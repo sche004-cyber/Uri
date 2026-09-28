@@ -15,7 +15,7 @@ from pathlib import Path
 import re
 
 from uri_v1.memory.contracts import TrustedInput
-from ..approval import approval_given, approval_withheld
+from ..approval import approval_given, approval_withheld, names_standalone
 
 
 def _whole_token(text: str, token: str) -> bool:
@@ -106,6 +106,12 @@ def canonical(value) -> bytes:
 _APPROVE_WORDS = frozenset({"allow", "permit", "enable", "yes", "approve"})
 _GRANT_WORDS = _APPROVE_WORDS | {"use", "grant"}
 _ELEVATIONS = {"network": ("network", "internet", "web"), "package_install": ("install", "pip", "package", "packages")}
+# The exact phrases an elevation's words may take in a grant ("allow network access"). They are
+# matched only where they stand alone, so "allow network.server" or "allow network-server" never
+# name the network elevation (Codex re-check of f8115d5).
+_ELEVATION_PHRASES = {k: tuple(f"{w} access" for w in v) + v for k, v in _ELEVATIONS.items()}
+# Capability kinds a grant may name next to the capability itself ("use the sheets server").
+_CAPABILITY_KIND_WORDS = frozenset("server servers skill skills plugin plugins mcp tool tools".split())
 # Directories whose exposure would defeat the point of scoping at all, even though
 # they are not $HOME itself (D-5/M-4): a parent of $HOME (e.g. `/home`) grants
 # everything under every user's home the same way `/` would, and a well-known
@@ -169,8 +175,13 @@ class ElevationGrant:
         itself, the turn may hold only approval verbs, the elevation's own words and closed
         fillers -- "hmm maybe allow network" or "ok so should we allow network" never grant."""
         if elevation.startswith("extra_dir:"):
-            return approval_given(raw_text, _APPROVE_WORDS, data=_raw_paths_naming(raw_text, elevation.split(":", 1)[1]))
-        return approval_given(raw_text, _APPROVE_WORDS, extra_words=_ELEVATIONS.get(elevation, ()))
+            # "access to <path>" is accepted as one exact phrase, not "to"/"access" as fillers.
+            paths = _raw_paths_naming(raw_text, elevation.split(":", 1)[1])
+            data = [f"access to {q}{p}{q}" for p in paths for q in ("", '"', "'")] + paths
+            return approval_given(raw_text, _APPROVE_WORDS, data=data)
+        phrases = _ELEVATION_PHRASES.get(elevation, ())
+        return (any(names_standalone(raw_text, w) for w in _ELEVATIONS.get(elevation, ()))
+                and approval_given(raw_text, _APPROVE_WORDS, data=phrases))
 
     def valid_for(self, run_scope: str) -> bool:
         # Only a `from_user`-issued grant, and the same allowlist re-checked (Codex audits).
@@ -242,7 +253,8 @@ class CapabilityGrant:
         # "use sheets maybe", "we could use sheets" never grant.
         if (not items or approval_withheld(intake.raw_text) or not _GRANT_WORDS & set(re.findall(r"\w+", text))
                 or any(not _whole_token(text, n.casefold()) for _, n in items)
-                or not approval_given(intake.raw_text, _GRANT_WORDS, data=[n for _, n in items])):
+                or not approval_given(intake.raw_text, _GRANT_WORDS, data=[n for _, n in items],
+                                      extra_words=_CAPABILITY_KIND_WORDS)):
             raise HarnessError("EXPLICIT_CAPABILITY_GRANT_REQUIRED")
         grant = cls(items, intake)
         object.__setattr__(grant, "_issued", _ISSUED)
@@ -254,7 +266,8 @@ class CapabilityGrant:
         # pass this gate either.
         if not self.items: return True
         return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
-                and approval_given(self.intake.raw_text, _GRANT_WORDS, data=[n for _, n in self.items]))
+                and approval_given(self.intake.raw_text, _GRANT_WORDS, data=[n for _, n in self.items],
+                                   extra_words=_CAPABILITY_KIND_WORDS))
 
     def to_dict(self) -> dict:
         return {"items": [list(x) for x in self.items]}

@@ -147,7 +147,7 @@ def test_directly_built_capability_grant_never_validates(text):
 
 def test_from_user_issued_grants_still_validate_and_copies_do_not():
     import dataclasses
-    ap = WritebackApproval.from_user(intake("yes, apply it"), RUN_ID, {"report.py": "0" * 64})
+    ap = WritebackApproval.from_user(intake("yes, apply the fix"), RUN_ID, {"report.py": "0" * 64})
     assert ap.valid() and not dataclasses.replace(ap).valid()
     g = ElevationGrant.from_user(intake("yes, allow network access"), "network", "scope1")
     assert g.valid_for("scope1") and PermissionProfile().elevate(g, "scope1").network
@@ -238,7 +238,7 @@ def test_hedged_writeback_approval_is_refused(text):
         WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64})
 
 
-@pytest.mark.parametrize("text", ["yes, apply it", "yes apply report.py", "ok, please apply the fix", "approve"])
+@pytest.mark.parametrize("text", ["yes, apply the fix", "yes apply report.py", "ok, please apply the fix", "approve"])
 def test_explicit_writeback_approval_is_issued(text):
     assert WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64}).valid()
 
@@ -355,3 +355,52 @@ def test_exact_run_scope_and_sentence_punctuation_still_grant(tmp_path):
     assert ElevationGrant.from_user(intake("yes allow network for this run"), "network", "s").valid_for("s")
     assert ElevationGrant.from_user(intake(f"yes, allow access to {d} for this run."), f"extra_dir:{d}", "s").valid_for("s")
     assert WritebackApproval.from_user(intake("yes, apply report.py."), RUN_ID, {"report.py": "0" * 64}).valid()
+
+
+# -- dangling referents and non-standalone elevation names never authorize --------------------------
+# (Codex re-check of f8115d5.) Fillers are now only assent/politeness words; "it", "that", "in",
+# "with", "to", "access" are not. "access to <path>" is accepted only as that exact phrase, and an
+# elevation's own words must stand alone. Every string Codex reported is a case here.
+
+REFERENT_CAPABILITY = ("use sheets with it", "use sheets in that", "use sheets to it", "use sheets, it's fine")
+REFERENT_ELEVATION = ("allow network in that", "allow network.server", "allow network-server", "allow network with it",
+                      "allow it network", "allow internet.web", "allow pip.install")
+REFERENT_WRITEBACK = ("apply the fix with it", "yes, apply it", "apply the fix in that", "apply that")
+
+
+@pytest.mark.parametrize("text", REFERENT_CAPABILITY)
+def test_dangling_referent_capability_is_refused(text):
+    with pytest.raises(HarnessError):
+        CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")])
+
+
+@pytest.mark.parametrize("text", REFERENT_ELEVATION)
+def test_dangling_referent_or_joined_elevation_is_refused(text):
+    elevation = "package_install" if "pip" in text else "network"
+    with pytest.raises(HarnessError):
+        ElevationGrant.from_user(intake(text), elevation, "scope1")
+
+
+@pytest.mark.parametrize("tail", ["in that", "with it", "to it"])
+def test_dangling_referent_extra_dir_is_refused(tail, tmp_path):
+    d = tmp_path / "reports"; d.mkdir()
+    with pytest.raises(HarnessError):
+        ElevationGrant.from_user(intake(f"yes allow access to {d} {tail}"), f"extra_dir:{d}", "scope1")
+    with pytest.raises(HarnessError):  # "to" is only accepted inside the exact "access to <path>"
+        ElevationGrant.from_user(intake(f"yes allow to {d}"), f"extra_dir:{d}", "scope1")
+
+
+@pytest.mark.parametrize("text", REFERENT_WRITEBACK)
+def test_dangling_referent_writeback_is_refused(text):
+    with pytest.raises(WorkspaceError):
+        WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64})
+
+
+def test_plain_grants_still_work_after_the_filler_cut(tmp_path):
+    d = tmp_path / "reports"; d.mkdir()
+    assert ElevationGrant.from_user(intake("yes, allow network access for this run"), "network", "s").valid_for("s")
+    assert ElevationGrant.from_user(intake("ok, please allow pip install"), "package_install", "s").valid_for("s")
+    assert ElevationGrant.from_user(intake(f'yes, allow access to "{d}" for this run'), f"extra_dir:{d}", "s").valid_for("s")
+    assert ElevationGrant.from_user(intake(f"allow {d}"), f"extra_dir:{d}", "s").valid_for("s")
+    assert CapabilityGrant.from_user(intake("yes, use the sheets server, thanks"), [("MCP_SERVER", "sheets")]).valid()
+    assert WritebackApproval.from_user(intake("yes, go ahead and apply the fix"), RUN_ID, {"report.py": "0" * 64}).valid()

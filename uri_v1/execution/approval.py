@@ -76,27 +76,34 @@ def approval_withheld(raw_text: str) -> bool:
 # hedges, questions, conditions, extra clauses -- is not a grant.
 #
 # Codex re-check of 249660e: a declarative ("I use sheets", "I allow network") or a time/scope
-# qualifier ("for now", "just for this", "allow network on") is not a grant, so "i", "now",
-# "just", "on", "here", "for", "this" and "run" are not fillers; the one scope phrase accepted
-# is the exact "for this run" (`_RUN_SCOPE`), which is what every grant is bound to anyway.
-GRANT_FILLERS = frozenset(
-    "yes yeah yep ok okay sure please pls go ahead that the server servers skill skills plugin "
-    "plugins mcp tool tools and to access it them fine thanks thank you of in with".split())
+# qualifier ("for now", "just for this", "allow network on") is not a grant; the one scope
+# phrase accepted is the exact "for this run" (`_RUN_SCOPE`), which every grant is bound to.
+# Codex re-check of f8115d5: a dangling referent ("use sheets with it", "allow network in that",
+# "apply the fix with it") is not a grant either, so the fillers are cut to this minimal set of
+# assent and politeness words. Anything a gate needs beyond them (an elevation's own words, a
+# capability kind such as "server", "access to <path>") it passes itself as data or extra words.
+GRANT_FILLERS = frozenset("yes yeah ok okay sure please go ahead the and thanks thank you".split())
 _GRANT_PUNCTUATION = frozenset(",.!:;\"'-")
 _RUN_SCOPE = re.compile(r"(?<!\S)for this run(?=$|\s|[,.!:;](?:\s|$))", re.IGNORECASE)
 
 
-def _strip_data(text: str, data) -> str:
-    """Remove each granted item where it stands as a whole word of its own.
-
-    The item (optionally in matching quotes) must start at the beginning or after
-    whitespace, and end at the end, before whitespace, or before sentence-final
+def _standalone(item: str) -> re.Pattern:
+    """`item` (optionally in matching quotes) where it stands as a whole word of its own: at
+    the start or after whitespace, and at the end, before whitespace, or before sentence-final
     punctuation that is itself followed by whitespace or the end. So "sheets.server",
-    "sheets-x" or "x/sheets" never count as naming "sheets" (Codex re-check of 249660e).
-    """
+    "network-server" or "x/sheets" never count as naming "sheets" or "network" (Codex
+    re-checks of 249660e and f8115d5)."""
+    return re.compile(r"(?<!\S)([\"']?)" + re.escape(item) + r"\1(?=$|\s|[,.!:;](?:\s|$))", re.IGNORECASE)
+
+
+def names_standalone(text: str, item: str) -> bool:
+    return bool(item) and _standalone(str(item)).search(text) is not None
+
+
+def _strip_data(text: str, data) -> str:
+    """Remove each granted item where it stands on its own (see `_standalone`)."""
     for d in sorted({str(x) for x in data if x}, key=len, reverse=True):
-        text = re.sub(r"(?<!\S)([\"']?)" + re.escape(d) + r"\1(?=$|\s|[,.!:;](?:\s|$))", " ", text,
-                      flags=re.IGNORECASE)
+        text = _standalone(d).sub(" ", text)
     return text
 
 
