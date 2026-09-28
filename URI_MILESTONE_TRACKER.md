@@ -1,5 +1,8 @@
 # URI Milestone Tracker
 
+**Batch handoff — 2026-09-28: M38 Harness Execution Minimum implemented, PROVISIONAL / NOT FROZEN; batch stopped before the Office demonstrator.**
+State: `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN`. Built on unaudited M36 (`405db1f`) and M37 (`5460d64`), dependencies recorded. [Plan](docs/plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](docs/plans/M38_IMPLEMENTATION_REPORT.md), [Codex audit package](docs/plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md). Next: one independent Codex audit of the M36 -> M37 -> M38 chain. No freeze, no production integration.
+
 **Batch handoff — 2026-09-28: M37 Edge Minimum implemented, PROVISIONAL / NOT FROZEN.**
 State: `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN`. Claude planned and implemented the Edge minimum under the User's batched-audit workflow, on unaudited M36 repair commit `405db1f` (dependency recorded). [Plan](docs/plans/M37_EDGE_MINIMUM_PLAN.md), [report](docs/plans/M37_IMPLEMENTATION_REPORT.md). Self-qualification only; the independent audit is the batched Codex package covering M36 -> M37 -> M38. No freeze, no production integration.
 

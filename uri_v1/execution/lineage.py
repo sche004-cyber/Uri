@@ -28,7 +28,8 @@ class LineageResult:
 
 
 def record_and_verify(*, recorder, ledger, store, workspace, run_id, task_id, action_label, session_id, trace_id,
-                      claimed_failed=False, exit_code=None, executor_claim=None, verifier_id=VERIFIER_ID) -> LineageResult:
+                      claimed_failed=False, exit_code=None, executor_claim=None, uri_observations=None,
+                      verifier_id=VERIFIER_ID) -> LineageResult:
     diff = workspace.diff()
     outputs = []
     for n, change in enumerate(c for c in diff["changes"] if c["after_sha256"]):
@@ -38,6 +39,7 @@ def record_and_verify(*, recorder, ledger, store, workspace, run_id, task_id, ac
             raise ValueError("OUTPUT_CHANGED_DURING_RECORDING")
         outputs.append({"result_id": version.result_id, "result_version": version.version, "content_sha256": version.content_sha256})
     store.append(run_id, "RUN_RESULT", {"uri_computed_diff": diff, "outputs": outputs, "executor_claim": executor_claim or {},
+                                        "uri_observations": uri_observations or {"safety_flags": []},
                                         "claimed_failed": bool(claimed_failed)})
     inputs = tuple({"source_id": e.source_id, "content_sha256": e.content_sha256} for e in workspace.manifest)
     claim = recorder.outcome(task_id, action_label=action_label, inputs=inputs, outputs=tuple(outputs), session_id=session_id,

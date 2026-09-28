@@ -154,6 +154,9 @@ def make_memory_verifier(run_root, *, recompute=None, python=None):
         if run is None or "result" not in run:
             return "UNVERIFIABLE", (uuid.uuid4().hex,), dict(acceptance, reason="RUN_RECORD_MISSING")
         started = run["started"]
+        flags = run["result"].get("uri_observations", {}).get("safety_flags", [])
+        if flags:
+            return "FAILED", (uuid.uuid4().hex,), dict(acceptance, reason="SAFETY_FLAGS", flags=list(flags))
         if started["task_id"] != claim.task_id:
             return "FAILED", (uuid.uuid4().hex,), dict(acceptance, reason="CLAIM_TASK_MISMATCH")
         claimed_inputs = sorted((x["source_id"], x["content_sha256"]) for x in claim.payload["inputs"])

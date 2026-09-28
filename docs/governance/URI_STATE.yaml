@@ -215,6 +215,20 @@ product_milestones:
     closing_audit: "REQUIRED_NOT_PERFORMED (batched Codex audit package covering M36 -> M37 -> M38)"
     integration_authorized: false
     note: "New files only. No change to M36, frozen M33.3, S6, M31 or uri_core. Only deterministic mechanisms are qualified; no local model is qualified."
+  - id: "M38"
+    title: "Harness Execution Minimum (controlled external-harness execution with URI verification)"
+    status: "M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN"
+    currently_active: false
+    implementation_authorized: true
+    authorization: "User instruction 2026-09-28 (batched independent audits): plan and implement Harness Execution minimum incl. capability/plugin/skill/MCP discovery and controlled use; stop before the Office demonstrator; no freeze"
+    plan: "docs/plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md"
+    implementation_report: "docs/plans/M38_IMPLEMENTATION_REPORT.md"
+    component: "uri_v1/execution/harness (OD-5 placement)"
+    depends_on_unaudited: "M36 at 405db1ff21f11f6927fe1b74990ff6b88a97a28d; M37 at 5460d64 (both PROVISIONAL, not frozen)"
+    self_qualification: "PASSED offline fake-harness gate (implementer-run; not independent); live Claude Code pilot recorded as PILOT_NOT_QUALIFICATION; Codex UNAVAILABLE"
+    closing_audit: "REQUIRED_NOT_PERFORMED (batched Codex audit package covering M36 -> M37 -> M38)"
+    integration_authorized: false
+    note: "Governed by D-A, OD-2..OD-5, VG-1, LF-1. Office demonstrator not started (batch stop point)."
 queued_initiatives:
   - id: "hybrid_ui"
     title: "URI Hybrid UI Implementation (\"Compact Chat Mode\")"
