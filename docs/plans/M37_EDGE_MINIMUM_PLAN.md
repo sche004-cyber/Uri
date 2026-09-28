@@ -1,7 +1,7 @@
 # M37 — Edge Minimum (local-first resolution and qualified local completion)
 
 - **Status:** `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` once the implementation commit lands. Until an independent audit, M37 is PROVISIONAL / NOT FROZEN. Nothing here claims independent qualification or closure.
-- **Date:** 2026-09-28. **Author / implementer:** Claude Code (Opus 5.5). Independent auditor for the batch: Codex (preferred, per User 2026-09-28).
+- **Date:** 2026-09-28. **Author / implementer:** Claude Code. Independent auditor for the batch: Codex (preferred, per User 2026-09-28).
 - **Authority:** User instruction 2026-09-28 (project thread "batched independent audits"): "Edge minimum — plan and implement", building on unaudited M36 with the dependency recorded, then Harness Execution minimum, then one independent Codex audit package for Memory → Edge → Harness. No freeze, no production integration.
 - **Baseline:** branch `m35-uri-v1-parallel-architecture` at `be4451c6fda7803a742e0ad48c7fec63140ec30b` (M36, Codex-built, PROVISIONAL, under separate Claude audit). Frozen M33.3 baseline `291c9daa48435200c4b56857d0e3bc630016e82a`.
 - **Recorded dependency:** M37 consumes M36 `MemoryContextPackage`, `Recorder.outcome`, `Recorder.invoke_verifier`, `SourceRegistry` and the S11 `ResultVersionLedger` read/write API **without modifying any M36 or M33.3 file**. If the M36 audit requires a repair to any of those APIs, M37 must be re-qualified against the repaired M36.
