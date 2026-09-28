@@ -10,6 +10,7 @@ from .contracts import (MemoryRecord, RecordKind as K, Provenance as P, TaskStat
                         VerificationStatus as V, WriteResult, TrustedInput, BoundReference,
                         IdentityStatus as I, canonical, digest, plain, utc_now, negated,
                         affirmative_words, STATUS_FILLERS, DURATION_FILLERS, REQUEST_LEAD_WORDS)
+from .index import VerifierRegistryMismatch
 
 # Populated only by trusted bootstrap in this module; no public registration API.
 _VERIFIERS = MappingProxyType({})
@@ -100,7 +101,9 @@ class Recorder:
                    last_outcome_record_id=None, runtime_action=None):
         self._trusted(intake)
         with self.log.guard():
-            index = self.log.load_unlocked(); head = index.task(task_id)
+            try: index = self.log.load_unlocked()
+            except VerifierRegistryMismatch: return WriteResult(False,"VERIFIER_REGISTRY_MISMATCH")
+            head = index.task(task_id)
             if not head or head.record_id != expected_head_record_id: return WriteResult(False,"CONFLICT")
             p = plain(head.payload); p.pop("correction_record_id",None); p.pop("correction_operation_id",None)
             old = S(p["status"]); new = S(status or old); eid = uuid.uuid4().hex
@@ -173,7 +176,9 @@ class Recorder:
         registered = _VERIFIERS.get(verifier_id)
         if not registered: raise ValueError("UNREGISTERED_VERIFIER")
         with self.log.guard():
-            index = self.log.load_unlocked(); claim = index.records.get(assessed_outcome_record_id)
+            try: index = self.log.load_unlocked()
+            except VerifierRegistryMismatch: return WriteResult(False,"VERIFIER_REGISTRY_MISMATCH")
+            claim = index.records.get(assessed_outcome_record_id)
             if not claim or claim.kind != K.OUTCOME or claim.provenance != P.EXECUTION_OUTCOME: raise ValueError("CLAIM_REQUIRED")
             if not self.log.durable_enabled(): return WriteResult(False,"DURABLE_OFF")
             # Live identity is checked before handing immutable evidence to the producer.
@@ -211,7 +216,9 @@ class Recorder:
         self._trusted(intake)
         op = operation_id or uuid.uuid4().hex
         with self.log.guard():
-            index = self.log.load_unlocked(); head = index.task(task_id)
+            try: index = self.log.load_unlocked()
+            except VerifierRegistryMismatch: return WriteResult(False,"VERIFIER_REGISTRY_MISMATCH")
+            head = index.task(task_id)
             pending = next((c for c in index.records.values() if c.kind == K.CORRECTION and c.payload["correction_operation_id"] == op),None)
             if pending:
                 if replacement and (replacement.source.source_id != pending.payload.get("right_source_id") or replacement.source.content_sha256 != pending.payload.get("new_source_ref",{}).get("content_sha256")):

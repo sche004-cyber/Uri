@@ -142,7 +142,15 @@ def test_core_adapter_import_boundaries_and_frozen_scope():
                 assert mod!="uri_v1.turn.rar_deterministic"
                 if "uri_adapter" not in path.parts and mod.startswith("uri_v1."):
                     assert mod=="uri_v1.user_storage" or mod.startswith("uri_v1.memory.")
-    changed=subprocess.check_output(["git","diff","--name-only","291c9daa48435200c4b56857d0e3bc630016e82a","--","uri_v1","uri_core","uri_ui","tests","scripts","fixtures"],cwd=root,text=True).splitlines()
-    assert all(p.startswith(("uri_v1/memory/","tests/test_m36_","scripts/m36_","fixtures/m36_memory/")) for p in changed)
+    # Frozen scope, stated as what M36 actually guarantees (Antigravity a87e158 F-5): no file
+    # that existed at the M33.3 freeze (291c9da) is modified, deleted or renamed outside M36's
+    # own paths, and nothing at all is added under the frozen uri_core/uri_ui apps. New files
+    # elsewhere belong to successor milestones (M37+, which carry their own scope guards);
+    # the old form failed on any such file, i.e. on every candidate after M36.
+    base="291c9daa48435200c4b56857d0e3bc630016e82a"; scope=["uri_v1","uri_core","uri_ui","tests","scripts","fixtures"]
+    touched=subprocess.check_output(["git","diff","--name-only","--diff-filter=MDRTCUXB",base,"--",*scope],cwd=root,text=True).splitlines()
+    assert all(p.startswith(("uri_v1/memory/","tests/test_m36_","scripts/m36_","fixtures/m36_memory/")) for p in touched), touched
+    added=subprocess.check_output(["git","diff","--name-only","--diff-filter=A",base,"--","uri_core","uri_ui"],cwd=root,text=True).splitlines()
+    assert not added, added
     from scripts.m33_3_r_anchors import require_anchors
     assert require_anchors()["ok"]
