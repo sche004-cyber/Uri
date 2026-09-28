@@ -10,9 +10,18 @@ from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import json
+from pathlib import Path
 import re
 
 from uri_v1.memory.contracts import TrustedInput, negated
+
+
+def _whole_token(text: str, token: str) -> bool:
+    """True only if `token` appears in `text` as a standalone token, not as a
+    substring of a longer word (an incidental letter or fragment must not
+    satisfy an explicit grant)."""
+    if not token: return False
+    return re.search(r"(?<![\w-])" + re.escape(token) + r"(?![\w-])", text) is not None
 
 CAPSULE_SCHEMA_VERSION = "m38.capsule.v1"
 
@@ -41,6 +50,12 @@ def canonical(value) -> bytes:
 # -- permissions (OD-4) ---------------------------------------------------------------------------
 
 _ELEVATIONS = {"network": ("network", "internet", "web"), "package_install": ("install", "pip", "package", "packages")}
+# Directories whose exposure would defeat the point of scoping at all, even though
+# they are not $HOME itself (D-5/M-4): a parent of $HOME (e.g. `/home`) grants
+# everything under every user's home the same way `/` would, and a well-known
+# credential directory directly under $HOME (e.g. `~/.ssh`) is exactly the kind of
+# thing an "allow access to my files" grant must never quietly cover.
+_SENSITIVE_HOME_CHILDREN = frozenset({".ssh", ".gnupg", ".aws", ".docker", ".kube", ".config", ".netrc"})
 
 
 @dataclass(frozen=True)
@@ -53,10 +68,24 @@ class ElevationGrant:
     @classmethod
     def from_user(cls, intake, elevation: str, run_scope: str) -> "ElevationGrant":
         if not isinstance(intake, TrustedInput) or not intake.trusted: raise HarnessError("TRUSTED_USER_INPUT_REQUIRED")
+        if not run_scope: raise HarnessError("RUN_SCOPE_REQUIRED")
         words = set(re.findall(r"\w+", intake.raw_text.casefold()))
         if elevation.startswith("extra_dir:"):
-            named = elevation.split(":", 1)[1].replace("\\", "/").rstrip("/").split("/")[-1].casefold()
-            ok = bool(named) and named in intake.raw_text.casefold()
+            resolved_path = Path(elevation.split(":", 1)[1]).expanduser().resolve()
+            resolved = str(resolved_path)
+            home = Path.home().resolve()
+            # D-5/M-4: reject the granted path itself, any ancestor of $HOME (which
+            # would expose $HOME and everything alongside it the same way `/` would),
+            # and any well-known credential directory directly under $HOME.
+            if (resolved in ("/", str(home)) or resolved_path in home.parents
+                    or (resolved_path.parent == home and resolved_path.name.casefold() in _SENSITIVE_HOME_CHILDREN)):
+                raise HarnessError("EXTRA_DIR_NOT_ALLOWED")
+            # The user's own words must name the literal directory being granted, not
+            # merely an incidental word that happens to match its last path segment
+            # (D-5/M-4): matching on the basename alone let a sentence that never
+            # mentioned the real path at all still satisfy the grant.
+            ok = _whole_token(intake.raw_text.casefold(), resolved.casefold())
+            elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))
         if negated(intake.raw_text) or not ok or not ({"allow", "permit", "enable", "yes", "approve"} & words):
@@ -71,11 +100,23 @@ class ElevationGrant:
 
 @dataclass(frozen=True)
 class PermissionProfile:
-    """Default is the most restrictive posture that can do a script repair."""
+    """Default is the most restrictive posture that can do a script repair.
+
+    Every elevated field must be backed by a matching `ElevationGrant` in
+    `grants` (H-3/P3): a profile cannot be built with `network`,
+    `package_install` or `extra_dirs` set unless `elevate()` put it there.
+    """
     network: bool = False
     package_install: bool = False
     extra_dirs: tuple = ()
     grants: tuple = field(default=(), compare=False, repr=False)
+
+    def __post_init__(self):
+        if not all(isinstance(g, ElevationGrant) for g in self.grants): raise HarnessError("ELEVATION_GRANT_INVALID")
+        granted_dirs = {g.elevation.split(":", 1)[1] for g in self.grants if g.elevation.startswith("extra_dir:")}
+        if self.network and not any(g.elevation == "network" for g in self.grants): raise HarnessError("ELEVATION_GRANT_INVALID")
+        if self.package_install and not any(g.elevation == "package_install" for g in self.grants): raise HarnessError("ELEVATION_GRANT_INVALID")
+        if set(self.extra_dirs) - granted_dirs: raise HarnessError("ELEVATION_GRANT_INVALID")
 
     def elevate(self, grant: ElevationGrant, run_scope: str) -> "PermissionProfile":
         if not isinstance(grant, ElevationGrant) or not grant.valid_for(run_scope): raise HarnessError("ELEVATION_GRANT_INVALID")
@@ -106,7 +147,8 @@ class CapabilityGrant:
     def from_user(cls, intake, items) -> "CapabilityGrant":
         if not isinstance(intake, TrustedInput) or not intake.trusted: raise HarnessError("TRUSTED_USER_INPUT_REQUIRED")
         items = tuple(sorted({(str(k), str(n)) for k, n in items}))
-        if not items or negated(intake.raw_text) or any(n.casefold() not in intake.raw_text.casefold() for _, n in items):
+        text = intake.raw_text.casefold()
+        if not items or negated(intake.raw_text) or any(not _whole_token(text, n.casefold()) for _, n in items):
             raise HarnessError("EXPLICIT_CAPABILITY_GRANT_REQUIRED")
         return cls(items, intake)
 

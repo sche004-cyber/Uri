@@ -3,6 +3,7 @@ import ast
 import json
 import os
 from pathlib import Path
+import sys
 import threading
 import time
 
@@ -93,6 +94,217 @@ def test_whole_process_group_is_terminated(tmp_path, monkeypatch):
         pytest.fail("grandchild survived process-group termination")
 
 
+# ---- M38 repair regressions (2026-09-28, from the internal audit's adversarial probes) ----
+
+def test_same_group_orphan_is_killed_and_never_touches_the_original(tmp_path, monkeypatch):
+    """H-2: a background child in the harness's own process group, stdio closed, used to
+    survive a clean exit and overwrite the original a moment later. `supervise()` now
+    sweeps the whole process group after every exit, not only on timeout/inactivity/cancel."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "orphan_same_group"); monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert out.verified and out.verification_status == "VERIFIED" and out.safety_flags == ()
+    before = (e.root / "report.py").read_text()
+    time.sleep(2.5)
+    assert (e.root / "report.py").read_text() == before  # the orphan never got to run
+
+
+def test_originals_are_rechecked_after_verification_not_only_before(tmp_path, monkeypatch):
+    """H-2/M-1: code that only fires under URI's verifier (scrubbed HOME) used to overwrite
+    the original after the pre-verification check already passed, and nothing looked again."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "verifier_time_bomb"); monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert not out.verified and "ORIGINAL_MODIFIED_DURING_VERIFICATION" in out.safety_flags
+
+
+# ---- M38 repair round 2 regressions (2026-09-28, from the repair re-audit) ----
+
+def test_writeback_refuses_when_original_was_modified_during_verification(tmp_path, monkeypatch):
+    """Finding 2 (D-2): `ORIGINAL_MODIFIED_DURING_VERIFICATION` used to update only the
+    in-memory `HarnessOutcome`, leaving the run store's own last VERIFICATION record
+    saying VERIFIED. `Workspace.write_back` reads that saved record, not the outcome
+    object, so a flagged run could still write back to originals. The runner must now
+    append a superseding VERIFICATION event so the saved record itself reflects it."""
+    from uri_v1.execution.workspace import Workspace, WorkspaceError, WritebackApproval
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "verifier_time_bomb"); monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert not out.verified and "ORIGINAL_MODIFIED_DURING_VERIFICATION" in out.safety_flags
+    run = e.store.get(out.run_id)
+    assert run["verifications"] and run["verifications"][-1]["status"] != "VERIFIED"
+    change = next(c for c in run["result"]["uri_computed_diff"]["changes"] if c["relpath"] == "report.py")
+    ws = Workspace.open(run["started"]["workspace_dir"])
+    approval = WritebackApproval.from_user(intake("yes, approve and apply the fix"), out.run_id, {"report.py": change["after_sha256"]})
+    with pytest.raises(WorkspaceError, match="WRITEBACK_REQUIRES_VERIFIED_RUN"):
+        ws.write_back(approval, sources=e.sources, run_store=e.store)
+
+
+def test_verifier_time_orphan_is_killed_and_never_touches_the_original(tmp_path, monkeypatch):
+    """Finding 3: `verify.py`'s `run_process` (which runs the candidate script during
+    verification) used to sweep the process group only on timeout, not on a clean exit --
+    the harness path already fixed this (H-2) but the verifier's own subprocess did not.
+    A same-process-group child the script spawns must not survive the verifier's run."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "verifier_orphan_same_group")
+    monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert out.verified and out.verification_status == "VERIFIED" and out.safety_flags == ()
+    before = (e.root / "report.py").read_text()
+    time.sleep(2.5)
+    assert (e.root / "report.py").read_text() == before  # the orphan never got to run
+
+
+def test_fabricated_empty_output_sheet_fails_verification(tmp_path, monkeypatch):
+    """Finding 4 (H-4/P7): a script that exits zero and creates the right sheet name, but
+    never writes any data into it, used to pass verification anyway -- `workbook_has_sheets`
+    only checked sheet presence. It now also requires at least one cell of real content
+    beyond the header, so a fabricated/empty output no longer passes as VERIFIED."""
+    e, esc, out = _run(tmp_path, monkeypatch, "fabricated_empty_summary")
+    assert out.verification_status == "FAILED" and not out.verified
+    items = e.store.get(out.run_id)["verifications"][-1]["items"]
+    sheets_item = next(i for i in items if i["kind"] == "workbook_has_sheets")
+    assert sheets_item["status"] == "FAIL" and sheets_item["detail"] == ["Summary"]
+
+
+def test_extra_dir_cannot_be_a_home_ancestor_or_a_sensitive_home_child(tmp_path, monkeypatch):
+    """Finding 5 (D-5/M-4): the old check only refused `/` and $HOME exactly, so a parent
+    of $HOME (e.g. `/home`) or a well-known credential directory directly under $HOME
+    (e.g. `~/.ssh`) could still be granted as an `extra_dir`, exposing far more than the
+    grant's own wording implied. Matching also used to key off the directory's basename
+    alone; it now requires the literal resolved path in the user's own words."""
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+    (tmp_path / "home").mkdir()
+    parent = str(tmp_path)
+    with pytest.raises(HarnessError):  # an ancestor of $HOME grants $HOME too
+        ElevationGrant.from_user(intake(f"yes, allow access to {parent} for this run"), f"extra_dir:{parent}", "run-1")
+    ssh = str(tmp_path / "home" / ".ssh")
+    with pytest.raises(HarnessError):  # a well-known credential dir directly under $HOME
+        ElevationGrant.from_user(intake(f"yes, allow access to {ssh} for this run"), f"extra_dir:{ssh}", "run-1")
+    reports = str(tmp_path / "home" / "reports")
+    with pytest.raises(HarnessError):  # basename alone ("reports") is not enough anymore
+        ElevationGrant.from_user(intake("yes, allow access to reports for this run"), f"extra_dir:{reports}", "run-1")
+    g = ElevationGrant.from_user(intake(f"yes, allow access to {reports} for this run"), f"extra_dir:{reports}", "run-1")
+    assert g.elevation == f"extra_dir:{reports}"
+
+
+def test_oversized_prompt_does_not_block_the_watchdog(tmp_path):
+    """M-5: stdin used to be written synchronously before the timeout loop started, so a
+    harness that never reads stdin could hang `supervise()` past its own timeout."""
+    from uri_v1.execution.harness.process import supervise
+    log = tmp_path / "log"
+    started = time.monotonic()
+    r = supervise([sys.executable, "-c", "import time; time.sleep(3600)"], cwd=tmp_path, env=dict(os.environ),
+                 stdin_bytes=b"x" * (1 << 20), timeout_s=2, inactivity_s=1, log_path=log)
+    assert time.monotonic() - started < 8 and (r.timed_out or r.inactivity_killed)
+
+
+def test_discovery_target_never_carries_a_single_string_commands_arguments(tmp_path):
+    """M-2: `_target()` used to basename the *whole* command string, so a single-string
+    MCP command such as `npx -y pkg --api-key sk-live-...` leaked the secret argument."""
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude.json").write_text(json.dumps({"mcpServers": {
+        "acme": {"command": "npx -y @acme/mcp-server --api-key sk-live-LEAK1"}}}))
+    inv = discover_claude_code(tmp_path)
+    assert inv.find("MCP_SERVER", "acme").target == "npx" and "sk-live" not in json.dumps(inv.to_dict())
+
+
+def test_harness_env_is_an_allowlist_not_a_denylist(monkeypatch):
+    """M-3: `harness_env()` used to forward the whole environment minus a short denylist,
+    so URI's own provider keys and the user's unrelated secrets reached the harness."""
+    from uri_v1.execution.harness.process import harness_env
+    for k in ("OPENAI_API_KEY", "TAVILY_API_KEY", "GITHUB_TOKEN", "AWS_SECRET_ACCESS_KEY"):
+        monkeypatch.setenv(k, "sk-live-" + k)
+    env = harness_env()
+    assert not any(k in env for k in ("OPENAI_API_KEY", "TAVILY_API_KEY", "GITHUB_TOKEN", "AWS_SECRET_ACCESS_KEY"))
+    assert "PATH" in env
+    env = harness_env(("CLAUDE_CODE_OAUTH_TOKEN",))
+    monkeypatch.setenv("CLAUDE_CODE_OAUTH_TOKEN", "oauth-adapter-owns-this-one")
+    assert harness_env(("CLAUDE_CODE_OAUTH_TOKEN",))["CLAUDE_CODE_OAUTH_TOKEN"] == "oauth-adapter-owns-this-one"
+
+
+def test_anthropic_api_key_is_never_forwarded_even_if_named_as_an_auth_var(monkeypatch):
+    """M38 repair round 2, finding 6: ANTHROPIC_API_KEY would switch Claude Code from the
+    user's subscription session to metered API billing, which Chetan has ruled out
+    entirely. It must never reach the harness, even if an adapter names it as one of its
+    own `auth_vars` (as ClaudeCodeAdapter itself used to)."""
+    from uri_v1.execution.harness.process import harness_env
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-should-never-forward")
+    assert "ANTHROPIC_API_KEY" not in harness_env()
+    assert "ANTHROPIC_API_KEY" not in harness_env(("ANTHROPIC_API_KEY",))
+    assert "ANTHROPIC_API_KEY" not in ClaudeCodeAdapter.AUTH_VARS
+
+
+def test_elevated_posture_needs_a_grant_it_cannot_be_built_without(tmp_path, monkeypatch):
+    """H-3/P3: `PermissionProfile(network=True, ...)` used to be buildable directly, with
+    no `ElevationGrant` at all, making the restrictive default posture opt-out by construction."""
+    with pytest.raises(HarnessError): PermissionProfile(network=True)
+    with pytest.raises(HarnessError): PermissionProfile(package_install=True)
+    with pytest.raises(HarnessError): PermissionProfile(extra_dirs=("/tmp",))
+
+
+def test_elevation_grant_is_bound_to_the_run_it_was_issued_for(tmp_path, monkeypatch):
+    """H-3/P3b: an `ElevationGrant`'s `run_scope` used to never be compared with the actual
+    run: `HarnessRunner.run()` generated its own run id after the posture was already built,
+    so a grant issued for one run could be reused on any other. `run()` now requires the
+    caller to name the run up front and checks every grant against it."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "honest")
+    from uri_v1.execution.workspace import new_run_id
+    run_a, run_b = new_run_id(), new_run_id()
+    g = ElevationGrant.from_user(intake("yes, allow network access for this run"), "network", run_a)
+    p = PermissionProfile().elevate(g, run_a)
+    limits = Limits(timeout_s=30, inactivity_s=15)
+    with pytest.raises(HarnessError): runner.run(esc, fake_adapter(home), session_id="s", posture=p, limits=limits)
+    with pytest.raises(HarnessError):
+        runner.run(esc, fake_adapter(home), session_id="s", posture=p, run_id=run_b, limits=limits)
+    out = runner.run(esc, fake_adapter(home), session_id="s", posture=p, run_id=run_a, limits=limits)
+    assert out.verified
+
+
+def test_extra_dir_grant_needs_the_whole_directory_name_not_an_incidental_letter(tmp_path):
+    """M-4/P4: `extra_dir:/home/someone/e` used to be granted by any "allow" sentence that
+    happened to contain the letter `e`, because the basename was matched as a substring."""
+    with pytest.raises(HarnessError):
+        ElevationGrant.from_user(intake("yes allow the repair"), "extra_dir:/home/someone/e", "run-1")
+    g = ElevationGrant.from_user(intake("yes, allow access to /home/someone/e for this run"), "extra_dir:/home/someone/e", "run-1")
+    assert g.elevation.startswith("extra_dir:") and g.elevation.endswith("/e")
+    with pytest.raises(HarnessError):  # root and home are never an allowed extra_dir
+        ElevationGrant.from_user(intake("yes, allow access to / for this run"), "extra_dir:/", "run-1")
+
+
+def test_capability_grant_needs_the_whole_name_not_a_substring(tmp_path):
+    """M-4/P4b: a granted capability name used to be matched as a bare substring, so "the
+    digital report fix" satisfied a grant for an MCP server named "git"."""
+    with pytest.raises(HarnessError): CapabilityGrant.from_user(intake("allow the digital report fix"), [("MCP_SERVER", "git")])
+    g = CapabilityGrant.from_user(intake("allow the git server"), [("MCP_SERVER", "git")])
+    assert g.items == (("MCP_SERVER", "git"),)
+
+
+def test_default_posture_has_no_shell_and_scopes_file_tools_to_the_workspace(tmp_path, monkeypatch):
+    """H-1: bare `Read`/`Edit`/`Write`/`Glob`/`Grep` allow rules were not path-scoped at all,
+    and `Bash(python *)` gave the harness arbitrary code execution by default. Chetan's
+    decision (2026-09-28): no shell in the default posture; URI's own verifier runs any
+    script. File tools are scoped to the workspace's `files/` directory.
+
+    D-1 (M38 repair round 2): the scoped allow rule must use Claude Code's `//` prefix
+    for an absolute path (a single leading `/` is read relative to the settings root and
+    never matches), and the bare tool name must NOT also be denied -- `--disallowedTools`
+    overrides every scoped `--allowedTools` rule for that tool, so denying it bare left
+    the harness with no usable file tool at all regardless of the scope above it."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    ws = Workspace.create(user_id=e.user, scratch_root=e.scratch, sources=e.sources,
+                          inputs=[WorkspaceInput(i.role, i.source_id, i.content_sha256) for i in esc.inputs])
+    cap = build_capsule(esc, ws, harness_type=HarnessType.CLAUDE_CODE)
+    argv, _, _ = fake_adapter(home).invocation(cap, ws.bundle)
+    disallowed = argv[argv.index("--disallowedTools"):]
+    assert "Bash" in disallowed and not any(a.startswith("Bash(python") for a in argv)
+    scope = str(ws.files.resolve())
+    for tool in ("Read", "Edit", "Write", "Glob", "Grep"):
+        assert f"{tool}(//{scope.lstrip('/')}/**)" in argv  # scoped allow, correctly anchored absolute
+        assert tool not in disallowed  # and NOT bare-denied, or the scoped allow above is dead
+
+
 def test_reported_error_is_recorded_as_failed_claim_but_uri_still_checks(tmp_path, monkeypatch):
     e, esc, out = _run(tmp_path, monkeypatch, "honest_but_reports_error")
     assert out.claimed_outcome == "failed" and out.verification_status == "VERIFIED"
@@ -114,8 +326,10 @@ def test_restrictive_default_argv_and_no_bypass_flags(tmp_path, monkeypatch):
     argv = json.loads(argv_out.read_text())
     assert not FORBIDDEN_FLAGS.intersection(argv)
     assert argv[argv.index("--permission-mode") + 1] == "dontAsk" and argv[argv.index("--setting-sources") + 1] == ""
-    assert "--strict-mcp-config" in argv and "WebFetch" in argv[argv.index("--disallowedTools"):]
-    assert "Bash(python *)" in argv and "Bash(pip *)" not in argv and "--add-dir" not in argv
+    disallowed = argv[argv.index("--disallowedTools"):]
+    assert "--strict-mcp-config" in argv and "WebFetch" in disallowed and "Bash" in disallowed  # no shell by default
+    assert "Bash(python *)" not in argv and "Bash(pip *)" not in argv and "--add-dir" not in argv
+    assert any(a.startswith("Read(") and a.endswith("/**)") for a in argv)  # file tools are path-scoped to the workspace
     mcp = Path(argv[argv.index("--mcp-config") + 1])
     assert not mcp.exists()  # per-run config removed after the run
 
@@ -132,7 +346,8 @@ def test_elevation_requires_explicit_trusted_named_grant(tmp_path, monkeypatch):
                           inputs=[WorkspaceInput(i.role, i.source_id, i.content_sha256) for i in esc.inputs])
     cap = build_capsule(esc, ws, harness_type=HarnessType.CLAUDE_CODE, posture=p)
     argv, _, _ = fake_adapter(home).invocation(cap, ws.bundle)
-    assert "WebFetch" in argv and "--disallowedTools" not in argv
+    disallowed = argv[argv.index("--disallowedTools"):]  # file tools stay path-scoped and denied bare (H-1) even when elevated
+    assert "WebFetch" in argv and "WebFetch" not in disallowed and "WebSearch" not in disallowed
     cx, _, _ = CodexCliAdapter(("python3",), home=home).invocation(cap, ws.bundle)
     assert "sandbox_workspace_write.network_access=true" in cx
 

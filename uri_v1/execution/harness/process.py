@@ -12,21 +12,35 @@ import time
 
 from uri_v1.execution.verify import kill_group
 
-# Nesting guards and URI-private variables are never forwarded to a harness.
-NEVER_FORWARD = ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SSE_PORT", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED",
-                 "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME", "URI_PROVIDER_KEY_SECRET")
+# Generic process environment a harness needs to run at all. Nothing named here
+# can carry a secret. Anything else, including URI's own provider keys and the
+# user's unrelated tokens, is never forwarded (OD-2): the harness authenticates
+# itself, and only the auth variables an adapter names for its own harness are
+# added on top of this base.
+BASE_ENV_ALLOW = frozenset({"PATH", "HOME", "USERPROFILE", "LANG", "LC_ALL", "LC_CTYPE", "TERM", "TMPDIR", "TEMP",
+                            "TMP", "TZ", "USER", "USERNAME", "SHELL", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR"})
+
+# Test-only control channels for the fake/probe harness fixtures (never present
+# outside a test run, never a secret name). A real harness never reads these.
+_TEST_FIXTURE_PREFIXES = ("URI_FAKE_", "URI_PROBE_")
+
+# Chetan has ruled out any separately metered API spend (2026-09-28 spend policy): a
+# harness run must always authenticate through the user's own subscription session,
+# never through a metered provider key. `ANTHROPIC_API_KEY` is therefore never
+# forwarded, even if an adapter names it as one of its own `auth_vars` -- the general
+# allowlist is not the place to encode a billing decision, so it is hard-stripped here.
+_NEVER_FORWARD = frozenset({"ANTHROPIC_API_KEY"})
 
 
-def harness_env(extra: dict | None = None) -> dict:
-    """The user's environment minus nesting guards and URI secrets.
+def harness_env(auth_vars: tuple = ()) -> dict:
+    """A minimal, allowlisted environment: generic runtime variables plus the
+    named auth variables the harness needs for its own authentication.
 
-    The harness authenticates itself (subscription login or its own API key,
-    ruling OD-2); URI forwards the environment it runs in and never reads or
-    stores harness credentials.
+    `auth_vars` must name only the harness's own credentials; passing URI's
+    provider keys or the user's unrelated secrets here would defeat OD-2.
     """
-    env = {k: v for k, v in os.environ.items() if k not in NEVER_FORWARD}
-    env.update(extra or {})
-    return env
+    allow = (BASE_ENV_ALLOW | set(auth_vars)) - _NEVER_FORWARD
+    return {k: v for k, v in os.environ.items() if k in allow or k.startswith(_TEST_FIXTURE_PREFIXES)}
 
 
 @dataclass(frozen=True)
@@ -61,13 +75,16 @@ def supervise(argv, *, cwd: Path, env: dict, stdin_bytes: bytes | None, timeout_
         for chunk in iter(lambda: proc.stderr.read(4096), b""):
             last[0] = time.monotonic(); err.extend(chunk); del err[:-4096]
 
-    threads = [threading.Thread(target=pump_out, daemon=True), threading.Thread(target=pump_err, daemon=True)]
+    def pump_in():
+        try:
+            if stdin_bytes: proc.stdin.write(stdin_bytes)
+            proc.stdin.close()
+        except (BrokenPipeError, OSError):
+            pass
+
+    threads = [threading.Thread(target=pump_out, daemon=True), threading.Thread(target=pump_err, daemon=True),
+              threading.Thread(target=pump_in, daemon=True)]
     for t in threads: t.start()
-    try:
-        if stdin_bytes: proc.stdin.write(stdin_bytes)
-        proc.stdin.close()
-    except (BrokenPipeError, OSError):
-        pass
     timed_out = inactive = cancelled = False
     while proc.poll() is None:
         now = time.monotonic()
@@ -79,6 +96,11 @@ def supervise(argv, *, cwd: Path, env: dict, stdin_bytes: bytes | None, timeout_
         kill_group(proc)
         break
     proc.wait()
+    kill_group(proc)  # always sweep the process group, even after a clean exit (H-2): a same-group
+                       # background child with stdio closed would otherwise outlive the run undetected.
+                       # A child that escaped into its own session (setsid) is not reachable this way;
+                       # containing that needs OS support (a Linux subreaper/cgroup or a Windows job
+                       # object) that is out of scope for this minimum and stays disclosed.
     for t in threads: t.join(timeout=5)
     log.close()
     settled = proc.returncode is not None and not any(t.is_alive() for t in threads)
