@@ -206,7 +206,11 @@ def test_safe_f7_writeback_binds_to_latest_verification_not_latest_result(tmp_pa
                             trace_id=t.trace_id, executor_claim={}, uri_observations={"safety_flags": ["retry"]})
     assert lin.verification_status != "VERIFIED"
     run = env.store.get(run_id)
-    assert run["verifications"][-1]["status"] == "VERIFIED"  # the stale VERIFIED stays last
+    # M38 repair round 3: a SCRIPT_WORKBOOK_REPAIR run has no exact recompute oracle, so
+    # its VERIFIED-equivalent run-ledger status is the honestly weaker
+    # STRUCTURALLY_VERIFIED (differential-rerun only) -- still the stale verified status
+    # this test is about, just under its accurate name.
+    assert run["verifications"][-1]["status"] == "STRUCTURALLY_VERIFIED"  # the stale verified status stays last
     after = {c["relpath"]: c["after_sha256"] for c in ws.diff()["changes"] if c["op"] == "MODIFIED"}
     ap = WritebackApproval.from_user(intake("yes apply", user=env.user), run_id, after)
     try:

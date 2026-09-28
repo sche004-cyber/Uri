@@ -167,6 +167,104 @@ def test_fabricated_empty_output_sheet_fails_verification(tmp_path, monkeypatch)
     assert sheets_item["status"] == "FAIL" and sheets_item["detail"] == ["Summary"]
 
 
+def test_blank_data_cell_in_output_sheet_fails_verification(tmp_path, monkeypatch):
+    """Finding 1 (M38 repair round 3 re-audit): the round-2 fix compared `scanned_cells`
+    (every `<c>` node the sheet has, header or not, blank or not) against the header
+    length, so a real data row whose own cell is blank still counted as "has data" --
+    identical to a header-only sheet in every way `scanned_cells` could see. `data_cells`
+    only counts cells that hold a real, non-empty value outside the header row, so a
+    present-but-blank data cell now correctly fails."""
+    e, esc, out = _run(tmp_path, monkeypatch, "blank_summary_cell")
+    assert out.verification_status == "FAILED" and not out.verified
+    items = e.store.get(out.run_id)["verifications"][-1]["items"]
+    sheets_item = next(i for i in items if i["kind"] == "workbook_has_sheets")
+    assert sheets_item["status"] == "FAIL" and sheets_item["detail"] == ["Summary"]
+
+
+def test_hardcoded_output_fails_the_differential_rerun(tmp_path, monkeypatch):
+    """Finding 1 (M38 repair round 3 re-audit): a script that never opens the real input
+    at all, but writes a workbook with the right sheet name and a real, non-empty,
+    formula-error-free value, passed every shape-based check identically to a script
+    that actually computed the number. The differential-rerun check reruns the script
+    against a copy of the input with one real value changed and requires the output to
+    move in response -- a hardcoded output does not, and the run must not be VERIFIED
+    (or STRUCTURALLY_VERIFIED) on that basis."""
+    e, esc, out = _run(tmp_path, monkeypatch, "hardcoded_total")
+    assert out.verification_status == "FAILED" and not out.verified
+    items = e.store.get(out.run_id)["verifications"][-1]["items"]
+    diff_item = next(i for i in items if i["kind"] == "differential_rerun")
+    assert diff_item["status"] == "FAIL"
+
+
+def test_honest_script_repair_is_structurally_verified_via_differential_rerun(tmp_path, monkeypatch):
+    """Finding 1 (M38 repair round 3 re-audit): a SCRIPT_WORKBOOK_REPAIR task has no
+    exact recompute oracle, so a genuine fix can only be checked causally -- this is
+    a strictly weaker guarantee than `report_recomputes`'s exact recomputation, so the
+    run ledger records it honestly as STRUCTURALLY_VERIFIED rather than plain VERIFIED,
+    even though the M36-facing verdict (which has no such status) still reads VERIFIED
+    so write-back and Memory both keep working."""
+    e, esc, out = _run(tmp_path, monkeypatch, "honest")
+    assert out.verified and out.verification_status == "VERIFIED"  # M36-facing verdict is a real status
+    record = e.store.get(out.run_id)["verifications"][-1]
+    assert record["status"] == "STRUCTURALLY_VERIFIED"
+    diff_item = next(i for i in record["items"] if i["kind"] == "differential_rerun")
+    assert diff_item["status"] == "PASS"
+
+
+def test_memory_record_reflects_failed_not_verified_when_an_original_was_tampered(tmp_path, monkeypatch):
+    """Finding 2 (M38 repair round 3 re-audit): for a script that tampers with an
+    original synchronously as part of its own main flow (the "verifier_time_bomb"
+    scenario), the runner's own post-verification re-check already blocked write-back
+    (see `test_originals_are_rechecked_after_verification_not_only_before`) by
+    appending a later superseding run-ledger event -- but the M36 Memory
+    VERIFIER_RESULT itself, persisted by `Recorder.invoke_verifier` *before* that later
+    re-check can run, still said VERIFIED: `verify_candidate` has no visibility into
+    `sources`/originals at all, only `make_memory_verifier`'s own closure does, and it
+    used to hand Memory whatever `verify_candidate` computed regardless. The tamper
+    check must run, and win, before Memory ever records a verdict -- not only in a
+    later local correction to the run ledger."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "verifier_time_bomb")
+    monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert not out.verified
+    memory_record = e.log.load().records[out.verifier_record_id]
+    assert memory_record.payload["verification_status"] == "FAILED"
+    first_verification = e.store.get(out.run_id)["verifications"][0]
+    assert first_verification["status"] == "FAILED"
+    assert any(i["kind"] == "original_integrity" for i in first_verification["items"])
+
+
+def test_windows_drive_letter_scope_is_not_given_a_posix_double_slash_prefix():
+    """Finding 4 (M38 repair round 3, Windows-specific): Claude Code's own permission
+    rule parser strips a leading `//` down to a single `/` and matches the remainder as
+    a POSIX-absolute path -- a Windows drive-letter path (`C:\\...` / `C:/...`) is
+    already absolute on its own terms and is never written with a leading slash, so
+    prefixing it with `//` the same way as a POSIX path would turn it into `/C:/...`,
+    which the real path can never match. A drive-letter scope must be left bare
+    (backslashes normalized to forward slashes); everything else still gets `//`."""
+    from uri_v1.execution.harness.adapters import _absolute_scope
+    assert _absolute_scope(r"C:\Users\chetan\reports") == "C:/Users/chetan/reports"
+    assert _absolute_scope("C:/Users/chetan/reports") == "C:/Users/chetan/reports"
+    assert _absolute_scope("d:/data") == "d:/data"
+    assert _absolute_scope("/home/chetan/reports") == "//home/chetan/reports"
+
+
+def test_subfolder_grant_does_not_also_approve_its_parent():
+    """Finding 3 (M38 repair round 3 re-audit): `_whole_token`'s word-boundary treats
+    `/` as an ordinary non-word character, the same as a space -- so a shorter granted
+    path that is merely a path-prefix of a longer path the user actually named (e.g.
+    matching `.../reports` inside a sentence that only ever says `.../reports/2026`)
+    satisfied it too, since the character right after the match was `/`, not `\\w` or
+    `-`. Approving a subfolder must never silently approve its parent."""
+    parent = str(Path("/home/chetan/reports"))
+    child = str(Path("/home/chetan/reports/2026"))
+    with pytest.raises(HarnessError):  # the sentence only ever names the child, not the parent
+        ElevationGrant.from_user(intake(f"yes, allow access to {child} for this run"), f"extra_dir:{parent}", "run-1")
+    g = ElevationGrant.from_user(intake(f"yes, allow access to {child} for this run"), f"extra_dir:{child}", "run-1")
+    assert g.elevation == f"extra_dir:{child}"
+
+
 def test_extra_dir_cannot_be_a_home_ancestor_or_a_sensitive_home_child(tmp_path, monkeypatch):
     """Finding 5 (D-5/M-4): the old check only refused `/` and $HOME exactly, so a parent
     of $HOME (e.g. `/home`) or a well-known credential directory directly under $HOME

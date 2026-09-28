@@ -100,6 +100,27 @@ def main():
         p = Path("report.py")
         fixed = p.read_text().replace('"Amt"', '"Amount"')
         p.write_text(fixed.replace("o.append([total])", "# total intentionally dropped"))
+    elif scenario == "blank_summary_cell":
+        # A script that exits zero, creates the right sheet name, and appends a data
+        # row -- but the row's own cell is blank. Round 2's "has data" check counted
+        # any `<c>` node the sheet has, header included, so a present-but-empty cell in
+        # a real data row still passed identically to a real value (M38 repair round 3
+        # re-audit, finding 1).
+        p = Path("report.py")
+        fixed = p.read_text().replace('"Amt"', '"Amount"')
+        p.write_text(fixed.replace("o.append([total])", "o.append([None])"))
+    elif scenario == "hardcoded_total":
+        # A script that exits zero and produces a workbook with the right sheet name
+        # and a real, non-empty value -- but never opens the real input at all. Every
+        # shape-based check (sheet name, non-empty cell, no formula errors) passes
+        # identically to a script that actually computed the number (M38 repair round
+        # 3 re-audit, finding 1); only a causal check (does the output move when the
+        # input does) can tell them apart.
+        Path("report.py").write_text(
+            "from openpyxl import Workbook\n"
+            "out = Workbook(); o = out.active; o.title = 'Summary'\n"
+            "o.append(['Total']); o.append([30])\n"
+            "out.save('summary.xlsx')\n")
     elif scenario == "error":
         result(False, "error_during_execution", "Could not complete."); return 1
     elif scenario == "honest_but_reports_error":

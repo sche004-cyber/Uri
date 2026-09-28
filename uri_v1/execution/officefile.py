@@ -37,6 +37,16 @@ class SheetStructure:
     header: tuple
     error_cells: int
     scanned_cells: int
+    # Cells with a real, non-empty value in a row other than the header row.
+    # `scanned_cells` counts every `<c>` node found, header or not, present or
+    # empty -- a sheet with a header and nothing else scans the same as a
+    # sheet with a header and real rows below it whose cells are all blank.
+    # Finding 1 (M38 repair round 3 re-audit): that let a script produce an
+    # output sheet with only its header row and still pass "has data"
+    # checks built on `scanned_cells`. `data_cells` counts only cells that
+    # actually hold a value, and only outside the header row, so a
+    # header-only sheet reads as zero.
+    data_cells: int = 0
 
 
 @dataclass(frozen=True)
@@ -83,6 +93,33 @@ def _text(node) -> str:
     return "".join(t.text or "" for t in node.iter(_M + "t"))
 
 
+def _resolve_sheet_members(zf: zipfile.ZipFile, budget: list) -> list:
+    """The (sheet_name, zip_member) pairs a workbook's own relationships name,
+    in declaration order. Factored out of `read_workbook_structure` so the
+    differential-rerun perturbation helper below locates the exact same sheet
+    member a structure read would, rather than guessing at zip layout."""
+    workbook = _xml(_read(zf, "xl/workbook.xml", budget))
+    rels = _xml(_read(zf, "xl/_rels/workbook.xml.rels", budget))
+    targets = {r.get("Id"): r.get("Target") for r in rels.findall("pr:Relationship", _NS)}
+    sheet_nodes = workbook.findall("m:sheets/m:sheet", _NS)
+    if len(sheet_nodes) > MAX_SHEETS: raise WorkbookReadError("XLSX_TOO_MANY_SHEETS")
+    resolved = []
+    for node in sheet_nodes:
+        name = node.get("name")
+        target = targets.get(node.get("{%s}id" % _NS["r"]))
+        if not name or not target: raise WorkbookReadError("XLSX_SHEET_UNRESOLVED")
+        member = target.lstrip("/") if target.startswith("/") else posixpath.normpath(posixpath.join("xl", target))
+        if member.startswith("../") or not member.startswith("xl/"): raise WorkbookReadError("XLSX_SHEET_UNRESOLVED")
+        resolved.append((name, member))
+    return resolved
+
+
+def _shared_strings(zf: zipfile.ZipFile, budget: list) -> list:
+    if "xl/sharedStrings.xml" not in zf.namelist(): return []
+    sst = _xml(_read(zf, "xl/sharedStrings.xml", budget))
+    return [_text(si) for si in sst.findall("m:si", _NS)]
+
+
 def read_workbook_structure(path) -> WorkbookStructure:
     try:
         with open(path, "rb") as probe:
@@ -96,23 +133,9 @@ def read_workbook_structure(path) -> WorkbookStructure:
     except (zipfile.BadZipFile, OSError): raise WorkbookReadError("XLSX_NOT_ZIP")
     budget = [0]
     with zf:
-        workbook = _xml(_read(zf, "xl/workbook.xml", budget))
-        rels = _xml(_read(zf, "xl/_rels/workbook.xml.rels", budget))
-        targets = {r.get("Id"): r.get("Target") for r in rels.findall("pr:Relationship", _NS)}
-        shared = []
-        if "xl/sharedStrings.xml" in zf.namelist():
-            sst = _xml(_read(zf, "xl/sharedStrings.xml", budget))
-            shared = [_text(si) for si in sst.findall("m:si", _NS)]
-        sheet_nodes = workbook.findall("m:sheets/m:sheet", _NS)
-        if len(sheet_nodes) > MAX_SHEETS: raise WorkbookReadError("XLSX_TOO_MANY_SHEETS")
-        sheets = []
-        for node in sheet_nodes:
-            name = node.get("name")
-            target = targets.get(node.get("{%s}id" % _NS["r"]))
-            if not name or not target: raise WorkbookReadError("XLSX_SHEET_UNRESOLVED")
-            member = target.lstrip("/") if target.startswith("/") else posixpath.normpath(posixpath.join("xl", target))
-            if member.startswith("../") or not member.startswith("xl/"): raise WorkbookReadError("XLSX_SHEET_UNRESOLVED")
-            sheets.append(_sheet(name, _xml(_read(zf, member, budget)), shared))
+        resolved = _resolve_sheet_members(zf, budget)
+        shared = _shared_strings(zf, budget)
+        sheets = [_sheet(name, _xml(_read(zf, member, budget)), shared) for name, member in resolved]
     return WorkbookStructure(tuple(sheets))
 
 
@@ -130,20 +153,109 @@ def _cell_value(cell, shared):
 
 
 def _sheet(name, root, shared) -> SheetStructure:
-    header, errors, scanned = None, 0, 0
+    header, errors, scanned, data_cells = None, 0, 0, 0
     for row in root.iter(_M + "row"):
         cells = row.findall("m:c", _NS)
         values = {}
+        row_is_header_candidate = header is None
         for cell in cells:
             scanned += 1
             if scanned > MAX_SCANNED_CELLS: raise WorkbookReadError("XLSX_TOO_MANY_CELLS")
             if cell.get("t") == "e": errors += 1
-            if header is None:
+            value = _cell_value(cell, shared)
+            if row_is_header_candidate:
                 match = _CELL_REF.fullmatch(cell.get("r") or "")
-                value = _cell_value(cell, shared)
                 if match and value not in (None, ""):
                     values[_col_index(match.group(1))] = value
+            elif value not in (None, ""):
+                data_cells += 1
         if header is None and values:
             if max(values) > MAX_HEADER_CELLS: raise WorkbookReadError("XLSX_HEADER_TOO_WIDE")
             header = tuple(values.get(i) for i in range(1, max(values) + 1))
-    return SheetStructure(name, header or (), errors, scanned)
+    return SheetStructure(name, header or (), errors, scanned, data_cells)
+
+
+def _find_numeric_data_cells(root, shared) -> list:
+    """The cell references of every numeric value in a non-header row of
+    `root`'s sheet. Uses the same "first non-empty row is the header" rule as
+    `_sheet` so this never mistakes the header for data.
+
+    Every numeric data cell is perturbed, not just one: a script reads a
+    specific column (e.g. "Unit Price", not "Amount"), and perturbing an
+    arbitrary cell that happens not to be in that column would leave the
+    script's real input to that column untouched, making a correct script
+    look non-causal (M38 repair round 3, found via the M37 qualification
+    battery's E03 case, whose script reads a column other than the first
+    numeric one in the row)."""
+    header_seen = False
+    refs = []
+    for row in root.iter(_M + "row"):
+        cells = row.findall("m:c", _NS)
+        if not header_seen:
+            if any(_cell_value(c, shared) not in (None, "") for c in cells): header_seen = True
+            continue
+        for cell in cells:
+            if cell.get("t") in ("e", "s", "str", "inlineStr", "b"): continue
+            value = cell.find("m:v", _NS)
+            if value is None or value.text is None: continue
+            try: float(value.text)
+            except ValueError: continue
+            ref = cell.get("r")
+            if ref: refs.append(ref)
+    return refs
+
+
+def _perturb_numeric_cell(data: bytes, cell_ref: str) -> bytes:
+    """Change the `<v>` text of the cell at `cell_ref` within a sheet member's
+    raw bytes, leaving everything else byte-identical. Targeted string
+    slicing rather than a regex substitution over the whole document: cell
+    references are unique within a sheet, so locating this one occurrence of
+    `r="<ref>"` and the `<v>...</v>` that immediately follows it identifies
+    the exact cell an ElementTree parse would have resolved to the same ref,
+    without needing a full round-trip XML rewrite."""
+    marker = ('r="%s"' % cell_ref).encode()
+    idx = data.find(marker)
+    if idx == -1: raise WorkbookReadError("XLSX_PERTURB_CELL_NOT_FOUND")
+    v_start = data.find(b"<v>", idx)
+    v_end = data.find(b"</v>", v_start) if v_start != -1 else -1
+    if v_start == -1 or v_end == -1: raise WorkbookReadError("XLSX_PERTURB_CELL_NOT_FOUND")
+    try: num = float(data[v_start + 3:v_end])
+    except ValueError: raise WorkbookReadError("XLSX_PERTURB_NOT_NUMERIC")
+    bumped = num + 1
+    new_text = str(int(bumped)) if bumped.is_integer() else repr(bumped)
+    return data[:v_start + 3] + new_text.encode("ascii") + data[v_end:]
+
+
+def make_perturbed_copy(src_path, dest_path) -> bool:
+    """Write a copy of the workbook at `src_path` to `dest_path` with every
+    numeric data cell in its first sheet changed by +1.
+
+    For the differential-rerun check (M38 repair round 3, finding 1): a
+    script whose output does not move when a real input value changes cannot
+    have derived that output from the input it was given, whether because it
+    hardcodes an answer or never actually reads the input at all. This
+    perturbation is what makes that check possible without depending on any
+    task-specific recompute oracle. Every numeric data cell is changed, not
+    just one, so the check does not depend on knowing which column the
+    script actually reads.
+
+    Returns False, writing nothing, when the workbook has no non-header
+    numeric cell to perturb (e.g. an all-text sheet) -- callers must treat
+    that as UNVERIFIABLE, never as a pass or a fail, since no perturbation
+    was actually exercised.
+    """
+    budget = [0]
+    with zipfile.ZipFile(src_path) as zf:
+        resolved = _resolve_sheet_members(zf, budget)
+        if not resolved: return False
+        _, member = resolved[0]
+        shared = _shared_strings(zf, budget)
+        data = _read(zf, member, budget)
+        refs = _find_numeric_data_cells(_xml(data), shared)
+        if not refs: return False
+        new_data = data
+        for ref in refs: new_data = _perturb_numeric_cell(new_data, ref)
+        with zipfile.ZipFile(dest_path, "w", zipfile.ZIP_DEFLATED) as out:
+            for info in zf.infolist():
+                out.writestr(info, new_data if info.filename == member else zf.read(info.filename))
+    return True

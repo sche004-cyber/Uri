@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 
 from .contracts import UNAVAILABLE, ClaimedOutcome, ExecutionCapsule, HarnessError, HarnessRunResult, HarnessType
@@ -23,6 +24,28 @@ FORBIDDEN_FLAGS = frozenset({"--dangerously-skip-permissions", "--allow-dangerou
 def _check(argv) -> list:
     if FORBIDDEN_FLAGS.intersection(argv): raise HarnessError("BYPASS_FLAG_REFUSED")
     return argv
+
+
+_DRIVE_LETTER = re.compile(r"^[A-Za-z]:[\\/]")
+
+
+def _absolute_scope(scope: str) -> str:
+    """Render `scope` as an absolute-path permission-rule prefix.
+
+    Finding 4 (M38 repair round 3, Windows-specific): Claude Code's own permission-rule
+    parser (read from the installed CLI's own source, 2026-09-28 -- not from official
+    docs, since none were found covering this) strips a leading `//` down to a single
+    `/` and matches the result as a POSIX-absolute path. A Windows drive-letter path
+    (`C:\\...` / `C:/...`) is already absolute on its own terms -- Windows tooling in the
+    same codebase tests absoluteness with `^[a-z]:[\\/]`, never with a leading slash --
+    so giving it a `//` prefix as well would turn it into `/C:/...`, which the real path
+    (`C:/...`, no leading slash) can never match. Drive-letter scopes are therefore left
+    bare (backslashes normalized to forward slashes); everything else gets the `//`
+    prefix. This has not been confirmed on a live Windows Claude Code run; treat it as
+    provisional until Chetan's Windows smoke test confirms it.
+    """
+    if _DRIVE_LETTER.match(scope): return scope.replace("\\", "/")
+    return "//" + scope.lstrip("/")
 
 
 def _num(d, key):
@@ -113,8 +136,10 @@ class ClaudeCodeAdapter:
         # that tool, so a bare `Read` deny left the harness with no usable file tool at
         # all regardless of the scoped allow above it. The workspace/extra_dir scoping
         # above is the containment boundary; the bare names are not separately denied.
+        # A Windows drive-letter scope needs a different prefix than a POSIX one --
+        # see `_absolute_scope` (finding 4, M38 repair round 3).
         scopes = [str(Path(capsule.workspace_files).resolve()), *posture.extra_dirs]
-        allowed = [f"{tool}(//{scope.lstrip('/')}/**)" for scope in scopes for tool in self.FILE_TOOLS]
+        allowed = [f"{tool}({_absolute_scope(scope)}/**)" for scope in scopes for tool in self.FILE_TOOLS]
         # No shell in the default posture (Chetan, 2026-09-28): the harness can edit
         # files but not run them. URI's own verifier does all execution, so it, not
         # an unsandboxed harness process, is what actually runs any script.

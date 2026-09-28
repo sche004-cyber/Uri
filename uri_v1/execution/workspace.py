@@ -238,7 +238,11 @@ class Workspace:
             raise WorkspaceError("WRITEBACK_APPROVAL_REQUIRED")
         if approval.intake.user_id != self.base.parent.parent.name: raise WorkspaceError("WRITEBACK_APPROVAL_WRONG_USER")
         run = run_store.get(self.run_id)
-        if run is None or not run.get("verifications") or run["verifications"][-1].get("status") != "VERIFIED":
+        # M38 repair round 3: a script-based repair with no exact recompute oracle can
+        # only be checked causally (verify.py's differential-rerun), so it is recorded
+        # as "STRUCTURALLY_VERIFIED" rather than plain "VERIFIED" -- a real, weaker-but-
+        # sufficient verdict for write-back, not a failure to reach VERIFIED.
+        if run is None or not run.get("verifications") or run["verifications"][-1].get("status") not in ("VERIFIED", "STRUCTURALLY_VERIFIED"):
             raise WorkspaceError("WRITEBACK_REQUIRES_VERIFIED_RUN")
         diff = self.diff()
         if diff["containment_violations"]: raise WorkspaceError("CONTAINMENT_VIOLATION")

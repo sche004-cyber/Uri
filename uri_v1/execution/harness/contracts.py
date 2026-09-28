@@ -23,6 +23,22 @@ def _whole_token(text: str, token: str) -> bool:
     if not token: return False
     return re.search(r"(?<![\w-])" + re.escape(token) + r"(?![\w-])", text) is not None
 
+
+def _whole_path_token(text: str, token: str) -> bool:
+    """Like `_whole_token`, but for a path.
+
+    Finding 3 (M38 repair round 3): `_whole_token`'s boundary treats `/` as an ordinary
+    non-word character, the same as a space. A shorter granted path that is merely a
+    path-prefix of a longer path the user actually mentioned (e.g. matching
+    `.../reports` inside a sentence that only ever says `.../reports/2026`) satisfied it
+    too, since the character right after the match was `/`, not `\\w` or `-` -- so
+    approving a subfolder silently approved its parent as well. A path boundary must
+    also exclude `/` and `\\`, so the match only succeeds on the path actually named,
+    never on one of its ancestors.
+    """
+    if not token: return False
+    return re.search(r"(?<![\w/\\-])" + re.escape(token) + r"(?![\w/\\-])", text) is not None
+
 CAPSULE_SCHEMA_VERSION = "m38.capsule.v1"
 
 
@@ -84,7 +100,7 @@ class ElevationGrant:
             # merely an incidental word that happens to match its last path segment
             # (D-5/M-4): matching on the basename alone let a sentence that never
             # mentioned the real path at all still satisfy the grant.
-            ok = _whole_token(intake.raw_text.casefold(), resolved.casefold())
+            ok = _whole_path_token(intake.raw_text.casefold(), resolved.casefold())
             elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))
