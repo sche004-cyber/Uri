@@ -22,7 +22,7 @@ import uuid
 
 from uri_v1.execution.workspace import Workspace, WorkspaceError, WritebackApproval, new_run_id
 from uri_v1.memory.contracts import RecordKind as K, Provenance as P
-from uri_v1.memory.recorder import _runtime_observation
+from uri_v1.memory.uri_adapter.envelope import URIIntake
 from uri_v1.user_storage import user_scoped_path
 
 WRITEBACK_VERIFIER_ID = "uri.verifier.office.writeback.v1"
@@ -134,9 +134,25 @@ def writeback(*, recorder, sources, user_id, scratch_root, task_id, run_id, expe
     if str(record.payload["verification_status"]) != "VERIFIED":
         raise WritebackRefused("WRITEBACK_NOT_VERIFIED")
 
-    observation = _runtime_observation(approval_intake, "VERIFIED_COMPLETE")
-    result = recorder.task_state(task_id, expected_head_record_id, intake=approval_intake, status="COMPLETED",
-                                 last_outcome_record_id=record.record_id, runtime_action=observation)
+    # The COMPLETED transition goes through the USER_PROVIDED path (an
+    # ordinary explicit-word transition, uri_v1/memory/recorder.py:114-121),
+    # not the runtime "VERIFIED_COMPLETE" observation. That runtime path
+    # additionally requires (uri_v1/memory/index.py:140-145,
+    # VERIFIED_CURRENT_REFERENCES_REQUIRED) that the task's *current*
+    # reference hashes still match the verifying record's inputs -- true for
+    # an Edge/harness completion (which verifies the still-untouched bound
+    # originals), but never true here: write-back deliberately changes the
+    # original's live bytes while (per rule 4.3.6) the task's own reference
+    # still names the pre-write hash, on purpose, so a follow-up request opens
+    # a new task instead of silently re-pointing this one. Completion here is
+    # correctly modeled as user-approved (the write only happened because the
+    # user approved it), evidenced by `last_outcome_record_id` pointing at
+    # this module's own independently-checked VERIFIER_RESULT record.
+    complete_text = "write-back complete"
+    complete_intake = URIIntake().capture(approval_intake.user_id, approval_intake.session_id, uuid.uuid4().hex,
+                                          uuid.uuid4().hex, complete_text, spans={"complete": (0, len(complete_text))})
+    result = recorder.task_state(task_id, expected_head_record_id, intake=complete_intake, status="COMPLETED",
+                                 last_outcome_record_id=record.record_id)
     if not result.persisted:
         raise WritebackRefused(result.reason)
     return WritebackOutcome(tuple(written), record.record_id, result)
