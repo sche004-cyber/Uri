@@ -7,6 +7,8 @@
 
 ## 1. Milestone Identity & State
 
+**PLANNING NOTE — 2026-09-28 (additive):** M39 Office Demonstrator is planned, not implemented: `M39_PLAN_DRAFTED_PROVISIONAL` ([plan](../plans/M39_OFFICE_DEMONSTRATOR_PLAN.md)). It depends on PROVISIONAL M36 `405db1f`, M37 `5460d64` and M38 `3501f85`. Nothing here freezes, closes or integrates any milestone.
+
 **BATCH NOTE — 2026-09-28 (additive):** M38 Harness Execution Minimum is implemented and `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](../plans/M38_IMPLEMENTATION_REPORT.md)). The batch stops before the Office demonstrator; the next stage is one independent Codex audit per [the batch package](../plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md).
 
 **BATCH NOTE — 2026-09-28 (additive):** Under the User's batched-audit workflow, M37 Edge Minimum is implemented and `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M37_EDGE_MINIMUM_PLAN.md), [report](../plans/M37_IMPLEMENTATION_REPORT.md)). It depends on unaudited M36 at `405db1f`. M36 remains the current milestone record above; nothing here freezes, closes or integrates M36 or M37.
