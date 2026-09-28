@@ -8,8 +8,18 @@ ineligible. Recognized patterns (openpyxl and pandas):
   sheet = workbook["Name"] / workbook.get_sheet_by_name("Name") -> sheet reference
   frame = read_excel("x.xlsx", sheet_name="Name")          -> dataframe + sheet reference
   frame["Column"], frame[["A", "B"]] (load context)         -> column references
-  <anything>.index("Column")                                -> column reference (header lookup)
+  <header>.index("Column")                                  -> column reference (header lookup),
+                                                                only when <header> traces to a header-row
+                                                                derivation such as `[c.value for c in ws[1]]`
   <x>.save("out.xlsx") / <frame>.to_excel("out.xlsx")      -> output path
+
+An `.index(literal)` call on a receiver that is not a recognized header-row
+variable is never treated as a column reference: it is marked dynamic instead,
+so it cannot be silently rewritten by the literal remap or count as evidence
+that the script is compatible. Likewise, a string equality comparison against
+a variable bound from a header row (or from enumerating one) is marked
+dynamic: static inspection cannot know whether that comparison actually
+matches, so the script must not be reported compatible on the strength of it.
 """
 from __future__ import annotations
 
@@ -62,6 +72,46 @@ def _simple(source_lines, node) -> bool:
     return "\\" not in body and seg[0] not in body and body == node.value
 
 
+def _header_row_vars(tree, sheets) -> set:
+    """Names bound to a header-row derivation: `<name> = [c.value for c in <sheet>[<row>]]`.
+
+    Conservative and single-pattern on purpose: this is the only shape the
+    qualified repair's `.index(...)` recognition may trust. Anything else stays
+    unrecognized rather than risk treating an unrelated `.index()` call as a
+    column lookup (F-1).
+    """
+    names = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign): continue
+        targets = [t.id for t in node.targets if isinstance(t, ast.Name)]
+        v = node.value
+        if not targets or not isinstance(v, ast.ListComp) or len(v.generators) != 1: continue
+        gen = v.generators[0]
+        target, elt, it = gen.target, v.elt, gen.iter
+        if not isinstance(target, ast.Name): continue
+        if not (isinstance(elt, ast.Attribute) and elt.attr == "value"
+                and isinstance(elt.value, ast.Name) and elt.value.id == target.id):
+            continue
+        if isinstance(it, ast.Subscript) and isinstance(it.value, ast.Name) and it.value.id in sheets:
+            names.update(targets)
+    return names
+
+
+def _header_value_vars(tree, headers) -> set:
+    """Names bound to a single header value: `for h in <headers>` / `for i, h in enumerate(<headers>)`."""
+    names = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.For): continue
+        it, target = node.iter, node.target
+        if isinstance(target, ast.Name) and isinstance(it, ast.Name) and it.id in headers:
+            names.add(target.id)
+        elif (isinstance(target, ast.Tuple) and len(target.elts) == 2 and isinstance(target.elts[1], ast.Name)
+              and isinstance(it, ast.Call) and _func_name(it) == "enumerate"
+              and it.args and isinstance(it.args[0], ast.Name) and it.args[0].id in headers):
+            names.add(target.elts[1].id)
+    return names
+
+
 def inspect_script(source: bytes) -> ScriptInfo:
     if len(source) > MAX_SCRIPT_BYTES: return ScriptInfo(False, (), (), ("SCRIPT_TOO_LARGE",))
     try:
@@ -93,6 +143,9 @@ def inspect_script(source: bytes) -> ScriptInfo:
             if kind is not None:
                 for n in names:
                     if n not in kind: kind.add(n); changed = True
+
+    headers = _header_row_vars(tree, sheets)
+    header_values = _header_value_vars(tree, headers)
 
     refs, dynamic = [], []
 
@@ -127,8 +180,25 @@ def inspect_script(source: bytes) -> ScriptInfo:
             elif name == "get_sheet_by_name":
                 literal_or_dynamic("sheet", node.args[0] if node.args else None, "DYNAMIC_SHEET_ACCESS")
             elif name == "index" and isinstance(node.func, ast.Attribute) and len(node.args) >= 1:
-                literal_or_dynamic("column", node.args[0], "DYNAMIC_COLUMN_ACCESS")
+                recv = node.func.value
+                if isinstance(recv, ast.Name) and recv.id in headers:
+                    literal_or_dynamic("column", node.args[0], "DYNAMIC_COLUMN_ACCESS")
+                else:
+                    # Receiver does not trace to a header-row derivation: this is not a
+                    # column lookup we can trust, so it must never feed the literal remap
+                    # or count as evidence the script is compatible (F-1).
+                    dynamic.append("DYNAMIC_COLUMN_ACCESS")
             elif name in ("save", "to_excel") and node.args:
                 a = node.args[0]
                 if isinstance(a, ast.Constant) and isinstance(a.value, str) and a.value.lower().endswith(_WORKBOOK_EXT): add("output_path", a)
+        elif isinstance(node, ast.Compare) and len(node.ops) == 1 and isinstance(node.ops[0], (ast.Eq, ast.NotEq)):
+            left, right = node.left, node.comparators[0]
+            for side, other in ((left, right), (right, left)):
+                if (isinstance(side, ast.Name) and side.id in header_values
+                        and isinstance(other, ast.Constant) and isinstance(other.value, str)):
+                    # A comparison against a header value read at runtime: static inspection
+                    # cannot know whether this actually matches, so the script must not be
+                    # reported compatible (or ALREADY_COMPATIBLE) on the strength of it (F-4).
+                    dynamic.append("HEADER_VALUE_COMPARISON")
+                    break
     return ScriptInfo(True, tuple(sorted(imports)), tuple(refs), tuple(sorted(set(dynamic))))

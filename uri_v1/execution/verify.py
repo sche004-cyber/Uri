@@ -137,6 +137,13 @@ def verify_candidate(workspace: Workspace, criteria: AcceptanceCriteria, *, pyth
             items.append({"kind": kind, "status": "UNVERIFIABLE", "detail": str(exc)})
         except OSError as exc:
             items.append({"kind": kind, "status": "UNVERIFIABLE", "detail": type(exc).__name__})
+    # The script under test can reach outside its verification copy (no OS sandbox) and
+    # write back into the candidate it is being verified against, e.g. via `../../files/`.
+    # Re-diff the candidate after the run: if it moved, the verdict must fail rather than
+    # be recorded for bytes that no longer exist (F-8).
+    after = workspace.diff()
+    if after != diff:
+        items.append({"kind": "containment", "status": "FAIL", "detail": "CANDIDATE_CHANGED_DURING_VERIFICATION"})
     return {"status": _status(items), "criteria_sha256": criteria.sha256, "items": items, "diff": diff}
 
 

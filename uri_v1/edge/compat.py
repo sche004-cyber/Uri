@@ -30,7 +30,10 @@ def diagnose(script_info, structure, workbook_name: str) -> dict:
            "missing_sheets": [], "missing_columns": [], "path_mismatch": [], "status": "COMPATIBLE"}
     if not script_info.parse_ok:
         out["status"] = "UNRESOLVED"; return out
-    out["path_mismatch"] = [p for p in info["workbook_paths"] if p.replace("\\", "/").split("/")[-1] != workbook_name]
+    # Any directory component (including an absolute path) is a mismatch, not just a
+    # differing basename: a script naming a path outside the workspace must never be
+    # treated as referring to the bound workbook (F-2).
+    out["path_mismatch"] = [p for p in info["workbook_paths"] if "/" in p.replace("\\", "/") or p != workbook_name]
     for s in info["sheets"]:
         if s not in sheet_names: out["missing_sheets"].append(_remap(s, sheet_names))
     # Columns are checked against the sheets the script names (after remap), or the

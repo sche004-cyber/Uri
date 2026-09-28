@@ -8,6 +8,7 @@ the verification evidence (LF-1: correctness over avoidance).
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import time
 
 from uri_v1.execution.lineage import record_and_verify
@@ -25,6 +26,26 @@ ACTION_LABELS = {T.WORKBOOK_INSPECT: "edge workbook inspection", T.SCRIPT_WORKBO
 def verifier_entries(run_root, *, python=None) -> dict:
     """Entries for the M36 trusted verifier bootstrap (process start only)."""
     return {VERIFIER_ID: (VERIFIER_TYPE, VERIFIER_VERSION, make_memory_verifier(run_root, recompute=recompute, python=python))}
+
+
+def _redact_evidence(items) -> list:
+    """Strip raw script output from verification items before they can reach an
+    escalation (and, via M38, a harness capsule). `stderr_tail` can contain
+    workbook cell values (F-5); a hash and length are enough to show what
+    happened without carrying the content itself. The unredacted items stay in
+    the private run record.
+    """
+    out = []
+    for item in items:
+        detail = item.get("detail")
+        if isinstance(detail, dict) and "stderr_tail" in detail:
+            tail = detail["stderr_tail"]
+            detail = {k: v for k, v in detail.items() if k != "stderr_tail"}
+            detail["stderr_tail_sha256"] = hashlib.sha256(tail.encode("utf-8")).hexdigest()
+            detail["stderr_tail_len"] = len(tail)
+            item = dict(item, detail=detail)
+        out.append(item)
+    return out
 
 
 @dataclass(frozen=True)
@@ -80,7 +101,7 @@ class LocalRunner:
         esc = None
         if not completed:
             run = self.store.get(run_id)
-            evidence = run["verifications"][-1]["items"] if run and run["verifications"] else []
+            evidence = _redact_evidence(run["verifications"][-1]["items"]) if run and run["verifications"] else []
             findings = dict(decision.findings, local_attempt={"run_id": run_id, "verification_status": lineage.verification_status,
                                                               "items": evidence})
             esc = escalation(task, findings, ("local attempt did not pass URI verification",))
