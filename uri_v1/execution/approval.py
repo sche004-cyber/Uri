@@ -65,3 +65,35 @@ def approval_uncertain(raw_text: str) -> bool:
 def approval_withheld(raw_text: str) -> bool:
     """The single test every approval/grant gate applies: declined, or not actually given."""
     return approval_declined(raw_text) or approval_uncertain(raw_text)
+
+
+# -- positive allowlist (Codex bridge probe of c7832b9) -------------------------------------------
+# A leading-word denylist kept leaking ("please can we use sheets", "I guess use sheets", "use
+# sheets maybe", "we could use sheets"). Following M36's certainty gate (`affirmative_words`,
+# `STATUS_FILLERS`), a turn is a grant only if, once the granted data itself (capability names,
+# the granted path, write-back file names) is taken out, every remaining word is a grant verb
+# or one of these closed fillers, and at least one grant verb is present. Anything else --
+# hedges, questions, conditions, extra clauses -- is not a grant.
+GRANT_FILLERS = frozenset(
+    "yes yeah yep ok okay sure please pls go ahead i for this that the run server servers skill skills plugin "
+    "plugins mcp tool tools and to access now just it them fine thanks thank you here of on in with".split())
+_GRANT_PUNCTUATION = frozenset(",.!:;\"'-")
+
+
+def _strip_data(text: str, data) -> str:
+    for d in sorted({str(x) for x in data if x}, key=len, reverse=True):
+        text = re.sub(r"(?<![\w-])" + re.escape(d) + r"(?![\w-])", " ", text, flags=re.IGNORECASE)
+    return text
+
+
+def approval_given(raw_text: str, verbs, *, data=(), extra_words=()) -> bool:
+    """True only for an explicit, unhedged grant: not declined, no question, and every
+    word outside `data` is in `verbs`, `extra_words` or `GRANT_FILLERS`, with at least
+    one of `verbs` present."""
+    if approval_withheld(raw_text): return False
+    rest = _strip_data(raw_text, data)
+    if any(not (c.isascii() and (c.isalnum() or c.isspace())) and c not in _GRANT_PUNCTUATION for c in rest):
+        return False
+    tokens = _TOKEN_RE.findall(rest.casefold())
+    verbs = frozenset(verbs)
+    return bool(verbs.intersection(tokens)) and all(t in verbs or t in extra_words or t in GRANT_FILLERS for t in tokens)

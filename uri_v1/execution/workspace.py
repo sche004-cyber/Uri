@@ -28,13 +28,22 @@ import uuid
 from uri_v1.memory.contracts import TrustedInput
 from uri_v1.user_storage import user_scoped_path
 from .acceptance import workspace_relpath
-from .approval import approval_withheld
+from .approval import approval_given, approval_withheld
 
 WORKSPACE_SCHEMA_VERSION = "m37.workspace.v1"
 _RUN_ID = re.compile(r"^[0-9a-f]{32}$")
 MAX_FILES = 2000
 MAX_TOTAL_BYTES = 512 * 1024 * 1024
 _APPROVAL_WORDS = frozenset({"approve", "approved", "yes", "apply", "accept", "confirm"})
+# Nouns naming what is approved; with GRANT_FILLERS the closed vocabulary of an approval.
+_APPROVAL_NOUNS = frozenset({"fix", "fixes", "change", "changes", "edit", "edits", "repair", "file", "files", "result",
+                             "results", "write", "back", "writeback", "all"})
+
+
+def _explicit_approval(raw_text: str, relpaths) -> bool:
+    names = set()
+    for rel in relpaths: names.update((rel, rel.rsplit("/", 1)[-1]))
+    return approval_given(raw_text, _APPROVAL_WORDS, data=names, extra_words=_APPROVAL_NOUNS)
 
 
 class WorkspaceStrategy(str, Enum):
@@ -293,6 +302,10 @@ class WritebackApproval:
         if approval_withheld(intake.raw_text) or not set(re.findall(r"\w+", intake.raw_text.casefold())) & _APPROVAL_WORDS:
             raise WorkspaceError("EXPLICIT_APPROVAL_REQUIRED")
         if not expected_after: raise WorkspaceError("WRITEBACK_TARGETS_REQUIRED")
+        # Positive allowlist (Codex bridge probe of c7832b9): apart from the file names being
+        # written back, only approval verbs and closed fillers -- no hedge, question or clause.
+        if not _explicit_approval(intake.raw_text, expected_after):
+            raise WorkspaceError("EXPLICIT_APPROVAL_REQUIRED")
         approval = cls(run_id, tuple(sorted(expected_after)), dict(expected_after), intake)
         object.__setattr__(approval, "_issued", _ISSUED)
         return approval
@@ -302,6 +315,6 @@ class WritebackApproval:
         # (trusted, not declined, an actual approval word). The decline re-check stays
         # as defense in depth (Codex audit, 2026-09-28).
         return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
-                and bool(self.relpaths) and not approval_withheld(self.intake.raw_text))
+                and bool(self.relpaths) and _explicit_approval(self.intake.raw_text, self.relpaths))
 
     def __reduce__(self): raise TypeError("approvals cannot be serialized")

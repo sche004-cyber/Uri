@@ -15,7 +15,7 @@ from pathlib import Path
 import re
 
 from uri_v1.memory.contracts import TrustedInput
-from ..approval import approval_withheld
+from ..approval import approval_given, approval_withheld
 
 
 def _whole_token(text: str, token: str) -> bool:
@@ -42,6 +42,17 @@ def _resolve_dir(value: str) -> str:
 def _named_paths(text: str):
     for m in _BARE_PATH.finditer(text): yield m.group(0).rstrip(".:!?)")  # sentence punctuation
     for m in _QUOTED_PATH.finditer(text): yield (m.group(1) or m.group(2)).strip()
+
+
+def _raw_paths_naming(text: str, granted: str, *, resolve=_resolve_dir, normcase=os.path.normcase) -> list:
+    """The literal path strings in `text` that resolve to `granted` (see `_names_same_path`)."""
+    target, found = normcase(granted), []
+    for raw in _named_paths(text):
+        try:
+            if normcase(resolve(raw)) == target: found.append(raw)
+        except (OSError, RuntimeError, ValueError):
+            continue
+    return found
 
 
 def _names_same_path(text: str, granted: str, *, resolve=_resolve_dir, normcase=os.path.normcase) -> bool:
@@ -146,18 +157,25 @@ class ElevationGrant:
             elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))
-        if approval_withheld(intake.raw_text) or not ok or not (_APPROVE_WORDS & words):
+        if approval_withheld(intake.raw_text) or not ok or not (_APPROVE_WORDS & words) or not cls._explicit(intake.raw_text, elevation):
             raise HarnessError("EXPLICIT_ELEVATION_REQUIRED")
         grant = cls(elevation, run_scope, intake)
         object.__setattr__(grant, "_issued", _ISSUED)
         return grant
 
+    @staticmethod
+    def _explicit(raw_text: str, elevation: str) -> bool:
+        """Positive allowlist (Codex bridge probe of c7832b9): apart from the granted path
+        itself, the turn may hold only approval verbs, the elevation's own words and closed
+        fillers -- "hmm maybe allow network" or "ok so should we allow network" never grant."""
+        if elevation.startswith("extra_dir:"):
+            return approval_given(raw_text, _APPROVE_WORDS, data=_raw_paths_naming(raw_text, elevation.split(":", 1)[1]))
+        return approval_given(raw_text, _APPROVE_WORDS, extra_words=_ELEVATIONS.get(elevation, ()))
+
     def valid_for(self, run_scope: str) -> bool:
-        # Re-checks the same decline test `from_user` applies (Codex audit, 2026-09-28):
-        # a grant built directly, bypassing `from_user`, from declined text must not
-        # pass this gate either.
+        # Only a `from_user`-issued grant, and the same allowlist re-checked (Codex audits).
         return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
-                and self.run_scope == run_scope and not approval_withheld(self.intake.raw_text))
+                and self.run_scope == run_scope and self._explicit(self.intake.raw_text, self.elevation))
 
     def __reduce__(self): raise TypeError("grants cannot be serialized")
 
@@ -219,8 +237,12 @@ class CapabilityGrant:
         # "what is sheets" or a bare "sheets" named the capability without granting it.
         # Same verbs as ElevationGrant, plus "use"/"grant", which are how a capability is
         # granted in practice ("use the sheets server").
+        # And a positive allowlist (Codex bridge probe of c7832b9): apart from the granted
+        # names themselves, only grant verbs and closed fillers -- "I guess use sheets",
+        # "use sheets maybe", "we could use sheets" never grant.
         if (not items or approval_withheld(intake.raw_text) or not _GRANT_WORDS & set(re.findall(r"\w+", text))
-                or any(not _whole_token(text, n.casefold()) for _, n in items)):
+                or any(not _whole_token(text, n.casefold()) for _, n in items)
+                or not approval_given(intake.raw_text, _GRANT_WORDS, data=[n for _, n in items])):
             raise HarnessError("EXPLICIT_CAPABILITY_GRANT_REQUIRED")
         grant = cls(items, intake)
         object.__setattr__(grant, "_issued", _ISSUED)
@@ -232,7 +254,7 @@ class CapabilityGrant:
         # pass this gate either.
         if not self.items: return True
         return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
-                and not approval_withheld(self.intake.raw_text))
+                and approval_given(self.intake.raw_text, _GRANT_WORDS, data=[n for _, n in self.items]))
 
     def to_dict(self) -> dict:
         return {"items": [list(x) for x in self.items]}

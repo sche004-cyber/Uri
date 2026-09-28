@@ -202,10 +202,55 @@ def test_writeback_question_or_hypothetical_is_not_an_approval(text):
         WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64})
 
 
-@pytest.mark.parametrize("text", ["yes, allow network access for this run", "allow network, it's needed",
-                                  "yes, allow network if needed"])
-def test_explicit_elevation_with_a_trailing_condition_is_still_granted(text):
+@pytest.mark.parametrize("text", ["yes, allow network access for this run", "allow network", "ok, please enable internet access"])
+def test_explicit_elevation_is_still_granted(text):
     assert ElevationGrant.from_user(intake(text), "network", "scope1").valid_for("scope1")
+
+
+# -- positive allowlist (Codex bridge probe of c7832b9) -------------------------------------------
+# Only grant verbs, the granted data (names, path, file names) and closed fillers make a grant;
+# a hedge, condition or extra clause anywhere in the turn does not.
+
+HEDGED_CAPABILITY = ("please can we use sheets", "I guess use sheets", "just wondering if we use sheets", "so can I use sheets",
+                     "I think maybe use sheets", "use sheets maybe", "use sheets, I wonder", "we could use sheets",
+                     "not sure, use sheets")
+HEDGED_ELEVATION = ("ok so should we allow network", "hmm maybe allow network", "yes, allow network if needed",
+                    "allow network, it's needed", "allow network unless it fails")
+
+
+@pytest.mark.parametrize("text", HEDGED_CAPABILITY)
+def test_hedged_capability_grant_is_refused(text):
+    with pytest.raises(HarnessError, match="EXPLICIT_CAPABILITY_GRANT_REQUIRED"):
+        CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")])
+    assert CapabilityGrant((("MCP_SERVER", "sheets"),), intake(text)).valid() is False
+
+
+@pytest.mark.parametrize("text", HEDGED_ELEVATION)
+def test_hedged_elevation_is_refused(text):
+    with pytest.raises(HarnessError, match="EXPLICIT_ELEVATION_REQUIRED"):
+        ElevationGrant.from_user(intake(text), "network", "scope1")
+
+
+@pytest.mark.parametrize("text", ["I guess apply it", "apply it, I think", "yes apply report.py unless it breaks",
+                                  "ok so yes apply", "we could apply the fix"])
+def test_hedged_writeback_approval_is_refused(text):
+    with pytest.raises(WorkspaceError, match="EXPLICIT_APPROVAL_REQUIRED"):
+        WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64})
+
+
+@pytest.mark.parametrize("text", ["yes, apply it", "yes apply report.py", "ok, please apply the fix", "approve"])
+def test_explicit_writeback_approval_is_issued(text):
+    assert WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64}).valid()
+
+
+def test_path_and_names_are_data_not_words(tmp_path):
+    d = tmp_path / "quarterly-reports" / "2026"; d.mkdir(parents=True)
+    g = ElevationGrant.from_user(intake(f"yes, allow access to {d} for this run"), f"extra_dir:{d}", "run-1")
+    assert g.valid_for("run-1")
+    with pytest.raises(HarnessError):  # the path is data, but a hedge around it still is not a grant
+        ElevationGrant.from_user(intake(f"maybe allow access to {d} I guess"), f"extra_dir:{d}", "run-1")
+    assert CapabilityGrant.from_user(intake("use the sheets server and the xlsx-helper skill"),
+                                     [("MCP_SERVER", "sheets"), ("SKILL", "xlsx-helper")]).valid()
 
 
 def test_approval_uncertain_helper():
