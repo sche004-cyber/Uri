@@ -308,3 +308,128 @@ shows no further modification to them).
 
 No file under `uri_core/`, `uri_ui/`, `uri_v1/turn/`, `uri_v1/reference_clarification/`,
 `uri_v1/results/`, `uri_v1/evaluation/`, or any pre-existing M36/M37/M38 file was edited.
+
+## 8. Repair round 2 (R1 re-audit residuals: R1-A..R1-D)
+
+A fresh, same-provider re-audit of repair round 1 (`915a1ac`,
+`audits/M39_REPAIR1_REAUDIT_REPORT.md`) found repair round 1's own fixes for M39-2/3/4
+each closed the audit's original reproduction but left a narrower residual path open
+(R1-A..R1-C), plus one new regression (R1-D). This round closes all four, entirely
+within `uri_v1/office/*` -- no `uri_core`, `uri_ui`, or M36/M37/M38 file touched.
+
+- **R1-A (High, residual of M39-4):** `OfficeSession.pause(task_id, run_id=...)` stored
+  whatever `run_id` its caller passed, with no check that this session had ever offered
+  that run for approval. `approve_writeback`'s "only the offered run" check only holds if
+  `pause()` cannot be used to forge what "offered" means, and the CLI is honest but the
+  Python API (and any future caller, e.g. the planned `/ask` seam) is not bound by CLI
+  behavior. Combined with a separate, disclosed M38-owned gap -- the harness runner's
+  post-verification `ORIGINAL_MODIFIED_DURING_VERIFICATION` flag
+  (`uri_v1/execution/harness/runner.py:98-99`) is computed only in-memory and never
+  persisted to the run store -- a run URI itself reported `HARNESS_FAILED` could still be
+  written back via `pause(run_id=<that run>)` if the original was restored first (user
+  revert, or a `setsid`-escaped helper). Fix: `pause()` now accepts only a `run_id` equal
+  to `self._run.get(task_id)`, the run this exact session already offered via
+  `_offer_writeback`; anything else refuses `RUN_ID_NOT_OFFERED`, the same reason
+  `approve_writeback` already used. Because `HarnessOutcome.verified` is computed
+  synchronously inside `HarnessRunner.run()` and already accounts for this flag
+  (`verified = lineage.verification_status == "VERIFIED" and not flags`),
+  `confirm_escalation` never calls `_offer_writeback` for a flagged run in the first
+  place -- the only way such a run_id could ever reach "offered" was through `pause()`
+  accepting an out-of-band value, which this fix removes. The underlying M38 gap (the
+  flag itself not being durable) remains open and is not fixable from this package
+  without touching M38-owned `runner.py`; it is disclosed here and no longer reachable
+  through `uri_v1/office/*`. Regression tests:
+  `test_r1_a_pause_refuses_a_run_id_this_session_never_offered`,
+  `test_r1_a_pause_refuses_another_tasks_run_id`,
+  `test_r1_a_flagged_run_via_pause_after_restore_cannot_write_back` (the last exercises
+  the real `HarnessRunner`/`ClaudeCodeAdapter` path against a new adversarial test-only
+  fake, `fixtures/m39_office/evil_claude_office.py`, not a hand-written run-store record).
+
+- **R1-B (High, residual of M39-3):** `_PY_QUOTED`/`_XLSX_QUOTED` recognised only ASCII
+  `"`/`'`, so a name auto-corrected to smart quotes (Word/macOS/iOS), wrapped in
+  backticks (chat/markdown), or left unquoted still parsed as only its trailing
+  `.py`/`.xlsx` fragment and silently bound the wrong, shorter file. Fix: the quote
+  character classes now also recognise `“ ” ‘ ’` and backtick
+  (mismatched pairs are still tolerated, as the original ASCII-only pattern already did,
+  since this module has no way to know which side is "wrong"). For the genuinely
+  unquoted case, an unquoted filename match immediately preceded by a single word that
+  isn't one of this request grammar's own function words (`make`/`get`/`with`/`the`/etc.)
+  is now refused as `ROLE_AMBIGUOUS` rather than silently bound -- `request.py` has no
+  access to the real file list, so it cannot tell "my report.py" (a real file) apart from
+  "my" (possessive) plus the distinct file "report.py", and refusing rather than guessing
+  is the module's existing design principle (see its own docstring). Every unquoted
+  phrasing already exercised by the M39 test suite (`make`/`get`/`fix`/`have report.py
+  work/run with sales.xlsx`, `... or/and backup_report.py ...`, `... with the
+  sales.xlsx`) keeps parsing exactly as before. Regression tests:
+  `test_r1_b_quote_variants_bind_the_full_space_containing_name`,
+  `test_r1_b_unquoted_space_name_is_ambiguous_not_silently_wrong`,
+  `test_r1_b_smart_quote_end_to_end_never_writes_the_plain_file`.
+
+- **R1-C (Medium, residual of M39-2):** `_is_consent`'s tokeniser (`[a-z']+`) silently
+  dropped every character outside ASCII letters, so a reply mixing an English
+  affirmative word with an emoji, another script, or full-width punctuation (`ok
+  ❌ 不要`, `okay‽`, `¿yes`, `ok, run it？`) kept only its
+  recognised English words and passed as consent. Fix: the question-mark check now also
+  matches full-width `？`, interrobang `‽`, inverted `¿`/`؟`, and
+  `⸮`; tokens are now taken from whitespace-splitting the whole reply (stripping
+  each token's own leading/trailing ASCII punctuation), and every token must both be in
+  the affirmative vocabulary and match `[a-z']+` in full -- so a token containing any
+  non-ASCII-letter character (an emoji, CJK/Cyrillic text, a bare digit) refuses consent
+  instead of being silently ignored. Regression tests:
+  `test_r1_c_non_ascii_and_symbolic_replies_are_not_consent` (10 cases from the re-audit),
+  `test_r1_c_non_ascii_decline_never_starts_the_harness`.
+
+- **R1-D (Medium, new regression introduced by repair round 1):** the M39-3 fix's
+  continuation check (`_CONTINUATION`, which includes `.`) treated a sentence-final `.`
+  or `...` the same as a mid-token `.`, so `"make report.py work with sales.xlsx."`,
+  `"Please fix report.py. It should work with sales.xlsx"`, and `"make ./report.py work
+  with sales.xlsx"` all regressed to `ROLE_AMBIGUOUS` (all three parsed fine before
+  repair round 1). Fix: a run of one or more `.` at the end of a match is a continuation
+  only when something token-like follows once the dots are skipped (`report.py.bak`
+  still refuses); a `.`/`...` followed by whitespace or end-of-text is ordinary sentence
+  punctuation. A leading `./` is now recognised as a normal, unambiguous script-in-its-
+  own-directory prefix rather than a continuation of the text before it. `report.py.bak`
+  and `data.xlsx.py` (M39-3's own original cases) are still refused, verified by the same
+  regression test file. Regression tests: `test_r1_d_sentence_final_punctuation_still_parses`,
+  `test_r1_d_fix_does_not_reopen_m39_3_longer_token_refusal`.
+
+**Disclosed, not fixed (out of this bounded round's scope):**
+- The M38-owned root cause behind R1-A (the post-verification safety flag never reaching
+  the run store) is unchanged; R1-A's fix closes every path reachable through
+  `uri_v1/office/*`, but the flag itself still is not durable outside this package. Any
+  future caller with direct run-store/Memory access (bypassing `OfficeSession` entirely)
+  is not covered by this fix.
+- R1-E (Low, UX): a clarifying question during escalation consent still discards the
+  pending proposal (`ESCALATION_DECLINED`, proposal deleted) rather than keeping it
+  available for a later "yes". This is unchanged from repair round 1, is exercised by an
+  existing, still-passing test (`test_m39_2_question_never_starts_harness`, which asserts
+  the proposal is cleared), and the re-audit flagged it as a product/UX choice for the
+  project owner, not a defect -- left as is rather than reversed without that decision.
+- R1-F (Low, disclosure): the M39-7 CLI delivery gap (generated/ADDED-output delivery,
+  disclosed since R0) remains disclosed only in commit messages, not in this report or
+  `URI_STATE.yaml`, for repair round 1's part of the gap; this repair round adds no new
+  instance of it and does not attempt the M36-owned fix it needs.
+
+**Verification (this round, independently re-run, not merely claimed):**
+- All 60 of the re-audit's own probes (`audits/m39_reaudit/test_m39_r1_reaudit_probes.py`)
+  pass against this repair, including every R1-A..D reproduction, confirmed by direct
+  re-run of that exact file (not a rewritten copy).
+- All 37 of the original R0 audit's probes (`audits/m39_audit/test_m39_audit_probes.py`)
+  still pass -- no regression in what repair round 1 already fixed.
+- `pytest tests/test_m39_request.py tests/test_m39_flow.py tests/test_m39_boundaries.py
+  tests/test_m39_repair1_regressions.py tests/test_m39_repair2_regressions.py`: 132
+  passed.
+- `pytest tests/test_m37_*.py tests/test_m38_*.py tests/governance`: 109 passed, 1 failed
+  (the same pre-existing, disclosed scope-guard failure as every prior M39 commit --
+  `test_m36_and_frozen_files_unchanged` flags M39's own files, which is expected and not
+  new).
+- `pytest tests/ --ignore=tests/test_m31_model_brain_ux.py`: 923 passed, 1 skipped, 2
+  failed (the same two disclosed scope-guard failures as the R0/R1 audit baselines, none
+  new).
+- `scripts/m33_3_r_anchors.py`: `ok: True, changed: []`.
+- `scripts/governance/uri_state_validator.py`: `VALID`.
+- Diff scope (`git diff a9098e0 HEAD --name-only` for this round's own changes):
+  `uri_v1/office/flow.py`, `uri_v1/office/request.py`,
+  `fixtures/m39_office/evil_claude_office.py` (new, test-only),
+  `tests/test_m39_repair2_regressions.py` (new), and this section of this report. No
+  `uri_core`, `uri_ui`, or M36/M37/M38 file appears in the diff.

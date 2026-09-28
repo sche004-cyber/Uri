@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import re
+import string
 
 from uri_v1.edge.contracts import EdgeTask, TaskClass, TaskInput
 from uri_v1.edge.resolver import read_bound
@@ -51,13 +52,26 @@ _CONSENT_ANCHORS = frozenset({
     "yes", "y", "yeah", "yep", "yup", "sure", "ok", "okay",
     "approve", "approved", "confirm", "confirmed", "proceed", "apply",
 })
+# R1-C (re-audit, residual of M39-2): a question mark is not only the ASCII
+# "?" -- full-width, interrobang and inverted forms all mark a question and
+# must refuse consent the same way.
+_QUESTION_MARKS = "?？‽¿؟⸮"
 
 
 def _is_consent(raw_text: str) -> bool:
-    if "?" in raw_text or negated(raw_text):
+    if any(ch in raw_text for ch in _QUESTION_MARKS) or negated(raw_text):
         return False
-    tokens = re.findall(r"[a-z']+", raw_text.casefold())
-    if not tokens or not all(t in _CONSENT_TOKENS for t in tokens):
+    # R1-C: tokenising only `[a-z']+` silently dropped every character
+    # outside ASCII letters, so a reply with an emoji, non-English word or
+    # other script ("ok ❌ 不要", "okay \U0001F6D1") kept only its
+    # ASCII words and could pass as a clean "yes". Splitting on whitespace and
+    # requiring every token -- once its own leading/trailing ASCII
+    # punctuation is stripped -- to be a recognised affirmative word means
+    # anything unrecognised (another language, an emoji, a symbol) refuses
+    # consent instead of being silently ignored.
+    tokens = [t.strip(string.punctuation) for t in raw_text.casefold().split()]
+    tokens = [t for t in tokens if t]
+    if not tokens or not all(t in _CONSENT_TOKENS and re.fullmatch(r"[a-z']+", t) for t in tokens):
         return False
     if set(tokens) & _CONSENT_ANCHORS:
         return True
@@ -255,6 +269,19 @@ class OfficeSession:
 
     # -- pause / resume ------------------------------------------------------------
     def pause(self, task_id, raw_text, *, run_id, session_id, turn_id, trace_id) -> StepResult:
+        # R1-A (re-audit, residual of M39-4): this used to store whatever
+        # run_id the caller passed, with no check at all -- so any caller
+        # (the Python API, not just the CLI) could re-arm ANY run, including
+        # one this same session had already reported HARNESS_FAILED/flagged,
+        # as the run offered for approval. `approve_writeback`'s "only the
+        # offered run" check (M39-4) only holds if `pause()` cannot be used to
+        # forge what "offered" means. So `pause()` now accepts only the run_id
+        # this exact session already offered via `_offer_writeback` (the same
+        # run `self._run[task_id]` already holds) -- it can re-affirm that
+        # offer durably in Memory, never introduce a new one.
+        offered = self._run.get(task_id)
+        if offered is None or run_id != offered:
+            return StepResult("ERROR", task_id=task_id, reason="RUN_ID_NOT_OFFERED")
         intake = _make_intake(self.user_id, session_id, turn_id, trace_id, raw_text, ref_key="pause")
         result = self.recorder.task_state(task_id, self._heads[task_id], intake=intake, status="PAUSED",
                                           next_step=f"awaiting write-back approval for run {run_id}")
