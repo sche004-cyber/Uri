@@ -1,7 +1,8 @@
 # M36 State — URI-Memory Minimum (pre-Office demonstrator)
 
-STATE: M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION
-READINESS: FREEZE_DECISION_REQUIRED (closing audit performed; repairs re-verified by the repairing session, not independently)
+STATE: M36_REPAIRED_AWAITING_INDEPENDENT_REAUDIT
+READINESS: INDEPENDENT_REAUDIT_REQUIRED (repair round 3, positive-allowlist certainty gate per User decision 2026-09-28; self-verified only; see docs/plans/M36_REPAIR3_VERIFICATION.md). NOT FROZEN.
+Prior state (historical): M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION (superseded by 2026-09-28 internal re-audits returning REPAIRS_REQUIRED at 405db1f and 410d1b8)
 Prior state (historical): M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT
 Plan: docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md (§17 = A2 repairs preserved; §18 preserves accepted initial projection grounding; §19 repairs FREE_INPUT; earlier history retained)
 Component: `URI-Memory` (implemented; independently unaudited, not frozen or production integrated)

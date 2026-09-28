@@ -212,18 +212,94 @@ def bounded(value, limit=512):
     return value
 
 
-# Closed deterministic negation cues (audit F-1/F-2). Apostrophes are removed
-# before tokenizing so "don't" is the token "dont". Vocabulary expansion needs
-# later qualification; any hit fails closed to clarification.
-NEGATION_WORDS = frozenset(("not", "no", "never", "skip", "except", "excluding", "exclude", "without", "avoid",
-                            "dont", "doesnt", "didnt", "isnt", "wont", "cant", "cannot", "shouldnt"))
-NEGATION_PHRASES = ("other than", "instead of", "rather than", "apart from")
+# Closed deterministic negation cues (audit F-1/F-2; re-audit R-1/R-2/R-3).
+# Every apostrophe-like code point (straight, curly, modifier-letter, backtick,
+# acute accent, fullwidth) is normalised away before tokenizing, and a split
+# "do n't" form is rejoined, so "don't" matches regardless of quote glyph or
+# whitespace. Vocabulary expansion needs later qualification; any hit fails
+# closed to clarification.
+NEGATION_WORDS = frozenset((
+    "not", "no", "never", "skip", "except", "excluding", "exclude", "without", "avoid",
+    "dont", "doesnt", "didnt", "isnt", "arent", "wasnt", "werent", "wont", "cant", "cannot",
+    "shouldnt", "wouldnt", "couldnt", "mustnt", "neednt", "aint", "hasnt", "hadnt", "havent",
+    "but", "ignore", "neither", "nor", "none", "nothing", "stop", "drop", "omit", "minus",
+    "unless", "besides", "nope", "nah", "hardly",
+))
+NEGATION_PHRASES = (
+    "other than", "instead of", "rather than", "apart from", "aside from",
+    "leave out", "far from",
+)
+
+_APOSTROPHE_RE = re.compile("['‘’ʼ`´＇]")
 
 
 def negated(text: str) -> bool:
-    tokens = re.findall(r"\w+", re.sub(r"['’]", "", text.casefold()))
+    normalized = _APOSTROPHE_RE.sub("", text.casefold())
+    # Rejoin a split "do n't" -> "dont" before tokenizing.
+    normalized = re.sub(r"(\w+)\s+nt\b", r"\1nt", normalized)
+    tokens = re.findall(r"\w+", normalized)
     joined = " " + " ".join(tokens) + " "
     return bool(NEGATION_WORDS.intersection(tokens)) or any(" " + p + " " in joined for p in NEGATION_PHRASES)
+
+
+# Positive allowlist gate (User decision 2026-09-28, replacing blocklist growth).
+# A turn may carry certainty (an exact-title/ID binding or an explicit user status
+# transition) only when every word around the reference is plainly affirmative.
+# Anything else, including every negation or exclusion form, whatever its glyphs,
+# spelling or idiom, falls outside the closed vocabulary and asks for clarification.
+# Contractions split at the apostrophe, so "it's" -> "it" "s" is admitted but
+# "don't" -> "don" "t" is not: "t" is never affirmative.
+#
+# Repair round 4 (re-audit c179e42, findings P-1): "up", "over", "through" and
+# "give" are dropped -- each combines with otherwise-allowed words into a
+# phrasal exclusion ("give up on X", "we're over X", "I'm through with X").
+# And a non-trivial context (anything beyond a bare filename plus filler such
+# as please/ok/yes/the/file) must contain an explicit action verb, closing
+# "let go of X" / "let X go" / "that's it for X", which use only allowed words
+# but name no action.
+_AFFIRMATIVE_PUNCTUATION = set(".,!?:;\"'()“”‘’")
+AFFIRMATIVE_FILLERS = frozenset(
+    "a an the my our your this that it its one same file document doc spreadsheet workbook sheet script pdf "
+    "please pls kindly now today again also just quickly here ok okay yes yeah sure thanks thank you "
+    "i we me us let lets s d ll m re ve can could would will want need like go ahead and to with on in at "
+    "for of into".split())
+AFFIRMATIVE_ACTIONS = frozenset(
+    "open update edit use read check review summarize summarise analyze analyse fix format print show load "
+    "look see process convert run attach clean correct change modify finish continue resume work start "
+    "prepare draft write fill add save export find get make take send share proofread translate tidy "
+    "improve rewrite refresh recalculate calculate validate verify".split())
+# Trivial fillers: a context made only of these (or empty) needs no action verb --
+# a bare filename plus politeness/pointer words is still plainly affirmative.
+TRIVIAL_FILLERS = frozenset(
+    "please pls kindly ok okay yes yeah sure thanks thank you "
+    "a an the this that it its one same file document doc spreadsheet workbook sheet script pdf".split())
+# Duration fillers only make a declaration affirmative for PAUSED ("pause for a
+# moment"); elsewhere they let through non-declarations like "done for now".
+DURATION_FILLERS = frozenset("for a moment while bit time then back on again".split())
+STATUS_FILLERS = frozenset(
+    "i im m we re it its s this that the task job work is are am all now please pls mark as set to "
+    "thanks thank you ok okay yes yeah go ahead and just let lets us here fully completely finally can".split())
+# Leading words that turn a status keyword into a request rather than a
+# declaration (audit P-2): "please/can you complete this task" asks for work.
+REQUEST_LEAD_WORDS = frozenset("please pls can could would you".split())
+
+
+def affirmative_words(text: str, allowed) -> tuple[str, ...] | None:
+    """Tokens of ``text`` if every character and word is inside the closed
+    affirmative vocabulary; ``None`` (not affirmative) otherwise."""
+    if any(not (c.isascii() and (c.isalnum() or c.isspace())) and c not in _AFFIRMATIVE_PUNCTUATION for c in text):
+        return None
+    tokens = tuple(re.findall(r"[a-z0-9]+", text.casefold()))
+    return tokens if all(t in allowed for t in tokens) else None
+
+
+def affirmative_context(text: str) -> bool:
+    tokens = affirmative_words(text, AFFIRMATIVE_FILLERS | AFFIRMATIVE_ACTIONS)
+    if tokens is None:
+        return False
+    if any(t not in TRIVIAL_FILLERS for t in tokens) and not any(t in AFFIRMATIVE_ACTIONS for t in tokens):
+        return False
+    return True
 
 
 def opaque_link(value):

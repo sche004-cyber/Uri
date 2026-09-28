@@ -9,7 +9,7 @@ from uri_v1.turn.rar_clarification_contract import ClarificationResponse, Respon
 from uri_v1.reference_clarification.binding import BindingResult
 from ..contracts import (TrustedInput, _INTAKE_AUTHORITY, IdentityStatus as I, require_trace_id,
                          RetrievalResult, canonical, AttachmentManifest, _ATTACHMENT_AUTHORITY, authorized_attachments,
-                         negated)
+                         negated, affirmative_context)
 from ..retrieval import raw_span, exact_name, TYPE_WORDS, words
 
 
@@ -84,6 +84,20 @@ def ground(intake, ref_key, proposed, *, whole_answer=False):
     return ExpressionGrounding(intake.turn_id,intake.trace_id,ref_key,(a,b),"RAW_VERBATIM",raw[a:b])
 
 
+def affirmative_around(intake, grounding):
+    """True when every word of the trusted turn outside the grounded expression is
+    plainly affirmative (User decision 2026-09-28: positive allowlist, not a
+    negation blocklist). Required before any exact-title/ID or attachment certainty."""
+    if not grounding or grounding.status != "RAW_VERBATIM" or not grounding.offsets: return False
+    a,b = grounding.offsets; raw = intake.raw_text
+    return affirmative_context(raw[:a] + " " + raw[b:])
+
+
+def _exact(expression, candidates):
+    e = expression.strip().casefold()
+    return any(e == c.source.source_id or exact_name(expression,c.source.relpath.split("/")[-1]) for c in candidates)
+
+
 class MemoryAdapter:
     def __init__(self, sources):
         self.sources = sources
@@ -125,6 +139,8 @@ class MemoryAdapter:
         failure = self._safe(result,expression)
         if failure: return Projection(None,grounding,failure)
         q = result.query
+        affirmative = affirmative_around(q.intake,grounding)
+        if not affirmative and _exact(expression,result.candidates): return Projection(None,grounding,"NON_AFFIRMATIVE_CONTEXT")
         attachments=authorized_attachments(q)
         candidates = tuple(RARCandidate(c.source.source_id,c.source.relpath.split("/")[-1],c.source.media_type,
                            recency_rank=n,is_attachment=c.source.source_id in attachments,
@@ -141,7 +157,7 @@ class MemoryAdapter:
             if supplied.target_type_hint and attached and supplied.target_type_hint != attached.candidate_type: eligible=False
             trusted_classes=dict(q.attachment_manifest.media_classes)
             if attached and attached.id in trusted_classes and trusted_classes[attached.id]!=attached.candidate_type: eligible=False
-            if eligible: anchor = RARDeterministicAnchor(current_attachment_id=attached.id)
+            if eligible and affirmative: anchor = RARDeterministicAnchor(current_attachment_id=attached.id)
         # Model evidence cannot furnish recency/type/negation certainty. Derive from raw.
         evidence = RAREvidence(clause_text=expression)
         projected = RARQuery(expression,candidates,evidence,anchor)
@@ -154,6 +170,9 @@ class MemoryAdapter:
     def register(self, service, built, result, frozen_query):
         failure = self._safe(result,frozen_query.reference_expression)
         if failure: return BindingResult(BindingState.PENDING,reason=failure)
+        if ((frozen_query.deterministic_anchor or _exact(frozen_query.reference_expression,result.candidates))
+                and not affirmative_around(result.query.intake,self._ground(result,frozen_query.reference_expression))):
+            return BindingResult(BindingState.PENDING,reason="NON_AFFIRMATIVE_CONTEXT")
         return service.register(built,frozen_query)
 
     def respond_selection(self, service, result, frozen_query, response, *, user_selection,
@@ -196,5 +215,7 @@ class MemoryAdapter:
         expression = receipt.raw_expression
         failure = self._safe(result,expression,ids=pending.contract.scope_candidate_ids)
         if failure: return BindingResult(BindingState.PENDING,reason=failure)
+        if _exact(expression,result.candidates) and not affirmative_around(answer_intake,receipt):
+            return BindingResult(BindingState.PENDING,reason="NON_AFFIRMATIVE_CONTEXT")
         response = ClarificationResponse(round_id,ResponseKind.FREE_INPUT,text=expression)
         return service.respond(q.session_id,response,frozen_query,wrong_binding_impact=wrong_binding_impact)
