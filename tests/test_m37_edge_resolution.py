@@ -30,12 +30,17 @@ def test_script_inspection_patterns():
         df = pd.read_excel("in.xlsx", sheet_name="Data")
         x = df["Price"]; y = df[["A", "B"]]; df["New"] = 1
         wb = load_workbook("in.xlsx"); ws = wb["Other"]; v = ws["A1"].value
+        header = [c.value for c in ws[1]]
         i = header.index("Qty")
         df.to_excel("out.xlsx")
     ''').encode())
     d = info.to_dict()
     assert d["sheets"] == ["Data", "Other"] and d["columns"] == ["A", "B", "Price", "Qty"]
     assert d["workbook_paths"] == ["in.xlsx"] and d["output_paths"] == ["out.xlsx"] and d["dynamic"] == []
+    # F-1: `.index(literal)` on a receiver that does NOT trace to a header-row derivation
+    # is never a recognized column reference, however header-like the literal looks.
+    not_header = inspect_script(b'modes = ["amount", "Amount"]\nmode = modes.index("amount")\n')
+    assert not_header.values("column") == [] and "DYNAMIC_COLUMN_ACCESS" in not_header.dynamic
     dyn = inspect_script(b'from openpyxl import load_workbook\nwb = load_workbook("a.xlsx")\nname = "S" + "1"\nws = wb[name]\nh.index(f"{c}")\n')
     assert set(dyn.dynamic) == {"DYNAMIC_SHEET_ACCESS", "DYNAMIC_COLUMN_ACCESS"}
     assert inspect_script(b"def (:\n").dynamic == ("PARSE_FAILED",)

@@ -100,20 +100,44 @@ def test_writeback_requires_verified_run_explicit_trusted_approval_and_unchanged
     ws = _ws(env, "sales.xlsx", "report.py")
     (ws.files / "report.py").write_bytes(script().encode())
     after = {c["relpath"]: c["after_sha256"] for c in ws.diff()["changes"]}
+    store = RunStore(env.user, tmp_path / "runs")
     for text in ("don't apply it", "maybe later"):
         with pytest.raises(WorkspaceError, match="EXPLICIT_APPROVAL_REQUIRED"):
             WritebackApproval.from_user(intake(text, user=env.user), ws.run_id, after)
     approval = WritebackApproval.from_user(intake("yes, apply the fix", user=env.user), ws.run_id, after)
-    with pytest.raises(WorkspaceError, match="REQUIRES_VERIFIED"): ws.write_back(approval, sources=env.sources, verified_status="FAILED")
     forged = WritebackApproval(ws.run_id, ("report.py",), after, object())
-    with pytest.raises(WorkspaceError, match="APPROVAL_REQUIRED"): ws.write_back(forged, sources=env.sources, verified_status="VERIFIED")
+    with pytest.raises(WorkspaceError, match="APPROVAL_REQUIRED"): ws.write_back(forged, sources=env.sources, run_store=store)
     other = WritebackApproval.from_user(intake("approve", user="00000000-0000-0000-0000-000000000009"), ws.run_id, after)
-    with pytest.raises(WorkspaceError, match="WRONG_USER"): ws.write_back(other, sources=env.sources, verified_status="VERIFIED")
+    with pytest.raises(WorkspaceError, match="WRONG_USER"): ws.write_back(other, sources=env.sources, run_store=store)
+    # No run record at all: write-back must not trust a caller-supplied status string (F-7).
+    with pytest.raises(WorkspaceError, match="REQUIRES_VERIFIED"): ws.write_back(approval, sources=env.sources, run_store=store)
+    store.append(ws.run_id, "RUN_STARTED", {"executor": "LOCAL_EDGE"})
+    store.append(ws.run_id, "RUN_RESULT", {"uri_computed_diff": ws.diff()})
+    store.append(ws.run_id, "VERIFICATION", {"status": "FAILED"})
+    with pytest.raises(WorkspaceError, match="REQUIRES_VERIFIED"): ws.write_back(approval, sources=env.sources, run_store=store)
+    store.append(ws.run_id, "VERIFICATION", {"status": "VERIFIED"})
     original.write_text("# user edited meanwhile\n")
-    with pytest.raises(WorkspaceError, match="ORIGINAL_CHANGED"): ws.write_back(approval, sources=env.sources, verified_status="VERIFIED")
+    with pytest.raises(WorkspaceError, match="ORIGINAL_CHANGED"): ws.write_back(approval, sources=env.sources, run_store=store)
     original.write_bytes(script(column="amount").encode())
-    written = ws.write_back(approval, sources=env.sources, verified_status="VERIFIED")
+    written = ws.write_back(approval, sources=env.sources, run_store=store)
     assert written[0]["relpath"] == "report.py" and original.read_bytes() == script().encode()
+
+
+def test_writeback_rejects_candidate_changed_after_recorded_verification(tmp_path, monkeypatch):
+    """F-7/F-8: even a real VERIFIED run cannot write back if the workspace no longer
+    matches what was verified (e.g. a further edit, or the verifier's own tamper case)."""
+    env = Env(tmp_path, monkeypatch)
+    make_workbook(env.root / "sales.xlsx", SALES); original = env.write("report.py", script(column="amount"))
+    ws = _ws(env, "sales.xlsx", "report.py")
+    (ws.files / "report.py").write_bytes(script().encode())
+    after = {c["relpath"]: c["after_sha256"] for c in ws.diff()["changes"]}
+    store = RunStore(env.user, tmp_path / "runs")
+    store.append(ws.run_id, "RUN_STARTED", {"executor": "LOCAL_EDGE"})
+    store.append(ws.run_id, "RUN_RESULT", {"uri_computed_diff": ws.diff()})
+    store.append(ws.run_id, "VERIFICATION", {"status": "VERIFIED"})
+    (ws.files / "report.py").write_bytes(script().encode() + b"# tampered after verification\n")
+    approval = WritebackApproval.from_user(intake("yes, apply the fix", user=env.user), ws.run_id, after)
+    with pytest.raises(WorkspaceError, match="CANDIDATE_CHANGED"): ws.write_back(approval, sources=env.sources, run_store=store)
 
 
 def test_run_lineage_is_append_only_and_tamper_evident(tmp_path):

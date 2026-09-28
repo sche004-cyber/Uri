@@ -18,6 +18,22 @@ from .scriptinfo import inspect_script
 _DEGRADED = {"CONFLICT": R.MEMORY_CONFLICT, "PENDING_CORRECTION": R.MEMORY_PENDING_CORRECTION,
              "QUARANTINED_RECORDS": R.MEMORY_QUARANTINED}
 
+# Per-class minimum acceptance (F-3): a caller-supplied AcceptanceCriteria that omits the
+# check that actually exercises the class's own qualified capability must never let a
+# local completion be reported VERIFIED — it would only prove something unrelated passed.
+_MIN_ACCEPTANCE = {
+    T.SCRIPT_WORKBOOK_REPAIR: lambda kinds, items: "script_exit_zero" in kinds,
+    T.WORKBOOK_INSPECT: lambda kinds, items: any(i["kind"] == "report_recomputes" and i.get("task_class") == T.WORKBOOK_INSPECT.value for i in items),
+    T.SCRIPT_WORKBOOK_DIAGNOSE: lambda kinds, items: any(i["kind"] == "report_recomputes" and i.get("task_class") == T.SCRIPT_WORKBOOK_DIAGNOSE.value for i in items),
+}
+
+
+def _meets_minimum_acceptance(task_class, acceptance) -> bool:
+    check = _MIN_ACCEPTANCE.get(task_class)
+    if check is None: return True
+    items = list(acceptance.items)
+    return check({i["kind"] for i in items}, items)
+
 
 def read_bound(sources, source_id, content_sha256):
     """Return (bytes, filename) for a live, hash-matching original, else None."""
@@ -44,6 +60,9 @@ def _memory_gate(task: EdgeTask, package):
         return R.INVALID_CONTEXT
     if not isinstance(ctx, dict) or ctx.get("schema_version") != "m36.context.v1": return R.INVALID_CONTEXT
     if ctx.get("degraded") in _DEGRADED: return _DEGRADED[ctx["degraded"]]
+    # The package must belong to this task: a clean package built for another task_id
+    # would otherwise silently bypass a real CONFLICT/correction on this one (F-6).
+    if ctx.get("task") and ctx["task"].get("task_id") != task.task_id: return R.INVALID_CONTEXT
     wanted = {(i.source_id, i.content_sha256) for i in task.inputs}
     ids = {i.source_id for i in task.inputs}
     # Only stale *references* gate the task; stale historical outcomes are expected
@@ -104,6 +123,9 @@ def resolve(task: EdgeTask, package, registry, sources) -> EdgeDecision:
     if not eligible:
         return EdgeDecision(D.ESCALATE, R.NO_QUALIFIED_CAPABILITY, task.task_id, findings=findings,
                             escalation=escalation(task, findings, (f"no qualified local capability for {task.task_class.value}",)))
+    if not _meets_minimum_acceptance(task.task_class, task.acceptance):
+        return EdgeDecision(D.ESCALATE, R.ACCEPTANCE_BELOW_MINIMUM, task.task_id, findings=findings,
+                            escalation=escalation(task, findings, (f"acceptance criteria omit the required check for {task.task_class.value}",)))
     cap = eligible[0].capability_id
     if task.task_class is not T.SCRIPT_WORKBOOK_REPAIR:
         return EdgeDecision(D.LOCAL, R.QUALIFIED_LOCAL, task.task_id, cap, findings)
