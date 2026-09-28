@@ -11,7 +11,7 @@ import pytest
 
 from tests.m37_edge_support import intake
 from tests.m38_harness_support import ROOT, escalated, fake_adapter
-from uri_v1.execution.harness.adapters import FORBIDDEN_FLAGS, ClaudeCodeAdapter, CodexCliAdapter
+from uri_v1.execution.harness.adapters import FORBIDDEN_FLAGS, ClaudeCodeAdapter, CodexCliAdapter, _absolute_scope
 from uri_v1.execution.harness.capsule import build_capsule
 from uri_v1.execution.harness.contracts import (CapabilityGrant, ElevationGrant, HarnessError, HarnessType, Limits,
                                                 PermissionProfile)
@@ -260,7 +260,7 @@ def test_subfolder_grant_does_not_also_approve_its_parent():
     with pytest.raises(HarnessError):  # the sentence only ever names the child, not the parent
         ElevationGrant.from_user(intake(f"yes, allow access to {child} for this run"), f"extra_dir:{parent}", "run-1")
     g = ElevationGrant.from_user(intake(f"yes, allow access to {child} for this run"), f"extra_dir:{child}", "run-1")
-    assert g.elevation == f"extra_dir:{child}"
+    assert g.elevation == f"extra_dir:{Path(child).resolve()}"  # resolved: C:\... on Windows
 
 
 def test_extra_dir_cannot_be_a_home_ancestor_or_a_sensitive_home_child(tmp_path, monkeypatch):
@@ -364,7 +364,7 @@ def test_extra_dir_grant_needs_the_whole_directory_name_not_an_incidental_letter
     with pytest.raises(HarnessError):
         ElevationGrant.from_user(intake("yes allow the repair"), "extra_dir:/home/someone/e", "run-1")
     g = ElevationGrant.from_user(intake("yes, allow access to /home/someone/e for this run"), "extra_dir:/home/someone/e", "run-1")
-    assert g.elevation.startswith("extra_dir:") and g.elevation.endswith("/e")
+    assert g.elevation == f"extra_dir:{Path('/home/someone/e').resolve()}"  # C:\home\someone\e on Windows
     with pytest.raises(HarnessError):  # root and home are never an allowed extra_dir
         ElevationGrant.from_user(intake("yes, allow access to / for this run"), "extra_dir:/", "run-1")
 
@@ -397,7 +397,10 @@ def test_default_posture_has_no_shell_and_scopes_file_tools_to_the_workspace(tmp
     assert "Bash" in disallowed and not any(a.startswith("Bash(python") for a in argv)
     scope = str(ws.files.resolve())
     for tool in ("Read", "Edit", "Write", "Glob", "Grep"):
-        assert f"{tool}(//{scope.lstrip('/')}/**)" in argv  # scoped allow, correctly anchored absolute
+        # scoped allow, correctly anchored absolute: `//` + POSIX path, or a bare
+        # forward-slashed drive-letter path on Windows (round 3 finding 4)
+        expected = _absolute_scope(scope)
+        assert f"{tool}({expected}/**)" in argv
         assert tool not in disallowed  # and NOT bare-denied, or the scoped allow above is dead
 
 

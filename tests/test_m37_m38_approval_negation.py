@@ -9,6 +9,8 @@ the three approval/grant gates below, without touching M36 or negated() itself.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from tests.m37_edge_support import intake
@@ -74,7 +76,7 @@ def test_elevation_grant_rejects_informal_negatives(text):
 def test_elevation_grant_accepts_positive_extra_dir_path():
     g = ElevationGrant.from_user(intake("yes, allow access to /home/someone/e for this run"),
                                  "extra_dir:/home/someone/e", "run-1")
-    assert g.elevation == "extra_dir:/home/someone/e"
+    assert g.elevation == f"extra_dir:{Path('/home/someone/e').resolve()}"  # C:\home\someone\e on Windows
 
 
 def test_elevation_grant_still_rejects_formal_negation():
