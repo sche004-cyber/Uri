@@ -259,3 +259,49 @@ def test_approval_uncertain_helper():
     assert approval_uncertain("allow it？")  # fullwidth question mark
     assert not approval_uncertain("yes, apply it") and not approval_uncertain("allow the git server")
     assert approval_withheld("nah apply it") and approval_withheld("maybe apply it")
+
+
+# -- hedged or speculative language never authorizes (Chetan, 2026-09-28 17:53) ----------------------
+# Every hedge, in front of, inside and after an otherwise-valid grant, for all four grant kinds.
+
+HEDGES = ("could", "I guess", "maybe", "perhaps", "might", "possibly", "probably", "I think", "I suppose",
+          "hopefully", "would", "should", "may", "if needed", "unless", "presumably", "ideally", "kind of")
+
+
+def _placements(hedge, grant):
+    head, _, tail = grant.partition(" ")
+    return (f"{hedge} {grant}", f"{grant} {hedge}", f"{head} {hedge} {tail}", f"{grant}, {hedge}")
+
+
+@pytest.mark.parametrize("hedge", HEDGES)
+def test_hedge_never_authorizes_a_capability(hedge):
+    assert CapabilityGrant.from_user(intake("use the sheets server"), [("MCP_SERVER", "sheets")]).valid()
+    for text in _placements(hedge, "use the sheets server"):
+        with pytest.raises(HarnessError):
+            CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")])
+
+
+@pytest.mark.parametrize("hedge", HEDGES)
+def test_hedge_never_authorizes_an_elevation(hedge):
+    assert ElevationGrant.from_user(intake("allow network access"), "network", "scope1").valid_for("scope1")
+    for text in _placements(hedge, "allow network access"):
+        with pytest.raises(HarnessError):
+            ElevationGrant.from_user(intake(text), "network", "scope1")
+
+
+@pytest.mark.parametrize("hedge", HEDGES)
+def test_hedge_never_authorizes_an_extra_dir(hedge, tmp_path):
+    d = tmp_path / "reports"; d.mkdir()
+    grant = f"allow access to {d}"
+    assert ElevationGrant.from_user(intake(grant), f"extra_dir:{d}", "scope1").valid_for("scope1")
+    for text in _placements(hedge, grant):
+        with pytest.raises(HarnessError):
+            ElevationGrant.from_user(intake(text), f"extra_dir:{d}", "scope1")
+
+
+@pytest.mark.parametrize("hedge", HEDGES)
+def test_hedge_never_authorizes_a_writeback(hedge):
+    assert WritebackApproval.from_user(intake("yes apply the fix"), RUN_ID, {"report.py": "0" * 64}).valid()
+    for text in _placements(hedge, "yes apply the fix"):
+        with pytest.raises(WorkspaceError):
+            WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64})
