@@ -230,16 +230,18 @@ product_milestones:
     integration_authorized: false
     note: "Governed by D-A, OD-2..OD-5, VG-1, LF-1. Office demonstrator not started (batch stop point)."
   - id: "M39"
-    title: "Office Demonstrator (make this script work with this spreadsheet; VG-1 viability benchmark)"
-    status: "M39_PLAN_DRAFTED_PROVISIONAL"
+    title: "Working Product Baseline: Office Demonstrator through the real URI interface"
+    status: "M39_PLAN_R1_DRAFTED_PROVISIONAL"
     currently_active: false
     implementation_authorized: false
     plan: "docs/plans/M39_OFFICE_DEMONSTRATOR_PLAN.md"
-    component: "uri_v1/office (isolated vertical composition layer; no production wiring)"
+    component: "uri_v1/office + /ask Office seam, /office endpoints, FileStore .py/.xlsm, uri_ui file list and run polling"
     planned_at_commit: "610c8f8"
+    plan_history: "R0 7363ba5 (isolated demonstrator) superseded by R1 after the User product completion target 2026-09-28 10:03"
+    product_target: "URI_WORKING_PRODUCT_BASELINE_REACHED (not reached)"
     depends_on_unaudited: "M36 at 405db1ff21f11f6927fe1b74990ff6b88a97a28d; M37 at 5460d64; M38 at 3501f85 (all PROVISIONAL, not frozen, under fresh audit)"
     integration_authorized: false
-    note: "Planned 2026-09-28 by the Planning lane under the User's pipeline instruction. Plan only; implementation handoff is the Chief Orchestrator's. Open User decisions in plan section 10 (VG-1 thresholds, M37 scope-guard treatment, benchmark spend cap) do not block waves W1/W1b/W2."
+    note: "Planned 2026-09-28 by the Planning lane under the User's pipeline instruction. Plan only; implementation handoff is the Chief Orchestrator's. Production integration requires INT-001, to be registered by the implementation commit that wires the seam (plan section 4.2; read as authorized by the User product target, pending User confirmation). Real Claude Code spend waits for User confirmation."
 queued_initiatives:
   - id: "hybrid_ui"
     title: "URI Hybrid UI Implementation (\"Compact Chat Mode\")"
