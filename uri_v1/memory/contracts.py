@@ -249,21 +249,39 @@ def negated(text: str) -> bool:
 # spelling or idiom, falls outside the closed vocabulary and asks for clarification.
 # Contractions split at the apostrophe, so "it's" -> "it" "s" is admitted but
 # "don't" -> "don" "t" is not: "t" is never affirmative.
+#
+# Repair round 4 (re-audit c179e42, findings P-1): "up", "over", "through" and
+# "give" are dropped -- each combines with otherwise-allowed words into a
+# phrasal exclusion ("give up on X", "we're over X", "I'm through with X").
+# And a non-trivial context (anything beyond a bare filename plus filler such
+# as please/ok/yes/the/file) must contain an explicit action verb, closing
+# "let go of X" / "let X go" / "that's it for X", which use only allowed words
+# but name no action.
 _AFFIRMATIVE_PUNCTUATION = set(".,!?:;\"'()“”‘’")
 AFFIRMATIVE_FILLERS = frozenset(
     "a an the my our your this that it its one same file document doc spreadsheet workbook sheet script pdf "
     "please pls kindly now today again also just quickly here ok okay yes yeah sure thanks thank you "
     "i we me us let lets s d ll m re ve can could would will want need like go ahead and to with on in at "
-    "for of up over into through".split())
+    "for of into".split())
 AFFIRMATIVE_ACTIONS = frozenset(
     "open update edit use read check review summarize summarise analyze analyse fix format print show load "
     "look see process convert run attach clean correct change modify finish continue resume work start "
-    "prepare draft write fill add save export find get give make take send share proofread translate tidy "
+    "prepare draft write fill add save export find get make take send share proofread translate tidy "
     "improve rewrite refresh recalculate calculate validate verify".split())
+# Trivial fillers: a context made only of these (or empty) needs no action verb --
+# a bare filename plus politeness/pointer words is still plainly affirmative.
+TRIVIAL_FILLERS = frozenset(
+    "please pls kindly ok okay yes yeah sure thanks thank you "
+    "a an the this that it its one same file document doc spreadsheet workbook sheet script pdf".split())
+# Duration fillers only make a declaration affirmative for PAUSED ("pause for a
+# moment"); elsewhere they let through non-declarations like "done for now".
+DURATION_FILLERS = frozenset("for a moment while bit time then back on again".split())
 STATUS_FILLERS = frozenset(
     "i im m we re it its s this that the task job work is are am all now please pls mark as set to "
-    "thanks thank you ok okay yes yeah go ahead and just let lets us here fully completely finally can for "
-    "a moment while bit time then back on again".split())
+    "thanks thank you ok okay yes yeah go ahead and just let lets us here fully completely finally can".split())
+# Leading words that turn a status keyword into a request rather than a
+# declaration (audit P-2): "please/can you complete this task" asks for work.
+REQUEST_LEAD_WORDS = frozenset("please pls can could would you".split())
 
 
 def affirmative_words(text: str, allowed) -> tuple[str, ...] | None:
@@ -276,7 +294,12 @@ def affirmative_words(text: str, allowed) -> tuple[str, ...] | None:
 
 
 def affirmative_context(text: str) -> bool:
-    return affirmative_words(text, AFFIRMATIVE_FILLERS | AFFIRMATIVE_ACTIONS) is not None
+    tokens = affirmative_words(text, AFFIRMATIVE_FILLERS | AFFIRMATIVE_ACTIONS)
+    if tokens is None:
+        return False
+    if any(t not in TRIVIAL_FILLERS for t in tokens) and not any(t in AFFIRMATIVE_ACTIONS for t in tokens):
+        return False
+    return True
 
 
 def opaque_link(value):

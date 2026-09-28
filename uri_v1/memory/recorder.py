@@ -9,7 +9,7 @@ import uuid
 from .contracts import (MemoryRecord, RecordKind as K, Provenance as P, TaskStatus as S,
                         VerificationStatus as V, WriteResult, TrustedInput, BoundReference,
                         IdentityStatus as I, canonical, digest, plain, utc_now, negated,
-                        affirmative_words, STATUS_FILLERS)
+                        affirmative_words, STATUS_FILLERS, DURATION_FILLERS, REQUEST_LEAD_WORDS)
 
 # Populated only by trusted bootstrap in this module; no public registration API.
 _VERIFIERS = MappingProxyType({})
@@ -119,10 +119,17 @@ class Recorder:
                     # Explicit declarations only (audit F-2, re-audit R-3): the whole turn must be
                     # the status keyword plus plainly affirmative filler (positive allowlist), so
                     # "not done yet", "don‘t cancel" or "nothing is done" are never transitions.
-                    words = affirmative_words(intake.raw_text,STATUS_FILLERS | set(allowed[new]))
+                    # Re-audit round 3 (P-2): duration fillers ("for a moment", "for now") only
+                    # make a declaration affirmative for PAUSED -- elsewhere they let through
+                    # non-declarations like "done for now". And "complete" led by a request word
+                    # ("please/can you complete this task") asks for work, it does not declare it.
+                    fillers = STATUS_FILLERS | (DURATION_FILLERS if new is S.PAUSED else frozenset())
+                    words = affirmative_words(intake.raw_text,fillers | set(allowed[new]))
+                    matched = set(words).intersection(allowed[new]) if words else set()
                     # A question ("is it done?") asks; it does not declare.
-                    if (negated(intake.raw_text) or not words or not set(words).intersection(allowed[new])
-                            or "?" in intake.raw_text or words[0] in ("is","are","am")):
+                    if (negated(intake.raw_text) or not words or not matched
+                            or "?" in intake.raw_text or words[0] in ("is","are","am")
+                            or (new is S.COMPLETED and "complete" in matched and words[0] in REQUEST_LEAD_WORDS)):
                         raise ValueError("EXPLICIT_USER_TRANSITION_REQUIRED")
                 if new == S.OPEN: prov = P.URI_RECORDED  # URI accepts the user resume event.
             p["status"] = new; p["transition_evidence_ids"] = (eid,)
