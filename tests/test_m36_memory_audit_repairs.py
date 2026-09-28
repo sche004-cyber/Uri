@@ -8,6 +8,7 @@ from uri_v1.memory.context_package import build_context
 from uri_v1.memory.index import VerifierRegistryMismatch
 from uri_v1.memory.log import MemoryLog
 from uri_v1.memory.retrieval import Retriever
+from uri_v1.memory.uri_adapter.envelope import MemoryAdapter
 from uri_v1.turn.rar_clarification_contract import BindingState
 from tests.test_m36_memory_support import setup,retrieval,opened,intake,bind,USER
 from tests.test_m36_memory_grounding import registered
@@ -236,3 +237,132 @@ def test_f6_hidden_directory_still_makes_scope_incomplete(tmp_path):
     log,sources,rec,root=setup(tmp_path,("budget.xlsx",))
     (root/".git").mkdir(); (root/".git"/"budget.xlsx").write_bytes(b"x")
     assert not sources.scan().complete
+
+
+# ---- Positive-allowlist gate (User decision 2026-09-28; replaces further blocklist growth) ----
+# Forms deliberately absent from any negation list: the gate must reject them because
+# they are not plainly affirmative, not because they were anticipated.
+UNLISTED_NON_AFFIRMATIVE = [
+    "don‛t use budget.xlsx", "don′t use budget.xlsx", "donʹt use budget.xlsx", "donˈt use budget.xlsx",
+    "don t use budget.xlsx", "don­t use budget.xlsx", "ＮＯＴ budget.xlsx", "n​ot budget.xlsx",
+    "shan't use budget.xlsx", "mightn't use budget.xlsx", "oughtn't use budget.xlsx", "daren't use budget.xlsx",
+    "leave budget.xlsx out", "rule out budget.xlsx", "keep budget.xlsx out of this", "steer clear of budget.xlsx",
+    "hold off on budget.xlsx", "w/o budget.xlsx", "sans budget.xlsx", "budget.xlsx is the wrong file",
+    "budget.xlsx is off limits", "deselect budget.xlsx", "keep away from budget.xlsx", "budget.xlsx? no thanks",
+    "pas budget.xlsx", "sin budget.xlsx", "open budget.xlsx... actually never mind", "update budget.xlsx but keep the format",
+]
+
+
+@pytest.mark.parametrize("raw",UNLISTED_NON_AFFIRMATIVE)
+@pytest.mark.parametrize("tight",[False,True])
+def test_allowlist_non_affirmative_turns_never_confirm(raw,tight,tmp_path):
+    log,sources,rec,root=setup(tmp_path,("budget.xlsx","report.docx"))
+    a=raw.index("budget.xlsx")
+    result=retrieval(log,sources,raw,proposal="budget.xlsx",span=(a,a+11) if tight else None)
+    state,service,p=registered(sources,result)
+    assert state!=BindingState.CONFIRMED, raw
+
+
+AFFIRMATIVE_CONTROLS = [
+    "update budget.xlsx", "please open budget.xlsx", "can you summarize budget.xlsx for me", "let's review budget.xlsx",
+    "I'd like to check budget.xlsx", "open the budget.xlsx file please", "use budget.xlsx", '"budget.xlsx"',
+    "Update budget.xlsx now!", "could you fix budget.xlsx?", "I'll edit budget.xlsx", "ok, open budget.xlsx again",
+]
+
+
+@pytest.mark.parametrize("raw",AFFIRMATIVE_CONTROLS)
+def test_allowlist_plain_affirmative_requests_still_confirm(raw,tmp_path):
+    log,sources,rec,root=setup(tmp_path,("budget.xlsx","report.docx"))
+    a=raw.index("budget.xlsx")
+    result=retrieval(log,sources,raw,proposal="budget.xlsx",span=(a,a+11))
+    state,service,p=registered(sources,result)
+    assert state==BindingState.CONFIRMED, raw
+
+
+def test_allowlist_non_affirmative_explicit_id_never_confirms(tmp_path):
+    log,sources,rec,root=setup(tmp_path,("budget.xlsx","report.docx"))
+    sid=next(l.source_id for l in sources.scan().locators if l.relpath=="budget.xlsx")
+    for raw,ok in ((f"steer clear of {sid}",False),(f"don′t use {sid}",False),(f"please open {sid}",True)):
+        a=raw.index(sid)
+        result=retrieval(log,sources,raw,proposal=sid,span=(a,a+len(sid)))
+        assert (registered(sources,result)[0]==BindingState.CONFIRMED)==ok, raw
+
+
+def test_allowlist_gates_attachment_anchor(tmp_path):
+    log,sources,rec,root=setup(tmp_path,("budget.xlsx","worker.py"))
+    ids={x.relpath:x.source_id for x in sources.scan().locators}
+    for raw,anchored in (("open the spreadsheet",True),("steer clear of the spreadsheet",False)):
+        a=raw.index("spreadsheet")
+        r=retrieval(log,sources,raw,span=(a,a+11),attachment_source_ids=(ids["budget.xlsx"],))
+        p=MemoryAdapter(sources).project(r)
+        assert (p.query is not None and p.query.deterministic_anchor is not None)==anchored, raw
+
+
+def test_allowlist_gates_free_input_answer(tmp_path):
+    from tests.test_m36_memory_support import resolve
+    log,sources,rec,root=setup(tmp_path)
+    for raw,ok in (("steer clear of budget.xlsx",False),("budget.xlsx? no thanks",False),("yes, budget.xlsx please",True)):
+        result,p,service,b=resolve(log,sources,"budget sheet")
+        answer=intake(raw,round_id=b.next_contract_id)
+        a=raw.index("budget.xlsx")
+        bound=MemoryAdapter(sources).respond_free_input(service,result,p.query,b.next_contract_id,answer,proposed_offsets=(a,a+11))
+        assert (bound.state==BindingState.CONFIRMED)==ok, raw
+
+
+@pytest.mark.parametrize("text,status",[
+    ("don t cancel this","ABANDONED"), ("don′t cancel this","ABANDONED"), ("shan't cancel this","ABANDONED"),
+    ("mightn't be done","COMPLETED"), ("don‛t pause","PAUSED"), ("oughtn't be marked failed","FAILED"),
+    ("done? not really","COMPLETED"), ("is it done","COMPLETED"), ("pause and resume later","PAUSED"),
+    ("cancel? maybe","ABANDONED"),
+])
+def test_allowlist_status_needs_plain_declaration(text,status,tmp_path):
+    log,sources,rec,root=setup(tmp_path)
+    task,head=opened(rec)
+    with pytest.raises(ValueError,match="EXPLICIT_USER_TRANSITION_REQUIRED"):
+        rec.task_state(task,head.record_id,intake=intake(text),status=status)
+    assert log.load().task(task).payload["status"]=="OPEN"
+
+
+@pytest.mark.parametrize("text,status",[
+    ("done","COMPLETED"), ("it's done","COMPLETED"), ("we are done now","COMPLETED"), ("mark this task as complete","COMPLETED"),
+    ("please cancel this task","ABANDONED"), ("pause for a moment","PAUSED"), ("ok, the task failed","FAILED"),
+    ("can you cancel this task","ABANDONED"),
+])
+def test_allowlist_status_plain_declarations_accepted(text,status,tmp_path):
+    log,sources,rec,root=setup(tmp_path)
+    task,head=opened(rec)
+    assert rec.task_state(task,head.record_id,intake=intake(text),status=status).persisted, text
+    assert log.load().task(task).payload["status"]==status
+
+
+def test_a1_forget_blocked_while_claim_awaits_verdict(tmp_path):
+    bootstrap(); log,s,rec,root=setup(tmp_path)
+    (root/"budget.xlsx").write_bytes(b"FAIL")
+    task,head=opened(rec); src=s.fingerprint(s.scan().locators[0])
+    claim=claimed(rec,task,src).record_ids[0]
+    hidden=rec.forget((log.load().openings[task],),intake=intake("forget the task"))
+    assert not hidden.persisted and hidden.reason=="INVALID_HIDE_TARGET"
+    verdict=rec.invoke_verifier(claim,"uri.verifier.m36_fixture",trace_id="a"*32,session_id="session")
+    assert verdict.persisted
+    package=build_context(log.load(),s,task).to_dict()
+    assert any(o["record_id"]==verdict.record_ids[0] and o["verification_status"]=="FAILED" for o in package["recent_outcomes"])
+
+
+def test_a1_nothing_recorded_against_a_forgotten_task(tmp_path):
+    bootstrap(); log,s,rec,root=setup(tmp_path)
+    (root/"budget.xlsx").write_bytes(b"FAIL")
+    task,head=opened(rec); src=s.fingerprint(s.scan().locators[0])
+    assert rec.forget((log.load().openings[task],),intake=intake("forget the task")).persisted
+    later=claimed(rec,task,src)
+    assert not later.persisted and later.reason=="TASK_HIDDEN"
+    assert log.load().task(task) is None
+
+
+def test_a1_stale_claim_can_be_forgotten_before_the_task(tmp_path):
+    bootstrap(); log,s,rec,root=setup(tmp_path)
+    task,head=opened(rec); src=s.fingerprint(s.scan().locators[0])
+    claim=claimed(rec,task,src).record_ids[0]
+    assert not rec.forget((log.load().openings[task],),intake=intake("forget the task")).persisted
+    assert rec.forget((claim,),intake=intake("forget that claim")).persisted
+    assert rec.forget((log.load().openings[task],),intake=intake("forget the task")).persisted
+    assert log.load().task(task) is None

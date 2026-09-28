@@ -8,7 +8,8 @@ import uuid
 
 from .contracts import (MemoryRecord, RecordKind as K, Provenance as P, TaskStatus as S,
                         VerificationStatus as V, WriteResult, TrustedInput, BoundReference,
-                        IdentityStatus as I, canonical, digest, plain, utc_now, negated)
+                        IdentityStatus as I, canonical, digest, plain, utc_now, negated,
+                        affirmative_words, STATUS_FILLERS)
 
 # Populated only by trusted bootstrap in this module; no public registration API.
 _VERIFIERS = MappingProxyType({})
@@ -115,8 +116,13 @@ class Recorder:
                     actor,prov = "USER",P.USER_PROVIDED
                     allowed = {S.PAUSED:("pause",),S.OPEN:("resume","continue"),S.COMPLETED:("complete","completed","done"),
                                S.FAILED:("failed","failure"),S.ABANDONED:("cancel","abandon"),S.WAITING_USER:()}
-                    # A negated keyword ("not done yet") is not an explicit declaration (audit F-2).
-                    if negated(intake.raw_text) or not set(re.findall(r"\w+",intake.raw_text.casefold())).intersection(allowed[new]):
+                    # Explicit declarations only (audit F-2, re-audit R-3): the whole turn must be
+                    # the status keyword plus plainly affirmative filler (positive allowlist), so
+                    # "not done yet", "don‘t cancel" or "nothing is done" are never transitions.
+                    words = affirmative_words(intake.raw_text,STATUS_FILLERS | set(allowed[new]))
+                    # A question ("is it done?") asks; it does not declare.
+                    if (negated(intake.raw_text) or not words or not set(words).intersection(allowed[new])
+                            or "?" in intake.raw_text or words[0] in ("is","are","am")):
                         raise ValueError("EXPLICIT_USER_TRANSITION_REQUIRED")
                 if new == S.OPEN: prov = P.URI_RECORDED  # URI accepts the user resume event.
             p["status"] = new; p["transition_evidence_ids"] = (eid,)

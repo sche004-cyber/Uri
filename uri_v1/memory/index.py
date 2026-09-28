@@ -84,6 +84,10 @@ class MemoryIndex:
             parent = self.records[rid]
             if parent.task_id != r.task_id: raise ValueError("CROSS_TASK_SUPERSESSION")
             parents.append(parent)
+        # Nothing new may be recorded against a forgotten task: a later claim or
+        # verdict would otherwise land where no read can surface it (re-audit A-1 ordering).
+        if (writing and r.kind != K.TOMBSTONE and r.task_id in self.openings
+                and self.openings[r.task_id] in self.hidden): raise ValueError("TASK_HIDDEN")
         events = []
         if r.kind in (K.TASK_OPENED, K.TASK_STATE, K.CORRECTION, K.TOMBSTONE): events = self._events(r)
         if r.kind == K.TASK_OPENED:
@@ -182,13 +186,19 @@ class MemoryIndex:
             # Hiding the whole task (its TASK_OPENED) cannot hide a FAILED
             # verifier verdict recorded against it either (audit A-1): a user
             # cannot use whole-task forget as a side door around the rule above.
+            # The same holds for a claim still awaiting its verdict: once the task is
+            # hidden, that verdict could no longer be recorded or seen (re-audit ordering bypass).
             targets = [self.records[t] for t in r.payload["target_record_ids"]]
-            if any(target.kind == K.TASK_OPENED and any(
-                        other.task_id == target.task_id and other.kind == K.OUTCOME
-                        and other.provenance == P.VERIFIER_RESULT
-                        and other.payload["verification_status"] == V.FAILED
-                        for other in self.records.values())
-                   for target in targets): raise ValueError("INVALID_HIDE_TARGET")
+            for target in targets:
+                if target.kind != K.TASK_OPENED: continue
+                outcomes = [o for o in self.records.values() if o.task_id == target.task_id and o.kind == K.OUTCOME]
+                assessed = {o.payload.get("assessed_outcome_record_id") for o in outcomes if o.provenance == P.VERIFIER_RESULT}
+                if any(o.provenance == P.VERIFIER_RESULT and o.payload["verification_status"] == V.FAILED for o in outcomes):
+                    raise ValueError("INVALID_HIDE_TARGET")
+                # A stale claim can be forgotten on its own first, then the task.
+                if any(o.provenance == P.EXECUTION_OUTCOME and o.record_id not in assessed and o.record_id not in self.hidden
+                       for o in outcomes):
+                    raise ValueError("INVALID_HIDE_TARGET")
             if not all(e["actor"] == "USER" and e["action"] == "FORGET" for e in events): raise ValueError("USER_FORGET_REQUIRED")
         elif r.kind == K.DERIVATIVE:
             if r.supersedes or r.task_id not in self.openings: raise ValueError("INVALID_DERIVATIVE")

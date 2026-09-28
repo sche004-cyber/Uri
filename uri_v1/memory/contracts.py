@@ -242,6 +242,43 @@ def negated(text: str) -> bool:
     return bool(NEGATION_WORDS.intersection(tokens)) or any(" " + p + " " in joined for p in NEGATION_PHRASES)
 
 
+# Positive allowlist gate (User decision 2026-09-28, replacing blocklist growth).
+# A turn may carry certainty (an exact-title/ID binding or an explicit user status
+# transition) only when every word around the reference is plainly affirmative.
+# Anything else, including every negation or exclusion form, whatever its glyphs,
+# spelling or idiom, falls outside the closed vocabulary and asks for clarification.
+# Contractions split at the apostrophe, so "it's" -> "it" "s" is admitted but
+# "don't" -> "don" "t" is not: "t" is never affirmative.
+_AFFIRMATIVE_PUNCTUATION = set(".,!?:;\"'()“”‘’")
+AFFIRMATIVE_FILLERS = frozenset(
+    "a an the my our your this that it its one same file document doc spreadsheet workbook sheet script pdf "
+    "please pls kindly now today again also just quickly here ok okay yes yeah sure thanks thank you "
+    "i we me us let lets s d ll m re ve can could would will want need like go ahead and to with on in at "
+    "for of up over into through".split())
+AFFIRMATIVE_ACTIONS = frozenset(
+    "open update edit use read check review summarize summarise analyze analyse fix format print show load "
+    "look see process convert run attach clean correct change modify finish continue resume work start "
+    "prepare draft write fill add save export find get give make take send share proofread translate tidy "
+    "improve rewrite refresh recalculate calculate validate verify".split())
+STATUS_FILLERS = frozenset(
+    "i im m we re it its s this that the task job work is are am all now please pls mark as set to "
+    "thanks thank you ok okay yes yeah go ahead and just let lets us here fully completely finally can for "
+    "a moment while bit time then back on again".split())
+
+
+def affirmative_words(text: str, allowed) -> tuple[str, ...] | None:
+    """Tokens of ``text`` if every character and word is inside the closed
+    affirmative vocabulary; ``None`` (not affirmative) otherwise."""
+    if any(not (c.isascii() and (c.isalnum() or c.isspace())) and c not in _AFFIRMATIVE_PUNCTUATION for c in text):
+        return None
+    tokens = tuple(re.findall(r"[a-z0-9]+", text.casefold()))
+    return tokens if all(t in allowed for t in tokens) else None
+
+
+def affirmative_context(text: str) -> bool:
+    return affirmative_words(text, AFFIRMATIVE_FILLERS | AFFIRMATIVE_ACTIONS) is not None
+
+
 def opaque_link(value):
     if not isinstance(value,str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:\-]{0,127}",value):
         raise ValueError("identifier-only link required")

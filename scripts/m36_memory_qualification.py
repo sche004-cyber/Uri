@@ -129,8 +129,19 @@ def run_one(directory,battery):
                  "negated_ignore_title":f"ignore {name}",
                  "negated_leave_out_title":f"leave out {name}",
                  "negated_aside_from_title":f"aside from {name}",
-                 "negated_havent_title":f"haven't touched {name}"}[form]
-            result=retrieve(raw,proposal=name if form=="model_normalized_title" else None)
+                 "negated_havent_title":f"haven't touched {name}",
+                 # Positive-allowlist gate (User decision 2026-09-28): unlisted idioms,
+                 # glyph and fullwidth forms never confirm; plain affirmative requests still do.
+                 "negated_unlisted_idiom_title":f"steer clear of {name}",
+                 "negated_modifier_glyph_title":f"don\u02bct use {name}",
+                 "negated_fullwidth_title":f"\uff2e\uff2f\uff34 {name}",
+                 "negated_wrong_file_title":f"{name} is the wrong file",
+                 "affirmative_polite_title":f"could you please open {name}",
+                 "affirmative_contraction_title":f"I'd like to review {name}"}[form]
+            # Negated/affirmative forms carry the decoder's filename proposal, so the
+            # certainty gate itself is exercised rather than an ungroundable expression.
+            proposes=form=="model_normalized_title" or form.startswith(("negated_","affirmative_"))
+            result=retrieve(raw,proposal=name if proposes else None)
             latencies.append(result.telemetry["retrieval_us"])
             projected,b=register(result)
             state=b.state.value if b else "WITHHELD"

@@ -166,7 +166,8 @@ product_milestones:
 
   - id: "M36"
     title: "URI-Memory Minimum (pre-Office demonstrator)"
-    status: "M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION"
+    status: "M36_REPAIRED_AWAITING_INDEPENDENT_REAUDIT"
+    prior_status: "M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION (historical, before the 2026-09-28 internal re-audits)"
     currently_active: true
     implementation_authorized: true
     plan: "docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md"
@@ -177,6 +178,8 @@ product_milestones:
     closing_audit: "PERFORMED_2026-09-28_REPAIRS_REQUIRED; F-1..F-6 and D-1 repaired and re-verified by the same session that made the repairs; freeze not authorized"
     closing_audit_report: "docs/plans/M36_INDEPENDENT_CLOSING_AUDIT_REPORT.md"
     audited_commit: "be4451c6fda7803a742e0ad48c7fec63140ec30b"
+    internal_reaudits: "2026-09-28 same-provider internal re-audits: 405db1f REPAIRS_REQUIRED (R-1..R-3 negation gaps, A-1 whole-task forget); 410d1b8 REPAIRS_REQUIRED (further glyph/idiom gaps, forget/verify ordering bypass). Reports in the project audit folder, not repository evidence."
+    repair_round_3: "Positive-allowlist certainty gate per User decision 2026-09-28 (replaces further negation-blocklist growth) plus hidden-task ordering fix; self-verified by the repairing session, not independent. See docs/plans/M36_REPAIR3_VERIFICATION.md. Freeze not authorized; independent re-audit required."
     integration_authorized: false
     planned_at_commit: "291c9daa48435200c4b56857d0e3bc630016e82a"
     note: "Implemented 2026-09-28 per direct User task package; self-qualified and awaiting independent closing audit. Minimum Memory slice before the isolated URI Office vertical demonstrator (sequence: M33.3 CLOSED_FROZEN -> Memory minimum -> Edge minimum -> Office demonstrator). Gates: PG-M1 independent plan pre-audit, PG-M2 explicit User implementation authorization. No S13, no INT-* event, no uri_core wiring; S9 stays deferred under D4-R1."
