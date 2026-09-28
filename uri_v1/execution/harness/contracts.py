@@ -15,7 +15,7 @@ from pathlib import Path
 import re
 
 from uri_v1.memory.contracts import TrustedInput
-from ..approval import approval_declined
+from ..approval import approval_withheld
 
 
 def _whole_token(text: str, token: str) -> bool:
@@ -146,7 +146,7 @@ class ElevationGrant:
             elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))
-        if approval_declined(intake.raw_text) or not ok or not (_APPROVE_WORDS & words):
+        if approval_withheld(intake.raw_text) or not ok or not (_APPROVE_WORDS & words):
             raise HarnessError("EXPLICIT_ELEVATION_REQUIRED")
         grant = cls(elevation, run_scope, intake)
         object.__setattr__(grant, "_issued", _ISSUED)
@@ -157,7 +157,7 @@ class ElevationGrant:
         # a grant built directly, bypassing `from_user`, from declined text must not
         # pass this gate either.
         return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
-                and self.run_scope == run_scope and not approval_declined(self.intake.raw_text))
+                and self.run_scope == run_scope and not approval_withheld(self.intake.raw_text))
 
     def __reduce__(self): raise TypeError("grants cannot be serialized")
 
@@ -219,7 +219,7 @@ class CapabilityGrant:
         # "what is sheets" or a bare "sheets" named the capability without granting it.
         # Same verbs as ElevationGrant, plus "use"/"grant", which are how a capability is
         # granted in practice ("use the sheets server").
-        if (not items or approval_declined(intake.raw_text) or not _GRANT_WORDS & set(re.findall(r"\w+", text))
+        if (not items or approval_withheld(intake.raw_text) or not _GRANT_WORDS & set(re.findall(r"\w+", text))
                 or any(not _whole_token(text, n.casefold()) for _, n in items)):
             raise HarnessError("EXPLICIT_CAPABILITY_GRANT_REQUIRED")
         grant = cls(items, intake)
@@ -232,7 +232,7 @@ class CapabilityGrant:
         # pass this gate either.
         if not self.items: return True
         return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
-                and not approval_declined(self.intake.raw_text))
+                and not approval_withheld(self.intake.raw_text))
 
     def to_dict(self) -> dict:
         return {"items": [list(x) for x in self.items]}

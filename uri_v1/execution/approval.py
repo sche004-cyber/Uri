@@ -42,3 +42,26 @@ def approval_declined(raw_text: str) -> bool:
         return True
     tokens = _TOKEN_RE.findall(raw_text.casefold())
     return bool(INFORMAL_NEGATIVES.intersection(tokens))
+
+
+# A question, or a turn led by a question, modal or conditional word, asks about or
+# hypothesizes a grant; it never makes one (Codex probe of f9ac385, plan AC-H5: "can I
+# use sheets?", "should we allow network", "maybe use sheets", "if you use sheets it
+# breaks"). Same precedent as M36's recorder, which refuses questions as transitions.
+# Leading-word only, so an explicit grant with a trailing condition ("yes, allow access
+# to /data if needed") is unaffected; any "?" anywhere is enough to refuse.
+UNCERTAIN_LEADS = frozenset({"can", "could", "should", "would", "will", "do", "does", "how", "what", "why",
+                             "if", "maybe", "might", "may", "perhaps"})
+
+
+def approval_uncertain(raw_text: str) -> bool:
+    """True if `raw_text` is a question or a hypothetical rather than a grant."""
+    if "?" in raw_text or "？" in raw_text:  # ASCII or fullwidth question mark
+        return True
+    tokens = _TOKEN_RE.findall(raw_text.casefold())
+    return bool(tokens) and tokens[0] in UNCERTAIN_LEADS
+
+
+def approval_withheld(raw_text: str) -> bool:
+    """The single test every approval/grant gate applies: declined, or not actually given."""
+    return approval_declined(raw_text) or approval_uncertain(raw_text)

@@ -28,7 +28,7 @@ import uuid
 from uri_v1.memory.contracts import TrustedInput
 from uri_v1.user_storage import user_scoped_path
 from .acceptance import workspace_relpath
-from .approval import approval_declined
+from .approval import approval_withheld
 
 WORKSPACE_SCHEMA_VERSION = "m37.workspace.v1"
 _RUN_ID = re.compile(r"^[0-9a-f]{32}$")
@@ -290,7 +290,7 @@ class WritebackApproval:
         if not isinstance(intake, TrustedInput) or not intake.trusted: raise WorkspaceError("TRUSTED_USER_INPUT_REQUIRED")
         # A negated or informally declined approval ("don't apply it", "nah apply it")
         # is not an approval (same rule as M36 audit F-2; informal negatives 2026-09-28).
-        if approval_declined(intake.raw_text) or not set(re.findall(r"\w+", intake.raw_text.casefold())) & _APPROVAL_WORDS:
+        if approval_withheld(intake.raw_text) or not set(re.findall(r"\w+", intake.raw_text.casefold())) & _APPROVAL_WORDS:
             raise WorkspaceError("EXPLICIT_APPROVAL_REQUIRED")
         if not expected_after: raise WorkspaceError("WRITEBACK_TARGETS_REQUIRED")
         approval = cls(run_id, tuple(sorted(expected_after)), dict(expected_after), intake)
@@ -302,6 +302,6 @@ class WritebackApproval:
         # (trusted, not declined, an actual approval word). The decline re-check stays
         # as defense in depth (Codex audit, 2026-09-28).
         return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
-                and bool(self.relpaths) and not approval_declined(self.intake.raw_text))
+                and bool(self.relpaths) and not approval_withheld(self.intake.raw_text))
 
     def __reduce__(self): raise TypeError("approvals cannot be serialized")

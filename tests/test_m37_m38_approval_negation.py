@@ -171,3 +171,46 @@ def test_capability_named_without_a_grant_verb_is_refused(text):
                                   "I approve sheets for this run", "grant sheets"])
 def test_capability_grant_with_an_explicit_verb_is_issued(text):
     assert CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")]).valid()
+
+
+# -- a question or hypothetical is never a grant ----------------------------------------------------
+# (Codex bridge probe of f9ac385, plan AC-H5). One shared test, `approval_withheld`, in every gate.
+
+QUESTION_OR_HYPOTHETICAL_USE = ("can I use sheets?", "should we use sheets", "how would I use sheets", "maybe use sheets",
+                                "if you use sheets it breaks", "do you use sheets", "use it? sheets")
+
+
+@pytest.mark.parametrize("text", QUESTION_OR_HYPOTHETICAL_USE + ("use sheets? no", "I wouldn't use sheets",
+                                                                   "I used sheets yesterday", "show me sheets"))
+def test_capability_question_or_hypothetical_is_not_a_grant(text):
+    with pytest.raises(HarnessError, match="EXPLICIT_CAPABILITY_GRANT_REQUIRED"):
+        CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")])
+    assert CapabilityGrant((("MCP_SERVER", "sheets"),), intake(text)).valid() is False
+
+
+@pytest.mark.parametrize("text", ["can I allow network?", "should we allow network", "can I allow network",
+                                  "maybe allow network", "if you allow network it breaks", "allow network?"])
+def test_elevation_question_or_hypothetical_is_not_a_grant(text):
+    with pytest.raises(HarnessError, match="EXPLICIT_ELEVATION_REQUIRED"):
+        ElevationGrant.from_user(intake(text), "network", "scope1")
+
+
+@pytest.mark.parametrize("text", ["should I apply it?", "can you apply it", "yes, apply it?", "maybe apply it",
+                                  "what if I approve this", "would you apply the fix"])
+def test_writeback_question_or_hypothetical_is_not_an_approval(text):
+    with pytest.raises(WorkspaceError, match="EXPLICIT_APPROVAL_REQUIRED"):
+        WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64})
+
+
+@pytest.mark.parametrize("text", ["yes, allow network access for this run", "allow network, it's needed",
+                                  "yes, allow network if needed"])
+def test_explicit_elevation_with_a_trailing_condition_is_still_granted(text):
+    assert ElevationGrant.from_user(intake(text), "network", "scope1").valid_for("scope1")
+
+
+def test_approval_uncertain_helper():
+    from uri_v1.execution.approval import approval_uncertain, approval_withheld
+    assert approval_uncertain("can I use sheets?") and approval_uncertain("Perhaps allow it")
+    assert approval_uncertain("allow it？")  # fullwidth question mark
+    assert not approval_uncertain("yes, apply it") and not approval_uncertain("allow the git server")
+    assert approval_withheld("nah apply it") and approval_withheld("maybe apply it")
