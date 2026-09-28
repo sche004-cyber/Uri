@@ -201,6 +201,20 @@ product_milestones:
     amendment_a4_status: "ACCEPTED_PER_USER_IMPLEMENTATION_PACKAGE"
     amendment_a4_scope: "Documentation only; section 19 requires current trusted raw-answer grounding before every FREE_INPUT respond() call; Q-A3-1 H1-H3 added; A2/A3 preserved; PG-M2 blocked (historical at A4; PG-M2 later GRANTED_BY_USER, see pg_m2_status)."
     pg_m1_latest_finding_source: "User-supplied A4 task instruction, recorded in plan section 19.1; no separate A3 report file located. A2 holds; A3 initial projection accepted; sole blocker FREE_INPUT."
+  - id: "M37"
+    title: "Edge Minimum (local-first resolution and qualified local completion)"
+    status: "M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN"
+    currently_active: false
+    implementation_authorized: true
+    authorization: "User instruction 2026-09-28 (batched independent audits): plan and implement Edge minimum on unaudited M36 with the dependency recorded; no freeze"
+    plan: "docs/plans/M37_EDGE_MINIMUM_PLAN.md"
+    implementation_report: "docs/plans/M37_IMPLEMENTATION_REPORT.md"
+    component: "URI-Edge (uri_v1/edge) + shared execution layer (uri_v1/execution)"
+    depends_on_unaudited: "M36 at 405db1ff21f11f6927fe1b74990ff6b88a97a28d (PROVISIONAL, not frozen)"
+    self_qualification: "PASSED (implementer-run; not independent)"
+    closing_audit: "REQUIRED_NOT_PERFORMED (batched Codex audit package covering M36 -> M37 -> M38)"
+    integration_authorized: false
+    note: "New files only. No change to M36, frozen M33.3, S6, M31 or uri_core. Only deterministic mechanisms are qualified; no local model is qualified."
 queued_initiatives:
   - id: "hybrid_ui"
     title: "URI Hybrid UI Implementation (\"Compact Chat Mode\")"

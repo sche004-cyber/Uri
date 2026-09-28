@@ -7,6 +7,8 @@
 
 ## 1. Milestone Identity & State
 
+**BATCH NOTE — 2026-09-28 (additive):** Under the User's batched-audit workflow, M37 Edge Minimum is implemented and `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M37_EDGE_MINIMUM_PLAN.md), [report](../plans/M37_IMPLEMENTATION_REPORT.md)). It depends on unaudited M36 at `405db1f`. M36 remains the current milestone record above; nothing here freezes, closes or integrates M36 or M37.
+
 **CURRENT MILESTONE — 2026-09-28:** M36 — URI-Memory Minimum.
 State: `M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION`. Independent closing audit (Claude) of `be4451c` returned REPAIRS_REQUIRED; the User authorized bounded repairs of F-1..F-6 and D-1 plus commit and push, not freeze. Repairs re-verified by the same session that made them (not independent). See [closing audit report](../plans/M36_INDEPENDENT_CLOSING_AUDIT_REPORT.md). Freeze awaits a User decision.
 

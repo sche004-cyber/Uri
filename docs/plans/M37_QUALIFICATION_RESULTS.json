@@ -1,0 +1,597 @@
+{
+ "battery_sha256": "16d6cae128aff75409967fa32ffd534f45136ffec345d86acbe9be41e5f4541a",
+ "checks": {
+  "claims_not_recorded_claimed_only_first": {
+   "pass": true,
+   "threshold": {
+    "op": "==",
+    "value": 0
+   },
+   "value": 0
+  },
+  "decision_accuracy": {
+   "pass": true,
+   "threshold": {
+    "op": "==",
+    "value": 1.0
+   },
+   "value": 1.0
+  },
+  "determinism_mismatches": {
+   "pass": true,
+   "threshold": {
+    "op": "==",
+    "value": 0
+   },
+   "value": 0
+  },
+  "false_local_success": {
+   "pass": true,
+   "threshold": {
+    "op": "==",
+    "value": 0
+   },
+   "value": 0
+  },
+  "original_modified": {
+   "pass": true,
+   "threshold": {
+    "op": "==",
+    "value": 0
+   },
+   "value": 0
+  },
+  "stale_corrected_or_conflict_not_clarified": {
+   "pass": true,
+   "threshold": {
+    "op": "==",
+    "value": 0
+   },
+   "value": 0
+  },
+  "unsafe_local_on_ambiguous_or_dynamic": {
+   "pass": true,
+   "threshold": {
+    "op": "==",
+    "value": 0
+   },
+   "value": 0
+  }
+ },
+ "gate_passed": true,
+ "gate_sha256": "3d78b620a898ee786517e8e28a692c50e3f3348cff7c8dd6c266bd4bb6652058",
+ "metrics": {
+  "avoidance_rate": 0.4,
+  "claims_not_recorded_claimed_only_first": 0,
+  "decision_accuracy": 1.0,
+  "determinism_mismatches": 0,
+  "false_local_success": 0,
+  "latency_ms_p50": 22.0,
+  "latency_ms_p95": 280.0,
+  "local_attempt_failures": 2,
+  "original_modified": 0,
+  "stale_corrected_or_conflict_not_clarified": 0,
+  "unsafe_local_on_ambiguous_or_dynamic": 0
+ },
+ "platform": "linux",
+ "python": "3.11.15",
+ "runs": [
+  [
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E01",
+    "latency_ms": 280.0,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "ALREADY_COMPATIBLE",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E02",
+    "latency_ms": 221.6,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E03",
+    "latency_ms": 232.6,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E04",
+    "latency_ms": 225.7,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E05",
+    "latency_ms": 231.3,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E06",
+    "latency_ms": 5.5,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "AMBIGUOUS_REMAP",
+    "route": "ESCALATE",
+    "unresolved": [
+     "'AMOUNT': ambiguous match in workbook"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E07",
+    "latency_ms": 5.6,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "NO_REMAP",
+    "route": "ESCALATE",
+    "unresolved": [
+     "'Amt': none match in workbook"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E08",
+    "latency_ms": 6.9,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "DYNAMIC_ACCESS",
+    "route": "ESCALATE",
+    "unresolved": [
+     "script has dynamic column access"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E09",
+    "latency_ms": 6.8,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "WORKBOOK_PATH_MISMATCH",
+    "route": "ESCALATE",
+    "unresolved": [
+     "script uses a workbook path 'sales_2025.xlsx' that is not the bound workbook"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E10",
+    "latency_ms": 234.3,
+    "local_attempted": true,
+    "local_verification": "FAILED",
+    "memory_verifier_status": "FAILED",
+    "original_modified": false,
+    "reason": "ALREADY_COMPATIBLE",
+    "route": "ESCALATE",
+    "unresolved": [
+     "local attempt did not pass URI verification"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E11",
+    "latency_ms": 307.8,
+    "local_attempted": true,
+    "local_verification": "FAILED",
+    "memory_verifier_status": "FAILED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "ESCALATE",
+    "unresolved": [
+     "local attempt did not pass URI verification"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E12",
+    "latency_ms": 10.0,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "OUTSIDE_LOCAL_ENVELOPE",
+    "route": "ESCALATE",
+    "unresolved": [
+     "script has parse failed"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E13",
+    "latency_ms": 5.2,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "UNREADABLE_INPUT",
+    "route": "ESCALATE",
+    "unresolved": [
+     "workbook structure unreadable locally"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E14",
+    "latency_ms": 64.5,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E15",
+    "latency_ms": 40.8,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E16",
+    "latency_ms": 2.4,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "STALE_INPUT",
+    "route": "CLARIFY",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E17",
+    "latency_ms": 0.1,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "STALE_INPUT",
+    "route": "CLARIFY",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E18",
+    "latency_ms": 0.1,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "CORRECTED_REFERENCE",
+    "route": "CLARIFY",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E19",
+    "latency_ms": 221.3,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E20",
+    "latency_ms": 0.0,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "MEMORY_CONFLICT",
+    "route": "CLARIFY",
+    "unresolved": []
+   }
+  ],
+  [
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E01",
+    "latency_ms": 256.4,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "ALREADY_COMPATIBLE",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E02",
+    "latency_ms": 207.4,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E03",
+    "latency_ms": 236.8,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E04",
+    "latency_ms": 235.6,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E05",
+    "latency_ms": 240.0,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E06",
+    "latency_ms": 9.6,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "AMBIGUOUS_REMAP",
+    "route": "ESCALATE",
+    "unresolved": [
+     "'AMOUNT': ambiguous match in workbook"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E07",
+    "latency_ms": 10.0,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "NO_REMAP",
+    "route": "ESCALATE",
+    "unresolved": [
+     "'Amt': none match in workbook"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E08",
+    "latency_ms": 11.7,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "DYNAMIC_ACCESS",
+    "route": "ESCALATE",
+    "unresolved": [
+     "script has dynamic column access"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E09",
+    "latency_ms": 14.4,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "WORKBOOK_PATH_MISMATCH",
+    "route": "ESCALATE",
+    "unresolved": [
+     "script uses a workbook path 'sales_2025.xlsx' that is not the bound workbook"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E10",
+    "latency_ms": 240.7,
+    "local_attempted": true,
+    "local_verification": "FAILED",
+    "memory_verifier_status": "FAILED",
+    "original_modified": false,
+    "reason": "ALREADY_COMPATIBLE",
+    "route": "ESCALATE",
+    "unresolved": [
+     "local attempt did not pass URI verification"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E11",
+    "latency_ms": 309.1,
+    "local_attempted": true,
+    "local_verification": "FAILED",
+    "memory_verifier_status": "FAILED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "ESCALATE",
+    "unresolved": [
+     "local attempt did not pass URI verification"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E12",
+    "latency_ms": 5.5,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "OUTSIDE_LOCAL_ENVELOPE",
+    "route": "ESCALATE",
+    "unresolved": [
+     "script has parse failed"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E13",
+    "latency_ms": 3.7,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "UNREADABLE_INPUT",
+    "route": "ESCALATE",
+    "unresolved": [
+     "workbook structure unreadable locally"
+    ]
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E14",
+    "latency_ms": 33.1,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E15",
+    "latency_ms": 29.6,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E16",
+    "latency_ms": 1.2,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "STALE_INPUT",
+    "route": "CLARIFY",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E17",
+    "latency_ms": 0.1,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "STALE_INPUT",
+    "route": "CLARIFY",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E18",
+    "latency_ms": 0.1,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "CORRECTED_REFERENCE",
+    "route": "CLARIFY",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E19",
+    "latency_ms": 235.7,
+    "local_attempted": true,
+    "local_verification": "VERIFIED",
+    "memory_verifier_status": "VERIFIED",
+    "original_modified": false,
+    "reason": "QUALIFIED_LOCAL",
+    "route": "LOCAL_VERIFIED",
+    "unresolved": []
+   },
+   {
+    "claim_recorded_as_claim_first": true,
+    "id": "E20",
+    "latency_ms": 0.0,
+    "local_attempted": false,
+    "local_verification": null,
+    "memory_verifier_status": null,
+    "original_modified": false,
+    "reason": "MEMORY_CONFLICT",
+    "route": "CLARIFY",
+    "unresolved": []
+   }
+  ]
+ ],
+ "schema_version": "m37.qualification-results.v1"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "m37.edge.threshold-gate.v1",
+  "frozen": "2026-09-28, before the first measured run",
+  "runs": 2,
+  "thresholds": {
+    "decision_accuracy": {"op": "==", "value": 1.0},
+    "false_local_success": {"op": "==", "value": 0},
+    "unsafe_local_on_ambiguous_or_dynamic": {"op": "==", "value": 0},
+    "stale_corrected_or_conflict_not_clarified": {"op": "==", "value": 0},
+    "original_modified": {"op": "==", "value": 0},
+    "claims_not_recorded_claimed_only_first": {"op": "==", "value": 0},
+    "determinism_mismatches": {"op": "==", "value": 0}
+  },
+  "reported_not_thresholded": ["avoidance_rate", "local_attempt_failures", "latency_ms_p50", "latency_ms_p95"]
+}

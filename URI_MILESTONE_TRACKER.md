@@ -1,5 +1,8 @@
 # URI Milestone Tracker
 
+**Batch handoff — 2026-09-28: M37 Edge Minimum implemented, PROVISIONAL / NOT FROZEN.**
+State: `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN`. Claude planned and implemented the Edge minimum under the User's batched-audit workflow, on unaudited M36 repair commit `405db1f` (dependency recorded). [Plan](docs/plans/M37_EDGE_MINIMUM_PLAN.md), [report](docs/plans/M37_IMPLEMENTATION_REPORT.md). Self-qualification only; the independent audit is the batched Codex package covering M36 -> M37 -> M38. No freeze, no production integration.
+
 **Current handoff — 2026-09-28: M36 closing audit performed; bounded repairs applied.**
 State: `M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION`. Claude performed the independent closing audit of Codex commit `be4451c` ([report](docs/plans/M36_INDEPENDENT_CLOSING_AUDIT_REPORT.md)): verdict REPAIRS_REQUIRED with six code findings (F-1 negation cropping could yield wrong CONFIRMED; F-2 negated status keywords; F-3 verifier-registry mismatch on reload; F-4 forget could hide verdicts; F-5 stem regex diverged from frozen RAR; F-6 hidden files blocked all exact-title certainty) and D-1 (URI_STATE.yaml PG-M1 verdict overwritten). The User authorized the repairs, commit and push, not freeze. Repairs are confined to `uri_v1/memory/`, M36 tests, the M36 driver/battery and governance. The focused re-verification was performed by the same session that made the repairs, so it is not independent. Freeze requires a User decision. No S13, INT-*, Office/Edge/Harness or frozen-file change. The entry below is historical.
 
