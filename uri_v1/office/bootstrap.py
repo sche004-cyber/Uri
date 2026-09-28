@@ -81,7 +81,8 @@ def build_session(user_id: str, data_dir, *, authorized_root, with_harness: bool
         adapter = ClaudeCodeAdapter(harness_executable, home=Path(harness_home or Path.home()))
 
     return OfficeSession(log=log, sources=sources, recorder=recorder, retriever=retriever, edge=edge,
-                         scratch_root=scratch_root, user_id=user_id, harness_runner=harness_runner, adapter=adapter)
+                         scratch_root=scratch_root, user_id=user_id, run_store=store,
+                         harness_runner=harness_runner, adapter=adapter)
 
 
 def new_user_id() -> str:

@@ -82,15 +82,24 @@ class WritebackOutcome:
     task_state_result: object
 
 
-def writeback(*, recorder, sources, user_id, scratch_root, task_id, run_id, expected_head_record_id,
+def writeback(*, recorder, sources, run_store, user_id, scratch_root, task_id, run_id, expected_head_record_id,
              session_id, trace_id, approval_intake, relpaths) -> WritebackOutcome:
-    """Approve, write, verify and complete -- gated only on a live Memory verdict.
+    """Approve, write, verify and complete -- gated only on live verdicts, never a caller flag.
 
     Raises `WritebackRefused` (reason in `args[0]`) on any refusal: the run is
     not VERIFIED yet, the approval text is not explicit/non-negated
     (`WritebackApproval.from_user`), nothing at `relpaths` actually changed, or
-    an original changed since copy-in (`WorkspaceError` from
-    `Workspace.write_back`, e.g. `ORIGINAL_CHANGED_SINCE_COPY_IN`).
+    an original/candidate changed since verification (`WorkspaceError` from
+    `Workspace.write_back`, e.g. `ORIGINAL_CHANGED_SINCE_COPY_IN` /
+    `WRITEBACK_CANDIDATE_CHANGED`).
+
+    Two independent, both caller-flag-free checks gate this: this module's own
+    `_live_verification_status` re-reads the Memory `VERIFIER_RESULT` record
+    (M37 audit finding F-7's original concern), and `Workspace.write_back`
+    itself now independently re-derives the same verdict from `run_store`
+    (the M37 repair, commit 763d8e7, landed the same fix at that layer). This
+    module passes `run_store` through rather than any status string of its
+    own, so a caller of this module cannot short-circuit either check.
     """
     status, _ = _live_verification_status(recorder, task_id, run_id)
     if status != "VERIFIED":
@@ -106,7 +115,7 @@ def writeback(*, recorder, sources, user_id, scratch_root, task_id, run_id, expe
         expected_after[rel] = c["after_sha256"]
     try:
         approval = WritebackApproval.from_user(approval_intake, run_id, expected_after)
-        written = ws.write_back(approval, sources=sources, verified_status=status)
+        written = ws.write_back(approval, sources=sources, run_store=run_store)
     except WorkspaceError as exc:
         raise WritebackRefused(str(exc)) from exc
 

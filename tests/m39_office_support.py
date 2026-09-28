@@ -58,7 +58,8 @@ class OfficeEnv:
             self.adapter = fake_adapter(home)
         self.session = OfficeSession(log=self.log, sources=self.sources, recorder=self.recorder,
                                      retriever=self.retriever, edge=self.edge, scratch_root=self.scratch,
-                                     user_id=self.user, harness_runner=self.harness_runner, adapter=self.adapter)
+                                     user_id=self.user, run_store=self.store,
+                                     harness_runner=self.harness_runner, adapter=self.adapter)
 
     def write(self, name, data) -> Path:
         p = self.root / name; p.parent.mkdir(parents=True, exist_ok=True)

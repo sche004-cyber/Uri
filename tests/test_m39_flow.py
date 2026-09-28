@@ -205,7 +205,7 @@ def test_d10_pause_resume_new_process(tmp_path, monkeypatch):
 
         # A new process: a fresh OfficeSession over the same durable stores.
         new_session = OfficeSession(log=env.log, sources=env.sources, recorder=env.recorder, retriever=env.retriever,
-                                    edge=env.edge, scratch_root=env.scratch, user_id=env.user)
+                                    edge=env.edge, scratch_root=env.scratch, user_id=env.user, run_store=env.store)
         rows = new_session.status()
         row = next(r for r in rows if r["task_id"] == step.task_id)
         assert row["status"] == "PAUSED"

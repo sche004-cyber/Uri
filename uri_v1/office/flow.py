@@ -64,10 +64,10 @@ class StepResult:
 
 
 class OfficeSession:
-    def __init__(self, *, log, sources, recorder, retriever, edge, scratch_root, user_id,
+    def __init__(self, *, log, sources, recorder, retriever, edge, scratch_root, user_id, run_store,
                 harness_runner=None, adapter=None, service=None):
         self.log, self.sources, self.recorder, self.retriever, self.edge = log, sources, recorder, retriever, edge
-        self.scratch_root, self.user_id = scratch_root, user_id
+        self.scratch_root, self.user_id, self.run_store = scratch_root, user_id, run_store
         self.harness_runner, self.adapter = harness_runner, adapter
         self.service = service or BindingService()
         self._heads: dict[str, str] = {}
@@ -101,7 +101,12 @@ class OfficeSession:
         return self._bind_complete(task_id, answer_intake, pending)
 
     def _advance_binding(self, task_id, intake) -> StepResult:
-        bindings = {role: bind_role(self.retriever, self.sources, self.service, intake, role, task_id=task_id) for role in ROLES}
+        # task_id is intentionally NOT passed to bind_role: a brand-new task has
+        # no prior references yet, and uri_v1/memory/retrieval.py's registry
+        # fallback (deictic/type-word phrases like "the spreadsheet") is only
+        # reached when the query is *not* task-scoped -- scoping it here would
+        # silently return zero candidates for every phrase reference.
+        bindings = {role: bind_role(self.retriever, self.sources, self.service, intake, role) for role in ROLES}
         self._pending[task_id] = bindings
         if any(rb.state != "CONFIRMED" for rb in bindings.values()):
             return StepResult("CLARIFY", task_id=task_id, roles=dict(bindings))
@@ -181,8 +186,8 @@ class OfficeSession:
             return StepResult("ERROR", task_id=task_id, reason="NO_PENDING_RUN")
         approval_intake = _make_intake(self.user_id, session_id, turn_id, trace_id, raw_text, ref_key="approval")
         try:
-            outcome = do_writeback(recorder=self.recorder, sources=self.sources, user_id=self.user_id,
-                                   scratch_root=self.scratch_root, task_id=task_id, run_id=run_id,
+            outcome = do_writeback(recorder=self.recorder, sources=self.sources, run_store=self.run_store,
+                                   user_id=self.user_id, scratch_root=self.scratch_root, task_id=task_id, run_id=run_id,
                                    expected_head_record_id=self._heads[task_id], session_id=approval_intake.session_id,
                                    trace_id=approval_intake.trace_id, approval_intake=approval_intake,
                                    relpaths=relpaths or ())
