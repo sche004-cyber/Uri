@@ -152,5 +152,10 @@ def test_core_adapter_import_boundaries_and_frozen_scope():
     assert all(p.startswith(("uri_v1/memory/","tests/test_m36_","scripts/m36_","fixtures/m36_memory/")) for p in touched), touched
     added=subprocess.check_output(["git","diff","--name-only","--diff-filter=A",base,"--","uri_core","uri_ui"],cwd=root,text=True).splitlines()
     assert not added, added
+    # Nor anything added inside a uri_v1 package that already existed at the freeze (other
+    # than M36's own memory package): successors add new packages, never files in frozen ones.
+    frozen=[p+"/" for p in subprocess.check_output(["git","ls-tree","-d","--name-only",base,"uri_v1/"],cwd=root,text=True).split() if p!="uri_v1/memory"]
+    added=subprocess.check_output(["git","diff","--name-only","--diff-filter=A",base,"--","uri_v1"],cwd=root,text=True).splitlines()
+    assert not [p for p in added if p.startswith(tuple(frozen))], added
     from scripts.m33_3_r_anchors import require_anchors
     assert require_anchors()["ok"]
