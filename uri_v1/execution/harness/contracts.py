@@ -92,6 +92,8 @@ def canonical(value) -> bytes:
 
 # -- permissions (OD-4) ---------------------------------------------------------------------------
 
+_APPROVE_WORDS = frozenset({"allow", "permit", "enable", "yes", "approve"})
+_GRANT_WORDS = _APPROVE_WORDS | {"use", "grant"}
 _ELEVATIONS = {"network": ("network", "internet", "web"), "package_install": ("install", "pip", "package", "packages")}
 # Directories whose exposure would defeat the point of scoping at all, even though
 # they are not $HOME itself (D-5/M-4): a parent of $HOME (e.g. `/home`) grants
@@ -144,7 +146,7 @@ class ElevationGrant:
             elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))
-        if approval_declined(intake.raw_text) or not ok or not ({"allow", "permit", "enable", "yes", "approve"} & words):
+        if approval_declined(intake.raw_text) or not ok or not (_APPROVE_WORDS & words):
             raise HarnessError("EXPLICIT_ELEVATION_REQUIRED")
         grant = cls(elevation, run_scope, intake)
         object.__setattr__(grant, "_issued", _ISSUED)
@@ -212,7 +214,13 @@ class CapabilityGrant:
         if not isinstance(intake, TrustedInput) or not intake.trusted: raise HarnessError("TRUSTED_USER_INPUT_REQUIRED")
         items = tuple(sorted({(str(k), str(n)) for k, n in items}))
         text = intake.raw_text.casefold()
-        if not items or approval_declined(intake.raw_text) or any(not _whole_token(text, n.casefold()) for _, n in items):
+        # An explicit grant verb is required, not just the name (Codex requalification of
+        # 4cd360f, plan AC-H5 "only when explicitly granted for that run"): "show me sheets",
+        # "what is sheets" or a bare "sheets" named the capability without granting it.
+        # Same verbs as ElevationGrant, plus "use"/"grant", which are how a capability is
+        # granted in practice ("use the sheets server").
+        if (not items or approval_declined(intake.raw_text) or not _GRANT_WORDS & set(re.findall(r"\w+", text))
+                or any(not _whole_token(text, n.casefold()) for _, n in items)):
             raise HarnessError("EXPLICIT_CAPABILITY_GRANT_REQUIRED")
         grant = cls(items, intake)
         object.__setattr__(grant, "_issued", _ISSUED)

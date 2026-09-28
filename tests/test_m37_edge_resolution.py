@@ -256,7 +256,7 @@ def test_edge_and_execution_import_boundaries():
 # the ported remainder of Antigravity-audited 70e6065). It was 405db1f, the pre-repair M36
 # commit, which made this guard fail as soon as any accepted M36 repair was applied
 # (Antigravity a87e158 F-5); M36 repairs are M36's, not a scope breach by M37/M38.
-M36_BASELINE = "945ccba743069a4caee90cbce7da3ef12abba653"
+M36_BASELINE = "82b5984ac2b173bae10fac0ce62339148214db26"
 
 
 def test_m36_and_frozen_files_unchanged():

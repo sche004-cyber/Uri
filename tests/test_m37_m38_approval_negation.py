@@ -154,3 +154,20 @@ def test_from_user_issued_grants_still_validate_and_copies_do_not():
     assert not dataclasses.replace(g).valid_for("scope1")
     c = CapabilityGrant.from_user(intake("allow the git server"), [("MCP_SERVER", "git")])
     assert c.valid() and not dataclasses.replace(c).valid()
+
+
+# -- CapabilityGrant needs an explicit grant verb, not just the name ------------------------------
+# (Codex requalification of 4cd360f, plan AC-H5): "show me sheets" etc. named the capability
+# without granting it and were issued as valid grants.
+
+@pytest.mark.parametrize("text", ["show me sheets", "thanks sheets", "what is sheets", "sheets"])
+def test_capability_named_without_a_grant_verb_is_refused(text):
+    with pytest.raises(HarnessError, match="EXPLICIT_CAPABILITY_GRANT_REQUIRED"):
+        CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")])
+    assert CapabilityGrant((("MCP_SERVER", "sheets"),), intake(text)).valid() is False  # nor built directly
+
+
+@pytest.mark.parametrize("text", ["allow sheets", "yes, enable the sheets server", "use the sheets server",
+                                  "I approve sheets for this run", "grant sheets"])
+def test_capability_grant_with_an_explicit_verb_is_issued(text):
+    assert CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")]).valid()
