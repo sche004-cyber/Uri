@@ -14,7 +14,7 @@ Layout under <scratch_root>/<user_id>/workspaces/<run_id>/:
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import json
@@ -269,6 +269,13 @@ class Workspace:
         return written
 
 
+# Issued only by `WritebackApproval.from_user`. `valid()` requires it, so an approval
+# built directly or copied with `dataclasses.replace` never passes write-back's gate,
+# whatever its text (Codex audit, requalification of 6420f3e: "show me the diff",
+# "what changed?", "thanks" all validated when constructed directly).
+_ISSUED = object()
+
+
 @dataclass(frozen=True)
 class WritebackApproval:
     """Explicit user approval for writing named verified artifacts back to originals."""
@@ -276,6 +283,7 @@ class WritebackApproval:
     relpaths: tuple
     expected_after: dict
     intake: TrustedInput
+    _issued: object = field(default=None, init=False, compare=False, repr=False)
 
     @classmethod
     def from_user(cls, intake, run_id, expected_after: dict) -> "WritebackApproval":
@@ -285,13 +293,15 @@ class WritebackApproval:
         if approval_declined(intake.raw_text) or not set(re.findall(r"\w+", intake.raw_text.casefold())) & _APPROVAL_WORDS:
             raise WorkspaceError("EXPLICIT_APPROVAL_REQUIRED")
         if not expected_after: raise WorkspaceError("WRITEBACK_TARGETS_REQUIRED")
-        return cls(run_id, tuple(sorted(expected_after)), dict(expected_after), intake)
+        approval = cls(run_id, tuple(sorted(expected_after)), dict(expected_after), intake)
+        object.__setattr__(approval, "_issued", _ISSUED)
+        return approval
 
     def valid(self) -> bool:
-        # Re-checks the same decline test `from_user` applies, not just trust+shape,
-        # so an approval built directly (bypassing `from_user`) from declined text
-        # cannot pass write_back's gate (Codex audit, 2026-09-28).
-        return (isinstance(self.intake, TrustedInput) and self.intake.trusted and bool(self.relpaths)
-                and not approval_declined(self.intake.raw_text))
+        # Only an approval `from_user` issued is valid: it alone applies the full bar
+        # (trusted, not declined, an actual approval word). The decline re-check stays
+        # as defense in depth (Codex audit, 2026-09-28).
+        return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
+                and bool(self.relpaths) and not approval_declined(self.intake.raw_text))
 
     def __reduce__(self): raise TypeError("approvals cannot be serialized")

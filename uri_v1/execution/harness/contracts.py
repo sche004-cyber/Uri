@@ -101,12 +101,21 @@ _ELEVATIONS = {"network": ("network", "internet", "web"), "package_install": ("i
 _SENSITIVE_HOME_CHILDREN = frozenset({".ssh", ".gnupg", ".aws", ".docker", ".kube", ".config", ".netrc"})
 
 
+# Issued only by the `from_user` constructors below. A grant built directly (or copied
+# with `dataclasses.replace`) never validates, whatever its text: `from_user` is the only
+# place the full consent bar is applied -- trusted, not declined, an approval word, the
+# elevation word, and the extra_dir path rule (Codex audit, requalification of 6420f3e:
+# ElevationGrant("network", ..., intake("thanks")) validated and elevated to network).
+_ISSUED = object()
+
+
 @dataclass(frozen=True)
 class ElevationGrant:
     """One explicit per-run elevation, issued only from a trusted user turn that names it."""
     elevation: str
     run_scope: str
     intake: TrustedInput
+    _issued: object = field(default=None, init=False, compare=False, repr=False)
 
     @classmethod
     def from_user(cls, intake, elevation: str, run_scope: str) -> "ElevationGrant":
@@ -137,14 +146,16 @@ class ElevationGrant:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))
         if approval_declined(intake.raw_text) or not ok or not ({"allow", "permit", "enable", "yes", "approve"} & words):
             raise HarnessError("EXPLICIT_ELEVATION_REQUIRED")
-        return cls(elevation, run_scope, intake)
+        grant = cls(elevation, run_scope, intake)
+        object.__setattr__(grant, "_issued", _ISSUED)
+        return grant
 
     def valid_for(self, run_scope: str) -> bool:
         # Re-checks the same decline test `from_user` applies (Codex audit, 2026-09-28):
         # a grant built directly, bypassing `from_user`, from declined text must not
         # pass this gate either.
-        return (isinstance(self.intake, TrustedInput) and self.intake.trusted and self.run_scope == run_scope
-                and not approval_declined(self.intake.raw_text))
+        return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
+                and self.run_scope == run_scope and not approval_declined(self.intake.raw_text))
 
     def __reduce__(self): raise TypeError("grants cannot be serialized")
 
@@ -163,7 +174,8 @@ class PermissionProfile:
     grants: tuple = field(default=(), compare=False, repr=False)
 
     def __post_init__(self):
-        if not all(isinstance(g, ElevationGrant) for g in self.grants): raise HarnessError("ELEVATION_GRANT_INVALID")
+        if not all(isinstance(g, ElevationGrant) and g._issued is _ISSUED for g in self.grants):
+            raise HarnessError("ELEVATION_GRANT_INVALID")
         granted_dirs = {g.elevation.split(":", 1)[1] for g in self.grants if g.elevation.startswith("extra_dir:")}
         if self.network and not any(g.elevation == "network" for g in self.grants): raise HarnessError("ELEVATION_GRANT_INVALID")
         if self.package_install and not any(g.elevation == "package_install" for g in self.grants): raise HarnessError("ELEVATION_GRANT_INVALID")
@@ -189,6 +201,7 @@ class CapabilityGrant:
     """Discovered native capabilities the user explicitly allows for this one run (default: none)."""
     items: tuple = ()            # ((kind, name), ...)
     intake: TrustedInput | None = field(default=None, compare=False, repr=False)
+    _issued: object = field(default=None, init=False, compare=False, repr=False)
 
     @classmethod
     def none(cls) -> "CapabilityGrant":
@@ -201,14 +214,16 @@ class CapabilityGrant:
         text = intake.raw_text.casefold()
         if not items or approval_declined(intake.raw_text) or any(not _whole_token(text, n.casefold()) for _, n in items):
             raise HarnessError("EXPLICIT_CAPABILITY_GRANT_REQUIRED")
-        return cls(items, intake)
+        grant = cls(items, intake)
+        object.__setattr__(grant, "_issued", _ISSUED)
+        return grant
 
     def valid(self) -> bool:
         # Re-checks the same decline test `from_user` applies (Codex audit, 2026-09-28):
         # a grant built directly, bypassing `from_user`, from declined text must not
         # pass this gate either.
         if not self.items: return True
-        return (isinstance(self.intake, TrustedInput) and self.intake.trusted
+        return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
                 and not approval_declined(self.intake.raw_text))
 
     def to_dict(self) -> dict:

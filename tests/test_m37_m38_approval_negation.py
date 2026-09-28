@@ -13,7 +13,7 @@ import pytest
 
 from tests.m37_edge_support import intake
 from uri_v1.execution.approval import approval_declined
-from uri_v1.execution.harness.contracts import CapabilityGrant, ElevationGrant, HarnessError
+from uri_v1.execution.harness.contracts import CapabilityGrant, ElevationGrant, HarnessError, PermissionProfile
 from uri_v1.execution.workspace import WorkspaceError, WritebackApproval
 
 RUN_ID = "r" * 32
@@ -115,3 +115,40 @@ def test_capability_grant_valid_rejects_directly_constructed_declined_intake():
 
 def test_capability_grant_valid_still_true_for_none():
     assert CapabilityGrant.none().valid() is True
+
+
+# -- only `from_user` issues a valid approval/grant ------------------------------------------------
+# (Codex audit, requalification of 6420f3e): 6420f3e re-checked only the decline test, so a
+# directly built approval/grant whose text has no approval word at all still validated, and
+# `PermissionProfile().elevate(...)` granted network. `from_user` is now the only issuer.
+
+NO_APPROVAL_WORD = ("show me the diff", "what changed?", "network", "thanks")
+
+
+@pytest.mark.parametrize("text", NO_APPROVAL_WORD)
+def test_directly_built_writeback_approval_never_validates(text):
+    assert WritebackApproval(RUN_ID, ("report.py",), {"report.py": "0" * 64}, intake(text)).valid() is False
+
+
+@pytest.mark.parametrize("text", NO_APPROVAL_WORD)
+def test_directly_built_elevation_grant_never_validates_or_elevates(text):
+    g = ElevationGrant("network", "scope1", intake(text))
+    assert g.valid_for("scope1") is False
+    with pytest.raises(HarnessError): PermissionProfile().elevate(g, "scope1")
+    with pytest.raises(HarnessError): PermissionProfile(network=True, grants=(g,))
+
+
+@pytest.mark.parametrize("text", NO_APPROVAL_WORD)
+def test_directly_built_capability_grant_never_validates(text):
+    assert CapabilityGrant((("MCP_SERVER", "git"),), intake(text)).valid() is False
+
+
+def test_from_user_issued_grants_still_validate_and_copies_do_not():
+    import dataclasses
+    ap = WritebackApproval.from_user(intake("yes, apply it"), RUN_ID, {"report.py": "0" * 64})
+    assert ap.valid() and not dataclasses.replace(ap).valid()
+    g = ElevationGrant.from_user(intake("yes, allow network access"), "network", "scope1")
+    assert g.valid_for("scope1") and PermissionProfile().elevate(g, "scope1").network
+    assert not dataclasses.replace(g).valid_for("scope1")
+    c = CapabilityGrant.from_user(intake("allow the git server"), [("MCP_SERVER", "git")])
+    assert c.valid() and not dataclasses.replace(c).valid()
