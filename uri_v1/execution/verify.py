@@ -23,7 +23,7 @@ import uuid
 from .acceptance import AcceptanceCriteria
 from .officefile import WorkbookReadError, read_workbook_structure
 from .run_record import RunStore
-from .workspace import Workspace, WorkspaceError
+from .workspace import Workspace, WorkspaceError, diff_fingerprint
 
 VERIFIER_ID = "uri.verifier.execution.script_workbook.v1"
 VERIFIER_TYPE = "EXECUTION_ACCEPTANCE"
@@ -45,7 +45,15 @@ def scrubbed_env(tmp: Path, extra: dict | None = None) -> dict:
 
 
 def run_process(argv, *, cwd: Path, env: dict, timeout_s: float, stdin_bytes: bytes | None = None) -> dict:
-    """Run a process in its own group; on timeout kill the whole group and wait for settlement."""
+    """Run a process in its own group; kill the whole group once it stops, whether it
+    exits normally or times out (R-5), so an ordinary (non-detached) leftover child does
+    not outlive the run. A child that calls `os.setsid()` / `start_new_session=True`
+    leaves this process group before it exits and is not reachable this way -- closing
+    that gap needs OS-level sandboxing, a disclosed limitation shared with M38. The
+    ledger records outputs at RUN_RESULT time and `Workspace.write_back` refuses when the
+    live workspace no longer matches what was verified, so a script that tampers with the
+    workspace after this point cannot make its way back to the original undetected.
+    """
     kwargs = {}
     if os.name == "nt": kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
     else: kwargs["start_new_session"] = True
@@ -59,6 +67,8 @@ def run_process(argv, *, cwd: Path, env: dict, timeout_s: float, stdin_bytes: by
         timed_out = True
         kill_group(proc)
         out, err = proc.communicate()
+    else:
+        kill_group(proc)
     return {"exit_code": proc.returncode, "timed_out": timed_out, "duration_ms": round((time.monotonic() - started) * 1000, 1),
             "stdout": out, "stderr": err}
 
@@ -188,7 +198,10 @@ def make_memory_verifier(run_root, *, recompute=None, python=None):
         store.append(run["run_id"], "VERIFICATION", {"verification_id": verification_id, "verifier_id": VERIFIER_ID,
                                                    "verifier_version": VERIFIER_VERSION, "claim_record_id": claim.record_id,
                                                    "status": report["status"], "criteria_sha256": report["criteria_sha256"],
-                                                   "items": report["items"]})
+                                                   "items": report["items"],
+                                                   # Binds this verdict to exactly the candidate bytes it covered, so
+                                                   # write_back never checks against a later, unverified RUN_RESULT (R-6).
+                                                   "diff_sha256": diff_fingerprint(report["diff"])})
         return report["status"], (verification_id,), dict(acceptance, criteria_sha256=criteria.sha256,
                                                           items=[{"kind": i["kind"], "status": i["status"]} for i in report["items"]])
     return verifier

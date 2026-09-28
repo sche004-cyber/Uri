@@ -16,10 +16,25 @@ ineligible. Recognized patterns (openpyxl and pandas):
 An `.index(literal)` call on a receiver that is not a recognized header-row
 variable is never treated as a column reference: it is marked dynamic instead,
 so it cannot be silently rewritten by the literal remap or count as evidence
-that the script is compatible. Likewise, a string equality comparison against
-a variable bound from a header row (or from enumerating one) is marked
-dynamic: static inspection cannot know whether that comparison actually
-matches, so the script must not be reported compatible on the strength of it.
+that the script is compatible. Likewise, a string comparison (`==`, `!=`,
+`in`, `not in`) against a value that traces back to a header row -- a loop
+variable over the header list, `cell.value` while iterating a sheet row, a
+subscript of the header list, a method call on any of those, or the header
+list itself as an `in` collection -- is marked dynamic: static inspection
+cannot know whether that comparison actually matches, so the script must not
+be reported compatible on the strength of it.
+
+A name that is ever bound as a function/lambda parameter, a `for`/comprehension
+target, a `with ... as` target or an `except ... as` name anywhere in the
+script is never trusted for workbook/sheet/frame subscript access, even at the
+occurrence that looks like the real module-level binding: static inspection
+has no scope resolution, so a name that is shadowed anywhere could refer to
+something else at any given use, and every access through it is marked
+dynamic instead of guessing which one is safe.
+
+Any call to `os.chdir`/`os.fchdir` marks the script dynamic on workbook-path
+grounds: a script that changes the working directory can make an exact,
+unchanged workbook-path literal resolve outside the workspace.
 """
 from __future__ import annotations
 
@@ -112,6 +127,63 @@ def _header_value_vars(tree, headers) -> set:
     return names
 
 
+def _row_iter_vars(tree, sheets) -> set:
+    """Names bound to a single cell by iterating a sheet row directly: `for cell in ws[1]:`
+    (the direct-iteration form; `_header_row_vars` covers the list-comprehension form).
+    `cell.value` on such a name is a header value read at runtime, same as `_header_value_vars`.
+    """
+    names = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.For): continue
+        it, target = node.iter, node.target
+        if (isinstance(target, ast.Name) and isinstance(it, ast.Subscript)
+                and isinstance(it.value, ast.Name) and it.value.id in sheets):
+            names.add(target.id)
+    return names
+
+
+def _binder_names(tree) -> set:
+    """Names ever bound as a function/lambda parameter, a `for`/comprehension target, a
+    `with ... as` target, or an `except ... as` name anywhere in the script (F-1 shadowing).
+    """
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            a = node.args
+            for arglist in (a.posonlyargs, a.args, a.kwonlyargs):
+                names.update(x.arg for x in arglist)
+            if a.vararg: names.add(a.vararg.arg)
+            if a.kwarg: names.add(a.kwarg.arg)
+        elif isinstance(node, (ast.For, ast.AsyncFor, ast.comprehension)):
+            names.update(n.id for n in ast.walk(node.target) if isinstance(n, ast.Name))
+        elif isinstance(node, ast.withitem) and node.optional_vars is not None:
+            names.update(n.id for n in ast.walk(node.optional_vars) if isinstance(n, ast.Name))
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            names.add(node.name)
+    return names
+
+
+def _header_scalar(node, header_values, headers, cell_vars) -> bool:
+    """True when `node` is an expression that traces back to a header value read at
+    runtime: a header-loop variable, `cell.value` on a row-iteration variable, a
+    subscript of the header list, or a method call on any of those (F-4).
+    """
+    if isinstance(node, ast.Attribute) and node.attr == "value" and isinstance(node.value, ast.Name):
+        return node.value.id in cell_vars
+    if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name) and node.value.id in headers:
+        return True
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+        return _header_scalar(node.func.value, header_values, headers, cell_vars)
+    if isinstance(node, ast.Name):
+        return node.id in header_values
+    return False
+
+
+def _str_literal_seq(node) -> bool:
+    return isinstance(node, (ast.Tuple, ast.List, ast.Set)) and bool(node.elts) and all(
+        isinstance(e, ast.Constant) and isinstance(e.value, str) for e in node.elts)
+
+
 def inspect_script(source: bytes) -> ScriptInfo:
     if len(source) > MAX_SCRIPT_BYTES: return ScriptInfo(False, (), (), ("SCRIPT_TOO_LARGE",))
     try:
@@ -146,6 +218,8 @@ def inspect_script(source: bytes) -> ScriptInfo:
 
     headers = _header_row_vars(tree, sheets)
     header_values = _header_value_vars(tree, headers)
+    cell_vars = _row_iter_vars(tree, sheets)
+    shadowed = _binder_names(tree)
 
     refs, dynamic = [], []
 
@@ -160,14 +234,27 @@ def inspect_script(source: bytes) -> ScriptInfo:
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name):
-            if node.value.id in workbooks:
+            name = node.value.id
+            if name in shadowed and (name in workbooks or name in frames):
+                # A name bound as a function parameter, loop target, `with`/`except` name
+                # or comprehension variable anywhere in the script cannot be trusted for
+                # workbook/sheet/frame access at any occurrence, including this one:
+                # static inspection has no scope resolution to tell which binding a given
+                # use refers to (F-1 shadowing).
+                dynamic.append("DYNAMIC_SHEET_ACCESS" if name in workbooks else "DYNAMIC_COLUMN_ACCESS")
+            elif name in workbooks:
                 literal_or_dynamic("sheet", node.slice, "DYNAMIC_SHEET_ACCESS")
-            elif node.value.id in frames and isinstance(node.ctx, ast.Load):
+            elif name in frames and isinstance(node.ctx, ast.Load):
                 if not (isinstance(node.slice, ast.Constant) and isinstance(node.slice.value, int)):
                     literal_or_dynamic("column", node.slice, "DYNAMIC_COLUMN_ACCESS")
         elif isinstance(node, ast.Call):
             name = _func_name(node)
-            if name in ("load_workbook", "read_excel"):
+            if name in ("chdir", "fchdir"):
+                # A script that changes its working directory can make an unchanged,
+                # exact workbook-path literal resolve to a file outside the workspace
+                # (F-2): the path check alone cannot see this, so it must be dynamic.
+                dynamic.append("DYNAMIC_WORKBOOK_PATH")
+            elif name in ("load_workbook", "read_excel"):
                 if node.args: literal_or_dynamic("workbook_path", node.args[0], "DYNAMIC_WORKBOOK_PATH")
                 else: dynamic.append("DYNAMIC_WORKBOOK_PATH")
                 for kw in node.keywords:
@@ -181,24 +268,32 @@ def inspect_script(source: bytes) -> ScriptInfo:
                 literal_or_dynamic("sheet", node.args[0] if node.args else None, "DYNAMIC_SHEET_ACCESS")
             elif name == "index" and isinstance(node.func, ast.Attribute) and len(node.args) >= 1:
                 recv = node.func.value
-                if isinstance(recv, ast.Name) and recv.id in headers:
+                if isinstance(recv, ast.Name) and recv.id in headers and recv.id not in shadowed:
                     literal_or_dynamic("column", node.args[0], "DYNAMIC_COLUMN_ACCESS")
                 else:
-                    # Receiver does not trace to a header-row derivation: this is not a
-                    # column lookup we can trust, so it must never feed the literal remap
-                    # or count as evidence the script is compatible (F-1).
+                    # Receiver does not trace to a header-row derivation, or does but is
+                    # also shadowed elsewhere: this is not a column lookup we can trust,
+                    # so it must never feed the literal remap or count as evidence the
+                    # script is compatible (F-1).
                     dynamic.append("DYNAMIC_COLUMN_ACCESS")
             elif name in ("save", "to_excel") and node.args:
                 a = node.args[0]
                 if isinstance(a, ast.Constant) and isinstance(a.value, str) and a.value.lower().endswith(_WORKBOOK_EXT): add("output_path", a)
-        elif isinstance(node, ast.Compare) and len(node.ops) == 1 and isinstance(node.ops[0], (ast.Eq, ast.NotEq)):
-            left, right = node.left, node.comparators[0]
-            for side, other in ((left, right), (right, left)):
-                if (isinstance(side, ast.Name) and side.id in header_values
-                        and isinstance(other, ast.Constant) and isinstance(other.value, str)):
-                    # A comparison against a header value read at runtime: static inspection
-                    # cannot know whether this actually matches, so the script must not be
-                    # reported compatible (or ALREADY_COMPATIBLE) on the strength of it (F-4).
+        elif isinstance(node, ast.Compare) and len(node.ops) == 1:
+            op, left, right = node.ops[0], node.left, node.comparators[0]
+            if isinstance(op, (ast.Eq, ast.NotEq)):
+                for side, other in ((left, right), (right, left)):
+                    if (_header_scalar(side, header_values, headers, cell_vars)
+                            and isinstance(other, ast.Constant) and isinstance(other.value, str)):
+                        dynamic.append("HEADER_VALUE_COMPARISON"); break
+                    if (_header_scalar(side, header_values, headers, cell_vars) and _str_literal_seq(other)):
+                        dynamic.append("HEADER_VALUE_COMPARISON"); break
+            elif isinstance(op, (ast.In, ast.NotIn)):
+                if (_header_scalar(left, header_values, headers, cell_vars) and _str_literal_seq(right)):
+                    # `h in ("amount", "amt")`: a header value tested against a literal set.
                     dynamic.append("HEADER_VALUE_COMPARISON")
-                    break
+                elif (isinstance(left, ast.Constant) and isinstance(left.value, str)
+                      and isinstance(right, ast.Name) and right.id in headers):
+                    # `"amount" in hdr`: a literal tested against the header list itself.
+                    dynamic.append("HEADER_VALUE_COMPARISON")
     return ScriptInfo(True, tuple(sorted(imports)), tuple(refs), tuple(sorted(set(dynamic))))

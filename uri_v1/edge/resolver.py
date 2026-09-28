@@ -62,7 +62,11 @@ def _memory_gate(task: EdgeTask, package):
     if ctx.get("degraded") in _DEGRADED: return _DEGRADED[ctx["degraded"]]
     # The package must belong to this task: a clean package built for another task_id
     # would otherwise silently bypass a real CONFLICT/correction on this one (F-6).
-    if ctx.get("task") and ctx["task"].get("task_id") != task.task_id: return R.INVALID_CONTEXT
+    # This must fail closed, not open, when the package carries no task at all (R-4):
+    # `build_context` returns `task: None` for any task_id Memory has no state for, and
+    # such a package would otherwise skip this check entirely, letting a package built
+    # for an unknown or wrong task_id turn a task that should CLARIFY into LOCAL.
+    if not ctx.get("task") or ctx["task"].get("task_id") != task.task_id: return R.INVALID_CONTEXT
     wanted = {(i.source_id, i.content_sha256) for i in task.inputs}
     ids = {i.source_id for i in task.inputs}
     # Only stale *references* gate the task; stale historical outcomes are expected

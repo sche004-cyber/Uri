@@ -74,6 +74,18 @@ def new_run_id() -> str:
     return uuid.uuid4().hex
 
 
+def diff_fingerprint(diff: dict) -> str:
+    """Content-addressed fingerprint of a `Workspace.diff()` result's changes.
+
+    Used to bind a VERIFICATION event to exactly the candidate bytes it verified,
+    so `write_back` can check the live workspace against what the latest
+    verification covered rather than against whatever RUN_RESULT happens to be
+    last recorded (R-6): those can diverge when a run is recorded more than once.
+    """
+    changes = sorted((c["relpath"], c["after_sha256"]) for c in diff.get("changes", []))
+    return hashlib.sha256(json.dumps(changes, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
 def _atomic_json(path: Path, value) -> None:
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_bytes(json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8"))
@@ -214,6 +226,13 @@ class Workspace:
         (defence in depth alongside the verifier's own post-run re-diff, F-8):
         anything that changed the workspace after verification invalidates the
         write-back.
+
+        The candidate is checked against the diff fingerprint recorded on the
+        latest VERIFICATION event itself, not against the latest RUN_RESULT (R-6):
+        a run recorded more than once can leave the last RUN_RESULT describing
+        bytes that were never the ones the last VERIFIED verdict actually covered,
+        and comparing against RUN_RESULT would then write back never-verified
+        bytes under a stale VERIFIED status.
         """
         if not isinstance(approval, WritebackApproval) or approval.run_id != self.run_id or not approval.valid():
             raise WorkspaceError("WRITEBACK_APPROVAL_REQUIRED")
@@ -223,9 +242,9 @@ class Workspace:
             raise WorkspaceError("WRITEBACK_REQUIRES_VERIFIED_RUN")
         diff = self.diff()
         if diff["containment_violations"]: raise WorkspaceError("CONTAINMENT_VIOLATION")
-        verified_changes = {c["relpath"]: c["after_sha256"] for c in run.get("result", {}).get("uri_computed_diff", {}).get("changes", [])}
-        live_changes = {c["relpath"]: c["after_sha256"] for c in diff["changes"]}
-        if verified_changes != live_changes: raise WorkspaceError("WRITEBACK_CANDIDATE_CHANGED")
+        verified_fingerprint = run["verifications"][-1].get("diff_sha256")
+        if verified_fingerprint is None or verified_fingerprint != diff_fingerprint(diff):
+            raise WorkspaceError("WRITEBACK_CANDIDATE_CHANGED")
         by_rel = {e.relpath: e for e in self.manifest}
         changes = {c["relpath"]: c for c in diff["changes"]}
         written = []

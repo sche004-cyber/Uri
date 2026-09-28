@@ -11,7 +11,7 @@ from uri_v1.execution.officefile import WorkbookReadError, read_workbook_structu
 from uri_v1.execution.run_record import RunRecordError, RunStore
 from uri_v1.execution.verify import verify_candidate
 from uri_v1.execution.workspace import (Workspace, WorkspaceError, WorkspaceInput, WorkspaceStrategy,
-                                        WritebackApproval, new_run_id)
+                                        WritebackApproval, diff_fingerprint, new_run_id)
 
 
 def test_acceptance_is_closed_and_hash_stable():
@@ -115,7 +115,7 @@ def test_writeback_requires_verified_run_explicit_trusted_approval_and_unchanged
     store.append(ws.run_id, "RUN_RESULT", {"uri_computed_diff": ws.diff()})
     store.append(ws.run_id, "VERIFICATION", {"status": "FAILED"})
     with pytest.raises(WorkspaceError, match="REQUIRES_VERIFIED"): ws.write_back(approval, sources=env.sources, run_store=store)
-    store.append(ws.run_id, "VERIFICATION", {"status": "VERIFIED"})
+    store.append(ws.run_id, "VERIFICATION", {"status": "VERIFIED", "diff_sha256": diff_fingerprint(ws.diff())})
     original.write_text("# user edited meanwhile\n")
     with pytest.raises(WorkspaceError, match="ORIGINAL_CHANGED"): ws.write_back(approval, sources=env.sources, run_store=store)
     original.write_bytes(script(column="amount").encode())
