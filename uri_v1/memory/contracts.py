@@ -230,7 +230,7 @@ NEGATION_PHRASES = (
     "leave out", "far from",
 )
 
-_APOSTROPHE_RE = re.compile("['‘’ʼ`´＇]")
+_APOSTROPHE_RE = re.compile("['‘’‛ʻʼ′‵❛❜`´＇]")
 
 
 def negated(text: str) -> bool:
