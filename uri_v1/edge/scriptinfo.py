@@ -296,4 +296,11 @@ def inspect_script(source: bytes) -> ScriptInfo:
                       and isinstance(right, ast.Name) and right.id in headers):
                     # `"amount" in hdr`: a literal tested against the header list itself.
                     dynamic.append("HEADER_VALUE_COMPARISON")
+    # A SCRIPT_WORKBOOK_REPAIR capability is qualified only for scripts whose workbook
+    # input is statically bound through a recognized load_workbook/read_excel call. An
+    # unrecognized reader (read_csv, a wrapper, a Path expression) or a script that never
+    # reads its input is not COMPATIBLE: output-only acceptance criteria could otherwise
+    # certify fabricated data (port of 379769f, verified by the Codex bridge audit).
+    if not any(r.kind == "workbook_path" for r in refs):
+        dynamic.append("WORKBOOK_ACCESS_UNPROVEN")
     return ScriptInfo(True, tuple(sorted(imports)), tuple(refs), tuple(sorted(set(dynamic))))

@@ -227,7 +227,7 @@ def test_windows_posix_style_consent_is_accepted(tmp_path):
 
 @windows_only
 def test_any_windows_drive_root_and_unc_paths_are_refused():
-    for root in ("D:\\", "C:\\", "\\\\server\\share\\x"):
+    for root in ("\\", "D:\\", "C:\\", "\\\\server\\share\\x"):
         with pytest.raises(HarnessError):
             ElevationGrant.from_user(intake(f"yes, allow access to {root} for this run"), f"extra_dir:{root}", "run-1")
 

@@ -189,7 +189,8 @@ class ClaudeCodeAdapter:
             if isinstance(result.get("modelUsage"), dict): usage["models"] = sorted(str(k)[:64] for k in result["modelUsage"])
         killed = proc.timed_out or proc.inactivity_killed or proc.cancelled
         if killed or result is None:
-            outcome, family = (ClaimedOutcome.STOPPED if proc.cancelled else ClaimedOutcome.OUTCOME_UNKNOWN), (
+            # AC-H8: cancellation is `outcome_unknown` like a timeout, never `stopped`.
+            outcome, family = ClaimedOutcome.OUTCOME_UNKNOWN, (
                 "TIMEOUT" if proc.timed_out else "INACTIVITY" if proc.inactivity_killed else "CANCELLED" if proc.cancelled else "NO_RESULT")
         elif result.get("is_error") or result.get("subtype") != "success":
             outcome, family = ClaimedOutcome.FAILED, str(result.get("subtype") or "error")[:64]
