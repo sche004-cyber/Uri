@@ -1,6 +1,6 @@
 # M39 — Working Product Baseline: the Office Demonstrator through the real URI interface
 
-- **Status:** `M39_PLAN_R1_DRAFTED_PROVISIONAL`. Plan only. Nothing here is implemented, frozen or integrated.
+- **Status:** `M39_PLAN_R1_1_DRAFTED_PROVISIONAL` (R1 plus amendment §13). Plan only. Nothing here is implemented, frozen or integrated.
 - **Revision history:** R0 at `7363ba5` planned an *isolated* demonstrator (CLI, no production wiring) with the VG-1 benchmark as its main gate. **R1 (this file) supersedes R0** after the User's product completion target (2026-09-28 10:03). R0 is kept in git history and is not rewritten elsewhere. What changed and why is in §12.
 - **Date:** 2026-09-28. **Author:** Claude Code, Planning lane. This session did not implement M37/M38.
 - **Authority:**
@@ -224,3 +224,48 @@ Re-check: AC-P1 §2 (every target row has evidence); AC-P2 §3 and the gaps in �
 | VG-1 benchmark was the main gate | Baseline gated on §2; VG-1 moved to a post-baseline lane | Target lists end-to-end capability and the regression suite, not the benchmark; "do not keep inventing prerequisite architecture" |
 | Write-back to originals only | Return files to the user (attachments) plus write-back for registered folders | Target item T7; uploads are copies, not originals |
 | Open decisions: thresholds, M37 guard | Both accepted as defaults | Coordinator relay 10:07 |
+
+## 13. Amendment R1.1 (2026-09-28 10:24): User rulings on spend and integration; audit results
+
+Additive. Sections 0-12 stand except where this section says otherwise.
+
+### 13.1 User rulings (Chetan, 2026-09-28 10:24, verbatim in substance)
+
+- **SP-1 Spend.** No separate paid Claude/API spend. All live baseline and comparison runs use the User's existing subscription-authenticated Claude Code. If a specific test genuinely needs separately metered API usage, stop and tell the User why, which capability needs it, and the estimated cost before spending anything.
+- **INT-001 approved.** Connect the experimental M38 harness path to the real URI app. Keep it isolated, reversible and provisional. Do not modify frozen components, and do not treat the experimental adapter as production architecture because it works.
+
+### 13.2 Effect on the plan
+
+- **Spend.** Checked in this container: Claude Code authenticates through the host-managed session of the User's account (`CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` is set; no `ANTHROPIC_API_KEY`; no credentials file). On the User's Windows machine it uses the User's own Claude Code login. No step in this plan needs metered API access.
+  - `--max-budget-usd` stays as a per-run usage limiter.
+  - `cost_usd` is recorded as Claude Code's own reported estimate, labelled "notional (subscription)", not as billing. The $40 cap in §5.1 becomes a cap on that notional figure.
+  - If a run reports that it is using API-key auth, the driver stops before starting (new gate `metered_auth_runs` = 0; the adapter probe's `auth_mode` is checked on every run).
+  - Codex, if ever used, must also be subscription-authenticated, or the same stop rule applies.
+- **Isolated.** Everything new lives in `uri_v1/office/`. `uri_core` gets exactly one `/ask` seam block, the `/office/*` endpoints, and a flag-gated FileStore extension list. No orchestrator, Brain, S6, M31 or anchored-file change (S-1, S-6 unchanged).
+- **Reversible.** One flag, `URI_OFFICE_SEAM`, **default off in the repository**. It is switched on in the User's launch environment.
+  - With it off, `/ask` behaves exactly as at `610c8f8`, the `/office/*` endpoints return 404, and `.py`/`.xlsm` uploads are refused as before.
+  - New B5 test `test_office_flag_off_is_byte_identical_behavior`: with the flag off, `/ask` responses for the existing server test corpus are unchanged.
+  - Removing the flag and `uri_v1/office/` restores the prior app.
+- **Provisional.**
+  - Replies that used the harness say it was an experimental harness run.
+  - `/office/runs` reports `experimental: true`.
+  - `URI_STATE.yaml` records `INT-001` with `status: "AUTHORIZED_PROVISIONAL_EXPERIMENTAL"`, which is not a production-architecture adoption. M38 stays `PROVISIONAL` whatever B3/B-UI show.
+
+### 13.3 Audit results received since R1 (from project audit reports; treated as leads, not re-verified by this planning session)
+
+| Audit | Verdict | Findings that hit the M39 path |
+|---|---|---|
+| M36 repair re-audit (`/mnt/project-files/audits/M36_REPAIR_REAUDIT_REPORT.md`) | REPAIRS_REQUIRED | R-1/R-2: `negated()` misses Unicode apostrophes and "anything but / ignore / stop using X" → wrong `CONFIRMED` binding. R-3: the same gaps in task transitions. Used by `request.py`, `binding.py` and write-back approval |
+| M37 internal audit (`M37_INTERNAL_AUDIT_REPORT.md`) | REPAIRS_REQUIRED | F-1/F-2 High (wrong local remap; the path check lets a script read an outside file); F-3 no per-class minimum acceptance; F-5 cell data in escalation; F-7 `write_back` trusts a caller's "VERIFIED" string; F-8 a verification run can tamper with the candidate |
+| M38 internal audit (`M38_INTERNAL_AUDIT_REPORT.md`) | REPAIRS_REQUIRED | H-1 the real Claude Code escapes `files/` under the default posture and reads originals; H-2 orphan processes can overwrite originals after `VERIFIED`; H-3 elevations need no grant; H-4 fabricated output passes acceptance. Open User decision: drop `Bash(python *)` from the default posture |
+
+These trigger stop condition **S-3** for anything that runs on real user files. Sequencing:
+- **Proceeds now (no dependency on the repairs for building):** W1 code (`inbox.py`, `request.py`, `binding.py`), W2 code, the server seam behind the default-off flag, W3 UI code, and B1/B2 offline tests against the current commits. Their results are recorded as pre-repair evidence and re-run after the repairs.
+- **Waits for M36 R-1..R-3 and M37 F-1/F-2/F-7/F-8 repairs plus re-audit:** turning the flag on for the User's real files, the local path in B-UI, and write-back.
+- **Waits for M38 H-1..H-4 (and M37 F-3/F-5) repairs plus re-audit, and the User's decision on `Bash(python *)`:** any live harness run on real files (B3 in the real app, B-UI D2). A B3 run in this container on generated fixture files is allowed before then, because nothing of the User's is exposed. Its result is labelled pre-repair.
+- `URI_WORKING_PRODUCT_BASELINE_REACHED` cannot be reported while any of these findings is open on a path the baseline uses.
+- The acceptance builder's output-structure items (§4.1) address the same failure class as M38 H-4 / M37 F-3 at the Office layer. They do not replace the M37 repair.
+
+### 13.4 Posture decision (2026-09-28 10:26, relayed by the coordinator as the User's decision)
+
+`Bash(python *)` is dropped from the default harness posture. Claude Code does not run scripts; URI's own verifier does all execution. The M38 repair lane implements this in `uri_v1/execution/harness/adapters.py`. M39 builds no workaround and relies on the repaired posture. The §13.3 wait on "the User's decision on `Bash(python *)`" is resolved; the wait on the M38 repairs and re-audit remains.
