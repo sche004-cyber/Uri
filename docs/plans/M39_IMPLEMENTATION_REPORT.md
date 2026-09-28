@@ -3,6 +3,29 @@
 Status: `M39_IMPLEMENTED_PROVISIONAL_NOT_FROZEN`. Implementer self-qualification only;
 independent closing audit **not performed**. Not frozen, not integration-authorized.
 
+**CORRECTION (M39 repair round 1, preserving history per the auditable-correction
+requirement rather than silently editing the claims below):** the internal audit at
+`a9098e0` (`docs/plans/M39_INTERNAL_AUDIT_REPORT.md` / project files
+`audits/M39_INTERNAL_AUDIT_REPORT.md`) found two claims in §6 below contradicted by its
+probes, both since fixed by the M39 repair round 1 session (`uri_v1/office/flow.py`,
+`uri_v1/office/writeback.py`):
+- The claim that harness escalation is gated "on an explicit, non-negated
+  `WritebackApproval`/consent intake" was false as originally built: the gate was a
+  bag-of-words check (`_CONSENT_WORDS` substring match) that a question like "how long
+  will it run?" or an unrelated new request could satisfy. Repair round 1 replaced it
+  with `_is_consent()`, a whole-reply affirmative check that rejects any question and
+  any reply containing a non-affirmative token, and records the consent decision in
+  Memory.
+- The claim that `acceptance_builder.py` guards "structurally" against a fabricated
+  harness fix was true only for the empty-script variant (M38 D-4); a script rewritten
+  to produce the right shape (`ws.title = "Summary"`, a hard-coded header list, no read
+  of the real workbook) still passed. This is **not fixed** by repair round 1 -- it
+  needs an input-dependence/recompute check shared with the M37 acceptance owner, out of
+  this repair lane's bounded scope. What round 1 did fix: the `NO_OUTPUT_WARNING`
+  ("URI can only check that the script runs") caveat was being dropped specifically on
+  the harness-approved path, so a neutered fix could render as a bare "Verified." with
+  no caveat at all; it is now carried through every path.
+
 ## 0. Scope actually built (important correction)
 
 This implementation pass was tasked against `docs/plans/M39_OFFICE_DEMONSTRATOR_PLAN.md`'s

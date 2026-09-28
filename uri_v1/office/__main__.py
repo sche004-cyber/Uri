@@ -23,6 +23,7 @@ def _turn():
 def run_repl(session: OfficeSession, user_id: str, *, in_stream=sys.stdin, out=sys.stdout) -> None:
     session_id = uuid.uuid4().hex
     active_task = None
+    pending_writeback: dict = {}  # task_id -> relpaths URI offered for approval (M39-7)
     out.write("URI Office demonstrator. Type a request, or 'status' / 'pause' / 'resume <task>'.\n")
     for line in in_stream:
         raw = line.strip()
@@ -36,6 +37,10 @@ def run_repl(session: OfficeSession, user_id: str, *, in_stream=sys.stdin, out=s
             turn_id, trace_id = _turn()
             step = session.resume(task_id, raw, session_id=session_id, turn_id=turn_id, trace_id=trace_id)
             active_task = step.task_id
+            if step.kind == "AWAITING_APPROVAL":
+                pending_writeback[step.task_id] = step.relpaths
+            elif step.task_id is not None:
+                pending_writeback.pop(step.task_id, None)
             out.write(render(step) + "\n")
             continue
         if raw == "pause" and active_task:
@@ -51,7 +56,14 @@ def run_repl(session: OfficeSession, user_id: str, *, in_stream=sys.stdin, out=s
         if active_task and session._escalation.get(active_task) is not None:
             step = session.confirm_escalation(active_task, raw, session_id=session_id, turn_id=turn_id, trace_id=trace_id)
         elif active_task and active_task in session._run:
-            step = session.approve_writeback(active_task, raw, session_id=session_id, turn_id=turn_id, trace_id=trace_id)
+            # M39-7: approve_writeback needs the exact relpaths URI itself
+            # offered (`_offer_writeback`'s AWAITING_APPROVAL result) -- it no
+            # longer guesses "all modified files" on the caller's behalf, so
+            # the REPL must remember and pass them, or every approval used to
+            # refuse with WRITEBACK_TARGETS_REQUIRED.
+            relpaths = pending_writeback.get(active_task, ())
+            step = session.approve_writeback(active_task, raw, relpaths=relpaths,
+                                             session_id=session_id, turn_id=turn_id, trace_id=trace_id)
         else:
             parsed = parse(raw)
             if not parsed.ok:
@@ -59,6 +71,10 @@ def run_repl(session: OfficeSession, user_id: str, *, in_stream=sys.stdin, out=s
                 continue
             step = session.start(raw, session_id=session_id, turn_id=turn_id, trace_id=trace_id, parsed=parsed)
             active_task = step.task_id
+        if step.kind == "AWAITING_APPROVAL":
+            pending_writeback[step.task_id] = step.relpaths
+        elif step.task_id is not None:
+            pending_writeback.pop(step.task_id, None)
         out.write(render(step) + "\n")
 
 

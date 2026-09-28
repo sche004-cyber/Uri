@@ -53,7 +53,13 @@ def render(step) -> str:
             lines.append(f"Note: {w}")
         lines.append('Reply "apply" / "approve" to write these files back, or "pause" to decide later.')
     elif kind == "WRITEBACK_REFUSED":
-        lines.append(f"Write-back refused: {step.reason}. Nothing was written.")
+        if step.written:
+            lines.append(f"Write-back refused: {step.reason}.")
+            lines.append("Some files were already written to disk before the refusal -- this is not \"nothing happened\":")
+            for w in step.written:
+                lines.append(f"- {w['relpath']}: {w['before_sha256'][:12]} -> {w['after_sha256'][:12]}")
+        else:
+            lines.append(f"Write-back refused: {step.reason}. Nothing was written.")
     elif kind == "COMPLETED":
         lines.append("Written and task complete.")
         for w in step.written:

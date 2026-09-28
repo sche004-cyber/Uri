@@ -33,8 +33,17 @@ _INTENT = re.compile(
 
 _PY = re.compile(r"\b[\w][\w\-./]*\.py\b", re.IGNORECASE)
 _XLSX = re.compile(r"\b[\w][\w\-./]*\.xlsm\b|\b[\w][\w\-./]*\.xlsx\b", re.IGNORECASE)
+# M39-3 (audit): a quoted name is unambiguous even when it contains spaces
+# ("my report.py"), and taking it whole is the only way to avoid matching
+# just the trailing ".py"/".xlsx" fragment of it.
+_PY_QUOTED = re.compile(r'["\']([^"\']{1,260}\.py)["\']', re.IGNORECASE)
+_XLSX_QUOTED = re.compile(r'["\']([^"\']{1,260}\.(?:xlsm|xlsx))["\']', re.IGNORECASE)
 _SCRIPT_PHRASE = re.compile(r"\b(?:this|the|my)\s+(?:[a-z]+\s+){0,2}?script\b", re.IGNORECASE)
 _WORKBOOK_PHRASE = re.compile(r"\b(?:this|the|my)\s+(?:[a-z]+\s+){0,2}?(?:spreadsheet|workbook|sheet)\b", re.IGNORECASE)
+# A character that continues a filename-like token: if it sits immediately
+# before/after an unquoted match, the match is only part of a longer token
+# ("report.py" inside "report.py.bak") and must not be silently accepted.
+_CONTINUATION = re.compile(r"[\w./\-]")
 
 _MAX_LEN = 2000
 
@@ -49,6 +58,35 @@ class ParsedRequest:
 
 def _spans_of(pattern, text):
     return [(m.start(), m.end()) for m in pattern.finditer(text)]
+
+
+def _group_spans(pattern, text):
+    return [(m.start(1), m.end(1)) for m in pattern.finditer(text)]
+
+
+def _strict_substring(text, a, b):
+    after = text[b:b + 1]
+    before = text[a - 1:a] if a > 0 else ""
+    return bool(_CONTINUATION.match(after)) or bool(before and _CONTINUATION.match(before))
+
+
+def _filename_spans(quoted_pattern, plain_pattern, text):
+    """Quoted names (inner text, spaces and all) are taken as-is. An unquoted
+    match that is a strict substring of a longer token -- not covered by a
+    quote -- is a refusal (`bad=True`), never a silent partial match (M39-3).
+    """
+    quoted_spans = _group_spans(quoted_pattern, text)
+    quoted_ranges = [(m.start(), m.end()) for m in quoted_pattern.finditer(text)]
+    bad = False
+    plain = []
+    for a, b in _spans_of(plain_pattern, text):
+        if any(qa <= a and b <= qb for qa, qb in quoted_ranges):
+            continue  # already covered by the quoted match
+        if _strict_substring(text, a, b):
+            bad = True
+            continue
+        plain.append((a, b))
+    return quoted_spans + plain, bad
 
 
 def _pick(names, phrases):
@@ -74,13 +112,17 @@ def parse(raw_text: str) -> ParsedRequest:
     if not _INTENT.search(raw_text):
         return ParsedRequest(False, REASON_UNSUPPORTED)
 
-    py_names = _spans_of(_PY, raw_text)
+    py_names, py_bad = _filename_spans(_PY_QUOTED, _PY, raw_text)
+    if py_bad:
+        return ParsedRequest(False, REASON_ROLE_AMBIGUOUS, "script")
     py_unique = {raw_text[a:b].strip().casefold() for a, b in py_names}
     if len(py_unique) > 1:
         return ParsedRequest(False, REASON_ROLE_AMBIGUOUS, "script")
     script_phrases = _spans_of(_SCRIPT_PHRASE, raw_text)
 
-    xl_names = _spans_of(_XLSX, raw_text)
+    xl_names, xl_bad = _filename_spans(_XLSX_QUOTED, _XLSX, raw_text)
+    if xl_bad:
+        return ParsedRequest(False, REASON_ROLE_AMBIGUOUS, "workbook")
     xl_unique = {raw_text[a:b].strip().casefold() for a, b in xl_names}
     if len(xl_unique) > 1:
         return ParsedRequest(False, REASON_ROLE_AMBIGUOUS, "workbook")

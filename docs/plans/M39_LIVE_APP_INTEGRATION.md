@@ -15,6 +15,8 @@ Current state (verified, this file, lines ~55-73): `ALLOWED_EXTENSIONS` is a `fr
 
 **Proposed diff (additive, two lines):**
 
+**CORRECTION (M39 repair round 1):** the diff below was checked against the actual file and did not match its context -- the real file has an M19 comment block (`uri_core/core/file_store.py:72-75`, explaining why generated `.pptx` presentations are stored the same way as uploads) between `".docx"` and `".pptx"` that this diff's context omitted, so it would not apply verbatim with `patch`/`git apply`. Corrected below:
+
 ```diff
  ALLOWED_EXTENSIONS = frozenset(
      {
@@ -34,6 +36,10 @@ Current state (verified, this file, lines ~55-73): `ALLOWED_EXTENSIONS` is a `fr
          ".bmp",
          ".webp",
          ".docx",
+         # M19: generated presentations (see generate_document.py) - a
+         # document URI itself produces is stored the same way a user's
+         # own upload is, so it is downloadable via the existing
+         # GET /files/{id}/content path.
          ".pptx",
 +        ".py",
      }
@@ -47,10 +53,14 @@ Existing `test_file_store.py` expectations that assert `.py`/`.xlsm` are rejecte
 ## 3. `uri_core/app/server.py` — the Office seam in `/ask`
 
 Current state (verified, lines 1631-1700 of this file, function `ask`): two existing seams already follow the exact pattern this needs —
-- **Approval resumption** (M32.1, lines ~1638-1656): guarded by `approval_resumption_enabled()`, wrapped in `try/except Exception: result = None; early_executed = False` so any internal failure falls straight through to the unchanged chain below it, never raises past the seam.
-- **Lifecycle intent** (M33.1 Batch 4, lines ~1658-1691): guarded by `lifecycle_intent_seam_enabled() and user_id is not None`, same fall-through-on-`None`-or-failure discipline, narrow closure bound to the request's authenticated `context`/`user_id`.
+- **Approval resumption** (M32.1, lines ~1640-1665): guarded by `approval_resumption_enabled()`, wrapped in `try/except Exception: result = None; early_executed = False` so any internal failure falls straight through to the unchanged chain below it, never raises past the seam.
+- **Lifecycle intent** (M33.1 Batch 4, lines ~1667-1703, corrected from an earlier ~1658-1691 estimate in this document that was off by roughly 10 lines): guarded by `lifecycle_intent_seam_enabled() and user_id is not None`, same fall-through-on-`None`-or-failure discipline, narrow closure bound to the request's authenticated `context`/`user_id`.
 
-**Proposed addition:** a third seam, `office_seam_enabled()`, inserted after the lifecycle-intent block (i.e. after line ~1700) and before the existing Brain chain, following the identical shape:
+**CORRECTION (M39 repair round 1, from the internal audit's §4 review of this document): the ordering claim below was wrong and is left uncorrected in the diff sketch pending a real design decision, not silently fixed.** Between the lifecycle-intent block (ending ~1703) and where a "Brain chain" actually begins, there is a third existing block this document previously did not account for: the M30.7 workflow-continuation seam (~1705-1760), which resumes a pending `WorkflowExecutor` pause. Inserting the Office seam "after ~1700" as originally written lands it *after* that block, not immediately before the Brain chain as claimed. Two consequences, both open and NOT resolved by this document:
+1. The M32.1 approval-resumption seam runs *first*, before Office ever sees the turn. A plain "yes"/"approve" typed to confirm an Office write-back could instead be claimed by an unrelated *pending* M32.1 approval, if one happens to be outstanding for the same user/session, since M32.1 has no way to know the "yes" was meant for Office.
+2. The M30.7 workflow-continuation block also runs before the proposed Office seam and could similarly claim a turn meant for Office.
+
+Resolving this needs an explicit ordering decision (e.g., Office checks first when an Office task is active for that user/session, or the existing seams are taught to ignore a turn that names an active Office task) -- a genuine design question for whoever applies this patch, not something to guess at here. **Proposed addition (ordering not yet finalized -- see correction above):** a third seam, `office_seam_enabled()`, inserted after the lifecycle-intent block and before the existing Brain chain, following the identical shape:
 
 ```python
 # M39: Office flow seam ("make this script work with this spreadsheet").
@@ -85,9 +95,13 @@ if not early_executed:
         early_executed = False
 ```
 
-`office_seam_enabled()` (new, in `uri_v1/office/bootstrap.py`, already-built package): reads `os.environ.get("URI_OFFICE_SEAM", "0") == "1"` — **default OFF**, opposite polarity from the two existing seams (which default on with an opt-out flag), because this is an unaudited, provisional milestone and Chetan's ruling was explicit that it must default off.
+`office_seam_enabled()` (new, in `uri_v1/office/bootstrap.py`, already-built package): reads `os.environ.get("URI_OFFICE_SEAM", "0") == "1"` — **default OFF**.
 
-`office_handle_turn` is new glue in `uri_v1/office/flow.py` (not yet built — the implementation session built `OfficeSession`/`flow.py`'s programmatic API for the CLI; this is a thin adapter from the FastAPI request shape to that existing API) returning `None` for anything the deterministic request parser (`uri_v1/office/request.py`, already built and tested — Q-O1, 61/61 cases) does not recognize as an Office-flow turn, so ordinary chat is completely unaffected when the flag is on, and everything is unaffected when the flag is off (the `office_seam_enabled()` check short-circuits before any import of `uri_v1.office.flow` executes).
+**CORRECTION (M39 repair round 1):** this document previously claimed that default-off is "opposite polarity from the two existing seams (which default on with an opt-out flag)". That is false: both `approval_resumption_enabled()` (`uri_core/core/approval_resumption.py:39-40`, `os.environ.get(...) == "1"`) and `lifecycle_intent_seam_enabled()` (`uri_core/core/lifecycle_intent_interpreter.py:40-43`, same shape, its own docstring says "production default" leaves `/ask` "byte-identical") are themselves opt-in, default-OFF, `== "1"` checks. `URI_OFFICE_SEAM` defaulting off is the *same* polarity as the two precedents it is modeled on, not the opposite. (Also note: neither has actually been built yet -- `office_seam_enabled()` and `handle_turn()` do not exist in the repository as of this repair round; this whole section remains a design proposal, not a description of code that runs today.)
+
+`office_handle_turn` is new glue in `uri_v1/office/flow.py` (not yet built — the implementation session built `OfficeSession`/`flow.py`'s programmatic API for the CLI; this is a thin adapter from the FastAPI request shape to that existing API) returning `None` for anything the deterministic request parser (`uri_v1/office/request.py`, already built and tested — Q-O1, 61/61 cases) does not recognize as an Office-flow turn, so ordinary chat is completely unaffected when the flag is on.
+
+**CORRECTION (M39 repair round 1):** the claim that "everything is unaffected when the flag is off (the `office_seam_enabled()` check short-circuits before any import of `uri_v1.office.flow` executes)" is also false as the snippet in §3 is actually written: that snippet imports `uri_v1.office.bootstrap` (to reach `office_seam_enabled`) *before* it checks the flag, on every `/ask` call, flag on or off. `uri_v1/office/bootstrap.py` in turn imports `.flow` at module top, which imports the edge, memory and harness modules. So with the flag OFF, every `/ask` call still imports the entire `uri_v1.office` package tree (Python caches this after the first import, so it is not a *repeated* cost, but it is not "never imported" either). The `try/except Exception` around the block means a failure in that import cannot crash the request, so this is not a correctness bug, but "zero behavioral change" and "never imported" are not accurate as written, and whoever applies this patch should move the flag check to gate the import itself (`if office_seam_enabled(): from uri_v1.office.bootstrap import ...`) if a true zero-import-when-off property is required.
 
 **Two supporting endpoints** (plan §4.2, not yet designed in diff form — left for a follow-up patch once the seam itself is reviewed, since they depend on how background-run polling is wired):
 - `GET /office/runs/{run_id}` — status of a background Office run, scoped to `user_id`.
@@ -101,7 +115,7 @@ Per plan §4.3: render `response.files` (fallback to `response.file`, which the 
 
 | Name | Default | Effect |
 |---|---|---|
-| `URI_OFFICE_SEAM` | unset / `"0"` (OFF) | `"1"` enables the `/ask` seam in §3. OFF means `uri_v1.office` is never imported by `uri_core` at request time — zero behavioral change to the live app. |
+| `URI_OFFICE_SEAM` | unset / `"0"` (OFF) | `"1"` enables the `/ask` seam in §3. OFF means the seam never claims a turn; it does **not** mean `uri_v1.office` is never imported by `uri_core` at request time -- see the correction in §3 (the proposed snippet imports `uri_v1.office.bootstrap` before checking the flag). |
 
 ## 6. Rollback
 

@@ -70,9 +70,17 @@ def _sheet_vars_of(tree, workbook_vars) -> dict:
 
 
 def _titles_and_headers(tree, sheet_vars: set) -> tuple[dict, dict]:
-    """First `<sheet>.title = "..."` and first `<sheet>.append([...])` literal list per sheet var."""
+    """First `<sheet>.title = "..."` and first `<sheet>.append([...])` literal list per sheet var.
+
+    "First" means first in *source order* (M39-9, audit): `ast.walk` is
+    breadth-first, so an `append` nested one block deeper (e.g. inside an
+    `if`) loses to a later, shallower `append` even when the nested one runs
+    first and is the real header row. Sorting by (lineno, col_offset) before
+    scanning makes "first" mean what a reader of the script would mean by it.
+    """
     titles, headers = {}, {}
-    for node in ast.walk(tree):
+    ordered = sorted(ast.walk(tree), key=lambda n: (getattr(n, "lineno", 0), getattr(n, "col_offset", 0)))
+    for node in ordered:
         if isinstance(node, ast.Assign):
             for t in node.targets:
                 if (isinstance(t, ast.Attribute) and t.attr == "title" and isinstance(t.value, ast.Name)

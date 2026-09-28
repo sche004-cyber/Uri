@@ -143,7 +143,14 @@ def test_d6_original_changed_since_verification(tmp_path, monkeypatch):
         (env.root / "report.py").write_text("# edited by someone else\n" + script_text(column="amount"))
         refused = approve(env, step.task_id, run_id=step.run_id, relpaths=step.relpaths)
         assert refused.kind == "WRITEBACK_REFUSED", refused
-        assert "ORIGINAL_CHANGED_SINCE_COPY_IN" in refused.reason
+        # M39-1 repair: writeback.py now checks every current task reference
+        # is still live *before* opening the workspace at all (so a stale
+        # reference can never be discovered only after a write already
+        # happened -- see uri_v1/office/writeback.py). That pre-check now
+        # catches this case earlier than `Workspace.write_back`'s own
+        # per-relpath check would, with a more general reason.
+        assert refused.reason == "WRITEBACK_SOURCE_NOT_CURRENT"
+        assert refused.written == ()
 
 
 # -- D7: "don't apply it" -> no write-back --------------------------------------------------------
@@ -172,7 +179,12 @@ def test_d8_declines_escalation(tmp_path, monkeypatch):
         assert step.kind == "ESCALATION_PROPOSAL", step
         result = confirm(env, step.task_id, raw="no, don't run anything")
         assert result.kind == "ESCALATION_DECLINED", result
-        assert step.task_id in env.session._escalation  # task stays open with local findings
+        # M39-7 repair: a decline must clear the pending escalation, or every
+        # later line (including a brand new request) keeps being routed to
+        # confirm_escalation and declined again (the REPL "stuck after
+        # decline" bug). The task itself is untouched (still open, with
+        # URI's local findings) -- only the *pending proposal* is gone.
+        assert step.task_id not in env.session._escalation
 
 
 # -- D9: harness not installed -> typed message, nothing started ---------------------------------

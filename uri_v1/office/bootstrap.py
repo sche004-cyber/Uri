@@ -17,6 +17,7 @@ constructs it.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import uuid
 
@@ -32,10 +33,14 @@ from uri_v1.memory.retrieval import Retriever
 from uri_v1.memory.sources import SourceRegistry
 from uri_v1.results.version_ledger import ResultVersionLedger
 
-from .flow import OfficeSession
+from .flow import KNOWN_UNSAFE_HARNESS_SUBSTRATE, OfficeSession
 from .writeback import writeback_verifier_entry
 
 _VERIFIERS_FROZEN = False
+
+
+class UnsafeHarnessRefused(ValueError):
+    """Typed refusal: building the real harness wiring was refused (M39-8)."""
 
 
 def _freeze_verifiers(run_root, *, python=None):
@@ -49,10 +54,31 @@ def _freeze_verifiers(run_root, *, python=None):
 
 
 def build_session(user_id: str, data_dir, *, authorized_root, with_harness: bool = False,
-                  harness_home=None, harness_executable="claude") -> OfficeSession:
+                  harness_home=None, harness_executable="claude", acknowledge_unsafe_harness: bool = False) -> OfficeSession:
     """`data_dir` is a private per-user application data directory (never the
     user's own document root). `authorized_root` is the one folder this run is
-    authorized to read/write documents in (M36 `SourceRegistry.register`)."""
+    authorized to read/write documents in (M36 `SourceRegistry.register`).
+
+    M39-8 (audit): `KNOWN_UNSAFE_HARNESS_SUBSTRATE` was previously just a
+    docstring/comment claim -- nothing in code actually stopped
+    `with_harness=True` from wiring up the real `ClaudeCodeAdapter` against a
+    live `claude` executable, which the M38 containment defect (still open,
+    see `flow.py`'s module docstring) makes unsafe against real user files or
+    real credentials. Building that wiring now requires the caller to pass
+    `acknowledge_unsafe_harness=True` explicitly; the CLI (`__main__.py`)
+    never does, so `python -m uri_v1.office` still cannot reach it. Separately
+    and unconditionally (this is a spend-policy line, not a safety
+    trade-off a caller can opt into): if `ANTHROPIC_API_KEY` is set in the
+    environment, `with_harness=True` is refused outright, because the current
+    harness wiring forwards the process environment and a real run would bill
+    metered API usage instead of Chetan's subscription-authenticated Claude
+    Code session.
+    """
+    if with_harness:
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            raise UnsafeHarnessRefused("HARNESS_REFUSED_ANTHROPIC_API_KEY_SET")
+        if KNOWN_UNSAFE_HARNESS_SUBSTRATE and not acknowledge_unsafe_harness:
+            raise UnsafeHarnessRefused("HARNESS_CONTAINMENT_NOT_QUALIFIED")
     data_dir = Path(data_dir)
     scratch_root = data_dir / "scratch"
     runs_root = data_dir / "runs"

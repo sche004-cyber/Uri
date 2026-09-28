@@ -34,7 +34,35 @@ from .binding import ROLES, answer_role, bind_role
 from .writeback import WritebackRefused, open_run_workspace, writeback as do_writeback
 
 INTAKE = URIIntake()
-_CONSENT_WORDS = frozenset({"yes", "approve", "approved", "run", "send", "escalate", "proceed", "ok", "okay", "go"})
+# M39-2 (audit): consent must be a short, entirely-affirmative reply to the
+# specific proposal shown -- not any sentence that merely contains a word like
+# "run" or "go" ("how long will it run?", "go back, I want to rename the file
+# first", and a brand-new request that happens to say "run" all used to start
+# the harness before this fix). A question is never consent, whatever words it
+# uses; every token in the reply must be drawn from the affirmative
+# vocabulary, and at least one must be a real consent anchor (so "it", "do",
+# "go" alone -- with nothing else -- cannot accidentally count).
+_CONSENT_TOKENS = frozenset({
+    "yes", "y", "yeah", "yep", "yup", "sure", "ok", "okay",
+    "approve", "approved", "confirm", "confirmed",
+    "go", "ahead", "do", "it", "run", "proceed", "apply", "send", "please", "that", "one",
+})
+_CONSENT_ANCHORS = frozenset({
+    "yes", "y", "yeah", "yep", "yup", "sure", "ok", "okay",
+    "approve", "approved", "confirm", "confirmed", "proceed", "apply",
+})
+
+
+def _is_consent(raw_text: str) -> bool:
+    if "?" in raw_text or negated(raw_text):
+        return False
+    tokens = re.findall(r"[a-z']+", raw_text.casefold())
+    if not tokens or not all(t in _CONSENT_TOKENS for t in tokens):
+        return False
+    if set(tokens) & _CONSENT_ANCHORS:
+        return True
+    pairs = set(zip(tokens, tokens[1:]))
+    return bool({("go", "ahead"), ("do", "it"), ("run", "it"), ("send", "it")} & pairs)
 
 # Known-open M38 defect: containment / secret isolation is not repaired. This
 # flag is checked (and can be asserted on in tests) rather than silently
@@ -73,6 +101,7 @@ class OfficeSession:
         self._heads: dict[str, str] = {}
         self._pending: dict[str, dict] = {}          # task_id -> {ref_key: RoleBinding}
         self._escalation: dict[str, object] = {}      # task_id -> EscalationRequest awaiting consent
+        self._escalation_warnings: dict[str, tuple] = {}  # task_id -> warnings carried from the proposal (M39-5)
         self._run: dict[str, tuple] = {}              # task_id -> (run_id, source)
 
     # -- request -> bind -------------------------------------------------------
@@ -138,6 +167,7 @@ class OfficeSession:
             return self._offer_writeback(task_id, edge_result.local.run_id, warnings=warnings)
         if edge_result.route == "ESCALATE":
             self._escalation[task_id] = edge_result.escalation
+            self._escalation_warnings[task_id] = warnings
             return StepResult("ESCALATION_PROPOSAL", task_id=task_id, escalation=edge_result.escalation, warnings=warnings)
         return StepResult("CLARIFY_MEMORY", task_id=task_id, reason=edge_result.decision.reason.value, warnings=warnings)
 
@@ -156,34 +186,60 @@ class OfficeSession:
         if escalation is None:
             return StepResult("ERROR", task_id=task_id, reason="NO_PENDING_ESCALATION")
         consent_intake = _make_intake(self.user_id, session_id, turn_id, trace_id, raw_text, ref_key="consent")
-        words = set(re.findall(r"\w+", raw_text.casefold()))
-        if negated(raw_text) or not (words & _CONSENT_WORDS):
+        if not _is_consent(raw_text):
+            # M39-7: a decline (or anything that is not a clean "yes") must
+            # not leave the proposal stuck pending forever -- the caller is
+            # free to answer again or start something new.
+            del self._escalation[task_id]
+            self._escalation_warnings.pop(task_id, None)
             return StepResult("ESCALATION_DECLINED", task_id=task_id)
         if self.adapter is None or self.harness_runner is None:
             return StepResult("HARNESS_UNAVAILABLE", task_id=task_id)
         probe = self.adapter.probe()
         if not probe.get("installed"):
             return StepResult("HARNESS_UNAVAILABLE", task_id=task_id)
+        # M39-2: record the explicit consent in Memory before the harness runs,
+        # so the decision to escalate is itself durable and auditable.
+        consent_note = self.recorder.task_state(task_id, self._heads[task_id], intake=consent_intake,
+                                                next_step="harness escalation approved by explicit user consent")
+        if not consent_note.persisted:
+            return StepResult("ERROR", task_id=task_id, reason=consent_note.reason)
+        self._heads[task_id] = consent_note.record_ids[-1]
         del self._escalation[task_id]
+        warnings = self._escalation_warnings.pop(task_id, ())
         try:
             outcome = self.harness_runner.run(escalation, self.adapter, session_id=consent_intake.session_id,
                                               posture=PermissionProfile(), limits=Limits(max_budget_usd=1.0))
         except HarnessError:
             return StepResult("HARNESS_UNAVAILABLE", task_id=task_id)
         if outcome.verified:
-            return self._offer_writeback(task_id, outcome.run_id)
+            # M39-5: the "URI can only check that the script runs" warning
+            # (and any other acceptance warning) must survive the harness
+            # path too -- it was previously dropped here, so a neutered
+            # harness "fix" could render as a plain "Verified." with no
+            # caveat at all.
+            return self._offer_writeback(task_id, outcome.run_id, warnings=warnings)
         return StepResult("HARNESS_FAILED", task_id=task_id, run_id=outcome.run_id,
                           verification_status=outcome.verification_status, safety_flags=outcome.safety_flags)
 
     def decline_escalation(self, task_id) -> StepResult:
         self._escalation.pop(task_id, None)
+        self._escalation_warnings.pop(task_id, None)
         return StepResult("ESCALATION_DECLINED", task_id=task_id)
 
     # -- write-back --------------------------------------------------------------
     def approve_writeback(self, task_id, raw_text, *, run_id=None, relpaths=None, session_id, turn_id, trace_id) -> StepResult:
-        run_id = run_id or self._run.get(task_id)
-        if run_id is None:
+        # M39-4: only the run this session itself offered for approval can be
+        # approved. Previously a caller-supplied `run_id` was trusted outright
+        # (`run_id or self._run.get(task_id)`), so any run_id -- including one
+        # this same session already reported as HARNESS_FAILED -- could be
+        # written back if a caller (e.g. a future API) passed it explicitly.
+        offered = self._run.get(task_id)
+        if offered is None:
             return StepResult("ERROR", task_id=task_id, reason="NO_PENDING_RUN")
+        if run_id is not None and run_id != offered:
+            return StepResult("ERROR", task_id=task_id, reason="RUN_ID_NOT_OFFERED")
+        run_id = offered
         approval_intake = _make_intake(self.user_id, session_id, turn_id, trace_id, raw_text, ref_key="approval")
         try:
             outcome = do_writeback(recorder=self.recorder, sources=self.sources, run_store=self.run_store,
@@ -192,7 +248,7 @@ class OfficeSession:
                                    trace_id=approval_intake.trace_id, approval_intake=approval_intake,
                                    relpaths=relpaths or ())
         except WritebackRefused as exc:
-            return StepResult("WRITEBACK_REFUSED", task_id=task_id, reason=str(exc))
+            return StepResult("WRITEBACK_REFUSED", task_id=task_id, reason=str(exc), written=exc.written)
         self._heads[task_id] = outcome.task_state_result.record_ids[-1]
         self._run.pop(task_id, None)
         return StepResult("COMPLETED", task_id=task_id, run_id=run_id, written=outcome.written)
