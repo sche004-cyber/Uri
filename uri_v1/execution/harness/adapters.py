@@ -90,8 +90,11 @@ class ClaudeCodeAdapter:
         return ["--strict-mcp-config", "--mcp-config", str(mcp_path)] + args
 
     # Auth variables Claude Code needs for its own authentication (OD-2). Never
-    # includes a URI provider key: the harness authenticates itself.
-    AUTH_VARS = ("ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN")
+    # includes a URI provider key: the harness authenticates itself. Deliberately
+    # excludes ANTHROPIC_API_KEY (spend policy, 2026-09-28): that would switch Claude
+    # Code from the user's subscription to metered API billing, which is never
+    # authorized here; `harness_env()` also strips it as a hard denial either way.
+    AUTH_VARS = ("CLAUDE_CODE_OAUTH_TOKEN",)
     FILE_TOOLS = ("Read", "Edit", "Write", "Glob", "Grep")
 
     def invocation(self, capsule: ExecutionCapsule, bundle: Path, inventory=None):
@@ -101,13 +104,21 @@ class ClaudeCodeAdapter:
         # File tools are path-scoped to the workspace (H-1): a bare `Read`/`Edit`/… allow
         # rule has no path bound at all, so it can reach any file the user can. Elevated
         # `extra_dirs` (each backed by an ElevationGrant) are scoped in the same way rather
-        # than opened up wholesale. The bare tool names stay denied everywhere else.
+        # than opened up wholesale.
+        #
+        # D-1: an absolute path rule needs Claude Code's `//` prefix -- a single leading
+        # `/` is read relative to the settings root, not as an absolute path, so the old
+        # rule never matched anything at all. And the bare tool name must never also be
+        # denied: `--disallowedTools` overrides every scoped `--allowedTools` rule for
+        # that tool, so a bare `Read` deny left the harness with no usable file tool at
+        # all regardless of the scoped allow above it. The workspace/extra_dir scoping
+        # above is the containment boundary; the bare names are not separately denied.
         scopes = [str(Path(capsule.workspace_files).resolve()), *posture.extra_dirs]
-        allowed = [f"{tool}({scope}/**)" for scope in scopes for tool in self.FILE_TOOLS]
+        allowed = [f"{tool}(//{scope.lstrip('/')}/**)" for scope in scopes for tool in self.FILE_TOOLS]
         # No shell in the default posture (Chetan, 2026-09-28): the harness can edit
         # files but not run them. URI's own verifier does all execution, so it, not
         # an unsandboxed harness process, is what actually runs any script.
-        disallowed = ["WebFetch", "WebSearch", "Bash", *self.FILE_TOOLS]
+        disallowed = ["WebFetch", "WebSearch", "Bash"]
         if posture.package_install: allowed += ["Bash(pip *)", "Bash(pip3 *)", "Bash(python -m pip *)", "Bash(python3 -m pip *)"]
         if posture.network:
             allowed += ["WebFetch", "WebSearch"]

@@ -118,6 +118,76 @@ def test_originals_are_rechecked_after_verification_not_only_before(tmp_path, mo
     assert not out.verified and "ORIGINAL_MODIFIED_DURING_VERIFICATION" in out.safety_flags
 
 
+# ---- M38 repair round 2 regressions (2026-09-28, from the repair re-audit) ----
+
+def test_writeback_refuses_when_original_was_modified_during_verification(tmp_path, monkeypatch):
+    """Finding 2 (D-2): `ORIGINAL_MODIFIED_DURING_VERIFICATION` used to update only the
+    in-memory `HarnessOutcome`, leaving the run store's own last VERIFICATION record
+    saying VERIFIED. `Workspace.write_back` reads that saved record, not the outcome
+    object, so a flagged run could still write back to originals. The runner must now
+    append a superseding VERIFICATION event so the saved record itself reflects it."""
+    from uri_v1.execution.workspace import Workspace, WorkspaceError, WritebackApproval
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "verifier_time_bomb"); monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert not out.verified and "ORIGINAL_MODIFIED_DURING_VERIFICATION" in out.safety_flags
+    run = e.store.get(out.run_id)
+    assert run["verifications"] and run["verifications"][-1]["status"] != "VERIFIED"
+    change = next(c for c in run["result"]["uri_computed_diff"]["changes"] if c["relpath"] == "report.py")
+    ws = Workspace.open(run["started"]["workspace_dir"])
+    approval = WritebackApproval.from_user(intake("yes, approve and apply the fix"), out.run_id, {"report.py": change["after_sha256"]})
+    with pytest.raises(WorkspaceError, match="WRITEBACK_REQUIRES_VERIFIED_RUN"):
+        ws.write_back(approval, sources=e.sources, run_store=e.store)
+
+
+def test_verifier_time_orphan_is_killed_and_never_touches_the_original(tmp_path, monkeypatch):
+    """Finding 3: `verify.py`'s `run_process` (which runs the candidate script during
+    verification) used to sweep the process group only on timeout, not on a clean exit --
+    the harness path already fixed this (H-2) but the verifier's own subprocess did not.
+    A same-process-group child the script spawns must not survive the verifier's run."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "verifier_orphan_same_group")
+    monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert out.verified and out.verification_status == "VERIFIED" and out.safety_flags == ()
+    before = (e.root / "report.py").read_text()
+    time.sleep(2.5)
+    assert (e.root / "report.py").read_text() == before  # the orphan never got to run
+
+
+def test_fabricated_empty_output_sheet_fails_verification(tmp_path, monkeypatch):
+    """Finding 4 (H-4/P7): a script that exits zero and creates the right sheet name, but
+    never writes any data into it, used to pass verification anyway -- `workbook_has_sheets`
+    only checked sheet presence. It now also requires at least one cell of real content
+    beyond the header, so a fabricated/empty output no longer passes as VERIFIED."""
+    e, esc, out = _run(tmp_path, monkeypatch, "fabricated_empty_summary")
+    assert out.verification_status == "FAILED" and not out.verified
+    items = e.store.get(out.run_id)["verifications"][-1]["items"]
+    sheets_item = next(i for i in items if i["kind"] == "workbook_has_sheets")
+    assert sheets_item["status"] == "FAIL" and sheets_item["detail"] == ["Summary"]
+
+
+def test_extra_dir_cannot_be_a_home_ancestor_or_a_sensitive_home_child(tmp_path, monkeypatch):
+    """Finding 5 (D-5/M-4): the old check only refused `/` and $HOME exactly, so a parent
+    of $HOME (e.g. `/home`) or a well-known credential directory directly under $HOME
+    (e.g. `~/.ssh`) could still be granted as an `extra_dir`, exposing far more than the
+    grant's own wording implied. Matching also used to key off the directory's basename
+    alone; it now requires the literal resolved path in the user's own words."""
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+    (tmp_path / "home").mkdir()
+    parent = str(tmp_path)
+    with pytest.raises(HarnessError):  # an ancestor of $HOME grants $HOME too
+        ElevationGrant.from_user(intake(f"yes, allow access to {parent} for this run"), f"extra_dir:{parent}", "run-1")
+    ssh = str(tmp_path / "home" / ".ssh")
+    with pytest.raises(HarnessError):  # a well-known credential dir directly under $HOME
+        ElevationGrant.from_user(intake(f"yes, allow access to {ssh} for this run"), f"extra_dir:{ssh}", "run-1")
+    reports = str(tmp_path / "home" / "reports")
+    with pytest.raises(HarnessError):  # basename alone ("reports") is not enough anymore
+        ElevationGrant.from_user(intake("yes, allow access to reports for this run"), f"extra_dir:{reports}", "run-1")
+    g = ElevationGrant.from_user(intake(f"yes, allow access to {reports} for this run"), f"extra_dir:{reports}", "run-1")
+    assert g.elevation == f"extra_dir:{reports}"
+
+
 def test_oversized_prompt_does_not_block_the_watchdog(tmp_path):
     """M-5: stdin used to be written synchronously before the timeout loop started, so a
     harness that never reads stdin could hang `supervise()` past its own timeout."""
@@ -148,9 +218,21 @@ def test_harness_env_is_an_allowlist_not_a_denylist(monkeypatch):
     env = harness_env()
     assert not any(k in env for k in ("OPENAI_API_KEY", "TAVILY_API_KEY", "GITHUB_TOKEN", "AWS_SECRET_ACCESS_KEY"))
     assert "PATH" in env
-    env = harness_env(("ANTHROPIC_API_KEY",))
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-adapter-owns-this-one")
-    assert harness_env(("ANTHROPIC_API_KEY",))["ANTHROPIC_API_KEY"] == "sk-ant-adapter-owns-this-one"
+    env = harness_env(("CLAUDE_CODE_OAUTH_TOKEN",))
+    monkeypatch.setenv("CLAUDE_CODE_OAUTH_TOKEN", "oauth-adapter-owns-this-one")
+    assert harness_env(("CLAUDE_CODE_OAUTH_TOKEN",))["CLAUDE_CODE_OAUTH_TOKEN"] == "oauth-adapter-owns-this-one"
+
+
+def test_anthropic_api_key_is_never_forwarded_even_if_named_as_an_auth_var(monkeypatch):
+    """M38 repair round 2, finding 6: ANTHROPIC_API_KEY would switch Claude Code from the
+    user's subscription session to metered API billing, which Chetan has ruled out
+    entirely. It must never reach the harness, even if an adapter names it as one of its
+    own `auth_vars` (as ClaudeCodeAdapter itself used to)."""
+    from uri_v1.execution.harness.process import harness_env
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-should-never-forward")
+    assert "ANTHROPIC_API_KEY" not in harness_env()
+    assert "ANTHROPIC_API_KEY" not in harness_env(("ANTHROPIC_API_KEY",))
+    assert "ANTHROPIC_API_KEY" not in ClaudeCodeAdapter.AUTH_VARS
 
 
 def test_elevated_posture_needs_a_grant_it_cannot_be_built_without(tmp_path, monkeypatch):
@@ -203,7 +285,13 @@ def test_default_posture_has_no_shell_and_scopes_file_tools_to_the_workspace(tmp
     """H-1: bare `Read`/`Edit`/`Write`/`Glob`/`Grep` allow rules were not path-scoped at all,
     and `Bash(python *)` gave the harness arbitrary code execution by default. Chetan's
     decision (2026-09-28): no shell in the default posture; URI's own verifier runs any
-    script. File tools are scoped to the workspace's `files/` directory."""
+    script. File tools are scoped to the workspace's `files/` directory.
+
+    D-1 (M38 repair round 2): the scoped allow rule must use Claude Code's `//` prefix
+    for an absolute path (a single leading `/` is read relative to the settings root and
+    never matches), and the bare tool name must NOT also be denied -- `--disallowedTools`
+    overrides every scoped `--allowedTools` rule for that tool, so denying it bare left
+    the harness with no usable file tool at all regardless of the scope above it."""
     e, esc, runner, home = escalated(tmp_path, monkeypatch)
     ws = Workspace.create(user_id=e.user, scratch_root=e.scratch, sources=e.sources,
                           inputs=[WorkspaceInput(i.role, i.source_id, i.content_sha256) for i in esc.inputs])
@@ -213,7 +301,8 @@ def test_default_posture_has_no_shell_and_scopes_file_tools_to_the_workspace(tmp
     assert "Bash" in disallowed and not any(a.startswith("Bash(python") for a in argv)
     scope = str(ws.files.resolve())
     for tool in ("Read", "Edit", "Write", "Glob", "Grep"):
-        assert f"{tool}({scope}/**)" in argv and tool in disallowed  # scoped allow + bare deny elsewhere
+        assert f"{tool}(//{scope.lstrip('/')}/**)" in argv  # scoped allow, correctly anchored absolute
+        assert tool not in disallowed  # and NOT bare-denied, or the scoped allow above is dead
 
 
 def test_reported_error_is_recorded_as_failed_claim_but_uri_still_checks(tmp_path, monkeypatch):

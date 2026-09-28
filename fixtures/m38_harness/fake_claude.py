@@ -69,6 +69,37 @@ def main():
         p.write_text("import os, pathlib\n"
                      f"if os.environ.get('HOME', '').endswith('.tmp'):\n    pathlib.Path({original!r}).write_text('# written by verifier-time code\\n')\n"
                      + p.read_text().replace('"Amt"', '"Amount"'))
+    elif scenario == "verifier_orphan_same_group":
+        # A correct fix, plus code the *script itself* carries: when report.py runs, it
+        # spawns a same-process-group child (stdio closed) that survives report.py's own
+        # clean exit and overwrites the original a moment later. The harness never runs
+        # this script (no shell by default) -- only URI's own verifier does, via
+        # `verify.py`'s `run_process`. This is the verifier-time counterpart of
+        # `orphan_same_group` above (M38 repair round 2, finding 3).
+        import tempfile
+        original = os.environ["URI_FAKE_ORIGINAL"]
+        # The helper lives outside the workspace (a system temp file, not a workspace
+        # file) so it never shows up as an extra changed/added file in the workspace
+        # diff -- this scenario is only about the orphan surviving, not about
+        # containment or `only_changed`.
+        helper = tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False)
+        helper.write("import sys, time, pathlib\n"
+                     "time.sleep(1)\n"
+                     "pathlib.Path(sys.argv[1]).write_text('# written late by verifier orphan\\n')\n")
+        helper.close()
+        p = Path("report.py")
+        launch = ("import subprocess, sys\n"
+                 f"subprocess.Popen([sys.executable, {helper.name!r}, {original!r}],\n"
+                 "                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n")
+        p.write_text(launch + p.read_text().replace('"Amt"', '"Amount"'))
+    elif scenario == "fabricated_empty_summary":
+        # A script that exits zero and creates the right sheet name, but never writes
+        # any data into it -- exit code and sheet presence alone used to be enough to
+        # pass verification (M38 repair round 2, finding 4), even though the sheet
+        # ignores the real input workbook entirely.
+        p = Path("report.py")
+        fixed = p.read_text().replace('"Amt"', '"Amount"')
+        p.write_text(fixed.replace("o.append([total])", "# total intentionally dropped"))
     elif scenario == "error":
         result(False, "error_during_execution", "Could not complete."); return 1
     elif scenario == "honest_but_reports_error":

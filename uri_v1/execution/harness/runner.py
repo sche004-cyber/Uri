@@ -95,8 +95,21 @@ class HarnessRunner:
         # harness-written code (M37 verifier, no sandbox), which can modify an original only
         # after the first check ran. A run is never called clean on the strength of a check
         # that predates code execution it did not see.
+        verification_status = lineage.verification_status
         if not originals_changed and ws.originals_unchanged(self.sources):
             flags.append("ORIGINAL_MODIFIED_DURING_VERIFICATION")
-        verified = lineage.verification_status == "VERIFIED" and not flags
-        return HarnessOutcome(run_id, verified, lineage.verification_status, claims.claimed_outcome.value, tuple(flags),
+            # D-2: the run store's own append-only record is what `Workspace.write_back`
+            # reads (`verifications[-1]["status"]`), not this in-memory `HarnessOutcome`.
+            # The verifier already wrote its VERIFICATION event before this check could
+            # run, so leaving that event alone would let write-back proceed on a run
+            # this method itself has just determined is unsafe. Append a superseding
+            # VERIFICATION event so the saved record -- the one write-back actually
+            # trusts -- reflects the same verdict as the outcome being returned here.
+            verification_status = "FAILED"
+            self.store.append(run_id, "VERIFICATION", {"verifier_id": None, "verifier_version": None,
+                                                        "claim_record_id": lineage.verifier_record_id,
+                                                        "status": verification_status, "criteria_sha256": None, "items": [],
+                                                        "reason": "ORIGINAL_MODIFIED_DURING_VERIFICATION"})
+        verified = verification_status == "VERIFIED" and not flags
+        return HarnessOutcome(run_id, verified, verification_status, claims.claimed_outcome.value, tuple(flags),
                               lineage.claim_record_id, lineage.verifier_record_id, metrics, lineage.reason)

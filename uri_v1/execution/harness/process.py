@@ -24,6 +24,13 @@ BASE_ENV_ALLOW = frozenset({"PATH", "HOME", "USERPROFILE", "LANG", "LC_ALL", "LC
 # outside a test run, never a secret name). A real harness never reads these.
 _TEST_FIXTURE_PREFIXES = ("URI_FAKE_", "URI_PROBE_")
 
+# Chetan has ruled out any separately metered API spend (2026-09-28 spend policy): a
+# harness run must always authenticate through the user's own subscription session,
+# never through a metered provider key. `ANTHROPIC_API_KEY` is therefore never
+# forwarded, even if an adapter names it as one of its own `auth_vars` -- the general
+# allowlist is not the place to encode a billing decision, so it is hard-stripped here.
+_NEVER_FORWARD = frozenset({"ANTHROPIC_API_KEY"})
+
 
 def harness_env(auth_vars: tuple = ()) -> dict:
     """A minimal, allowlisted environment: generic runtime variables plus the
@@ -32,7 +39,7 @@ def harness_env(auth_vars: tuple = ()) -> dict:
     `auth_vars` must name only the harness's own credentials; passing URI's
     provider keys or the user's unrelated secrets here would defeat OD-2.
     """
-    allow = BASE_ENV_ALLOW | set(auth_vars)
+    allow = (BASE_ENV_ALLOW | set(auth_vars)) - _NEVER_FORWARD
     return {k: v for k, v in os.environ.items() if k in allow or k.startswith(_TEST_FIXTURE_PREFIXES)}
 
 

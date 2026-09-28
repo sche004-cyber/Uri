@@ -50,6 +50,12 @@ def canonical(value) -> bytes:
 # -- permissions (OD-4) ---------------------------------------------------------------------------
 
 _ELEVATIONS = {"network": ("network", "internet", "web"), "package_install": ("install", "pip", "package", "packages")}
+# Directories whose exposure would defeat the point of scoping at all, even though
+# they are not $HOME itself (D-5/M-4): a parent of $HOME (e.g. `/home`) grants
+# everything under every user's home the same way `/` would, and a well-known
+# credential directory directly under $HOME (e.g. `~/.ssh`) is exactly the kind of
+# thing an "allow access to my files" grant must never quietly cover.
+_SENSITIVE_HOME_CHILDREN = frozenset({".ssh", ".gnupg", ".aws", ".docker", ".kube", ".config", ".netrc"})
 
 
 @dataclass(frozen=True)
@@ -65,10 +71,20 @@ class ElevationGrant:
         if not run_scope: raise HarnessError("RUN_SCOPE_REQUIRED")
         words = set(re.findall(r"\w+", intake.raw_text.casefold()))
         if elevation.startswith("extra_dir:"):
-            resolved = str(Path(elevation.split(":", 1)[1]).expanduser().resolve())
-            if resolved in ("/", str(Path.home().resolve())): raise HarnessError("EXTRA_DIR_NOT_ALLOWED")
-            named = Path(resolved).name.casefold()
-            ok = _whole_token(intake.raw_text.casefold(), named)
+            resolved_path = Path(elevation.split(":", 1)[1]).expanduser().resolve()
+            resolved = str(resolved_path)
+            home = Path.home().resolve()
+            # D-5/M-4: reject the granted path itself, any ancestor of $HOME (which
+            # would expose $HOME and everything alongside it the same way `/` would),
+            # and any well-known credential directory directly under $HOME.
+            if (resolved in ("/", str(home)) or resolved_path in home.parents
+                    or (resolved_path.parent == home and resolved_path.name.casefold() in _SENSITIVE_HOME_CHILDREN)):
+                raise HarnessError("EXTRA_DIR_NOT_ALLOWED")
+            # The user's own words must name the literal directory being granted, not
+            # merely an incidental word that happens to match its last path segment
+            # (D-5/M-4): matching on the basename alone let a sentence that never
+            # mentioned the real path at all still satisfy the grant.
+            ok = _whole_token(intake.raw_text.casefold(), resolved.casefold())
             elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))

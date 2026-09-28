@@ -59,6 +59,13 @@ def run_process(argv, *, cwd: Path, env: dict, timeout_s: float, stdin_bytes: by
         timed_out = True
         kill_group(proc)
         out, err = proc.communicate()
+    # Always sweep the process group, even after a clean exit (mirrors the harness
+    # path's own H-2 fix in `process.py`): the script under verification runs with no
+    # OS sandbox, so a same-group background child it spawns would otherwise outlive
+    # this call and could overwrite the original after the run is already recorded as
+    # VERIFIED. A child that escaped into its own session (setsid) is not reachable
+    # this way and stays a disclosed gap, same as the harness path.
+    kill_group(proc)
     return {"exit_code": proc.returncode, "timed_out": timed_out, "duration_ms": round((time.monotonic() - started) * 1000, 1),
             "stdout": out, "stderr": err}
 
@@ -120,7 +127,15 @@ def verify_candidate(workspace: Workspace, criteria: AcceptanceCriteria, *, pyth
                 structure = read_workbook_structure(path)
                 if kind == "workbook_has_sheets":
                     missing = [s for s in item["sheets"] if s not in structure.sheet_names]
-                    items.append({"kind": kind, "status": "FAIL" if missing else "PASS", "detail": missing})
+                    # H-4/P7: a sheet with the right name but nothing in it beyond its own
+                    # header row is indistinguishable from one the script never actually
+                    # populated from the real input -- exit code zero and sheet presence
+                    # alone are not evidence the output derives from anything. Require at
+                    # least one cell beyond the header for every named sheet.
+                    empty = [] if missing else [s for s in item["sheets"]
+                                                if structure.sheet(s).scanned_cells <= len(structure.sheet(s).header)]
+                    problems = missing + empty
+                    items.append({"kind": kind, "status": "FAIL" if problems else "PASS", "detail": problems or None})
                 elif kind == "workbook_has_columns":
                     sheet = structure.sheet(item["sheet"])
                     missing = list(item["columns"]) if sheet is None else [c for c in item["columns"] if c not in sheet.header]
