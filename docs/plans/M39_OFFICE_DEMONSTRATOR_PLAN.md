@@ -265,3 +265,7 @@ These trigger stop condition **S-3** for anything that runs on real user files. 
 - **Waits for M38 H-1..H-4 (and M37 F-3/F-5) repairs plus re-audit, and the User's decision on `Bash(python *)`:** any live harness run on real files (B3 in the real app, B-UI D2). A B3 run in this container on generated fixture files is allowed before then, because nothing of the User's is exposed. Its result is labelled pre-repair.
 - `URI_WORKING_PRODUCT_BASELINE_REACHED` cannot be reported while any of these findings is open on a path the baseline uses.
 - The acceptance builder's output-structure items (§4.1) address the same failure class as M38 H-4 / M37 F-3 at the Office layer. They do not replace the M37 repair.
+
+### 13.4 Posture decision (2026-09-28 10:26, relayed by the coordinator as the User's decision)
+
+`Bash(python *)` is dropped from the default harness posture. Claude Code does not run scripts; URI's own verifier does all execution. The M38 repair lane implements this in `uri_v1/execution/harness/adapters.py`. M39 builds no workaround and relies on the repaired posture. The §13.3 wait on "the User's decision on `Bash(python *)`" is resolved; the wait on the M38 repairs and re-audit remains.
