@@ -179,6 +179,16 @@ class MemoryIndex:
             # A user cannot hide a verifier verdict or strand a task without a head (audit F-4).
             if any(self.records[t].kind == K.TASK_STATE or self.records[t].provenance == P.VERIFIER_RESULT
                    for t in r.payload["target_record_ids"]): raise ValueError("INVALID_HIDE_TARGET")
+            # Hiding the whole task (its TASK_OPENED) cannot hide a FAILED
+            # verifier verdict recorded against it either (audit A-1): a user
+            # cannot use whole-task forget as a side door around the rule above.
+            targets = [self.records[t] for t in r.payload["target_record_ids"]]
+            if any(target.kind == K.TASK_OPENED and any(
+                        other.task_id == target.task_id and other.kind == K.OUTCOME
+                        and other.provenance == P.VERIFIER_RESULT
+                        and other.payload["verification_status"] == V.FAILED
+                        for other in self.records.values())
+                   for target in targets): raise ValueError("INVALID_HIDE_TARGET")
             if not all(e["actor"] == "USER" and e["action"] == "FORGET" for e in events): raise ValueError("USER_FORGET_REQUIRED")
         elif r.kind == K.DERIVATIVE:
             if r.supersedes or r.task_id not in self.openings: raise ValueError("INVALID_DERIVATIVE")

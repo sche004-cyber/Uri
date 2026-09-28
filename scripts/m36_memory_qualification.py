@@ -119,7 +119,17 @@ def run_one(directory,battery):
                  "model_normalized_title":f"the {stem} file","negated_title":f"not {name}",
                  # Closing-audit F-1: negation cues beyond the literal word "not".
                  "negated_dont_title":f"don't use {name}","negated_skip_title":f"skip {name}",
-                 "negated_other_than_title":f"anything other than {name}"}[form]
+                 "negated_other_than_title":f"anything other than {name}",
+                 # Repair re-audit R-1/R-2: apostrophe-glyph variants, the split
+                 # "do n't" form, and everyday negation phrasings beyond the
+                 # original 8-word cue set.
+                 "negated_apostrophe_variant_title":f"don‘t use {name}",
+                 "negated_split_nt_title":f"do n't use {name}",
+                 "negated_but_title":f"anything but {name}",
+                 "negated_ignore_title":f"ignore {name}",
+                 "negated_leave_out_title":f"leave out {name}",
+                 "negated_aside_from_title":f"aside from {name}",
+                 "negated_havent_title":f"haven't touched {name}"}[form]
             result=retrieve(raw,proposal=name if form=="model_normalized_title" else None)
             latencies.append(result.telemetry["retrieval_us"])
             projected,b=register(result)

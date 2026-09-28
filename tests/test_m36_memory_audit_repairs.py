@@ -37,6 +37,50 @@ def test_f1_positive_literals_are_not_negations(raw):
     assert not negated(raw)
 
 
+@pytest.mark.parametrize("raw",[
+    "don‘t use budget.xlsx",   # left single quotation mark
+    "donʼt use budget.xlsx",  # modifier letter apostrophe
+    "don`t use budget.xlsx",       # backtick
+    "don´t use budget.xlsx",  # acute accent
+    "do n't use budget.xlsx",
+    "DON'T use budget.xlsx",
+    "anything but budget.xlsx",
+    "ignore budget.xlsx",
+    "leave out budget.xlsx",
+    "neither budget.xlsx nor report.docx",
+    "nothing from budget.xlsx",
+    "none of budget.xlsx",
+    "aside from budget.xlsx",
+    "stop using budget.xlsx",
+    "haven't touched budget.xlsx",
+    "wouldn't use budget.xlsx",
+    "mustn't use budget.xlsx",
+    "please exclude budget.xlsx",
+    "without budget.xlsx",
+    "everything except budget.xlsx",
+    "use report.docx instead of budget.xlsx",
+])
+def test_r1_r2_negation_forms_never_confirm(raw,tmp_path):
+    """Re-audit R-1/R-2: apostrophe-glyph variants, the split "do n't" form,
+    and everyday negation phrasings beyond the original 8-word cue set."""
+    log,sources,rec,root=setup(tmp_path,("budget.xlsx","report.docx"))
+    a=raw.index("budget.xlsx")
+    result=retrieval(log,sources,raw,proposal="budget.xlsx",span=(a,a+len("budget.xlsx")))
+    state,service,p=registered(sources,result)
+    assert state!=BindingState.CONFIRMED, raw
+
+
+def test_r1_explicit_id_negation_forms_never_confirm(tmp_path):
+    """Re-audit R-1: negation of an explicit source_id, not just a filename."""
+    log,sources,rec,root=setup(tmp_path,("budget.xlsx","report.docx"))
+    sid=next(l.source_id for l in sources.scan().locators if l.relpath=="budget.xlsx")
+    for raw in (f"don't use {sid}", f"anything but {sid}"):
+        a=raw.index(sid)
+        result=retrieval(log,sources,raw,proposal=sid,span=(a,a+len(sid)))
+        state,service,p=registered(sources,result)
+        assert state!=BindingState.CONFIRMED, raw
+
+
 @pytest.mark.parametrize("text,status",[
     ("I'm not done yet","COMPLETED"),
     ("please do not mark this done yet","COMPLETED"),
@@ -58,6 +102,25 @@ def test_f2_explicit_transitions_still_accepted(tmp_path):
     assert rec.task_state(task,head.record_id,intake=intake("pause"),status="PAUSED").persisted
     assert rec.task_state(task,log.load().task(task).record_id,intake=intake("resume"),status="OPEN").persisted
     assert rec.task_state(task,log.load().task(task).record_id,intake=intake("done"),status="COMPLETED").persisted
+
+
+@pytest.mark.parametrize("text,status",[
+    ("nothing is done yet","COMPLETED"),
+    ("none of it is done","COMPLETED"),
+    ("done? nope","COMPLETED"),
+    ("far from done","COMPLETED"),
+    ("don‘t cancel this","ABANDONED"),
+    ("donʼt pause","PAUSED"),
+    ("it hasn't failed","FAILED"),
+])
+def test_r3_negated_status_forms_are_not_user_transitions(text,status,tmp_path):
+    """Re-audit R-3: the R-1/R-2 cue gaps also let negated status phrasings
+    bind as explicit USER_ASSERTED transitions."""
+    log,sources,rec,root=setup(tmp_path)
+    task,head=opened(rec)
+    with pytest.raises(ValueError,match="EXPLICIT_USER_TRANSITION_REQUIRED"):
+        rec.task_state(task,head.record_id,intake=intake(text),status=status)
+    assert log.load().task(task).payload["status"]=="OPEN"
 
 
 @pytest.fixture
@@ -126,6 +189,22 @@ def test_f4_forget_cannot_strand_task_but_can_hide_whole_task(tmp_path):
     assert log.load().task(task).record_id==head.record_id
     assert rec.forget((log.load().openings[task],),intake=intake("forget")).persisted
     assert log.load().task(task) is None
+
+
+def test_a1_whole_task_forget_cannot_hide_a_failed_verdict(tmp_path):
+    """User ruling (2026-09-28): whole-task forget must not be allowed to hide
+    a FAILED verifier verdict inside it (audit A-1). Blocked, not redacted."""
+    bootstrap(); log,s,rec,root=setup(tmp_path)
+    (root/"budget.xlsx").write_bytes(b"FAIL")
+    task,head=opened(rec); src=s.fingerprint(s.scan().locators[0])
+    verdict=rec.invoke_verifier(claimed(rec,task,src).record_ids[0],"uri.verifier.m36_fixture",trace_id="a"*32,session_id="session")
+    assert verdict.persisted
+    opening=log.load().openings[task]
+    hidden=rec.forget((opening,),intake=intake("forget the task"))
+    assert not hidden.persisted and hidden.reason=="INVALID_HIDE_TARGET"
+    package=build_context(log.load(),s,task).to_dict()
+    assert package["task"] is not None
+    assert any(o["record_id"]==verdict.record_ids[0] and o["verification_status"]=="FAILED" for o in package["recent_outcomes"])
 
 
 def test_f5_dot_separated_stem_is_a_collision(tmp_path):
