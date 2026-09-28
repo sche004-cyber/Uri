@@ -4,6 +4,13 @@
 - **Requested auditor:** Codex (User, 2026-09-28). Codex implemented M36 `be4451c`, so for M36 this package asks Codex to audit only the *integration* of M36 into the chain and Claude's M36 repair commit `405db1f`, not to re-close its own M36 build (see §6).
 - **Status of every milestone in scope:** PROVISIONAL / NOT FROZEN. Nothing here is closed, frozen, released or integrated. This package does not authorize repair; the auditor reports findings and the User decides.
 
+> **2026-09-28 lineage notice:** the SHA table below is the original scope package,
+> not the terminal implementation lineage. Later M36/M37/M38 repair lines were
+> reconciled and audited at `833d6ed8b47b797369f775a0bfc01c1c61a09833`;
+> bounded audit repairs begin at `379769f`. See
+> `URI_BATCH_M36_M37_M38_INDEPENDENT_AUDIT_REPORT.md`. All three milestones remain
+> PROVISIONAL / NOT FROZEN.
+
 ## 1. Where the code is
 
 | Item | Value |

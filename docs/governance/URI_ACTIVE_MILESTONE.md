@@ -7,6 +7,16 @@
 
 ## 1. Milestone Identity & State
 
+**BATCH AUDIT NOTE — 2026-09-28 (additive):** The later divergent M36,
+M37, and M38 repair lines were reconciled without overwriting their history and
+independently audited at `833d6ed`; bounded audit repairs are recorded at
+`379769f`. M36 and M37 are `ACCEPT_WITH_DOCUMENTED_LIMITATIONS` and ready to be
+presented for a freeze decision. M38 is `ACCEPT_WITH_DOCUMENTED_LIMITATIONS` for
+offline/Windows qualification but still requires a fresh subscription-backed
+Windows live qualification before a freeze decision. All three remain
+**PROVISIONAL / NOT FROZEN**. See the
+[independent audit report](../plans/URI_BATCH_M36_M37_M38_INDEPENDENT_AUDIT_REPORT.md).
+
 **BATCH NOTE — 2026-09-28 (additive):** M38 Harness Execution Minimum is implemented and `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](../plans/M38_IMPLEMENTATION_REPORT.md)). The batch stops before the Office demonstrator; the next stage is one independent Codex audit per [the batch package](../plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md).
 
 **BATCH NOTE — 2026-09-28 (additive):** Under the User's batched-audit workflow, M37 Edge Minimum is implemented and `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M37_EDGE_MINIMUM_PLAN.md), [report](../plans/M37_IMPLEMENTATION_REPORT.md)). It depends on unaudited M36 at `405db1f`. M36 remains the current milestone record above; nothing here freezes, closes or integrates M36 or M37.
