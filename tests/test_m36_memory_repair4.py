@@ -35,6 +35,12 @@ NON_DECLARATIONS = [
     ("can you complete the task", "COMPLETED"),     # a request for work, no '?'
     ("please complete this task", "COMPLETED"),
     ("I can pause it for a bit then resume", "PAUSED"),
+    # Focused re-check fix: bare "complete" outside "mark as"/"it's" framing is a
+    # request, not a declaration, whether or not it carries a lead request word.
+    ("just complete it", "COMPLETED"),
+    ("complete the task", "COMPLETED"),
+    ("go ahead and complete the task", "COMPLETED"),
+    ("let's complete this task", "COMPLETED"),
 ]
 
 
@@ -114,6 +120,8 @@ STATUS_DECLARATION_CONTROLS = [
     ("done", "COMPLETED"), ("it's done", "COMPLETED"), ("we are done now", "COMPLETED"),
     ("mark this task as complete", "COMPLETED"), ("please cancel this task", "ABANDONED"),
     ("pause for a moment", "PAUSED"), ("ok, the task failed", "FAILED"), ("can you cancel this task", "ABANDONED"),
+    # "complete" declares completion only in "mark as"/"it's"/"is" framing.
+    ("it's complete", "COMPLETED"), ("the task is complete", "COMPLETED"), ("mark as complete", "COMPLETED"),
 ]
 
 

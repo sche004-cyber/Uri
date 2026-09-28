@@ -126,10 +126,21 @@ class Recorder:
                     fillers = STATUS_FILLERS | (DURATION_FILLERS if new is S.PAUSED else frozenset())
                     words = affirmative_words(intake.raw_text,fillers | set(allowed[new]))
                     matched = set(words).intersection(allowed[new]) if words else set()
+                    # Focused re-check fix: bare "complete" reads as a request ("just complete it",
+                    # "complete the task", "let's complete this task") almost as often as a
+                    # declaration. Only "mark ... as complete" and "it's/is complete" framings
+                    # declare completion via "complete"; anything else needs "done"/"completed".
+                    bare_complete = False
+                    if new is S.COMPLETED and words and "complete" in matched and not matched & {"completed","done"}:
+                        i = words.index("complete")
+                        framed = (i > 0 and words[i-1] in ("as","is")) or \
+                                 (i > 1 and words[i-1] == "s" and words[i-2] == "it")
+                        bare_complete = not framed and words != ("complete",)
                     # A question ("is it done?") asks; it does not declare.
                     if (negated(intake.raw_text) or not words or not matched
                             or "?" in intake.raw_text or words[0] in ("is","are","am")
-                            or (new is S.COMPLETED and "complete" in matched and words[0] in REQUEST_LEAD_WORDS)):
+                            or (new is S.COMPLETED and "complete" in matched and words[0] in REQUEST_LEAD_WORDS)
+                            or bare_complete):
                         raise ValueError("EXPLICIT_USER_TRANSITION_REQUIRED")
                 if new == S.OPEN: prov = P.URI_RECORDED  # URI accepts the user resume event.
             p["status"] = new; p["transition_evidence_ids"] = (eid,)
