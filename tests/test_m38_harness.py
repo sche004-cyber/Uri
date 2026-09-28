@@ -16,6 +16,8 @@ from uri_v1.execution.harness.capsule import build_capsule
 from uri_v1.execution.harness.contracts import (CapabilityGrant, ElevationGrant, HarnessError, HarnessType, Limits,
                                                 PermissionProfile)
 from uri_v1.execution.harness.discovery import discover_claude_code, discover_codex
+from uri_v1.execution.private_files import is_private
+from uri_v1.execution.proctree import process_alive
 from uri_v1.execution.workspace import Workspace, WorkspaceInput
 from uri_v1.memory.contracts import Authority, VerificationStatus
 
@@ -84,11 +86,7 @@ def test_whole_process_group_is_terminated(tmp_path, monkeypatch):
     pid = int(pid_file.read_text())
     deadline = time.monotonic() + 5
     while time.monotonic() < deadline:
-        try:
-            os.kill(pid, 0)
-            with open(f"/proc/{pid}/stat") as f:
-                if f.read().split()[2] == "Z": break
-        except (ProcessLookupError, FileNotFoundError): break
+        if not process_alive(pid): break  # works on Windows too, unlike os.kill(pid, 0) (a87e158 F-2)
         time.sleep(0.1)
     else:
         pytest.fail("grandchild survived process-group termination")
@@ -501,7 +499,8 @@ def test_controlled_use_injects_only_granted_capabilities_per_run(tmp_path, monk
     cap = build_capsule(esc, ws2, harness_type=HarnessType.CLAUDE_CODE, capabilities=grant)
     argv, _, _ = adapter.invocation(cap, ws2.bundle)
     assert list(json.loads((ws2.bundle / "mcp.json").read_text())["mcpServers"]) == ["sheets"]
-    assert oct((ws2.bundle / "mcp.json").stat().st_mode & 0o777) == "0o600"
+    assert is_private(ws2.bundle / "mcp.json")  # owner-only on every platform (a87e158 F-4)
+    if os.name != "nt": assert oct((ws2.bundle / "mcp.json").stat().st_mode & 0o777) == "0o600"
     plugin_dir = Path(argv[argv.index("--plugin-dir") + 1])
     assert (plugin_dir / "skills" / "xlsx-helper" / "SKILL.md").exists() and ws2.bundle in plugin_dir.parents
     assert (home / ".claude" / "settings.json").read_text().count("fmt@market") == 1  # nothing changed globally

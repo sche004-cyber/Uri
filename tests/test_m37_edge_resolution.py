@@ -252,8 +252,15 @@ def test_edge_and_execution_import_boundaries():
                     assert not mod.startswith("uri_v1.memory.") or mod in ("uri_v1.memory.contracts",), (path, mod)
 
 
+# Baseline = the reconciled M36 state this candidate carries (cloud M36 line 80b7359 plus
+# the ported remainder of Antigravity-audited 70e6065). It was 405db1f, the pre-repair M36
+# commit, which made this guard fail as soon as any accepted M36 repair was applied
+# (Antigravity a87e158 F-5); M36 repairs are M36's, not a scope breach by M37/M38.
+M36_BASELINE = "945ccba743069a4caee90cbce7da3ef12abba653"
+
+
 def test_m36_and_frozen_files_unchanged():
-    changed = subprocess.check_output(["git", "diff", "--name-only", "405db1ff21f11f6927fe1b74990ff6b88a97a28d", "--",
+    changed = subprocess.check_output(["git", "diff", "--name-only", M36_BASELINE, "--",
                                        "uri_v1", "uri_core", "uri_ui", "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
     untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "--", "uri_v1", "uri_core", "uri_ui",
                                          "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()

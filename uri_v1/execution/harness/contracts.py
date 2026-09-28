@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 
@@ -25,20 +26,45 @@ def _whole_token(text: str, token: str) -> bool:
     return re.search(r"(?<![\w-])" + re.escape(token) + r"(?![\w-])", text) is not None
 
 
-def _whole_path_token(text: str, token: str) -> bool:
-    """Like `_whole_token`, but for a path.
+# A path the user actually wrote: starting with a drive letter, a UNC/root separator or
+# `~`, either bare (up to whitespace/quote) or quoted (may contain spaces). A bare word
+# ("reports") is never read as a path. The two scans run independently so an
+# apostrophe elsewhere in the sentence ("it's", "Chetan's") cannot swallow a bare path.
+_ANCHOR = r"(?:[A-Za-z]:[\\/]|[\\/]|~)"
+_BARE_PATH = re.compile(_ANCHOR + r"[^\s\"'<>|,;]*")
+_QUOTED_PATH = re.compile(r'"(' + _ANCHOR + r'[^"]*)"|\'(' + _ANCHOR + r"[^']*)'")
 
-    Finding 3 (M38 repair round 3): `_whole_token`'s boundary treats `/` as an ordinary
-    non-word character, the same as a space. A shorter granted path that is merely a
-    path-prefix of a longer path the user actually mentioned (e.g. matching
-    `.../reports` inside a sentence that only ever says `.../reports/2026`) satisfied it
-    too, since the character right after the match was `/`, not `\\w` or `-` -- so
-    approving a subfolder silently approved its parent as well. A path boundary must
-    also exclude `/` and `\\`, so the match only succeeds on the path actually named,
-    never on one of its ancestors.
+
+def _resolve_dir(value: str) -> str:
+    return str(Path(value).expanduser().resolve())
+
+
+def _named_paths(text: str):
+    for m in _BARE_PATH.finditer(text): yield m.group(0).rstrip(".:!?)")  # sentence punctuation
+    for m in _QUOTED_PATH.finditer(text): yield (m.group(1) or m.group(2)).strip()
+
+
+def _names_same_path(text: str, granted: str, *, resolve=_resolve_dir, normcase=os.path.normcase) -> bool:
+    """True iff some path the user wrote in `text` resolves to the same directory as
+    `granted` (an already-resolved path).
+
+    The comparison is semantic, never textual (Antigravity a87e158 F-3): each path the
+    user typed is resolved exactly the way the grant itself was, then compared with the
+    platform's own case/separator rules. The earlier literal search looked for the
+    *resolved* form in the user's words, so on Windows "allow access to /home/someone/e"
+    was checked for "c:\\home\\someone\\e" (a drive letter the user never typed) and
+    refused; "D:/Reports" vs "d:\\reports" failed the same way. Equality, not prefix,
+    keeps round 3's finding-3 guarantee: naming `.../reports/2026` never authorizes
+    `.../reports`, and naming a parent never authorizes a child.
     """
-    if not token: return False
-    return re.search(r"(?<![\w/\\-])" + re.escape(token) + r"(?![\w/\\-])", text) is not None
+    target = normcase(granted)
+    for raw in _named_paths(text):
+        try:
+            if normcase(resolve(raw)) == target: return True
+        except (OSError, RuntimeError, ValueError):
+            continue
+    return False
+
 
 CAPSULE_SCHEMA_VERSION = "m38.capsule.v1"
 
@@ -88,20 +114,24 @@ class ElevationGrant:
         if not run_scope: raise HarnessError("RUN_SCOPE_REQUIRED")
         words = set(re.findall(r"\w+", intake.raw_text.casefold()))
         if elevation.startswith("extra_dir:"):
-            resolved_path = Path(elevation.split(":", 1)[1]).expanduser().resolve()
-            resolved = str(resolved_path)
+            resolved = _resolve_dir(elevation.split(":", 1)[1])
+            resolved_path = Path(resolved)
             home = Path.home().resolve()
-            # D-5/M-4: reject the granted path itself, any ancestor of $HOME (which
-            # would expose $HOME and everything alongside it the same way `/` would),
-            # and any well-known credential directory directly under $HOME.
-            if (resolved in ("/", str(home)) or resolved_path in home.parents
+            # D-5/M-4: reject the granted path itself, any filesystem root (`/`, or any
+            # Windows drive root such as `D:\\`, not only the one holding $HOME), any
+            # ancestor of $HOME (which would expose $HOME and everything alongside it the
+            # same way `/` would), and any well-known credential directory directly under
+            # $HOME. A Windows UNC/network path is refused too: no file-tool permission
+            # rule form for it has been confirmed against Claude Code, so it fails closed.
+            if (resolved_path.parent == resolved_path or resolved_path == home or resolved_path in home.parents
+                    or resolved.startswith("\\\\")
                     or (resolved_path.parent == home and resolved_path.name.casefold() in _SENSITIVE_HOME_CHILDREN)):
                 raise HarnessError("EXTRA_DIR_NOT_ALLOWED")
             # The user's own words must name the literal directory being granted, not
             # merely an incidental word that happens to match its last path segment
             # (D-5/M-4): matching on the basename alone let a sentence that never
             # mentioned the real path at all still satisfy the grant.
-            ok = _whole_path_token(intake.raw_text.casefold(), resolved.casefold())
+            ok = _names_same_path(intake.raw_text, resolved)
             elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))

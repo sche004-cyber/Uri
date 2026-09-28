@@ -10,6 +10,7 @@ import subprocess
 import threading
 import time
 
+from uri_v1.execution import proctree
 from uri_v1.execution.verify import kill_group
 
 # Generic process environment a harness needs to run at all. Nothing named here
@@ -59,10 +60,8 @@ class ProcessResult:
 
 def supervise(argv, *, cwd: Path, env: dict, stdin_bytes: bytes | None, timeout_s: float, inactivity_s: float,
               log_path: Path, cancel: threading.Event | None = None) -> ProcessResult:
-    kwargs = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if os.name == "nt" else {"start_new_session": True}
     started = time.monotonic()
-    proc = subprocess.Popen(argv, cwd=str(cwd), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, **kwargs)
+    proc = proctree.spawn(argv, cwd=str(cwd), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     last = [time.monotonic()]
     digest = hashlib.sha256(); size = [0]; err = bytearray()
     log = open(log_path, "wb")
@@ -96,13 +95,18 @@ def supervise(argv, *, cwd: Path, env: dict, stdin_bytes: bytes | None, timeout_
         kill_group(proc)
         break
     proc.wait()
-    kill_group(proc)  # always sweep the process group, even after a clean exit (H-2): a same-group
+    contained = kill_group(proc)  # always sweep the process tree, even after a clean exit (H-2): a same-group
                        # background child with stdio closed would otherwise outlive the run undetected.
-                       # A child that escaped into its own session (setsid) is not reachable this way;
-                       # containing that needs OS support (a Linux subreaper/cgroup or a Windows job
-                       # object) that is out of scope for this minimum and stays disclosed.
+                       # On Windows the tree is a kill-on-close Job Object (`proctree`), which also
+                       # reaches descendants of an already-exited parent and ones that detached. On
+                       # POSIX a child that escaped into its own session (setsid) is not reachable this
+                       # way; that needs a Linux subreaper/cgroup and stays disclosed.
+    proctree.release(proc)
     for t in threads: t.join(timeout=5)
     log.close()
-    settled = proc.returncode is not None and not any(t.is_alive() for t in threads)
+    # A tree URI could not confirm dead is not settled, whatever the parent's exit code
+    # (Codex audit of 3cd3557): the runner flags PROCESS_NOT_SETTLED and verification
+    # fails closed instead of trusting a workspace a survivor can still write to.
+    settled = contained and proc.returncode is not None and not any(t.is_alive() for t in threads)
     return ProcessResult(proc.returncode, timed_out, inactive, cancelled, settled, round((time.monotonic() - started) * 1000, 1),
                          str(log_path), digest.hexdigest(), size[0], bytes(err).decode("utf-8", "replace"))

@@ -15,14 +15,14 @@ import hashlib
 import os
 from pathlib import Path
 import shutil
-import signal
 import subprocess
 import sys
 import time
 import uuid
 
+from . import proctree
 from .acceptance import AcceptanceCriteria
-from .officefile import WorkbookReadError, make_perturbed_copy, read_workbook_structure
+from .officefile import WorkbookReadError, make_perturbed_copy, read_workbook_structure, workbook_content_sha256
 from .run_record import RunStore
 from .workspace import Workspace, WorkspaceError, diff_fingerprint
 
@@ -49,54 +49,39 @@ def run_process(argv, *, cwd: Path, env: dict, timeout_s: float, stdin_bytes: by
     """Run a process in its own group; kill the whole group once it stops, whether it
     exits normally or times out (R-5), so an ordinary (non-detached) leftover child does
     not outlive the run. A child that calls `os.setsid()` / `start_new_session=True`
-    leaves this process group before it exits and is not reachable this way -- closing
-    that gap needs OS-level sandboxing, a disclosed limitation shared with M38. The
+    leaves this process group before it exits and is not reachable this way on POSIX --
+    closing that gap needs OS-level sandboxing, a disclosed limitation shared with M38.
+    On Windows the child runs in a kill-on-close Job Object (`proctree`), which does
+    reach such detached descendants. The
     ledger records outputs at RUN_RESULT time and `Workspace.write_back` refuses when the
     live workspace no longer matches what was verified, so a script that tampers with the
     workspace after this point cannot make its way back to the original undetected.
     """
-    kwargs = {}
-    if os.name == "nt": kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
-    else: kwargs["start_new_session"] = True
     started = time.monotonic()
-    proc = subprocess.Popen(argv, cwd=str(cwd), env=env, stdin=subprocess.PIPE if stdin_bytes is not None else subprocess.DEVNULL,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+    proc = proctree.spawn(argv, cwd=str(cwd), env=env, stdin=subprocess.PIPE if stdin_bytes is not None else subprocess.DEVNULL,
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     timed_out = False
     try:
         out, err = proc.communicate(stdin_bytes, timeout=timeout_s)
     except subprocess.TimeoutExpired:
         timed_out = True
-        kill_group(proc)
+        contained = kill_group(proc)
         out, err = proc.communicate()
     else:
         # Mirrors the harness path's own H-2 fix in `process.py`.
-        kill_group(proc)
+        contained = kill_group(proc)
+    finally:
+        proctree.release(proc)
     return {"exit_code": proc.returncode, "timed_out": timed_out, "duration_ms": round((time.monotonic() - started) * 1000, 1),
-            "stdout": out, "stderr": err}
+            "stdout": out, "stderr": err, "contained": contained}
 
 
-def kill_group(proc) -> None:
-    """Terminate `proc` and its descendants.
-
-    Finding 5 (M38 repair round 3, Windows-specific, predicted not observed): Windows has
-    no direct equivalent of a POSIX process group. `taskkill /F /T` walks the live
-    process tree by each process's recorded parent PID, which is the standard way to
-    reach for this on Windows and catches the common case (an ordinary child still
-    parented to `proc` when this runs). It is not the same guarantee as `killpg`,
-    though: a descendant that has already been reparented (its immediate parent exited
-    first, e.g. a grandchild left behind mid-chain) or one started detached
-    (`DETACHED_PROCESS` / `CREATE_NEW_PROCESS_GROUP` on itself) can fall outside the
-    tree `/T` walks. This is the same category of disclosed gap as a POSIX child that
-    escapes via `setsid` -- closing it fully needs a Windows Job Object, which is out of
-    scope for this minimum. Not exercised on real Windows in this repair; Chetan's
-    Windows smoke test is the first live confirmation either way.
-    """
-    try:
-        if os.name == "nt": subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True)
-        else: os.killpg(proc.pid, signal.SIGKILL)
-    except (ProcessLookupError, PermissionError, OSError):
-        pass
-    proc.wait()
+def kill_group(proc) -> bool:
+    """Kill the process and its whole tree: the POSIX process group, or on Windows the
+    kill-on-close Job Object `proctree.spawn` placed it in (reaches orphans whose parent
+    has already exited, which `taskkill /T` cannot). Returns False when the tree could
+    not be confirmed dead; callers must not treat that run as settled."""
+    return proctree.kill_tree(proc)
 
 
 def _status(items) -> str:
@@ -130,10 +115,15 @@ def _differential_rerun(script_item, output_paths, vdir: Path, tmp: Path, python
     check was not actually exercised, not that it succeeded or failed.
     """
     if not output_paths: return None
+    def content(p: Path) -> str:
+        # Compare what the output says, not its bytes: an .xlsx embeds its save time,
+        # so identical content saved a second apart differs byte-wise.
+        try: return workbook_content_sha256(p)
+        except WorkbookReadError: return "bytes:" + hashlib.sha256(p.read_bytes()).hexdigest()
     originals = {}
     for rel in output_paths:
         p = vdir / rel
-        if p.is_file(): originals[rel] = hashlib.sha256(p.read_bytes()).hexdigest()
+        if p.is_file(): originals[rel] = content(p)
     if not originals:
         return {"kind": "differential_rerun", "status": "UNVERIFIABLE", "detail": "NO_VALIDATED_OUTPUT"}
     candidates = sorted(p for p in vdir.rglob("*.xlsx") if p.relative_to(vdir).as_posix() not in output_paths)
@@ -161,10 +151,11 @@ def _differential_rerun(script_item, output_paths, vdir: Path, tmp: Path, python
         dtmp = ddir.parent / (ddir.name + ".tmp"); dtmp.mkdir()
         result = run_process([python or sys.executable, str(script), *script_item.get("args", [])], cwd=ddir,
                              env=scrubbed_env(dtmp), timeout_s=script_item.get("timeout_s", 60))
+        if not result["contained"]:
+            return {"kind": "differential_rerun", "status": "FAIL", "detail": "PROCESS_TREE_NOT_CONTAINED"}
         if result["exit_code"] != 0 or result["timed_out"]:
             return {"kind": "differential_rerun", "status": "UNVERIFIABLE", "detail": "PERTURBED_RUN_FAILED"}
-        changed = any((ddir / rel).is_file() and hashlib.sha256((ddir / rel).read_bytes()).hexdigest() != before
-                     for rel, before in originals.items())
+        changed = any((ddir / rel).is_file() and content(ddir / rel) != before for rel, before in originals.items())
         return {"kind": "differential_rerun", "status": "PASS" if changed else "FAIL",
                 "detail": {"perturbed_input": rel_target.as_posix()}}
     finally:
@@ -201,9 +192,12 @@ def verify_candidate(workspace: Workspace, criteria: AcceptanceCriteria, *, pyth
                     items.append({"kind": kind, "status": "FAIL", "detail": "SCRIPT_MISSING"}); script_ok = False; continue
                 result = run_process([python or sys.executable, str(script), *item.get("args", [])], cwd=vdir,
                                      env=scrubbed_env(tmp), timeout_s=item.get("timeout_s", 60))
-                script_ok = result["exit_code"] == 0 and not result["timed_out"]
+                # A script whose process tree could not be confirmed dead may still be
+                # writing: never a pass (Codex audit of 3cd3557).
+                script_ok = result["exit_code"] == 0 and not result["timed_out"] and result["contained"]
                 items.append({"kind": kind, "status": "PASS" if script_ok else "FAIL",
                               "detail": {"exit_code": result["exit_code"], "timed_out": result["timed_out"],
+                                         "process_tree_contained": result["contained"],
                                          "duration_ms": result["duration_ms"],
                                          "stdout_sha256": hashlib.sha256(result["stdout"]).hexdigest(),
                                          "stderr_tail": result["stderr"][-_TAIL:].decode("utf-8", "replace")}})

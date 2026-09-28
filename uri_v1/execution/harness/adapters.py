@@ -13,6 +13,8 @@ from pathlib import Path
 import re
 import shutil
 
+from uri_v1.execution.private_files import write_private
+
 from .contracts import UNAVAILABLE, ClaimedOutcome, ExecutionCapsule, HarnessError, HarnessRunResult, HarnessType
 from .discovery import discover_claude_code, discover_codex, probe_version, resolve_command
 from .process import ProcessResult, harness_env
@@ -54,8 +56,9 @@ def _num(d, key):
 
 
 def _write_private(path: Path, data: bytes) -> None:
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(fd, "wb") as f: f.write(data)
+    # Owner-only on every platform: 0o600 on POSIX, a protected current-user-only DACL
+    # on Windows, where POSIX mode bits are not enforced (Antigravity a87e158 F-4).
+    write_private(path, data)
 
 
 class ClaudeCodeAdapter:

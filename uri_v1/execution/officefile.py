@@ -8,6 +8,7 @@ any limit breach or malformed container yields a typed failure, never a guess.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import posixpath
 import re
 import zipfile
@@ -137,6 +138,34 @@ def read_workbook_structure(path) -> WorkbookStructure:
         shared = _shared_strings(zf, budget)
         sheets = [_sheet(name, _xml(_read(zf, member, budget)), shared) for name, member in resolved]
     return WorkbookStructure(tuple(sheets))
+
+
+def workbook_content_sha256(path) -> str:
+    """Digest of what a workbook *says* -- sheet names and every cell's reference,
+    type and value -- and nothing else.
+
+    The raw bytes of an .xlsx also carry the writer's save time (docProps/core.xml
+    `dcterms:created`/`modified`, zip entry mtimes), so two saves of identical content
+    a second apart hash differently. The differential rerun compares with this, never
+    with raw bytes: a byte comparison let a hardcoded output "change" whenever the two
+    runs straddled a clock second, passing intermittently.
+    """
+    try:
+        zf = zipfile.ZipFile(path)
+    except (zipfile.BadZipFile, OSError): raise WorkbookReadError("XLSX_NOT_ZIP")
+    budget = [0]; digest = hashlib.sha256()
+    with zf:
+        shared = _shared_strings(zf, budget)
+        for name, member in _resolve_sheet_members(zf, budget):
+            digest.update(b"\x00S" + name.encode("utf-8"))
+            scanned = 0
+            for cell in _xml(_read(zf, member, budget)).iter(_M + "c"):
+                scanned += 1
+                if scanned > MAX_SCANNED_CELLS: raise WorkbookReadError("XLSX_TOO_MANY_CELLS")
+                value = _cell_value(cell, shared)
+                if value in (None, ""): continue
+                digest.update(b"\x00C" + "\x1f".join((cell.get("r") or "", cell.get("t") or "", value)).encode("utf-8"))
+    return digest.hexdigest()
 
 
 def _cell_value(cell, shared):
