@@ -25,9 +25,10 @@ import shutil
 import stat
 import uuid
 
-from uri_v1.memory.contracts import TrustedInput, negated
+from uri_v1.memory.contracts import TrustedInput
 from uri_v1.user_storage import user_scoped_path
 from .acceptance import workspace_relpath
+from .approval import approval_declined
 
 WORKSPACE_SCHEMA_VERSION = "m37.workspace.v1"
 _RUN_ID = re.compile(r"^[0-9a-f]{32}$")
@@ -279,8 +280,9 @@ class WritebackApproval:
     @classmethod
     def from_user(cls, intake, run_id, expected_after: dict) -> "WritebackApproval":
         if not isinstance(intake, TrustedInput) or not intake.trusted: raise WorkspaceError("TRUSTED_USER_INPUT_REQUIRED")
-        # A negated approval ("don't apply it") is not an approval (same rule as M36 audit F-2).
-        if negated(intake.raw_text) or not set(re.findall(r"\w+", intake.raw_text.casefold())) & _APPROVAL_WORDS:
+        # A negated or informally declined approval ("don't apply it", "nah apply it")
+        # is not an approval (same rule as M36 audit F-2; informal negatives 2026-09-28).
+        if approval_declined(intake.raw_text) or not set(re.findall(r"\w+", intake.raw_text.casefold())) & _APPROVAL_WORDS:
             raise WorkspaceError("EXPLICIT_APPROVAL_REQUIRED")
         if not expected_after: raise WorkspaceError("WRITEBACK_TARGETS_REQUIRED")
         return cls(run_id, tuple(sorted(expected_after)), dict(expected_after), intake)

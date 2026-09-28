@@ -13,7 +13,8 @@ import json
 from pathlib import Path
 import re
 
-from uri_v1.memory.contracts import TrustedInput, negated
+from uri_v1.memory.contracts import TrustedInput
+from ..approval import approval_declined
 
 
 def _whole_token(text: str, token: str) -> bool:
@@ -104,7 +105,7 @@ class ElevationGrant:
             elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))
-        if negated(intake.raw_text) or not ok or not ({"allow", "permit", "enable", "yes", "approve"} & words):
+        if approval_declined(intake.raw_text) or not ok or not ({"allow", "permit", "enable", "yes", "approve"} & words):
             raise HarnessError("EXPLICIT_ELEVATION_REQUIRED")
         return cls(elevation, run_scope, intake)
 
@@ -164,7 +165,7 @@ class CapabilityGrant:
         if not isinstance(intake, TrustedInput) or not intake.trusted: raise HarnessError("TRUSTED_USER_INPUT_REQUIRED")
         items = tuple(sorted({(str(k), str(n)) for k, n in items}))
         text = intake.raw_text.casefold()
-        if not items or negated(intake.raw_text) or any(not _whole_token(text, n.casefold()) for _, n in items):
+        if not items or approval_declined(intake.raw_text) or any(not _whole_token(text, n.casefold()) for _, n in items):
             raise HarnessError("EXPLICIT_CAPABILITY_GRANT_REQUIRED")
         return cls(items, intake)
 
