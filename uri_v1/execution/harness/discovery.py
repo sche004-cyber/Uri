@@ -101,7 +101,11 @@ def _target(cfg: dict) -> tuple:
         return (str(cfg.get("type") or cfg.get("transport") or "http"))[:16], host
     command = cfg.get("command")
     if isinstance(command, str):
-        return "stdio", os.path.basename(command.replace("\\", "/"))[:64] or None
+        # Only the first whitespace-separated token: a single-string command can
+        # carry its own arguments (e.g. "npx -y pkg --api-key sk-live-...", or a
+        # Codex-style "cmd --token=..."), and those must never reach the inventory.
+        first = command.strip().split(None, 1)[0] if command.strip() else ""
+        return "stdio", os.path.basename(first.replace("\\", "/"))[:64] or None
     return None, None
 
 

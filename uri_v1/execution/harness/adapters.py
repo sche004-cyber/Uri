@@ -45,7 +45,7 @@ class ClaudeCodeAdapter:
     def describe(self) -> dict:
         return {"harness_type": self.harness_type.value, "capabilities": {"resume": "stored_not_used", "structured_events": True,
                 "instructions": "stdin", "per_run_mcp": True, "per_run_plugins": True, "per_run_skills": True,
-                "os_sandbox": False}, "default_posture": "dontAsk + tool allowlist; no web tools; shell limited to python"}
+                "os_sandbox": False}, "default_posture": "dontAsk + path-scoped file tools; no web tools; no shell"}
 
     def inventory(self):
         return discover_claude_code(self.home, self.project)
@@ -89,14 +89,29 @@ class ClaudeCodeAdapter:
         _write_private(mcp_path, json.dumps({"mcpServers": mcp}).encode())
         return ["--strict-mcp-config", "--mcp-config", str(mcp_path)] + args
 
+    # Auth variables Claude Code needs for its own authentication (OD-2). Never
+    # includes a URI provider key: the harness authenticates itself.
+    AUTH_VARS = ("ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN")
+    FILE_TOOLS = ("Read", "Edit", "Write", "Glob", "Grep")
+
     def invocation(self, capsule: ExecutionCapsule, bundle: Path, inventory=None):
         if not capsule.capabilities.valid(): raise HarnessError("CAPABILITY_GRANT_INVALID")
         inventory = inventory or self.inventory()
         posture = capsule.posture
-        allowed = ["Read", "Edit", "Write", "Glob", "Grep", "Bash(python *)", "Bash(python3 *)", "Bash(py *)"]
-        disallowed = ["WebFetch", "WebSearch"]
+        # File tools are path-scoped to the workspace (H-1): a bare `Read`/`Edit`/… allow
+        # rule has no path bound at all, so it can reach any file the user can. Elevated
+        # `extra_dirs` (each backed by an ElevationGrant) are scoped in the same way rather
+        # than opened up wholesale. The bare tool names stay denied everywhere else.
+        scopes = [str(Path(capsule.workspace_files).resolve()), *posture.extra_dirs]
+        allowed = [f"{tool}({scope}/**)" for scope in scopes for tool in self.FILE_TOOLS]
+        # No shell in the default posture (Chetan, 2026-09-28): the harness can edit
+        # files but not run them. URI's own verifier does all execution, so it, not
+        # an unsandboxed harness process, is what actually runs any script.
+        disallowed = ["WebFetch", "WebSearch", "Bash", *self.FILE_TOOLS]
         if posture.package_install: allowed += ["Bash(pip *)", "Bash(pip3 *)", "Bash(python -m pip *)", "Bash(python3 -m pip *)"]
-        if posture.network: allowed += disallowed; disallowed = []
+        if posture.network:
+            allowed += ["WebFetch", "WebSearch"]
+            disallowed = [t for t in disallowed if t not in ("WebFetch", "WebSearch")]
         cmd = resolve_command(self.executable)
         if not cmd: raise HarnessError("HARNESS_UNAVAILABLE")
         argv = [*cmd, "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence",
@@ -109,7 +124,7 @@ class ClaudeCodeAdapter:
         argv += self._inject(capsule, bundle, inventory)
         prompt = Path(capsule.instructions_path).read_bytes()
         if hashlib.sha256(prompt).hexdigest() != capsule.instructions_sha256: raise HarnessError("INSTRUCTIONS_TAMPERED")
-        return _check(argv), harness_env(), prompt
+        return _check(argv), harness_env(self.AUTH_VARS), prompt
 
     def parse(self, proc: ProcessResult, capsule: ExecutionCapsule, harness_version) -> HarnessRunResult:
         result, tool_calls, models = None, 0, set()
@@ -153,6 +168,9 @@ class ClaudeCodeAdapter:
 class CodexCliAdapter:
     """Built from documented `codex exec` flags. Not executed in this environment: UNQUALIFIED."""
     harness_type = HarnessType.CODEX_CLI
+    # Codex's own auth (OD-2). Deliberately excludes OPENAI_API_KEY: that name is
+    # also read as a URI Brain provider key elsewhere, so it is never forwarded here.
+    AUTH_VARS = ("CODEX_API_KEY", "CODEX_HOME")
 
     def __init__(self, executable="codex", *, home: Path | None = None, model: str | None = None):
         self.executable, self.home, self.model = executable, Path(home or Path.home()), model
@@ -181,7 +199,7 @@ class CodexCliAdapter:
         argv.append("-")
         prompt = Path(capsule.instructions_path).read_bytes()
         if hashlib.sha256(prompt).hexdigest() != capsule.instructions_sha256: raise HarnessError("INSTRUCTIONS_TAMPERED")
-        return _check(argv), harness_env(), prompt
+        return _check(argv), harness_env(self.AUTH_VARS), prompt
 
     def parse(self, proc: ProcessResult, capsule: ExecutionCapsule, harness_version) -> HarnessRunResult:
         thread, text, failed, usage_raw, tools = None, None, None, {}, 0
