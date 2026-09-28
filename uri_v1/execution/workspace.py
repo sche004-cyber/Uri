@@ -288,6 +288,10 @@ class WritebackApproval:
         return cls(run_id, tuple(sorted(expected_after)), dict(expected_after), intake)
 
     def valid(self) -> bool:
-        return isinstance(self.intake, TrustedInput) and self.intake.trusted and bool(self.relpaths)
+        # Re-checks the same decline test `from_user` applies, not just trust+shape,
+        # so an approval built directly (bypassing `from_user`) from declined text
+        # cannot pass write_back's gate (Codex audit, 2026-09-28).
+        return (isinstance(self.intake, TrustedInput) and self.intake.trusted and bool(self.relpaths)
+                and not approval_declined(self.intake.raw_text))
 
     def __reduce__(self): raise TypeError("approvals cannot be serialized")

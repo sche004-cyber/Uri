@@ -110,7 +110,11 @@ class ElevationGrant:
         return cls(elevation, run_scope, intake)
 
     def valid_for(self, run_scope: str) -> bool:
-        return isinstance(self.intake, TrustedInput) and self.intake.trusted and self.run_scope == run_scope
+        # Re-checks the same decline test `from_user` applies (Codex audit, 2026-09-28):
+        # a grant built directly, bypassing `from_user`, from declined text must not
+        # pass this gate either.
+        return (isinstance(self.intake, TrustedInput) and self.intake.trusted and self.run_scope == run_scope
+                and not approval_declined(self.intake.raw_text))
 
     def __reduce__(self): raise TypeError("grants cannot be serialized")
 
@@ -170,7 +174,12 @@ class CapabilityGrant:
         return cls(items, intake)
 
     def valid(self) -> bool:
-        return not self.items or (isinstance(self.intake, TrustedInput) and self.intake.trusted)
+        # Re-checks the same decline test `from_user` applies (Codex audit, 2026-09-28):
+        # a grant built directly, bypassing `from_user`, from declined text must not
+        # pass this gate either.
+        if not self.items: return True
+        return (isinstance(self.intake, TrustedInput) and self.intake.trusted
+                and not approval_declined(self.intake.raw_text))
 
     def to_dict(self) -> dict:
         return {"items": [list(x) for x in self.items]}

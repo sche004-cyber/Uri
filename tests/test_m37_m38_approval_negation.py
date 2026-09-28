@@ -92,3 +92,26 @@ def test_capability_grant_rejects_informal_negative():
 def test_capability_grant_accepts_positive():
     g = CapabilityGrant.from_user(intake("allow the git server"), [("MCP_SERVER", "git")])
     assert g.items == (("MCP_SERVER", "git"),)
+
+
+# -- .valid()/.valid_for() re-check the decline test too, not only trust+shape ---------------------
+# (Codex audit, 2026-09-28): a grant/approval built directly, bypassing `from_user`, from text that
+# reads as declined must still fail the gate that `write_back`/harness code actually calls.
+
+def test_writeback_approval_valid_rejects_directly_constructed_declined_intake():
+    ap = WritebackApproval(RUN_ID, ("report.py",), {"report.py": "0" * 64}, intake("do not approve"))
+    assert ap.valid() is False
+
+
+def test_elevation_grant_valid_for_rejects_directly_constructed_declined_intake():
+    g = ElevationGrant("network", "run-1", intake("nah allow network"))
+    assert g.valid_for("run-1") is False
+
+
+def test_capability_grant_valid_rejects_directly_constructed_declined_intake():
+    g = CapabilityGrant((("MCP_SERVER", "git"),), intake("nah allow the git server"))
+    assert g.valid() is False
+
+
+def test_capability_grant_valid_still_true_for_none():
+    assert CapabilityGrant.none().valid() is True
