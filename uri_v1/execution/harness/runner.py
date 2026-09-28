@@ -89,7 +89,8 @@ class HarnessRunner:
                                                       "process_settled": proc.settled})
         metrics = dict(claims.usage, capsule_instructions_bytes=len(prompt), input_files=len(ws.manifest),
                        changed_files=len(lineage.uri_computed_diff["changes"]), exit_code=proc.exit_code,
-                       timed_out=proc.timed_out, inactivity_killed=proc.inactivity_killed)
+                       timed_out=proc.timed_out, inactivity_killed=proc.inactivity_killed,
+                       cancelled=proc.cancelled)
         # Re-check the originals after verification too (H-2/M-1, probe P8): the run store
         # already reflects the pre-verification check, but verification can itself execute
         # harness-written code (M37 verifier, no sandbox), which can modify an original only

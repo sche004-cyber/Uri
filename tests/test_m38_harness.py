@@ -3,6 +3,7 @@ import ast
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import threading
 import time
@@ -18,6 +19,7 @@ from uri_v1.execution.harness.contracts import (CapabilityGrant, ElevationGrant,
 from uri_v1.execution.harness.discovery import discover_claude_code, discover_codex
 from uri_v1.execution.workspace import Workspace, WorkspaceInput
 from uri_v1.memory.contracts import Authority, VerificationStatus
+from uri_v1.execution.verify import process_alive
 
 
 def _run(tmp_path, monkeypatch, scenario, *, limits=None, **env):
@@ -83,14 +85,9 @@ def test_whole_process_group_is_terminated(tmp_path, monkeypatch):
                        URI_FAKE_CHILD_PID=str(pid_file))
     pid = int(pid_file.read_text())
     deadline = time.monotonic() + 5
-    while time.monotonic() < deadline:
-        try:
-            os.kill(pid, 0)
-            with open(f"/proc/{pid}/stat") as f:
-                if f.read().split()[2] == "Z": break
-        except (ProcessLookupError, FileNotFoundError): break
+    while process_alive(pid) and time.monotonic() < deadline:
         time.sleep(0.1)
-    else:
+    if process_alive(pid):
         pytest.fail("grandchild survived process-group termination")
 
 
@@ -268,7 +265,7 @@ def test_extra_dir_grant_needs_the_whole_directory_name_not_an_incidental_letter
     with pytest.raises(HarnessError):
         ElevationGrant.from_user(intake("yes allow the repair"), "extra_dir:/home/someone/e", "run-1")
     g = ElevationGrant.from_user(intake("yes, allow access to /home/someone/e for this run"), "extra_dir:/home/someone/e", "run-1")
-    assert g.elevation.startswith("extra_dir:") and g.elevation.endswith("/e")
+    assert g.elevation.startswith("extra_dir:") and Path(g.elevation.split(":", 1)[1]).name == "e"
     with pytest.raises(HarnessError):  # root and home are never an allowed extra_dir
         ElevationGrant.from_user(intake("yes, allow access to / for this run"), "extra_dir:/", "run-1")
 
@@ -403,7 +400,12 @@ def test_controlled_use_injects_only_granted_capabilities_per_run(tmp_path, monk
     cap = build_capsule(esc, ws2, harness_type=HarnessType.CLAUDE_CODE, capabilities=grant)
     argv, _, _ = adapter.invocation(cap, ws2.bundle)
     assert list(json.loads((ws2.bundle / "mcp.json").read_text())["mcpServers"]) == ["sheets"]
-    assert oct((ws2.bundle / "mcp.json").stat().st_mode & 0o777) == "0o600"
+    mcp_path = ws2.bundle / "mcp.json"
+    if os.name == "nt":
+        acl = subprocess.run(["icacls", str(mcp_path)], check=True, capture_output=True, text=True).stdout
+        assert "(I)" not in acl and subprocess.run(["whoami"], check=True, capture_output=True, text=True).stdout.strip().casefold() in acl.casefold()
+    else:
+        assert oct(mcp_path.stat().st_mode & 0o777) == "0o600"
     plugin_dir = Path(argv[argv.index("--plugin-dir") + 1])
     assert (plugin_dir / "skills" / "xlsx-helper" / "SKILL.md").exists() and ws2.bundle in plugin_dir.parents
     assert (home / ".claude" / "settings.json").read_text().count("fmt@market") == 1  # nothing changed globally

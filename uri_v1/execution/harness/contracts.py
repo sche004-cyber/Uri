@@ -71,20 +71,23 @@ class ElevationGrant:
         if not run_scope: raise HarnessError("RUN_SCOPE_REQUIRED")
         words = set(re.findall(r"\w+", intake.raw_text.casefold()))
         if elevation.startswith("extra_dir:"):
-            resolved_path = Path(elevation.split(":", 1)[1]).expanduser().resolve()
+            requested = elevation.split(":", 1)[1]
+            resolved_path = Path(requested).expanduser().resolve()
             resolved = str(resolved_path)
             home = Path.home().resolve()
             # D-5/M-4: reject the granted path itself, any ancestor of $HOME (which
             # would expose $HOME and everything alongside it the same way `/` would),
             # and any well-known credential directory directly under $HOME.
-            if (resolved in ("/", str(home)) or resolved_path in home.parents
+            if (requested in ("/", "\\") or resolved_path == resolved_path.parent or resolved == str(home) or resolved_path in home.parents
                     or (resolved_path.parent == home and resolved_path.name.casefold() in _SENSITIVE_HOME_CHILDREN)):
                 raise HarnessError("EXTRA_DIR_NOT_ALLOWED")
             # The user's own words must name the literal directory being granted, not
             # merely an incidental word that happens to match its last path segment
             # (D-5/M-4): matching on the basename alone let a sentence that never
             # mentioned the real path at all still satisfy the grant.
-            ok = _whole_token(intake.raw_text.casefold(), resolved.casefold())
+            raw = intake.raw_text.casefold().replace("\\", "/")
+            names = {requested.casefold().replace("\\", "/"), resolved.casefold().replace("\\", "/")}
+            ok = any(_whole_token(raw, name) for name in names)
             elevation = f"extra_dir:{resolved}"
         else:
             ok = elevation in _ELEVATIONS and bool(words & set(_ELEVATIONS[elevation]))

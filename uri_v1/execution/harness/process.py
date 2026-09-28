@@ -10,7 +10,7 @@ import subprocess
 import threading
 import time
 
-from uri_v1.execution.verify import kill_group
+from uri_v1.execution.verify import attach_process_tree, kill_group
 
 # Generic process environment a harness needs to run at all. Nothing named here
 # can carry a secret. Anything else, including URI's own provider keys and the
@@ -63,6 +63,7 @@ def supervise(argv, *, cwd: Path, env: dict, stdin_bytes: bytes | None, timeout_
     started = time.monotonic()
     proc = subprocess.Popen(argv, cwd=str(cwd), env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, **kwargs)
+    job = attach_process_tree(proc)
     last = [time.monotonic()]
     digest = hashlib.sha256(); size = [0]; err = bytearray()
     log = open(log_path, "wb")
@@ -93,10 +94,10 @@ def supervise(argv, *, cwd: Path, env: dict, stdin_bytes: bytes | None, timeout_
         elif cancel is not None and cancel.is_set(): cancelled = True
         else:
             time.sleep(0.05); continue
-        kill_group(proc)
+        kill_group(proc, job)
         break
     proc.wait()
-    kill_group(proc)  # always sweep the process group, even after a clean exit (H-2): a same-group
+    kill_group(proc, job)  # always sweep the process group, even after a clean exit (H-2): a same-group
                        # background child with stdio closed would otherwise outlive the run undetected.
                        # A child that escaped into its own session (setsid) is not reachable this way;
                        # containing that needs OS support (a Linux subreaper/cgroup or a Windows job

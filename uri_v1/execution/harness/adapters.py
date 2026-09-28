@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 
 from .contracts import UNAVAILABLE, ClaimedOutcome, ExecutionCapsule, HarnessError, HarnessRunResult, HarnessType
 from .discovery import discover_claude_code, discover_codex, probe_version, resolve_command
@@ -32,7 +33,20 @@ def _num(d, key):
 
 def _write_private(path: Path, data: bytes) -> None:
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(fd, "wb") as f: f.write(data)
+    os.close(fd)
+    try:
+        if os.name == "nt":
+            identity = subprocess.run(["whoami"], check=True, capture_output=True, text=True).stdout.strip()
+            if not identity:
+                raise OSError("unable to identify current Windows principal")
+            subprocess.run(["icacls", str(path), "/inheritance:r", "/grant:r", f"{identity}:(R,W)"],
+                           check=True, capture_output=True, text=True)
+        else:
+            os.chmod(path, 0o600)
+        path.write_bytes(data)
+    except Exception:
+        path.unlink(missing_ok=True)
+        raise
 
 
 class ClaudeCodeAdapter:
@@ -161,7 +175,7 @@ class ClaudeCodeAdapter:
             if isinstance(result.get("modelUsage"), dict): usage["models"] = sorted(str(k)[:64] for k in result["modelUsage"])
         killed = proc.timed_out or proc.inactivity_killed or proc.cancelled
         if killed or result is None:
-            outcome, family = (ClaimedOutcome.STOPPED if proc.cancelled else ClaimedOutcome.OUTCOME_UNKNOWN), (
+            outcome, family = ClaimedOutcome.OUTCOME_UNKNOWN, (
                 "TIMEOUT" if proc.timed_out else "INACTIVITY" if proc.inactivity_killed else "CANCELLED" if proc.cancelled else "NO_RESULT")
         elif result.get("is_error") or result.get("subtype") != "success":
             outcome, family = ClaimedOutcome.FAILED, str(result.get("subtype") or "error")[:64]

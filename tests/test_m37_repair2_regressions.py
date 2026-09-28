@@ -11,6 +11,7 @@ verification, but `write_back` is shown to still refuse in that case.
 """
 from __future__ import annotations
 
+import os
 import textwrap
 import time
 import uuid
@@ -170,9 +171,15 @@ def test_safe_f8_detached_child_tamper_cannot_write_back(tmp_path, monkeypatch):
     time.sleep(5)
     recorded = {c["relpath"]: c["after_sha256"] for c in run["result"]["uri_computed_diff"]["changes"]}
     live = {c["relpath"]: c["after_sha256"] for c in ws.diff()["changes"]}
-    # Disclosed: a setsid-detached child still tampers with the raw workspace after the
-    # verifier's own re-diff, since only OS-level containment (not a process-group kill)
-    # can reach a process that has already left the group.
+    if os.name == "nt":
+        # Windows Job Objects contain descendants even when they request a new process
+        # group.  This assertion tests the security property, rather than POSIX session
+        # metadata that has no equivalent meaning on Windows.
+        assert recorded == live
+        assert not (ws.files / "report.py").read_text().endswith("\n# tampered late\n")
+        return
+    # POSIX has no Job Object equivalent here: a setsid-detached child can still tamper
+    # with the raw workspace after the verifier's own re-diff.
     assert recorded != live
     assert "# tampered late" in (ws.files / "report.py").read_text()
     # But the safety net holds: write_back reads the verified diff fingerprint, not the

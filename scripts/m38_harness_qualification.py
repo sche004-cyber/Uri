@@ -21,6 +21,7 @@ from scripts.m37_edge_qualification import _Patch, lf  # noqa: E402
 from tests.m38_harness_support import escalated, fake_adapter  # noqa: E402
 from uri_v1.execution.harness.adapters import FORBIDDEN_FLAGS  # noqa: E402
 from uri_v1.execution.harness.contracts import Limits  # noqa: E402
+from uri_v1.execution.verify import process_alive  # noqa: E402
 
 GATE = ROOT / "fixtures/m38_harness/threshold_gate.json"
 RESULTS = ROOT / "docs/plans/M38_QUALIFICATION_RESULTS.json"
@@ -28,10 +29,7 @@ SECRETS = (b"sk-live",)
 
 
 def _alive(pid: int) -> bool:
-    try:
-        os.kill(pid, 0)
-        with open(f"/proc/{pid}/stat") as f: return f.read().split()[2] != "Z"
-    except (ProcessLookupError, FileNotFoundError, PermissionError): return False
+    return process_alive(pid)
 
 
 def run_scenario(name: str, tmp: Path) -> dict:

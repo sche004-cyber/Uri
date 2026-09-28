@@ -34,6 +34,101 @@ _TAIL = 1024
 _NEVER_FORWARD = ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CODEX_HOME", "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME")
 
 
+class _WindowsJob:
+    """Windows process-tree containment with kill-on-close semantics."""
+
+    def __init__(self, proc):
+        import ctypes
+        from ctypes import wintypes
+
+        class IO_COUNTERS(ctypes.Structure):
+            _fields_ = [(name, ctypes.c_ulonglong) for name in (
+                "ReadOperationCount", "WriteOperationCount", "OtherOperationCount",
+                "ReadTransferCount", "WriteTransferCount", "OtherTransferCount")]
+
+        class BASIC_LIMITS(ctypes.Structure):
+            _fields_ = [
+                ("PerProcessUserTimeLimit", ctypes.c_longlong),
+                ("PerJobUserTimeLimit", ctypes.c_longlong),
+                ("LimitFlags", wintypes.DWORD),
+                ("MinimumWorkingSetSize", ctypes.c_size_t),
+                ("MaximumWorkingSetSize", ctypes.c_size_t),
+                ("ActiveProcessLimit", wintypes.DWORD),
+                ("Affinity", ctypes.c_size_t),
+                ("PriorityClass", wintypes.DWORD),
+                ("SchedulingClass", wintypes.DWORD),
+            ]
+
+        class EXTENDED_LIMITS(ctypes.Structure):
+            _fields_ = [
+                ("BasicLimitInformation", BASIC_LIMITS),
+                ("IoInfo", IO_COUNTERS),
+                ("ProcessMemoryLimit", ctypes.c_size_t),
+                ("JobMemoryLimit", ctypes.c_size_t),
+                ("PeakProcessMemoryUsed", ctypes.c_size_t),
+                ("PeakJobMemoryUsed", ctypes.c_size_t),
+            ]
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.CreateJobObjectW.restype = wintypes.HANDLE
+        kernel32.CreateJobObjectW.argtypes = (ctypes.c_void_p, wintypes.LPCWSTR)
+        kernel32.SetInformationJobObject.argtypes = (wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD)
+        kernel32.AssignProcessToJobObject.argtypes = (wintypes.HANDLE, wintypes.HANDLE)
+        kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
+        handle = kernel32.CreateJobObjectW(None, None)
+        if not handle:
+            raise OSError(ctypes.get_last_error(), "CreateJobObjectW failed")
+        limits = EXTENDED_LIMITS()
+        limits.BasicLimitInformation.LimitFlags = 0x00002000  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        if not kernel32.SetInformationJobObject(handle, 9, ctypes.byref(limits), ctypes.sizeof(limits)):
+            error = ctypes.get_last_error(); kernel32.CloseHandle(handle)
+            raise OSError(error, "SetInformationJobObject failed")
+        if not kernel32.AssignProcessToJobObject(handle, wintypes.HANDLE(proc._handle)):
+            error = ctypes.get_last_error(); kernel32.CloseHandle(handle)
+            raise OSError(error, "AssignProcessToJobObject failed")
+        self._kernel32, self._handle = kernel32, handle
+
+    def close(self):
+        if self._handle:
+            self._kernel32.CloseHandle(self._handle)
+            self._handle = None
+
+
+def attach_process_tree(proc):
+    """Attach a Windows process to a kill-on-close Job Object; POSIX uses sessions."""
+    if os.name != "nt":
+        return None
+    try:
+        return _WindowsJob(proc)
+    except Exception:
+        proc.kill()
+        proc.wait()
+        raise
+
+
+def process_alive(pid: int) -> bool:
+    """Cross-platform liveness check used by qualification without POSIX-only os.kill(0)."""
+    if os.name != "nt":
+        try:
+            os.kill(pid, 0)
+            stat = Path(f"/proc/{pid}/stat")
+            return not stat.exists() or stat.read_text().split()[2] != "Z"
+        except (ProcessLookupError, FileNotFoundError, PermissionError):
+            return False
+    import ctypes
+    from ctypes import wintypes
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+    if not handle:
+        return ctypes.get_last_error() == 5  # access denied means the PID still exists
+    try:
+        code = wintypes.DWORD()
+        return bool(kernel32.GetExitCodeProcess(handle, ctypes.byref(code))) and code.value == 259
+    finally:
+        kernel32.CloseHandle(handle)
+
+
 def scrubbed_env(tmp: Path, extra: dict | None = None) -> dict:
     keep = ("PATH", "SYSTEMROOT", "SystemRoot", "WINDIR", "COMSPEC", "PATHEXT", "LANG", "LC_ALL")
     env = {k: os.environ[k] for k in keep if k in os.environ}
@@ -60,23 +155,27 @@ def run_process(argv, *, cwd: Path, env: dict, timeout_s: float, stdin_bytes: by
     started = time.monotonic()
     proc = subprocess.Popen(argv, cwd=str(cwd), env=env, stdin=subprocess.PIPE if stdin_bytes is not None else subprocess.DEVNULL,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+    job = attach_process_tree(proc)
     timed_out = False
     try:
         out, err = proc.communicate(stdin_bytes, timeout=timeout_s)
     except subprocess.TimeoutExpired:
         timed_out = True
-        kill_group(proc)
+        kill_group(proc, job)
         out, err = proc.communicate()
     else:
         # Mirrors the harness path's own H-2 fix in `process.py`.
-        kill_group(proc)
+        kill_group(proc, job)
     return {"exit_code": proc.returncode, "timed_out": timed_out, "duration_ms": round((time.monotonic() - started) * 1000, 1),
             "stdout": out, "stderr": err}
 
 
-def kill_group(proc) -> None:
+def kill_group(proc, job=None) -> None:
     try:
-        if os.name == "nt": subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True)
+        if os.name == "nt" and job is not None:
+            job.close()
+        elif os.name == "nt":
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True)
         else: os.killpg(proc.pid, signal.SIGKILL)
     except (ProcessLookupError, PermissionError, OSError):
         pass
