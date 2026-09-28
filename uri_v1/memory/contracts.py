@@ -11,6 +11,7 @@ import re
 from types import MappingProxyType
 from collections.abc import Mapping
 from typing import Any
+import unicodedata
 import uuid
 
 MEMORY_SCHEMA_VERSION = "m36.memory.v1"
@@ -213,28 +214,29 @@ def bounded(value, limit=512):
 
 
 # Closed deterministic negation cues (audit F-1/F-2; re-audit R-1/R-2/R-3).
-# Every apostrophe-like code point (straight, curly, modifier-letter, backtick,
-# acute accent, fullwidth) is normalised away before tokenizing, and a split
-# "do n't" form is rejoined, so "don't" matches regardless of quote glyph or
-# whitespace. Vocabulary expansion needs later qualification; any hit fails
+# The text is NFKC-normalized (so fullwidth "ｄｏｎ＇ｔ" reads as "don't"), then every
+# apostrophe-like code point (straight, curly, modifier-letter, backtick, acute accent,
+# fullwidth) is removed before tokenizing, and a split "do n't" form is rejoined, so
+# "don't" matches regardless of quote glyph, width or whitespace. Vocabulary expansion needs later qualification; any hit fails
 # closed to clarification.
 NEGATION_WORDS = frozenset((
     "not", "no", "never", "skip", "except", "excluding", "exclude", "without", "avoid",
     "dont", "doesnt", "didnt", "isnt", "arent", "wasnt", "werent", "wont", "cant", "cannot",
     "shouldnt", "wouldnt", "couldnt", "mustnt", "neednt", "aint", "hasnt", "hadnt", "havent",
+    "mightnt", "shant", "darent",
     "but", "ignore", "neither", "nor", "none", "nothing", "stop", "drop", "omit", "minus",
     "unless", "besides", "nope", "nah", "hardly",
 ))
 NEGATION_PHRASES = (
     "other than", "instead of", "rather than", "apart from", "aside from",
-    "leave out", "far from",
+    "leave out", "anything besides", "except for", "far from",
 )
 
 _APOSTROPHE_RE = re.compile("['‘’‛ʻʼ′‵❛❜`´＇]")
 
 
 def negated(text: str) -> bool:
-    normalized = _APOSTROPHE_RE.sub("", text.casefold())
+    normalized = _APOSTROPHE_RE.sub("", unicodedata.normalize("NFKC", text).casefold())
     # Rejoin a split "do n't" -> "dont" before tokenizing.
     normalized = re.sub(r"(\w+)\s+nt\b", r"\1nt", normalized)
     tokens = re.findall(r"\w+", normalized)

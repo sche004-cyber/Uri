@@ -17,3 +17,14 @@ def test_additional_apostrophe_variants_fail_closed_for_elevation(glyph):
     assert negated(text)
     with pytest.raises(ValueError, match="EXPLICIT_ELEVATION_REQUIRED"):
         ElevationGrant.from_user(intake(text), "network", "run-1")
+
+
+# Codex re-check of f8115d5 (parity with 379769f): NFKC normalization and the rest of
+# the -n't vocabulary. Each is negated and refuses an M38 elevation grant.
+@pytest.mark.parametrize("text", ["mightn't allow network", "shan\u02bbt allow network",
+                                  "\uff44\uff4f\uff4e\uff07\uff54 allow network", "daren't allow network",
+                                  "allow anything besides network", "allow network except for this run"])
+def test_nfkc_and_remaining_nt_forms_are_negated(text):
+    assert negated(text)
+    with pytest.raises(ValueError):
+        ElevationGrant.from_user(intake(text), "network", "run-1")
