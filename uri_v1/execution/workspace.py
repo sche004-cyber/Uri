@@ -204,13 +204,28 @@ class Workspace:
         return target
 
     # -- approval-gated write-back ----------------------------------------------
-    def write_back(self, approval: "WritebackApproval", *, sources, verified_status: str) -> list:
+    def write_back(self, approval: "WritebackApproval", *, sources, run_store) -> list:
+        """Write approved, verified changes back to their originals.
+
+        The verification status is never taken from the caller (F-7): it is read
+        from `run_store`, the same append-only record URI's own verifier writes
+        to, for this exact run. A run with no VERIFIED verification cannot write
+        back. The candidate is also required to still match what was verified
+        (defence in depth alongside the verifier's own post-run re-diff, F-8):
+        anything that changed the workspace after verification invalidates the
+        write-back.
+        """
         if not isinstance(approval, WritebackApproval) or approval.run_id != self.run_id or not approval.valid():
             raise WorkspaceError("WRITEBACK_APPROVAL_REQUIRED")
         if approval.intake.user_id != self.base.parent.parent.name: raise WorkspaceError("WRITEBACK_APPROVAL_WRONG_USER")
-        if verified_status != "VERIFIED": raise WorkspaceError("WRITEBACK_REQUIRES_VERIFIED_RUN")
+        run = run_store.get(self.run_id)
+        if run is None or not run.get("verifications") or run["verifications"][-1].get("status") != "VERIFIED":
+            raise WorkspaceError("WRITEBACK_REQUIRES_VERIFIED_RUN")
         diff = self.diff()
         if diff["containment_violations"]: raise WorkspaceError("CONTAINMENT_VIOLATION")
+        verified_changes = {c["relpath"]: c["after_sha256"] for c in run.get("result", {}).get("uri_computed_diff", {}).get("changes", [])}
+        live_changes = {c["relpath"]: c["after_sha256"] for c in diff["changes"]}
+        if verified_changes != live_changes: raise WorkspaceError("WRITEBACK_CANDIDATE_CHANGED")
         by_rel = {e.relpath: e for e in self.manifest}
         changes = {c["relpath"]: c for c in diff["changes"]}
         written = []
