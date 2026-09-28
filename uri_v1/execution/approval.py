@@ -74,15 +74,29 @@ def approval_withheld(raw_text: str) -> bool:
 # the granted path, write-back file names) is taken out, every remaining word is a grant verb
 # or one of these closed fillers, and at least one grant verb is present. Anything else --
 # hedges, questions, conditions, extra clauses -- is not a grant.
+#
+# Codex re-check of 249660e: a declarative ("I use sheets", "I allow network") or a time/scope
+# qualifier ("for now", "just for this", "allow network on") is not a grant, so "i", "now",
+# "just", "on", "here", "for", "this" and "run" are not fillers; the one scope phrase accepted
+# is the exact "for this run" (`_RUN_SCOPE`), which is what every grant is bound to anyway.
 GRANT_FILLERS = frozenset(
-    "yes yeah yep ok okay sure please pls go ahead i for this that the run server servers skill skills plugin "
-    "plugins mcp tool tools and to access now just it them fine thanks thank you here of on in with".split())
+    "yes yeah yep ok okay sure please pls go ahead that the server servers skill skills plugin "
+    "plugins mcp tool tools and to access it them fine thanks thank you of in with".split())
 _GRANT_PUNCTUATION = frozenset(",.!:;\"'-")
+_RUN_SCOPE = re.compile(r"(?<!\S)for this run(?=$|\s|[,.!:;](?:\s|$))", re.IGNORECASE)
 
 
 def _strip_data(text: str, data) -> str:
+    """Remove each granted item where it stands as a whole word of its own.
+
+    The item (optionally in matching quotes) must start at the beginning or after
+    whitespace, and end at the end, before whitespace, or before sentence-final
+    punctuation that is itself followed by whitespace or the end. So "sheets.server",
+    "sheets-x" or "x/sheets" never count as naming "sheets" (Codex re-check of 249660e).
+    """
     for d in sorted({str(x) for x in data if x}, key=len, reverse=True):
-        text = re.sub(r"(?<![\w-])" + re.escape(d) + r"(?![\w-])", " ", text, flags=re.IGNORECASE)
+        text = re.sub(r"(?<!\S)([\"']?)" + re.escape(d) + r"\1(?=$|\s|[,.!:;](?:\s|$))", " ", text,
+                      flags=re.IGNORECASE)
     return text
 
 
@@ -91,7 +105,7 @@ def approval_given(raw_text: str, verbs, *, data=(), extra_words=()) -> bool:
     word outside `data` is in `verbs`, `extra_words` or `GRANT_FILLERS`, with at least
     one of `verbs` present."""
     if approval_withheld(raw_text): return False
-    rest = _strip_data(raw_text, data)
+    rest = _RUN_SCOPE.sub(" ", _strip_data(raw_text, data))
     if any(not (c.isascii() and (c.isalnum() or c.isspace())) and c not in _GRANT_PUNCTUATION for c in rest):
         return False
     tokens = _TOKEN_RE.findall(rest.casefold())

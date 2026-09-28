@@ -168,7 +168,7 @@ def test_capability_named_without_a_grant_verb_is_refused(text):
 
 
 @pytest.mark.parametrize("text", ["allow sheets", "yes, enable the sheets server", "use the sheets server",
-                                  "I approve sheets for this run", "grant sheets"])
+                                  "approve sheets for this run", "grant sheets"])
 def test_capability_grant_with_an_explicit_verb_is_issued(text):
     assert CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")]).valid()
 
@@ -305,3 +305,53 @@ def test_hedge_never_authorizes_a_writeback(hedge):
     for text in _placements(hedge, "yes apply the fix"):
         with pytest.raises(WorkspaceError):
             WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64})
+
+
+# -- declaratives, time/scope qualifiers and dotted names never authorize --------------------------
+# (Codex re-check of 249660e.) "i", "now", "just", "on", "for", "this" and "run" are no longer
+# fillers; the only scope phrase accepted is the exact "for this run". A granted name must stand
+# on its own: "sheets.server" does not name "sheets". Every string Codex reported is a case here.
+
+CODEX_CAPABILITY = ("I use sheets", "use sheets for now", "use sheets.server", "I approve sheets for this run",
+                    "use sheets just for this", "use sheets on", "use sheets for this", "use 'sheets'.server",
+                    "use sheets-server", "use x/sheets")
+CODEX_ELEVATION = ("I allow network", "yes allow network for now", "yes allow network just for this",
+                   "allow network on", "allow network for this", "allow network for the run", "allow network here")
+CODEX_WRITEBACK = ("I apply the fix", "yes apply the fix for now", "apply the fix just for this", "apply the fix on",
+                   "yes apply report.py.bak", "I approve")
+
+
+@pytest.mark.parametrize("text", CODEX_CAPABILITY)
+def test_declarative_qualified_or_dotted_capability_is_refused(text):
+    with pytest.raises(HarnessError, match="EXPLICIT_CAPABILITY_GRANT_REQUIRED"):
+        CapabilityGrant.from_user(intake(text), [("MCP_SERVER", "sheets")])
+
+
+@pytest.mark.parametrize("text", CODEX_ELEVATION)
+def test_declarative_or_qualified_elevation_is_refused(text):
+    with pytest.raises(HarnessError):
+        ElevationGrant.from_user(intake(text), "network", "scope1")
+
+
+@pytest.mark.parametrize("tail", ["for now", "just for this", "on", "for this"])
+def test_qualified_extra_dir_is_refused(tail, tmp_path):
+    d = tmp_path / "reports"; d.mkdir()
+    with pytest.raises(HarnessError):
+        ElevationGrant.from_user(intake(f"yes allow access to {d} {tail}"), f"extra_dir:{d}", "scope1")
+    with pytest.raises(HarnessError):
+        ElevationGrant.from_user(intake(f"I allow access to {d}"), f"extra_dir:{d}", "scope1")
+
+
+@pytest.mark.parametrize("text", CODEX_WRITEBACK)
+def test_declarative_qualified_or_dotted_writeback_is_refused(text):
+    with pytest.raises(WorkspaceError):
+        WritebackApproval.from_user(intake(text), RUN_ID, {"report.py": "0" * 64})
+
+
+def test_exact_run_scope_and_sentence_punctuation_still_grant(tmp_path):
+    d = tmp_path / "reports"; d.mkdir()
+    assert CapabilityGrant.from_user(intake("use sheets for this run."), [("MCP_SERVER", "sheets")]).valid()
+    assert CapabilityGrant.from_user(intake("yes, use 'sheets', please"), [("MCP_SERVER", "sheets")]).valid()
+    assert ElevationGrant.from_user(intake("yes allow network for this run"), "network", "s").valid_for("s")
+    assert ElevationGrant.from_user(intake(f"yes, allow access to {d} for this run."), f"extra_dir:{d}", "s").valid_for("s")
+    assert WritebackApproval.from_user(intake("yes, apply report.py."), RUN_ID, {"report.py": "0" * 64}).valid()
