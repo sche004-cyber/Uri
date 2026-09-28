@@ -8,7 +8,8 @@ import uuid
 
 from .contracts import (MemoryRecord, RecordKind as K, Provenance as P, TaskStatus as S,
                         VerificationStatus as V, WriteResult, TrustedInput, BoundReference,
-                        IdentityStatus as I, canonical, digest, plain, utc_now, negated)
+                        IdentityStatus as I, canonical, digest, plain, utc_now, negated,
+                        affirmative_words, STATUS_FILLERS, DURATION_FILLERS, REQUEST_LEAD_WORDS)
 from .index import VerifierRegistryMismatch
 
 # Populated only by trusted bootstrap in this module; no public registration API.
@@ -120,8 +121,31 @@ class Recorder:
                     actor,prov = "USER",P.USER_PROVIDED
                     allowed = {S.PAUSED:("pause",),S.OPEN:("resume","continue"),S.COMPLETED:("complete","completed","done"),
                                S.FAILED:("failed","failure"),S.ABANDONED:("cancel","abandon"),S.WAITING_USER:()}
-                    # A negated keyword ("not done yet") is not an explicit declaration (audit F-2).
-                    if negated(intake.raw_text) or not set(re.findall(r"\w+",intake.raw_text.casefold())).intersection(allowed[new]):
+                    # Explicit declarations only (audit F-2, re-audit R-3): the whole turn must be
+                    # the status keyword plus plainly affirmative filler (positive allowlist), so
+                    # "not done yet", "don‘t cancel" or "nothing is done" are never transitions.
+                    # Re-audit round 3 (P-2): duration fillers ("for a moment", "for now") only
+                    # make a declaration affirmative for PAUSED -- elsewhere they let through
+                    # non-declarations like "done for now". And "complete" led by a request word
+                    # ("please/can you complete this task") asks for work, it does not declare it.
+                    fillers = STATUS_FILLERS | (DURATION_FILLERS if new is S.PAUSED else frozenset())
+                    words = affirmative_words(intake.raw_text,fillers | set(allowed[new]))
+                    matched = set(words).intersection(allowed[new]) if words else set()
+                    # Focused re-check fix: bare "complete" reads as a request ("just complete it",
+                    # "complete the task", "let's complete this task") almost as often as a
+                    # declaration. Only "mark ... as complete" and "it's/is complete" framings
+                    # declare completion via "complete"; anything else needs "done"/"completed".
+                    bare_complete = False
+                    if new is S.COMPLETED and words and "complete" in matched and not matched & {"completed","done"}:
+                        i = words.index("complete")
+                        framed = (i > 0 and words[i-1] in ("as","is")) or \
+                                 (i > 1 and words[i-1] == "s" and words[i-2] == "it")
+                        bare_complete = not framed and words != ("complete",)
+                    # A question ("is it done?") asks; it does not declare.
+                    if (negated(intake.raw_text) or not words or not matched
+                            or "?" in intake.raw_text or words[0] in ("is","are","am")
+                            or (new is S.COMPLETED and "complete" in matched and words[0] in REQUEST_LEAD_WORDS)
+                            or bare_complete):
                         raise ValueError("EXPLICIT_USER_TRANSITION_REQUIRED")
                 if new == S.OPEN: prov = P.URI_RECORDED  # URI accepts the user resume event.
             p["status"] = new; p["transition_evidence_ids"] = (eid,)
