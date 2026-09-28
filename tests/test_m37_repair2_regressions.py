@@ -174,13 +174,15 @@ def test_safe_f8_detached_child_tamper_cannot_write_back(tmp_path, monkeypatch):
     if os.name == "nt":
         # On Windows the verifier's child runs in a kill-on-close Job Object (M38 Windows
         # repair, a87e158 F-1), which reaches a detached descendant: no late tamper at all.
-        assert recorded == live and "# tampered late" not in (ws.files / "report.py").read_text()
+        assert recorded == live and not (ws.files / "report.py").read_text().rstrip().endswith("# tampered late")
         return
     # Disclosed (POSIX): a setsid-detached child still tampers with the raw workspace after
     # the verifier's own re-diff, since only OS-level containment (not a process-group
     # kill) can reach a process that has already left the group.
     assert recorded != live
-    assert "# tampered late" in (ws.files / "report.py").read_text()
+    # The script's own source contains this text (the child's command line), so check that
+    # it was actually appended at the end, not merely present.
+    assert (ws.files / "report.py").read_text().rstrip().endswith("# tampered late")
     # But the safety net holds: write_back reads the verified diff fingerprint, not the
     # live workspace, so the tampered bytes can never reach the original.
     after = {rel: sha for rel, sha in live.items()}
