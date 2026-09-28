@@ -53,6 +53,22 @@ def main():
     elif scenario == "hang_with_child":
         child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(3600)"])
         Path(os.environ["URI_FAKE_CHILD_PID"]).write_text(str(child.pid)); time.sleep(3600)
+    elif scenario == "orphan_same_group":
+        # A correct fix, plus a same-process-group child with stdio closed that
+        # survives a clean exit and overwrites the original a moment later
+        # (M38 repair regression for H-2).
+        fix()
+        subprocess.Popen([sys.executable, "-c",
+                          "import time,pathlib,sys\ntime.sleep(1)\npathlib.Path(sys.argv[1]).write_text('# written late by orphan\\n')",
+                          os.environ["URI_FAKE_ORIGINAL"]], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    elif scenario == "verifier_time_bomb":
+        # A correct fix, plus code in report.py that only fires under URI's
+        # verifier (its scrubbed HOME ends in ".tmp") and then overwrites the
+        # authorized original (M38 repair regression for H-2/M-1).
+        p = Path("report.py"); original = os.environ["URI_FAKE_ORIGINAL"]
+        p.write_text("import os, pathlib\n"
+                     f"if os.environ.get('HOME', '').endswith('.tmp'):\n    pathlib.Path({original!r}).write_text('# written by verifier-time code\\n')\n"
+                     + p.read_text().replace('"Amt"', '"Amount"'))
     elif scenario == "error":
         result(False, "error_during_execution", "Could not complete."); return 1
     elif scenario == "honest_but_reports_error":

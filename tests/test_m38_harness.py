@@ -3,6 +3,7 @@ import ast
 import json
 import os
 from pathlib import Path
+import sys
 import threading
 import time
 
@@ -93,6 +94,128 @@ def test_whole_process_group_is_terminated(tmp_path, monkeypatch):
         pytest.fail("grandchild survived process-group termination")
 
 
+# ---- M38 repair regressions (2026-09-28, from the internal audit's adversarial probes) ----
+
+def test_same_group_orphan_is_killed_and_never_touches_the_original(tmp_path, monkeypatch):
+    """H-2: a background child in the harness's own process group, stdio closed, used to
+    survive a clean exit and overwrite the original a moment later. `supervise()` now
+    sweeps the whole process group after every exit, not only on timeout/inactivity/cancel."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "orphan_same_group"); monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert out.verified and out.verification_status == "VERIFIED" and out.safety_flags == ()
+    before = (e.root / "report.py").read_text()
+    time.sleep(2.5)
+    assert (e.root / "report.py").read_text() == before  # the orphan never got to run
+
+
+def test_originals_are_rechecked_after_verification_not_only_before(tmp_path, monkeypatch):
+    """H-2/M-1: code that only fires under URI's verifier (scrubbed HOME) used to overwrite
+    the original after the pre-verification check already passed, and nothing looked again."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "verifier_time_bomb"); monkeypatch.setenv("URI_FAKE_ORIGINAL", str(e.root / "report.py"))
+    out = runner.run(esc, fake_adapter(home), session_id="session", limits=Limits(timeout_s=60, inactivity_s=30))
+    assert not out.verified and "ORIGINAL_MODIFIED_DURING_VERIFICATION" in out.safety_flags
+
+
+def test_oversized_prompt_does_not_block_the_watchdog(tmp_path):
+    """M-5: stdin used to be written synchronously before the timeout loop started, so a
+    harness that never reads stdin could hang `supervise()` past its own timeout."""
+    from uri_v1.execution.harness.process import supervise
+    log = tmp_path / "log"
+    started = time.monotonic()
+    r = supervise([sys.executable, "-c", "import time; time.sleep(3600)"], cwd=tmp_path, env=dict(os.environ),
+                 stdin_bytes=b"x" * (1 << 20), timeout_s=2, inactivity_s=1, log_path=log)
+    assert time.monotonic() - started < 8 and (r.timed_out or r.inactivity_killed)
+
+
+def test_discovery_target_never_carries_a_single_string_commands_arguments(tmp_path):
+    """M-2: `_target()` used to basename the *whole* command string, so a single-string
+    MCP command such as `npx -y pkg --api-key sk-live-...` leaked the secret argument."""
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude.json").write_text(json.dumps({"mcpServers": {
+        "acme": {"command": "npx -y @acme/mcp-server --api-key sk-live-LEAK1"}}}))
+    inv = discover_claude_code(tmp_path)
+    assert inv.find("MCP_SERVER", "acme").target == "npx" and "sk-live" not in json.dumps(inv.to_dict())
+
+
+def test_harness_env_is_an_allowlist_not_a_denylist(monkeypatch):
+    """M-3: `harness_env()` used to forward the whole environment minus a short denylist,
+    so URI's own provider keys and the user's unrelated secrets reached the harness."""
+    from uri_v1.execution.harness.process import harness_env
+    for k in ("OPENAI_API_KEY", "TAVILY_API_KEY", "GITHUB_TOKEN", "AWS_SECRET_ACCESS_KEY"):
+        monkeypatch.setenv(k, "sk-live-" + k)
+    env = harness_env()
+    assert not any(k in env for k in ("OPENAI_API_KEY", "TAVILY_API_KEY", "GITHUB_TOKEN", "AWS_SECRET_ACCESS_KEY"))
+    assert "PATH" in env
+    env = harness_env(("ANTHROPIC_API_KEY",))
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-adapter-owns-this-one")
+    assert harness_env(("ANTHROPIC_API_KEY",))["ANTHROPIC_API_KEY"] == "sk-ant-adapter-owns-this-one"
+
+
+def test_elevated_posture_needs_a_grant_it_cannot_be_built_without(tmp_path, monkeypatch):
+    """H-3/P3: `PermissionProfile(network=True, ...)` used to be buildable directly, with
+    no `ElevationGrant` at all, making the restrictive default posture opt-out by construction."""
+    with pytest.raises(HarnessError): PermissionProfile(network=True)
+    with pytest.raises(HarnessError): PermissionProfile(package_install=True)
+    with pytest.raises(HarnessError): PermissionProfile(extra_dirs=("/tmp",))
+
+
+def test_elevation_grant_is_bound_to_the_run_it_was_issued_for(tmp_path, monkeypatch):
+    """H-3/P3b: an `ElevationGrant`'s `run_scope` used to never be compared with the actual
+    run: `HarnessRunner.run()` generated its own run id after the posture was already built,
+    so a grant issued for one run could be reused on any other. `run()` now requires the
+    caller to name the run up front and checks every grant against it."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    monkeypatch.setenv("URI_FAKE_SCENARIO", "honest")
+    from uri_v1.execution.workspace import new_run_id
+    run_a, run_b = new_run_id(), new_run_id()
+    g = ElevationGrant.from_user(intake("yes, allow network access for this run"), "network", run_a)
+    p = PermissionProfile().elevate(g, run_a)
+    limits = Limits(timeout_s=30, inactivity_s=15)
+    with pytest.raises(HarnessError): runner.run(esc, fake_adapter(home), session_id="s", posture=p, limits=limits)
+    with pytest.raises(HarnessError):
+        runner.run(esc, fake_adapter(home), session_id="s", posture=p, run_id=run_b, limits=limits)
+    out = runner.run(esc, fake_adapter(home), session_id="s", posture=p, run_id=run_a, limits=limits)
+    assert out.verified
+
+
+def test_extra_dir_grant_needs_the_whole_directory_name_not_an_incidental_letter(tmp_path):
+    """M-4/P4: `extra_dir:/home/someone/e` used to be granted by any "allow" sentence that
+    happened to contain the letter `e`, because the basename was matched as a substring."""
+    with pytest.raises(HarnessError):
+        ElevationGrant.from_user(intake("yes allow the repair"), "extra_dir:/home/someone/e", "run-1")
+    g = ElevationGrant.from_user(intake("yes, allow access to /home/someone/e for this run"), "extra_dir:/home/someone/e", "run-1")
+    assert g.elevation.startswith("extra_dir:") and g.elevation.endswith("/e")
+    with pytest.raises(HarnessError):  # root and home are never an allowed extra_dir
+        ElevationGrant.from_user(intake("yes, allow access to / for this run"), "extra_dir:/", "run-1")
+
+
+def test_capability_grant_needs_the_whole_name_not_a_substring(tmp_path):
+    """M-4/P4b: a granted capability name used to be matched as a bare substring, so "the
+    digital report fix" satisfied a grant for an MCP server named "git"."""
+    with pytest.raises(HarnessError): CapabilityGrant.from_user(intake("allow the digital report fix"), [("MCP_SERVER", "git")])
+    g = CapabilityGrant.from_user(intake("allow the git server"), [("MCP_SERVER", "git")])
+    assert g.items == (("MCP_SERVER", "git"),)
+
+
+def test_default_posture_has_no_shell_and_scopes_file_tools_to_the_workspace(tmp_path, monkeypatch):
+    """H-1: bare `Read`/`Edit`/`Write`/`Glob`/`Grep` allow rules were not path-scoped at all,
+    and `Bash(python *)` gave the harness arbitrary code execution by default. Chetan's
+    decision (2026-09-28): no shell in the default posture; URI's own verifier runs any
+    script. File tools are scoped to the workspace's `files/` directory."""
+    e, esc, runner, home = escalated(tmp_path, monkeypatch)
+    ws = Workspace.create(user_id=e.user, scratch_root=e.scratch, sources=e.sources,
+                          inputs=[WorkspaceInput(i.role, i.source_id, i.content_sha256) for i in esc.inputs])
+    cap = build_capsule(esc, ws, harness_type=HarnessType.CLAUDE_CODE)
+    argv, _, _ = fake_adapter(home).invocation(cap, ws.bundle)
+    disallowed = argv[argv.index("--disallowedTools"):]
+    assert "Bash" in disallowed and not any(a.startswith("Bash(python") for a in argv)
+    scope = str(ws.files.resolve())
+    for tool in ("Read", "Edit", "Write", "Glob", "Grep"):
+        assert f"{tool}({scope}/**)" in argv and tool in disallowed  # scoped allow + bare deny elsewhere
+
+
 def test_reported_error_is_recorded_as_failed_claim_but_uri_still_checks(tmp_path, monkeypatch):
     e, esc, out = _run(tmp_path, monkeypatch, "honest_but_reports_error")
     assert out.claimed_outcome == "failed" and out.verification_status == "VERIFIED"
@@ -114,8 +237,10 @@ def test_restrictive_default_argv_and_no_bypass_flags(tmp_path, monkeypatch):
     argv = json.loads(argv_out.read_text())
     assert not FORBIDDEN_FLAGS.intersection(argv)
     assert argv[argv.index("--permission-mode") + 1] == "dontAsk" and argv[argv.index("--setting-sources") + 1] == ""
-    assert "--strict-mcp-config" in argv and "WebFetch" in argv[argv.index("--disallowedTools"):]
-    assert "Bash(python *)" in argv and "Bash(pip *)" not in argv and "--add-dir" not in argv
+    disallowed = argv[argv.index("--disallowedTools"):]
+    assert "--strict-mcp-config" in argv and "WebFetch" in disallowed and "Bash" in disallowed  # no shell by default
+    assert "Bash(python *)" not in argv and "Bash(pip *)" not in argv and "--add-dir" not in argv
+    assert any(a.startswith("Read(") and a.endswith("/**)") for a in argv)  # file tools are path-scoped to the workspace
     mcp = Path(argv[argv.index("--mcp-config") + 1])
     assert not mcp.exists()  # per-run config removed after the run
 
@@ -132,7 +257,8 @@ def test_elevation_requires_explicit_trusted_named_grant(tmp_path, monkeypatch):
                           inputs=[WorkspaceInput(i.role, i.source_id, i.content_sha256) for i in esc.inputs])
     cap = build_capsule(esc, ws, harness_type=HarnessType.CLAUDE_CODE, posture=p)
     argv, _, _ = fake_adapter(home).invocation(cap, ws.bundle)
-    assert "WebFetch" in argv and "--disallowedTools" not in argv
+    disallowed = argv[argv.index("--disallowedTools"):]  # file tools stay path-scoped and denied bare (H-1) even when elevated
+    assert "WebFetch" in argv and "WebFetch" not in disallowed and "WebSearch" not in disallowed
     cx, _, _ = CodexCliAdapter(("python3",), home=home).invocation(cap, ws.bundle)
     assert "sandbox_workspace_write.network_access=true" in cx
 

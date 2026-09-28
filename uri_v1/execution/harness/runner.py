@@ -38,13 +38,19 @@ class HarnessRunner:
 
     def run(self, escalation, adapter, *, session_id, posture: PermissionProfile | None = None,
             capabilities: CapabilityGrant | None = None, limits: Limits | None = None,
-            cancel: threading.Event | None = None) -> HarnessOutcome:
+            cancel: threading.Event | None = None, run_id: str | None = None) -> HarnessOutcome:
         if AcceptanceCriteria.from_dict(escalation.acceptance).sha256 != escalation.acceptance_sha256:
             raise HarnessError("ACCEPTANCE_TAMPERED")
         probe = adapter.probe()
         if not probe.get("installed"): raise HarnessError("HARNESS_UNAVAILABLE")
         inventory = adapter.inventory()
-        run_id = new_run_id()
+        posture = posture or PermissionProfile()
+        if posture.grants:
+            # An elevation grant is scoped to one run (H-3/P3b): the caller must name
+            # the run it was issued for, and it must be the run about to happen.
+            if not run_id: raise HarnessError("RUN_ID_REQUIRED_FOR_ELEVATION")
+            if not all(g.valid_for(run_id) for g in posture.grants): raise HarnessError("ELEVATION_GRANT_INVALID")
+        run_id = run_id or new_run_id()
         ws = Workspace.create(user_id=self.user_id, scratch_root=self.scratch_root, sources=self.sources, run_id=run_id,
                               inputs=[WorkspaceInput(i.role, i.source_id, i.content_sha256) for i in escalation.inputs])
         capsule = build_capsule(escalation, ws, harness_type=adapter.harness_type, posture=posture, capabilities=capabilities, limits=limits)
@@ -84,6 +90,13 @@ class HarnessRunner:
         metrics = dict(claims.usage, capsule_instructions_bytes=len(prompt), input_files=len(ws.manifest),
                        changed_files=len(lineage.uri_computed_diff["changes"]), exit_code=proc.exit_code,
                        timed_out=proc.timed_out, inactivity_killed=proc.inactivity_killed)
+        # Re-check the originals after verification too (H-2/M-1, probe P8): the run store
+        # already reflects the pre-verification check, but verification can itself execute
+        # harness-written code (M37 verifier, no sandbox), which can modify an original only
+        # after the first check ran. A run is never called clean on the strength of a check
+        # that predates code execution it did not see.
+        if not originals_changed and ws.originals_unchanged(self.sources):
+            flags.append("ORIGINAL_MODIFIED_DURING_VERIFICATION")
         verified = lineage.verification_status == "VERIFIED" and not flags
         return HarnessOutcome(run_id, verified, lineage.verification_status, claims.claimed_outcome.value, tuple(flags),
                               lineage.claim_record_id, lineage.verifier_record_id, metrics, lineage.reason)
