@@ -12,9 +12,9 @@ from dataclasses import dataclass, field
 import hashlib
 import json
 import re
+from typing import Protocol
 
 from uri_v1.execution.workspace import WorkspaceInput
-from uri_v1.memory.contracts import IdentityStatus
 from .contracts import REPORT_NAME, CompiledPlan, PortType, SourceCandidate, canonical
 
 _SOURCE_ID = re.compile(r"^[0-9a-f]{32}$")
@@ -25,18 +25,31 @@ class BindingError(ValueError):
     """Typed failure; the reason code is the message."""
 
 
-def candidates_from_registry(sources) -> tuple:
-    """Trusted candidates: every source the registry can locate and hash right now."""
+class SourceResolver(Protocol):
+    """The adapter through which planning reaches sources. The caller injects it (in slice 1 the
+    M36 `SourceRegistry` satisfies it structurally); no planning module imports `uri_v1.memory`."""
+    def scan(self): ...
+    def fingerprint(self, locator): ...
+    def verify_source(self, source_id, expected_sha): ...
+
+
+def _hash_verified(ref) -> bool:
+    status = getattr(ref, "identity_status", None)
+    return getattr(status, "value", status) == "HASH_VERIFIED" and getattr(ref, "content_sha256", None) is not None
+
+
+def candidates_from_registry(sources: SourceResolver) -> tuple:
+    """Trusted candidates: every source the injected resolver can locate and hash right now."""
     scan = sources.scan()
     out = []
     for locator in scan.locators:
         ref = sources.fingerprint(locator)
-        if ref is None or ref.identity_status != IdentityStatus.HASH_VERIFIED or ref.content_sha256 is None: continue
+        if ref is None or not _hash_verified(ref): continue
         out.append(SourceCandidate(ref.source_id, ref.relpath, ref.media_type, ref.content_sha256))
     return tuple(out)
 
 
-def bind_sources(plan: CompiledPlan, sources, candidates) -> tuple:
+def bind_sources(plan: CompiledPlan, sources: SourceResolver, candidates) -> tuple:
     """One WorkspaceInput per distinct plan source, only for trusted, still-current candidates."""
     if not isinstance(plan, CompiledPlan): raise BindingError("PLAN_REQUIRED")
     by_id = {c.source_id: c for c in candidates}

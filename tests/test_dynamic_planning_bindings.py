@@ -127,3 +127,19 @@ def test_value_shapes_are_closed():
     assert not valid_value(SEL, PortType.STRUCTURE_COMPARISON)
     assert not valid_value({"relpath": "other.json", "sha256": "0" * 64}, PortType.REPORT_ARTIFACT)
     assert not valid_value({"source_id": "a" * 32, "sheets": []}, PortType.STRUCTURE_SELECTION)
+
+
+def test_candidates_come_only_from_hash_verified_resolver_refs():
+    from types import SimpleNamespace as NS
+    from uri_v1.execution.planning.bindings import candidates_from_registry
+    refs = {"a": NS(source_id="a" * 32, relpath="a.xlsx", media_type="spreadsheet", content_sha256="1" * 64,
+                    identity_status=NS(value="HASH_VERIFIED")),
+            "b": NS(source_id="b" * 32, relpath="b.xlsx", media_type="spreadsheet", content_sha256=None,
+                    identity_status=NS(value="HASH_UNAVAILABLE_SIZE_CAP")),
+            "c": NS(source_id="c" * 32, relpath="c.xlsx", media_type="spreadsheet", content_sha256="3" * 64,
+                    identity_status=NS(value="HASH_UNAVAILABLE_POLICY"))}
+    class Resolver:
+        def scan(self): return NS(locators=list(refs))
+        def fingerprint(self, locator): return refs[locator]
+        def verify_source(self, sid, sha): return True
+    assert [c.source_id for c in candidates_from_registry(Resolver())] == ["a" * 32]

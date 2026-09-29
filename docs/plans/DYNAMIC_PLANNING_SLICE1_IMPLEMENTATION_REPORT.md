@@ -5,11 +5,13 @@ Plans: `docs/architecture/DYNAMIC_PLANNING_CANONICAL_ARCHITECTURE.md` (Stage 2),
 
 ## 1. Base
 
-- `BASE` = `4292528` (the two plan documents) on top of `21bcc63`, the tip of `claude/project-thread-2vamlf` when implementation started (D1 working line). Rollback point: `BASE`.
+- **Current base: the frozen M36-M38 line `5bbf738`** (CLOSED_FROZEN at `bd7c450`, the line D1 now names). The slice's three commits (plan docs, battery freeze, implementation) were rebased onto it without conflicts, because they add new files only.
+- History: implementation started on `4292528` (the plan docs on `21bcc63`, the D1 working line at the time) and was first pushed as `67e0e94` (freeze) and `bdb4834`. The rebase supersedes those SHAs with the same content and order; the freeze commit is now `44fa36e`.
+- Rollback point: `5bbf738`.
 
 ## 2. Frozen battery (recorded before the first qualifying run)
 
-These digests were recorded and committed before `scripts/dynamic_planning_qualification.py` was first run against the battery. Digests are over LF-normalized bytes for the JSON files (the script uses the same normalization) and raw bytes for the workbooks.
+These digests were recorded and committed (originally `67e0e94`, now `44fa36e`) before `scripts/dynamic_planning_qualification.py` was first run against the battery. Digests are over LF-normalized bytes for the JSON files (the script uses the same normalization) and raw bytes for the workbooks.
 
 | File | sha256 |
 |---|---|
@@ -51,20 +53,31 @@ Battery notes, fixed at freeze time:
 
 ## 4. Checks run (all COMPLETED_WITH_RESULT on Linux, Python 3.11.15)
 
-| Check | Command | BASE `4292528` | HEAD |
+| Check | Command | BASE `5bbf738` (first run at `4292528`) | HEAD |
 |---|---|---|---|
-| Full suite | `python -B -m pytest -q -p no:cacheprovider tests/` | 1283 passed, 9 skipped | **1381 passed, 1 failed**, 9 skipped (the 99 new tests included; failure in §4.1) |
+| Full suite | `python -B -m pytest -q -p no:cacheprovider tests/` | 1303 passed, 9 skipped (1283 at `4292528`) | **1404 passed, 1 failed**, 9 skipped (the 101 new tests included; failure in §4.1) |
 | Review regression | `python -B -m pytest -q -p no:cacheprovider test_multi_action_capabilities.py test_m33_p1_permission_seam.py tests/test_m37_edge_execution.py tests/test_m38_harness.py tests/governance/test_uri_state_validator.py` | 113 passed | 113 passed |
 | Frozen anchors | `python scripts/m33_3_r_anchors.py` | ok, changed [] | ok, changed [] |
 | M36/M37/M38 qualification | `python scripts/m3{6_memory,7_edge,8_harness}_qualification.py` | exit 0 each, gates passed | exit 0 each, gates passed |
-| Slice tests | `python -B -m pytest -q -p no:cacheprovider tests/test_dynamic_planning_*.py` | n/a | 99 passed |
+| Governance | `python -B -m pytest -q -p no:cacheprovider tests/governance` and `python scripts/governance/uri_state_validator.py` | 37 passed, VALID | 37 passed, VALID |
+| Slice tests | `python -B -m pytest -q -p no:cacheprovider tests/test_dynamic_planning_*.py` | n/a | 101 passed |
 | Slice qualification | `python -B scripts/dynamic_planning_qualification.py` | n/a | exit 0, gate passed |
 
-### 4.1 G8 is not identical: one existing scope guard fails (STOP CONDITION, needs a decision)
+### 4.1 G8 is not identical: one frozen M37 scope guard fails (open decision)
 
-`tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged` passes at BASE and fails at HEAD. It asserts that every path changed or added since M36 baseline `179fe10` under `tests`, `scripts` and `fixtures` starts with an M37/M38 prefix (`tests/test_m37_`, `scripts/m37_`, `fixtures/m37_edge/`, …). The migration plan puts this slice's files at `tests/test_dynamic_planning_*.py`, `scripts/dynamic_planning_qualification.py` and `fixtures/dynamic_planning/**`, which the guard does not allow. (`uri_v1/execution/planning/` is allowed by its `uri_v1/execution/` prefix.) The M36 guard (`tests/test_m36_memory_adversarial.py`) was already reworded to let successors add files; the M37 guard was not.
+`tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged` passes at BASE and fails at HEAD. It asserts that every path changed or added since M36 baseline `179fe10` under `tests`, `scripts` and `fixtures` starts with an M37/M38 prefix. The plan puts this slice's tests, driver and fixtures at `tests/test_dynamic_planning_*.py`, `scripts/dynamic_planning_qualification.py` and `fixtures/dynamic_planning/**`. The production package `uri_v1/execution/planning/` is already allowed. M36 to M38 are CLOSED_FROZEN, and Chetan ruled (2026-09-29 05:21) that dynamic planning gets no allowlist entry in that test. So this failure stays, and no frozen file was edited.
 
-Making G8 identical needs one of: (a) an edit to that M37 test's allowlist, an existing M37 file under audit, which this slice may not make; or (b) moving the slice's tests, script and fixtures under `uri_v1/execution/planning/`, which departs from the plan's file list and would pass the guard by placement rather than by scope. Neither was done. This is reported for Chetan's decision; nothing else in G8 differs.
+Relocation was tried in the rework and reverted, because it only passes by placement:
+- Under `uri_v1/execution/planning/` it passes the scope guard but fails the separate frozen M37 import check (`test_edge_and_execution_import_boundaries`). The test harness builds real M36 stores (`uri_v1.memory.recorder`, `sources`, `log`), and that check allows only `uri_v1.memory.contracts` inside `uri_v1/execution`.
+- In a new top-level directory outside every guard's scope, both frozen checks pass, but only because the files sit where no guard looks.
+
+Options for Chetan: (a) keep the plan locations and accept this one documented failure until governance allows a successor rule; (b) allow an exact-path entry covering only the slice's test, driver and fixture paths (the production package is already covered); (c) approve a dedicated top-level qualification directory for successor-milestone harnesses as a governance rule rather than a workaround.
+
+### 4.2 Rework on the frozen line (Chetan, 2026-09-29 05:21: keep the SourceResolver/adapter approach)
+
+- `bindings.py` no longer imports `uri_v1.memory`. It declares a `SourceResolver` protocol (`scan`, `fingerprint`, `verify_source`), and the caller injects the resolver; M36's `SourceRegistry` satisfies it structurally. No planning production module imports anything from `uri_v1.memory`. That is stricter than the frozen M37 rule, which allows `uri_v1.memory.contracts`.
+- New boundary tests: no planning production module imports `uri_v1.memory` or the test harness. A new binding test shows that only hash-verified resolver refs become candidates.
+- The battery, gate, qualification record and workbooks are unchanged; the §2 digests still hold.
 
 The M36 to M38 qualification scripts rewrite their own tracked result files under `docs/plans/` (timestamps and latencies). Those rewrites were reverted and are not part of this slice.
 
@@ -86,7 +99,7 @@ The M36 to M38 qualification scripts rewrite their own tracked result files unde
 - Reported, not gated: C33 semantic miss 1 / 1 (expected: the wrong literal is verified as executed and scored as a miss); latency p50 ≈ 1 ms, p95 ≈ 36 ms per case on this machine (volatile).
 - Negative control (not part of the gate): forcing C26 and C30 to report VERIFIED, adding an extra executed node to C22 and corrupting one C01 manifest hash made the counters read 2, 1, 1, 1 and 2 as expected, so they are not constant zeros.
 
-**Run history (preserved, not overwritten).** Run 1 crashed in the scorer (NO_OUTPUT): it read the first ledger output as the report, which in C28 is the extra artifact. Fixed in the driver to read the `plan_report.json` change. Run 2 completed with the gate **failed**, 32 / 34: C22 and C23 flagged "halted at wrong node" because the scorer compared the expected halt node with the last *executed* node, while a node refused for CAPABILITY_CHANGED is stopped before it runs. The runtime behaviour (sa refused, no descendant run) matched the expectation; the scorer now reads the node named in the RUN_ABORTED event. Run 3 passed as above. The battery and gate files were not changed between runs (digests in §2 still match). Run 2's results file is kept for the audit at `/mnt/project-files/audits/dynamic_planning_slice1/qual_run2_results_superseded.json`.
+**Run history (preserved, not overwritten).** Run 1 crashed in the scorer (NO_OUTPUT): it read the first ledger output as the report, which in C28 is the extra artifact. Fixed in the driver to read the `plan_report.json` change. Run 2 completed with the gate **failed**, 32 / 34: C22 and C23 flagged "halted at wrong node" because the scorer compared the expected halt node with the last *executed* node, while a node refused for CAPABILITY_CHANGED is stopped before it runs. The runtime behaviour (sa refused, no descendant run) matched the expectation; the scorer now reads the node named in the RUN_ABORTED event. Run 3 passed as above. Run 4, on the frozen line after the rework, passed with the same result. The battery and gate files were not changed between runs (digests in §2 still match). Run 2's results file is kept for the audit at `/mnt/project-files/audits/dynamic_planning_slice1/qual_run2_results_superseded.json`.
 
 ## 6. Deviations and disclosed limitations
 
@@ -106,4 +119,6 @@ The M36 to M38 qualification scripts rewrite their own tracked result files unde
 
 ## 7. Next
 
-Step 5: a fresh independent audit that starts from repository evidence, reruns everything above, and adds adversarial probes beyond the battery. The slice stays PROVISIONAL / NOT FROZEN whatever the result. If the M36 to M38 freeze picks the other line (`62d564c`), rebase this new-files-only slice and rerun G8 and the battery there first (migration §1).
+Chetan's decision on §4.1. Then:
+
+Step 5: a fresh independent audit that starts from repository evidence, reruns everything above, and adds adversarial probes beyond the battery. The slice stays PROVISIONAL / NOT FROZEN whatever the result. The slice now sits on the frozen line, so the migration-plan §1 rebase contingency is closed.

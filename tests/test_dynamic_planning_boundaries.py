@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLANNING = ROOT / "uri_v1" / "execution" / "planning"
 FORBIDDEN = ("uri_core", "experimental", "server", "file_store", "uri_ui")
 
-# LF-normalized sha256 of every reused file, pinned at BASE (4292528, on 21bcc63). Slice 1 must not change any of them.
+# LF-normalized sha256 of every reused file, pinned at BASE (frozen M36-M38 line 5bbf738; identical at 21bcc63). Slice 1 must not change any of them.
 REUSED = {
     "uri_v1/execution/officefile.py": "1fecc22568e3e44fde13047d064dea9d0aa3d0ed7da1207c7c4febdc4dfc40d3",
     "uri_v1/execution/workspace.py": "46b71b09be0c12b1f3b9d0583dfd9605ee540793bb81770c5e57c945e24c81a4",
@@ -70,3 +70,17 @@ def test_no_eval_exec_or_subprocess_in_planning():
         calls = {getattr(n.func, "id", None) for n in ast.walk(tree) if isinstance(n, ast.Call)}
         assert not calls & {"eval", "exec", "compile"}, path.name
         assert "subprocess" not in imports(path) and "os" not in {i.split(".")[0] for i in imports(path)}, path.name
+
+
+def test_production_modules_reach_sources_only_through_an_injected_resolver():
+    """Source access goes through the SourceResolver adapter handed in by the caller; no planning module
+    imports uri_v1.memory (Chetan, 2026-09-29 05:21: no execution -> memory.sources crossing)."""
+    for path in PLANNING.glob("*.py"):
+        for name in imports(path):
+            assert not name.startswith("uri_v1.memory"), (path.name, name)
+
+
+def test_production_modules_never_import_the_test_harness():
+    for path in PLANNING.glob("*.py"):
+        for name in imports(path):
+            assert ".tests" not in name and not name.lstrip(".").startswith("tests"), (path.name, name)
