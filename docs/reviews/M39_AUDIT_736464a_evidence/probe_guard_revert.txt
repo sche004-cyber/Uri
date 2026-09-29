@@ -1,0 +1,8 @@
+{"mutation": "unmodified HEAD", "content": "-", "m37_guard": "PASS", "m39_boundary_guard": "PASS"}
+{"mutation": "uri_v1/execution/workspace.py", "content": "as at 763d8e7", "m37_guard": "PASS", "m39_boundary_guard": "PASS"}
+{"mutation": "uri_v1/execution/verify.py", "content": "as at 763d8e7", "m37_guard": "PASS", "m39_boundary_guard": "PASS"}
+{"mutation": "uri_v1/edge/resolver.py", "content": "as at 763d8e7", "m37_guard": "PASS", "m39_boundary_guard": "PASS"}
+{"mutation": "uri_v1/execution/harness/runner.py", "content": "as at b013dba", "m37_guard": "PASS", "m39_boundary_guard": "PASS"}
+{"mutation": "uri_v1/execution/harness/contracts.py", "content": "as at b013dba", "m37_guard": "PASS", "m39_boundary_guard": "PASS"}
+{"mutation": "uri_v1/execution/workspace.py", "content": "appended comment", "m37_guard": "PASS", "m39_boundary_guard": "FAIL:['uri_v1/execution/workspace.py']"}
+{"mutation": "uri_v1/memory/contracts.py", "content": "appended comment", "m37_guard": "FAIL:['uri_v1/memory/contracts.py']", "m39_boundary_guard": "FAIL:['uri_v1/memory/contracts.py']"}

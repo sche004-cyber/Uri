@@ -1,0 +1,9 @@
+{"probe": "tamper_workbook", "after_run": "HARNESS_FAILED", "verification": "FAILED", "relpaths": [], "originals_changed": [], "extra_files_in_root": []}
+{"probe": "extra_file", "after_run": "HARNESS_FAILED", "verification": "FAILED", "relpaths": [], "originals_changed": [], "extra_files_in_root": []}
+{"probe": "hardcode", "after_run": "HARNESS_FAILED", "verification": "FAILED", "relpaths": [], "originals_changed": [], "extra_files_in_root": []}
+{"probe": "symlink_out", "after_run": "HARNESS_FAILED", "verification": "FAILED", "relpaths": [], "originals_changed": [], "extra_files_in_root": []}
+{"probe": "symlink_out", "after_run": "HARNESS_FAILED", "verification": "FAILED", "relpaths": [], "originals_changed": [], "extra_files_in_root": [], "original_is_symlink": false, "original_has_outside_marker": false}
+{"probe": "write_original", "after_run": "HARNESS_FAILED", "verification": "CLAIMED_ONLY", "relpaths": [], "originals_changed": ["report.py"], "extra_files_in_root": []}
+{"probe": "claim_verified_text", "after_run": "HARNESS_FAILED", "verification": "FAILED", "relpaths": [], "originals_changed": [], "extra_files_in_root": []}
+{"probe": "honest_control", "after_run": "AWAITING_APPROVAL", "verification": null, "relpaths": ["report.py"], "after_approve": "COMPLETED", "reason": null, "originals_changed": ["report.py"], "extra_files_in_root": []}
+7 passed in 3.24s
