@@ -1,0 +1,717 @@
+{
+ "battery_sha256": "2c36641926db04e679fb937ce10d0fff141c7989e049618caf9759002fd0f419",
+ "cases": [
+  {
+   "code": null,
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "report": {
+     "only_left": [],
+     "only_right": [
+      "Region"
+     ],
+     "shared": [
+      "Id",
+      "Date",
+      "Amount"
+     ]
+    },
+    "status": "VERIFIED"
+   },
+   "gate": null,
+   "id": "C01",
+   "latency_ms": 25.2,
+   "problems": [],
+   "status": "VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": null,
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "same_plan_sha_as": "C01",
+    "status": "VERIFIED"
+   },
+   "gate": null,
+   "id": "C02",
+   "latency_ms": 22.8,
+   "problems": [],
+   "status": "VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": null,
+   "executed": [
+    "ia",
+    "s1",
+    "s2",
+    "w"
+   ],
+   "expected": {
+    "status": "VERIFIED"
+   },
+   "gate": null,
+   "id": "C03",
+   "latency_ms": 20.5,
+   "problems": [],
+   "status": "VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": null,
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "status": "VERIFIED"
+   },
+   "gate": null,
+   "id": "C04",
+   "latency_ms": 27.0,
+   "problems": [],
+   "status": "VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "UNKNOWN_ACTION",
+   "executed": [],
+   "expected": {
+    "code": "UNKNOWN_ACTION",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C05",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "DUPLICATE_NODE",
+   "executed": [],
+   "expected": {
+    "code": "DUPLICATE_NODE",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C06",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "UNKNOWN_PORT",
+   "executed": [],
+   "expected": {
+    "code": "UNKNOWN_PORT",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C07",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "PORT_TYPE_MISMATCH",
+   "executed": [],
+   "expected": {
+    "code": "PORT_TYPE_MISMATCH",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C08",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "CYCLE",
+   "executed": [],
+   "expected": {
+    "code": "CYCLE",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C09",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "UNBOUND_REQUIRED_INPUT",
+   "executed": [],
+   "expected": {
+    "code": "UNBOUND_REQUIRED_INPUT",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C10",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "UNKNOWN_ACTION_VERSION",
+   "executed": [],
+   "expected": {
+    "code": "UNKNOWN_ACTION_VERSION",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C11",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "NO_EXECUTABLE_PLAN",
+   "executed": [],
+   "expected": {
+    "code": "NO_EXECUTABLE_PLAN",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C12",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "LIMIT_EXCEEDED",
+   "executed": [],
+   "expected": {
+    "code": "LIMIT_EXCEEDED",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C13",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "UNREACHABLE_OUTPUT",
+   "executed": [],
+   "expected": {
+    "code": "UNREACHABLE_OUTPUT",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C14",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "UNKNOWN_SOURCE",
+   "executed": [],
+   "expected": {
+    "code": "UNKNOWN_SOURCE",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C15",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "AMBIGUOUS_SOURCE",
+   "executed": [],
+   "expected": {
+    "clarification": [
+     "$src:root1/wb_a.xlsx",
+     "$src:root2/wb_a.xlsx"
+    ],
+    "status": "NEEDS_CLARIFICATION"
+   },
+   "gate": null,
+   "id": "C16",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "NEEDS_CLARIFICATION",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "INPUT_NOT_CURRENT",
+   "executed": [],
+   "expected": {
+    "code": "INPUT_NOT_CURRENT",
+    "status": "NOT_ATTEMPTED"
+   },
+   "gate": null,
+   "id": "C17",
+   "latency_ms": 2.3,
+   "problems": [],
+   "status": "NOT_ATTEMPTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "LITERAL_NOT_IN_SOURCE",
+   "executed": [
+    "ia",
+    "ib",
+    "sa"
+   ],
+   "expected": {
+    "code": "LITERAL_NOT_IN_SOURCE",
+    "status": "NOT_ATTEMPTED"
+   },
+   "gate": null,
+   "id": "C18",
+   "latency_ms": 11.2,
+   "problems": [],
+   "status": "NOT_ATTEMPTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "PROPOSAL_INVALID",
+   "executed": [],
+   "expected": {
+    "code": "PROPOSAL_INVALID",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C19",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "PROPOSAL_INVALID",
+   "executed": [],
+   "expected": {
+    "code": "PROPOSAL_INVALID",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C20",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "XLSX_NOT_ZIP",
+   "executed": [
+    "ia"
+   ],
+   "expected": {
+    "code": "XLSX_NOT_ZIP",
+    "halted_at": "ia",
+    "status": "NOT_ATTEMPTED"
+   },
+   "gate": null,
+   "id": "C21",
+   "latency_ms": 10.0,
+   "problems": [],
+   "status": "NOT_ATTEMPTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "CAPABILITY_CHANGED",
+   "executed": [
+    "ia",
+    "ib"
+   ],
+   "expected": {
+    "code": "CAPABILITY_CHANGED",
+    "halted_at": "sa",
+    "status": "NOT_ATTEMPTED"
+   },
+   "gate": null,
+   "id": "C22",
+   "latency_ms": 13.2,
+   "problems": [],
+   "status": "NOT_ATTEMPTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "CAPABILITY_CHANGED",
+   "executed": [
+    "ia",
+    "ib"
+   ],
+   "expected": {
+    "code": "CAPABILITY_CHANGED",
+    "halted_at": "sa",
+    "status": "NOT_ATTEMPTED"
+   },
+   "gate": null,
+   "id": "C23",
+   "latency_ms": 10.1,
+   "problems": [],
+   "status": "NOT_ATTEMPTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "XLSX_HEADER_TOO_WIDE",
+   "executed": [
+    "ia"
+   ],
+   "expected": {
+    "code": "XLSX_HEADER_TOO_WIDE",
+    "halted_at": "ia",
+    "status": "NOT_ATTEMPTED"
+   },
+   "gate": null,
+   "id": "C24",
+   "latency_ms": 11.2,
+   "problems": [],
+   "status": "NOT_ATTEMPTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "PROPOSAL_INVALID",
+   "executed": [],
+   "expected": {
+    "code": "PROPOSAL_INVALID",
+    "status": "REJECTED"
+   },
+   "gate": null,
+   "id": "C25",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "REJECTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "FAILED",
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "status": "NOT_VERIFIED"
+   },
+   "gate": null,
+   "id": "C26",
+   "latency_ms": 24.2,
+   "problems": [],
+   "status": "NOT_VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "FAILED",
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "status": "NOT_VERIFIED"
+   },
+   "gate": null,
+   "id": "C27",
+   "latency_ms": 25.0,
+   "problems": [],
+   "status": "NOT_VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "FAILED",
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "status": "NOT_VERIFIED"
+   },
+   "gate": null,
+   "id": "C28",
+   "latency_ms": 26.7,
+   "problems": [],
+   "status": "NOT_VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "FAILED",
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "status": "NOT_VERIFIED"
+   },
+   "gate": null,
+   "id": "C29",
+   "latency_ms": 23.4,
+   "problems": [],
+   "status": "NOT_VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "VERIFIER_SOURCE_NOT_CURRENT",
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "status": "NOT_VERIFIED"
+   },
+   "gate": null,
+   "id": "C30",
+   "latency_ms": 15.2,
+   "problems": [],
+   "status": "NOT_VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "VERIFIER_SOURCE_NOT_CURRENT",
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "status": "NOT_VERIFIED"
+   },
+   "gate": null,
+   "id": "C31",
+   "latency_ms": 14.5,
+   "problems": [],
+   "status": "NOT_VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "PROPOSAL_INVALID",
+   "executed": [],
+   "expected": {
+    "code": "PROPOSAL_INVALID",
+    "status": "NOT_ATTEMPTED"
+   },
+   "gate": null,
+   "id": "C32a",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "NOT_ATTEMPTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": "PROVIDER_UNAVAILABLE",
+   "executed": [],
+   "expected": {
+    "code": "PROVIDER_UNAVAILABLE",
+    "status": "NOT_ATTEMPTED"
+   },
+   "gate": null,
+   "id": "C32b",
+   "latency_ms": 0.0,
+   "problems": [],
+   "status": "NOT_ATTEMPTED",
+   "typed_outcome_ok": true
+  },
+  {
+   "code": null,
+   "executed": [
+    "ia",
+    "ib",
+    "sa",
+    "sb",
+    "cmp",
+    "w"
+   ],
+   "expected": {
+    "semantic": {
+     "only_left": [],
+     "only_right": [
+      "Region"
+     ],
+     "shared": [
+      "Id",
+      "Date",
+      "Amount"
+     ]
+    },
+    "status": "VERIFIED"
+   },
+   "gate": null,
+   "id": "C33",
+   "latency_ms": 24.9,
+   "problems": [],
+   "status": "VERIFIED",
+   "typed_outcome_ok": true
+  },
+  {
+   "detail": {
+    "composed": {
+     "forged": {
+      "items": [
+       {
+        "kind": "only_changed",
+        "status": "PASS"
+       },
+       {
+        "kind": "report_recomputes",
+        "status": "FAIL"
+       }
+      ],
+      "status": "FAILED"
+     },
+     "honest": {
+      "items": [
+       {
+        "kind": "only_changed",
+        "status": "PASS"
+       },
+       {
+        "kind": "report_recomputes",
+        "status": "PASS"
+       }
+      ],
+      "status": "VERIFIED"
+     },
+     "mode": "composed",
+     "route": "LOCAL_VERIFIED",
+     "verification_status": "VERIFIED"
+    },
+    "edge": {
+     "forged": {
+      "items": [
+       {
+        "kind": "only_changed",
+        "status": "PASS"
+       },
+       {
+        "kind": "report_recomputes",
+        "status": "FAIL"
+       }
+      ],
+      "status": "FAILED"
+     },
+     "honest": {
+      "items": [
+       {
+        "kind": "only_changed",
+        "status": "PASS"
+       },
+       {
+        "kind": "report_recomputes",
+        "status": "PASS"
+       }
+      ],
+      "status": "VERIFIED"
+     },
+     "mode": "edge",
+     "route": "LOCAL_VERIFIED",
+     "verification_status": "VERIFIED"
+    }
+   },
+   "expected": {
+    "status": "SAME_AS_EDGE"
+   },
+   "gate": "compat",
+   "id": "C-1",
+   "problems": [],
+   "status": "SAME_AS_EDGE",
+   "typed_outcome_ok": true
+  }
+ ],
+ "counters": {
+  "false_verified_completion": {
+   "cases": [],
+   "denominator": 34,
+   "numerator": 0
+  },
+  "unauthorized_effect": {
+   "cases": [],
+   "denominator": 34,
+   "numerator": 0
+  },
+  "undeclared_execution": {
+   "cases": [],
+   "denominator": 16,
+   "numerator": 0
+  },
+  "undetected_original_modification": {
+   "cases": [],
+   "denominator": 34,
+   "numerator": 0
+  },
+  "unresolved_reported_complete": {
+   "cases": [],
+   "denominator": 34,
+   "numerator": 0
+  },
+  "wrong_source_binding": {
+   "cases": [],
+   "denominator": 16,
+   "numerator": 0
+  }
+ },
+ "expected_outcome": {
+  "denominator": 34,
+  "numerator": 34,
+  "rate": 1.0
+ },
+ "gate_passed": true,
+ "latency_ms_p50": 1.15,
+ "latency_ms_p95": 26.775,
+ "platform": "linux",
+ "provider": "FixtureProvider (test double)",
+ "python": "3.11.15",
+ "qualifying": true,
+ "schema_version": "uri.plan.qualification-results.v1",
+ "semantic_miss": {
+  "cases": [
+   "C33"
+  ],
+  "denominator": 1,
+  "numerator": 1
+ },
+ "status": "PROVISIONAL / NOT FROZEN (self-qualification)",
+ "threshold_gate_sha256": "f2dfc9371871eb994ff22f4e5a6d0802864980d9dab03e521a8dac04938c50ff"
+}

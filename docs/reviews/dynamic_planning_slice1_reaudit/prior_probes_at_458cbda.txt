@@ -1,0 +1,41 @@
+[N0] SAFE: baseline C01 through audit harness
+      -> status=VERIFIED events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']
+[F1] PROBE_EXCEPTION: F1
+      -> UNCAUGHT FileNotFoundError: [Errno 2] No such file or directory: '/tmp/dp-audit-1t854snz/f1_out.json'
+[F2] CONFIRMED: substituted inspect adapter (same id/version) writes outside workspace
+      -> status=VERIFIED outside_exists=True
+[F3] NOT_REPRODUCED: record_and_verify raises RuntimeError
+      -> status=NOT_VERIFIED
+[F3b] NOT_REPRODUCED: ledger raises its own ResultVersionError during recording
+      -> status=NOT_VERIFIED
+[N1-bad_crc] TYPED: C01 plan over a bad_crc workbook from the user's root
+      -> status=NOT_ATTEMPTED reason=ACTION_FAILED events=['RUN_STARTED', 'RUN_ABORTED']
+[N1-encrypted] TYPED: C01 plan over a encrypted workbook from the user's root
+      -> status=NOT_ATTEMPTED reason=ACTION_FAILED events=['RUN_STARTED', 'RUN_ABORTED']
+[N1-bad_method] TYPED: C01 plan over a bad_method workbook from the user's root
+      -> status=NOT_ATTEMPTED reason=ACTION_FAILED events=['RUN_STARTED', 'RUN_ABORTED']
+[N2a] TYPED: provider text with 200k nested arrays through parse_raw
+      -> error=PROPOSAL_INVALID
+[N2b] TYPED: compile_proposal on a dict with 5000-deep nesting
+      -> Rejection(code='PROPOSAL_INVALID', detail='NESTING_DEPTH')
+[N3] TYPED: hand-built CompiledPlan with an unused extra node (compiler rejects it)
+      -> compiler=UNREACHABLE_OUTPUT/UNUSED_NODE:zz; runner status=REJECTED executed=()
+[N4] OBSERVATION: writer writes the report then returns an invalid output shape
+      -> status=NOT_VERIFIED reason=OUTPUT_TYPE_INVALID executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_ABORTED'] report_left_in_scratch=True
+[N1x] OBSERVATION: RunStore state after the bad_crc crash
+      -> run events=[['RUN_STARTED', 'RUN_ABORTED']]
+[N5] SAFE: original mutated between verify_source and workspace copy-in
+      -> status=NOT_ATTEMPTED reason=INPUT_NOT_CURRENT
+[N6-lone_surrogate] TYPED: sheet literal with lone_surrogate
+      -> Rejection PROPOSAL_INVALID
+[N6-bidi_override] TYPED: sheet literal with bidi_override
+      -> CompiledPlan 
+[N6-del_char] TYPED: sheet literal with del_char
+      -> CompiledPlan 
+[N7] OBSERVATION: report items lists the same ref twice
+      -> status=VERIFIED edges=6
+[N8] OBSERVATION: 50 MB provider text
+      -> parse_raw accepted=False in 506 ms; compile=None/
+[N9] SAFE: hand-constructed Handle without issue()
+      -> HANDLE_FABRICATED
+results -> /tmp/dp-audit-1t854snz/audit_probe_results.json

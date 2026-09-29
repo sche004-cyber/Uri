@@ -1,0 +1,6 @@
+[R6b-SystemExit] OBSERVATION: adapter raises SystemExit: last event per run in the store
+      -> escaped=SystemExit runs={'69b9322a348048f6ae894d7f9a62153e': 'RUN_STARTED'}
+[R6b-KeyboardInterrupt] OBSERVATION: adapter raises KeyboardInterrupt: last event per run in the store
+      -> escaped=KeyboardInterrupt runs={'d31793aa5df34f24937835d72317b997': 'RUN_STARTED'}
+[R6b-logload] OBSERVATION: M36 log load fails after the verifier persisted its verdict
+      -> outcome=NOT_VERIFIED/VERIFICATION_ERROR:RuntimeError store_events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION'] store_verification=[{'claim_record_id': 'c652c838129f4950a8a4416c0eeb6fb6', 'criteria_sha256': '8b8495b22a0809742f93aa89d69a34d64b47d457b98740e7a20b195911d1f1fb', 'diff_sha256': '8a27be8f33e126bace13151edbcaee996bc5de0164f3fd52bb3677650cf9d798', 'items': [{'detail': [], 'kind': 'only_changed', 'status': 'PASS'}, {'detail': None, 'kind': 'report_recomputes', 'status': 'PASS'}], 'status': 'VERIFIED', 'verification_id': 'aa123deefec74468b1608870478d52fb', 'verifier_id': 'uri.verifier.execution.script_workbook.v1', 'verifier_version': '1'}] m36_verdicts=[{}, {}, {}, {}] rec_types=['MemoryRecord']

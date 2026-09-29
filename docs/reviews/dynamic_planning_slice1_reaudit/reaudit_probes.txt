@@ -1,0 +1,59 @@
+[R1] DEFECT: driver: changed battery refused; --non-qualifying labelled and gate forced false; CRLF copy of frozen battery
+      -> (2, True, 1, False, False, 0, True, 'refuse: exit=2 out_written=False stderr=REFUSED: battery 6c22559f12c5f7ad3b8b7afa9153c06f95a7a3406ce; non-qualifying: exit=1 status=NON_QUALIFYING (battery or gate differs from frozen digest) qualifying=False gate_passed=False; crlf copy of frozen battery: exit=0 qualifying=True gate=True')
+[R2-reversed_nodes] HOLDS: valid C01 proposal written as reversed_nodes through run_proposal
+      -> status=VERIFIED reason=None rej=None executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']
+[R2-bare_items_ref] HOLDS: valid C01 proposal written as bare_items_ref through run_proposal
+      -> status=VERIFIED reason=None rej=None executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']
+[R2-key_order] HOLDS: valid C01 proposal written as key_order through run_proposal
+      -> status=VERIFIED reason=None rej=None executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']
+[R2-dup_items] HOLDS: valid C01 proposal written as dup_items through run_proposal
+      -> status=VERIFIED reason=None rej=None executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']
+[R2-whitespace_raw] HOLDS: valid C01 proposal written as whitespace_raw through run_proposal
+      -> status=VERIFIED reason=None rej=None executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']
+[R3-other] HOLDS: compiled C01 run with raw_proposal of a different proposal
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=PROPOSAL_DIFFERS executed=() events=None
+[R3-garbage] HOLDS: compiled C01 run with unparseable raw_proposal
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=PROPOSAL_DIFFERS executed=() events=None
+[R3-same] HOLDS: compiled C01 run with the same proposal reformatted
+      -> status=VERIFIED reason=None rej=None executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']
+[R3-huge] OBSERVATION: compiled C01 run with the same proposal padded past the raw cap
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=PROPOSAL_DIFFERS executed=() events=None
+[R4-none] HOLDS: runner snapshot argument none
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=SNAPSHOT_MISMATCH executed=() events=None
+[R4-missing_kw] HOLDS: runner snapshot argument missing_kw
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=SNAPSHOT_MISMATCH executed=() events=None
+[R4-wrong_sha] HOLDS: runner snapshot argument wrong_sha
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=SNAPSHOT_MISMATCH executed=() events=None
+[R5-order_swapped] HOLDS: hand-altered CompiledPlan: order_swapped
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=PLAN_DIFFERS executed=() events=None
+[R5-proposal_sha] HOLDS: hand-altered CompiledPlan: proposal_sha
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=PLAN_DIFFERS executed=() events=None
+[R5-literal_changed] HOLDS: hand-altered CompiledPlan: literal_changed
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=PLAN_DIFFERS executed=() events=None
+[R5-source_hash] HOLDS: hand-altered CompiledPlan: source_hash
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=PLAN_DIFFERS executed=() events=None
+[R5-qual_sha] HOLDS: hand-altered CompiledPlan: qual_sha
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=PLAN_DIFFERS executed=() events=None
+[R5-candidates_shrunk] HOLDS: hand-altered CompiledPlan: candidates_shrunk
+      -> status=REJECTED reason=PLAN_NOT_COMPILED rej=COMPILER_UNKNOWN_SOURCE executed=() events=None
+[R6-writer] OBSERVATION: writer adapter raises before writing anything
+      -> status=NOT_VERIFIED reason=ACTION_FAILED rej=None executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_ABORTED']
+[R6-sysexit] OBSERVATION: adapter raises SystemExit (trusted code)
+      -> ESCAPED SystemExit; open runs in store: 0
+[R6-kbint] OBSERVATION: adapter raises KeyboardInterrupt (trusted code)
+      -> ESCAPED KeyboardInterrupt; open runs in store: 0
+[R6-snapprov] HOLDS: live snapshot provider raises mid-run
+      -> status=NOT_ATTEMPTED reason=RUNNER_ERROR rej=None executed=('ia', 'ib') events=['RUN_STARTED', 'RUN_ABORTED']
+[R6-store-abort] HOLDS: run store refuses RUN_ABORTED after an adapter failure
+      -> status=NOT_ATTEMPTED reason=ACTION_FAILED|RUN_NOT_CLOSED rej=None executed=('ia',) events=['RUN_STARTED']
+[R6-store-start] HOLDS: run store refuses RUN_STARTED
+      -> status=NOT_ATTEMPTED reason=RUN_RECORD_ERROR:OSError rej=None executed=() events=None
+[R6-logload] OBSERVATION: M36 log load fails after the verifier persisted its verdict
+      -> status=NOT_VERIFIED reason=VERIFICATION_ERROR:Boom rej=None executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION'] m36_log_verdicts=[]
+[R7-raises] HOLDS: provider.propose raises
+      -> status=NOT_ATTEMPTED reason=PROVIDER_UNAVAILABLE rej=None executed=() events=None
+[R7-none] ESCAPED: provider.propose returns None (not a ProviderResult)
+      -> UNCAUGHT AttributeError: 'NoneType' object has no attribute 'error'
+[R8] HOLDS: parse_raw: at cap accepted, cap+1 refused, 4-byte chars counted as bytes, depth 16 ok / 17 refused
+      -> (True, True, True, True, True)
+RESULTS_JSON /tmp/dp-reaudit-7umjeysz/results.json
