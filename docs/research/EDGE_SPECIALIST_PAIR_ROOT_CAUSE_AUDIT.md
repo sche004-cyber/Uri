@@ -1,7 +1,7 @@
 # Edge Specialist Pair (Needle 3 + Granite `granite4:350m-h`): Stage 1 Evidence and Root-Cause Audit
 
-- **Lifecycle stage:** Stage 1 of the four-stage lifecycle (`docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md`). **Status: `DRAFT`** (planning and pre-audit only).
-- **Date:** 2026-09-29. **Author:** Claude (planning thread). The independent review of this package is to run on Codex (User instruction 2026-09-29 05:33, "use codex for audits").
+- **Lifecycle stage:** Stage 1 of the four-stage lifecycle (`docs/governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md`). **Status: `DRAFT r1`** (planning and pre-audit only). r1 adds RC-13 and records corrections after the independent review (`0be2c32`); r0 is at `8305f9c`; see §9.
+- **Date:** 2026-09-29. **Author:** Claude (planning thread). The independent review of this package was to run on Codex (User instruction 2026-09-29 05:33, "use codex for audits"). With Codex paused, r0 was reviewed by a separate Claude thread (`docs/plans/EDGE_SPECIALIST_PAIR_INDEPENDENT_REVIEW.md` on `claude/project-thread-ux1rad`, `0be2c32`).
 - **Repository base inspected:** `claude/project-thread-2vamlf` at `5bbf738` (freeze commit for M36/M37/M38 at `bd7c450`). Also read without modifying them: M39 `claude/project-thread-wb7tmm` at `736464a`; dynamic planning `claude/project-thread-s2qcmk` at `4292528` and `claude/dynamic-planning-slice1-2eemmh` at `3bbf8f7`.
 - **Naming.** "Edge Specialist Pair" is a descriptive working label, not a milestone identity. See the migration plan §1 for the governance scope proposal.
 - **This document does not** implement anything, qualify either model, change any milestone state, or reopen any frozen work. The Stage-1 results remain **exploratory**.
@@ -150,7 +150,7 @@ To test claim A-4 I ran the frozen M36 functions `negated()` and `affirmative_co
 | RC | Root cause | Evidence | Belongs to | Existing containment |
 |---|---|---|---|---|
 | RC-1 | **Neither model can decide its own eligibility.** They almost never abstain, and custom classification is degenerate. | T13–T20 (1/8, 0/8); classification groups; Batch A 0/16 | MC | None needed if eligibility never comes from the model. S6 `edge_eligibility` (`routing_policy.py:145`) reads deployment and qualification facts, never model output. |
-| RC-2 | **Argument copying is lossy:** mutation, diacritics, instruction-verb contamination, quoted text. | T05, T06, T12, W04–W06, W09, W14 | MC + RC | **Gap on the live path:** gates check presence only (`decision_gates.py:480-503`). `uri_v1` has verbatim grounding (`envelope.py:58-84`) and S1 binding states. A deterministic value-grounding validator is needed on the specialist path. |
+| RC-2 | **Argument copying is lossy:** mutation, diacritics, instruction-verb contamination, quoted text. | T05, T06, T12, W04–W06, W09, W14 | MC + RC | **Gap on the live path:** gates check presence only (`decision_gates.py:480-503`). `uri_v1` has verbatim grounding (`envelope.py:58-84`) and S1 binding states. A deterministic value-grounding validator is needed on the specialist path. [r1: superseded by a stronger fix. URI fills every argument from its grounding declaration, so the model never supplies a value (S2A §7, review M-4).] |
 | RC-3 | Negation, contrast and quoted instructions | T08–T12, W08, W10 | MC | **Contained conservatively** by M36 `negated()` / `affirmative_context()` (§4). Accepted by User decision 2026-09-28 (positive allowlist). |
 | RC-4 | **Unsupported-request substitution** | T17–T20 | MC + AR | Authority is contained by capability metadata (`EffectType`, `ApprovalRequirement`, `capabilities/base.py:17-33,140-170`) and by offering only in-envelope actions. **Operation identity is not checked anywhere.** Words outside the closed vocabulary are excluded (§4), but in-vocabulary verbs (send, share, summarize, translate…) are not. |
 | RC-5 | **Multiple calls where one was asked** | T09, T10, T16 | MC + RC | The translator accepts batches (`tool_call_translator.py:80-136`). An "exactly one call" rule does not exist on any path. |
@@ -160,6 +160,7 @@ To test claim A-4 I ran the frozen M36 functions `negated()` and `affirmative_co
 | RC-9 | Needle stdio encoding | W03 | PRC | Surfaced as a transport error, not a wrong value. Adapter contract fix (explicit UTF-8 on both ends) is needed. |
 | RC-10 | **Stage-1 catalogue ≠ URI registry** | §2 item 1 | AR (evidence scope) | Qualification must use registered action contracts and their real schemas. |
 | RC-11 | **Latency comparison confounded by placement** | REPORT §Setup | PRC | Qualification must record placement and run a placement-matched comparison. |
+| RC-13 | **The direct envelope has no admissible action today (added in r1).** No registry action declares `wrong_binding_impact` (0 occurrences in `uri_workspace/capabilities_registry.json`; Gmail only on `create_draft`, `capability.py:107`), so all are CONSEQUENTIAL by default. No producer exists for spans or bindings of Gmail ids, spreadsheet ids or roll numbers. `untrusted_content_present` has no producer (`edge/contracts.py:44`). The frozen M36 affirmative vocabulary rejects natural phrasings of the candidate actions (probe in S2A §5.1). | source + offline probe | AR | None inside this design. See S2A §5.1 (P-1 to P-5) and the E-d option. |
 | RC-12 | **Routing inputs without producers.** S6 takes `task_complex`, `edge_sufficient` and `edge_role_qualified` as booleans (`routing_policy.py:29,121-125`), but nothing computes them. `EdgeSettings.edge` selects exactly one runtime and model (`settings.py:74`). | source | AR | This is the integration boundary. See the Stage 2 draft §5–§7. |
 
 ## 6. Lifecycle Stage-1 questions
@@ -196,3 +197,14 @@ Gaps found in the first draft and repaired:
 1. The draft called T05 a "truncation". The raw output is `venue_2026-09.csv` for `revenue_2026-09.csv`, a mutation that drops a prefix. The row now says "mutation/truncation", and exact-match scoring treats both the same.
 2. The draft counted T15 as a Needle failure. The runner scores it correct, because the invented call was suppressed and never emitted. The row now records that, and RC-6 records why promotion must stay forbidden.
 3. The draft said the live gates validate argument types. `decision_gates.py:480-503` checks presence only, and only where an action schema exists. Corrected.
+
+## 9. Revision r1: corrections after the independent review
+
+The independent review confirmed the Stage-1 numbers quoted here (it reproduced all 12 manifest hashes and the §3.1 direct-suite counts from the raw records). Its findings that touch this audit:
+
+1. **Missed root cause, now RC-13.** §4 probed the M36 gates with Stage-1's file-oriented phrasings and the X1–X3 residual. It did not probe the *candidate registered actions'* own phrasings, and it did not check whether any candidate declares a wrong-binding impact. Both checks, re-run by this thread on 2026-09-29, show the direct envelope is empty today (RC-13). §4's conclusions about the Stage-1 phrasings stand; the gap was in what §4 chose to probe.
+2. **§4 residual list extended.** "Send it.", "Translate it.", "Share it.", "Rewrite it." and "Open it and send it." also pass both gates (review H-2; "Send it." and "Translate it." re-checked here). This strengthens RC-4.
+3. **RC-2 remedy changed** (inline note in §5): from validating model-copied values to URI filling them.
+4. **RC-12 detail.** `task_complex` is checked by `evaluate_routing` before `proposal_valid` (`routing_policy.py:77-80`), so leaving it without a producer is equivalent to asserting the task is simple (review M-1).
+
+Nothing in §3 (per-failure audit) changed. The §8 self-review is kept as written for r0.
