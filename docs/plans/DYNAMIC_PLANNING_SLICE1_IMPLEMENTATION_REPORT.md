@@ -63,7 +63,7 @@ Battery notes, fixed at freeze time:
 | Slice tests | `python -B -m pytest -q -p no:cacheprovider tests/test_dynamic_planning_*.py` | n/a | 101 passed |
 | Slice qualification | `python -B scripts/dynamic_planning_qualification.py` | n/a | exit 0, gate passed |
 
-### 4.1 G8 is not identical: one frozen M37 scope guard fails (open decision)
+### 4.1 G8 is not identical: one frozen M37 scope guard fails (decided: accepted)
 
 `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged` passes at BASE and fails at HEAD. It asserts that every path changed or added since M36 baseline `179fe10` under `tests`, `scripts` and `fixtures` starts with an M37/M38 prefix. The plan puts this slice's tests, driver and fixtures at `tests/test_dynamic_planning_*.py`, `scripts/dynamic_planning_qualification.py` and `fixtures/dynamic_planning/**`. The production package `uri_v1/execution/planning/` is already allowed. M36 to M38 are CLOSED_FROZEN, and Chetan ruled (2026-09-29 05:21) that dynamic planning gets no allowlist entry in that test. So this failure stays, and no frozen file was edited.
 
@@ -72,6 +72,8 @@ Relocation was tried in the rework and reverted, because it only passes by place
 - In a new top-level directory outside every guard's scope, both frozen checks pass, but only because the files sit where no guard looks.
 
 Options for Chetan: (a) keep the plan locations and accept this one documented failure until governance allows a successor rule; (b) allow an exact-path entry covering only the slice's test, driver and fixture paths (the production package is already covered); (c) approve a dedicated top-level qualification directory for successor-milestone harnesses as a governance rule rather than a workaround.
+
+**Decision (Chetan, 2026-09-29 05:31): option (a).** The files stay at the plan locations and this is the one documented expected failure of the full suite at this commit. It is not a regression in frozen code. No frozen file is edited and nothing is relocated. Any other failure in a rerun is a real defect.
 
 ### 4.2 Rework on the frozen line (Chetan, 2026-09-29 05:21: keep the SourceResolver/adapter approach)
 
@@ -119,6 +121,6 @@ The M36 to M38 qualification scripts rewrite their own tracked result files unde
 
 ## 7. Next
 
-Chetan's decision on §4.1. Then:
+§4.1 is decided (accepted failure). Next:
 
 Step 5: a fresh independent audit that starts from repository evidence, reruns everything above, and adds adversarial probes beyond the battery. The slice stays PROVISIONAL / NOT FROZEN whatever the result. The slice now sits on the frozen line, so the migration-plan §1 rebase contingency is closed.
