@@ -568,3 +568,9 @@ files in frozen M36 and live-app scope, and for M39 look-alike paths; that
 `uri_v1/office` does no direct file I/O (all user-file access goes through frozen
 M36/M37); and that a file outside the authorized folder is never bound. With this, the
 full suite has no failing test on Linux.
+
+  Tightened the same day after the recheck of `ba0db5e` (LOW items): the three
+  single-file entries (`tests/m39_office_support.py` and the two scripts) are now exact
+  matches (`M39_ALLOWED_FILES`), so a longer name such as `scripts/m39_office_benchmark.pyx`
+  is rejected, and the guard probes run on a disposable clone instead of editing frozen
+  files in the working checkout.

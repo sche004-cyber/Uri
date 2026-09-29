@@ -112,7 +112,7 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
 # - tests/test_m37_edge_resolution.py: minimal M39 allowlist entry in
 #   test_m36_and_frozen_files_unchanged (Chetan, 2026-09-29 05:21 UTC).
 AUTHORIZED_FROZEN_EDITS = {
-    "tests/test_m37_edge_resolution.py": "a8dfa41bed50a91de4dcfce45cb3ffba9c55bb1b532fac5358398128f14aa155",
+    "tests/test_m37_edge_resolution.py": "f288b194f4c41abffd6fc32fe197df20b06f08bd3cd2db3f7e773933ce236853",
 }
 
 

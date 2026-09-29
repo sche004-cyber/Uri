@@ -138,3 +138,9 @@ record. M39 (Office demonstrator) proceeds under its own gates.
   `tests/test_m39_frozen_guard_allowlist.py` proves the guard still fails for a changed
   frozen file, a new file in frozen or live-app scope, and M39 look-alike paths, and that
   `uri_v1/office` does no direct file I/O.
+
+  Tightened the same day after the recheck of `ba0db5e` (LOW items): the three
+  single-file entries (`tests/m39_office_support.py` and the two scripts) are now exact
+  matches (`M39_ALLOWED_FILES`), so a longer name such as `scripts/m39_office_benchmark.pyx`
+  is rejected, and the guard probes run on a disposable clone instead of editing frozen
+  files in the working checkout.

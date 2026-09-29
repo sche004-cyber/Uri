@@ -5,7 +5,8 @@ User authorization, Chetan, 2026-09-29 05:21 UTC).
 Proves the entry is minimal and hides nothing else:
 - it names only M39 paths (no dynamic-planning or other lane's paths);
 - the guard still fails for a changed frozen file, a new file in frozen scope,
-  a look-alike of an M39 path, and a path-traversal name;
+  a look-alike of an M39 path, and a path-traversal name (exercised on a
+  disposable clone, never on the working checkout);
 - M39 code itself does no direct file I/O, so the allowlisted package cannot
   read or write arbitrary files; everything goes through frozen M36/M37;
 - a request or answer naming a file outside the authorized folder never binds it.
@@ -27,14 +28,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _allowed(path: str) -> bool:
     """Same predicate the frozen guard applies, with only the M39 entry."""
-    return path.startswith(m37.M39_ALLOWED) and ".." not in path.split("/")
+    return (path.startswith(m37.M39_ALLOWED) or path in m37.M39_ALLOWED_FILES) and ".." not in path.split("/")
 
 
 def test_entry_is_m39_only_and_tight():
-    assert m37.M39_ALLOWED == ("uri_v1/office/", "fixtures/m39_office/", "tests/test_m39_",
-                               "tests/m39_office_support.py", "scripts/m39_office_benchmark.py",
-                               "scripts/m39_generate_benchmark.py")
-    for entry in m37.M39_ALLOWED:
+    assert m37.M39_ALLOWED == ("uri_v1/office/", "fixtures/m39_office/", "tests/test_m39_")
+    assert m37.M39_ALLOWED_FILES == {"tests/m39_office_support.py", "scripts/m39_office_benchmark.py",
+                                     "scripts/m39_generate_benchmark.py"}
+    for entry in m37.M39_ALLOWED + tuple(m37.M39_ALLOWED_FILES):
         assert "m39" in entry or entry == "uri_v1/office/", entry
         assert "planning" not in entry and "*" not in entry
 
@@ -50,6 +51,11 @@ def test_entry_is_m39_only_and_tight():
     "uri_v1/officex/a.py",
     "fixtures/m39_office_evil/x.py",
     "scripts/m39_anything_else.py",
+    "scripts/m39_office_benchmark.pyx",               # exact files match exactly
+    "scripts/m39_office_benchmark.py.bak",
+    "scripts/m39_generate_benchmark.py~",
+    "tests/m39_office_support.py/evil.py",
+    "tests/m39_office_support.pyc",
     "tests/m39_other_support.py",
     "uri_v1/office/../memory/recorder.py",             # traversal
     "tests/test_m33_3_r_anchors.py",
@@ -61,9 +67,28 @@ def test_entry_does_not_cover_other_paths(path):
 @pytest.mark.parametrize("path", [
     "uri_v1/office/flow.py", "fixtures/m39_office/benchmark/task_01/report.py",
     "tests/test_m39_flow.py", "tests/m39_office_support.py", "scripts/m39_office_benchmark.py",
+    "scripts/m39_generate_benchmark.py",
 ])
 def test_entry_covers_m39_paths(path):
     assert _allowed(path)
+
+
+# The real guard is exercised on a disposable clone of this repository, never on
+# the working checkout: an interrupted run can then never leave a frozen file
+# modified or a probe file behind in the real tree.
+@pytest.fixture(scope="module")
+def clone(tmp_path_factory):
+    import subprocess
+    dest = tmp_path_factory.mktemp("guard_clone") / "repo"
+    subprocess.run(["git", "clone", "-q", "--shared", str(ROOT), str(dest)], check=True)
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    subprocess.run(["git", "checkout", "-q", "--detach", head], cwd=dest, check=True)
+    return dest
+
+
+def _run_guard_on(clone, monkeypatch):
+    monkeypatch.setattr(m37, "ROOT", clone)
+    m37.test_m36_and_frozen_files_unchanged()
 
 
 @pytest.mark.parametrize("relpath", [
@@ -71,36 +96,30 @@ def test_entry_covers_m39_paths(path):
     "uri_core/_m39_guard_probe.py",           # live-app scope
     "fixtures/m39_office_probe/x.txt",        # look-alike of the M39 fixture prefix
     "scripts/m39_guard_probe.py",             # M39-looking script not on the exact list
+    "scripts/m39_office_benchmark.pyx",       # longer name than an exact entry
 ])
-def test_guard_still_fails_for_an_untracked_file_outside_the_entry(relpath):
-    target = ROOT / relpath
-    created_dir = None
-    if not target.parent.exists():
-        created_dir = target.parent
-        created_dir.mkdir(parents=True)
-    assert not target.exists()
+def test_guard_still_fails_for_an_untracked_file_outside_the_entry(clone, monkeypatch, relpath):
+    target = clone / relpath
+    target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text("# probe\n")
     try:
         with pytest.raises(AssertionError) as info:
-            m37.test_m36_and_frozen_files_unchanged()
+            _run_guard_on(clone, monkeypatch)
         assert relpath in str(info.value)
     finally:
         target.unlink()
-        if created_dir is not None:
-            created_dir.rmdir()
 
 
-def test_guard_still_fails_for_a_changed_frozen_file():
-    target = ROOT / "uri_v1" / "memory" / "contracts.py"
+def test_guard_still_fails_for_a_changed_frozen_file(clone, monkeypatch):
+    target = clone / "uri_v1" / "memory" / "contracts.py"
     original = target.read_bytes()
+    target.write_bytes(original + b"\n# m39 guard probe\n")
     try:
-        target.write_bytes(original + b"\n# m39 guard probe\n")
         with pytest.raises(AssertionError) as info:
-            m37.test_m36_and_frozen_files_unchanged()
+            _run_guard_on(clone, monkeypatch)
         assert "uri_v1/memory/contracts.py" in str(info.value)
     finally:
         target.write_bytes(original)
-    assert target.read_bytes() == original
 
 
 # -- the allowlisted package cannot reach arbitrary files -------------------------------------------
