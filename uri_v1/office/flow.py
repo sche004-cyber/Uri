@@ -31,7 +31,7 @@ from uri_v1.memory.uri_adapter.envelope import URIIntake
 from uri_v1.reference_clarification.binding import BindingService
 
 from .acceptance_builder import build_acceptance
-from .binding import ROLES, answer_role, bind_role
+from .binding import ROLES, answer_ask, answer_filename_span, answer_role, ask_role, bind_role, with_asks
 from .writeback import WritebackRefused, open_run_workspace, writeback as do_writeback
 
 INTAKE = URIIntake()
@@ -103,6 +103,7 @@ class StepResult:
     warnings: tuple = ()
     written: tuple = ()
     safety_flags: tuple = ()
+    partial_record: str | None = None
 
 
 class OfficeSession:
@@ -121,6 +122,11 @@ class OfficeSession:
     # -- request -> bind -------------------------------------------------------
     def start(self, raw_text, *, session_id, turn_id, trace_id, parsed) -> StepResult:
         """`parsed` is a `uri_v1.office.request.ParsedRequest` with `ok=True`."""
+        if not getattr(parsed, "ok", False) or not parsed.spans:
+            # Repair round 3: a refused parse (e.g. R2-3 ROLE_AMBIGUOUS) is a
+            # typed answer, never a crash and never an opened task.
+            return StepResult("UNSUPPORTED", reason=getattr(parsed, "reason", None) or "UNSUPPORTED_REQUEST",
+                              role=getattr(parsed, "role", None))
         intake = INTAKE.capture(self.user_id, session_id, turn_id, trace_id, raw_text, spans=parsed.spans)
         objective = raw_text if len(raw_text) <= 500 else raw_text[:500]
         task_id, opened = self.recorder.open_task(intake, objective)
@@ -135,8 +141,21 @@ class OfficeSession:
         target = next((rb for rb in pending.values() if rb.contract_id == round_id), None)
         if target is None:
             return StepResult("ERROR", task_id=task_id, reason="UNKNOWN_ROUND")
-        answer_intake = _make_intake(self.user_id, session_id, turn_id, trace_id, raw_text, round_id=round_id, ref_key=target.ref_key)
-        rb = answer_role(self.service, self.sources, target, answer_intake)
+        if target.ask:
+            # R2-1 per-file question: the answer turn must be just the file
+            # name; its span is grounded and bound by frozen M36 like any
+            # request. Anything else is asked again, never guessed.
+            span = answer_filename_span(raw_text, target.ref_key)
+            if span is None:
+                pending[target.ref_key] = ask_role(target.ref_key, reason="ANSWER_NOT_A_FILE_NAME")
+                return StepResult("CLARIFY", task_id=task_id, roles=dict(pending))
+            answer_intake = INTAKE.capture(self.user_id, session_id, turn_id, trace_id, raw_text,
+                                           spans={target.ref_key: span})
+            rb = answer_ask(self.retriever, self.sources, self.service, target, answer_intake)
+        else:
+            answer_intake = _make_intake(self.user_id, session_id, turn_id, trace_id, raw_text, round_id=round_id,
+                                         ref_key=target.ref_key)
+            rb = answer_role(self.service, self.sources, target, answer_intake)
         pending[target.ref_key] = rb
         still_pending = [x for x in pending.values() if x.state != "CONFIRMED"]
         if still_pending:
@@ -149,7 +168,7 @@ class OfficeSession:
         # fallback (deictic/type-word phrases like "the spreadsheet") is only
         # reached when the query is *not* task-scoped -- scoping it here would
         # silently return zero candidates for every phrase reference.
-        bindings = {role: bind_role(self.retriever, self.sources, self.service, intake, role) for role in ROLES}
+        bindings = with_asks({role: bind_role(self.retriever, self.sources, self.service, intake, role) for role in ROLES})
         self._pending[task_id] = bindings
         if any(rb.state != "CONFIRMED" for rb in bindings.values()):
             return StepResult("CLARIFY", task_id=task_id, roles=dict(bindings))
@@ -262,7 +281,8 @@ class OfficeSession:
                                    trace_id=approval_intake.trace_id, approval_intake=approval_intake,
                                    relpaths=relpaths or ())
         except WritebackRefused as exc:
-            return StepResult("WRITEBACK_REFUSED", task_id=task_id, reason=str(exc), written=exc.written)
+            return StepResult("WRITEBACK_REFUSED", task_id=task_id, reason=str(exc), written=exc.written,
+                              partial_record=exc.partial_record)
         self._heads[task_id] = outcome.task_state_result.record_ids[-1]
         self._run.pop(task_id, None)
         return StepResult("COMPLETED", task_id=task_id, run_id=run_id, written=outcome.written)

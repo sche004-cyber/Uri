@@ -53,13 +53,11 @@ _WORKBOOK_PHRASE = re.compile(r"\b(?:this|the|my)\s+(?:[a-z]+\s+){0,2}?(?:spread
 # A character that continues a filename-like token: if it sits immediately
 # before/after an unquoted match, the match is only part of a longer token
 # ("report.py" inside "report.py.bak") and must not be silently accepted.
-_CONTINUATION = re.compile(r"[\w./\-]")
 # R1-D (re-audit, regression): a sentence-final "." (or "...") is punctuation,
 # not a continuation of the filename -- "make report.py work with sales.xlsx."
 # and "Please fix report.py. It should work with sales.xlsx" must still parse.
 # It is a continuation only when something that could extend the token (not
 # whitespace/end-of-text) follows the run of dots, e.g. "report.py.bak".
-_WORD_BEFORE = re.compile(r"[A-Za-z']+\s+$")
 # R1-B (re-audit): an unquoted filename immediately preceded by a single word
 # that isn't one of this request grammar's own function words could just as
 # well be part of the filename itself ("my report.py" is a real file, not
@@ -92,33 +90,49 @@ def _group_spans(pattern, text):
     return [(m.start(1), m.end(1)) for m in pattern.finditer(text)]
 
 
+# Re-audit R2-3 (repair round 3): which characters end a token. Anything
+# else touching an unquoted match (a digit, CJK, "\\", "~", ":" inside a
+# drive letter, ...) could be part of a longer real filename, so the match is
+# refused as ambiguous rather than bound as the bare name. This replaces the
+# earlier ASCII-only allowlist (`[\\w./\\-]` continuations, ASCII-letter
+# preceding words), which let "Q1 sales.xlsx", "2024 report.py",
+# "C:\\old\\report.py", "../report.py" and "sales.xlsx~" bind the bare name.
+_OPENERS = "(\"'\u201c\u201d\u2018\u2019`[{"
+_CLOSERS = ",;:!?)]}\"'\u201c\u201d\u2018\u2019`"
+
+
 def _trailing_continuation(text, b):
     """True iff the text right after an unquoted match still continues the
     same token. A run of one or more "." right at the match's end is only a
     continuation when something token-like follows it once the dots are
     skipped (report.py.bak); a "." (or "...") followed by whitespace or the
-    end of the text is ordinary sentence punctuation (R1-D)."""
+    end of the text is ordinary sentence punctuation (R1-D). Otherwise any
+    character that is not whitespace or closing punctuation continues the
+    token (R2-3: "sales.xlsx~")."""
     j = b
     while text[j:j + 1] == ".":
         j += 1
-    if j == b:
-        after = text[b:b + 1]
-        return bool(after) and bool(_CONTINUATION.match(after))
     tail = text[j:j + 1]
-    return bool(tail) and tail != "." and bool(_CONTINUATION.match(tail))
+    if not tail or tail.isspace() or tail in _CLOSERS:
+        return False
+    return not (j > b and tail == ".")
 
 
 def _leading_continuation(text, a):
     """True iff the text right before an unquoted match still continues the
-    same token. A leading "./" is a normal, unambiguous way to name a script
-    in its own directory, not a continuation of some other identifier
-    (R1-D)."""
+    same token: anything but whitespace or an opening quote/bracket (R2-3:
+    "\\", ":", "..", a digit, CJK). A leading "./" that itself starts a token
+    is a normal, unambiguous way to name a file in the current folder (R1-D);
+    "../" is not -- it names a file somewhere else."""
     if a <= 0:
         return False
     before = text[a - 1]
-    if before == "/" and a >= 2 and text[a - 2] == ".":
+    if before.isspace() or before in _OPENERS:
         return False
-    return bool(_CONTINUATION.match(before))
+    if before == "/" and a >= 2 and text[a - 2] == ".":
+        start = a - 2
+        return not (start == 0 or text[start - 1].isspace() or text[start - 1] in _OPENERS)
+    return True
 
 
 def _strict_substring(text, a, b):
@@ -126,15 +140,19 @@ def _strict_substring(text, a, b):
 
 
 def _unquoted_prefix_ambiguous(text, a):
-    """R1-B: an unquoted filename preceded by exactly one word (only
-    whitespace between) is ambiguous unless that word is one of this
-    grammar's own safe function words -- otherwise the word could be part of
-    the real filename ("my report.py"), and guessing it isn't is exactly the
-    silent wrong-file bind the audit found."""
-    m = _WORD_BEFORE.search(text[:a])
+    """R1-B / R2-3: an unquoted filename preceded (across whitespace only) by
+    a token that is not one of this grammar's own safe function words is
+    ambiguous: the token could be part of the real filename ("my report.py",
+    "Q1 sales.xlsx", "2024 report.py", "报告 report.py"). A token ending in
+    clause punctuation ("this:", "else,") is a separate clause, not part of a
+    name."""
+    m = re.search(r"(\S+)\s+$", text[:a])
     if not m:
         return False
-    return m.group(0).strip().casefold() not in _SAFE_PRECEDING_WORDS
+    token = m.group(1)
+    if token[-1] in ",;:.!?)]}":
+        return False
+    return token.lstrip(_OPENERS).casefold() not in _SAFE_PRECEDING_WORDS
 
 
 def _filename_spans(quoted_pattern, plain_pattern, text):

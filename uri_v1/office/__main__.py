@@ -24,6 +24,7 @@ def run_repl(session: OfficeSession, user_id: str, *, in_stream=sys.stdin, out=s
     session_id = uuid.uuid4().hex
     active_task = None
     pending_writeback: dict = {}  # task_id -> relpaths URI offered for approval (M39-7)
+    pending_round = None          # (task_id, round_id) of the question URI last asked (repair round 3, R2-1)
     out.write("URI Office demonstrator. Type a request, or 'status' / 'pause' / 'resume <task>'.\n")
     for line in in_stream:
         raw = line.strip()
@@ -53,7 +54,13 @@ def run_repl(session: OfficeSession, user_id: str, *, in_stream=sys.stdin, out=s
             out.write(render(step) + "\n")
             continue
         turn_id, trace_id = _turn()
-        if active_task and session._escalation.get(active_task) is not None:
+        if pending_round and not parse(raw).ok:
+            # Repair round 3 (R2-1): a clarifying question (a per-file
+            # question, or a Memory round) is answered by the next line,
+            # unless that line is itself a new supported request.
+            step = session.answer(pending_round[0], raw, session_id=session_id, turn_id=turn_id,
+                                  trace_id=trace_id, round_id=pending_round[1])
+        elif active_task and session._escalation.get(active_task) is not None:
             step = session.confirm_escalation(active_task, raw, session_id=session_id, turn_id=turn_id, trace_id=trace_id)
         elif active_task and active_task in session._run:
             # M39-7: approve_writeback needs the exact relpaths URI itself
@@ -75,6 +82,11 @@ def run_repl(session: OfficeSession, user_id: str, *, in_stream=sys.stdin, out=s
             pending_writeback[step.task_id] = step.relpaths
         elif step.task_id is not None:
             pending_writeback.pop(step.task_id, None)
+        pending_round = None
+        if step.kind == "CLARIFY":
+            nxt = next((rb for rb in step.roles.values() if rb.state != "CONFIRMED" and rb.contract_id), None)
+            if nxt is not None:
+                pending_round = (step.task_id, nxt.contract_id)
         out.write(render(step) + "\n")
 
 

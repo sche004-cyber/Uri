@@ -72,3 +72,27 @@ class OfficeEnv:
 
 def fake_adapter(home: Path, **kw) -> ClaudeCodeAdapter:
     return ClaudeCodeAdapter((sys.executable, str(FAKE)), home=home, **kw)
+
+
+def answer_asks(env, step, names: dict, *, session_id):
+    """Answer M39's per-file questions (re-audit R2-1, repair round 3) with the
+    given file names, one fresh turn per role, and return the final step.
+
+    On the frozen M36 line a request naming both files cannot bind either one
+    in its own turn (frozen `affirmative_around`), so the flow asks for each
+    file separately. Only asks are answered here; a Memory clarification
+    round or any other step is returned unchanged."""
+    while step.kind == "CLARIFY":
+        asks = [rb for rb in step.roles.values() if getattr(rb, "ask", False)]
+        if not asks:
+            return step
+        rb = asks[0]
+        turn_id, trace_id = env.turn()
+        step = env.session.answer(step.task_id, names[rb.ref_key], session_id=session_id, turn_id=turn_id,
+                                  trace_id=trace_id, round_id=rb.contract_id)
+    return step
+
+
+def request_names(raw, parsed) -> dict:
+    """The file names the request itself used for each role (its parsed spans)."""
+    return {role: raw[a:b] for role, (a, b) in parsed.spans.items()}

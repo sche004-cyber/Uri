@@ -2,8 +2,9 @@
 
 - `uri_v1/office` imports no `uri_core`/`uri_ui`/network client, and only the
   allowed subset of `uri_v1.*`.
-- Every path changed since 610c8f8 (the M38 audit-package commit this plan is
-  based on) is an M39 path.
+- Every path changed since 5bbf738 (the M36-M38 freeze commit, code frozen at
+  bd7c450, that M39 now builds on; repair round 3, re-audit R2-5) is an M39
+  path. It was 610c8f8, the pre-freeze M38 audit-package commit.
 - M36/M37/M38 and frozen files are byte-identical (git diff empty for them).
 - `require_anchors()["ok"]` still holds (M33.3 frozen anchors unchanged).
 - No workbook cell values or script source text leak into Memory beyond
@@ -18,7 +19,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE = "610c8f8"  # M38 audit-package commit this plan (§1) is built on
+BASELINE = "5bbf738"  # M36-M38 freeze commit (frozen code bd7c450); was 610c8f8 before the freeze
 
 # Never imported by uri_v1.office (plan §4.1).
 BANNED = {"uri_core", "uri_ui", "requests", "httpx", "urllib3", "aiohttp", "socket"}

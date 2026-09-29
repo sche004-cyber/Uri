@@ -15,7 +15,7 @@ import pytest
 from uri_v1.execution.harness.adapters import ClaudeCodeAdapter
 from uri_v1.office import request as req
 from uri_v1.office.flow import _is_consent
-from tests.m39_office_support import OfficeEnv, SALES, make_workbook, script as script_text
+from tests.m39_office_support import answer_asks, request_names, OfficeEnv, SALES, make_workbook, script as script_text
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIL = ROOT / "fixtures" / "m39_office" / "evil_claude_office.py"
@@ -25,7 +25,11 @@ def start(env, raw):
     parsed = req.parse(raw)
     assert parsed.ok, parsed
     turn_id, trace_id = env.turn()
-    return env.session.start(raw, session_id="session-r2", turn_id=turn_id, trace_id=trace_id, parsed=parsed)
+    step = env.session.start(raw, session_id="session-r2", turn_id=turn_id, trace_id=trace_id, parsed=parsed)
+    # Repair round 3 (R2-1): on the frozen M36 line a request naming both
+    # files is confirmed one file per turn; answer those per-file questions
+    # with the names the request used. Pinned in test_m39_repair3_regressions.
+    return answer_asks(env, step, request_names(raw, parsed), session_id="session-r2")
 
 
 def confirm(env, task_id, raw="yes, run it"):
@@ -116,16 +120,14 @@ def test_r1_a_flagged_run_via_pause_after_restore_cannot_write_back(tmp_path, mo
     step = start(env, "make report.py work with sales.xlsx")
     result = confirm(env, step.task_id, "yes")
     assert result.kind == "HARNESS_FAILED", result
-    assert result.verification_status == "VERIFIED"
+    # Repair round 3 (re-audit R2-5): on the frozen M38 line (bd7c450) the
+    # runner appends a superseding FAILED verification when
+    # ORIGINAL_MODIFIED_DURING_VERIFICATION fires, so the run is FAILED, not
+    # VERIFIED-with-a-flag as on the old base. That closes the old
+    # "M38-owned gap" at the store level; the offer guard below stays as
+    # defence in depth.
+    assert result.verification_status == "FAILED"
     assert "ORIGINAL_MODIFIED_DURING_VERIFICATION" in result.safety_flags
-
-    run = env.store.get(result.run_id)
-    # The flag never reaches the run store (a disclosed, M38-owned gap) --
-    # this regression test exists precisely because that persistence gap
-    # makes the *offer* path the only thing standing between this run and a
-    # write-back, so that path must hold even though the flag itself is not
-    # durable here.
-    assert run["result"]["uri_observations"]["safety_flags"] == []
 
     direct = approve(env, step.task_id, run_id=result.run_id, relpaths=("report.py",))
     assert direct.kind == "ERROR"

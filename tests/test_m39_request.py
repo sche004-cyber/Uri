@@ -12,7 +12,8 @@ import pytest
 
 from uri_v1.memory.uri_adapter.envelope import URIIntake
 from uri_v1.office import request as req
-from uri_v1.office.binding import bind_all
+from uri_v1.office.binding import answer_ask, answer_filename_span, bind_all, with_asks
+from uri_v1.reference_clarification.binding import BindingService
 from tests.m39_office_support import OfficeEnv, make_workbook, script as script_text, SALES
 
 GATE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "m39_office" / "threshold_gate.json"
@@ -20,15 +21,34 @@ INTAKE = URIIntake()
 
 
 def _classify(env, raw):
+    """BOUND: both roles bound from the request turn itself. ASK_THEN_BOUND /
+    ASK_THEN_CLARIFY (repair round 3, R2-1): frozen M36 refused exact-name
+    certainty in the two-filename turn, M39 asked for each file separately,
+    and the answer turn (just the name the request used) then bound, or
+    opened a clarification. CLARIFY: a clarification with no per-file ask."""
     parsed = req.parse(raw)
     if not parsed.ok:
         return "UNSUPPORTED", parsed
+    service = BindingService()
     intake = INTAKE.capture(env.user, "session-q1", uuid.uuid4().hex, uuid.uuid4().hex, raw, spans=parsed.spans)
-    bindings = bind_all(env.retriever, env.sources, __import__("uri_v1.reference_clarification.binding", fromlist=["BindingService"]).BindingService(),
-                        intake, task_id=None)
+    bindings = with_asks(bind_all(env.retriever, env.sources, service, intake, task_id=None))
     if all(rb.state == "CONFIRMED" for rb in bindings.values()):
         return "BOUND", bindings
-    return "CLARIFY", bindings
+    if not any(rb.ask for rb in bindings.values()):
+        return "CLARIFY", bindings
+    for role, rb in list(bindings.items()):
+        if not rb.ask:
+            continue
+        a, b = parsed.spans[role]
+        answer = raw[a:b]
+        span = answer_filename_span(answer, role)
+        assert span is not None, (role, answer)
+        answer_intake = INTAKE.capture(env.user, "session-q1", uuid.uuid4().hex, uuid.uuid4().hex, answer,
+                                       spans={role: span})
+        bindings[role] = answer_ask(env.retriever, env.sources, service, rb, answer_intake)
+    if all(rb.state == "CONFIRMED" for rb in bindings.values()):
+        return "ASK_THEN_BOUND", bindings
+    return "ASK_THEN_CLARIFY", bindings
 
 
 def _known_source_ids(env):
@@ -160,20 +180,26 @@ _MOVED_CLARIFY = [
     "make report.py run with sales.xlsx",
 ]
 
+# Repair round 3 (re-audit R2-1): on the frozen M36 line a request that names
+# both files cannot bind either one in its own turn (frozen
+# `affirmative_around`: each role's context holds the other file name), so
+# every two-filename case is asked per file first. The labels below were
+# "BOUND" / "CLARIFY" on the pre-freeze base; they return to "BOUND" only if
+# the User chooses the narrow M36 amendment (route 2) instead.
 CASES = (
-    [(r, _basic, "BOUND") for r in _BOUND_FILENAME]
+    [(r, _basic, "ASK_THEN_BOUND") for r in _BOUND_FILENAME]
     # Sole-candidate deictic phrases ("this script") are HEURISTIC, not
     # CERTAINTY authority (uri_v1/reference_clarification/authority.py
     # classify_authority): even with one matching file, they open a
     # CONFIRM_ONE clarification round rather than binding outright.
     + [(r, _basic, "CLARIFY") for r in _CLARIFY_PHRASE]
-    + [(r, _same_stem, "BOUND") for r in _SAME_STEM]
+    + [(r, _same_stem, "ASK_THEN_BOUND") for r in _SAME_STEM]
     + [(r, _basic, "UNSUPPORTED") for r in _TYPOS_UNSUPPORTED]
     + [(r, _basic, "UNSUPPORTED") for r in _UNSUPPORTED_INTENT]
-    + [(r, _collision, "CLARIFY") for r in _COLLISION_CLARIFY]
+    + [(r, _collision, "ASK_THEN_CLARIFY") for r in _COLLISION_CLARIFY]
     + [(r, _negation_setup, "CLARIFY") for r in _NEGATION_CLARIFY]
     + [(r, _ambiguous_py_setup, "UNSUPPORTED") for r in _AMBIGUOUS_ROLE_UNSUPPORTED]
-    + [(r, _moved_setup, "CLARIFY") for r in _MOVED_CLARIFY]
+    + [(r, _moved_setup, "ASK_THEN_CLARIFY") for r in _MOVED_CLARIFY]
 )
 
 assert len(CASES) >= 60, f"Q-O1 requires >= 60 cases, have {len(CASES)}"
@@ -194,7 +220,12 @@ def test_q_o1_request_and_binding(raw, setup, expected, tmp_path, monkeypatch):
         outcome, detail = _classify(env, raw)
         outcomes.append(outcome)
         assert outcome == expected, f"{raw!r}: expected {expected}, got {outcome} ({detail})"
-        if outcome == "BOUND":
+        if outcome == "ASK_THEN_CLARIFY":
+            # The per-file answer led to a real Memory clarification round
+            # (two files share the name, or none matches) -- never a guess
+            # and never a dead end.
+            assert any(rb.contract_id and not rb.ask for rb in detail.values()), detail
+        if outcome in ("BOUND", "ASK_THEN_BOUND"):
             for rb in detail.values():
                 assert rb.bound is not None
                 # invented_source: every bound source_id must be a real, scanned source.

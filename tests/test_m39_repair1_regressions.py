@@ -17,7 +17,7 @@ from uri_v1.office.__main__ import run_repl
 from uri_v1.office.acceptance_builder import build_acceptance
 from uri_v1.office.bootstrap import UnsafeHarnessRefused, build_session
 from uri_v1.office.flow import _is_consent
-from tests.m39_office_support import OfficeEnv, SALES, make_workbook, script as script_text
+from tests.m39_office_support import answer_asks, request_names, OfficeEnv, SALES, make_workbook, script as script_text
 
 
 def _fresh_verifier_registry(monkeypatch):
@@ -34,7 +34,11 @@ def start(env, raw):
     parsed = req.parse(raw)
     assert parsed.ok, parsed
     turn_id, trace_id = env.turn()
-    return env.session.start(raw, session_id="session-r1", turn_id=turn_id, trace_id=trace_id, parsed=parsed)
+    step = env.session.start(raw, session_id="session-r1", turn_id=turn_id, trace_id=trace_id, parsed=parsed)
+    # Repair round 3 (R2-1): on the frozen M36 line a request naming both
+    # files is confirmed one file per turn; answer those per-file questions
+    # with the names the request used. Pinned in test_m39_repair3_regressions.
+    return answer_asks(env, step, request_names(raw, parsed), session_id="session-r1")
 
 
 def confirm(env, task_id, raw="yes, run it"):
@@ -188,7 +192,9 @@ def test_m39_7_repl_approve_completes_writeback(tmp_path, monkeypatch):
     env.write("report.py", script_text(column="amount"))
     buf = io.StringIO()
     run_repl(env.session, env.user, in_stream=io.StringIO(
-        "make report.py work with sales.xlsx\napprove\n"), out=buf)
+        "make report.py work with sales.xlsx\nreport.py\nsales.xlsx\napprove\n"), out=buf)
+    # (repair round 3, R2-1: the two lines after the request answer the
+    # per-file questions the frozen M36 line requires.)
     assert "[COMPLETED]" in buf.getvalue()
     assert "Written and task complete." in buf.getvalue()
 
@@ -199,7 +205,7 @@ def test_m39_7_repl_recovers_after_declined_escalation(tmp_path, monkeypatch):
     env.write("report.py", script_text(column="Amt"))  # forces escalation
     buf = io.StringIO()
     run_repl(env.session, env.user, in_stream=io.StringIO(
-        "make report.py work with sales.xlsx\nno, don't run anything\nstatus\n"), out=buf)
+        "make report.py work with sales.xlsx\nreport.py\nsales.xlsx\nno, don't run anything\nstatus\n"), out=buf)
     rendered = buf.getvalue()
     assert "[ESCALATION_DECLINED]" in rendered
     # After a decline, the session must not still be stuck offering the same

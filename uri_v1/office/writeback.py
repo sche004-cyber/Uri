@@ -22,7 +22,7 @@ import uuid
 
 from uri_v1.execution.workspace import Workspace, WorkspaceError, WritebackApproval, new_run_id
 from uri_v1.memory.contracts import RecordKind as K, Provenance as P
-from uri_v1.memory.uri_adapter.envelope import URIIntake
+from uri_v1.memory.recorder import _runtime_observation
 from uri_v1.user_storage import user_scoped_path
 
 WRITEBACK_VERIFIER_ID = "uri.verifier.office.writeback.v1"
@@ -39,9 +39,14 @@ class WritebackRefused(ValueError):
     really happened -- never "nothing was written" for a write that did.
     """
 
-    def __init__(self, reason, written=()):
+    def __init__(self, reason, written=(), partial_record=None):
         super().__init__(reason)
         self.written = tuple(written)
+        # How the partial write was recorded in Memory (repair round 3,
+        # R2-2): "FAILED" (task moved to FAILED through M36's runtime
+        # FAILURE path), "NOTED" (checkpoint note only), or the reason the
+        # record itself could not persist. None when nothing was written.
+        self.partial_record = partial_record
 
 
 def writeback_verifier_entry() -> dict:
@@ -106,16 +111,34 @@ def _actually_written(ws, expected_after, sources) -> list:
     return written
 
 
-def _record_partial_write(recorder, task_id, expected_head_record_id, intake, written):
-    """Best-effort checkpoint (no status change, so it needs no explicit user
-    wording): note in Memory that files were actually written to disk even
-    though this write-back attempt is being refused, so the task's history
-    does not silently miss that the originals changed. If this itself cannot
-    persist (e.g. a concurrent head change), the refusal to the caller still
-    carries `written` -- the report is never dishonest even when this
-    best-effort note is not."""
-    note = "write-back partially applied before refusal: " + ", ".join(w["relpath"] for w in written)
-    recorder.task_state(task_id, expected_head_record_id, intake=intake, next_step=note)
+def _record_partial_write(recorder, task_id, expected_head_record_id, intake, written, reason):
+    """Record in Memory that originals were changed even though this
+    write-back is being refused (repair round 3, R2-2: never leave the task
+    silently OPEN after a write).
+
+    First choice: move the task to FAILED through frozen M36's governed
+    runtime path (`runtime_action=FAILURE`), with a checkpoint text naming
+    the files and the reason. If M36 refuses that (e.g. a concurrent head
+    change), fall back to a checkpoint note with no status change. Returns
+    how it was recorded; the refusal to the caller carries `written` either
+    way, so the report is never dishonest even if Memory could not be
+    updated."""
+    note = (f"write-back partially applied before refusal ({reason}): "
+            + ", ".join(f"{w['relpath']} {w['before_sha256'][:12]}->{w['after_sha256'][:12]}" for w in written))
+    try:
+        failed = recorder.task_state(task_id, expected_head_record_id, intake=intake, status="FAILED",
+                                     runtime_action=_runtime_observation(intake, "FAILURE"), next_step=note)
+        if failed.persisted:
+            return "FAILED"
+        noted = recorder.task_state(task_id, expected_head_record_id, intake=intake, next_step=note)
+        return "NOTED" if noted.persisted else f"NOT_RECORDED:{noted.reason}"
+    except Exception as exc:  # noqa: BLE001 -- the refusal must still reach the caller
+        return f"NOT_RECORDED:{type(exc).__name__}:{exc}"
+
+
+def _refuse_after_write(recorder, task_id, expected_head_record_id, intake, written, reason):
+    how = _record_partial_write(recorder, task_id, expected_head_record_id, intake, written, reason)
+    return WritebackRefused(reason, written=written, partial_record=how)
 
 
 def writeback(*, recorder, sources, run_store, user_id, scratch_root, task_id, run_id, expected_head_record_id,
@@ -181,12 +204,27 @@ def writeback(*, recorder, sources, run_store, user_id, scratch_root, task_id, r
     except WorkspaceError as exc:
         partial = _actually_written(ws, expected_after, sources)
         if partial:
-            _record_partial_write(recorder, task_id, expected_head_record_id, approval_intake, partial)
-        raise WritebackRefused(str(exc), written=partial) from exc
+            raise _refuse_after_write(recorder, task_id, expected_head_record_id, approval_intake,
+                                      partial, str(exc)) from exc
+        raise WritebackRefused(str(exc)) from exc
 
-    # From this point the write already happened on disk: every refusal below
-    # must carry and record `written`, never claim nothing happened.
+    # From this point the write already happened on disk: every refusal or
+    # unexpected error below must carry and record `written`, never claim
+    # nothing happened and never escape as a bare exception (R2-2).
+    try:
+        return _verify_and_complete(recorder=recorder, task_id=task_id, run_id=run_id,
+                                    expected_head_record_id=expected_head_record_id, session_id=session_id,
+                                    trace_id=trace_id, approval_intake=approval_intake, written=written)
+    except WritebackRefused as exc:
+        raise _refuse_after_write(recorder, task_id, expected_head_record_id, approval_intake,
+                                  written, str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise _refuse_after_write(recorder, task_id, expected_head_record_id, approval_intake,
+                                  written, f"POST_WRITE_ERROR:{type(exc).__name__}:{exc}") from exc
 
+
+def _verify_and_complete(*, recorder, task_id, run_id, expected_head_record_id, session_id, trace_id,
+                         approval_intake, written) -> WritebackOutcome:
     # The completing OUTCOME's inputs must cover every one of the task's
     # *current* Memory references (uri_v1/memory/index.py:145
     # VERIFIED_CURRENT_REFERENCES_REQUIRED), not only the files just written:
@@ -203,47 +241,37 @@ def writeback(*, recorder, sources, run_store, user_id, scratch_root, task_id, r
     claim = recorder.outcome(task_id, action_label="office write-back", inputs=inputs, outputs=(),
                              session_id=session_id, trace_id=trace_id, attempt_id=new_run_id())
     if not claim.persisted:
-        _record_partial_write(recorder, task_id, expected_head_record_id, approval_intake, written)
-        raise WritebackRefused(claim.reason, written=written)
+        raise WritebackRefused(claim.reason)
     verdict = recorder.invoke_verifier(claim.record_ids[0], WRITEBACK_VERIFIER_ID, trace_id=trace_id, session_id=session_id)
     if not verdict.persisted:
-        _record_partial_write(recorder, task_id, expected_head_record_id, approval_intake, written)
-        raise WritebackRefused(verdict.reason, written=written)
+        raise WritebackRefused(verdict.reason)
     record = recorder.log.load().records[verdict.record_ids[0]]
     if str(record.payload["verification_status"]) != "VERIFIED":
-        _record_partial_write(recorder, task_id, expected_head_record_id, approval_intake, written)
-        raise WritebackRefused("WRITEBACK_NOT_VERIFIED", written=written)
+        raise WritebackRefused("WRITEBACK_NOT_VERIFIED")
 
-    # KNOWN, DISCLOSED DEFECT (M39-6, not fixed here -- needs an M36-owned
-    # change): the COMPLETED transition below goes through the USER_PROVIDED
-    # explicit-word path (uri_v1/memory/recorder.py:114-121) by synthesizing
-    # the text "write-back complete" as if the user had typed it, which they
-    # did not. The correct runtime path for this ("VERIFIED_COMPLETE",
-    # `Recorder.task_state(..., runtime_action=...)`) is not usable as-is:
-    # uri_v1/memory/index.py:140-145 (VERIFIED_CURRENT_REFERENCES_REQUIRED)
-    # additionally requires the task's *current* reference hashes to already
-    # equal the verifying record's inputs, which is never true here --
-    # write-back deliberately changes the original's live bytes while (per
-    # rule 4.3.6) the task's own reference still names the pre-write hash on
-    # purpose, so a follow-up request opens a new task instead of silently
-    # re-pointing this one. Closing this honestly needs either a new M36
-    # transition kind for "runtime-verified completion with a deliberately
-    # stale reference", or a way to refresh the task's reference to the
-    # post-write hash before completing -- both are M36 index/recorder
-    # changes, out of this repair lane's scope (M36 is a separate, currently
-    # PROVISIONAL milestone). Bounded mitigation applied here: the synthetic
-    # intake is grounded in the *real* approval turn's session/turn/trace
-    # (not a disconnected random one), so the record it produces is at least
-    # traceable back to the actual user action that authorized the write,
-    # even though the record's own `raw_text` field still does not reflect
-    # words the user actually typed. `last_outcome_record_id` points at this
-    # module's own independently-checked VERIFIER_RESULT record regardless.
-    complete_text = "write-back complete"
-    complete_intake = URIIntake().capture(approval_intake.user_id, approval_intake.session_id, approval_intake.turn_id,
-                                          approval_intake.trace_id, complete_text, spans={"complete": (0, len(complete_text))})
-    result = recorder.task_state(task_id, expected_head_record_id, intake=complete_intake, status="COMPLETED",
-                                 last_outcome_record_id=record.record_id)
+    # M39-6 / re-audit R2-2 (repair round 3): completion goes through frozen
+    # M36's governed runtime path (`runtime_action=VERIFIED_COMPLETE`,
+    # uri_v1/memory/recorder.py:113-117), never through a synthesized user
+    # turn. The earlier synthetic write-back-complete intake put words in
+    # the user's mouth, and frozen M36 correctly refuses it
+    # (EXPLICIT_USER_TRANSITION_REQUIRED) -- after the originals were already
+    # overwritten.
+    #
+    # Frozen M36's index requires the completing verdict's inputs to cover
+    # the task's *current* references (uri_v1/memory/index.py:145-149). The
+    # task's references deliberately keep the pre-write hashes (rule 4.3.6),
+    # so the verdict that satisfies that is the run's own VERIFIER_RESULT:
+    # the run was verified against exactly those inputs, and the write-back
+    # verifier above has just independently confirmed that the live
+    # originals now hold exactly that run's verified output. Both record ids
+    # are kept: `last_outcome_record_id` names the run verdict, and the
+    # checkpoint text names the write-back verdict.
+    _, run_verdict_id = _live_verification_status(recorder, task_id, run_id)
+    note = ("write-back applied and verified (" + ", ".join(w["relpath"] for w in written)
+            + f"; write-back verifier record {record.record_id})")
+    result = recorder.task_state(task_id, expected_head_record_id, intake=approval_intake, status="COMPLETED",
+                                 runtime_action=_runtime_observation(approval_intake, "VERIFIED_COMPLETE"),
+                                 last_outcome_record_id=run_verdict_id, next_step=note)
     if not result.persisted:
-        _record_partial_write(recorder, task_id, expected_head_record_id, approval_intake, written)
-        raise WritebackRefused(result.reason, written=written)
+        raise WritebackRefused(result.reason)
     return WritebackOutcome(tuple(written), record.record_id, result)

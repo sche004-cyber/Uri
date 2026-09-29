@@ -141,6 +141,12 @@ PYTHONPATH=. python3 scripts/m39_office_benchmark.py --dry-run --out /tmp/m39_be
 => exit 0; summary: {"total_tasks": 12, "arm_b_verified": 4, "arm_b_oracle_confirmed": 2}
 ```
 
+> **Correction (repair round 3, re-audit R2-4; the line above is kept as history).** Both
+> "oracle_confirmed" tasks in that summary were the two `no_success` tasks, not
+> successes: the scorer read a `summary.xlsx` that write-back never returns, so no success
+> could ever match, and the driver exited 0 whatever the outcome. See §9 for the fixed
+> driver and its current result.
+
 The mock-mode Q-O4 driver runs end-to-end over all 12 tasks with no network access and
 no cost. Arm A is a labelled `"mock": true` no-op stand-in only, never presented as a
 measurement of a real coding agent. Arm B drives the fake harness through the same
@@ -433,3 +439,67 @@ within `uri_v1/office/*` -- no `uri_core`, `uri_ui`, or M36/M37/M38 file touched
   `fixtures/m39_office/evil_claude_office.py` (new, test-only),
   `tests/test_m39_repair2_regressions.py` (new), and this section of this report. No
   `uri_core`, `uri_ui`, or M36/M37/M38 file appears in the diff.
+
+## 9. Repair round 3 (re-audit of 7bcbbee on the frozen M36-M38 line: R2-1..R2-5)
+
+Base: `7bcbbee` merged onto the freeze commit `5bbf738` (code frozen at `bd7c450`). The
+merge had one additive doc conflict (`docs/governance/URI_ACTIVE_MILESTONE.md`, both
+notes kept). No frozen (M33.x, M36-M38) or live-app file differs from `5bbf738`. Status
+stays **PROVISIONAL, NOT FROZEN**; a fresh audit follows.
+
+**Fixed:**
+- **R2-2 (High).** `writeback.py` no longer fabricates a "write-back complete" user turn.
+  Completion goes through frozen M36's runtime path
+  (`task_state(..., runtime_action=_runtime_observation(intake, "VERIFIED_COMPLETE"))`),
+  linked to the run's own VERIFIED verdict (whose inputs are the task's pre-write
+  references, as `index.py:145-149` requires); the write-back verifier's independent
+  verdict is named in the checkpoint text. Any failure after the originals were written,
+  including an unexpected exception, is now a `WritebackRefused` carrying `written`, and
+  the task is moved to `FAILED` through M36's runtime `FAILURE` path with the files named
+  (falling back to a checkpoint note, and reporting if even that cannot persist).
+  `_runtime_observation` is a private M36 hook; M39 is trusted URI runtime code calling it
+  with the real trusted approval turn, which is the use its docstring describes.
+- **R2-1 (High), interim fix pending the User's route decision.** A two-filename request
+  still cannot bind in one turn on the frozen line. That rejection used to be a dead end;
+  `binding.py` now turns exactly that rejection (`NON_AFFIRMATIVE_CONTEXT`, no Memory
+  round) into an M39 per-file question ("which file is the script?"), answered in a fresh
+  turn holding just the file name, which frozen M36 grounds and binds on its own terms. A
+  bad answer is asked again; a name collision opens the normal Memory round. The REPL now
+  routes the next line to a pending question unless it is itself a new request. This is
+  route 1's behaviour; if the User picks route 2 (narrow M36 amendment), the questions
+  simply stop appearing for the common case.
+- **R2-3 (Medium).** `request.py` treats any non-whitespace, non-punctuation character
+  touching an unquoted name (digits, CJK, `\`, `~`, `..`) as part of a longer name, and
+  any preceding token outside the safe function words as possibly part of the name. "Q1
+  sales.xlsx", "2024 report.py", "报告 report.py", "2024-Q1 sales.xlsx",
+  `C:\old\report.py`, `..\report.py`, `../report.py` and `sales.xlsx~` are refused as
+  ambiguous; quoting disambiguates. `OfficeSession.start` returns a typed `UNSUPPORTED`
+  for a refused parse instead of crashing.
+- **R2-4 (Medium).** The benchmark copies the folder as it stands after write-back, runs
+  the returned `report.py` offline, and scores its `summary.xlsx`; `NOTHING_TO_WRITE` is
+  scored by running the unchanged script. Hard gates (false verified, originals modified
+  without approval, wrong file bound) are measured from live files and Memory. It exits 1
+  when a hard gate fires, an in-envelope task is not oracle-confirmed, or a no_success task
+  is not refused.
+- **R2-5 (Low).** `test_r1_a_flagged_run...` now expects frozen M38's `FAILED`; the M39
+  boundary guard's baseline moved from `610c8f8` to `5bbf738`. Q-O1 labels for the 28
+  two-filename cases are now `ASK_THEN_BOUND` / `ASK_THEN_CLARIFY`; they return to
+  `BOUND` / `CLARIFY` only under route 2.
+
+**Still open:**
+- R2-1 route choice (User): per-file questions (current) vs a narrow M36 amendment.
+- R2-6 (User): frozen `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged`
+  fails, and only because of the 86 M39 paths it does not allowlist. Not edited.
+- R1-E and R1-F unchanged (see §8).
+
+**Verification (Linux, this round):** M39 tests 170 passed (`tests/test_m39_*.py`,
+including 38 new in `test_m39_repair3_regressions.py`); `tests/` 1,472 passed, 1 failed
+(the frozen M37 guard above), 9 skipped (Windows paths); M36/M37/M38 quals exit 0 and
+gates pass; anchors `ok: True, changed: []`, RAR `4db77566...`; governance `VALID`.
+Benchmark dry run: gate PASS, exit 0; 4 completed and oracle-confirmed by running the
+returned script (task_01-04), 1 verified already working (task_07), both no_success
+tasks refused, hard gates 0; the outside-envelope tasks end `HARNESS_FAILED` because the
+dry-run fake harness applies an empty fix. Re-audit probes: 39 OK, 1 `FINDING` (F1, the
+route-2 expectation that a two-filename request binds in one turn). The R0 and R1 audit
+probes (97) pass once the per-file questions are answered; run unmodified they stop at
+that first question. Not verified: Windows, Chetan's machine, any live harness run.

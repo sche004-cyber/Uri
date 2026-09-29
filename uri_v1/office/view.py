@@ -18,6 +18,11 @@ def render(step) -> str:
         for role, rb in step.roles.items():
             if rb.state == "CONFIRMED":
                 lines.append(f"- {role}: bound.")
+            elif getattr(rb, "ask", False):
+                kind = "script (.py)" if role == "script" else "workbook (.xlsx/.xlsm)"
+                why = "" if rb.reason == "NON_AFFIRMATIVE_CONTEXT" else f" ({rb.reason})"
+                lines.append(f"- {role}: which file is the {kind}? Reply with just its file name{why}. "
+                             f"(round {step.task_id}/{rb.contract_id})")
             elif rb.contract_id:
                 lines.append(f"- {role}: needs clarification (round {step.task_id}/{rb.contract_id}; {rb.reason or ''}).")
             else:
@@ -58,6 +63,12 @@ def render(step) -> str:
             lines.append("Some files were already written to disk before the refusal -- this is not \"nothing happened\":")
             for w in step.written:
                 lines.append(f"- {w['relpath']}: {w['before_sha256'][:12]} -> {w['after_sha256'][:12]}")
+            if step.partial_record == "FAILED":
+                lines.append("The task is recorded as FAILED in Memory, with the files above.")
+            elif step.partial_record == "NOTED":
+                lines.append("The partial write is noted on the task in Memory.")
+            elif step.partial_record:
+                lines.append(f"Memory could not record the partial write ({step.partial_record}).")
         else:
             lines.append(f"Write-back refused: {step.reason}. Nothing was written.")
     elif kind == "COMPLETED":

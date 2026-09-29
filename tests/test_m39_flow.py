@@ -12,7 +12,7 @@ import pytest
 from uri_v1.execution.harness.adapters import ClaudeCodeAdapter
 from uri_v1.office import request as req
 from uri_v1.office.flow import OfficeSession
-from tests.m39_office_support import OfficeEnv, SALES, fake_adapter, make_workbook, script as script_text
+from tests.m39_office_support import answer_asks, request_names, OfficeEnv, SALES, fake_adapter, make_workbook, script as script_text
 
 GATE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "m39_office" / "threshold_gate.json"
 
@@ -21,7 +21,11 @@ def start(env, raw):
     parsed = req.parse(raw)
     assert parsed.ok, parsed
     turn_id, trace_id = env.turn()
-    return env.session.start(raw, session_id="session-d", turn_id=turn_id, trace_id=trace_id, parsed=parsed)
+    step = env.session.start(raw, session_id="session-d", turn_id=turn_id, trace_id=trace_id, parsed=parsed)
+    # Repair round 3 (R2-1): on the frozen M36 line a request naming both
+    # files is confirmed one file per turn; answer those per-file questions
+    # with the names the request used. Pinned in test_m39_repair3_regressions.
+    return answer_asks(env, step, request_names(raw, parsed), session_id="session-d")
 
 
 def answer(env, task_id, round_id, raw):
