@@ -574,3 +574,39 @@ full suite has no failing test on Linux.
   matches (`M39_ALLOWED_FILES`), so a longer name such as `scripts/m39_office_benchmark.pyx`
   is rejected, and the guard probes run on a disposable clone instead of editing frozen
   files in the working checkout.
+
+## 13. Repair round 5 (independent audit of 736464a: F3, N3, F4, N1, N2, F2)
+
+Audit: `/mnt/project-files/audits/M39_INDEPENDENT_AUDIT_736464a.md` (REPAIRS_REQUIRED).
+All repairs stay inside M39's own files and docs; no frozen or live-app file changed.
+R1.1 scope work (F1) is not started; it waits on the User's scope decision.
+
+- **F3 (MED).** The escalation consent screen said files are copied to the harness
+  "never the network". It now names the harness (`StepResult.harness`, from the configured
+  adapter's `harness_type`) and says the file contents are sent to it and passed over the
+  network to its external model provider. The posture line now says it limits the
+  harness's own tools and does not stop the file contents reaching the provider. With no
+  harness configured, the screen says so.
+- **N3 (MED).** The HARNESS_FAILED reply said "Nothing was written to your files" even
+  when the harness wrote an original (flag `ORIGINAL_MODIFIED_DURING_RUN`). It now says
+  the original was changed during the harness run (or during verification of its output,
+  for `ORIGINAL_MODIFIED_DURING_VERIFICATION`), not by URI's write-back, names the files
+  from the run store's `uri_observations.originals_changed`, says URI did not undo it,
+  and says the task stays open. "Nothing was written" appears only with no safety flag;
+  any other flag reads "URI wrote nothing back". New fixture scenario `write_original`
+  in `fixtures/m39_office/evil_claude_office.py` reproduces the audit's probe.
+- **F4 (LOW).** `tests/test_m39_repair4_regressions.py` writes the benchmark output to a
+  temporary file instead of `/dev/null`. Windows not run here.
+- **N1 (LOW).** `tests/test_m39_boundaries.py` drops `KNOWN_UPSTREAM_REPAIRS`
+  (763d8e7, b013dba). With the baseline at the freeze commit `5bbf738`, every frozen file
+  must match it exactly; only M39 paths and the hash-pinned authorized edit may differ.
+- **N2 (LOW).** Additive correction `status_correction_2026_09_29_audit_736464a` and
+  `repair_round_5_2026_09_29` in the M39 entry of `docs/governance/URI_STATE.yaml`.
+- **F2.** Recorded as M37-L3, a frozen-line limitation (freeze record section 7; M37
+  `retained_limitation_addendum_2026_09_29`). No code change. User acceptance not yet
+  recorded.
+
+Regression tests: `tests/test_m39_repair5_regressions.py` (F3 x2, N3 x6, N1 x6). All 14
+fail against the 736464a code and pass after the repair. The N1 probes restore
+`uri_v1/execution/{workspace,verify}.py` and `uri_v1/edge/resolver.py` (from 763d8e7)
+and `uri_v1/execution/harness/{runner,contracts}.py` (from b013dba) on a disposable clone.

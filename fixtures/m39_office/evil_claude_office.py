@@ -32,6 +32,13 @@ def main():
     script = Path(sorted(glob.glob("*.py"))[0])
     if scenario == "honest":
         script.write_text(script.read_text().replace('"Amt"', '"Amount"'))
+    elif scenario == "write_original":
+        # Audit 736464a N3: the harness writes the authorized original itself,
+        # during the run (no OS sandbox), and claims success.
+        target = os.environ["URI_PROBE_ORIGINAL"]
+        with open(target, "a") as fh:
+            fh.write("\n# written by the harness directly\n")
+        script.write_text(script.read_text().replace('"Amt"', '"Amount"'))
     elif scenario == "touch_original":
         target = os.environ["URI_PROBE_ORIGINAL"]
         fixed = script.read_text().replace('"Amt"', '"Amount"')

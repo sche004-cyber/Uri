@@ -6,6 +6,8 @@ render says so explicitly.
 """
 from __future__ import annotations
 
+_HARNESS_NAMES = {"CLAUDE_CODE": "Claude Code", "CODEX_CLI": "Codex CLI"}
+_ORIGINAL_MODIFIED_FLAGS = {"ORIGINAL_MODIFIED_DURING_RUN", "ORIGINAL_MODIFIED_DURING_VERIFICATION"}
 _VERIFIED_CAVEAT = "(VERIFIED means the acceptance items URI checked passed -- not that the change is semantically correct.)"
 
 
@@ -38,9 +40,19 @@ def render(step) -> str:
         lines.append("URI could not complete this locally. Route: harness escalation.")
         for u in esc.unresolved:
             lines.append(f"- unresolved: {u}")
-        lines.append("Files that will be copied to the harness (never the network): "
-                    + ", ".join(sorted(i.role for i in esc.inputs)))
-        lines.append("Posture: restrictive default (no network, no package install, no elevation).")
+        roles = ", ".join(sorted(i.role for i in esc.inputs))
+        harness = getattr(step, "harness", None)
+        if harness:
+            # F3 (independent audit 736464a): escalation sends file contents
+            # to an external model provider over the network (plan §4.4 rule
+            # 2); the consent screen must say so and name the harness.
+            name = _HARNESS_NAMES.get(harness, harness)
+            lines.append(f"Harness: {name}. The contents of these files will be sent to {name}, "
+                         f"which passes them over the network to its external model provider: {roles}")
+        else:
+            lines.append(f"No harness is configured, so approving cannot run anything. Files the escalation would send: {roles}")
+        lines.append("Posture: restrictive default for the harness's own tools (no network tools, no package install, "
+                     "no elevation). This does not stop the file contents above from reaching the provider.")
         for w in step.warnings:
             lines.append(f"Note: {w}")
         lines.append('Reply "yes" / "approve" to run the harness, or say why not to decline.')
@@ -50,9 +62,26 @@ def render(step) -> str:
         lines.append("The configured harness is not installed or not reachable. Nothing was started.")
     elif kind == "HARNESS_FAILED":
         lines.append(f"The harness's claim was checked and rejected (status: {step.verification_status}).")
-        if step.safety_flags:
-            lines.append(f"Safety flags: {', '.join(step.safety_flags)}.")
-        lines.append("Nothing was written to your files.")
+        flags = tuple(step.safety_flags or ())
+        if flags:
+            lines.append(f"Safety flags: {', '.join(flags)}.")
+        # N3 (independent audit 736464a): "Nothing was written" is only true
+        # when no flag says an original was touched. Without an OS sandbox the
+        # harness itself can write an original; URI detects that but cannot
+        # undo it, so the reply must say so plainly.
+        if set(flags) & _ORIGINAL_MODIFIED_FLAGS:
+            who = _HARNESS_NAMES.get(getattr(step, "harness", None) or "", "the harness")
+            changed = tuple(getattr(step, "originals_changed", ()) or ())
+            what = ", ".join(changed) if changed else "one or more of your original files"
+            when = ("the harness run" if "ORIGINAL_MODIFIED_DURING_RUN" in flags
+                    else "verification of the harness's output (its code ran and changed them)")
+            lines.append(f"Warning: your original file(s) were changed during {when}, not by URI's write-back "
+                         f"({who}): {what}. URI did not undo this; check the file(s) before relying on them.")
+            lines.append("URI wrote nothing back. The task stays open and is not complete.")
+        elif flags:
+            lines.append("URI wrote nothing back to your files. The task stays open and is not complete.")
+        else:
+            lines.append("Nothing was written to your files. The task stays open and is not complete.")
     elif kind == "NOTHING_TO_WRITE":
         lines.append("The run verified but changed nothing that needs writing back. Nothing to apply.")
     elif kind == "AWAITING_APPROVAL":

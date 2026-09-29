@@ -144,3 +144,19 @@ record. M39 (Office demonstrator) proceeds under its own gates.
   matches (`M39_ALLOWED_FILES`), so a longer name such as `scripts/m39_office_benchmark.pyx`
   is rejected, and the guard probes run on a disposable clone instead of editing frozen
   files in the working checkout.
+
+## 7. Retained limitation recorded after the freeze (additive)
+
+- **2026-09-29, M37-L3: the frozen M37 scope guard cannot by itself prove the frozen
+  line intact.** Recorded from the independent audit of M39 at `736464a` (finding F2,
+  classified there as a frozen-line limitation, not an M39 defect). The pre-freeze
+  prefixes `uri_v1/edge/` and `uri_v1/execution/` in
+  `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged` date from M37,
+  when those were M37's working directories, so an edit under them passes that guard. The
+  authorized M39 entry (section 6) did not widen them. No code change: the test is
+  frozen and the User's authorization covers only the M39 entry. Frozen-line integrity is
+  enforced instead by M39's guard
+  `tests/test_m39_boundaries.py::test_m36_m37_m38_and_frozen_files_unchanged`, which
+  diffs against the freeze commit `5bbf738` with no exemption since the M39 repair after
+  that audit (its N1). The classification is the audit's; the User's acceptance of this
+  limitation is not yet recorded.

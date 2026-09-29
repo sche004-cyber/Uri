@@ -104,6 +104,8 @@ class StepResult:
     written: tuple = ()
     safety_flags: tuple = ()
     partial_record: str | None = None
+    harness: str | None = None          # F3: the harness a proposal/run names (HarnessType value), None if none configured
+    originals_changed: tuple = ()       # N3: originals the run store saw modified during the harness run
 
 
 class OfficeSession:
@@ -201,7 +203,8 @@ class OfficeSession:
         if edge_result.route == "ESCALATE":
             self._escalation[task_id] = edge_result.escalation
             self._escalation_warnings[task_id] = warnings
-            return StepResult("ESCALATION_PROPOSAL", task_id=task_id, escalation=edge_result.escalation, warnings=warnings)
+            return StepResult("ESCALATION_PROPOSAL", task_id=task_id, escalation=edge_result.escalation, warnings=warnings,
+                              harness=self._harness_name())
         return StepResult("CLARIFY_MEMORY", task_id=task_id, reason=edge_result.decision.reason.value, warnings=warnings)
 
     def _offer_writeback(self, task_id, run_id, *, warnings=()) -> StepResult:
@@ -253,7 +256,25 @@ class OfficeSession:
             # caveat at all.
             return self._offer_writeback(task_id, outcome.run_id, warnings=warnings)
         return StepResult("HARNESS_FAILED", task_id=task_id, run_id=outcome.run_id,
-                          verification_status=outcome.verification_status, safety_flags=outcome.safety_flags)
+                          verification_status=outcome.verification_status, safety_flags=outcome.safety_flags,
+                          harness=self._harness_name(), originals_changed=self._originals_changed(outcome.run_id))
+
+    def _harness_name(self):
+        # F3: the consent screen names the harness that would receive the files.
+        harness_type = getattr(self.adapter, "harness_type", None)
+        return getattr(harness_type, "value", None)
+
+    def _originals_changed(self, run_id) -> tuple:
+        # N3: the run store's own record of which originals the harness run
+        # changed (frozen M38 runner, `uri_observations.originals_changed`).
+        # Read-only; an unreadable record yields () and the view still reports
+        # the safety flag itself.
+        try:
+            run = self.run_store.get(run_id) or {}
+            changed = run.get("result", {}).get("uri_observations", {}).get("originals_changed") or ()
+            return tuple(sorted(str(c) for c in changed))
+        except Exception:
+            return ()
 
     def decline_escalation(self, task_id) -> StepResult:
         self._escalation.pop(task_id, None)

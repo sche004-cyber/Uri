@@ -64,32 +64,11 @@ def test_office_never_calls_a_model_or_network_client():
             assert token not in text, (path, token)
 
 
-# Upstream repair commits, on the same branch, made by sessions other than this
-# one (audit-driven fixes to M37/M38, not M39 edits): a path outside the M39
-# allowlist is tolerated only if its *current* content is byte-identical to
-# what one of these commits itself introduced -- i.e. it is legitimately at
-# the repair's own version, not drifted from it by anything this package's
-# code did. This is what plan §6 means by re-running Q-O5 after an
-# audit-driven API change: the frozen-scope check is re-pointed at the new,
-# audited version of those files instead of silently disabled.
-KNOWN_UPSTREAM_REPAIRS = (
-    "763d8e7",  # M37 repair: audit findings F-1..F-9 (uri_v1/edge/*, uri_v1/execution/{verify,workspace}.py)
-    "b013dba",  # M38 repair: audit findings H-2/H-3/M-2..M-5 (uri_v1/execution/harness/*)
-)
-
-
-def _matches_some_upstream_repair(path: str) -> bool:
-    working = (ROOT / path).read_bytes() if (ROOT / path).is_file() else None
-    if working is None:
-        return False
-    for rev in KNOWN_UPSTREAM_REPAIRS:
-        try:
-            at_repair = subprocess.check_output(["git", "show", f"{rev}:{path}"], cwd=ROOT, stderr=subprocess.DEVNULL)
-        except subprocess.CalledProcessError:
-            continue
-        if working == at_repair:
-            return True
-    return False
+# Audit 736464a N1: the KNOWN_UPSTREAM_REPAIRS exemption (763d8e7, b013dba)
+# is gone. It let a frozen M37/M38 file be rolled back to its pre-freeze
+# repair-commit bytes and still pass. Since BASELINE is the freeze commit
+# 5bbf738, every frozen file must match it exactly; only M39 paths and the
+# hash-pinned authorized edit below may differ.
 
 
 def test_m36_m37_m38_and_frozen_files_unchanged():
@@ -102,8 +81,7 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
     allowed = ("uri_v1/office/", "tests/test_m39_", "tests/m39_office_support.py",
                "scripts/m39_", "fixtures/m39_office/", "docs/plans/M39_")
     offenders = [p for p in changed + untracked
-                if not p.startswith(allowed) and not _matches_some_upstream_repair(p)
-                and not _is_authorized_frozen_edit(p)]
+                if not p.startswith(allowed) and not _is_authorized_frozen_edit(p)]
     assert not offenders, offenders
 
 

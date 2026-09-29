@@ -108,9 +108,11 @@ def test_f2_interrupt_before_anything_is_written_leaves_the_task_open(tmp_path, 
 
 # -- F-3 -------------------------------------------------------------------------------------------
 
-def test_f3_benchmark_names_what_a_dry_run_cannot_measure(capsys):
+def test_f3_benchmark_names_what_a_dry_run_cannot_measure(capsys, tmp_path):
     bench = _bench()
-    assert bench.main(["--dry-run", "--out", "/dev/null"]) == 0
+    # Audit 736464a F4: a real temporary file, not /dev/null, so this also
+    # runs on Windows (where "/dev/null" resolves to "\\dev\\null").
+    assert bench.main(["--dry-run", "--out", str(tmp_path / "bench.json")]) == 0
     err = capsys.readouterr().err
     results = bench.run(dry_run=True, out_path=None)
     capsys.readouterr()
