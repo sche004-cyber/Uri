@@ -1,0 +1,122 @@
+[
+ {
+  "id": "N0",
+  "probe": "baseline C01 through audit harness",
+  "observed": "status=VERIFIED events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']",
+  "verdict": "SAFE"
+ },
+ {
+  "id": "F1",
+  "probe": "battery copy with one changed description passed via --cases",
+  "observed": "exit=0 gate_passed=True battery_sha256=581a577be0fe (frozen 2c366419)",
+  "verdict": "CONFIRMED"
+ },
+ {
+  "id": "F2",
+  "probe": "substituted inspect adapter (same id/version) writes outside workspace",
+  "observed": "status=VERIFIED outside_exists=True",
+  "verdict": "CONFIRMED"
+ },
+ {
+  "id": "F3",
+  "probe": "record_and_verify raises RuntimeError",
+  "observed": "escaped RuntimeError: probe verifier crash",
+  "verdict": "CONFIRMED"
+ },
+ {
+  "id": "F3b",
+  "probe": "ledger raises its own ResultVersionError during recording",
+  "observed": "escaped ResultVersionError(blob integrity failure) (RuntimeError subclass)",
+  "verdict": "CONFIRMED"
+ },
+ {
+  "id": "N1-bad_crc",
+  "probe": "C01 plan over a bad_crc workbook from the user's root",
+  "observed": "UNCAUGHT BadZipFile: Bad CRC-32 for file 'xl/worksheets/sheet1.xml'; no PlanOutcome; RUN_STARTED left without RUN_ABORTED",
+  "verdict": "DEFECT"
+ },
+ {
+  "id": "N1-encrypted",
+  "probe": "C01 plan over a encrypted workbook from the user's root",
+  "observed": "UNCAUGHT RuntimeError: File <ZipInfo filename='xl/workbook.xml' filemode='?rw-r--r--' file_size=330> is encrypted, password required for extrac; no PlanOutcome; RUN_STARTED left without RUN_ABORTED",
+  "verdict": "DEFECT"
+ },
+ {
+  "id": "N1-bad_method",
+  "probe": "C01 plan over a bad_method workbook from the user's root",
+  "observed": "UNCAUGHT NotImplementedError: That compression method is not supported; no PlanOutcome; RUN_STARTED left without RUN_ABORTED",
+  "verdict": "DEFECT"
+ },
+ {
+  "id": "N2a",
+  "probe": "provider text with 200k nested arrays through parse_raw",
+  "observed": "UNCAUGHT RecursionError",
+  "verdict": "DEFECT"
+ },
+ {
+  "id": "N2b",
+  "probe": "compile_proposal on a dict with 5000-deep nesting",
+  "observed": "UNCAUGHT RecursionError from canonical()",
+  "verdict": "DEFECT"
+ },
+ {
+  "id": "N3",
+  "probe": "hand-built CompiledPlan with an unused extra node (compiler rejects it)",
+  "observed": "compiler=UNREACHABLE_OUTPUT/UNUSED_NODE:zz; runner status=VERIFIED executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w', 'zz')",
+  "verdict": "OBSERVATION"
+ },
+ {
+  "id": "N4",
+  "probe": "writer writes the report then returns an invalid output shape",
+  "observed": "status=NOT_ATTEMPTED reason=OUTPUT_TYPE_INVALID executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w') events=['RUN_STARTED', 'RUN_ABORTED'] report_left_in_scratch=True",
+  "verdict": "OBSERVATION"
+ },
+ {
+  "id": "N1x",
+  "probe": "RunStore state after the bad_crc crash",
+  "observed": "run events=[['RUN_STARTED']]",
+  "verdict": "OBSERVATION"
+ },
+ {
+  "id": "N5",
+  "probe": "original mutated between verify_source and workspace copy-in",
+  "observed": "status=NOT_ATTEMPTED reason=INPUT_NOT_CURRENT",
+  "verdict": "SAFE"
+ },
+ {
+  "id": "N6-lone_surrogate",
+  "probe": "sheet literal with lone_surrogate",
+  "observed": "Rejection PROPOSAL_INVALID",
+  "verdict": "TYPED"
+ },
+ {
+  "id": "N6-bidi_override",
+  "probe": "sheet literal with bidi_override",
+  "observed": "CompiledPlan ",
+  "verdict": "TYPED"
+ },
+ {
+  "id": "N6-del_char",
+  "probe": "sheet literal with del_char",
+  "observed": "CompiledPlan ",
+  "verdict": "TYPED"
+ },
+ {
+  "id": "N7",
+  "probe": "report items lists the same ref twice",
+  "observed": "status=VERIFIED edges=6",
+  "verdict": "OBSERVATION"
+ },
+ {
+  "id": "N8",
+  "probe": "50 MB provider text",
+  "observed": "parse_raw accepted=True in 537 ms; compile=LIMIT_EXCEEDED/PROPOSAL_BYTES",
+  "verdict": "OBSERVATION"
+ },
+ {
+  "id": "N9",
+  "probe": "hand-constructed Handle without issue()",
+  "observed": "HANDLE_FABRICATED",
+  "verdict": "SAFE"
+ }
+]
