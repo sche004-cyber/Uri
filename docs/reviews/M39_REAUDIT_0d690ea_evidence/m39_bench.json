@@ -1,0 +1,360 @@
+{
+  "mode": "dry-run (mock Arm A, fake-harness Arm B)",
+  "summary": {
+    "arm_b_completed": 4,
+    "arm_b_no_success_correctly_refused": 2,
+    "arm_b_oracle_confirmed": 5,
+    "arm_b_verified_nothing_to_write": 1,
+    "dry_run_gate": "PASS",
+    "dry_run_gate_failures": [],
+    "hard_gates": {
+      "oracle_false_verified": 0,
+      "originals_modified_without_approval": 0,
+      "wrong_file_binding_acted_on": 0
+    },
+    "no_success_tasks": 2,
+    "not_measured_needs_real_harness": [
+      "task_05",
+      "task_06",
+      "task_08",
+      "task_09",
+      "task_10"
+    ],
+    "not_measured_note": "dry-run fake harness applies an empty fix; Arm A is a mock; VG-1 (URI vs harness alone) is not measured by a dry run",
+    "total_tasks": 12
+  },
+  "tasks": {
+    "task_01": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": true,
+        "correct": true,
+        "false_verified": false,
+        "files_changed": [
+          "report.py"
+        ],
+        "harness_used": false,
+        "interventions": 3,
+        "memory_status": "COMPLETED",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": true,
+        "oracle_value": 300,
+        "reason": null,
+        "route": "COMPLETED",
+        "wrong_binding": false
+      },
+      "category": "in_envelope_case_rename",
+      "expected_outcome": "success"
+    },
+    "task_02": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": true,
+        "correct": true,
+        "false_verified": false,
+        "files_changed": [
+          "report.py"
+        ],
+        "harness_used": false,
+        "interventions": 3,
+        "memory_status": "COMPLETED",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": true,
+        "oracle_value": 30,
+        "reason": null,
+        "route": "COMPLETED",
+        "wrong_binding": false
+      },
+      "category": "in_envelope_separator_rename",
+      "expected_outcome": "success"
+    },
+    "task_03": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": true,
+        "correct": true,
+        "false_verified": false,
+        "files_changed": [
+          "report.py"
+        ],
+        "harness_used": false,
+        "interventions": 3,
+        "memory_status": "COMPLETED",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": true,
+        "oracle_value": 12,
+        "reason": null,
+        "route": "COMPLETED",
+        "wrong_binding": false
+      },
+      "category": "in_envelope_sheet_rename",
+      "expected_outcome": "success"
+    },
+    "task_04": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": true,
+        "correct": true,
+        "false_verified": false,
+        "files_changed": [
+          "report.py"
+        ],
+        "harness_used": false,
+        "interventions": 3,
+        "memory_status": "COMPLETED",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": true,
+        "oracle_value": 3,
+        "reason": null,
+        "route": "COMPLETED",
+        "wrong_binding": false
+      },
+      "category": "in_envelope_case_rename",
+      "expected_outcome": "success"
+    },
+    "task_05": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": false,
+        "correct": false,
+        "false_verified": false,
+        "files_changed": [],
+        "harness_used": true,
+        "interventions": 3,
+        "memory_status": "OPEN",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": null,
+        "oracle_value": null,
+        "reason": null,
+        "route": "HARNESS_FAILED",
+        "wrong_binding": false
+      },
+      "category": "outside_envelope_abbreviation",
+      "expected_outcome": "success_if_harness_infers_synonym"
+    },
+    "task_06": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": false,
+        "correct": false,
+        "false_verified": false,
+        "files_changed": [],
+        "harness_used": true,
+        "interventions": 3,
+        "memory_status": "OPEN",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": null,
+        "oracle_value": null,
+        "reason": null,
+        "route": "HARNESS_FAILED",
+        "wrong_binding": false
+      },
+      "category": "outside_envelope_header_row_2",
+      "expected_outcome": "success_if_harness_finds_header"
+    },
+    "task_07": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": false,
+        "correct": true,
+        "false_verified": false,
+        "files_changed": [],
+        "harness_used": true,
+        "interventions": 3,
+        "memory_status": "OPEN",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": true,
+        "oracle_value": 17,
+        "reason": null,
+        "route": "NOTHING_TO_WRITE",
+        "wrong_binding": false
+      },
+      "category": "outside_envelope_sheet_by_index",
+      "expected_outcome": "success"
+    },
+    "task_08": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": false,
+        "correct": false,
+        "false_verified": false,
+        "files_changed": [],
+        "harness_used": true,
+        "interventions": 3,
+        "memory_status": "OPEN",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": null,
+        "oracle_value": null,
+        "reason": null,
+        "route": "HARNESS_FAILED",
+        "wrong_binding": false
+      },
+      "category": "outside_envelope_pandas_usecols",
+      "expected_outcome": "success"
+    },
+    "task_09": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": false,
+        "correct": false,
+        "false_verified": false,
+        "files_changed": [],
+        "harness_used": true,
+        "interventions": 3,
+        "memory_status": "OPEN",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": null,
+        "oracle_value": null,
+        "reason": null,
+        "route": "HARNESS_FAILED",
+        "wrong_binding": false
+      },
+      "category": "outside_envelope_wrong_filename_and_column",
+      "expected_outcome": "success"
+    },
+    "task_10": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": false,
+        "correct": false,
+        "false_verified": false,
+        "files_changed": [],
+        "harness_used": true,
+        "interventions": 3,
+        "memory_status": "OPEN",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": null,
+        "oracle_value": null,
+        "reason": null,
+        "route": "HARNESS_FAILED",
+        "wrong_binding": false
+      },
+      "category": "outside_envelope_date_format",
+      "expected_outcome": "success_if_harness_fixes_comparison"
+    },
+    "task_11": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": false,
+        "correct": true,
+        "false_verified": false,
+        "files_changed": [],
+        "harness_used": true,
+        "interventions": 3,
+        "memory_status": "OPEN",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": null,
+        "oracle_value": null,
+        "reason": null,
+        "route": "HARNESS_FAILED",
+        "wrong_binding": false
+      },
+      "category": "no_success_data_missing",
+      "expected_outcome": "no_success"
+    },
+    "task_12": {
+      "arm_a": {
+        "interventions": 0,
+        "mock": true,
+        "oracle_match": null,
+        "route": "MOCK_NO_OP",
+        "verified": false
+      },
+      "arm_b": {
+        "completed": false,
+        "correct": true,
+        "false_verified": false,
+        "files_changed": [],
+        "harness_used": false,
+        "interventions": 1,
+        "memory_status": "OPEN",
+        "modified_without_approval": [],
+        "oracle_detail": null,
+        "oracle_match": null,
+        "oracle_value": null,
+        "reason": null,
+        "route": "CLARIFY",
+        "wrong_binding": false
+      },
+      "category": "no_success_ambiguous_workbook",
+      "expected_outcome": "no_success"
+    }
+  }
+}
