@@ -1,0 +1,5 @@
+{
+  "category": "no_success_ambiguous_workbook",
+  "expected_outcome": "no_success",
+  "reason": "two workbooks equally match 'the spreadsheet'; the correct behavior is to ask, not guess"
+}

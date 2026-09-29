@@ -1,0 +1,32 @@
+{
+  "schema_version": "m39.office.threshold_gate.v1",
+  "frozen_before_first_measured_run": true,
+  "source_plan": "docs/plans/M39_OFFICE_DEMONSTRATOR_PLAN.md",
+  "q_o1": {
+    "name": "Request and binding battery",
+    "reference": "plan §5.1",
+    "min_cases": 60,
+    "runs": 2,
+    "gates": {
+      "wrong_binding_acted_on": 0,
+      "invented_source": 0,
+      "expected_outcome_match_pct": 100,
+      "identical_across_runs": true
+    },
+    "outcome_vocabulary": ["BOUND", "CLARIFY", "UNSUPPORTED"]
+  },
+  "q_o2": {
+    "name": "End-to-end scenarios D1-D12",
+    "reference": "plan §5.2",
+    "scenarios": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12"],
+    "runs": 2,
+    "gates": {
+      "expected_result_match_pct": 100,
+      "original_modified_without_approval": 0,
+      "false_verified": 0,
+      "harness_started_without_consent": 0,
+      "identical_across_runs": true
+    },
+    "harness": "fake (fixtures/m39_office/fake_claude_office.py via tests/m38_harness_support.py-style adapter), no real API calls"
+  }
+}
