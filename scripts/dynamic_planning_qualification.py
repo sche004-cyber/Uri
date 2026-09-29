@@ -11,8 +11,12 @@ The planning verifier is bootstrapped once for this process. C-1 compares the
 unchanged M37 edge verifier with the composed dispatch, each in its own
 subprocess, so each process bootstraps exactly once.
 
-Usage: python scripts/dynamic_planning_qualification.py [--cases PATH] [--out PATH]
+Usage: python scripts/dynamic_planning_qualification.py [--cases PATH] [--out PATH] [--non-qualifying]
 Exit status is non-zero when any safety counter is non-zero or a threshold is missed.
+The battery and gate must match the digests frozen at 44fa36e (LF-normalized);
+otherwise the driver refuses with exit 2. `--non-qualifying` runs a changed
+battery for exploration only: the result is labelled NON_QUALIFYING and its
+gate never passes.
 """
 from __future__ import annotations
 
@@ -49,6 +53,9 @@ GATE = ROOT / "fixtures/dynamic_planning/threshold_gate.json"
 WORKBOOKS = ROOT / "fixtures/dynamic_planning/workbooks"
 RESULTS = ROOT / "docs/plans/DYNAMIC_PLANNING_SLICE1_QUALIFICATION_RESULTS.json"
 RENAMED_INSPECT = "uri.plan.workbook.load_workbook_structure"
+# Frozen before the first qualifying run (commit 44fa36e; implementation report §2).
+BATTERY_SHA256 = "2c36641926db04e679fb937ce10d0fff141c7989e049618caf9759002fd0f419"
+GATE_SHA256 = "f2dfc9371871eb994ff22f4e5a6d0802864980d9dab03e521a8dac04938c50ff"
 COUNTERS = ("false_verified_completion", "unauthorized_effect", "wrong_source_binding", "undeclared_execution",
             "undetected_original_modification", "unresolved_reported_complete")
 
@@ -399,11 +406,18 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--cases", default=str(CASES)); parser.add_argument("--out", default=str(RESULTS))
     parser.add_argument("--compat", choices=("edge", "composed")); parser.add_argument("--compat-dir")
+    parser.add_argument("--non-qualifying", action="store_true")
     args = parser.parse_args(argv)
     if args.compat:
         print(json.dumps(compat_edge(args.compat, Path(args.compat_dir)), sort_keys=True))
         return 0
     cases_path = Path(args.cases)
+    frozen = lf_sha256(cases_path) == BATTERY_SHA256 and lf_sha256(GATE) == GATE_SHA256
+    if not frozen and not args.non_qualifying:
+        print(f"REFUSED: battery {lf_sha256(cases_path)} / gate {lf_sha256(GATE)} differ from the frozen digests "
+              f"{BATTERY_SHA256} / {GATE_SHA256}; pass --non-qualifying to run anyway (never counts as qualification)",
+              file=sys.stderr)
+        return 2
     cases, expected = load_battery(cases_path)
     gate = json.loads(GATE.read_bytes())
     fixtures_before = tree_hashes(ROOT / "fixtures/dynamic_planning")
@@ -419,7 +433,10 @@ def main(argv=None) -> int:
         result["counters"]["unauthorized_effect"]["numerator"] += 1
         result["counters"]["unauthorized_effect"]["cases"].append("FIXTURE_TREE_CHANGED")
         result["gate_passed"] = False
-    result = {"schema_version": "uri.plan.qualification-results.v1", "status": "PROVISIONAL / NOT FROZEN (self-qualification)",
+    if not frozen: result["gate_passed"] = False
+    result = {"schema_version": "uri.plan.qualification-results.v1",
+              "status": "PROVISIONAL / NOT FROZEN (self-qualification)" if frozen else "NON_QUALIFYING (battery or gate differs from frozen digest)",
+              "qualifying": frozen,
               "battery_sha256": lf_sha256(cases_path), "threshold_gate_sha256": lf_sha256(GATE),
               "provider": "FixtureProvider (test double)", "python": sys.version.split()[0], "platform": sys.platform, **result}
     Path(args.out).write_text(json.dumps(result, indent=1, sort_keys=True) + "\n", encoding="utf-8")

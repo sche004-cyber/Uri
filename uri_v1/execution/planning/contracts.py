@@ -33,6 +33,8 @@ MAX_CANNOT = 16
 MAX_LITERAL_ITEMS = 32
 MAX_LITERAL_LEN = 128
 MAX_TEXT_LEN = 500
+# A well-formed proposal nests 6 levels (object, nodes, node, inputs, binding, from-list).
+MAX_NESTING = 16
 
 _NODE_ID = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
 _PORT = _NODE_ID
@@ -77,6 +79,17 @@ UNQUALIFIED = "UNQUALIFIED"
 
 def canonical(value) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+
+
+def nesting_exceeds(value, limit: int = MAX_NESTING) -> bool:
+    """Iterative depth check, so hostile nesting can never exhaust the interpreter stack."""
+    stack = [(value, 1)]
+    while stack:
+        item, depth = stack.pop()
+        if isinstance(item, (dict, list, tuple)):
+            if depth > limit: return True
+            stack.extend((v, depth + 1) for v in (item.values() if isinstance(item, dict) else item))
+    return False
 
 
 def sha256_of(value) -> str:
@@ -294,8 +307,9 @@ class SemanticProposal:
     @classmethod
     def parse(cls, raw) -> "SemanticProposal":
         if not isinstance(raw, dict): raise ProposalInvalid("PROPOSAL_INVALID", "NOT_AN_OBJECT")
+        if nesting_exceeds(raw): raise ProposalInvalid("PROPOSAL_INVALID", "NESTING_DEPTH")
         try: size = len(canonical(raw))
-        except (TypeError, ValueError): raise ProposalInvalid("PROPOSAL_INVALID", "NOT_JSON")
+        except (TypeError, ValueError, RecursionError): raise ProposalInvalid("PROPOSAL_INVALID", "NOT_JSON")
         if size > MAX_PROPOSAL_BYTES: raise ProposalInvalid("LIMIT_EXCEEDED", "PROPOSAL_BYTES")
         if set(raw) != {"schema_version", "nodes", "outputs", "cannot"}: raise ProposalInvalid("PROPOSAL_INVALID", "TOP_LEVEL_KEYS")
         if raw["schema_version"] != PROPOSAL_SCHEMA_VERSION: raise ProposalInvalid("PROPOSAL_INVALID", "SCHEMA_VERSION")

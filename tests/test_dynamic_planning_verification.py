@@ -128,3 +128,19 @@ def test_qualification_script_end_to_end(tmp_path):
     assert result["gate_passed"] and all(v["numerator"] == 0 for v in result["counters"].values())
     assert all(v["denominator"] > 0 for v in result["counters"].values())
     assert result["expected_outcome"]["rate"] == 1.0
+
+
+def test_qualification_driver_refuses_a_changed_battery(tmp_path):
+    raw = json.loads((ROOT / "fixtures/dynamic_planning/qualification_cases.json").read_bytes())
+    raw["cases"][0]["description"] += " (changed)"
+    changed = tmp_path / "cases.json"; changed.write_text(json.dumps(raw))
+    out = tmp_path / "results.json"
+    script = str(ROOT / "scripts" / "dynamic_planning_qualification.py")
+    proc = subprocess.run([sys.executable, "-B", script, "--cases", str(changed), "--out", str(out)],
+                          capture_output=True, text=True, cwd=str(ROOT), timeout=120)
+    assert proc.returncode == 2 and "REFUSED" in proc.stderr and not out.exists()
+    proc = subprocess.run([sys.executable, "-B", script, "--cases", str(changed), "--out", str(out), "--non-qualifying"],
+                          capture_output=True, text=True, cwd=str(ROOT), timeout=600)
+    result = json.loads(out.read_text())
+    assert proc.returncode == 1 and result["qualifying"] is False and result["gate_passed"] is False
+    assert result["status"].startswith("NON_QUALIFYING")

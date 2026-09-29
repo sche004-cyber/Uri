@@ -55,12 +55,12 @@ Battery notes, fixed at freeze time:
 
 | Check | Command | BASE `5bbf738` (first run at `4292528`) | HEAD |
 |---|---|---|---|
-| Full suite | `python -B -m pytest -q -p no:cacheprovider tests/` | 1303 passed, 9 skipped (1283 at `4292528`) | **1404 passed, 1 failed**, 9 skipped (the 101 new tests included; failure in §4.1) |
+| Full suite | `python -B -m pytest -q -p no:cacheprovider tests/` | 1303 passed, 9 skipped (1283 at `4292528`) | **1404 passed, 1 failed**, 9 skipped (the new slice tests included; failure in §4.1). **Correction:** 102 slice tests at `3bbf8f7`, not 101 (audit D-7); the totals were right. Current head: §8. |
 | Review regression | `python -B -m pytest -q -p no:cacheprovider test_multi_action_capabilities.py test_m33_p1_permission_seam.py tests/test_m37_edge_execution.py tests/test_m38_harness.py tests/governance/test_uri_state_validator.py` | 113 passed | 113 passed |
 | Frozen anchors | `python scripts/m33_3_r_anchors.py` | ok, changed [] | ok, changed [] |
 | M36/M37/M38 qualification | `python scripts/m3{6_memory,7_edge,8_harness}_qualification.py` | exit 0 each, gates passed | exit 0 each, gates passed |
 | Governance | `python -B -m pytest -q -p no:cacheprovider tests/governance` and `python scripts/governance/uri_state_validator.py` | 37 passed, VALID | 37 passed, VALID |
-| Slice tests | `python -B -m pytest -q -p no:cacheprovider tests/test_dynamic_planning_*.py` | n/a | 101 passed |
+| Slice tests | `python -B -m pytest -q -p no:cacheprovider tests/test_dynamic_planning_*.py` | n/a | 102 passed at `3bbf8f7` (was misreported as 101; see §8) |
 | Slice qualification | `python -B scripts/dynamic_planning_qualification.py` | n/a | exit 0, gate passed |
 
 ### 4.1 G8 is not identical: one frozen M37 scope guard fails (decided: accepted)
@@ -118,9 +118,39 @@ The M36 to M38 qualification scripts rewrite their own tracked result files unde
 11. **Windows not run.** All checks ran on Linux only. `wb_malformed.xlsx` is a text file, so a Windows autocrlf checkout could change its bytes (and its §2 digest); nothing reads that digest at run time, and the XLSX_NOT_ZIP outcome does not depend on line endings.
 12. **graphify** is not installed in this environment and `graphify-out/` is untracked, so `graphify update .` was not run.
 13. **No live provider, no spend.** FixtureProvider only (D3, spend policy). Semantic ability is not measured.
+14. **Trusted adapters, no OS sandbox (audit F2; retained limitation, PENDING CHETAN'S CONFIRMATION).** The runner checks each node's contract metadata and qualification digest against the live snapshot, but not the identity of the injected adapter callable. Whoever wires the runner in-process can substitute an adapter under the same `(action_id, version)` that writes outside the workspace, and the run can still verify, because the verifier checks the workspace, not the host. This needs control of trusted in-process wiring, not proposal text or user data, and is the same class as the shared "no OS sandbox" limitation retained at the M36-M38 freeze and M36's M-2. The audit recommends accepting it as documented; no adapter-identity check is added unless Chetan chooses one (the alternative: pin each adapter's `module:qualname` and code digest in the qualification record and check it before each node).
+15. **Plan re-derivation needs the pinned snapshot.** `PlanRunner.run` now takes the snapshot the plan was compiled against (`snapshot=`; `run_proposal` passes it). Without it, or with one whose hash differs from `plan.snapshot_sha256`, the run is refused as PLAN_NOT_COMPILED before anything is recorded.
 
 ## 7. Next
 
 §4.1 is decided (accepted failure). Next:
 
 Step 5: a fresh independent audit that starts from repository evidence, reruns everything above, and adds adversarial probes beyond the battery. The slice stays PROVISIONAL / NOT FROZEN whatever the result. The slice now sits on the frozen line, so the migration-plan §1 rebase contingency is closed.
+
+## 8. Repair round 1 (independent Claude audit of `c5d47a0`, verdict REPAIRS_REQUIRED)
+
+Audit report: `docs/reviews/dynamic_planning_slice1_audit/` on `claude/project-thread-vhp2g6` (`b4eae6b`). All repairs are in the slice's own files; no frozen file, `verify.py` or battery/gate file changed (`git diff --quiet 44fa36e -- fixtures/dynamic_planning` holds).
+
+| Finding | Repair | Regression test |
+|---|---|---|
+| F3 (MEDIUM) verifier-path exception escapes | Any exception from `record_and_verify` (including the ledger's `ResultVersionError`) returns `NOT_VERIFIED` with reason `VERIFICATION_ERROR:<type>` (ValueError/OSError keep their message) and appends RUN_ABORTED unless the run already has a VERIFICATION event | `test_ledger_error_during_recording_is_not_verified_with_a_closed_record`, `test_any_verifier_path_exception_is_not_verified` |
+| N1 (MEDIUM) damaged workbook crashes, run left open | Any other adapter exception is a typed abort `ACTION_FAILED` (exception type in the RUN_ABORTED `detail`); any unexpected runner exception is `RUNNER_ERROR`; setup and RUN_STARTED failures are `NOT_ATTEMPTED` with no run recorded; if the store itself cannot take RUN_ABORTED the reason ends `\|RUN_NOT_CLOSED` | `test_damaged_user_workbook_is_a_typed_abort_with_a_closed_record[bad_crc,encrypted,bad_method]`, `test_any_adapter_exception_is_a_typed_abort`, `test_a_broken_run_store_still_returns_a_typed_outcome` |
+| N2 (MEDIUM) deep nesting crashes the parser | `parse_raw` refuses raw text over 256 KiB before parsing (also N8), catches `RecursionError`, and refuses nesting deeper than 16; `SemanticProposal.parse` checks depth iteratively before canonicalizing (`PROPOSAL_INVALID/NESTING_DEPTH`); `run_proposal` turns a raising provider into `PROVIDER_UNAVAILABLE` | `test_deeply_nested_provider_text_is_a_typed_invalid_proposal`, `test_oversized_provider_text_is_refused_before_parsing`, `test_deeply_nested_proposal_dict_is_rejected_not_crashed`, `test_run_proposal_turns_a_raising_provider_into_a_typed_outcome` |
+| F1 (LOW) changed battery accepted | Driver pins the battery and gate digests and exits 2 on a mismatch; `--non-qualifying` runs anyway, labelled NON_QUALIFYING with the gate forced to fail | `test_qualification_driver_refuses_a_changed_battery` |
+| N3 (LOW) hand-built plan runs | Before anything is recorded, the runner rebuilds the proposal from the plan, recompiles it against the pinned snapshot and candidates, and requires the byte-identical plan (including `proposal_sha256`); a supplied raw proposal must hash to `proposal_sha256`. Otherwise `REJECTED/PLAN_NOT_COMPILED`; a non-`CompiledPlan` now gets the same typed refusal instead of `ValueError` | `test_runner_refuses_a_hand_built_plan_the_compiler_would_reject`, updated `test_runner_refuses_anything_but_a_compiled_plan` |
+| N4 (LOW) NOT_ATTEMPTED after every node ran | An abort after every node executed is `NOT_VERIFIED` (reason = abort code); partial aborts stay `NOT_ATTEMPTED` as the frozen battery expects | `test_run_that_executed_every_node_is_not_labelled_not_attempted` |
+| D-7 (LOW) test count | §4 corrected (102 at `3bbf8f7`, history kept) | n/a |
+| F2 (HIGH→MEDIUM, decision) | Not changed; retained limitation §6.14, pending Chetan | n/a |
+
+Re-running the audit's own probe script (adjusted only to pass `snapshot=` to direct `runner.run` calls): N1 ×3 `NOT_ATTEMPTED/ACTION_FAILED` with `RUN_STARTED, RUN_ABORTED`; N2a `PROPOSAL_INVALID`; N2b `PROPOSAL_INVALID/NESTING_DEPTH`; F3 and F3b `NOT_VERIFIED`; N3 `REJECTED`; N4 `NOT_VERIFIED/OUTPUT_TYPE_INVALID`; F1 refused (no result file); F2 still `VERIFIED` with the outside file written (by design, §6.14); N5, N9 safe.
+
+Checks at the repair head (Linux, Python 3.11.15, all COMPLETED_WITH_RESULT):
+
+| Check | Result |
+|---|---|
+| Full suite | **1418 passed, 1 failed** (only the accepted `test_m36_and_frozen_files_unchanged`), 9 skipped |
+| Slice tests | 116 passed |
+| Slice qualification | exit 0: 34/34, counters 0/34, 0/34, 0/16, 0/16, 0/34, 0/34; C33 miss 1/1; battery and gate digests as §2 |
+| Review regression set | 113 passed |
+| Anchors / governance validator | ok, changed [] / VALID |
+| M36, M37, M38 qualification | exit 0 each (rewritten result files reverted) |

@@ -13,6 +13,12 @@ import json
 import time
 from typing import Protocol
 
+from .contracts import MAX_PROPOSAL_BYTES, nesting_exceeds
+
+# Raw provider text is refused before parsing above this size. Canonical proposals are capped at
+# MAX_PROPOSAL_BYTES; the raw cap leaves room for whitespace and escapes.
+MAX_RAW_BYTES = 4 * MAX_PROPOSAL_BYTES
+
 
 @dataclass(frozen=True)
 class ProviderResult:
@@ -51,11 +57,12 @@ def _no_duplicate_keys(pairs):
 
 
 def parse_raw(raw_text):
-    """Strict JSON: one object, no duplicate keys. None on anything else."""
-    if not isinstance(raw_text, str): return None
+    """Strict JSON: one object, no duplicate keys, bounded size and nesting. None on anything else."""
+    if not isinstance(raw_text, str) or len(raw_text) > MAX_RAW_BYTES: return None
+    if len(raw_text.encode("utf-8", "surrogatepass")) > MAX_RAW_BYTES: return None
     try: value = json.loads(raw_text, object_pairs_hook=_no_duplicate_keys)
-    except ValueError: return None
-    return value if isinstance(value, dict) else None
+    except (ValueError, RecursionError): return None
+    return value if isinstance(value, dict) and not nesting_exceeds(value) else None
 
 
 class FixtureProvider:
