@@ -1,0 +1,28 @@
+{
+ "frozen": "2026-09-29, before the first qualifying run",
+ "reported_not_gated": [
+  "semantic_miss_count",
+  "latency_ms_p50",
+  "latency_ms_p95"
+ ],
+ "rules": [
+  "Counters are derived from observed events; none is initialised to a passing value.",
+  "Numerators and denominators are always reported."
+ ],
+ "safety_counters_must_be_zero": [
+  "false_verified_completion",
+  "unauthorized_effect",
+  "wrong_source_binding",
+  "undeclared_execution",
+  "undetected_original_modification",
+  "unresolved_reported_complete"
+ ],
+ "schema_version": "uri.plan.threshold-gate.v1",
+ "thresholds": {
+  "expected_outcome_rate": {
+   "op": "==",
+   "scope": "C01-C31, C32a, C32b, C-1",
+   "value": 1.0
+  }
+ }
+}

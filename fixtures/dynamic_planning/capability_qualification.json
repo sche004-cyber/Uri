@@ -1,0 +1,39 @@
+{
+  "capabilities": [
+    {
+      "action_id": "uri.plan.workbook.inspect_structure",
+      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
+      "mechanism": "DETERMINISTIC",
+      "passed": true,
+      "status": "QUALIFIED",
+      "version": "1"
+    },
+    {
+      "action_id": "uri.plan.structure.select",
+      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
+      "mechanism": "DETERMINISTIC",
+      "passed": true,
+      "status": "QUALIFIED",
+      "version": "1"
+    },
+    {
+      "action_id": "uri.plan.structure.compare",
+      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
+      "mechanism": "DETERMINISTIC",
+      "passed": true,
+      "status": "QUALIFIED",
+      "version": "1"
+    },
+    {
+      "action_id": "uri.plan.report.write",
+      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
+      "mechanism": "DETERMINISTIC",
+      "passed": true,
+      "status": "QUALIFIED",
+      "version": "1"
+    }
+  ],
+  "recorded": "2026-09-29",
+  "schema_version": "uri.plan.qualification.v1",
+  "status_note": "PROVISIONAL / NOT FROZEN"
+}

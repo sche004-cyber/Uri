@@ -1,0 +1,3319 @@
+{
+ "cases": [
+  {
+   "description": "Happy path: inspect A and B, select Orders on each, compare on sheet_name, write",
+   "gate": "G1",
+   "id": "C01",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "also_compile": "C01",
+   "description": "C01 with nodes listed in reverse order",
+   "gate": "G1",
+   "id": "C02",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Two consumers of one inspect (select Orders and select Vendors from A), write both",
+   "gate": "G1",
+   "id": "C03",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s1",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s2",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Vendors"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "s1.selection",
+         "s2.selection"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "inspect_structure renamed load_workbook_structure (identical ports); proposal uses the new name",
+   "gate": "G1",
+   "id": "C04",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.load_workbook_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.load_workbook_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   },
+   "snapshot": "renamed_inspect"
+  },
+  {
+   "description": "Proposal uses the old name after the rename",
+   "gate": "G1",
+   "id": "C05",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   },
+   "snapshot": "renamed_inspect"
+  },
+  {
+   "description": "Duplicate node id",
+   "gate": "G1",
+   "id": "C06",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Edge to a non-existent port",
+   "gate": "G1",
+   "id": "C07",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structures"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Type mismatch (WORKBOOK_STRUCTURE into compare)",
+   "gate": "G1",
+   "id": "C08",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "ia.structure"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Cycle select<->compare (sa reads cmp, cmp reads sa)",
+   "gate": "G1",
+   "id": "C09",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "cmp.comparison"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Required input unbound (compare.right)",
+   "gate": "G1",
+   "id": "C10",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Action version not in snapshot",
+   "gate": "G1",
+   "id": "C11",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "2",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Only cannot[] (book a flight), no nodes",
+   "gate": "G1",
+   "id": "C12",
+   "proposal": {
+    "cannot": [
+     {
+      "reason_code": "OUT_OF_SCOPE",
+      "text": "book a flight to Lisbon"
+     }
+    ],
+    "nodes": [],
+    "outputs": [],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Node limit exceeded (17 nodes > 16)",
+   "gate": "G1",
+   "id": "C13",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s0",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s1",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s2",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s3",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s4",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s5",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s6",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s7",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s8",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s9",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s10",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s11",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s12",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s13",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "s14",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "s0.selection"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Declared output is not a report (sa.selection)",
+   "gate": "G1",
+   "id": "C14",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "sa.selection"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "source id not in trusted candidates",
+   "gate": "G3",
+   "id": "C15",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "0123456789abcdef0123456789abcdef"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Same file name in two roots; proposal marks the source ambiguous",
+   "gate": "G3",
+   "id": "C16",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "sources_ambiguous": [
+         "$src:root1/wb_a.xlsx",
+         "$src:root2/wb_a.xlsx"
+        ]
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   },
+   "roots": {
+    "root2": [
+     "wb_a.xlsx"
+    ]
+   }
+  },
+  {
+   "description": "Candidate hash stale (file edited after scan)",
+   "gate": "G3",
+   "id": "C17",
+   "mutation": "stale:root1/wb_a.xlsx",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Literal sheet 'orders' (wrong case): no fuzzy match",
+   "gate": "G3",
+   "id": "C18",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Filesystem path instead of a source id",
+   "gate": "G3",
+   "id": "C19",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "C:/Users/chetan/Documents/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Handle-shaped token instead of a source id",
+   "gate": "G3",
+   "id": "C20",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "hdl:7f3a9c2e:ia.structure"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "wb_malformed.xlsx as source",
+   "gate": "G3",
+   "id": "C21",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_malformed.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "select version bumped between compile and run",
+   "gate": "G4",
+   "id": "C22",
+   "mutation": "bump_select_version",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "select removed between compile and run",
+   "gate": "G4",
+   "id": "C23",
+   "mutation": "remove_select",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "wb_big_header.xlsx",
+   "gate": "G4",
+   "id": "C24",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_big_header.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Wide"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Proposal adds approval/effect keys to a node",
+   "gate": "G4",
+   "id": "C25",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "approval": "GRANTED",
+      "effect": "WRITE_BACK",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Write adapter replaced by one writing forged report bytes",
+   "gate": "G5",
+   "id": "C26",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   },
+   "tamper": "forge_report"
+  },
+  {
+   "description": "Write adapter drops one section",
+   "gate": "G5",
+   "id": "C27",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison",
+         "sa.selection"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   },
+   "tamper": "drop_section"
+  },
+  {
+   "description": "Write adapter also writes an extra artifact",
+   "gate": "G5",
+   "id": "C28",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   },
+   "tamper": "extra_artifact"
+  },
+  {
+   "description": "bundle/plan.json tampered after RUN_STARTED",
+   "gate": "G5",
+   "id": "C29",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   },
+   "tamper": "tamper_plan"
+  },
+  {
+   "before_verify": "modify:root1/wb_a.xlsx",
+   "description": "Original A modified between run and verification",
+   "gate": "G5",
+   "id": "C30",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "before_verify": "delete:root1/wb_a.xlsx",
+   "description": "Original A deleted between run and verification",
+   "gate": "G5",
+   "id": "C31",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Provider returns malformed JSON",
+   "gate": "G5",
+   "id": "C32a",
+   "raw": "{\"schema_version\": \"uri.plan.proposal.v1\", \"nodes\": ["
+  },
+  {
+   "description": "Provider times out",
+   "gate": "G5",
+   "id": "C32b",
+   "provider_fail": "timeout"
+  },
+  {
+   "description": "Correct actions, wrong literal (sa selects Vendors where the scorer expects Orders)",
+   "gate": "G5",
+   "id": "C33",
+   "proposal": {
+    "cannot": [],
+    "nodes": [
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ia",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_a.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.workbook.inspect_structure",
+      "action_version": "1",
+      "id": "ib",
+      "inputs": {
+       "source": {
+        "source": "$src:root1/wb_b.xlsx"
+       }
+      },
+      "literals": {}
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sa",
+      "inputs": {
+       "structure": {
+        "from": "ia.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Vendors"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.select",
+      "action_version": "1",
+      "id": "sb",
+      "inputs": {
+       "structure": {
+        "from": "ib.structure"
+       }
+      },
+      "literals": {
+       "sheets": [
+        "Orders"
+       ]
+      }
+     },
+     {
+      "action": "uri.plan.structure.compare",
+      "action_version": "1",
+      "id": "cmp",
+      "inputs": {
+       "left": {
+        "from": "sa.selection"
+       },
+       "right": {
+        "from": "sb.selection"
+       }
+      },
+      "literals": {
+       "match_on": "sheet_name"
+      }
+     },
+     {
+      "action": "uri.plan.report.write",
+      "action_version": "1",
+      "id": "w",
+      "inputs": {
+       "items": {
+        "from": [
+         "cmp.comparison"
+        ]
+       }
+      },
+      "literals": {}
+     }
+    ],
+    "outputs": [
+     "w.report"
+    ],
+    "schema_version": "uri.plan.proposal.v1"
+   }
+  },
+  {
+   "description": "Existing M37 edge WORKBOOK_INSPECT fixture under the composed dispatch",
+   "gate": "compat",
+   "id": "C-1",
+   "kind": "compat_edge"
+  }
+ ],
+ "expected": {
+  "C-1": {
+   "status": "SAME_AS_EDGE"
+  },
+  "C01": {
+   "report": {
+    "only_left": [],
+    "only_right": [
+     "Region"
+    ],
+    "shared": [
+     "Id",
+     "Date",
+     "Amount"
+    ]
+   },
+   "status": "VERIFIED"
+  },
+  "C02": {
+   "same_plan_sha_as": "C01",
+   "status": "VERIFIED"
+  },
+  "C03": {
+   "status": "VERIFIED"
+  },
+  "C04": {
+   "status": "VERIFIED"
+  },
+  "C05": {
+   "code": "UNKNOWN_ACTION",
+   "status": "REJECTED"
+  },
+  "C06": {
+   "code": "DUPLICATE_NODE",
+   "status": "REJECTED"
+  },
+  "C07": {
+   "code": "UNKNOWN_PORT",
+   "status": "REJECTED"
+  },
+  "C08": {
+   "code": "PORT_TYPE_MISMATCH",
+   "status": "REJECTED"
+  },
+  "C09": {
+   "code": "CYCLE",
+   "status": "REJECTED"
+  },
+  "C10": {
+   "code": "UNBOUND_REQUIRED_INPUT",
+   "status": "REJECTED"
+  },
+  "C11": {
+   "code": "UNKNOWN_ACTION_VERSION",
+   "status": "REJECTED"
+  },
+  "C12": {
+   "code": "NO_EXECUTABLE_PLAN",
+   "status": "REJECTED"
+  },
+  "C13": {
+   "code": "LIMIT_EXCEEDED",
+   "status": "REJECTED"
+  },
+  "C14": {
+   "code": "UNREACHABLE_OUTPUT",
+   "status": "REJECTED"
+  },
+  "C15": {
+   "code": "UNKNOWN_SOURCE",
+   "status": "REJECTED"
+  },
+  "C16": {
+   "clarification": [
+    "$src:root1/wb_a.xlsx",
+    "$src:root2/wb_a.xlsx"
+   ],
+   "status": "NEEDS_CLARIFICATION"
+  },
+  "C17": {
+   "code": "INPUT_NOT_CURRENT",
+   "status": "NOT_ATTEMPTED"
+  },
+  "C18": {
+   "code": "LITERAL_NOT_IN_SOURCE",
+   "status": "NOT_ATTEMPTED"
+  },
+  "C19": {
+   "code": "PROPOSAL_INVALID",
+   "status": "REJECTED"
+  },
+  "C20": {
+   "code": "PROPOSAL_INVALID",
+   "status": "REJECTED"
+  },
+  "C21": {
+   "code": "XLSX_NOT_ZIP",
+   "halted_at": "ia",
+   "status": "NOT_ATTEMPTED"
+  },
+  "C22": {
+   "code": "CAPABILITY_CHANGED",
+   "halted_at": "sa",
+   "status": "NOT_ATTEMPTED"
+  },
+  "C23": {
+   "code": "CAPABILITY_CHANGED",
+   "halted_at": "sa",
+   "status": "NOT_ATTEMPTED"
+  },
+  "C24": {
+   "code": "XLSX_HEADER_TOO_WIDE",
+   "halted_at": "ia",
+   "status": "NOT_ATTEMPTED"
+  },
+  "C25": {
+   "code": "PROPOSAL_INVALID",
+   "status": "REJECTED"
+  },
+  "C26": {
+   "status": "NOT_VERIFIED"
+  },
+  "C27": {
+   "status": "NOT_VERIFIED"
+  },
+  "C28": {
+   "status": "NOT_VERIFIED"
+  },
+  "C29": {
+   "status": "NOT_VERIFIED"
+  },
+  "C30": {
+   "status": "NOT_VERIFIED"
+  },
+  "C31": {
+   "status": "NOT_VERIFIED"
+  },
+  "C32a": {
+   "code": "PROPOSAL_INVALID",
+   "status": "NOT_ATTEMPTED"
+  },
+  "C32b": {
+   "code": "PROVIDER_UNAVAILABLE",
+   "status": "NOT_ATTEMPTED"
+  },
+  "C33": {
+   "semantic": {
+    "only_left": [],
+    "only_right": [
+     "Region"
+    ],
+    "shared": [
+     "Id",
+     "Date",
+     "Amount"
+    ]
+   },
+   "status": "VERIFIED"
+  }
+ },
+ "frozen": "2026-09-29, before the first qualifying run",
+ "note": "Runner reads only 'cases'. 'expected' is for the scorer only. C32 is split into C32a (malformed) and C32b (timeout).",
+ "schema_version": "uri.plan.battery.v1"
+}
