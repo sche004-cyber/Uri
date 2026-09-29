@@ -110,8 +110,26 @@ _ELEVATIONS = {"network": ("network", "internet", "web"), "package_install": ("i
 # matched only where they stand alone, so "allow network.server" or "allow network-server" never
 # name the network elevation (Codex re-check of f8115d5).
 _ELEVATION_PHRASES = {k: tuple(f"{w} access" for w in v) + v for k, v in _ELEVATIONS.items()}
-# Capability kinds a grant may name next to the capability itself ("use the sheets server").
-_CAPABILITY_KIND_WORDS = frozenset("server servers skill skills plugin plugins mcp tool tools".split())
+# Kind nouns a grant may attach to a capability's own name ("use the sheets server"). A kind
+# noun is accepted only as part of an exact "<name> <noun>" / "<noun> <name>" phrase, and only
+# a noun valid for the kind of every granted item with that name (Codex re-check of 21bcc63:
+# "use sheets plugin" granted MCP_SERVER sheets, and "use sheets server" validated a PLUGIN or
+# SKILL named sheets, while the nouns were fillers for any kind). A bare name stays accepted.
+_KIND_NOUNS = {"MCP_SERVER": ("mcp server", "mcp servers", "server", "servers", "mcp"),
+               "PLUGIN": ("plugin", "plugins"), "SKILL": ("skill", "skills"), "AGENT": ("agent", "agents"),
+               "HOOK": ("hook", "hooks"), "PROMPT": ("prompt", "prompts")}
+
+
+def _capability_data(items) -> list:
+    """The granted names, plus each name joined to a kind noun valid for all its items' kinds."""
+    kinds_by_name: dict = {}
+    for kind, name in items: kinds_by_name.setdefault(name, set()).add(kind)
+    data = []
+    for name, kinds in kinds_by_name.items():
+        nouns = set.intersection(*(set(_KIND_NOUNS.get(k, ())) for k in kinds))
+        data.append(name)
+        data += [f"{name} {n}" for n in nouns] + [f"{n} {name}" for n in nouns]
+    return data
 # Directories whose exposure would defeat the point of scoping at all, even though
 # they are not $HOME itself (D-5/M-4): a parent of $HOME (e.g. `/home`) grants
 # everything under every user's home the same way `/` would, and a well-known
@@ -253,8 +271,7 @@ class CapabilityGrant:
         # "use sheets maybe", "we could use sheets" never grant.
         if (not items or approval_withheld(intake.raw_text) or not _GRANT_WORDS & set(re.findall(r"\w+", text))
                 or any(not _whole_token(text, n.casefold()) for _, n in items)
-                or not approval_given(intake.raw_text, _GRANT_WORDS, data=[n for _, n in items],
-                                      extra_words=_CAPABILITY_KIND_WORDS)):
+                or not approval_given(intake.raw_text, _GRANT_WORDS, data=_capability_data(items))):
             raise HarnessError("EXPLICIT_CAPABILITY_GRANT_REQUIRED")
         grant = cls(items, intake)
         object.__setattr__(grant, "_issued", _ISSUED)
@@ -266,8 +283,7 @@ class CapabilityGrant:
         # pass this gate either.
         if not self.items: return True
         return (self._issued is _ISSUED and isinstance(self.intake, TrustedInput) and self.intake.trusted
-                and approval_given(self.intake.raw_text, _GRANT_WORDS, data=[n for _, n in self.items],
-                                   extra_words=_CAPABILITY_KIND_WORDS))
+                and approval_given(self.intake.raw_text, _GRANT_WORDS, data=_capability_data(self.items)))
 
     def to_dict(self) -> dict:
         return {"items": [list(x) for x in self.items]}

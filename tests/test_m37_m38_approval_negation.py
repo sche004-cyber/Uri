@@ -404,3 +404,40 @@ def test_plain_grants_still_work_after_the_filler_cut(tmp_path):
     assert ElevationGrant.from_user(intake(f"allow {d}"), f"extra_dir:{d}", "s").valid_for("s")
     assert CapabilityGrant.from_user(intake("yes, use the sheets server, thanks"), [("MCP_SERVER", "sheets")]).valid()
     assert WritebackApproval.from_user(intake("yes, go ahead and apply the fix"), RUN_ID, {"report.py": "0" * 64}).valid()
+
+
+# -- a kind noun must match the kind of the granted item ------------------------------------------
+# (Codex re-check of 21bcc63.) Kind nouns were fillers for any kind, so "use sheets plugin" granted
+# the MCP server "sheets" and "use sheets server" validated a plugin or skill named "sheets".
+
+@pytest.mark.parametrize("kind,text", [
+    ("MCP_SERVER", "use sheets plugin"), ("MCP_SERVER", "use sheets skill"),
+    ("PLUGIN", "use sheets server"), ("PLUGIN", "use sheets skill"), ("PLUGIN", "use the sheets mcp server"),
+    ("SKILL", "use sheets server"), ("SKILL", "use sheets plugin"), ("SKILL", "use the sheets mcp server"),
+    ("MCP_SERVER", "use sheets, plugin"), ("MCP_SERVER", "use plugin sheets"), ("MCP_SERVER", "use the server"),
+])
+def test_kind_noun_of_another_kind_is_refused(kind, text):
+    with pytest.raises(HarnessError, match="EXPLICIT_CAPABILITY_GRANT_REQUIRED"):
+        CapabilityGrant.from_user(intake(text), [(kind, "sheets")])
+    assert CapabilityGrant((( kind, "sheets"),), intake(text)).valid() is False
+
+
+@pytest.mark.parametrize("kind,text", [
+    ("MCP_SERVER", "use sheets"), ("MCP_SERVER", "use the sheets server"), ("MCP_SERVER", "use the sheets mcp server"),
+    ("MCP_SERVER", "allow the mcp server sheets"), ("PLUGIN", "use sheets"), ("PLUGIN", "enable the sheets plugin"),
+    ("SKILL", "use sheets"), ("SKILL", "use the sheets skill"),
+])
+def test_matching_kind_noun_or_bare_name_is_granted(kind, text):
+    assert CapabilityGrant.from_user(intake(text), [(kind, "sheets")]).valid()
+
+
+def test_kind_noun_must_match_every_item_sharing_the_name():
+    items = [("MCP_SERVER", "sheets"), ("PLUGIN", "sheets")]
+    assert CapabilityGrant.from_user(intake("use sheets"), items).valid()
+    for text in ("use sheets server", "use sheets plugin", "use the sheets skill"):
+        with pytest.raises(HarnessError):
+            CapabilityGrant.from_user(intake(text), items)
+    mixed = [("MCP_SERVER", "sheets"), ("SKILL", "xlsx-helper")]
+    assert CapabilityGrant.from_user(intake("use the sheets server and the xlsx-helper skill"), mixed).valid()
+    with pytest.raises(HarnessError):
+        CapabilityGrant.from_user(intake("use the sheets skill and the xlsx-helper server"), mixed)
