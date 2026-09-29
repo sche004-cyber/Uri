@@ -260,6 +260,15 @@ def test_edge_and_execution_import_boundaries():
 # 179fe10 for its NFKC / -n't parity port.
 M36_BASELINE = "179fe10b7fe620cef60a979431e337c135f58215"
 
+# Authorized frozen-test edit (User, Chetan, 2026-09-29 05:21 UTC): the minimum
+# M39-specific entry, so this guard stops failing on M39's own isolated paths.
+# Exact files or tight M39-only prefixes; nothing for dynamic planning or any
+# other lane. M39's own boundary tests (tests/test_m39_boundaries.py) cover
+# these paths; tests/test_m39_frozen_guard_allowlist.py proves the entry hides
+# no other change.
+M39_ALLOWED = ("uri_v1/office/", "fixtures/m39_office/", "tests/test_m39_", "tests/m39_office_support.py",
+               "scripts/m39_office_benchmark.py", "scripts/m39_generate_benchmark.py")
+
 
 def test_m36_and_frozen_files_unchanged():
     changed = subprocess.check_output(["git", "diff", "--name-only", M36_BASELINE, "--",
@@ -267,7 +276,8 @@ def test_m36_and_frozen_files_unchanged():
     untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "--", "uri_v1", "uri_core", "uri_ui",
                                          "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
     allowed = ("uri_v1/edge/", "uri_v1/execution/", "tests/test_m37_", "tests/test_m38_", "tests/m37_edge_support.py",
-               "tests/m38_harness_support.py", "scripts/m37_", "scripts/m38_", "fixtures/m37_edge/", "fixtures/m38_harness/")
-    assert all(p.startswith(allowed) for p in changed + untracked), [p for p in changed + untracked if not p.startswith(allowed)]
+               "tests/m38_harness_support.py", "scripts/m37_", "scripts/m38_", "fixtures/m37_edge/", "fixtures/m38_harness/") + M39_ALLOWED
+    assert all(p.startswith(allowed) and ".." not in p.split("/") for p in changed + untracked), \
+        [p for p in changed + untracked if not p.startswith(allowed) or ".." in p.split("/")]
     from scripts.m33_3_r_anchors import require_anchors
     assert require_anchors()["ok"]

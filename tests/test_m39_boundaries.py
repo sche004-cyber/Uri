@@ -102,8 +102,25 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
     allowed = ("uri_v1/office/", "tests/test_m39_", "tests/m39_office_support.py",
                "scripts/m39_", "fixtures/m39_office/", "docs/plans/M39_")
     offenders = [p for p in changed + untracked
-                if not p.startswith(allowed) and not _matches_some_upstream_repair(p)]
+                if not p.startswith(allowed) and not _matches_some_upstream_repair(p)
+                and not _is_authorized_frozen_edit(p)]
     assert not offenders, offenders
+
+
+# Frozen files edited with the User's explicit authorization, pinned to the
+# exact authorized content: any further change to them is an offender again.
+# - tests/test_m37_edge_resolution.py: minimal M39 allowlist entry in
+#   test_m36_and_frozen_files_unchanged (Chetan, 2026-09-29 05:21 UTC).
+AUTHORIZED_FROZEN_EDITS = {
+    "tests/test_m37_edge_resolution.py": "a8dfa41bed50a91de4dcfce45cb3ffba9c55bb1b532fac5358398128f14aa155",
+}
+
+
+def _is_authorized_frozen_edit(path: str) -> bool:
+    import hashlib
+    expected = AUTHORIZED_FROZEN_EDITS.get(path)
+    target = ROOT / path
+    return expected is not None and target.is_file() and hashlib.sha256(target.read_bytes()).hexdigest() == expected
 
 
 def test_frozen_anchors_unchanged():

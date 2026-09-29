@@ -216,6 +216,7 @@ product_milestones:
     title: "Edge Minimum (local-first resolution and qualified local completion)"
     status: "CLOSED_FROZEN"
     status_history_note: "M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN -> audit/repair rounds -> CLOSED_FROZEN at bd7c450 (2026-09-29). Fields below dated before 2026-09-29 (depends_on_unaudited, closing_audit) are historical."
+    authorized_frozen_edits: "2026-09-29 (User authorization, Chetan, 05:21 UTC): tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged gains a minimal M39-only allowlist entry (M39_ALLOWED: uri_v1/office/, fixtures/m39_office/, tests/test_m39_, tests/m39_office_support.py, scripts/m39_office_benchmark.py, scripts/m39_generate_benchmark.py) and rejects '..' path segments. No dynamic-planning paths. No M37 code changed; M37 stays CLOSED_FROZEN at bd7c450. Pinned by content hash in tests/test_m39_boundaries.py; regression coverage in tests/test_m39_frozen_guard_allowlist.py."
     currently_active: false
     closed_date: "2026-09-29"
     frozen_commit: "bd7c45068ed2f75cb68c9ea60f803e61a36dd7f2"

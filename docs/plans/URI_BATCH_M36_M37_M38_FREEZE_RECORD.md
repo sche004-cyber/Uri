@@ -124,3 +124,17 @@ the kind listed in §4 are recorded as limitations.
 
 No production integration, live-app wiring, INT-* event or next milestone is opened by this
 record. M39 (Office demonstrator) proceeds under its own gates.
+
+## 6. Authorized edits after the freeze (additive)
+
+- **2026-09-29, frozen M37 test (User authorization, Chetan, 05:21 UTC).**
+  `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged` gains the
+  minimum M39-specific allowlist entry (`M39_ALLOWED`: `uri_v1/office/`,
+  `fixtures/m39_office/`, `tests/test_m39_`, `tests/m39_office_support.py`,
+  `scripts/m39_office_benchmark.py`, `scripts/m39_generate_benchmark.py`) and now also
+  rejects `..` path segments. No dynamic-planning paths were added (that lane keeps its
+  SourceResolver/adapter approach). No M37 code changed, and the freeze verdict above is
+  unchanged. The edited file is pinned by content hash in `tests/test_m39_boundaries.py`;
+  `tests/test_m39_frozen_guard_allowlist.py` proves the guard still fails for a changed
+  frozen file, a new file in frozen or live-app scope, and M39 look-alike paths, and that
+  `uri_v1/office` does no direct file I/O.

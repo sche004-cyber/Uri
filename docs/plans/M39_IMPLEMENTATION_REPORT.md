@@ -488,8 +488,9 @@ stays **PROVISIONAL, NOT FROZEN**; a fresh audit follows.
 
 **Still open:**
 - ~~R2-1 route choice (User)~~ Decided 2026-09-29: per-file answers (§11).
-- R2-6 (User): frozen `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged`
-  fails, and only because of the 86 M39 paths it does not allowlist. Not edited.
+- ~~R2-6 (User): frozen `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged`
+  fails, and only because of the 86 M39 paths it does not allowlist. Not edited.~~ Resolved
+  2026-09-29 by the User's authorized minimal allowlist entry (§12).
 - R1-E and R1-F unchanged (see §8).
 
 **Verification (Linux, this round):** M39 tests 170 passed (`tests/test_m39_*.py`,
@@ -551,3 +552,19 @@ turns for a two-filename request; "cancel" leaves the task (§10, F-4).
 Not changed by this decision: no code (the behaviour already shipped in `7838479` /
 `9290594`); the frozen M37 allowlist test (R2-6) is still an open User decision and was
 not edited.
+
+## 12. Authorized frozen-test edit: M39 entry in the M37 scope guard (2026-09-29)
+
+The User authorized (Chetan, 05:21 UTC) the minimum M39-specific allowlist entry in
+frozen `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged`, and
+asked that dynamic planning not be allowlisted across the execution-to-memory.sources
+boundary. The entry is `M39_ALLOWED` = `uri_v1/office/`, `fixtures/m39_office/`,
+`tests/test_m39_`, `tests/m39_office_support.py`, and the two exact M39 scripts; the
+guard also rejects any `..` path segment. Nothing else in the frozen test changed, and no
+M37 code changed. `tests/test_m39_boundaries.py` pins the edited file by content hash, so
+any further change to it fails again. `tests/test_m39_frozen_guard_allowlist.py` proves
+the guard still fails for a modified frozen file (`uri_v1/memory/contracts.py`), for new
+files in frozen M36 and live-app scope, and for M39 look-alike paths; that
+`uri_v1/office` does no direct file I/O (all user-file access goes through frozen
+M36/M37); and that a file outside the authorized folder is never bound. With this, the
+full suite has no failing test on Linux.
