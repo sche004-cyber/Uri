@@ -1,6 +1,6 @@
 # Edge Specialist Pair: Migration and Integration Plan (Stage 3 draft)
 
-Status: **PLANNING DRAFT r1. Not accepted. No implementation, wiring, qualification or state change is authorized by this document.** r1 repairs the independent review (`0be2c32`, `REPAIRS_REQUIRED`); r0 is at `8305f9c`; §12 maps each finding to its repair.
+Status: **PLANNING DRAFT r2. Not accepted. No implementation, wiring, qualification or state change is authorized by this document.** r1 repairs the independent review (`0be2c32`, `REPAIRS_REQUIRED`); r0 is at `8305f9c`; §12 maps each finding to its repair.
 Date: 2026-09-29. Branch: `claude/needle-granite-planning-nqic37`.
 Inputs:
 - S1A: `docs/research/EDGE_SPECIALIST_PAIR_ROOT_CAUSE_AUDIT.md`
@@ -68,13 +68,14 @@ Chetan may pull this forward. The plan does not assume it.
 | Step | Content | Files | Entry gate | Exit evidence |
 |---|---|---|---|---|
 | 0 | r0 independent review done (`0be2c32`, Claude standing in for Codex). This r1 repairs it. Chetan accepts, or accepts with repairs, and decides D-1 to D-5. A Codex re-review of r1 is optional, at Chetan's choice. | Review reports under `docs/plans/` | This commit | Chetan's recorded decisions |
-| 1 | Author and freeze the **extraction** battery (QP §2, §3.2, §3.3). The direct segments (QP §3.1) are not authored unless D-1 reopens after step P. | `fixtures/edge_specialist_pair/` (cases, oracle, fixtures, manifest) | Step 0 and D-4 | Manifest committed; substring-collision check output; holdout sealed |
+| 1 | Before authoring, fix the extraction admission rule and schema set (S2A §6 step 11: declared closed schemas, requested only by a deterministic producer; E-SUB deferred). Then author and freeze the **extraction** battery (QP §2, §3.2, §3.3). The direct segments (QP §3.1) are not authored unless D-1 reopens after step P. | `fixtures/edge_specialist_pair/` (cases, oracle, fixtures, manifest) | Step 0 and D-4 | Manifest committed; substring-collision check output; holdout sealed |
 | 2 | Implement N1, N4, N5 and N7 as isolated code, with fake-model unit tests for every applicable Z invariant (QP §5.2) and every N5 rejection | `uri_v1/specialists/*`, `tests/test_edge_specialists_*.py` | Step 1 and an implementation authorization | Tests green; full suite green except any failure accepted under D-4; no import of `uri_core` |
 | 3 | Development-split runs of both models on `EXTRACTION_V1` on Chetan's device, placement-matched, local Ollama Brain for X-ASSIST; per-class assignment by QP §6. Optionally the QP §3.4 selection diagnostic, if Chetan wants direct-class evidence. | `scripts/edge_specialist_pair_run.py`, raw outputs under `/mnt/project-files/` (not the repo) | Step 2; device online | Per-arm tables; proposed profile with rankings |
 | 4 | Holdout qualification (QP §5) and comparative experiment (QP §7), one run each; pinned qualification record | `fixtures/edge_specialist_pair/record.json` (digest-pinned) | Step 3; latency and memory budgets written into the profile | `COMPLETED_WITH_RESULT` runs; gate table with n, k and bounds; honest-outcome verdict |
 | 5 | Independent audit (Codex when available) re-scores step 4 from raw outputs | Audit report | Step 4 | Audit verdict |
 | 6 | L1 live canonical-path verification (QP §8) with read-only actions and real documents Chetan supplies | Test-side runner; evidence report | Step 5 passes; Chetan names the documents and accounts | Receipts, truthful replies, follow-up grounding, Z-5/6/7/12/13 evidence |
 | 7 | `INT-*` proposal plus the smallest live PR: N6 in a new file beside S6; a call from the existing Edge routing point into `uri_v1/specialists` through a thin adapter; `URI_EDGE_SPECIALISTS` flag off by default | PR only (new files under `uri_core/core/edge/`, adapter file) | Step 6; URI_WORKING_PRODUCT_BASELINE (§2); Chetan's authorization | PR for Chetan's review and application; L2 checks after he applies it |
+| X-P1 | **Extraction producer** (needed for live extraction routing and for E-SUB): a registered capability or deterministic flow that requests a declared closed schema. None exists today. | Own lifecycle and PR | Chetan's authorization | Then E-SUB is authored and L1 covers extraction admission |
 | P | **Direct-class prerequisites** (only if Chetan wants `DIRECT_TOOL_V1` reopened): P-1 impact declarations on candidate actions (live-app change); P-2 span or binding producers per identifier kind (own lifecycle); P-3 is built inside N2; P-5 deployment configuration. P-4 (frozen M36 vocabulary) is not changed; its coverage loss is measured. | Separate lifecycles and PRs | Chetan's authorization for each | Then D-1 is re-decided on fresh evidence, and QP §3.1 is authored |
 
 Each step stops at its exit, and the next step needs its entry gate. Steps 2–7 and P each need Chetan's explicit authorization. Step 7 is never merged or applied by a pipeline thread.
@@ -147,7 +148,7 @@ This document authorizes none of the following. Each needs Chetan's explicit wor
 - any merge or application of the step-7 PR;
 - marking Needle or Granite qualified for anything;
 - `TRANSFORM_V1`, E-b, E-c, and reopening `DIRECT_TOOL_V1`;
-- the step-P prerequisites (impact declarations, id producers), which are live-app or new-mechanism changes;
+- the step-P prerequisites (impact declarations, id producers) and X-P1 (an extraction producer), which are live-app or new-mechanism changes;
 - the optional selection diagnostic (QP §3.4), which is a model run;
 - new registered capabilities;
 - metered API spend;
@@ -191,3 +192,13 @@ Each finding was re-checked against source before it was accepted (S2A §23). r0
 | Review §4 unlisted option | E-d added to D-1 and recommended; D-3 notes the local-file link |
 
 **Self-review of r1 against §0.** M-1 to M-7 still pass. M-6 now also covers the step-P prerequisites and the optional diagnostic. What r0 got wrong: it sequenced battery authoring for a class whose admission rules no registered action can satisfy today, and it did not list the direct-class prerequisites as separate authorizations.
+
+### Revision r2 (re-review `5f56992`, verdict `ACCEPTABLE_WITH_BOUNDED_REPAIRS`)
+
+Docs-only repairs, each re-checked before it was applied:
+- **N-1 (MEDIUM), extraction admission and field selection.** S2A §6 step 11 now requires a deterministic producer that names a declared closed schema; no free-text classification. No producer exists among the 17 registered actions (checked), so that is prerequisite X-P1. E-SUB and G-E5 are deferred with it; the other extraction segments start from a battery-supplied schema.
+- **N-2 (LOW).** QP §9 no longer names the subscription session as the Brain.
+- **N-3 (LOW).** S2A §5.1 P-4 states the probe convention: full string ("Get 2021CS042." is False) vs reference removed as `affirmative_around()` does ("Get ." is True). Both hold; the conclusion is unchanged.
+- **N-4 (LOW).** S2A §5.4 corrects the Stage-1 description: 0/8 and 1/8 are withholding rates over T13–T20; on T17–T20 both models chose another tool 4/4 in all 3 repeats, sometimes `draft_message` rather than a read (re-checked from `direct_tool_results.json`).
+
+The eligibility card's options are unchanged; none of these repairs affects them.
