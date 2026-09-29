@@ -1,0 +1,454 @@
+[
+ {
+  "config": "none",
+  "attack": "A_open_write",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "B_os_open",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "C_path_touch",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "D_shutil_copy",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "E_subprocess",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "F_os_system",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "G_thread_joined",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "H_thread_late",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "I_ctypes",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "L_guard_tamper",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "P_extra_in_workspace",
+  "status": "NOT_VERIFIED",
+  "reason": "FAILED",
+  "outside_effect": "n/a"
+ },
+ {
+  "config": "none",
+  "attack": "Q_preopened_handle",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": false
+ },
+ {
+  "config": "none",
+  "attack": "M_module_attr_patch",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "N_code_swap",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "none",
+  "attack": "O_dict_swap_only",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": true
+ },
+ {
+  "config": "M1_pin",
+  "attack": "A_open_write",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "B_os_open",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "C_path_touch",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "D_shutil_copy",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "E_subprocess",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "F_os_system",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "G_thread_joined",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "H_thread_late",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "I_ctypes",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "L_guard_tamper",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "P_extra_in_workspace",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": "n/a"
+ },
+ {
+  "config": "M1_pin",
+  "attack": "Q_preopened_handle",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "M_module_attr_patch",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "N_code_swap",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1_pin",
+  "attack": "O_dict_swap_only",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "A_open_write",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "B_os_open",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "C_path_touch",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "D_shutil_copy",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "E_subprocess",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "F_os_system",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "G_thread_joined",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "H_thread_late",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": true
+ },
+ {
+  "config": "M2_guard",
+  "attack": "I_ctypes",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "L_guard_tamper",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "P_extra_in_workspace",
+  "status": "NOT_VERIFIED",
+  "reason": "FAILED",
+  "outside_effect": "n/a"
+ },
+ {
+  "config": "M2_guard",
+  "attack": "Q_preopened_handle",
+  "status": "VERIFIED",
+  "reason": null,
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "M_module_attr_patch",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "N_code_swap",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M2_guard",
+  "attack": "O_dict_swap_only",
+  "status": "NOT_ATTEMPTED",
+  "reason": "UNAUTHORIZED_EFFECT",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "A_open_write",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "B_os_open",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "C_path_touch",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "D_shutil_copy",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "E_subprocess",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "F_os_system",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "G_thread_joined",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "H_thread_late",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "I_ctypes",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "L_guard_tamper",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "P_extra_in_workspace",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": "n/a"
+ },
+ {
+  "config": "M1+M2",
+  "attack": "Q_preopened_handle",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "M_module_attr_patch",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "N_code_swap",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "M1+M2",
+  "attack": "O_dict_swap_only",
+  "status": "NOT_ATTEMPTED",
+  "reason": "ADAPTER_IDENTITY",
+  "outside_effect": false
+ },
+ {
+  "config": "none",
+  "attack": "R_honest_x20",
+  "status": [
+   "VERIFIED"
+  ],
+  "ms_per_run": 44.6
+ },
+ {
+  "config": "M1_pin",
+  "attack": "R_honest_x20",
+  "status": [
+   "VERIFIED"
+  ],
+  "ms_per_run": 42.3
+ },
+ {
+  "config": "M2_guard",
+  "attack": "R_honest_x20",
+  "status": [
+   "VERIFIED"
+  ],
+  "ms_per_run": 44.4
+ },
+ {
+  "config": "M1+M2",
+  "attack": "R_honest_x20",
+  "status": [
+   "VERIFIED"
+  ],
+  "ms_per_run": 49.0
+ }
+]
