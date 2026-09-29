@@ -1,5 +1,17 @@
 # URI Milestone Tracker
 
+**Latest delivery checkpoint — 2026-09-29: M36, M37 and M38 `CLOSED_FROZEN` at
+`bd7c450`, `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.** Frozen on the User's decision after
+the Codex bridge audits of the merged line: final independent Windows check 1,309
+passed / 0 failed, all gates passed, 132 adversarial grant-wording probes blocked, no
+open findings. Linux at `bd7c450`: tests/ 1,303 passed / 0 failed; three quals pass;
+anchors ok; governance 37; broad 15 legacy failures, unchanged. `62d564c` and `a87e158`
+are superseded, not competing lines. Retained limitations (M36-L1, M37-L1/L2,
+M38-L1/L2/L3, S-L1/L2) and evidence: `docs/plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md`.
+Next validation: a live harness pilot (M38 first), which reopens M36-M38 only for a
+defect violating a frozen guarantee. No production integration or next milestone is
+opened by this checkpoint.
+
 **Batch handoff — 2026-09-28: M38 Harness Execution Minimum implemented, PROVISIONAL / NOT FROZEN; batch stopped before the Office demonstrator.**
 State: `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN`. Built on unaudited M36 (`405db1f`) and M37 (`5460d64`), dependencies recorded. [Plan](docs/plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](docs/plans/M38_IMPLEMENTATION_REPORT.md), [Codex audit package](docs/plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md). Next: one independent Codex audit of the M36 -> M37 -> M38 chain. No freeze, no production integration.
 

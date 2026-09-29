@@ -166,9 +166,17 @@ product_milestones:
 
   - id: "M36"
     title: "URI-Memory Minimum (pre-Office demonstrator)"
-    status: "M36_REPAIRED_AWAITING_INDEPENDENT_REAUDIT"
+    status: "CLOSED_FROZEN"
+    status_history_note: "M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION -> M36_REPAIRED_AWAITING_INDEPENDENT_REAUDIT (2026-09-28) -> CLOSED_FROZEN at bd7c450 (2026-09-29) after the Codex bridge audits of the merged M36+M37+M38 line. Fields below dated before 2026-09-29 are historical."
     prior_status: "M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION (historical, before the 2026-09-28 internal re-audits)"
-    currently_active: true
+    currently_active: false
+    closed_date: "2026-09-29"
+    frozen_commit: "bd7c45068ed2f75cb68c9ea60f803e61a36dd7f2"
+    terminal_audit_state: "ACCEPT_WITH_DOCUMENTED_LIMITATIONS"
+    closure_evidence: "docs/plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md"
+    closure_authority: "User (Chetan) 2026-09-29 03:24 UTC: freeze M36, M37 and M38 at bd7c450; accept the documented limitations; live pilot not a prerequisite; 62d564c superseded"
+    mutable: false
+    retained_limitations: "M36-L1 verifier receipts bound to id/type/version only; trusted-code compromise out of scope. Shared S-L1/S-L2 in the closure evidence."
     implementation_authorized: true
     plan: "docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md"
     state: "docs/plans/M36_STATE.md"
@@ -206,8 +214,16 @@ product_milestones:
     pg_m1_latest_finding_source: "User-supplied A4 task instruction, recorded in plan section 19.1; no separate A3 report file located. A2 holds; A3 initial projection accepted; sole blocker FREE_INPUT."
   - id: "M37"
     title: "Edge Minimum (local-first resolution and qualified local completion)"
-    status: "M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN"
+    status: "CLOSED_FROZEN"
+    status_history_note: "M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN -> audit/repair rounds -> CLOSED_FROZEN at bd7c450 (2026-09-29). Fields below dated before 2026-09-29 (depends_on_unaudited, closing_audit) are historical."
     currently_active: false
+    closed_date: "2026-09-29"
+    frozen_commit: "bd7c45068ed2f75cb68c9ea60f803e61a36dd7f2"
+    terminal_audit_state: "ACCEPT_WITH_DOCUMENTED_LIMITATIONS"
+    closure_evidence: "docs/plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md"
+    closure_authority: "User (Chetan) 2026-09-29 03:24 UTC: freeze M36, M37 and M38 at bd7c450; accept the documented limitations; live pilot not a prerequisite; 62d564c superseded"
+    mutable: false
+    retained_limitations: "M37-L1 qualification_run switch admits deterministic capabilities without a pinned record (driver/tests only; never default); M37-L2 Windows alternate data streams invisible to the workspace diff (never reach originals). Shared S-L1/S-L2."
     implementation_authorized: true
     authorization: "User instruction 2026-09-28 (batched independent audits): plan and implement Edge minimum on unaudited M36 with the dependency recorded; no freeze"
     plan: "docs/plans/M37_EDGE_MINIMUM_PLAN.md"
@@ -220,8 +236,18 @@ product_milestones:
     note: "New files only. No change to M36, frozen M33.3, S6, M31 or uri_core. Only deterministic mechanisms are qualified; no local model is qualified."
   - id: "M38"
     title: "Harness Execution Minimum (controlled external-harness execution with URI verification)"
-    status: "M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN"
+    status: "CLOSED_FROZEN"
+    status_history_note: "M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN -> audit/repair rounds incl. Windows repair and strict grant grammar -> CLOSED_FROZEN at bd7c450 (2026-09-29). Fields below dated before 2026-09-29 (depends_on_unaudited, closing_audit, self_qualification) are historical."
     currently_active: false
+    closed_date: "2026-09-29"
+    frozen_commit: "bd7c45068ed2f75cb68c9ea60f803e61a36dd7f2"
+    terminal_audit_state: "ACCEPT_WITH_DOCUMENTED_LIMITATIONS"
+    closure_evidence: "docs/plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md"
+    closure_authority: "User (Chetan) 2026-09-29 03:24 UTC: freeze M36, M37 and M38 at bd7c450; accept the documented limitations; live pilot not a prerequisite; 62d564c superseded"
+    mutable: false
+    retained_limitations: "M38-L1 no live harness run in qualification; M38-L2 POSIX setsid-detached and Windows service-launched descendants not contained; M38-L3 owner-only DACL untested across Windows accounts. Shared S-L1 no OS sandbox; S-L2 strict grammar refuses some natural phrasings by design."
+    next_validation: "Live harness pilot (subscription-authenticated Claude Code on Windows, against bd7c450). Reopens M36-M38 only if it exposes a defect violating a frozen guarantee."
+    superseded_lines: "62d564c (codex/m36-m38-canonical-audit) and a87e158 (Antigravity) are superseded, not competing qualification lines."
     implementation_authorized: true
     authorization: "User instruction 2026-09-28 (batched independent audits): plan and implement Harness Execution minimum incl. capability/plugin/skill/MCP discovery and controlled use; stop before the Office demonstrator; no freeze"
     plan: "docs/plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md"

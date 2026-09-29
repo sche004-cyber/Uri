@@ -7,6 +7,14 @@
 
 ## 1. Milestone Identity & State
 
+**CURRENT STATE — 2026-09-29: M36, M37 and M38 `CLOSED_FROZEN` at `bd7c450`
+(`ACCEPT_WITH_DOCUMENTED_LIMITATIONS`).** User decision 2026-09-29 03:24 UTC; evidence,
+lineage and the retained limitations in
+[the freeze record](../plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md). `62d564c` is
+superseded. Next validation activity: a live harness pilot, which reopens M36-M38 only
+for a defect that violates a frozen guarantee. No milestone is automatically opened;
+the M36/M37/M38 notes below are historical. Canonical machine state: `URI_STATE.yaml`.
+
 **BATCH NOTE — 2026-09-28 (additive):** M38 Harness Execution Minimum is implemented and `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](../plans/M38_IMPLEMENTATION_REPORT.md)). The batch stops before the Office demonstrator; the next stage is one independent Codex audit per [the batch package](../plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md).
 
 **BATCH NOTE — 2026-09-28 (additive):** Under the User's batched-audit workflow, M37 Edge Minimum is implemented and `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M37_EDGE_MINIMUM_PLAN.md), [report](../plans/M37_IMPLEMENTATION_REPORT.md)). It depends on unaudited M36 at `405db1f`. M36 remains the current milestone record above; nothing here freezes, closes or integrates M36 or M37.
