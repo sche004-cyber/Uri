@@ -287,6 +287,29 @@ class OfficeSession:
         self._run.pop(task_id, None)
         return StepResult("COMPLETED", task_id=task_id, run_id=run_id, written=outcome.written)
 
+    # -- cancel ---------------------------------------------------------------------
+    def cancel(self, task_id, raw_text, *, session_id, turn_id, trace_id) -> StepResult:
+        """Re-audit 3 F-4: let the user leave a task (e.g. one waiting on a
+        file question) instead of being asked again forever.
+
+        The task moves to ABANDONED only through frozen M36's explicit user
+        transition, with the user's own words ("cancel", "abandon", ...); M36
+        decides whether those words declare it. If M36 refuses, nothing
+        changes and the reason is returned."""
+        if task_id not in self._heads:
+            return StepResult("ERROR", task_id=task_id, reason="UNKNOWN_TASK")
+        intake = _make_intake(self.user_id, session_id, turn_id, trace_id, raw_text, ref_key="cancel")
+        try:
+            result = self.recorder.task_state(task_id, self._heads[task_id], intake=intake, status="ABANDONED")
+        except ValueError as exc:
+            return StepResult("ERROR", task_id=task_id, reason=str(exc))
+        if not result.persisted:
+            return StepResult("ERROR", task_id=task_id, reason=result.reason)
+        self._heads[task_id] = result.record_ids[-1]
+        for pending in (self._pending, self._escalation, self._escalation_warnings, self._run):
+            pending.pop(task_id, None)
+        return StepResult("CANCELLED", task_id=task_id)
+
     # -- pause / resume ------------------------------------------------------------
     def pause(self, task_id, raw_text, *, run_id, session_id, turn_id, trace_id) -> StepResult:
         # R1-A (re-audit, residual of M39-4): this used to store whatever

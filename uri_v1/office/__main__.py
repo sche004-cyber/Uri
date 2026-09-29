@@ -16,6 +16,14 @@ from .request import parse
 from .view import render, render_status
 
 
+_CANCEL_WORDS = frozenset({"cancel", "abandon", "stop", "quit", "nevermind", "never mind"})
+
+
+def _is_cancel(raw: str) -> bool:
+    words = raw.strip().casefold().strip(".!")
+    return words in _CANCEL_WORDS or words.replace(" it", "").replace(" this", "") in _CANCEL_WORDS
+
+
 def _turn():
     return uuid.uuid4().hex, uuid.uuid4().hex
 
@@ -54,7 +62,16 @@ def run_repl(session: OfficeSession, user_id: str, *, in_stream=sys.stdin, out=s
             out.write(render(step) + "\n")
             continue
         turn_id, trace_id = _turn()
-        if pending_round and not parse(raw).ok:
+        if pending_round and _is_cancel(raw):
+            # Re-audit 3 F-4: "cancel" while a question is pending leaves the
+            # task (recorded ABANDONED by frozen M36 from the user's own
+            # words) instead of being re-asked forever.
+            step = session.cancel(pending_round[0], raw, session_id=session_id, turn_id=turn_id, trace_id=trace_id)
+            if step.kind == "ERROR":
+                out.write(render(step) + '\nTo stop answering, type "cancel" on its own.\n')
+                continue
+            active_task = None
+        elif pending_round and not parse(raw).ok:
             # Repair round 3 (R2-1): a clarifying question (a per-file
             # question, or a Memory round) is answered by the next line,
             # unless that line is itself a new supported request.

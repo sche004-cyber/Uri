@@ -21,12 +21,16 @@ def render(step) -> str:
             elif getattr(rb, "ask", False):
                 kind = "script (.py)" if role == "script" else "workbook (.xlsx/.xlsm)"
                 why = "" if rb.reason == "NON_AFFIRMATIVE_CONTEXT" else f" ({rb.reason})"
-                lines.append(f"- {role}: which file is the {kind}? Reply with just its file name{why}. "
+                lines.append(f"- {role}: which file is the {kind}? Reply with just its file name{why}, or \"cancel\" to stop. "
                              f"(round {step.task_id}/{rb.contract_id})")
             elif rb.contract_id:
-                lines.append(f"- {role}: needs clarification (round {step.task_id}/{rb.contract_id}; {rb.reason or ''}).")
+                why = f"; {rb.reason}" if rb.reason else ""
+                lines.append(f"- {role}: needs clarification (round {step.task_id}/{rb.contract_id}{why}). "
+                             "Reply to choose, or \"cancel\" to stop.")
             else:
                 lines.append(f"- {role}: could not be resolved ({rb.reason}).")
+    elif kind == "CANCELLED":
+        lines.append("Task cancelled. Nothing was written.")
     elif kind == "CLARIFY_MEMORY":
         lines.append(f"URI needs to re-check this task before continuing ({step.reason}).")
     elif kind == "ESCALATION_PROPOSAL":

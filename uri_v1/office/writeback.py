@@ -122,18 +122,62 @@ def _record_partial_write(recorder, task_id, expected_head_record_id, intake, wr
     change), fall back to a checkpoint note with no status change. Returns
     how it was recorded; the refusal to the caller carries `written` either
     way, so the report is never dishonest even if Memory could not be
-    updated."""
+    updated.
+
+    Re-audit 3 F-1: this record states what already happened on disk, so it
+    is not conditional on the task head the approval saw. Each attempt uses
+    the task's *current* head, re-read just before it, so a concurrent
+    checkpoint by another writer no longer turns both attempts into
+    CONFLICT and leaves the task silently OPEN. (M36 still refuses a
+    FAILED transition from a terminal state; that case falls back to the
+    note, or is reported NOT_RECORDED.)"""
     note = (f"write-back partially applied before refusal ({reason}): "
             + ", ".join(f"{w['relpath']} {w['before_sha256'][:12]}->{w['after_sha256'][:12]}" for w in written))
+
+    def head():
+        try:
+            current = recorder.log.load().task(task_id)
+        except Exception:  # noqa: BLE001 -- fall back to the head the caller saw
+            current = None
+        return current.record_id if current is not None else expected_head_record_id
+
+    last = None
     try:
-        failed = recorder.task_state(task_id, expected_head_record_id, intake=intake, status="FAILED",
-                                     runtime_action=_runtime_observation(intake, "FAILURE"), next_step=note)
-        if failed.persisted:
-            return "FAILED"
-        noted = recorder.task_state(task_id, expected_head_record_id, intake=intake, next_step=note)
-        return "NOTED" if noted.persisted else f"NOT_RECORDED:{noted.reason}"
+        for _ in range(2):  # one retry if another writer moves the head in between
+            failed = recorder.task_state(task_id, head(), intake=intake, status="FAILED",
+                                         runtime_action=_runtime_observation(intake, "FAILURE"), next_step=note)
+            if failed.persisted:
+                return "FAILED"
+            last = failed.reason
+            if last != "CONFLICT":
+                break
+    except Exception as exc:  # noqa: BLE001 -- try the note below
+        last = f"{type(exc).__name__}:{exc}"
+    try:
+        for _ in range(2):
+            noted = recorder.task_state(task_id, head(), intake=intake, next_step=note)
+            if noted.persisted:
+                return "NOTED"
+            last = noted.reason
+            if last != "CONFLICT":
+                break
     except Exception as exc:  # noqa: BLE001 -- the refusal must still reach the caller
-        return f"NOT_RECORDED:{type(exc).__name__}:{exc}"
+        last = f"{type(exc).__name__}:{exc}"
+    return f"NOT_RECORDED:{last}"
+
+
+def _record_interrupted(recorder, task_id, expected_head_record_id, intake, get_written, exc):
+    """Best effort, for an interrupt after (or during) the write: record any
+    files already on disk as a partial write. A second interrupt while
+    recording is not caught; the original interrupt is always re-raised by
+    the caller."""
+    try:
+        written = get_written()
+    except Exception:  # noqa: BLE001
+        return
+    if written:
+        _record_partial_write(recorder, task_id, expected_head_record_id, intake, written,
+                              f"INTERRUPTED:{type(exc).__name__}")
 
 
 def _refuse_after_write(recorder, task_id, expected_head_record_id, intake, written, reason):
@@ -207,6 +251,13 @@ def writeback(*, recorder, sources, run_store, user_id, scratch_root, task_id, r
             raise _refuse_after_write(recorder, task_id, expected_head_record_id, approval_intake,
                                       partial, str(exc)) from exc
         raise WritebackRefused(str(exc)) from exc
+    except BaseException as exc:
+        # Re-audit 3 F-2: an interrupt (KeyboardInterrupt, SystemExit) mid-write
+        # is re-raised unchanged, but first whatever already landed on disk is
+        # recorded, so the task is not left silently OPEN.
+        _record_interrupted(recorder, task_id, expected_head_record_id, approval_intake,
+                            lambda: _actually_written(ws, expected_after, sources), exc)
+        raise
 
     # From this point the write already happened on disk: every refusal or
     # unexpected error below must carry and record `written`, never claim
@@ -221,6 +272,10 @@ def writeback(*, recorder, sources, run_store, user_id, scratch_root, task_id, r
     except Exception as exc:  # noqa: BLE001
         raise _refuse_after_write(recorder, task_id, expected_head_record_id, approval_intake,
                                   written, f"POST_WRITE_ERROR:{type(exc).__name__}:{exc}") from exc
+    except BaseException as exc:
+        # Re-audit 3 F-2: never swallow an interrupt, but record the write first.
+        _record_interrupted(recorder, task_id, expected_head_record_id, approval_intake, lambda: written, exc)
+        raise
 
 
 def _verify_and_complete(*, recorder, task_id, run_id, expected_head_record_id, session_id, trace_id,

@@ -287,6 +287,16 @@ def run(dry_run: bool, out_path: Path | None):
                  for n in sorted(no_success) if not results["tasks"][n]["arm_b"]["correct"]]
     summary["dry_run_gate"] = "PASS" if not failures else "FAIL"
     summary["dry_run_gate_failures"] = failures
+    # Re-audit 3 F-3: say plainly what this dry run cannot measure. Every
+    # task the gate does not cover (outside the Edge envelope) needs a real
+    # harness: the dry-run fake harness applies an EMPTY fix, so those rows
+    # only show that URI refuses a no-op fix, not any harness capability.
+    # Arm A is a labelled mock, so the VG-1 comparison is not measured.
+    summary["not_measured_needs_real_harness"] = sorted(
+        n for n in results["tasks"] if n not in in_envelope | no_success
+        and not results["tasks"][n]["arm_b"]["correct"])
+    summary["not_measured_note"] = ("dry-run fake harness applies an empty fix; Arm A is a mock; "
+                                    "VG-1 (URI vs harness alone) is not measured by a dry run")
     results["summary"] = summary
     text = json.dumps(results, indent=2, sort_keys=True, default=str)
     if out_path:
@@ -305,8 +315,11 @@ def main(argv=None):
     args = ap.parse_args(argv)
     results = run(dry_run=not args.live, out_path=args.out)
     gate = results["summary"]["dry_run_gate"]
-    print(f"M39 dry-run gate: {gate} ({results['summary']['arm_b_oracle_confirmed']}/{results['summary']['total_tasks']} "
-          f"oracle-confirmed)", file=sys.stderr)
+    summary = results["summary"]
+    not_measured = summary["not_measured_needs_real_harness"]
+    print(f"M39 dry-run gate: {gate} ({summary['arm_b_oracle_confirmed']}/{summary['total_tasks']} "
+          f"oracle-confirmed; not measured, need a real harness: {', '.join(not_measured) or 'none'}; "
+          f"{summary['not_measured_note']})", file=sys.stderr)
     for f in results["summary"]["dry_run_gate_failures"]:
         print(f"  FAIL: {f}", file=sys.stderr)
     return 0 if gate == "PASS" else 1

@@ -503,3 +503,32 @@ dry-run fake harness applies an empty fix. Re-audit probes: 39 OK, 1 `FINDING` (
 route-2 expectation that a two-filename request binds in one turn). The R0 and R1 audit
 probes (97) pass once the per-file questions are answered; run unmodified they stop at
 that first question. Not verified: Windows, Chetan's machine, any live harness run.
+
+## 10. Repair round 4 (re-audit of 7838479: LOW items F-1..F-4)
+
+The re-audit of `7838479` found no blocking findings and four LOW items. All four are
+fixed inside `uri_v1/office/` and `scripts/m39_office_benchmark.py`, with regressions in
+`tests/test_m39_repair4_regressions.py`. No frozen or live-app file changed, and the
+frozen M37 guard was not touched. Status stays **PROVISIONAL, NOT FROZEN**.
+
+- **F-1:** `_record_partial_write` re-reads the task's current head before each attempt
+  (with one retry on CONFLICT), because the record states what already happened on disk
+  and is not conditional on the head the approval saw. A concurrent checkpoint no longer
+  leaves the task silently OPEN. Remaining limit: if another writer moved the task to a
+  terminal state, M36 refuses the FAILED transition; the note is tried, and otherwise the
+  refusal reports `NOT_RECORDED`. A `VERIFIED_COMPLETE` that races a concurrent writer
+  still fails on the stale head by design and is then recorded as FAILED.
+- **F-2:** an interrupt (`KeyboardInterrupt`, `SystemExit`) during or after the write is
+  re-raised unchanged, after any files already on disk are recorded (task FAILED, note
+  `INTERRUPTED:<type>`). Remaining limit: a second interrupt while recording, or a hard
+  kill, leaves no record.
+- **F-3:** the benchmark summary and its stderr line list
+  `not_measured_needs_real_harness` (task_05, 06, 08, 09, 10) and state that the dry-run
+  fake harness applies an empty fix, Arm A is a mock, and VG-1 is not measured.
+- **F-4:** "cancel" (or "abandon") while a question is pending moves the task to ABANDONED
+  through frozen M36's explicit user transition, using the user's own words; words M36
+  does not accept as a declaration (e.g. "stop") change nothing and the REPL says to type
+  "cancel". Questions now mention "cancel", and a Memory round no longer renders an empty
+  reason. Not changed: a new request typed mid-question starts a new task and leaves the
+  first one OPEN; a relative-path answer such as "sub/report2.py" opens a Memory round
+  rather than binding.
