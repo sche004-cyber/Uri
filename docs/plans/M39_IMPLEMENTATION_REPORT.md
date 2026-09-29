@@ -459,15 +459,15 @@ stays **PROVISIONAL, NOT FROZEN**; a fresh audit follows.
   (falling back to a checkpoint note, and reporting if even that cannot persist).
   `_runtime_observation` is a private M36 hook; M39 is trusted URI runtime code calling it
   with the real trusted approval turn, which is the use its docstring describes.
-- **R2-1 (High), interim fix pending the User's route decision.** A two-filename request
+- **R2-1 (High), per-file answers (the User's chosen design, 2026-09-29; see §11).** A two-filename request
   still cannot bind in one turn on the frozen line. That rejection used to be a dead end;
   `binding.py` now turns exactly that rejection (`NON_AFFIRMATIVE_CONTEXT`, no Memory
   round) into an M39 per-file question ("which file is the script?"), answered in a fresh
   turn holding just the file name, which frozen M36 grounds and binds on its own terms. A
   bad answer is asked again; a name collision opens the normal Memory round. The REPL now
-  routes the next line to a pending question unless it is itself a new request. This is
-  route 1's behaviour; if the User picks route 2 (narrow M36 amendment), the questions
-  simply stop appearing for the common case.
+  routes the next line to a pending question unless it is itself a new request. This
+  was written as an interim fix; the User has since chosen it as the design (§11), and
+  frozen M36 stays unchanged.
 - **R2-3 (Medium).** `request.py` treats any non-whitespace, non-punctuation character
   touching an unquoted name (digits, CJK, `\`, `~`, `..`) as part of a longer name, and
   any preceding token outside the safe function words as possibly part of the name. "Q1
@@ -483,11 +483,11 @@ stays **PROVISIONAL, NOT FROZEN**; a fresh audit follows.
   is not refused.
 - **R2-5 (Low).** `test_r1_a_flagged_run...` now expects frozen M38's `FAILED`; the M39
   boundary guard's baseline moved from `610c8f8` to `5bbf738`. Q-O1 labels for the 28
-  two-filename cases are now `ASK_THEN_BOUND` / `ASK_THEN_CLARIFY`; they return to
-  `BOUND` / `CLARIFY` only under route 2.
+  two-filename cases are now `ASK_THEN_BOUND` / `ASK_THEN_CLARIFY`, which is the
+  intended behaviour under the chosen design (§11).
 
 **Still open:**
-- R2-1 route choice (User): per-file questions (current) vs a narrow M36 amendment.
+- ~~R2-1 route choice (User)~~ Decided 2026-09-29: per-file answers (§11).
 - R2-6 (User): frozen `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged`
   fails, and only because of the 86 M39 paths it does not allowlist. Not edited.
 - R1-E and R1-F unchanged (see §8).
@@ -499,8 +499,9 @@ gates pass; anchors `ok: True, changed: []`, RAR `4db77566...`; governance `VALI
 Benchmark dry run: gate PASS, exit 0; 4 completed and oracle-confirmed by running the
 returned script (task_01-04), 1 verified already working (task_07), both no_success
 tasks refused, hard gates 0; the outside-envelope tasks end `HARNESS_FAILED` because the
-dry-run fake harness applies an empty fix. Re-audit probes: 39 OK, 1 `FINDING` (F1, the
-route-2 expectation that a two-filename request binds in one turn). The R0 and R1 audit
+dry-run fake harness applies an empty fix. Re-audit probes: 39 OK, 1 `FINDING` (F1, which
+expected a two-filename request to bind in one turn; under the chosen per-file design
+(§11) that expectation no longer applies). The R0 and R1 audit
 probes (97) pass once the per-file questions are answered; run unmodified they stop at
 that first question. Not verified: Windows, Chetan's machine, any live harness run.
 
@@ -532,3 +533,21 @@ frozen M37 guard was not touched. Status stays **PROVISIONAL, NOT FROZEN**.
   reason. Not changed: a new request typed mid-question starts a new task and leaves the
   first one OPEN; a relative-path answer such as "sub/report2.py" opens a Memory round
   rather than binding.
+
+## 11. Decision: per-file answers for requests naming two files (2026-09-29)
+
+The User chose **per-file answers** (Chetan, 2026-09-29 05:16 UTC) over a narrow
+amendment to frozen M36. The ask-per-file flow added in repair round 3 (§9, R2-1) is
+therefore the intended M39 design, not a stopgap. Frozen M36 stays unchanged.
+
+What that means in the product: when a request names both files ("make report.py work
+with sales.xlsx"), frozen M36 does not grant exact-filename certainty in that turn,
+because each file's context contains the other name. URI then asks for each file in its
+own turn ("which file is the script?"), and the user replies with just the name, which
+M36 grounds and binds on its own terms. A request naming one file plus a phrase ("make
+report.py work with the spreadsheet") still binds in one turn. The cost is two extra
+turns for a two-filename request; "cancel" leaves the task (§10, F-4).
+
+Not changed by this decision: no code (the behaviour already shipped in `7838479` /
+`9290594`); the frozen M37 allowlist test (R2-6) is still an open User decision and was
+not edited.

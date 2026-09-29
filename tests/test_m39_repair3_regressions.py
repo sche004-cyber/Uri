@@ -4,8 +4,9 @@ M36-M38 line (audits/m39_reaudit2, report M39_REPAIR2_REAUDIT_REPORT.md).
 - R2-2 (High): approved write-back completes through frozen M36's runtime
   VERIFIED_COMPLETE path, never a synthesized user turn; any failure after the
   originals were written is a typed refusal carrying and recording `written`.
-- R2-1 (High, route pending the User): a two-filename request cannot bind in
-  one turn on the frozen line, so M39 asks for each file instead of dead-ending.
+- R2-1 (High): a two-filename request cannot bind in one turn on the frozen
+  line, so M39 asks for each file instead of dead-ending (per-file answers:
+  the User's chosen design, 2026-09-29).
 - R2-3 (Medium): unquoted names with an unsafe prefix or path never bind the
   bare name.
 - R2-4 (Medium): the benchmark scores what write-back actually returns and

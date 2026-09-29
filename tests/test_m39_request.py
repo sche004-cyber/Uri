@@ -184,8 +184,9 @@ _MOVED_CLARIFY = [
 # both files cannot bind either one in its own turn (frozen
 # `affirmative_around`: each role's context holds the other file name), so
 # every two-filename case is asked per file first. The labels below were
-# "BOUND" / "CLARIFY" on the pre-freeze base; they return to "BOUND" only if
-# the User chooses the narrow M36 amendment (route 2) instead.
+# "BOUND" / "CLARIFY" on the pre-freeze base. Per-file answers is the User's
+# chosen design (2026-09-29; implementation report §11), so these labels are
+# the intended behaviour.
 CASES = (
     [(r, _basic, "ASK_THEN_BOUND") for r in _BOUND_FILENAME]
     # Sole-candidate deictic phrases ("this script") are HEURISTIC, not
