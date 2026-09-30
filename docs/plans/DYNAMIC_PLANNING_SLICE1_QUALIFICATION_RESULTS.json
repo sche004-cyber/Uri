@@ -27,7 +27,7 @@
    },
    "gate": null,
    "id": "C01",
-   "latency_ms": 111.1,
+   "latency_ms": 123.2,
    "problems": [],
    "status": "VERIFIED",
    "typed_outcome_ok": true
@@ -48,7 +48,7 @@
    },
    "gate": null,
    "id": "C02",
-   "latency_ms": 110.9,
+   "latency_ms": 138.3,
    "problems": [],
    "status": "VERIFIED",
    "typed_outcome_ok": true
@@ -66,7 +66,7 @@
    },
    "gate": null,
    "id": "C03",
-   "latency_ms": 63.8,
+   "latency_ms": 85.3,
    "problems": [],
    "status": "VERIFIED",
    "typed_outcome_ok": true
@@ -86,7 +86,7 @@
    },
    "gate": null,
    "id": "C04",
-   "latency_ms": 112.3,
+   "latency_ms": 143.6,
    "problems": [],
    "status": "VERIFIED",
    "typed_outcome_ok": true
@@ -271,7 +271,7 @@
    },
    "gate": null,
    "id": "C17",
-   "latency_ms": 16.1,
+   "latency_ms": 7.3,
    "problems": [],
    "status": "NOT_ATTEMPTED",
    "typed_outcome_ok": true
@@ -289,7 +289,7 @@
    },
    "gate": null,
    "id": "C18",
-   "latency_ms": 88.1,
+   "latency_ms": 70.8,
    "problems": [],
    "status": "NOT_ATTEMPTED",
    "typed_outcome_ok": true
@@ -334,7 +334,7 @@
    },
    "gate": null,
    "id": "C21",
-   "latency_ms": 39.0,
+   "latency_ms": 36.0,
    "problems": [],
    "status": "NOT_ATTEMPTED",
    "typed_outcome_ok": true
@@ -352,7 +352,7 @@
    },
    "gate": null,
    "id": "C22",
-   "latency_ms": 72.7,
+   "latency_ms": 68.7,
    "problems": [],
    "status": "NOT_ATTEMPTED",
    "typed_outcome_ok": true
@@ -370,7 +370,7 @@
    },
    "gate": null,
    "id": "C23",
-   "latency_ms": 65.8,
+   "latency_ms": 55.5,
    "problems": [],
    "status": "NOT_ATTEMPTED",
    "typed_outcome_ok": true
@@ -387,7 +387,7 @@
    },
    "gate": null,
    "id": "C24",
-   "latency_ms": 38.5,
+   "latency_ms": 36.3,
    "problems": [],
    "status": "NOT_ATTEMPTED",
    "typed_outcome_ok": true
@@ -421,7 +421,7 @@
    },
    "gate": null,
    "id": "C26",
-   "latency_ms": 112.8,
+   "latency_ms": 101.3,
    "problems": [],
    "status": "NOT_VERIFIED",
    "typed_outcome_ok": true
@@ -441,7 +441,7 @@
    },
    "gate": null,
    "id": "C27",
-   "latency_ms": 112.2,
+   "latency_ms": 100.7,
    "problems": [],
    "status": "NOT_VERIFIED",
    "typed_outcome_ok": true
@@ -461,7 +461,7 @@
    },
    "gate": null,
    "id": "C28",
-   "latency_ms": 131.7,
+   "latency_ms": 118.8,
    "problems": [],
    "status": "NOT_VERIFIED",
    "typed_outcome_ok": true
@@ -481,7 +481,7 @@
    },
    "gate": null,
    "id": "C29",
-   "latency_ms": 116.3,
+   "latency_ms": 105.0,
    "problems": [],
    "status": "NOT_VERIFIED",
    "typed_outcome_ok": true
@@ -501,7 +501,7 @@
    },
    "gate": null,
    "id": "C30",
-   "latency_ms": 94.5,
+   "latency_ms": 95.1,
    "problems": [],
    "status": "NOT_VERIFIED",
    "typed_outcome_ok": true
@@ -521,7 +521,7 @@
    },
    "gate": null,
    "id": "C31",
-   "latency_ms": 110.0,
+   "latency_ms": 97.4,
    "problems": [],
    "status": "NOT_VERIFIED",
    "typed_outcome_ok": true
@@ -580,7 +580,7 @@
    },
    "gate": null,
    "id": "C33",
-   "latency_ms": 118.0,
+   "latency_ms": 112.6,
    "problems": [],
    "status": "VERIFIED",
    "typed_outcome_ok": true
@@ -698,8 +698,8 @@
   "rate": 1.0
  },
  "gate_passed": true,
- "latency_ms_p50": 8.05,
- "latency_ms_p95": 121.425,
+ "latency_ms_p50": 3.65,
+ "latency_ms_p95": 139.625,
  "platform": "linux",
  "provider": "FixtureProvider (test double)",
  "python": "3.11.15",

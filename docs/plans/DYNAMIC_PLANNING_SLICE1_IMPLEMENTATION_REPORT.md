@@ -127,6 +127,7 @@ The M36 to M38 qualification scripts rewrite their own tracked result files unde
     - editing both a source file and the record, then re-pinning the digest in `actions.py` (visible in git as re-qualification);
     - replacing `attestation.py`, the runner or `actions.QUALIFICATION_*` in the process;
     - effects of tampered module state on code that is not an adapter. Re-audit probe P3: a fake `hashlib` placed in `actions` is refused at the node, but it runs when `actions._qualified` hashes the record during planning.
+    - any other in-process modification of URI's already-running code or state (module or class attributes, objects, interpreter internals) beyond the specific shapes attestation checks (§9, §10, §11). Attestation is not a containment boundary against a process that is already tampered with; containment is the effect guard or an OS sandbox. This ends the round-by-round chase of individual attribute kinds (re-audit of `06a920b`, I-4).
 
     All of these need an attacker who already controls the process. Preventing the outside write itself needs containment: an OS sandbox (the "no OS sandbox" limitation retained at the M36-M38 freeze) or the in-process effect guard prototyped in `docs/reviews/DYNAMIC_PLANNING_F2_TRUST_REVIEW.md` (audit hook; a material security choice awaiting Chetan). The guard would be a separate module wrapped around the adapter call and can be added or dropped without touching attestation.
 
@@ -233,7 +234,7 @@ Re-audit report: `5eb0149` on `claude/project-thread-wjykgi`; copy at `/mnt/proj
 |---|---|---|
 | F2R-1 (HIGH): the genuine code object with private builtins or private globals attests | Every function in the implementation must be its own module's function. Its `__globals__` must be that module's namespace, its `__builtins__` the real builtins, and the function must be found at its qualname in the module (through class dictionaries for methods). Otherwise `NOT_MODULE_FUNCTION`. | `test_genuine_code_with_private_builtins_is_refused_before_it_runs` (P1), `test_genuine_code_with_a_private_module_reference_is_refused` (P2); the spoofed-name test now expects `NOT_MODULE_FUNCTION` |
 | F2R-2 (MED): a module global is fingerprinted by name only | A module global must be the `sys.modules` entry of its name, otherwise `FOREIGN_MODULE`. A builtin global must be its module's attribute, otherwise `FOREIGN_BUILTIN`. | `test_replaced_module_reference_in_the_real_module_is_refused` (P3) |
-| F2R-3 (MED): methods of uri_v1 classes are not attested | **Closed, not documented** (coordinator default). Every uri_v1 class reached by the implementation joins it: the class source is added to the digest; methods defined in the class source are attested like functions (source digest, code check, home check); and a class must be its module's attribute with only uri_v1 or builtin bases and the plain metaclass. Methods a dataclass generated at import (no source file) are compared against the methods `dataclasses` generates now, from the field names, literal defaults and decorator arguments parsed from the class source with `ast` (nothing is executed). They must match in code, globals, builtins, defaults and closure; default factories are refused. Anything else gives `GENERATED_MISMATCH`. About 110 lines, all in `attestation.py`. | `test_patched_methods_of_uri_classes_are_refused` (P4: generated `__init__` replaced, source method replaced, method added, dataclass params changed, exception class given a method), `test_classes_and_their_methods_are_part_of_the_digest` |
+| F2R-3 (MED): methods of uri_v1 classes are not attested | **Closed, not documented** (coordinator default). Every uri_v1 class reached by the implementation joins it: the class source is added to the digest; methods defined in the class source are attested like functions (source digest, code check, home check); and a class must be its module's attribute with only uri_v1 or builtin bases and the plain metaclass. Methods a dataclass generated at import (no source file) are compared against the methods `dataclasses` generates now, from the field names, literal defaults and decorator arguments parsed from the class source with `ast` (nothing is executed). They must match in code, globals, builtins, defaults and closure; default factories are refused. Anything else gives `GENERATED_MISMATCH`. About 110 lines, all in `attestation.py`. | `test_patched_methods_of_uri_classes_are_refused` (P4: generated `__init__` replaced, source method replaced, method added, dataclass params changed, exception class given a method), `test_classes_and_their_methods_are_part_of_the_digest` <br>**Correction (re-audit of `06a920b`, R3-1):** "Closed" was false at `06a920b`. Only function-like class members were checked, so a non-function descriptor placed on `WorkbookStructure.sheets` attested, the run reached VERIFIED and it wrote outside the workspace (probe Q1). Repair round 4 (§11) closes that shape. |
 | F2R-4 (LOW): report overclaims | §6.14 correction added (history kept); §6.16 now lists the remaining bound exactly. | n/a |
 | F2R-5 (LOW, latent): unknown objects fingerprinted by type | Refused as `FOREIGN_OBJECT`. | `test_unknown_object_globals_are_refused_not_typed` |
 
@@ -255,4 +256,31 @@ The record digest is re-pinned to `9975a268c1301e01ec87430d1c2d632088460f71c29bb
 | Anchors / governance validator | ok, changed [] / VALID |
 | M36, M37, M38 qualification | exit 0 each (rewritten result files reverted) |
 
-**Unverified:** Windows and other CPython versions were not run. Code-object comparison and dataclass-generated code are specific to the interpreter; a mismatch there fails closed (no run) and is never a false VERIFIED. The record digests are source-based and do not depend on the interpreter version.
+**Unverified:** Windows and other CPython versions were not run. Code-object comparison and dataclass-generated code are specific to the interpreter; a mismatch there fails closed (no run) and is never a false VERIFIED. The record digests are source-based and do not depend on the interpreter version. **Correction (re-audit of `06a920b`, I-3):** mostly; the `repr` of a compiled `re.Pattern` global is part of a digest and could differ across CPython versions. Such a difference fails closed.
+
+## 11. Repair round 4 (independent re-audit of `06a920b`, verdict REPAIRS_REQUIRED)
+
+Re-audit report: `d3d26de` on `claude/project-thread-wjykgi`; copy at `/mnt/project-files/audits/dynamic_planning_slice1/CLAUDE_REAUDIT_06a920b.md`. All code changes are in `attestation.py` (the auditor's prototype for R3-1, plus the two optional latent items, which were small). No frozen file changed, `verify.py` is unchanged, and the record and its digest are unchanged (no current digest moved).
+
+| Finding | Repair | Regression test |
+|---|---|---|
+| R3-1 (MED): a non-function descriptor on a uri_v1 class escapes class attestation | Every member of a uri_v1 class in the implementation must be function-like (attested as before), class or dataclass machinery of the expected type (`__module__`, `__doc__`, `__annotations__`, `__match_args__`, `__dataclass_params__` from `dataclasses`, `__dataclass_fields__`, `__hash__ = None`, the `__dict__`/`__weakref__` getset descriptors), or a plain value. Anything else gives `FOREIGN_MEMBER`. | `test_hook_object_on_a_uri_class_is_refused` (Q1 through the real runner: NOT_ATTEMPTED, detail `FOREIGN_MEMBER`, nothing written outside), `test_callable_object_replacing_a_method_is_refused` (Q2, now refused by rule) |
+| R3-2 (LOW, latent): default argument values not attested | When a function has `__defaults__` or `__kwdefaults__`, their fingerprints join its digest part (absent, the part is unchanged, so existing digests hold). | `test_injected_default_arguments_change_the_digest` (Q5 gives `IMPLEMENTATION_CHANGED`) |
+| R3-3 (LOW, latent): uri_v1 code reached through a module global is not hashed | A uri_v1 module used as a global is refused (`FOREIGN_MODULE`), so uri_v1 code is reached only by direct import and is always in the closure. | `test_uri_module_as_a_global_is_refused` |
+| I-4 (recommendation) | §6.16 now says any other in-process modification of URI's running code or state is outside attestation; containment is the effect guard or an OS sandbox. | n/a |
+| §10 "Closed" claim for F2R-3 | Corrected in place with the history kept. | n/a |
+
+All four new tests fail on `06a920b` and pass at this head (checked by running them against the `06a920b` `attestation.py`).
+
+**Checks at this head** (Linux, Python 3.11.15, all COMPLETED_WITH_RESULT):
+
+| Check | Result |
+|---|---|
+| Full suite | **1449 passed, 1 failed** (only the accepted `test_m36_and_frozen_files_unchanged`, offenders all dynamic-planning paths), 9 skipped |
+| Slice tests | 147 passed (143 + 4) |
+| Slice qualification | exit 0: 34/34, counters 0/34, 0/34, 0/16, 0/16, 0/34, 0/34; C33 miss 1/1; gate passed; battery and gate digests unchanged |
+| Review regression set | 113 passed |
+| Anchors / governance validator | ok, changed [] / VALID |
+| M36, M37, M38 qualification | exit 0 each (rewritten result files reverted) |
+
+**Unverified:** Windows and other CPython versions, as in §10. The auditor's full probe script was not rerun here; the Q1, Q2 and Q5 shapes are covered by the new tests.

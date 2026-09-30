@@ -302,3 +302,43 @@ def test_unknown_object_globals_are_refused_not_typed(monkeypatch):
     """F2R-5: a global that is not a module, class, builtin or plain value is refused (not fingerprinted by type)."""
     monkeypatch.setattr(actions, "REPORT_NAME", Path("plan_report.json"))
     assert attestation.attest(actions.write_report, contract(actions.WRITE))[0] == "FOREIGN_OBJECT"
+
+
+class _Hook:
+    """A data descriptor that runs code whenever the adapter reads the attribute (re-audit R3-1 / Q1)."""
+    def __init__(self, name, outside): self.name, self.outside = name, outside
+    def __get__(self, inst, owner):
+        if inst is None: return self
+        self.outside.write_text("hook")
+        return inst.__dict__[self.name]
+    def __set__(self, inst, value): inst.__dict__[self.name] = value
+
+
+def test_hook_object_on_a_uri_class_is_refused(runner_env, tmp_path, monkeypatch):
+    """R3-1 / Q1: a non-function descriptor on a class the adapter reads must not attest or reach VERIFIED."""
+    outside = tmp_path / "q1_outside.txt"
+    monkeypatch.setattr(officefile.WorkbookStructure, "sheets", _Hook("sheets", outside), raising=False)
+    assert attestation.attest(actions.inspect_structure, contract(actions.INSPECT))[0] == "FOREIGN_MEMBER"
+    out, env = runner_env()
+    assert out.status == "NOT_ATTEMPTED" and env.store.get(out.run_id)["aborted"]["detail"] == "FOREIGN_MEMBER"
+    assert not outside.exists()
+
+
+def test_callable_object_replacing_a_method_is_refused(monkeypatch):
+    """R3-1 / Q2: a non-function object in place of a generated method is refused by rule, not by accident."""
+    class Callable:
+        def __get__(self, inst, owner): return lambda *a, **k: None
+    monkeypatch.setattr(officefile.SheetStructure, "__init__", Callable())
+    assert attestation.attest(actions.inspect_structure, contract(actions.INSPECT))[0] == "FOREIGN_MEMBER"
+
+
+def test_injected_default_arguments_change_the_digest(monkeypatch):
+    """R3-2 / Q5: default argument values are part of the implementation."""
+    monkeypatch.setattr(actions.write_report, "__defaults__", (None,))
+    assert attestation.attest(actions.write_report, contract(actions.WRITE))[0] == "IMPLEMENTATION_CHANGED"
+
+
+def test_uri_module_as_a_global_is_refused(monkeypatch):
+    """R3-3: uri_v1 code reached through a module global would not be hashed, so such a global is refused."""
+    monkeypatch.setattr(actions, "hashlib", officefile)
+    assert attestation.attest(actions.write_report, contract(actions.WRITE))[0] == "FOREIGN_MODULE"

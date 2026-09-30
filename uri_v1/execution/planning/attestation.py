@@ -24,6 +24,11 @@ other global name the function uses: a module by name, a class by its defining m
 container, compiled pattern) by its repr. A global that resolves to a Python function outside
 `uri_v1.*` (for example a helper or a shadowed builtin replaced at run time) is refused. The code of
 standard-library modules and builtins is not hashed (see the implementation report's limitations).
+A uri_v1 module used as a global is refused (FOREIGN_MODULE), so uri_v1 code is reached only by
+direct import and is always in the closure. Default argument values join the function's part when
+present. Classes: every member of a uri_v1 class must be a function (attested as above), class or
+dataclass machinery of the expected type, or a plain value; anything else is refused (FOREIGN_MEMBER).
+Any other in-process modification of URI's already-running code or state is outside attestation.
 """
 from __future__ import annotations
 
@@ -104,7 +109,9 @@ def _fingerprint(ref):
     anything that must not run."""
     if isinstance(ref, types.FunctionType): raise AttestationError("FOREIGN_FUNCTION")
     if isinstance(ref, types.ModuleType):
-        if sys.modules.get(ref.__name__) is not ref: raise AttestationError("FOREIGN_MODULE")
+        # a uri_v1 module global would reach uri_v1 code the closure does not hash (re-audit R3-3)
+        if sys.modules.get(ref.__name__) is not ref or (ref.__name__ + ".").startswith(_OWN_PREFIX):
+            raise AttestationError("FOREIGN_MODULE")
         return ["module", ref.__name__]
     if isinstance(ref, type):
         owner = sys.modules.get(ref.__module__)
@@ -193,6 +200,19 @@ def _check_generated(cls, generated: dict, source: str) -> None:
         raise AttestationError("GENERATED_MISMATCH")
 
 
+_MACHINERY = {"__module__": str, "__doc__": (str, type(None)), "__annotations__": dict, "__match_args__": tuple,
+              "__dataclass_params__": object, "__dataclass_fields__": dict, "__hash__": type(None),
+              "__dict__": types.GetSetDescriptorType, "__weakref__": types.GetSetDescriptorType}
+
+
+def _plain_member(name, value) -> bool:
+    """A non-function class member is allowed only as class or dataclass machinery of the expected type,
+    or as a plain value (re-audit R3-1: a descriptor or hook object must not escape attestation)."""
+    if name in _MACHINERY:
+        return isinstance(value, _MACHINERY[name]) and (name != "__dataclass_params__" or type(value).__module__ == "dataclasses")
+    return isinstance(value, _VALUES)
+
+
 def _class_members(cls) -> list:
     """Source-defined methods of a uri_v1 class (attested like functions); generated ones are checked here."""
     owner = sys.modules.get(cls.__module__)
@@ -203,6 +223,7 @@ def _class_members(cls) -> list:
     source, own_file = _source(cls), getattr(owner, "__file__", None)
     methods, generated = [], {}
     for name, value in vars(cls).items():
+        if not _functions_of(value) and not _plain_member(name, value): raise AttestationError("FOREIGN_MEMBER")
         for fn in _functions_of(value):
             if fn.__code__.co_filename == own_file and fn.__module__ == cls.__module__: methods.append(fn)
             else: generated[name] = fn
@@ -270,7 +291,11 @@ def implementation_sha256(fn) -> str:
             parts.append([f.__module__, f.__qualname__, "class", source, [f"{b.__module__}.{b.__qualname__}" for b in f.__bases__]])
             continue
         if not _runs_its_source(f): raise AttestationError("CODE_MISMATCH")
-        parts.append([f.__module__, f.__qualname__, source, _globals(f)])
+        part = [f.__module__, f.__qualname__, source, _globals(f)]
+        if f.__defaults__ is not None or f.__kwdefaults__ is not None:      # re-audit R3-2; absent keeps old digests
+            part.append([[_fingerprint(d) for d in f.__defaults__ or ()],
+                         sorted([k] + _fingerprint(v) for k, v in (f.__kwdefaults__ or {}).items())])
+        parts.append(part)
     return hashlib.sha256(canonical(parts)).hexdigest()
 
 
