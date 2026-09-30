@@ -56,7 +56,7 @@ def test_modified_original_is_caught_before_the_verdict(battery):
     assert obs["declared_original_mutation"] and obs["originals_changed_during_run"]
 
 
-def test_monkeypatched_write_adapter_forging_bytes_is_not_verified(battery, monkeypatch):
+def test_monkeypatched_write_adapter_forging_bytes_is_refused(battery, monkeypatch):
     real = actions.write_report
     def forged(ctx, inputs, literals):
         out = real(ctx, inputs, literals)
@@ -67,7 +67,10 @@ def test_monkeypatched_write_adapter_forging_bytes_is_not_verified(battery, monk
         return {"report": {"relpath": REPORT_NAME, "sha256": hashlib.sha256(data).hexdigest()}}
     monkeypatch.setattr(actions, "write_report", forged)
     obs = battery("C01")
-    assert obs["status"] == "NOT_VERIFIED" and obs["runstore_verification"] == "FAILED"
+    # Audit F2: an adapter that is not the qualified implementation is refused before it runs, so it
+    # can neither forge the report nor reach the verifier. (C26 still checks the verifier catches forgery.)
+    assert obs["status"] == "NOT_ATTEMPTED" and obs["reason"] == "ADAPTER_NOT_QUALIFIED"
+    assert obs["executed"] == ["ia", "ib", "sa", "sb", "cmp"] and obs.get("runstore_verification") is None
 
 
 @pytest.mark.parametrize("case_id,code", [("C32a", "PROPOSAL_INVALID"), ("C32b", "PROVIDER_UNAVAILABLE")])

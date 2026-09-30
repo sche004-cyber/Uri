@@ -1,7 +1,18 @@
 {
+  "adapter_binding_note": "adapter.implementation_sha256 is uri_v1.execution.planning.attestation.implementation_sha256 of the named function; the runner refuses any node whose adapter does not match (audit F2).",
   "capabilities": [
     {
       "action_id": "uri.plan.workbook.inspect_structure",
+      "adapter": {
+        "implementation_sha256": "e1d75be24667d0436df0d24e592ce50e74c47267ef3e63fb3fff20447893ea07",
+        "module": "uri_v1.execution.planning.actions",
+        "qualname": "inspect_structure"
+      },
+      "boundary": {
+        "effect": "READ_ONLY",
+        "verifier_coverage": "oracle.inspect_structure.v1",
+        "workspace_writes": []
+      },
       "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
       "mechanism": "DETERMINISTIC",
       "passed": true,
@@ -10,6 +21,16 @@
     },
     {
       "action_id": "uri.plan.structure.select",
+      "adapter": {
+        "implementation_sha256": "36df30ed27417d146007d2b6595f9da378612c1a28b6950a86132bac6cfe3f39",
+        "module": "uri_v1.execution.planning.actions",
+        "qualname": "select"
+      },
+      "boundary": {
+        "effect": "READ_ONLY",
+        "verifier_coverage": "oracle.select.v1",
+        "workspace_writes": []
+      },
       "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
       "mechanism": "DETERMINISTIC",
       "passed": true,
@@ -18,6 +39,16 @@
     },
     {
       "action_id": "uri.plan.structure.compare",
+      "adapter": {
+        "implementation_sha256": "0dfbe353cb7e84b18b1c02708844a0c2dfac9fd0ff7aafcb47eee2cf6b858f15",
+        "module": "uri_v1.execution.planning.actions",
+        "qualname": "compare"
+      },
+      "boundary": {
+        "effect": "READ_ONLY",
+        "verifier_coverage": "oracle.compare.v1",
+        "workspace_writes": []
+      },
       "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
       "mechanism": "DETERMINISTIC",
       "passed": true,
@@ -26,6 +57,18 @@
     },
     {
       "action_id": "uri.plan.report.write",
+      "adapter": {
+        "implementation_sha256": "ff464bf18c6fcea49a35044e792349b5879e350bb1a8762af6a86e31d2afaa55",
+        "module": "uri_v1.execution.planning.actions",
+        "qualname": "write_report"
+      },
+      "boundary": {
+        "effect": "SCRATCH_WRITE",
+        "verifier_coverage": "oracle.report_write.v1",
+        "workspace_writes": [
+          "plan_report.json"
+        ]
+      },
       "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
       "mechanism": "DETERMINISTIC",
       "passed": true,
@@ -34,6 +77,6 @@
     }
   ],
   "recorded": "2026-09-29",
-  "schema_version": "uri.plan.qualification.v1",
+  "schema_version": "uri.plan.qualification.v2",
   "status_note": "PROVISIONAL / NOT FROZEN"
 }

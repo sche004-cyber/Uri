@@ -20,9 +20,9 @@ from uri_v1.execution.officefile import read_workbook_structure
 from .contracts import (REPORT_NAME, REPORT_SCHEMA_VERSION, UNQUALIFIED, Approval, CapabilityContract,
                         CapabilitySnapshot, Effect, InputSpec, LiteralSpec, Mechanism, PortType as T, canonical)
 
-QUALIFICATION_SCHEMA_VERSION = "uri.plan.qualification.v1"
+QUALIFICATION_SCHEMA_VERSION = "uri.plan.qualification.v2"
 QUALIFICATION_PATH = Path(__file__).resolve().parents[3] / "fixtures" / "dynamic_planning" / "capability_qualification.json"
-QUALIFICATION_SHA256 = "98c1d78e22138ce6f83c767f0524b4564f81658b3f99efda2bfaaa8b834e7c49"
+QUALIFICATION_SHA256 = "a91af8bb681e2a403990f43c558a087c35770e6dbb08e184b4014bfa7457431c"
 
 INSPECT = "uri.plan.workbook.inspect_structure"
 SELECT = "uri.plan.structure.select"

@@ -17,7 +17,7 @@ These digests were recorded and committed (originally `67e0e94`, now `44fa36e`) 
 |---|---|
 | `fixtures/dynamic_planning/qualification_cases.json` | `2c36641926db04e679fb937ce10d0fff141c7989e049618caf9759002fd0f419` |
 | `fixtures/dynamic_planning/threshold_gate.json` | `f2dfc9371871eb994ff22f4e5a6d0802864980d9dab03e521a8dac04938c50ff` |
-| `fixtures/dynamic_planning/capability_qualification.json` (pinned in `actions.py`) | `98c1d78e22138ce6f83c767f0524b4564f81658b3f99efda2bfaaa8b834e7c49` |
+| `fixtures/dynamic_planning/capability_qualification.json` (pinned in `actions.py`) | `98c1d78e22138ce6f83c767f0524b4564f81658b3f99efda2bfaaa8b834e7c49` at freeze; **superseded in repair round 2 (§9) by `a91af8bb681e2a403990f43c558a087c35770e6dbb08e184b4014bfa7457431c`** (schema v2 adds each adapter's identity, implementation digest and boundary). This record is the capability qualification, not part of the battery or gate, whose digests are unchanged. |
 | `fixtures/dynamic_planning/make_workbooks.py` | `02079cbddad55c5c7efbbe6ee766ed3de986ff3d8860c450cd45ae78d1acf9f2` |
 | `workbooks/wb_a.xlsx` and `wb_same_as_a.xlsx` | `cec400e4af19eb279a7ff4a76c8cde8cacad2ce86c5bd92abbeb67ba95e08bec` |
 | `workbooks/wb_b.xlsx` | `7a360f54b71967a6efc7053e9ae9799796560367ee277a73fe768e8d414c0cc0` |
@@ -118,8 +118,9 @@ The M36 to M38 qualification scripts rewrite their own tracked result files unde
 11. **Windows not run.** All checks ran on Linux only. `wb_malformed.xlsx` is a text file, so a Windows autocrlf checkout could change its bytes (and its §2 digest); nothing reads that digest at run time, and the XLSX_NOT_ZIP outcome does not depend on line endings.
 12. **graphify** is not installed in this environment and `graphify-out/` is untracked, so `graphify update .` was not run.
 13. **No live provider, no spend.** FixtureProvider only (D3, spend policy). Semantic ability is not measured.
-14. **Trusted adapters, no OS sandbox (audit F2; retained limitation, PENDING CHETAN'S CONFIRMATION).** The runner checks each node's contract metadata and qualification digest against the live snapshot, but not the identity of the injected adapter callable. Whoever wires the runner in-process can substitute an adapter under the same `(action_id, version)` that writes outside the workspace, and the run can still verify, because the verifier checks the workspace, not the host. This needs control of trusted in-process wiring, not proposal text or user data, and is the same class as the shared "no OS sandbox" limitation retained at the M36-M38 freeze and M36's M-2. The audit recommends accepting it as documented; no adapter-identity check is added unless Chetan chooses one (the alternative: pin each adapter's `module:qualname` and code digest in the qualification record and check it before each node).
+14. **Adapter identity (audit F2): fixed in repair round 2 (§9); a narrower residual remains.** *History, kept:* at `458cbda` this item said the runner did not check the injected adapter's identity, so a swapped adapter under the same `(action_id, version)` could write outside the workspace and still verify, and it said "the audit recommends accepting it". **Correction (re-audit `1cab035`, R-3):** the audit listed both options (accept, or bind adapter identity) without recommending either; the recommendation to accept came from the coordinator. Chetan chose to bind identity (2026-09-29 13:49). Now every node's adapter must attest against the pinned record before it is called (§9), so a swapped, spoofed, code-swapped or helper-patched adapter is refused and cannot run or reach VERIFIED.
 15. **Plan re-derivation needs the pinned snapshot.** `PlanRunner.run` now takes the snapshot the plan was compiled against (`snapshot=`; `run_proposal` passes it). Without it, or with one whose hash differs from `plan.snapshot_sha256`, the run is refused as PLAN_NOT_COMPILED before anything is recorded.
+16. **Outside-workspace effects of qualified code, and in-process tampering beyond attestation (narrower residual of F2; retained).** Attestation proves the adapter is the qualified implementation; it does not contain what that implementation does. A qualified adapter's own writes outside the workspace, and an attacker who already controls the process (patching standard-library or builtin code, which is not hashed; editing both the source and the record and repinning the digest; C-level code; replacing the attestation itself), are not stopped. Preventing the outside write itself needs containment: an OS sandbox (the "no OS sandbox" limitation retained at the M36-M38 freeze) or the in-process effect guard prototyped in `docs/reviews/DYNAMIC_PLANNING_F2_TRUST_REVIEW.md` (audit hook; a material security choice awaiting Chetan). The guard would be a separate module wrapped around the adapter call and can be added or dropped without touching attestation.
 
 ## 7. Next
 
@@ -154,3 +155,63 @@ Checks at the repair head (Linux, Python 3.11.15, all COMPLETED_WITH_RESULT):
 | Review regression set | 113 passed |
 | Anchors / governance validator | ok, changed [] / VALID |
 | M36, M37, M38 qualification | exit 0 each (rewritten result files reverted) |
+
+## 9. Repair round 2: adapter identity binding (audit F2; Chetan 2026-09-29 13:49, option 2)
+
+Chetan's decision: do not accept F2; bind qualification to a stable adapter identity and an implementation SHA-256, fail closed if the runtime adapter differs, check whether the declared boundary fits the same record, and record any outside-write containment need as a separate, narrower residual. All changes are in the slice's own files; no frozen file and no `verify.py` change (`git diff --name-status 5bbf738` is additions only).
+
+**Mechanism.**
+- `fixtures/dynamic_planning/capability_qualification.json` is now schema `uri.plan.qualification.v2`. Each capability carries `adapter {module, qualname, implementation_sha256}` and `boundary {effect, verifier_coverage, workspace_writes}`. Its digest is re-pinned in `actions.py` (§2).
+- New `uri_v1/execution/planning/attestation.py`. `attest(adapter, contract)` returns `(None, digest)` only when all of these hold:
+  - the record is present, matches its pinned digest and uses schema v2;
+  - exactly one QUALIFIED entry names the adapter's `module:qualname`;
+  - the implementation digest recomputed now equals the recorded one;
+  - every function in the implementation runs the code compiled from its module file on disk;
+  - the declared boundary equals the contract's mechanism, effect and verifier coverage, and a READ_ONLY entry declares no workspace writes while a writer declares only `plan_report.json`.
+- **The implementation digest** covers:
+  - the adapter's source;
+  - every `uri_v1.*` function it reaches by global name, including the frozen `officefile` reader;
+  - a fingerprint of every other global each of those functions uses: modules by name, classes by defining module and qualname, and constants by value.
+
+  A global that resolves to a Python function outside `uri_v1.*` is refused, which covers a helper or a shadowed builtin swapped in at run time.
+- **Runner.** Before each node, after the contract check, the runner calls `attest`. On any refusal the node is not called: the run aborts `ADAPTER_NOT_QUALIFIED`, and RUN_ABORTED's `detail` carries the refusal code. The attested digests are recorded per node in the RUN_RESULT executor claim (`adapters`).
+- **Rename (C04).** Matching is by implementation, not by action name, so a renamed action over the same handler still attests.
+- **Harness.** The qualification driver no longer wraps adapters, because wrapped adapters would now be refused. It observes adapter calls with `sys.setprofile`, independently of the runner's `executed` list. The tamper cases (C26-C29) corrupt the workspace the moment the genuine writer returns, and they are still caught by the verifier (`FAILED`). Tests that deliberately inject misbehaving adapters to exercise the runner's later defences now use an explicit `unattested` fixture.
+
+**Adversarial tests** (`tests/test_dynamic_planning_attestation.py`, 21):
+- **Valid unchanged adapter:** attests, verifies, and records its digests.
+- **Same adapter id, different code:**
+  - the audited F2 dict swap: refused before it runs, and no outside file is written;
+  - a spoofed `module:qualname`: `IMPLEMENTATION_CHANGED`;
+  - a `__code__` swap on the real function: `CODE_MISMATCH`;
+  - a patched helper: `FOREIGN_FUNCTION`;
+  - a patched constant: `IMPLEMENTATION_CHANGED`;
+  - a shadowed builtin: `FOREIGN_FUNCTION`;
+  - a replaced class: `FOREIGN_CLASS`;
+  - a non-function callable: `NOT_A_FUNCTION`.
+- **Changed hash:** a record hash that does not match the code gives `IMPLEMENTATION_CHANGED`; a record edited without re-pinning gives `RECORD_DIGEST`.
+- **Missing record:** `RECORD_MISSING` at run time, with the node refused; before compile the contracts are UNQUALIFIED. A missing entry gives `NOT_IN_RECORD`.
+- **Malformed record:** bad JSON, wrong top-level type, old schema, wrong `capabilities` type, missing `adapter`, short digest, or missing `workspace_writes` all give `RECORD_MALFORMED`; a duplicate entry gives `NOT_IN_RECORD`; a revoked status gives `NOT_QUALIFIED`.
+- **Boundary:** a contract whose effect or coverage differs from the record, a READ_ONLY entry declaring writes, or a writer declaring a path other than the report all give `BOUNDARY_MISMATCH`.
+
+**Boundary binding.** The declared boundary is bound into the same record and checked against the contract. Enforcement inside the workspace is still the verifier's `only_changed` check. Preventing writes *outside* the workspace needs containment, so it is recorded separately as the narrower residual §6.16, not used to leave identity unfixed.
+
+**Re-audit nits folded in (re-audit `1cab035`).**
+- R-1: the runner docstring no longer claims runs close on `KeyboardInterrupt`, `SystemExit` or `GeneratorExit`, or when the process is killed.
+- R-3: §6.14 corrected; the recommendation to accept F2 came from the coordinator, not the auditor.
+
+**Correction.** The F2 trust review commit `e69df0c` added evidence scripts under `docs/reviews/dynamic_planning_f2/` whose `.py` names broke the slice test `test_no_existing_module_imports_planning`. That commit was never run against the suite. They are renamed `*.py.txt` here, which the test does not scan.
+
+**Checks at this head** (Linux, Python 3.11.15, all COMPLETED_WITH_RESULT):
+
+| Check | Result |
+|---|---|
+| Full suite | **1439 passed, 1 failed** (only the accepted `test_m36_and_frozen_files_unchanged`, on slice paths), 9 skipped |
+| Slice tests | 137 passed (116 + 21 attestation) |
+| Slice qualification | exit 0: 34/34, counters 0/34, 0/34, 0/16, 0/16, 0/34, 0/34; C33 miss 1/1; C04 (renamed) VERIFIED; C26-C29 `FAILED` by the verifier; battery and gate digests unchanged |
+| Audit probe script (repair-round-1 copy) | F2 now `NOT_ATTEMPTED`, outside file not written; N4 now refused by attestation (it injects a wrapped writer); all other probes as in §8 |
+| Review regression set | 113 passed |
+| Anchors / governance validator | ok, changed [] / VALID |
+| M36, M37, M38 qualification | exit 0 each (rewritten result files reverted) |
+
+Performance: attesting a node costs about 0.5 to 3 ms after the first call per module file (compiled modules are cached by file digest).

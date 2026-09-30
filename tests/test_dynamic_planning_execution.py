@@ -71,6 +71,14 @@ def test_proposal_cannot_add_approval_or_effect(ctx):
     assert obs["status"] == "REJECTED" and obs["rejection_code"] == "PROPOSAL_INVALID" and obs["run_id"] is None
 
 
+@pytest.fixture
+def unattested(monkeypatch):
+    """Skip adapter attestation so the runner's later defences can be exercised with deliberately
+    misbehaving adapters. Attestation itself is tested in test_dynamic_planning_attestation.py."""
+    from uri_v1.execution.planning import runner as runner_mod
+    monkeypatch.setattr(runner_mod, "attest", lambda adapter, contract: (None, "0" * 64))
+
+
 def _runner_env(ctx, adapters=None, limits=Limits()):
     q, by_id, _, tmp = ctx
     env = q.CaseEnv(tmp / uuid.uuid4().hex, tmp / "runs")
@@ -92,7 +100,7 @@ def test_output_ceiling_fires(ctx):
     assert out.status == "NOT_ATTEMPTED" and out.reason == "OUTPUT_TOO_LARGE" and out.executed == ("ia",)
 
 
-def test_adapter_returning_an_undeclared_shape_issues_nothing(ctx):
+def test_adapter_returning_an_undeclared_shape_issues_nothing(ctx, unattested):
     adapters = dict(actions.adapters())
     adapters[(actions.SELECT, "1")] = lambda c, i, l: {"selection": {"anything": True}}
     env, runner, plan = _runner_env(ctx, adapters)
@@ -195,7 +203,7 @@ def test_damaged_user_workbook_is_a_typed_abort_with_a_closed_record(ctx, mode):
     assert env.store.get(out.run_id)["aborted"]["node"] == out.executed[-1]
 
 
-def test_any_adapter_exception_is_a_typed_abort(ctx):
+def test_any_adapter_exception_is_a_typed_abort(ctx, unattested):
     adapters = dict(actions.adapters())
     def boom(c, i, l): raise NotImplementedError("unsupported")
     adapters[(actions.COMPARE, "1")] = boom
@@ -231,7 +239,7 @@ def test_any_verifier_path_exception_is_not_verified(ctx, monkeypatch):
     assert _terminal(env, out.run_id)[-1] == "RUN_ABORTED"
 
 
-def test_a_broken_run_store_still_returns_a_typed_outcome(ctx):
+def test_a_broken_run_store_still_returns_a_typed_outcome(ctx, unattested):
     env, runner, plan = _runner_env(ctx)
     real = env.store.append
     def append(run_id, event, data):
@@ -245,7 +253,7 @@ def test_a_broken_run_store_still_returns_a_typed_outcome(ctx):
     assert out.status == "NOT_ATTEMPTED" and out.reason == "ACTION_FAILED|RUN_NOT_CLOSED"
 
 
-def test_run_that_executed_every_node_is_not_labelled_not_attempted(ctx):
+def test_run_that_executed_every_node_is_not_labelled_not_attempted(ctx, unattested):
     adapters = dict(actions.adapters())
     real_write = adapters[(actions.WRITE, "1")]
     def write_then_bad_shape(c, i, l):
@@ -270,7 +278,7 @@ def _with_extra_node(plan, env):
                         plan.proposal_sha256, plan.snapshot_sha256)
 
 
-def test_runner_refuses_a_hand_built_plan_the_compiler_would_reject(ctx):
+def test_runner_refuses_a_hand_built_plan_the_compiler_would_reject(ctx, unattested):
     from dataclasses import replace
     env, runner, plan = _runner_env(ctx)
     calls = []

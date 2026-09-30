@@ -13,10 +13,18 @@ Only a `VERIFIED` verdict from the registered verifier is reported as
 `VERIFIED`. Every other path is REJECTED, NEEDS_CLARIFICATION, NOT_ATTEMPTED
 or NOT_VERIFIED.
 
-Every call returns a typed `PlanOutcome`; nothing an adapter, the ledger, the
-recorder or the verifier raises escapes. Once RUN_STARTED is appended, the run
-record always gets a terminal event: RUN_RESULT and VERIFICATION from
+Every call returns a typed `PlanOutcome` for any `Exception` an adapter, the
+ledger, the recorder or the verifier raises. Once RUN_STARTED is appended, the
+run record gets a terminal event: RUN_RESULT and VERIFICATION from
 `record_and_verify`, or RUN_ABORTED (best effort if the run store itself fails).
+Not covered: `BaseException`s that are not `Exception`s (KeyboardInterrupt,
+SystemExit, GeneratorExit) propagate and can leave RUN_STARTED without a
+terminal event, as can a killed process.
+
+Before each node runs, its adapter must attest (`attestation.attest`): the
+callable must be the implementation named and hashed in the pinned
+qualification record, with a matching declared boundary. Otherwise the node
+is refused with ADAPTER_NOT_QUALIFIED and never called (audit F2).
 Before anything runs, the plan is re-derived by the compiler from its own
 content, the pinned snapshot and the candidates; a plan the compiler would not
 produce byte for byte is refused (PLAN_NOT_COMPILED).
@@ -34,6 +42,7 @@ from uri_v1.execution.officefile import WorkbookReadError
 from uri_v1.execution.verify import VERIFIER_ID
 from uri_v1.execution.workspace import Workspace, WorkspaceError, new_run_id
 from .actions import ActionError, NodeContext, SourceInput
+from .attestation import attest
 from .bindings import BindingError, HandleTable, bind_sources
 from .compiler import compile_proposal
 from .contracts import (CAPABILITY_ID, PROPOSAL_SCHEMA_VERSION, REPORT_NAME, ClarificationRequired, CompiledPlan, Limits, ProposalInvalid, Rejection,
@@ -153,7 +162,7 @@ class PlanRunner:
             return PlanOutcome("NOT_ATTEMPTED", run_id=None, reason=str(exc), latency_ms=elapsed())
         except Exception as exc:
             return PlanOutcome("NOT_ATTEMPTED", run_id=None, reason=f"SETUP_ERROR:{type(exc).__name__}", latency_ms=elapsed())
-        executed = []
+        executed, attested = [], {}
         try:
             (ws.bundle / "plan.json").write_bytes(plan.canonical())
             proposal_sha = None
@@ -177,7 +186,7 @@ class PlanRunner:
                 return PlanOutcome("NOT_ATTEMPTED", run_id=None, reason=f"RUN_RECORD_ERROR:{type(exc).__name__}",
                                    latency_ms=elapsed())
             try:
-                self._execute(plan, ws, task_id, run_id, executed, started)
+                self._execute(plan, ws, task_id, run_id, executed, started, attested)
             except Exception as exc:
                 abort = exc if isinstance(exc, _Abort) else _Abort("RUNNER_ERROR", None, type(exc).__name__)
                 closed = self._close(run_id, abort.code, abort.node_id, executed, abort.detail)
@@ -192,7 +201,7 @@ class PlanRunner:
             lineage = record_and_verify(recorder=self.recorder, ledger=self.ledger, store=self.store, workspace=ws, run_id=run_id,
                                         task_id=task_id, action_label=ACTION_LABEL, session_id=session_id, trace_id=trace_id,
                                         executor_claim={"capability_id": CAPABILITY_ID, "plan_sha256": plan.sha256,
-                                                        "executed": list(executed)},
+                                                        "executed": list(executed), "adapters": dict(attested)},
                                         verifier_id=VERIFIER_ID)
         except Exception as exc:
             reason = str(exc)[:64] if isinstance(exc, (ValueError, OSError)) else f"VERIFICATION_ERROR:{type(exc).__name__}"
@@ -217,7 +226,7 @@ class PlanRunner:
         except Exception:
             return False
 
-    def _execute(self, plan, ws, task_id, run_id, executed, started):
+    def _execute(self, plan, ws, task_id, run_id, executed, started, attested):
         paths = {e.source_id: ws.files / e.relpath for e in ws.manifest}
         table = HandleTable(user_id=self.user_id, task_id=task_id, run_id=run_id)
         for node_id in plan.order:
@@ -228,6 +237,9 @@ class PlanRunner:
             if (contract is None or adapter is None or contract.qualification != node.qualification_sha
                     or contract.verifier_coverage != node.verifier_coverage):
                 raise _Abort("CAPABILITY_CHANGED", node_id)
+            refusal, digest = attest(adapter, contract)
+            if refusal is not None: raise _Abort("ADAPTER_NOT_QUALIFIED", node_id, refusal)
+            attested[node_id] = digest
             if time.perf_counter() - started > self.limits.run_seconds: raise _Abort("RUN_TIME_EXCEEDED", node_id)
             inputs = {}
             try:

@@ -177,16 +177,18 @@ def run_case(case: dict, cases_by_id: dict, base: Path, run_root: Path) -> dict:
         live_catalog = tuple((c, fn) for c, fn in catalog if c.action_id != actions.SELECT)
     live_snapshot = actions.snapshot(live_catalog)
     calls = []
+    # The runner runs only attested (qualified, unmodified) adapters, so the driver observes and tampers
+    # without wrapping them: a profile hook records each adapter call independently of the runner's own
+    # `executed` list, and for tamper cases it corrupts the workspace the moment the writer returns.
+    live_adapters = actions.adapters(live_catalog)
+    adapter_codes = {fn.__code__ for fn in live_adapters.values()}
+    writer_code = actions.write_report.__code__
 
-    def wrap(key, fn):
-        def adapter(ctx, inputs, literals):
-            calls.append(ctx.node_id)
-            out = fn(ctx, inputs, literals)
-            if case.get("tamper") and key[0] == actions.WRITE: out = _tamper(case["tamper"], ctx, out)
-            return out
-        return adapter
-
-    live_adapters = {k: wrap(k, fn) for k, fn in actions.adapters(live_catalog).items()}
+    def observe(frame, event, arg):
+        if event == "call" and frame.f_code in adapter_codes:
+            calls.append(frame.f_locals["ctx"].node_id)
+        elif event == "return" and frame.f_code is writer_code and case.get("tamper") and arg is not None:
+            _tamper(case["tamper"], frame.f_locals["ctx"], arg)
     recorder = env.recorder
     if case.get("before_verify"):
         op, label = case["before_verify"].split(":", 1)
@@ -202,9 +204,14 @@ def run_case(case: dict, cases_by_id: dict, base: Path, run_root: Path) -> dict:
         target = env.path(mutation.split(":", 1)[1])
         target.write_bytes(target.read_bytes() + b"\0"); declared_mutation = True
     before = env.originals()
-    outcome, plan, provider_result = run_proposal(provider, compile_snapshot, env.candidates, runner,
-                                                  goal_context={"text": case["description"]}, task_id=env.task_id,
-                                                  trace_id=uuid.uuid4().hex, session_id="session")
+    previous = sys.getprofile()
+    sys.setprofile(observe)
+    try:
+        outcome, plan, provider_result = run_proposal(provider, compile_snapshot, env.candidates, runner,
+                                                      goal_context={"text": case["description"]}, task_id=env.task_id,
+                                                      trace_id=uuid.uuid4().hex, session_id="session")
+    finally:
+        sys.setprofile(previous)
     after = env.originals()
     mutated_in_run = bool(getattr(recorder, "mutated_before_verify", False))
     obs = {"id": case["id"], "status": outcome.status, "reason": outcome.reason,
