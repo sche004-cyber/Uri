@@ -1,0 +1,41 @@
+[N0] SAFE: baseline C01 through audit harness
+      -> status=VERIFIED events=['RUN_STARTED', 'RUN_RESULT', 'VERIFICATION']
+[F1] CONFIRMED: battery copy with one changed description passed via --cases
+      -> exit=0 gate_passed=True battery_sha256=581a577be0fe (frozen 2c366419)
+[F2] NOT_REPRODUCED: substituted inspect adapter (same id/version) writes outside workspace
+      -> status=NOT_ATTEMPTED outside_exists=False
+[F3] CONFIRMED: record_and_verify raises RuntimeError
+      -> escaped RuntimeError: probe verifier crash
+[F3b] CONFIRMED: ledger raises its own ResultVersionError during recording
+      -> escaped ResultVersionError(blob integrity failure) (RuntimeError subclass)
+[N1-bad_crc] DEFECT: C01 plan over a bad_crc workbook from the user's root
+      -> UNCAUGHT BadZipFile: Bad CRC-32 for file 'xl/worksheets/sheet1.xml'; no PlanOutcome; RUN_STARTED left without RUN_ABORTED
+[N1-encrypted] DEFECT: C01 plan over a encrypted workbook from the user's root
+      -> UNCAUGHT RuntimeError: File <ZipInfo filename='xl/workbook.xml' filemode='?rw-r--r--' file_size=330> is encrypted, password required for extrac; no PlanOutcome; RUN_STARTED left without RUN_ABORTED
+[N1-bad_method] DEFECT: C01 plan over a bad_method workbook from the user's root
+      -> UNCAUGHT NotImplementedError: That compression method is not supported; no PlanOutcome; RUN_STARTED left without RUN_ABORTED
+[N2a] DEFECT: provider text with 200k nested arrays through parse_raw
+      -> UNCAUGHT RecursionError
+[N2b] DEFECT: compile_proposal on a dict with 5000-deep nesting
+      -> UNCAUGHT RecursionError from canonical()
+[N3] OBSERVATION: hand-built CompiledPlan with an unused extra node (compiler rejects it)
+      -> compiler=UNREACHABLE_OUTPUT/UNUSED_NODE:zz; runner status=VERIFIED executed=('ia', 'ib', 'sa', 'sb', 'cmp', 'w', 'zz')
+[N4] OBSERVATION: writer writes the report then returns an invalid output shape
+      -> status=NOT_ATTEMPTED reason=ADAPTER_NOT_QUALIFIED executed=('ia', 'ib', 'sa', 'sb', 'cmp') events=['RUN_STARTED', 'RUN_ABORTED'] report_left_in_scratch=False
+[N1x] OBSERVATION: RunStore state after the bad_crc crash
+      -> run events=[['RUN_STARTED']]
+[N5] SAFE: original mutated between verify_source and workspace copy-in
+      -> status=NOT_ATTEMPTED reason=INPUT_NOT_CURRENT
+[N6-lone_surrogate] TYPED: sheet literal with lone_surrogate
+      -> Rejection PROPOSAL_INVALID
+[N6-bidi_override] TYPED: sheet literal with bidi_override
+      -> CompiledPlan 
+[N6-del_char] TYPED: sheet literal with del_char
+      -> CompiledPlan 
+[N7] OBSERVATION: report items lists the same ref twice
+      -> status=VERIFIED edges=6
+[N8] OBSERVATION: 50 MB provider text
+      -> parse_raw accepted=True in 537 ms; compile=LIMIT_EXCEEDED/PROPOSAL_BYTES
+[N9] SAFE: hand-constructed Handle without issue()
+      -> HANDLE_FABRICATED
+results -> <scratch>/ev2/audit_probe_results.json

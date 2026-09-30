@@ -91,15 +91,23 @@ def test_output_ceiling_fires(ctx):
     assert out.status == "NOT_ATTEMPTED" and out.reason == "OUTPUT_TOO_LARGE" and out.executed == ("ia",)
 
 
-def test_adapter_returning_an_undeclared_shape_issues_nothing(ctx):
-    adapters = dict(actions.adapters())
-    adapters[(actions.SELECT, "1")] = lambda c, i, l: {"selection": {"anything": True}}
-    env, runner, plan = _runner_env(ctx, adapters)
-    out = _run(env, runner, plan)
+def select_undeclared_shape(c, i, l):
+    return {"selection": {"anything": True}}
+
+
+def select_extra_port(c, i, l):
+    return {"selection": i["structure"], "bonus": 1}
+
+
+@pytest.mark.parametrize("buggy", [select_undeclared_shape, select_extra_port])
+def test_adapter_returning_an_undeclared_shape_issues_nothing(ctx, buggy):
+    # A buggy but *qualified* select adapter (qualified only by a throwaway record): output typing still stops it.
+    q, _, _, tmp = ctx
+    with q.tamper_record(tmp / uuid.uuid4().hex, {actions.SELECT: buggy}):
+        adapters = dict(actions.adapters()); adapters[(actions.SELECT, "1")] = buggy
+        env, runner, plan = _runner_env(ctx, adapters)
+        out = _run(env, runner, plan)
     assert out.status == "NOT_ATTEMPTED" and out.reason == "OUTPUT_TYPE_INVALID" and out.executed[-1] == "sa"
-    adapters[(actions.SELECT, "1")] = lambda c, i, l: {"selection": i["structure"], "bonus": 1}
-    env, runner, plan = _runner_env(ctx, adapters)
-    assert _run(env, runner, plan).reason == "OUTPUT_TYPE_INVALID"
 
 
 def test_missing_adapter_is_capability_changed(ctx):

@@ -4,7 +4,9 @@ Stage 2 §2.5 and §4. The runner is a composition controller over injected,
 approved action adapters, not a new dispatcher. Before each node it
 re-validates `(action_id, version, qualification_sha)` against the live
 snapshot; on any mismatch the node and every unfinished node stop with
-CAPABILITY_CHANGED. A failed node issues no handle, so nothing downstream can
+CAPABILITY_CHANGED. It then checks that the injected adapter is the exact
+implementation the pinned record qualified (`qualification.check_adapter`);
+otherwise the node never runs and the run stops with ADAPTER_NOT_QUALIFIED. A failed node issues no handle, so nothing downstream can
 run on a default. `bundle/plan.json` is written before RUN_STARTED, and the
 plan hash is bound into the acceptance task class, so the verifier checks the
 exact plan that ran.
@@ -28,6 +30,7 @@ from .actions import ActionError, NodeContext, SourceInput
 from .bindings import BindingError, HandleTable, bind_sources
 from .compiler import compile_proposal
 from .contracts import (CAPABILITY_ID, REPORT_NAME, ClarificationRequired, CompiledPlan, Limits, Rejection, canonical)
+from .qualification import QualificationError, check_adapter
 
 ACTION_LABEL = "planned workbook structure report"
 STATUSES = frozenset({"VERIFIED", "NOT_VERIFIED", "REJECTED", "NEEDS_CLARIFICATION", "NOT_ATTEMPTED"})
@@ -43,6 +46,7 @@ class PlanOutcome:
     rejection: Rejection | None = None
     clarification: ClarificationRequired | None = None
     reason: str | None = None
+    detail: str | None = None
     executed: tuple = ()
     latency_ms: float = 0.0
 
@@ -56,17 +60,18 @@ def plan_acceptance(plan: CompiledPlan) -> AcceptanceCriteria:
 
 
 class _Abort(Exception):
-    def __init__(self, code, node_id):
+    def __init__(self, code, node_id, detail=None):
         super().__init__(code)
-        self.code, self.node_id = code, node_id
+        self.code, self.node_id, self.detail = code, node_id, detail
 
 
 class PlanRunner:
     def __init__(self, *, user_id, scratch_root, run_store, recorder, ledger, sources, snapshot_provider, adapters,
-                 limits: Limits = Limits()):
+                 limits: Limits = Limits(), observer=None):
         self.user_id, self.scratch_root, self.store = user_id, scratch_root, run_store
         self.recorder, self.ledger, self.sources = recorder, ledger, sources
         self.snapshot_provider, self.adapters, self.limits = snapshot_provider, adapters, limits
+        self.observer = observer          # optional, observation only: called with the node id just before its adapter runs
 
     def run(self, plan: CompiledPlan, *, task_id, trace_id, session_id, candidates, raw_proposal=None) -> PlanOutcome:
         if not isinstance(plan, CompiledPlan): raise ValueError("COMPILED_PLAN_REQUIRED")
@@ -97,8 +102,11 @@ class PlanRunner:
             try:
                 self._execute(plan, ws, task_id, run_id, executed, started)
             except _Abort as exc:
-                self.store.append(run_id, "RUN_ABORTED", {"reason": exc.code, "node": exc.node_id, "executed": list(executed)})
-                return PlanOutcome("NOT_ATTEMPTED", run_id=run_id, reason=exc.code, executed=tuple(executed), latency_ms=elapsed())
+                aborted = {"reason": exc.code, "node": exc.node_id, "executed": list(executed)}
+                if exc.detail is not None: aborted["detail"] = exc.detail
+                self.store.append(run_id, "RUN_ABORTED", aborted)
+                return PlanOutcome("NOT_ATTEMPTED", run_id=run_id, reason=exc.code, detail=exc.detail, executed=tuple(executed),
+                                   latency_ms=elapsed())
         finally:
             ws.release(run_id)
         try:
@@ -126,6 +134,10 @@ class PlanRunner:
             if (contract is None or adapter is None or contract.qualification != node.qualification_sha
                     or contract.verifier_coverage != node.verifier_coverage):
                 raise _Abort("CAPABILITY_CHANGED", node_id)
+            try:
+                check_adapter(contract, adapter)
+            except QualificationError as exc:
+                raise _Abort("ADAPTER_NOT_QUALIFIED", node_id, str(exc))
             if time.perf_counter() - started > self.limits.run_seconds: raise _Abort("RUN_TIME_EXCEEDED", node_id)
             inputs = {}
             try:
@@ -145,6 +157,7 @@ class PlanRunner:
                 raise _Abort(str(exc) if isinstance(exc, BindingError) else "UNBOUND_INPUT", node_id)
             literals = {k: list(v) if isinstance(v, tuple) else v for k, v in node.literals}
             executed.append(node_id)
+            if self.observer is not None: self.observer(node_id)
             node_started = time.perf_counter()
             try:
                 out = adapter(NodeContext(ws.files, plan.sha256, node_id), inputs, literals)

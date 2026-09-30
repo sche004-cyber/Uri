@@ -2,7 +2,15 @@
   "capabilities": [
     {
       "action_id": "uri.plan.workbook.inspect_structure",
-      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
+      "adapter": "uri_v1.execution.planning.actions:inspect_structure",
+      "contract_shape_sha256": "f28d677d3cd9d0fb64988c4a4ac7b6ca846bf18d7f5b5bdd1dc1b5947ead38cc",
+      "effect": "READ_ONLY",
+      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5). Adapter identity, implementation digests and contract shape bound 2026-09-29 (audit finding F2).",
+      "implementation": {
+        "uri_v1.execution.officefile": "1fecc22568e3e44fde13047d064dea9d0aa3d0ed7da1207c7c4febdc4dfc40d3",
+        "uri_v1.execution.planning.actions": "ee47bd2c94d7059c6ab2e0cc43f840771479e479ff348aebdb49ebcc093da676",
+        "uri_v1.execution.planning.contracts": "a815f3e35ff583d834403f3c9ed93f03cb79cd11e9f202be73a02267e55668d0"
+      },
       "mechanism": "DETERMINISTIC",
       "passed": true,
       "status": "QUALIFIED",
@@ -10,7 +18,15 @@
     },
     {
       "action_id": "uri.plan.structure.select",
-      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
+      "adapter": "uri_v1.execution.planning.actions:select",
+      "contract_shape_sha256": "402954adbb1b6fdd027ad9cf8ddbee439e0a89b5495071be7d6b08f5949db3a1",
+      "effect": "READ_ONLY",
+      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5). Adapter identity, implementation digests and contract shape bound 2026-09-29 (audit finding F2).",
+      "implementation": {
+        "uri_v1.execution.officefile": "1fecc22568e3e44fde13047d064dea9d0aa3d0ed7da1207c7c4febdc4dfc40d3",
+        "uri_v1.execution.planning.actions": "ee47bd2c94d7059c6ab2e0cc43f840771479e479ff348aebdb49ebcc093da676",
+        "uri_v1.execution.planning.contracts": "a815f3e35ff583d834403f3c9ed93f03cb79cd11e9f202be73a02267e55668d0"
+      },
       "mechanism": "DETERMINISTIC",
       "passed": true,
       "status": "QUALIFIED",
@@ -18,7 +34,15 @@
     },
     {
       "action_id": "uri.plan.structure.compare",
-      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
+      "adapter": "uri_v1.execution.planning.actions:compare",
+      "contract_shape_sha256": "9c1f041ef8b6c3f6ae2fc7638d5d22407d4e40b27d290e05e9a49efec248c0f3",
+      "effect": "READ_ONLY",
+      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5). Adapter identity, implementation digests and contract shape bound 2026-09-29 (audit finding F2).",
+      "implementation": {
+        "uri_v1.execution.officefile": "1fecc22568e3e44fde13047d064dea9d0aa3d0ed7da1207c7c4febdc4dfc40d3",
+        "uri_v1.execution.planning.actions": "ee47bd2c94d7059c6ab2e0cc43f840771479e479ff348aebdb49ebcc093da676",
+        "uri_v1.execution.planning.contracts": "a815f3e35ff583d834403f3c9ed93f03cb79cd11e9f202be73a02267e55668d0"
+      },
       "mechanism": "DETERMINISTIC",
       "passed": true,
       "status": "QUALIFIED",
@@ -26,7 +50,15 @@
     },
     {
       "action_id": "uri.plan.report.write",
-      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5).",
+      "adapter": "uri_v1.execution.planning.actions:write_report",
+      "contract_shape_sha256": "29d9b29b5f500a1d0ad325ea6be3ca0c259788fab40fd5175a694b810a8ff913",
+      "effect": "SCRATCH_WRITE",
+      "evidence": "Self-qualification by the implementer (dynamic planning slice 1): unit tests in tests/test_dynamic_planning_*.py and the frozen battery in fixtures/dynamic_planning/qualification_cases.json. PROVISIONAL until independently audited (migration plan section 4.5). Adapter identity, implementation digests and contract shape bound 2026-09-29 (audit finding F2).",
+      "implementation": {
+        "uri_v1.execution.officefile": "1fecc22568e3e44fde13047d064dea9d0aa3d0ed7da1207c7c4febdc4dfc40d3",
+        "uri_v1.execution.planning.actions": "ee47bd2c94d7059c6ab2e0cc43f840771479e479ff348aebdb49ebcc093da676",
+        "uri_v1.execution.planning.contracts": "a815f3e35ff583d834403f3c9ed93f03cb79cd11e9f202be73a02267e55668d0"
+      },
       "mechanism": "DETERMINISTIC",
       "passed": true,
       "status": "QUALIFIED",
@@ -34,6 +66,6 @@
     }
   ],
   "recorded": "2026-09-29",
-  "schema_version": "uri.plan.qualification.v1",
+  "schema_version": "uri.plan.qualification.v2",
   "status_note": "PROVISIONAL / NOT FROZEN"
 }

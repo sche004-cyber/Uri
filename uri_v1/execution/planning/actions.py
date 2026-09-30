@@ -6,23 +6,24 @@ fuzzy matching. Only `report.write` has an effect, and it writes one canonical
 JSON file into the run's scratch `files/` directory.
 
 Qualification follows the `uri_v1/edge/registry.py` pattern without importing
-or widening it: a pinned JSON record whose SHA-256 must match the digest pinned
-here, and whose entries name each action's exact id, version and mechanism.
+or widening it: a pinned JSON record (digest pinned in `qualification.py`, not
+here, because the record hashes this file) binds each action to its adapter's
+identity, implementation digest and contract shape.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
 import hashlib
-import json
 from pathlib import Path
 
 from uri_v1.execution.officefile import read_workbook_structure
 from .contracts import (REPORT_NAME, REPORT_SCHEMA_VERSION, UNQUALIFIED, Approval, CapabilityContract,
                         CapabilitySnapshot, Effect, InputSpec, LiteralSpec, Mechanism, PortType as T, canonical)
+from .qualification import qualification_for
 
-QUALIFICATION_SCHEMA_VERSION = "uri.plan.qualification.v1"
-QUALIFICATION_PATH = Path(__file__).resolve().parents[3] / "fixtures" / "dynamic_planning" / "capability_qualification.json"
-QUALIFICATION_SHA256 = "98c1d78e22138ce6f83c767f0524b4564f81658b3f99efda2bfaaa8b834e7c49"
+# The modules an action adapter relies on; the record binds their digests (`qualification.record_entry`).
+IMPLEMENTATION_MODULES = ("uri_v1.execution.planning.actions", "uri_v1.execution.planning.contracts",
+                          "uri_v1.execution.officefile")
 
 INSPECT = "uri.plan.workbook.inspect_structure"
 SELECT = "uri.plan.structure.select"
@@ -103,42 +104,30 @@ def write_report(ctx, inputs, literals) -> dict:
     return {"report": {"relpath": REPORT_NAME, "sha256": hashlib.sha256(data).hexdigest()}}
 
 
-def _contract(action_id, inputs, outputs, literals, effect, coverage, qualification):
+def _contract(action_id, inputs, outputs, literals, effect, coverage):
     return CapabilityContract(action_id, "1", Mechanism.DETERMINISTIC, inputs, outputs, literals, effect, Approval.NONE,
-                              coverage, qualification)
+                              coverage, UNQUALIFIED)
 
 
-def _qualified(action_id, version, mechanism) -> str:
-    """The pinned record's digest if it qualifies this exact action, else UNQUALIFIED (fail closed)."""
-    try:
-        data = QUALIFICATION_PATH.read_bytes().replace(b"\r\n", b"\n")
-    except OSError:
-        return UNQUALIFIED
-    sha = hashlib.sha256(data).hexdigest()
-    if sha != QUALIFICATION_SHA256: return UNQUALIFIED
-    raw = json.loads(data)
-    if raw.get("schema_version") != QUALIFICATION_SCHEMA_VERSION: return UNQUALIFIED
-    for e in raw.get("capabilities", []):
-        if (e.get("action_id"), e.get("version"), e.get("mechanism")) == (action_id, version, mechanism.value):
-            return sha if e.get("status") == "QUALIFIED" and e.get("passed") is True else UNQUALIFIED
-    return UNQUALIFIED
+def _unqualified_catalog() -> tuple:
+    return (
+        (_contract(INSPECT, (("source", InputSpec((T.SOURCE_XLSX,))),), (("structure", T.WORKBOOK_STRUCTURE),), (),
+                   Effect.READ_ONLY, "oracle.inspect_structure.v1"), inspect_structure),
+        (_contract(SELECT, (("structure", InputSpec((T.WORKBOOK_STRUCTURE,))),), (("selection", T.STRUCTURE_SELECTION),),
+                   (("sheets", LiteralSpec("string_list", True)), ("headers", LiteralSpec("string_list", False))),
+                   Effect.READ_ONLY, "oracle.select.v1"), select),
+        (_contract(COMPARE, (("left", InputSpec((T.STRUCTURE_SELECTION,))), ("right", InputSpec((T.STRUCTURE_SELECTION,)))),
+                   (("comparison", T.STRUCTURE_COMPARISON),), (("match_on", LiteralSpec("enum", True, ("sheet_name",))),),
+                   Effect.READ_ONLY, "oracle.compare.v1"), compare),
+        (_contract(WRITE, (("items", InputSpec((T.STRUCTURE_SELECTION, T.STRUCTURE_COMPARISON), True, 4)),),
+                   (("report", T.REPORT_ARTIFACT),), (), Effect.SCRATCH_WRITE, "oracle.report_write.v1"), write_report),
+    )
 
 
 def default_catalog() -> tuple:
-    """((CapabilityContract, adapter), ...) for the four approved slice-1 actions."""
-    q = lambda a: _qualified(a, "1", Mechanism.DETERMINISTIC)
-    return (
-        (_contract(INSPECT, (("source", InputSpec((T.SOURCE_XLSX,))),), (("structure", T.WORKBOOK_STRUCTURE),), (),
-                   Effect.READ_ONLY, "oracle.inspect_structure.v1", q(INSPECT)), inspect_structure),
-        (_contract(SELECT, (("structure", InputSpec((T.WORKBOOK_STRUCTURE,))),), (("selection", T.STRUCTURE_SELECTION),),
-                   (("sheets", LiteralSpec("string_list", True)), ("headers", LiteralSpec("string_list", False))),
-                   Effect.READ_ONLY, "oracle.select.v1", q(SELECT)), select),
-        (_contract(COMPARE, (("left", InputSpec((T.STRUCTURE_SELECTION,))), ("right", InputSpec((T.STRUCTURE_SELECTION,)))),
-                   (("comparison", T.STRUCTURE_COMPARISON),), (("match_on", LiteralSpec("enum", True, ("sheet_name",))),),
-                   Effect.READ_ONLY, "oracle.compare.v1", q(COMPARE)), compare),
-        (_contract(WRITE, (("items", InputSpec((T.STRUCTURE_SELECTION, T.STRUCTURE_COMPARISON), True, 4)),),
-                   (("report", T.REPORT_ARTIFACT),), (), Effect.SCRATCH_WRITE, "oracle.report_write.v1", q(WRITE)), write_report),
-    )
+    """((CapabilityContract, adapter), ...) for the four approved slice-1 actions. A contract carries the record's
+    digest only if the record qualifies that exact adapter under that exact contract shape (fail closed)."""
+    return tuple((replace(c, qualification=qualification_for(c, fn)), fn) for c, fn in _unqualified_catalog())
 
 
 def snapshot(catalog=None) -> CapabilitySnapshot:

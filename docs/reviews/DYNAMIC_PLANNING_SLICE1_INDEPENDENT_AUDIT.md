@@ -94,3 +94,8 @@ Corrections made while drafting: my first N4 probe tripped the output ceiling on
 - Hardening (optional): F1 run-time digest check, N3 plan re-derivation, N4 status wording, D-7 count fix, N8 raw-size cap.
 
 What held: the untrusted-proposal compiler, closed source-id binding, DAG and type checks, per-node revalidation, handle discipline and the independent oracle. The qualification (34/34, six counters at 0) reproduces exactly. The frozen boundary is intact, and the only suite failure is the accepted guard.
+
+## 8. Correction history
+
+- **2026-09-29, audit evidence:** the committed probe script `dynamic_planning_slice1_audit/audit_probes.py` made the slice's own boundary test `test_no_existing_module_imports_planning` fail on this branch, because the test scans every `*.py` in the repo. The full-suite result in §2 was measured before the file was added, so it still stands for `c5d47a0`. The file was renamed to `audit_probes.py.txt` so it is not collected.
+- **F2 status after the repair** (Chetan chose to close it; see implementation report §8): the rerun probe F2 gives `NOT_ATTEMPTED ADAPTER_NOT_QUALIFIED`, and the outside file is not written. The other probes are unchanged, except N4, whose buggy writer is now refused before it runs. That probe no longer shows what N4 describes; N4 remains a LOW observation about status wording. The residual limitations RL-1 and RL-2 are recorded there.

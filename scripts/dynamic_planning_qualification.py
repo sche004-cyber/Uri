@@ -31,7 +31,7 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from uri_v1.execution.planning import actions, oracle  # noqa: E402
+from uri_v1.execution.planning import actions, oracle, qualification  # noqa: E402
 from uri_v1.execution.planning.bindings import candidates_from_registry  # noqa: E402
 from uri_v1.execution.planning.contracts import REPORT_NAME, SemanticProposal, canonical  # noqa: E402
 from uri_v1.execution.planning.compiler import compile_proposal  # noqa: E402
@@ -141,6 +141,58 @@ def _tamper(kind, ctx, out):
     return out
 
 
+# -- tampering write adapters (C26 to C29) ----------------------------------------------------
+# A substituted adapter is now refused before it runs (ADAPTER_NOT_QUALIFIED; audit finding F2). These
+# cases model the remaining risk the oracle exists for: a *qualified* writer that misbehaves. Each is a
+# named function in this module, qualified only by a throwaway record built for that one case
+# (`tamper_record`), never by the pinned production record.
+
+def tamper_forge_report(ctx, inputs, literals):
+    return _tamper("forge_report", ctx, actions.write_report(ctx, inputs, literals))
+
+
+def tamper_drop_section(ctx, inputs, literals):
+    return _tamper("drop_section", ctx, actions.write_report(ctx, inputs, literals))
+
+
+def tamper_extra_artifact(ctx, inputs, literals):
+    return _tamper("extra_artifact", ctx, actions.write_report(ctx, inputs, literals))
+
+
+def tamper_tamper_plan(ctx, inputs, literals):
+    return _tamper("tamper_plan", ctx, actions.write_report(ctx, inputs, literals))
+
+
+TAMPER_WRITERS = {"forge_report": tamper_forge_report, "drop_section": tamper_drop_section,
+                  "extra_artifact": tamper_extra_artifact, "tamper_plan": tamper_tamper_plan}
+
+
+class tamper_record:
+    """Context manager: a throwaway record that qualifies the production adapters plus `extra`
+    ({action_id: adapter}) under the same contracts, pinned for the duration of the block only."""
+
+    def __init__(self, base: Path, extra: dict):
+        self.base, self.extra = base, extra
+
+    def __enter__(self):
+        entries = []
+        for contract, fn in actions._unqualified_catalog():
+            entries.append(qualification.record_entry(contract, fn, actions.IMPLEMENTATION_MODULES, evidence="test record"))
+            if contract.action_id in self.extra:
+                entries.append(qualification.record_entry(contract, self.extra[contract.action_id], actions.IMPLEMENTATION_MODULES,
+                                                          evidence="test record: deliberately buggy writer"))
+        data = qualification.record_bytes(entries)
+        self.base.mkdir(parents=True, exist_ok=True)
+        path = self.base / "test_capability_qualification.json"; path.write_bytes(data)
+        self.saved = (qualification.QUALIFICATION_PATH, qualification.QUALIFICATION_SHA256)
+        qualification.QUALIFICATION_PATH, qualification.QUALIFICATION_SHA256 = path, hashlib.sha256(data).hexdigest()
+        return qualification.QUALIFICATION_SHA256
+
+    def __exit__(self, *exc):
+        qualification.QUALIFICATION_PATH, qualification.QUALIFICATION_SHA256 = self.saved
+        return False
+
+
 class _RecorderProxy:
     """Mutates an original right before the registered verifier runs (C30/C31 test hook)."""
 
@@ -157,8 +209,19 @@ class _RecorderProxy:
 
 def run_case(case: dict, cases_by_id: dict, base: Path, run_root: Path) -> dict:
     """Run one case. Never sees the scorer's expectations."""
+    if case.get("tamper"):
+        writer = TAMPER_WRITERS[case["tamper"]]
+        with tamper_record(base / case["id"] / "qualification", {actions.WRITE: writer}) as record_sha:
+            obs = _run_case(case, cases_by_id, base, run_root, writer)
+        obs["test_record_sha256"] = record_sha
+        return obs
+    return _run_case(case, cases_by_id, base, run_root, None)
+
+
+def _run_case(case: dict, cases_by_id: dict, base: Path, run_root: Path, writer) -> dict:
     env = CaseEnv(base / case["id"], run_root, case.get("roots"))
     catalog = actions.default_catalog()
+    if writer is not None: catalog = tuple((c, writer if c.action_id == actions.WRITE else fn) for c, fn in catalog)
     if case.get("snapshot") == "renamed_inspect": catalog = actions.renamed(catalog, actions.INSPECT, RENAMED_INSPECT)
     compile_snapshot = actions.snapshot(catalog)
     live_catalog = catalog
@@ -169,17 +232,8 @@ def run_case(case: dict, cases_by_id: dict, base: Path, run_root: Path) -> dict:
     elif mutation == "remove_select":
         live_catalog = tuple((c, fn) for c, fn in catalog if c.action_id != actions.SELECT)
     live_snapshot = actions.snapshot(live_catalog)
-    calls = []
-
-    def wrap(key, fn):
-        def adapter(ctx, inputs, literals):
-            calls.append(ctx.node_id)
-            out = fn(ctx, inputs, literals)
-            if case.get("tamper") and key[0] == actions.WRITE: out = _tamper(case["tamper"], ctx, out)
-            return out
-        return adapter
-
-    live_adapters = {k: wrap(k, fn) for k, fn in actions.adapters(live_catalog).items()}
+    calls = []          # adapter-call recorder, fed by the runner's observation hook (adapters stay unwrapped)
+    live_adapters = actions.adapters(live_catalog)
     recorder = env.recorder
     if case.get("before_verify"):
         op, label = case["before_verify"].split(":", 1)
@@ -187,7 +241,8 @@ def run_case(case: dict, cases_by_id: dict, base: Path, run_root: Path) -> dict:
         action = (lambda: target.write_bytes(target.read_bytes() + b"\0")) if op == "modify" else target.unlink
         recorder = _RecorderProxy(env.recorder, action)
     runner = PlanRunner(user_id=env.user, scratch_root=env.scratch, run_store=env.store, recorder=recorder, ledger=env.ledger,
-                        sources=env.sources, snapshot_provider=lambda: live_snapshot, adapters=live_adapters)
+                        sources=env.sources, snapshot_provider=lambda: live_snapshot, adapters=live_adapters,
+                        observer=calls.append)
     raw_text = case.get("raw") if "raw" in case else (json.dumps(substitute(case["proposal"], env.ids)) if "proposal" in case else None)
     provider = FixtureProvider(raw_text, fail=case.get("provider_fail"))
     declared_mutation = False

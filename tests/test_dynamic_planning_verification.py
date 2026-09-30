@@ -56,9 +56,13 @@ def test_modified_original_is_caught_before_the_verdict(battery):
     assert obs["declared_original_mutation"] and obs["originals_changed_during_run"]
 
 
-def test_monkeypatched_write_adapter_forging_bytes_is_not_verified(battery, monkeypatch):
+def test_monkeypatched_write_adapter_forging_bytes_never_runs(battery, monkeypatch):
+    # Before the F2 repair this forged writer ran and was caught only by the oracle (NOT_VERIFIED).
+    # Now the runner refuses it before it runs: it is not the implementation the record qualifies.
     real = actions.write_report
+    ran = []
     def forged(ctx, inputs, literals):
+        ran.append(ctx.node_id)
         out = real(ctx, inputs, literals)
         path = ctx.files / REPORT_NAME
         report = json.loads(path.read_bytes()); report["items"][0]["value"]["only_right_sheets"] = ["Invented"]
@@ -67,7 +71,8 @@ def test_monkeypatched_write_adapter_forging_bytes_is_not_verified(battery, monk
         return {"report": {"relpath": REPORT_NAME, "sha256": hashlib.sha256(data).hexdigest()}}
     monkeypatch.setattr(actions, "write_report", forged)
     obs = battery("C01")
-    assert obs["status"] == "NOT_VERIFIED" and obs["runstore_verification"] == "FAILED"
+    assert obs["status"] != "VERIFIED" and not ran
+    assert obs["status"] == "REJECTED" and obs["rejection_code"] == "UNQUALIFIED_ACTION"   # compile-time: catalog contract is UNQUALIFIED
 
 
 @pytest.mark.parametrize("case_id,code", [("C32a", "PROPOSAL_INVALID"), ("C32b", "PROVIDER_UNAVAILABLE")])

@@ -1,0 +1,24 @@
+{
+ "gate_passed": true,
+ "metrics": {
+  "scenario_accuracy": 1.0,
+  "false_verified": 0,
+  "originals_modified_undetected": 0,
+  "unkilled_processes": 0,
+  "bypass_flags_emitted": 0,
+  "secrets_in_records": 0,
+  "session_ids_in_memory": 0,
+  "determinism_mismatches": 0
+ }
+}
+honest True VERIFIED completed_claimed []
+false_claim False FAILED completed_claimed []
+extra_file False FAILED completed_claimed []
+write_original False CLAIMED_ONLY completed_claimed ['ORIGINAL_MODIFIED_DURING_RUN']
+symlink_escape False FAILED completed_claimed ['CONTAINMENT_VIOLATION']
+hang_silent False FAILED outcome_unknown []
+hang_chatty False FAILED outcome_unknown []
+hang_with_child False FAILED outcome_unknown []
+error False FAILED failed []
+honest_but_reports_error True VERIFIED failed []
+exit=0

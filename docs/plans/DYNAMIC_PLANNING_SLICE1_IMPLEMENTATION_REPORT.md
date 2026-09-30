@@ -124,3 +124,51 @@ The M36 to M38 qualification scripts rewrite their own tracked result files unde
 §4.1 is decided (accepted failure). Next:
 
 Step 5: a fresh independent audit that starts from repository evidence, reruns everything above, and adds adversarial probes beyond the battery. The slice stays PROVISIONAL / NOT FROZEN whatever the result. The slice now sits on the frozen line, so the migration-plan §1 rebase contingency is closed.
+
+## 8. F2 repair: adapter identity binding (Chetan, 2026-09-29 13:49)
+
+Audit finding F2 (Codex, confirmed in `docs/reviews/DYNAMIC_PLANNING_SLICE1_INDEPENDENT_AUDIT.md`): a caller could swap an injected adapter under the same `(action_id, version)`, and the swapped adapter could write outside the workspace while the run still reached `VERIFIED`. Chetan chose to close the path rather than accept it. Sections 1 to 7 above describe `3bbf8f7`/`c5d47a0` and are kept as they were.
+
+**Mechanism** (new `uri_v1/execution/planning/qualification.py`; changes to `actions.py`, `runner.py`):
+- Each record entry (schema `uri.plan.qualification.v2`) binds a capability to three things. The first is `adapter`, a stable identity `<module>:<qualname>`. The second is `implementation`, the LF-normalized SHA-256 of the adapter's module and of the modules it relies on (`planning.actions`, `planning.contracts`, `execution.officefile`). The third is `contract_shape_sha256`, the contract minus its display name and qualification field, so the version, mechanism, ports, literals, verifier coverage and declared effect are all bound in the same record.
+- The record pin moved from `actions.py` to `qualification.py`, because the record now hashes `actions.py`.
+- `PlanRunner` calls `check_adapter(contract, adapter)` before every node, after the existing CAPABILITY_CHANGED check. On any failure the node never runs, and the run stops as `NOT_ATTEMPTED ADAPTER_NOT_QUALIFIED`, with the typed detail in the outcome and in `RUN_ABORTED`. The check refuses the adapter unless all of these hold:
+  - the adapter is a plain function;
+  - its identity is in the record, qualified, under the same contract shape;
+  - that name resolves to this exact object;
+  - its code comes from that module's file;
+  - every bound module still hashes to the recorded value;
+  - the contract carries the current record digest.
+
+  A missing record fails as `RECORD_MISSING`, an unpinned one as `RECORD_DIGEST_MISMATCH` and a malformed one as `RECORD_MALFORMED`.
+- `default_catalog()` applies the same match at compile time, so a catalog built around a swapped function carries `UNQUALIFIED` and is rejected with `UNQUALIFIED_ACTION`.
+- Renaming (C04) still verifies. Trust binds to the implementation and the contract shape; the action name is a label.
+
+**Qualification record digest changed**: `98c1d78e…` (report §2) is now `b0dcf1ec54d7eb256038dd53d4efdaac874cdbc4622fb8167f8e504a4e190a7a`. Any later edit to `actions.py`, `contracts.py` or `officefile.py` makes the four actions UNQUALIFIED until the record is regenerated with `qualification.record_entry` and re-pinned. That is the intended requalification step. The battery (`2c366419…`), gate (`f2dfc937…`) and workbooks are unchanged.
+
+**Driver changes** (`scripts/dynamic_planning_qualification.py`), needed because the old driver wrapped every adapter:
+- The adapter-call recorder now uses a new observation-only `PlanRunner(observer=...)` hook, called with the node id just before the adapter runs, so the adapters stay unwrapped.
+- In C26 to C29 a swapped writer would now be refused before it runs, and those cases would stop testing the oracle. So the tampering writers are named functions in the driver, qualified only by a throwaway per-case record (`tamper_record`). They model a qualified writer that misbehaves, which is the risk the oracle exists for. The production record never qualifies them. The literal "swapped writer" scenario is covered by the new tests.
+
+**Tests**: new `tests/test_dynamic_planning_adapter_identity.py` (19 tests). It covers:
+- a valid unchanged adapter;
+- same id with different code: a closure, a look-alike with a copied `__module__`/`__qualname__`, a patched module attribute, a wrapper, a callable object, and a genuine adapter in the wrong slot;
+- a changed implementation hash, a module source changed after qualification, and a record edited without re-pinning;
+- a changed contract shape or effect;
+- a missing record, and four malformed records that are still pinned;
+- entries that are not qualified.
+
+With the runtime check disabled, 13 of the 19 fail. Three existing tests changed to match: the forged writer is now refused at compile time, the undeclared-output test uses qualified buggy adapters, and the record-tamper test patches the record path in `qualification`.
+
+**Results (Linux, Python 3.11.15)**:
+- Full suite: 1424 passed, 1 failed (only the accepted §4.1 guard; its 18 disallowed paths are all slice paths, now including the new test file), 9 skipped.
+- Slice tests: 122 passed.
+- Qualification: 34/34, six counters at 0, C33 miss 1/1.
+- Anchors ok; governance 37 + VALID; M36/M37/M38 quals exit 0; review set 113 passed.
+- Audit probe F2: now `NOT_ATTEMPTED`, and no outside file was written.
+
+**Residual limitations (narrower than F2, need containment beyond this slice):**
+- **RL-1:** a *qualified* adapter's own code still runs unsandboxed. If qualified code writes outside the workspace, nothing here prevents or detects it. The shared retained limitation "no OS sandbox" (M36 to M38 freeze) covers this. Closing it needs OS-level containment. The binding makes sure only reviewed, hash-pinned code gets that trust.
+- **RL-2:** a caller running code in the same process could still forge a function's code object in place (reassign `__code__` to one compiled with the same file name). Only interpreter-level isolation stops that. It needs deliberate code-object forgery, not a swap in the adapter map.
+
+Still open from the audit, and not part of this repair: N1, N2 and F3 (typed outcome on unexpected exceptions), F1, N3, N4, D-7. The slice stays PROVISIONAL / NOT FROZEN.

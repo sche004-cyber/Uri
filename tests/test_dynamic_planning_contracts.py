@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from uri_v1.execution.planning import actions
+from uri_v1.execution.planning import actions, qualification
 from uri_v1.execution.planning.contracts import (UNQUALIFIED, CapabilityContract, CapabilitySnapshot, InputSpec, LiteralSpec,
                                                  PortType, ProposalInvalid, SemanticProposal, sha256_of)
 from uri_v1.execution.planning.provider_port import FixtureProvider, parse_raw
@@ -108,12 +108,12 @@ def test_snapshot_hash_tracks_contract_changes():
 
 
 def test_contracts_are_qualified_by_the_pinned_record():
-    assert all(c.qualification == actions.QUALIFICATION_SHA256 for c in actions.snapshot().contracts)
+    assert all(c.qualification == qualification.QUALIFICATION_SHA256 for c in actions.snapshot().contracts)
 
 
 def test_tampered_qualification_record_fails_closed(tmp_path, monkeypatch):
-    fake = tmp_path / "q.json"; fake.write_bytes(actions.QUALIFICATION_PATH.read_bytes().replace(b"QUALIFIED", b"QUALIFIEd", 1))
-    monkeypatch.setattr(actions, "QUALIFICATION_PATH", fake)
+    fake = tmp_path / "q.json"; fake.write_bytes(qualification.QUALIFICATION_PATH.read_bytes().replace(b"QUALIFIED", b"QUALIFIEd", 1))
+    monkeypatch.setattr(qualification, "QUALIFICATION_PATH", fake)
     assert all(c.qualification == UNQUALIFIED for c in actions.snapshot().contracts)
 
 

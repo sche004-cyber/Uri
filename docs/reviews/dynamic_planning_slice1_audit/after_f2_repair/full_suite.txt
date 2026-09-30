@@ -1,0 +1,47 @@
+........................................................................ [  5%]
+........................................................................ [ 10%]
+........................................................................ [ 15%]
+........................................................................ [ 20%]
+........................................................................ [ 25%]
+........................................................................ [ 30%]
+........................................................................ [ 35%]
+........................................................................ [ 40%]
+........................................................................ [ 45%]
+................................................ [ 48%]
+.............................. [ 50%]
+................................................................................ [ 56%]
+........................................................................ [ 61%]
+........................................................................ [ 66%]
+.......................................................................s [ 71%]
+...........................................................F............ [ 76%]
+........................................................................ [ 81%]
+........................................................................ [ 86%]
+........................................................................ [ 91%]
+........................................................................ [ 96%]
+....................ssss..s...........ss..........s.                     [100%]
+=================================== FAILURES ===================================
+_____________________ test_m36_and_frozen_files_unchanged ______________________
+
+    def test_m36_and_frozen_files_unchanged():
+        changed = subprocess.check_output(["git", "diff", "--name-only", M36_BASELINE, "--",
+                                           "uri_v1", "uri_core", "uri_ui", "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
+        untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "--", "uri_v1", "uri_core", "uri_ui",
+                                             "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
+        allowed = ("uri_v1/edge/", "uri_v1/execution/", "tests/test_m37_", "tests/test_m38_", "tests/m37_edge_support.py",
+                   "tests/m38_harness_support.py", "scripts/m37_", "scripts/m38_", "fixtures/m37_edge/", "fixtures/m38_harness/")
+>       assert all(p.startswith(allowed) for p in changed + untracked), [p for p in changed + untracked if not p.startswith(allowed)]
+E       AssertionError: ['fixtures/dynamic_planning/capability_qualification.json', 'fixtures/dynamic_planning/make_workbooks.py', 'fixtures/d...hold_gate.json', 'fixtures/dynamic_planning/workbooks/wb_a.xlsx', 'fixtures/dynamic_planning/workbooks/wb_b.xlsx', ...]
+E       assert False
+E        +  where False = all(<generator object test_m36_and_frozen_files_unchanged.<locals>.<genexpr> at 0x7f976a882420>)
+
+tests/test_m37_edge_resolution.py:271: AssertionError
+=============================== warnings summary ===============================
+scripts/dev_workflow/auditor.py:41
+  /home/claude/Uri/scripts/dev_workflow/auditor.py:41: PytestCollectionWarning: cannot collect test class 'TestExecutionResult' because it has a __init__ constructor (from: tests/dev_workflow/test_workflow.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged
+1 failed, 1424 passed, 9 skipped, 1 warning, 130 subtests passed in 61.32s (0:01:01)
+exit=1
