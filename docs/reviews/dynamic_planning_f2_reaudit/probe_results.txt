@@ -1,0 +1,15 @@
+PROBE P1_custom_builtins {"attest": null, "status": "VERIFIED", "reason": null, "outside_written": true}
+.PROBE P2_fake_module_in_globals {"attest": null, "status": "VERIFIED", "reason": null, "outside_written": true}
+.PROBE P3_live_module_global_fake_module {"attest": null, "status": "VERIFIED", "reason": null, "outside_written": true}
+.PROBE P4_patched_class_method {"attest": null, "status": "VERIFIED", "reason": null, "outside_written": true}
+.PROBE P5_process_builtin_patch {"attest": null, "status": "VERIFIED", "reason": null, "outside_written": true}
+.PROBE P6_cross_wired {"attest": "BOUNDARY_MISMATCH"}
+.PROBE P7_wraps {"attest": "IMPLEMENTATION_CHANGED"}
+.PROBE P8_copied_globals_unmodified {"attest": null}
+.PROBE P9_partial {"attest": "NOT_A_FUNCTION"}
+PROBE P9_lambda {"attest": "NOT_IN_RECORD"}
+.PROBE P10_boundary_downgrade {"attest": "BOUNDARY_MISMATCH"}
+.PROBE P11_passed_string {"attest": "NOT_QUALIFIED"}
+.PROBE P12_crlf_record_attests_under_committed_pin {"attest": null}
+.PROBE P13_fresh_interpreter {"stdout": "{'uri.plan.workbook.inspect_structure': (None, 'e1d75be24667d0436df0d24e592ce50e74c47267ef3e63fb3fff20447893ea07'), 'uri.plan.structure.select': (None, '36df30ed27417d146007d2b6595f9da378612c1a28b6950a86132bac6cfe3f39'), 'uri.plan.structure.compare': (None, '0dfbe353cb7e84b18b1c02708844a0c2dfac9fd0ff7aafcb47eee2cf6b858f15'), 'uri.plan.report.write': (None, 'ff464bf18c6fcea49a35044e792349b5879e350bb1a8762af6a86e31d2afaa55')}", "rc": 0}
+13 passed in 0.53s

@@ -1,0 +1,34 @@
+diff --git a/uri_v1/execution/planning/attestation.py b/uri_v1/execution/planning/attestation.py
+index 0254a76..bcfeaa5 100644
+--- a/uri_v1/execution/planning/attestation.py
++++ b/uri_v1/execution/planning/attestation.py
+@@ -27,6 +27,7 @@ standard-library modules and builtins is not hashed (see the implementation repo
+ """
+ from __future__ import annotations
+ 
++import builtins
+ import hashlib
+ import inspect
+ import json
+@@ -71,7 +72,9 @@ def _own(ref) -> bool:
+ def _fingerprint(ref):
+     """How a non-uri_v1-function global enters the digest; raises for anything that must not run."""
+     if isinstance(ref, types.FunctionType): raise AttestationError("FOREIGN_FUNCTION")
+-    if isinstance(ref, types.ModuleType): return ["module", ref.__name__]
++    if isinstance(ref, types.ModuleType):
++        if sys.modules.get(ref.__name__) is not ref: raise AttestationError("FOREIGN_MODULE")
++        return ["module", ref.__name__]
+     if isinstance(ref, type):
+         owner = sys.modules.get(ref.__module__)
+         if getattr(owner, ref.__qualname__, None) is not ref: raise AttestationError("FOREIGN_CLASS")
+@@ -96,6 +99,10 @@ def _closure(fn) -> list:
+     while stack:
+         f = stack.pop()
+         if not isinstance(f, types.FunctionType): raise AttestationError("NOT_A_FUNCTION")
++        owner = sys.modules.get(f.__module__ or "")
++        if (owner is None or f.__globals__ is not vars(owner) or f.__builtins__ is not vars(builtins)
++                or getattr(owner, f.__qualname__, None) is not f):
++            raise AttestationError("NOT_MODULE_FUNCTION")
+         key = (f.__module__ or "", f.__qualname__)
+         if key in seen:
+             if seen[key] is not f: raise AttestationError("AMBIGUOUS_FUNCTION")

@@ -1,0 +1,5 @@
+PROBE P1_custom_builtins {"attest": "NOT_MODULE_FUNCTION", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE P2_fake_module_in_globals {"attest": "NOT_MODULE_FUNCTION", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE P3_live_module_global_fake_module {"attest": "FOREIGN_MODULE", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": true}
+.PROBE P4_patched_class_method {"attest": null, "status": "VERIFIED", "reason": null, "outside_written": true}
+.PROBE P5_process_builtin_patch {"attest": null, "status": "VERIFIED", "reason": null, "outside_written": true}

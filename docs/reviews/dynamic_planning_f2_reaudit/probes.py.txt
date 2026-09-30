@@ -1,0 +1,167 @@
+"""Independent re-audit probes for the F2 adapter attestation at 74474a2 (not part of the slice).
+
+Each probe tries to run code other than the qualified implementation under a trusted action while
+attestation still passes. A probe PASSES here when it records what actually happened; the
+assertions record the observed outcome so the result file is evidence, not a verdict.
+"""
+import builtins
+import json
+import sys
+import types
+
+import pytest
+
+from uri_v1.execution import officefile
+from uri_v1.execution.planning import actions, attestation
+from tests.test_dynamic_planning_attestation import CATALOG, contract, qual, runner_env, record, real_record  # noqa: F401
+
+RESULTS = {}
+
+
+def _note(name, **kw):
+    RESULTS[name] = kw
+    print("PROBE", name, json.dumps(kw, default=str))
+
+
+def _outside(tmp_path):
+    return tmp_path / "OUTSIDE_WRITTEN.txt"
+
+
+def _rebuilt(fn, g):
+    return types.FunctionType(fn.__code__, g, fn.__name__, fn.__defaults__, fn.__closure__)
+
+
+# P1: genuine code object, crafted globals whose __builtins__ carries an evil `open` (write_report uses open).
+def test_p1_same_code_custom_builtins(runner_env, tmp_path):
+    outside = _outside(tmp_path)
+    real_open = builtins.open
+    def evil_open(*a, **k):
+        outside.write_text("P1")
+        return real_open(*a, **k)
+    evil_builtins = dict(vars(builtins)); evil_builtins["open"] = evil_open
+    g = dict(actions.write_report.__globals__); g["__builtins__"] = evil_builtins
+    evil = _rebuilt(actions.write_report, g)
+    refusal, _ = attestation.attest(evil, contract(actions.WRITE))
+    out, env = runner_env({**actions.adapters(), (actions.WRITE, "1"): evil})
+    _note("P1_custom_builtins", attest=refusal, status=out.status, reason=out.reason, outside_written=outside.exists())
+
+
+# P2: genuine code object, crafted globals with a fake module under the same name (write_report uses hashlib).
+def test_p2_same_code_fake_module(runner_env, tmp_path):
+    outside = _outside(tmp_path)
+    import hashlib as real
+    fake = types.ModuleType("hashlib")
+    def sha256(data):
+        outside.write_text("P2")
+        return real.sha256(data)
+    fake.sha256 = sha256
+    g = dict(actions.write_report.__globals__); g["hashlib"] = fake
+    evil = _rebuilt(actions.write_report, g)
+    refusal, _ = attestation.attest(evil, contract(actions.WRITE))
+    out, env = runner_env({**actions.adapters(), (actions.WRITE, "1"): evil})
+    _note("P2_fake_module_in_globals", attest=refusal, status=out.status, reason=out.reason, outside_written=outside.exists())
+
+
+# P3: the real, unmodified function object; a module global of the live module replaced by a fake of the same name.
+def test_p3_live_module_global_replaced(runner_env, tmp_path, monkeypatch):
+    outside = _outside(tmp_path)
+    import hashlib as real
+    fake = types.ModuleType("hashlib")
+    def sha256(data):
+        outside.write_text("P3")
+        return real.sha256(data)
+    fake.sha256 = sha256
+    monkeypatch.setattr(actions, "hashlib", fake)
+    refusal, _ = attestation.attest(actions.write_report, contract(actions.WRITE))
+    out, env = runner_env()
+    _note("P3_live_module_global_fake_module", attest=refusal, status=out.status, reason=out.reason, outside_written=outside.exists())
+
+
+# P4: a uri_v1 class used by the implementation gets a patched method (classes are fingerprinted by name only).
+def test_p4_patched_uri_v1_class_method(runner_env, tmp_path, monkeypatch):
+    outside = _outside(tmp_path)
+    original = officefile.SheetStructure.__init__
+    def init(self, *a, **k):
+        outside.write_text("P4")
+        original(self, *a, **k)
+    monkeypatch.setattr(officefile.SheetStructure, "__init__", init)
+    refusal, _ = attestation.attest(actions.inspect_structure, contract(actions.INSPECT))
+    out, env = runner_env()
+    _note("P4_patched_class_method", attest=refusal, status=out.status, reason=out.reason, outside_written=outside.exists())
+
+
+# P5: the process-wide builtin replaced (residual §6.16 names this; checked for accuracy of the record).
+def test_p5_global_builtin_patch(runner_env, tmp_path, monkeypatch):
+    outside = _outside(tmp_path)
+    real_open = builtins.open
+    def evil_open(*a, **k):
+        if str(a[0]).endswith("plan_report.json"): outside.write_text("P5")
+        return real_open(*a, **k)
+    monkeypatch.setattr(builtins, "open", evil_open)
+    refusal, _ = attestation.attest(actions.write_report, contract(actions.WRITE))
+    out, env = runner_env()
+    _note("P5_process_builtin_patch", attest=refusal, status=out.status, reason=out.reason, outside_written=outside.exists())
+
+
+# P6: cross-wire two qualified READ_ONLY adapters (record action_id is not compared with the contract).
+def test_p6_cross_wired_qualified_adapter():
+    refusal, _ = attestation.attest(actions.select, contract(actions.INSPECT))
+    _note("P6_cross_wired", attest=refusal)
+
+
+# P7: a wrapper that forwards to the real adapter (functools.wraps copies name/module/qualname and __wrapped__).
+def test_p7_functools_wraps_wrapper():
+    import functools
+    @functools.wraps(actions.inspect_structure)
+    def wrapper(ctx, inputs, literals):
+        return actions.inspect_structure(ctx, inputs, literals)
+    _note("P7_wraps", attest=attestation.attest(wrapper, contract(actions.INSPECT))[0])
+
+
+# P8: genuine code, globals dict of another module (module/qualname taken from globals __name__).
+def test_p8_same_code_other_module_globals():
+    g = {"__name__": "uri_v1.execution.planning.actions", "__builtins__": builtins}
+    g.update({k: v for k, v in actions.__dict__.items() if not k.startswith("__")})
+    evil = _rebuilt(actions.inspect_structure, g)
+    _note("P8_copied_globals_unmodified", attest=attestation.attest(evil, contract(actions.INSPECT))[0])
+
+
+# P9: a lambda / partial / bound method as adapter.
+def test_p9_non_plain_callables():
+    import functools
+    _note("P9_partial", attest=attestation.attest(functools.partial(actions.inspect_structure), contract(actions.INSPECT))[0])
+    _note("P9_lambda", attest=attestation.attest(lambda c, i, l: actions.inspect_structure(c, i, l), contract(actions.INSPECT))[0])
+
+
+# P10: record whose entry for the writer declares READ_ONLY with no writes (boundary downgrade).
+def test_p10_boundary_downgrade(record):
+    raw = real_record()
+    w = next(e for e in raw["capabilities"] if e["action_id"] == actions.WRITE)
+    w["boundary"]["effect"] = "READ_ONLY"; w["boundary"]["workspace_writes"] = []
+    record(raw)
+    _note("P10_boundary_downgrade", attest=attestation.attest(actions.write_report, contract(actions.WRITE))[0])
+
+
+# P11: record entry with passed as string "true" and status lowercase.
+def test_p11_loose_types(record):
+    raw = real_record()
+    raw["capabilities"][0]["passed"] = "true"
+    record(raw)
+    c, fn = CATALOG[raw["capabilities"][0]["action_id"]]
+    _note("P11_passed_string", attest=attestation.attest(fn, c)[0])
+
+
+# P12: a record digest mismatch vs committed pin, with CRLF line endings (Windows checkout) still attests.
+def test_p12_crlf_record(record, monkeypatch):
+    data = actions.QUALIFICATION_PATH.read_bytes().replace(b"\n", b"\r\n")
+    path = record(data, pin=False)
+    _note("P12_crlf_record_attests_under_committed_pin", attest=attestation.attest(actions.inspect_structure, contract(actions.INSPECT))[0])
+
+
+# P13: attestation of the real catalog is deterministic across a fresh interpreter (digest equals record).
+def test_p13_fresh_interpreter_digest():
+    import subprocess
+    code = ("from uri_v1.execution.planning import actions, attestation;"
+            "print({c.action_id: attestation.attest(fn, c) for c, fn in actions.default_catalog()})")
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, cwd=str(actions.QUALIFICATION_PATH.parents[2]))
+    _note("P13_fresh_interpreter", stdout=out.stdout.strip(), rc=out.returncode)
