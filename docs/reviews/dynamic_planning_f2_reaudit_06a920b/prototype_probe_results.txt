@@ -1,0 +1,9 @@
+.PROBE P4_patched_class_method {"attest": "GENERATED_MISMATCH", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE P13_fresh_interpreter {"stdout": "{'uri.plan.workbook.inspect_structure': (None, '885ba1894e865dfe6f07a37a8a198eef1cd0866d47ab535f7da64316a98de0ee'), 'uri.plan.structure.select': (None, '9f30f02e3256fd55c0609039734d2d8320d37c8c479c57e888fe07fd26ed8e46'), 'uri.plan.structure.compare': (None, '0f35d9cc68c248cef1ec9ac3899ef3ea6db9d292f2388bf28d839980a407dad6'), 'uri.plan.report.write': (None, 'ff464bf18c6fcea49a35044e792349b5879e350bb1a8762af6a86e31d2afaa55')}", "rc": 0}
+.PROBE Q1_data_descriptor_on_class {"attest": "FOREIGN_MEMBER", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE Q2_non_function_init {"attest": "FOREIGN_MEMBER", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE Q3_sibling_method_swap {"attest": "IMPLEMENTATION_CHANGED"}
+.PROBE Q4_plain_function_method_patch {"attest": "GENERATED_MISMATCH"}
+.PROBE Q5_defaults_injected {"attest": null}
+.PROBE Q6_sys_modules_and_global_swap {"attest": null}
+.PROBE Q7_extra_class_value {"attest": null}

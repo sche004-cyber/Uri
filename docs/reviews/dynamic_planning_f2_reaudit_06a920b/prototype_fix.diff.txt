@@ -1,0 +1,32 @@
+diff --git a/uri_v1/execution/planning/attestation.py b/uri_v1/execution/planning/attestation.py
+index e2fcde1..2639b5c 100644
+--- a/uri_v1/execution/planning/attestation.py
++++ b/uri_v1/execution/planning/attestation.py
+@@ -193,6 +193,19 @@ def _check_generated(cls, generated: dict, source: str) -> None:
+         raise AttestationError("GENERATED_MISMATCH")
+ 
+ 
++_MACHINERY = {"__module__": str, "__doc__": (str, type(None)), "__annotations__": dict, "__match_args__": tuple,
++              "__dataclass_params__": object, "__dataclass_fields__": dict, "__hash__": type(None),
++              "__dict__": types.GetSetDescriptorType, "__weakref__": types.GetSetDescriptorType}
++
++
++def _plain_member(cls, name, value) -> bool:
++    """A non-function class member is allowed only as dataclass/class machinery or a plain value
++    (re-audit Q1: a descriptor object in the class dict must not escape attestation)."""
++    if name in _MACHINERY:
++        return isinstance(value, _MACHINERY[name]) and (name != "__dataclass_params__" or type(value).__module__ == "dataclasses")
++    return isinstance(value, _VALUES)
++
++
+ def _class_members(cls) -> list:
+     """Source-defined methods of a uri_v1 class (attested like functions); generated ones are checked here."""
+     owner = sys.modules.get(cls.__module__)
+@@ -203,6 +216,7 @@ def _class_members(cls) -> list:
+     source, own_file = _source(cls), getattr(owner, "__file__", None)
+     methods, generated = [], {}
+     for name, value in vars(cls).items():
++        if not _functions_of(value) and not _plain_member(cls, name, value): raise AttestationError("FOREIGN_MEMBER")
+         for fn in _functions_of(value):
+             if fn.__code__.co_filename == own_file and fn.__module__ == cls.__module__: methods.append(fn)
+             else: generated[name] = fn
