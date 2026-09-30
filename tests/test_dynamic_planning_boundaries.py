@@ -2,6 +2,7 @@
 import ast
 import hashlib
 from pathlib import Path
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 PLANNING = ROOT / "uri_v1" / "execution" / "planning"
@@ -48,10 +49,19 @@ def test_oracle_is_a_separate_execution_path():
         assert not any(n.lstrip(".").split(".")[0] == banned or n.endswith("planning." + banned) for n in names), banned
 
 
+def _repository_python_files():
+    """The repository's tracked .py files. Untracked local files (scratch probes, virtualenvs, tool output
+    on a developer's machine) are not "existing modules" and made this test depend on the checkout."""
+    try:
+        listed = subprocess.run(["git", "ls-files", "-z", "--", "*.py"], cwd=ROOT, capture_output=True, check=True).stdout
+        return [(ROOT / rel, rel) for rel in listed.decode("utf-8").split("\0") if rel]
+    except (OSError, subprocess.CalledProcessError, UnicodeDecodeError):
+        return [(path, path.relative_to(ROOT).as_posix()) for path in ROOT.rglob("*.py")]
+
+
 def test_no_existing_module_imports_planning():
     allowed_prefixes = ("uri_v1/execution/planning/", "tests/test_dynamic_planning_", "scripts/dynamic_planning_qualification.py")
-    for path in ROOT.rglob("*.py"):
-        rel = path.relative_to(ROOT).as_posix()
+    for path, rel in _repository_python_files():
         if rel.startswith(allowed_prefixes) or "/." in "/" + rel or rel.startswith(("node_modules/", "venv/", ".venv/")): continue
         try: text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError): continue
