@@ -1,4 +1,4 @@
-# Dynamic planning slice 1: focused independent re-check of R3-1 at `0c56215`
+# Dynamic planning slice 1: focused independent re-check of R3-1 at `0c56215` (and branch head `28fcbf9`)
 
 - **Subject:** `0c56215` on `claude/dynamic-planning-slice1-2eemmh`, written by the implementation thread on top of `06a920b`.
 - **Auditor:** Claude, in the audit thread that wrote `5eb0149` and `d3d26de`. This thread did not write any slice code.
@@ -43,3 +43,20 @@ None blocking.
 - **`graphify update .`:** not run. This is a docs-only commit, and graphify is not installed.
 
 Freezing the slice is Chetan's decision; this re-check does not freeze it.
+
+## Addendum: branch head `28fcbf9` (verdict holds: ACCEPT at `28fcbf9`)
+
+The branch head moved to `28fcbf9`, which sits on `0c56215`. It changes only two files: `tests/test_dynamic_planning_boundaries.py` and a report note. There is no change under `uri_v1/`, `scripts/` or `fixtures/`, so qualification behaviour is the same as at `0c56215`. `test_no_existing_module_imports_planning` now scans `git ls-files '*.py'` instead of every file on disk, and falls back to the old walk if git is unavailable.
+
+I reran everything at `28fcbf9` itself:
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full suite | **1449 passed, 1 failed, 9 skipped**. The one failure is the accepted `test_m36_and_frozen_files_unchanged`. | `full_suite_summary_28fcbf9.txt` |
+| Slice tests | 147 passed | `slice_28fcbf9.txt` |
+| Frozen files | `5bbf738..28fcbf9` contains additions only; `verify.py` unchanged | `frozen_28fcbf9.txt` |
+| Boundary test still bites | I created `uri_v1/zz_probe_importer.py` importing planning. While untracked, the test **passes**. Once `git add`ed, it **fails**. A tracked `tests/` importer also **fails**. After cleanup, the test passes. | `boundary_test_probe.txt` |
+
+**Judgement: sound and in scope.** The test now guards tracked, committed code only. That is the code CI and reviewers see, and it is what the rule is about. The narrowing is that a new importer is not caught until it is staged. It cannot reach a commit uncaught, because a clean checkout makes every file tracked. The change removes a false failure caused by local scratch files; my own probe file hit this in round 1 (I-6).
+
+Qualification at `28fcbf9` was not rerun: no code, fixture or script changed since `0c56215`, where it passed 34/34.
