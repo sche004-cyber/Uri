@@ -9,7 +9,9 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import builtins
 import sys
+import types
 import uuid
 
 import pytest
@@ -113,7 +115,7 @@ def test_adapter_spoofing_the_qualified_name_is_refused():
         return {"structure": {"source_id": "x", "sheets": []}}
     inspect_structure.__module__ = actions.__name__
     inspect_structure.__qualname__ = "inspect_structure"
-    assert attestation.attest(inspect_structure, contract(actions.INSPECT))[0] == "IMPLEMENTATION_CHANGED"
+    assert attestation.attest(inspect_structure, contract(actions.INSPECT))[0] == "NOT_MODULE_FUNCTION"
 
 
 def test_code_swap_on_the_real_function_is_refused(monkeypatch):
@@ -225,3 +227,78 @@ def test_boundary_in_the_record_is_bound_to_the_contract(record):
     writer["boundary"]["workspace_writes"] = ["../outside.json"]
     record(raw)
     assert attestation.attest(actions.write_report, contract(actions.WRITE))[0] == "BOUNDARY_MISMATCH"
+
+
+# -- re-audit of 74474a2 (F2R-1 .. F2R-5): the auditor's probes P1-P4 as regressions ----------------------
+
+def _rebuilt(fn, globals_):
+    """A function object built from the genuine code object but with its own globals."""
+    clone = types.FunctionType(fn.__code__, globals_, fn.__name__, fn.__defaults__, fn.__closure__)
+    clone.__module__, clone.__qualname__ = fn.__module__, fn.__qualname__
+    return clone
+
+
+def test_genuine_code_with_private_builtins_is_refused_before_it_runs(runner_env, tmp_path):
+    """F2R-1 / probe P1: the real write_report code with a private __builtins__ whose open() also writes outside."""
+    outside, real_open = tmp_path / "p1_outside.txt", builtins.open
+    def leaky_open(*args, **kwargs):
+        real_open(outside, "w").write("x")
+        return real_open(*args, **kwargs)
+    private = dict(vars(actions)); private["__builtins__"] = {**vars(builtins), "open": leaky_open}
+    clone = _rebuilt(actions.write_report, private)
+    assert attestation.attest(clone, contract(actions.WRITE))[0] == "NOT_MODULE_FUNCTION"
+    out, env = runner_env({**actions.adapters(), (actions.WRITE, "1"): clone})
+    assert out.status == "NOT_ATTEMPTED" and out.reason == "ADAPTER_NOT_QUALIFIED" and "w" not in out.executed
+    assert env.store.get(out.run_id)["aborted"]["detail"] == "NOT_MODULE_FUNCTION" and not outside.exists()
+
+
+def test_genuine_code_with_a_private_module_reference_is_refused(runner_env, tmp_path):
+    """F2R-1 / probe P2: the real code with private globals whose hashlib is a fake module."""
+    outside = tmp_path / "p2_outside.txt"
+    fake = types.ModuleType("hashlib")
+    def sha256(data): outside.write_text("x"); return hashlib.sha256(data)
+    fake.sha256 = sha256
+    clone = _rebuilt(actions.write_report, {**vars(actions), "hashlib": fake})
+    out, env = runner_env({**actions.adapters(), (actions.WRITE, "1"): clone})
+    assert out.status == "NOT_ATTEMPTED" and env.store.get(out.run_id)["aborted"]["detail"] == "NOT_MODULE_FUNCTION"
+    assert not outside.exists()
+
+
+def test_replaced_module_reference_in_the_real_module_is_refused(monkeypatch):
+    """F2R-2 / probe P3: actions.hashlib replaced by a fake module named hashlib."""
+    monkeypatch.setattr(actions, "hashlib", types.ModuleType("hashlib"))
+    assert attestation.attest(actions.write_report, contract(actions.WRITE))[0] == "FOREIGN_MODULE"
+
+
+def test_patched_methods_of_uri_classes_are_refused(monkeypatch):
+    """F2R-3 / probe P4: methods of uri_v1 classes the implementation uses are attested too."""
+    real_init = officefile.SheetStructure.__init__
+    def init(self, *args, **kwargs): real_init(self, *args, **kwargs)
+    init.__qualname__ = "SheetStructure.__init__"
+    cases = [
+        (officefile.SheetStructure, "__init__", init),                                   # generated method replaced
+        (officefile.WorkbookStructure, "sheet", lambda self, name: None),                # source method replaced
+        (officefile.WorkbookStructure, "extra", lambda self: None),                      # method added
+        (officefile.SheetStructure, "__dataclass_params__", type(officefile.SheetStructure.__dataclass_params__)(
+            True, True, True, False, False, False)),                                      # frozen dropped
+        (actions.ActionError, "__init__", lambda self, *a: None),                        # exception class
+    ]
+    for cls, name, value in cases:
+        with monkeypatch.context() as m:
+            m.setattr(cls, name, value, raising=False)
+            target = actions.select if cls is actions.ActionError else actions.inspect_structure
+            key = actions.SELECT if cls is actions.ActionError else actions.INSPECT
+            assert attestation.attest(target, contract(key))[0] in ("GENERATED_MISMATCH", "IMPLEMENTATION_CHANGED"), name
+    assert attestation.attest(actions.inspect_structure, contract(actions.INSPECT))[0] is None
+
+
+def test_classes_and_their_methods_are_part_of_the_digest():
+    closure = attestation._closure(actions.inspect_structure)
+    names = {f.__qualname__ for f in closure}
+    assert {"SheetStructure", "WorkbookStructure", "WorkbookStructure.sheet", "WorkbookReadError"} <= names
+
+
+def test_unknown_object_globals_are_refused_not_typed(monkeypatch):
+    """F2R-5: a global that is not a module, class, builtin or plain value is refused (not fingerprinted by type)."""
+    monkeypatch.setattr(actions, "REPORT_NAME", Path("plan_report.json"))
+    assert attestation.attest(actions.write_report, contract(actions.WRITE))[0] == "FOREIGN_OBJECT"

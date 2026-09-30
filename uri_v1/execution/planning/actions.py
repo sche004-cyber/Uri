@@ -22,7 +22,7 @@ from .contracts import (REPORT_NAME, REPORT_SCHEMA_VERSION, UNQUALIFIED, Approva
 
 QUALIFICATION_SCHEMA_VERSION = "uri.plan.qualification.v2"
 QUALIFICATION_PATH = Path(__file__).resolve().parents[3] / "fixtures" / "dynamic_planning" / "capability_qualification.json"
-QUALIFICATION_SHA256 = "a91af8bb681e2a403990f43c558a087c35770e6dbb08e184b4014bfa7457431c"
+QUALIFICATION_SHA256 = "9975a268c1301e01ec87430d1c2d632088460f71c29bb8465ff166b0d5dd553b"
 
 INSPECT = "uri.plan.workbook.inspect_structure"
 SELECT = "uri.plan.structure.select"

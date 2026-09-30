@@ -118,9 +118,17 @@ The M36 to M38 qualification scripts rewrite their own tracked result files unde
 11. **Windows not run.** All checks ran on Linux only. `wb_malformed.xlsx` is a text file, so a Windows autocrlf checkout could change its bytes (and its §2 digest); nothing reads that digest at run time, and the XLSX_NOT_ZIP outcome does not depend on line endings.
 12. **graphify** is not installed in this environment and `graphify-out/` is untracked, so `graphify update .` was not run.
 13. **No live provider, no spend.** FixtureProvider only (D3, spend policy). Semantic ability is not measured.
-14. **Adapter identity (audit F2): fixed in repair round 2 (§9); a narrower residual remains.** *History, kept:* at `458cbda` this item said the runner did not check the injected adapter's identity, so a swapped adapter under the same `(action_id, version)` could write outside the workspace and still verify, and it said "the audit recommends accepting it". **Correction (re-audit `1cab035`, R-3):** the audit listed both options (accept, or bind adapter identity) without recommending either; the recommendation to accept came from the coordinator. Chetan chose to bind identity (2026-09-29 13:49). Now every node's adapter must attest against the pinned record before it is called (§9), so a swapped, spoofed, code-swapped or helper-patched adapter is refused and cannot run or reach VERIFIED.
+14. **Adapter identity (audit F2): fixed in repair round 2 (§9); a narrower residual remains.** *History, kept:* at `458cbda` this item said the runner did not check the injected adapter's identity, so a swapped adapter under the same `(action_id, version)` could write outside the workspace and still verify, and it said "the audit recommends accepting it". **Correction (re-audit `1cab035`, R-3):** the audit listed both options (accept, or bind adapter identity) without recommending either; the recommendation to accept came from the coordinator. Chetan chose to bind identity (2026-09-29 13:49). Now every node's adapter must attest against the pinned record before it is called (§9), so a swapped, spoofed, code-swapped or helper-patched adapter is refused and cannot run or reach VERIFIED. **Correction (re-audit of `74474a2`, F2R-4):** that sentence was false at `74474a2`. An adapter rebuilt from the genuine code with private builtins or a private module reference (F2R-1), a replaced module global (F2R-2) and a patched method of a uri_v1 class (F2R-3) all passed attestation and reached VERIFIED. Repair round 3 (§10) closes those shapes. The bound that remains is §6.16.
 15. **Plan re-derivation needs the pinned snapshot.** `PlanRunner.run` now takes the snapshot the plan was compiled against (`snapshot=`; `run_proposal` passes it). Without it, or with one whose hash differs from `plan.snapshot_sha256`, the run is refused as PLAN_NOT_COMPILED before anything is recorded.
-16. **Outside-workspace effects of qualified code, and in-process tampering beyond attestation (narrower residual of F2; retained).** Attestation proves the adapter is the qualified implementation; it does not contain what that implementation does. A qualified adapter's own writes outside the workspace, and an attacker who already controls the process (patching standard-library or builtin code, which is not hashed; editing both the source and the record and repinning the digest; C-level code; replacing the attestation itself), are not stopped. Preventing the outside write itself needs containment: an OS sandbox (the "no OS sandbox" limitation retained at the M36-M38 freeze) or the in-process effect guard prototyped in `docs/reviews/DYNAMIC_PLANNING_F2_TRUST_REVIEW.md` (audit hook; a material security choice awaiting Chetan). The guard would be a separate module wrapped around the adapter call and can be added or dropped without touching attestation.
+16. **Outside-workspace effects of qualified code, and in-process tampering beyond attestation (narrower residual of F2; retained).** Attestation proves that the adapter is the qualified implementation. It does not contain what that implementation does. Not stopped (list made exact in repair round 3):
+    - a qualified adapter's own writes outside the workspace;
+    - process-wide patching of builtins, standard-library modules or `sys.modules` entries (for example `builtins.open`, confirmed by re-audit probe P5), including the `dataclasses` module used to re-derive generated methods;
+    - C-level code;
+    - editing both a source file and the record, then re-pinning the digest in `actions.py` (visible in git as re-qualification);
+    - replacing `attestation.py`, the runner or `actions.QUALIFICATION_*` in the process;
+    - effects of tampered module state on code that is not an adapter. Re-audit probe P3: a fake `hashlib` placed in `actions` is refused at the node, but it runs when `actions._qualified` hashes the record during planning.
+
+    All of these need an attacker who already controls the process. Preventing the outside write itself needs containment: an OS sandbox (the "no OS sandbox" limitation retained at the M36-M38 freeze) or the in-process effect guard prototyped in `docs/reviews/DYNAMIC_PLANNING_F2_TRUST_REVIEW.md` (audit hook; a material security choice awaiting Chetan). The guard would be a separate module wrapped around the adapter call and can be added or dropped without touching attestation.
 
 ## 7. Next
 
@@ -215,3 +223,36 @@ Chetan's decision: do not accept F2; bind qualification to a stable adapter iden
 | M36, M37, M38 qualification | exit 0 each (rewritten result files reverted) |
 
 Performance: attesting a node costs about 0.5 to 3 ms after the first call per module file (compiled modules are cached by file digest).
+
+
+## 10. Repair round 3 (independent re-audit of `74474a2`, verdict REPAIRS_REQUIRED)
+
+Re-audit report: `5eb0149` on `claude/project-thread-wjykgi`; copy at `/mnt/project-files/audits/dynamic_planning_slice1/CLAUDE_REAUDIT_74474a2.md`. All repairs are in `attestation.py`, plus the re-pinned record, tests and this report. No frozen file changed, and `verify.py` is unchanged.
+
+| Finding | Repair | Regression test |
+|---|---|---|
+| F2R-1 (HIGH): the genuine code object with private builtins or private globals attests | Every function in the implementation must be its own module's function. Its `__globals__` must be that module's namespace, its `__builtins__` the real builtins, and the function must be found at its qualname in the module (through class dictionaries for methods). Otherwise `NOT_MODULE_FUNCTION`. | `test_genuine_code_with_private_builtins_is_refused_before_it_runs` (P1), `test_genuine_code_with_a_private_module_reference_is_refused` (P2); the spoofed-name test now expects `NOT_MODULE_FUNCTION` |
+| F2R-2 (MED): a module global is fingerprinted by name only | A module global must be the `sys.modules` entry of its name, otherwise `FOREIGN_MODULE`. A builtin global must be its module's attribute, otherwise `FOREIGN_BUILTIN`. | `test_replaced_module_reference_in_the_real_module_is_refused` (P3) |
+| F2R-3 (MED): methods of uri_v1 classes are not attested | **Closed, not documented** (coordinator default). Every uri_v1 class reached by the implementation joins it: the class source is added to the digest; methods defined in the class source are attested like functions (source digest, code check, home check); and a class must be its module's attribute with only uri_v1 or builtin bases and the plain metaclass. Methods a dataclass generated at import (no source file) are compared against the methods `dataclasses` generates now, from the field names, literal defaults and decorator arguments parsed from the class source with `ast` (nothing is executed). They must match in code, globals, builtins, defaults and closure; default factories are refused. Anything else gives `GENERATED_MISMATCH`. About 110 lines, all in `attestation.py`. | `test_patched_methods_of_uri_classes_are_refused` (P4: generated `__init__` replaced, source method replaced, method added, dataclass params changed, exception class given a method), `test_classes_and_their_methods_are_part_of_the_digest` |
+| F2R-4 (LOW): report overclaims | §6.14 correction added (history kept); §6.16 now lists the remaining bound exactly. | n/a |
+| F2R-5 (LOW, latent): unknown objects fingerprinted by type | Refused as `FOREIGN_OBJECT`. | `test_unknown_object_globals_are_refused_not_typed` |
+
+The record digest is re-pinned to `9975a268c1301e01ec87430d1c2d632088460f71c29bb8465ff166b0d5dd553b`. The three digests that include classes (`inspect_structure`, `select`, `compare`) changed; `write_report` did not.
+
+**The auditor's own probe script** was rerun against this head (`probes.py.txt`, run from `tests/` in a scratch copy and then removed):
+- P1 and P2 are `NOT_MODULE_FUNCTION`, P3 is `FOREIGN_MODULE`, P4 is `GENERATED_MISMATCH`. All four runs are NOT_ATTEMPTED, and the adapter wrote nothing outside the workspace. For P3, the fake module still writes when it is called while the plan compiles; §6.16 records this.
+- P5 still verifies with an outside write. It is process-wide builtin patching, which §6.16 lists.
+- P6, P7, P9, P10 and P11 are refused as before. P8 (an unmodified copy of the globals) is now refused, which is harmless. P12 is unchanged, and P13 reproduces the new digests in a fresh interpreter.
+
+**Checks at this head** (Linux, Python 3.11.15, all COMPLETED_WITH_RESULT):
+
+| Check | Result |
+|---|---|
+| Full suite | **1445 passed, 1 failed** (only the accepted `test_m36_and_frozen_files_unchanged`), 9 skipped |
+| Slice tests | 143 passed (137 + 6) |
+| Slice qualification | exit 0: 34/34, counters 0/34, 0/34, 0/16, 0/16, 0/34, 0/34; C33 miss 1/1; battery and gate digests unchanged |
+| Review regression set | 113 passed |
+| Anchors / governance validator | ok, changed [] / VALID |
+| M36, M37, M38 qualification | exit 0 each (rewritten result files reverted) |
+
+**Unverified:** Windows and other CPython versions were not run. Code-object comparison and dataclass-generated code are specific to the interpreter; a mismatch there fails closed (no run) and is never a false VERIFIED. The record digests are source-based and do not depend on the interpreter version.
