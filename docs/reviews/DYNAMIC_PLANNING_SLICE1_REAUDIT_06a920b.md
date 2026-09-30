@@ -12,7 +12,7 @@ F2R-1, F2R-2, F2R-4 and F2R-5 are closed, and F2R-3 is closed for function-typed
 One bypass of the same kind as F2R-3 remains, R3-1. A non-function descriptor object placed on a uri_v1 class that the adapter uses is invisible to class attestation. With it in place, the run reaches **VERIFIED** and writes a file outside the workspace. Report §10 says F2R-3 is "Closed, not documented", so the claim is wrong as written.
 
 Either repair below leads to ACCEPT:
-- **Fix it.** The 13-line prototype in §5 refuses the bypass and keeps 143/143 slice tests and qualification 34/34.
+- **Fix it.** The 14-line prototype in §5 refuses the bypass and keeps 143/143 slice tests and qualification 34/34.
 - **Record it in §6.16.** Add it as an in-process residual and correct §10.
 
 ## 1. Acceptance criteria
