@@ -1,5 +1,6 @@
 # M39 — Working Product Baseline: the Office Demonstrator through the real URI interface
 
+- **Scope decision (2026-10-01, additive):** M39 is judged against **R0**, not R1/R1.1. Real-app integration moves to the Harness-first Edge track. See §14, which takes precedence over the R1/R1.1 target below; the status line below is kept as history.
 - **Status:** `M39_PLAN_R1_1_DRAFTED_PROVISIONAL` (R1 plus amendment §13). Plan only. Nothing here is implemented, frozen or integrated.
 - **Revision history:** R0 at `7363ba5` planned an *isolated* demonstrator (CLI, no production wiring) with the VG-1 benchmark as its main gate. **R1 (this file) supersedes R0** after the User's product completion target (2026-09-28 10:03). R0 is kept in git history and is not rewritten elsewhere. What changed and why is in §12.
 - **Date:** 2026-09-28. **Author:** Claude Code, Planning lane. This session did not implement M37/M38.
@@ -269,3 +270,54 @@ These trigger stop condition **S-3** for anything that runs on real user files. 
 ### 13.4 Posture decision (2026-09-28 10:26, relayed by the coordinator as the User's decision)
 
 `Bash(python *)` is dropped from the default harness posture. Claude Code does not run scripts; URI's own verifier does all execution. The M38 repair lane implements this in `uri_v1/execution/harness/adapters.py`. M39 builds no workaround and relies on the repaired posture. The §13.3 wait on "the User's decision on `Bash(python *)`" is resolved; the wait on the M38 repairs and re-audit remains.
+
+## 14. Scope decision: R0 + Office capability (2026-10-01)
+
+Additive. This section takes precedence over §§0-13 wherever they set the R1/R1.1 target. Those sections are kept as history.
+
+### 14.1 Decision
+
+User decision (Chetan, 2026-10-01 08:05 UTC): "I explicitly approve Option A: M39 R0 + Office capability, with real-app integration owned by Harness-first." Also: preserve all frozen boundaries; do not introduce R1.1 application features into M39; one thread owns M39 closure; Harness-first consumes the accepted Office capability rather than duplicating it. The options were compared in `/mnt/project-files/decisions/M39_SCOPE_R0_vs_R1_1.md`.
+
+### 14.2 What M39 is
+
+The isolated R0 product, as planned at `7363ba5`:
+- `uri_v1/office/`: `request`, `binding`, `acceptance_builder`, `flow`, `writeback`, `view`, `bootstrap`, `__main__`.
+- The CLI demonstrator `python -m uri_v1.office --root <folder>`.
+- The design decisions recorded since: per-file answers for requests naming two files (2026-09-29 05:16); the minimal M39 entry in the frozen M37 guard (2026-09-29 05:21).
+
+It stays on the frozen line (`5bbf738`, code `bd7c450`), and no M36, M37, M38, anchored or live-app file changes.
+
+### 14.3 Not in M39 (owned by the Harness-first Edge track)
+
+Everything in §4.1-§4.3 that R0 does not have:
+- `inbox.py`, `worker.py`, `deliver.py`;
+- the `/ask` Office seam, `/office/runs` and `/office/folders` endpoints;
+- `.py`/`.xlsm` in `FileStore`, UI file chips and run polling;
+- INT-001 registration;
+- the B2/B3/B-UI/B5 real-app evidence.
+
+`docs/plans/M39_LIVE_APP_INTEGRATION.md` stays as a design reference for that track and is not an M39 deliverable.
+
+The Office capability that track consumes is `OfficeSession` (`uri_v1/office/flow.py`):
+- turn methods `start`, `answer`, `confirm_escalation`, `decline_escalation`, `approve_writeback`, `cancel`, `pause`, `resume`, `status`;
+- their typed `StepResult`;
+- `view.render`;
+- `bootstrap.build_session`.
+
+Real-harness wiring there still needs `acknowledge_unsafe_harness=True` and refuses when `ANTHROPIC_API_KEY` is set.
+
+### 14.4 R0 closing gates
+
+| Gate | Source | State at this amendment |
+|---|---|---|
+| Q-O1 request/binding battery | R0 §5.1 | Passes in the Linux suite (`tests/test_m39_request.py`) |
+| Q-O2 end-to-end scenarios D1-D12 (fake harness, 2 runs) | R0 §5.2 | Passes in the Linux suite (`tests/test_m39_flow.py`) |
+| Q-O5 boundaries and regression | R0 §5.5 | Passes on Linux: M39 guard against `5bbf738` with no exemptions, frozen M37 guard with the authorized entry, anchors, governance |
+| Independent audit | pipeline rule | ACCEPT at `0d690ea`. Later commits (R5-1, D9 CRLF fix, opt-in live smoke test, these docs) need an independent re-check before closure |
+| **Q-O6 Windows** | R0 §5.6 | **NOT RUN.** Full `tests/` suite plus governance and anchors on the User's Windows PC; D1, D6, D10, D12 are inside that suite |
+| **Q-O3 live smoke** | R0 §5.3 | **NOT RUN.** One D2 run with the real, subscription-authenticated Claude Code (`tests/test_m39_live_smoke.py`, opt-in `URI_M39_LIVE_SMOKE=1`). An honest harness failure is a valid result |
+
+The two NOT RUN gates are mandatory and can only run on the User's PC (runbook `/mnt/project-files/decisions/M39_R0_PC_RUNBOOK.md`). Until both have run with a result, M39 stays provisionally accepted, not closed and not frozen. Neither is recorded as passed before it has actually run there.
+
+**Not a closing gate:** the Q-O4 VG-1 viability benchmark. This follows R1 §5.1, which moved it after the product baseline. It needs a live campaign of about 60-70 Claude Code runs. The dry-run driver measures 5 of 12 tasks; tasks 05, 06, 08, 09 and 10 need a real harness. It stays a later measurement of URI's advantage.

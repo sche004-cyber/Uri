@@ -610,3 +610,18 @@ Regression tests: `tests/test_m39_repair5_regressions.py` (F3 x2, N3 x6, N1 x6).
 fail against the 736464a code and pass after the repair. The N1 probes restore
 `uri_v1/execution/{workspace,verify}.py` and `uri_v1/edge/resolver.py` (from 763d8e7)
 and `uri_v1/execution/harness/{runner,contracts}.py` (from b013dba) on a disposable clone.
+
+## 14. R0 closing repairs and scope decision (2026-10-01)
+
+**Scope.** User decision (Chetan, 2026-10-01 08:05 UTC): "Option A: M39 R0 + Office capability, with real-app integration owned by Harness-first." M39 is judged against R0, the isolated `uri_v1/office` backend and CLI built here. The §0 correction's open question (R0 built versus R1/R1.1 planned) is closed by this decision. Real-app integration (`/ask` seam, endpoints, FileStore, UI, INT-001) belongs to the Harness-first Edge track, which consumes `OfficeSession` as the Office capability (plan §14.3). No R1.1 application feature is added to M39.
+
+**Repairs at `a303ec5`** (no frozen or live-app file changed):
+- **R5-1 (LOW, re-audit of `0d690ea`).** No reply says "Nothing was written". The cancel, write-back-refused and harness-failed replies now say "URI wrote nothing back to your files", because no safety flag proves only that the originals kept their hashes. A new fixture scenario `write_sibling` (the harness writes a new file into the user's folder, no flag) and two regressions.
+- **D9 (Windows CRLF, integration readiness audit 2026-10-01).** On a checkout with `core.autocrlf=true`, the authorized frozen-edit pin failed on line endings alone (5 failures on the User's PC). The pin is now the git blob id from `git hash-object` (`e54c180…`), which applies the checkout's own conversion; a real content change still fails. The guard-probe clones use `core.autocrlf=false`. A regression test uses a CRLF clone. Not yet run on Windows.
+- **Live smoke test.** `tests/test_m39_live_smoke.py` runs R0 Q-O3 (D2 against the real Claude Code CLI on a generated fixture). It is skipped unless `URI_M39_LIVE_SMOKE=1`, and refuses unless the probe reports `auth_mode` `subscription` and `ANTHROPIC_API_KEY` is unset. Here it was exercised only against the fake harness (an honest fix → COMPLETED; a false claim → HARNESS_FAILED; an API key set → refused). It has **not** run against the real Claude Code.
+
+**R5-2.** `docs/governance/URI_ACTIVE_MILESTONE.md` gains an additive M39 status correction; the two stale planning notes stay as history.
+
+**Results (Linux, Python 3.11).** `tests/`: 1531 passed, 0 failed, 10 skipped (the live smoke test among the skips). Governance validator VALID, `tests/governance` 37 passed, anchors `ok`. Evidence: `/mnt/project-files/audits/m39_r0_closing/`.
+
+**Outstanding mandatory gates (plan §14.4), not run:** the Windows suite on the User's PC (Q-O6) and the live Claude Code smoke run (Q-O3). Both need the User's PC (runbook `/mnt/project-files/decisions/M39_R0_PC_RUNBOOK.md`). Until they have run, M39 is provisionally accepted, not closed and not frozen.
