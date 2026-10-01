@@ -180,6 +180,13 @@ M39 line (`claude/project-thread-wb7tmm`); it is not part of this line.
   files. None of these travels on a branch unseen. Review rule: the guard proves the frozen
   paths only while those files are unchanged from `9395677`, so reviewers check
   `git diff 9395677 -- tests/test_m37_edge_resolution.py tests/test_m37_frozen_guard_pin.py
-  .gitignore pytest.ini pyproject.toml conftest.py`. Recorded as retained because the User
-  chose to re-freeze at `9395677` rather than authorize the optional hardening round the
-  re-audit offered.
+  .gitignore pytest.ini pyproject.toml conftest.py`. Accepted by the User, 2026-10-01
+  12:39 UTC, verbatim: "I accept the independent re-audit verdict and authorize retaining findings F-1, F-2 and F-3 as documented limitations."
+- **Windows validation: pending, not a freeze precondition.** No repository governance
+  rule requires a Windows run before a freeze (checked: `docs/governance/`,
+  `URI_STATE.yaml`, `AGENTS.md`, `CLAUDE.md`), so this is a normal re-freeze. This
+  re-freeze is test-only and was validated on Linux, including an `autocrlf=true`
+  checkout in the re-audit. The Windows / Python 3.13 run of `tests/` at this line stays a
+  required follow-up and is carried into the combined M37/M39 Windows run on the User's
+  PC. A failure there that is not already known (re-audit F-6: the M33.3 raw-byte anchors
+  fail in an `autocrlf=true` checkout, identically on `5bbf738`) reopens M37.
