@@ -102,6 +102,10 @@ def turn(specialist, brain, text, context=None, document=None, offered=OFFER):
         if len(acts) > 1 or any(c["name"] not in ACTIONS and c["name"] not in CONTROLS for c in calls):
             st["containment"] = "REJECTED_MULTI_OR_UNKNOWN"
             continue
+        if acts and ctrls:
+            # added after run 1: a proposal that both acts and abstains is contradictory, so it is rejected
+            st["containment"] = "REJECTED_ACTION_AND_CONTROL"
+            continue
         if not acts:
             cls = CONTROL_CLASS.get(ctrls[0]) if ctrls else "NO_CALL"
             st["abstain"] = cls

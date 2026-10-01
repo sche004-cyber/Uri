@@ -158,14 +158,21 @@ def t_replacement_and_recovery():
     """Live: specialist fails -> replacement specialist -> Brain escalation; then crash-and-resume without a repeated side effect."""
     spec_a, spec_b, brain = harness.make("needle_P1"), harness.make("granite_json_P1"), harness.make("brain_P1")
     flows = []
-    for text, ctx in [("Compare the attached two hostel menus and suggest a healthier weekly plan.", None),
-                      ("Read the attached minutes_ec_0928.pdf.", "attachments = [minutes_ec_0928.pdf]")]:
-        log = {"text": text, "stages": []}
+    for text, ctx, inject_a in [("Compare the attached two hostel menus and suggest a healthier weekly plan.", None, False),
+                                ("Read the attached minutes_ec_0928.pdf.", "attachments = [minutes_ec_0928.pdf]", False),
+                                # run 2: specialist A's output is replaced by a synthetic malformed result, so the
+                                # replacement path is exercised deterministically (marked in the record)
+                                ("Read the attached minutes_ec_0928.pdf.", "attachments = [minutes_ec_0928.pdf]", True)]:
+        log = {"text": text, "stages": [], "specialist_a_injected_malformed": inject_a}
         for role, ad in (("specialist_A_needle", spec_a), ("replacement_B_granite", spec_b), ("main_brain", brain)):
             case = {"kind": "select", "text": text, "context": ctx, "document": None, "offered": integration.OFFER}
-            r = ad.call(harness.spec(case, "R1"), case, "R1", None)
+            if inject_a and role == "specialist_A_needle":
+                r = {"calls": [], "wall_ms": 0.0, "malformed": True}
+            else:
+                r = ad.call(harness.spec(case, "R1"), case, "R1", None)
             acts = [c for c in r["calls"] if c["name"] in integration.ACTIONS]
-            ok = len(acts) == 1 and acts[0]["name"] in integration.OFFER
+            ctrls = [c for c in r["calls"] if c["name"] in integration.CONTROLS]
+            ok = len(acts) == 1 and not ctrls and acts[0]["name"] in integration.OFFER
             gate = integration.uri_gates(acts[0], integration.OFFER, text)["gate"] if ok else None
             log["stages"].append({"role": role, "ms": r["wall_ms"], "calls": r["calls"], "gate": (gate or {}).get("outcome")})
             if gate and gate.get("outcome") == "READY":

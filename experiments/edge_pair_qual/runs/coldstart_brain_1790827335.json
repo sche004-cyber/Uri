@@ -1,0 +1,172 @@
+{
+ "load_before": {
+  "t": 1790827309.0486465,
+  "cpu_percent": 13.5,
+  "mem_percent": 74.0,
+  "top_cpu": [
+   {
+    "cpu": 2118.0,
+    "name": "System Idle Process"
+   },
+   {
+    "cpu": 97.7,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 31.8,
+    "name": "python.exe"
+   },
+   {
+    "cpu": 25.3,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 23.4,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 21.2,
+    "name": "MsMpEng.exe"
+   }
+  ]
+ },
+ "brain": [
+  {
+   "first_wall_ms": 8502.78220000473,
+   "load_duration_ms": 7594.8036,
+   "warm_wall_ms": [
+    554.3708999975934,
+    487.42090000450844,
+    778.9415000006557,
+    490.52600000140956,
+    775.5894000001717
+   ],
+   "ps": {
+    "models": [
+     {
+      "name": "qwen3.5:9b",
+      "model": "qwen3.5:9b",
+      "size": 5490081790,
+      "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "qwen35",
+       "families": [
+        "qwen35"
+       ],
+       "parameter_size": "9.7B",
+       "quantization_level": "Q4_K_M"
+      },
+      "expires_at": "2026-10-01T10:02:00.3736545+05:30",
+      "size_vram": 5490081790,
+      "context_length": 4096
+     },
+     {
+      "name": "granite4:350m-h",
+      "model": "granite4:350m-h",
+      "size": 427640749,
+      "digest": "7145075ed3d6da48bd41cafd8bed8171936abe0ece819aa1e516fd98881aa6a4",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "granitehybrid",
+       "families": [
+        "granitehybrid"
+       ],
+       "parameter_size": "340.33M",
+       "quantization_level": "Q8_0"
+      },
+      "expires_at": "2026-10-01T10:01:46.5044325+05:30",
+      "size_vram": 427640749,
+      "context_length": 4096
+     }
+    ]
+   }
+  },
+  {
+   "first_wall_ms": 5783.316299995931,
+   "load_duration_ms": 4842.3225,
+   "warm_wall_ms": [
+    581.1257999957888,
+    502.13459999940824,
+    788.3240000010119,
+    496.1974000034388,
+    797.2861999951419
+   ],
+   "ps": {
+    "models": [
+     {
+      "name": "qwen3.5:9b",
+      "model": "qwen3.5:9b",
+      "size": 5490081790,
+      "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "qwen35",
+       "families": [
+        "qwen35"
+       ],
+       "parameter_size": "9.7B",
+       "quantization_level": "Q4_K_M"
+      },
+      "expires_at": "2026-10-01T10:02:11.2484913+05:30",
+      "size_vram": 5490081790,
+      "context_length": 4096
+     },
+     {
+      "name": "granite4:350m-h",
+      "model": "granite4:350m-h",
+      "size": 427640749,
+      "digest": "7145075ed3d6da48bd41cafd8bed8171936abe0ece819aa1e516fd98881aa6a4",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "granitehybrid",
+       "families": [
+        "granitehybrid"
+       ],
+       "parameter_size": "340.33M",
+       "quantization_level": "Q8_0"
+      },
+      "expires_at": "2026-10-01T10:01:46.5044325+05:30",
+      "size_vram": 427640749,
+      "context_length": 4096
+     }
+    ]
+   }
+  }
+ ],
+ "load_after": {
+  "t": 1790827335.2159586,
+  "cpu_percent": 10.2,
+  "mem_percent": 40.8,
+  "top_cpu": [
+   {
+    "cpu": 2181.5,
+    "name": "System Idle Process"
+   },
+   {
+    "cpu": 101.7,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 31.2,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 29.1,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 24.1,
+    "name": "python.exe"
+   },
+   {
+    "cpu": 24.0,
+    "name": "claude.exe"
+   }
+  ]
+ }
+}

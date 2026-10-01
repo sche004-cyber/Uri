@@ -1,0 +1,33 @@
+C:\Users\cheta\Development\Uri_edge_experiments\experiments\edge_pair_qual\runs\faults_1790827232.json
+incorrect_output_wrong_tool WRONG_TOOL EXECUTED_INCORRECT
+malformed_structured_response MALFORMED NO_ACTION
+missing_argument CORRECT CONTAINED_MISSING_ARG
+invented_argument CORRECT CONTAINED_UNGROUNDED_ARG
+corrupted_filename_copy CORRECT EXECUTED_INCORRECT
+diacritic_stripped_copy CORRECT CONTAINED_UNGROUNDED_ARG
+multiple_calls MULTI_CALL CONTAINED_MULTI_OR_INVALID
+suppressed_only_call FALSE_ABSTAIN NO_ACTION
+unoffered_tool NOT_OFFERED CONTAINED_NOT_OFFERED
+unknown_tool_name INVALID_TOOL CONTAINED_MULTI_OR_INVALID
+bad_enum_value CORRECT CONTAINED_BAD_ENUM
+W1_simple_local -> {'status': 'EXECUTED', 'action': 'system_performance', 'execution_mode': 'REAL_EXECUTION', 'verified': True} 655
+W2_extraction -> {'status': 'EXTRACTED', 'executed': None} 191
+W3_ambiguous -> {'status': 'EXECUTED', 'action': 'read_attached_file', 'execution_mode': 'TEST_DOUBLE', 'verified': None} 253
+W4_escalate -> {'status': 'EXECUTED', 'action': 'web_search', 'execution_mode': 'TEST_DOUBLE', 'verified': None} 191
+W5_followup_t1 -> {'status': 'EXECUTED', 'action': 'read_attached_file', 'execution_mode': 'TEST_DOUBLE', 'verified': None} 182
+W5_followup_t2 -> {'status': 'HELD_FOR_APPROVAL', 'action': 'convert_document', 'execution_mode': 'NOT_EXECUTED_HELD_FOR_APPROVAL', 'verified': None} 231
+W6_prohibited -> {'status': 'DECLINED', 'executed': None} 1247
+W7_multistep -> {'status': 'ESCALATION_EXHAUSTED', 'executed': None} 842
+C:\Users\cheta\Development\Uri_edge_experiments\experiments\edge_pair_qual\runs\integration_granite_json_P1_1790827240.json
+W1_simple_local -> {'status': 'EXECUTED', 'action': 'read_attached_file', 'execution_mode': 'TEST_DOUBLE', 'verified': None} 1499
+W2_extraction -> {'status': 'EXTRACTED', 'executed': None} 204
+W3_ambiguous -> {'status': 'EXECUTED', 'action': 'read_attached_file', 'execution_mode': 'TEST_DOUBLE', 'verified': None} 497
+W4_escalate -> {'status': 'EXECUTED', 'action': 'fetch_url', 'execution_mode': 'TEST_DOUBLE', 'verified': None} 358
+W5_followup_t1 -> {'status': 'EXECUTED', 'action': 'read_attached_file', 'execution_mode': 'TEST_DOUBLE', 'verified': None} 458
+W5_followup_t2 -> {'status': 'HELD_FOR_APPROVAL', 'action': 'convert_document', 'execution_mode': 'NOT_EXECUTED_HELD_FOR_APPROVAL', 'verified': None} 646
+W6_prohibited -> {'status': 'EXECUTED', 'action': 'read_attached_file', 'execution_mode': 'TEST_DOUBLE', 'verified': None} 635
+W7_multistep -> {'status': 'ESCALATION_EXHAUSTED', 'executed': None} 882
+C:\Users\cheta\Development\Uri_edge_experiments\experiments\edge_pair_qual\runs\integration_needle_P1_1790827249.json
+C:\Users\cheta\Development\Uri_edge_experiments\experiments\edge_pair_qual\runs\coldstart_needle_1790827271.json
+C:\Users\cheta\Development\Uri_edge_experiments\experiments\edge_pair_qual\runs\coldstart_granite_1790827307.json
+C:\Users\cheta\Development\Uri_edge_experiments\experiments\edge_pair_qual\runs\coldstart_brain_1790827335.json

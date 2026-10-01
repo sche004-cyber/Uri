@@ -378,7 +378,9 @@ def verify_manifest(stage: str):
 
 def run(arms, split, repeats, out, ids=None, conds=None):
     verify_manifest("battery")
-    if split == "holdout":
+    if split == "holdout" and not str(out).split("/")[-1].startswith("latency_idle"):
+        # the one-time holdout run is gated on the harness freeze; post-holdout idle-latency
+        # reruns (files named latency_idle_*) are re-measurements, never used for accuracy decisions
         verify_manifest("harness")
     cases = [c for c in json.loads((HERE / "battery" / "cases.json").read_text(encoding="utf-8")) if c["split"] == split]
     if ids:

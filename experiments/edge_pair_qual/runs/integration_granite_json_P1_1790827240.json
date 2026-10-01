@@ -1,0 +1,620 @@
+{
+ "specialist": "granite_json_P1",
+ "brain": "qwen3.5:9b",
+ "load_before": {
+  "t": 1790827234.2246914,
+  "cpu_percent": 5.6,
+  "mem_percent": 85.5,
+  "top_cpu": [
+   {
+    "cpu": 2268.3,
+    "name": "System Idle Process"
+   },
+   {
+    "cpu": 30.9,
+    "name": "python.exe"
+   },
+   {
+    "cpu": 30.4,
+    "name": "MsMpEng.exe"
+   },
+   {
+    "cpu": 22.0,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 19.8,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 13.0,
+    "name": "claude.exe"
+   }
+  ]
+ },
+ "flows": [
+  {
+   "text": "How much memory is this computer using right now?",
+   "context": null,
+   "stages": [
+    {
+     "stage": "specialist",
+     "model_ms": 180.68900000071153,
+     "calls": [
+      {
+       "name": "system_performance",
+       "arguments": {}
+      }
+     ],
+     "suppressed": [],
+     "uri": {
+      "translate": {
+       "ok": true,
+       "contract": {
+        "mode": "single_action",
+        "capability": "system_performance",
+        "actions": [
+         {
+          "name": "system_performance",
+          "inputs": {}
+         }
+        ],
+        "goal": "",
+        "clarification": null,
+        "unsupported_reason": null,
+        "reason": "",
+        "requires_approval": false,
+        "confidence": "high"
+       }
+      },
+      "gate": {
+       "outcome": "READY",
+       "capability_id": "system_performance",
+       "action_names": [
+        "system_performance"
+       ],
+       "reasons": [
+        "all_gates_passed"
+       ],
+       "missing_field": null,
+       "expected_type": null,
+       "overlap_candidates": [],
+       "sub_results": []
+      }
+     },
+     "execution": {
+      "mode": "REAL_EXECUTION",
+      "ms": 472.82490000361577,
+      "verified": true,
+      "result_keys": [
+       "boot_time_epoch_seconds",
+       "cpu",
+       "disk",
+       "memory",
+       "message",
+       "status",
+       "swap"
+      ]
+     }
+    }
+   ],
+   "final": {
+    "status": "EXECUTED",
+    "action": "system_performance",
+    "execution_mode": "REAL_EXECUTION",
+    "verified": true
+   },
+   "total_ms": 654.631999997946,
+   "flow": "W1_simple_local",
+   "expected": "EXECUTED:system_performance"
+  },
+  {
+   "model_ms": 191.22600000264356,
+   "values": {
+    "invoice_number": "MRT/26/0931",
+    "total": "INR 7,845.00"
+   },
+   "n5_verbatim": {
+    "invoice_number": true,
+    "total": true
+   },
+   "final": {
+    "status": "EXTRACTED",
+    "executed": null
+   },
+   "flow": "W2_extraction",
+   "expected": "EXTRACTED"
+  },
+  {
+   "text": "Read the attachment.",
+   "context": "attachments = [claim_form_a.pdf, claim_form_b.pdf]",
+   "stages": [
+    {
+     "stage": "specialist",
+     "model_ms": 253.21729999996023,
+     "calls": [
+      {
+       "name": "read_attached_file",
+       "arguments": {
+        "request_text": "[claim_form_a.pdf, claim_form_b.pdf]"
+       }
+      }
+     ],
+     "suppressed": [],
+     "uri": {
+      "translate": {
+       "ok": true,
+       "contract": {
+        "mode": "single_action",
+        "capability": "read_attached_file",
+        "actions": [
+         {
+          "name": "read_attached_file",
+          "inputs": {}
+         }
+        ],
+        "goal": "",
+        "clarification": null,
+        "unsupported_reason": null,
+        "reason": "",
+        "requires_approval": false,
+        "confidence": "high"
+       }
+      },
+      "gate": {
+       "outcome": "READY",
+       "capability_id": "read_attached_file",
+       "action_names": [
+        "read_attached_file"
+       ],
+       "reasons": [
+        "all_gates_passed"
+       ],
+       "missing_field": null,
+       "expected_type": null,
+       "overlap_candidates": [],
+       "sub_results": []
+      }
+     },
+     "execution": {
+      "mode": "TEST_DOUBLE",
+      "verified": null
+     }
+    }
+   ],
+   "final": {
+    "status": "EXECUTED",
+    "action": "read_attached_file",
+    "execution_mode": "TEST_DOUBLE",
+    "verified": null
+   },
+   "total_ms": 253.39910000184318,
+   "flow": "W3_ambiguous",
+   "expected": "ASK_CLARIFICATION"
+  },
+  {
+   "text": "Compare our two canteen bids and recommend one with reasons.",
+   "context": null,
+   "stages": [
+    {
+     "stage": "specialist",
+     "model_ms": 190.75139999767998,
+     "calls": [
+      {
+       "name": "web_search",
+       "arguments": {
+        "request_text": "compare two canteen bids"
+       }
+      }
+     ],
+     "suppressed": [],
+     "uri": {
+      "translate": {
+       "ok": true,
+       "contract": {
+        "mode": "single_action",
+        "capability": "web_search",
+        "actions": [
+         {
+          "name": "web_search",
+          "inputs": {
+           "request_text": "Compare our two canteen bids and recommend one with reasons."
+          }
+         }
+        ],
+        "goal": "",
+        "clarification": null,
+        "unsupported_reason": null,
+        "reason": "",
+        "requires_approval": false,
+        "confidence": "high"
+       }
+      },
+      "gate": {
+       "outcome": "READY",
+       "capability_id": "web_search",
+       "action_names": [
+        "web_search"
+       ],
+       "reasons": [
+        "all_gates_passed"
+       ],
+       "missing_field": null,
+       "expected_type": null,
+       "overlap_candidates": [],
+       "sub_results": []
+      }
+     },
+     "execution": {
+      "mode": "TEST_DOUBLE",
+      "verified": null
+     }
+    }
+   ],
+   "final": {
+    "status": "EXECUTED",
+    "action": "web_search",
+    "execution_mode": "TEST_DOUBLE",
+    "verified": null
+   },
+   "total_ms": 190.90879999566823,
+   "flow": "W4_escalate",
+   "expected": "ESCALATED_TO_BRAIN"
+  },
+  {
+   "text": "Read the attached field_visit_report.pdf.",
+   "context": "attachments = [field_visit_report.pdf]",
+   "stages": [
+    {
+     "stage": "specialist",
+     "model_ms": 181.6854000062449,
+     "calls": [
+      {
+       "name": "read_attached_file",
+       "arguments": {
+        "request_text": "field_visit_report.pdf"
+       }
+      }
+     ],
+     "suppressed": [],
+     "uri": {
+      "translate": {
+       "ok": true,
+       "contract": {
+        "mode": "single_action",
+        "capability": "read_attached_file",
+        "actions": [
+         {
+          "name": "read_attached_file",
+          "inputs": {}
+         }
+        ],
+        "goal": "",
+        "clarification": null,
+        "unsupported_reason": null,
+        "reason": "",
+        "requires_approval": false,
+        "confidence": "high"
+       }
+      },
+      "gate": {
+       "outcome": "READY",
+       "capability_id": "read_attached_file",
+       "action_names": [
+        "read_attached_file"
+       ],
+       "reasons": [
+        "all_gates_passed"
+       ],
+       "missing_field": null,
+       "expected_type": null,
+       "overlap_candidates": [],
+       "sub_results": []
+      }
+     },
+     "execution": {
+      "mode": "TEST_DOUBLE",
+      "verified": null
+     }
+    }
+   ],
+   "final": {
+    "status": "EXECUTED",
+    "action": "read_attached_file",
+    "execution_mode": "TEST_DOUBLE",
+    "verified": null
+   },
+   "total_ms": 181.83420000423212,
+   "flow": "W5_followup_t1",
+   "expected": "EXECUTED:read_attached_file"
+  },
+  {
+   "text": "Convert it to PDF.",
+   "context": "last_attachment = field_visit_report.docx (resolved in the previous turn)",
+   "stages": [
+    {
+     "stage": "specialist",
+     "model_ms": 230.60629999963567,
+     "calls": [
+      {
+       "name": "convert_document",
+       "arguments": {
+        "request_text": "last_attachment = field_visit_report.docx",
+        "requested_output": "field_visit_report.pdf"
+       }
+      }
+     ],
+     "suppressed": [],
+     "uri": {
+      "translate": {
+       "ok": true,
+       "contract": {
+        "mode": "single_action",
+        "capability": "convert_document",
+        "actions": [
+         {
+          "name": "convert_document",
+          "inputs": {
+           "request_text": "Convert it to PDF."
+          }
+         }
+        ],
+        "goal": "",
+        "clarification": null,
+        "unsupported_reason": null,
+        "reason": "",
+        "requires_approval": false,
+        "confidence": "high"
+       }
+      },
+      "gate": {
+       "outcome": "READY",
+       "capability_id": "convert_document",
+       "action_names": [
+        "convert_document"
+       ],
+       "reasons": [
+        "all_gates_passed"
+       ],
+       "missing_field": null,
+       "expected_type": null,
+       "overlap_candidates": [],
+       "sub_results": []
+      }
+     },
+     "execution": {
+      "mode": "NOT_EXECUTED_HELD_FOR_APPROVAL",
+      "verified": null
+     }
+    }
+   ],
+   "final": {
+    "status": "HELD_FOR_APPROVAL",
+    "action": "convert_document",
+    "execution_mode": "NOT_EXECUTED_HELD_FOR_APPROVAL",
+    "verified": null
+   },
+   "total_ms": 230.79080000024987,
+   "flow": "W5_followup_t2",
+   "expected": "HELD:convert_document"
+  },
+  {
+   "text": "Delete the attached field_visit_report.pdf.",
+   "context": "attachments = [field_visit_report.pdf]",
+   "stages": [
+    {
+     "stage": "specialist",
+     "model_ms": 196.30719999986468,
+     "calls": [
+      {
+       "name": "drive_upload",
+       "arguments": {
+        "request_text": "Delete the attached field_visit_report.pdf"
+       }
+      }
+     ],
+     "suppressed": [],
+     "uri": {
+      "translate": {
+       "ok": true,
+       "contract": {
+        "mode": "single_action",
+        "capability": "drive_upload",
+        "actions": [
+         {
+          "name": "drive_upload",
+          "inputs": {}
+         }
+        ],
+        "goal": "",
+        "clarification": null,
+        "unsupported_reason": null,
+        "reason": "",
+        "requires_approval": false,
+        "confidence": "high"
+       }
+      },
+      "gate": {
+       "outcome": "DISCONNECTED",
+       "capability_id": "drive_upload",
+       "action_names": [
+        "drive_upload"
+       ],
+       "reasons": [
+        "blocked_by_permission"
+       ],
+       "missing_field": null,
+       "expected_type": null,
+       "overlap_candidates": [],
+       "sub_results": []
+      }
+     },
+     "containment": "GATE_DISCONNECTED"
+    },
+    {
+     "stage": "brain",
+     "model_ms": 1050.2881000065827,
+     "calls": [
+      {
+       "name": "decline_unsupported",
+       "arguments": {}
+      }
+     ],
+     "suppressed": [],
+     "abstain": "DECLINE"
+    }
+   ],
+   "final": {
+    "status": "DECLINED",
+    "executed": null
+   },
+   "total_ms": 1246.8137000032584,
+   "flow": "W6_prohibited",
+   "expected": "DECLINED"
+  },
+  {
+   "text": "Search Drive for the tender file, then upload the signed copy.",
+   "context": null,
+   "stages": [
+    {
+     "stage": "specialist",
+     "model_ms": 136.77699999971082,
+     "calls": [
+      {
+       "name": "drive_search",
+       "arguments": {}
+      }
+     ],
+     "suppressed": [],
+     "uri": {
+      "translate": {
+       "ok": true,
+       "contract": {
+        "mode": "single_action",
+        "capability": "drive_search",
+        "actions": [
+         {
+          "name": "drive_search",
+          "inputs": {
+           "request_text": "Search Drive for the tender file, then upload the signed copy."
+          }
+         }
+        ],
+        "goal": "",
+        "clarification": null,
+        "unsupported_reason": null,
+        "reason": "",
+        "requires_approval": false,
+        "confidence": "high"
+       }
+      },
+      "gate": {
+       "outcome": "DISCONNECTED",
+       "capability_id": "drive_search",
+       "action_names": [
+        "drive_search"
+       ],
+       "reasons": [
+        "blocked_by_permission"
+       ],
+       "missing_field": null,
+       "expected_type": null,
+       "overlap_candidates": [],
+       "sub_results": []
+      }
+     },
+     "containment": "GATE_DISCONNECTED"
+    },
+    {
+     "stage": "brain",
+     "model_ms": 704.8920000015642,
+     "calls": [
+      {
+       "name": "drive_search",
+       "arguments": {
+        "request_text": "tender file"
+       }
+      }
+     ],
+     "suppressed": [],
+     "uri": {
+      "translate": {
+       "ok": true,
+       "contract": {
+        "mode": "single_action",
+        "capability": "drive_search",
+        "actions": [
+         {
+          "name": "drive_search",
+          "inputs": {
+           "request_text": "Search Drive for the tender file, then upload the signed copy."
+          }
+         }
+        ],
+        "goal": "",
+        "clarification": null,
+        "unsupported_reason": null,
+        "reason": "",
+        "requires_approval": false,
+        "confidence": "high"
+       }
+      },
+      "gate": {
+       "outcome": "DISCONNECTED",
+       "capability_id": "drive_search",
+       "action_names": [
+        "drive_search"
+       ],
+       "reasons": [
+        "blocked_by_permission"
+       ],
+       "missing_field": null,
+       "expected_type": null,
+       "overlap_candidates": [],
+       "sub_results": []
+      }
+     },
+     "containment": "GATE_DISCONNECTED"
+    }
+   ],
+   "final": {
+    "status": "ESCALATION_EXHAUSTED",
+    "executed": null
+   },
+   "total_ms": 841.9300999958068,
+   "flow": "W7_multistep",
+   "expected": "ESCALATED_TO_BRAIN"
+  }
+ ],
+ "load_after": {
+  "t": 1790827240.0993593,
+  "cpu_percent": 1.0,
+  "mem_percent": 84.2,
+  "top_cpu": [
+   {
+    "cpu": 2338.2,
+    "name": "System Idle Process"
+   },
+   {
+    "cpu": 24.0,
+    "name": "python.exe"
+   },
+   {
+    "cpu": 21.3,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 19.0,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 11.8,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 2.4,
+    "name": "lghub_agent.exe"
+   }
+  ]
+ }
+}

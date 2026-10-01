@@ -1,0 +1,406 @@
+{
+ "load_before": {
+  "t": 1790827272.9792995,
+  "cpu_percent": 4.3,
+  "mem_percent": 84.5,
+  "top_cpu": [
+   {
+    "cpu": 2297.5,
+    "name": "System Idle Process"
+   },
+   {
+    "cpu": 27.0,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 22.0,
+    "name": "python.exe"
+   },
+   {
+    "cpu": 19.2,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 9.6,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 4.9,
+    "name": "ProtonVPNService.exe"
+   }
+  ]
+ },
+ "granite": [
+  {
+   "first_wall_ms": 1463.3752000008826,
+   "load_duration_ms": 1298.9554,
+   "warm_wall_ms": [
+    143.495600001188,
+    136.44419999764068,
+    159.8565999956918,
+    136.30840000405442,
+    159.31049999926472,
+    138.48489999509184,
+    157.55039999930887,
+    140.24990000325488,
+    161.7277000041213,
+    138.16750000114553,
+    160.98439999768743,
+    146.9234999967739,
+    170.01639999944018,
+    147.77550000144402,
+    173.53559999901336,
+    140.70300000457792,
+    166.82109999965178,
+    148.29509999981383,
+    174.5805999962613,
+    144.9538999950164
+   ],
+   "ps": {
+    "models": [
+     {
+      "name": "granite4:350m-h",
+      "model": "granite4:350m-h",
+      "size": 427640749,
+      "digest": "7145075ed3d6da48bd41cafd8bed8171936abe0ece819aa1e516fd98881aa6a4",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "granitehybrid",
+       "families": [
+        "granitehybrid"
+       ],
+       "parameter_size": "340.33M",
+       "quantization_level": "Q8_0"
+      },
+      "expires_at": "2026-10-01T10:01:17.2668916+05:30",
+      "size_vram": 427640749,
+      "context_length": 4096
+     },
+     {
+      "name": "qwen3.5:9b",
+      "model": "qwen3.5:9b",
+      "size": 5490081790,
+      "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "qwen35",
+       "families": [
+        "qwen35"
+       ],
+       "parameter_size": "9.7B",
+       "quantization_level": "Q4_K_M"
+      },
+      "expires_at": "2026-10-01T10:00:48.2452024+05:30",
+      "size_vram": 5490081790,
+      "context_length": 4096
+     }
+    ]
+   }
+  },
+  {
+   "first_wall_ms": 1457.7723000038532,
+   "load_duration_ms": 1291.1651,
+   "warm_wall_ms": [
+    144.965500003309,
+    138.07770000130404,
+    161.94499999983236,
+    137.61660000454867,
+    160.06299999571638,
+    136.65089999994962,
+    158.95930000260705,
+    137.0494000002509,
+    158.55890000239015,
+    135.81790000171168,
+    162.16960000019753,
+    145.79469999443972,
+    170.43479999847477,
+    145.15209999808576,
+    170.09560000587953,
+    145.77599999756785,
+    172.13349999656202,
+    146.8096999960835,
+    171.80959999677725,
+    146.77499999379506
+   ],
+   "ps": {
+    "models": [
+     {
+      "name": "granite4:350m-h",
+      "model": "granite4:350m-h",
+      "size": 427640749,
+      "digest": "7145075ed3d6da48bd41cafd8bed8171936abe0ece819aa1e516fd98881aa6a4",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "granitehybrid",
+       "families": [
+        "granitehybrid"
+       ],
+       "parameter_size": "340.33M",
+       "quantization_level": "Q8_0"
+      },
+      "expires_at": "2026-10-01T10:01:23.7764718+05:30",
+      "size_vram": 427640749,
+      "context_length": 4096
+     },
+     {
+      "name": "qwen3.5:9b",
+      "model": "qwen3.5:9b",
+      "size": 5490081790,
+      "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "qwen35",
+       "families": [
+        "qwen35"
+       ],
+       "parameter_size": "9.7B",
+       "quantization_level": "Q4_K_M"
+      },
+      "expires_at": "2026-10-01T10:00:48.2452024+05:30",
+      "size_vram": 5490081790,
+      "context_length": 4096
+     }
+    ]
+   }
+  },
+  {
+   "first_wall_ms": 1458.1940999996732,
+   "load_duration_ms": 1291.8523,
+   "warm_wall_ms": [
+    144.40110000577988,
+    139.7071999963373,
+    166.62300000461983,
+    138.26340000377968,
+    162.82330000103684,
+    139.2307999994955,
+    163.30549999838695,
+    139.60289999522502,
+    163.01409999869065,
+    141.16540000395617,
+    181.58380000386387,
+    147.49339999980293,
+    169.52470000251196,
+    144.56649999920046,
+    174.09230000339448,
+    143.7383000011323,
+    172.20620000443887,
+    148.14810000098078,
+    170.32669999753125,
+    147.07619999535382
+   ],
+   "ps": {
+    "models": [
+     {
+      "name": "granite4:350m-h",
+      "model": "granite4:350m-h",
+      "size": 427640749,
+      "digest": "7145075ed3d6da48bd41cafd8bed8171936abe0ece819aa1e516fd98881aa6a4",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "granitehybrid",
+       "families": [
+        "granitehybrid"
+       ],
+       "parameter_size": "340.33M",
+       "quantization_level": "Q8_0"
+      },
+      "expires_at": "2026-10-01T10:01:30.2870139+05:30",
+      "size_vram": 427640749,
+      "context_length": 4096
+     },
+     {
+      "name": "qwen3.5:9b",
+      "model": "qwen3.5:9b",
+      "size": 5490081790,
+      "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "qwen35",
+       "families": [
+        "qwen35"
+       ],
+       "parameter_size": "9.7B",
+       "quantization_level": "Q4_K_M"
+      },
+      "expires_at": "2026-10-01T10:00:48.2452024+05:30",
+      "size_vram": 5490081790,
+      "context_length": 4096
+     }
+    ]
+   }
+  },
+  {
+   "first_wall_ms": 1462.30800000194,
+   "load_duration_ms": 1293.6148,
+   "warm_wall_ms": [
+    148.3555000013439,
+    137.82429999992019,
+    164.42039999674307,
+    141.73609999852488,
+    161.19160000380361,
+    138.99999999557622,
+    163.71260000596521,
+    138.64369999646442,
+    163.00259999843547,
+    138.07530000485713,
+    168.30990000016754,
+    144.6007999984431,
+    168.20690000167815,
+    145.63400000042748,
+    170.9846000012476,
+    145.02409999840893,
+    174.4944000020041,
+    143.73679999698652,
+    185.74210000224411,
+    147.39969999936875
+   ],
+   "ps": {
+    "models": [
+     {
+      "name": "granite4:350m-h",
+      "model": "granite4:350m-h",
+      "size": 427640749,
+      "digest": "7145075ed3d6da48bd41cafd8bed8171936abe0ece819aa1e516fd98881aa6a4",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "granitehybrid",
+       "families": [
+        "granitehybrid"
+       ],
+       "parameter_size": "340.33M",
+       "quantization_level": "Q8_0"
+      },
+      "expires_at": "2026-10-01T10:01:36.8522046+05:30",
+      "size_vram": 427640749,
+      "context_length": 4096
+     },
+     {
+      "name": "qwen3.5:9b",
+      "model": "qwen3.5:9b",
+      "size": 5490081790,
+      "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "qwen35",
+       "families": [
+        "qwen35"
+       ],
+       "parameter_size": "9.7B",
+       "quantization_level": "Q4_K_M"
+      },
+      "expires_at": "2026-10-01T10:00:48.2452024+05:30",
+      "size_vram": 5490081790,
+      "context_length": 4096
+     }
+    ]
+   }
+  },
+  {
+   "first_wall_ms": 1457.8631999975187,
+   "load_duration_ms": 1292.5502,
+   "warm_wall_ms": [
+    146.15480000065872,
+    138.06879999901867,
+    162.82309999951394,
+    139.20779999898514,
+    164.17100000398932,
+    140.36550000309944,
+    163.9833000008366,
+    139.69619999988936,
+    167.1308000004501,
+    147.6535000037984,
+    170.3261000002385,
+    145.7257000001846,
+    171.26480000297306,
+    145.75049999984913,
+    173.21869999432238,
+    145.20899999479298,
+    171.58229999768082,
+    147.4852000028477,
+    174.8091999979806,
+    143.87300000089454
+   ],
+   "ps": {
+    "models": [
+     {
+      "name": "granite4:350m-h",
+      "model": "granite4:350m-h",
+      "size": 427640749,
+      "digest": "7145075ed3d6da48bd41cafd8bed8171936abe0ece819aa1e516fd98881aa6a4",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "granitehybrid",
+       "families": [
+        "granitehybrid"
+       ],
+       "parameter_size": "340.33M",
+       "quantization_level": "Q8_0"
+      },
+      "expires_at": "2026-10-01T10:01:43.4058542+05:30",
+      "size_vram": 427640749,
+      "context_length": 4096
+     },
+     {
+      "name": "qwen3.5:9b",
+      "model": "qwen3.5:9b",
+      "size": 5490081790,
+      "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "details": {
+       "parent_model": "",
+       "format": "gguf",
+       "family": "qwen35",
+       "families": [
+        "qwen35"
+       ],
+       "parameter_size": "9.7B",
+       "quantization_level": "Q4_K_M"
+      },
+      "expires_at": "2026-10-01T10:00:48.2452024+05:30",
+      "size_vram": 5490081790,
+      "context_length": 4096
+     }
+    ]
+   }
+  }
+ ],
+ "load_after": {
+  "t": 1790827307.31888,
+  "cpu_percent": 9.9,
+  "mem_percent": 73.9,
+  "top_cpu": [
+   {
+    "cpu": 2299.0,
+    "name": "System Idle Process"
+   },
+   {
+    "cpu": 72.4,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 24.1,
+    "name": "python.exe"
+   },
+   {
+    "cpu": 4.8,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 4.7,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 2.4,
+    "name": "claude.exe"
+   }
+  ]
+ }
+}
