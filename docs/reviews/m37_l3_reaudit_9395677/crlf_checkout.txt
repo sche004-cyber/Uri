@@ -1,0 +1,7 @@
+=========================== short test summary info ============================
+FAILED tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged
+1 failed, 22 passed in 6.29s
+raw sha 117f8c980ff6dd38 crlf count 293
+E           RuntimeError: FROZEN_ANCHOR_INTEGRITY_FAILURE: ['uri_v1/turn/rar_natural_boundary_raw_turn_fixtures.json', 'uri_v1/turn/rar_deterministic.py', 'uri_v1/turn/rar_contracts.py', 'fixtures/m33_3_batch_a/battery.json', 'uri_v1/turn/rar_attachment_order_experimental.py', 'uri_v1/turn/rar_attachment_order_factorial_fixtures.py', 'scripts/m35_a2_8f_detector_d1r.py', 'scripts/m35_a2_8h_detector_d1rq.py']
+1 failed in 0.45s
+crlf offenders at head: []

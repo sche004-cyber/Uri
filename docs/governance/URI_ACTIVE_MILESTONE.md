@@ -15,6 +15,11 @@ superseded. Next validation activity: a live harness pilot, which reopens M36-M3
 for a defect that violates a frozen guarantee. No milestone is automatically opened;
 the M36/M37/M38 notes below are historical. Canonical machine state: `URI_STATE.yaml`.
 
+**M37 UPDATE — 2026-10-01:** M37 was reopened on 2026-09-29 for the authorized M37-L3
+guard fix and is `CLOSED_FROZEN` again at `9395677` (code unchanged from `bd7c450`), after
+an independent re-audit ACCEPT and the User's instruction of 2026-10-01 12:36 UTC. See the
+freeze record section 7.
+
 **M39 STATUS CORRECTION — 2026-10-01 (additive; the two M39 planning notes below are kept as history and are stale):** M39 is implemented, not only planned: `M39_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` on branch `claude/project-thread-wb7tmm`. It is built on the M36-M38 freeze commit `5bbf738` (frozen code `bd7c450`, all `CLOSED_FROZEN`), so the dependency on PROVISIONAL `405db1f`/`5460d64`/`3501f85` no longer applies. Latest independent re-audit: ACCEPT at `0d690ea`. **Scope: R0** (User decision, Chetan, 2026-10-01 08:05 UTC: "Option A: M39 R0 + Office capability, with real-app integration owned by Harness-first"). M39 is the isolated `uri_v1/office` backend and CLI demonstrator; real-app Office integration is owned by the Harness-first Edge track, which consumes the accepted Office capability. R0 closing gates: [plan §14](../plans/M39_OFFICE_DEMONSTRATOR_PLAN.md). The Windows regression run and the live Claude Code smoke test have not run yet, so M39 stays provisional. Not closed, not frozen.
 
 **PLANNING NOTE — 2026-09-28 (additive, R1):** M39 plan revised to R1, retargeted at `URI_WORKING_PRODUCT_BASELINE_REACHED` through the real URI interface (User product completion target); state `M39_PLAN_R1_DRAFTED_PROVISIONAL`. The R0 note below is kept as history.

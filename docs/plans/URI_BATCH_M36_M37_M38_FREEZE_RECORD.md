@@ -134,7 +134,7 @@ record. M39 (Office demonstrator) proceeds under its own gates.
   `scripts/m39_office_benchmark.py`, `scripts/m39_generate_benchmark.py`) and now also
   rejects `..` path segments. No dynamic-planning paths were added (that lane keeps its
   SourceResolver/adapter approach). No M37 code changed, and the freeze verdict above is
-  unchanged. The edited file is pinned by content hash in `tests/test_m39_boundaries.py`;
+  unchanged. The edited file is pinned by git blob id in `tests/test_m39_boundaries.py`;
   `tests/test_m39_frozen_guard_allowlist.py` proves the guard still fails for a changed
   frozen file, a new file in frozen or live-app scope, and M39 look-alike paths, and that
   `uri_v1/office` does no direct file I/O.
@@ -145,18 +145,66 @@ record. M39 (Office demonstrator) proceeds under its own gates.
   is rejected, and the guard probes run on a disposable clone instead of editing frozen
   files in the working checkout.
 
-## 7. Retained limitation recorded after the freeze (additive)
+## 7. M37-L3: frozen guard gap, reopened and fixed (additive)
 
-- **2026-09-29, M37-L3: the frozen M37 scope guard cannot by itself prove the frozen
-  line intact.** Recorded from the independent audit of M39 at `736464a` (finding F2,
-  classified there as a frozen-line limitation, not an M39 defect). The pre-freeze
-  prefixes `uri_v1/edge/` and `uri_v1/execution/` in
+- **Raised.** The independent audit of M39 at `736464a` (finding F2) found that the
+  pre-freeze prefixes `uri_v1/edge/` and `uri_v1/execution/` in
   `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged` date from M37,
-  when those were M37's working directories, so an edit under them passes that guard. The
-  authorized M39 entry (section 6) did not widen them. No code change: the test is
-  frozen and the User's authorization covers only the M39 entry. Frozen-line integrity is
-  enforced instead by M39's guard
-  `tests/test_m39_boundaries.py::test_m36_m37_m38_and_frozen_files_unchanged`, which
-  diffs against the freeze commit `5bbf738` with no exemption since the M39 repair after
-  that audit (its N1). The classification is the audit's; the User's acceptance of this
-  limitation is not yet recorded.
+  when those were M37's working directories. The guard diffs against the M36 baseline
+  `179fe10`, so any edit, addition or deletion under them passed it, and the guard alone
+  could not prove the frozen line intact. The same held for the other M37/M38 entries
+  (`tests/test_m37_*`, `tests/test_m38_*`, the two support modules, `scripts/m37_*`,
+  `scripts/m38_*`, `fixtures/m37_edge/`, `fixtures/m38_harness/`). The M39 line recorded
+  it as retained limitation M37-L3 with the User's acceptance pending.
+- **Decision.** Chetan (User), 2026-09-29 13:57 UTC, chose **"Fix in M37"** over accepting
+  the limitation: M37 is reopened for a narrow authorized edit to its frozen check, followed
+  by a re-audit.
+- **Fix (test-only; no code under `uri_v1/` changed; frozen code is still the tree of
+  `bd7c450`).** The guard keeps its M36-baseline check unchanged and now also diffs every
+  path under those M37/M38 entries against the freeze commit `5bbf738` (`--no-renames`,
+  so a rename reports both names), plus untracked files. Any difference fails. The only
+  exemptions are the guard file itself and its new pin,
+  `tests/test_m37_frozen_guard_pin.py`, which holds the guard file to its authorized
+  content by SHA-256 (line endings normalized, so a Windows CRLF checkout hashes the
+  same). The guard's offender list is now built by `frozen_scope_offenders()`, and the
+  pin's tamper probes run it on a disposable clone, checking exactly what each tampering
+  adds: a changed file under each kind of entry, new files (including
+  `uri_v1/execution/planning/`), a deletion and a committed rename are all reported, and
+  the guard test itself raises. With the pre-fix guard, all 17 of these tamperings passed
+  it silently. No allowlist entry was added for any lane.
+- **Effect on other lines.** Any branch that adds or changes files under these frozen paths
+  now fails this guard. The dynamic-planning slice puts its code under
+  `uri_v1/execution/planning/`, which the pre-fix guard let through; with the fix those
+  files join its already-accepted guard failure (still one failing test, nine more
+  offender paths). The M39 line must update its hash pin of this file when it merges the fix.
+- **Status.** M37 is `REOPENED_FOR_AUTHORIZED_EDIT`, pending an independent re-audit of the
+  fix, and returns to `CLOSED_FROZEN` only after it; this record does not re-freeze it.
+  M37-L3 is closed by the fix, subject to that re-audit.
+- **Re-freeze (2026-10-01).** Independent re-audit of `9395677`: **ACCEPT**, no CRITICAL,
+  HIGH or MEDIUM findings (`docs/reviews/M37_L3_REAUDIT_9395677.md`, commit `98d8b1b`).
+  Chetan (User), 2026-10-01 12:36 UTC, verbatim: "Re-freeze M37 at 9395677." Before this commit the
+  conditions were re-checked on `98d8b1b`: no change under `uri_v1/`, `uri_core/`,
+  `uri_ui/`, `scripts/` or `fixtures/` since `5bbf738` (only the guard test and its pin
+  differ under `tests/`); `tests/` 1,325 passed / 0 failed; M36, M37 and M38 qualification
+  drivers exit 0 with gates passing; governance 37 passed, `URI_STATE.yaml` VALID; anchors
+  ok, changed `[]`. **M37 is `CLOSED_FROZEN` at `9395677d8fce63ffb5d45722ac871bb5a21b6135`**, frozen code still the
+  tree of `bd7c450`. M37-L3 is closed.
+- **Retained limitation M37-L4 (re-audit F-1 to F-3, LOW).** The guard is git-based, so
+  deliberate local action can blind it: `--skip-worktree`/`--assume-unchanged` flags,
+  `git replace` of the baseline commits, `.git/info/exclude`; ignored paths (`cache/`,
+  `__pycache__`) and stale bytecode; and editing the guard, its pin, `.gitignore` or root
+  pytest config (`pytest.ini`, `pyproject.toml`, `conftest.py`) together with frozen
+  files. None of these travels on a branch unseen. Review rule: the guard proves the frozen
+  paths only while those files are unchanged from `9395677`, so reviewers check
+  `git diff 9395677 -- tests/test_m37_edge_resolution.py tests/test_m37_frozen_guard_pin.py
+  .gitignore pytest.ini pyproject.toml conftest.py`. Accepted by the User, 2026-10-01
+  12:39 UTC, verbatim: "I accept the independent re-audit verdict and authorize retaining findings F-1, F-2 and F-3 as documented limitations."
+- **Windows validation: pending, not a freeze precondition.** No repository governance
+  rule requires a Windows run before a freeze (checked: `docs/governance/`,
+  `URI_STATE.yaml`, `AGENTS.md`, `CLAUDE.md`), so this is a normal re-freeze. This
+  re-freeze is test-only and was validated on Linux, including an `autocrlf=true`
+  checkout in the re-audit. The Windows / Python 3.13 run of `tests/` at this line stays a
+  required follow-up and is carried into the combined M37/M39 Windows run on the User's
+  PC. A failure there that is not already known (re-audit F-6: the M33.3 raw-byte anchors
+  fail in an `autocrlf=true` checkout, identically on `5bbf738`) reopens M37.
+

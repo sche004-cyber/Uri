@@ -1,0 +1,238 @@
+[
+ {
+  "probe": "edit uri_v1/edge/__init__.py",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/edge/__init__.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "edit fixtures/m37_edge file",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "fixtures/m37_edge/battery.json"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "edit fixtures/m38_harness file",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "fixtures/m38_harness/fake_claude.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "add tests/test_m37_zz.py",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "tests/test_m37_zz.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "add uri_v1/execution/harness/new.py",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/execution/harness/new.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "delete uri_v1/execution/__init__.py (unstaged)",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/execution/__init__.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "delete + commit uri_v1/edge file",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/edge/repair.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "staged-only edit (index differs, worktree edited)",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/edge/resolver.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "committed edit then HEAD moved",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/execution/verify.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "chmod +x frozen file",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/edge/resolver.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "non-ASCII filename under uri_v1/edge",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "\"uri_v1/edge/\\303\\251vil.py\""
+  ],
+  "note": ""
+ },
+ {
+  "probe": "filename with space under uri_v1/edge",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/edge/a b.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "case variant dir uri_v1/Edge/x.py (Linux)",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/Edge/x.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "tracked file replaced by symlink to tampered copy",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/edge/resolver.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "tracked dir replaced by symlink to copy",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/execution/harness",
+   "uri_v1/execution/harness/__init__.py",
+   "uri_v1/execution/harness/adapters.py",
+   "uri_v1/execution/harness/capsule.py",
+   "uri_v1/execution/harness/contracts.py",
+   "uri_v1/execution/harness/discovery.py",
+   "uri_v1/execution/harness/process.py",
+   "uri_v1/execution/harness/runner.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "new symlink under frozen path",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/edge/link.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "skip-worktree then edit frozen file",
+  "verdict": "MISSED",
+  "expected": "?",
+  "offenders": [],
+  "note": ""
+ },
+ {
+  "probe": "assume-unchanged then edit frozen file",
+  "verdict": "MISSED",
+  "expected": "?",
+  "offenders": [],
+  "note": ""
+ },
+ {
+  "probe": "git replace freeze commit with tampered commit",
+  "verdict": "MISSED",
+  "expected": "?",
+  "offenders": [],
+  "note": ""
+ },
+ {
+  "probe": ".git/info/exclude hides new frozen-path file",
+  "verdict": "MISSED",
+  "expected": "?",
+  "offenders": [],
+  "note": ""
+ },
+ {
+  "probe": "root .gitignore entry (tracked, unscanned) hides new file",
+  "verdict": "MISSED",
+  "expected": "?",
+  "offenders": [],
+  "note": ""
+ },
+ {
+  "probe": "existing ignore pattern: uri_v1/edge/cache/__init__.py",
+  "verdict": "MISSED",
+  "expected": "?",
+  "offenders": [],
+  "note": ""
+ },
+ {
+  "probe": "git add -f of ignored file under frozen path",
+  "verdict": "CAUGHT",
+  "expected": "CAUGHT",
+  "offenders": [
+   "uri_v1/edge/cache/__init__.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "crafted __pycache__ pyc shadows frozen module (source untouched)",
+  "verdict": "MISSED",
+  "expected": "?",
+  "offenders": [],
+  "note": ""
+ },
+ {
+  "probe": "edit guard + pin together, then edit frozen file (run in-clone)",
+  "verdict": "CAUGHT",
+  "expected": "?",
+  "offenders": [
+   "uri_v1/edge/resolver.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "delete pin file + weaken guard, then edit frozen file (run in-clone)",
+  "verdict": "CAUGHT",
+  "expected": "?",
+  "offenders": [
+   "uri_v1/edge/resolver.py"
+  ],
+  "note": ""
+ },
+ {
+  "probe": "root pytest.ini deselects guard (root config unscanned), frozen file edited",
+  "verdict": "CAUGHT",
+  "expected": "?",
+  "offenders": [
+   "uri_v1/edge/resolver.py"
+  ],
+  "note": ""
+ }
+]

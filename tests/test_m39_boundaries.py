@@ -97,7 +97,8 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
 # change does not. Was sha256 f288b194... of the LF bytes, which failed on
 # such checkouts (integration readiness audit 2026-10-01, D9).
 AUTHORIZED_FROZEN_EDITS = {
-    "tests/test_m37_edge_resolution.py": "e54c180676e506a538f52662bf8182b2960befe8",
+    "tests/test_m37_edge_resolution.py": "cf8f88efcd70c4a3bf22a9840f27b311edf5dce2",
+    "tests/test_m37_frozen_guard_pin.py": "4db0da1990fbc4d1efd9c76ee35f365e2ec97736",
 }
 
 

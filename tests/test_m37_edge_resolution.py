@@ -270,15 +270,35 @@ M39_ALLOWED = ("uri_v1/office/", "fixtures/m39_office/", "tests/test_m39_")
 M39_ALLOWED_FILES = frozenset({"tests/m39_office_support.py", "scripts/m39_office_benchmark.py",
                                "scripts/m39_generate_benchmark.py"})
 
+# M37-L3 fix (User, Chetan, 2026-09-29 13:57 UTC, "Fix in M37"): the FROZEN_M37_M38 prefixes
+# only say where M37/M38 may differ from the M36 baseline, so on their own they let any edit
+# under uri_v1/edge/ or uri_v1/execution/ pass. Since the freeze those paths are frozen as
+# well and must match the freeze commit exactly (renames counted as delete + add). Only this
+# guard file and its hash pin, tests/test_m37_frozen_guard_pin.py, are exempt; the pin holds
+# this file to its authorized content.
+FREEZE_COMMIT = "5bbf73856011fac7f8abad6970e664616a4c01ec"
+FROZEN_M37_M38 = ("uri_v1/edge/", "uri_v1/execution/", "tests/test_m37_", "tests/test_m38_", "tests/m37_edge_support.py",
+                  "tests/m38_harness_support.py", "scripts/m37_", "scripts/m38_", "fixtures/m37_edge/", "fixtures/m38_harness/")
+FREEZE_EXEMPT = frozenset({"tests/test_m37_edge_resolution.py", "tests/test_m37_frozen_guard_pin.py"})
 
-def test_m36_and_frozen_files_unchanged():
+
+def frozen_scope_offenders():
+    """Every path the guard below rejects: outside the allowed scope, or (M37-L3) changed since the freeze."""
     changed = subprocess.check_output(["git", "diff", "--name-only", M36_BASELINE, "--",
                                        "uri_v1", "uri_core", "uri_ui", "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
     untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "--", "uri_v1", "uri_core", "uri_ui",
                                          "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
-    allowed = ("uri_v1/edge/", "uri_v1/execution/", "tests/test_m37_", "tests/test_m38_", "tests/m37_edge_support.py",
-               "tests/m38_harness_support.py", "scripts/m37_", "scripts/m38_", "fixtures/m37_edge/", "fixtures/m38_harness/") + M39_ALLOWED
+    allowed = FROZEN_M37_M38 + M39_ALLOWED
     ok = lambda p: (p.startswith(allowed) or p in M39_ALLOWED_FILES) and ".." not in p.split("/")
-    assert all(ok(p) for p in changed + untracked), [p for p in changed + untracked if not ok(p)]
+    outside = [p for p in changed + untracked if not ok(p)]
+    since_freeze = subprocess.check_output(["git", "diff", "--name-only", "--no-renames", FREEZE_COMMIT, "--",
+                                            "uri_v1", "uri_core", "uri_ui", "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
+    unfrozen = [p for p in since_freeze + untracked if p.startswith(FROZEN_M37_M38) and p not in FREEZE_EXEMPT]
+    return outside + unfrozen
+
+
+def test_m36_and_frozen_files_unchanged():
+    offenders = frozen_scope_offenders()
+    assert not offenders, offenders
     from scripts.m33_3_r_anchors import require_anchors
     assert require_anchors()["ok"]
