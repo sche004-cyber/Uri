@@ -25,4 +25,4 @@ Everything is under `experiments/edge_pair_qual/` on branch `claude/project-thre
 | Comparative pass rule (plan §7) | No Edge-model configuration is non-inferior to the Main Brain alone (report C §2) |
 | Independent audit | **not done**: Codex is paused; handoff in report G |
 
-Status: **NOT QUALIFIED.** No model or pairing is qualified by this package.
+Status: **NOT QUALIFIED**, accepted by Chetan on 2026-10-01 (`QUALIFICATION_DECISION.md`). No model or pairing is qualified by this package. **The independent Codex audit is PENDING; these results are not independently audited.**

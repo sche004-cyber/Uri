@@ -1,6 +1,6 @@
 # Report G: Independent audit handoff (for Codex)
 
-Codex is paused, so it has not been called. This package lets an independent auditor reproduce, re-score and challenge every EPQ-1 claim without relying on Claude's summaries.
+**Audit status: PENDING (not started).** Codex is paused, so it has not been called. The owner accepted the NOT QUALIFIED outcome on 2026-10-01 (`QUALIFICATION_DECISION.md`). That acceptance is not an audit, and nothing here may be described as independently audited until the Codex review is complete. This package lets an independent auditor reproduce, re-score and challenge every EPQ-1 claim without relying on Claude's summaries.
 
 ## 1. What to verify first (ordered by how much the conclusions depend on it)
 
@@ -19,6 +19,7 @@ Codex is paused, so it has not been called. This package lets an independent aud
 | Edge in front of the Brain lowers success (86 vs 109 of 138) | `results/compose_holdout.json` | Show a composition error, e.g. wrong fallback rule in `compose.stage` |
 | Selective-by-kind equals Granite alone | `battery/assignment_by_kind_from_dev.json` | Show the dev assignment was computed wrongly |
 | The verbatim-span check cannot stop a wrong but real span | examples in interim report 1 §5 | — |
+| Existing deterministic checks cannot separate right from wrong specialist selections, except RAR on references | `reports/H_INTEGRATION_BOUNDARY_FINDINGS.md`, `boundary_replay.py` | Find an existing check with high wrong-blocked and low right-lost counts |
 | Latency differences are mostly placement | `runs/holdout_granitecpu.jsonl` | Re-measure on an idle machine |
 
 ## 3. Known weaknesses the auditor should weigh

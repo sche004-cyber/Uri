@@ -1,7 +1,7 @@
 {
  "experiment": "EPQ-1",
  "branch": "claude/project-thread-gb7z7s",
- "head_when_built": "6f06237c8109a2f0775b834f61e6dc6fa160a4b5",
+ "head_when_built": "26537cdb4e247c303926820fd7b2ffa3ea6561cd",
  "files": {
   "author_battery.py": {
    "sha256": "c3464be2b56ab067702d1a82c6f31f445c2231a8fba2f67971582cc62b07bc45",
@@ -26,6 +26,10 @@
   "battery/MANIFEST_harness.json": {
    "sha256": "85fa2f9a3921388479344a44bef1355f0e662e23de4b2b7a42d395249b2b846c",
    "bytes": 1147
+  },
+  "boundary_replay.py": {
+   "sha256": "3f817cfbe33bdc37edacf87b8a448a7b4b2fa34211604a521a5d72292b9e9c50",
+   "bytes": 7663
   },
   "build_manifest.py": {
    "sha256": "06c30bf383941ca7ef26e1b3ec22658fbc7d67de5ed63458871c8c7121b27399",
@@ -100,12 +104,16 @@
    "bytes": 6818
   },
   "reports/F_QUALIFICATION_EVIDENCE_PACKAGE.md": {
-   "sha256": "085ba6b735453130b62ad828b78c664408240da598520314478ea53151c9837f",
-   "bytes": 2900
+   "sha256": "80d985a99db07d3c8e31aaba59c6fda6eed31f4998969a4113004223adc6123f",
+   "bytes": 3081
   },
   "reports/G_CODEX_AUDIT_HANDOFF.md": {
-   "sha256": "b52f287450413b9f0bf5171bb943007aad9aabbfe676498aad7a70fbd1ccfb8d",
-   "bytes": 4307
+   "sha256": "f891af14f0d279ebcf11bec81e6a62189187da6726275b075c87a99456093704",
+   "bytes": 4861
+  },
+  "reports/H_INTEGRATION_BOUNDARY_FINDINGS.md": {
+   "sha256": "d46880ef888c0fb56fb85c1b7946f6d3a72eaade92c704391e89ff14f3ceb5fc",
+   "bytes": 6255
   },
   "reports/INTERIM_1_DEV_BATCH.md": {
    "sha256": "f2a56b52ae3dea50679ed6f3f990b851449e30bc94d85c2639fe18e330d6f456",
@@ -114,6 +122,14 @@
   "reports/INTERIM_2_HOLDOUT.md": {
    "sha256": "40a2b028c97e17595bb63cfe27bf3cd26cf8ffe6a92e04712b22d2d954493f76",
    "bytes": 6970
+  },
+  "reports/QUALIFICATION_DECISION.md": {
+   "sha256": "ad096bef3b20800346ff2c1f1f320efb32b1583e4089be6b2b6967c08aa0c58f",
+   "bytes": 1920
+  },
+  "results/boundary_replay.json": {
+   "sha256": "658c09ed6f04d14fcceaa9022631f940a7b8f7d6d8cf6acb7910ce1152a46647",
+   "bytes": 5502
   },
   "results/compose_dev_v1.json": {
    "sha256": "9287d932e1f17e4ea8c3fce7ba6843c8397cdcb76c96311a106d3036dc8b6da0",
