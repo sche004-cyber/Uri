@@ -1,0 +1,116 @@
+[
+ {
+  "text": "hi",
+  "client_total_s": 0.15,
+  "backend_last_byte_s": 0.13,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.09
+  ],
+  "reply": "Hello! How can I assist you today?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.124,
+  "status": "success",
+  "exec": null,
+  "run": "final_030dec5"
+ },
+ {
+  "text": "thank you",
+  "client_total_s": 0.05,
+  "backend_last_byte_s": 0.05,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.04
+  ],
+  "reply": "You're welcome!",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.05,
+  "status": "success",
+  "exec": null,
+  "run": "final_030dec5"
+ },
+ {
+  "text": "hi, can you summarize the attached report?",
+  "client_total_s": 38.66,
+  "backend_last_byte_s": 38.65,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4173,
+    146,
+    18.43
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5288,
+    43,
+    20.13
+   ]
+  ],
+  "model_sum_s": 38.56,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9461,
+   38.56
+  ],
+  "reply": "I cannot summarize the report because I do not have a capability to analyze or summarize documents. My available tools a",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 38.649,
+  "status": "unavailable",
+  "exec": null,
+  "run": "final_030dec5"
+ },
+ {
+  "text": "Hello URI, what can you currently do?",
+  "client_total_s": 39.12,
+  "backend_last_byte_s": 39.12,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4043,
+    107,
+    17.1
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5313,
+    105,
+    21.94
+   ]
+  ],
+  "model_sum_s": 39.04,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9356,
+   39.04
+  ],
+  "reply": "I can help with administrative tasks like searching and managing emails, retrieving documents, drafting official corresp",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 39.12,
+  "status": "success",
+  "exec": null,
+  "run": "final_030dec5"
+ }
+]
