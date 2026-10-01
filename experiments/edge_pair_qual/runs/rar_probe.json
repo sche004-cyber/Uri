@@ -1,0 +1,55 @@
+[
+ {
+  "case": "W5 follow-up: one resolved attachment",
+  "expr": "it",
+  "outcome": "UNKNOWN",
+  "selected": null,
+  "ambiguous": [],
+  "rule": "TERM_DISCRIMINATION",
+  "failure": "PRONOUN_BINDING",
+  "latency_ms": 0.394
+ },
+ {
+  "case": "W3 ambiguous: two attachments",
+  "expr": "the attachment",
+  "outcome": "AMBIGUOUS",
+  "selected": null,
+  "ambiguous": [
+   "a1",
+   "a2"
+  ],
+  "rule": "CURRENT_ATTACHMENT",
+  "failure": "MULTIPLE_PLAUSIBLE",
+  "latency_ms": 0.034
+ },
+ {
+  "case": "named reference",
+  "expr": "the field visit report",
+  "outcome": "RESOLVED",
+  "selected": "a1",
+  "ambiguous": [],
+  "rule": "TERM_DISCRIMINATION",
+  "failure": null,
+  "latency_ms": 0.089
+ },
+ {
+  "case": "latest of versions",
+  "expr": "the latest plan",
+  "outcome": "RESOLVED",
+  "selected": "a3",
+  "ambiguous": [],
+  "rule": "TEMPORAL_RELATION",
+  "failure": null,
+  "latency_ms": 0.018
+ },
+ {
+  "case": "no candidates",
+  "expr": "it",
+  "outcome": "UNKNOWN",
+  "selected": null,
+  "ambiguous": [],
+  "rule": "TERM_DISCRIMINATION",
+  "failure": "PRONOUN_BINDING",
+  "latency_ms": 0.011
+ }
+]
