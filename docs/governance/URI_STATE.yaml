@@ -214,8 +214,9 @@ product_milestones:
     pg_m1_latest_finding_source: "User-supplied A4 task instruction, recorded in plan section 19.1; no separate A3 report file located. A2 holds; A3 initial projection accepted; sole blocker FREE_INPUT."
   - id: "M37"
     title: "Edge Minimum (local-first resolution and qualified local completion)"
-    status: "CLOSED_FROZEN"
-    status_history_note: "M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN -> audit/repair rounds -> CLOSED_FROZEN at bd7c450 (2026-09-29). Fields below dated before 2026-09-29 (depends_on_unaudited, closing_audit) are historical."
+    status: "REOPENED_FOR_AUTHORIZED_EDIT"
+    reopened_2026_09_29: "User (Chetan) 2026-09-29 13:57 UTC chose 'Fix in M37' for M37-L3 (the frozen M37 scope guard's pre-freeze prefixes uri_v1/edge/ and uri_v1/execution/ let edits under them pass; independent audit of M39 736464a, F2). Reopened for one narrow authorized edit to tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged plus its hash pin and tamper tests (tests/test_m37_frozen_guard_pin.py). Test-only: frozen code is still the tree of bd7c450. Returns to CLOSED_FROZEN only after an independent re-audit of the fix. See docs/plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md section 7."
+    status_history_note: "M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN -> audit/repair rounds -> CLOSED_FROZEN at bd7c450 (2026-09-29) -> REOPENED_FOR_AUTHORIZED_EDIT (M37-L3, decision 2026-09-29 13:57 UTC, fix 2026-10-01). Fields below dated before 2026-09-29 (depends_on_unaudited, closing_audit) are historical."
     currently_active: false
     closed_date: "2026-09-29"
     frozen_commit: "bd7c45068ed2f75cb68c9ea60f803e61a36dd7f2"

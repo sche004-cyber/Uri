@@ -124,3 +124,42 @@ the kind listed in §4 are recorded as limitations.
 
 No production integration, live-app wiring, INT-* event or next milestone is opened by this
 record. M39 (Office demonstrator) proceeds under its own gates.
+
+## 7. M37-L3: frozen guard gap, reopened and fixed (additive)
+
+Section 6 (the authorized M39 entry in the same guard, 2026-09-29 05:21 UTC) lives on the
+M39 line (`claude/project-thread-wb7tmm`); it is not part of this line.
+
+- **Raised.** The independent audit of M39 at `736464a` (finding F2) found that the
+  pre-freeze prefixes `uri_v1/edge/` and `uri_v1/execution/` in
+  `tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged` date from M37,
+  when those were M37's working directories. The guard diffs against the M36 baseline
+  `179fe10`, so any edit, addition or deletion under them passed it, and the guard alone
+  could not prove the frozen line intact. The same held for the other M37/M38 entries
+  (`tests/test_m37_*`, `tests/test_m38_*`, the two support modules, `scripts/m37_*`,
+  `scripts/m38_*`, `fixtures/m37_edge/`, `fixtures/m38_harness/`). The M39 line recorded
+  it as retained limitation M37-L3 with the User's acceptance pending.
+- **Decision.** Chetan (User), 2026-09-29 13:57 UTC, chose **"Fix in M37"** over accepting
+  the limitation: M37 is reopened for a narrow authorized edit to its frozen check, followed
+  by a re-audit.
+- **Fix (test-only; no code under `uri_v1/` changed; frozen code is still the tree of
+  `bd7c450`).** The guard keeps its M36-baseline check unchanged and now also diffs every
+  path under those M37/M38 entries against the freeze commit `5bbf738` (`--no-renames`,
+  so a rename reports both names), plus untracked files. Any difference fails. The only
+  exemptions are the guard file itself and its new pin,
+  `tests/test_m37_frozen_guard_pin.py`, which holds the guard file to its authorized
+  content by SHA-256 (line endings normalized, so a Windows CRLF checkout hashes the
+  same). The guard's offender list is now built by `frozen_scope_offenders()`, and the
+  pin's tamper probes run it on a disposable clone, checking exactly what each tampering
+  adds: a changed file under each kind of entry, new files (including
+  `uri_v1/execution/planning/`), a deletion and a committed rename are all reported, and
+  the guard test itself raises. With the pre-fix guard, all 17 of these tamperings passed
+  it silently. No allowlist entry was added for any lane.
+- **Effect on other lines.** Any branch that adds or changes files under these frozen paths
+  now fails this guard. The dynamic-planning slice puts its code under
+  `uri_v1/execution/planning/`, which the pre-fix guard let through; with the fix those
+  files join its already-accepted guard failure (still one failing test, nine more
+  offender paths). The M39 line must update its hash pin of this file when it merges the fix.
+- **Status.** M37 is `REOPENED_FOR_AUTHORIZED_EDIT`, pending an independent re-audit of the
+  fix, and returns to `CLOSED_FROZEN` only after it; this record does not re-freeze it.
+  M37-L3 is closed by the fix, subject to that re-audit.
