@@ -117,7 +117,7 @@ def test_n3_original_changed_during_verification_is_reported(tmp_path, monkeypat
 
 
 @pytest.mark.parametrize("flags,expect,forbid", [
-    ((), "Nothing was written to your files. The task stays open", "changed during"),
+    ((), "URI wrote nothing back to your files. The task stays open", "changed during"),
     (("CONTAINMENT_VIOLATION",), "URI wrote nothing back to your files.", "Nothing was written"),
     (("PROCESS_NOT_SETTLED",), "URI wrote nothing back to your files.", "Nothing was written"),
     (("ORIGINAL_MODIFIED_DURING_RUN",), "one or more of your original files", "Nothing was written"),
@@ -133,7 +133,10 @@ def test_n3_render_only_claims_nothing_was_written_without_safety_flags(flags, e
 @pytest.fixture(scope="module")
 def clone(tmp_path_factory):
     dest = tmp_path_factory.mktemp("m39_guard_clone") / "repo"
-    subprocess.run(["git", "clone", "-q", "--shared", str(ROOT), str(dest)], check=True)
+    # core.autocrlf=false: check files out exactly as committed (LF), whatever
+    # the machine's global setting; a CRLF checkout on Windows made the probes
+    # fail for line endings, not content (readiness audit 2026-10-01, D9).
+    subprocess.run(["git", "clone", "-q", "--shared", "-c", "core.autocrlf=false", str(ROOT), str(dest)], check=True)
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     subprocess.run(["git", "checkout", "-q", "--detach", head], cwd=dest, check=True)
     return dest
@@ -166,3 +169,48 @@ def test_n1_rolling_a_frozen_file_back_to_a_pre_freeze_version_fails_the_guard(c
     finally:
         target.write_bytes(current)
     boundaries.test_m36_m37_m38_and_frozen_files_unchanged()  # clean clone passes again
+
+
+# -- R5-1 (re-audit of 0d690ea) ---------------------------------------------------------------------
+
+def test_r5_1_no_flag_failure_does_not_claim_nothing_was_written(tmp_path, monkeypatch):
+    """The re-audit's probe: the harness writes a new file into the user's
+    folder and fixes nothing. No original changed, so no safety flag. URI
+    cannot know nothing was written, so it only says what it did itself."""
+    env = escalating_env(tmp_path, monkeypatch, scenario="write_sibling")
+    monkeypatch.setenv("URI_PROBE_ORIGINAL", str(env.root / "report.py"))
+    step = start(env)
+    result = confirm(env, step.task_id)
+    assert result.kind == "HARNESS_FAILED", result
+    assert not result.safety_flags
+    assert (env.root / "harness_notes.txt").exists()
+    text = render(result)
+    assert "Nothing was written" not in text
+    assert "URI wrote nothing back to your files." in text
+
+
+def test_r5_1_no_view_branch_claims_nothing_was_written():
+    for step in (StepResult("CANCELLED", task_id="t"),
+                 StepResult("WRITEBACK_REFUSED", task_id="t", reason="X"),
+                 StepResult("HARNESS_FAILED", task_id="t", verification_status="FAILED")):
+        assert "Nothing was written" not in render(step), step.kind
+
+
+# -- D9: Windows CRLF checkouts (integration readiness audit 2026-10-01) -------------------------------
+
+def test_d9_authorized_edit_pin_ignores_autocrlf_line_endings(tmp_path, monkeypatch):
+    """A clone made with core.autocrlf=true has the authorized frozen edit on
+    disk with CRLF. Its committed content is unchanged, so the pin must still
+    match; a real content change must still fail it."""
+    dest = tmp_path / "crlf_clone"
+    subprocess.run(["git", "clone", "-q", "--shared", "-c", "core.autocrlf=true", str(ROOT), str(dest)], check=True)
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    subprocess.run(["git", "checkout", "-q", "--detach", head], cwd=dest, check=True)
+    rel = "tests/test_m37_edge_resolution.py"
+    target = dest / rel
+    # Force CRLF on disk (Linux git leaves LF even with autocrlf=true).
+    target.write_bytes(target.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+    monkeypatch.setattr(boundaries, "ROOT", dest)
+    assert boundaries._is_authorized_frozen_edit(rel)
+    target.write_bytes(target.read_bytes() + b"# drift\r\n")
+    assert not boundaries._is_authorized_frozen_edit(rel)

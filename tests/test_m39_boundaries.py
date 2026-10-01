@@ -89,16 +89,25 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
 # exact authorized content: any further change to them is an offender again.
 # - tests/test_m37_edge_resolution.py: minimal M39 allowlist entry in
 #   test_m36_and_frozen_files_unchanged (Chetan, 2026-09-29 05:21 UTC).
+#
+# Pinned by git blob id (what `git hash-object` computes for the working file),
+# not by a hash of the raw bytes: git applies the checkout's own line-ending
+# conversion first, so a Windows checkout or clone with core.autocrlf=true
+# (CRLF on disk, same committed content) matches, while any real content
+# change does not. Was sha256 f288b194... of the LF bytes, which failed on
+# such checkouts (integration readiness audit 2026-10-01, D9).
 AUTHORIZED_FROZEN_EDITS = {
-    "tests/test_m37_edge_resolution.py": "f288b194f4c41abffd6fc32fe197df20b06f08bd3cd2db3f7e773933ce236853",
+    "tests/test_m37_edge_resolution.py": "e54c180676e506a538f52662bf8182b2960befe8",
 }
 
 
 def _is_authorized_frozen_edit(path: str) -> bool:
-    import hashlib
     expected = AUTHORIZED_FROZEN_EDITS.get(path)
     target = ROOT / path
-    return expected is not None and target.is_file() and hashlib.sha256(target.read_bytes()).hexdigest() == expected
+    if expected is None or not target.is_file():
+        return False
+    blob = subprocess.check_output(["git", "hash-object", "--", path], cwd=ROOT, text=True).strip()
+    return blob == expected
 
 
 def test_frozen_anchors_unchanged():

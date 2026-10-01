@@ -80,7 +80,10 @@ def test_entry_covers_m39_paths(path):
 def clone(tmp_path_factory):
     import subprocess
     dest = tmp_path_factory.mktemp("guard_clone") / "repo"
-    subprocess.run(["git", "clone", "-q", "--shared", str(ROOT), str(dest)], check=True)
+    # core.autocrlf=false: check files out exactly as committed (LF), whatever
+    # the machine's global setting; a CRLF checkout on Windows made the probes
+    # fail for line endings, not content (readiness audit 2026-10-01, D9).
+    subprocess.run(["git", "clone", "-q", "--shared", "-c", "core.autocrlf=false", str(ROOT), str(dest)], check=True)
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     subprocess.run(["git", "checkout", "-q", "--detach", head], cwd=dest, check=True)
     return dest

@@ -32,7 +32,7 @@ def render(step) -> str:
             else:
                 lines.append(f"- {role}: could not be resolved ({rb.reason}).")
     elif kind == "CANCELLED":
-        lines.append("Task cancelled. Nothing was written.")
+        lines.append("Task cancelled. URI wrote nothing back to your files.")
     elif kind == "CLARIFY_MEMORY":
         lines.append(f"URI needs to re-check this task before continuing ({step.reason}).")
     elif kind == "ESCALATION_PROPOSAL":
@@ -81,7 +81,10 @@ def render(step) -> str:
         elif flags:
             lines.append("URI wrote nothing back to your files. The task stays open and is not complete.")
         else:
-            lines.append("Nothing was written to your files. The task stays open and is not complete.")
+            # R5-1 (re-audit 0d690ea): no flag proves only that the originals
+            # kept their hashes, not that the harness wrote nothing anywhere
+            # (no OS sandbox), so URI states only what it did itself.
+            lines.append("URI wrote nothing back to your files. The task stays open and is not complete.")
     elif kind == "NOTHING_TO_WRITE":
         lines.append("The run verified but changed nothing that needs writing back. Nothing to apply.")
     elif kind == "AWAITING_APPROVAL":
@@ -103,7 +106,7 @@ def render(step) -> str:
             elif step.partial_record:
                 lines.append(f"Memory could not record the partial write ({step.partial_record}).")
         else:
-            lines.append(f"Write-back refused: {step.reason}. Nothing was written.")
+            lines.append(f"Write-back refused: {step.reason}. URI wrote nothing back to your files.")
     elif kind == "COMPLETED":
         lines.append("Written and task complete.")
         for w in step.written:

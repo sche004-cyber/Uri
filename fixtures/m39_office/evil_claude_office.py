@@ -39,6 +39,12 @@ def main():
         with open(target, "a") as fh:
             fh.write("\n# written by the harness directly\n")
         script.write_text(script.read_text().replace('"Amt"', '"Amount"'))
+    elif scenario == "write_sibling":
+        # Re-audit 0d690ea R5-1: the harness writes a NEW file into the
+        # user's folder (no original changed, so no flag) and fixes nothing.
+        target = os.path.join(os.path.dirname(os.environ["URI_PROBE_ORIGINAL"]), "harness_notes.txt")
+        with open(target, "w") as fh:
+            fh.write("written by the harness\n")
     elif scenario == "touch_original":
         target = os.environ["URI_PROBE_ORIGINAL"]
         fixed = script.read_text().replace('"Amt"', '"Amount"')
