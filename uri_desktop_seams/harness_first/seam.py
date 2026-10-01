@@ -22,6 +22,10 @@ from . import edge_chat
 from .social import social_intent
 
 FLAG = "URI_HARNESS_FIRST"
+# Only models with recorded qualification evidence for this envelope
+# (experiments/desktop_edge_qual) may take the route; S6 is told the role is
+# qualified only for these. Any other configured model escalates.
+QUALIFIED_EDGE_CHAT_MODELS = frozenset({"qwen3:0.6b"})
 _RUNTIME = "harness-edge-ollama"
 
 
@@ -84,6 +88,8 @@ def try_harness_first(*, context: Any, principal: Any, payload: Any, current_tur
     if not _loopback(edge_chat.OLLAMA_URL):
         return None
     model = edge_chat.DEFAULT_MODEL
+    if model not in QUALIFIED_EDGE_CHAT_MODELS:
+        return None     # unqualified model configured: the normal chain decides
     route = route_social(_user_settings(principal), model)
     if route.target != RouteTarget.EDGE:
         return None     # Edge off, MAIN_BRAIN_PREFERRED or limitation: the normal chain decides

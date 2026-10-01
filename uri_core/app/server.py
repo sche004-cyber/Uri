@@ -1905,14 +1905,17 @@ def _turn_model_calls(user_id: Optional[str], since: Optional[float]) -> Optiona
     if not user_id or since is None:
         return None
     try:
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         from uri_core.core.usage_meter import current_month, month_records
 
+        months = [current_month()]
+        started_month = datetime.fromtimestamp(since, tz=timezone.utc).strftime("%Y-%m")
+        if started_month not in months:
+            months.insert(0, started_month)  # turn crossed a month boundary
+        records = [r for m in months for r in month_records(user_id, m)]
         calls = []
-        for record in month_records(user_id, current_month()):
-            if record.get("outcome") != "success":
-                continue
+        for record in records:
             try:
                 ended = datetime.fromisoformat(str(record.get("ts"))).timestamp()
             except ValueError:
@@ -1926,6 +1929,7 @@ def _turn_model_calls(user_id: Optional[str], since: Optional[float]) -> Optiona
                 "prompt_tokens": _measured(record, "prompt_tokens"),
                 "eval_tokens": _measured(record, "eval_tokens"),
                 "duration_seconds": _measured(record, "duration_seconds"),
+                "outcome": record.get("outcome"),
             })
         return calls
     except Exception:
@@ -1993,14 +1997,18 @@ def _finalize_ask_response(
             "prompt_tokens": None, "eval_tokens": None, "duration_seconds": serving_duration_seconds,
         }] if _harness.get("edge_model") else []
     elif serving_calls:
-        last = serving_calls[-1]
-        serving_provider = last.get("provider_id")
-        serving_model = last.get("model")
+        # Every recorded attempt (failed ones included) counts as a call; the
+        # executing model is the last successful one.
+        succeeded = [c for c in serving_calls if c.get("outcome") == "success"]
+        last = succeeded[-1] if succeeded else serving_calls[-1]
+        serving_provider = last.get("provider_id") if succeeded else None
+        serving_model = last.get("model") if succeeded else None
         serving_prompt_tokens = _sum_measured(serving_calls, "prompt_tokens")
         serving_eval_tokens = _sum_measured(serving_calls, "eval_tokens")
         serving_duration_seconds = _sum_measured(serving_calls, "duration_seconds")
-    elif serving_calls is not None and payload.model_override is None:
-        # No model call happened this turn: never attribute an earlier turn's.
+    elif serving_calls is not None:
+        # No model call happened this turn: never attribute an earlier turn's
+        # record, nor present a requested override as the executing model.
         serving_provider = serving_model = None
         serving_prompt_tokens = serving_eval_tokens = serving_duration_seconds = None
     try:

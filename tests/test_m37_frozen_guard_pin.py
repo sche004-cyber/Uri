@@ -26,7 +26,7 @@ import tests.test_m37_edge_resolution as m37
 
 ROOT = Path(__file__).resolve().parents[1]
 GUARD = "tests/test_m37_edge_resolution.py"
-GUARD_SHA256 = "01324e501894a451aef11f062cdbc711ecf8a73e841b28e8affb2387d21f3136"
+GUARD_SHA256 = "a971a182bbeb50bf6c6c04a4d4dc6c139a59f64f99b69918ef0d0db7c89c9392"
 
 
 

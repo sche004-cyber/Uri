@@ -31,6 +31,12 @@ from uri_core.core.security_guards import looks_like_credential_value
 
 MAX_NARRATIVE_LENGTH = 2000
 
+# Desktop recovery: a purely conversational turn is exempt from the
+# capability-gap expansion cap below but keeps its own bound, well under
+# MAX_NARRATIVE_LENGTH. Claims about what URI can do are not verified here
+# for short or long drafts alike (pre-existing limitation, disclosed).
+MAX_CONVERSATIONAL_NARRATIVE_LENGTH = 1000
+
 # Evidence-proportional grounding (see module docstring's "explanation,
 # not solution-generation" invariant): for any non-"success" outcome,
 # the draft may be at most MAX_EXPANSION_RATIO times the length of the
@@ -181,6 +187,13 @@ def validate_drafted_response(
     # to "what can you do?" rejected against 242 chars of "evidence") and
     # the user saw the reasoning rationale instead. The success-claim,
     # credential, overall-length and action-id checks still apply.
+    if not is_genuine_success and _is_conversational_turn(outcome):
+        if len(text) > MAX_CONVERSATIONAL_NARRATIVE_LENGTH:
+            raise ResponseValidationError(
+                f"conversational draft ({len(text)} chars) exceeds "
+                f"{MAX_CONVERSATIONAL_NARRATIVE_LENGTH} characters."
+            )
+
     if not is_genuine_success and not _is_conversational_turn(outcome):
 
         evidence_length = _outcome_evidence_length(outcome)

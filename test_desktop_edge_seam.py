@@ -148,6 +148,51 @@ class FinalizeAttributionTests(unittest.TestCase):
         self.assertIsNone(out["serving_duration_seconds"])
 
 
+class AuditRepairTests(unittest.TestCase):
+    """Codex audit of dc5b337 (REPAIR_REQUIRED) repairs."""
+
+    def test_unqualified_edge_model_escalates(self):
+        with patch.dict(os.environ, {seam.FLAG: "1"}), patch.object(edge_chat, "DEFAULT_MODEL", "gemma3:270m"),                 patch.object(edge_chat, "generate") as gen:
+            out = seam.try_harness_first(context=_context(), principal=None, payload=_payload("hello"),
+                                         current_turn_attachments=[])
+        self.assertIsNone(out)
+        gen.assert_not_called()
+
+    def _rec(self, ts, outcome="success", dur=1.0):
+        k = lambda v: {"value": v, "confidence": "KNOWN"}
+        return {"ts": ts, "role": "reasoning", "provider_id": "ollama", "model": "qwen3.5:9b", "outcome": outcome,
+                "prompt_tokens": k(10), "eval_tokens": k(1), "duration_seconds": k(dur)}
+
+    def test_failed_attempts_are_counted(self):
+        from datetime import datetime
+        from uri_core.app import server
+        start = datetime.fromisoformat("2026-10-01T18:00:00+00:00").timestamp()
+        recs = [self._rec("2026-10-01T18:00:05+00:00", "failure", 2.0), self._rec("2026-10-01T18:00:09+00:00")]
+        with patch("uri_core.core.usage_meter.month_records", return_value=recs):
+            out = server._finalize_ask_response(MagicMock(), "u1", _payload("x"), {"status": "success"}, turn_started=start)
+        self.assertEqual(out["serving_call_count"], 2)
+        self.assertEqual(out["serving_duration_seconds"], 3.0)
+        self.assertEqual(out["serving_model"], "qwen3.5:9b")
+
+    def test_override_without_any_call_is_not_shown_as_executing_model(self):
+        from datetime import datetime
+        from uri_core.app import server
+        start = datetime.fromisoformat("2026-10-01T18:00:00+00:00").timestamp()
+        payload = _payload("x", override={"provider_id": "ollama", "model": "gemma4:12b"})
+        with patch("uri_core.core.usage_meter.month_records", return_value=[]):
+            out = server._finalize_ask_response(MagicMock(), "u1", payload, {"status": "success"}, turn_started=start)
+        self.assertEqual(out["serving_call_count"], 0)
+        self.assertIsNone(out["serving_model"])
+
+    def test_conversational_draft_keeps_a_length_bound(self):
+        from uri_core.core.response_validation import (MAX_CONVERSATIONAL_NARRATIVE_LENGTH, ResponseValidationError,
+                                                       validate_drafted_response)
+        outcome = {"execution": {"status": "not_applicable", "capability": None}, "response": {"message": "chat"}}
+        self.assertTrue(validate_drafted_response("word " * 150, outcome))
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response("word " * (MAX_CONVERSATIONAL_NARRATIVE_LENGTH // 5 + 10), outcome)
+
+
 class IntentFitTests(unittest.TestCase):
     def test_farewell_answered_with_welcome_is_rejected(self):
         self.assertEqual(edge_chat.validate("You're welcome! Have a great day!", "farewell"), "intent_mismatch")
