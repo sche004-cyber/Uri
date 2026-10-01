@@ -28,8 +28,9 @@ def check_reply(text, intent):
 
 
 def main():
-    corpus = json.loads((HERE / "corpus.json").read_text(encoding="utf-8"))
-    out = HERE / "run_r1.jsonl"
+    tag = sys.argv[1] if len(sys.argv) > 1 else "r1"
+    corpus = json.loads((HERE / ("corpus.json" if tag == "r1" else f"corpus_{tag}.json")).read_text(encoding="utf-8"))
+    out = HERE / f"run_{tag}.jsonl"
     rows = []
     # cold: unload candidate then one call
     urllib.request.urlopen(urllib.request.Request(edge_chat.OLLAMA_URL + "/api/generate",
@@ -70,7 +71,7 @@ def main():
         "Q6_warm_ms_p50": statistics.median(ms), "Q6_warm_ms_p95": ms[int(0.95 * (len(ms) - 1))],
         "cold_ms": rows[0]["ms"], "n_turns": len(turns),
     }
-    (HERE / "results_r1.json").write_text(json.dumps(res, indent=1, ensure_ascii=False), encoding="utf-8")
+    (HERE / f"results_{tag}.json").write_text(json.dumps(res, indent=1, ensure_ascii=False), encoding="utf-8")
     print(json.dumps(res, indent=1, ensure_ascii=False))
 
 

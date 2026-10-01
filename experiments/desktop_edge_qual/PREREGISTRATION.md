@@ -34,3 +34,13 @@ A pass qualifies only this route for this envelope on this PC, as EXPERIMENTAL
 pending Codex audit. It does not qualify qwen3:0.6b for any other task
 (selection, extraction, labelling, drafting), which the harness-first track
 found unqualifiable at 0.30-0.50 precision.
+
+## Round 2 (added after r1 FAIL, before any r2 run)
+
+r1 failed Q5 (0.929): farewells answered "You're welcome!". Repair (commit
+after r1): directive intent hints for thanks/farewell and a URI-side
+intent-fit check in `edge_chat.validate` (thanks needs a welcome marker;
+farewell needs a goodbye marker and must not say "you're welcome"); a
+mismatch falls back to the fixed line. Gates Q1-Q7 unchanged. r2 runs on a
+fresh corpus, `corpus_r2.json` (no text shared with `corpus.json`), same
+author (same independence limit).

@@ -30,8 +30,8 @@ SYSTEM = (
 
 INTENT_HINT = {
     "greeting": "The user is greeting you.",
-    "thanks": "The user is thanking you.",
-    "farewell": "The user is saying goodbye.",
+    "thanks": "The user is thanking you. Reply that they are welcome.",
+    "farewell": "The user is saying goodbye. Say goodbye back; do not say 'you're welcome'.",
     "acknowledgement": "The user is acknowledging what you said.",
     "about_uri": "The user is asking who you are or what you can do.",
 }
@@ -60,7 +60,18 @@ class ChatResult:
     eval_count: Optional[int] = None
 
 
-def validate(reply: str) -> Optional[str]:
+# Desktop repair after qualification r1 (experiments/desktop_edge_qual): the reply
+# must fit the deterministic intent. A farewell answered with "You're welcome"
+# or thanks answered without acknowledging it is rejected (deterministic
+# fallback line instead), never shown.
+_INTENT_MARKER = {
+    "thanks": re.compile(r"welcome|pleasure|glad|anytime|no problem", re.I),
+    "farewell": re.compile(r"bye|goodbye|see you|take care|night|later", re.I),
+}
+_FAREWELL_WRONG = re.compile(r"you'?re (very )?welcome", re.I)
+
+
+def validate(reply: str, intent: Optional[str] = None) -> Optional[str]:
     """Return a rejection reason, or None when the reply is acceptable."""
     r = (reply or "").strip()
     if not r:
@@ -75,6 +86,11 @@ def validate(reply: str) -> Optional[str]:
         return "claims_action"
     if r.count("?") > 1:
         return "too_many_questions"
+    marker = _INTENT_MARKER.get(intent or "")
+    if marker is not None and not marker.search(r):
+        return "intent_mismatch"
+    if intent == "farewell" and _FAREWELL_WRONG.search(r):
+        return "intent_mismatch"
     return None
 
 
@@ -101,7 +117,7 @@ def generate(user_text: str, intent: str, model: Optional[str] = None, timeout_s
         with urllib.request.urlopen(req, timeout=timeout_s) as resp:  # loopback only (OLLAMA_URL)
             raw = json.loads(resp.read().decode("utf-8"))
         text = _clean((raw.get("message") or {}).get("content", ""))
-        reason = validate(text)
+        reason = validate(text, intent)
         ms = (time.perf_counter() - t0) * 1000
         if reason is None:
             return ChatResult(text, "edge_model", model, ms, None, prompt_chars, raw.get("eval_count"))
