@@ -25,10 +25,15 @@ $UiExePath = Join-Path $RepoRoot "uri_ui\build\windows\x64\runner\Release\uri_ui
 $ServerScript = Join-Path $RepoRoot "run_desktop_server.py"
 
 # A PID file can be stale and its number reused by an unrelated process.
-# Only act on a PID whose executable / command line proves it is ours.
+# A process counts as this checkout's backend only when its executable is a
+# python/pythonw and its first argument is exactly this checkout's
+# run_desktop_server.py (not merely mentioned somewhere in the command line).
 function Test-OwnedServer([int]$ProcessId) {
     $cim = Get-CimInstance Win32_Process -Filter "ProcessId=$ProcessId" -ErrorAction SilentlyContinue
-    return ($cim -and $cim.CommandLine -and $cim.CommandLine.IndexOf($ServerScript, [StringComparison]::OrdinalIgnoreCase) -ge 0)
+    if (-not $cim -or -not $cim.CommandLine -or -not $cim.ExecutablePath) { return $false }
+    if ([IO.Path]::GetFileName($cim.ExecutablePath) -notmatch '^pythonw?\.exe$') { return $false }
+    $pattern = '^\s*(?:"[^"]*"|\S+)\s+"?' + [Regex]::Escape($ServerScript) + '"?(?:\s|$)'
+    return [Regex]::IsMatch($cim.CommandLine, $pattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase)
 }
 
 Write-Output "==> Shutting down URI Desktop..."

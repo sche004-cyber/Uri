@@ -255,3 +255,51 @@ def mount_desktop_status_endpoint(app: Any) -> None:
         })
 
     logger.info("Registered GET /desktop/status endpoint (no /ask interception)")
+
+
+TIMING_LOG = REPO_ROOT / "uri_workspace" / "logs" / "desktop_request_timing.jsonl"
+
+
+class RequestTimingMiddleware:
+    """Pure ASGI pass-through that timestamps POST /ask and /ask/stream.
+
+    Observation only: it never reads or alters the request body, headers or
+    response, never short-circuits, and any logging failure is swallowed.
+    Records wall-clock receive time, time to first response byte and time to
+    last response byte, so per-turn backend latency can be joined with the
+    model-call records in uri_workspace/users/<id>/usage/*.jsonl.
+    """
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http" or scope.get("path") not in ("/ask", "/ask/stream"):
+            await self.app(scope, receive, send)
+            return
+        import time as _time
+
+        record: Dict[str, Any] = {
+            "path": scope.get("path"),
+            "received_wall": _time.time(),
+        }
+        t0 = _time.perf_counter()
+
+        async def _send(message):
+            if message.get("type") == "http.response.start":
+                record["status"] = message.get("status")
+                record["first_byte_ms"] = round((_time.perf_counter() - t0) * 1000, 1)
+            elif message.get("type") == "http.response.body" and not message.get("more_body"):
+                record["last_byte_ms"] = round((_time.perf_counter() - t0) * 1000, 1)
+            await send(message)
+
+        try:
+            await self.app(scope, receive, _send)
+        finally:
+            record.setdefault("last_byte_ms", round((_time.perf_counter() - t0) * 1000, 1))
+            try:
+                TIMING_LOG.parent.mkdir(parents=True, exist_ok=True)
+                with open(TIMING_LOG, "a", encoding="utf-8") as fh:
+                    fh.write(json.dumps(record) + "\n")
+            except Exception:
+                pass

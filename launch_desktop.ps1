@@ -29,6 +29,7 @@ if (-not (Test-Path $PythonwExe)) {
     $PythonwExe = $PythonExe
 }
 $ServerScript = Join-Path $RepoRoot "run_desktop_server.py"
+$ServerScript = [IO.Path]::GetFullPath($ServerScript)
 $LogDir = Join-Path $RepoRoot "uri_workspace\logs"
 $LogFile = Join-Path $LogDir "uri_server.log"
 $ExePath = Join-Path $RepoRoot "uri_ui\build\windows\x64\runner\Release\uri_ui.exe"
@@ -67,9 +68,28 @@ function Activate-ExistingWindow {
     return $false
 }
 
+# A PID file can be stale and its number reused by an unrelated process.
+# A process counts as this checkout's backend only when its executable is a
+# python/pythonw and its first argument is exactly this checkout's
+# run_desktop_server.py (not merely mentioned somewhere in the command line).
+function Test-OwnedServer([int]$ProcessId) {
+    $cim = Get-CimInstance Win32_Process -Filter "ProcessId=$ProcessId" -ErrorAction SilentlyContinue
+    if (-not $cim -or -not $cim.CommandLine -or -not $cim.ExecutablePath) { return $false }
+    if ([IO.Path]::GetFileName($cim.ExecutablePath) -notmatch '^pythonw?\.exe$') { return $false }
+    $pattern = '^\s*(?:"[^"]*"|\S+)\s+"?' + [Regex]::Escape($ServerScript) + '"?(?:\s|$)'
+    return [Regex]::IsMatch($cim.CommandLine, $pattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+}
+
 function Test-OwnBackend {
-    # /health only proves *a* URI backend answers. Require /desktop/status to
-    # report this checkout before attaching the UI to it. Never stops it.
+    # /health only proves *a* URI backend answers. Require the process that
+    # owns the listening socket to be this checkout's run_desktop_server.py,
+    # and /desktop/status to report this checkout, before attaching the UI.
+    # Never stops anything.
+    $listeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+    if ($listeners.Count -eq 0) { return $false }
+    foreach ($l in $listeners) {
+        if (-not (Test-OwnedServer ([int]$l.OwningProcess))) { return $false }
+    }
     $ownerRoot = $null
     try {
         $st = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/desktop/status" -TimeoutSec 5 -ErrorAction Stop
@@ -189,17 +209,26 @@ try {
 
             # Hold the mutex until the UI window appears (up to 15 s)
             $windowWait = 0
+            $windowShown = $false
             while ($windowWait -lt 30) {
                 Start-Sleep -Milliseconds 500
                 $windowWait++
-                try {
-                    $uiProcess.Refresh()
-                    if ($uiProcess.MainWindowHandle -ne [IntPtr]::Zero) {
-                        break
-                    }
-                }
-                catch { break }
+                $uiProcess.Refresh()
+                if ($uiProcess.HasExited) { break }
+                if ($uiProcess.MainWindowHandle -ne [IntPtr]::Zero) { $windowShown = $true; break }
             }
+            if ($uiProcess.HasExited) {
+                Remove-Item $UiPidFile -Force -ErrorAction SilentlyContinue
+                Write-Error "URI desktop app exited during startup (exit code $($uiProcess.ExitCode))."
+                exit 1
+            }
+            if (-not $windowShown) {
+                Write-Step "UI process is running but its window has not appeared yet (15 s)."
+            }
+        }
+        else {
+            Write-Error "URI desktop app could not be started."
+            exit 1
         }
     }
 

@@ -29,7 +29,14 @@ REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 
 _LEGACY_PROVIDER_KEY_SECRET = "uri_local_dev_secret_key_v1"  # scripts/run_uri_server.py's default
-SECRETS_FILE = Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "URI" / "desktop_secrets.json"
+import hashlib as _hashlib
+
+# One secrets file per checkout, outside the repository, so the legacy
+# provider-key decision below is made for this checkout's own data.
+SECRETS_FILE = (
+    Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "URI"
+    / f"desktop_secrets_{_hashlib.sha256(str(REPO_ROOT).lower().encode('utf-8')).hexdigest()[:12]}.json"
+)
 
 
 def _load_or_create_desktop_secrets() -> dict:
@@ -43,12 +50,19 @@ def _load_or_create_desktop_secrets() -> dict:
     import json
     import secrets
 
-    try:
-        data = json.loads(SECRETS_FILE.read_text(encoding="utf-8"))
-        if isinstance(data.get("provider_key_secret"), str) and isinstance(data.get("external_credential_secret"), str):
-            return data
-    except (OSError, ValueError):
-        pass
+    if SECRETS_FILE.exists():
+        # Never silently regenerate: new keys would make every credential
+        # already encrypted with the old ones unreadable. Fail loudly instead.
+        try:
+            data = json.loads(SECRETS_FILE.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise SystemExit(f"ERROR: {SECRETS_FILE} is unreadable ({type(exc).__name__}). "
+                             "Restore it from backup or remove it deliberately (stored keys will be lost).")
+        if not (isinstance(data, dict) and isinstance(data.get("provider_key_secret"), str)
+                and isinstance(data.get("external_credential_secret"), str)):
+            raise SystemExit(f"ERROR: {SECRETS_FILE} is malformed. "
+                             "Restore it from backup or remove it deliberately (stored keys will be lost).")
+        return data
     users = REPO_ROOT / "uri_workspace" / "users"
     legacy_provider_keys = users.is_dir() and any(users.glob("*/provider_keys.enc"))
     data = {
@@ -57,10 +71,16 @@ def _load_or_create_desktop_secrets() -> dict:
         "external_credential_secret": secrets.token_urlsafe(32),
     }
     SECRETS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    tmp = SECRETS_FILE.with_suffix(".tmp")
+    tmp = SECRETS_FILE.with_name(f"{SECRETS_FILE.name}.{os.getpid()}.{secrets.token_hex(4)}.tmp")
     tmp.write_text(json.dumps(data), encoding="utf-8")
-    os.replace(tmp, SECRETS_FILE)
-    return data
+    try:
+        # O_EXCL-style: if another launch created the file first, keep theirs.
+        os.link(tmp, SECRETS_FILE)
+    except FileExistsError:
+        pass
+    finally:
+        tmp.unlink(missing_ok=True)
+    return json.loads(SECRETS_FILE.read_text(encoding="utf-8"))
 
 
 if not (os.environ.get("URI_PROVIDER_KEY_SECRET") and os.environ.get("URI_EXTERNAL_CREDENTIAL_SECRET")):
@@ -231,6 +251,8 @@ def main() -> None:
 
     # Mount the desktop status endpoint (no /ask interception)
     uri_desktop_adapter.mount_desktop_status_endpoint(app)
+    # Timing only (pass-through): see RequestTimingMiddleware's docstring.
+    app.add_middleware(uri_desktop_adapter.RequestTimingMiddleware)
 
     print("=" * 60)
     print("URI Desktop Server")
