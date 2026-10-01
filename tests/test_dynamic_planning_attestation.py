@@ -4,6 +4,7 @@ A trusted adapter used at run time must be the implementation that was qualified
 module:qualname, same implementation SHA-256, same declared boundary, from a present and
 well-formed pinned record. Anything else fails closed before the adapter is called.
 """
+import copy
 from dataclasses import replace
 import hashlib
 import importlib.util
@@ -270,6 +271,14 @@ def test_replaced_module_reference_in_the_real_module_is_refused(monkeypatch):
     assert attestation.attest(actions.write_report, contract(actions.WRITE))[0] == "FOREIGN_MODULE"
 
 
+def _unfrozen(params):
+    """A copy of a dataclass's params with frozen dropped. Copied rather than constructed, because the
+    constructor's arguments differ between Python versions (3.11 takes 6, 3.12+ takes 10)."""
+    params = copy.copy(params)
+    params.frozen = False
+    return params
+
+
 def test_patched_methods_of_uri_classes_are_refused(monkeypatch):
     """F2R-3 / probe P4: methods of uri_v1 classes the implementation uses are attested too."""
     real_init = officefile.SheetStructure.__init__
@@ -279,8 +288,7 @@ def test_patched_methods_of_uri_classes_are_refused(monkeypatch):
         (officefile.SheetStructure, "__init__", init),                                   # generated method replaced
         (officefile.WorkbookStructure, "sheet", lambda self, name: None),                # source method replaced
         (officefile.WorkbookStructure, "extra", lambda self: None),                      # method added
-        (officefile.SheetStructure, "__dataclass_params__", type(officefile.SheetStructure.__dataclass_params__)(
-            True, True, True, False, False, False)),                                      # frozen dropped
+        (officefile.SheetStructure, "__dataclass_params__", _unfrozen(officefile.SheetStructure.__dataclass_params__)),  # frozen dropped
         (actions.ActionError, "__init__", lambda self, *a: None),                        # exception class
     ]
     for cls, name, value in cases:
