@@ -1,0 +1,454 @@
+[
+ {
+  "id": "E01",
+  "text": "hi there",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E02",
+  "text": "Hello!",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E03",
+  "text": "hey",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E04",
+  "text": "good morning",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E05",
+  "text": "Good evening URI",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E06",
+  "text": "hiya",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E07",
+  "text": "namaste",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E08",
+  "text": "hey uri",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E09",
+  "text": "hello again",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E10",
+  "text": "morning!",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E11",
+  "text": "how are you?",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E12",
+  "text": "how are you doing today",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E13",
+  "text": "are you there",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E14",
+  "text": "yo",
+  "expect": "edge",
+  "intent": "greeting"
+ },
+ {
+  "id": "E15",
+  "text": "thank you",
+  "expect": "edge",
+  "intent": "thanks"
+ },
+ {
+  "id": "E16",
+  "text": "thanks a lot",
+  "expect": "edge",
+  "intent": "thanks"
+ },
+ {
+  "id": "E17",
+  "text": "thanks so much uri",
+  "expect": "edge",
+  "intent": "thanks"
+ },
+ {
+  "id": "E18",
+  "text": "thx",
+  "expect": "edge",
+  "intent": "thanks"
+ },
+ {
+  "id": "E19",
+  "text": "cheers",
+  "expect": "edge",
+  "intent": "thanks"
+ },
+ {
+  "id": "E20",
+  "text": "much appreciated",
+  "expect": "edge",
+  "intent": "thanks"
+ },
+ {
+  "id": "E21",
+  "text": "thank you very much",
+  "expect": "edge",
+  "intent": "thanks"
+ },
+ {
+  "id": "E22",
+  "text": "ty",
+  "expect": "edge",
+  "intent": "thanks"
+ },
+ {
+  "id": "E23",
+  "text": "bye",
+  "expect": "edge",
+  "intent": "farewell"
+ },
+ {
+  "id": "E24",
+  "text": "goodbye uri",
+  "expect": "edge",
+  "intent": "farewell"
+ },
+ {
+  "id": "E25",
+  "text": "see you later",
+  "expect": "edge",
+  "intent": "farewell"
+ },
+ {
+  "id": "E26",
+  "text": "good night",
+  "expect": "edge",
+  "intent": "farewell"
+ },
+ {
+  "id": "E27",
+  "text": "take care",
+  "expect": "edge",
+  "intent": "farewell"
+ },
+ {
+  "id": "E28",
+  "text": "bye for now",
+  "expect": "edge",
+  "intent": "farewell"
+ },
+ {
+  "id": "E29",
+  "text": "see you tomorrow",
+  "expect": "edge",
+  "intent": "farewell"
+ },
+ {
+  "id": "E30",
+  "text": "ok",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E31",
+  "text": "okay great",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E32",
+  "text": "noted",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E33",
+  "text": "cool",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E34",
+  "text": "perfect",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E35",
+  "text": "got it",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E36",
+  "text": "alright",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E37",
+  "text": "sure",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E38",
+  "text": "understood",
+  "expect": "edge",
+  "intent": "acknowledgement"
+ },
+ {
+  "id": "E39",
+  "text": "who are you?",
+  "expect": "edge",
+  "intent": "about_uri"
+ },
+ {
+  "id": "E40",
+  "text": "what are you",
+  "expect": "edge",
+  "intent": "about_uri"
+ },
+ {
+  "id": "E41",
+  "text": "what's your name",
+  "expect": "edge",
+  "intent": "about_uri"
+ },
+ {
+  "id": "E42",
+  "text": "who are you uri",
+  "expect": "edge",
+  "intent": "about_uri"
+ },
+ {
+  "id": "X01",
+  "text": "hi, can you summarize the attached report?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X02",
+  "text": "hello, what's on my calendar today?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X03",
+  "text": "thanks, now send it to the principal",
+  "expect": "escalate"
+ },
+ {
+  "id": "X04",
+  "text": "ok send it",
+  "expect": "escalate"
+ },
+ {
+  "id": "X05",
+  "text": "okay delete that file",
+  "expect": "escalate"
+ },
+ {
+  "id": "X06",
+  "text": "thanks. open the second one",
+  "expect": "escalate"
+ },
+ {
+  "id": "X07",
+  "text": "good morning, check my unread mail",
+  "expect": "escalate"
+ },
+ {
+  "id": "X08",
+  "text": "bye, and remind me tomorrow at 9",
+  "expect": "escalate"
+ },
+ {
+  "id": "X09",
+  "text": "hey, how much disk space is free?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X10",
+  "text": "hi, search the web for UGC guidelines",
+  "expect": "escalate"
+ },
+ {
+  "id": "X11",
+  "text": "hello draft an office note for leave",
+  "expect": "escalate"
+ },
+ {
+  "id": "X12",
+  "text": "don't greet me, just list the pending tasks",
+  "expect": "escalate"
+ },
+ {
+  "id": "X13",
+  "text": "no thanks, cancel the email",
+  "expect": "escalate"
+ },
+ {
+  "id": "X14",
+  "text": "yes, approve it",
+  "expect": "escalate"
+ },
+ {
+  "id": "X15",
+  "text": "approve",
+  "expect": "escalate"
+ },
+ {
+  "id": "X16",
+  "text": "cancel that",
+  "expect": "escalate"
+ },
+ {
+  "id": "X17",
+  "text": "hi uri 2+2",
+  "expect": "escalate"
+ },
+ {
+  "id": "X18",
+  "text": "what is 17 times 23?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X19",
+  "text": "what can you do about the printer?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X20",
+  "text": "who sent me the last email?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X21",
+  "text": "what's the weather",
+  "expect": "escalate"
+ },
+ {
+  "id": "X22",
+  "text": "hey convert minutes.docx to pdf",
+  "expect": "escalate"
+ },
+ {
+  "id": "X23",
+  "text": "thanks, also translate it to Hindi",
+  "expect": "escalate"
+ },
+ {
+  "id": "X24",
+  "text": "remember my extension is 4417",
+  "expect": "escalate"
+ },
+ {
+  "id": "X25",
+  "text": "ok but make it formal",
+  "expect": "escalate"
+ },
+ {
+  "id": "X26",
+  "text": "hello read attendance.xlsx",
+  "expect": "escalate"
+ },
+ {
+  "id": "X27",
+  "text": "who is the HOD of CS?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X28",
+  "text": "what are you doing with my files?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X29",
+  "text": "good night, back up my documents first",
+  "expect": "escalate"
+ },
+ {
+  "id": "X30",
+  "text": "see you, schedule the meeting for Friday",
+  "expect": "escalate"
+ },
+ {
+  "id": "X31",
+  "text": "is it the first or second file?",
+  "expect": "escalate"
+ },
+ {
+  "id": "X32",
+  "text": "not that one, the other report",
+  "expect": "escalate"
+ },
+ {
+  "id": "X33",
+  "text": "hi http://example.com",
+  "expect": "escalate"
+ },
+ {
+  "id": "X34",
+  "text": "can you help me write a letter",
+  "expect": "escalate"
+ },
+ {
+  "id": "X35",
+  "text": "tell me a joke",
+  "expect": "escalate"
+ },
+ {
+  "id": "X36",
+  "text": "what time is it",
+  "expect": "escalate"
+ },
+ {
+  "id": "X37",
+  "text": "how do I reset my password",
+  "expect": "escalate"
+ },
+ {
+  "id": "X38",
+  "text": "thank you, now print it",
+  "expect": "escalate"
+ },
+ {
+  "id": "X39",
+  "text": "ok, use the older version",
+  "expect": "escalate"
+ },
+ {
+  "id": "X40",
+  "text": "hey there, what did I ask yesterday?",
+  "expect": "escalate"
+ }
+]

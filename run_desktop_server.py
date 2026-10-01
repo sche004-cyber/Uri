@@ -176,7 +176,7 @@ def _warm_edge_chat_model() -> None:
     is logged and ignored - the seam still falls back safely."""
     try:
         try:
-            from uri_core.core.harness_first import edge_chat, seam
+            from uri_desktop_seams.harness_first import edge_chat, seam
         except ImportError:
             return  # seam not present on this line: nothing to warm
 
