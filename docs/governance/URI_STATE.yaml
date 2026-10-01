@@ -425,6 +425,22 @@ planning_artifacts:
     implementation_authorized: false
     note: "Added 2026-09-28 from direct User instruction (decision VG-1). Future qualification requirement for the Harness Execution minimum, the Edge minimum avoidance share, and the Office demonstrator. No test implemented."
 
+  - id: "DYNAMIC_PLANNING_SLICE1"
+    kind: "slice_scope_state"
+    title: "Dynamic planning slice 1 (two-workbook structure comparison; four read-only actions + report writer; uri_v1/planning)"
+    path: "docs/plans/DYNAMIC_PLANNING_SLICE1_FREEZE_RECORD.md"
+    status: "CLOSED_FROZEN"
+    currently_active: false
+    mutable: false
+    closed_date: "2026-10-01"
+    frozen_commit: "565eae8be2e3896e1d8615ccf4e610e014b87a90"
+    terminal_audit_state: "ACCEPT_WITH_DOCUMENTED_LIMITATIONS"
+    closure_evidence: "docs/plans/DYNAMIC_PLANNING_SLICE1_FREEZE_RECORD.md"
+    closure_authority: "User (Chetan) 2026-10-01 12:22 UTC: accepts the audited slice at b6b2cb0 for freezing, subject to the documented limitations; 12:23 UTC 'Move, then freeze' (frozen tree = b6b2cb0 moved to uri_v1/planning, 565eae8); effect guard not approved, not implemented; no further slices approved"
+    implementation_authorized: true
+    integration_authorized: false
+    retained_limitations: "DP-L1 frozen M37 guard fails on the 27 slice paths (uri_v1/planning, tests, scripts, fixtures; accepted 2026-09-29); DP-L2 attestation is not a containment or complete security boundary (report 6.16: qualified adapter's own outside writes, process-wide builtins/stdlib/sys.modules patching, C-level code, re-pinning, other in-process tampering); DP-L3 effect guard not approved, not implemented; DP-L4 self-qualified capabilities; DP-L5 fixture provider only; DP-L6 interpreter-specific attestation fails closed; DP-L7 recorded deviations (report 6, 12 package move); DP-L8 Windows not validated at 565eae8 (Windows py3.13 ran at b6b2cb0 only)."
+    note: "Plans: docs/architecture/DYNAMIC_PLANNING_CANONICAL_ARCHITECTURE.md, docs/plans/DYNAMIC_PLANNING_MIGRATION_PLAN.md. Report: docs/plans/DYNAMIC_PLANNING_SLICE1_IMPLEMENTATION_REPORT.md. Focused independent re-check ACCEPT at b6b2cb0 (67681af); focused re-check of the move ACCEPT at 565eae8 (43101f8). New files only; verify.py unchanged; no live wiring before the working-product baseline."
 # ---------------------------------------------------------------------------
 # Architecture decisions recorded from direct User instruction (2026-09-26).
 # Full exact text: docs/plans/M33_3_CROSS_PLAN_STATE.md section 2.
