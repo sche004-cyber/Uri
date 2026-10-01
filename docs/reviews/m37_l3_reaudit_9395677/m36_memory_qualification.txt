@@ -1,0 +1,36 @@
+{
+  "reference_cases_per_run": 189,
+  "runs": 2,
+  "wrong_confirmed": 0,
+  "invented_ids": 0,
+  "deterministic": true,
+  "performance": {
+    "retrieval_p50_us": 3351.0,
+    "retrieval_p95_us": 4732,
+    "machine": "Linux-6.18.44-fc-v50-x86_64-with-glibc2.39",
+    "cpu": "x86_64",
+    "python": "3.11.15 (main, Mar  3 2026, 09:26:23) [GCC 13.3.0]"
+  },
+  "e2e": {
+    "real_formats": [
+      ".docx",
+      ".md",
+      ".pdf",
+      ".py",
+      ".xlsx"
+    ],
+    "s1_bindings": 40,
+    "s7_change_events": 1,
+    "s11_versions": 1,
+    "memory_records": 16,
+    "paused_discovery_new_process": true,
+    "worker_force_terminated": true,
+    "correction_pair": [
+      true,
+      true
+    ],
+    "verifier_outcome": "VERIFIED",
+    "source_edit_derivative": "DERIVATIVE_STALE"
+  },
+  "threshold_sha256": "e5fdeff503bd520ad60a3e4c567e8da71254041f9b987018331f9015a7af24af"
+}

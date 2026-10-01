@@ -1,0 +1,153 @@
+"""Independent adversarial probes of the M37-L3 guard at 9395677 (re-audit, not part of the repo).
+
+Each probe: fresh hard reset of a disposable clone, one tampering, then report whether the
+guard's frozen_scope_offenders() catches it (CAUGHT) or the tampering passes silently (MISSED).
+The guard module is imported from the clone itself so the clone's own guard code is exercised.
+"""
+import importlib, os, subprocess, sys, shutil, hashlib, py_compile, json
+from pathlib import Path
+
+SRC = Path(sys.argv[1]).resolve()        # repo checkout at 9395677
+WORK = Path(sys.argv[2]).resolve()
+HEAD = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=SRC, text=True).strip()
+clone = WORK / "clone"
+if clone.exists():
+    shutil.rmtree(clone)
+subprocess.run(["git", "clone", "-q", "--no-hardlinks", str(SRC), str(clone)], check=True)
+subprocess.run(["git", "checkout", "-q", "--detach", HEAD], cwd=clone, check=True)
+G = lambda *a, **k: subprocess.run(["git", *a], cwd=clone, check=True, capture_output=True, text=True, **k)
+
+sys.path.insert(0, str(clone))
+import tests.test_m37_edge_resolution as m37   # noqa: E402
+assert Path(m37.__file__).resolve().is_relative_to(clone), m37.__file__
+PIN = importlib.import_module("tests.test_m37_frozen_guard_pin")
+
+def reset():
+    for f in ("assume-unchanged", "skip-worktree"):
+        pass
+    G("update-index", "--really-refresh", check=False) if False else None
+    subprocess.run(["git", "ls-files", "-v"], cwd=clone, capture_output=True)
+    # clear index flags
+    for p in subprocess.check_output(["git", "ls-files", "-v"], cwd=clone, text=True).splitlines():
+        if p[:1] in ("h", "S", "s"):
+            subprocess.run(["git", "update-index", "--no-assume-unchanged", "--no-skip-worktree", p[2:]], cwd=clone)
+    for l in [q for q in clone.rglob("*") if q.is_symlink() and ".git" not in q.parts]:
+        l.unlink()
+    (clone / ".git/index").unlink(missing_ok=True)
+    subprocess.run(["git", "replace", "-d", m37.FREEZE_COMMIT], cwd=clone, capture_output=True)
+    subprocess.run(["git", "checkout", "-q", "--detach", "-f", HEAD], cwd=clone, check=True)
+    subprocess.run(["git", "reset", "-q", "--hard", HEAD], cwd=clone, check=True)
+    subprocess.run(["git", "clean", "-q", "-ffdx"], cwd=clone, check=True)
+    (clone / ".git/info/exclude").write_text("")
+
+def offenders():
+    m37.ROOT = clone
+    return set(m37.frozen_scope_offenders())
+
+def pin_ok():
+    return PIN._normalized_sha256(clone / PIN.GUARD) == PIN.GUARD_SHA256
+
+def append(rel, data=b"\n# reaudit probe\n"):
+    p = clone / rel; p.write_bytes(p.read_bytes() + data)
+
+results = []
+def probe(name, action, expect="CAUGHT", note=""):
+    reset()
+    base = offenders()
+    assert base == set(), base
+    extra = action()
+    off = offenders() - base
+    verdict = "CAUGHT" if off else "MISSED"
+    if extra is not None and verdict == "MISSED" and extra is False:
+        verdict = "CAUGHT"   # caught by the pin rather than by offenders
+    results.append(dict(probe=name, verdict=verdict, expected=expect, offenders=sorted(off), note=note))
+    print(f"{verdict:7s} (expected {expect:7s}) {name}  {sorted(off)[:4]}")
+
+# ---- edits/additions/deletions/renames across every prefix kind ----
+probe("edit uri_v1/edge/__init__.py", lambda: append("uri_v1/edge/__init__.py"))
+probe("edit fixtures/m37_edge file", lambda: append(next(str(p.relative_to(clone)) for p in sorted((clone/"fixtures/m37_edge").rglob("*")) if p.is_file())))
+probe("edit fixtures/m38_harness file", lambda: append(next(str(p.relative_to(clone)) for p in sorted((clone/"fixtures/m38_harness").rglob("*")) if p.is_file())))
+probe("add tests/test_m37_zz.py", lambda: (clone/"tests/test_m37_zz.py").write_text("def test_x(): pass\n"))
+probe("add uri_v1/execution/harness/new.py", lambda: (clone/"uri_v1/execution/harness/new.py").write_text("x=1\n"))
+probe("delete uri_v1/execution/__init__.py (unstaged)", lambda: (clone/"uri_v1/execution/__init__.py").unlink())
+probe("delete + commit uri_v1/edge file", lambda: (G("rm", "-q", "uri_v1/edge/repair.py"), G("-c","user.name=p","-c","user.email=p@x","commit","-qm","p")) and None)
+probe("staged-only edit (index differs, worktree edited)", lambda: (append("uri_v1/edge/resolver.py"), G("add", "uri_v1/edge/resolver.py")) and None)
+probe("committed edit then HEAD moved", lambda: (append("uri_v1/execution/verify.py"), G("-c","user.name=p","-c","user.email=p@x","commit","-qam","p")) and None)
+probe("chmod +x frozen file", lambda: os.chmod(clone/"uri_v1/edge/resolver.py", 0o755))
+probe("non-ASCII filename under uri_v1/edge", lambda: (clone/"uri_v1/edge/évil.py").write_text("x=1\n"))
+probe("filename with space under uri_v1/edge", lambda: (clone/"uri_v1/edge/a b.py").write_text("x=1\n"))
+probe("case variant dir uri_v1/Edge/x.py (Linux)", lambda: ((clone/"uri_v1/Edge").mkdir(), (clone/"uri_v1/Edge/x.py").write_text("x=1\n")) and None)
+def symlink_file():
+    t = clone/"uri_v1/edge/resolver.py"; copy = WORK/"resolver_tampered.py"
+    copy.write_bytes(t.read_bytes() + b"\n# tampered\n"); t.unlink(); t.symlink_to(copy)
+probe("tracked file replaced by symlink to tampered copy", symlink_file)
+def symlink_dir():
+    d = clone/"uri_v1/execution/harness"; copy = WORK/"harness_copy"
+    shutil.rmtree(copy, ignore_errors=True); shutil.copytree(d, copy); shutil.rmtree(d); d.symlink_to(copy)
+probe("tracked dir replaced by symlink to copy", symlink_dir)
+probe("new symlink under frozen path", lambda: (clone/"uri_v1/edge/link.py").symlink_to(clone/"uri_v1/edge/resolver.py"))
+# ---- git-metadata / ignore bypasses (local, not committable) ----
+probe("skip-worktree then edit frozen file", lambda: (G("update-index","--skip-worktree","uri_v1/edge/resolver.py"), append("uri_v1/edge/resolver.py")) and None, expect="?")
+probe("assume-unchanged then edit frozen file", lambda: (G("update-index","--assume-unchanged","uri_v1/edge/resolver.py"), append("uri_v1/edge/resolver.py")) and None, expect="?")
+def replace_freeze():
+    append("uri_v1/edge/resolver.py"); G("add","-A"); G("-c","user.name=p","-c","user.email=p@x","commit","-qm","tamper")
+    tampered = G("rev-parse","HEAD").stdout.strip()
+    G("replace", m37.FREEZE_COMMIT, tampered)
+probe("git replace freeze commit with tampered commit", replace_freeze, expect="?")
+probe(".git/info/exclude hides new frozen-path file", lambda: ((clone/".git/info/exclude").write_text("uri_v1/edge/evil.py\n"), (clone/"uri_v1/edge/evil.py").write_text("x=1\n")) and None, expect="?")
+probe("root .gitignore entry (tracked, unscanned) hides new file", lambda: (append(".gitignore", b"\nuri_v1/edge/evil.py\n"), (clone/"uri_v1/edge/evil.py").write_text("x=1\n")) and None, expect="?")
+probe("existing ignore pattern: uri_v1/edge/cache/__init__.py", lambda: ((clone/"uri_v1/edge/cache").mkdir(), (clone/"uri_v1/edge/cache/__init__.py").write_text("x=1\n")) and None, expect="?")
+probe("git add -f of ignored file under frozen path", lambda: ((clone/"uri_v1/edge/cache").mkdir(), (clone/"uri_v1/edge/cache/__init__.py").write_text("x=1\n"), G("add","-f","uri_v1/edge/cache/__init__.py")) and None)
+
+# ---- __pycache__ shadow: tampered bytecode with matching source mtime/size ----
+def pyc_shadow():
+    rel = "uri_v1/edge/repair.py"; src = clone/rel
+    st = src.stat()
+    fake = WORK/"repair_fake.py"
+    fake.write_text("PYC_SHADOW_PROBE = True\n")
+    import importlib.util
+    cfile = importlib.util.cache_from_source(str(src))
+    Path(cfile).parent.mkdir(exist_ok=True)
+    py_compile.compile(str(fake), cfile=cfile, dfile=str(src))
+    data = bytearray(Path(cfile).read_bytes())
+    import struct
+    data[8:12] = struct.pack("<I", int(st.st_mtime) & 0xFFFFFFFF)
+    data[12:16] = struct.pack("<I", st.st_size & 0xFFFFFFFF)
+    Path(cfile).write_bytes(bytes(data))
+    out = subprocess.run([sys.executable, "-c", "import uri_v1.edge.repair as r; print(getattr(r,'PYC_SHADOW_PROBE',False))"],
+                         cwd=clone, capture_output=True, text=True, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
+    results_note["pyc"] = out.stdout.strip() + out.stderr.strip()[-200:]
+results_note = {}
+probe("crafted __pycache__ pyc shadows frozen module (source untouched)", pyc_shadow, expect="?")
+print("pyc shadow import result: loaded tampered bytecode =", results_note.get("pyc"))
+
+# ---- self-pin bypass: edit guard + pin together ----
+def guard_and_pin():
+    g = clone/PIN.GUARD
+    g.write_text(g.read_text().replace("return outside + unfrozen", "return outside"))
+    newh = hashlib.sha256(g.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    p = clone/"tests/test_m37_frozen_guard_pin.py"
+    p.write_text(p.read_text().replace(PIN.GUARD_SHA256, newh))
+    append("uri_v1/edge/resolver.py")
+    r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged",
+                        "tests/test_m37_frozen_guard_pin.py::test_guard_file_is_pinned_to_its_authorized_content"], cwd=clone, capture_output=True, text=True)
+    results_note["guard_pin"] = r.stdout.strip().splitlines()[-1]
+probe("edit guard + pin together, then edit frozen file (run in-clone)", guard_and_pin, expect="?")
+print("guard+pin co-edit pytest:", results_note.get("guard_pin"))
+def delete_pin():
+    (clone/"tests/test_m37_frozen_guard_pin.py").unlink()
+    g = clone/PIN.GUARD; g.write_text(g.read_text().replace("return outside + unfrozen", "return outside"))
+    append("uri_v1/edge/resolver.py")
+    r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged"], cwd=clone, capture_output=True, text=True)
+    results_note["del_pin"] = r.stdout.strip().splitlines()[-1]
+probe("delete pin file + weaken guard, then edit frozen file (run in-clone)", delete_pin, expect="?")
+print("pin deleted pytest:", results_note.get("del_pin"))
+def root_pytest_ini():
+    (clone/"pytest.ini").write_text("[pytest]\naddopts = --deselect tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged\n")
+    append("uri_v1/edge/resolver.py")
+    r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_m37_edge_resolution.py"], cwd=clone, capture_output=True, text=True)
+    results_note["ini"] = r.stdout.strip().splitlines()[-1]
+probe("root pytest.ini deselects guard (root config unscanned), frozen file edited", root_pytest_ini, expect="?")
+print("root pytest.ini pytest:", results_note.get("ini"))
+reset()
+json.dump(results, open(WORK/"probe_results.json", "w"), indent=1)

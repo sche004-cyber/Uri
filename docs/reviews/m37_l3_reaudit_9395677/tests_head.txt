@@ -1,0 +1,5 @@
+  /tmp/claude-0/-home-claude-Uri/ee462e3a-69f2-5b1f-b5b9-ea0fee927d07/scratchpad/head/scripts/dev_workflow/auditor.py:41: PytestCollectionWarning: cannot collect test class 'TestExecutionResult' because it has a __init__ constructor (from: tests/dev_workflow/test_workflow.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1325 passed, 9 skipped, 1 warning, 130 subtests passed in 68.45s (0:01:08)
