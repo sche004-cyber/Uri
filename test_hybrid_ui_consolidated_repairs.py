@@ -110,6 +110,7 @@ class NeedleCanonicalWiringTests(unittest.TestCase):
         }
         return context
 
+    @patch.dict(os.environ, {"URI_EDGE_NEEDLE_PREROUTE": "1"})
     @patch("uri_core.app.server._get_needle_bridge")
     @patch("uri_core.app.server._edge_settings_for_principal")
     def test_valid_proposal_crosses_uri_approval_gate_without_model_arguments(
@@ -148,6 +149,7 @@ class NeedleCanonicalWiringTests(unittest.TestCase):
         self.assertEqual(kwargs["request_text"], "show unread mail")
         self.assertNotIn("query", kwargs)
 
+    @patch.dict(os.environ, {"URI_EDGE_NEEDLE_PREROUTE": "1"})
     @patch("uri_core.app.server._get_needle_bridge")
     @patch("uri_core.app.server._edge_settings_for_principal")
     def test_low_confidence_proposal_escalates_without_execution(
@@ -177,6 +179,56 @@ class NeedleCanonicalWiringTests(unittest.TestCase):
         self.assertIsNone(result)
         self.assertEqual(trace["disposition"], "NEEDLE_ESCALATED")
         context.orchestrator.approval_gate.execute_tool.assert_not_called()
+
+
+class NeedlePrerouteDefaultBypassTests(unittest.TestCase):
+    """The unqualified Needle pre-route is bypassed unless explicitly enabled."""
+
+    def _settings(self, mode="HYBRID"):
+        return MagicMock(
+            enabled=True,
+            intelligence_mode=mode,
+            reply_confidence_threshold_percent=90,
+        )
+
+    def _call(self, mode="HYBRID"):
+        from uri_core.app import server
+
+        context = MagicMock()
+        payload = MagicMock(text="show unread mail", session_id="s1", model_override=None)
+        with patch("uri_core.app.server._edge_settings_for_principal") as store,                 patch("uri_core.app.server._get_needle_bridge") as get_bridge:
+            store.return_value.load.return_value = self._settings(mode)
+            result, trace = server._edge_route_for_ask(
+                context=context,
+                principal=MagicMock(user_id="u1"),
+                payload=payload,
+                current_turn_attachments=[],
+                personalization_context=None,
+            )
+            return result, trace, get_bridge, context
+
+    @patch.dict(os.environ, {}, clear=False)
+    def test_default_hybrid_bypasses_needle_and_falls_through(self):
+        os.environ.pop("URI_EDGE_NEEDLE_PREROUTE", None)
+        result, trace, get_bridge, context = self._call("HYBRID")
+        self.assertIsNone(result)
+        self.assertEqual(trace["disposition"], "NEEDLE_BYPASSED")
+        self.assertIn("PREROUTE_EXPERIMENTAL_DISABLED", trace["reason_codes"])
+        get_bridge.assert_not_called()
+        context.orchestrator.approval_gate.execute_tool.assert_not_called()
+
+    @patch.dict(os.environ, {"URI_EDGE_NEEDLE_PREROUTE": "0"})
+    def test_edge_only_bypass_returns_limitation_not_main_brain(self):
+        result, trace, get_bridge, _ = self._call("EDGE_ONLY")
+        self.assertEqual(result["canonical_outcome"], "UNSUPPORTED")
+        self.assertEqual(trace["disposition"], "NEEDLE_BYPASSED")
+        get_bridge.assert_not_called()
+
+    @patch.dict(os.environ, {"URI_EDGE_NEEDLE_PREROUTE": "1"})
+    def test_flag_enables_experimental_preroute(self):
+        _, trace, get_bridge, _ = self._call("HYBRID")
+        get_bridge.assert_called_once()
+        self.assertNotIn("PREROUTE_EXPERIMENTAL_DISABLED", trace.get("reason_codes", ()))
 
 
 class RoutingTracePersistenceTests(unittest.TestCase):

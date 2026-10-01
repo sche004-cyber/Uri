@@ -1725,6 +1725,32 @@ _NEEDLE_CAPABILITY_MAP = {
     "read_attached_file": "read_attached_file",
 }
 
+# The Needle pre-route is experimental and not qualified as production
+# routing authority (readiness audit 2026-09-30, D2; Edge specialist pair
+# plan r2). It stays implemented and invokable, but runs only when this
+# environment flag is explicitly set. Default: bypassed.
+_NEEDLE_PREROUTE_FLAG = "URI_EDGE_NEEDLE_PREROUTE"
+
+_EDGE_ONLY_LIMITATION_MESSAGE = (
+    "Under Edge-Only mode, Main Brain is disabled. Needle could not produce "
+    "a URI-valid, sufficiently confident proposal for this request."
+)
+
+
+def _needle_preroute_enabled() -> bool:
+    return os.environ.get(_NEEDLE_PREROUTE_FLAG, "").strip().lower() in {"1", "true", "on", "yes"}
+
+
+def _edge_only_limitation(payload: "AskRequest") -> dict:
+    return {
+        "status": "unavailable",
+        "canonical_outcome": "UNSUPPORTED",
+        "response": {"message": _EDGE_ONLY_LIMITATION_MESSAGE},
+        "narrative": _EDGE_ONLY_LIMITATION_MESSAGE,
+        "error": "Main Brain execution disabled by Edge-Only policy.",
+        "session_id": payload.session_id,
+    }
+
 
 def _edge_route_for_ask(
     *, context, principal, payload: "AskRequest", current_turn_attachments,
@@ -1753,6 +1779,12 @@ def _edge_route_for_ask(
         return None, {**base, "disposition": "NEEDLE_BYPASSED", "reason_codes": ("NEEDLE_BYPASSED", "EDGE_DISABLED_BY_USER")}
     if settings.intelligence_mode == "MAIN_BRAIN_PREFERRED" or payload.model_override is not None:
         return None, {**base, "disposition": "NEEDLE_BYPASSED", "reason_codes": ("NEEDLE_BYPASSED", "EXPLICIT_MAIN_BRAIN")}
+    if not _needle_preroute_enabled():
+        metadata = {**base, "disposition": "NEEDLE_BYPASSED", "reason_codes": ("NEEDLE_BYPASSED", "PREROUTE_EXPERIMENTAL_DISABLED")}
+        # EDGE_ONLY must never fall through to the Main Brain silently.
+        if settings.intelligence_mode == "EDGE_ONLY":
+            return _edge_only_limitation(payload), metadata
+        return None, metadata
     normalized_text = (payload.text or "").strip().casefold()
     if normalized_text in {"hello", "hi", "hey", "ping", "status", "help", "who are you", "what can you do"}:
         return None, {**base, "disposition": "NEEDLE_BYPASSED", "reason_codes": ("NEEDLE_BYPASSED", "URI_PREFLIGHT")}
@@ -1845,14 +1877,7 @@ def _edge_route_for_ask(
             }
 
     if settings.intelligence_mode == "EDGE_ONLY":
-        return {
-            "status": "unavailable",
-            "canonical_outcome": "UNSUPPORTED",
-            "response": {"message": "Under Edge-Only mode, Main Brain is disabled. Needle could not produce a URI-valid, sufficiently confident proposal for this request."},
-            "narrative": "Under Edge-Only mode, Main Brain is disabled. Needle could not produce a URI-valid, sufficiently confident proposal for this request.",
-            "error": "Main Brain execution disabled by Edge-Only policy.",
-            "session_id": payload.session_id,
-        }, metadata
+        return _edge_only_limitation(payload), metadata
     return None, metadata
 
 
