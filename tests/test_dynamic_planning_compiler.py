@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from uri_v1.execution.planning import actions
-from uri_v1.execution.planning.compiler import compile_proposal
-from uri_v1.execution.planning.contracts import (UNQUALIFIED, CompiledPlan, Limits, Mechanism, Rejection, SourceCandidate)
+from uri_v1.planning import actions
+from uri_v1.planning.compiler import compile_proposal
+from uri_v1.planning.contracts import (UNQUALIFIED, CompiledPlan, Limits, Mechanism, Rejection, SourceCandidate)
 
 BATTERY = json.loads((Path(__file__).resolve().parents[1] / "fixtures/dynamic_planning/qualification_cases.json").read_bytes())
 CASES = {c["id"]: c for c in BATTERY["cases"]}

@@ -4,10 +4,10 @@ import json
 
 import pytest
 
-from uri_v1.execution.planning import actions
-from uri_v1.execution.planning.contracts import (UNQUALIFIED, CapabilityContract, CapabilitySnapshot, InputSpec, LiteralSpec,
+from uri_v1.planning import actions
+from uri_v1.planning.contracts import (UNQUALIFIED, CapabilityContract, CapabilitySnapshot, InputSpec, LiteralSpec,
                                                  PortType, ProposalInvalid, SemanticProposal, sha256_of)
-from uri_v1.execution.planning.provider_port import FixtureProvider, parse_raw
+from uri_v1.planning.provider_port import FixtureProvider, parse_raw
 
 A = "a" * 32
 
@@ -136,13 +136,13 @@ def test_deeply_nested_provider_text_is_a_typed_invalid_proposal():
 
 
 def test_oversized_provider_text_is_refused_before_parsing():
-    from uri_v1.execution.planning.provider_port import MAX_RAW_BYTES
+    from uri_v1.planning.provider_port import MAX_RAW_BYTES
     raw = '{"schema_version":"uri.plan.proposal.v1","nodes":[],"outputs":[],"cannot":[],"pad":"' + "x" * MAX_RAW_BYTES + '"}'
     assert parse_raw(raw) is None
 
 
 def test_deeply_nested_proposal_dict_is_rejected_not_crashed():
-    from uri_v1.execution.planning.compiler import compile_proposal
+    from uri_v1.planning.compiler import compile_proposal
     nested = cur = []
     for _ in range(5000):
         nxt = []; cur.append(nxt); cur = nxt
@@ -155,7 +155,7 @@ def test_deeply_nested_proposal_dict_is_rejected_not_crashed():
 
 
 def test_run_proposal_turns_a_raising_provider_into_a_typed_outcome():
-    from uri_v1.execution.planning.runner import run_proposal
+    from uri_v1.planning.runner import run_proposal
     class Broken:
         provider_id, model_id, config_sha256 = "broken", "none", ""
         def propose(self, *a): raise TimeoutError("socket")

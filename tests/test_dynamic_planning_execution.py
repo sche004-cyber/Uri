@@ -8,10 +8,10 @@ import uuid
 import pytest
 
 import uri_v1.memory.recorder as memory_recorder
-from uri_v1.execution.planning import actions
-from uri_v1.execution.planning.compiler import compile_proposal
-from uri_v1.execution.planning.contracts import Limits
-from uri_v1.execution.planning.runner import PlanRunner
+from uri_v1.planning import actions
+from uri_v1.planning.compiler import compile_proposal
+from uri_v1.planning.contracts import Limits
+from uri_v1.planning.runner import PlanRunner
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -75,7 +75,7 @@ def test_proposal_cannot_add_approval_or_effect(ctx):
 def unattested(monkeypatch):
     """Skip adapter attestation so the runner's later defences can be exercised with deliberately
     misbehaving adapters. Attestation itself is tested in test_dynamic_planning_attestation.py."""
-    from uri_v1.execution.planning import runner as runner_mod
+    from uri_v1.planning import runner as runner_mod
     monkeypatch.setattr(runner_mod, "attest", lambda adapter, contract: (None, "0" * 64))
 
 
@@ -185,7 +185,7 @@ def _damaged(src, dst, mode):
 
 @pytest.mark.parametrize("mode", ["bad_crc", "encrypted", "bad_method"])
 def test_damaged_user_workbook_is_a_typed_abort_with_a_closed_record(ctx, mode):
-    from uri_v1.execution.planning.bindings import candidates_from_registry
+    from uri_v1.planning.bindings import candidates_from_registry
     q, by_id, _, tmp = ctx
     env = q.CaseEnv(tmp / uuid.uuid4().hex, tmp / "runs")
     _damaged(q.WORKBOOKS / "wb_a.xlsx", env.roots["root1"] / "damaged.xlsx", mode)
@@ -230,7 +230,7 @@ def test_ledger_error_during_recording_is_not_verified_with_a_closed_record(ctx)
 
 
 def test_any_verifier_path_exception_is_not_verified(ctx, monkeypatch):
-    from uri_v1.execution.planning import runner as runner_mod
+    from uri_v1.planning import runner as runner_mod
     env, runner, plan = _runner_env(ctx)
     def boom(**kw): raise RuntimeError("verifier crash")
     monkeypatch.setattr(runner_mod, "record_and_verify", boom)
@@ -267,7 +267,7 @@ def test_run_that_executed_every_node_is_not_labelled_not_attempted(ctx, unattes
 
 
 def _with_extra_node(plan, env):
-    from uri_v1.execution.planning.contracts import CompiledPlan, PlanNode
+    from uri_v1.planning.contracts import CompiledPlan, PlanNode
     snap = actions.snapshot()
     ic = snap.get(actions.INSPECT, "1")
     extra_src = env.ids["$src:root1/wb_formula_err.xlsx"]

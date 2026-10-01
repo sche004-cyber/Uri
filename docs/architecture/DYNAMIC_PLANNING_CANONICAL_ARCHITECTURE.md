@@ -1,5 +1,7 @@
 # Dynamic Planning: Stage 2 Canonical Architecture Plan
 
+Location change (Chetan, 2026-10-01 12:23, "Move, then freeze"): the slice code now lives in `uri_v1/planning/`, not `uri_v1/execution/planning/`, so the frozen `uri_v1/execution/` package holds only frozen code. Paths below are as originally planned; see the slice report §12.
+
 Status: **ACCEPTED FOR STEPS 1-5 by Chetan 2026-09-29 01:10Z (decisions D1-D3 recorded in §10). PLANNING ONLY.** Nothing is implemented, committed, pushed, frozen, or wired into production.
 Date: 2026-09-28. Author: Claude (planning thread). Same-provider document; it has not been independently audited.
 

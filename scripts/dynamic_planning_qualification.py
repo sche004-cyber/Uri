@@ -35,12 +35,12 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from uri_v1.execution.planning import actions, oracle  # noqa: E402
-from uri_v1.execution.planning.bindings import candidates_from_registry  # noqa: E402
-from uri_v1.execution.planning.contracts import REPORT_NAME, SemanticProposal, canonical  # noqa: E402
-from uri_v1.execution.planning.compiler import compile_proposal  # noqa: E402
-from uri_v1.execution.planning.provider_port import FixtureProvider  # noqa: E402
-from uri_v1.execution.planning.runner import PlanRunner, run_proposal  # noqa: E402
+from uri_v1.planning import actions, oracle  # noqa: E402
+from uri_v1.planning.bindings import candidates_from_registry  # noqa: E402
+from uri_v1.planning.contracts import REPORT_NAME, SemanticProposal, canonical  # noqa: E402
+from uri_v1.planning.compiler import compile_proposal  # noqa: E402
+from uri_v1.planning.provider_port import FixtureProvider  # noqa: E402
+from uri_v1.planning.runner import PlanRunner, run_proposal  # noqa: E402
 from uri_v1.execution.run_record import RunStore  # noqa: E402
 from uri_v1.memory.log import MemoryLog  # noqa: E402
 from uri_v1.memory.recorder import Recorder, _bootstrap_verifiers  # noqa: E402

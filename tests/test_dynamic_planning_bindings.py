@@ -7,8 +7,8 @@ import sys
 import pytest
 
 import uri_v1.memory.recorder as memory_recorder
-from uri_v1.execution.planning.bindings import BindingError, Handle, HandleTable, bind_sources, valid_value
-from uri_v1.execution.planning.contracts import CompiledPlan, PortType
+from uri_v1.planning.bindings import BindingError, Handle, HandleTable, bind_sources, valid_value
+from uri_v1.planning.contracts import CompiledPlan, PortType
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -83,7 +83,7 @@ class _Sources:
 
 
 def test_bind_sources_refuses_unknown_mismatched_and_stale():
-    from uri_v1.execution.planning.contracts import SourceCandidate
+    from uri_v1.planning.contracts import SourceCandidate
     cand = (SourceCandidate("a" * 32, "a.xlsx", "spreadsheet", "1" * 64),)
     assert bind_sources(_plan([("a" * 32, "1" * 64)]), _Sources(True), cand)[0].source_id == "a" * 32
     for plan, current, code in ((_plan([("b" * 32, "1" * 64)]), True, "UNKNOWN_SOURCE"),
@@ -131,7 +131,7 @@ def test_value_shapes_are_closed():
 
 def test_candidates_come_only_from_hash_verified_resolver_refs():
     from types import SimpleNamespace as NS
-    from uri_v1.execution.planning.bindings import candidates_from_registry
+    from uri_v1.planning.bindings import candidates_from_registry
     refs = {"a": NS(source_id="a" * 32, relpath="a.xlsx", media_type="spreadsheet", content_sha256="1" * 64,
                     identity_status=NS(value="HASH_VERIFIED")),
             "b": NS(source_id="b" * 32, relpath="b.xlsx", media_type="spreadsheet", content_sha256=None,

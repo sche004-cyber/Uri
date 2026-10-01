@@ -19,10 +19,10 @@ import pytest
 
 import uri_v1.memory.recorder as memory_recorder
 from uri_v1.execution import officefile
-from uri_v1.execution.planning import actions, attestation
-from uri_v1.execution.planning.compiler import compile_proposal
-from uri_v1.execution.planning.contracts import Effect
-from uri_v1.execution.planning.runner import PlanRunner
+from uri_v1.planning import actions, attestation
+from uri_v1.planning.compiler import compile_proposal
+from uri_v1.planning.contracts import Effect
+from uri_v1.planning.runner import PlanRunner
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = {c.action_id: (c, fn) for c, fn in actions.default_catalog()}

@@ -21,8 +21,8 @@ from .contracts import (REPORT_NAME, REPORT_SCHEMA_VERSION, UNQUALIFIED, Approva
                         CapabilitySnapshot, Effect, InputSpec, LiteralSpec, Mechanism, PortType as T, canonical)
 
 QUALIFICATION_SCHEMA_VERSION = "uri.plan.qualification.v2"
-QUALIFICATION_PATH = Path(__file__).resolve().parents[3] / "fixtures" / "dynamic_planning" / "capability_qualification.json"
-QUALIFICATION_SHA256 = "9975a268c1301e01ec87430d1c2d632088460f71c29bb8465ff166b0d5dd553b"
+QUALIFICATION_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "dynamic_planning" / "capability_qualification.json"
+QUALIFICATION_SHA256 = "9998e2b238c2837d206e0505c77191d56391c7646ae37534f1da087c74fd2a26"
 
 INSPECT = "uri.plan.workbook.inspect_structure"
 SELECT = "uri.plan.structure.select"

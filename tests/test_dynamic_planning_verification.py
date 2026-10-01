@@ -12,8 +12,8 @@ import uri_v1.memory.recorder as memory_recorder
 from tests.m37_edge_support import SALES, Env, make_workbook, report_acceptance
 from uri_v1.edge import report as edge_report
 from uri_v1.edge.contracts import TaskClass
-from uri_v1.execution.planning import actions, oracle
-from uri_v1.execution.planning.contracts import REPORT_NAME, canonical
+from uri_v1.planning import actions, oracle
+from uri_v1.planning.contracts import REPORT_NAME, canonical
 from uri_v1.execution.verify import verify_candidate
 from uri_v1.execution.workspace import Workspace
 

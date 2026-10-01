@@ -288,3 +288,38 @@ All four new tests fail on `06a920b` and pass at this head (checked by running t
 **Boundary test on Windows (coordinator, 15:42).** The integration readiness audit on Chetan's Windows PC reported that the branch tip failed "its own boundary test" (tip then `74474a2` or `06a920b`; that evidence is on Chetan's PC and was not seen here). Of the seven tests in `tests/test_dynamic_planning_boundaries.py`, only `test_no_existing_module_imports_planning` depends on the checkout: it walked every `.py` file under the repository root, tracked or not, so any untracked local file that mentions `execution.planning` (a scratch probe, a tool's output, a virtualenv not named `venv`/`.venv`) fails it, and an unreadable directory makes `rglob` raise. The other six read only the slice's own files and normalize CRLF. The test now scans `git ls-files` (falling back to `rglob` without git). Reproduced here: an untracked `tests/zz_untracked_probe.py` importing the planning package failed the old test and passes the new one. *Inferred, not verified:* that this is the failure the Windows audit saw.
 
 **Python 3.13 test fix (readiness audit on Chetan's Windows PC, Python 3.13, against `28fcbf9`; relayed 2026-10-01).** `test_patched_methods_of_uri_classes_are_refused` built a `_DataclassParams` with the 3.11 constructor (6 arguments; 3.12+ needs 10), so it raised `TypeError` there (slice 146/147). Test-only: the test now copies the class's params and drops `frozen`. No attestation code changed. Reproduced and fixed here with Python 3.13: slice 147 passed and qualification 34/34 with counters 0 on 3.13. On 3.11 the slice is 147 passed and the full suite is 1449 passed / 1 failed (the accepted guard only). Windows itself was not run here.
+
+## 12. Package move to `uri_v1/planning/` (Chetan, 2026-10-01 12:23, "Move, then freeze")
+
+**Why.** The M37-L3 guard fix (`9395677` on `claude/project-thread-hrkr7o`) pins `uri_v1/execution/` to the M36-M38 freeze commit. With that fix, the 9 planning code files under `uri_v1/execution/planning/` were flagged as changes in frozen territory. Chetan chose to move them out, so the frozen `uri_v1/execution/` package holds only frozen code. The move does not shrink the guard failure: the files are now flagged as outside the M37/M38 scope instead, and the count stays at 27 paths, all slice paths.
+
+**What changed.** Only the following; there is no logic change.
+- The 9 files moved from `uri_v1/execution/planning/` to `uri_v1/planning/` (`git mv`; file contents are identical apart from the two lines below).
+- `actions.QUALIFICATION_PATH` now goes up `parents[2]` instead of `parents[3]`, for the shallower location.
+- Imports in the 7 slice test files and the qualification script now use `uri_v1.planning`.
+- `test_dynamic_planning_boundaries.py` now uses the new package path, allowed prefix and forbidden import text (`uri_v1.planning`, `uri_v1 import planning`).
+- The qualification record's adapter `module` fields and binding note now name `uri_v1.planning.*`.
+- The implementation digests include the module name, so all four changed. They were recomputed:
+  - `inspect_structure` `505dff2c…`;
+  - `select` `02152cdc…`;
+  - `compare` `944ac6d0…`;
+  - `write_report` `8ff6aca1…`.
+- The record digest is re-pinned in `actions.py` to `9998e2b238c2837d206e0505c77191d56391c7646ae37534f1da087c74fd2a26`. That is a re-qualification.
+- The battery and gate digests are unchanged, because neither contains module paths.
+- The migration plan and canonical architecture each gained a one-line note about the new location. Their planned paths are kept as history.
+
+Every path `uri_v1/execution/planning/…` in §1-§11 of this report and in `docs/reviews/` now refers to `uri_v1/planning/…`. That earlier text is kept as written.
+
+**Checks at this head** (Linux, all COMPLETED_WITH_RESULT):
+
+| Check | Result |
+|---|---|
+| Full suite (Python 3.11.15) | 1449 passed, 1 failed (only the accepted `test_m36_and_frozen_files_unchanged`), 9 skipped |
+| Guard offenders, recomputed with the current guard and with the `9395677` logic | 27 under each; all are `uri_v1/planning/`, `tests/test_dynamic_planning_*`, `scripts/dynamic_planning_*` or `fixtures/dynamic_planning/`; none is in `uri_v1/execution/` |
+| Slice tests | 147 passed on Python 3.11 and on Python 3.13 |
+| Slice qualification (Python 3.11) | exit 0: 34/34; all six counters 0; C33 semantic miss 1/1; gate passed; the results file differs only in latency |
+| Review regression set | 113 passed |
+| Anchors / governance | ok, changed [] / VALID, 37 passed |
+| M36, M37, M38 qualification | exit 0 each (rewritten result files reverted) |
+
+**Not run at this head:** Windows. The Windows Python 3.13 run (slice 147/147, qualification 34/34) was at `b6b2cb0`, before the move.

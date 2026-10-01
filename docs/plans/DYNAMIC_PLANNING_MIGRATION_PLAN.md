@@ -1,5 +1,7 @@
 # Dynamic Planning: Stage 3 Migration & Integration Plan (Slice 1)
 
+Location change (Chetan, 2026-10-01 12:23, "Move, then freeze"): the slice code now lives in `uri_v1/planning/`, not `uri_v1/execution/planning/`, so the frozen `uri_v1/execution/` package holds only frozen code. Paths below are as originally planned; see the slice report §12.
+
 Status: **DRAFT FOR STAGE 3 ACCEPTANCE. PLANNING ONLY.** It is not implemented, not frozen, and it has no milestone number or INT event (review §8).
 Date: 2026-09-29. Author: Claude (planning thread). Same-provider document; it has not been independently audited.
 Maps to: Stage 1, the Codex review (F1 to F12, §10 gates). Stage 2, `DYNAMIC_PLANNING_STAGE2_CANONICAL_PLAN.md` (the §-refs below as "S2 §x").

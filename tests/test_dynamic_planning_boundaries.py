@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-PLANNING = ROOT / "uri_v1" / "execution" / "planning"
+PLANNING = ROOT / "uri_v1" / "planning"
 FORBIDDEN = ("uri_core", "experimental", "server", "file_store", "uri_ui")
 
 # LF-normalized sha256 of every reused file, pinned at BASE (frozen M36-M38 line 5bbf738; identical at 21bcc63). Slice 1 must not change any of them.
@@ -60,12 +60,12 @@ def _repository_python_files():
 
 
 def test_no_existing_module_imports_planning():
-    allowed_prefixes = ("uri_v1/execution/planning/", "tests/test_dynamic_planning_", "scripts/dynamic_planning_qualification.py")
+    allowed_prefixes = ("uri_v1/planning/", "tests/test_dynamic_planning_", "scripts/dynamic_planning_qualification.py")
     for path, rel in _repository_python_files():
         if rel.startswith(allowed_prefixes) or "/." in "/" + rel or rel.startswith(("node_modules/", "venv/", ".venv/")): continue
         try: text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError): continue
-        assert "execution.planning" not in text and "execution import planning" not in text, rel
+        assert "uri_v1.planning" not in text and "uri_v1 import planning" not in text, rel
 
 
 def test_reused_files_are_unchanged_since_base():
