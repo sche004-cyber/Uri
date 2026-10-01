@@ -631,3 +631,10 @@ and `uri_v1/execution/harness/{runner,contracts}.py` (from b013dba) on a disposa
 - **L-2.** The Windows suite needs an LF clone (`git clone -c core.autocrlf=false`). A CRLF checkout fails 7 frozen M33.3/M36/anchor checks that hash raw bytes. Those are not M39 defects; this goes in the runbook.
 - **L-3.** The D9 test comment is corrected, and the runbook says the live run is "limited to" the temporary folder rather than "touches only". The note about the blob-id pin is in `URI_STATE.yaml` (`recheck_e9c891f_2026_10_01`).
 - The M37-L3 fix (`9395677`) changes `tests/test_m37_edge_resolution.py`, so M39's pin must be regenerated when that merges. It is not merged here; that waits for the User to re-freeze M37.
+
+**M37 re-freeze merged (2026-10-01).** The re-frozen M37-L3 fix (`9395677`, freeze commit `b610dd0`) is merged into the M39 line.
+- Conflicts were in `tests/test_m37_edge_resolution.py`, `URI_STATE.yaml`, the freeze record and `URI_ACTIVE_MILESTONE.md`. The docs were resolved by keeping both sides. The M39 line's earlier "M37-L3 retained" section in the freeze record is kept as §6b, marked superseded by §7.
+- The guard file is the re-frozen fix plus exactly the existing M39 entry. M37's new pin test was updated to the combined content, by User decision (Chetan, 13:10 UTC, "Update pin").
+- M39's own guard now pins both M37 files by git blob id.
+- M39's acceptance status is unchanged.
+

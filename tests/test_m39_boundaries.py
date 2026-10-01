@@ -96,8 +96,14 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
 # (CRLF on disk, same committed content) matches, while any real content
 # change does not. Was sha256 f288b194... of the LF bytes, which failed on
 # such checkouts (integration readiness audit 2026-10-01, D9).
+#
+# 2026-10-01: the M37-L3 fix (re-frozen at 9395677, freeze commit b610dd0) is merged in. The
+# guard file now carries both authorized edits, and the new frozen pin test
+# tests/test_m37_frozen_guard_pin.py holds the combined content (User, Chetan, 2026-10-01
+# 13:10 UTC, "Update pin"). Both are pinned here; e54c180... was the M39-entry-only version.
 AUTHORIZED_FROZEN_EDITS = {
-    "tests/test_m37_edge_resolution.py": "e54c180676e506a538f52662bf8182b2960befe8",
+    "tests/test_m37_edge_resolution.py": "cf8f88efcd70c4a3bf22a9840f27b311edf5dce2",
+    "tests/test_m37_frozen_guard_pin.py": "dbb46c9f09f58c0a3a82b7d461be35907e5bda5d",
 }
 
 
