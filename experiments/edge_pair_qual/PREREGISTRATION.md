@@ -102,3 +102,23 @@ frozen (second manifest). The holdout is never edited; a defective holdout case 
 
 ---
 Addenda (append only)
+
+### Addendum 1 (2026-10-01, before any holdout run)
+
+Development findings that fix the holdout configuration (numbers in `reports/E_FAILURE_AND_REPAIR.md`):
+- Prompt presentation stays **v1** (as pre-registered). Repairs v2 (no `<<<` fence, options in label question) and v3
+  (fence only) gave no measurable development improvement for any model (Needle document cases 11 → 12 → 7 of 69;
+  Granite JSON 33 → 28 → 30), so neither is adopted.
+- Label-as-tool-choice (v3t) raised Needle's development SEMANTIC score from 3 to 8 of 30 (Granite native 12 → 12). It is run
+  on the holdout as a **diagnostic arm only**; it does not replace v1 in any decision.
+- Real URI tool schemas (condition R1, `build_tool_schemas`) are run on the holdout select cases for Needle and Granite JSON as
+  an additional arm. Under R1 URI supplies `request_text`, so only the action choice decides the outcome.
+- Placement-matched arm added: `granitecpu_json_P1` (Granite JSON, `num_gpu: 0`).
+- Main Brain arm: `qwen3.5:9b`, `think: false`, Ollama default context, v1 presentation.
+- Holdout arms (3 repeats each): needle_P0, needle_P1, granite_native_P0, granite_native_P1, granite_json_P0, granite_json_P1,
+  granitecpu_json_P1, brain_P1; plus needle_R1, granite_json_R1 (select cases), needle_P1@v3t, granite_native_P1@v3t (label cases); plus deterministic.
+- Combined-configuration assignments were chosen on the development split and frozen in `battery/assignment_by_kind_from_dev.json`
+  (implementable: by request kind; Granite JSON wins every kind) and `battery/assignment_from_dev.json` (by family; an
+  oracle upper bound, because URI does not know a request's family at run time).
+- Records lost to an Ollama shutdown during development (connection refused) are kept in `runs/FAILED_ollama_down_*.jsonl` and excluded.
+- No gate, threshold or oracle changed.

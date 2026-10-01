@@ -289,7 +289,8 @@ def eval_label(case, rec):
     elif len(calls) > 1:
         o = "MULTI_CALL"
     else:
-        v = (calls[0].get("arguments") or {}).get("value")
+        n = calls[0].get("name") or ""
+        v = n[len("choose_"):] if n.startswith("choose_") else (calls[0].get("arguments") or {}).get("value")
         o = "CORRECT" if v == case["expected"]["value"] else ("INVALID_VALUE" if v not in case["enum"] else "WRONG_VALUE")
     return {"outcome": o, "correct": o == "CORRECT", "suppressed_only": bool(rec.get("suppressed")) and not calls}
 

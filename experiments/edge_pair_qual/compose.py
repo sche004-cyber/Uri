@@ -107,7 +107,7 @@ def run_config(name, plan, by, split_ids, assign=None):
                 if not fb:
                     break
                 continue
-            arm = assign(c) if st == "assigned" else st
+            arm = assign[st](c) if st in assign else st
             if arm is None or (bypass and not arm.startswith("brain")):
                 continue
             rec = by[arm].get(cid)
@@ -154,7 +154,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("paths", nargs="+")
     ap.add_argument("--split", default="dev")
-    ap.add_argument("--assign", help="JSON file with family->arm assignment chosen on dev")
+    ap.add_argument("--assign", help="JSON file with family->arm assignment chosen on dev (oracle upper bound: URI does not know a request's family)")
+    ap.add_argument("--assign-kind", help="JSON file with kind->arm assignment chosen on dev (implementable: URI knows whether it asks for selection, extraction, a label or a route)")
     ap.add_argument("--needle", default="needle_P1")
     ap.add_argument("--granite", default="granite_json_P1")
     ap.add_argument("--out", required=True)
@@ -166,25 +167,29 @@ if __name__ == "__main__":
         assign_map = json.loads(Path(a.assign).read_text())
     else:
         assign_map = family_winner(by, [N, G], ids)
-    assign = lambda c: assign_map.get(c["family"])  # noqa: E731
+    kind_map = json.loads(Path(a.assign_kind).read_text()) if a.assign_kind else {}
+    assign = {"assigned_family": lambda c: assign_map.get(c["family"]),
+              "assigned_kind": lambda c: kind_map.get(c["kind"])}
     have_brain = "brain_P1" in by and len(by["brain_P1"]) >= len(ids)
     configs = [
         ("C0_deterministic_only", ["det"]),
         ("C1_needle_alone", ["m36", N]),
         ("C2_granite_alone", ["m36", G]),
-        ("C3_pair_selective", ["m36", "assigned"]),
+        ("C3_pair_selective_by_kind", ["m36", "assigned_kind"]),
+        ("C3o_pair_selective_by_family_ORACLE_UPPER_BOUND", ["m36", "assigned_family"]),
         ("C4_pair_sequential_needle_then_granite", ["m36", N, G]),
         ("C4b_pair_sequential_granite_then_needle", ["m36", G, N]),
     ]
     if have_brain:
         configs += [
             ("C5_main_brain_alone", ["brain_P1"]),
-            ("C6_hybrid_det_selective_edge_then_brain", ["m36", "det", "assigned", "brain_P1"]),
+            ("C6_hybrid_det_selective_by_kind_then_brain", ["m36", "det", "assigned_kind", "brain_P1"]),
+            ("C6o_hybrid_det_selective_by_family_ORACLE_then_brain", ["m36", "det", "assigned_family", "brain_P1"]),
             ("C6b_hybrid_det_granite_then_brain", ["m36", "det", G, "brain_P1"]),
             ("C6c_hybrid_det_needle_then_brain", ["m36", "det", N, "brain_P1"]),
             ("C7_det_then_brain", ["m36", "det", "brain_P1"]),
         ]
-    out = {"split": a.split, "assignment": assign_map, "needle_arm": N, "granite_arm": G,
+    out = {"split": a.split, "assignment": assign_map, "assignment_by_kind": kind_map, "needle_arm": N, "granite_arm": G,
            "configs": [run_config(n, p, by, ids, assign) for n, p in configs]}
     Path(a.out).write_text(json.dumps(out, indent=1), encoding="utf-8")
     print("assignment", assign_map)
