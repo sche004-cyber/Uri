@@ -1,9 +1,15 @@
-"""Starts the real URI backend with Canonical Desktop Intelligence (M36-M39) mounted.
+"""Authoritative server runner for URI Desktop on Windows.
 
-Authoritative server runner for the Windows Desktop application.
-- Loopback-only binding (127.0.0.1) by default per M22.3 security invariants.
-- Manages process PID in uri_workspace/uri_server.pid for coordinated shutdown.
-- Mounts uri_desktop_adapter onto uri_core.app.server:app.
+Starts the real URI backend (uri_core.app.server:app) with:
+- Pre-startup validation: Ollama health, model availability, port conflicts.
+- Loopback-only binding (127.0.0.1) per M22.3 security invariants.
+- PID file written AFTER uvicorn successfully binds (not before).
+- Desktop status endpoint registered (GET /desktop/status).
+- No middleware interception of POST /ask — requests flow through the
+  canonical URI Core handler.
+
+The canonical POST /ask handler reads model configuration from
+uri_workspace/model_roles.json via uri_core.config.model_roles.load_model_roles().
 """
 
 from __future__ import annotations
@@ -14,6 +20,8 @@ import os
 import signal
 import socket
 import sys
+import threading
+import time
 from pathlib import Path
 
 # Add repo root to sys.path
@@ -22,6 +30,10 @@ sys.path.insert(0, str(REPO_ROOT))
 
 os.environ.setdefault("URI_PROVIDER_KEY_SECRET", "uri_local_dev_secret_key_v1")
 os.environ.setdefault("URI_EXTERNAL_CREDENTIAL_SECRET", "uri_local_dev_credential_secret_v1")
+# Desktop default: the EXPERIMENTAL harness-first social seam is on, so purely
+# social turns ("hi", "thanks") are answered by the local Edge chat model
+# instead of two Main Brain calls. Set URI_HARNESS_FIRST=0 to turn it off.
+os.environ.setdefault("URI_HARNESS_FIRST", "1")
 
 LOG_FILE = REPO_ROOT / "uri_workspace" / "logs" / "uri_server.log"
 LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -33,13 +45,6 @@ try:
         sys.stderr = log_handle
 except Exception:
     pass
-
-import uvicorn
-from uri_core.app.server import app
-import uri_desktop_adapter
-
-# Mount the canonical desktop intelligence adapter
-uri_desktop_adapter.mount_desktop_adapter(app)
 
 PID_FILE = REPO_ROOT / "uri_workspace" / "uri_server.pid"
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost"})
@@ -60,15 +65,78 @@ def _cleanup_pid() -> None:
 
 
 def _record_pid() -> None:
+    """Write PID file. Called AFTER uvicorn binds successfully."""
     PID_FILE.parent.mkdir(parents=True, exist_ok=True)
     PID_FILE.write_text(str(os.getpid()), encoding="utf-8")
     atexit.register(_cleanup_pid)
 
 
+def _check_port_conflict(host: str, port: int) -> bool:
+    """Return True if the port is already in use. Aborts startup if so."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(1.0)
+    try:
+        result = sock.connect_ex((host, port))
+        return result == 0  # True = conflict
+    except Exception:
+        return False
+    finally:
+        sock.close()
+
+
+def _wait_for_bind_then_record_pid(host: str, port: int, timeout: float = 15.0) -> None:
+    """Background thread: wait until the server is actually listening,
+    then write the PID file. This ensures PID is recorded only after
+    a successful bind, not before."""
+    start = time.monotonic()
+    while time.monotonic() - start < timeout:
+        time.sleep(0.5)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1.0)
+        try:
+            result = sock.connect_ex((host, port))
+            if result == 0:
+                _record_pid()
+                print(f"PID {os.getpid()} recorded after successful bind to {host}:{port}", flush=True)
+                return
+        except Exception:
+            pass
+        finally:
+            sock.close()
+    print(f"WARNING: PID file NOT written — server did not bind to {host}:{port} within {timeout}s", file=sys.stderr, flush=True)
+
+
+def _warm_edge_chat_model() -> None:
+    """Background thread: load the harness-first Edge chat model once at
+    startup so the first social turn is not lost to a cold load (live
+    2026-10-01: a cold qwen3:0.6b load exceeded the seam's 4 s budget and the
+    first "Hi" fell back to the fixed line). Loopback Ollama only; any failure
+    is logged and ignored - the seam still falls back safely."""
+    try:
+        from uri_core.core.harness_first import edge_chat, seam
+
+        if not seam.enabled() or not seam._loopback(edge_chat.OLLAMA_URL):
+            return
+        import json
+        import urllib.request
+
+        started = time.monotonic()
+        body = json.dumps({"model": edge_chat.DEFAULT_MODEL, "keep_alive": "30m"}).encode("utf-8")
+        req = urllib.request.Request(f"{edge_chat.OLLAMA_URL}/api/generate", data=body,
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            resp.read()
+        print(f"Edge chat model {edge_chat.DEFAULT_MODEL} warmed in {time.monotonic() - started:.1f}s", flush=True)
+    except Exception as exc:
+        print(f"WARNING: Edge chat model warm-up failed: {type(exc).__name__}: {exc}", file=sys.stderr, flush=True)
+
+
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run URI Desktop Server with Canonical Intelligence.")
-    parser.add_argument("--host", default=os.environ.get("URI_SERVER_HOST", DEFAULT_HOST), help=f"Bind address (default: {DEFAULT_HOST}).")
-    parser.add_argument("--port", type=int, default=int(os.environ.get("URI_SERVER_PORT", str(DEFAULT_PORT))), help=f"Bind port (default: {DEFAULT_PORT}).")
+    parser = argparse.ArgumentParser(description="Run URI Desktop Server.")
+    parser.add_argument("--host", default=os.environ.get("URI_SERVER_HOST", DEFAULT_HOST),
+                        help=f"Bind address (default: {DEFAULT_HOST}).")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("URI_SERVER_PORT", str(DEFAULT_PORT))),
+                        help=f"Bind port (default: {DEFAULT_PORT}).")
     parser.add_argument("--reload", action="store_true", help="Enable uvicorn reload.")
     return parser
 
@@ -77,19 +145,67 @@ def main() -> None:
     args = build_arg_parser().parse_args()
 
     if not is_loopback_host(args.host):
-        print(f"ERROR: Non-loopback host {args.host!r} is refused for desktop launcher.", file=sys.stderr)
+        print(f"ERROR: Non-loopback host {args.host!r} refused for desktop launcher.", file=sys.stderr)
         sys.exit(1)
 
-    _record_pid()
+    # Pre-startup port conflict check — abort if port is occupied
+    if _check_port_conflict(args.host, args.port):
+        # Check if it's a healthy URI instance
+        import urllib.request
+        import json
+        try:
+            with urllib.request.urlopen(f"http://{args.host}:{args.port}/health", timeout=2) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                if data.get("status") == "ok":
+                    print(f"URI backend already healthy at {args.host}:{args.port}. Exiting (no duplicate).", flush=True)
+                    sys.exit(0)
+        except Exception:
+            pass
+        print(f"ERROR: Port {args.port} is already in use by a non-URI process. Aborting.", file=sys.stderr)
+        sys.exit(1)
+
+    # Pre-startup validation
+    import uri_desktop_adapter
+    report = uri_desktop_adapter.validate_desktop_readiness(host=args.host, port=args.port)
 
     print("=" * 60)
-    print("URI Canonical Desktop Server (M36-M39 Integrated)")
-    print(f"Local:  http://127.0.0.1:{args.port}")
-    print(f"PID:    {os.getpid()} (recorded in {PID_FILE})")
-    print("Health: GET /health")
-    print("Ask:    POST /ask (Canonical v1 Pipeline Active)")
+    print("URI Desktop Server — Pre-Startup Validation")
+    print(f"  Ollama:  {'HEALTHY' if report['ollama']['healthy'] else 'UNREACHABLE'}")
+    if report["model_roles"]["missing_from_ollama"]:
+        print(f"  WARNING: Models missing from Ollama: {report['model_roles']['missing_from_ollama']}")
+    else:
+        print(f"  Models:  {report['model_roles']['configured_models']}")
+    print(f"  Config:  {report['model_roles']['config_file']} (exists={report['model_roles']['config_file_exists']})")
+
+    if not report["ollama"]["healthy"]:
+        print("WARNING: Ollama is not reachable. Model calls will fail at runtime.", file=sys.stderr, flush=True)
+        # Do NOT abort — the canonical handler will return honest errors.
+
+    # Import the app — this triggers all uri_core initialization
+    from uri_core.app.server import app
+
+    # Mount the desktop status endpoint (no /ask interception)
+    uri_desktop_adapter.mount_desktop_status_endpoint(app)
+
+    print("=" * 60)
+    print("URI Desktop Server")
+    print(f"  Bind:    http://{args.host}:{args.port}")
+    print(f"  PID:     {os.getpid()} (will be recorded after bind)")
+    print(f"  Health:  GET /health")
+    print(f"  Ask:     POST /ask (canonical URI Core pipeline)")
+    print(f"  Status:  GET /desktop/status (capability inventory)")
     print("=" * 60, flush=True)
 
+    # Start PID recording thread — writes PID only after successful bind
+    pid_thread = threading.Thread(
+        target=_wait_for_bind_then_record_pid,
+        args=(args.host, args.port),
+        daemon=True,
+    )
+    pid_thread.start()
+    threading.Thread(target=_warm_edge_chat_model, daemon=True).start()
+
+    import uvicorn
     try:
         uvicorn.run(
             app,

@@ -4,10 +4,12 @@
 
 .DESCRIPTION
     1. Uses a local Windows named mutex ("Local\URI_Desktop_App_Mutex") to prevent concurrent launch races.
-    2. Checks if the backend is already running and healthy at http://127.0.0.1:8000/health.
-    3. If offline, starts run_desktop_server.py directly with user privileges (no Task Scheduler/admin requirement).
-    4. Waits for /health to return {"status":"ok"}.
-    5. Brings existing uri_ui window to the front or launches uri_ui.exe.
+    2. Checks if the backend is already running and healthy at http://127.0.0.1:$Port/health.
+    3. If a non-URI process occupies the port, ABORTS (does not start a competing server).
+    4. If offline, starts run_desktop_server.py and waits for /health to confirm readiness.
+    5. Mutex is held until the UI process is confirmed running (not released before UI starts).
+    6. Brings existing uri_ui window to the front or launches uri_ui.exe.
+    7. Records launched UI PID alongside server PID for targeted shutdown.
 #>
 
 param(
@@ -33,6 +35,7 @@ $ExePath = Join-Path $RepoRoot "uri_ui\build\windows\x64\runner\Release\uri_ui.e
 $HealthUrl = "http://127.0.0.1:$Port/health"
 $ProcessName = "uri_ui"
 $MutexName = "Local\URI_Desktop_App_Mutex"
+$UiPidFile = Join-Path $RepoRoot "uri_workspace\uri_ui.pid"
 
 function Write-Step($Message) {
     Write-Output "==> $Message"
@@ -80,7 +83,7 @@ try {
     # 2. Check Backend Health
     $backendHealthy = $false
     try {
-        $res = Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 1 -ErrorAction Stop
+        $res = Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 2 -ErrorAction Stop
         if ($res.status -eq "ok") {
             $backendHealthy = $true
         }
@@ -90,16 +93,30 @@ try {
     }
 
     if ($backendHealthy) {
+        # A healthy /health only proves *a* URI backend is listening. Make sure it
+        # is this checkout's desktop backend, not one started from another
+        # worktree, before attaching the UI to it. Never stop it either way.
+        $ownerRoot = $null
+        try {
+            $st = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/desktop/status" -TimeoutSec 5 -ErrorAction Stop
+            $ownerRoot = $st.repo_root
+        }
+        catch {}
+        if (-not $ownerRoot -or ([IO.Path]::GetFullPath($ownerRoot).TrimEnd([char]92) -ne [IO.Path]::GetFullPath($RepoRoot).TrimEnd([char]92))) {
+            Write-Error "Port $Port is serving a URI backend that is not this desktop install ($RepoRoot; it reports '$ownerRoot'). Close that backend first. Aborting."
+            exit 1
+        }
         Write-Step "Backend already active and healthy at $HealthUrl."
     }
     else {
-        # Check port collision
+        # Check port conflict — ABORT if occupied by non-URI process
         $portConflict = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
         if ($portConflict) {
-            Write-Warning "Port $Port is occupied by PID $($portConflict.OwningProcess), but /health is not responding."
+            Write-Error "Port $Port is occupied by PID $($portConflict.OwningProcess) but /health is not responding. This is NOT a URI server. Aborting."
+            exit 1
         }
 
-        Write-Step "Starting URI Backend Server with Canonical Intelligence..."
+        Write-Step "Starting URI Backend Server..."
         if (-not (Test-Path $LogDir)) {
             New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
         }
@@ -114,7 +131,7 @@ try {
             Start-Sleep -Seconds 1
             $elapsed += 1
             try {
-                $h = Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 1 -ErrorAction Stop
+                $h = Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 2 -ErrorAction Stop
                 if ($h.status -eq "ok") {
                     $backendHealthy = $true
                     break
@@ -130,7 +147,7 @@ try {
         Write-Step "Backend is ready."
     }
 
-    # 3. Desktop Application Window
+    # 3. Desktop Application Window — still under mutex protection
     if (Activate-ExistingWindow) {
         Write-Step "Existing window activated."
     }
@@ -140,12 +157,33 @@ try {
             exit 1
         }
         Write-Step "Launching URI Desktop Application..."
-        Start-Process -FilePath $ExePath -WorkingDirectory (Split-Path -Parent $ExePath)
+        $uiProcess = Start-Process -FilePath $ExePath -WorkingDirectory (Split-Path -Parent $ExePath) -PassThru
+
+        # Record UI PID for targeted shutdown
+        if ($null -ne $uiProcess) {
+            $uiProcess.Id | Out-File -FilePath $UiPidFile -Encoding utf8 -Force
+            Write-Step "UI process started (PID $($uiProcess.Id))."
+
+            # Wait briefly for the UI window to appear before releasing mutex
+            $windowWait = 0
+            while ($windowWait -lt 5) {
+                Start-Sleep -Milliseconds 500
+                $windowWait++
+                try {
+                    $uiProcess.Refresh()
+                    if ($uiProcess.MainWindowHandle -ne [IntPtr]::Zero) {
+                        break
+                    }
+                }
+                catch { break }
+            }
+        }
     }
 
     Write-Step "Done."
 }
 finally {
+    # Release mutex AFTER UI is confirmed running
     if ($null -ne $mutex) {
         try {
             $mutex.ReleaseMutex()

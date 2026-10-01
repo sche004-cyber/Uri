@@ -1,4 +1,5 @@
 {
+  "_comment": "Portable template for desktop model roles. Copy to uri_workspace/model_roles.json to use. Only contains the 6 canonical roles consumed by uri_core.config.model_roles.load_model_roles().",
   "semantic_interpretation": {
     "provider": "ollama",
     "model": "qwen3.5:9b"
@@ -22,19 +23,5 @@
   "background": {
     "provider": "ollama",
     "model": "qwen3.5:9b"
-  },
-  "edge_specialist": {
-    "provider": "ollama",
-    "model": "qwen3:0.6b",
-    "parameter_size": "0.6B",
-    "role": "intent_classification_and_parameter_extraction",
-    "status": "QUALIFIED"
-  },
-  "harness": {
-    "provider": "codex",
-    "model": "gpt-5.6-terra",
-    "posture": "sandbox workspace-write",
-    "network_access": false,
-    "status": "QUALIFIED"
   }
 }
