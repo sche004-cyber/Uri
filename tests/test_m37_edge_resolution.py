@@ -281,6 +281,26 @@ FROZEN_M37_M38 = ("uri_v1/edge/", "uri_v1/execution/", "tests/test_m37_", "tests
                   "tests/m38_harness_support.py", "scripts/m37_", "scripts/m38_", "fixtures/m37_edge/", "fixtures/m38_harness/")
 FREEZE_EXEMPT = frozenset({"tests/test_m37_edge_resolution.py", "tests/test_m37_frozen_guard_pin.py"})
 
+# Desktop recovery / Edge-first allowlist (User, Chetan, 2026-10-01 18:21 UTC approval and
+# 18:24 UTC in-thread confirmation; record docs/plans/DESKTOP_RECOVERY_ALLOWLIST.md): exact
+# uri_core/uri_ui files pinned by blob in desktop_recovery_allowlist.py, whose own content is
+# pinned here, plus the edited M36 guard pinned by blob. Nothing else is allowed by it.
+DESKTOP_ALLOWLIST_MODULE = ("desktop_recovery_allowlist.py", "d87ec4cc90dfb1ae39ac6672252d6e672c32d585")
+DESKTOP_GUARD_EDITS = {"tests/test_m36_memory_adversarial.py": "a1a8470ea620e1c374e44d7c6e6af438e03e74a0"}
+
+
+def _blob(path):
+    return subprocess.check_output(["git", "hash-object", "--", path], cwd=ROOT, text=True).strip()
+
+
+def _desktop_recovery_ok(p):
+    if not (ROOT / DESKTOP_ALLOWLIST_MODULE[0]).is_file() or _blob(DESKTOP_ALLOWLIST_MODULE[0]) != DESKTOP_ALLOWLIST_MODULE[1]:
+        return False
+    if p in DESKTOP_GUARD_EDITS:
+        return (ROOT / p).is_file() and _blob(p) == DESKTOP_GUARD_EDITS[p]
+    from desktop_recovery_allowlist import is_desktop_recovery_edit
+    return is_desktop_recovery_edit(ROOT, p)
+
 
 def frozen_scope_offenders():
     """Every path the guard below rejects: outside the allowed scope, or (M37-L3) changed since the freeze."""
@@ -289,7 +309,7 @@ def frozen_scope_offenders():
     untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "--", "uri_v1", "uri_core", "uri_ui",
                                          "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
     allowed = FROZEN_M37_M38 + M39_ALLOWED
-    ok = lambda p: (p.startswith(allowed) or p in M39_ALLOWED_FILES) and ".." not in p.split("/")
+    ok = lambda p: ((p.startswith(allowed) or p in M39_ALLOWED_FILES) and ".." not in p.split("/")) or _desktop_recovery_ok(p)
     outside = [p for p in changed + untracked if not ok(p)]
     since_freeze = subprocess.check_output(["git", "diff", "--name-only", "--no-renames", FREEZE_COMMIT, "--",
                                             "uri_v1", "uri_core", "uri_ui", "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()

@@ -186,8 +186,12 @@ def _warm_edge_chat_model() -> None:
         import urllib.request
 
         started = time.monotonic()
-        body = json.dumps({"model": edge_chat.DEFAULT_MODEL, "keep_alive": "30m"}).encode("utf-8")
-        req = urllib.request.Request(f"{edge_chat.OLLAMA_URL}/api/generate", data=body,
+        # Same endpoint and runner options as edge_chat.generate: a different
+        # num_ctx makes Ollama reload the model on the first real turn.
+        body = json.dumps({"model": edge_chat.DEFAULT_MODEL, "keep_alive": "30m", "stream": False,
+                           "think": False, "messages": [{"role": "user", "content": "hi"}],
+                           "options": {"num_predict": 1, "num_ctx": 1024}}).encode("utf-8")
+        req = urllib.request.Request(f"{edge_chat.OLLAMA_URL}/api/chat", data=body,
                                      headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=60) as resp:
             resp.read()

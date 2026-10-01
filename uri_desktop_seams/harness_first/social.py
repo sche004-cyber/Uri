@@ -47,8 +47,22 @@ def _intent_from_tokens(tokens: list[str]) -> str:
     return "acknowledgement"
 
 
+# Desktop recovery: a capability question ("what can you do?", "can you help
+# me with ...") must be answered from URI's real capability catalogue, which
+# the Edge chat model does not see, so it is not admitted here and escalates
+# to the canonical chain. Identity questions ("who are you?") stay admitted.
+_CAPABILITY_QUESTION = re.compile(r"\b(can|do|help|able|capabilit\w*)\b", re.I)
+
+
 def social_intent(text: str) -> Optional[str]:
     """Return the social intent, or None when the turn is not purely social."""
+    intent = _social_intent(text)
+    if intent == "about_uri" and _CAPABILITY_QUESTION.search(text or ""):
+        return None
+    return intent
+
+
+def _social_intent(text: str) -> Optional[str]:
     raw = (text or "").strip()
     if not raw or len(raw) > 80 or _ACTION_HINT.search(raw):
         return None

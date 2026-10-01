@@ -477,5 +477,73 @@ class ToolResultOwnStatusOverridesDispatchStatusTests(unittest.TestCase):
         self.assertEqual(result, "Done.")
 
 
+    # Desktop recovery 2026-10-01: conversational turns (nothing
+    # dispatched) are not held to the capability-gap expansion cap.
+    _GREETING = (
+        "I am URI, your administrative assistant. I help you draft notes "
+        "and orders, recall information from memory, convert documents "
+        "and manage Gmail. I can also plan workflows for tasks that need "
+        "several steps. If you have a specific request, tell me and I "
+        "will check which of my available capabilities can help you with "
+        "it right now, and tell you plainly when something is not "
+        "available yet rather than pretending otherwise."
+    )
+
+    def _conversation_outcome(self, **execution_extra):
+        execution = {"status": "not_applicable", "capability": None}
+        execution.update(execution_extra)
+        return {
+            "execution": execution,
+            "response": {"message": "General inquiry, no tool applies."},
+            "known_gaps": None,
+        }
+
+    def test_long_conversational_reply_is_accepted(self):
+        self.assertGreater(len(self._GREETING), MAX_NON_SUCCESS_NARRATIVE_LENGTH)
+        result = validate_drafted_response(
+            self._GREETING, self._conversation_outcome()
+        )
+        self.assertEqual(result, self._GREETING)
+
+    def test_conversational_reply_still_rejects_success_claims(self):
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(
+                "Done! I've sent the email for you.",
+                self._conversation_outcome(),
+            )
+
+    def test_conversational_reply_still_rejects_oversized_draft(self):
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(
+                "x " * 1500, self._conversation_outcome()
+            )
+
+    def test_not_applicable_with_capability_keeps_expansion_cap(self):
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(
+                self._GREETING,
+                self._conversation_outcome(capability="draft_note"),
+            )
+
+    def test_not_applicable_with_tool_or_branches_keeps_expansion_cap(self):
+        for extra in ({"tool": "gmail"}, {"branch_results": [{"x": 1}]}):
+            with self.assertRaises(ResponseValidationError):
+                validate_drafted_response(
+                    self._GREETING, self._conversation_outcome(**extra)
+                )
+
+    def test_not_applicable_with_known_gaps_keeps_expansion_cap(self):
+        outcome = self._conversation_outcome()
+        outcome["known_gaps"] = [{"reason": "unavailable_runtime"}]
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(self._GREETING, outcome)
+
+    def test_not_applicable_with_tool_status_keeps_expansion_cap(self):
+        outcome = self._conversation_outcome()
+        outcome["response"]["status"] = "not_found"
+        with self.assertRaises(ResponseValidationError):
+            validate_drafted_response(self._GREETING, outcome)
+
+
 if __name__ == "__main__":
     unittest.main()

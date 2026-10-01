@@ -1634,6 +1634,9 @@ def ask(
     user_id: Optional[str] = Depends(_resolve_authenticated_user_id),
     _size_check: None = Depends(enforce_ask_content_length),
 ) -> dict:
+    # Desktop recovery (allowlisted): turn start, so the response can report
+    # every model call this turn made, not only the last one.
+    turn_started = time.time()
     context, principal, personalization_context = _resolve_ask_context(payload, user_id)
     current_turn_attachments = _current_turn_attachment_references(context, payload)
 
@@ -1701,6 +1704,28 @@ def ask(
         except Exception:
             result = None
             early_executed = False
+
+    # Desktop recovery, Edge-first (allowlisted; EXPERIMENTAL, desktop default
+    # URI_HARNESS_FIRST=1). Runs after approval resumption and lifecycle
+    # handling. A purely social turn with nothing pending is answered by the
+    # qualified local Edge chat route (uri_desktop_seams.harness_first;
+    # experiments/desktop_edge_qual) under URI validation, with no Main Brain
+    # call. S6 evaluate_intelligence_route decides; every other turn, and any
+    # failure or missing seam, continues down the unchanged chain below.
+    if not early_executed:
+        try:
+            from uri_desktop_seams.harness_first.seam import try_harness_first
+
+            harness_result = try_harness_first(
+                context=context, principal=principal, payload=payload,
+                current_turn_attachments=current_turn_attachments,
+            )
+            if harness_result is not None:
+                return _finalize_ask_response(
+                    context, user_id, payload, harness_result, turn_started=turn_started,
+                )
+        except Exception:
+            pass
 
     # M30.7: pending WorkflowExecutor pauses otherwise resume inside the
     # legacy orchestrator before the Decision Contract can judge whether this
@@ -1868,11 +1893,55 @@ def ask(
     except Exception:
         pass
 
-    return _finalize_ask_response(context, user_id, payload, result)
+    return _finalize_ask_response(context, user_id, payload, result, turn_started=turn_started)
+
+
+def _turn_model_calls(user_id: Optional[str], since: Optional[float]) -> Optional[list]:
+    """Desktop recovery (allowlisted): every successful model call recorded
+    for this user since `since` (epoch seconds, the turn start), in order.
+    None when unknown. UsageMeter records carry no reliable session_id, so a
+    second turn running concurrently for the same user would be counted
+    too (disclosed limitation)."""
+    if not user_id or since is None:
+        return None
+    try:
+        from datetime import datetime
+
+        from uri_core.core.usage_meter import current_month, month_records
+
+        calls = []
+        for record in month_records(user_id, current_month()):
+            if record.get("outcome") != "success":
+                continue
+            try:
+                ended = datetime.fromisoformat(str(record.get("ts"))).timestamp()
+            except ValueError:
+                continue
+            if ended < since:
+                continue
+            calls.append({
+                "role": record.get("role"),
+                "provider_id": record.get("provider_id"),
+                "model": record.get("model"),
+                "prompt_tokens": _measured(record, "prompt_tokens"),
+                "eval_tokens": _measured(record, "eval_tokens"),
+                "duration_seconds": _measured(record, "duration_seconds"),
+            })
+        return calls
+    except Exception:
+        return None
+
+
+def _sum_measured(calls: list, field: str) -> Optional[float]:
+    values = [c.get(field) for c in calls]
+    if not values or any(v is None for v in values):
+        return None
+    return sum(values)
 
 
 def _finalize_ask_response(
-    context, user_id: Optional[str], payload: "AskRequest", result: dict
+    context, user_id: Optional[str], payload: "AskRequest", result: dict,
+    turn_started: Optional[float] = None,
 ) -> dict:
     """Shared tail for POST /ask and POST /ask/stream's "done" event
     (M32 D5) - extracted verbatim from /ask's own tail so the two
@@ -1904,6 +1973,36 @@ def _finalize_ask_response(
         # (Live UX Repair §8: never fabricate an unavailable measurement).
         serving_provider = payload.model_override["provider_id"]
         serving_model = payload.model_override["model"]
+    # Desktop recovery (allowlisted): report the whole turn, not the last
+    # call. serving_prompt/eval_tokens and serving_duration_seconds become
+    # sums over every model call this turn made (None if any call's value
+    # was unmeasured); serving_calls lists them. An Edge-handled turn makes
+    # no Main Brain call, so it reports the Edge model and its own latency.
+    serving_calls = _turn_model_calls(user_id, turn_started)
+    _harness = result.get("_harness") or {}
+    if _harness:
+        serving_provider = "ollama (edge)" if _harness.get("edge_model") else "uri (deterministic)"
+        serving_model = _harness.get("edge_model")
+        serving_prompt_tokens = serving_eval_tokens = None
+        serving_duration_seconds = (
+            round((_harness.get("edge_ms") or 0) / 1000.0, 3)
+            if _harness.get("edge_model") else None
+        )
+        serving_calls = [{
+            "role": "edge_chat", "provider_id": "ollama", "model": _harness.get("edge_model"),
+            "prompt_tokens": None, "eval_tokens": None, "duration_seconds": serving_duration_seconds,
+        }] if _harness.get("edge_model") else []
+    elif serving_calls:
+        last = serving_calls[-1]
+        serving_provider = last.get("provider_id")
+        serving_model = last.get("model")
+        serving_prompt_tokens = _sum_measured(serving_calls, "prompt_tokens")
+        serving_eval_tokens = _sum_measured(serving_calls, "eval_tokens")
+        serving_duration_seconds = _sum_measured(serving_calls, "duration_seconds")
+    elif serving_calls is not None and payload.model_override is None:
+        # No model call happened this turn: never attribute an earlier turn's.
+        serving_provider = serving_model = None
+        serving_prompt_tokens = serving_eval_tokens = serving_duration_seconds = None
     try:
         context.orchestrator.conversation_history.annotate_latest_turn(
             payload.session_id,
@@ -1946,6 +2045,12 @@ def _finalize_ask_response(
         "serving_prompt_tokens": serving_prompt_tokens,
         "serving_eval_tokens": serving_eval_tokens,
         "serving_duration_seconds": serving_duration_seconds,
+        "serving_calls": serving_calls,
+        "serving_call_count": len(serving_calls) if serving_calls is not None else None,
+        "turn_duration_seconds": (
+            round(time.time() - turn_started, 3) if turn_started is not None else None
+        ),
+        "harness_route": result.get("_harness"),
     }
 
 

@@ -268,6 +268,38 @@ void main() {
     );
 
     testWidgets(
+      'Desktop recovery: caption shows every model call and Send-to-reply time',
+      (tester) async {
+        final turn = UriTurn(
+          id: 't9',
+          userText: 'hi',
+          timestamp: DateTime.now(),
+          stage: TurnStage.completed,
+          servingModel: 'qwen3.5:9b',
+          durationSeconds: 10.9,
+          modelCallCount: 2,
+          elapsedSeconds: 11.0,
+          result: const ActionResult(summary: 'Hello.'),
+        );
+        await tester.pumpWidget(
+          wrap(
+            TurnCard(
+              turn: turn,
+              onApprove: () {},
+              onCancel: () {},
+              onConnectService: (_) {},
+              onOpenAttachment: (_) {},
+            ),
+          ),
+        );
+        expect(
+          find.text('Model: qwen3.5:9b · 2 model calls · model 10.9s · reply in 11.0s'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
       'Live UX Repair §8: shows model, response time, and tokens when actually available',
       (tester) async {
         final turn = UriTurn(
@@ -296,7 +328,7 @@ void main() {
 
         expect(
           find.text(
-            'Conversation model: gemma4:12b · 2.5s · 120 in / 40 out (160 total tokens)',
+            'Model: gemma4:12b · model 2.5s · 120 in / 40 out (160 total tokens)',
           ),
           findsOneWidget,
         );
@@ -327,7 +359,7 @@ void main() {
           ),
         );
 
-        expect(find.text('Conversation model: gpt-4o'), findsOneWidget);
+        expect(find.text('Model: gpt-4o'), findsOneWidget);
         expect(find.textContaining('tokens'), findsNothing);
       },
     );

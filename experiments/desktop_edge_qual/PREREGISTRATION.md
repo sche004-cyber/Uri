@@ -44,3 +44,13 @@ farewell needs a goodbye marker and must not say "you're welcome"); a
 mismatch falls back to the fixed line. Gates Q1-Q7 unchanged. r2 runs on a
 fresh corpus, `corpus_r2.json` (no text shared with `corpus.json`), same
 author (same independence limit).
+
+## Post-r2 change (narrowing only)
+
+After the live battery showed the Edge model answering "what can you do?" with
+a generic list not taken from URI's capability catalogue, capability questions
+("can/do/help/able/capability") are no longer admitted to the Edge route; they
+escalate to the canonical chain. Identity questions stay. This only shrinks
+the envelope. Re-check on corpus_r2 (not a new qualification):
+`results_r2_recheck_after_narrowing.json` - Q1 0 false admissions, Q2 0.90,
+Q4/Q5 0.963, warm p95 102 ms; all gates still met.

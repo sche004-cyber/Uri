@@ -1,0 +1,203 @@
+[
+ {
+  "text": "hi",
+  "client_total_s": 15.05,
+  "backend_last_byte_s": 15.04,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4164,
+    95,
+    11.7
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5192,
+    21,
+    3.22
+   ]
+  ],
+  "model_sum_s": 14.92,
+  "ui_shown": [
+   "qwen3.5:9b",
+   5192,
+   3.22
+  ],
+  "reply": "Hi. I'm ready to help with your administrative work whenever you have a specific request or goal.",
+  "narrative_ok": true,
+  "run": "before_cold"
+ },
+ {
+  "text": "hello",
+  "client_total_s": 16.14,
+  "backend_last_byte_s": 16.13,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4164,
+    94,
+    9.99
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5256,
+    23,
+    6.07
+   ]
+  ],
+  "model_sum_s": 16.06,
+  "ui_shown": [
+   "qwen3.5:9b",
+   5256,
+   6.07
+  ],
+  "reply": "Hello. I am ready to assist with your administrative work. Please let me know what you need help with.",
+  "narrative_ok": true,
+  "run": "before_cold"
+ },
+ {
+  "text": "thanks",
+  "client_total_s": 11.73,
+  "backend_last_byte_s": 11.73,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4164,
+    100,
+    10.44
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5334,
+    5,
+    1.19
+   ]
+  ],
+  "model_sum_s": 11.63,
+  "ui_shown": [
+   "qwen3.5:9b",
+   5334,
+   1.19
+  ],
+  "reply": "You're welcome.",
+  "narrative_ok": true,
+  "run": "before_cold"
+ },
+ {
+  "text": "what can you do?",
+  "client_total_s": 30.91,
+  "backend_last_byte_s": 30.91,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4004,
+    109,
+    10.99
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5395,
+    102,
+    11.67
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5395,
+    113,
+    8.1
+   ]
+  ],
+  "model_sum_s": 30.76,
+  "ui_shown": [
+   "qwen3.5:9b",
+   5395,
+   8.1
+  ],
+  "reply": "The user's query is a general inquiry about system capabilities rather than a request to perform a specific task covered",
+  "narrative_ok": false,
+  "run": "before_cold"
+ },
+ {
+  "text": "what is 17 times 23?",
+  "client_total_s": 36.46,
+  "backend_last_byte_s": 36.46,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4009,
+    104,
+    10.5
+   ],
+   [
+    "semantic_interpretation",
+    "qwen3.5:9b",
+    461,
+    102,
+    7.07
+   ],
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    6701,
+    96,
+    12.59
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    9507,
+    22,
+    6.15
+   ]
+  ],
+  "model_sum_s": 36.31,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9507,
+   6.15
+  ],
+  "reply": "URI could not complete the calculation because it does not have an implemented capability for this kind of task yet.",
+  "narrative_ok": true,
+  "run": "before_cold"
+ },
+ {
+  "text": "hi",
+  "client_total_s": 16.67,
+  "backend_last_byte_s": 16.65,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4203,
+    98,
+    10.41
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5661,
+    20,
+    6.14
+   ]
+  ],
+  "model_sum_s": 16.55,
+  "ui_shown": [
+   "qwen3.5:9b",
+   5661,
+   6.14
+  ],
+  "reply": "The user's greeting 'hi' is a simple message that does not require any institutional capabilities.",
+  "narrative_ok": true,
+  "run": "before_cold"
+ }
+]

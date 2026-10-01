@@ -429,6 +429,12 @@ class HttpUriClient implements UriClient {
     final evalTokens = body['serving_eval_tokens'] as int?;
     final durationSeconds = (body['serving_duration_seconds'] as num?)
         ?.toDouble();
+    // Desktop recovery: whole-turn telemetry. serving_duration_seconds is the
+    // sum over every model call of this turn; serving_call_count says how many
+    // there were; elapsedSeconds is Send -> response received on this client.
+    final modelCallCount = body['serving_call_count'] as int?;
+    final elapsedSeconds =
+        DateTime.now().difference(timestamp).inMilliseconds / 1000.0;
 
     if (body['status'] == 'failed' || body['status'] == 'unavailable') {
       // Post-Launch Brain Setup Repair: with onboarding now skippable, a
@@ -456,6 +462,8 @@ class HttpUriClient implements UriClient {
         promptTokens: promptTokens,
         evalTokens: evalTokens,
         durationSeconds: durationSeconds,
+        modelCallCount: modelCallCount,
+        elapsedSeconds: elapsedSeconds,
       );
     }
 
@@ -524,6 +532,8 @@ class HttpUriClient implements UriClient {
         promptTokens: promptTokens,
         evalTokens: evalTokens,
         durationSeconds: durationSeconds,
+        modelCallCount: modelCallCount,
+        elapsedSeconds: elapsedSeconds,
       );
     }
 
@@ -552,6 +562,8 @@ class HttpUriClient implements UriClient {
         promptTokens: promptTokens,
         evalTokens: evalTokens,
         durationSeconds: durationSeconds,
+        modelCallCount: modelCallCount,
+        elapsedSeconds: elapsedSeconds,
       );
     }
 
@@ -591,6 +603,8 @@ class HttpUriClient implements UriClient {
       promptTokens: promptTokens,
       evalTokens: evalTokens,
       durationSeconds: durationSeconds,
+      modelCallCount: modelCallCount,
+      elapsedSeconds: elapsedSeconds,
       result: ActionResult(
         summary: summary,
         // Only ever shown when a real tool was actually involved (e.g.

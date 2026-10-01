@@ -1,0 +1,329 @@
+[
+ {
+  "text": "hi",
+  "client_total_s": 0.13,
+  "backend_last_byte_s": 0.11,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.08
+  ],
+  "reply": "Hello! How can I assist you today?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.104,
+  "status": "success",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "hello",
+  "client_total_s": 0.1,
+  "backend_last_byte_s": 0.07,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.06
+  ],
+  "reply": "Hello! How can I assist you today?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.071,
+  "status": "success",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "thanks a lot",
+  "client_total_s": 0.05,
+  "backend_last_byte_s": 0.05,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.04
+  ],
+  "reply": "You're welcome!",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.049,
+  "status": "success",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "good night",
+  "client_total_s": 0.07,
+  "backend_last_byte_s": 0.07,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.06
+  ],
+  "reply": "Good night! Have a great day!",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.067,
+  "status": "success",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "ok cool",
+  "client_total_s": 0.07,
+  "backend_last_byte_s": 0.07,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.06
+  ],
+  "reply": "Great! I'm glad you found it helpful.",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.07,
+  "status": "success",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "who are you?",
+  "client_total_s": 0.14,
+  "backend_last_byte_s": 0.13,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.12
+  ],
+  "reply": "I'm URI, a friendly desktop assistant that helps with documents, files, and research. How can I assist you?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.132,
+  "status": "success",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "what can you do?",
+  "client_total_s": 81.8,
+  "backend_last_byte_s": 81.8,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4139,
+    120,
+    52.85
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5388,
+    108,
+    28.85
+   ]
+  ],
+  "model_sum_s": 81.7,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9527,
+   81.7
+  ],
+  "reply": "I am URI, an administrative assistant designed to help with institutional work accurately and efficiently. I can compose",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 81.801,
+  "status": "success",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "hi, what's on my calendar today?",
+  "client_total_s": 37.79,
+  "backend_last_byte_s": 37.79,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4143,
+    119,
+    17.74
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5405,
+    20,
+    19.97
+   ]
+  ],
+  "model_sum_s": 37.71,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9548,
+   37.71
+  ],
+  "reply": "I cannot view your calendar today because no capability for managing or viewing scheduled events is currently available.",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 37.787,
+  "status": "unavailable",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "thanks, now send it to the principal",
+  "client_total_s": 40.13,
+  "backend_last_byte_s": 40.13,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4306,
+    165,
+    19.82
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5463,
+    21,
+    20.22
+   ]
+  ],
+  "model_sum_s": 40.04,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9769,
+   40.04
+  ],
+  "reply": "I cannot send it to the principal right now because the capability required for that action is not connected.",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 40.126,
+  "status": "unavailable",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "don't greet me, just list my tasks",
+  "client_total_s": 39.78,
+  "backend_last_byte_s": 39.78,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4307,
+    127,
+    18.76
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5584,
+    39,
+    20.93
+   ]
+  ],
+  "model_sum_s": 39.68,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9891,
+   39.68
+  ],
+  "reply": "I cannot retrieve or list your personal task list; that capability is not currently available. I can help with drafting ",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 39.778,
+  "status": "unavailable",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "ok delete that file",
+  "client_total_s": 39.1,
+  "backend_last_byte_s": 39.09,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4302,
+    128,
+    18.75
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5591,
+    16,
+    20.26
+   ]
+  ],
+  "model_sum_s": 39.01,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9893,
+   39.01
+  ],
+  "reply": "I cannot delete files right now because the file system capability isn't connected.",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 39.093,
+  "status": "unavailable",
+  "exec": null,
+  "run": "final_coldstart"
+ },
+ {
+  "text": "hi",
+  "client_total_s": 2.76,
+  "backend_last_byte_s": 2.76,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   2.75
+  ],
+  "reply": "Hello! How can I assist you today?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 2.758,
+  "status": "success",
+  "exec": null,
+  "run": "final_coldstart"
+ }
+]

@@ -171,7 +171,17 @@ def validate_drafted_response(
             "so nothing the user provides changes that."
         )
 
-    if not is_genuine_success:
+    # A purely conversational turn (canonical "conversation" mode, or the
+    # native tool loop's tier0) dispatches nothing: execution.status is
+    # "not_applicable", no capability was selected, and there is no
+    # known_gaps entry. The evidence-proportional cap below exists to stop
+    # invented troubleshooting around a capability gap or failed action;
+    # a conversational turn has neither, so applying it rejected almost
+    # every ordinary greeting/answer (live 2026-10-01: 413-653 char replies
+    # to "what can you do?" rejected against 242 chars of "evidence") and
+    # the user saw the reasoning rationale instead. The success-claim,
+    # credential, overall-length and action-id checks still apply.
+    if not is_genuine_success and not _is_conversational_turn(outcome):
 
         evidence_length = _outcome_evidence_length(outcome)
         allowed_length = min(
@@ -266,6 +276,39 @@ def _has_not_implemented_gap(outcome: Dict[str, Any]) -> bool:
             return True
 
     return False
+
+
+def _is_conversational_turn(outcome: Dict[str, Any]) -> bool:
+    """True only when nothing was dispatched at all: execution.status is
+    "not_applicable", execution names no capability, tool or branch results,
+    outcome carries no non-empty known_gaps, and outcome.response reports
+    no status of its own. Any capability, gap or tool status keeps the
+    strict non-success rules."""
+
+    execution = outcome.get("execution")
+
+    if not isinstance(execution, dict):
+        return False
+
+    if execution.get("status") != "not_applicable":
+        return False
+
+    if (
+        execution.get("capability")
+        or execution.get("tool")
+        or execution.get("branch_results")
+    ):
+        return False
+
+    if outcome.get("known_gaps"):
+        return False
+
+    response = outcome.get("response")
+
+    if isinstance(response, dict) and response.get("status") is not None:
+        return False
+
+    return True
 
 
 def _implies_future_capability(text: str) -> bool:

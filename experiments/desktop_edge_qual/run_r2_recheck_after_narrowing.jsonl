@@ -1,0 +1,190 @@
+{"type": "cold", "ms": 2057.4, "source": "edge_model", "reply": "Hello! How can I assist you today?"}
+{"type": "admission", "id": "E01", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E01", "rep": 0, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 61.4, "reply_ok": true}
+{"type": "turn", "id": "E01", "rep": 1, "intent": "greeting", "reply": "Hello! How can I help you today?", "source": "edge_model", "reject": null, "ms": 48.7, "reply_ok": true}
+{"type": "turn", "id": "E01", "rep": 2, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 50.6, "reply_ok": true}
+{"type": "admission", "id": "E02", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E02", "rep": 0, "intent": "greeting", "reply": "Hi! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 55.4, "reply_ok": true}
+{"type": "turn", "id": "E02", "rep": 1, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 49.2, "reply_ok": true}
+{"type": "turn", "id": "E02", "rep": 2, "intent": "greeting", "reply": "Hi! How can I help you today?", "source": "edge_model", "reject": null, "ms": 49.5, "reply_ok": true}
+{"type": "admission", "id": "E03", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E03", "rep": 0, "intent": "greeting", "reply": "Hello! How can I help you today?", "source": "edge_model", "reject": null, "ms": 58.1, "reply_ok": true}
+{"type": "turn", "id": "E03", "rep": 1, "intent": "greeting", "reply": "Hi! How can I help you today?", "source": "edge_model", "reject": null, "ms": 75.1, "reply_ok": true}
+{"type": "turn", "id": "E03", "rep": 2, "intent": "greeting", "reply": "Hi! How can I help you today?", "source": "edge_model", "reject": null, "ms": 48.6, "reply_ok": true}
+{"type": "admission", "id": "E04", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E04", "rep": 0, "intent": "greeting", "reply": "Hello! It's good to see you! Have a great day!", "source": "edge_model", "reject": null, "ms": 72.1, "reply_ok": true}
+{"type": "turn", "id": "E04", "rep": 1, "intent": "greeting", "reply": "Hello! Good afternoon! Have a great day!", "source": "edge_model", "reject": null, "ms": 52.9, "reply_ok": true}
+{"type": "turn", "id": "E04", "rep": 2, "intent": "greeting", "reply": "Hello! Have a great day!", "source": "edge_model", "reject": null, "ms": 42.2, "reply_ok": true}
+{"type": "admission", "id": "E05", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E05", "rep": 0, "intent": "greeting", "reply": "Good evening! Have a great day!", "source": "edge_model", "reject": null, "ms": 55.3, "reply_ok": true}
+{"type": "turn", "id": "E05", "rep": 1, "intent": "greeting", "reply": "Good evening! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 52.1, "reply_ok": true}
+{"type": "turn", "id": "E05", "rep": 2, "intent": "greeting", "reply": "Good evening! Have a great day!", "source": "edge_model", "reject": null, "ms": 45.6, "reply_ok": true}
+{"type": "admission", "id": "E06", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E06", "rep": 0, "intent": "greeting", "reply": "Hello! How can I help you today?", "source": "edge_model", "reject": null, "ms": 54.8, "reply_ok": true}
+{"type": "turn", "id": "E06", "rep": 1, "intent": "greeting", "reply": "Hi! How can I help you today?", "source": "edge_model", "reject": null, "ms": 49.5, "reply_ok": true}
+{"type": "turn", "id": "E06", "rep": 2, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 50.2, "reply_ok": true}
+{"type": "admission", "id": "E07", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E07", "rep": 0, "intent": "greeting", "reply": "Namaskar! Have a great day!", "source": "edge_model", "reject": null, "ms": 59.8, "reply_ok": true}
+{"type": "turn", "id": "E07", "rep": 1, "intent": "greeting", "reply": "Namaskar! Keep going!", "source": "edge_model", "reject": null, "ms": 65.9, "reply_ok": true}
+{"type": "turn", "id": "E07", "rep": 2, "intent": "greeting", "reply": "Namaskar! Keep going and feel better.", "source": "edge_model", "reject": null, "ms": 59.1, "reply_ok": true}
+{"type": "admission", "id": "E08", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E08", "rep": 0, "intent": "greeting", "reply": "Hi! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 57.8, "reply_ok": true}
+{"type": "turn", "id": "E08", "rep": 1, "intent": "greeting", "reply": "Hi! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 50.7, "reply_ok": true}
+{"type": "turn", "id": "E08", "rep": 2, "intent": "greeting", "reply": "Hi! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 51.5, "reply_ok": true}
+{"type": "admission", "id": "E09", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E09", "rep": 0, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 56.9, "reply_ok": true}
+{"type": "turn", "id": "E09", "rep": 1, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 51.8, "reply_ok": true}
+{"type": "turn", "id": "E09", "rep": 2, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 51.8, "reply_ok": true}
+{"type": "admission", "id": "E10", "expect": "edge", "label": "greeting", "admitted": false, "intent": null}
+{"type": "admission", "id": "E11", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E11", "rep": 0, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 57.8, "reply_ok": true}
+{"type": "turn", "id": "E11", "rep": 1, "intent": "greeting", "reply": "Hello! How can I help you today?", "source": "edge_model", "reject": null, "ms": 73.5, "reply_ok": true}
+{"type": "turn", "id": "E11", "rep": 2, "intent": "greeting", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 49.8, "reply_ok": true}
+{"type": "admission", "id": "E12", "expect": "edge", "label": "greeting", "admitted": true, "intent": "greeting"}
+{"type": "turn", "id": "E12", "rep": 0, "intent": "greeting", "reply": "Hi! I'm glad to hear that! How's everything going?", "source": "edge_model", "reject": null, "ms": 75.1, "reply_ok": true}
+{"type": "turn", "id": "E12", "rep": 1, "intent": "greeting", "reply": "Hello! I'm here to help with anything you need. How can I assist you today?", "source": "edge_model", "reject": null, "ms": 79.9, "reply_ok": true}
+{"type": "turn", "id": "E12", "rep": 2, "intent": "greeting", "reply": "Hey! I'm here to help with anything you need!", "source": "edge_model", "reject": null, "ms": 63.1, "reply_ok": true}
+{"type": "admission", "id": "E13", "expect": "edge", "label": "thanks", "admitted": true, "intent": "thanks"}
+{"type": "turn", "id": "E13", "rep": 0, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 41.4, "reply_ok": true}
+{"type": "turn", "id": "E13", "rep": 1, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 34.4, "reply_ok": true}
+{"type": "turn", "id": "E13", "rep": 2, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 34.5, "reply_ok": true}
+{"type": "admission", "id": "E14", "expect": "edge", "label": "thanks", "admitted": true, "intent": "thanks"}
+{"type": "turn", "id": "E14", "rep": 0, "intent": "thanks", "reply": "You're welcome! Have a great day!", "source": "edge_model", "reject": null, "ms": 52.1, "reply_ok": true}
+{"type": "turn", "id": "E14", "rep": 1, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 34.6, "reply_ok": true}
+{"type": "turn", "id": "E14", "rep": 2, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 34.1, "reply_ok": true}
+{"type": "admission", "id": "E15", "expect": "edge", "label": "thanks", "admitted": false, "intent": null}
+{"type": "admission", "id": "E16", "expect": "edge", "label": "thanks", "admitted": false, "intent": null}
+{"type": "admission", "id": "E17", "expect": "edge", "label": "thanks", "admitted": true, "intent": "thanks"}
+{"type": "turn", "id": "E17", "rep": 0, "intent": "thanks", "reply": "You're welcome! Appreciate it!", "source": "edge_model", "reject": null, "ms": 54.7, "reply_ok": true}
+{"type": "turn", "id": "E17", "rep": 1, "intent": "thanks", "reply": "You're welcome! Appreciate it!", "source": "edge_model", "reject": null, "ms": 46.8, "reply_ok": true}
+{"type": "turn", "id": "E17", "rep": 2, "intent": "thanks", "reply": "You're welcome! Appreciate it, I'm glad to help.", "source": "edge_model", "reject": null, "ms": 62.8, "reply_ok": true}
+{"type": "admission", "id": "E18", "expect": "edge", "label": "thanks", "admitted": true, "intent": "thanks"}
+{"type": "turn", "id": "E18", "rep": 0, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 41.7, "reply_ok": true}
+{"type": "turn", "id": "E18", "rep": 1, "intent": "thanks", "reply": "You're welcome! Have a great day!", "source": "edge_model", "reject": null, "ms": 44.5, "reply_ok": true}
+{"type": "turn", "id": "E18", "rep": 2, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 35.1, "reply_ok": true}
+{"type": "admission", "id": "E19", "expect": "edge", "label": "thanks", "admitted": true, "intent": "thanks"}
+{"type": "turn", "id": "E19", "rep": 0, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 39.5, "reply_ok": true}
+{"type": "turn", "id": "E19", "rep": 1, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 33.7, "reply_ok": true}
+{"type": "turn", "id": "E19", "rep": 2, "intent": "thanks", "reply": "You're welcome!", "source": "edge_model", "reject": null, "ms": 34.6, "reply_ok": true}
+{"type": "admission", "id": "E20", "expect": "edge", "label": "thanks", "admitted": true, "intent": "thanks"}
+{"type": "turn", "id": "E20", "rep": 0, "intent": "thanks", "reply": "You're welcome! Thank you for the thanks.", "source": "edge_model", "reject": null, "ms": 61.3, "reply_ok": true}
+{"type": "turn", "id": "E20", "rep": 1, "intent": "thanks", "reply": "You're welcome! Thank you for your kind words.", "source": "edge_model", "reject": null, "ms": 59.4, "reply_ok": true}
+{"type": "turn", "id": "E20", "rep": 2, "intent": "thanks", "reply": "You're very welcome! Thank you for your kind words.", "source": "edge_model", "reject": null, "ms": 62.8, "reply_ok": true}
+{"type": "admission", "id": "E21", "expect": "edge", "label": "farewell", "admitted": true, "intent": "farewell"}
+{"type": "turn", "id": "E21", "rep": 0, "intent": "farewell", "reply": "I'm sorry to see you go. Have a great day!", "source": "edge_model", "reject": null, "ms": 77.5, "reply_ok": true}
+{"type": "turn", "id": "E21", "rep": 1, "intent": "farewell", "reply": "Goodbye! Have a great day!", "source": "edge_model", "reject": null, "ms": 40.9, "reply_ok": true}
+{"type": "turn", "id": "E21", "rep": 2, "intent": "farewell", "reply": "Say goodbye! Have a great day!", "source": "edge_model", "reject": null, "ms": 52.7, "reply_ok": true}
+{"type": "admission", "id": "E22", "expect": "edge", "label": "farewell", "admitted": true, "intent": "farewell"}
+{"type": "turn", "id": "E22", "rep": 0, "intent": "farewell", "reply": "See you again soon!", "source": "edge_model", "reject": null, "ms": 48.1, "reply_ok": true}
+{"type": "turn", "id": "E22", "rep": 1, "intent": "farewell", "reply": "Bye bye! Have a great day!", "source": "edge_model", "reject": null, "ms": 45.2, "reply_ok": true}
+{"type": "turn", "id": "E22", "rep": 2, "intent": "farewell", "reply": "Goodbye! Have a great day ahead.", "source": "edge_model", "reject": null, "ms": 45.1, "reply_ok": true}
+{"type": "admission", "id": "E23", "expect": "edge", "label": "farewell", "admitted": true, "intent": "farewell"}
+{"type": "turn", "id": "E23", "rep": 0, "intent": "farewell", "reply": "See you soon!", "source": "edge_model", "reject": null, "ms": 34.6, "reply_ok": true}
+{"type": "turn", "id": "E23", "rep": 1, "intent": "farewell", "reply": "See you soon!", "source": "edge_model", "reject": null, "ms": 47.9, "reply_ok": true}
+{"type": "turn", "id": "E23", "rep": 2, "intent": "farewell", "reply": "See you soon!", "source": "edge_model", "reject": null, "ms": 26.4, "reply_ok": true}
+{"type": "admission", "id": "E24", "expect": "edge", "label": "farewell", "admitted": true, "intent": "farewell"}
+{"type": "turn", "id": "E24", "rep": 0, "intent": "farewell", "reply": "Good night! Have a great day ahead.", "source": "edge_model", "reject": null, "ms": 61.9, "reply_ok": true}
+{"type": "turn", "id": "E24", "rep": 1, "intent": "farewell", "reply": "Goodnight! Have a great night!", "source": "edge_model", "reject": null, "ms": 52.5, "reply_ok": true}
+{"type": "turn", "id": "E24", "rep": 2, "intent": "farewell", "reply": "Good night! Have a great day ahead.", "source": "edge_model", "reject": null, "ms": 55.2, "reply_ok": true}
+{"type": "admission", "id": "E25", "expect": "edge", "label": "farewell", "admitted": true, "intent": "farewell"}
+{"type": "turn", "id": "E25", "rep": 0, "intent": "farewell", "reply": "I'll be here to help with anything you need. Goodbye!", "source": "edge_model", "reject": null, "ms": 68.6, "reply_ok": true}
+{"type": "turn", "id": "E25", "rep": 1, "intent": "farewell", "reply": "I'm glad to meet you again! Goodbyes, you're doing well.", "source": "edge_model", "reject": null, "ms": 72.8, "reply_ok": true}
+{"type": "turn", "id": "E25", "rep": 2, "intent": "farewell", "reply": "Goodbye, talk soon.", "source": "deterministic_fallback", "reject": "intent_mismatch", "ms": 69.7, "reply_ok": false}
+{"type": "admission", "id": "E26", "expect": "edge", "label": "farewell", "admitted": true, "intent": "farewell"}
+{"type": "turn", "id": "E26", "rep": 0, "intent": "farewell", "reply": "Goodbye, talk soon.", "source": "deterministic_fallback", "reject": "intent_mismatch", "ms": 50.7, "reply_ok": false}
+{"type": "turn", "id": "E26", "rep": 1, "intent": "farewell", "reply": "Take care!", "source": "edge_model", "reject": null, "ms": 30.6, "reply_ok": true}
+{"type": "turn", "id": "E26", "rep": 2, "intent": "farewell", "reply": "Take care!", "source": "edge_model", "reject": null, "ms": 29.7, "reply_ok": true}
+{"type": "admission", "id": "E27", "expect": "edge", "label": "farewell", "admitted": true, "intent": "farewell"}
+{"type": "turn", "id": "E27", "rep": 0, "intent": "farewell", "reply": "See you again!", "source": "edge_model", "reject": null, "ms": 44.1, "reply_ok": true}
+{"type": "turn", "id": "E27", "rep": 1, "intent": "farewell", "reply": "See you later!", "source": "edge_model", "reject": null, "ms": 34.4, "reply_ok": true}
+{"type": "turn", "id": "E27", "rep": 2, "intent": "farewell", "reply": "See you!", "source": "edge_model", "reject": null, "ms": 29.9, "reply_ok": true}
+{"type": "admission", "id": "E28", "expect": "edge", "label": "farewell", "admitted": true, "intent": "farewell"}
+{"type": "turn", "id": "E28", "rep": 0, "intent": "farewell", "reply": "Goodbye, talk soon.", "source": "deterministic_fallback", "reject": "intent_mismatch", "ms": 75.3, "reply_ok": false}
+{"type": "turn", "id": "E28", "rep": 1, "intent": "farewell", "reply": "Goodbye, talk soon.", "source": "deterministic_fallback", "reject": "intent_mismatch", "ms": 70.3, "reply_ok": false}
+{"type": "turn", "id": "E28", "rep": 2, "intent": "farewell", "reply": "I'm glad we met! See you soon!", "source": "edge_model", "reject": null, "ms": 48.9, "reply_ok": true}
+{"type": "admission", "id": "E29", "expect": "edge", "label": "acknowledgement", "admitted": true, "intent": "acknowledgement"}
+{"type": "turn", "id": "E29", "rep": 0, "intent": "acknowledgement", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 59.8, "reply_ok": true}
+{"type": "turn", "id": "E29", "rep": 1, "intent": "acknowledgement", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 51.8, "reply_ok": true}
+{"type": "turn", "id": "E29", "rep": 2, "intent": "acknowledgement", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 52.1, "reply_ok": true}
+{"type": "admission", "id": "E30", "expect": "edge", "label": "acknowledgement", "admitted": true, "intent": "acknowledgement"}
+{"type": "turn", "id": "E30", "rep": 0, "intent": "acknowledgement", "reply": "Great! Feel free to ask anything I can help with.", "source": "edge_model", "reject": null, "ms": 68.2, "reply_ok": true}
+{"type": "turn", "id": "E30", "rep": 1, "intent": "acknowledgement", "reply": "Great! I'm glad you're happy. Let me know if you need help with anything!", "source": "edge_model", "reject": null, "ms": 87.4, "reply_ok": true}
+{"type": "turn", "id": "E30", "rep": 2, "intent": "acknowledgement", "reply": "Cool! Let me know if you need help with anything else.", "source": "edge_model", "reject": null, "ms": 66.0, "reply_ok": true}
+{"type": "admission", "id": "E31", "expect": "edge", "label": "acknowledgement", "admitted": true, "intent": "acknowledgement"}
+{"type": "turn", "id": "E31", "rep": 0, "intent": "acknowledgement", "reply": "Great! I'm glad you're feeling good. Let me know if there's anything I can help with.", "source": "edge_model", "reject": null, "ms": 103.8, "reply_ok": true}
+{"type": "turn", "id": "E31", "rep": 1, "intent": "acknowledgement", "reply": "Great! I'm glad to hear that!", "source": "edge_model", "reject": null, "ms": 51.8, "reply_ok": true}
+{"type": "turn", "id": "E31", "rep": 2, "intent": "acknowledgement", "reply": "Great! Let me know if you need anything else.", "source": "edge_model", "reject": null, "ms": 58.8, "reply_ok": true}
+{"type": "admission", "id": "E32", "expect": "edge", "label": "acknowledgement", "admitted": true, "intent": "acknowledgement"}
+{"type": "turn", "id": "E32", "rep": 0, "intent": "acknowledgement", "reply": "That's great! I'm glad you're satisfied.", "source": "edge_model", "reject": null, "ms": 63.5, "reply_ok": true}
+{"type": "turn", "id": "E32", "rep": 1, "intent": "acknowledgement", "reply": "Nice! Let me know if you need anything else.", "source": "edge_model", "reject": null, "ms": 57.9, "reply_ok": true}
+{"type": "turn", "id": "E32", "rep": 2, "intent": "acknowledgement", "reply": "Nice! Let me know if there's anything else you need.", "source": "edge_model", "reject": null, "ms": 66.4, "reply_ok": true}
+{"type": "admission", "id": "E33", "expect": "edge", "label": "acknowledgement", "admitted": true, "intent": "acknowledgement"}
+{"type": "turn", "id": "E33", "rep": 0, "intent": "acknowledgement", "reply": "You're welcome! Have a great day!", "source": "edge_model", "reject": null, "ms": 57.7, "reply_ok": true}
+{"type": "turn", "id": "E33", "rep": 1, "intent": "acknowledgement", "reply": "You're welcome! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 59.9, "reply_ok": true}
+{"type": "turn", "id": "E33", "rep": 2, "intent": "acknowledgement", "reply": "Hello! I'm glad to hear that. Let me know if there's anything you need help with!", "source": "edge_model", "reject": null, "ms": 94.6, "reply_ok": true}
+{"type": "admission", "id": "E34", "expect": "edge", "label": "acknowledgement", "admitted": true, "intent": "acknowledgement"}
+{"type": "turn", "id": "E34", "rep": 0, "intent": "acknowledgement", "reply": "Gotcha! How can I help you today?", "source": "edge_model", "reject": null, "ms": 61.5, "reply_ok": true}
+{"type": "turn", "id": "E34", "rep": 1, "intent": "acknowledgement", "reply": "Gotcha! How can I help you today?", "source": "edge_model", "reject": null, "ms": 55.5, "reply_ok": true}
+{"type": "turn", "id": "E34", "rep": 2, "intent": "acknowledgement", "reply": "Gotcha! I'm glad you said that. How's your day going?", "source": "edge_model", "reject": null, "ms": 75.7, "reply_ok": true}
+{"type": "admission", "id": "E35", "expect": "edge", "label": "acknowledgement", "admitted": true, "intent": "acknowledgement"}
+{"type": "turn", "id": "E35", "rep": 0, "intent": "acknowledgement", "reply": "Hey! Appreciate the compliment! Let me know if there's something else I can help with.", "source": "edge_model", "reject": null, "ms": 99.0, "reply_ok": true}
+{"type": "turn", "id": "E35", "rep": 1, "intent": "acknowledgement", "reply": "I'm glad to hear that!", "source": "edge_model", "reject": null, "ms": 44.2, "reply_ok": true}
+{"type": "turn", "id": "E35", "rep": 2, "intent": "acknowledgement", "reply": "Nice to hear that!", "source": "edge_model", "reject": null, "ms": 38.1, "reply_ok": true}
+{"type": "admission", "id": "E36", "expect": "edge", "label": "acknowledgement", "admitted": true, "intent": "acknowledgement"}
+{"type": "turn", "id": "E36", "rep": 0, "intent": "acknowledgement", "reply": "I'm glad to hear that! Let me know if there's anything else you need.", "source": "edge_model", "reject": null, "ms": 90.9, "reply_ok": true}
+{"type": "turn", "id": "E36", "rep": 1, "intent": "acknowledgement", "reply": "Hello! How can I assist you today?", "source": "edge_model", "reject": null, "ms": 44.3, "reply_ok": true}
+{"type": "turn", "id": "E36", "rep": 2, "intent": "acknowledgement", "reply": "I'm glad to hear that! Let me know if there's anything you need help with.", "source": "edge_model", "reject": null, "ms": 86.2, "reply_ok": true}
+{"type": "admission", "id": "E37", "expect": "edge", "label": "about_uri", "admitted": true, "intent": "about_uri"}
+{"type": "turn", "id": "E37", "rep": 0, "intent": "about_uri", "reply": "I'm URI, a friendly desktop assistant that helps with documents, files, emails, and research. Let me know how I can assist you!", "source": "edge_model", "reject": null, "ms": 123.1, "reply_ok": true}
+{"type": "turn", "id": "E37", "rep": 1, "intent": "about_uri", "reply": "I'm a friendly desktop assistant helping with documents, files, emails, and research. Let me know how I can assist!", "source": "edge_model", "reject": null, "ms": 100.0, "reply_ok": true}
+{"type": "turn", "id": "E37", "rep": 2, "intent": "about_uri", "reply": "I'm URI, a friendly desktop assistant helping with documents, files, and email. What can I do for you?", "source": "edge_model", "reject": null, "ms": 101.6, "reply_ok": true}
+{"type": "admission", "id": "E38", "expect": "edge", "label": "about_uri", "admitted": true, "intent": "about_uri"}
+{"type": "turn", "id": "E38", "rep": 0, "intent": "about_uri", "reply": "I am URI, a friendly desktop assistant that helps with documents, files, emails, and research. How can I assist you today?", "source": "edge_model", "reject": null, "ms": 117.6, "reply_ok": true}
+{"type": "turn", "id": "E38", "rep": 1, "intent": "about_uri", "reply": "I'm URI, a friendly desktop assistant that helps with documents, files, emails, and research. Let me know if I can assist you!", "source": "edge_model", "reject": null, "ms": 115.1, "reply_ok": true}
+{"type": "turn", "id": "E38", "rep": 2, "intent": "about_uri", "reply": "I'm URI, a friendly desktop assistant helping with documents, files, and research. What can I do for you?", "source": "edge_model", "reject": null, "ms": 98.6, "reply_ok": true}
+{"type": "admission", "id": "E39", "expect": "edge", "label": "about_uri", "admitted": true, "intent": "about_uri"}
+{"type": "turn", "id": "E39", "rep": 0, "intent": "about_uri", "reply": "My name is URI, and I'm here to help with any tasks you need. Let me know how I can assist!", "source": "edge_model", "reject": null, "ms": 109.3, "reply_ok": true}
+{"type": "turn", "id": "E39", "rep": 1, "intent": "about_uri", "reply": "I'm URI, a friendly desktop assistant! What can I do for you?", "source": "edge_model", "reject": null, "ms": 69.3, "reply_ok": true}
+{"type": "turn", "id": "E39", "rep": 2, "intent": "about_uri", "reply": "I'm URI, a friendly desktop assistant helping with office work, files, emails, and research. Let me know how I can assist!", "source": "edge_model", "reject": null, "ms": 112.4, "reply_ok": true}
+{"type": "admission", "id": "E40", "expect": "edge", "label": "about_uri", "admitted": false, "intent": null}
+{"type": "admission", "id": "X01", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X02", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X03", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X04", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X05", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X06", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X07", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X08", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X09", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X10", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X11", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X12", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X13", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X14", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X15", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X16", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X17", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X18", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X19", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X20", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X21", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X22", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X23", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X24", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X25", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X26", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X27", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X28", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X29", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X30", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X31", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X32", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X33", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X34", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X35", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X36", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X37", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X38", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X39", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "admission", "id": "X40", "expect": "escalate", "label": null, "admitted": false, "intent": null}
+{"type": "resident_models_after", "models": ["qwen3.5:9b", "qwen3:0.6b"]}

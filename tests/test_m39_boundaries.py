@@ -81,7 +81,8 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
     allowed = ("uri_v1/office/", "tests/test_m39_", "tests/m39_office_support.py",
                "scripts/m39_", "fixtures/m39_office/", "docs/plans/M39_")
     offenders = [p for p in changed + untracked
-                if not p.startswith(allowed) and not _is_authorized_frozen_edit(p)]
+                if not p.startswith(allowed) and not _is_authorized_frozen_edit(p)
+                and not _is_desktop_recovery_edit(p)]
     assert not offenders, offenders
 
 
@@ -97,9 +98,27 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
 # change does not. Was sha256 f288b194... of the LF bytes, which failed on
 # such checkouts (integration readiness audit 2026-10-01, D9).
 AUTHORIZED_FROZEN_EDITS = {
-    "tests/test_m37_edge_resolution.py": "a6bb874cd4c6c7b7a4cceb203784c2010f872287",
-    "tests/test_m37_frozen_guard_pin.py": "c51c46c10977869c710357f04b1b81b2da573f6d",
+    # Re-pinned for the desktop recovery allowlist (Chetan, 2026-10-01 18:21/18:24 UTC):
+    # was a6bb874c... / c51c46c1...; the M36 guard gains the same exact-file exemption.
+    "tests/test_m37_edge_resolution.py": "7a58f22b1c5dec268d0904524c5aaa488717faf3",
+    "tests/test_m37_frozen_guard_pin.py": "a60fe6a2fb5cc5ed86d5663b992f934d52b32273",
+    "tests/test_m36_memory_adversarial.py": "a1a8470ea620e1c374e44d7c6e6af438e03e74a0",
 }
+
+# Desktop recovery / Edge-first allowlist: exact uri_core/uri_ui files pinned by blob in
+# desktop_recovery_allowlist.py, whose own content is pinned here. See
+# docs/plans/DESKTOP_RECOVERY_ALLOWLIST.md.
+DESKTOP_ALLOWLIST_MODULE = ("desktop_recovery_allowlist.py", "d87ec4cc90dfb1ae39ac6672252d6e672c32d585")
+
+
+def _is_desktop_recovery_edit(path: str) -> bool:
+    module, pin = DESKTOP_ALLOWLIST_MODULE
+    if not (ROOT / module).is_file():
+        return False
+    if subprocess.check_output(["git", "hash-object", "--", module], cwd=ROOT, text=True).strip() != pin:
+        return False
+    from desktop_recovery_allowlist import is_desktop_recovery_edit
+    return is_desktop_recovery_edit(ROOT, path)
 
 
 def _is_authorized_frozen_edit(path: str) -> bool:

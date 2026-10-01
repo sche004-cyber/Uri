@@ -14,10 +14,23 @@ import 'status_pill.dart';
 /// didn't report is simply omitted from the caption, never shown as a
 /// fabricated 0 or guess.
 String _metadataCaption(UriTurn turn) {
-  final parts = <String>['Conversation model: ${turn.servingModel ?? 'URI Auto'}'];
+  // Desktop recovery: the model that actually executed (an Edge model on an
+  // Edge-handled turn), how many model calls the turn made, their summed
+  // time, and the Send-to-reply time measured on this client.
+  final calls = turn.modelCallCount;
+  final model = turn.servingModel ??
+      (calls == 0 ? 'no model (URI deterministic)' : 'URI Auto');
+  final parts = <String>['Model: $model'];
+  if (calls != null && calls > 1) {
+    parts.add('$calls model calls');
+  }
   final duration = turn.durationSeconds;
   if (duration != null) {
-    parts.add('${duration.toStringAsFixed(1)}s');
+    parts.add('model ${duration.toStringAsFixed(1)}s');
+  }
+  final elapsed = turn.elapsedSeconds;
+  if (elapsed != null) {
+    parts.add('reply in ${elapsed.toStringAsFixed(1)}s');
   }
   final promptTokens = turn.promptTokens;
   final evalTokens = turn.evalTokens;

@@ -112,6 +112,8 @@ class UriTurn {
     this.promptTokens,
     this.evalTokens,
     this.durationSeconds,
+    this.modelCallCount,
+    this.elapsedSeconds,
   });
 
   final String id;
@@ -151,6 +153,12 @@ class UriTurn {
   final int? evalTokens;
   final double? durationSeconds;
 
+  /// Desktop recovery: how many model calls the backend made for this turn
+  /// (0 for a deterministic turn), and the client-measured time from Send to
+  /// the response arriving. Null when unknown, never guessed.
+  final int? modelCallCount;
+  final double? elapsedSeconds;
+
   UriTurn copyWith({
     TurnStage? stage,
     String? understanding,
@@ -165,6 +173,8 @@ class UriTurn {
     int? promptTokens,
     int? evalTokens,
     double? durationSeconds,
+    int? modelCallCount,
+    double? elapsedSeconds,
   }) {
     return UriTurn(
       id: id,
@@ -184,6 +194,8 @@ class UriTurn {
       promptTokens: promptTokens ?? this.promptTokens,
       evalTokens: evalTokens ?? this.evalTokens,
       durationSeconds: durationSeconds ?? this.durationSeconds,
+      modelCallCount: modelCallCount ?? this.modelCallCount,
+      elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
     );
   }
 
@@ -202,6 +214,8 @@ class UriTurn {
     'serving_prompt_tokens': promptTokens,
     'serving_eval_tokens': evalTokens,
     'serving_duration_seconds': durationSeconds,
+    'serving_call_count': modelCallCount,
+    'elapsed_seconds': elapsedSeconds,
   };
 
   factory UriTurn.fromJson(Map<String, dynamic> json) {
@@ -223,6 +237,8 @@ class UriTurn {
       promptTokens: json['serving_prompt_tokens'] as int?,
       evalTokens: json['serving_eval_tokens'] as int?,
       durationSeconds: (json['serving_duration_seconds'] as num?)?.toDouble(),
+      modelCallCount: json['serving_call_count'] as int?,
+      elapsedSeconds: (json['elapsed_seconds'] as num?)?.toDouble(),
     );
   }
 }

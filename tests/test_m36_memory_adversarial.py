@@ -149,6 +149,10 @@ def test_core_adapter_import_boundaries_and_frozen_scope():
     # the old form failed on any such file, i.e. on every candidate after M36.
     base="291c9daa48435200c4b56857d0e3bc630016e82a"; scope=["uri_v1","uri_core","uri_ui","tests","scripts","fixtures"]
     touched=subprocess.check_output(["git","diff","--name-only","--diff-filter=MDRTCUXB",base,"--",*scope],cwd=root,text=True).splitlines()
+    # Authorized desktop-recovery edits (User, Chetan, 2026-10-01 18:21/18:24 UTC): exact
+    # files pinned by blob in desktop_recovery_allowlist.py; anything else still fails.
+    from desktop_recovery_allowlist import is_desktop_recovery_edit
+    touched=[p for p in touched if not is_desktop_recovery_edit(root,p)]
     assert all(p.startswith(("uri_v1/memory/","tests/test_m36_","scripts/m36_","fixtures/m36_memory/")) for p in touched), touched
     added=subprocess.check_output(["git","diff","--name-only","--diff-filter=A",base,"--","uri_core","uri_ui"],cwd=root,text=True).splitlines()
     assert not added, added
