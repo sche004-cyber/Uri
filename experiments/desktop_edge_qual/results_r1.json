@@ -1,0 +1,60 @@
+{
+ "Q1_false_admissions": [],
+ "Q2_social_recall": 1.0,
+ "Q2_missed": [],
+ "Q3_intent_agreement": 1.0,
+ "Q3_mismatch": [],
+ "Q4_validator_accept": 0.992,
+ "Q5_reply_ok": 0.929,
+ "Q5_failures": [
+  [
+   "E11",
+   "Hello! What can I help you with today?",
+   "too_many_sentences"
+  ],
+  [
+   "E20",
+   "You're very appreciated! Let me know if you need help with anything.",
+   null
+  ],
+  [
+   "E23",
+   "You're welcome! Have a great day!",
+   null
+  ],
+  [
+   "E23",
+   "You're welcome! Feel free to reach out if you need help with anything. Have a great day!",
+   null
+  ],
+  [
+   "E23",
+   "You're welcome! Have a great day!",
+   null
+  ],
+  [
+   "E24",
+   "Hi! Have a great day!",
+   null
+  ],
+  [
+   "E24",
+   "You're welcome! Feel free to reach out again if you need anything else. Have a great day!",
+   null
+  ],
+  [
+   "E24",
+   "You're welcome! Have a great day!",
+   null
+  ],
+  [
+   "E28",
+   "You're welcome! Have a great day!",
+   null
+  ]
+ ],
+ "Q6_warm_ms_p50": 59.75,
+ "Q6_warm_ms_p95": 115.3,
+ "cold_ms": 2358.8,
+ "n_turns": 126
+}
