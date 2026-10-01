@@ -72,7 +72,7 @@ def test_office_never_calls_a_model_or_network_client():
 
 
 def test_m36_m37_m38_and_frozen_files_unchanged():
-    changed = subprocess.check_output(["git", "diff", "--name-only", BASELINE, "--",
+    changed = subprocess.check_output(["git", "diff", "--name-only", "--no-renames", BASELINE, "--",
                                        "uri_v1", "uri_core", "uri_ui", "tests", "scripts", "fixtures"],
                                       cwd=ROOT, text=True).splitlines()
     untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "--",
@@ -97,8 +97,8 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
 # change does not. Was sha256 f288b194... of the LF bytes, which failed on
 # such checkouts (integration readiness audit 2026-10-01, D9).
 AUTHORIZED_FROZEN_EDITS = {
-    "tests/test_m37_edge_resolution.py": "cf8f88efcd70c4a3bf22a9840f27b311edf5dce2",
-    "tests/test_m37_frozen_guard_pin.py": "4db0da1990fbc4d1efd9c76ee35f365e2ec97736",
+    "tests/test_m37_edge_resolution.py": "a6bb874cd4c6c7b7a4cceb203784c2010f872287",
+    "tests/test_m37_frozen_guard_pin.py": "c51c46c10977869c710357f04b1b81b2da573f6d",
 }
 
 

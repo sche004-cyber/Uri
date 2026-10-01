@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
+import subprocess
 import uuid
 
 import pytest
@@ -123,6 +124,26 @@ def test_guard_still_fails_for_a_changed_frozen_file(clone, monkeypatch):
         assert "uri_v1/memory/contracts.py" in str(info.value)
     finally:
         target.write_bytes(original)
+
+
+def test_guards_fail_for_cross_boundary_rename(clone, monkeypatch):
+    import tests.test_m39_boundaries as m39
+    src = "uri_v1/memory/contracts.py"
+    dst = "uri_v1/office/audit_moved_contracts.py"
+    subprocess.run(["git", "mv", src, dst], cwd=clone, check=True)
+    try:
+        monkeypatch.setattr(m37, "ROOT", clone)
+        with pytest.raises(AssertionError) as info37:
+            m37.test_m36_and_frozen_files_unchanged()
+        assert src in str(info37.value)
+
+        monkeypatch.setattr(m39, "ROOT", clone)
+        with pytest.raises(AssertionError) as info39:
+            m39.test_m36_m37_m38_and_frozen_files_unchanged()
+        assert src in str(info39.value)
+    finally:
+        subprocess.run(["git", "reset", "--hard", "HEAD"], cwd=clone, check=True)
+
 
 
 # -- the allowlisted package cannot reach arbitrary files -------------------------------------------

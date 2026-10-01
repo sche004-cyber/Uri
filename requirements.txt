@@ -26,3 +26,6 @@ Pillow>=10.0
 # M33.1 Batch 2: developer-reviewed bounded CLI Skill.  The runner rejects
 # every other installed version before it can launch a network-capable process.
 yt-dlp==2026.08.19
+# Windows timezone database required by Python zoneinfo (uri_v1/memory/retrieval.py)
+tzdata>=2024.1; sys_platform == 'win32'
+

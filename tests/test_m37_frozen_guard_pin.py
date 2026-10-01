@@ -26,7 +26,7 @@ import tests.test_m37_edge_resolution as m37
 
 ROOT = Path(__file__).resolve().parents[1]
 GUARD = "tests/test_m37_edge_resolution.py"
-GUARD_SHA256 = "fda0d60025abd5c3d6fb9f3716cf6db8982179092a04eff64b8d42c361e15686"
+GUARD_SHA256 = "2fc0cae023758b75d69bc0e1766a04f9e3d3b45a1111e2a84f403c1910c3a726"
 
 
 
@@ -113,6 +113,12 @@ def test_guard_fails_for_a_committed_rename_between_frozen_paths(clone, monkeypa
     subprocess.run(["git", "-c", "user.name=probe", "-c", "user.email=probe@example.invalid", "commit", "-q",
                     "-m", "probe"], cwd=clone, check=True)
     assert _offenders(clone, monkeypatch) - baseline == {"uri_v1/edge/repair.py", "uri_v1/execution/repair.py"}
+ 
+ 
+def test_guard_fails_for_cross_boundary_rename_to_allowed_scope(clone, monkeypatch, baseline):
+    """Moving a frozen file to an allowlisted path (e.g. M39) must report the frozen source path."""
+    subprocess.run(["git", "mv", "uri_v1/memory/contracts.py", "uri_v1/office/moved_contracts.py"], cwd=clone, check=True)
+    assert "uri_v1/memory/contracts.py" in (_offenders(clone, monkeypatch) - baseline)
 
 
 def test_the_guard_test_itself_fails_on_tampering(clone, monkeypatch, baseline):

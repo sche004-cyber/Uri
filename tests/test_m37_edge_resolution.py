@@ -284,7 +284,7 @@ FREEZE_EXEMPT = frozenset({"tests/test_m37_edge_resolution.py", "tests/test_m37_
 
 def frozen_scope_offenders():
     """Every path the guard below rejects: outside the allowed scope, or (M37-L3) changed since the freeze."""
-    changed = subprocess.check_output(["git", "diff", "--name-only", M36_BASELINE, "--",
+    changed = subprocess.check_output(["git", "diff", "--name-only", "--no-renames", M36_BASELINE, "--",
                                        "uri_v1", "uri_core", "uri_ui", "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
     untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "--", "uri_v1", "uri_core", "uri_ui",
                                          "tests", "scripts", "fixtures"], cwd=ROOT, text=True).splitlines()
