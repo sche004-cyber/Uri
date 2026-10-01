@@ -77,3 +77,29 @@ Qualification at `28fcbf9` was not rerun: no code, fixture or script changed sin
 | Frozen files | `5bbf738..b6b2cb0` contains additions only; `verify.py` unchanged | `frozen.txt` |
 
 **Not run here:** the full suite and qualification on 3.12 and 3.13 (only the slice tests ran there; the venvs had only pytest and openpyxl), Windows, and `graphify update .`. None of these affects the verdict for a test-only change.
+
+## Addendum 3: package move `b6b2cb0..565eae8` (2026-10-01; verdict: **ACCEPT at `565eae8`**)
+
+Chetan picked "Move, then freeze" at 12:23. `565eae8` moves the slice's 9 code files from `uri_v1/execution/planning/` to `uri_v1/planning/`. This re-check covers the move only. Evidence is in `dynamic_planning_f2_recheck_0c56215/565eae8_move/`.
+
+| Check | Result |
+|---|---|
+| Pure move | 8 of the 9 files are renamed byte-for-byte (`R100`). `actions.py` changes only in `QUALIFICATION_PATH` (`parents[3]` → `parents[2]`, for the shallower location) and the re-pinned record digest. Every other change in `scripts/`, `tests/` and `fixtures/` is an import path or a path constant. The slice's own boundary test now checks for `uri_v1.planning` instead of `execution.planning`. Tracked `.py`/`.json` files contain no references to the old path, and the old directory is gone. |
+| Record honest | Normalising module names, digests and the note shows the regenerated record is identical to `b6b2cb0`'s: same statuses, boundaries, mechanisms and evidence text. Each digest recomputed now equals its recorded value, all four adapters attest, and the pinned digest `9998e2b2…` matches the file. The digests changed only because the module name is part of the hashed implementation. The battery and gate files, workbooks and generator are byte-identical to `b6b2cb0`. (`record_honesty.txt`) |
+| Attestation still refuses tampering | My P1-P13 and Q1-Q7 probes, with paths updated, give the same results as at `b6b2cb0`. P1-P4 and Q1-Q5 are refused. P5 and Q6 are the recorded residual. (`probe_results.txt`) |
+| Slice tests | Python 3.11: 147 passed; Python 3.13: 147 passed |
+| Qualification (3.11) | exit 0, 34/34, all six counters 0, C33 semantic miss 1/1, gate passed. The result file differs only in latency. |
+| Full suite (3.11) | **1449 passed, 1 failed, 9 skipped.** The one failure is the accepted guard. It has **27** offenders: the 18 previous ones plus the 9 moved code files, which now sit in `uri_v1/planning/` instead of the guard's allowlisted `uri_v1/execution/`. All 27 are slice paths; none is a frozen M36-M38 path. That count is expected for this move. |
+| Review set / anchors / governance / M36-M38 quals | 113 passed / ok, changed [] / 37 passed, VALID / exit 0 each |
+| Frozen files | `5bbf738..565eae8` contains additions only; **0** files changed under `uri_v1/execution`, `uri_v1/edge` and `uri_v1/memory`; `verify.py` unchanged |
+| Import boundary after the move | The frozen M37 import check no longer covers `uri_v1/planning/`. The slice's own `test_planning_imports_nothing_outside_its_boundary` still does, and it passes. Planning imports only `uri_v1.edge.report` and `uri_v1.execution.{acceptance, lineage, officefile, verify, workspace}` (`planning_imports.txt`), the same set as before. |
+| Freeze draft applied to `565eae8` (scratch, not committed) | Governance 37 passed, VALID; anchors ok; full suite 1449/1, accepted guard only (`with_freeze_patch.txt`) |
+
+**Review of the freeze draft (`freeze_draft_on_565eae8.patch`) against Chetan's 12:22 authorization.** It meets the authorization. Small fixes before commit:
+
+1. The §2 audit-chain row "Focused re-check of the move: PENDING" should cite this addendum's commit and read ACCEPT.
+2. Item 4 of the authorization ("without modifying the previously frozen components") has no evidence row at `565eae8` in §3. Add one: `git diff 5bbf738 565eae8` contains additions only, 0 files under `uri_v1/execution|edge|memory`, `verify.py` unchanged. I verified this here.
+3. The §1 "verbatim" quote stops before Chetan's last two sentences (follow-up reporting). Either label it an excerpt or quote it in full.
+4. DP-L3 says "Effect guard declined", citing a "Freeze, no guard" card that I could not see. It is consistent with the 12:22 message, which says the freeze does not approve the guard. If that card cannot be cited, "not approved; not implemented" is the wording that is true regardless.
+
+Windows is recorded correctly: not performed at `565eae8`; at `b6b2cb0` it was reported from Chetan's PC but is not a repository artifact (DP-L8, §3a).

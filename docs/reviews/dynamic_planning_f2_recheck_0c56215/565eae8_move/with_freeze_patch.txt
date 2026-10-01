@@ -1,0 +1,5 @@
+37 passed in 0.08s
+VALID: docs/governance/URI_STATE.yaml — no DCL violations found.
+{'ok': True, 'changed': [], 's4_anchor_count': 8, 'frozen_lf_anchor_count': 24, 'current_rar_sha256': '4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95'}
+FAILED tests/test_m37_edge_resolution.py::test_m36_and_frozen_files_unchanged
+1 failed, 1449 passed, 9 skipped, 1 warning, 130 subtests passed in 69.62s (0:01:09)

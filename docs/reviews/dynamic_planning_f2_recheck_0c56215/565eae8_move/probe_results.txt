@@ -1,0 +1,22 @@
+PROBE P1_custom_builtins {"attest": "NOT_MODULE_FUNCTION", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE P2_fake_module_in_globals {"attest": "NOT_MODULE_FUNCTION", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE P3_live_module_global_fake_module {"attest": "FOREIGN_MODULE", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": true}
+.PROBE P4_patched_class_method {"attest": "GENERATED_MISMATCH", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE P5_process_builtin_patch {"attest": null, "status": "VERIFIED", "reason": null, "outside_written": true}
+.PROBE P6_cross_wired {"attest": "BOUNDARY_MISMATCH"}
+.PROBE P7_wraps {"attest": "NOT_MODULE_FUNCTION"}
+.PROBE P8_copied_globals_unmodified {"attest": "NOT_MODULE_FUNCTION"}
+.PROBE P9_partial {"attest": "NOT_A_FUNCTION"}
+PROBE P9_lambda {"attest": "NOT_IN_RECORD"}
+.PROBE P10_boundary_downgrade {"attest": "BOUNDARY_MISMATCH"}
+.PROBE P11_passed_string {"attest": "NOT_QUALIFIED"}
+.PROBE P12_crlf_record_attests_under_committed_pin {"attest": null}
+.PROBE P13_fresh_interpreter {"stdout": "{'uri.plan.workbook.inspect_structure': (None, '505dff2cc24aa70d244b9403e1ffdefd8bb39e681c989ce613cd3a62fe5d2fff'), 'uri.plan.structure.select': (None, '02152cdc59ef982f3d094e163df0b9158e0466b48e8dd00731f30baef233ae8e'), 'uri.plan.structure.compare': (None, '944ac6d041d9e6ff007ef0f114750930c17dc46ddd4bc116bdaaa775a3301478'), 'uri.plan.report.write': (None, '8ff6aca154b4c1364e29176138340480e2847ef35ad22c0b0b6105df2d682e60')}", "rc": 0}
+.PROBE Q1_data_descriptor_on_class {"attest": "FOREIGN_MEMBER", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE Q2_non_function_init {"attest": "FOREIGN_MEMBER", "status": "NOT_ATTEMPTED", "reason": "ADAPTER_NOT_QUALIFIED", "outside_written": false}
+.PROBE Q3_sibling_method_swap {"attest": "IMPLEMENTATION_CHANGED"}
+.PROBE Q4_plain_function_method_patch {"attest": "GENERATED_MISMATCH"}
+.PROBE Q5_defaults_injected {"attest": "IMPLEMENTATION_CHANGED"}
+.PROBE Q6_sys_modules_and_global_swap {"attest": null}
+.PROBE Q7_extra_class_value {"attest": null}
+20 passed in 1.28s
