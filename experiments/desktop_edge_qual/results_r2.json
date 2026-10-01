@@ -1,0 +1,35 @@
+{
+ "Q1_false_admissions": [],
+ "Q2_social_recall": 0.9,
+ "Q2_missed": [
+  "E10",
+  "E15",
+  "E16",
+  "E40"
+ ],
+ "Q3_intent_agreement": 1.0,
+ "Q3_mismatch": [],
+ "Q4_validator_accept": 0.972,
+ "Q5_reply_ok": 0.972,
+ "Q5_failures": [
+  [
+   "E25",
+   "Goodbye, talk soon.",
+   "intent_mismatch"
+  ],
+  [
+   "E25",
+   "Goodbye, talk soon.",
+   "intent_mismatch"
+  ],
+  [
+   "E28",
+   "Goodbye, talk soon.",
+   "intent_mismatch"
+  ]
+ ],
+ "Q6_warm_ms_p50": 52.900000000000006,
+ "Q6_warm_ms_p95": 114.9,
+ "cold_ms": 2064.2,
+ "n_turns": 108
+}
