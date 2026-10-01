@@ -1,0 +1,1296 @@
+{
+ "summary": {
+  "defect_cases": 22,
+  "defects_detected": 22,
+  "control_cases": 4,
+  "controls_clean": 4,
+  "median_ms": 27.6,
+  "max_ms": 54.9
+ },
+ "rows": [
+  {
+   "case": "identical",
+   "template": 0,
+   "expected": [],
+   "detected": [],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 54.9,
+   "findings": [],
+   "ok": true
+  },
+  {
+   "case": "jitter_0_5mm",
+   "template": 0,
+   "expected": [],
+   "detected": [],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.6,
+   "findings": [],
+   "ok": true
+  },
+  {
+   "case": "margin_shift",
+   "template": 0,
+   "expected": [
+    "margin",
+    "moved_text"
+   ],
+   "detected": [
+    "header",
+    "margin",
+    "moved_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 29.2,
+   "findings": [
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "left margin 24.7mm -> 34.6mm",
+     "repair_hint": "adjust left margin",
+     "data": {
+      "side": "left",
+      "delta_mm": 9.9
+     }
+    },
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "right margin 45.9mm -> 36.0mm",
+     "repair_hint": "adjust right margin",
+     "data": {
+      "side": "right",
+      "delta_mm": -9.9
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +10.0mm, +0.0mm: \"Office of the Registrar\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 10.0,
+      "dy_mm": 0.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +10.0mm, +0.0mm: \"Office Order No. 14/2026\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 10.0,
+      "dy_mm": 0.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +10.0mm, +0.0mm: \"The following members are nominated to t\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 10.0,
+      "dy_mm": 0.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +10.0mm, +0.0mm: \"The committee will meet every Monday at \"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 10.0,
+      "dy_mm": 0.0
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "clipping",
+   "template": 0,
+   "expected": [
+    "clipping"
+   ],
+   "detected": [
+    "added_text",
+    "clipping",
+    "margin",
+    "missing_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.9,
+   "findings": [
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "right margin 45.9mm -> 0.4mm",
+     "repair_hint": "adjust right margin",
+     "data": {
+      "side": "right",
+      "delta_mm": -45.5
+     }
+    },
+    {
+     "check": "clipping",
+     "page": 1,
+     "severity": "error",
+     "detail": "content touches the right page edge",
+     "repair_hint": "content may be cut off; check margins and scaling",
+     "data": {
+      "side": "right"
+     }
+    },
+    {
+     "check": "missing_text",
+     "page": 1,
+     "severity": "error",
+     "detail": "text block missing: \"The following members are nominated to the purchase committe\"",
+     "repair_hint": "re-insert the block",
+     "data": {
+      "text": "The following members are nominated to the purchase committee.",
+      "bbox": [
+       70.86614227294922,
+       152.5844268798828,
+       393.6611328125,
+       167.69842529296875
+      ]
+     }
+    },
+    {
+     "check": "added_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "unexpected text block: \"The following members are nominated to the purchase committe\"",
+     "repair_hint": "remove or verify the block",
+     "data": {
+      "text": "The following members are nominated to the purchase committee. and all departments are requested to circ"
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "missing_block",
+   "template": 0,
+   "expected": [
+    "missing_text"
+   ],
+   "detected": [
+    "missing_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.8,
+   "findings": [
+    {
+     "check": "missing_text",
+     "page": 1,
+     "severity": "error",
+     "detail": "text block missing: \"The committee will meet every Monday at 11 am in the Senate \"",
+     "repair_hint": "re-insert the block",
+     "data": {
+      "text": "The committee will meet every Monday at 11 am in the Senate Hall.",
+      "bbox": [
+       70.86614227294922,
+       175.26161193847656,
+       400.3821716308594,
+       190.3756103515625
+      ]
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "table_borders_lost",
+   "template": 0,
+   "expected": [
+    "table_rules"
+   ],
+   "detected": [
+    "table_rules"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 28.2,
+   "findings": [
+    {
+     "check": "table_rules",
+     "page": 1,
+     "severity": "error",
+     "detail": "rule lines h/v 9/6 -> 6/2",
+     "repair_hint": "restore table borders",
+     "data": {
+      "expected": [
+       9,
+       6
+      ],
+      "found": [
+       6,
+       2
+      ]
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "font_drift",
+   "template": 0,
+   "expected": [
+    "font_size"
+   ],
+   "detected": [
+    "font_size"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 26.8,
+   "findings": [
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 11.0 -> 13.0pt: \"The following members are nominated to t\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 11.0,
+      "found": 13.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 11.0 -> 13.0pt: \"The committee will meet every Monday at \"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 11.0,
+      "found": 13.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 11.0 -> 13.0pt: \"This order comes into effect immediately\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 11.0,
+      "found": 13.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 10.0 -> 12.0pt: \"Name Department Role\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 10.0,
+      "found": 12.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 10.0 -> 12.0pt: \"A. Rao Physics Chair\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 10.0,
+      "found": 12.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 10.0 -> 12.0pt: \"S. Das Chemistry Member\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 10.0,
+      "found": 12.0
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "orientation",
+   "template": 0,
+   "expected": [
+    "page_size"
+   ],
+   "detected": [
+    "margin",
+    "moved_text",
+    "page_size"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 22.8,
+   "findings": [
+    {
+     "check": "page_size",
+     "page": 1,
+     "severity": "error",
+     "detail": "orientation changed: 595x842pt -> 842x595pt",
+     "repair_hint": "restore page size/orientation",
+     "data": {
+      "expected": [
+       595.0,
+       842.0
+      ],
+      "found": [
+       842.0,
+       595.0
+      ]
+     }
+    },
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "right margin 45.9mm -> 133.0mm",
+     "repair_hint": "adjust right margin",
+     "data": {
+      "side": "right",
+      "delta_mm": 87.1
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, -87.1mm: \"Page 1 of 1\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": -87.1
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "extra_page",
+   "template": 0,
+   "expected": [
+    "page_count"
+   ],
+   "detected": [
+    "page_count"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.6,
+   "findings": [
+    {
+     "check": "page_count",
+     "page": 0,
+     "severity": "error",
+     "detail": "1 pages expected, 2 found",
+     "repair_hint": "check pagination / page breaks",
+     "data": {
+      "expected": 1,
+      "found": 2
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "logo_removed",
+   "template": 0,
+   "expected": [
+    "images"
+   ],
+   "detected": [
+    "header",
+    "images",
+    "table_rules"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.9,
+   "findings": [
+    {
+     "check": "table_rules",
+     "page": 1,
+     "severity": "error",
+     "detail": "rule lines h/v 9/6 -> 6/4",
+     "repair_hint": "restore table borders",
+     "data": {
+      "expected": [
+       9,
+       6
+      ],
+      "found": [
+       6,
+       4
+      ]
+     }
+    },
+    {
+     "check": "images",
+     "page": 1,
+     "severity": "error",
+     "detail": "images 2 -> 1 (logo, letterhead or signature)",
+     "repair_hint": "restore the missing image",
+     "data": {
+      "expected": 2,
+      "found": 1
+     }
+    },
+    {
+     "check": "header",
+     "page": 1,
+     "severity": "warning",
+     "detail": "header band differs (3.7% of pixels)",
+     "repair_hint": "check header content",
+     "data": {
+      "diff_fraction": 0.0368
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "signature_removed",
+   "template": 0,
+   "expected": [
+    "images"
+   ],
+   "detected": [
+    "images",
+    "margin",
+    "table_rules"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.4,
+   "findings": [
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "right margin 45.9mm -> 55.0mm",
+     "repair_hint": "adjust right margin",
+     "data": {
+      "side": "right",
+      "delta_mm": 9.2
+     }
+    },
+    {
+     "check": "table_rules",
+     "page": 1,
+     "severity": "error",
+     "detail": "rule lines h/v 9/6 -> 6/6",
+     "repair_hint": "restore table borders",
+     "data": {
+      "expected": [
+       9,
+       6
+      ],
+      "found": [
+       6,
+       6
+      ]
+     }
+    },
+    {
+     "check": "images",
+     "page": 1,
+     "severity": "error",
+     "detail": "images 2 -> 1 (logo, letterhead or signature)",
+     "repair_hint": "restore the missing image",
+     "data": {
+      "expected": 2,
+      "found": 1
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "header_changed",
+   "template": 0,
+   "expected": [
+    "missing_text"
+   ],
+   "detected": [
+    "added_text",
+    "missing_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 29.2,
+   "findings": [
+    {
+     "check": "missing_text",
+     "page": 1,
+     "severity": "error",
+     "detail": "text block missing: \"Office of the Registrar\"",
+     "repair_hint": "re-insert the block",
+     "data": {
+      "text": "Office of the Registrar",
+      "bbox": [
+       70.86614227294922,
+       24.340747833251953,
+       158.4001007080078,
+       36.706748962402344
+      ]
+     }
+    },
+    {
+     "check": "added_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "unexpected text block: \"Office of the Dean\"",
+     "repair_hint": "remove or verify the block",
+     "data": {
+      "text": "Office of the Dean"
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "spacing_shift",
+   "template": 0,
+   "expected": [
+    "moved_text"
+   ],
+   "detected": [
+    "moved_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.4,
+   "findings": [
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"The following members are nominated to t\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"The committee will meet every Monday at \"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"This order comes into effect immediately\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"Name Department Role\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"A. Rao Physics Chair\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"S. Das Chemistry Member\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "identical",
+   "template": 1,
+   "expected": [],
+   "detected": [],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 32.6,
+   "findings": [],
+   "ok": true
+  },
+  {
+   "case": "jitter_0_5mm",
+   "template": 1,
+   "expected": [],
+   "detected": [],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 26.9,
+   "findings": [],
+   "ok": true
+  },
+  {
+   "case": "margin_shift",
+   "template": 1,
+   "expected": [
+    "margin",
+    "moved_text"
+   ],
+   "detected": [
+    "header",
+    "margin",
+    "moved_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.6,
+   "findings": [
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "left margin 24.7mm -> 34.6mm",
+     "repair_hint": "adjust left margin",
+     "data": {
+      "side": "left",
+      "delta_mm": 9.9
+     }
+    },
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "right margin 45.9mm -> 36.0mm",
+     "repair_hint": "adjust right margin",
+     "data": {
+      "side": "right",
+      "delta_mm": -9.9
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +10.0mm, +0.0mm: \"Office of the Registrar\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 10.0,
+      "dy_mm": 0.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +10.0mm, +0.0mm: \"Notice: Revised Examination Schedule\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 10.0,
+      "dy_mm": 0.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +10.0mm, +0.0mm: \"The following members are nominated to t\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 10.0,
+      "dy_mm": 0.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +10.0mm, +0.0mm: \"The committee will meet every Monday at \"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 10.0,
+      "dy_mm": 0.0
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "clipping",
+   "template": 1,
+   "expected": [
+    "clipping"
+   ],
+   "detected": [
+    "added_text",
+    "clipping",
+    "margin",
+    "missing_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.3,
+   "findings": [
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "right margin 45.9mm -> 0.4mm",
+     "repair_hint": "adjust right margin",
+     "data": {
+      "side": "right",
+      "delta_mm": -45.5
+     }
+    },
+    {
+     "check": "clipping",
+     "page": 1,
+     "severity": "error",
+     "detail": "content touches the right page edge",
+     "repair_hint": "content may be cut off; check margins and scaling",
+     "data": {
+      "side": "right"
+     }
+    },
+    {
+     "check": "missing_text",
+     "page": 1,
+     "severity": "error",
+     "detail": "text block missing: \"The following members are nominated to the purchase committe\"",
+     "repair_hint": "re-insert the block",
+     "data": {
+      "text": "The following members are nominated to the purchase committee.",
+      "bbox": [
+       70.86614227294922,
+       152.5844268798828,
+       393.6611328125,
+       167.69842529296875
+      ]
+     }
+    },
+    {
+     "check": "added_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "unexpected text block: \"The following members are nominated to the purchase committe\"",
+     "repair_hint": "remove or verify the block",
+     "data": {
+      "text": "The following members are nominated to the purchase committee. and all departments are requested to circ"
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "missing_block",
+   "template": 1,
+   "expected": [
+    "missing_text"
+   ],
+   "detected": [
+    "missing_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.3,
+   "findings": [
+    {
+     "check": "missing_text",
+     "page": 1,
+     "severity": "error",
+     "detail": "text block missing: \"The committee will meet every Monday at 11 am in the Senate \"",
+     "repair_hint": "re-insert the block",
+     "data": {
+      "text": "The committee will meet every Monday at 11 am in the Senate Hall.",
+      "bbox": [
+       70.86614227294922,
+       175.26161193847656,
+       400.3821716308594,
+       190.3756103515625
+      ]
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "table_borders_lost",
+   "template": 1,
+   "expected": [
+    "table_rules"
+   ],
+   "detected": [
+    "table_rules"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.2,
+   "findings": [
+    {
+     "check": "table_rules",
+     "page": 1,
+     "severity": "error",
+     "detail": "rule lines h/v 9/6 -> 6/2",
+     "repair_hint": "restore table borders",
+     "data": {
+      "expected": [
+       9,
+       6
+      ],
+      "found": [
+       6,
+       2
+      ]
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "font_drift",
+   "template": 1,
+   "expected": [
+    "font_size"
+   ],
+   "detected": [
+    "font_size"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.0,
+   "findings": [
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 11.0 -> 13.0pt: \"The following members are nominated to t\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 11.0,
+      "found": 13.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 11.0 -> 13.0pt: \"The committee will meet every Monday at \"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 11.0,
+      "found": 13.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 11.0 -> 13.0pt: \"This order comes into effect immediately\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 11.0,
+      "found": 13.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 10.0 -> 12.0pt: \"Name Department Role\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 10.0,
+      "found": 12.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 10.0 -> 12.0pt: \"A. Rao Physics Chair\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 10.0,
+      "found": 12.0
+     }
+    },
+    {
+     "check": "font_size",
+     "page": 1,
+     "severity": "warning",
+     "detail": "font size 10.0 -> 12.0pt: \"S. Das Chemistry Member\"",
+     "repair_hint": "restore font size",
+     "data": {
+      "expected": 10.0,
+      "found": 12.0
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "orientation",
+   "template": 1,
+   "expected": [
+    "page_size"
+   ],
+   "detected": [
+    "margin",
+    "moved_text",
+    "page_size"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 23.6,
+   "findings": [
+    {
+     "check": "page_size",
+     "page": 1,
+     "severity": "error",
+     "detail": "orientation changed: 595x842pt -> 842x595pt",
+     "repair_hint": "restore page size/orientation",
+     "data": {
+      "expected": [
+       595.0,
+       842.0
+      ],
+      "found": [
+       842.0,
+       595.0
+      ]
+     }
+    },
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "right margin 45.9mm -> 133.0mm",
+     "repair_hint": "adjust right margin",
+     "data": {
+      "side": "right",
+      "delta_mm": 87.1
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, -87.1mm: \"Page 1 of 1\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": -87.1
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "extra_page",
+   "template": 1,
+   "expected": [
+    "page_count"
+   ],
+   "detected": [
+    "page_count"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.1,
+   "findings": [
+    {
+     "check": "page_count",
+     "page": 0,
+     "severity": "error",
+     "detail": "1 pages expected, 2 found",
+     "repair_hint": "check pagination / page breaks",
+     "data": {
+      "expected": 1,
+      "found": 2
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "logo_removed",
+   "template": 1,
+   "expected": [
+    "images"
+   ],
+   "detected": [
+    "header",
+    "images",
+    "table_rules"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 28.2,
+   "findings": [
+    {
+     "check": "table_rules",
+     "page": 1,
+     "severity": "error",
+     "detail": "rule lines h/v 9/6 -> 6/4",
+     "repair_hint": "restore table borders",
+     "data": {
+      "expected": [
+       9,
+       6
+      ],
+      "found": [
+       6,
+       4
+      ]
+     }
+    },
+    {
+     "check": "images",
+     "page": 1,
+     "severity": "error",
+     "detail": "images 2 -> 1 (logo, letterhead or signature)",
+     "repair_hint": "restore the missing image",
+     "data": {
+      "expected": 2,
+      "found": 1
+     }
+    },
+    {
+     "check": "header",
+     "page": 1,
+     "severity": "warning",
+     "detail": "header band differs (3.7% of pixels)",
+     "repair_hint": "check header content",
+     "data": {
+      "diff_fraction": 0.0368
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "signature_removed",
+   "template": 1,
+   "expected": [
+    "images"
+   ],
+   "detected": [
+    "images",
+    "margin",
+    "table_rules"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 26.9,
+   "findings": [
+    {
+     "check": "margin",
+     "page": 1,
+     "severity": "warning",
+     "detail": "right margin 45.9mm -> 55.0mm",
+     "repair_hint": "adjust right margin",
+     "data": {
+      "side": "right",
+      "delta_mm": 9.2
+     }
+    },
+    {
+     "check": "table_rules",
+     "page": 1,
+     "severity": "error",
+     "detail": "rule lines h/v 9/6 -> 6/6",
+     "repair_hint": "restore table borders",
+     "data": {
+      "expected": [
+       9,
+       6
+      ],
+      "found": [
+       6,
+       6
+      ]
+     }
+    },
+    {
+     "check": "images",
+     "page": 1,
+     "severity": "error",
+     "detail": "images 2 -> 1 (logo, letterhead or signature)",
+     "repair_hint": "restore the missing image",
+     "data": {
+      "expected": 2,
+      "found": 1
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "header_changed",
+   "template": 1,
+   "expected": [
+    "missing_text"
+   ],
+   "detected": [
+    "added_text",
+    "missing_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 26.7,
+   "findings": [
+    {
+     "check": "missing_text",
+     "page": 1,
+     "severity": "error",
+     "detail": "text block missing: \"Office of the Registrar\"",
+     "repair_hint": "re-insert the block",
+     "data": {
+      "text": "Office of the Registrar",
+      "bbox": [
+       70.86614227294922,
+       24.340747833251953,
+       158.4001007080078,
+       36.706748962402344
+      ]
+     }
+    },
+    {
+     "check": "added_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "unexpected text block: \"Office of the Dean\"",
+     "repair_hint": "remove or verify the block",
+     "data": {
+      "text": "Office of the Dean"
+     }
+    }
+   ],
+   "ok": true
+  },
+  {
+   "case": "spacing_shift",
+   "template": 1,
+   "expected": [
+    "moved_text"
+   ],
+   "detected": [
+    "moved_text"
+   ],
+   "missed": [],
+   "false_positive_findings": 0,
+   "ms": 27.6,
+   "findings": [
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"The following members are nominated to t\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"The committee will meet every Monday at \"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"This order comes into effect immediately\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"Name Department Role\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"A. Rao Physics Chair\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    },
+    {
+     "check": "moved_text",
+     "page": 1,
+     "severity": "warning",
+     "detail": "block moved +0.0mm, +8.0mm: \"S. Das Chemistry Member\"",
+     "repair_hint": "check spacing / alignment",
+     "data": {
+      "dx_mm": 0.0,
+      "dy_mm": 8.0
+     }
+    }
+   ],
+   "ok": true
+  }
+ ]
+}

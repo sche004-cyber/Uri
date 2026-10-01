@@ -1,0 +1,238 @@
+[
+ {
+  "template": 0,
+  "variant": "portrait",
+  "convert_ms": 229,
+  "word_render_ms": 3773,
+  "qa_ms": 45.0,
+  "findings": [
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 9.0 -> 10.0pt: \"Office of the Registrar\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 9.0,
+     "found": 10.019999980926514
+    }
+   },
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 14.0 -> 12.5pt: \"Office Order No. 14/2026\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 14.0,
+     "found": 12.539999961853027
+    }
+   },
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 8.0 -> 9.5pt: \"Page 1 of 1\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 8.0,
+     "found": 9.539999961853027
+    }
+   },
+   {
+    "check": "table_rules",
+    "page": 1,
+    "severity": "warning",
+    "detail": "rule lines h/v 9/6 -> 10/6",
+    "repair_hint": "restore table borders",
+    "data": {
+     "expected": [
+      9,
+      6
+     ],
+     "found": [
+      10,
+      6
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "template": 0,
+  "variant": "landscape",
+  "convert_ms": 86,
+  "word_render_ms": 13734,
+  "qa_ms": 25.4,
+  "findings": [
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 9.0 -> 10.0pt: \"Office of the Registrar\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 9.0,
+     "found": 10.019999980926514
+    }
+   },
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 14.0 -> 12.5pt: \"Office Order No. 14/2026\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 14.0,
+     "found": 12.539999961853027
+    }
+   },
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 8.0 -> 9.5pt: \"Page 1 of 1\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 8.0,
+     "found": 9.539999961853027
+    }
+   },
+   {
+    "check": "table_rules",
+    "page": 1,
+    "severity": "warning",
+    "detail": "rule lines h/v 9/6 -> 10/6",
+    "repair_hint": "restore table borders",
+    "data": {
+     "expected": [
+      9,
+      6
+     ],
+     "found": [
+      10,
+      6
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "template": 1,
+  "variant": "portrait",
+  "convert_ms": 88,
+  "word_render_ms": 3530,
+  "qa_ms": 26.4,
+  "findings": [
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 9.0 -> 10.0pt: \"Office of the Registrar\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 9.0,
+     "found": 10.019999980926514
+    }
+   },
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 14.0 -> 12.5pt: \"Notice: Revised Examination Schedule\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 14.0,
+     "found": 12.539999961853027
+    }
+   },
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 8.0 -> 9.5pt: \"Page 1 of 1\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 8.0,
+     "found": 9.539999961853027
+    }
+   },
+   {
+    "check": "table_rules",
+    "page": 1,
+    "severity": "warning",
+    "detail": "rule lines h/v 9/6 -> 10/6",
+    "repair_hint": "restore table borders",
+    "data": {
+     "expected": [
+      9,
+      6
+     ],
+     "found": [
+      10,
+      6
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "template": 1,
+  "variant": "landscape",
+  "convert_ms": 90,
+  "word_render_ms": 3569,
+  "qa_ms": 26.3,
+  "findings": [
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 9.0 -> 10.0pt: \"Office of the Registrar\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 9.0,
+     "found": 10.019999980926514
+    }
+   },
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 14.0 -> 12.5pt: \"Notice: Revised Examination Schedule\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 14.0,
+     "found": 12.539999961853027
+    }
+   },
+   {
+    "check": "font_size",
+    "page": 1,
+    "severity": "warning",
+    "detail": "font size 8.0 -> 9.5pt: \"Page 1 of 1\"",
+    "repair_hint": "restore font size",
+    "data": {
+     "expected": 8.0,
+     "found": 9.539999961853027
+    }
+   },
+   {
+    "check": "table_rules",
+    "page": 1,
+    "severity": "warning",
+    "detail": "rule lines h/v 9/6 -> 10/6",
+    "repair_hint": "restore table borders",
+    "data": {
+     "expected": [
+      9,
+      6
+     ],
+     "found": [
+      10,
+      6
+     ]
+    }
+   }
+  ]
+ }
+]
