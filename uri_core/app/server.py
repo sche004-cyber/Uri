@@ -1969,6 +1969,27 @@ def ask(
             result = None
             early_executed = False
 
+    # Harness-first (EXPERIMENTAL, default off: URI_HARNESS_FIRST=1). A purely
+    # social turn with nothing pending is answered by a local Edge text model
+    # under URI validation, without waking the Main Brain. Every other turn,
+    # and any failure here, continues down the unchanged chain below.
+    if not early_executed:
+        try:
+            from uri_core.core.harness_first.seam import try_harness_first
+
+            harness_result = try_harness_first(
+                context=context, principal=principal, payload=payload,
+                current_turn_attachments=current_turn_attachments,
+            )
+            if harness_result is not None:
+                return _finalize_ask_response(
+                    context, user_id, payload, harness_result,
+                    total_duration_seconds=time.perf_counter() - turn_start_time,
+                    turn_start_iso=turn_start_iso,
+                )
+        except Exception:
+            pass
+
     # M30.7: pending WorkflowExecutor pauses otherwise resume inside the
     # legacy orchestrator before the Decision Contract can judge whether this
     # message is actually a continuation.  This isolated, default-off branch
@@ -2188,6 +2209,14 @@ def _finalize_ask_response(
         # (Live UX Repair §8: never fabricate an unavailable measurement).
         serving_provider = payload.model_override["provider_id"]
         serving_model = payload.model_override["model"]
+    _harness = result.get("_harness") or {}
+    if _harness and serving_provider is None:
+        # Harness-first turn: no Main Brain call happened. Report the Edge model
+        # (or URI itself) as the serving source, with its measured latency.
+        serving_provider = "ollama (edge)" if _harness.get("edge_model") else "uri (deterministic)"
+        serving_model = _harness.get("edge_model")
+        if model_total_ms is None and _harness.get("edge_model"):
+            model_total_ms = int(round(_harness.get("edge_ms") or 0))
     try:
         context.orchestrator.conversation_history.annotate_latest_turn(
             payload.session_id,
@@ -2298,6 +2327,7 @@ def _finalize_ask_response(
         "serving_calls": serving_calls,
         "arn_state": arn_state,
         "recovery_required": recovery_required,
+        "harness_route": result.get("_harness"),
     }
 
 
@@ -2382,6 +2412,27 @@ async def ask_stream(
         yield _sse_event("done", {"narrative_interrupted": False})
 
     async def _generate():
+        # Harness-first (EXPERIMENTAL, default off): same seam as /ask, tried
+        # before the stream path. None means "not handled here".
+        try:
+            from uri_core.core.harness_first.seam import try_harness_first
+
+            loop = asyncio.get_event_loop()
+            harness_result = await loop.run_in_executor(None, lambda: try_harness_first(
+                context=context, principal=principal, payload=payload,
+                current_turn_attachments=current_turn_attachments,
+            ))
+        except Exception:
+            harness_result = None
+        if harness_result is not None:
+            finalized = _finalize_ask_response(
+                context, user_id, payload, harness_result,
+                total_duration_seconds=time.perf_counter() - stream_start_time,
+                turn_start_iso=stream_start_iso,
+            )
+            yield _sse_event("message", finalized)
+            yield _sse_event("done", {"narrative_interrupted": False})
+            return
         # Streaming Tier 0 has no Turn State payload seam.  Attachment
         # turns therefore use the ordinary /ask path, which passes the
         # one validated structured signal to canonical/native routing;
