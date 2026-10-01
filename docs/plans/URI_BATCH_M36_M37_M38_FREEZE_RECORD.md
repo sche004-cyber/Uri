@@ -163,3 +163,23 @@ M39 line (`claude/project-thread-wb7tmm`); it is not part of this line.
 - **Status.** M37 is `REOPENED_FOR_AUTHORIZED_EDIT`, pending an independent re-audit of the
   fix, and returns to `CLOSED_FROZEN` only after it; this record does not re-freeze it.
   M37-L3 is closed by the fix, subject to that re-audit.
+- **Re-freeze (2026-10-01).** Independent re-audit of `9395677`: **ACCEPT**, no CRITICAL,
+  HIGH or MEDIUM findings (`docs/reviews/M37_L3_REAUDIT_9395677.md`, commit `98d8b1b`).
+  Chetan (User), 2026-10-01 12:36 UTC, verbatim: "Re-freeze M37 at 9395677." Before this commit the
+  conditions were re-checked on `98d8b1b`: no change under `uri_v1/`, `uri_core/`,
+  `uri_ui/`, `scripts/` or `fixtures/` since `5bbf738` (only the guard test and its pin
+  differ under `tests/`); `tests/` 1,325 passed / 0 failed; M36, M37 and M38 qualification
+  drivers exit 0 with gates passing; governance 37 passed, `URI_STATE.yaml` VALID; anchors
+  ok, changed `[]`. **M37 is `CLOSED_FROZEN` at `9395677d8fce63ffb5d45722ac871bb5a21b6135`**, frozen code still the
+  tree of `bd7c450`. M37-L3 is closed.
+- **Retained limitation M37-L4 (re-audit F-1 to F-3, LOW).** The guard is git-based, so
+  deliberate local action can blind it: `--skip-worktree`/`--assume-unchanged` flags,
+  `git replace` of the baseline commits, `.git/info/exclude`; ignored paths (`cache/`,
+  `__pycache__`) and stale bytecode; and editing the guard, its pin, `.gitignore` or root
+  pytest config (`pytest.ini`, `pyproject.toml`, `conftest.py`) together with frozen
+  files. None of these travels on a branch unseen. Review rule: the guard proves the frozen
+  paths only while those files are unchanged from `9395677`, so reviewers check
+  `git diff 9395677 -- tests/test_m37_edge_resolution.py tests/test_m37_frozen_guard_pin.py
+  .gitignore pytest.ini pyproject.toml conftest.py`. Recorded as retained because the User
+  chose to re-freeze at `9395677` rather than authorize the optional hardening round the
+  re-audit offered.

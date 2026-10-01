@@ -15,6 +15,11 @@ superseded. Next validation activity: a live harness pilot, which reopens M36-M3
 for a defect that violates a frozen guarantee. No milestone is automatically opened;
 the M36/M37/M38 notes below are historical. Canonical machine state: `URI_STATE.yaml`.
 
+**M37 UPDATE — 2026-10-01:** M37 was reopened on 2026-09-29 for the authorized M37-L3
+guard fix and is `CLOSED_FROZEN` again at `9395677` (code unchanged from `bd7c450`), after
+an independent re-audit ACCEPT and the User's instruction of 2026-10-01 12:36 UTC. See the
+freeze record section 7.
+
 **BATCH NOTE — 2026-09-28 (additive):** M38 Harness Execution Minimum is implemented and `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](../plans/M38_IMPLEMENTATION_REPORT.md)). The batch stops before the Office demonstrator; the next stage is one independent Codex audit per [the batch package](../plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md).
 
 **BATCH NOTE — 2026-09-28 (additive):** Under the User's batched-audit workflow, M37 Edge Minimum is implemented and `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M37_EDGE_MINIMUM_PLAN.md), [report](../plans/M37_IMPLEMENTATION_REPORT.md)). It depends on unaudited M36 at `405db1f`. M36 remains the current milestone record above; nothing here freezes, closes or integrates M36 or M37.
