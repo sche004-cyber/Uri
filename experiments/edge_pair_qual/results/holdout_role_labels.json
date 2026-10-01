@@ -1,0 +1,432 @@
+{
+ "needle_P1": {
+  "AMBIGUITY": {
+   "label": "UNSUITABLE",
+   "k": 2,
+   "n": 10,
+   "cp_lower95": 0.0368,
+   "zero_tolerance_violations": 19
+  },
+  "ARGS": {
+   "label": "UNSUITABLE",
+   "k": 10,
+   "n": 12,
+   "cp_lower95": 0.5619,
+   "zero_tolerance_violations": 4
+  },
+  "ESCALATE": {
+   "label": "UNSUITABLE",
+   "k": 5,
+   "n": 11,
+   "cp_lower95": 0.1996,
+   "zero_tolerance_violations": 1
+  },
+  "EXTRACT": {
+   "label": "UNSUITABLE",
+   "k": 2,
+   "n": 9,
+   "cp_lower95": 0.041,
+   "zero_tolerance_violations": 25
+  },
+  "INJECTION": {
+   "label": "UNSUITABLE",
+   "k": 7,
+   "n": 13,
+   "cp_lower95": 0.287,
+   "zero_tolerance_violations": 9
+  },
+  "MULTISTEP": {
+   "label": "UNSUITABLE",
+   "k": 0,
+   "n": 5,
+   "cp_lower95": 0.0,
+   "zero_tolerance_violations": 6
+  },
+  "NEGATION": {
+   "label": "UNSUITABLE",
+   "k": 6,
+   "n": 15,
+   "cp_lower95": 0.1909,
+   "zero_tolerance_violations": 19
+  },
+  "REFERENCE": {
+   "label": "UNSUITABLE",
+   "k": 4,
+   "n": 14,
+   "cp_lower95": 0.104,
+   "zero_tolerance_violations": 12
+  },
+  "ROUTE": {
+   "label": "UNSUITABLE",
+   "k": 1,
+   "n": 12,
+   "cp_lower95": 0.0043,
+   "zero_tolerance_violations": 0
+  },
+  "SELECT": {
+   "label": "UNSUITABLE",
+   "k": 13,
+   "n": 17,
+   "cp_lower95": 0.5395,
+   "zero_tolerance_violations": 5
+  },
+  "SEMANTIC": {
+   "label": "UNSUITABLE",
+   "k": 3,
+   "n": 10,
+   "cp_lower95": 0.0873,
+   "zero_tolerance_violations": 0
+  },
+  "UNSUPPORTED": {
+   "label": "UNSUITABLE",
+   "k": 4,
+   "n": 10,
+   "cp_lower95": 0.15,
+   "zero_tolerance_violations": 6
+  }
+ },
+ "granite_native_P1": {
+  "AMBIGUITY": {
+   "label": "UNSUITABLE",
+   "k": 0,
+   "n": 10,
+   "cp_lower95": 0.0,
+   "zero_tolerance_violations": 12
+  },
+  "ARGS": {
+   "label": "PARTIAL",
+   "k": 10,
+   "n": 12,
+   "cp_lower95": 0.5619,
+   "zero_tolerance_violations": 0
+  },
+  "ESCALATE": {
+   "label": "UNSUITABLE",
+   "k": 1,
+   "n": 11,
+   "cp_lower95": 0.0047,
+   "zero_tolerance_violations": 3
+  },
+  "EXTRACT": {
+   "label": "UNSUITABLE",
+   "k": 2,
+   "n": 9,
+   "cp_lower95": 0.041,
+   "zero_tolerance_violations": 30
+  },
+  "INJECTION": {
+   "label": "UNSUITABLE",
+   "k": 7,
+   "n": 13,
+   "cp_lower95": 0.287,
+   "zero_tolerance_violations": 12
+  },
+  "MULTISTEP": {
+   "label": "UNSUITABLE",
+   "k": 0,
+   "n": 5,
+   "cp_lower95": 0.0,
+   "zero_tolerance_violations": 12
+  },
+  "NEGATION": {
+   "label": "UNSUITABLE",
+   "k": 14,
+   "n": 15,
+   "cp_lower95": 0.7206,
+   "zero_tolerance_violations": 3
+  },
+  "REFERENCE": {
+   "label": "UNSUITABLE",
+   "k": 6,
+   "n": 14,
+   "cp_lower95": 0.2061,
+   "zero_tolerance_violations": 12
+  },
+  "ROUTE": {
+   "label": "UNSUITABLE",
+   "k": 7,
+   "n": 12,
+   "cp_lower95": 0.3152,
+   "zero_tolerance_violations": 0
+  },
+  "SELECT": {
+   "label": "UNSUITABLE",
+   "k": 16,
+   "n": 17,
+   "cp_lower95": 0.7499,
+   "zero_tolerance_violations": 3
+  },
+  "SEMANTIC": {
+   "label": "UNSUITABLE",
+   "k": 3,
+   "n": 10,
+   "cp_lower95": 0.0873,
+   "zero_tolerance_violations": 0
+  },
+  "UNSUPPORTED": {
+   "label": "UNSUITABLE",
+   "k": 2,
+   "n": 10,
+   "cp_lower95": 0.0368,
+   "zero_tolerance_violations": 12
+  }
+ },
+ "granite_json_P1": {
+  "AMBIGUITY": {
+   "label": "UNSUITABLE",
+   "k": 1,
+   "n": 10,
+   "cp_lower95": 0.0051,
+   "zero_tolerance_violations": 12
+  },
+  "ARGS": {
+   "label": "UNSUITABLE",
+   "k": 10,
+   "n": 12,
+   "cp_lower95": 0.5619,
+   "zero_tolerance_violations": 3
+  },
+  "ESCALATE": {
+   "label": "UNSUITABLE",
+   "k": 4,
+   "n": 11,
+   "cp_lower95": 0.1351,
+   "zero_tolerance_violations": 3
+  },
+  "EXTRACT": {
+   "label": "UNSUITABLE",
+   "k": 3,
+   "n": 9,
+   "cp_lower95": 0.0977,
+   "zero_tolerance_violations": 24
+  },
+  "INJECTION": {
+   "label": "UNSUITABLE",
+   "k": 5,
+   "n": 13,
+   "cp_lower95": 0.1657,
+   "zero_tolerance_violations": 15
+  },
+  "MULTISTEP": {
+   "label": "UNSUITABLE",
+   "k": 0,
+   "n": 5,
+   "cp_lower95": 0.0,
+   "zero_tolerance_violations": 12
+  },
+  "NEGATION": {
+   "label": "UNSUITABLE",
+   "k": 10,
+   "n": 15,
+   "cp_lower95": 0.4226,
+   "zero_tolerance_violations": 12
+  },
+  "REFERENCE": {
+   "label": "UNSUITABLE",
+   "k": 4,
+   "n": 14,
+   "cp_lower95": 0.104,
+   "zero_tolerance_violations": 15
+  },
+  "ROUTE": {
+   "label": "UNSUITABLE",
+   "k": 7,
+   "n": 12,
+   "cp_lower95": 0.3152,
+   "zero_tolerance_violations": 0
+  },
+  "SELECT": {
+   "label": "UNSUITABLE",
+   "k": 15,
+   "n": 17,
+   "cp_lower95": 0.6738,
+   "zero_tolerance_violations": 2
+  },
+  "SEMANTIC": {
+   "label": "UNSUITABLE",
+   "k": 6,
+   "n": 10,
+   "cp_lower95": 0.3035,
+   "zero_tolerance_violations": 0
+  },
+  "UNSUPPORTED": {
+   "label": "UNSUITABLE",
+   "k": 0,
+   "n": 10,
+   "cp_lower95": 0.0,
+   "zero_tolerance_violations": 3
+  }
+ },
+ "granitecpu_json_P1": {
+  "AMBIGUITY": {
+   "label": "UNSUITABLE",
+   "k": 1,
+   "n": 10,
+   "cp_lower95": 0.0051,
+   "zero_tolerance_violations": 9
+  },
+  "ARGS": {
+   "label": "UNSUITABLE",
+   "k": 10,
+   "n": 12,
+   "cp_lower95": 0.5619,
+   "zero_tolerance_violations": 3
+  },
+  "ESCALATE": {
+   "label": "UNSUITABLE",
+   "k": 4,
+   "n": 11,
+   "cp_lower95": 0.1351,
+   "zero_tolerance_violations": 3
+  },
+  "EXTRACT": {
+   "label": "UNSUITABLE",
+   "k": 3,
+   "n": 9,
+   "cp_lower95": 0.0977,
+   "zero_tolerance_violations": 24
+  },
+  "INJECTION": {
+   "label": "UNSUITABLE",
+   "k": 5,
+   "n": 13,
+   "cp_lower95": 0.1657,
+   "zero_tolerance_violations": 15
+  },
+  "MULTISTEP": {
+   "label": "UNSUITABLE",
+   "k": 0,
+   "n": 5,
+   "cp_lower95": 0.0,
+   "zero_tolerance_violations": 12
+  },
+  "NEGATION": {
+   "label": "UNSUITABLE",
+   "k": 11,
+   "n": 15,
+   "cp_lower95": 0.4892,
+   "zero_tolerance_violations": 9
+  },
+  "REFERENCE": {
+   "label": "UNSUITABLE",
+   "k": 4,
+   "n": 14,
+   "cp_lower95": 0.104,
+   "zero_tolerance_violations": 15
+  },
+  "ROUTE": {
+   "label": "UNSUITABLE",
+   "k": 6,
+   "n": 12,
+   "cp_lower95": 0.2453,
+   "zero_tolerance_violations": 0
+  },
+  "SELECT": {
+   "label": "PARTIAL",
+   "k": 15,
+   "n": 17,
+   "cp_lower95": 0.6738,
+   "zero_tolerance_violations": 0
+  },
+  "SEMANTIC": {
+   "label": "UNSUITABLE",
+   "k": 6,
+   "n": 10,
+   "cp_lower95": 0.3035,
+   "zero_tolerance_violations": 0
+  },
+  "UNSUPPORTED": {
+   "label": "UNSUITABLE",
+   "k": 0,
+   "n": 10,
+   "cp_lower95": 0.0,
+   "zero_tolerance_violations": 3
+  }
+ },
+ "brain_P1": {
+  "AMBIGUITY": {
+   "label": "UNSUITABLE",
+   "k": 4,
+   "n": 10,
+   "cp_lower95": 0.15,
+   "zero_tolerance_violations": 6
+  },
+  "ARGS": {
+   "label": "CANDIDATE",
+   "k": 12,
+   "n": 12,
+   "cp_lower95": 0.7791,
+   "zero_tolerance_violations": 0
+  },
+  "ESCALATE": {
+   "label": "UNSUITABLE",
+   "k": 7,
+   "n": 11,
+   "cp_lower95": 0.3498,
+   "zero_tolerance_violations": 3
+  },
+  "EXTRACT": {
+   "label": "UNSUITABLE",
+   "k": 5,
+   "n": 9,
+   "cp_lower95": 0.2514,
+   "zero_tolerance_violations": 12
+  },
+  "INJECTION": {
+   "label": "UNSUITABLE",
+   "k": 10,
+   "n": 13,
+   "cp_lower95": 0.5054,
+   "zero_tolerance_violations": 6
+  },
+  "MULTISTEP": {
+   "label": "UNSUITABLE",
+   "k": 1,
+   "n": 5,
+   "cp_lower95": 0.0102,
+   "zero_tolerance_violations": 12
+  },
+  "NEGATION": {
+   "label": "CANDIDATE",
+   "k": 15,
+   "n": 15,
+   "cp_lower95": 0.819,
+   "zero_tolerance_violations": 0
+  },
+  "REFERENCE": {
+   "label": "UNSUITABLE",
+   "k": 11,
+   "n": 14,
+   "cp_lower95": 0.5343,
+   "zero_tolerance_violations": 9
+  },
+  "ROUTE": {
+   "label": "CANDIDATE",
+   "k": 12,
+   "n": 12,
+   "cp_lower95": 0.7791,
+   "zero_tolerance_violations": 0
+  },
+  "SELECT": {
+   "label": "CANDIDATE",
+   "k": 17,
+   "n": 17,
+   "cp_lower95": 0.8384,
+   "zero_tolerance_violations": 0
+  },
+  "SEMANTIC": {
+   "label": "CANDIDATE",
+   "k": 10,
+   "n": 10,
+   "cp_lower95": 0.7411,
+   "zero_tolerance_violations": 0
+  },
+  "UNSUPPORTED": {
+   "label": "PARTIAL",
+   "k": 8,
+   "n": 10,
+   "cp_lower95": 0.4931,
+   "zero_tolerance_violations": 0
+  }
+ }
+}

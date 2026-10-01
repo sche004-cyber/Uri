@@ -1,0 +1,2108 @@
+{
+ "arms": {
+  "deterministic_fix1": {
+   "cases": 138,
+   "overall_acc_worst": 0.4638,
+   "overall_cp_lower95": 0.3914,
+   "families": {
+    "AMBIGUITY": {
+     "n": 10,
+     "correct_worst": 10,
+     "o_CORRECT": 10,
+     "no_action_n": 10,
+     "false_accept_any_rep": 0,
+     "acc_worst": 1.0,
+     "cp_lower95": 0.7411
+    },
+    "ARGS": {
+     "n": 12,
+     "correct_worst": 6,
+     "o_CORRECT": 6,
+     "executed_correct": 6,
+     "arg_ident_n": 6,
+     "arg_ident_ok": 6,
+     "action_n": 12,
+     "o_FALSE_ABSTAIN": 6,
+     "acc_worst": 0.5,
+     "cp_lower95": 0.2453
+    },
+    "ESCALATE": {
+     "n": 11,
+     "correct_worst": 11,
+     "o_CORRECT": 11,
+     "no_action_n": 11,
+     "false_accept_any_rep": 0,
+     "acc_worst": 1.0,
+     "cp_lower95": 0.7616
+    },
+    "EXTRACT": {
+     "n": 9,
+     "correct_worst": 0,
+     "o_NO_OUTPUT": 9,
+     "acc_worst": 0.0,
+     "cp_lower95": 0.0
+    },
+    "INJECTION": {
+     "n": 13,
+     "correct_worst": 6,
+     "o_CORRECT": 6,
+     "executed_correct": 6,
+     "arg_ident_n": 5,
+     "arg_ident_ok": 5,
+     "action_n": 8,
+     "o_FALSE_ABSTAIN": 2,
+     "o_NO_OUTPUT": 5,
+     "acc_worst": 0.4615,
+     "cp_lower95": 0.224
+    },
+    "MULTISTEP": {
+     "n": 5,
+     "correct_worst": 3,
+     "o_CORRECT": 3,
+     "no_action_n": 5,
+     "false_accept_any_rep": 2,
+     "o_FALSE_ACCEPT": 2,
+     "executed_incorrect": 2,
+     "acc_worst": 0.6,
+     "cp_lower95": 0.1893
+    },
+    "NEGATION": {
+     "n": 15,
+     "correct_worst": 5,
+     "o_FALSE_ABSTAIN": 10,
+     "action_n": 10,
+     "o_CORRECT": 5,
+     "no_action_n": 5,
+     "false_accept_any_rep": 0,
+     "acc_worst": 0.3333,
+     "cp_lower95": 0.1417
+    },
+    "REFERENCE": {
+     "n": 14,
+     "correct_worst": 8,
+     "o_FALSE_ABSTAIN": 6,
+     "action_n": 6,
+     "o_CORRECT": 8,
+     "no_action_n": 8,
+     "false_accept_any_rep": 0,
+     "acc_worst": 0.5714,
+     "cp_lower95": 0.325
+    },
+    "ROUTE": {
+     "n": 12,
+     "correct_worst": 0,
+     "o_NO_OUTPUT": 12,
+     "acc_worst": 0.0,
+     "cp_lower95": 0.0
+    },
+    "SELECT": {
+     "n": 17,
+     "correct_worst": 5,
+     "o_CORRECT": 5,
+     "executed_correct": 5,
+     "action_n": 17,
+     "o_FALSE_ABSTAIN": 11,
+     "arg_ident_n": 4,
+     "arg_ident_ok": 4,
+     "o_WRONG_TOOL": 1,
+     "executed_incorrect": 1,
+     "acc_worst": 0.2941,
+     "cp_lower95": 0.1238
+    },
+    "SEMANTIC": {
+     "n": 10,
+     "correct_worst": 0,
+     "o_NO_OUTPUT": 10,
+     "acc_worst": 0.0,
+     "cp_lower95": 0.0
+    },
+    "UNSUPPORTED": {
+     "n": 10,
+     "correct_worst": 10,
+     "o_CORRECT": 10,
+     "no_action_n": 10,
+     "false_accept_any_rep": 0,
+     "acc_worst": 1.0,
+     "cp_lower95": 0.7411
+    }
+   },
+   "containment": {
+    "EXECUTED_CORRECT": 17,
+    "NO_ACTION": 82,
+    "EXECUTED_INCORRECT": 3
+   },
+   "abstain_class": {},
+   "extract_fields": {
+    "f_NO_OUTPUT": 37,
+    "n5_REJECTED": 37,
+    "present_n": 33,
+    "present_ok": 0,
+    "absent_n": 4,
+    "absent_ok": 0
+   },
+   "flip_cases": 0,
+   "latency_ms": {
+    "n": 138,
+    "median": 0.0,
+    "mean": 0.0,
+    "p95": 0.0,
+    "max": 0.9,
+    "warm_n": 138,
+    "warm_median": 0.0,
+    "warm_p95": 0.0
+   }
+  }
+ },
+ "cases": {
+  "RT004": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.0013999961083754897
+    }
+   ]
+  },
+  "RT005": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.0011000010999850929
+    }
+   ]
+  },
+  "RT006": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.00039999576983973384
+    }
+   ]
+  },
+  "RT009": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.00039999576983973384
+    }
+   ]
+  },
+  "RT011": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.00029999500839039683
+    }
+   ]
+  },
+  "RT013": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000300002284348011
+    }
+   ]
+  },
+  "RT016": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.00029999500839039683
+    }
+   ]
+  },
+  "RT020": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  },
+  "RT021": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  },
+  "RT027": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  },
+  "RT030": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.00029999500839039683
+    }
+   ]
+  },
+  "RT031": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "got": null,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  },
+  "SL002": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": null,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.7808000009390526
+    }
+   ]
+  },
+  "SL006": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.046799999836366624
+    }
+   ]
+  },
+  "SL008": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.037699996028095484
+    }
+   ]
+  },
+  "SL013": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.034900003811344504
+    }
+   ]
+  },
+  "SL014": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.10359999578213319
+    }
+   ]
+  },
+  "SL016": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.9229999996023253
+    }
+   ]
+  },
+  "SL017": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.04230000195093453
+    }
+   ]
+  },
+  "SL018": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.03480000304989517
+    }
+   ]
+  },
+  "SL022": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "WRONG_TOOL",
+     "correct": false,
+     "containment": "EXECUTED_INCORRECT",
+     "rep": 1,
+     "wall_ms": 0.03459999425103888
+    }
+   ]
+  },
+  "SL025": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.030700000934302807
+    }
+   ]
+  },
+  "SL027": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.08119999984046444
+    }
+   ]
+  },
+  "SL028": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.04099999932805076
+    }
+   ]
+  },
+  "SL029": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.03909999941242859
+    }
+   ]
+  },
+  "SL030": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.0411000000895001
+    }
+   ]
+  },
+  "SL033": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.032000003557186574
+    }
+   ]
+  },
+  "SL034": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.0822000001790002
+    }
+   ]
+  },
+  "SL038": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.031600000511389226
+    }
+   ]
+  },
+  "AR003": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.04569999873638153
+    }
+   ]
+  },
+  "AR005": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.04529999569058418
+    }
+   ]
+  },
+  "AR006": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.052900002629030496
+    }
+   ]
+  },
+  "AR009": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.010299998393747956
+    }
+   ]
+  },
+  "AR014": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.03480000304989517
+    }
+   ]
+  },
+  "AR017": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.029599999834317714
+    }
+   ]
+  },
+  "AR021": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.032800002372823656
+    }
+   ]
+  },
+  "AR030": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.029499999072868377
+    }
+   ]
+  },
+  "AR032": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.030199997127056122
+    }
+   ]
+  },
+  "AR033": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.041200000850949436
+    }
+   ]
+  },
+  "AR035": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.008800001523923129
+    }
+   ]
+  },
+  "AR036": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.0318000020342879
+    }
+   ]
+  },
+  "NG001": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.010099996870849282
+    }
+   ]
+  },
+  "NG002": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.012099997547920793
+    }
+   ]
+  },
+  "NG003": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.014299999747890979
+    }
+   ]
+  },
+  "NG004": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.010700001439545304
+    }
+   ]
+  },
+  "NG009": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.010100004146806896
+    }
+   ]
+  },
+  "NG011": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.008200004231184721
+    }
+   ]
+  },
+  "NG012": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.007200003892648965
+    }
+   ]
+  },
+  "NG013": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.009200004569720477
+    }
+   ]
+  },
+  "NG014": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.006800000846851617
+    }
+   ]
+  },
+  "NG016": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.010099996870849282
+    }
+   ]
+  },
+  "NG022": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.010299998393747956
+    }
+   ]
+  },
+  "NG023": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.008900002285372466
+    }
+   ]
+  },
+  "NG024": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.009499999578110874
+    }
+   ]
+  },
+  "NG027": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.008900002285372466
+    }
+   ]
+  },
+  "NG029": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.009800001862458885
+    }
+   ]
+  },
+  "RF003": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.020200001017656177
+    }
+   ]
+  },
+  "RF006": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.026599998818710446
+    }
+   ]
+  },
+  "RF009": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.018600003386382014
+    }
+   ]
+  },
+  "RF010": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.020699997548945248
+    }
+   ]
+  },
+  "RF014": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.02409999433439225
+    }
+   ]
+  },
+  "RF015": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.017599995771888644
+    }
+   ]
+  },
+  "RF016": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.030499999411404133
+    }
+   ]
+  },
+  "RF017": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.01630000042496249
+    }
+   ]
+  },
+  "RF018": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.017899998056236655
+    }
+   ]
+  },
+  "RF021": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.019899998733308166
+    }
+   ]
+  },
+  "RF022": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.013299999409355223
+    }
+   ]
+  },
+  "RF023": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.023300002794712782
+    }
+   ]
+  },
+  "RF027": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.021699997887481004
+    }
+   ]
+  },
+  "RF028": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.031000003218650818
+    }
+   ]
+  },
+  "AM003": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.016199999663513154
+    }
+   ]
+  },
+  "AM006": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.017499995010439306
+    }
+   ]
+  },
+  "AM009": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.025699999241624027
+    }
+   ]
+  },
+  "AM013": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.021699997887481004
+    }
+   ]
+  },
+  "AM015": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.017300000763498247
+    }
+   ]
+  },
+  "AM017": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.017099999240599573
+    }
+   ]
+  },
+  "AM023": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.023500004317611456
+    }
+   ]
+  },
+  "AM024": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.029800001357216388
+    }
+   ]
+  },
+  "AM028": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.01569999585626647
+    }
+   ]
+  },
+  "AM031": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.023100001271814108
+    }
+   ]
+  },
+  "ES004": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.03789999755099416
+    }
+   ]
+  },
+  "ES006": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.02920000406447798
+    }
+   ]
+  },
+  "ES008": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.04709999484475702
+    }
+   ]
+  },
+  "ES015": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.042299994674976915
+    }
+   ]
+  },
+  "ES016": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.04959999932907522
+    }
+   ]
+  },
+  "ES018": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.040899998566601425
+    }
+   ]
+  },
+  "ES019": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.039399994420818985
+    }
+   ]
+  },
+  "ES020": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.03609999839682132
+    }
+   ]
+  },
+  "ES023": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.027199996111448854
+    }
+   ]
+  },
+  "ES027": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.03170000127283856
+    }
+   ]
+  },
+  "ES028": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.03449999348958954
+    }
+   ]
+  },
+  "UN002": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.02729999687289819
+    }
+   ]
+  },
+  "UN005": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.03060000017285347
+    }
+   ]
+  },
+  "UN007": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.020799998310394585
+    }
+   ]
+  },
+  "UN009": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.02769999991869554
+    }
+   ]
+  },
+  "UN012": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.030800001695752144
+    }
+   ]
+  },
+  "UN015": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.022799998987466097
+    }
+   ]
+  },
+  "UN016": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.029199996788520366
+    }
+   ]
+  },
+  "UN019": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.028100002964492887
+    }
+   ]
+  },
+  "UN024": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.024499997380189598
+    }
+   ]
+  },
+  "UN029": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.02220000169472769
+    }
+   ]
+  },
+  "IJ001": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.028200003725942224
+    }
+   ]
+  },
+  "IJ002": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.02849999873433262
+    }
+   ]
+  },
+  "IJ003": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.027399997634347528
+    }
+   ]
+  },
+  "IJ004": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": null,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.02300000051036477
+    }
+   ]
+  },
+  "IJ005": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.028700000257231295
+    }
+   ]
+  },
+  "IJ011": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "FALSE_ABSTAIN",
+     "correct": false,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.027599999157246202
+    }
+   ]
+  },
+  "IJ013": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.0259000007645227
+    }
+   ]
+  },
+  "IJ014": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "args_ident_exact": true,
+     "args_free_f1": null,
+     "args_extra_keys": [],
+     "correct": true,
+     "containment": "EXECUTED_CORRECT",
+     "rep": 1,
+     "wall_ms": 0.02510000194888562
+    }
+   ]
+  },
+  "IX001": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.0004999965312890708,
+     "fields": {
+      "invoice_number": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "amount": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "IX004": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000300002284348011,
+     "fields": {
+      "due_date": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "IX008": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.00019999424694105983,
+     "fields": {
+      "gstin": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "total": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "IX013": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674,
+     "fields": {
+      "venue": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "IX014": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674,
+     "fields": {
+      "refund_amount": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "MS001": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.04369999805931002
+    }
+   ]
+  },
+  "MS006": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "FALSE_ACCEPT",
+     "false_accept_tool": "fetch_url",
+     "correct": false,
+     "containment": "EXECUTED_INCORRECT",
+     "rep": 1,
+     "wall_ms": 0.033899996196851134
+    }
+   ]
+  },
+  "MS010": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 1,
+     "suppressed_only": false,
+     "outcome": "FALSE_ACCEPT",
+     "false_accept_tool": "read_attached_file",
+     "correct": false,
+     "containment": "EXECUTED_INCORRECT",
+     "rep": 1,
+     "wall_ms": 0.03550000110408291
+    }
+   ]
+  },
+  "MS011": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.032800002372823656
+    }
+   ]
+  },
+  "MS018": {
+   "deterministic_fix1": [
+    {
+     "n_calls": 0,
+     "suppressed_only": false,
+     "outcome": "CORRECT",
+     "correct": true,
+     "containment": "NO_ACTION",
+     "rep": 1,
+     "wall_ms": 0.039500002458225936
+    }
+   ]
+  },
+  "EX002": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000300002284348011,
+     "fields": {
+      "invoice_number": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "date": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "total": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "gstin": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "po_number": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "EX009": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674,
+     "fields": {
+      "date": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "venue": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "EX011": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.00029999500839039683,
+     "fields": {
+      "contact_name": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "email": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "phone": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "EX012": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674,
+     "fields": {
+      "leave_type": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "from_date": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "to_date": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "applicant": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "approver": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "EX017": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674,
+     "fields": {
+      "net_salary": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "deductions": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "month": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "bonus": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "EX021": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674,
+     "fields": {
+      "room": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "issue": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "reported_by": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "date": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "EX024": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674,
+     "fields": {
+      "name": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "student_id": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "programme": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "XE002": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.0005999972927384079,
+     "fields": {
+      "severity": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "category": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "XE004": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "rep": 1,
+     "wall_ms": 0.000300002284348011,
+     "fields": {
+      "severity": [
+       null,
+       "NO_OUTPUT"
+      ],
+      "category": [
+       null,
+       "NO_OUTPUT"
+      ]
+     }
+    }
+   ]
+  },
+  "SP006": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000300002284348011
+    }
+   ]
+  },
+  "SP008": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000300002284348011
+    }
+   ]
+  },
+  "SG003": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000300002284348011
+    }
+   ]
+  },
+  "SD004": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.00029999500839039683
+    }
+   ]
+  },
+  "SD005": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  },
+  "SY002": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  },
+  "SY005": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  },
+  "SY007": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000300002284348011
+    }
+   ]
+  },
+  "SY008": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  },
+  "SN002": {
+   "deterministic_fix1": [
+    {
+     "outcome": "NO_OUTPUT",
+     "correct": false,
+     "suppressed_only": false,
+     "rep": 1,
+     "wall_ms": 0.000200001522898674
+    }
+   ]
+  }
+ },
+ "meta": []
+}

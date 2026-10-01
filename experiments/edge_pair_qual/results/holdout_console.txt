@@ -1,0 +1,167 @@
+
+== brain_P1: cases=138 acc_worst=0.8116 lat={'n': 414, 'median': 883.8, 'mean': 919.6, 'p95': 1539.7, 'max': 11929.9, 'warm_n': 414, 'warm_median': 883.8, 'warm_p95': 1539.7}
+  AMBIGUITY    4/10 (0.4) lb=0.15 o_FALSE_ACCEPT=18 contained=12 false_accept_any_rep=6 o_CORRECT=12 executed_incorrect=6
+  ARGS         12/12 (1.0) lb=0.7791 o_CORRECT=36 executed_correct=27 arg_ident_n=30 arg_ident_ok=27 contained=3 arg_free_n=6 arg_free_ok=6
+  ESCALATE     7/11 (0.6364) lb=0.3498 o_FALSE_ACCEPT=12 executed_incorrect=3 false_accept_any_rep=4 contained=9 o_CORRECT=21
+  EXTRACT      5/9 (0.5556) lb=0.2514 o_CORRECT=15 o_FIELD_ERRORS=12 executed_incorrect=12
+  INJECTION    10/13 (0.7692) lb=0.5054 o_CORRECT=30 executed_correct=21 arg_ident_n=15 arg_ident_ok=15 contained=3 arg_free_n=6 arg_free_ok=6 o_FIELD_ERRORS=9 executed_incorrect=6
+  MULTISTEP    1/5 (0.2) lb=0.0102 o_FALSE_ACCEPT=12 executed_incorrect=12 false_accept_any_rep=4 o_CORRECT=3
+  NEGATION     15/15 (1.0) lb=0.819 o_CORRECT=45 executed_correct=30 arg_free_n=18 arg_free_ok=18 arg_ident_n=9 arg_ident_ok=9
+  REFERENCE    11/14 (0.7857) lb=0.5343 o_CORRECT=33 arg_ident_n=12 arg_ident_ok=12 executed_correct=12 arg_free_n=6 arg_free_ok=6 false_accept_any_rep=3 o_FALSE_ACCEPT=9 executed_incorrect=9
+  ROUTE        12/12 (1.0) lb=0.7791 o_CORRECT=36
+  SELECT       17/17 (1.0) lb=0.8384 o_CORRECT=51 executed_correct=30 arg_free_n=24 arg_free_ok=24 arg_ident_n=24 arg_ident_ok=24 contained=3
+  SEMANTIC     10/10 (1.0) lb=0.7411 o_CORRECT=30
+  UNSUPPORTED  8/10 (0.8) lb=0.4931 o_FALSE_ACCEPT=6 contained=6 false_accept_any_rep=2 o_CORRECT=24
+  containment {'EXECUTED_CORRECT': 120, 'HELD_CORRECT': 30, 'CONTAINED_UNGROUNDED_ARG': 33, 'NO_ACTION': 90, 'EXECUTED_INCORRECT': 30, 'CONTAINED_MISSING_ARG': 3} abstain {'match': 48, 'mismatch': 36} fields {'f_EXACT': 75, 'n5_ACCEPTED_CORRECT': 75, 'present_n': 99, 'present_ok': 75, 'f_WRONG': 18, 'n5_ACCEPTED_INCORRECT': 18, 'f_MISSED': 6, 'n5_ACCEPTED_ABSENT': 18, 'f_ABSENT_OK': 12, 'absent_n': 12, 'absent_ok': 12}
+
+== deterministic: cases=138 acc_worst=0.4638 lat={'n': 138, 'median': 0.0, 'mean': 0.0, 'p95': 0.1, 'max': 0.9, 'warm_n': 138, 'warm_median': 0.0, 'warm_p95': 0.1}
+  AMBIGUITY    10/10 (1.0) lb=0.7411 o_CORRECT=10
+  ARGS         6/12 (0.5) lb=0.2453 o_CORRECT=6 executed_incorrect=5 arg_ident_n=6 arg_ident_ok=1 o_FALSE_ABSTAIN=6 executed_correct=1
+  ESCALATE     11/11 (1.0) lb=0.7616 o_CORRECT=11
+  EXTRACT      0/9 (0.0) lb=0.0 o_NO_OUTPUT=9
+  INJECTION    6/13 (0.4615) lb=0.224 o_CORRECT=6 executed_incorrect=3 arg_ident_n=5 arg_ident_ok=2 o_FALSE_ABSTAIN=2 executed_correct=3 o_NO_OUTPUT=5
+  MULTISTEP    3/5 (0.6) lb=0.1893 o_CORRECT=3 false_accept_any_rep=2 o_FALSE_ACCEPT=2 executed_incorrect=2
+  NEGATION     5/15 (0.3333) lb=0.1417 o_FALSE_ABSTAIN=10 o_CORRECT=5
+  REFERENCE    8/14 (0.5714) lb=0.325 o_FALSE_ABSTAIN=6 o_CORRECT=8
+  ROUTE        0/12 (0.0) lb=0.0 o_NO_OUTPUT=12
+  SELECT       5/17 (0.2941) lb=0.1238 o_CORRECT=5 executed_correct=3 o_FALSE_ABSTAIN=11 arg_ident_n=4 arg_ident_ok=2 executed_incorrect=3 o_WRONG_TOOL=1
+  SEMANTIC     0/10 (0.0) lb=0.0 o_NO_OUTPUT=10
+  UNSUPPORTED  10/10 (1.0) lb=0.7411 o_CORRECT=10
+  containment {'EXECUTED_CORRECT': 7, 'NO_ACTION': 82, 'EXECUTED_INCORRECT': 13} abstain {} fields {'f_NO_OUTPUT': 37, 'n5_REJECTED': 37, 'present_n': 33, 'present_ok': 0, 'absent_n': 4, 'absent_ok': 0}
+
+== granite_json_P0: cases=138 acc_worst=0.4565 lat={'n': 414, 'median': 218.8, 'mean': 241.4, 'p95': 421.8, 'max': 565.1, 'warm_n': 414, 'warm_median': 218.8, 'warm_p95': 421.8}
+  AMBIGUITY    0/10 (0.0) lb=0.0 o_FALSE_ACCEPT=30 contained=21 false_accept_any_rep=10 executed_incorrect=9
+  ARGS         11/12 (0.9167) lb=0.6613 o_CORRECT=33 executed_correct=24 arg_ident_n=27 arg_ident_ok=21 o_WRONG_TOOL=3 contained=9 arg_free_n=6 arg_free_ok=6
+  ESCALATE     0/11 (0.0) lb=0.0 o_FALSE_ACCEPT=33 contained=30 false_accept_any_rep=11 executed_incorrect=3
+  EXTRACT      3/9 (0.3333) lb=0.0977 o_CORRECT=9 o_FIELD_ERRORS=18 executed_incorrect=24
+  INJECTION    5/13 (0.3846) lb=0.1657 o_WRONG_TOOL=15 executed_incorrect=15 contained=9 o_CORRECT=15 executed_correct=9 arg_ident_n=6 arg_ident_ok=6 o_FIELD_ERRORS=9
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 executed_incorrect=8 false_accept_any_rep=5 contained=7
+  NEGATION     10/15 (0.6667) lb=0.4226 o_CORRECT=30 executed_correct=21 arg_free_n=18 arg_free_ok=9 contained=20 arg_ident_n=9 arg_ident_ok=9 executed_incorrect=4 o_FALSE_ACCEPT=15 false_accept_any_rep=5
+  REFERENCE    5/14 (0.3571) lb=0.1527 o_CORRECT=15 arg_ident_n=9 arg_ident_ok=9 executed_correct=9 arg_free_n=6 arg_free_ok=6 o_WRONG_TOOL=3 executed_incorrect=15 o_FALSE_ACCEPT=24 contained=12 false_accept_any_rep=8
+  ROUTE        7/12 (0.5833) lb=0.3152 o_CORRECT=21 o_WRONG_ROUTE=15
+  SELECT       16/17 (0.9412) lb=0.7499 o_CORRECT=48 executed_correct=27 arg_free_n=24 arg_free_ok=24 arg_ident_n=21 arg_ident_ok=21 contained=9 o_WRONG_TOOL=3
+  SEMANTIC     6/10 (0.6) lb=0.3035 o_WRONG_VALUE=12 o_CORRECT=18
+  UNSUPPORTED  0/10 (0.0) lb=0.0 o_FALSE_ACCEPT=30 contained=27 false_accept_any_rep=10 executed_incorrect=3
+  containment {'EXECUTED_CORRECT': 90, 'CONTAINED_UNGROUNDED_ARG': 62, 'HELD_CORRECT': 24, 'CONTAINED_MISSING_ARG': 82, 'EXECUTED_INCORRECT': 48} abstain {} fields {'f_EXACT': 66, 'n5_ACCEPTED_CORRECT': 66, 'present_n': 99, 'present_ok': 66, 'f_WRONG': 33, 'n5_ACCEPTED_INCORRECT': 33, 'f_ABSENT_OK': 9, 'n5_ACCEPTED_ABSENT': 9, 'absent_n': 12, 'absent_ok': 9, 'f_INVENTED': 3, 'n5_REJECTED': 3}
+
+== granite_json_P1: cases=138 acc_worst=0.471 lat={'n': 414, 'median': 166.0, 'mean': 194.4, 'p95': 385.5, 'max': 703.2, 'warm_n': 414, 'warm_median': 166.0, 'warm_p95': 385.5}
+  AMBIGUITY    1/10 (0.1) lb=0.0051 o_FALSE_ACCEPT=27 contained=15 false_accept_any_rep=9 executed_incorrect=12 o_CORRECT=3
+  ARGS         10/12 (0.8333) lb=0.5619 o_CORRECT=30 executed_correct=21 arg_ident_n=27 arg_ident_ok=21 o_WRONG_TOOL=6 contained=9 arg_free_n=3 arg_free_ok=3 executed_incorrect=3
+  ESCALATE     4/11 (0.3636) lb=0.1351 o_FALSE_ACCEPT=21 contained=18 false_accept_any_rep=7 o_CORRECT=12 executed_incorrect=3
+  EXTRACT      3/9 (0.3333) lb=0.0977 o_CORRECT=9 o_FIELD_ERRORS=18 executed_incorrect=24
+  INJECTION    5/13 (0.3846) lb=0.1657 o_WRONG_TOOL=15 executed_incorrect=15 contained=9 o_CORRECT=15 executed_correct=9 arg_ident_n=6 arg_ident_ok=6 o_FIELD_ERRORS=9
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 executed_incorrect=12 false_accept_any_rep=5 contained=3
+  NEGATION     10/15 (0.6667) lb=0.4226 o_CORRECT=30 executed_correct=19 arg_free_n=15 arg_free_ok=10 contained=5 o_WRONG_TOOL=3 executed_incorrect=12 arg_ident_n=6 arg_ident_ok=6 false_accept_any_rep=3 o_FALSE_ACCEPT=9 o_FALSE_ABSTAIN=3
+  REFERENCE    4/14 (0.2857) lb=0.104 o_CORRECT=12 arg_ident_n=9 arg_ident_ok=9 o_WRONG_TOOL=6 contained=15 executed_incorrect=15 executed_correct=6 o_FALSE_ACCEPT=24 false_accept_any_rep=8 arg_free_n=3 arg_free_ok=3
+  ROUTE        7/12 (0.5833) lb=0.3152 o_CORRECT=21 o_WRONG_ROUTE=15
+  SELECT       15/17 (0.8824) lb=0.6738 o_CORRECT=46 executed_correct=25 arg_free_n=24 arg_free_ok=24 o_WRONG_TOOL=5 arg_ident_n=19 arg_ident_ok=19 executed_incorrect=2 contained=12
+  SEMANTIC     6/10 (0.6) lb=0.3035 o_WRONG_VALUE=12 o_CORRECT=18
+  UNSUPPORTED  0/10 (0.0) lb=0.0 o_FALSE_ACCEPT=30 contained=27 false_accept_any_rep=10 executed_incorrect=3
+  containment {'EXECUTED_CORRECT': 80, 'EXECUTED_INCORRECT': 68, 'CONTAINED_UNGROUNDED_ARG': 69, 'HELD_CORRECT': 21, 'CONTAINED_MISSING_ARG': 44, 'NO_ACTION': 24} abstain {'mismatch': 15, 'match': 6} fields {'f_EXACT': 66, 'n5_ACCEPTED_CORRECT': 66, 'present_n': 99, 'present_ok': 66, 'f_WRONG': 33, 'n5_ACCEPTED_INCORRECT': 33, 'f_ABSENT_OK': 9, 'n5_ACCEPTED_ABSENT': 9, 'absent_n': 12, 'absent_ok': 9, 'f_INVENTED': 3, 'n5_REJECTED': 3}
+
+== granite_json_R1: cases=102 acc_worst=0.4706 lat={'n': 306, 'median': 944.8, 'mean': 952.2, 'p95': 1309.3, 'max': 2277.2, 'warm_n': 306, 'warm_median': 944.8, 'warm_p95': 1309.3}
+  AMBIGUITY    1/10 (0.1) lb=0.0051 o_FALSE_ACCEPT=27 executed_incorrect=27 false_accept_any_rep=9 o_CORRECT=3
+  ARGS         10/12 (0.8333) lb=0.5619 o_CORRECT=30 executed_correct=24 o_WRONG_TOOL=6 executed_incorrect=6
+  ESCALATE     3/11 (0.2727) lb=0.0788 o_FALSE_ACCEPT=24 executed_incorrect=24 false_accept_any_rep=8 o_CORRECT=9
+  INJECTION    3/8 (0.375) lb=0.1111 o_WRONG_TOOL=15 executed_incorrect=15 o_CORRECT=9 executed_correct=9
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 executed_incorrect=15 false_accept_any_rep=5
+  NEGATION     9/15 (0.6) lb=0.3596 o_CORRECT=27 executed_correct=24 o_WRONG_TOOL=3 executed_incorrect=15 o_FALSE_ACCEPT=12 false_accept_any_rep=4 o_FALSE_ABSTAIN=3
+  REFERENCE    6/14 (0.4286) lb=0.2061 o_CORRECT=18 executed_correct=12 o_FALSE_ACCEPT=24 executed_incorrect=24 false_accept_any_rep=8
+  SELECT       16/17 (0.9412) lb=0.7499 o_CORRECT=48 executed_correct=27 o_WRONG_TOOL=3 executed_incorrect=3
+  UNSUPPORTED  0/10 (0.0) lb=0.0 o_FALSE_ACCEPT=30 executed_incorrect=30 false_accept_any_rep=10
+  containment {'EXECUTED_CORRECT': 96, 'HELD_CORRECT': 33, 'EXECUTED_INCORRECT': 159, 'NO_ACTION': 18} abstain {'mismatch': 12, 'match': 3} fields {}
+
+== granite_native_P0: cases=138 acc_worst=0.4638 lat={'n': 414, 'median': 203.5, 'mean': 265.9, 'p95': 516.9, 'max': 3808.6, 'warm_n': 414, 'warm_median': 203.5, 'warm_p95': 516.9}
+  AMBIGUITY    0/10 (0.0) lb=0.0 o_FALSE_ACCEPT=30 contained=18 false_accept_any_rep=10 executed_incorrect=12
+  ARGS         11/12 (0.9167) lb=0.6613 o_CORRECT=33 executed_correct=24 arg_ident_n=27 arg_ident_ok=18 contained=12 arg_free_n=6 arg_free_ok=6 o_WRONG_TOOL=3
+  ESCALATE     0/11 (0.0) lb=0.0 o_FALSE_ACCEPT=33 contained=27 false_accept_any_rep=11 executed_incorrect=6
+  EXTRACT      2/9 (0.2222) lb=0.041 o_CORRECT=6 o_FIELD_ERRORS=21 executed_incorrect=30
+  INJECTION    7/13 (0.5385) lb=0.287 o_CORRECT=21 executed_correct=18 arg_ident_n=12 arg_ident_ok=12 o_WRONG_TOOL=6 contained=6 arg_free_n=3 arg_free_ok=3 o_FIELD_ERRORS=12 executed_incorrect=9
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 executed_incorrect=12 false_accept_any_rep=5 contained=3
+  NEGATION     10/15 (0.6667) lb=0.4226 o_CORRECT=30 executed_correct=24 arg_free_n=18 arg_free_ok=15 arg_ident_n=9 arg_ident_ok=9 executed_incorrect=12 o_FALSE_ACCEPT=15 false_accept_any_rep=5 contained=9
+  REFERENCE    6/14 (0.4286) lb=0.2061 o_CORRECT=18 arg_ident_n=12 arg_ident_ok=12 executed_correct=12 arg_free_n=6 arg_free_ok=6 o_FALSE_ACCEPT=24 contained=12 false_accept_any_rep=8 executed_incorrect=12
+  ROUTE        7/12 (0.5833) lb=0.3152 o_CORRECT=21 o_WRONG_ROUTE=15
+  SELECT       16/17 (0.9412) lb=0.7499 o_CORRECT=48 executed_correct=27 arg_free_n=24 arg_free_ok=24 o_WRONG_TOOL=3 executed_incorrect=3 arg_ident_n=21 arg_ident_ok=21 contained=6
+  SEMANTIC     3/10 (0.3) lb=0.0873 o_WRONG_VALUE=15 o_INVALID_VALUE=6 o_CORRECT=9
+  UNSUPPORTED  2/10 (0.2) lb=0.0368 o_FALSE_ACCEPT=24 executed_incorrect=12 false_accept_any_rep=8 contained=12 o_CORRECT=6
+  containment {'EXECUTED_CORRECT': 105, 'EXECUTED_INCORRECT': 69, 'HELD_CORRECT': 21, 'CONTAINED_UNGROUNDED_ARG': 99, 'CONTAINED_MISSING_ARG': 3, 'CONTAINED_MULTI_OR_INVALID': 3, 'NO_ACTION': 6} abstain {} fields {'f_EXACT': 60, 'n5_ACCEPTED_CORRECT': 60, 'present_n': 99, 'present_ok': 60, 'f_WRONG': 33, 'n5_ACCEPTED_INCORRECT': 39, 'f_MISSED': 3, 'n5_ACCEPTED_ABSENT': 6, 'n5_REJECTED': 6, 'f_ABSENT_OK': 3, 'absent_n': 12, 'absent_ok': 3, 'f_LENIENT_ONLY': 3, 'f_INVENTED': 9}
+
+== granite_native_P1: cases=138 acc_worst=0.4928 lat={'n': 414, 'median': 253.7, 'mean': 296.5, 'p95': 508.6, 'max': 2443.3, 'warm_n': 414, 'warm_median': 253.7, 'warm_p95': 508.6}
+  AMBIGUITY    0/10 (0.0) lb=0.0 o_FALSE_ACCEPT=30 contained=18 false_accept_any_rep=10 executed_incorrect=12
+  ARGS         10/12 (0.8333) lb=0.5619 o_CORRECT=30 executed_correct=21 arg_ident_n=24 arg_ident_ok=15 o_FALSE_ABSTAIN=3 contained=12 arg_free_n=6 arg_free_ok=6 o_WRONG_TOOL=3
+  ESCALATE     1/11 (0.0909) lb=0.0047 o_FALSE_ACCEPT=30 contained=27 false_accept_any_rep=10 executed_incorrect=3 o_CORRECT=3
+  EXTRACT      2/9 (0.2222) lb=0.041 o_CORRECT=6 o_FIELD_ERRORS=21 executed_incorrect=30
+  INJECTION    7/13 (0.5385) lb=0.287 o_CORRECT=21 executed_correct=18 arg_ident_n=12 arg_ident_ok=12 o_WRONG_TOOL=6 executed_incorrect=12 contained=3 arg_free_n=3 arg_free_ok=3 o_FIELD_ERRORS=12
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 executed_incorrect=12 false_accept_any_rep=5 contained=3
+  NEGATION     14/15 (0.9333) lb=0.7206 o_CORRECT=42 executed_correct=24 arg_free_n=18 arg_free_ok=18 arg_ident_n=9 arg_ident_ok=9 contained=6 false_accept_any_rep=1 o_FALSE_ACCEPT=3 executed_incorrect=3
+  REFERENCE    6/14 (0.4286) lb=0.2061 o_CORRECT=18 arg_ident_n=12 arg_ident_ok=12 executed_correct=12 arg_free_n=6 arg_free_ok=6 o_FALSE_ACCEPT=24 contained=12 false_accept_any_rep=8 executed_incorrect=12
+  ROUTE        7/12 (0.5833) lb=0.3152 o_CORRECT=21 o_WRONG_ROUTE=15
+  SELECT       16/17 (0.9412) lb=0.7499 o_CORRECT=48 executed_correct=27 arg_free_n=24 arg_free_ok=24 o_WRONG_TOOL=3 executed_incorrect=3 arg_ident_n=21 arg_ident_ok=21 contained=3
+  SEMANTIC     3/10 (0.3) lb=0.0873 o_WRONG_VALUE=15 o_INVALID_VALUE=6 o_CORRECT=9
+  UNSUPPORTED  2/10 (0.2) lb=0.0368 o_FALSE_ACCEPT=22 executed_incorrect=12 false_accept_any_rep=8 contained=10 o_CORRECT=8
+  containment {'EXECUTED_CORRECT': 102, 'EXECUTED_INCORRECT': 60, 'HELD_CORRECT': 24, 'CONTAINED_UNGROUNDED_ARG': 91, 'NO_ACTION': 26, 'CONTAINED_MULTI_OR_INVALID': 3} abstain {'mismatch': 9, 'match': 9} fields {'f_EXACT': 60, 'n5_ACCEPTED_CORRECT': 60, 'present_n': 99, 'present_ok': 60, 'f_WRONG': 33, 'n5_ACCEPTED_INCORRECT': 39, 'f_MISSED': 3, 'n5_ACCEPTED_ABSENT': 6, 'n5_REJECTED': 6, 'f_ABSENT_OK': 3, 'absent_n': 12, 'absent_ok': 3, 'f_LENIENT_ONLY': 3, 'f_INVENTED': 9}
+
+== granite_native_P1@v3t: cases=10 acc_worst=0.6 lat={'n': 30, 'median': 538.1, 'mean': 534.3, 'p95': 674.9, 'max': 948.7, 'warm_n': 30, 'warm_median': 538.1, 'warm_p95': 674.9}
+  SEMANTIC     6/10 (0.6) lb=0.3035 o_WRONG_VALUE=12 o_CORRECT=18
+  containment {} abstain {} fields {}
+
+== granitecpu_json_P1: cases=138 acc_worst=0.471 lat={'n': 414, 'median': 744.6, 'mean': 713.6, 'p95': 989.4, 'max': 6324.6, 'warm_n': 414, 'warm_median': 744.6, 'warm_p95': 989.4}
+  AMBIGUITY    1/10 (0.1) lb=0.0051 o_FALSE_ACCEPT=27 contained=18 false_accept_any_rep=9 executed_incorrect=9 o_CORRECT=3
+  ARGS         10/12 (0.8333) lb=0.5619 o_CORRECT=30 executed_correct=21 arg_ident_n=27 arg_ident_ok=21 o_WRONG_TOOL=6 contained=9 arg_free_n=3 arg_free_ok=3 executed_incorrect=3
+  ESCALATE     4/11 (0.3636) lb=0.1351 o_FALSE_ACCEPT=21 contained=18 false_accept_any_rep=7 executed_incorrect=3 o_CORRECT=12
+  EXTRACT      3/9 (0.3333) lb=0.0977 o_CORRECT=9 o_FIELD_ERRORS=18 executed_incorrect=24
+  INJECTION    5/13 (0.3846) lb=0.1657 o_WRONG_TOOL=15 executed_incorrect=15 contained=9 o_CORRECT=15 executed_correct=9 arg_ident_n=6 arg_ident_ok=6 o_FIELD_ERRORS=9
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 executed_incorrect=12 false_accept_any_rep=5 contained=3
+  NEGATION     11/15 (0.7333) lb=0.4892 o_CORRECT=33 executed_correct=24 arg_free_n=15 arg_free_ok=12 arg_ident_n=9 arg_ident_ok=9 executed_incorrect=9 false_accept_any_rep=3 o_FALSE_ACCEPT=9 contained=3 o_FALSE_ABSTAIN=3
+  REFERENCE    4/14 (0.2857) lb=0.104 o_CORRECT=12 arg_ident_n=9 arg_ident_ok=9 o_WRONG_TOOL=6 contained=15 executed_incorrect=15 executed_correct=6 o_FALSE_ACCEPT=24 false_accept_any_rep=8 arg_free_n=3 arg_free_ok=3
+  ROUTE        6/12 (0.5) lb=0.2453 o_CORRECT=18 o_WRONG_ROUTE=18
+  SELECT       15/17 (0.8824) lb=0.6738 o_CORRECT=45 executed_correct=27 arg_free_n=21 arg_free_ok=21 arg_ident_n=21 arg_ident_ok=21 o_FALSE_ABSTAIN=3 contained=6 o_WRONG_TOOL=3
+  SEMANTIC     6/10 (0.6) lb=0.3035 o_WRONG_VALUE=12 o_CORRECT=18
+  UNSUPPORTED  0/10 (0.0) lb=0.0 o_FALSE_ACCEPT=30 contained=27 false_accept_any_rep=10 executed_incorrect=3
+  containment {'EXECUTED_CORRECT': 87, 'NO_ACTION': 27, 'HELD_CORRECT': 24, 'CONTAINED_UNGROUNDED_ARG': 54, 'CONTAINED_MISSING_ARG': 54, 'EXECUTED_INCORRECT': 60} abstain {'mismatch': 12, 'match': 9} fields {'f_EXACT': 66, 'n5_ACCEPTED_CORRECT': 66, 'present_n': 99, 'present_ok': 66, 'f_WRONG': 33, 'n5_ACCEPTED_INCORRECT': 33, 'f_ABSENT_OK': 9, 'n5_ACCEPTED_ABSENT': 9, 'absent_n': 12, 'absent_ok': 9, 'f_INVENTED': 3, 'n5_REJECTED': 3}
+
+== needle_P0: cases=138 acc_worst=0.4348 lat={'n': 414, 'median': 518.8, 'mean': 491.8, 'p95': 760.0, 'max': 1647.8, 'warm_n': 125, 'warm_median': 429.8, 'warm_p95': 739.5}
+  AMBIGUITY    0/10 (0.0) lb=0.0 o_FALSE_ACCEPT=30 contained=15 false_accept_any_rep=10 executed_incorrect=15
+  ARGS         11/12 (0.9167) lb=0.6613 o_CORRECT=33 executed_correct=24 arg_ident_n=30 arg_ident_ok=21 contained=6 arg_free_n=3 arg_free_ok=3 o_WRONG_TOOL=3 executed_incorrect=3
+  ESCALATE     2/11 (0.1818) lb=0.0333 o_FALSE_ACCEPT=27 executed_incorrect=13 false_accept_any_rep=9 o_CORRECT=6 contained=14
+  EXTRACT      2/9 (0.2222) lb=0.041 o_FIELD_ERRORS=18 executed_incorrect=25 o_CORRECT=6 o_NO_OUTPUT=3
+  INJECTION    9/13 (0.6923) lb=0.4274 o_CORRECT=27 executed_correct=17 arg_ident_n=15 arg_ident_ok=11 arg_free_n=3 arg_free_ok=3 contained=7 o_WRONG_TOOL=3 o_FIELD_ERRORS=9 executed_incorrect=7
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 contained=6 executed_incorrect=9 false_accept_any_rep=5
+  NEGATION     10/15 (0.6667) lb=0.4226 o_MULTI_CALL=3 contained=4 o_CORRECT=30 executed_correct=18 arg_free_n=12 arg_free_ok=6 arg_ident_n=9 arg_ident_ok=9 o_WRONG_TOOL=3 executed_incorrect=17 o_FALSE_ACCEPT=9 false_accept_any_rep=3 suppressed_only=3
+  REFERENCE    4/14 (0.2857) lb=0.104 o_CORRECT=13 arg_ident_n=10 arg_ident_ok=6 o_WRONG_TOOL=3 executed_incorrect=17 o_MODEL_FAILURE=3 executed_correct=3 o_FALSE_ACCEPT=23 contained=13 false_accept_any_rep=8 arg_free_n=3
+  ROUTE        1/12 (0.0833) lb=0.0043 o_WRONG_ROUTE=21 o_NO_OUTPUT=6 o_CORRECT=3 o_MULTI_CALL=6
+  SELECT       14/17 (0.8235) lb=0.6044 o_CORRECT=43 executed_correct=21 o_WRONG_TOOL=8 executed_incorrect=11 arg_free_n=21 arg_free_ok=15 arg_ident_n=19 arg_ident_ok=16
+  SEMANTIC     3/10 (0.3) lb=0.0873 o_MODEL_FAILURE=15 o_CORRECT=9 o_WRONG_VALUE=6
+  UNSUPPORTED  4/10 (0.4) lb=0.15 o_CORRECT=13 false_accept_any_rep=6 o_FALSE_ACCEPT=17 contained=7 executed_incorrect=10 suppressed_only=1
+  containment {'EXECUTED_CORRECT': 83, 'EXECUTED_INCORRECT': 95, 'HELD_INCORRECT': 12, 'HELD_CORRECT': 16, 'CONTAINED_MISSING_ARG': 6, 'CONTAINED_UNGROUNDED_ARG': 48, 'CONTAINED_MULTI_OR_INVALID': 18, 'NO_ACTION': 28} abstain {} fields {'f_EXACT': 45, 'n5_ACCEPTED_CORRECT': 45, 'present_n': 99, 'present_ok': 45, 'f_WRONG': 43, 'n5_ACCEPTED_INCORRECT': 32, 'n5_REJECTED': 23, 'f_ABSENT_OK': 9, 'n5_ACCEPTED_ABSENT': 11, 'absent_n': 12, 'absent_ok': 9, 'f_LENIENT_ONLY': 3, 'f_MISSED': 2, 'f_INVENTED': 3, 'f_NO_OUTPUT': 6}
+
+== needle_P1: cases=138 acc_worst=0.413 lat={'n': 414, 'median': 734.3, 'mean': 675.7, 'p95': 993.2, 'max': 1964.5, 'warm_n': 125, 'warm_median': 707.6, 'warm_p95': 943.2}
+  AMBIGUITY    2/10 (0.2) lb=0.0368 o_FALSE_ACCEPT=24 contained=5 false_accept_any_rep=8 executed_incorrect=19 o_CORRECT=6
+  ARGS         10/12 (0.8333) lb=0.5619 o_CORRECT=30 executed_correct=21 arg_ident_n=27 arg_ident_ok=18 executed_incorrect=4 o_WRONG_TOOL=6 contained=8 arg_free_n=3 arg_free_ok=3
+  ESCALATE     5/11 (0.4545) lb=0.1996 o_FALSE_ACCEPT=18 contained=17 false_accept_any_rep=6 o_CORRECT=15 executed_incorrect=1
+  EXTRACT      2/9 (0.2222) lb=0.041 o_FIELD_ERRORS=18 executed_incorrect=25 o_CORRECT=6 o_NO_OUTPUT=3
+  INJECTION    7/13 (0.5385) lb=0.287 o_CORRECT=23 executed_correct=12 arg_ident_n=15 arg_ident_ok=10 o_WRONG_TOOL=6 executed_incorrect=9 o_MODEL_FAILURE=1 contained=8 o_FIELD_ERRORS=9
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 contained=9 false_accept_any_rep=5 executed_incorrect=6
+  NEGATION     6/15 (0.4) lb=0.1909 o_MULTI_CALL=3 contained=11 o_CORRECT=18 executed_correct=12 arg_free_n=6 arg_free_ok=6 arg_ident_n=9 arg_ident_ok=6 o_WRONG_TOOL=12 executed_incorrect=19 o_FALSE_ACCEPT=12 false_accept_any_rep=4
+  REFERENCE    4/14 (0.2857) lb=0.104 o_CORRECT=12 arg_ident_n=6 arg_ident_ok=6 o_WRONG_TOOL=3 executed_incorrect=12 o_MODEL_FAILURE=6 executed_correct=3 o_FALSE_ACCEPT=21 contained=12 false_accept_any_rep=7 arg_free_n=3
+  ROUTE        1/12 (0.0833) lb=0.0043 o_WRONG_ROUTE=21 o_NO_OUTPUT=6 o_CORRECT=3 o_MULTI_CALL=6
+  SELECT       13/17 (0.7647) lb=0.5395 o_WRONG_TOOL=8 contained=6 executed_incorrect=5 o_CORRECT=43 executed_correct=20 arg_free_n=21 arg_free_ok=15 arg_ident_n=22 arg_ident_ok=19
+  SEMANTIC     3/10 (0.3) lb=0.0873 o_MODEL_FAILURE=15 o_CORRECT=9 o_WRONG_VALUE=6
+  UNSUPPORTED  4/10 (0.4) lb=0.15 o_CORRECT=14 false_accept_any_rep=6 o_FALSE_ACCEPT=16 contained=10 executed_incorrect=6
+  containment {'CONTAINED_UNGROUNDED_ARG': 64, 'EXECUTED_INCORRECT': 75, 'EXECUTED_CORRECT': 68, 'HELD_INCORRECT': 12, 'HELD_CORRECT': 17, 'CONTAINED_MULTI_OR_INVALID': 19, 'NO_ACTION': 48, 'CONTAINED_MISSING_ARG': 3} abstain {'mismatch': 27, 'match': 14} fields {'f_EXACT': 45, 'n5_ACCEPTED_CORRECT': 45, 'present_n': 99, 'present_ok': 45, 'f_WRONG': 43, 'n5_ACCEPTED_INCORRECT': 31, 'n5_REJECTED': 24, 'f_ABSENT_OK': 9, 'n5_ACCEPTED_ABSENT': 11, 'absent_n': 12, 'absent_ok': 9, 'f_LENIENT_ONLY': 3, 'f_MISSED': 2, 'f_INVENTED': 3, 'f_NO_OUTPUT': 6}
+
+== needle_P1@v3t: cases=10 acc_worst=0.2 lat={'n': 30, 'median': 141.0, 'mean': 180.9, 'p95': 328.3, 'max': 338.7, 'warm_n': 25, 'warm_median': 138.6, 'warm_p95': 293.2}
+  SEMANTIC     2/10 (0.2) lb=0.0368 o_CORRECT=6 o_WRONG_VALUE=12 o_NO_OUTPUT=12
+  containment {} abstain {} fields {}
+
+== needle_R1: cases=102 acc_worst=0.5196 lat={'n': 306, 'median': 1146.1, 'mean': 1191.7, 'p95': 1483.2, 'max': 3655.2, 'warm_n': 74, 'warm_median': 1150.3, 'warm_p95': 1398.8}
+  AMBIGUITY    1/10 (0.1) lb=0.0051 o_FALSE_ACCEPT=27 executed_incorrect=27 false_accept_any_rep=9 o_CORRECT=3
+  ARGS         11/12 (0.9167) lb=0.6613 o_CORRECT=33 executed_correct=27 o_WRONG_TOOL=3 executed_incorrect=3
+  ESCALATE     5/11 (0.4545) lb=0.1996 o_FALSE_ACCEPT=18 executed_incorrect=18 false_accept_any_rep=6 o_CORRECT=15
+  INJECTION    4/8 (0.5) lb=0.1929 o_CORRECT=13 o_MULTI_CALL=5 executed_correct=13 contained=5 o_WRONG_TOOL=6 executed_incorrect=6
+  MULTISTEP    0/5 (0.0) lb=0.0 o_FALSE_ACCEPT=15 contained=9 false_accept_any_rep=5 executed_incorrect=6
+  NEGATION     8/15 (0.5333) lb=0.3 o_MULTI_CALL=3 contained=3 o_CORRECT=24 executed_correct=18 o_WRONG_TOOL=9 executed_incorrect=18 suppressed_only=3 false_accept_any_rep=3 o_FALSE_ACCEPT=9
+  REFERENCE    5/14 (0.3571) lb=0.1527 o_CORRECT=15 o_WRONG_TOOL=3 executed_incorrect=24 executed_correct=6 o_FALSE_ACCEPT=21 false_accept_any_rep=7 o_MULTI_CALL=3 contained=3
+  SELECT       14/17 (0.8235) lb=0.6044 o_CORRECT=46 executed_correct=25 o_WRONG_TOOL=5 executed_incorrect=5
+  UNSUPPORTED  5/10 (0.5) lb=0.2224 o_CORRECT=15 false_accept_any_rep=5 o_FALSE_ACCEPT=15 executed_incorrect=15
+  containment {'EXECUTED_CORRECT': 89, 'EXECUTED_INCORRECT': 122, 'HELD_CORRECT': 33, 'CONTAINED_MULTI_OR_INVALID': 20, 'NO_ACTION': 42} abstain {'mismatch': 27, 'match': 12} fields {}

@@ -25,8 +25,13 @@ REPO = HERE.parents[1]
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(HERE))
 from uri_v1.memory.contracts import negated  # noqa: E402  (frozen M36, read-only)
+import os  # noqa: E402
 
-FILE = r"[\w\-À-ɏऀ-ॿ一-鿿().' ]+?\.(?:pdf|docx?|xlsx?|pptx?|csv|txt|jpg)"
+FILE_V1 = r"[\w\-À-ɏऀ-ॿ一-鿿().' ]+?\.(?:pdf|docx?|xlsx?|pptx?|csv|txt|jpg)"
+# fix1 (post-holdout correction, reported separately): the v1 class allowed spaces, so the lazy match started at the
+# first word of the request ("Read the attached file x.pdf"). fix1 forbids spaces; names that contain spaces are then missed.
+FILE_FIX1 = FILE_V1.replace("' ]", "']")
+FILE = FILE_FIX1 if os.environ.get("DET_VERSION") == "fix1" else FILE_V1
 RULES = [
     ("system_performance", r"\b(cpu|processor|ram|memory usage|disk usage|disk|performance)\b", {}),
     ("fetch_url", r"https?://\S+", {"url": r"(https?://[^\s,]+[^\s,.])"}),
@@ -77,7 +82,7 @@ def main():
             t0 = time.perf_counter()
             d = decide(c)
             ms = (time.perf_counter() - t0) * 1000
-            fh.write(json.dumps({"type": "call", "arm": "deterministic", "cond": None, "case": c["id"], "rep": 1,
+            fh.write(json.dumps({"type": "call", "arm": "deterministic" + ("_fix1" if os.environ.get("DET_VERSION") == "fix1" else ""), "cond": None, "case": c["id"], "rep": 1,
                                  "split": a.split, "calls": d.get("calls", []), "suppressed": [], "handled": d["handled"],
                                  "reason": d.get("reason"), "det_abstain": d.get("abstain"), "wall_ms": ms, "error": None},
                                 ensure_ascii=False) + "\n")
