@@ -60,3 +60,20 @@ I reran everything at `28fcbf9` itself:
 **Judgement: sound and in scope.** The test now guards tracked, committed code only. That is the code CI and reviewers see, and it is what the rule is about. The narrowing is that a new importer is not caught until it is staged. It cannot reach a commit uncaught, because a clean checkout makes every file tracked. The change removes a false failure caused by local scratch files; my own probe file hit this in round 1 (I-6).
 
 Qualification at `28fcbf9` was not rerun: no code, fixture or script changed since `0c56215`, where it passed 34/34.
+
+## Addendum 2: branch head `b6b2cb0` (2026-10-01; verdict holds: ACCEPT at `b6b2cb0`)
+
+`b6b2cb0` sits on `28fcbf9` and changes two files: `tests/test_dynamic_planning_attestation.py` and the implementation report. The test change replaces a `_DataclassParams(...)` constructor call, which needs 6 arguments on 3.11 and 10 on 3.12+, with `copy.copy(params)` and `frozen = False`. Nothing under `uri_v1/`, `scripts/` or `fixtures/` changed since `28fcbf9` (`code_changed_since_28fcbf9.txt` = 0), so the attestation logic is unchanged.
+
+| Check | Result | Evidence (`dynamic_planning_f2_recheck_0c56215/b6b2cb0/`) |
+|---|---|---|
+| Slice tests by Python version | 3.11: **147 passed**; 3.12: **147 passed**; 3.13: **147 passed** | `slice_by_python.txt` |
+| The fix addresses a real failure | The `28fcbf9` version of the attestation test: 3.11 31 passed; 3.13 **1 failed**, 30 passed | `old_test_by_python.txt` |
+| The tamper case still tampers | On 3.11 and 3.13 the copied params have `frozen=False` while the original stays `True`. Installing them gives `GENERATED_MISMATCH`, and restoring them attests again. | `tamper_check.txt` |
+| Genuine catalog on 3.13 | Attests, because the record digests are source-based. Seen in `tamper_check.txt` (restored → `None`) and in the 3.13 slice run. | same |
+| Full suite (3.11) | **1449 passed, 1 failed** (only the accepted `test_m36_and_frozen_files_unchanged`; 18 offenders, all slice paths), 9 skipped | `full_suite_summary.txt`, `guard_offenders.txt` |
+| Slice qualification (3.11) | exit 0, 34/34, all six counters 0, C33 semantic miss 1/1, gate passed. The result file differs only in latency (0 other lines). | `dp_qualification.txt`, `qual_nonlatency_diff_lines.txt` |
+| Governance | 37 passed, VALID | `governance.txt` |
+| Frozen files | `5bbf738..b6b2cb0` contains additions only; `verify.py` unchanged | `frozen.txt` |
+
+**Not run here:** the full suite and qualification on 3.12 and 3.13 (only the slice tests ran there; the venvs had only pytest and openpyxl), Windows, and `graphify update .`. None of these affects the verdict for a test-only change.
