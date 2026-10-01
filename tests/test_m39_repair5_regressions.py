@@ -208,7 +208,7 @@ def test_d9_authorized_edit_pin_ignores_autocrlf_line_endings(tmp_path, monkeypa
     subprocess.run(["git", "checkout", "-q", "--detach", head], cwd=dest, check=True)
     rel = "tests/test_m37_edge_resolution.py"
     target = dest / rel
-    # Force CRLF on disk (Linux git leaves LF even with autocrlf=true).
+    # Force CRLF on disk, whatever this git version checked out.
     target.write_bytes(target.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
     monkeypatch.setattr(boundaries, "ROOT", dest)
     assert boundaries._is_authorized_frozen_edit(rel)

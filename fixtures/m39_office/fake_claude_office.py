@@ -37,7 +37,8 @@ def main():
     scenario = os.environ.get("URI_FAKE_SCENARIO", "honest")
     find = os.environ.get("URI_FAKE_FIND", "")
     replace = os.environ.get("URI_FAKE_REPLACE", "")
-    emit({"type": "system", "subtype": "init", "session_id": "fake-session-m39", "tools": ["Read", "Edit"]})
+    emit({"type": "system", "subtype": "init", "session_id": "fake-session-m39", "tools": ["Read", "Edit"],
+          "apiKeySource": os.environ.get("URI_FAKE_API_KEY_SOURCE", "none")})
     emit({"type": "assistant", "message": {"model": "fake-model", "content": [{"type": "tool_use", "name": "Read", "input": {}}]}})
     script = _script()
     if scenario == "honest" and script is not None and find:
