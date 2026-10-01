@@ -21,6 +21,15 @@ param(
 $RepoRoot = $PSScriptRoot
 $ServerPidFile = Join-Path $RepoRoot "uri_workspace\uri_server.pid"
 $UiPidFile = Join-Path $RepoRoot "uri_workspace\uri_ui.pid"
+$UiExePath = Join-Path $RepoRoot "uri_ui\build\windows\x64\runner\Release\uri_ui.exe"
+$ServerScript = Join-Path $RepoRoot "run_desktop_server.py"
+
+# A PID file can be stale and its number reused by an unrelated process.
+# Only act on a PID whose executable / command line proves it is ours.
+function Test-OwnedServer([int]$ProcessId) {
+    $cim = Get-CimInstance Win32_Process -Filter "ProcessId=$ProcessId" -ErrorAction SilentlyContinue
+    return ($cim -and $cim.CommandLine -and $cim.CommandLine.IndexOf($ServerScript, [StringComparison]::OrdinalIgnoreCase) -ge 0)
+}
 
 Write-Output "==> Shutting down URI Desktop..."
 
@@ -29,10 +38,12 @@ if (Test-Path $UiPidFile) {
     $uiPid = (Get-Content $UiPidFile -ErrorAction SilentlyContinue).Trim()
     if ($uiPid -match "^\d+$") {
         $proc = Get-Process -Id ([int]$uiPid) -ErrorAction SilentlyContinue
-        if ($proc -and $proc.ProcessName -eq "uri_ui") {
+        $procPath = $null
+        if ($proc) { try { $procPath = $proc.Path } catch {} }
+        if ($proc -and $procPath -and ($procPath -ieq $UiExePath)) {
             Write-Output "Closing URI desktop app (PID $uiPid)..."
             $proc.CloseMainWindow() | Out-Null
-            Start-Sleep -Milliseconds 500
+            $proc.WaitForExit(3000) | Out-Null
             if (-not $proc.HasExited) {
                 Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
             }
@@ -49,6 +60,10 @@ if (Test-Path $ServerPidFile) {
     $serverPid = (Get-Content $ServerPidFile -ErrorAction SilentlyContinue).Trim()
     if ($serverPid -match "^\d+$") {
         $proc = Get-Process -Id ([int]$serverPid) -ErrorAction SilentlyContinue
+        if ($proc -and -not (Test-OwnedServer ([int]$serverPid))) {
+            Write-Output "PID $serverPid in the PID file is not this URI backend (stale PID file) - leaving it alone."
+            $proc = $null
+        }
         if ($proc) {
             Write-Output "Terminating URI backend server (PID $serverPid)..."
             Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
@@ -69,8 +84,7 @@ if ($conn) {
     Write-Output "Port $Port still has a listener (PID $owningPid)."
     # Only kill if we can verify it's a run_desktop_server.py process
     try {
-        $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId=$owningPid" -ErrorAction SilentlyContinue).CommandLine
-        if ($cmdLine -and $cmdLine -like "*run_desktop_server.py*") {
+        if (Test-OwnedServer ([int]$owningPid)) {
             Write-Output "Confirmed lingering desktop server - stopping PID $owningPid..."
             Stop-Process -Id $owningPid -Force -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 1

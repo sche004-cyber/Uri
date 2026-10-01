@@ -157,7 +157,7 @@ def _inventory_v1_capabilities() -> Dict[str, Any]:
         inventory["edge_registry"] = {
             "importable": True,
             "capabilities": caps,
-            "status": "QUALIFIED — deterministic capabilities available via canonical orchestrator",
+            "status": "MODULE_QUALIFIED_NOT_WIRED - M37 qualification is module-level; desktop /ask does not invoke uri_v1 on this line",
         }
     except Exception as exc:
         inventory["edge_registry"] = {"importable": False, "error": str(exc)}
@@ -171,7 +171,7 @@ def _inventory_v1_capabilities() -> Dict[str, Any]:
             "importable": True,
             "installed": probe.get("installed", False),
             "version": probe.get("version"),
-            "status": "AVAILABLE — requires ExecutionCapsule + HarnessRunner for genuine execution"
+            "status": "INSTALLED_NOT_WIRED - desktop /ask does not invoke the harness on this line"
             if probe.get("installed")
             else "NOT INSTALLED — Codex CLI binary not found",
         }
@@ -183,7 +183,7 @@ def _inventory_v1_capabilities() -> Dict[str, Any]:
         import uri_v1.turn.rar_deterministic as rar_det
         inventory["rar_deterministic"] = {
             "importable": True,
-            "status": "IMPORTABLE — available for reference resolution within canonical pipeline",
+            "status": "IMPORTABLE_NOT_WIRED - not invoked by desktop /ask on this line",
         }
     except Exception as exc:
         inventory["rar_deterministic"] = {"importable": False, "error": str(exc)}
@@ -193,7 +193,7 @@ def _inventory_v1_capabilities() -> Dict[str, Any]:
         import uri_v1.memory.log as mem_log
         inventory["memory_log"] = {
             "importable": True,
-            "status": "IMPORTABLE — available for memory recording within canonical pipeline",
+            "status": "IMPORTABLE_NOT_WIRED - not invoked by desktop /ask on this line",
         }
     except Exception as exc:
         inventory["memory_log"] = {"importable": False, "error": str(exc)}
@@ -203,7 +203,7 @@ def _inventory_v1_capabilities() -> Dict[str, Any]:
         from uri_v1.execution.harness.runner import HarnessRunner
         inventory["harness_runner"] = {
             "importable": True,
-            "status": "IMPORTABLE — available for capsule-based execution",
+            "status": "IMPORTABLE_NOT_WIRED - not invoked by desktop /ask on this line",
         }
     except Exception as exc:
         inventory["harness_runner"] = {"importable": False, "error": str(exc)}

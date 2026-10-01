@@ -28,8 +28,46 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(REPO_ROOT))
 
-os.environ.setdefault("URI_PROVIDER_KEY_SECRET", "uri_local_dev_secret_key_v1")
-os.environ.setdefault("URI_EXTERNAL_CREDENTIAL_SECRET", "uri_local_dev_credential_secret_v1")
+_LEGACY_PROVIDER_KEY_SECRET = "uri_local_dev_secret_key_v1"  # scripts/run_uri_server.py's default
+SECRETS_FILE = Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "URI" / "desktop_secrets.json"
+
+
+def _load_or_create_desktop_secrets() -> dict:
+    """Per-install encryption secrets, kept outside the repository.
+
+    Created once with random values. The provider-key secret keeps the
+    legacy literal only when this checkout already holds provider keys
+    encrypted with it (re-keying would make them unreadable); that is a
+    disclosed, pre-existing limitation. Environment variables still win.
+    """
+    import json
+    import secrets
+
+    try:
+        data = json.loads(SECRETS_FILE.read_text(encoding="utf-8"))
+        if isinstance(data.get("provider_key_secret"), str) and isinstance(data.get("external_credential_secret"), str):
+            return data
+    except (OSError, ValueError):
+        pass
+    users = REPO_ROOT / "uri_workspace" / "users"
+    legacy_provider_keys = users.is_dir() and any(users.glob("*/provider_keys.enc"))
+    data = {
+        "provider_key_secret": _LEGACY_PROVIDER_KEY_SECRET if legacy_provider_keys else secrets.token_urlsafe(32),
+        "provider_key_secret_is_legacy": bool(legacy_provider_keys),
+        "external_credential_secret": secrets.token_urlsafe(32),
+    }
+    SECRETS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    tmp = SECRETS_FILE.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data), encoding="utf-8")
+    os.replace(tmp, SECRETS_FILE)
+    return data
+
+
+if not (os.environ.get("URI_PROVIDER_KEY_SECRET") and os.environ.get("URI_EXTERNAL_CREDENTIAL_SECRET")):
+    _secrets = _load_or_create_desktop_secrets()
+    os.environ.setdefault("URI_PROVIDER_KEY_SECRET", _secrets["provider_key_secret"])
+    os.environ.setdefault("URI_EXTERNAL_CREDENTIAL_SECRET", _secrets["external_credential_secret"])
+    del _secrets
 # Desktop default: the EXPERIMENTAL harness-first social seam is on, so purely
 # social turns ("hi", "thanks") are answered by the local Edge chat model
 # instead of two Main Brain calls. Set URI_HARNESS_FIRST=0 to turn it off.
@@ -84,26 +122,30 @@ def _check_port_conflict(host: str, port: int) -> bool:
         sock.close()
 
 
-def _wait_for_bind_then_record_pid(host: str, port: int, timeout: float = 15.0) -> None:
-    """Background thread: wait until the server is actually listening,
-    then write the PID file. This ensures PID is recorded only after
-    a successful bind, not before."""
+def _this_process_listens_on(port: int) -> bool:
+    """True only when *this* process owns a listening socket on `port`
+    (not merely when something answers on it)."""
+    import psutil
+
+    try:
+        conns = psutil.Process(os.getpid()).net_connections(kind="inet")
+    except Exception:
+        return False
+    return any(c.status == psutil.CONN_LISTEN and c.laddr and c.laddr.port == port for c in conns)
+
+
+def _wait_for_bind_then_record_pid(host: str, port: int, timeout: float = 30.0) -> None:
+    """Background thread: write the PID file only once this process itself
+    owns the listening socket, so a listener that won a race for the port
+    can never be recorded as ours."""
     start = time.monotonic()
     while time.monotonic() - start < timeout:
         time.sleep(0.5)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1.0)
-        try:
-            result = sock.connect_ex((host, port))
-            if result == 0:
-                _record_pid()
-                print(f"PID {os.getpid()} recorded after successful bind to {host}:{port}", flush=True)
-                return
-        except Exception:
-            pass
-        finally:
-            sock.close()
-    print(f"WARNING: PID file NOT written — server did not bind to {host}:{port} within {timeout}s", file=sys.stderr, flush=True)
+        if _this_process_listens_on(port):
+            _record_pid()
+            print(f"PID {os.getpid()} recorded after successful bind to {host}:{port}", flush=True)
+            return
+    print(f"WARNING: PID file NOT written - this process did not bind {host}:{port} within {timeout}s", file=sys.stderr, flush=True)
 
 
 def _warm_edge_chat_model() -> None:

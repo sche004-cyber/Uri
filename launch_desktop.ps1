@@ -7,7 +7,7 @@
     2. Checks if the backend is already running and healthy at http://127.0.0.1:$Port/health.
     3. If a non-URI process occupies the port, ABORTS (does not start a competing server).
     4. If offline, starts run_desktop_server.py and waits for /health to confirm readiness.
-    5. Mutex is held until the UI process is confirmed running (not released before UI starts).
+    5. Mutex is held until the UI window appears (up to 15 s); a concurrent launch waits for it, then re-checks.
     6. Brings existing uri_ui window to the front or launches uri_ui.exe.
     7. Records launched UI PID alongside server PID for targeted shutdown.
 #>
@@ -42,8 +42,12 @@ function Write-Step($Message) {
 }
 
 function Activate-ExistingWindow {
-    $existing = Get-Process -Name $ProcessName -ErrorAction SilentlyContinue
-    if ($existing) {
+    # Only this checkout's UI build counts; a uri_ui.exe from another worktree is ignored.
+    $existing = @(Get-Process -Name $ProcessName -ErrorAction SilentlyContinue | Where-Object {
+        $path = $null; try { $path = $_.Path } catch {}
+        $path -and ($path -ieq $ExePath)
+    })
+    if ($existing.Count -gt 0) {
         Write-Step "URI desktop app is already open. Activating window..."
         try {
             Add-Type -Name Win32NativeWindow -Namespace Native -MemberDefinition @"
@@ -63,20 +67,41 @@ function Activate-ExistingWindow {
     return $false
 }
 
-# 1. Acquire Named Mutex for single-instance launch control
-$createdNew = $false
-$mutex = $null
-try {
-    $mutex = New-Object System.Threading.Mutex($true, $MutexName, [ref]$createdNew)
-}
-catch {
-    Write-Step "Could not allocate mutex; continuing with process check."
+function Test-OwnBackend {
+    # /health only proves *a* URI backend answers. Require /desktop/status to
+    # report this checkout before attaching the UI to it. Never stops it.
+    $ownerRoot = $null
+    try {
+        $st = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/desktop/status" -TimeoutSec 5 -ErrorAction Stop
+        $ownerRoot = $st.repo_root
+    }
+    catch {}
+    if (-not $ownerRoot) { return $false }
+    return ([IO.Path]::GetFullPath($ownerRoot).TrimEnd([char]92) -ieq [IO.Path]::GetFullPath($RepoRoot).TrimEnd([char]92))
 }
 
-if (-not $createdNew -and $null -ne $mutex) {
-    Write-Step "Another launch is already in progress. Activating window..."
-    Activate-ExistingWindow | Out-Null
-    exit 0
+# 1. Acquire Named Mutex for single-instance launch control. A launch that
+# finds another in progress waits for it (up to 90 s) and then re-checks the
+# real state, so it neither starts a duplicate nor reports success if the
+# first launch failed.
+$mutex = $null
+$haveMutex = $false
+try {
+    $mutex = New-Object System.Threading.Mutex($false, $MutexName)
+    try {
+        $haveMutex = $mutex.WaitOne(90000)
+    }
+    catch [System.Threading.AbandonedMutexException] {
+        $haveMutex = $true   # previous launcher died while holding it; we own it now
+    }
+}
+catch {
+    $mutex = $null
+    Write-Step "Could not allocate mutex; continuing with process check."
+}
+if ($null -ne $mutex -and -not $haveMutex) {
+    Write-Error "Another URI launch did not finish within 90 seconds. Aborting."
+    exit 1
 }
 
 try {
@@ -96,14 +121,8 @@ try {
         # A healthy /health only proves *a* URI backend is listening. Make sure it
         # is this checkout's desktop backend, not one started from another
         # worktree, before attaching the UI to it. Never stop it either way.
-        $ownerRoot = $null
-        try {
-            $st = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/desktop/status" -TimeoutSec 5 -ErrorAction Stop
-            $ownerRoot = $st.repo_root
-        }
-        catch {}
-        if (-not $ownerRoot -or ([IO.Path]::GetFullPath($ownerRoot).TrimEnd([char]92) -ne [IO.Path]::GetFullPath($RepoRoot).TrimEnd([char]92))) {
-            Write-Error "Port $Port is serving a URI backend that is not this desktop install ($RepoRoot; it reports '$ownerRoot'). Close that backend first. Aborting."
+        if (-not (Test-OwnBackend)) {
+            Write-Error "Port $Port is serving a URI backend that is not this desktop install ($RepoRoot). Close that backend first. Aborting."
             exit 1
         }
         Write-Step "Backend already active and healthy at $HealthUrl."
@@ -144,6 +163,10 @@ try {
             Write-Error "Backend failed to become healthy at $HealthUrl within 30 seconds."
             exit 1
         }
+        if (-not (Test-OwnBackend)) {
+            Write-Error "A backend answered on port $Port, but it is not the one this launcher started for $RepoRoot. Aborting."
+            exit 1
+        }
         Write-Step "Backend is ready."
     }
 
@@ -164,9 +187,9 @@ try {
             $uiProcess.Id | Out-File -FilePath $UiPidFile -Encoding utf8 -Force
             Write-Step "UI process started (PID $($uiProcess.Id))."
 
-            # Wait briefly for the UI window to appear before releasing mutex
+            # Hold the mutex until the UI window appears (up to 15 s)
             $windowWait = 0
-            while ($windowWait -lt 5) {
+            while ($windowWait -lt 30) {
                 Start-Sleep -Milliseconds 500
                 $windowWait++
                 try {
@@ -185,10 +208,7 @@ try {
 finally {
     # Release mutex AFTER UI is confirmed running
     if ($null -ne $mutex) {
-        try {
-            $mutex.ReleaseMutex()
-            $mutex.Dispose()
-        }
-        catch {}
+        try { if ($haveMutex) { $mutex.ReleaseMutex() } } catch {}
+        try { $mutex.Dispose() } catch {}
     }
 }
