@@ -109,7 +109,7 @@ try {
         Write-Step "Backend already active and healthy at $HealthUrl."
     }
     else {
-        # Check port conflict — ABORT if occupied by non-URI process
+        # Check port conflict - ABORT if occupied by non-URI process
         $portConflict = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
         if ($portConflict) {
             Write-Error "Port $Port is occupied by PID $($portConflict.OwningProcess) but /health is not responding. This is NOT a URI server. Aborting."
@@ -147,7 +147,7 @@ try {
         Write-Step "Backend is ready."
     }
 
-    # 3. Desktop Application Window — still under mutex protection
+    # 3. Desktop Application Window - still under mutex protection
     if (Activate-ExistingWindow) {
         Write-Step "Existing window activated."
     }

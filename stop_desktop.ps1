@@ -3,7 +3,7 @@
     Gracefully stops the URI Desktop application and backend server.
 
 .DESCRIPTION
-    Uses PID files for targeted shutdown — only terminates processes
+    Uses PID files for targeted shutdown - only terminates processes
     that THIS launcher started, not any process named "uri_ui".
 
     1. Stop the UI process tracked in uri_workspace/uri_ui.pid.
@@ -24,7 +24,7 @@ $UiPidFile = Join-Path $RepoRoot "uri_workspace\uri_ui.pid"
 
 Write-Output "==> Shutting down URI Desktop..."
 
-# 1. Stop Desktop UI — targeted by PID file
+# 1. Stop Desktop UI - targeted by PID file
 if (Test-Path $UiPidFile) {
     $uiPid = (Get-Content $UiPidFile -ErrorAction SilentlyContinue).Trim()
     if ($uiPid -match "^\d+$") {
@@ -41,10 +41,10 @@ if (Test-Path $UiPidFile) {
     Remove-Item $UiPidFile -Force -ErrorAction SilentlyContinue
 }
 else {
-    Write-Output "No UI PID file found — UI may not have been launched by this system."
+    Write-Output "No UI PID file found - UI may not have been launched by this system."
 }
 
-# 2. Stop Managed Backend — targeted by PID file
+# 2. Stop Managed Backend - targeted by PID file
 if (Test-Path $ServerPidFile) {
     $serverPid = (Get-Content $ServerPidFile -ErrorAction SilentlyContinue).Trim()
     if ($serverPid -match "^\d+$") {
@@ -58,10 +58,10 @@ if (Test-Path $ServerPidFile) {
     Remove-Item $ServerPidFile -Force -ErrorAction SilentlyContinue
 }
 else {
-    Write-Output "No server PID file found — backend may not have been started by this launcher."
+    Write-Output "No server PID file found - backend may not have been started by this launcher."
 }
 
-# 3. Check for lingering listener on port — but do NOT kill it if it's
+# 3. Check for lingering listener on port - but do NOT kill it if it's
 #    not ours (the PID file was our authority; without it, we don't own it)
 $conn = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
 if ($conn) {
@@ -71,16 +71,16 @@ if ($conn) {
     try {
         $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId=$owningPid" -ErrorAction SilentlyContinue).CommandLine
         if ($cmdLine -and $cmdLine -like "*run_desktop_server.py*") {
-            Write-Output "Confirmed lingering desktop server — stopping PID $owningPid..."
+            Write-Output "Confirmed lingering desktop server - stopping PID $owningPid..."
             Stop-Process -Id $owningPid -Force -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 1
         }
         else {
-            Write-Output "Listener is NOT a URI desktop server — leaving it alone."
+            Write-Output "Listener is NOT a URI desktop server - leaving it alone."
         }
     }
     catch {
-        Write-Output "Could not inspect lingering process — leaving it alone."
+        Write-Output "Could not inspect lingering process - leaving it alone."
     }
 }
 

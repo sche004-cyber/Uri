@@ -113,7 +113,10 @@ def _warm_edge_chat_model() -> None:
     first "Hi" fell back to the fixed line). Loopback Ollama only; any failure
     is logged and ignored - the seam still falls back safely."""
     try:
-        from uri_core.core.harness_first import edge_chat, seam
+        try:
+            from uri_core.core.harness_first import edge_chat, seam
+        except ImportError:
+            return  # seam not present on this line: nothing to warm
 
         if not seam.enabled() or not seam._loopback(edge_chat.OLLAMA_URL):
             return
