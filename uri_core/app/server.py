@@ -2210,13 +2210,16 @@ def _finalize_ask_response(
         serving_provider = payload.model_override["provider_id"]
         serving_model = payload.model_override["model"]
     _harness = result.get("_harness") or {}
-    if _harness and serving_provider is None:
-        # Harness-first turn: no Main Brain call happened. Report the Edge model
-        # (or URI itself) as the serving source, with its measured latency.
+    if _harness:
+        # Harness-first turn: no Main Brain call happened. _serving_model_for_turn
+        # falls back to the user's latest earlier Main Brain record when this turn
+        # wrote none, which would misattribute it here, so replace it entirely.
         serving_provider = "ollama (edge)" if _harness.get("edge_model") else "uri (deterministic)"
         serving_model = _harness.get("edge_model")
-        if model_total_ms is None and _harness.get("edge_model"):
-            model_total_ms = int(round(_harness.get("edge_ms") or 0))
+        serving_prompt_tokens = serving_eval_tokens = serving_duration_seconds = None
+        serving_calls = []
+        reasoning_ms = drafting_ms = None
+        model_total_ms = int(round(_harness.get("edge_ms") or 0)) if _harness.get("edge_model") else None
     try:
         context.orchestrator.conversation_history.annotate_latest_turn(
             payload.session_id,

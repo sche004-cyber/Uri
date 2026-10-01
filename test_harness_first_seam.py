@@ -92,3 +92,21 @@ class SeamTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FinalizeAttributionTests(unittest.TestCase):
+    def test_harness_turn_is_not_attributed_to_an_earlier_main_brain_call(self):
+        from uri_core.app import server
+        stale = {"provider_id": "ollama", "model": "qwen3.5:9b", "prompt_tokens": 9000, "eval_tokens": 50,
+                 "duration_seconds": 19.0, "calls": [{"role": "reasoning"}], "reasoning_ms": 16000,
+                 "drafting_ms": 2000, "model_total_ms": 18000}
+        result = {"status": "success", "session_id": "s1", "narrative": "Hi!", "response": {"message": "Hi!"},
+                  "_harness": {"class": "HARNESS_PLUS_EDGE", "edge_model": "qwen3:0.6b", "edge_ms": 80.0}}
+        with patch.object(server, "_serving_model_for_turn", return_value=stale):
+            out = server._finalize_ask_response(MagicMock(), None, _payload("hello"), result,
+                                                total_duration_seconds=0.09, turn_start_iso="2026-10-01T00:00:00")
+        self.assertEqual(out["serving_model"], "qwen3:0.6b")
+        self.assertEqual(out["serving_provider"], "ollama (edge)")
+        self.assertIsNone(out["serving_reasoning_duration_seconds"])
+        self.assertEqual(out["serving_calls"], [])
+        self.assertEqual(out["harness_route"]["class"], "HARNESS_PLUS_EDGE")

@@ -16,14 +16,14 @@ from uri_core.core import conversational_classifier as _conv
 
 MAX_WORDS = 9
 
-_GREETING = frozenset("hi hello hey hiya heya yo namaste namaskar greetings morning afternoon evening".split())
+_GREETING = frozenset("hi hii hello helo hey hiya heya yo namaste namaskar greetings morning afternoon evening".split())
 _THANKS = frozenset("thanks thank thx ty cheers appreciated appreciate grateful".split())
 _FAREWELL = frozenset("bye goodbye goodnight later cya farewell".split())
 _ACK = frozenset("ok okay okey k kk noted cool great awesome perfect nice fine alright sure gotcha understood".split())
-_SELF = frozenset("who what are you can do help me with your name".split())
+_SELF = frozenset("who what what's whats are you can do help me with your name".split())
 _FILLER = frozenset(
     "uri there so much a lot very again all for now that's thats it is how doing today the good night "
-    "see you take care have day nice to meet too and well i im i'm am fine got just tomorrow soon".split())
+    "see you take care have day nice to meet too and well i im i'm am fine got just tomorrow soon how's going helped that".split())
 _VOCAB = _GREETING | _THANKS | _FAREWELL | _ACK | _SELF | _FILLER
 
 _ACTION_HINT = re.compile(
@@ -38,11 +38,11 @@ def _intent_from_tokens(tokens: list[str]) -> str:
         return "farewell"
     if t & _THANKS:
         return "thanks"
-    if ("who" in t or "what" in t) and ("you" in t or "your" in t):
+    if t & {"who", "what", "what's", "whats"} and ("you" in t or "your" in t):
         return "about_uri"
     if t & _GREETING:
         return "greeting"
-    if "how" in t and "you" in t:
+    if "how" in t and "you" in t or {"you", "there"} <= t:
         return "greeting"
     return "acknowledgement"
 
@@ -57,12 +57,14 @@ def social_intent(text: str) -> Optional[str]:
         if pat.match(whole):
             if re.search(r"\bgood\s+night\b", whole, re.I):
                 return "farewell"
-            return ("greeting", "thanks", "farewell")[i] if i else "greeting"
+            if i == 1:   # the live pattern groups thanks with acknowledgements ("ok", "got it", "great")
+                return "thanks" if re.search(r"\b(thanks|thank|thx|ty|cheers)\b", whole, re.I) else "acknowledgement"
+            return ("greeting", "thanks", "farewell")[i]
     tokens = re.findall(r"[a-z']+", raw.casefold())
     if not tokens or len(tokens) > MAX_WORDS or any(t not in _VOCAB for t in tokens):
         return None
     social = _GREETING | _THANKS | _FAREWELL | _ACK
-    if not (set(tokens) & social) and not ({"who", "what"} & set(tokens) and {"you", "your"} & set(tokens)) \
+    if not (set(tokens) & social) and not ({"who", "what", "what's", "whats"} & set(tokens) and {"you", "your"} & set(tokens)) \
             and not ({"how", "you"} <= set(tokens)) and not ({"see", "you"} <= set(tokens)) \
             and not ({"take", "care"} <= set(tokens)) and not ({"good", "night"} <= set(tokens))             and not ({"you", "there"} <= set(tokens)):
         return None
