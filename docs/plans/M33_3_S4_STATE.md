@@ -1,0 +1,29 @@
+# M33.3 S4 — offline source-to-candidate replay state
+
+**Current state:** `S4_CLOSED_FROZEN` (2026-09-27 independent recovery audit, bounded replay-dependency repair, and requalification). **S4_IMPLEMENTATION_AUDITED:** YES. **S4_REPAIRS_REQUIRED:** YES. **S4_REPAIRS_VERIFIED:** YES. **S4_SAFETY_GATE_PASSED:** YES (independently reproduced). **S4_AUDIT_PENDING:** NO. **S4_CLOSED_FROZEN:** YES. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+
+Independent evidence: `M33_3_S4_RECOVERY_INDEPENDENT_AUDIT_REQUALIFICATION_REPORT.md`. The audited replay imports tracked sources only; the previously untracked A2.8F harness is not needed. Two fresh replays matched the committed R2 decisions and all safety gates. Batch A's old G-R2 hash pin correctly reports `REPRODUCTION_BASELINE_UNMATCHED` after the authorized RAR repair; its frozen historical evidence remains unchanged and current `run_det` decisions match the frozen record. This S4 experimental freeze grants no production adoption or later-slice authorization.
+
+## History (implementer recovery candidate, preserved)
+
+**State:** `S4_RECOVERY_CANDIDATE_REQUALIFIED_AWAITING_INDEPENDENT_AUDIT` (2026-09-27, implementer upstream recovery batch under User Option B; was `S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN`).
+**S4_UPSTREAM_REPAIR_APPLIED:** YES (D1R/D1RQ noun-phrase preposition boundary; RAR RC-5 contrast shortcut requires demonstrated exclusion). **S4_REQUALIFIED_BY_IMPLEMENTER:** YES. **S4_SAFETY_GATE_PASSED:** YES (implementer R2 replay; not independently reproduced). **S4_AUDIT_PENDING:** YES. **S4_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+
+Evidence: `docs/plans/M33_3_S4_UPSTREAM_RECOVERY_REQUALIFICATION_REPORT.md`; telemetry `M33_3_S4_R2_TELEMETRY.json` / `M33_3_S4_R2_AGGREGATES.json` (R1 and pre-repair files preserved). The R2 replay (79 cases, 2,466 rows, three fresh replays decision-identical) has 0 annotated wrong bindings, 0 producer-only wrong bindings, 0 false certainty on scored rows, and `safety_gate_passed: true`. The turn-scoped attachment anchor still gives certainty to 18 rows (8 unattributed); this remains an experimental limitation and is not production-approved. Changed protected anchors: `rar_deterministic.py` `e02af25b…` → `4db77566…`, D1R `03479773…` → `0986503d…`, D1RQ `49f5faa9…` → `42332d28…`; the other five S4 anchors are unchanged. This is an implementer recovery candidate. S4 may be frozen only after an independent audit by an agent other than this session.
+
+## History (independent S4 audit record, preserved)
+
+**State:** `S4_AUDITED_REPAIRED_SAFETY_GATE_FAILED_NOT_FROZEN` (2026-09-27, independent audit/repair/requalification; was `S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`).
+**S4_PLAN_PREAUDITED:** YES. **S4_IMPLEMENTATION_COMPLETE:** YES. **S4_IMPLEMENTATION_AUDITED:** YES. **S4_REPAIRS_REQUIRED:** YES (A-F1 turn-scoped lexical anchor contamination; A-F2 unmeasured authority gate). **S4_REPAIRS_VERIFIED:** YES. **S4_SAFETY_GATE_PASSED:** NO. **S4_AUDIT_PENDING:** NO. **S4_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+
+Independent audit evidence: `M33_3_S4_INDEPENDENT_AUDIT_REPAIR_REQUALIFICATION_REPORT.md`; requalified telemetry `M33_3_S4_R1_TELEMETRY.json` / `M33_3_S4_R1_AGGREGATES.json` (the implementer's `M33_3_S4_TELEMETRY.json` / `M33_3_S4_AGGREGATES.json` are preserved as pre-repair evidence). The audit repaired the producer so exact-ID/unique-title anchors reach only the span that contains the ID/title; per User decision (2026-09-27) the current-attachment anchor stays turn-scoped and its certainty exposure (8 unattributed rows) is disclosed. Annotated results are unchanged. The two annotated wrong-binding cases (`NB-B-05:r1` D1R/D1RQ×C2, `NB-H-06:r1` D1R/D1RQ×C1; 8 rows, identical in control and producer) were root-caused to frozen D1R/D1RQ detector and frozen RAR Level 4a/4b behavior, known since A2.8I/A2.8J, which S4 may not change. The safety gate therefore still fails and S4 is not closed or frozen. Closing S4 would require either an authorized repair of those frozen mechanisms outside S4 or an explicit User governance decision about S4's closure criteria; neither exists.
+
+## History (implementer record, preserved)
+
+**State:** `S4_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT`.
+**S4_PLAN_PREAUDITED:** YES (initial independent `BLOCKING_REPAIR_REQUIRED`, F1/F2 repaired; focused and final checks `ACCEPT`; scorer-only §5 amendment independently `ACCEPT`).
+**S4_IMPLEMENTATION_COMPLETE:** YES. **S4_IMPLEMENTER_QUALIFICATION_RUN:** YES. **S4_SAFETY_GATE_PASSED:** NO. **S4_AUDIT_PENDING:** YES. **S4_CLOSED_FROZEN:** NO. **M33_3_COMPLETE:** NO. **NEXT_SLICE_AUTHORIZED:** NO.
+
+The User authorized this S4-only plan and implementation at `0caf3dd5d11a7b5c8b7f18133955a785707505d7`. Scope and gates: `M33_3_S4_OFFLINE_SOURCE_TO_CANDIDATE_PLAN.md`. The implementer evidence and limitations: `M33_3_S4_IMPLEMENTATION_REPORT.md`. S1/S2/S3 remain `CLOSED_FROZEN`; their code, fixtures, and history are unchanged.
+
+S4 executed an offline replay, not a production source gateway. The 79-case corpus uses curated C1/C2 available-candidate inventories; grounded-target coverage is therefore conditional on the fixture inventory and does not establish live retrieval coverage. The producer arm adds no wrong confident binding on annotated references relative to the same-pool control, but both arms retain two distinct wrong-binding cases (`NB-B-05`, `NB-H-06`) across C1/C2. Per the plan's stop gate, S4 cannot be promoted or called safe. The independent implementation audit must inspect this evidence, including scorer isolation, anchor behavior, provenance, timing methodology, and the experiment's limited external validity. S5–S13, INT events, URI-RAR adoption, and M33.3 closure remain unauthorized.

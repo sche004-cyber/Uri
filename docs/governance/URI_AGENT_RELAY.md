@@ -4,7 +4,51 @@ Single canonical inter-agent handoff mailbox for URI development coordination.
 All Claude <-> Antigravity <-> Codex milestone communication occurs through repository files.
 Do NOT use agent-private logs or external directory scraping as communication channels.
 
-## CURRENT HANDOFF (M31 — URI HYBRID UI LIVE ACCEPTANCE REMEDIATION TO CODEX)
+**Canonical current-state authority note (added 2026-09-25, Development
+Control Layer Normalization, additive):** canonical current development
+state is defined by `docs/governance/URI_STATE.yaml`. The entries below are
+historical/handoff context and must not override canonical state. Where
+this file and `URI_STATE.yaml` conflict on what is current, `URI_STATE.yaml`
+wins unless a later, formally accepted governance artifact explicitly
+supersedes it.
+
+## CURRENT HANDOFF (M33.3 Batch A — FROZEN, ACCEPT_WITH_DOCUMENTED_LIMITATIONS)
+
+**FROM:**
+Claude Sonnet 5 (bounded freeze implementer, by direct User instruction `FREEZE_AND_COMMIT_M33_3_BATCH_A`)
+
+**TO:**
+Whoever plans the next M33.3 workstream (ARN architecture / <=1B clarification text generator, planning only)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+FREEZE — CLOSED AS STAGE A READINESS EVIDENCE
+
+**STATUS:**
+`BATCH_A_FROZEN_ACCEPTED_WITH_LIMITATIONS`. Independent R4 re-audit verdict `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_R4_INDEPENDENT_REAUDIT_REPORT.md` (the independent verdict, preserved as a durable artifact for the first time)
+- `docs/plans/M33_3_BATCH_A_R4_REPAIR_REPORT.md`, `_R3_`, `_R2_`, and the original `M33_3_BATCH_A_REPAIR_REPORT.md` (R1), `M33_3_BATCH_A_COMPLETION_REPORT.md` (original submission)
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (final; only a `coverage_rule` metadata string changed at freeze, no score changed)
+
+**SUMMARY:**
+Frozen as Stage A readiness / methodology evidence only. No Edge candidate
+is qualified; no Stage B, `INT-*`, or ARN implementation is authorized.
+Accepted Main-Brain-avoidance result: verified 0, potential 0, unverified
+22. Safety gates G-S1 `0/7/1/1`, G-S2 `0/12/0/3`, G-S3 `0/20/0/0`, G-S4 `0`.
+G-R1..G-R5 pass. The historical text-gap limitation for 78 already-retained
+multi-step rows is preserved unresolved and unsoftened: a fresh, separately
+authorized run would be required for a stronger historical claim. Next
+authorized action is planning only, for ARN architecture and a <=1B
+clarification text generator — not implementation.
+
+---
+
+
+## PARALLEL LINE HANDOFF (uri-agent working tree, preserved 2026-10-01 on preserve/running-app-2026-10-01; M31 — URI HYBRID UI LIVE ACCEPTANCE REMEDIATION TO CODEX)
 
 **FROM:**
 Antigravity (Coordinator / Harness)
@@ -39,6 +83,342 @@ Antigravity acts solely as coordinator/harness:
 - Delegating task directive docs/plans/CODEX_HYBRID_UI_REPAIR_TASK.txt to Codex.
 - Codex will inspect the uncommitted tree, resolve the 11 items, perform full regression, and produce POST_LIVE_CONSOLIDATED_REPAIR_REPORT.md.
 - Target state: VERIFICATION_READY. No commit, no push, no declaration of VERIFIED.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Bounded Repair R4 — VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT)
+
+**FROM:**
+Claude Sonnet 5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R4`)
+
+**TO:**
+Independent auditor (an agent other than Claude, or the User)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+BOUNDED REPAIR R4 COMPLETE — R4 RE-AUDIT REQUEST
+
+**STATUS:**
+`VERIFICATION_READY_FOR_M33_3_A_R4_REAUDIT`. Not accepted, not frozen. Stage B not authorized.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_R4_REPAIR_REPORT.md`
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (regenerated; no value changes)
+
+**SUMMARY:**
+Responds to independent R3 re-audit (`REPAIR_REQUIRED`). A 2,000-character
+truncation on retained model text silently dropped safety-relevant content
+past that cutoff, defeating R3's own per-step retention fix. Removed the
+truncation; text is now retained in full. Added a test that drives the real
+`required_coverage()`/quote-union pipeline directly against long,
+error-terminated text, per R3's separate coverage-path critique, plus a test
+confirming no currently retained row was ever near the old cutoff. Offline
+rescore: zero change to any published number. The R3-disclosed residual
+(no per-step history for 78 already-retained multi-step rows) remains
+unresolved; a future rerun would be needed to close it.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Bounded Repair R3 — VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT)
+
+**FROM:**
+Claude Sonnet 5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R3`)
+
+**TO:**
+Independent auditor (an agent other than Claude, or the User)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+BOUNDED REPAIR R3 COMPLETE — R3 RE-AUDIT REQUEST
+
+**STATUS:**
+`VERIFICATION_READY_FOR_M33_3_A_R3_REAUDIT`. Not accepted, not frozen. Stage B not authorized.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_R3_REPAIR_REPORT.md`
+- `docs/plans/M33_3_BATCH_A_R2_TRANSCRIPT_ADJUDICATIONS.json` (rebuilt, same 67 entries)
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (regenerated; no value changes)
+
+**SUMMARY:**
+Responds to the first genuinely independent audit this batch received
+(verdict `REPAIR_REQUIRED`). Fixed: adjudication coverage no longer skips a
+row merely because it errored; the harness now retains every step's own
+text instead of one overwritable `final_text`. Ten new end-to-end tests
+(mocked HTTP layer, full harness -> coverage -> scorer path) prove
+persistence across a continued step and all three error classes, plus a
+negative control. Offline rescore: zero change to any published number,
+since no currently retained row exercises the newly-covered case. Disclosed,
+not resolved: the 78 already-retained multi-step rows cannot be
+retroactively checked for a lost mid-trace commitment, since the pre-fix
+harness never stored per-step text.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Bounded Repair R2 — VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT)
+
+**FROM:**
+Claude Opus 5.5 (bounded repair implementer, by direct User instruction `BOUNDED_M33_3_A_REPAIR_R2`)
+
+**TO:**
+Independent auditor (an agent other than Claude, or the User)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+BOUNDED REPAIR R2 COMPLETE — R2 RE-AUDIT REQUEST
+
+**STATUS:**
+`VERIFICATION_READY_FOR_M33_3_A_R2_REAUDIT`. Not accepted, not frozen. Stage B not authorized.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_R2_REPAIR_REPORT.md`
+- `docs/plans/M33_3_BATCH_A_R2_TRANSCRIPT_ADJUDICATIONS.json` (implementer-authored, NOT independent — review every entry)
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (current, post-R2)
+
+**SUMMARY:**
+Offline rescore of the retained 240 rows; no provider inference. Final-text
+commitments are now unsafe and monotonic across later errors (`RWB-006`,
+`RWB-045`, `RWB-104`, `RWB-062`); clarification correctness and escalation
+reporting come from quote-backed adjudication; proposal and completion are
+separate (Needle completions 14 → 0); verified Main-Brain avoidance is 0
+(was 19; 22 unverified); per-row artifact provenance on every published row
+(G-R5 PASS). Historical deltas remain reconstructed, not authenticated.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Bounded Repair — VERIFICATION_READY_FOR_M33_3_A_REAUDIT)
+
+**FROM:**
+Claude Sonnet 5 (bounded repair implementer for this batch, by direct User instruction)
+
+**TO:**
+Independent auditor (an agent other than Claude, or the User)
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+BOUNDED REPAIR COMPLETE — RE-AUDIT REQUEST
+
+**STATUS:**
+`VERIFICATION_READY_FOR_M33_3_A_REAUDIT`. Not accepted.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_REPAIR_REPORT.md` (this repair: 7 findings addressed, before/after deltas, no provider reruns)
+- `docs/plans/M33_3_BATCH_A_COMPLETION_REPORT.md` (original submission, preserved unedited — its numeric claims are superseded by the repair report, not rewritten)
+- `docs/plans/M33_3_BATCH_A_AGGREGATES.json`, `_TELEMETRY.json` (current, post-repair)
+- `docs/plans/M33_3_BATCH_A_PRE_REPAIR_AGGREGATES.json`, `_PRE_REPAIR_TELEMETRY.json` (historical, pre-repair)
+- `docs/plans/M33_3_BATCH_A_CONTRACT_MAPPING.md`
+- `fixtures/m33_3_batch_a/battery.json` (LF SHA-256 `06d0dfff…c3fa`, unchanged)
+
+**SUMMARY:**
+No durable independent-audit artifact for M33.3-A exists in this repository
+(disclosed gap, repair report §0); the seven `REPAIR_REQUIRED` findings this
+repair addresses were each independently re-verified against retained raw
+evidence before being fixed (most notably, the "19 confirmation-gated rows
+mislabeled complete" finding was independently recomputed and matched
+exactly). Repairs made, offline, from retained raw provider outputs only —
+zero provider reruns: (1) G-S1 no longer conflates tool-selection, safety, and
+ask/clarification — a legitimate, non-prohibited read-only investigation
+before asking is no longer automatically unsafe; (2) safety violations are now
+monotonic across a later error/timeout; (3) a new `CORRECT_PROPOSAL_PENDING_
+CONFIRMATION` outcome separates a correct confirmation-gated proposal from
+literal task completion; (4) the unnecessary-Main-Brain metric now reports
+verified/potential/unverified separately instead of one number; (5) per-
+provider artifact hash provenance corrected (Needle's weight hash recovered
+retroactively from the unchanged cache file; the 9B's WP-A0 hash now actually
+wired into rows); (6) G-R3 wording split into two distinct invariants instead
+of one blanket PASS; (7) one stale "not started" governance field corrected.
+Battery, protected M33.2/A9 artifacts, and the frozen plans are unchanged.
+Claude planned, implemented, and repaired this batch, so Claude must not
+perform the re-audit. No Stage B, no `INT-*`, no promotion.
+
+---
+
+## PREVIOUS HANDOFF (M33.3 Batch A — Stage A Qualification Readiness — ACCEPTED, READY FOR EXECUTION)
+
+**FROM:**
+Claude Opus 5.5 (Architect / Pre-Auditor)
+
+**TO:**
+Antigravity (route to Codex) / User
+
+**MILESTONE:**
+M33.3 — Edge Intelligence Qualification & Integration, Batch A (`M33.3-A`)
+
+**HANDOFF TYPE:**
+PLAN ACCEPTED (AO-4 standing auto-approval)
+
+**STATUS:**
+ACCEPTED — implementation not started. `READY_FOR_M33_3_BATCH_A_EXECUTION`.
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md` (plan)
+- `docs/plans/M33_3_BATCH_A_STATE.md` (state, routing constraints, checkpoints)
+- `docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md`
+  (frozen parent plan, unchanged)
+- `docs/governance/URI_STATE.yaml` (current-state authority)
+
+**SUMMARY:**
+First executable M33.3 batch. Stage A isolated readiness only: freeze the
+real-workload battery, build the scorer, measure reference baselines, and
+characterize the unmodified deterministic path; write a documentary mapping
+to the M33.2 Edge contracts; record Rung 1 eligibility. No `uri_core`
+import, no change under `uri_core/`, `uri_v1/`, or `uri_ui/`, no model
+download, no real side effects, no production integration, no `INT-*`
+event, no promotion. Stage B cannot start directly after this batch. The
+implementation task package must quote the seven routing constraints in
+the state file verbatim.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: A2.8L-A9 RAR Evidence-Transport Factorial — ACCEPT_WITH_DOCUMENTED_LIMITATIONS)
+
+**FROM:**
+Claude Sonnet 5 (Release Authority / Final Auditor)
+
+**TO:**
+User / Antigravity
+
+**MILESTONE:**
+M35 URI v1 — A2.8L-A9: RAR Evidence-Transport Factorial (attachment-order
+resolver qualification, compiler-transport gap characterization)
+
+**HANDOFF TYPE:**
+CLOSURE + FREEZE
+
+**STATUS:**
+CLOSED / ACCEPT_WITH_DOCUMENTED_LIMITATIONS
+
+**AUTHORITATIVE ARTIFACTS:**
+- `docs/plans/M35_URIV1_A2_8L_A9_CLOSURE_REPORT.md` (closure record)
+- `docs/plans/M35_URIV1_A2_8L_A9_R2_INDEPENDENT_REAUDIT_REPORT.md` (final
+  independent re-audit; externally supplied verdict, provenance recorded
+  in §0, reconciliation check in §10)
+- `docs/plans/M35_URIV1_A2_8L_A9_R2_CORRECTION_REPORT.md` (implementer
+  self-report, unchanged, status `VERIFICATION_READY_FOR_REAUDIT`)
+- `docs/plans/M35_URIV1_A2_8L_OVERLAY_MANIFEST.md` (§3 protected hashes,
+  §6 ER-9 closure)
+
+**SUMMARY:**
+A2.8L-A9 (RAR attachment-order resolver factorial qualification) is
+closed with verdict `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`. Mechanism
+(`90d89c37…`) and fixture (`36570706…`) hashes unchanged since A9-R1;
+protected/reference hashes independently re-verified against the overlay
+manifest. Transport conclusion `EXISTING_CONTRACT_COMPILATION_INSUFFICIENT`
+(scoped to the tested §4.2.1 compiler algorithm; `NEW_CONTRACT_FIELD_
+REQUIRED` remains `NOT_ESTABLISHED`). Nine documented limitations carried
+forward unresolved (see closure report §8). **A9 is frozen: no further A9
+mechanism repair, factorial expansion, or causal experimentation is
+authorized by this closure; work on the documented limitations requires a
+separately authorized batch.**
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: A2.9 Native Problem-Solving Trace Pilot — ACCEPTED AS PILOT)
+
+**FROM:**
+Claude Sonnet 5 (Release Authority / Final Auditor)
+
+**TO:**
+User / Antigravity
+
+**MILESTONE:**
+M35 URI v1 — A2.9: native problem-solving trace pilot
+
+**HANDOFF TYPE:**
+CLOSURE
+
+**STATUS:**
+CLOSED / ACCEPTED AS PILOT
+
+**CLOSURE COMMIT:**
+`9e5d5e2` (M35 A2.9: close native problem-solving trace pilot, ACCEPTED AS PILOT)
+
+**NOTE:**
+Added retroactively during Post-A9 governance-state reconciliation
+(2026-09-25) — this entry was missing from the relay's handoff stack
+despite being closed and pushed before A9's closure. See governing
+plan/state artifacts under `docs/plans/M35_URIV1_A2_9_*` for detail.
+
+---
+
+## PREVIOUS HANDOFF (CLOSED: A2.8K Level-5 Evidence Sufficiency Qualification — ACCEPTED)
+
+**FROM:**
+Claude Sonnet 5 (Release Authority / Final Auditor)
+
+**TO:**
+User / Antigravity
+
+**MILESTONE:**
+M35 URI v1 — A2.8K: Level-5 evidence sufficiency qualification
+
+**HANDOFF TYPE:**
+CLOSURE
+
+**STATUS:**
+CLOSED / ACCEPTED
+
+**CLOSURE COMMIT:**
+`2351048` (M35 A2.8K: close Level-5 evidence sufficiency qualification,
+ACCEPTED); hash record `9a4af95`
+
+**NOTE:**
+Added retroactively during Post-A9 governance-state reconciliation
+(2026-09-25) — this entry was missing from the relay's handoff stack
+despite being closed and pushed before A9's closure. See governing
+plan/state artifacts under `docs/plans/M35_URIV1_A2_8K_*` for detail.
+
+---
+
+## PREVIOUS HANDOFF (A2.8J: RAR-SAFE Evidence-Safety Hardening Qualification — IMPLEMENTING)
+
+**FROM:**
+Antigravity (Development Loop Manager)
+
+**TO:**
+Claude Sonnet (Implementer; fallback: Gemini 3.8)
+
+**MILESTONE:**
+M35 URI v1 — A2.8J: RAR-SAFE Evidence-Safety Hardening Qualification
+
+**HANDOFF TYPE:**
+IMPLEMENTATION_DIRECTIVE
+
+**STATUS:**
+IMPLEMENTING
+
+**AUTHORITATIVE ARTIFACTS:**
+- docs/plans/M35_URIV1_A2_8J_RAR_SAFE_QUALIFICATION_PLAN.md
+- docs/plans/M35_URIV1_A2_8J_STATE.md
+- docs/plans/M35_URIV1_A2_8H_EXECUTION_REPORT.md
+- docs/plans/M35_URIV1_A2_8I_POST_REPAIR_END_TO_END_RESIDUAL_AUDIT.md
+- uri_v1/turn/rar_deterministic.py
+- uri_v1/turn/rar_contracts.py
+- scripts/m35_a2_8h_detector_d1rq.py
+- scripts/m35_a2_8h_run.py
+- scripts/m35_rar_natural_boundary_harness.py
+
+**ROUTING SUBSTITUTION DIRECTIVE:**
+Codex quota is currently unavailable. Implementation routing for A2.8J is substituted to Claude Sonnet as preferred implementer (Gemini 3.8 as fallback). Codex is prohibited; Opus is prohibited unless a genuine blocker arises. The accepted plan, scope, acceptance criteria, architecture, and experimental design remain strictly frozen. The implementer must execute M35_URIV1_A2_8J_RAR_SAFE_QUALIFICATION_PLAN.md exactly as frozen and stop at VERIFICATION_READY. No commit or push.
+
+**CLOSURE NOTE (added 2026-09-25, Post-A9 governance-state reconciliation):**
+The `IMPLEMENTING` status and routing directive above are historical —
+preserved as-is, not live. A2.8J actually closed as `COMPLETE` (bounded
+re-audit verdict `ACCEPTED`; experimental result accepted, not a
+promotion of RAR-SAFE or of S3) at commit `247265f` (M35 A2.8J: close
+RAR-SAFE qualification), closure authorized by the User on 2026-09-24,
+pushed successfully. See `docs/plans/M35_URIV1_A2_8J_STATE.md` §Release
+and `docs/plans/M35_URIV1_A2_8J_BOUNDED_REAUDIT.md`. This entry was left
+without a resolution annotation when commit `49a801f` (A9 closure)
+introduced it into the relay; no prior relay commit ever recorded this
+handoff. Do not treat this entry as an open/active task.
 
 ---
 

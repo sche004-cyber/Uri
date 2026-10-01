@@ -1,0 +1,29 @@
+{
+ "capabilities": [
+  {
+   "capability_id": "uri.edge.workbook_inspect",
+   "evidence": "docs/plans/M37_QUALIFICATION_RESULTS.json#battery=16d6cae128aff754",
+   "mechanism": "DETERMINISTIC",
+   "passed": true,
+   "status": "QUALIFIED",
+   "version": "1"
+  },
+  {
+   "capability_id": "uri.edge.script_workbook_diagnose",
+   "evidence": "docs/plans/M37_QUALIFICATION_RESULTS.json#battery=16d6cae128aff754",
+   "mechanism": "DETERMINISTIC",
+   "passed": true,
+   "status": "QUALIFIED",
+   "version": "1"
+  },
+  {
+   "capability_id": "uri.edge.script_workbook_literal_remap",
+   "evidence": "docs/plans/M37_QUALIFICATION_RESULTS.json#battery=16d6cae128aff754",
+   "mechanism": "DETERMINISTIC",
+   "passed": true,
+   "status": "QUALIFIED",
+   "version": "1"
+  }
+ ],
+ "schema_version": "m37.edge.qualification.v1"
+}

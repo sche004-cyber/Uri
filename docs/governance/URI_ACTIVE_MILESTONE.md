@@ -7,6 +7,23 @@
 
 ## 1. Milestone Identity & State
 
+**CURRENT STATE — 2026-09-29: M36, M37 and M38 `CLOSED_FROZEN` at `bd7c450`
+(`ACCEPT_WITH_DOCUMENTED_LIMITATIONS`).** User decision 2026-09-29 03:24 UTC; evidence,
+lineage and the retained limitations in
+[the freeze record](../plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md). `62d564c` is
+superseded. Next validation activity: a live harness pilot, which reopens M36-M38 only
+for a defect that violates a frozen guarantee. No milestone is automatically opened;
+the M36/M37/M38 notes below are historical. Canonical machine state: `URI_STATE.yaml`.
+
+**BATCH NOTE — 2026-09-28 (additive):** M38 Harness Execution Minimum is implemented and `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](../plans/M38_IMPLEMENTATION_REPORT.md)). The batch stops before the Office demonstrator; the next stage is one independent Codex audit per [the batch package](../plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md).
+
+**BATCH NOTE — 2026-09-28 (additive):** Under the User's batched-audit workflow, M37 Edge Minimum is implemented and `M37_IMPLEMENTED_PROVISIONAL_NOT_FROZEN` ([plan](../plans/M37_EDGE_MINIMUM_PLAN.md), [report](../plans/M37_IMPLEMENTATION_REPORT.md)). It depends on unaudited M36 at `405db1f`. M36 remains the current milestone record above; nothing here freezes, closes or integrates M36 or M37.
+
+**CURRENT MILESTONE — 2026-09-28:** M36 — URI-Memory Minimum.
+State: `M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION`. Independent closing audit (Claude) of `be4451c` returned REPAIRS_REQUIRED; the User authorized bounded repairs of F-1..F-6 and D-1 plus commit and push, not freeze. Repairs re-verified by the same session that made them (not independent). See [closing audit report](../plans/M36_INDEPENDENT_CLOSING_AUDIT_REPORT.md). Freeze awaits a User decision.
+
+Prior state (historical): `M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT`. Direct User implementation package supplies PG_M1_ACCEPTED and grants PG_M2; no separate final A4 report supplied/located. Codex implements the accepted M36 plan including A2/A3/A4, and prepares self-qualification evidence. A different independent audit session is the next stage; Codex does not close/freeze or grant release authority. [Implementation report](../plans/M36_IMPLEMENTATION_REPORT.md) and [state](../plans/M36_STATE.md) carry evidence and the exact audit prompt. Authorized scope remains new Memory core, thin adapters, qualification and governance. No S13/Brain/legacy/UI integration, Office/Edge/Harness implementation, S9 learning, INT-* event or push. Earlier current-state entries below are historical; machine current-state authority remains `URI_STATE.yaml`.
+
 **PRIOR MILESTONE (CLOSED):**  
 M30-PFC — Provider-Failure False-Consent Repair — **CLOSED: ACCEPTED**
 (User closure instruction, 2026-09-14). CLAUDE ACCEPT verdict, full
@@ -966,6 +983,27 @@ blueprint, not a new decision invented here.
 
 ## 1c. Roadmap Reservations, 2026-09-18: M32.1, M34, M35
 
+**Current state (2026-09-28): `CLOSED_FROZEN`.** Independent closing verdict:
+`ACCEPT_WITH_DOCUMENTED_LIMITATIONS`, under the User's one-session audit,
+bounded-repair, requalification and release authorization. Evidence:
+`docs/plans/M33_3_R_INDEPENDENT_CLOSING_AUDIT_REPORT.md`.
+
+S1 (including corrected S1-A1), S2, S3, S4, S5, S6, S7, S8, S10, S11 and
+S12 are accepted/frozen within their documented offline/fixture-backed scope.
+S9 is excluded and re-homed to URI-Memory/D4; S13 is excluded and requires a
+future INT-* authorization. M33.3 is complete within this explicit boundary.
+No model wording tier qualified; template is primary. S8 has one qualified
+route; S12 remains fixture-only. No production adoption, model/residency-policy
+freeze, research promotion, or next-slice authorization is created.
+
+Final clean LF regression: 3,261 passed, 9 baseline failures, 66 skipped, 218 subtests passed; no new failures.
+Flutter 204 passed; S12 analysis clean; one baseline full-app analyzer INFO.
+Historical records below remain evidence of their dates, not current authority.
+
+M33.3 identity: Edge Intelligence Qualification & Integration; this supersedes
+the stale Hybrid UI reservation below. Canonical machine state: `URI_STATE.yaml`.
+
+
 Recorded per direct User instruction ("Approve the consolidated
 governance/planning proposal... Apply the pending roadmap items").
 All three are reservations/scope records only — **none is started,
@@ -1005,6 +1043,35 @@ only, carrying two items forward —
 
 Both items' underlying code was untouched from Batch B/C's own
 disclosure until this M34 closure implemented and resolved them.
+
+**Correction, 2026-09-25 (Development Control Layer Normalization,
+additive, preserving the M33.3 wording below verbatim rather than
+editing it):** M33.3's reservation text below ("Unified URI Interaction
+& Capability UI") is superseded. Commit `47af60a` froze
+`docs/plans/M35_URIV1_A3_ARCHITECTURE_SYNTHESIS_AND_NEXT_BATCH_PLAN.md`
+as the planning basis for **M33.3 — Edge Intelligence Qualification &
+Integration**, continuing the M33.2 Edge/Second-Brain architecture
+lineage, not a UI milestone. The canonical current-state pointer for
+this and all other milestone identities is now
+`docs/governance/URI_STATE.yaml`; consult it before trusting any
+current-state prose in this file, including the M33.3 line immediately
+below.
+
+**M33.3 Batch A planning, 2026-09-25 (additive, Claude, AO-4 standing
+auto-approval):** M33.3 Batch A — Edge Intelligence Stage A Qualification
+Readiness is **ACCEPTED** (planning only; implementation not started) at
+baseline `1fa24fc`. Plan:
+`docs/plans/M33_3_BATCH_A_STAGE_A_QUALIFICATION_READINESS_PLAN.md`; state:
+`docs/plans/M33_3_BATCH_A_STATE.md`. Scope is Stage A isolated readiness
+only: frozen real-workload battery, scorer, reference baselines (no Edge,
+resident Qwen3.5-9B, Needle 3 in its M33.2 role, unmodified deterministic
+RAR), Rung 0 as-is characterization, documentary M33.2 contract mapping,
+and a Rung 1 eligibility record. It creates no production integration, no
+`INT-*` event, and no research promotion, and changes nothing under
+`uri_core/`, `uri_v1/`, or `uri_ui/`. The M33.2 "M33.3-owned
+control-surface follow-on" item was written for the superseded UI identity
+and is not adopted by this plan; its ownership remains unresolved (plan
+§2.1 C-2). `URI_STATE.yaml` is the current-state authority.
 
 ### M35 — URI Companion Experience
 **Status:** NOT STARTED. Net-new concept — no prior documentation
@@ -1443,6 +1510,20 @@ When one milestone completes and another is approved:
 ### Shared Active-Milestone Invariant
 `docs/governance/URI_ACTIVE_MILESTONE.md` is the **SINGLE** canonical current-state file for URI development coordination.
 Claude, Codex, and Antigravity must all read this exact file before starting milestone work.
+
+**Reconciliation note, 2026-09-25 (Development Control Layer Normalization,
+additive, preserving the invariant above verbatim rather than editing it):**
+the "SINGLE canonical current-state file" line above predates
+`docs/governance/URI_STATE.yaml` and describes a different, still-true
+concern — that milestone state must not fork into separate per-agent copies
+of this file. It does not conflict with `URI_STATE.yaml`'s own, narrower
+authority rule: `URI_STATE.yaml` is the canonical machine-readable answer to
+"what is true right now" for milestone/experiment/component identity and
+namespace resolution specifically; this file remains the single
+narrative/handoff record every agent reads, and nothing above authorizes a
+second copy of *this* file. Where the two genuinely conflict on a specific
+current-state claim (e.g. the M33.3 identity — see §1c), `URI_STATE.yaml`
+wins, per its own stated authority rule.
 There must NOT be:
 - Separate Claude milestone files.
 - Separate Codex active-state files.

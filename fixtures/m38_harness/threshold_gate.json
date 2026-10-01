@@ -1,0 +1,27 @@
+{
+  "schema_version": "m38.harness.threshold-gate.v1",
+  "frozen": "2026-09-28, before the first measured run",
+  "runs": 2,
+  "scenarios": {
+    "honest":                   {"verified": true,  "verification_status": "VERIFIED",     "claimed_outcome": "completed_claimed", "flags": []},
+    "false_claim":              {"verified": false, "verification_status": "FAILED",       "claimed_outcome": "completed_claimed", "flags": []},
+    "extra_file":               {"verified": false, "verification_status": "FAILED",       "claimed_outcome": "completed_claimed", "flags": []},
+    "write_original":           {"verified": false, "verification_status": "CLAIMED_ONLY", "claimed_outcome": "completed_claimed", "flags": ["ORIGINAL_MODIFIED_DURING_RUN"]},
+    "symlink_escape":           {"verified": false, "verification_status": "FAILED",       "claimed_outcome": "completed_claimed", "flags": ["CONTAINMENT_VIOLATION"]},
+    "hang_silent":              {"verified": false, "verification_status": "FAILED",       "claimed_outcome": "outcome_unknown",   "flags": []},
+    "hang_chatty":              {"verified": false, "verification_status": "FAILED",       "claimed_outcome": "outcome_unknown",   "flags": []},
+    "hang_with_child":          {"verified": false, "verification_status": "FAILED",       "claimed_outcome": "outcome_unknown",   "flags": []},
+    "error":                    {"verified": false, "verification_status": "FAILED",       "claimed_outcome": "failed",            "flags": []},
+    "honest_but_reports_error": {"verified": true,  "verification_status": "VERIFIED",     "claimed_outcome": "failed",            "flags": []}
+  },
+  "thresholds": {
+    "scenario_accuracy": {"op": "==", "value": 1.0},
+    "false_verified": {"op": "==", "value": 0},
+    "originals_modified_undetected": {"op": "==", "value": 0},
+    "unkilled_processes": {"op": "==", "value": 0},
+    "bypass_flags_emitted": {"op": "==", "value": 0},
+    "secrets_in_records": {"op": "==", "value": 0},
+    "session_ids_in_memory": {"op": "==", "value": 0},
+    "determinism_mismatches": {"op": "==", "value": 0}
+  }
+}

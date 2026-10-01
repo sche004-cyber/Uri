@@ -1,5 +1,67 @@
 # URI Project Memory
 
+**Latest delivery checkpoint — 2026-09-29: M36, M37 and M38 `CLOSED_FROZEN` at
+`bd7c450`, `ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.** Frozen on the User's decision after
+the Codex bridge audits of the merged line: final independent Windows check 1,309
+passed / 0 failed, all gates passed, 132 adversarial grant-wording probes blocked, no
+open findings. Linux at `bd7c450`: tests/ 1,303 passed / 0 failed; three quals pass;
+anchors ok; governance 37; broad 15 legacy failures, unchanged. `62d564c` and `a87e158`
+are superseded, not competing lines. Retained limitations (M36-L1, M37-L1/L2,
+M38-L1/L2/L3, S-L1/L2) and evidence: `docs/plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md`.
+Next validation: a live harness pilot (M38 first), which reopens M36-M38 only for a
+defect violating a frozen guarantee. No production integration or next milestone is
+opened by this checkpoint.
+
+**Current handoff — 2026-09-28: M36 closing audit performed; bounded repairs applied.**
+State: `M36_AUDIT_REPAIRED_AWAITING_FREEZE_DECISION`. Claude performed the independent closing audit of Codex commit `be4451c` ([report](docs/plans/M36_INDEPENDENT_CLOSING_AUDIT_REPORT.md)): verdict REPAIRS_REQUIRED with six code findings (F-1 negation cropping could yield wrong CONFIRMED; F-2 negated status keywords; F-3 verifier-registry mismatch on reload; F-4 forget could hide verdicts; F-5 stem regex diverged from frozen RAR; F-6 hidden files blocked all exact-title certainty) and D-1 (URI_STATE.yaml PG-M1 verdict overwritten). The User authorized the repairs, commit and push, not freeze. Repairs are confined to `uri_v1/memory/`, M36 tests, the M36 driver/battery and governance. The focused re-verification was performed by the same session that made the repairs, so it is not independent. Freeze requires a User decision. No S13, INT-*, Office/Edge/Harness or frozen-file change. The entry below is historical.
+
+**Current implementation handoff — 2026-09-28: M36 URI-Memory Minimum.**
+State: `M36_IMPLEMENTED_VERIFICATION_READY_FOR_INDEPENDENT_AUDIT`. The direct User task package supplies accepted PG-M1 and grants PG-M2; no separate final A4 report supplied/located. All nine implementation waves are delivered and self-qualified; independent closing audit remains required. See [implementation report](docs/plans/M36_IMPLEMENTATION_REPORT.md), [qualification matrix](docs/plans/M36_QUALIFICATION_MATRIX.md) and [M36 state](docs/plans/M36_STATE.md). No freeze, production agent-loop/UI wiring, INT-* event, Office/Harness/Edge implementation or push. Prior planning handoffs below are historical.
+
+**Planning resume point — 2026-09-28: M36 A4 ready for final PG-M1 re-check.**
+A2 repairs hold; A3 initial projection grounding is accepted per the latest
+User-supplied focused finding. [A4 plan §19](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md)
+repairs only clarification FREE_INPUT grounding before BindingService.respond(),
+with Q-A3-1 H1–H3. Status: PLAN_A4_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK.
+Readiness: M36_A4_READY_FOR_FINAL_PG_M1_RECHECK. PG-M1 still awaits final focused
+acceptance; PG-M2 remains blocked. No Memory implementation or push.
+Exact re-check prompt: plan §19.5; evidence/validation: [M36 state](docs/plans/M36_STATE.md).
+A2/A3, frozen M33.3, Memory boundary and all preserved rulings/deferrals/Edge
+limitations remain unchanged. Earlier A2/A3 handoffs below are historical.
+
+**Planning resume point — 2026-09-28: M36 A3.**
+[Focused A2 re-check](docs/plans/M36_PG_M1_A2_FOCUSED_RECHECK_REPORT.md):
+F-1…F-11 hold; sole blocker N-1. [M36 plan](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md)
+§18 adds raw-user grounding before exact-title/ID certainty-bearing projection.
+Current status: PLAN_A3_REPAIRED_AWAITING_FINAL_PG_M1_FOCUSED_RECHECK.
+Readiness: M36_A3_READY_FOR_FINAL_PG_M1_FOCUSED_RECHECK. Next step is the final
+independent focused N-1/A3 re-check using §18.5, preserving A2.
+PG-M1 is not fully accepted; PG-M2 remains blocked; no implementation.
+Source IDs/context usability, Memory boundary, harness_run_ref deferral and
+unverified Edge sufficiency remain. The A2 resume point below is historical.
+
+**Planning resume point — 2026-09-28: M36 A2.**
+User-authorized bounded plan/governance repairs follow
+PG_M1_ACCEPTED_WITH_BOUNDED_REPAIRS (F-1…F-11). Current status:
+PLAN_A2_REPAIRED_AWAITING_PG_M1_FOCUSED_RECHECK; readiness
+M36_A2_READY_FOR_PG_M1_FOCUSED_RECHECK. Read
+[M36 plan §17](docs/plans/M36_URI_MEMORY_MINIMUM_PLAN.md),
+[M36 state](docs/plans/M36_STATE.md) and the unchanged
+[PG-M1 report](docs/plans/M36_PG_M1_INDEPENDENT_PREAUDIT_REPORT.md).
+PG-M1 is not fully accepted; PG-M2 remains blocked. Memory boundary unchanged,
+harness_run_ref deferred, Edge sufficiency unverified. Next step is the independent
+focused re-check using plan §17.14; no implementation or release is authorized.
+
+**Latest delivery checkpoint — 2026-09-28: M33.3 `CLOSED_FROZEN`,
+`ACCEPT_WITH_DOCUMENTED_LIMITATIONS`.** Independent audit of `d1feaf7`, bounded
+repairs and requalification completed under the User's direct session authority.
+3,261 passed, 9 baseline failures, 66 skipped, 218 subtests passed; no new regression. Flutter 204 passed.
+Template-only wording; S8 one-route replay; S12 fixture-only. S9 remains
+URI-Memory/D4, S13 a future INT-* milestone; neither is authorized here.
+Full evidence, scope and limitations: `docs/plans/M33_3_R_INDEPENDENT_CLOSING_AUDIT_REPORT.md`.
+The commit containing this checkpoint is the closure release; older entries
+retain their historical meaning. No next milestone is automatically opened.
+
 ## Resume point
 
 - **M33.1 — Real Integrations / Acquire & Manage Abilities:** **CLOSED /

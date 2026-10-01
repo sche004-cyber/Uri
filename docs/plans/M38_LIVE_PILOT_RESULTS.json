@@ -1,0 +1,107 @@
+{
+ "budget_usd_per_run": 1.0,
+ "codex": "UNAVAILABLE (codex CLI not installed in this environment)",
+ "rows": [
+  {
+   "arm": "A_DIRECT",
+   "changed": [
+    "report.py",
+    "summary.xlsx"
+   ],
+   "claimed_outcome": "completed_claimed",
+   "failed_checks": [],
+   "files_visible": 6,
+   "instructions_bytes": 36,
+   "repeat": 0,
+   "usage": {
+    "cache_creation_input_tokens": 22517,
+    "cache_read_input_tokens": 63283,
+    "cost_usd": 0.2223216,
+    "duration_ms": 19701.5,
+    "input_tokens": 8,
+    "models": "2 model(s); identifiers not recorded in the repository",
+    "num_turns": 5,
+    "output_tokens": 1426,
+    "tool_calls": 4
+   },
+   "verification_status": "VERIFIED"
+  },
+  {
+   "arm": "B_URI_MEDIATED",
+   "changed": [
+    "report.py"
+   ],
+   "claimed_outcome": "completed_claimed",
+   "edge_reason": "NO_REMAP",
+   "failed_checks": [],
+   "files_visible": 2,
+   "instructions_bytes": 1549,
+   "repeat": 0,
+   "safety_flags": [],
+   "usage": {
+    "cache_creation_input_tokens": 7480,
+    "cache_read_input_tokens": 36170,
+    "cost_usd": 0.093413,
+    "duration_ms": 17531.4,
+    "input_tokens": 7,
+    "models": "2 model(s); identifiers not recorded in the repository",
+    "num_turns": 5,
+    "output_tokens": 1239,
+    "tool_calls": 4
+   },
+   "verification_status": "VERIFIED"
+  },
+  {
+   "arm": "A_DIRECT",
+   "changed": [
+    "report.py",
+    "summary.xlsx"
+   ],
+   "claimed_outcome": "completed_claimed",
+   "failed_checks": [],
+   "files_visible": 6,
+   "instructions_bytes": 36,
+   "repeat": 1,
+   "usage": {
+    "cache_creation_input_tokens": 5788,
+    "cache_read_input_tokens": 80038,
+    "cost_usd": 0.08984059999999999,
+    "duration_ms": 17445.9,
+    "input_tokens": 8,
+    "models": "2 model(s); identifiers not recorded in the repository",
+    "num_turns": 5,
+    "output_tokens": 1326,
+    "tool_calls": 4
+   },
+   "verification_status": "VERIFIED"
+  },
+  {
+   "arm": "B_URI_MEDIATED",
+   "changed": [
+    "report.py"
+   ],
+   "claimed_outcome": "completed_claimed",
+   "edge_reason": "NO_REMAP",
+   "failed_checks": [],
+   "files_visible": 2,
+   "instructions_bytes": 1549,
+   "repeat": 1,
+   "safety_flags": [],
+   "usage": {
+    "cache_creation_input_tokens": 4403,
+    "cache_read_input_tokens": 38340,
+    "cost_usd": 0.069011,
+    "duration_ms": 17695.5,
+    "input_tokens": 7,
+    "models": "2 model(s); identifiers not recorded in the repository",
+    "num_turns": 5,
+    "output_tokens": 1228,
+    "tool_calls": 4
+   },
+   "verification_status": "VERIFIED"
+  }
+ ],
+ "schema_version": "m38.live-pilot.v1",
+ "status": "PILOT_NOT_QUALIFICATION",
+ "task": "Make report.py work with sales.xlsx."
+}
