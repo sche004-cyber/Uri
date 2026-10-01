@@ -66,7 +66,7 @@ Cases whose outcome changed across 3 repeats: Needle P0 4/138, P1 4/138, R1 5/10
 | Measure | Needle | Granite (GPU) | Granite (CPU) | Main Brain |
 |---|---|---|---|---|
 | Holdout p50 / mean / p95, per case | 734 / – / 993 (P1) | 166 / – / 386 (JSON P1) | 745 / – / 989 | 884 / – / 1540 |
-| Idle rerun p50 / mean / p95 (09:32–09:35 IST, CPU 1–14%) | 721 / 672 / 1096 | JSON 157 / 161 / 242; native 204 / 211 / 304 | – | not completed (3 calls: 496) |
+| Idle rerun p50 / mean / p95 (09:32–09:35 IST, CPU 1–14%) | 721 / 672 / 1096; R1 1003 / 1061 / 1359 | JSON 157 / 161 / 242; native 204 / 211 / 304; JSON R1 211 / 214 / 282 | – | 888 / 887 / 1448 (13:13–13:16 IST, CPU 6–14%) |
 | Warm, fixed tool set (cold-start script, 5 × 20 calls) | p50 142–156, max 240 | p50 147–148, max 186 | – | p50 554–581, max 797 |
 | Cold start | worker process ready 169–175; first decode incl. agent build 470–529 (agent build 275–321) | first call 1,458–1,463 (load 1,291–1,300) | – | first call 5,783–8,503 (load 4,842–7,595) |
 | Memory | process tree RSS 95.5–97.0 MB; Needle `peak_ram_mb` 100.9–101.3 | 427.6 MB VRAM | CPU RAM (not separately sampled) | 5.49 GB VRAM at the default context when no other client set a larger one; 14.2 GB at 262,144 context |

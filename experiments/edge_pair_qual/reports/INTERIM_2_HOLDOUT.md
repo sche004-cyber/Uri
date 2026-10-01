@@ -41,7 +41,7 @@ The deterministic column counts "did nothing" as a correct abstention. Its real 
 | needle_R1 (real URI schemas) | 35/49 | 89 | 122 | 20 | 33 / 0 | 1146 / 1483 * |
 | granite_json_R1 (real URI schemas) | 44/49 | 96 | 159 | 0 | 33 / 0 | 945 / 1309 * |
 
-\* The R1 arms ran 08:43–08:55 IST, when another session on this PC was running a pytest suite that calls the same Ollama `qwen3.5:9b` (coordinator note). Their latencies are contended and will be re-measured on an idle machine. Accuracy is unaffected.
+\* The R1 arms ran 08:43–08:55 IST, when another session on this PC was running a pytest suite that calls the same Ollama `qwen3.5:9b` (coordinator note). Their latencies are contended. Idle rerun (report B §5): Needle R1 p50 1003 ms, Granite JSON R1 p50 211 ms. Accuracy is unaffected.
 
 With the real URI schemas (R1), action choice on the 102 select cases is Needle 53 and Granite JSON 48, against 49 and 47 with the typed catalogue. Executed-incorrect rises sharply (122 and 159), because the real tools take `request_text` or no argument, so URI's argument grounding check has nothing to reject.
 

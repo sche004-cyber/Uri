@@ -40,7 +40,7 @@ All configurations run on the same 138 holdout cases and are scored on the first
 3. **Selective routing gives nothing that URI can implement.** By request kind, Granite won every kind on development, so C3 equals C2. By family it adds 3 cases, but that needs an oracle URI does not have.
 4. **Calling both models on every turn was not tested.** Per the brief, a model is invoked only when the configuration's routing reaches it; calls per case stay at 0.88–1.17.
 5. **The deterministic layer, not an Edge model, is the only thing that reduced Brain calls without losing success**, and only after the post-holdout rule fix (C7 fix1). It is experimental and not a URI component, and its advantage is below the material-advantage thresholds.
-6. **Latency comparisons need the placement caveat.** On the same CPU placement, Granite JSON's p50 (745 ms) equals Needle's (734 ms). The idle-machine rerun (report B §5) reproduces the specialist latencies within 5%. The Main Brain idle rerun was cut off after 3 calls. Its holdout figures may include contention from another session; its warm p50 on an idle machine with a fixed prompt is 554–581 ms (cold-start script).
+6. **Latency comparisons need the placement caveat.** On the same CPU placement, Granite JSON's p50 (745 ms) equals Needle's (734 ms). The idle-machine rerun (report B §5) reproduces the specialist latencies within 5%. The Main Brain idle rerun on all 138 cases gave p50 888 ms and p95 1448 ms (holdout: 884 / 1540), so its holdout latency was not materially contended. Granite JSON R1's holdout latency was (945 ms holdout vs 211 ms idle).
 
 ## 4. Limits
 

@@ -1,0 +1,471 @@
+{
+ "load_before": {
+  "t": 1790840572.5316055,
+  "cpu_percent": 12.2,
+  "mem_percent": 39.0,
+  "top_cpu": [
+   {
+    "cpu": 2112.1,
+    "name": "System Idle Process"
+   },
+   {
+    "cpu": 88.1,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 23.9,
+    "name": "python.exe"
+   },
+   {
+    "cpu": 14.7,
+    "name": "claude.exe"
+   },
+   {
+    "cpu": 14.7,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 14.5,
+    "name": "MsMpEng.exe"
+   }
+  ]
+ },
+ "injected_outputs": [
+  {
+   "test": "incorrect_output_wrong_tool",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "web_search",
+      "arguments": {
+       "query": "grant_report_q2.pdf"
+      }
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "WRONG_TOOL",
+   "uri_containment": "EXECUTED_INCORRECT",
+   "executed": true,
+   "contained": false
+  },
+  {
+   "test": "malformed_structured_response",
+   "synthetic_model_output": {
+    "calls": [],
+    "suppressed": [],
+    "malformed": true,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "MALFORMED",
+   "uri_containment": "NO_ACTION",
+   "executed": false,
+   "contained": true
+  },
+  {
+   "test": "missing_argument",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "read_attached_file",
+      "arguments": {}
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "CORRECT",
+   "uri_containment": "CONTAINED_MISSING_ARG",
+   "executed": false,
+   "contained": true
+  },
+  {
+   "test": "invented_argument",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "read_attached_file",
+      "arguments": {
+       "attachment_name": "grant_report_final.pdf"
+      }
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "CORRECT",
+   "uri_containment": "CONTAINED_UNGROUNDED_ARG",
+   "executed": false,
+   "contained": true
+  },
+  {
+   "test": "corrupted_filename_copy",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "read_attached_file",
+      "arguments": {
+       "attachment_name": "grant_report_q2.pd"
+      }
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "CORRECT",
+   "uri_containment": "EXECUTED_INCORRECT",
+   "executed": true,
+   "contained": false
+  },
+  {
+   "test": "diacritic_stripped_copy",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "read_attached_file",
+      "arguments": {
+       "attachment_name": "grant_report_q2.PDF"
+      }
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "CORRECT",
+   "uri_containment": "CONTAINED_UNGROUNDED_ARG",
+   "executed": false,
+   "contained": true
+  },
+  {
+   "test": "multiple_calls",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "read_attached_file",
+      "arguments": {
+       "attachment_name": "grant_report_q2.pdf"
+      }
+     },
+     {
+      "name": "drive_search",
+      "arguments": {
+       "query": "grant_report_q2.pdf"
+      }
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "MULTI_CALL",
+   "uri_containment": "CONTAINED_MULTI_OR_INVALID",
+   "executed": false,
+   "contained": true
+  },
+  {
+   "test": "suppressed_only_call",
+   "synthetic_model_output": {
+    "calls": [],
+    "suppressed": [
+     {
+      "name": "read_attached_file",
+      "arguments": {
+       "attachment_name": "grant_report_q2.pdf"
+      }
+     }
+    ],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "FALSE_ABSTAIN",
+   "uri_containment": "NO_ACTION",
+   "executed": false,
+   "contained": true
+  },
+  {
+   "test": "unoffered_tool",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "drive_upload",
+      "arguments": {
+       "file_name": "grant_report_q2.pdf"
+      }
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "NOT_OFFERED",
+   "uri_containment": "CONTAINED_NOT_OFFERED",
+   "executed": false,
+   "contained": true
+  },
+  {
+   "test": "unknown_tool_name",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "delete_file",
+      "arguments": {
+       "name": "grant_report_q2.pdf"
+      }
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "INVALID_TOOL",
+   "uri_containment": "CONTAINED_MULTI_OR_INVALID",
+   "executed": false,
+   "contained": true
+  },
+  {
+   "test": "bad_enum_value",
+   "synthetic_model_output": {
+    "calls": [
+     {
+      "name": "convert_document",
+      "arguments": {
+       "attachment_name": "grant_report_q2.pdf",
+       "target_format": "odt"
+      }
+     }
+    ],
+    "suppressed": [],
+    "malformed": false,
+    "error": null,
+    "model_failure": null
+   },
+   "raw_outcome": "CORRECT",
+   "uri_containment": "CONTAINED_BAD_ENUM",
+   "executed": false,
+   "contained": true
+  }
+ ],
+ "real_gate_failures": [
+  {
+   "action": "drive_upload",
+   "translate_ok": true,
+   "gate": "DISCONNECTED",
+   "reasons": [
+    "blocked_by_permission"
+   ]
+  },
+  {
+   "action": "gmail_create_draft",
+   "translate_ok": true,
+   "gate": "INVALID_PROPOSAL",
+   "reasons": [
+    "unknown_capability"
+   ]
+  },
+  {
+   "action": "system_performance",
+   "translate_ok": true,
+   "gate": "READY",
+   "reasons": [
+    "all_gates_passed"
+   ]
+  }
+ ],
+ "needle_timeout": {
+  "error": "TimeoutError: needle bridge exceeded 0.001s",
+  "surfaced_after_ms": 7.575900000006186,
+  "process_alive_after": false,
+  "recovered_call_calls": [
+   {
+    "name": "read_attached_file",
+    "arguments": {
+     "attachment_name": "grant_report_q2.pdf"
+    }
+   }
+  ],
+  "recovery_ms_including_restart": 973.537800000031
+ },
+ "needle_crash": {
+  "error": "RuntimeError: needle bridge closed its output (crash)",
+  "after_restart_calls": [
+   {
+    "name": "read_attached_file",
+    "arguments": {
+     "attachment_name": "grant_report_q2.pdf"
+    }
+   }
+  ]
+ },
+ "oversize_input": {
+  "needle_P1": {
+   "ms": 7851.538899999923,
+   "outcome": "NO_OUTPUT",
+   "fields": {
+    "invoice_number": {
+     "exp": "ZZ-4410",
+     "got": null,
+     "outcome": "NO_OUTPUT",
+     "n5": "REJECTED"
+    }
+   },
+   "model_failure": null,
+   "prompt_eval_count": null
+  },
+  "granite_json_P1": {
+   "ms": 2415.4525999999805,
+   "outcome": "CORRECT",
+   "fields": {
+    "invoice_number": {
+     "exp": "ZZ-4410",
+     "got": "ZZ-4410",
+     "outcome": "EXACT",
+     "n5": "ACCEPTED_CORRECT"
+    }
+   },
+   "model_failure": null,
+   "prompt_eval_count": 2050
+  },
+  "chars": 78022
+ },
+ "replacement_escalation_recovery": {
+  "flows": [
+   {
+    "text": "Compare the attached two hostel menus and suggest a healthier weekly plan.",
+    "stages": [
+     {
+      "role": "specialist_A_needle",
+      "ms": 1648.6790000000155,
+      "calls": [
+       {
+        "name": "read_attached_file",
+        "arguments": {}
+       },
+       {
+        "name": "ask_clarification",
+        "arguments": {}
+       }
+      ],
+      "gate": null
+     },
+     {
+      "role": "replacement_B_granite",
+      "ms": 186.37030000002142,
+      "calls": [
+       {
+        "name": "read_attached_file",
+        "arguments": {}
+       }
+      ],
+      "gate": "READY"
+     }
+    ],
+    "specialist_a_injected_malformed": false
+   },
+   {
+    "text": "Read the attached minutes_ec_0928.pdf.",
+    "stages": [
+     {
+      "role": "specialist_A_needle",
+      "ms": 504.9171999999089,
+      "calls": [
+       {
+        "name": "read_attached_file",
+        "arguments": {}
+       }
+      ],
+      "gate": "READY"
+     }
+    ],
+    "specialist_a_injected_malformed": false
+   },
+   {
+    "text": "Read the attached minutes_ec_0928.pdf.",
+    "stages": [
+     {
+      "role": "specialist_A_needle",
+      "ms": 0.0,
+      "calls": [],
+      "gate": null
+     },
+     {
+      "role": "replacement_B_granite",
+      "ms": 206.01250000004256,
+      "calls": [
+       {
+        "name": "read_attached_file",
+        "arguments": {
+         "request_text": "minutes_ec_0928.pdf"
+        }
+       }
+      ],
+      "gate": "READY"
+     }
+    ],
+    "specialist_a_injected_malformed": true
+   }
+  ],
+  "idempotency_test_double": {
+   "first_attempt": "crash after side effect, before acknowledgement",
+   "naive_retry": {
+    "status": "EXECUTED"
+   },
+   "side_effects_naive": 2,
+   "record_first_retry": {
+    "status": "SKIPPED_ALREADY_EXECUTED",
+    "key": [
+     "turn-1",
+     "read_attached_file",
+     "{\"attachment_name\": \"minutes_ec_0928.pdf\"}"
+    ]
+   },
+   "side_effects_record_first": 1
+  }
+ },
+ "load_after": {
+  "t": 1790840590.156419,
+  "cpu_percent": 12.2,
+  "mem_percent": 41.8,
+  "top_cpu": [
+   {
+    "cpu": 2226.9,
+    "name": "System Idle Process"
+   },
+   {
+    "cpu": 99.5,
+    "name": "git-remote-https.exe"
+   },
+   {
+    "cpu": 32.7,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 23.4,
+    "name": "python.exe"
+   },
+   {
+    "cpu": 20.8,
+    "name": "chrome.exe"
+   },
+   {
+    "cpu": 13.9,
+    "name": "chrome.exe"
+   }
+  ]
+ }
+}
