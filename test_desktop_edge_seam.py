@@ -143,7 +143,7 @@ class FinalizeAttributionTests(unittest.TestCase):
         result = {"status": "success", "session_id": "s1", "response": {"message": "Approved."}}
         with patch("uri_core.core.usage_meter.month_records", return_value=records):
             out = server._finalize_ask_response(MagicMock(), "u1", _payload("yes"), result, turn_started=start)
-        self.assertEqual(out["serving_call_count"], 0)
+        self.assertIsNone(out["serving_call_count"])  # no usage record: unknown, not 0
         self.assertIsNone(out["serving_model"])
         self.assertIsNone(out["serving_duration_seconds"])
 
@@ -181,7 +181,7 @@ class AuditRepairTests(unittest.TestCase):
         payload = _payload("x", override={"provider_id": "ollama", "model": "gemma4:12b"})
         with patch("uri_core.core.usage_meter.month_records", return_value=[]):
             out = server._finalize_ask_response(MagicMock(), "u1", payload, {"status": "success"}, turn_started=start)
-        self.assertEqual(out["serving_call_count"], 0)
+        self.assertIsNone(out["serving_call_count"])  # no usage record: unknown, not 0
         self.assertIsNone(out["serving_model"])
 
     def test_conversational_draft_keeps_a_length_bound(self):

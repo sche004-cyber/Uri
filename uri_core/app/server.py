@@ -2007,8 +2007,10 @@ def _finalize_ask_response(
         serving_eval_tokens = _sum_measured(serving_calls, "eval_tokens")
         serving_duration_seconds = _sum_measured(serving_calls, "duration_seconds")
     elif serving_calls is not None:
-        # No model call happened this turn: never attribute an earlier turn's
-        # record, nor present a requested override as the executing model.
+        # No usage record this turn. Some older adapters never write one, so
+        # this does not prove no model ran: report it as unknown (call count
+        # None), never an earlier turn's record or a requested override.
+        serving_calls = None
         serving_provider = serving_model = None
         serving_prompt_tokens = serving_eval_tokens = serving_duration_seconds = None
     try:
@@ -2140,6 +2142,8 @@ async def ask_stream(
         yield _sse_event("message", result)
         yield _sse_event("done", {"narrative_interrupted": False})
 
+    stream_turn_started = time.time()
+
     async def _generate():
         # Streaming Tier 0 has no Turn State payload seam.  Attachment
         # turns therefore use the ordinary /ask path, which passes the
@@ -2199,7 +2203,9 @@ async def ask_stream(
                         async for chunk in _fallback_to_ask():
                             yield chunk
                         return
-                    finalized = _finalize_ask_response(context, user_id, payload, event.envelope)
+                    finalized = _finalize_ask_response(
+                        context, user_id, payload, event.envelope, turn_started=stream_turn_started,
+                    )
                     yield _sse_event("done", {
                         "response": finalized,
                         "ttft_seconds": event.ttft_seconds,
