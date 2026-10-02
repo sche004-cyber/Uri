@@ -4,7 +4,7 @@
 **Milestone:** INT-ARN-1 (Real RAR/reference clarification in desktop `/ask`)  
 **Governance:** [URI Four-Stage Development Lifecycle](../governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md)  
 **Prerequisite:** [Stage 1 Root-Cause Audit](../research/INT_ARN_1_ROOT_CAUSE_AUDIT.md)  
-**Branch:** `experimental/desktop-recovery-repair` | **Planning checkout HEAD:** `74677cc`
+**Branch:** `experimental/desktop-recovery-repair` | **Amendment base:** `74677cc` (accepted with amendments at `f212b0d`)
 **Date:** 2026-10-02  
 
 ---
