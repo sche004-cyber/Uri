@@ -6,18 +6,22 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from pptx import Presentation
+from PIL import Image
 
 from uri_core.core.canonical_execution import _execute_legacy_capability, _ready_read_prefix, run_canonical_for_ask
 from uri_core.core.decision_engine import DecisionOutcome
 from uri_core.core.tool_schema import LEGACY_TOOL_PARAMETERS
 from uri_core.core.response_validation import validate_drafted_response
-from uri_core.services.office_document_writer import render_pptx_bytes
+from uri_core.services.office_document_writer import find_openverse_images, render_pptx_bytes
 from uri_core.tools.generate_document import GenerateDocumentTool
 
 
 PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg=="
 )
+valid_png_buffer = io.BytesIO()
+Image.new("RGB", (1, 1), "red").save(valid_png_buffer, format="PNG")
+VALID_PNG = valid_png_buffer.getvalue()
 
 
 class Directory:
@@ -155,7 +159,7 @@ def test_followup_uses_brain_format_title_and_derived_image_queries():
     tool = GenerateDocumentTool(composer=DeckComposer(), file_store=Store())
     queries = []
 
-    def images(found_queries):
+    def images(found_queries, *, diagnostics=None):
         queries.extend(found_queries)
         return [{"data": PNG, "credit": "Test creator; CC0; example.test"}]
 
@@ -219,5 +223,154 @@ def test_image_failure_still_saves_pptx_with_research_context():
         )
     assert result["status"] == "success"
     assert result["images_added"] == 0
-    assert result["image_note"]
+    assert "search was unavailable" in result["image_note"]
     assert result["file"]["file_id"]
+
+
+class ImageResponse:
+    def __init__(self, *, results=None, data=VALID_PNG, url="https://api.openverse.org/image/thumb/",
+                 history=(), content_type="image/png"):
+        self.results = results
+        self.data = data
+        self.url = url
+        self.history = list(history)
+        self.headers = {"Content-Type": content_type}
+
+    def json(self):
+        return {"results": self.results}
+
+    def raise_for_status(self):
+        pass
+
+    def iter_content(self, size):
+        yield self.data
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+
+def _item(number):
+    return {
+        "license": "by", "title": f"Photo {number}", "creator": f"Creator {number}",
+        "thumbnail": f"https://api.openverse.org/v1/images/{number}/thumb/",
+        "url": f"https://photos.example/{number}.png",
+        "foreign_landing_url": f"https://photos.example/{number}",
+    }
+
+
+def test_thumbnail_preferred_and_multiple_images_have_credits():
+    calls = []
+
+    def get(url, **kwargs):
+        calls.append(url)
+        if url.endswith("/images/"):
+            assert kwargs["params"]["page_size"] == 5
+            return ImageResponse(results=[_item(len(calls)), _item(len(calls) + 1)])
+        return ImageResponse(url=url)
+
+    with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+        images = find_openverse_images(["campus", "students"])
+    assert len(images) == 2
+    assert len([url for url in calls if "/thumb/" in url]) == 2
+    assert not any("photos.example" in url for url in calls)
+    deck = Presentation(io.BytesIO(render_pptx_bytes(
+        "# Title\n- Intro\n# Campus\n- One\n# Students\n- Two", images=images,
+    )))
+    assert sum(any(shape.shape_type == 13 for shape in slide.shapes) for slide in deck.slides) == 2
+    credits = " ".join(shape.text for shape in deck.slides[-1].shapes if shape.has_text_frame)
+    assert "Creator 1" in credits and "Creator 3" in credits
+
+
+def test_http_redirect_rejected_and_later_result_tried():
+    calls = []
+
+    def get(url, **kwargs):
+        calls.append(url)
+        if url.endswith("/images/"):
+            return ImageResponse(results=[_item(1), _item(2)])
+        if "/1/" in url or url.endswith("/1.png"):
+            return ImageResponse(url="https://photos.example/final.png",
+                                 history=[SimpleNamespace(url="http://photos.example/redirect")])
+        return ImageResponse(url=url)
+
+    with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+        images = find_openverse_images(["campus"])
+    assert len(images) == 1
+    assert "Creator 2" in images[0]["credit"]
+    assert len(calls) == 4
+
+
+def test_https_redirects_accepted_up_to_three():
+    for hops, expected in ((3, 1), (4, 0)):
+        def get(url, **kwargs):
+            if url.endswith("/images/"):
+                return ImageResponse(results=[{**_item(1), "url": None}])
+            return ImageResponse(url="https://photos.example/final.png", history=[
+                SimpleNamespace(url=f"https://photos.example/hop-{index}") for index in range(hops)
+            ])
+
+        with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+            assert len(find_openverse_images(["campus"])) == expected
+
+
+def test_original_url_fallback_accepts_https_redirect():
+    calls = []
+
+    def get(url, **kwargs):
+        calls.append(url)
+        if url.endswith("/images/"):
+            return ImageResponse(results=[_item(1)])
+        if "/thumb/" in url:
+            return ImageResponse(url=url, content_type="text/html")
+        return ImageResponse(url="https://photos.example/final.png", history=[SimpleNamespace(url=url)])
+
+    with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+        images = find_openverse_images(["campus"])
+    assert len(images) == 1
+    assert calls[-1] == "https://photos.example/1.png"
+
+
+def test_oversize_rejected_and_download_failure_reason():
+    def get(url, **kwargs):
+        if url.endswith("/images/"):
+            return ImageResponse(results=[_item(1)])
+        return ImageResponse(url=url, data=b"x" * 5_000_001)
+
+    diagnostics = {}
+    with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+        assert find_openverse_images(["campus"], diagnostics=diagnostics) == []
+    assert diagnostics["reason"] == "downloads_failed"
+
+
+def test_no_results_reason():
+    diagnostics = {}
+    with patch("uri_core.services.office_document_writer.requests.get", return_value=ImageResponse(results=[])):
+        assert find_openverse_images(["campus"], diagnostics=diagnostics) == []
+    assert diagnostics["reason"] == "no_results"
+
+
+def test_tool_image_note_distinguishes_no_results_and_failed_downloads():
+    class Store:
+        def save(self, **kwargs):
+            return SimpleNamespace(to_reference=lambda: {"file_id": "saved-file"})
+
+    class PlainComposer:
+        def compose(self, **kwargs):
+            return {"body": "# Topic\n# Details", "status": "success", "composed_by": "model"}
+
+    tool = GenerateDocumentTool(composer=PlainComposer(), file_store=Store())
+    for results, note in (([], "found no usable licensed images"),
+                          ([_item(1)], "downloads failed")):
+        def get(url, **kwargs):
+            if url.endswith("/images/"):
+                return ImageResponse(results=results)
+            return ImageResponse(url=url, content_type="text/html")
+
+        with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+            outcome = tool.generate(request_text="Make a PPT", include_images=True,
+                                    image_queries=["campus"], session_id="s")
+        assert outcome["images_added"] == 0
+        assert note in outcome["image_note"]

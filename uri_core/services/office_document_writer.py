@@ -21,8 +21,6 @@ prompt) and these functions parse:
 
 import io
 import ipaddress
-import tempfile
-from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
@@ -97,50 +95,84 @@ _THEMES = {
 }
 
 
-def find_openverse_images(queries: List[str]) -> List[dict]:
-    """Best-effort CC photo retrieval. Never hold a network resource in a deck."""
+def _safe_image_url(url: str) -> bool:
+    if not isinstance(url, str):
+        return False
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+        return False
+    try:
+        port = parsed.port
+    except ValueError:
+        return False
+    if port not in {None, 443}:
+        return False
+    try:
+        ipaddress.ip_address(parsed.hostname)
+    except ValueError:
+        # Hostnames are allowed; literal IP addresses are not.
+        return True
+    return False
+
+
+def _download_image(url: str) -> bytes:
+    if not _safe_image_url(url):
+        raise ValueError("Unsafe image URL")
+    with requests.get(url, stream=True, timeout=6, allow_redirects=True) as download:
+        if len(download.history) > 3 or not all(
+            _safe_image_url(hop.url) for hop in [*download.history, download]
+        ):
+            raise ValueError("Unsafe image redirect")
+        download.raise_for_status()
+        if not download.headers.get("Content-Type", "").lower().startswith("image/"):
+            raise ValueError("Response is not an image")
+        data = bytearray()
+        for chunk in download.iter_content(65536):
+            data.extend(chunk)
+            if len(data) > 5_000_000:
+                raise ValueError("Image exceeds 5 MB")
+    with Image.open(io.BytesIO(data)) as image:
+        image.verify()
+    return bytes(data)
+
+
+def find_openverse_images(queries: List[str], *, diagnostics: dict = None) -> List[dict]:
+    """Best-effort CC photo retrieval, with an optional plain-language failure reason."""
     images = []
+    search_failed = False
+    search_succeeded = False
+    download_failed = False
     for query in queries[:4]:
+        if len(images) >= 4:
+            break
         if not isinstance(query, str) or not query.strip():
             continue
         try:
             response = requests.get(
                 "https://api.openverse.org/v1/images/",
-                params={"q": query[:120], "page_size": 3, "license_type": "commercial"},
+                params={"q": query[:120], "page_size": 5, "license_type": "commercial"},
                 timeout=5,
             )
             response.raise_for_status()
-            for item in response.json().get("results", [])[:3]:
+            results = response.json().get("results", [])[:5]
+            search_succeeded = True
+        except (requests.RequestException, OSError, ValueError, TypeError, KeyError, AttributeError):
+            search_failed = True
+            continue
+        for item in results:
+            try:
                 if item.get("license", "").lower() not in {"cc0", "by", "by-sa"}:
                     continue
                 url = item.get("url")
-                if not isinstance(url, str) or not url.startswith("https://"):
+                embedded_data = None
+                for candidate in (item.get("thumbnail"), url):
+                    try:
+                        embedded_data = _download_image(candidate)
+                        break
+                    except (requests.RequestException, OSError, ValueError, TypeError, SyntaxError):
+                        download_failed = True
+                if embedded_data is None:
                     continue
-                parsed = urlparse(url)
-                if not parsed.hostname or parsed.username or parsed.password or parsed.port not in {None, 443}:
-                    continue
-                try:
-                    ipaddress.ip_address(parsed.hostname)
-                    continue
-                except ValueError:
-                    pass
-                with requests.get(url, stream=True, timeout=6, allow_redirects=False) as download:
-                    download.raise_for_status()
-                    if not download.headers.get("Content-Type", "").lower().startswith("image/"):
-                        continue
-                    data = bytearray()
-                    for chunk in download.iter_content(65536):
-                        data.extend(chunk)
-                        if len(data) > 5_000_000:
-                            raise ValueError("Image exceeds 5 MB")
-                # Stage the bounded download in a short-lived local file;
-                # python-pptx embeds its bytes, and the directory is removed.
-                with tempfile.TemporaryDirectory(prefix="uri_ppt_image_") as temp_dir:
-                    image_path = Path(temp_dir) / "image"
-                    image_path.write_bytes(data)
-                    embedded_data = image_path.read_bytes()
-                with Image.open(io.BytesIO(embedded_data)) as image:
-                    image.verify()
                 images.append({
                     "data": embedded_data,
                     "credit": f"{item.get('title') or 'Image'} — {item.get('creator') or 'Unknown creator'}; "
@@ -149,8 +181,13 @@ def find_openverse_images(queries: List[str]) -> List[dict]:
                               f"{item.get('license_url') or ''}",
                 })
                 break
-        except (requests.RequestException, OSError, ValueError, TypeError, KeyError):
-            continue
+            except (ValueError, TypeError, AttributeError):
+                continue
+    if diagnostics is not None:
+        diagnostics["reason"] = (
+            "downloads_failed" if download_failed else
+            "offline" if search_failed and not search_succeeded else "no_results"
+        ) if not images else None
     return images
 
 

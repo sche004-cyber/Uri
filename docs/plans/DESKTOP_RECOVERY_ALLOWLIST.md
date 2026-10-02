@@ -218,3 +218,15 @@ discriminating match. `summarise my unread emails` puts the multi-action
 change presentation routing or promote another capability to foundational;
 the presentation gap needs a separate review of the general preselection
 behavior, without a phrase-specific keyword classifier.
+
+## 2026-10-02 Openverse PPTX image retrieval repair
+
+Authority: Chetan's direct implementer instruction, 2026-10-02, following a
+live PPTX run with zero added images. Claude re-pins frozen-file hashes after
+independent review. No milestone status or release checkpoint is claimed.
+
+| Path | Justification |
+|---|---|
+| `uri_core/services/office_document_writer.py` | Prefer Openverse thumbnail downloads, validate HTTPS redirect chains and image bytes, try up to five candidates per query, and return a bounded retrieval failure reason. |
+| `uri_core/tools/generate_document.py` | Pass the retrieval reason into a truthful plain-language image note when no images were added. |
+| `test_ppt_research_chain.py` | Mocked regressions for thumbnails, redirect policy, size cap, multiple credited slides, fallback, and image-note reasons; no network. |

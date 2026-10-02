@@ -176,6 +176,7 @@ class GenerateDocumentTool:
 
         try:
             images = []
+            image_diagnostics = {}
             if output_format == "pptx" and include_images:
                 from uri_core.services.office_document_writer import find_openverse_images
                 if not image_queries:
@@ -183,7 +184,7 @@ class GenerateDocumentTool:
                     image_queries = [f"{title} {slide}".strip() for slide in slide_titles[1:5]]
                     if not image_queries:
                         image_queries = [title or slide_titles[0]] if title or slide_titles else []
-                images = find_openverse_images(image_queries)
+                images = find_openverse_images(image_queries, diagnostics=image_diagnostics)
             content_bytes = self._render(
                 output_format, body, theme=theme, include_images=include_images,
                 images=images,
@@ -211,6 +212,14 @@ class GenerateDocumentTool:
                 "error": str(error),
             }
 
+        image_note = None
+        if output_format == "pptx" and include_images and not images:
+            image_note = {
+                "offline": "Image search was unavailable, so the presentation was created without photos.",
+                "downloads_failed": "Licensed images were found, but their downloads failed; the presentation was created without photos.",
+                "no_results": "Image search found no usable licensed images; the presentation was created without photos.",
+            }.get(image_diagnostics.get("reason"), "Images could not be added; the presentation was created without photos.")
+
         return {
             # Propagates the composer's own honest status - "success"
             # only when the Brain actually authored the content actually
@@ -225,7 +234,7 @@ class GenerateDocumentTool:
             "preview": body[:500],
             "images_requested": include_images if output_format == "pptx" else False,
             "images_added": len(images) if output_format == "pptx" else 0,
-            "image_note": "No licensed images were available; the presentation was created without photos." if output_format == "pptx" and include_images and not images else None,
+            "image_note": image_note,
         }
 
     @staticmethod
