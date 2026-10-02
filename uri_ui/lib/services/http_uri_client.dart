@@ -447,11 +447,15 @@ class HttpUriClient implements UriClient {
       // values this checks.
       final unavailableReason = body['narrative_unavailable_reason']
           ?.toString();
+      final response = body['response'];
+      final responseMessage = response is Map ? response['message'] : null;
       final failureReason = body['error']?.toString() ??
           (const {'no_brain_configured', 'drafting_provider_unreachable'}
                   .contains(unavailableReason)
               ? "URI's Brain isn't configured or is unreachable — set an Active Brain in Model Providers."
-              : 'URI could not process this request.');
+              : (responseMessage is String
+                  ? responseMessage
+                  : 'URI could not process this request.'));
       return UriTurn(
         id: id,
         userText: text,

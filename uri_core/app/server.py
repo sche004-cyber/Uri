@@ -525,6 +525,7 @@ def _build_user_context(user_id: str) -> _UserContext:
     #     executions land in the one audit trail their approvals do.
     from uri_core.capabilities.discovery import CapabilityDiscoveryEngine
     from uri_core.capabilities.gmail import GmailCapability
+    from uri_core.services.gmail_service import GmailService
     from uri_core.external.adapters.in_process import remember_fact_capability
     from uri_core.external.credentials import ExternalCredentialStore
     from uri_core.external.permission_binding import make_permission_resolver
@@ -539,7 +540,9 @@ def _build_user_context(user_id: str) -> _UserContext:
     )
 
     _remember_descriptor = _capability_registry.describe_status("remember_fact")
-    _base_capabilities = [GmailCapability()]
+    _base_capabilities = [
+        GmailCapability(GmailService(user_id=user_id)) if user_id else GmailCapability()
+    ]
     if _remember_descriptor is not None:
         _base_capabilities.append(remember_fact_capability(_remember_descriptor, principal=principal))
     _publisher = ExternalCapabilityPublisher(store=external_capability_store)
@@ -592,12 +595,15 @@ def refresh_user_external_lifecycle(
         context = _get_user_context(user_id)
     with context.external_lifecycle_lock:
         from uri_core.capabilities.gmail import GmailCapability
+        from uri_core.services.gmail_service import GmailService
         from uri_core.external.adapters.in_process import remember_fact_capability
         from uri_core.external.permission_binding import make_permission_resolver
         from uri_core.external.registry_bridge import ExternalCapabilityPublisher
         from uri_core.core.multi_action_dispatch import MultiActionDispatch
 
-        base_caps = [GmailCapability()]
+        base_caps = [
+            GmailCapability(GmailService(user_id=user_id)) if user_id else GmailCapability()
+        ]
         rem = _capability_registry.describe_status("remember_fact")
         if rem is not None:
             principal = getattr(context.orchestrator, "principal", None)

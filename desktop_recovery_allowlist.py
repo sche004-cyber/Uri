@@ -18,12 +18,13 @@ import subprocess
 from pathlib import Path
 
 DESKTOP_RECOVERY_FILES = {
-    "uri_core/app/server.py": "12fdc87d4500019d6d9794a288b9765d90fe13c8",
+    "uri_core/app/server.py": "5e71b77fedb2601fc0889ffa836d4fb1519459d9",
     "uri_core/core/response_validation.py": "35d1a790f187f4f487bc91483a553670b87ebade",
     "uri_ui/lib/models/uri_turn.dart": "ed841e094f78e628e880949fab4e9026f539dcb8",
-    "uri_ui/lib/services/http_uri_client.dart": "288b54a049a4356149ed3be4b77de148c1fe0a7d",
+    "uri_ui/lib/services/http_uri_client.dart": "72a91d386cb52840cde8e73e8ed6d57987326fb1",
     "uri_ui/lib/widgets/turn_card.dart": "f0a212a47d9392e7da5610eca11dc8ed4e7e19c7",
     "uri_ui/test/chat_lifecycle_test.dart": "e372b0a8edd41d862402d5c8f1d6a69e0ff9b2ad",
+    "uri_ui/test/desktop_recovery_failure_reason_test.dart": "2e927dd214a761d53c628c706282a7805fb3dc74",
 }
 
 

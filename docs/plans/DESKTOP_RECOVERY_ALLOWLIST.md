@@ -40,6 +40,15 @@ any other file under `uri_core`/`uri_ui` still fails the guards.
 | `uri_ui/test/chat_lifecycle_test.dart` | Caption text changed ("Model: ..." and "model N s"); one new test for multi-call and Send-to-reply time. |
 | `tests/test_m36_memory_adversarial.py`, `tests/test_m37_edge_resolution.py`, `tests/test_m39_boundaries.py` | Exact-file exemption: a path passes only if it is listed in `desktop_recovery_allowlist.py` and its blob matches the pin; the module itself is blob-pinned in the M37 and M39 guards; the edited M36 guard is blob-pinned in both. |
 | `tests/test_m37_frozen_guard_pin.py` | `GUARD_SHA256` re-pinned to the amended M37 guard. Tamper tests unchanged. |
+| `uri_core/app/server.py` | Per-user Gmail registry construction and lifecycle refresh now use that user's OAuth token path. |
+| `uri_ui/lib/services/http_uri_client.dart` | Failed `/ask` turns show the backend's `response.message` when no top-level error or Brain setup reason applies. |
+| `test_gmail_user_scope.py` | Root-level regression proof for Gmail token-path isolation across registry creation and refresh; outside frozen guard scope. |
+| `uri_ui/test/desktop_recovery_failure_reason_test.dart` | Mock HTTP regression cases for capability failure text and existing fallback priority. |
+| `desktop_recovery_allowlist.py` | Re-pins the changed server and UI client blobs and pins the new UI test. |
+| `tests/test_m37_edge_resolution.py` | Re-pins the desktop allowlist module blob. |
+| `tests/test_m39_boundaries.py` | Re-pins the desktop allowlist module and both authorized frozen guard edits. |
+| `tests/test_m37_frozen_guard_pin.py` | Re-pins the normalized M37 guard SHA-256. |
+| `docs/plans/DESKTOP_RECOVERY_ALLOWLIST.md` | Records this bounded Gmail and failure-reason repair and its exact changed paths. |
 
 Outside the guards' scope (not frozen, listed for completeness):
 `desktop_recovery_allowlist.py` (the pinned list), `uri_desktop_seams/`
