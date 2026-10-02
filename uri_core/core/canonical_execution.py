@@ -433,6 +433,7 @@ def _is_heterogeneous_contract(contract: Dict[str, Any]) -> bool:
 
 def _canonical_nonexecution_envelope(
     contract: Dict[str, Any], gate_result: Any,
+    capability_directory: Any = None,
 ) -> Dict[str, Any]:
     """Return a truthful terminal response for a valid non-execution turn.
 
@@ -478,13 +479,52 @@ def _canonical_nonexecution_envelope(
             {"capability_id": sub.capability_id, "outcome": sub.outcome, "action_names": list(sub.action_names)}
             for sub in sub_results
         ]
+    response = {"message": message}
+    if contract.get("mode") == "conversation" and execution_status == "not_applicable":
+        response["available_capabilities"] = _conversation_capability_evidence(
+            capability_directory
+        )
     return {
         "status": status,
         "canonical_outcome": outcome,
         "plan": plan,
         "execution": {"status": execution_status, "capability": contract.get("capability")},
-        "response": {"message": message},
+        "response": response,
     }
+
+
+def _conversation_capability_evidence(capability_directory: Any) -> List[Dict[str, Any]]:
+    """Bound current-user directory facts for the drafting Brain, without selecting a tool."""
+    if capability_directory is None:
+        return []
+    try:
+        summaries = capability_directory.summaries()
+    except Exception:
+        return []
+    evidence = []
+    for entry in summaries:
+        if not isinstance(entry, dict):
+            continue
+        available = entry.get("available")
+        if available is None and entry.get("source") == "multi_action":
+            try:
+                detail = capability_directory.describe(entry.get("capability_id"))
+                available = detail.get("available") if isinstance(detail, dict) else None
+            except Exception:
+                available = None
+        if available is not True:
+            continue
+        capability_id = entry.get("capability_id")
+        if not isinstance(capability_id, str) or not capability_id:
+            continue
+        evidence.append({
+            "id": capability_id[:80],
+            "summary": str(entry.get("summary") or "")[:160],
+            "requires_approval": entry.get("approval_required"),
+        })
+        if len(evidence) == 32:
+            break
+    return evidence
 
 
 def _execute_canonical(
@@ -740,7 +780,9 @@ def run_canonical_for_ask(
                         state=arn_state,
                     )
             elif fallback_reason is None:
-                envelope = _canonical_nonexecution_envelope(contract, gate_result)
+                envelope = _canonical_nonexecution_envelope(
+                    contract, gate_result, capability_directory=directory
+                )
     except Exception as exc:
         fallback_reason = f"canonical_execution_error:{exc}"
         envelope = None

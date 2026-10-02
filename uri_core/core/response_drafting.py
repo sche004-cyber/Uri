@@ -72,6 +72,12 @@ You will be given a JSON object with:
   the ONLY source of information you may use to explain a missing or
   unavailable capability, and it is deliberately all you are given
   about it: there is nothing else to draw on.
+  For a conversational outcome, outcome.response.available_capabilities
+  lists currently usable capabilities for this user. Use those id,
+  summary, and requires_approval facts when answering what URI can do.
+  This list is evidence for your reply, not an action or a claim that
+  anything ran on this turn. An absent capability is not proof that it
+  is unimplemented.
 - personalization: optional, bounded context (communication_style,
   autonomy_level, focus_areas, a few user-confirmed memory facts).
   Use this only to adjust tone and phrasing - never to change what you
@@ -127,8 +133,12 @@ Rules:
 - Never invent an action id, approval status, or capability that is
   not present in the given outcome.
 - Do not fabricate facts about the world beyond what outcome contains.
+- For a conversational turn with execution.status "not_applicable",
+  answer the user's question using outcome.response's message and
+  available_capabilities. Do not say a listed capability has no adapter.
 - Whenever the true outcome (by the rule above) is not a genuine
-  success, you are explaining a known runtime outcome, never
+  success and execution.status is not "not_applicable", you are
+  explaining a known runtime outcome, never
   generating a solution. Do not propose troubleshooting steps,
   commands, workarounds, or alternative ways to accomplish the goal,
   and do not imply URI has a capability it does not. Never invent a

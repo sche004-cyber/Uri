@@ -141,3 +141,13 @@ Authority: Chetan, 2026-10-02 04:01 UTC and 05:48 UTC, authorized desktop recove
 | `test_google_onboarding.py` | Add a mocked successful Gmail setup-probe regression. |
 | `test_capability_questions.py` | Root-level regression suite covering prompt and registry guidance, Brain-contract pass-through, non-execution messaging, and Google registry availability; outside frozen guard scope. |
 | `test_capability_registry.py` | Update the real-registry assertion for fetch_drive_spreadsheet now that static availability is available and live per-user feasibility decides connection usability. |
+
+## 2026-10-02 Batch 4 follow-up: conversational capability evidence
+
+Authority: Chetan's direct implementer instruction, 2026-10-02, to ground canonical conversation drafts in currently usable per-user capabilities without editing orchestrator.py.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/canonical_execution.py` | Attach a bounded projection of usable current-user Capability Directory entries to canonical conversation response evidence only; preserve non-conversation envelopes and execution state. |
+| `uri_core/core/response_drafting.py` | Tell the drafting Brain how to use the conversation envelope's capability evidence; its existing payload already forwards outcome.response. |
+| `test_capability_questions.py` | Mock the per-user directory and drafting provider to prove usable-only, bounded conversation evidence, validation acceptance, and unchanged non-conversation response. |

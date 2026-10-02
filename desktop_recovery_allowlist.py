@@ -18,10 +18,11 @@ import subprocess
 from pathlib import Path
 
 DESKTOP_RECOVERY_FILES = {
+    "uri_core/core/response_drafting.py": "ecb3b2955bf77a5f4112766cc3a6ded72253a6b3",
     "uri_core/core/model_reasoning_adapter.py": "a42f3d247cf0bad95943e2cc914c7f9a5a426217",
     "uri_core/core/decision_engine.py": "e02c9a533cb95a09cd41ae8729e3080c1ac42823",
     "uri_core/core/capability_feasibility.py": "5159100a4c4ace884decfd135196220611066d86",
-    "uri_core/core/canonical_execution.py": "24e8fd7fa659be7cc5857e76224944313a4f71f8",
+    "uri_core/core/canonical_execution.py": "00951eb7cf506ca4bc45989e14e6b475e8ac6ce6",
     "uri_core/core/tool_schema.py": "9c0957428d1a4473c4e25d68de1fb23fcb70ca39",
     "uri_core/tools/google_workspace_create.py": "c99f7d26bb7df2bd90c979be41e07b70af43ce68",
     "uri_core/app/server.py": "344a59b3a3d956d652ee1d2dea9818cd3023ade9",

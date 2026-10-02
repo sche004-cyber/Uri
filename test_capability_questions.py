@@ -5,7 +5,10 @@ from types import SimpleNamespace
 from uri_core.core.canonical_execution import _canonical_nonexecution_envelope
 from uri_core.core.decision_engine import DECISION_CONTRACT_SYSTEM_PROMPT, propose_decision
 from uri_core.core.model_reasoning_adapter import REASONING_SYSTEM_PROMPT
+from uri_core.core.response_drafting import DraftRequest, draft_response
+from uri_core.core.response_validation import validate_drafted_response
 from uri_core.core.tool_schema import LEGACY_TOOL_PARAMETERS
+from uri_core.core.model_providers.base import ModelResponse
 from pathlib import Path
 
 
@@ -63,6 +66,80 @@ def test_disconnected_message_requires_capability_in_brain_contract():
     assert _canonical_nonexecution_envelope(named, gate)["response"]["message"] == "That capability is not connected right now."
     named["mode"] = "unsupported"
     assert _canonical_nonexecution_envelope(named, gate)["response"]["message"] == "URI cannot perform that request with an available capability."
+
+
+def test_conversation_draft_receives_bounded_current_user_capabilities():
+    class Directory:
+        def __init__(self):
+            self.described = []
+
+        def summaries(self):
+            entries = [
+                {"capability_id": "generate_document", "source": "legacy", "available": True,
+                 "summary": "Create PPTX presentations.", "approval_required": False},
+                {"capability_id": "web_search", "source": "legacy", "available": True,
+                 "summary": "Research the web.", "approval_required": False},
+                {"capability_id": "unusable", "source": "legacy", "available": False,
+                 "summary": "Secret detail", "approval_required": False},
+                {"capability_id": "Gmail", "source": "multi_action", "available": None,
+                 "summary": "Read and draft Gmail messages.", "approval_required": None},
+                {"capability_id": "Disconnected", "source": "multi_action", "available": None,
+                 "summary": "Unavailable service.", "approval_required": None},
+            ]
+            entries.extend(
+                {"capability_id": f"extra_{index}", "source": "legacy", "available": True,
+                 "summary": "x" * 300, "approval_required": True}
+                for index in range(40)
+            )
+            return entries
+
+        def describe(self, capability_id):
+            self.described.append(capability_id)
+            return {"available": capability_id == "Gmail"}
+
+    directory = Directory()
+    gate = SimpleNamespace(outcome="READY")
+    envelope = _canonical_nonexecution_envelope(
+        {"mode": "conversation", "capability": None, "reason": "Brain reason"},
+        gate, capability_directory=directory,
+    )
+    capabilities = envelope["response"]["available_capabilities"]
+    assert envelope["execution"] == {"status": "not_applicable", "capability": None}
+    assert [item["id"] for item in capabilities[:3]] == [
+        "generate_document", "web_search", "Gmail",
+    ]
+    assert {"unusable", "Disconnected"}.isdisjoint(item["id"] for item in capabilities)
+    assert directory.described == ["Gmail", "Disconnected"]
+    assert len(capabilities) == 32
+    assert all(len(item["summary"]) <= 160 for item in capabilities)
+    assert validate_drafted_response(
+        "Yes, I can create a PPTX presentation and research the web.",
+        {"execution": envelope["execution"], "response": envelope["response"]},
+    )
+
+    class Provider:
+        def complete(self, *, system, user, **kwargs):
+            payload = json.loads(user)
+            assert payload["outcome"]["response"]["available_capabilities"] == capabilities
+            return ModelResponse(content="Yes, I can create a PPTX presentation.", model="fake", provider="fake")
+
+    draft_response(DraftRequest(
+        user_text="Can you create a PPT?",
+        outcome={"execution": envelope["execution"], "response": envelope["response"]},
+        personalization=None, policy_text="policy",
+    ), provider=Provider())
+
+
+def test_nonconversation_envelope_does_not_include_capability_catalogue():
+    class Directory:
+        def summaries(self):
+            raise AssertionError("Non-conversation must not read the catalogue")
+
+    envelope = _canonical_nonexecution_envelope(
+        {"mode": "unsupported", "capability": None, "unsupported_reason": "Unavailable"},
+        SimpleNamespace(outcome="UNSUPPORTED"), capability_directory=Directory(),
+    )
+    assert envelope["response"] == {"message": "Unavailable"}
 
 
 def test_google_registry_text_tracks_live_connection():
