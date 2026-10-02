@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/activity_event.dart';
+import '../models/clarification.dart';
 import '../models/connection.dart';
 import '../models/memory_entry.dart';
 import '../models/system_performance.dart';
@@ -311,13 +312,18 @@ class HttpUriClient implements UriClient {
     String text, {
     String? turnId,
     Object? modelOverride,
+    ClarificationResponsePayload? clarificationResponse,
   }) async {
     final id = turnId ?? 'turn-${DateTime.now().microsecondsSinceEpoch}';
     final timestamp = DateTime.now();
 
     http.Response response;
     try {
-      response = await _askOnce(text, modelOverride);
+      response = await _askOnce(
+        text,
+        modelOverride,
+        clarificationResponse: clarificationResponse,
+      );
     } on http.ClientException {
       // A pooled keep-alive connection that went idle (e.g. over a
       // Tailscale relay) dies with exactly this exception on its next
@@ -327,7 +333,11 @@ class HttpUriClient implements UriClient {
       // attempt provably never reached the server, this cannot result
       // in the same ask being processed twice.
       try {
-        response = await _askOnce(text, modelOverride);
+        response = await _askOnce(
+          text,
+          modelOverride,
+          clarificationResponse: clarificationResponse,
+        );
       } catch (error) {
         return UriTurn(
           id: id,
@@ -390,7 +400,25 @@ class HttpUriClient implements UriClient {
     return turn;
   }
 
-  Future<http.Response> _askOnce(String text, Object? modelOverride) {
+  @override
+  Future<UriTurn> submitClarificationResponse(
+    ClarificationResponsePayload response, {
+    String? turnId,
+    Object? modelOverride,
+  }) {
+    return ask(
+      response.text ?? '',
+      turnId: turnId,
+      modelOverride: modelOverride,
+      clarificationResponse: response,
+    );
+  }
+
+  Future<http.Response> _askOnce(
+    String text,
+    Object? modelOverride, {
+    ClarificationResponsePayload? clarificationResponse,
+  }) {
     return _http
         .post(
           Uri.parse('$baseUrl/ask'),
@@ -399,6 +427,8 @@ class HttpUriClient implements UriClient {
             'session_id': _sessionId,
             'text': text,
             'model_override': ?modelOverride,
+            if (clarificationResponse != null)
+              'clarification_response': clarificationResponse.toJson(),
           }),
         )
         // The backend runs a multi-step reasoning chain against a
@@ -492,6 +522,52 @@ class HttpUriClient implements UriClient {
             ? 'Understood as: ${semantic['goal']}'
             : 'URI processed this request.');
 
+    final clarificationData = body['clarification'] as Map<String, dynamic>?;
+    final tentativeData = (body['tentative_binding'] ??
+            body['tentative_choice'] ??
+            (responseData is Map
+                ? (responseData['tentative_binding'] ??
+                    responseData['tentative_choice'])
+                : null))
+        as Map<String, dynamic>?;
+    final tentativeBinding = tentativeData != null
+        ? TentativeBinding.fromJson(tentativeData)
+        : null;
+
+    if (clarificationData != null) {
+      final ClarificationRequest clarification;
+      try {
+        clarification = ClarificationRequest.fromJson(clarificationData);
+      } on FormatException {
+        // Fail closed: never render padded or ungrounded choices.
+        return UriTurn(
+          id: id,
+          userText: text,
+          timestamp: timestamp,
+          stage: TurnStage.failed,
+          failureReason:
+              'URI asked which item you meant, but the choices it sent were '
+              'not valid, so nothing was shown or run. Please ask again.',
+        );
+      }
+      return UriTurn(
+        id: id,
+        userText: text,
+        timestamp: timestamp,
+        stage: TurnStage.awaitingClarification,
+        understanding: understanding,
+        clarification: clarification,
+        tentativeBinding: tentativeBinding,
+        servingProvider: servingProvider,
+        servingModel: servingModel,
+        promptTokens: promptTokens,
+        evalTokens: evalTokens,
+        durationSeconds: durationSeconds,
+        modelCallCount: modelCallCount,
+        elapsedSeconds: elapsedSeconds,
+      );
+    }
+
     if (execution != null && execution['status'] == 'awaiting_approval') {
       final actionId = responseData is Map
           ? responseData['action_id'] as String?
@@ -524,6 +600,7 @@ class HttpUriClient implements UriClient {
         timestamp: timestamp,
         stage: TurnStage.awaitingApproval,
         understanding: understanding,
+        tentativeBinding: tentativeBinding,
         proposedAction: ProposedAction(
           title: humanTitle,
           description:
@@ -551,6 +628,7 @@ class HttpUriClient implements UriClient {
           'unavailable',
           'input_required',
           'not_implemented',
+          'not_executed',
         }.contains(execution['status'])) {
       final reason =
           execution['error'] ??
@@ -612,6 +690,7 @@ class HttpUriClient implements UriClient {
       durationSeconds: durationSeconds,
       modelCallCount: modelCallCount,
       elapsedSeconds: elapsedSeconds,
+      tentativeBinding: tentativeBinding,
       result: ActionResult(
         summary: summary,
         // Only ever shown when a real tool was actually involved (e.g.
@@ -1384,13 +1463,36 @@ class HttpUriClient implements UriClient {
       return raw.whereType<Map<String, dynamic>>().map((turn) {
         final status = turn['status'] as String?;
         final responseText = turn['response_text'] as String? ?? '';
+        final clarificationJson =
+            turn['clarification'] as Map<String, dynamic>?;
+        final tentativeJson = (turn['tentative_binding'] ??
+            turn['tentative_choice']) as Map<String, dynamic>?;
+        ClarificationRequest? clarification;
+        if (clarificationJson != null) {
+          try {
+            clarification = ClarificationRequest.fromJson(clarificationJson);
+          } on FormatException {
+            clarification = null;
+          }
+        }
+        final tentativeBinding = tentativeJson != null
+            ? TentativeBinding.fromJson(tentativeJson)
+            : null;
+
         // A past turn is rendered read-only: a completed turn shows its
         // recorded response as the result; a failed turn shows it as the
         // failure detail. Never re-runs or re-proposes anything.
         final failed =
             status != null &&
             status != 'success' &&
-            status != 'awaiting_approval';
+            status != 'awaiting_approval' &&
+            status != 'awaiting_clarification';
+        final isClarification =
+            status == 'awaiting_clarification' || clarification != null;
+        final stage = isClarification
+            ? TurnStage.awaitingClarification
+            : (failed ? TurnStage.failed : TurnStage.completed);
+
         return UriTurn(
           id:
               turn['turn_id'] as String? ??
@@ -1399,11 +1501,13 @@ class HttpUriClient implements UriClient {
           timestamp:
               DateTime.tryParse(turn['timestamp'] as String? ?? '') ??
               DateTime.now(),
-          stage: failed ? TurnStage.failed : TurnStage.completed,
+          stage: stage,
           failureReason: failed ? responseText : null,
+          clarification: clarification,
+          tentativeBinding: tentativeBinding,
           servingProvider: turn['serving_provider'] as String?,
           servingModel: turn['serving_model'] as String?,
-          result: failed
+          result: (failed || isClarification)
               ? null
               : ActionResult(
                   summary: responseText.isEmpty ? '—' : responseText,

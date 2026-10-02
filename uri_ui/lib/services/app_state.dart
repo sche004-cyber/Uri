@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/activity_event.dart';
+import '../models/clarification.dart';
 import '../models/connection.dart';
 import '../models/memory_entry.dart';
 import '../models/system_performance.dart';
@@ -530,6 +531,86 @@ class AppState extends ChangeNotifier {
     isSendingAsk = false;
     notifyListeners();
     return turn;
+  }
+
+  // ---------------------------------------------------------------
+  // INT-ARN-1: Clarification response handling.
+  // ---------------------------------------------------------------
+
+  final Set<String> _submittingClarificationTurnIds = <String>{};
+
+  bool isSubmittingClarification(String turnId) =>
+      _submittingClarificationTurnIds.contains(turnId);
+
+  /// Sends the user's typed answer to a clarification card through `/ask`.
+  ///
+  /// The card's turn stays in the conversation as the question that was
+  /// asked; the server's answer arrives as a new turn after it, labelled
+  /// with what the user picked. A stale, expired or rejected answer keeps
+  /// the card open and shows the server's retry text instead.
+  Future<UriTurn?> submitClarificationResponse(
+    String turnId,
+    ClarificationResponsePayload payload,
+  ) async {
+    if (_submittingClarificationTurnIds.contains(turnId)) {
+      return null;
+    }
+    final index = conversation.indexWhere((t) => t.id == turnId);
+    if (index == -1 || conversation[index].clarification == null) {
+      return null;
+    }
+    final question = conversation[index].clarification!;
+    _submittingClarificationTurnIds.add(turnId);
+    conversation[index] = conversation[index].copyWith(retryMessage: '');
+    notifyListeners();
+
+    try {
+      final response = await _client.submitClarificationResponse(
+        payload,
+        turnId: 'turn-${DateTime.now().microsecondsSinceEpoch}',
+        modelOverride: conversationModelOverride,
+      );
+
+      final current = conversation.indexWhere((t) => t.id == turnId);
+      if (response.stage == TurnStage.failed && current != -1) {
+        final retryMsg = (response.failureReason?.isNotEmpty ?? false)
+            ? response.failureReason!
+            : 'This choice could not be confirmed. Please try again.';
+        conversation[current] =
+            conversation[current].copyWith(retryMessage: retryMsg);
+        notifyListeners();
+        return conversation[current];
+      }
+
+      final answered =
+          response.copyWith(userText: _clarificationAnswerLabel(question, payload));
+      conversation.add(answered);
+      notifyListeners();
+      return answered;
+    } finally {
+      _submittingClarificationTurnIds.remove(turnId);
+      notifyListeners();
+    }
+  }
+
+  String _clarificationAnswerLabel(
+    ClarificationRequest question,
+    ClarificationResponsePayload payload,
+  ) {
+    switch (payload.kind) {
+      case ClarificationResponseKind.candidate:
+        for (final option in question.options) {
+          if (option.candidateId == payload.candidateId) return option.label;
+        }
+        return payload.candidateId ?? '';
+      case ClarificationResponseKind.attribute:
+        for (final filter in question.attributeFilters) {
+          if (filter.optionKey == payload.optionKey) return filter.label;
+        }
+        return payload.optionKey ?? '';
+      case ClarificationResponseKind.freeInput:
+        return payload.text ?? '';
+    }
   }
 
   // ---------------------------------------------------------------

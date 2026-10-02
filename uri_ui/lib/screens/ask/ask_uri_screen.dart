@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../models/uri_turn.dart' show TurnStage;
 import '../../services/app_state.dart';
 import '../../services/app_state_scope.dart';
 import '../../services/attachment_opener_service.dart';
@@ -226,6 +227,7 @@ class _UriConversationPaneState extends State<UriConversationPane> {
                 separatorBuilder: (_, _) => const SizedBox(height: UriSpace.md),
                 itemBuilder: (context, index) {
                   final turn = state.conversation[index];
+                  final isLatest = index == state.conversation.length - 1;
                   return TurnCard(
                     turn: turn,
                     onApprove: () => state.approve(turn.id),
@@ -234,6 +236,13 @@ class _UriConversationPaneState extends State<UriConversationPane> {
                     onOpenAttachment: (attachment) =>
                         _openAttachment(state, attachment),
                     compact: widget.compact,
+                    onClarificationResponse: (payload) =>
+                        state.submitClarificationResponse(turn.id, payload),
+                    isSubmittingClarification:
+                        state.isSubmittingClarification(turn.id),
+                    isReadOnlyClarification:
+                        !isLatest ||
+                        turn.stage != TurnStage.awaitingClarification,
                   );
                 },
               ),

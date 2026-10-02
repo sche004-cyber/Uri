@@ -7,19 +7,36 @@
 // and "None of these / Enter something else" opens a free-input field whose
 // text becomes the authoritative clarification. Once answered, the card
 // locks so the same round cannot be answered twice.
+//
+// INT-ARN-1 Slice D: supports post-submit lock, safe retry rendering on
+// expiration/stale/rejection, history read-only, presentation cap of max 5
+// options, keyboard activation, and Semantics labels.
 
 import 'package:flutter/material.dart';
 
 import '../models/clarification.dart';
 import '../theme/uri_theme.dart';
 
-typedef ClarificationResponder = void Function(ClarificationResponsePayload payload);
+typedef ClarificationResponder =
+    void Function(ClarificationResponsePayload payload);
 
 class ClarificationCard extends StatefulWidget {
-  const ClarificationCard({super.key, required this.request, required this.onRespond});
+  const ClarificationCard({
+    super.key,
+    required this.request,
+    required this.onRespond,
+    this.isSubmitting = false,
+    this.isReadOnly = false,
+    this.retryMessage,
+    this.onChange,
+  });
 
   final ClarificationRequest request;
   final ClarificationResponder onRespond;
+  final bool isSubmitting;
+  final bool isReadOnly;
+  final String? retryMessage;
+  final VoidCallback? onChange;
 
   @override
   State<ClarificationCard> createState() => _ClarificationCardState();
@@ -27,7 +44,8 @@ class ClarificationCard extends StatefulWidget {
 
 class _ClarificationCardState extends State<ClarificationCard> {
   late final TextEditingController _controller = TextEditingController();
-  late bool _freeInputOpen = widget.request.kind == ClarificationKind.freeInputOnly;
+  late bool _freeInputOpen =
+      widget.request.kind == ClarificationKind.freeInputOnly;
   String? _answeredLabel;
 
   @override
@@ -37,6 +55,10 @@ class _ClarificationCardState extends State<ClarificationCard> {
       _controller.clear();
       _answeredLabel = null;
       _freeInputOpen = widget.request.kind == ClarificationKind.freeInputOnly;
+    } else if ((widget.retryMessage?.isNotEmpty ?? false) &&
+        widget.retryMessage != oldWidget.retryMessage) {
+      // Re-enable the card if a retry message is received from server
+      _answeredLabel = null;
     }
   }
 
@@ -47,7 +69,9 @@ class _ClarificationCardState extends State<ClarificationCard> {
   }
 
   void _emit(ClarificationResponsePayload payload, String shown) {
-    if (_answeredLabel != null) return; // one answer per round
+    if (widget.isReadOnly || widget.isSubmitting || _answeredLabel != null) {
+      return; // locked
+    }
     setState(() => _answeredLabel = shown);
     widget.onRespond(payload);
   }
@@ -64,6 +88,8 @@ class _ClarificationCardState extends State<ClarificationCard> {
     final colors = UriColors.of(context);
     final request = widget.request;
     final answered = _answeredLabel != null;
+    final isLocked = widget.isSubmitting || widget.isReadOnly || answered;
+    final visibleOptions = request.options.take(5).toList();
 
     return Container(
       key: const Key('clarification-card'),
@@ -79,13 +105,19 @@ class _ClarificationCardState extends State<ClarificationCard> {
         children: [
           Row(
             children: [
-              Icon(Icons.help_outline_rounded, size: 16, color: colors.accentInk),
+              Icon(
+                Icons.help_outline_rounded,
+                size: 16,
+                color: colors.accentInk,
+              ),
               const SizedBox(width: UriSpace.xs),
               Flexible(
                 child: Text(
                   'Which one?',
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelLarge?.copyWith(color: colors.accentInk),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colors.accentInk,
+                  ),
                 ),
               ),
             ],
@@ -93,24 +125,115 @@ class _ClarificationCardState extends State<ClarificationCard> {
           const SizedBox(height: UriSpace.sm),
           Text(request.question, style: theme.textTheme.bodyLarge),
           const SizedBox(height: UriSpace.sm),
+
+          // Server retry text when a previous clarification was stale/expired/rejected
+          if (widget.retryMessage?.isNotEmpty ?? false) ...[
+            Container(
+              key: const Key('clarification-retry-message'),
+              padding: const EdgeInsets.all(UriSpace.xs),
+              decoration: BoxDecoration(
+                color: colors.dangerSoft,
+                borderRadius: BorderRadius.circular(UriRadius.sm),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 14,
+                    color: colors.danger,
+                  ),
+                  const SizedBox(width: UriSpace.xs),
+                  Expanded(
+                    child: Text(
+                      widget.retryMessage!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.danger,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: UriSpace.sm),
+          ],
+
+          if (widget.isSubmitting) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: UriSpace.xs),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colors.accentInk,
+                    ),
+                  ),
+                  const SizedBox(width: UriSpace.xs),
+                  Text(
+                    'Submitting choice...',
+                    key: const Key('clarification-submitting'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.accentInk,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           if (answered)
-            Text(
-              'Using: $_answeredLabel',
-              key: const Key('clarification-answered'),
-              style: theme.textTheme.labelLarge?.copyWith(color: colors.accentInk),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(
+                    'Using: $_answeredLabel',
+                    key: const Key('clarification-answered'),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.accentInk,
+                    ),
+                  ),
+                ),
+                if (widget.onChange != null && !widget.isReadOnly)
+                  TextButton(
+                    key: const Key('clarification-change-button'),
+                    onPressed: widget.onChange,
+                    child: const Text('Change'),
+                  ),
+              ],
             )
           else ...[
-            for (final option in request.options)
+            for (final option in visibleOptions)
               Padding(
                 padding: const EdgeInsets.only(bottom: UriSpace.xs),
                 child: SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton(
-                    key: Key('clarification-option-${option.optionKey}'),
-                    style: OutlinedButton.styleFrom(alignment: Alignment.centerLeft),
-                    onPressed: () =>
-                        _emit(ClarificationResponsePayload.candidate(request, option), option.label),
-                    child: Text(option.label, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  child: Semantics(
+                    button: true,
+                    enabled: !isLocked,
+                    label: 'Clarification option: ${option.label}',
+                    child: OutlinedButton(
+                      key: Key('clarification-option-${option.optionKey}'),
+                      style: OutlinedButton.styleFrom(
+                        alignment: Alignment.centerLeft,
+                      ),
+                      onPressed: isLocked
+                          ? null
+                          : () => _emit(
+                              ClarificationResponsePayload.candidate(
+                                request,
+                                option,
+                              ),
+                              option.label,
+                            ),
+                      child: Text(
+                        option.label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -125,39 +248,73 @@ class _ClarificationCardState extends State<ClarificationCard> {
                 runSpacing: UriSpace.xs,
                 children: [
                   for (final filter in request.attributeFilters)
-                    ActionChip(
-                      key: Key('clarification-filter-${filter.optionKey}'),
-                      label: Text(filter.label),
-                      onPressed: () =>
-                          _emit(ClarificationResponsePayload.attribute(request, filter), filter.label),
+                    Semantics(
+                      button: true,
+                      enabled: !isLocked,
+                      label: 'Filter by ${filter.label}',
+                      child: ActionChip(
+                        key: Key('clarification-filter-${filter.optionKey}'),
+                        label: Text(filter.label),
+                        onPressed: isLocked
+                            ? null
+                            : () => _emit(
+                                ClarificationResponsePayload.attribute(
+                                  request,
+                                  filter,
+                                ),
+                                filter.label,
+                              ),
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: UriSpace.xs),
             ],
             if (request.kind != ClarificationKind.freeInputOnly)
-              TextButton(
-                key: const Key('clarification-escape'),
-                onPressed: () => setState(() => _freeInputOpen = true),
-                child: Text(request.escapeLabel),
+              Semantics(
+                button: true,
+                enabled: !isLocked,
+                label: request.escapeLabel,
+                child: TextButton(
+                  key: const Key('clarification-escape'),
+                  onPressed: isLocked
+                      ? null
+                      : () => setState(() => _freeInputOpen = true),
+                  child: Text(request.escapeLabel),
+                ),
               ),
             if (_freeInputOpen)
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      key: const Key('clarification-free-input'),
-                      controller: _controller,
-                      autofocus: request.kind != ClarificationKind.freeInputOnly,
-                      decoration: const InputDecoration(hintText: 'Describe what you mean'),
-                      onSubmitted: (_) => _submitFreeInput(),
+                    child: Semantics(
+                      textField: true,
+                      enabled: !isLocked,
+                      label: 'Clarification description',
+                      child: TextField(
+                        key: const Key('clarification-free-input'),
+                        controller: _controller,
+                        enabled: !isLocked,
+                        autofocus:
+                            request.kind != ClarificationKind.freeInputOnly,
+                        decoration: const InputDecoration(
+                          hintText: 'Describe what you mean',
+                        ),
+                        onSubmitted:
+                            isLocked ? null : (_) => _submitFreeInput(),
+                      ),
                     ),
                   ),
                   const SizedBox(width: UriSpace.sm),
-                  ElevatedButton(
-                    key: const Key('clarification-free-input-submit'),
-                    onPressed: _submitFreeInput,
-                    child: const Text('Use this'),
+                  Semantics(
+                    button: true,
+                    enabled: !isLocked,
+                    label: 'Submit description',
+                    child: ElevatedButton(
+                      key: const Key('clarification-free-input-submit'),
+                      onPressed: isLocked ? null : _submitFreeInput,
+                      child: const Text('Use this'),
+                    ),
                   ),
                 ],
               ),

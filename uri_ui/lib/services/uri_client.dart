@@ -1,12 +1,15 @@
 import '../models/activity_event.dart';
 import '../models/system_performance.dart';
 import '../models/attachment.dart';
+import '../models/clarification.dart';
 import '../models/connection.dart';
 import '../models/memory_entry.dart';
 import '../models/task_item.dart';
 import '../models/uri_turn.dart';
 
 export '../models/attachment.dart' show Attachment;
+export '../models/clarification.dart'
+    show ClarificationResponsePayload, ClarificationRequest;
 
 /// The boundary between this Flutter client and URI's runtime.
 ///
@@ -121,7 +124,16 @@ abstract class UriClient {
   /// conversation before this call resolves, then update that exact
   /// same turn in place once it does, rather than the pending turn and
   /// the final result ever being two separate list entries.
+  ///
   Future<UriTurn> ask(String text, {String? turnId, Object? modelOverride});
+
+  /// INT-ARN-1: Submits a typed clarification response to resolve an ambiguous
+  /// reference, routing through `/ask`.
+  Future<UriTurn> submitClarificationResponse(
+    ClarificationResponsePayload response, {
+    String? turnId,
+    Object? modelOverride,
+  });
 
   /// Approve a previously proposed action, moving it through execution.
   /// Returns the final turn once execution completes.

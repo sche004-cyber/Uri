@@ -43,6 +43,8 @@ class StatusPill extends StatelessWidget {
       case TurnStage.proposalReady:
       case TurnStage.awaitingApproval:
         return StatusPill(label: 'Awaiting your approval', foreground: colors.warning, background: colors.warningSoft);
+      case TurnStage.awaitingClarification:
+        return StatusPill(label: 'Waiting for your choice', foreground: colors.warning, background: colors.warningSoft);
       case TurnStage.executing:
         return StatusPill(label: 'Executing', foreground: colors.accentInk, background: colors.accentSoft);
       case TurnStage.completed:

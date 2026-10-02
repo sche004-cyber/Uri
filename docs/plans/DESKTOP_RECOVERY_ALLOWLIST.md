@@ -256,3 +256,18 @@ Authority: Chetan, 2026-10-02 08:46 UTC (INT-ARN-1), 09:02, 09:24 and 09:32 UTC 
 | `uri_core/core/approval_store.py` | `ProposedAction` binding identities + `requires_reference_binding`; `propose()`/`_load()`. |
 | `uri_core/core/approval_gate.py` | Pre-consumption binding recheck for legacy-tool `/approve`; registered records never legacy-dispatched. |
 | `uri_core/core/decision_engine.py`, `canonical_execution.py`, `uri_core/app/server.py` | Optional `reference_slots`, clarification intake/stream intercept, pre-dispatch hook, central fail-closed exclusions, clarification wire projection. |
+
+## 2026-10-02 INT-ARN-1 Slice D (Flutter clarification card)
+
+Authority: Chetan, 2026-10-02 (INT-ARN-1 "yes to all" for `ask_uri_screen.dart`, `clarification_card.dart`, `clarification.dart`; 14:37 UTC "OK" for `status_pill.dart`). Drafted by Antigravity (Codex quota exhausted), reviewed and repaired by Claude.
+
+| Path | Justification |
+|---|---|
+| `uri_ui/lib/models/uri_turn.dart` | `TurnStage.awaitingClarification`, clarification / tentative binding / retry fields, `copyWith(userText)`, history decode. |
+| `uri_ui/lib/models/clarification.dart` | Tolerant decode of the backend wire projection, `expires_at`, `toJson`, `ClarificationResponsePayload.fromJson`. |
+| `uri_ui/lib/services/uri_client.dart`, `http_uri_client.dart`, `mock_uri_client.dart` | `submitClarificationResponse` sends the typed `clarification_response` through `/ask`; decode `clarification`; malformed card fails closed as a visible failed turn. |
+| `uri_ui/lib/services/app_state.dart` | Duplicate-submit guard; answer appended as its own turn; stale/rejected answer keeps the card with the server's retry text. |
+| `uri_ui/lib/widgets/turn_card.dart`, `uri_ui/lib/screens/ask/ask_uri_screen.dart` | Embed the existing `ClarificationCard`; only the latest turn's card is interactive. |
+| `uri_ui/lib/widgets/clarification_card.dart` | Submit lock, read-only history, retry banner, five-option presentation cap, Semantics labels. |
+| `uri_ui/lib/widgets/status_pill.dart` | One label for the new turn stage (exhaustive switch). |
+| `uri_ui/test/int_arn_1_clarification_test.dart` | 14 widget/state/HTTP-contract tests. |

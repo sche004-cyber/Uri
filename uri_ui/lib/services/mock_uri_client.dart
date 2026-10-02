@@ -354,6 +354,32 @@ class MockUriClient implements UriClient {
   }
 
   @override
+  Future<UriTurn> submitClarificationResponse(
+    ClarificationResponsePayload response, {
+    String? turnId,
+    Object? modelOverride,
+  }) async {
+    await _latency();
+    final id = turnId ?? _nextId('turn');
+    final choiceText = response.text ??
+        response.candidateId ??
+        response.optionKey ??
+        'selected option';
+    final turn = UriTurn(
+      id: id,
+      userText: choiceText,
+      timestamp: DateTime.now(),
+      stage: TurnStage.completed,
+      understanding: 'Understood your choice: $choiceText',
+      result: ActionResult(
+        summary: 'Clarification resolved with $choiceText.',
+      ),
+    );
+    _turns[id] = turn;
+    return turn;
+  }
+
+  @override
   Future<UriTurn> approve(String turnId) async {
     final existing = _turns[turnId];
     if (existing == null) {

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
 import '../models/attachment.dart';
+import '../models/clarification.dart';
 import '../models/uri_turn.dart';
 import '../theme/uri_theme.dart';
+import 'clarification_card.dart';
 import 'linkified_text.dart';
 import 'status_pill.dart';
 
@@ -63,6 +65,10 @@ class TurnCard extends StatelessWidget {
     required this.onConnectService,
     required this.onOpenAttachment,
     this.compact = false,
+    this.onClarificationResponse,
+    this.onChangeTentativeBinding,
+    this.isSubmittingClarification = false,
+    this.isReadOnlyClarification = false,
   });
 
   final UriTurn turn;
@@ -82,6 +88,18 @@ class TurnCard extends StatelessWidget {
   /// verify it — the same file URI has, not a re-upload or re-pick.
   final ValueChanged<Attachment> onOpenAttachment;
 
+  /// INT-ARN-1: Invoked when the user responds to an inline clarification.
+  final ValueChanged<ClarificationResponsePayload>? onClarificationResponse;
+
+  /// INT-ARN-1: Invoked when the user taps "Change" on a tentative binding.
+  final VoidCallback? onChangeTentativeBinding;
+
+  /// INT-ARN-1: True when a clarification response is currently submitting.
+  final bool isSubmittingClarification;
+
+  /// INT-ARN-1: True when the clarification card should be read-only (e.g. past history).
+  final bool isReadOnlyClarification;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -94,7 +112,10 @@ class TurnCard extends StatelessWidget {
     // cancelled, blocked, failed). "Completed" on every routine turn
     // added nothing a reader didn't already see from the reply itself
     // (2026-09-14, User directive).
-    final showStatusPill = turn.stage != TurnStage.completed;
+    // INT-ARN-1: awaitingClarification renders the interactive ClarificationCard
+    // with its own distinct header, so omit the standard status pill.
+    final showStatusPill = turn.stage != TurnStage.completed &&
+        turn.stage != TurnStage.awaitingClarification;
 
     return Container(
       padding: EdgeInsets.all(compact ? UriSpace.md : UriSpace.lg),
@@ -147,6 +168,28 @@ class TurnCard extends StatelessWidget {
             LinkifiedText(
               turn.understanding!,
               style: theme.textTheme.bodyMedium,
+            ),
+          ],
+
+          // ---- INT-ARN-1: tentative reference binding ("Using X · Change") ----
+          if (turn.tentativeBinding != null) ...[
+            const SizedBox(height: UriSpace.sm),
+            _TentativeBindingBlock(
+              binding: turn.tentativeBinding!,
+              onChange: onChangeTentativeBinding,
+            ),
+          ],
+
+          // ---- INT-ARN-1: reference clarification card ----
+          if (turn.clarification != null) ...[
+            const SizedBox(height: UriSpace.md),
+            ClarificationCard(
+              request: turn.clarification!,
+              onRespond: onClarificationResponse ?? (_) {},
+              isSubmitting: isSubmittingClarification,
+              isReadOnly: isReadOnlyClarification,
+              retryMessage: turn.retryMessage,
+              onChange: onChangeTentativeBinding,
             ),
           ],
 
@@ -724,3 +767,62 @@ class _CopyMessageActionState extends State<_CopyMessageAction> {
     );
   }
 }
+
+/// INT-ARN-1: Renders a compact "Using X · Change" chip for tentative bindings.
+class _TentativeBindingBlock extends StatelessWidget {
+  const _TentativeBindingBlock({
+    required this.binding,
+    this.onChange,
+  });
+
+  final TentativeBinding binding;
+  final VoidCallback? onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = UriColors.of(context);
+    return Container(
+      key: const Key('turn-tentative-binding'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: UriSpace.sm,
+        vertical: UriSpace.xs,
+      ),
+      decoration: BoxDecoration(
+        color: colors.surfaceSunken,
+        borderRadius: BorderRadius.circular(UriRadius.sm),
+        border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              'Using ${binding.label}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.inkFaint,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (onChange != null) ...[
+            Text(' · ', style: TextStyle(color: colors.inkFaint)),
+            InkWell(
+              key: const Key('tentative-binding-change'),
+              onTap: onChange,
+              child: Text(
+                'Change',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.accentInk,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+

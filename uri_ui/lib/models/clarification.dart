@@ -22,6 +22,19 @@ ClarificationKind _kindFrom(String value) {
   throw FormatException('unknown clarification kind: $value');
 }
 
+String _kindToString(ClarificationKind kind) {
+  switch (kind) {
+    case ClarificationKind.chooseOne:
+      return 'CHOOSE_ONE';
+    case ClarificationKind.confirmOne:
+      return 'CONFIRM_ONE';
+    case ClarificationKind.chooseAttribute:
+      return 'CHOOSE_ATTRIBUTE';
+    case ClarificationKind.freeInputOnly:
+      return 'FREE_INPUT_ONLY';
+  }
+}
+
 class ClarificationCandidateOption {
   const ClarificationCandidateOption({
     required this.optionKey,
@@ -32,11 +45,18 @@ class ClarificationCandidateOption {
 
   factory ClarificationCandidateOption.fromJson(Map<String, dynamic> json) =>
       ClarificationCandidateOption(
-        optionKey: json['option_key'] as String,
-        candidateId: json['candidate_id'] as String,
-        label: json['label'] as String,
-        rank: json['rank'] as int,
+        optionKey: json['option_key'] as String? ?? '',
+        candidateId: json['candidate_id'] as String? ?? '',
+        label: json['label'] as String? ?? '',
+        rank: (json['rank'] as num?)?.toInt() ?? 0,
       );
+
+  Map<String, dynamic> toJson() => {
+    'option_key': optionKey,
+    'candidate_id': candidateId,
+    'label': label,
+    'rank': rank,
+  };
 
   final String optionKey;
   final String candidateId;
@@ -55,12 +75,20 @@ class ClarificationAttributeFilter {
 
   factory ClarificationAttributeFilter.fromJson(Map<String, dynamic> json) =>
       ClarificationAttributeFilter(
-        optionKey: json['option_key'] as String,
-        axis: json['axis'] as String,
-        value: json['value'] as String,
-        label: json['label'] as String,
-        memberCount: json['member_count'] as int,
+        optionKey: json['option_key'] as String? ?? '',
+        axis: json['axis'] as String? ?? '',
+        value: json['value'] as String? ?? '',
+        label: json['label'] as String? ?? '',
+        memberCount: (json['member_count'] as num?)?.toInt() ?? 0,
       );
+
+  Map<String, dynamic> toJson() => {
+    'option_key': optionKey,
+    'axis': axis,
+    'value': value,
+    'label': label,
+    'member_count': memberCount,
+  };
 
   final String optionKey;
   final String axis;
@@ -81,30 +109,48 @@ class ClarificationRequest {
     required this.overflowCount,
     required this.escapeLabel,
     required this.candidateSetFingerprint,
+    this.expiresAt,
   });
 
   factory ClarificationRequest.fromJson(Map<String, dynamic> json) {
-    final options = (json['options'] as List)
+    final rawOptions = (json['options'] as List? ?? const []);
+    final options = rawOptions
         .map((o) => ClarificationCandidateOption.fromJson(o as Map<String, dynamic>))
         .toList(growable: false)
       ..sort((a, b) => a.rank.compareTo(b.rank));
+    final rawFilters = (json['attribute_filters'] as List? ?? const []);
     final request = ClarificationRequest(
-      ambiguityId: json['ambiguity_id'] as String,
-      traceId: json['trace_id'] as String,
+      ambiguityId: json['ambiguity_id'] as String? ?? '',
+      traceId: json['trace_id'] as String? ?? '',
       kind: _kindFrom(json['kind'] as String),
-      question: json['question'] as String,
+      question: json['question'] as String? ?? '',
       options: options,
       attributeAxis: json['attribute_axis'] as String?,
-      attributeFilters: (json['attribute_filters'] as List)
+      attributeFilters: rawFilters
           .map((f) => ClarificationAttributeFilter.fromJson(f as Map<String, dynamic>))
           .toList(growable: false),
-      overflowCount: json['overflow_count'] as int,
-      escapeLabel: json['escape_label'] as String,
-      candidateSetFingerprint: json['candidate_set_fingerprint'] as String,
+      overflowCount: (json['overflow_count'] as num?)?.toInt() ?? 0,
+      escapeLabel: json['escape_label'] as String? ?? 'None of these / Enter something else',
+      candidateSetFingerprint: json['candidate_set_fingerprint'] as String? ?? '',
+      expiresAt: json['expires_at'] as String?,
     );
     request._validate();
     return request;
   }
+
+  Map<String, dynamic> toJson() => {
+    'ambiguity_id': ambiguityId,
+    'trace_id': traceId,
+    'kind': _kindToString(kind),
+    'question': question,
+    'options': options.map((o) => o.toJson()).toList(),
+    'attribute_axis': attributeAxis,
+    'attribute_filters': attributeFilters.map((f) => f.toJson()).toList(),
+    'overflow_count': overflowCount,
+    'escape_label': escapeLabel,
+    'candidate_set_fingerprint': candidateSetFingerprint,
+    if (expiresAt != null) 'expires_at': expiresAt,
+  };
 
   /// Frozen S1 display cap (MAX_OPTIONS).
   static const int maxOptions = 5;
@@ -119,6 +165,7 @@ class ClarificationRequest {
   final int overflowCount;
   final String escapeLabel;
   final String candidateSetFingerprint;
+  final String? expiresAt;
 
   void _validate() {
     // Fail closed on a malformed card rather than rendering padded or
@@ -197,6 +244,39 @@ class ClarificationResponsePayload {
         kind: ClarificationResponseKind.freeInput,
         text: text,
       );
+
+  factory ClarificationResponsePayload.fromJson(Map<String, dynamic> json) {
+    final responseKindStr = json['response_kind'] as String? ?? '';
+    final ambiguityId = json['ambiguity_id'] as String? ?? '';
+    final candidateId = json['candidate_id'] as String?;
+    final optionKey = json['option_key'] as String?;
+    final fingerprint = json['candidate_set_fingerprint'] as String?;
+    final text = json['text'] as String?;
+
+    switch (responseKindStr) {
+      case 'CANDIDATE':
+        return ClarificationResponsePayload._(
+          ambiguityId: ambiguityId,
+          kind: ClarificationResponseKind.candidate,
+          candidateId: candidateId,
+          candidateSetFingerprint: fingerprint,
+        );
+      case 'ATTRIBUTE':
+        return ClarificationResponsePayload._(
+          ambiguityId: ambiguityId,
+          kind: ClarificationResponseKind.attribute,
+          optionKey: optionKey,
+          candidateSetFingerprint: fingerprint,
+        );
+      case 'FREE_INPUT':
+      default:
+        return ClarificationResponsePayload._(
+          ambiguityId: ambiguityId,
+          kind: ClarificationResponseKind.freeInput,
+          text: text,
+        );
+    }
+  }
 
   final String ambiguityId;
   final ClarificationResponseKind kind;

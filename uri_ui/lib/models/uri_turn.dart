@@ -1,4 +1,5 @@
 import 'attachment.dart';
+import 'clarification.dart';
 
 /// Lifecycle stage of a single Ask-URI turn.
 ///
@@ -11,6 +12,7 @@ enum TurnStage {
   understanding,
   proposalReady,
   awaitingApproval,
+  awaitingClarification,
   executing,
   completed,
   cancelled,
@@ -91,6 +93,34 @@ class ActionResult {
   final Attachment? generatedFile;
 }
 
+/// A tentative reference binding proposed by URI that the user can accept
+/// or explicitly change.
+class TentativeBinding {
+  const TentativeBinding({
+    required this.label,
+    this.candidateId,
+    this.bindingId,
+  });
+
+  final String label;
+  final String? candidateId;
+  final String? bindingId;
+
+  Map<String, dynamic> toJson() => {
+    'label': label,
+    if (candidateId != null) 'candidate_id': candidateId,
+    if (bindingId != null) 'binding_id': bindingId,
+  };
+
+  factory TentativeBinding.fromJson(Map<String, dynamic> json) {
+    return TentativeBinding(
+      label: json['label'] as String? ?? json['text'] as String? ?? '',
+      candidateId: json['candidate_id'] as String?,
+      bindingId: json['binding_id'] as String?,
+    );
+  }
+}
+
 /// One exchange in the Ask URI conversation: the user's request plus
 /// URI's evolving response as it moves through understanding, proposal,
 /// approval, and execution.
@@ -114,6 +144,9 @@ class UriTurn {
     this.durationSeconds,
     this.modelCallCount,
     this.elapsedSeconds,
+    this.clarification,
+    this.tentativeBinding,
+    this.retryMessage,
   });
 
   final String id;
@@ -124,6 +157,17 @@ class UriTurn {
   ProposedAction? proposedAction;
   ActionResult? result;
   String? failureReason;
+
+  /// INT-ARN-1: Clarification payload when [stage] is
+  /// [TurnStage.awaitingClarification].
+  ClarificationRequest? clarification;
+
+  /// INT-ARN-1: Tentative binding state ("Using X · Change").
+  TentativeBinding? tentativeBinding;
+
+  /// INT-ARN-1: Server retry feedback when a previous clarification attempt
+  /// was stale, expired, or rejected.
+  String? retryMessage;
 
   /// Whichever attachments were staged in the composer at the moment
   /// this turn was sent — fixed at creation, never mutated afterwards.
@@ -160,6 +204,7 @@ class UriTurn {
   final double? elapsedSeconds;
 
   UriTurn copyWith({
+    String? userText,
     TurnStage? stage,
     String? understanding,
     ProposedAction? proposedAction,
@@ -175,10 +220,13 @@ class UriTurn {
     double? durationSeconds,
     int? modelCallCount,
     double? elapsedSeconds,
+    ClarificationRequest? clarification,
+    TentativeBinding? tentativeBinding,
+    String? retryMessage,
   }) {
     return UriTurn(
       id: id,
-      userText: userText,
+      userText: userText ?? this.userText,
       timestamp: timestamp,
       stage: stage ?? this.stage,
       understanding: understanding ?? this.understanding,
@@ -196,6 +244,9 @@ class UriTurn {
       durationSeconds: durationSeconds ?? this.durationSeconds,
       modelCallCount: modelCallCount ?? this.modelCallCount,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
+      clarification: clarification ?? this.clarification,
+      tentativeBinding: tentativeBinding ?? this.tentativeBinding,
+      retryMessage: retryMessage ?? this.retryMessage,
     );
   }
 
@@ -216,6 +267,9 @@ class UriTurn {
     'serving_duration_seconds': durationSeconds,
     'serving_call_count': modelCallCount,
     'elapsed_seconds': elapsedSeconds,
+    if (clarification != null) 'clarification': clarification!.toJson(),
+    if (tentativeBinding != null) 'tentative_binding': tentativeBinding!.toJson(),
+    if (retryMessage != null) 'retry_message': retryMessage,
   };
 
   factory UriTurn.fromJson(Map<String, dynamic> json) {
@@ -223,6 +277,9 @@ class UriTurn {
     final parsedStage = TurnStage.values.where(
       (value) => value.name == stageName,
     );
+    final clarificationJson = json['clarification'] as Map<String, dynamic>?;
+    final tentativeBindingJson = (json['tentative_binding'] ??
+        json['tentative_choice']) as Map<String, dynamic>?;
     return UriTurn(
       id: json['id'] as String? ?? json['turn_id'] as String? ?? '',
       userText: json['user_text'] as String? ?? '',
@@ -239,6 +296,13 @@ class UriTurn {
       durationSeconds: (json['serving_duration_seconds'] as num?)?.toDouble(),
       modelCallCount: json['serving_call_count'] as int?,
       elapsedSeconds: (json['elapsed_seconds'] as num?)?.toDouble(),
+      clarification: clarificationJson != null
+          ? ClarificationRequest.fromJson(clarificationJson)
+          : null,
+      tentativeBinding: tentativeBindingJson != null
+          ? TentativeBinding.fromJson(tentativeBindingJson)
+          : null,
+      retryMessage: json['retry_message'] as String?,
     );
   }
 }
