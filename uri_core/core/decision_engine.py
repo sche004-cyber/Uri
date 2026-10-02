@@ -368,6 +368,21 @@ reference needs grounding.
 _BASE_DECISION_PROMPT = DECISION_CONTRACT_SYSTEM_PROMPT.replace(
     "with these required keys:", "with exactly these keys:")
 
+# The mode descriptions repeat the ordered checklist above.  Keep that
+# checklist, but omit its duplicate glossary on the reference-enabled call:
+# the extra slot instructions and argument names must not make the already
+# slow local Brain's one-shot decision prompt larger than the flag-off prompt.
+_REFERENCE_DECISION_PROMPT = (
+    DECISION_CONTRACT_SYSTEM_PROMPT.replace(
+        "in SHADOW MODE - your\noutput is recorded for comparison only and never executes anything.",
+        "for a live proposal. URI validates every proposal before execution.",
+    ).split("mode: exactly one of", 1)[0]
+    + "mode: choose exactly one mode from the ordered checklist above.\n\n"
+    + "capability: the exact capability_id"
+    + DECISION_CONTRACT_SYSTEM_PROMPT.split("capability: the exact capability_id", 1)[1]
+    + _REFERENCE_SLOT_PROMPT
+)
+
 
 @dataclass(frozen=True)
 class DecisionOutcome:
@@ -715,7 +730,7 @@ def propose_decision(
             response = get_router().attempt(
                 ROLE_REASONING,
                 principal,
-                system=(DECISION_CONTRACT_SYSTEM_PROMPT + _REFERENCE_SLOT_PROMPT
+                system=(_REFERENCE_DECISION_PROMPT
                         if reference_clarification_enabled()
                         else _BASE_DECISION_PROMPT),
                 user=request_json,

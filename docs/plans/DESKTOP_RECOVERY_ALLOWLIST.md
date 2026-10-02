@@ -301,3 +301,10 @@ Authority: Chetan's INT-ARN-1 approvals. Implemented by Codex; reviewed, regress
 | Path | Justification |
 |---|---|
 | `uri_core/core/canonical_execution.py`, `approval_resumption.py`, `uri_core/app/server.py` | Durable per-user "execution pending/unknown" marker written before bound dispatch; APPLIED after success; Change fails closed on pending/unknown, including after restart; render slot released if the worker fails to start. |
+
+## 2026-10-03 INT-ARN-1 live fix (Brain unavailable message, prompt size)
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/decision_engine.py` | Flag-ON decision prompt drops the duplicate mode glossary so it is no larger than flag-OFF plus slot instructions. |
+| `uri_core/core/canonical_execution.py` | With the flag on, an unreachable Brain reports that truthfully (not a reference question) and never executes. |

@@ -109,10 +109,18 @@ def reference_clarification_enabled() -> bool:
 
 
 def _reference_block(session_id: Optional[str], reason: str = "REFERENCE_UNRESOLVED") -> Dict[str, Any]:
+    unavailable = reason in {"BRAIN_UNAVAILABLE", "CANONICAL_REFERENCE_ROUTE_UNAVAILABLE"}
+    message = (
+        "I couldn't reach the Brain. Please try again."
+        if reason == "BRAIN_UNAVAILABLE" else
+        "The Brain route is unavailable. Please try again."
+        if unavailable else
+        "I need to clarify the reference before proceeding. Please retry the request."
+    )
     return {
-        "status": "awaiting_user_response", "session_id": session_id,
+        "status": "unavailable" if unavailable else "awaiting_user_response", "session_id": session_id,
         "execution": {"status": "not_executed", "reason": reason},
-        "response": {"message": "I need to clarify the reference before proceeding. Please retry the request."},
+        "response": {"message": message},
         "narrative": None,
     }
 
@@ -1228,6 +1236,8 @@ def run_canonical_for_ask(
         )
 
         if decision.status != "ok" or decision.contract is None:
+            if reference_clarification_enabled() and decision.status == "unavailable":
+                return _reference_block(session_id, "BRAIN_UNAVAILABLE")
             detail = str(decision.invalid_reason or decision.status)
             if reference_clarification_enabled() and "reference_slots" in detail:
                 return _reference_block(session_id, "INVALID_REFERENCE_PROPOSAL")

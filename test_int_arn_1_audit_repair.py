@@ -9,6 +9,8 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from uri_core.core import decision_engine
+from uri_core.core import canonical_execution
+from uri_core.core.context_budget import estimate_tokens
 from uri_core.core.canonical_execution import _reference_render_draft
 from uri_core.app import server
 
@@ -52,6 +54,71 @@ def test_decision_contract_exposes_real_argument_and_accepts_brain_slot():
             model_callable=lambda _: json.dumps(proposal))
     assert outcome.status == "ok"
     assert outcome.contract["reference_slots"] == proposal["reference_slots"]
+
+
+def test_reference_decision_prompt_stays_bounded_for_realistic_registry():
+    class Registry:
+        def summaries(self):
+            return [{"capability_id": f"Capability{i}", "source": "multi_action"}
+                    for i in range(5)]
+
+        def describe(self, capability_id):
+            return {"action_schemas": {
+                f"action{j}": {"description": "Read or update a selected item",
+                               "parameters": {f"argument{k}": {"type": "string"}
+                                              for k in range(5)}}
+                for j in range(6)}}
+
+    registry = Registry()
+    state = {"turn": {"user_text": "Summarize the sales report I uploaded"},
+             "recent_conversation": [], "active_pointer": {},
+             "capability_summaries": registry.summaries(),
+             "session_facts": [], "attempt_history": []}
+    with patch.dict("os.environ", {"URI_INT_ARN_1_ENABLED": "1"}):
+        request = decision_engine.build_decision_request(
+            state, preselected_ids=[entry["capability_id"] for entry in registry.summaries()],
+            capability_directory=registry)
+    with patch.dict("os.environ", {"URI_INT_ARN_1_ENABLED": "0"}):
+        off_request = decision_engine.build_decision_request(
+            state, preselected_ids=[entry["capability_id"] for entry in registry.summaries()],
+            capability_directory=registry)
+    prompt_tokens = estimate_tokens(decision_engine._REFERENCE_DECISION_PROMPT)
+    request_tokens = estimate_tokens(json.dumps(request, ensure_ascii=False))
+    off_tokens = (estimate_tokens(decision_engine._BASE_DECISION_PROMPT)
+                  + estimate_tokens(json.dumps(off_request, ensure_ascii=False)))
+    # 6,000 estimated input tokens leaves ample room in the live 16,384
+    # context window for output and later turns. Five selected capabilities,
+    # 30 actions, and 150 argument names are deliberately represented.
+    assert prompt_tokens + request_tokens <= 6000
+    assert prompt_tokens + request_tokens <= off_tokens + 500
+    assert len(request["capability_action_arguments"]) == 5
+    assert sum(len(actions) for actions in request["capability_action_arguments"].values()) == 30
+
+
+def test_unreachable_brain_fails_closed_with_truthful_response():
+    orchestrator = SimpleNamespace(process_user_input=lambda **kwargs: (_ for _ in ()).throw(
+        AssertionError("legacy execution must not run")))
+    directory = Directory()
+    with patch.dict("os.environ", {"URI_INT_ARN_1_ENABLED": "1"}), patch.object(
+        canonical_execution, "build_turn_state_and_directory",
+        return_value=(SimpleNamespace(data={"turn": {"user_text": "Summarize the sales report I uploaded"}}), directory)
+    ), patch.object(canonical_execution, "propose_decision", return_value=decision_engine.DecisionOutcome(
+        "unavailable", error="provider timeout"
+    )), patch.object(canonical_execution, "record_canonical_telemetry") as telemetry, patch.object(
+        canonical_execution, "_execute_canonical"
+    ) as execute:
+        result = canonical_execution.run_canonical_for_ask(
+            orchestrator=orchestrator, session_id="test-unreachable",
+            user_text="Summarize the sales report I uploaded", principal=None)
+    assert result["status"] == "unavailable"
+    assert result["execution"] == {"status": "not_executed", "reason": "BRAIN_UNAVAILABLE"}
+    assert "couldn't reach the Brain" in result["response"]["message"]
+    assert "clarify the reference" not in result["response"]["message"]
+    execute.assert_not_called()
+    telemetry.assert_not_called()
+    route_block = canonical_execution._reference_block("test-unreachable", "CANONICAL_REFERENCE_ROUTE_UNAVAILABLE")
+    assert route_block["status"] == "unavailable"
+    assert "route is unavailable" in route_block["response"]["message"]
 
 
 def test_render_call_is_bounded_and_budget_can_skip_it():
