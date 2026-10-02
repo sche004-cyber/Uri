@@ -225,6 +225,13 @@ workflow: {"steps": [{"step_id": "...", "capability": "<name>",
       about X"), propose generate_document by default (which creates a local
       .pptx file). Propose google_workspace_create only when the user explicitly
       requests Google Slides, Google Drive, or Google Workspace.
+      If the user asks for research and three design options before building,
+      research first, present three distinct Brain-authored outlines and visual
+      themes, and wait for their choice. On the choice turn, propose
+      generate_document with theme, include_images, and image_queries as
+      appropriate. Include PPTX in requested_output so a short choice such as
+      "Option 2" still selects the presentation renderer. Use the recent
+      research summary as source evidence.
     - Capability questions: When the user asks about whether URI CAN do something
       or what URI can do (e.g. "Can you create a PPT?", "Can you do web research?")
       with no task inputs to execute, do NOT propose a tool execution without

@@ -105,6 +105,9 @@ class GenerateDocumentTool:
         session_id = kwargs.get("session_id")
         decision_context = kwargs.get("decision_context") or {}
         requested_output = kwargs.get("requested_output", "") or ""
+        theme = kwargs.get("theme", "modern")
+        include_images = kwargs.get("include_images") is True
+        image_queries = kwargs.get("image_queries") or []
 
         output_format = infer_output_format(request_text, requested_output)
         document_type = _KIND_LABELS.get(output_format, "report")
@@ -116,6 +119,12 @@ class GenerateDocumentTool:
         evidence = gather_session_evidence(session_id, self._file_store)
         if isinstance(decision_context.get("verified_evidence"), dict):
             evidence = {**decision_context["verified_evidence"], **evidence}
+        recent = decision_context.get("recent_conversation")
+        if isinstance(recent, list):
+            evidence["recent_conversation"] = [
+                {"user": str(turn.get("user", ""))[:2000], "uri": str(turn.get("uri", ""))[:4000]}
+                for turn in recent[-5:] if isinstance(turn, dict)
+            ]
 
         preferences = {}
         if isinstance(decision_context.get("user_preferences"), dict):
@@ -148,7 +157,14 @@ class GenerateDocumentTool:
         body = result["body"]
 
         try:
-            content_bytes = self._render(output_format, body)
+            images = []
+            if output_format == "pptx" and include_images:
+                from uri_core.services.office_document_writer import find_openverse_images
+                images = find_openverse_images(image_queries)
+            content_bytes = self._render(
+                output_format, body, theme=theme, include_images=include_images,
+                images=images,
+            )
         except Exception as error:
             return {
                 "status": "error",
@@ -184,14 +200,17 @@ class GenerateDocumentTool:
             "composed_by": result["composed_by"],
             "detail": result.get("detail"),
             "preview": body[:500],
+            "images_requested": include_images if output_format == "pptx" else False,
+            "images_added": len(images) if output_format == "pptx" else 0,
+            "image_note": "No licensed images were available; the presentation was created without photos." if output_format == "pptx" and include_images and not images else None,
         }
 
     @staticmethod
-    def _render(output_format: str, body: str) -> bytes:
+    def _render(output_format: str, body: str, *, theme: str = "modern", include_images: bool = False, images=None) -> bytes:
         if output_format == "xlsx":
             return render_xlsx_bytes(body)
         if output_format == "pptx":
-            return render_pptx_bytes(body)
+            return render_pptx_bytes(body, theme=theme, images=images or [])
         if output_format == "pdf":
             return render_pdf_bytes(body)
         return DocumentWriterService().render_docx_bytes(body)

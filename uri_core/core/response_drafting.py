@@ -138,6 +138,12 @@ Rules:
   to a message next turn. Say that outcome.plan.deferred_actions did not
   run; offer an appropriate next step only as a question. Never claim a
   draft was created or approved from a deferred action.
+  When the user requested presentation design options, use the research
+  evidence to author three concrete options with different outlines and
+  visual themes, then ask which one to build. The deferred document
+  creation did not run. Do not claim an image or deck already exists.
+- When a generated presentation reports images_requested=true and
+  images_added=0, report that the file was created without photos.
 - Do not fabricate facts about the world beyond what outcome contains.
 - For a conversational turn with execution.status "not_applicable",
   answer the user's question using outcome.response's message and

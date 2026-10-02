@@ -20,11 +20,21 @@ prompt) and these functions parse:
 """
 
 import io
+import ipaddress
+import tempfile
+from pathlib import Path
 from typing import List
+from urllib.parse import urlparse
+
+import requests
+from PIL import Image
 
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from pptx import Presentation
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches, Pt
 import fitz
 
 
@@ -80,7 +90,84 @@ def render_xlsx_bytes(content: str) -> bytes:
     return buffer.getvalue()
 
 
-def render_pptx_bytes(content: str) -> bytes:
+_THEMES = {
+    "modern": (RGBColor(16, 36, 62), RGBColor(24, 153, 184), RGBColor(244, 248, 250)),
+    "academic": (RGBColor(24, 52, 84), RGBColor(185, 132, 57), RGBColor(249, 247, 241)),
+    "warm": (RGBColor(79, 48, 65), RGBColor(214, 113, 91), RGBColor(252, 247, 243)),
+}
+
+
+def find_openverse_images(queries: List[str]) -> List[dict]:
+    """Best-effort CC photo retrieval. Never hold a network resource in a deck."""
+    images = []
+    for query in queries[:4]:
+        if not isinstance(query, str) or not query.strip():
+            continue
+        try:
+            response = requests.get(
+                "https://api.openverse.org/v1/images/",
+                params={"q": query[:120], "page_size": 3, "license_type": "commercial"},
+                timeout=5,
+            )
+            response.raise_for_status()
+            for item in response.json().get("results", [])[:3]:
+                if item.get("license", "").lower() not in {"cc0", "by", "by-sa"}:
+                    continue
+                url = item.get("url")
+                if not isinstance(url, str) or not url.startswith("https://"):
+                    continue
+                parsed = urlparse(url)
+                if not parsed.hostname or parsed.username or parsed.password or parsed.port not in {None, 443}:
+                    continue
+                try:
+                    ipaddress.ip_address(parsed.hostname)
+                    continue
+                except ValueError:
+                    pass
+                with requests.get(url, stream=True, timeout=6, allow_redirects=False) as download:
+                    download.raise_for_status()
+                    if not download.headers.get("Content-Type", "").lower().startswith("image/"):
+                        continue
+                    data = bytearray()
+                    for chunk in download.iter_content(65536):
+                        data.extend(chunk)
+                        if len(data) > 5_000_000:
+                            raise ValueError("Image exceeds 5 MB")
+                # Stage the bounded download in a short-lived local file;
+                # python-pptx embeds its bytes, and the directory is removed.
+                with tempfile.TemporaryDirectory(prefix="uri_ppt_image_") as temp_dir:
+                    image_path = Path(temp_dir) / "image"
+                    image_path.write_bytes(data)
+                    embedded_data = image_path.read_bytes()
+                with Image.open(io.BytesIO(embedded_data)) as image:
+                    image.verify()
+                images.append({
+                    "data": embedded_data,
+                    "credit": f"{item.get('title') or 'Image'} — {item.get('creator') or 'Unknown creator'}; "
+                              f"{item.get('license', '').upper()} {item.get('license_version') or ''}; "
+                              f"{item.get('foreign_landing_url') or url}; "
+                              f"{item.get('license_url') or ''}",
+                })
+                break
+        except (requests.RequestException, OSError, ValueError, TypeError, KeyError):
+            continue
+    return images
+
+
+def _text_box(slide, x, y, width, height, text, *, size, color, bold=False):
+    box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(width), Inches(height))
+    frame = box.text_frame
+    frame.word_wrap = True
+    paragraph = frame.paragraphs[0]
+    paragraph.text = text
+    paragraph.font.name = "Aptos"
+    paragraph.font.size = Pt(size)
+    paragraph.font.bold = bold
+    paragraph.font.color.rgb = color
+    return box
+
+
+def render_pptx_bytes(content: str, *, theme: str = "modern", images: List[dict] = None) -> bytes:
     """Renders "# Slide Title" sections into real presentation slides -
     each subsequent non-empty, non-heading line becomes one bullet on
     that slide. Content with no "# " headings at all becomes a single
@@ -89,7 +176,10 @@ def render_pptx_bytes(content: str) -> bytes:
     real presentation rather than an empty one."""
 
     presentation = Presentation()
-    title_and_content_layout = presentation.slide_layouts[1]
+    presentation.slide_width = Inches(13.333)
+    presentation.slide_height = Inches(7.5)
+    title_color, accent, background = _THEMES.get(theme, _THEMES["modern"])
+    images = images or []
 
     slides: List[tuple] = []
     current_title = None
@@ -115,15 +205,51 @@ def render_pptx_bytes(content: str) -> bytes:
     if not slides:
         slides = [("Untitled presentation", [])]
 
-    for title, bullets in slides:
-        slide = presentation.slides.add_slide(title_and_content_layout)
-        slide.shapes.title.text = title
-        body = slide.placeholders[1].text_frame
-        if bullets:
-            body.text = bullets[0]
-            for bullet in bullets[1:]:
-                paragraph = body.add_paragraph()
-                paragraph.text = bullet
+    used_credits = []
+    for number, (title, bullets) in enumerate(slides, start=1):
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        fill = slide.background.fill
+        fill.solid()
+        fill.fore_color.rgb = title_color if number == 1 else background
+        ink = RGBColor(255, 255, 255) if number == 1 else title_color
+        bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(0.13), presentation.slide_height)
+        bar.fill.solid()
+        bar.fill.fore_color.rgb = accent
+        bar.line.fill.background()
+        # Native vector motif: editable and sharp at any display size.
+        for offset in (0, 0.19, 0.38):
+            icon = slide.shapes.add_shape(
+                MSO_SHAPE.OVAL, Inches(11.1 + offset), Inches(0.68),
+                Inches(0.23), Inches(0.23),
+            )
+            icon.fill.solid()
+            icon.fill.fore_color.rgb = accent
+            icon.line.fill.background()
+        _text_box(slide, 0.7, 0.6 if number == 1 else 0.45, 11.7, 1.2, title,
+                  size=36 if number == 1 else 30, color=ink, bold=True)
+        picture = images[number - 2] if number > 1 and number - 2 < len(images) else None
+        content_width = 7.5 if picture else 11.5
+        for index, bullet in enumerate(bullets[:7]):
+            _text_box(slide, 0.85, 2.05 + index * 0.66, content_width, 0.59,
+                      "• " + bullet, size=20, color=ink)
+        if picture:
+            try:
+                stream = io.BytesIO(picture["data"]) if "data" in picture else picture["path"]
+                slide.shapes.add_picture(stream, Inches(8.75), Inches(2.05), width=Inches(3.8))
+                if picture.get("credit"):
+                    used_credits.append(str(picture["credit"]))
+            except (KeyError, ValueError, OSError):
+                pass
+        _text_box(slide, 11.75, 7.05, 0.9, 0.25, str(number), size=11, color=ink)
+
+    if used_credits:
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        slide.background.fill.solid()
+        slide.background.fill.fore_color.rgb = background
+        _text_box(slide, 0.7, 0.5, 11.6, 0.8, "Image credits", size=30, color=title_color, bold=True)
+        for index, credit in enumerate(used_credits[:6]):
+            _text_box(slide, 0.85, 1.6 + index * 0.83, 11.7, 0.76,
+                      credit, size=13, color=title_color)
 
     buffer = io.BytesIO()
     presentation.save(buffer)

@@ -18,12 +18,14 @@ import subprocess
 from pathlib import Path
 
 DESKTOP_RECOVERY_FILES = {
-    "uri_core/core/response_drafting.py": "a48680257be30dde0c014f84c96c186718ced876",
-    "uri_core/core/model_reasoning_adapter.py": "a42f3d247cf0bad95943e2cc914c7f9a5a426217",
-    "uri_core/core/decision_engine.py": "2c67334159f0c6f814acc3584b1e3bdb8dca4cc1",
+    "uri_core/tools/generate_document.py": "d10709fc1691231ba6c07ea07f8443222924fb1d",
+    "uri_core/services/office_document_writer.py": "7c346c63aa000f24a948f71485bb7296ba6a9e7d",
+    "uri_core/core/response_drafting.py": "766f18ea2df5eaf013e5f529a541f4ab52066f57",
+    "uri_core/core/model_reasoning_adapter.py": "90462051b9fb8d8641dcadf030947fa5a4558485",
+    "uri_core/core/decision_engine.py": "eae7c2844654944cda9c961fd873db0f5556cbdf",
     "uri_core/core/capability_feasibility.py": "5159100a4c4ace884decfd135196220611066d86",
-    "uri_core/core/canonical_execution.py": "8392ed5825415bc2cfc05fcc50622b76b01d2982",
-    "uri_core/core/tool_schema.py": "9c0957428d1a4473c4e25d68de1fb23fcb70ca39",
+    "uri_core/core/canonical_execution.py": "d443144d9690e8290eca7a90bc8684aa1fd82070",
+    "uri_core/core/tool_schema.py": "9f7beb0ac29f0edc84553bb457fa9468c2ec813e",
     "uri_core/tools/google_workspace_create.py": "c99f7d26bb7df2bd90c979be41e07b70af43ce68",
     "uri_core/app/server.py": "344a59b3a3d956d652ee1d2dea9818cd3023ade9",
     "uri_core/capabilities/gmail/capability.py": "68e9b39b886b11cfdee3c2650476c5edb0b1e709",

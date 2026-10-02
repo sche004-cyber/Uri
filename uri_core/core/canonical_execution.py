@@ -287,6 +287,7 @@ def _execute_legacy_capability(
     user_text: str,
     principal: Any,
     current_turn_attachment_ids: Optional[Sequence[str]] = None,
+    recent_conversation: Optional[List[Dict[str, Any]]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Canonical entry to the existing legacy ToolDispatcher boundary.
 
@@ -316,6 +317,17 @@ def _execute_legacy_capability(
     # legacy turns so read_attached_file retains its historic session scan.
     if current_turn_attachment_ids is not None:
         runtime_context["current_turn_attachment_ids"] = current_turn_attachment_ids
+    if capability_id == "generate_document":
+        if recent_conversation:
+            runtime_context["decision_context"] = {
+                "recent_conversation": recent_conversation[-5:]
+            }
+        from uri_core.core.tool_schema import LEGACY_TOOL_PARAMETERS
+        proposed_inputs = actions[0].get("inputs") or {}
+        if not isinstance(proposed_inputs, dict):
+            return None
+        allowed = LEGACY_TOOL_PARAMETERS[capability_id]["properties"]
+        runtime_context.update({key: value for key, value in proposed_inputs.items() if key in allowed and key != "request_text"})
     if capability_id == "google_workspace_create":
         # The native Brain's structured arguments are proposals, never
         # authority. Pass only this tool's declared content fields through
@@ -541,6 +553,20 @@ def _ready_read_prefix(contract, directory, principal, turn_state_data):
     actions = contract.get("actions") or []
     if len(actions) < 2:
         return []
+    # Legacy read tools use the same gate but have no multi-action dispatch.
+    # Execute one independently ready read, then return its evidence to the
+    # Brain. The suffix is never executed from this proposal.
+    first = actions[0]
+    first_id = first.get("capability") or contract.get("capability") if isinstance(first, dict) else None
+    if isinstance(first, dict) and first_id in {"web_search", "fetch_url"} and first.get("name") == first_id:
+        if not is_allowlisted(first_id):
+            return []
+        verdict = evaluate_gates(
+            DecisionOutcome(status="ok", contract={**contract, "capability": first_id, "actions": [first]}),
+            capability_directory=directory, principal=principal,
+            turn_state_data=turn_state_data,
+        )
+        return [first] if verdict.outcome == "READY" else []
     prefix = []
     blocked = False
     # These are fields obtainable from earlier message evidence, not a
@@ -591,6 +617,7 @@ def _execute_canonical(
     user_text: str,
     principal: Any,
     current_turn_attachment_ids: Optional[Sequence[str]] = None,
+    recent_conversation: Optional[List[Dict[str, Any]]] = None,
 ) -> Optional[Dict[str, Any]]:
     capability_id = contract.get("capability")
     # M33 Batch B: registry lookup, not a `capability_id == "Gmail"`
@@ -636,6 +663,7 @@ def _execute_canonical(
         contract, orchestrator=orchestrator, session_id=session_id,
         user_text=user_text, principal=principal,
         current_turn_attachment_ids=current_turn_attachment_ids,
+        recent_conversation=recent_conversation,
     )
 
 
@@ -791,7 +819,7 @@ def run_canonical_for_ask(
             )
             read_prefix = (
                 _ready_read_prefix(contract, directory, principal, turn_state_result.data)
-                if gate_result.outcome == "MISSING_PARAMETER" and fallback_reason is None
+                if gate_result.outcome in {"MISSING_PARAMETER", "READY"} and fallback_reason is None
                 else []
             )
             if read_prefix:
@@ -859,6 +887,7 @@ def run_canonical_for_ask(
                     contract, orchestrator=orchestrator, session_id=session_id,
                     user_text=user_text, principal=principal,
                     current_turn_attachment_ids=attachment_ids,
+                    recent_conversation=turn_state_result.data.get("recent_conversation"),
                 )
                 if envelope is None:
                     fallback_reason = "execution_dispatch_returned_none"

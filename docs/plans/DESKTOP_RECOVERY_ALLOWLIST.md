@@ -165,3 +165,19 @@ re-pins frozen-file hashes after review.
 | `uri_core/capabilities/gmail/capability.py` | Advertise unread inbox queries and bounded body evidence in the Gmail search action description. |
 | `uri_core/core/response_drafting.py` | Guide the Brain to summarize actual partial-read evidence, identify messages for follow-up, and describe deferred work accurately. |
 | `test_gmail_multi_step.py` | Root-level mocked regression for read prefix, evidence, missing inputs, approval, and follow-up context; outside frozen guard scope. |
+
+## 2026-10-02 Research-to-PPT implementation
+
+Authority: Chetan's direct implementer instruction in-thread, 2026-10-02.
+Claude re-pins frozen-file hashes after independent review. No milestone status
+or release checkpoint is claimed by this implementation.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/canonical_execution.py` | Execute one independently gated legacy research read from a multi-action proposal and defer its suffix; pass recent conversation to a later document generation turn. |
+| `uri_core/core/tool_schema.py` | Expose Brain-proposed PPTX theme and licensed-image controls. |
+| `uri_core/core/model_reasoning_adapter.py`, `uri_core/core/decision_engine.py` | Guide the Brain to research, offer three options, and await the user's choice before creating the deck. |
+| `uri_core/core/response_drafting.py` | Guide the drafting Brain to report research evidence and deferred creation accurately. |
+| `uri_core/tools/generate_document.py` | Pass research context and selected design controls to the existing Brain composer, PPTX renderer, and FileStore. |
+| `uri_core/services/office_document_writer.py` | Render themed PPTX slides and optional embedded CC images with a credits slide, degrading to a deck without photos when retrieval fails. |
+| `test_ppt_research_chain.py` | Root-level mocked regression for read prefix, deferred creation, schema, styling, credits, and image failure. |

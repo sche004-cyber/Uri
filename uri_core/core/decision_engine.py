@@ -221,6 +221,10 @@ picking `mode`:
            .pptx presentation). Route to `google_workspace_create`
            (kind="slides") when the user explicitly requests creating in
            Google, Drive, or Google Slides.
+           If the user requests research and design options before creation,
+           select web_search first. Let the drafting Brain present three
+           distinct researched options and wait for the user's choice;
+           generate_document creates the PPTX on that later turn.
     4. Given your best candidate from question 3, is a concrete,
        specific required input actually missing (e.g. an identifier, a
        search term the user never gave) - not merely "I'm not fully
