@@ -18,6 +18,7 @@ DEFAULT_PREVIEW_WINDOW_SECONDS = 15.0
 DEFAULT_WAVEFORM_ENABLED = True
 DEFAULT_POLISH = True
 DEFAULT_POLISH_MODEL = "qwen3.5:9b"
+DEFAULT_POLISH_EDGE_MODEL = ""
 DEFAULT_POLISH_TIMEOUT_SECONDS = 8.0
 DEFAULT_POLISH_NUM_CTX = 16384
 DEFAULT_POLISH_KEEP_ALIVE = "30m"
@@ -34,6 +35,7 @@ class DictationConfig:
     waveform_enabled: bool = DEFAULT_WAVEFORM_ENABLED
     polish: bool = DEFAULT_POLISH
     polish_model: str = DEFAULT_POLISH_MODEL
+    polish_edge_model: str = DEFAULT_POLISH_EDGE_MODEL
     polish_timeout_s: float = DEFAULT_POLISH_TIMEOUT_SECONDS
     polish_num_ctx: int = DEFAULT_POLISH_NUM_CTX
     polish_keep_alive: str = DEFAULT_POLISH_KEEP_ALIVE
@@ -86,6 +88,12 @@ def load_config(path: Path) -> DictationConfig:
     else:
         polish_model = polish_model.strip()
 
+    polish_edge_model = raw.get("polish_edge_model", DEFAULT_POLISH_EDGE_MODEL)
+    if not isinstance(polish_edge_model, str):
+        polish_edge_model = DEFAULT_POLISH_EDGE_MODEL
+    else:
+        polish_edge_model = polish_edge_model.strip()
+
     polish_timeout = raw.get("polish_timeout_s", DEFAULT_POLISH_TIMEOUT_SECONDS)
     if (isinstance(polish_timeout, bool) or not isinstance(polish_timeout, (int, float))
             or not math.isfinite(polish_timeout) or polish_timeout <= 0):
@@ -105,7 +113,7 @@ def load_config(path: Path) -> DictationConfig:
         hotkey=hotkey.lower(), minimum_hold_seconds=float(minimum), language=language,
         preview_enabled=preview_enabled, preview_interval_seconds=float(preview_interval),
         preview_window_seconds=float(preview_window), waveform_enabled=waveform_enabled,
-        polish=polish, polish_model=polish_model,
+        polish=polish, polish_model=polish_model, polish_edge_model=polish_edge_model,
         polish_timeout_s=float(polish_timeout), polish_num_ctx=polish_num_ctx,
         polish_keep_alive=polish_keep_alive,
     )

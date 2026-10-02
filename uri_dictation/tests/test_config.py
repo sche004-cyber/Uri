@@ -1,6 +1,7 @@
 from config import (DEFAULT_HOTKEY, DEFAULT_LANGUAGE, DEFAULT_MINIMUM_HOLD_SECONDS,
                     DEFAULT_PREVIEW_ENABLED, DEFAULT_PREVIEW_INTERVAL_SECONDS,
                     DEFAULT_PREVIEW_WINDOW_SECONDS, DEFAULT_POLISH, DEFAULT_POLISH_MODEL,
+                    DEFAULT_POLISH_EDGE_MODEL,
                     DEFAULT_POLISH_TIMEOUT_SECONDS, DEFAULT_POLISH_NUM_CTX,
                     DEFAULT_POLISH_KEEP_ALIVE, DEFAULT_WAVEFORM_ENABLED, load_config, save_polish_enabled)
 
@@ -44,18 +45,19 @@ def test_waveform_defaults_and_invalid_values_are_safe():
 
 def test_polish_defaults_and_invalid_values_are_safe():
     defaults = load_config(FakePath())
-    assert (defaults.polish, defaults.polish_model, defaults.polish_timeout_s, defaults.polish_num_ctx, defaults.polish_keep_alive) == (
-        DEFAULT_POLISH, DEFAULT_POLISH_MODEL, DEFAULT_POLISH_TIMEOUT_SECONDS,
+    assert (defaults.polish, defaults.polish_model, defaults.polish_edge_model, defaults.polish_timeout_s, defaults.polish_num_ctx, defaults.polish_keep_alive) == (
+        DEFAULT_POLISH, DEFAULT_POLISH_MODEL, DEFAULT_POLISH_EDGE_MODEL, DEFAULT_POLISH_TIMEOUT_SECONDS,
         DEFAULT_POLISH_NUM_CTX, DEFAULT_POLISH_KEEP_ALIVE)
     invalid = load_config(FakePath('{"polish": "yes", "polish_model": "", "polish_timeout_s": false, "polish_num_ctx": false, "polish_keep_alive": ""}'))
-    assert (invalid.polish, invalid.polish_model, invalid.polish_timeout_s, invalid.polish_num_ctx, invalid.polish_keep_alive) == (
-        DEFAULT_POLISH, DEFAULT_POLISH_MODEL, DEFAULT_POLISH_TIMEOUT_SECONDS,
+    assert (invalid.polish, invalid.polish_model, invalid.polish_edge_model, invalid.polish_timeout_s, invalid.polish_num_ctx, invalid.polish_keep_alive) == (
+        DEFAULT_POLISH, DEFAULT_POLISH_MODEL, DEFAULT_POLISH_EDGE_MODEL, DEFAULT_POLISH_TIMEOUT_SECONDS,
         DEFAULT_POLISH_NUM_CTX, DEFAULT_POLISH_KEEP_ALIVE)
     assert load_config(FakePath('{"polish_timeout_s": 1e999}')).polish_timeout_s == DEFAULT_POLISH_TIMEOUT_SECONDS
     assert load_config(FakePath('{"polish_num_ctx": 0, "polish_keep_alive": 2}')).polish_num_ctx == DEFAULT_POLISH_NUM_CTX
     assert load_config(FakePath('{"polish_num_ctx": 0, "polish_keep_alive": 2}')).polish_keep_alive == DEFAULT_POLISH_KEEP_ALIVE
     configured = load_config(FakePath('{"polish_num_ctx": 32768, "polish_keep_alive": " 1h "}'))
     assert (configured.polish_num_ctx, configured.polish_keep_alive) == (32768, "1h")
+    assert load_config(FakePath('{"polish_edge_model": " edge "}')).polish_edge_model == "edge"
 
 
 def test_polish_toggle_persistence_retains_existing_keys():

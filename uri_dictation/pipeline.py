@@ -53,7 +53,7 @@ class DictationPipeline:
             transcript = self._transcriber.transcribe(audio)
         except Exception as exc:
             self._error_logger(exc)
-            self._append_timing(audio_seconds, (self._clock() - stt_start) * 1000, 0, 0, 0, False, "error")
+            self._append_timing(audio_seconds, (self._clock() - stt_start) * 1000, 0, 0, 0, False, "error", None, False)
             self._toast.show("Dictation failed")
             return False
         stt_ms = (self._clock() - stt_start) * 1000
@@ -62,16 +62,24 @@ class DictationPipeline:
         text = cleanup_transcript(transcript, self._dictionary)
         cleanup_ms = (self._clock() - cleanup_start) * 1000
         if not text:
-            self._append_timing(audio_seconds, stt_ms, cleanup_ms, 0, 0, False, "short")
+            self._append_timing(audio_seconds, stt_ms, cleanup_ms, 0, 0, False, "short", None, False)
             self._toast.show("No speech detected")
             return False
 
         polish_start = self._clock()
         if self._polisher.should_polish(text) and self._on_polishing is not None:
-            self._on_polishing(self._polisher.model)
+            self._on_polishing(self._polisher.polish_edge_model or self._polisher.model)
         polish = self._polisher.polish(text)
         polish_ms = (self._clock() - polish_start) * 1000
         text = polish.text
+        if self._on_polishing is not None and polish.fallback_reason not in ("short", "off"):
+            status = "unpolished" if polish.model is None else polish.model
+            if polish.escalated and polish.model is not None:
+                status += " (escalated)"
+            self._on_polishing(status)
+        if polish.used:
+            suffix = " (escalated)" if polish.escalated else ""
+            self._toast.show(f"Polished by {polish.model}{suffix}")
         if polish.fallback_reason not in (None, "short", "off"):
             self._toast.show(f"Pasted unpolished: {polish.fallback_reason}")
 
@@ -80,13 +88,13 @@ class DictationPipeline:
             paste_text(text, self._clipboard, self._key_sender, wait=self._wait)
         except Exception as exc:
             self._error_logger(exc)
-            self._append_timing(audio_seconds, stt_ms, cleanup_ms, polish_ms, (self._clock() - paste_start) * 1000, polish.used, polish.fallback_reason)
+            self._append_timing(audio_seconds, stt_ms, cleanup_ms, polish_ms, (self._clock() - paste_start) * 1000, polish.used, polish.fallback_reason, polish.model, polish.escalated)
             self._toast.show("Could not paste dictation")
             return False
-        self._append_timing(audio_seconds, stt_ms, cleanup_ms, polish_ms, (self._clock() - paste_start) * 1000, polish.used, polish.fallback_reason)
+        self._append_timing(audio_seconds, stt_ms, cleanup_ms, polish_ms, (self._clock() - paste_start) * 1000, polish.used, polish.fallback_reason, polish.model, polish.escalated)
         return True
 
-    def _append_timing(self, audio_seconds: float, stt_ms: float, cleanup_ms: float, polish_ms: float, paste_ms: float, polish_used: bool, polish_fallback_reason: str | None) -> None:
+    def _append_timing(self, audio_seconds: float, stt_ms: float, cleanup_ms: float, polish_ms: float, paste_ms: float, polish_used: bool, polish_fallback_reason: str | None, polish_model: str | None, polish_escalated: bool) -> None:
         append_timing(
             self._timing_path,
             audio_seconds=audio_seconds,
@@ -95,7 +103,8 @@ class DictationPipeline:
             polish_ms=polish_ms,
             paste_ms=paste_ms,
             device=getattr(self._transcriber, "label", self._transcriber.device),
-            polish_model=self._polisher.model,
+            polish_model=polish_model,
             polish_used=polish_used,
             polish_fallback_reason=polish_fallback_reason,
+            polish_escalated=polish_escalated,
         )

@@ -284,7 +284,7 @@ class DictationApp:
         self._listener = None
         self._polisher = Polisher(
             self.config.polish, self.config.polish_model, self.config.polish_timeout_s,
-            self.config.polish_num_ctx, self.config.polish_keep_alive,
+            self.config.polish_num_ctx, self.config.polish_keep_alive, self.config.polish_edge_model,
         )
         self.pipeline = DictationPipeline(
             self.transcriber, self.clipboard, self.key_sender, _TrayToast(self), self.dictionary,
@@ -326,7 +326,7 @@ class DictationApp:
             self._icon.title = self._tray_tooltip()
 
     def _tray_tooltip(self) -> str:
-        polish = self.config.polish_model if self._polisher.enabled else "off"
+        polish = (self.config.polish_edge_model or self.config.polish_model) if self._polisher.enabled else "off"
         return f"URI Dictation - {self.transcriber.label} - polish: {polish}"
 
     def _start_recording(self) -> None:

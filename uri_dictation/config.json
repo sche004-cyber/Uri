@@ -8,6 +8,7 @@
   "waveform_enabled": true,
   "polish": true,
   "polish_model": "qwen3.5:9b",
+  "polish_edge_model": "",
   "polish_timeout_s": 8,
   "polish_num_ctx": 16384,
   "polish_keep_alive": "30m"

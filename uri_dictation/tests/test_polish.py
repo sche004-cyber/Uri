@@ -5,7 +5,8 @@ from urllib.error import URLError
 
 import pytest
 
-from polish import OLLAMA_CHAT_URL, OLLAMA_PS_URL, Polisher, SYSTEM_PROMPT, _keep_alive_seconds
+from polish import (FEW_SHOT_MESSAGES, OLLAMA_CHAT_URL, OLLAMA_PS_URL, PROMPT_VERSION,
+                    Polisher, SYSTEM_PROMPT, _keep_alive_seconds)
 
 
 def response(text):
@@ -35,7 +36,89 @@ def test_success_and_request_body_are_guarded_and_configured():
     assert body["options"] == {"temperature": 0.2, "num_ctx": 16384}
     assert body["keep_alive"] == "30m"
     assert body["messages"][0] == {"role": "system", "content": SYSTEM_PROMPT}
-    assert body["messages"][1] == {"role": "user", "content": "<dictation>this is raw dictation</dictation>"}
+    assert body["messages"][-1] == {"role": "user", "content": "<dictation>this is raw dictation</dictation>"}
+
+
+def test_prompt_v2_contains_fresh_few_shot_examples():
+    assert PROMPT_VERSION == "v2"
+    assert len(FEW_SHOT_MESSAGES) == 6
+    messages = Polisher._messages("final dictation")
+    assert messages[0]["content"] == SYSTEM_PROMPT
+    assert sum(message["role"] == "assistant" for message in messages) == 6
+    assert messages[-1]["content"] == "<dictation>final dictation</dictation>"
+
+
+def test_edge_success_does_not_call_main_model():
+    calls = []
+    def post(_url, body, _timeout):
+        calls.append(json.loads(body)["model"])
+        return response("Clean edge result.")
+
+    result = polisher(True, "main", 1, polish_edge_model="edge", http_post=post).polish("clean edge input here")
+
+    assert (result.text, result.model, result.escalated) == ("Clean edge result.", "edge", False)
+    assert calls == ["edge"]
+
+
+def test_edge_guard_rail_failure_escalates_once_to_main_model():
+    calls = []
+    def post(_url, body, _timeout):
+        model = json.loads(body)["model"]
+        calls.append(model)
+        return response("Sure, I can do that" if model == "edge" else "Clean main result.")
+
+    result = polisher(True, "main", 1, polish_edge_model="edge", http_post=post).polish("clean edge input here")
+
+    assert (result.text, result.used, result.model, result.escalated) == ("Clean main result.", True, "main", True)
+    assert calls == ["edge", "main"]
+
+
+def test_edge_and_main_guard_rail_failures_paste_raw_text():
+    calls = []
+    def post(_url, body, _timeout):
+        calls.append(json.loads(body)["model"])
+        return response("")
+
+    result = polisher(True, "main", 1, polish_edge_model="edge", http_post=post).polish("clean edge input here")
+
+    assert (result.text, result.used, result.model, result.escalated, result.fallback_reason) == (
+        "clean edge input here", False, None, True, "empty")
+    assert calls == ["edge", "main"]
+
+
+def test_main_model_only_when_edge_is_not_set():
+    calls = []
+    def post(_url, body, _timeout):
+        calls.append(json.loads(body)["model"])
+        return response("Clean main result.")
+
+    result = polisher(True, "main", 1, http_post=post).polish("clean main input here")
+
+    assert (result.model, result.escalated, calls) == ("main", False, ["main"])
+
+
+def test_short_and_off_never_escalate_or_call_http():
+    def post(*_args):
+        raise AssertionError("HTTP should not run")
+    assert polisher(True, "main", 1, polish_edge_model="edge", http_post=post).polish("one two three").fallback_reason == "short"
+    assert polisher(False, "main", 1, polish_edge_model="edge", http_post=post).polish("one two three four").fallback_reason == "off"
+
+
+def test_loaded_context_length_is_reused_for_each_escalation_model():
+    calls = []
+    ps_response = json.dumps({"models": [
+        {"name": "edge", "context_length": 4096},
+        {"name": "main", "context_length": 8192},
+    ]}).encode()
+    def post(_url, body, _timeout):
+        request = json.loads(body)
+        calls.append(request)
+        return response("" if request["model"] == "edge" else "Clean main result.")
+
+    polisher(True, "main", 1, polish_num_ctx=16384, polish_edge_model="edge", http_post=post,
+             http_get=lambda *_args: ps_response).polish("clean main input here")
+
+    assert [(call["model"], call["options"]["num_ctx"]) for call in calls] == [("edge", 4096), ("main", 8192)]
 
 
 @pytest.mark.parametrize(("exc", "reason"), [

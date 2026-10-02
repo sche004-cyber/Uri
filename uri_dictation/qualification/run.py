@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from config import load_config
-from polish import Polisher
+from polish import PROMPT_VERSION, Polisher
 from qualification.score import score_item, summarize
 
 
@@ -52,7 +52,7 @@ def run(model: str, runs: int) -> dict[str, Any]:
     latencies = [record["latency_ms"] for record in records]
     summary.update({"p50_latency_ms": _percentile(latencies, 0.50),
                     "p95_latency_ms": _percentile(latencies, 0.95)})
-    payload = {"model": model, "runs": runs, "set_sha": set_sha(), "results": records, "summary": summary}
+    payload = {"model": model, "prompt_version": PROMPT_VERSION, "runs": runs, "set_sha": set_sha(), "results": records, "summary": summary}
     destination = Path(__file__).with_name(f"results_{model.replace(':', '_')}.json")
     destination.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return payload

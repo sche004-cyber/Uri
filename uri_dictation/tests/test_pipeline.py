@@ -100,10 +100,11 @@ def test_timing_records_polish_fields_without_transcript_text():
 
     assert pipeline.process([], 1.0)
     record = json.loads(timing.records[0])
-    assert {"polish_ms", "polish_model", "polish_used", "polish_fallback_reason"} <= record.keys()
+    assert {"polish_ms", "polish_model", "polish_used", "polish_fallback_reason", "polish_escalated"} <= record.keys()
     assert record["polish_model"] == "test-model"
     assert record["polish_used"] is True
     assert record["polish_fallback_reason"] is None
+    assert record["polish_escalated"] is False
     assert "private words for testing" not in timing.records[0].casefold()
 
 
@@ -125,3 +126,26 @@ def test_polish_failure_toasts_and_pastes_deterministic_cleanup():
     assert pipeline.process([], 1.0)
     assert clipboard.history == ["private words for testing"]
     assert toast.messages == ["Pasted unpolished: empty"]
+
+
+def test_escalated_polish_records_actual_model_and_updates_status():
+    class Transcriber:
+        device = "cpu (small)"
+        def transcribe(self, _audio): return "private words for testing"
+    timing, toast, statuses = FakeTimingPath(), FakeToast(), []
+
+    def post(_url, body, _timeout):
+        model = json.loads(body)["model"]
+        return b'{"message":{"content":""}}' if model == "edge" else b'{"message":{"content":"Private words for testing."}}'
+
+    pipeline = DictationPipeline(
+        Transcriber(), FakeClipboard(), FakeKeys(), toast, {}, timing,
+        polisher=Polisher(True, "main", 1, polish_edge_model="edge", http_post=post),
+        wait=lambda _: None, on_polishing=statuses.append,
+    )
+
+    assert pipeline.process([], 1.0)
+    record = json.loads(timing.records[0])
+    assert (record["polish_model"], record["polish_escalated"]) == ("main", True)
+    assert statuses == ["edge", "main (escalated)"]
+    assert toast.messages == ["Polished by main (escalated)"]
