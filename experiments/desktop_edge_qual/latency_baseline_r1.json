@@ -1,0 +1,363 @@
+[
+ {
+  "resident_after": [
+   [
+    "gemma4:12b",
+    8.3
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "hi",
+  "client_total_s": 1.85,
+  "backend_last_byte_s": 1.82,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   1.78
+  ],
+  "reply": "Hello! How can I assist you today?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 1.816,
+  "status": "success",
+  "exec": null,
+  "run": "baseline_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "gemma4:12b",
+    8.3
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "thanks",
+  "client_total_s": 0.06,
+  "backend_last_byte_s": 0.06,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.05
+  ],
+  "reply": "You're welcome!",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.061,
+  "status": "success",
+  "exec": null,
+  "run": "baseline_r1"
+ },
+ {
+  "resident_after": [],
+  "text": "what can you do?",
+  "client_total_s": 55.47,
+  "backend_last_byte_s": 55.47,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4038,
+    105,
+    34.84
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5240,
+    78,
+    20.54
+   ]
+  ],
+  "model_sum_s": 55.38,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9278,
+   55.38
+  ],
+  "reply": "I can help you with administrative tasks by composing available capabilities like searching, retrieving documents, and d",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 55.463,
+  "status": "success",
+  "exec": null,
+  "run": "baseline_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    14.2
+   ]
+  ],
+  "text": "explain in two sentences what an office note is",
+  "client_total_s": 90.01,
+  "backend_last_byte_s": 90.01,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4043,
+    104,
+    43.93
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5309,
+    51,
+    45.96
+   ]
+  ],
+  "model_sum_s": 89.89,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9352,
+   89.89
+  ],
+  "reply": "An office note is a brief, formal record of administrative details, decisions, or correspondence used within an institut",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 90.009,
+  "status": "success",
+  "exec": null,
+  "run": "baseline_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    14.2
+   ]
+  ],
+  "text": "draft an office note requesting two days of leave for a staff member",
+  "client_total_s": 51.27,
+  "backend_last_byte_s": 51.25,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4210,
+    147,
+    17.29
+   ],
+   [
+    "document_composition",
+    "qwen3.5:9b",
+    2324,
+    124,
+    10.79
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5548,
+    144,
+    22.94
+   ]
+  ],
+  "model_sum_s": 51.02,
+  "ui_shown": [
+   "qwen3.5:9b",
+   12082,
+   51.02
+  ],
+  "reply": "I have drafted the noting sheet for the leave request. The draft is ready below:  **NOTING**  **Subject:** Request for l",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 3,
+  "turn_s": 51.25,
+  "status": "success",
+  "exec": "draft_institutional_note",
+  "run": "baseline_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    14.2
+   ]
+  ],
+  "text": "don't send anything, just draft a short circular about the Friday meeting",
+  "client_total_s": 37.01,
+  "backend_last_byte_s": 37.01,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4045,
+    144,
+    16.87
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5416,
+    43,
+    20.06
+   ]
+  ],
+  "model_sum_s": 36.93,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9461,
+   36.93
+  ],
+  "reply": "I cannot send the circular right now because the Gmail capability is not connected. I can draft the text for you if you'",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 37.011,
+  "status": "unavailable",
+  "exec": "Gmail",
+  "run": "baseline_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    14.2
+   ]
+  ],
+  "text": "send it to the principal",
+  "client_total_s": 38.28,
+  "backend_last_byte_s": 38.28,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4202,
+    155,
+    17.67
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5471,
+    19,
+    20.47
+   ]
+  ],
+  "model_sum_s": 38.14,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9673,
+   38.14
+  ],
+  "reply": "I cannot send the message to the principal right now because the required capability is not connected.",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 38.28,
+  "status": "unavailable",
+  "exec": null,
+  "run": "baseline_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    14.2
+   ]
+  ],
+  "text": "what is 17 times 23?",
+  "client_total_s": 79.57,
+  "backend_last_byte_s": 79.57,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4043,
+    104,
+    16.15
+   ],
+   [
+    "semantic_interpretation",
+    "qwen3.5:9b",
+    461,
+    102,
+    3.57
+   ],
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    6762,
+    34,
+    24.45
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    9504,
+    22,
+    35.11
+   ]
+  ],
+  "model_sum_s": 79.28,
+  "ui_shown": [
+   "qwen3.5:9b",
+   20770,
+   79.28
+  ],
+  "reply": "URI could not complete the calculation because it does not have an implemented capability for this kind of task yet.",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 4,
+  "turn_s": 79.564,
+  "status": "failed",
+  "exec": null,
+  "run": "baseline_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    14.2
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "hi",
+  "client_total_s": 3.0,
+  "backend_last_byte_s": 2.99,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   2.98
+  ],
+  "reply": "Hello! How can I assist you today?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 2.993,
+  "status": "success",
+  "exec": null,
+  "run": "baseline_r1"
+ }
+]

@@ -1,0 +1,430 @@
+[
+ {
+  "resident_after": [
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "hi",
+  "client_total_s": 0.18,
+  "backend_last_byte_s": 0.15,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.1
+  ],
+  "reply": "Hello! How can I assist you today?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.147,
+  "status": "success",
+  "exec": null,
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "thanks",
+  "client_total_s": 0.07,
+  "backend_last_byte_s": 0.07,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.06
+  ],
+  "reply": "You're welcome!",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.07,
+  "status": "success",
+  "exec": null,
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    6.0
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "what can you do?",
+  "client_total_s": 12.87,
+  "backend_last_byte_s": 12.86,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4038,
+    105,
+    8.32
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5240,
+    139,
+    4.51
+   ]
+  ],
+  "model_sum_s": 12.83,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9278,
+   12.83
+  ],
+  "reply": "I am URI, an administrative assistant designed to help you perform institutional work accurately and efficiently. I can ",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 12.862,
+  "status": "success",
+  "exec": null,
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    6.0
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "explain in two sentences what an office note is",
+  "client_total_s": 4.61,
+  "backend_last_byte_s": 4.61,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4043,
+    104,
+    3.47
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5309,
+    27,
+    1.11
+   ]
+  ],
+  "model_sum_s": 4.58,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9352,
+   4.58
+  ],
+  "reply": "An office note is a brief, internal record of administrative details or decisions. This request did not require any inst",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 4.604,
+  "status": "success",
+  "exec": null,
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    6.0
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "draft an office note requesting two days of leave for a staff member",
+  "client_total_s": 12.45,
+  "backend_last_byte_s": 12.45,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4210,
+    136,
+    4.02
+   ],
+   [
+    "document_composition",
+    "qwen3.5:9b",
+    2324,
+    172,
+    3.64
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5597,
+    180,
+    4.75
+   ]
+  ],
+  "model_sum_s": 12.41,
+  "ui_shown": [
+   "qwen3.5:9b",
+   12131,
+   12.41
+  ],
+  "reply": "Here is the drafted Office Note:  **OFFICE NOTE**  **Subject:** Request for leave of absence for two days  1. It is subm",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 3,
+  "turn_s": 12.451,
+  "status": "success",
+  "exec": "draft_institutional_note",
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    6.0
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "don't send anything, just draft a short circular about the Friday meeting",
+  "client_total_s": 5.27,
+  "backend_last_byte_s": 5.27,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4045,
+    147,
+    4.18
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5416,
+    31,
+    1.07
+   ]
+  ],
+  "model_sum_s": 5.25,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9461,
+   5.25
+  ],
+  "reply": "I cannot send the circular right now because the Gmail capability is not connected. Once that connection is restored, I ",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 5.27,
+  "status": "unavailable",
+  "exec": "Gmail",
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    6.0
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "send it to the principal",
+  "client_total_s": 5.39,
+  "backend_last_byte_s": 5.39,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4202,
+    169,
+    4.47
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5471,
+    21,
+    0.9
+   ]
+  ],
+  "model_sum_s": 5.37,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9673,
+   5.37
+  ],
+  "reply": "I cannot send that right now because the capability to connect to the principal's inbox is not connected.",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 5.391,
+  "status": "unavailable",
+  "exec": null,
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    6.0
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "what is 17 times 23?",
+  "client_total_s": 12.45,
+  "backend_last_byte_s": 12.43,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4043,
+    104,
+    3.46
+   ],
+   [
+    "semantic_interpretation",
+    "qwen3.5:9b",
+    461,
+    102,
+    1.73
+   ],
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    6765,
+    66,
+    4.1
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    9495,
+    30,
+    3.11
+   ]
+  ],
+  "model_sum_s": 12.39,
+  "ui_shown": [
+   "qwen3.5:9b",
+   20764,
+   12.39
+  ],
+  "reply": "I could not calculate the product of 17 and 23 because URI does not have an implemented capability for this kind of task",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 4,
+  "turn_s": 12.425,
+  "status": "failed",
+  "exec": null,
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    6.0
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "hi",
+  "client_total_s": 0.09,
+  "backend_last_byte_s": 0.08,
+  "model_calls": [],
+  "model_sum_s": 0,
+  "ui_shown": [
+   "qwen3:0.6b",
+   null,
+   0.07
+  ],
+  "reply": "Hi! How can I assist you today?",
+  "narrative_ok": true,
+  "route": "HARNESS_PLUS_EDGE",
+  "edge_src": "edge_model",
+  "resp_calls": 1,
+  "turn_s": 0.077,
+  "status": "success",
+  "exec": null,
+  "run": "ctx16k_r1"
+ },
+ {
+  "resident_after": [
+   [
+    "qwen3.5:9b",
+    6.0
+   ],
+   [
+    "qwen3:0.6b",
+    0.6
+   ]
+  ],
+  "text": "what can you do?",
+  "client_total_s": 6.46,
+  "backend_last_byte_s": 6.45,
+  "model_calls": [
+   [
+    "reasoning",
+    "qwen3.5:9b",
+    4106,
+    110,
+    3.61
+   ],
+   [
+    "drafting",
+    "qwen3.5:9b",
+    5709,
+    142,
+    2.82
+   ]
+  ],
+  "model_sum_s": 6.43,
+  "ui_shown": [
+   "qwen3.5:9b",
+   9815,
+   6.43
+  ],
+  "reply": "I am URI, an administrative AI assistant designed to help with institutional work. My purpose is to perform tasks accura",
+  "narrative_ok": true,
+  "route": null,
+  "edge_src": null,
+  "resp_calls": 2,
+  "turn_s": 6.447,
+  "status": "success",
+  "exec": null,
+  "run": "ctx16k_r1"
+ }
+]
