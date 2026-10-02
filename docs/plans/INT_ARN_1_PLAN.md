@@ -449,3 +449,19 @@ No other User decision is needed to implement the scoped mechanism after the
 required lifecycle/pre-audit and exact-file authorization. The five-option
 cap, D4/D5 authority, Brain wording, free-input full round scope and
 consequence rules are already settled by the cited rulings.
+
+## 11. User decisions (recorded 2026-10-02)
+
+Chetan, 2026-10-02 09:02 UTC, in the desktop-recovery thread: "yes to all", answering:
+1. Exact-file allowlist additions approved: `uri_ui/lib/screens/ask/ask_uri_screen.dart`,
+   `uri_ui/lib/widgets/clarification_card.dart`, and `uri_ui/lib/models/clarification.dart`
+   only if a schema mismatch requires it - each pinned and recorded like the existing entries.
+2. After the live battery passes, `URI-RAR` may be recorded as adopted URI-internally with the
+   documented S4 limitations; `cross_agent_portable` stays false.
+3. After independent acceptance and the live battery, `URI_INT_ARN_1_ENABLED` defaults ON for
+   the desktop (single user); it stays OFF during implementation slices and qualification.
+
+Process note: per the User's standing instruction against further planning loops, this plan
+(with its embedded Stage 1/2 research) plus an independent Codex pre-audit is the lifecycle
+gate before slice A; the separate Stage 1/2 documents named in section 2 are folded into this
+file and the pre-audit record rather than produced as extra planning rounds.
