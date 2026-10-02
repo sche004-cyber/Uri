@@ -81,6 +81,13 @@ def infer_output_format(request_text: str, requested_output: str = "") -> str:
     return "docx"
 
 
+def _has_format_hint(text: str) -> bool:
+    lowered = text.lower()
+    return any(word in lowered for _, words in _FORMAT_KEYWORDS for word in words) or bool(
+        re.search(r"\b(docx|word document)\b", lowered)
+    )
+
+
 def _derive_filename(request_text: str, output_format: str) -> str:
     words = re.findall(r"[A-Za-z0-9]+", request_text)[:8]
     stem = "_".join(words) if words else "document"
@@ -105,12 +112,24 @@ class GenerateDocumentTool:
         session_id = kwargs.get("session_id")
         decision_context = kwargs.get("decision_context") or {}
         requested_output = kwargs.get("requested_output", "") or ""
+        proposed_format = kwargs.get("output_format")
+        title = kwargs.get("title") if isinstance(kwargs.get("title"), str) else ""
+        title = title.strip()
         theme = kwargs.get("theme", "modern")
         include_images = kwargs.get("include_images") is True
         image_queries = kwargs.get("image_queries") or []
 
-        output_format = infer_output_format(request_text, requested_output)
+        recent = decision_context.get("recent_conversation")
+        fallback_request = request_text
+        if proposed_format is None and not _has_format_hint(f"{requested_output} {request_text}") and isinstance(recent, list):
+            for turn in reversed(recent[-5:]):
+                prior_request = turn.get("user", "") if isinstance(turn, dict) else ""
+                if isinstance(prior_request, str) and _has_format_hint(prior_request):
+                    fallback_request = f"{prior_request} {request_text}"
+                    break
+        output_format = proposed_format if proposed_format in _MEDIA_TYPES else infer_output_format(fallback_request, requested_output)
         document_type = _KIND_LABELS.get(output_format, "report")
+        composition_request = f"{title}\n{request_text}" if title else request_text
 
         rules = load_institutional_rules()
         policy_rules = extract_drafting_rules(read_text_file(POLICY_PATH))
@@ -119,7 +138,6 @@ class GenerateDocumentTool:
         evidence = gather_session_evidence(session_id, self._file_store)
         if isinstance(decision_context.get("verified_evidence"), dict):
             evidence = {**decision_context["verified_evidence"], **evidence}
-        recent = decision_context.get("recent_conversation")
         if isinstance(recent, list):
             evidence["recent_conversation"] = [
                 {"user": str(turn.get("user", ""))[:2000], "uri": str(turn.get("uri", ""))[:4000]}
@@ -131,7 +149,7 @@ class GenerateDocumentTool:
             preferences = decision_context["user_preferences"]
 
         brief = build_drafting_brief(
-            request_text=request_text,
+            request_text=composition_request,
             requested_output=requested_output,
             document_type=document_type,
             evidence=evidence,
@@ -148,7 +166,7 @@ class GenerateDocumentTool:
         composer = self._composer or DocumentComposer(principal=principal)
         result = composer.compose(
             brief=brief,
-            request_text=request_text,
+            request_text=composition_request,
             evidence=evidence,
             preferences=preferences,
             soul_text=soul_text,
@@ -160,6 +178,11 @@ class GenerateDocumentTool:
             images = []
             if output_format == "pptx" and include_images:
                 from uri_core.services.office_document_writer import find_openverse_images
+                if not image_queries:
+                    slide_titles = [line[2:].strip() for line in body.splitlines() if line.startswith("# ")]
+                    image_queries = [f"{title} {slide}".strip() for slide in slide_titles[1:5]]
+                    if not image_queries:
+                        image_queries = [title or slide_titles[0]] if title or slide_titles else []
                 images = find_openverse_images(image_queries)
             content_bytes = self._render(
                 output_format, body, theme=theme, include_images=include_images,
@@ -172,7 +195,7 @@ class GenerateDocumentTool:
                 "error": str(error),
             }
 
-        filename = _derive_filename(request_text, output_format)
+        filename = _derive_filename(title or request_text, output_format)
 
         try:
             record = self._file_store.save(

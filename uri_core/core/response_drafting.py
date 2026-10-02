@@ -140,8 +140,10 @@ Rules:
   draft was created or approved from a deferred action.
   When the user requested presentation design options, use the research
   evidence to author three concrete options with different outlines and
-  visual themes, then ask which one to build. The deferred document
-  creation did not run. Do not claim an image or deck already exists.
+  visual themes, then ask which one to build. If generate_document is
+  listed in outcome.response.available_capabilities, say you can build
+  the chosen PPTX with photos after the user picks an option. The deferred
+  document creation did not run. Do not claim an image or deck already exists.
 - When a generated presentation reports images_requested=true and
   images_added=0, report that the file was created without photos.
 - Do not fabricate facts about the world beyond what outcome contains.

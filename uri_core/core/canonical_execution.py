@@ -854,6 +854,11 @@ def run_canonical_for_ask(
                     envelope["execution"] = {
                         **envelope.get("execution", {}), "partial_read_only": True,
                     }
+                    if isinstance(envelope.get("response"), dict):
+                        envelope["response"] = {
+                            **envelope["response"],
+                            "available_capabilities": _conversation_capability_evidence(directory),
+                        }
             # M32.1: APPROVAL_REQUIRED now also reaches _execute_canonical()
             # - previously only READY did, which meant an approval-required
             # capability never reached ApprovalGate/ApprovalStore (or the

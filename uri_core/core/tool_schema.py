@@ -85,6 +85,8 @@ LEGACY_TOOL_PARAMETERS: Dict[str, Dict[str, Any]] = {
         "properties": {
             "request_text": {"type": "string", "description": "The user's original request, verbatim. Default tool for creating local presentations (PPT, PPTX, PowerPoint) and office documents (DOCX, XLSX, PDF)."},
             "requested_output": {"type": "string", "description": "What the generated document or presentation should contain."},
+            "output_format": {"type": "string", "enum": ["docx", "xlsx", "pptx", "pdf"], "description": "File format selected from the full request and recent conversation. For a presentation follow-up, use pptx even if this turn only says an option number."},
+            "title": {"type": "string", "description": "Document or deck topic/title from the full request and recent conversation, not the wording of a short follow-up choice."},
             "theme": {"type": "string", "enum": ["modern", "academic", "warm"], "description": "Presentation design chosen by the user: modern, academic, or warm. Use the user's selected option when creating a PPTX."},
             "include_images": {"type": "boolean", "description": "Whether the user wants licensed photos in the PPTX. Only set true when requested or chosen by the user."},
             "image_queries": {"type": "array", "items": {"type": "string"}, "description": "Brain-chosen relevant search terms for licensed PPTX photos; use only when include_images is true."},

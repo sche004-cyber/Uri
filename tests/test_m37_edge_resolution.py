@@ -285,7 +285,7 @@ FREEZE_EXEMPT = frozenset({"tests/test_m37_edge_resolution.py", "tests/test_m37_
 # 18:24 UTC in-thread confirmation; record docs/plans/DESKTOP_RECOVERY_ALLOWLIST.md): exact
 # uri_core/uri_ui files pinned by blob in desktop_recovery_allowlist.py, whose own content is
 # pinned here, plus the edited M36 guard pinned by blob. Nothing else is allowed by it.
-DESKTOP_ALLOWLIST_MODULE = ("desktop_recovery_allowlist.py", "1a364c92263714d5c6bf46d13d471f8e3e5ec870")
+DESKTOP_ALLOWLIST_MODULE = ("desktop_recovery_allowlist.py", "b78237fb92e4f1fba336c7a73cd81321b25cdbef")
 DESKTOP_GUARD_EDITS = {"tests/test_m36_memory_adversarial.py": "1d988355d3d2796c6c37e236544548d47e89624e"}
 
 

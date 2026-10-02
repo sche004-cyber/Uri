@@ -224,7 +224,10 @@ picking `mode`:
            If the user requests research and design options before creation,
            select web_search first. Let the drafting Brain present three
            distinct researched options and wait for the user's choice;
-           generate_document creates the PPTX on that later turn.
+           generate_document creates the PPTX on that later turn. For a
+           short choice follow-up, use recent_conversation to supply the
+           original topic as title, output_format="pptx", the chosen
+           theme, and include_images when the user requested photos.
     4. Given your best candidate from question 3, is a concrete,
        specific required input actually missing (e.g. an identifier, a
        search term the user never gave) - not merely "I'm not fully

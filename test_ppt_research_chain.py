@@ -10,6 +10,7 @@ from pptx import Presentation
 from uri_core.core.canonical_execution import _execute_legacy_capability, _ready_read_prefix, run_canonical_for_ask
 from uri_core.core.decision_engine import DecisionOutcome
 from uri_core.core.tool_schema import LEGACY_TOOL_PARAMETERS
+from uri_core.core.response_validation import validate_drafted_response
 from uri_core.services.office_document_writer import render_pptx_bytes
 from uri_core.tools.generate_document import GenerateDocumentTool
 
@@ -22,6 +23,15 @@ PNG = base64.b64decode(
 class Directory:
     def describe(self, capability_id):
         return {"action_schemas": {}}
+
+    def summaries(self):
+        return [
+            {"capability_id": "generate_document", "available": True,
+             "summary": "Creates local PPTX presentations with themes and licensed photos.",
+             "approval_required": False},
+            {"capability_id": "unavailable_tool", "available": False,
+             "summary": "Unavailable", "approval_required": False},
+        ]
 
 
 def _contract(first="web_search"):
@@ -54,6 +64,18 @@ def test_web_research_prefix_runs_and_defers_document():
     assert result["execution"]["partial_read_only"] is True
     assert result["response"]["results"][0]["title"] == "Welfare guidance"
     assert result["plan"]["deferred_actions"] == [{"capability": "generate_document", "name": "generate_document"}]
+    assert result["execution"]["status"] == "success"
+    assert result["response"]["available_capabilities"] == [{
+        "id": "generate_document", "summary": "Creates local PPTX presentations with themes and licensed photos.",
+        "requires_approval": False,
+    }]
+    options = (
+        "Research found welfare guidance. Option 1: academic overview with a campus services map. "
+        "Option 2: student journey with warm photos and counselling support. "
+        "Option 3: outcomes and access routes with a modern visual theme. "
+        "I can build the chosen PPTX with photos after you pick. Which option would you like?"
+    )
+    assert validate_drafted_response(options, result) == options
 
 
 def test_non_read_prefix_never_auto_runs():
@@ -65,7 +87,7 @@ def test_non_read_prefix_never_auto_runs():
 
 def test_ppt_schema_exposes_user_chosen_design_controls():
     properties = LEGACY_TOOL_PARAMETERS["generate_document"]["properties"]
-    assert {"theme", "include_images", "image_queries"} <= properties.keys()
+    assert {"output_format", "title", "theme", "include_images", "image_queries"} <= properties.keys()
 
 
 def test_choice_turn_forwards_research_and_design_to_generator():
@@ -80,6 +102,7 @@ def test_choice_turn_forwards_research_and_design_to_generator():
             "name": "generate_document", "inputs": {
                 "request_text": "model replacement is not authoritative",
                 "requested_output": "PPTX on student welfare",
+                "output_format": "pptx", "title": "Student Welfare at NIT Sikkim",
                 "theme": "academic", "include_images": True,
                 "image_queries": ["campus support"],
             },
@@ -91,6 +114,8 @@ def test_choice_turn_forwards_research_and_design_to_generator():
     assert result["status"] == "success"
     assert captured["request_text"] == "Option 2"
     assert captured["theme"] == "academic"
+    assert captured["output_format"] == "pptx"
+    assert captured["title"] == "Student Welfare at NIT Sikkim"
     assert captured["decision_context"]["recent_conversation"][0]["uri"] == "Research summary"
 
 
@@ -110,6 +135,72 @@ class Composer:
     def compose(self, **kwargs):
         assert kwargs["evidence"]["recent_conversation"][0]["uri"] == "Research summary"
         return {"body": "# Student welfare\n- Support\n# Programmes\n- Counselling", "status": "success", "composed_by": "model"}
+
+
+def test_followup_uses_brain_format_title_and_derived_image_queries():
+    saved = {}
+
+    class Store:
+        def save(self, **kwargs):
+            saved.update(kwargs)
+            return SimpleNamespace(to_reference=lambda: {"file_id": "saved-pptx"})
+
+    class DeckComposer:
+        def compose(self, **kwargs):
+            assert "Student Welfare at NIT Sikkim" in kwargs["request_text"]
+            assert kwargs["evidence"]["recent_conversation"][0]["user"].startswith("Create a PPT")
+            return {"body": "# Student Welfare at NIT Sikkim\n- Overview\n# Campus support\n- Counselling",
+                    "status": "success", "composed_by": "model"}
+
+    tool = GenerateDocumentTool(composer=DeckComposer(), file_store=Store())
+    queries = []
+
+    def images(found_queries):
+        queries.extend(found_queries)
+        return [{"data": PNG, "credit": "Test creator; CC0; example.test"}]
+
+    with patch("uri_core.services.office_document_writer.find_openverse_images", side_effect=images):
+        result = tool.generate(
+            request_text="Option 2, please build it with photos",
+            output_format="pptx", title="Student Welfare at NIT Sikkim",
+            theme="warm", include_images=True, image_queries=[],
+            decision_context={"recent_conversation": [{"user": "Create a PPT on Student Welfare at NIT Sikkim", "uri": "Three options"}]},
+            session_id="s",
+        )
+    assert result["output_format"] == "pptx"
+    assert result["images_added"] == 1
+    assert saved["filename"] == "Student_Welfare_at_NIT_Sikkim.pptx"
+    assert queries == ["Student Welfare at NIT Sikkim Campus support"]
+    deck = Presentation(io.BytesIO(saved["content"]))
+    assert any(shape.shape_type == 13 for shape in deck.slides[1].shapes)
+
+
+def test_no_format_fallback_and_explicit_docx_are_preserved():
+    class Store:
+        def save(self, **kwargs):
+            return SimpleNamespace(to_reference=lambda: {"file_id": kwargs["filename"]})
+
+    class PlainComposer:
+        def compose(self, **kwargs):
+            return {"body": "# Summary\n- Detail", "status": "success", "composed_by": "model"}
+
+    tool = GenerateDocumentTool(composer=PlainComposer(), file_store=Store())
+    fallback = tool.generate(request_text="Create a PPT about campus support", session_id="s")
+    assert fallback["output_format"] == "pptx"
+    assert fallback["file"]["file_id"].endswith(".pptx")
+    contextual = tool.generate(
+        request_text="Option 2, build it", session_id="s",
+        decision_context={"recent_conversation": [{"user": "Create a PPT about campus support", "uri": "Choose an option"}]},
+    )
+    assert contextual["output_format"] == "pptx"
+    document = tool.generate(request_text="Option 2", output_format="docx", title="Student Welfare", session_id="s")
+    assert document["output_format"] == "docx"
+    assert document["file"]["file_id"] == "Student_Welfare.docx"
+    explicit_docx = tool.generate(
+        request_text="Create a DOCX report", session_id="s",
+        decision_context={"recent_conversation": [{"user": "Create a PPT", "uri": "Choose an option"}]},
+    )
+    assert explicit_docx["output_format"] == "docx"
 
 
 def test_image_failure_still_saves_pptx_with_research_context():

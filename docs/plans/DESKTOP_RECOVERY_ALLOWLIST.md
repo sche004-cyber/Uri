@@ -181,3 +181,17 @@ or release checkpoint is claimed by this implementation.
 | `uri_core/tools/generate_document.py` | Pass research context and selected design controls to the existing Brain composer, PPTX renderer, and FileStore. |
 | `uri_core/services/office_document_writer.py` | Render themed PPTX slides and optional embedded CC images with a credits slide, degrading to a deck without photos when retrieval fails. |
 | `test_ppt_research_chain.py` | Root-level mocked regression for read prefix, deferred creation, schema, styling, credits, and image failure. |
+
+## 2026-10-02 Research-to-PPT live repair
+
+Authority: Chetan's direct implementer instruction following the two-turn live
+`/ask` test at `8f7b7d2`. Claude re-pins frozen-file hashes after review.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/canonical_execution.py` | Give the read-prefix drafting Brain bounded, current-user capability evidence alongside the deferred steps and successful research result. |
+| `uri_core/core/response_drafting.py` | Direct the Brain to offer three researched choices and accurately say it can build the selected PPTX with photos when the available capability evidence supports it. |
+| `uri_core/core/tool_schema.py` | Expose Brain-selected output format and document topic/title as structured document inputs. |
+| `uri_core/core/decision_engine.py`, `uri_core/core/model_reasoning_adapter.py` | Instruct the Brain to carry the original presentation topic, format, design, and photo request through a short choice follow-up using recent conversation. |
+| `uri_core/tools/generate_document.py` | Use structured format and title for composition and filename; derive bounded image queries from the Brain's deck topic and slide titles when photos were requested without queries. |
+| `test_ppt_research_chain.py` | Mocked regressions for read-prefix evidence and validation, structured follow-up PPTX and photos, format fallback, and DOCX preservation; outside frozen guard scope. |
