@@ -195,3 +195,26 @@ Authority: Chetan's direct implementer instruction following the two-turn live
 | `uri_core/core/decision_engine.py`, `uri_core/core/model_reasoning_adapter.py` | Instruct the Brain to carry the original presentation topic, format, design, and photo request through a short choice follow-up using recent conversation. |
 | `uri_core/tools/generate_document.py` | Use structured format and title for composition and filename; derive bounded image queries from the Brain's deck topic and slide titles when photos were requested without queries. |
 | `test_ppt_research_chain.py` | Mocked regressions for read-prefix evidence and validation, structured follow-up PPTX and photos, format fallback, and DOCX preservation; outside frozen guard scope. |
+
+## 2026-10-02 Foundational web search catalogue repair
+
+Authority: Chetan's direct implementer instruction in-thread, 2026-10-02.
+Claude re-pins frozen-file hashes after independent review. No milestone status
+or release checkpoint is claimed here.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/capability_registry.py` | Carry the registry entry's optional boolean `foundational` value into its descriptor. |
+| `uri_core/core/capability_feasibility.py` | Preserve that value in the feasibility snapshot consumed by the directory. |
+| `uri_workspace/capabilities_registry.json` | Declare `web_search` foundational so topic-only information requests expose it to the Brain. Memory capabilities retain their existing fallback. No other capability was promoted. |
+| `test_preselection_foundational.py` | Root-level offline regressions for registry-to-directory propagation, web and memory visibility, and non-foundational lexical filtering; outside frozen guard scope. |
+
+Adjacent reachability check: with the real directory and top-five preselection,
+`make a presentation on X` and `make a presentation on the solar system` omit
+`generate_document`, although its registry description says it creates
+presentations. The terms `presentation` and `make` do not give it a top-five
+discriminating match. `summarise my unread emails` puts the multi-action
+`Gmail` capability first, exposing `search_messages`. This repair does not
+change presentation routing or promote another capability to foundational;
+the presentation gap needs a separate review of the general preselection
+behavior, without a phrase-specific keyword classifier.

@@ -220,6 +220,7 @@ def _feasibility_entry(
         "id": descriptor.id,
         "description": descriptor.description,
         "reads_current_attachments": descriptor.reads_current_attachments,
+        "foundational": descriptor.foundational,
         "usable": usable,
         "gap_reason": gap_reason,
         "blocked_by": blocked_by,

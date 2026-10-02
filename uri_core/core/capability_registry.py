@@ -92,6 +92,7 @@ class CapabilityDescriptor:
     interface: Optional[Dict[str, Any]] = None
     effect_type: str = "read_only"
     reads_current_attachments: bool = False
+    foundational: Optional[bool] = None
 
     @property
     def is_executable(self) -> bool:
@@ -193,6 +194,11 @@ def _descriptor_from_entry(
             "read_only",
         ),
         reads_current_attachments=entry.get("reads_current_attachments") is True,
+        foundational=(
+            entry.get("foundational")
+            if isinstance(entry.get("foundational"), bool)
+            else None
+        ),
     )
 
 

@@ -212,6 +212,7 @@
       "platform": "any",
       "limitations": "Requires a configured TAVILY_API_KEY (see .env.example); honestly reports when the search service is unreachable, misconfigured, or returns no results rather than inventing information.",
       "interface": null,
+      "foundational": true,
       "effect_type": "read_only"
     },
     "drive_search": {
