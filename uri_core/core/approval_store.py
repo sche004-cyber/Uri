@@ -165,6 +165,38 @@ class ProposedAction:
     # where capability_id already names the tool (unchanged meaning,
     # zero behavior change for every pre-existing record/caller).
     action_name: Optional[str] = None
+    requires_reference_binding: bool = False
+    binding_identity: Optional[Any] = None
+
+
+def _load_binding_identity(raw: Any) -> Any:
+    if raw is None:
+        return None
+    try:
+        from uri_desktop_seams.reference_clarification.service import (
+            ApprovalBindingIdentity, SlotBindingIdentity,
+        )
+        from uri_v1.turn.rar_clarification_contract import BindingState, WrongBindingImpact
+        if not isinstance(raw, dict) or set(raw) != {"version", "requires_reference_binding", "slots", "action_slots"}:
+            return None
+        slots = []
+        for item in raw["slots"]:
+            values = dict(item)
+            values["state"] = BindingState(values["state"])
+            values["wrong_binding_impact"] = WrongBindingImpact(values["wrong_binding_impact"])
+            slots.append(SlotBindingIdentity(**values))
+        return ApprovalBindingIdentity(raw["version"], raw["requires_reference_binding"],
+                                       tuple(slots), tuple(tuple(keys) for keys in raw["action_slots"]))
+    except (TypeError, ValueError, KeyError, AttributeError):
+        return None
+
+
+def _serialize_action(action: ProposedAction) -> Dict[str, Any]:
+    raw = asdict(action)
+    if not action.requires_reference_binding and action.binding_identity is None:
+        raw.pop("requires_reference_binding")
+        raw.pop("binding_identity")
+    return raw
 
 
 class ApprovalStore:
@@ -182,10 +214,24 @@ class ApprovalStore:
         arguments: Dict[str, Any],
         session_id: Optional[str] = None,
         action_name: Optional[str] = None,
+        binding_identity: Optional[Any] = None,
+        requires_reference_binding: bool = False,
     ) -> ProposedAction:
 
         arguments = dict(arguments or {})
         _validate_arguments(arguments)
+        if binding_identity is not None and not requires_reference_binding:
+            raise ApprovalValidationError("reference binding discriminator is required")
+        if requires_reference_binding:
+            from uri_desktop_seams.reference_clarification.service import ApprovalBindingIdentity
+            if (type(binding_identity) is not ApprovalBindingIdentity
+                    or not binding_identity.requires_reference_binding
+                    or not binding_identity.slots
+                    or len(binding_identity.slots) != len(binding_identity.action_slots)
+                    or any(slot.capability_id != capability_id
+                           or slot.action_name != (action_name or capability_id)
+                           for slot in binding_identity.slots)):
+                raise ApprovalValidationError("reference binding identity is required")
 
         action = ProposedAction(
             action_id=str(uuid.uuid4()),
@@ -198,6 +244,8 @@ class ApprovalStore:
             status=STATUS_PENDING,
             created_at=_now_iso(),
             action_name=action_name,
+            binding_identity=binding_identity,
+            requires_reference_binding=requires_reference_binding,
         )
 
         actions = self._load()
@@ -409,6 +457,8 @@ class ApprovalStore:
                             "schema_version", SCHEMA_VERSION
                         ),
                         action_name=raw.get("action_name"),
+                        requires_reference_binding=raw.get("requires_reference_binding", False),
+                        binding_identity=_load_binding_identity(raw.get("binding_identity")),
                     )
                 )
 
@@ -429,7 +479,7 @@ class ApprovalStore:
 
         data = {
             "schema_version": SCHEMA_VERSION,
-            "actions": [asdict(action) for action in actions],
+            "actions": [_serialize_action(action) for action in actions],
         }
 
         with open(self.storage_path, "w", encoding="utf-8") as file:

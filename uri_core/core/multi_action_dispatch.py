@@ -213,6 +213,7 @@ class MultiActionDispatch:
         principal: Any = None,
         user_approved: bool = False,
         admin_approved: bool = False,
+        reference_bindings: Any = None,
     ) -> Optional[Dict[str, Any]]:
         """M30.6: the same single-action execution path as `dispatch()`'s
         own `action is not None` branch (permission check, context-bound
@@ -232,10 +233,16 @@ class MultiActionDispatch:
         if not self._action_permitted(capability, action_name, principal):
             return self._permission_denied(capability, action_name)
         executor = self._executor_for(session_id, principal)
-        bound_inputs = self._bind_context(executor, capability, action_name, inputs, user_text)
+        # A verified reference turn already has the exact action inputs.
+        # Session result context must not append unrelated prior-result keys.
+        bound_inputs = (dict(inputs) if reference_bindings is not None else
+                        self._bind_context(executor, capability, action_name, inputs, user_text))
+        binding_options = ({"reference_bindings": reference_bindings}
+                           if reference_bindings is not None else {})
         result = executor.execute(
             capability, action_name, bound_inputs,
             user_approved=user_approved, admin_approved=admin_approved,
+            **binding_options,
         )
         return self._execution_response(capability, action_name, result, bound_inputs)
 
@@ -262,9 +269,34 @@ class MultiActionDispatch:
                 return self._permission_denied(step["capability"], step["action"])
         self._selected_capabilities[str(session_id)] = steps[0]["capability"]
         executor = self._executor_for(session_id, principal)
-        result = executor.execute_chain(
-            steps, user_approved=user_approved, admin_approved=admin_approved,
-        )
+        if any("reference_recheck" in step for step in steps):
+            completed: Dict[str, Dict[str, Any]] = {}
+            result = {"status": "success", "steps": completed}
+            for index, step in enumerate(steps):
+                step_id = str(step.get("id", index))
+                recheck = step.get("reference_recheck")
+                try:
+                    current = callable(recheck) and recheck()
+                except Exception:
+                    current = False
+                if not current and step.get("reference_bindings"):
+                    completed[step_id] = {"status": "reference_stale"}
+                    result = {"status": "halted", "halted_at": step_id, "steps": completed}
+                    break
+                inputs = executor._resolve_references(step.get("inputs", {}), completed)
+                response = executor.execute(
+                    str(step.get("capability")), str(step.get("action")), inputs,
+                    user_approved=user_approved, admin_approved=admin_approved,
+                    reference_bindings=step.get("reference_bindings"),
+                )
+                completed[step_id] = response
+                if response["status"] not in {"success", "ok"}:
+                    result = {"status": "halted", "halted_at": step_id, "steps": completed}
+                    break
+        else:
+            result = executor.execute_chain(
+                steps, user_approved=user_approved, admin_approved=admin_approved,
+            )
         status = "success" if result.get("status") == "success" else result.get("status", "failed")
         return {
             "handled": True,

@@ -93,6 +93,7 @@ class ApprovalGate:
         self,
         tool_name: str,
         session_id: Optional[str] = None,
+        binding_identity: Any = None,
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """Called wherever ToolDispatcher.execute_tool() used to be
@@ -188,6 +189,8 @@ class ApprovalGate:
                 capability_id=tool_name,
                 arguments=kwargs,
                 session_id=session_id,
+                **({"binding_identity": binding_identity, "requires_reference_binding": True}
+                   if binding_identity is not None else {}),
             )
 
         except ApprovalError as exc:
@@ -237,6 +240,7 @@ class ApprovalGate:
         action_id: str,
         approved: bool,
         session_id: Optional[str] = None,
+        binding_principal: Any = None,
     ) -> Dict[str, Any]:
         """Records a real user decision for one proposed action and,
         only if approved, executes it immediately through the same
@@ -246,6 +250,26 @@ class ApprovalGate:
         mismatched approval - see ApprovalStore.decide()/consume()
         for the exact checks."""
 
+        from uri_core.core.canonical_execution import reference_clarification_enabled
+        if reference_clarification_enabled() and approved:
+            existing = self.approval_store.get(action_id)
+            if existing is not None and existing.action_name is not None:
+                return {"status": "error", "message": "Registered actions must use the canonical approval path."}
+            if existing is not None and existing.requires_reference_binding:
+                try:
+                    from uri_desktop_seams.reference_clarification.service import revalidate_binding_identity
+                    if binding_principal is None or existing.binding_identity is None:
+                        raise ValueError("binding context missing")
+                    if any(slot.capability_id != existing.capability_id
+                           or slot.action_name != existing.capability_id
+                           for slot in existing.binding_identity.slots):
+                        raise ValueError("binding action mismatch")
+                    revalidate_binding_identity(binding_principal, existing.binding_identity)
+                except (ValueError, TypeError):
+                    self._record_audit_safely(event_type="capability_execution", status="approval_binding_rejected",
+                                              session_id=session_id, capability=existing.capability_id,
+                                              metadata={"action_id": action_id})
+                    return {"status": "error", "message": "Approval reference changed; please retry the request."}
         try:
             record = self.approval_store.decide(
                 action_id, approved=approved, session_id=session_id
@@ -275,6 +299,22 @@ class ApprovalGate:
 
         if not approved:
             return {"status": "cancelled", "action_id": action_id}
+
+        if reference_clarification_enabled() and record.requires_reference_binding:
+            try:
+                from uri_desktop_seams.reference_clarification.service import revalidate_binding_identity
+                if binding_principal is None or record.binding_identity is None:
+                    raise ValueError("binding context missing")
+                if any(slot.capability_id != record.capability_id
+                       or slot.action_name != record.capability_id
+                       for slot in record.binding_identity.slots):
+                    raise ValueError("binding action mismatch")
+                revalidate_binding_identity(binding_principal, record.binding_identity)
+            except (ValueError, TypeError):
+                self._record_audit_safely(event_type="capability_execution", status="approval_binding_rejected",
+                                          session_id=session_id, capability=record.capability_id,
+                                          metadata={"action_id": action_id})
+                return {"status": "error", "message": "Approval reference changed; please retry the request."}
 
         try:
             self.approval_store.consume(

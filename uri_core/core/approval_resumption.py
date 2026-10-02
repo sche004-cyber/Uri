@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import os
 import re
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # M32.1: default-OFF, matching this repo's own standing convention for
@@ -40,6 +41,95 @@ def approval_resumption_enabled() -> bool:
     return os.environ.get(APPROVAL_RESUMPTION_ENV_VAR) == "1"
 
 from uri_core.core.approval_store import ApprovalError, ApprovalStore, ProposedAction
+
+
+def _binding_principal(orchestrator: Any, principal: Any, session_id: str):
+    from datetime import datetime, timezone
+    from uri_desktop_seams.reference_clarification.evidence import (
+        EvidenceCandidate, _file_item, _provider_fields, _provider_version,
+    )
+    from uri_desktop_seams.reference_clarification.service import BindingPrincipal
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+    dispatch = getattr(orchestrator, "multi_action_dispatch", None)
+    file_store = getattr(getattr(orchestrator, "approval_gate", None), "file_store", None)
+    if principal is None or not getattr(principal, "user_id", None) or not session_id:
+        raise ValueError("authenticated approval context unavailable")
+
+    def read_source(source_class, locator):
+        if source_class in {"file", "attachment", "conversation"}:
+            if file_store is None:
+                return None
+            for record in file_store.list_for_session(session_id):
+                item = _file_item(file_store, record, principal.user_id, session_id,
+                                  datetime.now(timezone.utc), set())
+                if item is not None and item.locator == locator:
+                    return item
+            return None
+        if source_class == "gmail" and dispatch is not None:
+            capability = dispatch.registry.get_capability("Gmail")
+            if capability is None or not dispatch._action_permitted("Gmail", "read_message", principal):
+                return None
+            result = capability.read_message(locator)
+            record = result.get("message") if result.get("status") == "success" else None
+        elif source_class == "drive":
+            from uri_core.core.capability_resolver import CapabilityResolver
+            if not CapabilityResolver.is_allowed("drive_search", principal=principal):
+                return None
+            from uri_core.services.drive_service import DriveService
+            service = DriveService(user_id=principal.user_id)
+            if not service.connect().get("success"):
+                return None
+            try:
+                record = service.service.files().get(
+                    fileId=locator, fields="id,name,mimeType,modifiedTime,version"
+                ).execute()
+            except Exception:
+                return None
+        else:
+            return None
+        if not isinstance(record, dict):
+            return None
+        source_id, title, candidate_type, owner = _provider_fields(source_class, record)
+        if source_id != locator or not title:
+            return None
+        return EvidenceCandidate(
+            f"{source_class}:{principal.user_id}:{source_id}", source_id, source_class,
+            title, candidate_type, source_id, _provider_version(source_class, record),
+            datetime.now(timezone.utc).isoformat(), principal.user_id, None, owner=owner,
+        )
+
+    def get_action(capability_id, action_name):
+        capability = dispatch.registry.get_capability(capability_id) if dispatch else None
+        return capability.get_action(action_name) if capability else None
+
+    def has_grant(capability_id, action_name):
+        return bool(dispatch and dispatch._action_permitted(capability_id, action_name, principal))
+
+    def read_binding(round_id):
+        root = str(Path(file_store.storage_dir).parent.parent) if file_store is not None else None
+        journal_store = ClarificationJournal(**({"root": root} if root else {}))
+        with journal_store.transaction(principal.user_id, session_id) as journal:
+            return journal.store.bindings.get(round_id)
+
+    return BindingPrincipal(principal.user_id, session_id, read_source,
+                            has_grant, get_action, read_binding)
+
+
+def _recheck_binding(orchestrator: Any, principal: Any, session_id: str,
+                     record: ProposedAction):
+    if not record.requires_reference_binding:
+        return None
+    from uri_desktop_seams.reference_clarification.service import (
+        ApprovalBindingIdentity, revalidate_binding_identity,
+    )
+    identity = record.binding_identity
+    if (type(identity) is not ApprovalBindingIdentity or not identity.slots
+            or any(slot.capability_id != record.capability_id
+                   or slot.action_name != (record.action_name or record.capability_id)
+                   for slot in identity.slots)):
+        raise ValueError("approval reference identity is missing or changed")
+    return revalidate_binding_identity(
+        _binding_principal(orchestrator, principal, session_id), identity)
 
 # Conservative, deterministic, whole-message matching only - never a
 # substring search inside a longer sentence, so a genuinely new request
@@ -134,6 +224,68 @@ def _error_envelope(session_id: Optional[str], message: str) -> Dict[str, Any]:
     }
 
 
+def resume_by_action_id(*, orchestrator: Any, action_id: str,
+                        session_id: str, approved: bool, principal: Any,
+                        user_text: str = "") -> Dict[str, Any]:
+    """Shared API/chat resume path for a specific durable proposal."""
+    gate = getattr(orchestrator, "approval_gate", None)
+    store = getattr(gate, "approval_store", None)
+    if store is None:
+        return _error_envelope(session_id, "Approval store unavailable.")
+    record = store.get(action_id)
+    if record is None or record.session_id != session_id:
+        return _error_envelope(session_id, "Approval is unavailable for this session.")
+    if record.action_name is None:
+        result = gate.decide(action_id, approved=approved, session_id=session_id,
+                             binding_principal=(_binding_principal(orchestrator, principal, session_id)
+                                                if record.requires_reference_binding else None))
+        return {"status": "success" if result.get("status") not in {"error", "rejected"} else "error",
+                "session_id": session_id, "execution": {"status": result.get("status"), "action_id": action_id},
+                "response": result, "narrative": None}
+    if not approved:
+        try:
+            store.decide(action_id, approved=False, session_id=session_id)
+        except ApprovalError as exc:
+            return _error_envelope(session_id, str(exc))
+        return {"status": "cancelled", "session_id": session_id,
+                "execution": {"status": "not_executed", "action_id": action_id},
+                "response": {"message": "Cancelled - that action will not be performed."},
+                "narrative": None}
+    dispatch = getattr(orchestrator, "multi_action_dispatch", None)
+    if dispatch is None:
+        return _error_envelope(session_id, "Approve this action in chat when the dispatcher is available.")
+    try:
+        _recheck_binding(orchestrator, principal, session_id, record)
+        decided = store.decide(action_id, approved=True, session_id=session_id)
+        bindings = _recheck_binding(orchestrator, principal, session_id, decided)
+        store.consume(action_id, capability_id=decided.capability_id,
+                      arguments=decided.arguments, session_id=session_id)
+    except (ApprovalError, ValueError, TypeError) as exc:
+        try:
+            gate._record_audit_safely(event_type="capability_execution", status="approval_binding_rejected",
+                                      session_id=session_id, capability=record.capability_id,
+                                      metadata={"action_id": action_id, "reason": type(exc).__name__})
+        except Exception:
+            pass
+        return _error_envelope(session_id, "Approval reference changed or is unavailable; please retry the request.")
+    envelope = dispatch.dispatch_explicit(
+        decided.capability_id, decided.action_name, decided.arguments,
+        session_id=session_id, user_text=user_text, principal=principal,
+        user_approved=True,
+        **({"reference_bindings": bindings} if bindings is not None else {}),
+    )
+    if envelope is None:
+        return _error_envelope(session_id, "Approval was recorded, but the action could not be dispatched.")
+    envelope = dict(envelope)
+    envelope.pop("handled", None)
+    envelope.setdefault("session_id", session_id)
+    envelope.setdefault("narrative", None)
+    envelope.setdefault("error", None)
+    envelope.setdefault("semantic_analysis", None)
+    envelope["execution"] = {**(envelope.get("execution") or {}), "action_id": action_id}
+    return envelope
+
+
 def resume_pending_approval(
     *,
     orchestrator: Any,
@@ -165,6 +317,14 @@ def resume_pending_approval(
         return _clarification_envelope(pending)
 
     action = pending[0]
+
+    from uri_core.core.canonical_execution import reference_clarification_enabled
+    if reference_clarification_enabled():
+        return resume_by_action_id(
+            orchestrator=orchestrator, action_id=action.action_id,
+            session_id=session_id, approved=approved, principal=principal,
+            user_text=user_text,
+        )
 
     try:
         record = approval_store.decide(

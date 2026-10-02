@@ -350,6 +350,19 @@ not have that authority and are not given it here. Never claim an
 action already happened. Return nothing but the JSON object.
 """
 
+_REFERENCE_SLOT_PROMPT = """
+When a user reference must identify a real action input, you may add optional
+reference_slots to the decision. Each slot has exactly:
+{"span":{"start":0,"end":1,"text":"..."},"ref_key":"...",
+"target":{"capability_id":"...","action_name":"...","argument_name":"..."},
+"relation":"direct|previous|latest|revision|owner|contrast|same_as",
+"source_class":"any|file|attachment|conversation|gmail|drive|memory"}.
+Offsets index the exact latest user_text. Target a real action and parameter
+from the directory. URI validates and grounds these proposals; do not invent
+candidate IDs or claim a binding or approval. Omit the field if no input
+reference needs grounding.
+"""
+
 
 @dataclass(frozen=True)
 class DecisionOutcome:
@@ -676,7 +689,9 @@ def propose_decision(
             response = get_router().attempt(
                 ROLE_REASONING,
                 principal,
-                system=DECISION_CONTRACT_SYSTEM_PROMPT,
+                system=(DECISION_CONTRACT_SYSTEM_PROMPT + _REFERENCE_SLOT_PROMPT
+                        if os.environ.get("URI_INT_ARN_1_ENABLED") == "1"
+                        else DECISION_CONTRACT_SYSTEM_PROMPT),
                 user=request_json,
                 temperature=0,
                 max_tokens=500,
@@ -706,6 +721,30 @@ def propose_decision(
         return DecisionOutcome(
             status=outcome.status, invalid_reason=outcome.invalid_reason, raw_text=text[:500]
         )
+    if os.environ.get("URI_INT_ARN_1_ENABLED") == "1" and "reference_slots" in parsed:
+        from uri_desktop_seams.reference_clarification.proposal import (
+            InvalidReferenceProposal, validate_reference_slots,
+        )
+        from uri_core.core.tool_schema import LEGACY_TOOL_PARAMETERS
+
+        action_arguments = {}
+        for action in parsed.get("actions") or []:
+            if not isinstance(action, dict):
+                continue
+            capability_id = action.get("capability") or parsed.get("capability")
+            action_name = action.get("name")
+            detail = capability_directory.describe(capability_id) if capability_directory else None
+            schema = (detail or {}).get("action_schemas", {}).get(action_name, {})
+            parameters = schema.get("parameters", {})
+            if isinstance(parameters, dict) and "properties" in parameters:
+                parameters = parameters["properties"]
+            if capability_id == action_name and capability_id in LEGACY_TOOL_PARAMETERS:
+                parameters = LEGACY_TOOL_PARAMETERS[capability_id].get("properties", {})
+            action_arguments[(capability_id, action_name)] = frozenset(parameters or {})
+        try:
+            validate_reference_slots(parsed, str(turn_state_data.get("turn", {}).get("user_text") or ""), action_arguments)
+        except (InvalidReferenceProposal, TypeError, ValueError) as exc:
+            return DecisionOutcome(status="invalid", invalid_reason=f"invalid_reference_slots:{exc}")
     return outcome
 
 

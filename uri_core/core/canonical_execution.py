@@ -58,6 +58,10 @@ from __future__ import annotations
 
 import os
 import time
+import json
+import re
+from dataclasses import asdict
+from uuid import uuid4
 from typing import Any, Dict, List, Optional, Sequence
 
 from uri_core.core.decision_engine import (
@@ -75,6 +79,20 @@ DEFAULT_TELEMETRY_LOG_PATH = os.path.join(
     os.path.dirname(DEFAULT_SHADOW_LOG_PATH) or ".", "canonical_execution_log.jsonl"
 )
 
+
+def _record_reference_stage(*, path: str, session_id: str, stage: str,
+                            outcome: str, started: float, source_class: str = "",
+                            candidate_count: int = 0, binding_state: str = "",
+                            reason: str = "") -> None:
+    """Structured reference telemetry; no turn text, labels, or source content."""
+    code = reason if re.fullmatch(r"[A-Z][A-Z0-9_]{0,63}", reason or "") else "OTHER"
+    record_shadow_trace({
+        "event": "int_arn_1", "stage": stage, "session_id": session_id,
+        "outcome": outcome, "source_class": source_class,
+        "candidate_count": candidate_count, "binding_state": binding_state,
+        "reason_code": code, "duration_ms": round((time.monotonic() - started) * 1000, 2),
+    }, path=path)
+
 # M30.8: canonical is the normal authority for every capability exposed by
 # the Directory.  ``None`` deliberately means "no restriction".  Operators
 # can replace this value with a (possibly empty) frozenset as an emergency
@@ -82,6 +100,241 @@ DEFAULT_TELEMETRY_LOG_PATH = os.path.join(
 # Keeping the value mutable is intentional: it is an operational kill switch,
 # not a second capability registry.
 CANONICAL_EXECUTION_ALLOWLIST: Optional[frozenset[str]] = None
+
+
+def reference_clarification_enabled() -> bool:
+    return os.environ.get("URI_INT_ARN_1_ENABLED") == "1"
+
+
+def _reference_block(session_id: Optional[str], reason: str = "REFERENCE_UNRESOLVED") -> Dict[str, Any]:
+    return {
+        "status": "awaiting_user_response", "session_id": session_id,
+        "execution": {"status": "not_executed", "reason": reason},
+        "response": {"message": "I need to clarify the reference before proceeding. Please retry the request."},
+        "narrative": None,
+    }
+
+
+def _reference_wire(outcome: Any) -> Dict[str, Any]:
+    from uri_v1.turn.rar_clarification_contract import ESCAPE_LABEL
+    contract, render = outcome.contract, outcome.render
+    labels = dict(render.labels) if render is not None else {}
+    return {
+        "ambiguity_id": contract.ambiguity_id,
+        "trace_id": contract.turn_id,
+        "kind": contract.kind.value,
+        "question": render.question if render is not None else "Which item did you mean?",
+        "options": [
+            {"option_key": item.option_key, "candidate_id": item.candidate_id,
+             "label": labels.get(item.option_key, item.display_facts[0].value if item.display_facts else item.candidate_id),
+             "rank": item.rank}
+            for item in contract.candidates
+        ],
+        "attribute_axis": contract.attribute_axis,
+        "attribute_filters": [
+            {"option_key": item.option_key, "axis": item.axis, "value": item.value,
+             "label": labels.get(item.option_key, item.value),
+             "member_count": len(item.member_candidate_ids)}
+            for item in contract.attribute_options
+        ],
+        "overflow_count": contract.overflow_count,
+        "escape_label": ESCAPE_LABEL,
+        "candidate_set_fingerprint": contract.candidate_set_fingerprint,
+        "expires_at": contract.expires_at,
+    }
+
+
+def _reference_evidence(slot: Any, *, orchestrator: Any, principal: Any,
+                        session_id: str, attachments: Optional[List[Dict[str, Any]]]) -> Any:
+    from datetime import datetime, timezone
+    from uri_desktop_seams.reference_clarification.evidence import (
+        AuthorizedReadBatch, produce_evidence,
+    )
+    file_store = getattr(getattr(orchestrator, "approval_gate", None), "file_store", None)
+    dispatch = getattr(orchestrator, "multi_action_dispatch", None)
+    gmail = drive = None
+    if slot.source_class in {"any", "gmail"} and dispatch is not None:
+        capability = dispatch.registry.get_capability("Gmail")
+        if capability is not None and dispatch._action_permitted("Gmail", "search_messages", principal):
+            result = capability.search_messages(slot.expression, max_results=16)
+            def read_gmail(source_id):
+                current = capability.read_message(source_id)
+                return current.get("message") if current.get("status") == "success" else None
+            gmail = AuthorizedReadBatch(
+                "gmail", principal.user_id, datetime.now(timezone.utc).isoformat(), result,
+                read_current=read_gmail,
+                can_read=lambda source_id: dispatch._action_permitted("Gmail", "read_message", principal),
+                complete=not result.get("truncated", True),
+            )
+    if slot.source_class in {"any", "drive"}:
+        from uri_core.core.capability_resolver import CapabilityResolver
+        if CapabilityResolver.is_allowed("drive_search", principal=principal):
+            from uri_core.services.drive_service import DriveService
+            service = DriveService(user_id=principal.user_id)
+            result = service.search_drive(slot.expression, limit=16)
+            if result.get("success"):
+                def read_drive(source_id):
+                    try:
+                        return service.service.files().get(
+                            fileId=source_id, fields="id,name,mimeType,modifiedTime,version"
+                        ).execute()
+                    except Exception:
+                        return None
+                listed = result.get("files", [])
+                refreshed = [read_drive(item.get("id")) for item in listed if isinstance(item, dict)]
+                refresh_valid = len(refreshed) == len(listed) and all(item is not None for item in refreshed)
+                if not refresh_valid:
+                    refreshed = []
+                drive = AuthorizedReadBatch(
+                    "drive", principal.user_id, datetime.now(timezone.utc).isoformat(),
+                    {"status": "success" if refresh_valid else "unavailable", "files": refreshed},
+                    read_current=read_drive,
+                    can_read=lambda source_id: CapabilityResolver.is_allowed(
+                        "drive_search", principal=principal),
+                    complete=len(listed) < 16 and refresh_valid,
+                )
+    return produce_evidence(
+        slot, principal_id=principal.user_id, session_id=session_id,
+        file_store=file_store, file_store_user_id=principal.user_id if file_store is not None else None,
+        current_attachment_handles=tuple(item["file_id"] for item in (attachments or [])
+                                         if isinstance(item, dict) and isinstance(item.get("file_id"), str)),
+        gmail=gmail, drive=drive,
+    )
+
+
+def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: str,
+                       orchestrator: Any, principal: Any, directory: Any,
+                       attachments: Optional[List[Dict[str, Any]]],
+                       resumed: Optional[Dict[str, Any]] = None,
+                       journal_root: Optional[str] = None,
+                       telemetry_path: str = DEFAULT_TELEMETRY_LOG_PATH) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
+    """Validate Brain slots, ground them, and attach verified per-action transport."""
+    from uri_desktop_seams.reference_clarification.proposal import validate_reference_slots
+    from uri_desktop_seams.reference_clarification.service import (
+        ApprovalBindingIdentity, ReferenceClarificationService, SlotBindingIdentity,
+    )
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+    from uri_core.capabilities.wrong_binding import (
+        ReferenceBinding, ReferenceBindingStatus, effective_wrong_binding_impact,
+    )
+    from uri_v1.turn.rar_clarification_contract import BindingState
+
+    if "reference_slots" not in contract:
+        if resumed is not None:
+            return contract, _reference_block(session_id, "RESUMED_SLOT_MISSING")
+        return contract, None
+    dispatch = getattr(orchestrator, "multi_action_dispatch", None)
+    registry = getattr(dispatch, "registry", None)
+    argument_map = {}
+    for item in contract.get("actions") or []:
+        if not isinstance(item, dict):
+            continue
+        cap_id = item.get("capability") or contract.get("capability")
+        action = registry.get_capability(cap_id).get_action(item.get("name")) if registry and registry.get_capability(cap_id) else None
+        parameters = getattr(getattr(action, "parameters", None), "parameters", {}) if action else {}
+        argument_map[(cap_id, item.get("name"))] = frozenset(parameters)
+    slots = validate_reference_slots(contract, user_text, argument_map)
+    if not slots:
+        return contract, None
+    if principal is None or not principal.user_id or not session_id or registry is None:
+        return contract, _reference_block(session_id, "REFERENCE_AUTHORITY_UNAVAILABLE")
+    service = ReferenceClarificationService(journal=ClarificationJournal(
+        **({"root": journal_root} if journal_root is not None else {})))
+    actions = [dict(item) for item in contract.get("actions") or []]
+    resumed_used = False
+    for slot in slots:
+        stage_started = time.monotonic()
+        capability = registry.get_capability(slot.capability_id)
+        action = capability.get_action(slot.action_name) if capability else None
+        if action is None or not getattr(dispatch, "_action_permitted", lambda *_: False)(slot.capability_id, slot.action_name, principal):
+            return contract, _reference_block(session_id, "REFERENCE_ACTION_UNAVAILABLE")
+        impact, declared = effective_wrong_binding_impact(action)
+        envelope = _reference_evidence(slot, orchestrator=orchestrator, principal=principal,
+                                       session_id=session_id, attachments=attachments)
+        if envelope.abstained:
+            _record_reference_stage(path=telemetry_path, session_id=session_id, stage="evidence",
+                outcome="abstained", started=stage_started, source_class=slot.source_class,
+                reason=envelope.abstain_reason or "SOURCE_UNAVAILABLE")
+            return contract, _reference_block(session_id, envelope.abstain_reason or "SOURCE_UNAVAILABLE")
+        if resumed and not resumed_used and resumed.get("slot") == asdict(slot):
+            binding_id = resumed.get("binding_id")
+            with service.journal.transaction(principal.user_id, session_id) as journal:
+                if not isinstance(binding_id, str) or not service._verified_binding(journal, binding_id, envelope):
+                    return contract, _reference_block(session_id, "REFERENCE_STALE")
+                binding_record = journal.store.bindings[binding_id]
+            candidate_id, state = binding_record.candidate_id, binding_record.state
+            resumed_used = True
+        else:
+            outcome = service.resolve(user_id=principal.user_id, session_id=session_id,
+                                      turn_id=uuid4().hex, envelope=envelope,
+                                      wrong_binding_impact=impact)
+            if outcome.contract is not None:
+                _record_reference_stage(path=telemetry_path, session_id=session_id, stage="resolution",
+                    outcome="clarification", started=stage_started, source_class=slot.source_class,
+                    candidate_count=len(envelope.inventory), binding_state=outcome.state.value)
+                with service.journal.transaction(principal.user_id, session_id) as journal:
+                    journal.origins["request:" + outcome.contract.ambiguity_id] = json.dumps({
+                        "text": user_text, "slot": asdict(slot), "attachments": attachments or [],
+                        "capability_id": slot.capability_id, "action_name": slot.action_name,
+                    }, ensure_ascii=False)
+                blocked = _reference_block(session_id)
+                blocked["clarification"] = _reference_wire(outcome)
+                blocked["response"] = {"message": blocked["clarification"]["question"]}
+                return contract, blocked
+            if outcome.status != "BOUND" or not outcome.binding_id or not outcome.candidate_id:
+                _record_reference_stage(path=telemetry_path, session_id=session_id, stage="resolution",
+                    outcome="retry", started=stage_started, source_class=slot.source_class,
+                    candidate_count=len(envelope.inventory), reason="REFERENCE_UNRESOLVED")
+                return contract, _reference_block(session_id, outcome.reason or "REFERENCE_UNRESOLVED")
+            candidate_id, state, binding_id = outcome.candidate_id, outcome.state, outcome.binding_id
+        _record_reference_stage(path=telemetry_path, session_id=session_id, stage="resolution",
+            outcome="bound", started=stage_started, source_class=slot.source_class,
+            candidate_count=len(envelope.inventory), binding_state=state.value)
+        candidate = next((item for item in envelope.inventory if item.id == candidate_id), None)
+        if candidate is None or state not in (BindingState.CONFIRMED, BindingState.TENTATIVE):
+            return contract, _reference_block(session_id, "REFERENCE_STALE")
+        target = next((item for item in actions if item.get("name") == slot.action_name
+                       and (item.get("capability") or contract.get("capability")) == slot.capability_id
+                       and not any(bound.argument_name == slot.argument_name
+                                   for bound in item.get("_binding_slots", ()))), None)
+        if target is None:
+            return contract, _reference_block(session_id, "REFERENCE_ACTION_CHANGED")
+        target["inputs"] = {**(target.get("inputs") or {}), slot.argument_name: candidate.source_id}
+        target.setdefault("reference_bindings", []).append(ReferenceBinding(
+            slot.ref_key, candidate.id,
+            ReferenceBindingStatus.CONFIRMED if state == BindingState.CONFIRMED else ReferenceBindingStatus.TENTATIVE))
+        with service.journal.transaction(principal.user_id, session_id) as journal:
+            expires_at = journal.binding_expires.get(binding_id)
+        if not expires_at:
+            return contract, _reference_block(session_id, "REFERENCE_EXPIRED")
+        target.setdefault("_binding_slots", []).append(SlotBindingIdentity(
+            slot.capability_id, slot.action_name, slot.argument_name, slot.ref_key,
+            candidate.id, candidate.source_class, candidate.locator, candidate.version,
+            state, impact, principal.user_id, session_id, binding_id, expires_at))
+        def recheck(slot=slot, binding_id=binding_id, candidate_id=candidate.id,
+                    expected_impact=impact):
+            live_capability = registry.get_capability(slot.capability_id)
+            live_action = live_capability.get_action(slot.action_name) if live_capability else None
+            current_impact, current_declared = effective_wrong_binding_impact(live_action)
+            if (live_action is None or current_impact != expected_impact
+                    or not dispatch._action_permitted(slot.capability_id, slot.action_name, principal)):
+                return False
+            current = _reference_evidence(slot, orchestrator=orchestrator, principal=principal,
+                                          session_id=session_id, attachments=attachments)
+            with service.journal.transaction(principal.user_id, session_id) as journal:
+                binding = journal.store.bindings.get(binding_id)
+                return (binding is not None and binding.candidate_id == candidate_id
+                        and service._verified_binding(journal, binding_id, current))
+        target.setdefault("_reference_rechecks", []).append(recheck)
+    if resumed and not resumed_used:
+        return contract, _reference_block(session_id, "RESUMED_SLOT_CHANGED")
+    for item in actions:
+        if item.get("_binding_slots"):
+            identities = tuple(item["_binding_slots"])
+            item["_binding_identity"] = ApprovalBindingIdentity(1, True, identities,
+                tuple((slot.capability_id, slot.action_name, slot.argument_name, slot.ref_key)
+                      for slot in identities))
+    return {**contract, "actions": actions}, None
 
 # A mode with no real action to execute (conversation, clarification,
 # unsupported, workflow_continuation-with-no-capability,
@@ -154,6 +407,7 @@ def canonical_killswitch_enabled() -> bool:
 def _propose_durable_gmail_approval(
     *, orchestrator: Any, session_id: Optional[str], capability: str,
     action_name: str, bound_inputs: Dict[str, Any],
+    binding_identity: Any = None,
 ) -> Optional[str]:
     """M32.1: MultiActionExecutor.execute()'s approval_required outcome
     (executor.py:54-57) is a stateless, per-call boolean check with no
@@ -177,6 +431,8 @@ def _propose_durable_gmail_approval(
         proposed = approval_store.propose(
             capability_id=capability, arguments=bound_inputs,
             session_id=session_id, action_name=action_name,
+            **({"binding_identity": binding_identity, "requires_reference_binding": True}
+               if binding_identity is not None else {}),
         )
         return proposed.action_id
     except Exception:
@@ -210,6 +466,10 @@ def _execute_multi_action(
     if not actions:
         return None
     if len(actions) == 1:
+        if reference_clarification_enabled() and any(
+            not check() for check in actions[0].get("_reference_rechecks", ())
+        ):
+            return _reference_block(session_id, "REFERENCE_STALE")
         action_name = actions[0]["name"]
         # A typed action may explicitly declare that it needs the current
         # user utterance. Bind that runtime-owned value generically; the
@@ -223,6 +483,8 @@ def _execute_multi_action(
         envelope = dispatch.dispatch_explicit(
             capability_id, action_name, inputs,
             session_id=session_id, user_text=user_text, principal=principal,
+            **({"reference_bindings": tuple(actions[0]["reference_bindings"])}
+               if actions[0].get("reference_bindings") else {}),
         )
         # M32.1: a single-action awaiting_approval result is the ONLY
         # shape this milestone bridges to a durable, resumable action_id
@@ -242,6 +504,7 @@ def _execute_multi_action(
             action_id = _propose_durable_gmail_approval(
                 orchestrator=orchestrator, session_id=session_id, capability=capability_id,
                 action_name=action_name, bound_inputs=bound_inputs,
+                binding_identity=actions[0].get("_binding_identity"),
             )
             if action_id is not None:
                 envelope = dict(envelope)
@@ -266,6 +529,10 @@ def _execute_multi_action(
                 "capability": (a.get("capability") if isinstance(a.get("capability"), str) and a.get("capability") else capability_id),
                 "action": a["name"],
                 "inputs": a.get("inputs") or {},
+                **({"reference_bindings": tuple(a["reference_bindings"])}
+                   if a.get("reference_bindings") else {}),
+                **({"reference_recheck": lambda checks=tuple(a["_reference_rechecks"]): all(check() for check in checks)}
+                   if a.get("_reference_rechecks") else {}),
             }
             for a in actions
         ]
@@ -619,6 +886,19 @@ def _execute_canonical(
     current_turn_attachment_ids: Optional[Sequence[str]] = None,
     recent_conversation: Optional[List[Dict[str, Any]]] = None,
 ) -> Optional[Dict[str, Any]]:
+    if reference_clarification_enabled() and contract.get("reference_slots"):
+        slots = contract["reference_slots"]
+        actions = contract.get("actions") or []
+        if not isinstance(slots, list) or any(
+            not any(isinstance(action, dict)
+                    and (action.get("capability") or contract.get("capability")) == slot.get("target", {}).get("capability_id")
+                    and action.get("name") == slot.get("target", {}).get("action_name")
+                    and any(binding.ref_key == slot.get("ref_key")
+                            for binding in action.get("reference_bindings") or ())
+                    for action in actions)
+            for slot in slots if isinstance(slot, dict)
+        ):
+            return _reference_block(session_id, "REFERENCE_BINDING_MISSING")
     capability_id = contract.get("capability")
     # M33 Batch B: registry lookup, not a `capability_id == "Gmail"`
     # branch - Gmail is simply always present in `dispatch.registry` by
@@ -659,6 +939,8 @@ def _execute_canonical(
             contract, capability_id=capability_id, orchestrator=orchestrator,
             session_id=session_id, user_text=user_text, principal=principal,
         )
+    if reference_clarification_enabled() and contract.get("reference_slots"):
+        return _reference_block(session_id, "LEGACY_REFERENCE_UNSUPPORTED")
     return _execute_legacy_capability(
         contract, orchestrator=orchestrator, session_id=session_id,
         user_text=user_text, principal=principal,
@@ -746,6 +1028,8 @@ def run_canonical_for_ask(
     decision_observer: Any = None,
     current_turn_attachments: Optional[List[Dict[str, Any]]] = None,
     arn_state: Optional[Any] = None,
+    reference_resume: Optional[Dict[str, Any]] = None,
+    reference_root: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """The single M30.6 entry point for a live `/ask` call site
     (`server.py`). Returns a full `{"status", "session_id", "execution",
@@ -765,6 +1049,7 @@ def run_canonical_for_ask(
     envelope: Optional[Dict[str, Any]] = None
     fallback_reason: Optional[str] = None
     canonical_attempted = False
+    reference_dispatch_started = time.monotonic()
 
     try:
         turn_state_result, directory = build_turn_state_and_directory(
@@ -783,6 +1068,8 @@ def run_canonical_for_ask(
 
         if decision.status != "ok" or decision.contract is None:
             detail = str(decision.invalid_reason or decision.status)
+            if reference_clarification_enabled() and "reference_slots" in detail:
+                return _reference_block(session_id, "INVALID_REFERENCE_PROPOSAL")
             terminal = "provider" in detail.lower() and "unavailable" in detail.lower()
             fallback_reason = (
                 "MODEL_TERMINALLY_UNAVAILABLE" if terminal
@@ -790,6 +1077,22 @@ def run_canonical_for_ask(
             )
         else:
             contract = decision.contract
+            if reference_clarification_enabled():
+                try:
+                    contract, reference_terminal = _reference_prepare(
+                        contract, user_text=user_text, session_id=session_id,
+                        orchestrator=orchestrator, principal=principal, directory=directory,
+                        attachments=current_turn_attachments, resumed=reference_resume,
+                        journal_root=reference_root, telemetry_path=log_path,
+                    )
+                except Exception:
+                    return _reference_block(session_id, "REFERENCE_VALIDATION_UNAVAILABLE")
+                if reference_terminal is not None:
+                    return reference_terminal
+                if contract is not decision.contract:
+                    from uri_core.core.decision_engine import DecisionOutcome
+                    decision = DecisionOutcome(status="ok", contract=contract)
+            reference_dispatch_started = time.monotonic()
             gate_result = evaluate_gates(
                 decision, capability_directory=directory, principal=principal,
                 turn_state_data=turn_state_result.data,
@@ -820,6 +1123,7 @@ def run_canonical_for_ask(
             read_prefix = (
                 _ready_read_prefix(contract, directory, principal, turn_state_result.data)
                 if gate_result.outcome in {"MISSING_PARAMETER", "READY"} and fallback_reason is None
+                and not (reference_clarification_enabled() and contract.get("reference_slots"))
                 else []
             )
             if read_prefix:
@@ -915,6 +1219,13 @@ def run_canonical_for_ask(
         envelope = None
 
     fallback_required = fallback_reason is not None
+    if reference_clarification_enabled() and contract.get("reference_slots"):
+        _record_reference_stage(
+            path=log_path, session_id=str(session_id or ""), stage="dispatch",
+            outcome=str((envelope or {}).get("execution", {}).get("status") or "not_executed"),
+            started=reference_dispatch_started,
+            reason="FALLBACK_BLOCKED" if fallback_required else "",
+        )
     telemetry = build_canonical_telemetry(
         session_id=session_id, user_text=user_text, contract=contract,
         gate_result=gate_result, recall_at_5=recall_at_5,

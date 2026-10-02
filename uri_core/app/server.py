@@ -1018,6 +1018,7 @@ class AskRequest(BaseModel):
     # the historical no-current-attachment shape; never infer from files
     # persisted earlier in the session.
     attached_file_ids: List[str] = Field(default_factory=list)
+    clarification_response: Optional[dict] = None
 
 
 class FallbackRoutingRequest(BaseModel):
@@ -1650,6 +1651,95 @@ def _record_lifecycle_intent_audit(
         pass
 
 
+def _reference_pending(user_id: Optional[str], session_id: str):
+    """Read only this authenticated user's active, unused round."""
+    if user_id is None:
+        return None
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+    journal = ClarificationJournal(root=_USER_STATE_ROOT)
+    if not journal.path(user_id, session_id).exists():
+        return None
+    with journal.transaction(user_id, session_id) as state:
+        for round_id, record in reversed(tuple(state.store.rounds.items())):
+            if not record.used and record.contract.session_id == session_id:
+                return round_id, record.contract, state.origins.get("request:" + round_id)
+    return None
+
+
+def _reference_ask_turn(context, principal, payload: AskRequest, pending, attachments):
+    """Typed response wins all other /ask interpreters and resumes a fresh Brain pass."""
+    from types import SimpleNamespace
+    from uri_core.core.canonical_execution import (
+        _reference_block, _reference_evidence, _reference_wire, run_canonical_for_ask,
+    )
+    from uri_desktop_seams.reference_clarification.proposal import ReferenceSlot
+    from uri_desktop_seams.reference_clarification.service import ReferenceClarificationService
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+    from uri_v1.reference_clarification.template_renderer import render_template
+    from uri_v1.turn.rar_clarification_contract import ClarificationResponse, ResponseKind
+    from uri_core.capabilities.wrong_binding import effective_wrong_binding_impact
+
+    if pending is None:
+        return _reference_block(payload.session_id, "ROUND_UNAVAILABLE")
+    round_id, contract, metadata_raw = pending
+    if payload.clarification_response is None:
+        result = _reference_block(payload.session_id)
+        result["clarification"] = _reference_wire(SimpleNamespace(contract=contract, render=render_template(contract)))
+        result["response"] = {"message": result["clarification"]["question"]}
+        return result
+    if not isinstance(metadata_raw, str):
+        return _reference_block(payload.session_id, "ROUND_CONTEXT_UNAVAILABLE")
+    try:
+        metadata = json.loads(metadata_raw)
+        slot = ReferenceSlot(**metadata["slot"])
+        response_raw = payload.clarification_response
+        if not isinstance(response_raw, dict) or response_raw.get("ambiguity_id") != round_id:
+            raise ValueError("round mismatch")
+        response = ClarificationResponse(
+            ambiguity_id=round_id, response_kind=ResponseKind(response_raw["response_kind"]),
+            candidate_id=response_raw.get("candidate_id"), option_key=response_raw.get("option_key"),
+            text=response_raw.get("text"),
+            candidate_set_fingerprint=response_raw.get("candidate_set_fingerprint"),
+            axis=response_raw.get("axis"), value=response_raw.get("value"),
+        )
+        dispatch = context.orchestrator.multi_action_dispatch
+        capability = dispatch.registry.get_capability(slot.capability_id)
+        action = capability.get_action(slot.action_name) if capability else None
+        if action is None or not dispatch._action_permitted(slot.capability_id, slot.action_name, principal):
+            raise ValueError("action no longer authorized")
+        impact, declared = effective_wrong_binding_impact(action)
+        original_attachments = metadata.get("attachments") or []
+        service = ReferenceClarificationService(journal=ClarificationJournal(root=_USER_STATE_ROOT))
+        outcome = service.respond(
+            user_id=principal.user_id, session_id=payload.session_id, response=response,
+            refresh=lambda: _reference_evidence(slot, orchestrator=context.orchestrator,
+                principal=principal, session_id=payload.session_id, attachments=original_attachments),
+            impact_reader=lambda: impact,
+        )
+        if outcome.contract is not None:
+            with service.journal.transaction(principal.user_id, payload.session_id) as state:
+                state.origins["request:" + outcome.contract.ambiguity_id] = metadata_raw
+            result = _reference_block(payload.session_id)
+            result["clarification"] = _reference_wire(outcome)
+            result["response"] = {"message": result["clarification"]["question"]}
+            return result
+        if outcome.status != "BOUND" or not outcome.binding_id:
+            return _reference_block(payload.session_id, outcome.reason or "REFERENCE_REJECTED")
+        result = run_canonical_for_ask(
+            orchestrator=context.orchestrator, session_id=payload.session_id,
+            user_text=metadata["text"], principal=principal,
+            current_turn_attachments=original_attachments,
+            reference_resume={"slot": metadata["slot"], "binding_id": outcome.binding_id},
+            reference_root=_USER_STATE_ROOT,
+            log_path=user_scoped_path(principal.user_id, "reference_clarification/telemetry.jsonl", root=_USER_STATE_ROOT),
+        )
+        if result is None or result.get("_canonical_fallback"):
+            return _reference_block(payload.session_id, "RESUME_UNAVAILABLE")
+        return result
+    except (TypeError, KeyError, ValueError, AttributeError):
+        return _reference_block(payload.session_id, "REFERENCE_RESPONSE_INVALID")
+
+
 @app.post("/ask")
 def ask(
     payload: AskRequest,
@@ -1661,6 +1751,15 @@ def ask(
     turn_started = time.time()
     context, principal, personalization_context = _resolve_ask_context(payload, user_id)
     current_turn_attachments = _current_turn_attachment_references(context, payload)
+    from uri_core.core.canonical_execution import reference_clarification_enabled
+    reference_enabled = reference_clarification_enabled()
+    reference_pending = (_reference_pending(user_id, payload.session_id)
+                         if reference_enabled else None)
+    if reference_enabled and (payload.clarification_response is not None or reference_pending is not None):
+        reference_result = _reference_ask_turn(
+            context, principal, payload, reference_pending, current_turn_attachments)
+        return _finalize_ask_response(
+            context, user_id, payload, reference_result, turn_started=turn_started)
 
     # M32.1: a durable, pending approval-required action (see
     # approval_resumption.py) gets first chance at this turn, before
@@ -1786,8 +1885,16 @@ def ask(
                         personalization_context=personalization_context,
                         decision_observer=_observe_decision,
                         current_turn_attachments=current_turn_attachments,
+                        **({"reference_root": _USER_STATE_ROOT} if reference_enabled else {}),
+                        **({"log_path": user_scoped_path(user_id, "reference_clarification/telemetry.jsonl", root=_USER_STATE_ROOT)}
+                           if reference_enabled and user_id is not None else {}),
                     )
-                    if observed.get("mode") == "workflow_continuation" and early_result is not None:
+                    if (reference_enabled and isinstance(early_result, dict)
+                            and early_result.get("execution", {}).get("reason")
+                            and early_result.get("execution", {}).get("status") == "not_executed"):
+                        result = early_result
+                        early_executed = True
+                    elif observed.get("mode") == "workflow_continuation" and early_result is not None:
                         if early_result.get("_canonical_fallback"):
                             legacy_fallback = early_result
                         else:
@@ -1859,6 +1966,9 @@ def ask(
                         principal=principal,
                         personalization_context=personalization_context,
                         current_turn_attachments=current_turn_attachments,
+                        **({"reference_root": _USER_STATE_ROOT} if reference_enabled else {}),
+                        **({"log_path": user_scoped_path(user_id, "reference_clarification/telemetry.jsonl", root=_USER_STATE_ROOT)}
+                           if reference_enabled and user_id is not None else {}),
                     )
                     if canonical_result.get("_canonical_fallback"):
                         legacy_fallback = canonical_result
@@ -1874,6 +1984,10 @@ def ask(
                 "fallback_reason": "engine_failure:canonical_route_exception",
                 "gate_outcome": "DEGRADED",
             }
+
+    if result is None and reference_enabled:
+        from uri_core.core.canonical_execution import _reference_block
+        result = _reference_block(payload.session_id, "CANONICAL_REFERENCE_ROUTE_UNAVAILABLE")
 
     if result is None:
         result = context.orchestrator.process_user_input(
@@ -2066,7 +2180,7 @@ def _finalize_ask_response(
     # otherwise, in which case "response" (the pre-existing,
     # deterministic template/tool-output field, unchanged) remains the
     # only text a client has ever needed to render.
-    return {
+    response = {
         "status": result.get("status"),
         "session_id": result.get("session_id"),
         "error": result.get("error"),
@@ -2089,6 +2203,9 @@ def _finalize_ask_response(
         ),
         "harness_route": result.get("_harness"),
     }
+    if "clarification" in result:
+        response["clarification"] = result["clarification"]
+    return response
 
 
 def _sse_event(event: str, data: dict) -> str:
@@ -2108,6 +2225,12 @@ def _ask_stream_eligible(context, payload: "AskRequest") -> bool:
     re-routed here - this function only ever decides whether to TRY the
     fast path, never re-implements what ask() itself would decide."""
     try:
+        from uri_core.core.canonical_execution import reference_clarification_enabled
+        if reference_clarification_enabled() and (
+            payload.clarification_response is not None
+            or _reference_pending(getattr(context.orchestrator.principal, "user_id", None), payload.session_id)
+        ):
+            return False
         from uri_core.core.canonical_execution import workflow_continuation_mode_enabled
         from uri_core.core.native_tool_loop import native_tool_loop_enabled
 
@@ -2172,6 +2295,14 @@ async def ask_stream(
     stream_turn_started = time.time()
 
     async def _generate():
+        from uri_core.core.canonical_execution import reference_clarification_enabled
+        if reference_clarification_enabled() and (
+            payload.clarification_response is not None
+            or _reference_pending(user_id, payload.session_id) is not None
+        ):
+            async for chunk in _fallback_to_ask():
+                yield chunk
+            return
         # Streaming Tier 0 has no Turn State payload seam.  Attachment
         # turns therefore use the ordinary /ask path, which passes the
         # one validated structured signal to canonical/native routing;
@@ -2275,6 +2406,22 @@ def approve(
     the initial proposal.
     """
     context = _resolve_context(user_id)
+    from uri_core.core.canonical_execution import reference_clarification_enabled
+    if reference_clarification_enabled():
+        record = context.orchestrator.approval_gate.approval_store.get(payload.action_id)
+        if record is not None and (record.action_name is not None or record.requires_reference_binding):
+            if user_id is None:
+                return {"status": "error", "message": "Authenticated approval is required."}
+            from uri_core.core.approval_resumption import resume_by_action_id
+            account = _user_account_store.get_by_user_id(user_id)
+            principal = PrincipalContext(
+                user_id=user_id, role=account.role if account else None,
+                device_id=None, mode=account.mode if account else DEFAULT_MODE,
+            )
+            return resume_by_action_id(
+                orchestrator=context.orchestrator, action_id=payload.action_id,
+                session_id=payload.session_id, approved=True, principal=principal,
+            )
 
     personalization_context = build_personalization_context(
         context.profile_store.load_or_create(),

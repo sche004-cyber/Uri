@@ -373,6 +373,9 @@ def revalidate_binding_identity(principal: BindingPrincipal, identity: ApprovalB
         arguments = getattr(action, "input_schema", None)
         if isinstance(arguments, dict) and slot.argument_name not in arguments.get("properties", {}):
             raise ValueError("action slot changed")
+        declared_parameters = getattr(getattr(action, "parameters", None), "parameters", None)
+        if isinstance(declared_parameters, dict) and slot.argument_name not in declared_parameters:
+            raise ValueError("action slot changed")
         impact, declared = effective_wrong_binding_impact(action)
         if not declared or impact != slot.wrong_binding_impact:
             raise ValueError("action impact changed")

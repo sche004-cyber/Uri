@@ -243,3 +243,16 @@ hashes after independent review.
 | `uri_core/core/tool_schema.py` | Ask the Brain for short generic visual subjects, one per content slide, without institution names. |
 | `uri_core/tools/generate_document.py` | Derive generic slide queries when absent, retry one broader query per empty result, cap lookups and images, and report tried queries. |
 | `test_ppt_research_chain.py` | Mocked regressions for Brain-provided and derived queries, broader retry, and lookup/image caps; outside frozen guard scope. |
+
+## 2026-10-02 INT-ARN-1 Slice C (canonical /ask wiring and route guards)
+
+Authority: Chetan, 2026-10-02 08:46 UTC (INT-ARN-1), 09:02, 09:24 and 09:32 UTC (exact files). Plan: docs/plans/INT_ARN_1_PLAN.md (accepted with amendments at f212b0d).
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/multi_action_dispatch.py` | Per-action `reference_bindings` transport to `MultiActionExecutor` (single and chain). |
+| `uri_core/core/approval_resumption.py` | Pre-consumption binding recheck for natural-language approval; shared resume-by-action-ID entry for `/approve` registered records. |
+| `uri_core/core/native_tool_loop.py` | Both `_execute_canonical` sites fail closed for pending rounds / slot-bearing proposals. |
+| `uri_core/core/approval_store.py` | `ProposedAction` binding identities + `requires_reference_binding`; `propose()`/`_load()`. |
+| `uri_core/core/approval_gate.py` | Pre-consumption binding recheck for legacy-tool `/approve`; registered records never legacy-dispatched. |
+| `uri_core/core/decision_engine.py`, `canonical_execution.py`, `uri_core/app/server.py` | Optional `reference_slots`, clarification intake/stream intercept, pre-dispatch hook, central fail-closed exclusions, clarification wire projection. |

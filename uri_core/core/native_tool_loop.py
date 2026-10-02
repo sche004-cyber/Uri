@@ -184,6 +184,14 @@ def _execute_one_branch(
         "goal": "", "clarification": None, "unsupported_reason": None,
         "reason": "", "requires_approval": False, "confidence": "high",
     }
+    from uri_core.core.canonical_execution import reference_clarification_enabled
+    if reference_clarification_enabled() and (
+        "reference_slots" in inputs or "reference_bindings" in inputs
+    ):
+        return {"tool_call_id": tool_call_id, "capability": capability_id,
+                "action": action_name, "status": "not_executed",
+                "gate_outcome": "REFERENCE_UNRESOLVED",
+                "detail": "The reference needs clarification before this action can run."}
 
     try:
         gate_result = evaluate_gates(
@@ -275,6 +283,19 @@ def execute_translated_batch(
     """
     capability_id = contract["capability"]
     actions = contract["actions"]
+    from uri_core.core.canonical_execution import reference_clarification_enabled
+    if reference_clarification_enabled() and (
+        contract.get("reference_slots") or any(
+            isinstance(action, dict) and (
+                action.get("reference_slots") or action.get("reference_bindings")
+                or "reference_slots" in (action.get("inputs") or {})
+                or "reference_bindings" in (action.get("inputs") or {})
+            ) for action in actions)
+    ):
+        return [{"tool_call_id": meta.get("tool_call_id"), "status": "not_executed",
+                 "gate_outcome": "REFERENCE_UNRESOLVED",
+                 "detail": "The reference needs clarification before this action can run."}
+                for meta in results_meta]
     call_ids = [meta["tool_call_id"] for meta in results_meta]
     attachments = turn_state_data.get("current_turn_attachments")
     current_turn_attachment_ids = None
