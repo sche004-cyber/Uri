@@ -222,13 +222,13 @@ Use the approved **inline clarification card** within the existing standalone ch
 - `uri_core/core/approval_resumption.py` (H2: natural-language approval pre-dispatch binding re-check)
 - `uri_core/core/native_tool_loop.py` (H3: native tool loop reference binding gate)
 
-### Pending User approval (identified in Claude's review of the amended plan)
-The H2 design above also edits `uri_core/core/approval_store.py` (`ProposedAction.binding_identity`) and
-the `/approve` path through `uri_core/core/approval_gate.py` (`decide()` re-check). Both are frozen and not
-yet approved; slices touching them wait for explicit User approval.
+### Approved 2026-10-02 09:32 UTC (Chetan, in-thread)
+"Approve approval_store.py and approval_gate.py for INT-ARN-1":
+- `uri_core/core/approval_store.py` (H2: `ProposedAction.binding_identity`)
+- `uri_core/core/approval_gate.py` (H2: `/approve` `decide()` binding re-check)
 
 ### Four-Stage Lifecycle Status
 - **Stage 1 (Audit):** Complete & Frozen in [`docs/research/INT_ARN_1_ROOT_CAUSE_AUDIT.md`](../research/INT_ARN_1_ROOT_CAUSE_AUDIT.md).
 - **Stage 2 (Architecture):** Complete & Frozen in [`docs/architecture/INT_ARN_1_CANONICAL_ARCHITECTURE.md`](../architecture/INT_ARN_1_CANONICAL_ARCHITECTURE.md).
 - **Stage 3 (Migration Plan):** Accepted candidate in this document (`docs/plans/INT_ARN_1_PLAN.md`).
-- **Stage 4 (Implementation):** Awaits pre-audit acceptance and User approval of pending files.
+- **Stage 4 (Implementation):** Awaits independent pre-audit acceptance (all needed frozen files approved).
