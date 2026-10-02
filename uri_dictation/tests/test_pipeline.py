@@ -1,4 +1,7 @@
+import json
+
 from pipeline import DictationPipeline
+from polish import Polisher
 
 
 class FakeClipboard:
@@ -85,3 +88,40 @@ def test_pipeline_reports_exception_to_error_logger_without_transcript():
     assert not pipeline.process(["private audio"], 1.0)
     assert len(errors) == 1
     assert type(errors[0]) is RuntimeError
+
+
+def test_timing_records_polish_fields_without_transcript_text():
+    class Transcriber:
+        device = "cpu (small)"
+        def transcribe(self, _audio): return "private words for testing"
+    timing = FakeTimingPath()
+    polisher = Polisher(True, "test-model", 1, http_post=lambda *_args: b'{"message":{"content":"Private words for testing."}}')
+    pipeline = DictationPipeline(Transcriber(), FakeClipboard(), FakeKeys(), FakeToast(), {}, timing, polisher=polisher, wait=lambda _: None)
+
+    assert pipeline.process([], 1.0)
+    record = json.loads(timing.records[0])
+    assert {"polish_ms", "polish_model", "polish_used", "polish_fallback_reason"} <= record.keys()
+    assert record["polish_model"] == "test-model"
+    assert record["polish_used"] is True
+    assert record["polish_fallback_reason"] is None
+    assert "private words for testing" not in timing.records[0].casefold()
+
+
+def test_polish_failure_toasts_and_pastes_deterministic_cleanup():
+    class Transcriber:
+        device = "cpu (small)"
+        def transcribe(self, _audio): return "um private words for testing"
+    class Clipboard(FakeClipboard):
+        def __init__(self):
+            super().__init__()
+            self.history = []
+        def set_text(self, text):
+            self.history.append(text)
+            super().set_text(text)
+    clipboard, toast = Clipboard(), FakeToast()
+    polisher = Polisher(True, "test-model", 1, http_post=lambda *_args: b'{"message":{"content":""}}')
+    pipeline = DictationPipeline(Transcriber(), clipboard, FakeKeys(), toast, {}, FakeTimingPath(), polisher=polisher, wait=lambda _: None)
+
+    assert pipeline.process([], 1.0)
+    assert clipboard.history == ["private words for testing"]
+    assert toast.messages == ["Pasted unpolished: empty"]

@@ -4,10 +4,15 @@ import ctypes
 import queue
 import threading
 import traceback
+import textwrap
+from dataclasses import replace
+from enum import Enum, auto
 from pathlib import Path
 from typing import Callable
-from config import load_config, load_dictionary
+from cleanup import cleanup_transcript
+from config import load_config, load_dictionary, save_polish_enabled
 from pipeline import DictationPipeline
+from polish import Polisher
 from platform_io import PynputKeySender, WindowsClipboard
 from recording import MemoryRecorder
 from transcriber import WarmTranscriber
@@ -16,10 +21,34 @@ ROOT = Path(__file__).resolve().parent
 _MUTEX = None
 
 
+class _PanelState(Enum):
+    HIDDEN = auto()
+    LISTENING = auto()
+    TRANSCRIBING = auto()
+    POLISHING = auto()
+
+
+class _PanelCommandState:
+    """UI-thread-only state which rejects preview results after release."""
+    def __init__(self) -> None:
+        self.state = _PanelState.HIDDEN
+
+    def apply(self, action: str) -> bool:
+        if action == "listening":
+            self.state = _PanelState.LISTENING
+        elif action == "transcribing":
+            self.state = _PanelState.TRANSCRIBING
+        elif action == "polishing":
+            self.state = _PanelState.POLISHING
+        elif action == "hide":
+            self.state = _PanelState.HIDDEN
+        return action != "preview" or self.state is _PanelState.LISTENING
+
+
 class ListeningPill:
     """Owns all Tk state on one dedicated UI thread."""
     def __init__(self) -> None:
-        self._commands: queue.Queue[bool | None] = queue.Queue()
+        self._commands: queue.Queue[tuple[str, str | None] | None] = queue.Queue()
         self._ready = threading.Event()
         self._thread = threading.Thread(target=self._run, name="uri-dictation-ui", daemon=True)
 
@@ -28,10 +57,19 @@ class ListeningPill:
         self._ready.wait()
 
     def show(self) -> None:
-        self._commands.put(True)
+        self._commands.put(("listening", "Listening..."))
+
+    def show_transcribing(self) -> None:
+        self._commands.put(("transcribing", "Transcribing..."))
+
+    def show_polishing(self, model: str) -> None:
+        self._commands.put(("polishing", f"Polishing ({model})..."))
+
+    def show_preview(self, text: str) -> None:
+        self._commands.put(("preview", text))
 
     def hide(self) -> None:
-        self._commands.put(False)
+        self._commands.put(("hide", None))
 
     def stop(self) -> None:
         self._commands.put(None)
@@ -42,6 +80,7 @@ class ListeningPill:
         root = tk.Tk()
         root.withdraw()
         pill = None
+        state = _PanelCommandState()
         def poll() -> None:
             nonlocal pill
             while True:
@@ -54,20 +93,121 @@ class ListeningPill:
                         pill.destroy()
                     root.destroy()
                     return
-                if command and pill is None:
+                action, text = command
+                if not state.apply(action):
+                    continue
+                if action != "hide" and pill is None:
                     pill = tk.Toplevel(root)
                     pill.overrideredirect(True)
                     pill.attributes("-topmost", True)
                     pill.attributes("-alpha", 0.9)
-                    tk.Label(pill, text="  Listening...  ", bg="#262626", fg="white", font=("Segoe UI", 11, "bold")).pack(padx=8, pady=5)
-                    pill.geometry("+40+40")
-                elif not command and pill is not None:
+                    label = tk.Label(pill, text=self._visible_text(text or ""), bg="#262626", fg="white", font=("Segoe UI", 11, "bold"), justify="left", wraplength=560)
+                    label.pack(padx=14, pady=8)
+                    pill._uri_label = label
+                    pill.update_idletasks()
+                    self._position(pill)
+                    self._make_non_activating(pill)
+                elif action != "hide" and pill is not None:
+                    pill._uri_label.configure(text=self._visible_text(text or ""))
+                    pill.update_idletasks()
+                    self._position(pill)
+                elif action == "hide" and pill is not None:
                     pill.destroy()
                     pill = None
             root.after(25, poll)
         self._ready.set()
         root.after(0, poll)
         root.mainloop()
+
+    @staticmethod
+    def _visible_text(text: str) -> str:
+        """Approximate a 560 px, four-line panel while preserving the newest text."""
+        lines = []
+        for paragraph in text.splitlines() or [text]:
+            lines.extend(textwrap.wrap(paragraph, width=70, break_long_words=False) or [""])
+        return "\n".join(lines[-4:])
+
+    @staticmethod
+    def _position(panel) -> None:
+        """Put the panel bottom-centre in the primary work area."""
+        try:
+            class RECT(ctypes.Structure):
+                _fields_ = [("left", ctypes.c_long), ("top", ctypes.c_long), ("right", ctypes.c_long), ("bottom", ctypes.c_long)]
+            rect = RECT()
+            ctypes.windll.user32.SystemParametersInfoW(48, 0, ctypes.byref(rect), 0)
+            x = rect.left + (rect.right - rect.left - panel.winfo_reqwidth()) // 2
+            y = rect.bottom - panel.winfo_reqheight() - 80
+            panel.geometry(f"+{x}+{y}")
+        except Exception:
+            panel.geometry(f"+{(panel.winfo_screenwidth() - panel.winfo_reqwidth()) // 2}+{panel.winfo_screenheight() - panel.winfo_reqheight() - 80}")
+
+    @staticmethod
+    def _make_non_activating(panel) -> None:
+        try:
+            try:
+                hwnd = int(panel.wm_frame(), 16)
+            except Exception:
+                hwnd = ctypes.windll.user32.GetParent(panel.winfo_id()) or panel.winfo_id()
+            get = ctypes.windll.user32.GetWindowLongW
+            set_ = ctypes.windll.user32.SetWindowLongW
+            set_(hwnd, -20, get(hwnd, -20) | 0x08000000 | 0x00000080)  # WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW
+        except Exception:
+            pass
+
+
+class PreviewScheduler:
+    """Periodically transcribes rolling audio while keeping UI work queued."""
+    def __init__(self, recorder, transcriber, panel: ListeningPill, dictionary, interval_seconds: float, window_seconds: float, error_logger: Callable[[BaseException], None], *, thread_factory=threading.Thread) -> None:
+        self._recorder = recorder
+        self._transcriber = transcriber
+        self._panel = panel
+        self._dictionary = dictionary
+        self._interval_seconds = interval_seconds
+        self._window_seconds = window_seconds
+        self._error_logger = error_logger
+        self._thread_factory = thread_factory
+        self._stopped = threading.Event()
+        self._inflight = threading.Lock()
+        self._schedule_lock = threading.Lock()
+        self._ticker = None
+
+    def start(self) -> None:
+        self._ticker = self._thread_factory(target=self._run, name="uri-dictation-preview", daemon=True)
+        self._ticker.start()
+
+    def stop(self) -> None:
+        self._stopped.set()
+        # Ensure a tick already in progress cannot start fresh work after release.
+        with self._schedule_lock:
+            pass
+        if self._ticker is not None:
+            self._ticker.join(timeout=1)
+
+    def _run(self) -> None:
+        while not self._stopped.wait(self._interval_seconds):
+            self.tick()
+
+    def tick(self) -> bool:
+        with self._schedule_lock:
+            if self._stopped.is_set() or not self._inflight.acquire(blocking=False):
+                return False
+            audio = self._recorder.snapshot(self._window_seconds)
+            if not len(audio) or self._stopped.is_set():
+                self._inflight.release()
+                return False
+            truncated = self._recorder.is_window_truncated(self._window_seconds)
+            self._thread_factory(target=self._preview, args=(audio, truncated), name="uri-dictation-preview-work", daemon=True).start()
+            return True
+
+    def _preview(self, audio, truncated: bool) -> None:
+        try:
+            text = cleanup_transcript(self._transcriber.transcribe_preview(audio), self._dictionary)
+            if text and not self._stopped.is_set():
+                self._panel.show_preview(("... " if truncated else "") + text)
+        except Exception as exc:
+            self._error_logger(exc)
+        finally:
+            self._inflight.release()
 
 
 class SerializedProcessor:
@@ -102,9 +242,18 @@ class DictationApp:
         self._held: set[str] = set()
         self._hotkey_parts = {part.strip().lower() for part in self.config.hotkey.split("+") if part.strip()}
         self._pill = ListeningPill()
+        self._preview_scheduler: PreviewScheduler | None = None
         self._icon = None
         self._listener = None
-        self.pipeline = DictationPipeline(self.transcriber, self.clipboard, self.key_sender, _TrayToast(self), self.dictionary, ROOT / "logs" / "timing.jsonl", error_logger=self._report_error)
+        self._polisher = Polisher(
+            self.config.polish, self.config.polish_model, self.config.polish_timeout_s,
+            self.config.polish_num_ctx, self.config.polish_keep_alive,
+        )
+        self.pipeline = DictationPipeline(
+            self.transcriber, self.clipboard, self.key_sender, _TrayToast(self), self.dictionary,
+            ROOT / "logs" / "timing.jsonl", polisher=self._polisher, error_logger=self._report_error,
+            on_polishing=self._pill.show_polishing,
+        )
         self._processor = SerializedProcessor(self._transcribe_and_paste)
 
     def _toast(self, message: str) -> None:
@@ -119,11 +268,29 @@ class DictationApp:
             traceback.print_exception(type(exc), exc, exc.__traceback__, file=handle)
         self._toast("URI Dictation encountered an error")
 
+    def _report_preview_error(self, exc: BaseException) -> None:
+        """Preview failures are diagnostic-only and never expose transcript text."""
+        path = ROOT / "logs" / "error.log"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as handle:
+            traceback.print_exception(type(exc), exc, exc.__traceback__, file=handle)
+
     def _show_pill(self) -> None:
         self._pill.show()
 
     def _hide_pill(self) -> None:
         self._pill.hide()
+
+    def _toggle_polish(self, *_args) -> None:
+        self._polisher.enabled = not self._polisher.enabled
+        self.config = replace(self.config, polish=self._polisher.enabled)
+        save_polish_enabled(ROOT / "config.json", self._polisher.enabled)
+        if self._icon is not None:
+            self._icon.title = self._tray_tooltip()
+
+    def _tray_tooltip(self) -> str:
+        polish = self.config.polish_model if self._polisher.enabled else "off"
+        return f"URI Dictation - {self.transcriber.label} - polish: {polish}"
 
     def _start_recording(self) -> None:
         if self._recording:
@@ -134,6 +301,13 @@ class DictationApp:
             if "win" in self._hotkey_parts:
                 self.key_sender.mark_hotkey_pressed()
             self._show_pill()
+            if getattr(getattr(self, "config", None), "preview_enabled", False):
+                self._preview_scheduler = PreviewScheduler(
+                    self.recorder, self.transcriber, self._pill, self.dictionary,
+                    self.config.preview_interval_seconds, self.config.preview_window_seconds,
+                    self._report_preview_error,
+                )
+                self._preview_scheduler.start()
         except Exception as exc:
             self._recording = False
             self._report_error(exc)
@@ -143,14 +317,19 @@ class DictationApp:
         if not self._recording:
             return
         self._recording = False
-        self._hide_pill()
+        if self._preview_scheduler is not None:
+            self._preview_scheduler.stop()
+            self._preview_scheduler = None
         try:
             audio, audio_seconds = self.recorder.stop()
         except Exception as exc:
             self._report_error(exc)
             return
         if audio_seconds >= self.config.minimum_hold_seconds:
+            self._pill.show_transcribing()
             self._processor.submit(audio, audio_seconds)
+        else:
+            self._hide_pill()
 
     def _transcribe_and_paste(self, audio: object, audio_seconds: float) -> bool:
         try:
@@ -158,6 +337,8 @@ class DictationApp:
         except Exception as exc:
             self._report_error(exc)
             return False
+        finally:
+            self._hide_pill()
 
     def _key_name(self, key) -> str:
         value = str(key).lower().removeprefix("key.").strip("'")
@@ -183,7 +364,13 @@ class DictationApp:
         from pynput.keyboard import Listener
         image = Image.new("RGB", (64, 64), "#282828")
         ImageDraw.Draw(image).ellipse((16, 10, 48, 46), fill="#4fc3f7")
-        self._icon = pystray.Icon("uri_dictation", image, f"URI Dictation - {self.transcriber.label}", menu=pystray.Menu(pystray.MenuItem("Quit", self._quit)))
+        self._icon = pystray.Icon(
+            "uri_dictation", image, self._tray_tooltip(),
+            menu=pystray.Menu(
+                pystray.MenuItem("Polish", self._toggle_polish, checked=lambda _item: self._polisher.enabled),
+                pystray.MenuItem("Quit", self._quit),
+            ),
+        )
         self._listener = Listener(on_press=self._on_press, on_release=self._on_release)
         self._listener.start()
         self._pill.start()
@@ -200,6 +387,9 @@ class DictationApp:
         if self._listener is not None:
             self._listener.stop()
             self._listener = None
+        if self._preview_scheduler is not None:
+            self._preview_scheduler.stop()
+            self._preview_scheduler = None
         self._pill.stop()
         self._processor.stop()
 
