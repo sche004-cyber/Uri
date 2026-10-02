@@ -2,26 +2,32 @@
   "_comment": "Portable template for desktop model roles. Copy to uri_workspace/model_roles.json to use. Only contains the 6 canonical roles consumed by uri_core.config.model_roles.load_model_roles().",
   "semantic_interpretation": {
     "provider": "ollama",
-    "model": "qwen3.5:9b"
+    "model": "qwen3.5:9b",
+    "context_tokens": 16384
   },
   "reasoning": {
     "provider": "ollama",
-    "model": "qwen3.5:9b"
+    "model": "qwen3.5:9b",
+    "context_tokens": 16384
   },
   "drafting": {
     "provider": "ollama",
-    "model": "qwen3.5:9b"
+    "model": "qwen3.5:9b",
+    "context_tokens": 16384
   },
   "document_composition": {
     "provider": "ollama",
-    "model": "qwen3.5:9b"
+    "model": "qwen3.5:9b",
+    "context_tokens": 16384
   },
   "diagnostics": {
     "provider": "ollama",
-    "model": "qwen3.5:9b"
+    "model": "qwen3.5:9b",
+    "context_tokens": 16384
   },
   "background": {
     "provider": "ollama",
-    "model": "qwen3.5:9b"
+    "model": "qwen3.5:9b",
+    "context_tokens": 16384
   }
 }

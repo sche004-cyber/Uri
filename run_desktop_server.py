@@ -92,6 +92,12 @@ if not (os.environ.get("URI_PROVIDER_KEY_SECRET") and os.environ.get("URI_EXTERN
 # social turns ("hi", "thanks") are answered by the local Edge chat model
 # instead of two Main Brain calls. Set URI_HARNESS_FIRST=0 to turn it off.
 os.environ.setdefault("URI_HARNESS_FIRST", "1")
+# Desktop default: cap the Ollama context window URI requests. Without it URI
+# asks for the model's maximum (qwen3.5:9b: 262,144 tokens), which made the
+# model take 14.2 GB of a 16 GB GPU and evict every other model. URI's largest
+# observed prompt is ~10k tokens; prompts that would not fit are trimmed or
+# refused by the existing budget checks, never silently cut by Ollama.
+os.environ.setdefault("OLLAMA_NUM_CTX", "16384")
 
 LOG_FILE = REPO_ROOT / "uri_workspace" / "logs" / "uri_server.log"
 LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
