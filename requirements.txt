@@ -29,3 +29,4 @@ yt-dlp==2026.08.19
 # Windows timezone database required by Python zoneinfo (uri_v1/memory/retrieval.py)
 tzdata>=2024.1; sys_platform == 'win32'
 
+pdf2docx>=0.5.13

@@ -230,3 +230,16 @@ independent review. No milestone status or release checkpoint is claimed.
 | `uri_core/services/office_document_writer.py` | Prefer Openverse thumbnail downloads, validate HTTPS redirect chains and image bytes, try up to five candidates per query, and return a bounded retrieval failure reason. |
 | `uri_core/tools/generate_document.py` | Pass the retrieval reason into a truthful plain-language image note when no images were added. |
 | `test_ppt_research_chain.py` | Mocked regressions for thumbnails, redirect policy, size cap, multiple credited slides, fallback, and image-note reasons; no network. |
+
+## 2026-10-02 Openverse PPTX query recovery
+
+Authority: Chetan's direct implementer instruction following a live deck with
+zero images, despite successful generic Openverse searches. This bounded repair
+does not claim milestone verification or release. Claude re-pins frozen-file
+hashes after independent review.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/tool_schema.py` | Ask the Brain for short generic visual subjects, one per content slide, without institution names. |
+| `uri_core/tools/generate_document.py` | Derive generic slide queries when absent, retry one broader query per empty result, cap lookups and images, and report tried queries. |
+| `test_ppt_research_chain.py` | Mocked regressions for Brain-provided and derived queries, broader retry, and lookup/image caps; outside frozen guard scope. |

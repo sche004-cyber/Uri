@@ -174,9 +174,98 @@ def test_followup_uses_brain_format_title_and_derived_image_queries():
     assert result["output_format"] == "pptx"
     assert result["images_added"] == 1
     assert saved["filename"] == "Student_Welfare_at_NIT_Sikkim.pptx"
-    assert queries == ["Student Welfare at NIT Sikkim Campus support"]
+    assert queries == ["campus support counselling"]
+    assert result["image_queries_tried"] == queries
     deck = Presentation(io.BytesIO(saved["content"]))
     assert any(shape.shape_type == 13 for shape in deck.slides[1].shapes)
+
+
+def test_image_queries_use_brain_subjects_and_retry_broader_search():
+    class Store:
+        def save(self, **kwargs):
+            return SimpleNamespace(to_reference=lambda: {"file_id": "deck"})
+
+    class DeckComposer:
+        def compose(self, **kwargs):
+            return {"body": "# NIT Sikkim\n# Hostel at NIT Sikkim\n- Student rooms",
+                    "status": "success", "composed_by": "model"}
+
+    queries = []
+
+    def get(url, **kwargs):
+        if url.endswith("/images/"):
+            query = kwargs["params"]["q"]
+            queries.append(query)
+            return ImageResponse(results=[_item(1)] if query == "hostel" else [])
+        return ImageResponse(url=url)
+
+    tool = GenerateDocumentTool(composer=DeckComposer(), file_store=Store())
+    with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+        result = tool.generate(request_text="Build a PPT with photos", include_images=True,
+                               image_queries=["hostel room"], session_id="s")
+    assert queries == ["hostel room", "hostel"]
+    assert result["image_queries_tried"] == queries
+    assert result["images_added"] == 1
+
+
+def test_derived_queries_drop_institution_names_and_respect_caps():
+    class Store:
+        def save(self, **kwargs):
+            return SimpleNamespace(to_reference=lambda: {"file_id": "deck"})
+
+    class DeckComposer:
+        def compose(self, **kwargs):
+            return {"body": "# Student Welfare at NIT Sikkim\n" +
+                    "\n".join(f"# Campus Support at NIT Sikkim {n}\n- Students enjoying activities"
+                              for n in range(6)),
+                    "status": "success", "composed_by": "model"}
+
+    queries = []
+
+    def get(url, **kwargs):
+        if url.endswith("/images/"):
+            queries.append(kwargs["params"]["q"])
+            return ImageResponse(results=[])
+        raise AssertionError("No download expected")
+
+    tool = GenerateDocumentTool(composer=DeckComposer(), file_store=Store())
+    with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+        result = tool.generate(request_text="Build a PPT with photos", include_images=True,
+                               image_queries=[], session_id="s")
+    assert len(queries) == 8
+    assert result["image_queries_tried"] == queries
+    assert all("nit" not in q and "sikkim" not in q for q in queries)
+    assert all(1 <= len(q.split()) <= 4 for q in queries)
+    assert result["images_added"] == 0
+
+
+def test_brain_queries_stop_after_four_images():
+    class Store:
+        def save(self, **kwargs):
+            return SimpleNamespace(to_reference=lambda: {"file_id": "deck"})
+
+    class DeckComposer:
+        def compose(self, **kwargs):
+            return {"body": "# Topic\n" + "\n".join(f"# Slide {n}" for n in range(6)),
+                    "status": "success", "composed_by": "model"}
+
+    queries = []
+
+    def get(url, **kwargs):
+        if url.endswith("/images/"):
+            queries.append(kwargs["params"]["q"])
+            return ImageResponse(results=[_item(len(queries))])
+        return ImageResponse(url=url)
+
+    subjects = ["students on campus", "hostel room", "sports day",
+                "student counselling", "library books", "college friends"]
+    tool = GenerateDocumentTool(composer=DeckComposer(), file_store=Store())
+    with patch("uri_core.services.office_document_writer.requests.get", side_effect=get):
+        result = tool.generate(request_text="Build a PPT with photos", include_images=True,
+                               image_queries=subjects, session_id="s")
+    assert queries == subjects[:4]
+    assert result["image_queries_tried"] == subjects[:4]
+    assert result["images_added"] == 4
 
 
 def test_no_format_fallback_and_explicit_docx_are_preserved():

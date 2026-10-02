@@ -89,7 +89,7 @@ LEGACY_TOOL_PARAMETERS: Dict[str, Dict[str, Any]] = {
             "title": {"type": "string", "description": "Document or deck topic/title from the full request and recent conversation, not the wording of a short follow-up choice."},
             "theme": {"type": "string", "enum": ["modern", "academic", "warm"], "description": "Presentation design chosen by the user: modern, academic, or warm. Use the user's selected option when creating a PPTX."},
             "include_images": {"type": "boolean", "description": "Whether the user wants licensed photos in the PPTX. Only set true when requested or chosen by the user."},
-            "image_queries": {"type": "array", "items": {"type": "string"}, "description": "Brain-chosen relevant search terms for licensed PPTX photos; use only when include_images is true."},
+            "image_queries": {"type": "array", "items": {"type": "string"}, "description": "When include_images is true, give one short generic visual subject (2-4 words) per content slide, without institution names or acronyms; e.g. 'students on campus', 'hostel room', 'sports day'."},
         },
         "required": ["request_text"],
     },

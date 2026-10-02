@@ -69,6 +69,52 @@ _KIND_LABELS = {
     "docx": "report",
 }
 
+_IMAGE_STOPWORDS = {"a", "an", "and", "at", "by", "for", "from", "in", "of", "on", "the", "to", "with", "overview", "introduction"}
+_IMAGE_INSTITUTION_WORDS = {"college", "institute", "institution", "university"}
+_IMAGE_TOPIC_WORDS = ("students", "campus", "education")
+
+
+def _generic_image_words(text: str) -> list[str]:
+    """Keep visual subject words while dropping institution names and acronyms."""
+    words = re.findall(r"[A-Za-z]+", text)
+    generic = []
+    in_name = False
+    for word in words:
+        lower = word.lower()
+        if word.isupper() and len(word) > 1 or lower in _IMAGE_INSTITUTION_WORDS:
+            in_name = True
+            continue
+        if in_name and word[0].isupper():
+            continue
+        in_name = False
+        if lower not in _IMAGE_STOPWORDS and lower not in generic:
+            generic.append(lower)
+    return generic
+
+
+def _slide_image_queries(body: str) -> list[tuple[str, str]]:
+    slides = []
+    for line in body.splitlines():
+        if line.startswith("# "):
+            slides.append([line[2:].strip(), []])
+        elif slides and line.strip():
+            slides[-1][1].append(line.removeprefix("- ").strip())
+    queries = []
+    for heading, bullets in slides[1:5]:
+        words = _generic_image_words(heading)
+        for bullet in bullets:
+            if len(words) >= 4:
+                break
+            words.extend(word for word in _generic_image_words(bullet) if word not in words)
+        primary = " ".join(words[:4]) if words else "students on campus"
+        fallback = " ".join(words[:2]) if len(words) > 2 else (words[0] if len(words) > 1 else "campus")
+        if fallback == primary:
+            fallback = "students"
+        queries.append((primary, fallback))
+    if not queries:
+        queries.append(("students on campus", "education"))
+    return queries
+
 
 def infer_output_format(request_text: str, requested_output: str = "") -> str:
     """docx is the default - a generic written document is the common
@@ -177,14 +223,42 @@ class GenerateDocumentTool:
         try:
             images = []
             image_diagnostics = {}
+            image_queries_tried = []
             if output_format == "pptx" and include_images:
                 from uri_core.services.office_document_writer import find_openverse_images
-                if not image_queries:
-                    slide_titles = [line[2:].strip() for line in body.splitlines() if line.startswith("# ")]
-                    image_queries = [f"{title} {slide}".strip() for slide in slide_titles[1:5]]
-                    if not image_queries:
-                        image_queries = [title or slide_titles[0]] if title or slide_titles else []
-                images = find_openverse_images(image_queries, diagnostics=image_diagnostics)
+                if isinstance(image_queries, list) and image_queries:
+                    queries = []
+                    for query in image_queries[:4]:
+                        if not isinstance(query, str) or not query.strip():
+                            continue
+                        primary = query.strip()[:120]
+                        words = _generic_image_words(primary)
+                        fallback = " ".join(words[:2]) if len(words) > 2 else (words[0] if len(words) > 1 else "campus")
+                        if fallback == primary:
+                            fallback = "students"
+                        queries.append((primary, fallback))
+                else:
+                    queries = _slide_image_queries(body)
+                failure_reasons = []
+                for primary, fallback in queries:
+                    if len(images) >= 4 or len(image_queries_tried) >= 8:
+                        break
+                    for query in (primary, fallback):
+                        if len(image_queries_tried) >= 8:
+                            break
+                        image_queries_tried.append(query)
+                        attempt_diagnostics = {}
+                        found = find_openverse_images([query], diagnostics=attempt_diagnostics)
+                        if found:
+                            images.append(found[0])
+                            break
+                        failure_reasons.append(attempt_diagnostics.get("reason"))
+                if not images:
+                    image_diagnostics["reason"] = (
+                        "downloads_failed" if "downloads_failed" in failure_reasons else
+                        "offline" if failure_reasons and all(reason == "offline" for reason in failure_reasons) else
+                        "no_results"
+                    )
             content_bytes = self._render(
                 output_format, body, theme=theme, include_images=include_images,
                 images=images,
@@ -235,6 +309,7 @@ class GenerateDocumentTool:
             "images_requested": include_images if output_format == "pptx" else False,
             "images_added": len(images) if output_format == "pptx" else 0,
             "image_note": image_note,
+            "image_queries_tried": image_queries_tried,
         }
 
     @staticmethod

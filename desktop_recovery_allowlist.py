@@ -19,14 +19,14 @@ from pathlib import Path
 
 DESKTOP_RECOVERY_FILES = {
     "uri_core/core/capability_registry.py": "f93fdbb4e44135fd351f9938acf19c04a978a24f",
-    "uri_core/tools/generate_document.py": "7b010b618fe4081922ed6c343a221e57edabc762",
+    "uri_core/tools/generate_document.py": "2b7c44cb810ffc12d04f569f1e780b87749a307d",
     "uri_core/services/office_document_writer.py": "30d04e0cce971db9cee6ecc4cb2c930f976f76ec",
     "uri_core/core/response_drafting.py": "2c258958b3a8e5403b5410675dd59dc0fcf085f0",
     "uri_core/core/model_reasoning_adapter.py": "6881e2b382b03d8cffd49b11f352600b12485e8e",
     "uri_core/core/decision_engine.py": "be75c89874245886eda93d87912ad1b36521e1b0",
     "uri_core/core/capability_feasibility.py": "dc4d118b498d7d40d457b1e56cca154720daace8",
     "uri_core/core/canonical_execution.py": "bb572c59a2ec75a11f4ebf7ab3a0667e4539fb09",
-    "uri_core/core/tool_schema.py": "6af67ef7e8074d33d31a887a829774dae668f104",
+    "uri_core/core/tool_schema.py": "406eaf9d158a7aa0c71db7d004f31a948a115d25",
     "uri_core/tools/google_workspace_create.py": "c99f7d26bb7df2bd90c979be41e07b70af43ce68",
     "uri_core/app/server.py": "344a59b3a3d956d652ee1d2dea9818cd3023ade9",
     "uri_core/capabilities/gmail/capability.py": "68e9b39b886b11cfdee3c2650476c5edb0b1e709",
