@@ -15,6 +15,7 @@ DEFAULT_LANGUAGE = "en"
 DEFAULT_PREVIEW_ENABLED = True
 DEFAULT_PREVIEW_INTERVAL_SECONDS = 0.8
 DEFAULT_PREVIEW_WINDOW_SECONDS = 15.0
+DEFAULT_WAVEFORM_ENABLED = True
 DEFAULT_POLISH = True
 DEFAULT_POLISH_MODEL = "qwen3.5:9b"
 DEFAULT_POLISH_TIMEOUT_SECONDS = 8.0
@@ -30,6 +31,7 @@ class DictationConfig:
     preview_enabled: bool = DEFAULT_PREVIEW_ENABLED
     preview_interval_seconds: float = DEFAULT_PREVIEW_INTERVAL_SECONDS
     preview_window_seconds: float = DEFAULT_PREVIEW_WINDOW_SECONDS
+    waveform_enabled: bool = DEFAULT_WAVEFORM_ENABLED
     polish: bool = DEFAULT_POLISH
     polish_model: str = DEFAULT_POLISH_MODEL
     polish_timeout_s: float = DEFAULT_POLISH_TIMEOUT_SECONDS
@@ -70,6 +72,10 @@ def load_config(path: Path) -> DictationConfig:
     if isinstance(preview_window, bool) or not isinstance(preview_window, (int, float)) or preview_window <= 0:
         preview_window = DEFAULT_PREVIEW_WINDOW_SECONDS
 
+    waveform_enabled = raw.get("waveform_enabled", DEFAULT_WAVEFORM_ENABLED)
+    if not isinstance(waveform_enabled, bool):
+        waveform_enabled = DEFAULT_WAVEFORM_ENABLED
+
     polish = raw.get("polish", DEFAULT_POLISH)
     if not isinstance(polish, bool):
         polish = DEFAULT_POLISH
@@ -98,7 +104,8 @@ def load_config(path: Path) -> DictationConfig:
     return DictationConfig(
         hotkey=hotkey.lower(), minimum_hold_seconds=float(minimum), language=language,
         preview_enabled=preview_enabled, preview_interval_seconds=float(preview_interval),
-        preview_window_seconds=float(preview_window), polish=polish, polish_model=polish_model,
+        preview_window_seconds=float(preview_window), waveform_enabled=waveform_enabled,
+        polish=polish, polish_model=polish_model,
         polish_timeout_s=float(polish_timeout), polish_num_ctx=polish_num_ctx,
         polish_keep_alive=polish_keep_alive,
     )

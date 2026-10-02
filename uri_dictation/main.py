@@ -45,10 +45,27 @@ class _PanelCommandState:
         return action != "preview" or self.state is _PanelState.LISTENING
 
 
+def waveform_bar_geometry(levels: list[float], *, width: int = 560, height: int = 44,
+                          count: int = 48, smoothing: float = 0.85) -> list[tuple[float, float, float]]:
+    """Return centre-mirrored bar coordinates, with the newest level at right."""
+    values = ([0.0] * count + [min(1.0, max(0.0, float(value))) for value in levels])[-count:]
+    midline = height / 2
+    spacing = width / count
+    smoothed = 0.0
+    bars = []
+    for index, value in enumerate(values):
+        smoothed = max(smoothed * smoothing, value)
+        half_height = max(1.0, smoothed * (height / 2 - 2))
+        bars.append(((index + 0.5) * spacing, midline - half_height, midline + half_height))
+    return bars
+
+
 class ListeningPill:
     """Owns all Tk state on one dedicated UI thread."""
-    def __init__(self) -> None:
+    def __init__(self, recorder=None, waveform_enabled: bool = True) -> None:
         self._commands: queue.Queue[tuple[str, str | None] | None] = queue.Queue()
+        self._recorder = recorder
+        self._waveform_enabled = waveform_enabled
         self._ready = threading.Event()
         self._thread = threading.Thread(target=self._run, name="uri-dictation-ui", daemon=True)
 
@@ -81,6 +98,15 @@ class ListeningPill:
         root.withdraw()
         pill = None
         state = _PanelCommandState()
+
+        def redraw_waveform() -> None:
+            if (pill is not None and state.state is _PanelState.LISTENING
+                    and hasattr(pill, "_uri_waveform")):
+                levels = self._recorder.levels(48) if self._recorder is not None else [0.0] * 48
+                for item, (x, top, bottom) in zip(pill._uri_waveform_items, waveform_bar_geometry(levels)):
+                    pill._uri_waveform.coords(item, x, top, x, bottom)
+            root.after(33, redraw_waveform)
+
         def poll() -> None:
             nonlocal pill
             while True:
@@ -101,6 +127,11 @@ class ListeningPill:
                     pill.overrideredirect(True)
                     pill.attributes("-topmost", True)
                     pill.attributes("-alpha", 0.9)
+                    if self._waveform_enabled:
+                        waveform = tk.Canvas(pill, width=560, height=44, bg="#262626", highlightthickness=0)
+                        waveform.pack(padx=14, pady=(8, 0))
+                        pill._uri_waveform = waveform
+                        pill._uri_waveform_items = [waveform.create_line(0, 22, 0, 22, fill="#4fc3f7", width=4, capstyle="round") for _ in range(48)]
                     label = tk.Label(pill, text=self._visible_text(text or ""), bg="#262626", fg="white", font=("Segoe UI", 11, "bold"), justify="left", wraplength=560)
                     label.pack(padx=14, pady=8)
                     pill._uri_label = label
@@ -109,6 +140,11 @@ class ListeningPill:
                     self._make_non_activating(pill)
                 elif action != "hide" and pill is not None:
                     pill._uri_label.configure(text=self._visible_text(text or ""))
+                    if hasattr(pill, "_uri_waveform"):
+                        if state.state is _PanelState.LISTENING:
+                            pill._uri_waveform.pack(padx=14, pady=(8, 0), before=pill._uri_label)
+                        else:
+                            pill._uri_waveform.pack_forget()
                     pill.update_idletasks()
                     self._position(pill)
                 elif action == "hide" and pill is not None:
@@ -117,6 +153,7 @@ class ListeningPill:
             root.after(25, poll)
         self._ready.set()
         root.after(0, poll)
+        root.after(0, redraw_waveform)
         root.mainloop()
 
     @staticmethod
@@ -241,7 +278,7 @@ class DictationApp:
         self._recording = False
         self._held: set[str] = set()
         self._hotkey_parts = {part.strip().lower() for part in self.config.hotkey.split("+") if part.strip()}
-        self._pill = ListeningPill()
+        self._pill = ListeningPill(self.recorder, self.config.waveform_enabled)
         self._preview_scheduler: PreviewScheduler | None = None
         self._icon = None
         self._listener = None

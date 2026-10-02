@@ -1,8 +1,31 @@
 import threading
 
 import numpy as np
+import pytest
 
-from recording import MemoryRecorder
+from recording import LEVEL_HISTORY_SIZE, MemoryRecorder, scaled_rms_level
+
+
+def test_scaled_rms_level_is_silent_at_zero_and_clips_loud_audio():
+    assert scaled_rms_level(np.zeros((10, 1), dtype="float32")) == 0.0
+    assert scaled_rms_level(np.full((10, 1), .05, dtype="float32")) == pytest.approx(.4)
+    assert scaled_rms_level(np.ones((10, 1), dtype="float32")) == 1.0
+
+
+def test_levels_are_bounded_padded_and_reset_when_recording_starts(monkeypatch):
+    recorder = MemoryRecorder()
+    for value in range(LEVEL_HISTORY_SIZE + 4):
+        recorder._levels.append(float(value))
+    assert recorder.levels(3) == [121.0, 122.0, 123.0]
+    recorder._levels.clear()
+    recorder._levels.extend([.2, .4])
+    assert recorder.levels(4) == [0.0, 0.0, .2, .4]
+
+    class Stream:
+        def start(self): pass
+    monkeypatch.setattr("sounddevice.InputStream", lambda **_kwargs: Stream())
+    recorder.start()
+    assert recorder.levels(4) == [0.0] * 4
 
 
 def test_snapshot_keeps_only_latest_requested_audio_during_concurrent_callbacks():

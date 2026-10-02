@@ -2,7 +2,7 @@ from config import (DEFAULT_HOTKEY, DEFAULT_LANGUAGE, DEFAULT_MINIMUM_HOLD_SECON
                     DEFAULT_PREVIEW_ENABLED, DEFAULT_PREVIEW_INTERVAL_SECONDS,
                     DEFAULT_PREVIEW_WINDOW_SECONDS, DEFAULT_POLISH, DEFAULT_POLISH_MODEL,
                     DEFAULT_POLISH_TIMEOUT_SECONDS, DEFAULT_POLISH_NUM_CTX,
-                    DEFAULT_POLISH_KEEP_ALIVE, load_config, save_polish_enabled)
+                    DEFAULT_POLISH_KEEP_ALIVE, DEFAULT_WAVEFORM_ENABLED, load_config, save_polish_enabled)
 
 
 class FakePath:
@@ -34,6 +34,12 @@ def test_preview_defaults_and_invalid_values_are_safe():
     invalid = load_config(FakePath('{"preview_enabled": "yes", "preview_interval_seconds": 0, "preview_window_seconds": false}'))
     assert (invalid.preview_enabled, invalid.preview_interval_seconds, invalid.preview_window_seconds) == (
         DEFAULT_PREVIEW_ENABLED, DEFAULT_PREVIEW_INTERVAL_SECONDS, DEFAULT_PREVIEW_WINDOW_SECONDS)
+
+
+def test_waveform_defaults_and_invalid_values_are_safe():
+    assert load_config(FakePath()).waveform_enabled is DEFAULT_WAVEFORM_ENABLED
+    assert load_config(FakePath('{"waveform_enabled": "yes"}')).waveform_enabled is DEFAULT_WAVEFORM_ENABLED
+    assert load_config(FakePath('{"waveform_enabled": false}')).waveform_enabled is False
 
 
 def test_polish_defaults_and_invalid_values_are_safe():

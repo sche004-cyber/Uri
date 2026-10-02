@@ -3,7 +3,8 @@ import numpy as np
 from unittest.mock import mock_open, patch
 
 import main
-from main import DictationApp, ListeningPill, PreviewScheduler, SerializedProcessor, _PanelCommandState
+from main import (DictationApp, ListeningPill, PreviewScheduler, SerializedProcessor,
+                  _PanelCommandState, waveform_bar_geometry)
 from transcriber import WarmTranscriber
 
 
@@ -23,6 +24,15 @@ def test_late_preview_is_ignored_after_transcribing_starts():
     assert not state.apply("preview")
     assert state.apply("polishing")
     assert not state.apply("preview")
+
+
+def test_waveform_geometry_is_mirrored_smoothed_and_places_newest_level_right():
+    bars = waveform_bar_geometry([.1, 1.0], width=48, height=44, count=4)
+    assert len(bars) == 4
+    assert all(top < 22 < bottom and top + bottom == 44 for _, top, bottom in bars)
+    heights = [bottom - top for _, top, bottom in bars]
+    assert heights[-1] > heights[-2] > heights[0]
+    assert bars[-1][0] > bars[0][0]
 
 
 class _ManualThread:
