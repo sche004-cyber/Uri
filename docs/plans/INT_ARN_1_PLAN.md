@@ -243,4 +243,4 @@ Use the approved **inline clarification card** within the existing standalone ch
 - **Stage 1 (Audit):** Amended diagnosis in [`docs/research/INT_ARN_1_ROOT_CAUSE_AUDIT.md`](../research/INT_ARN_1_ROOT_CAUSE_AUDIT.md); independent re-audit pending.
 - **Stage 2 (Architecture):** Amended design in [`docs/architecture/INT_ARN_1_CANONICAL_ARCHITECTURE.md`](../architecture/INT_ARN_1_CANONICAL_ARCHITECTURE.md); independent re-audit pending.
 - **Stage 3 (Migration Plan):** Rejected version amended here for independent re-audit; not accepted or frozen.
-- **Stage 4 (Implementation):** Not started; awaits independent acceptance of the amended plan and required exact-file guard registration.
+- **Stage 4 (Implementation):** Unblocked. Independent Codex re-audit at `f212b0d` (2026-10-02 ~11:55 UTC): ACCEPT_WITH_AMENDMENTS; its LOW wording amendments are applied in `0038e40`. Audit implementation notes: `/approve` registered-action route needs a shared resume-by-action-ID helper in `approval_resumption.py`; every new qualifying proposal must set `requires_reference_binding`.
