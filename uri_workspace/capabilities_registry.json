@@ -265,6 +265,21 @@
       "interface": null,
       "effect_type": "external_write"
     },
+    "google_workspace_create": {
+      "file_path": "uri_core/tools/google_workspace_create.py",
+      "class_name": "GoogleWorkspaceCreateTool",
+      "method": "generate",
+      "description": "Create a new Google Drive folder, professionally formatted Google Sheet with headers and blank rows, Google Doc, Slides presentation, or text-question Form. Optionally place it in an exact-name visible folder, creating that folder if absent. Requires user approval before any write; never changes existing files. Use this for requests to create a Google file in Drive.",
+      "status": "implemented",
+      "availability": "available",
+      "permissions": ["google_drive_file_write"],
+      "approval_requirement": "user_approval_required",
+      "risk": "high",
+      "platform": "any",
+      "limitations": "Requires per-user Google sign-in with drive.file scope and the relevant Google API enabled. A same-name file in the target folder is reported instead of duplicated.",
+      "interface": null,
+      "effect_type": "external_write"
+    },
     "fetch_url": {
       "file_path": "uri_core/tools/fetch_url.py",
       "class_name": "FetchUrlTool",

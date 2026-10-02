@@ -316,6 +316,17 @@ def _execute_legacy_capability(
     # legacy turns so read_attached_file retains its historic session scan.
     if current_turn_attachment_ids is not None:
         runtime_context["current_turn_attachment_ids"] = current_turn_attachment_ids
+    if capability_id == "google_workspace_create":
+        # The native Brain's structured arguments are proposals, never
+        # authority. Pass only this tool's declared content fields through
+        # the existing approval gate; runtime identity/session stay owned
+        # by URI and cannot be replaced by model input.
+        from uri_core.core.tool_schema import LEGACY_TOOL_PARAMETERS
+        proposed_inputs = actions[0].get("inputs") or {}
+        if not isinstance(proposed_inputs, dict):
+            return None
+        allowed = LEGACY_TOOL_PARAMETERS[capability_id]["properties"]
+        runtime_context.update({key: value for key, value in proposed_inputs.items() if key in allowed})
     result = approval_gate.execute_tool(capability_id, **runtime_context)
     status = result.get("status")
     if status == "awaiting_approval":

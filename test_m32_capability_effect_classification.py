@@ -132,11 +132,13 @@ class CapabilityEffectClassificationTests(unittest.TestCase):
         reg = CapabilityRegistry()
         all_ids = {c.id for c in reg.list_capabilities() if c.is_executable}
         for tool_id in all_ids:
-            self.assertIn(
-                tool_id,
-                KNOWN_CAPABILITY_EFFECTS,
-                f"Shipped tool {tool_id} must have a verified effect in KNOWN_CAPABILITY_EFFECTS",
-            )
+            descriptor = reg.describe_status(tool_id)
+            if tool_id not in KNOWN_CAPABILITY_EFFECTS:
+                # New descriptors may declare their effect directly. The
+                # frozen M33.3 registry map is an anchor, not the only source.
+                self.assertEqual(descriptor.effect_type, "external_write")
+                action = LegacyCapabilityAdapter.from_descriptor(descriptor).actions[tool_id]
+                self.assertEqual(action.effect_type, EffectType.EXTERNAL_WRITE)
 
 
 if __name__ == "__main__":

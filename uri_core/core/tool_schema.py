@@ -127,6 +127,21 @@ LEGACY_TOOL_PARAMETERS: Dict[str, Dict[str, Any]] = {
         "required": ["request_text"],
     },
     "drive_upload": {"properties": {}, "required": []},
+    "google_workspace_create": {
+        "properties": {
+            "kind": {"type": "string", "enum": ["folder", "sheet", "doc", "slides", "form"], "description": "Google file type to create."},
+            "title": {"type": "string", "description": "Name of the new Google file or folder."},
+            "folder_name": {"type": "string", "description": "Optional exact name of a visible folder to reuse or create."},
+            "headers": {"type": "array", "items": {"type": "string"}, "description": "Required column headings for a sheet."},
+            "empty_rows": {"type": "integer", "description": "Additional blank sheet rows, 0 to 1000."},
+            "format": {"type": "string", "enum": ["professional"], "description": "Sheet design; professional is the supported choice."},
+            "heading": {"type": "string", "description": "Optional document heading."},
+            "body": {"type": "string", "description": "Optional document body."},
+            "slide_titles": {"type": "array", "items": {"type": "string"}, "description": "Optional slide titles."},
+            "questions": {"type": "array", "items": {"type": "object", "properties": {"title": {"type": "string"}, "required": {"type": "boolean"}}, "required": ["title"]}, "description": "Optional text questions for a form."},
+        },
+        "required": ["kind", "title"],
+    },
     "fetch_url": {
         "properties": {"request_text": {"type": "string", "description": "The request naming the URL to fetch."}},
         "required": ["request_text"],

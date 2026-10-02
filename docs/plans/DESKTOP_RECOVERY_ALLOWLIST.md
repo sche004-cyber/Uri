@@ -90,3 +90,25 @@ working-tree blob in `desktop_recovery_allowlist.py` for Claude's review.
 The root-level `test_google_onboarding.py` is outside the frozen directories
 and checks the Python handoff, cancellation, step classification, and errors.
 The exact-file guard pins are updated only to authorize these paths.
+
+## 2026-10-02 Batch 2 Google Workspace creation
+
+Authority: Chetan, 2026-10-02 04:01 UTC, authorized Google Docs, Slides,
+Forms, and other Google tools through Drive requests, with approval and
+onboarding help. This batch adds creation for folder, sheet, doc, slides,
+and form. The tool requires approval before any write and uses the user's
+own Google token. A matching destination name is reported instead of silently
+duplicated. The Batch 1 setup card already reports Sheets, Docs, Slides, and
+Forms API status as unknown until their use can establish availability.
+
+| Path | Justification under the 04:01 UTC authorization |
+|---|---|
+| `uri_core/tools/google_workspace_create.py` | Validate structured requests; find or create a destination folder; create a Google file and apply requested content only to that new file; report links and partial failures. |
+| `uri_core/core/canonical_execution.py` | Forward only declared creation arguments from the Brain's proposal into the existing approval gate while preserving runtime-owned identity and session fields. |
+| `uri_core/services/google_errors.py` | Classify disabled Workspace APIs and insufficient OAuth scopes with actionable, non-secret messages. |
+| `uri_core/core/tool_schema.py` | Advertise the new tool's structured inputs to the canonical Brain's native tool schema. |
+| `desktop_recovery_allowlist.py` | Pin the exact new and changed `uri_core` blobs. |
+| `tests/test_m37_edge_resolution.py`, `tests/test_m39_boundaries.py`, `tests/test_m37_frozen_guard_pin.py` | Re-pin the allowlist and dependent frozen guards to the authorized content. |
+| `uri_workspace/capabilities_registry.json` | Register the tool, explicit external-write effect, description, and user approval requirement for `/ask` discovery and dispatch; outside frozen guard scope. |
+| `test_google_workspace_create.py` | Root-level mocked regression checks; outside frozen guard scope. |
+| `test_m32_capability_effect_classification.py` | Root-level enumerator accepts an explicit, verified external-write effect from the descriptor because the M33.3 effect-map source is independently frozen; outside guard scope. |
