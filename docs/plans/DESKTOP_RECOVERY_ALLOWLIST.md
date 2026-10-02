@@ -126,3 +126,18 @@ Authority: Chetan, 2026-10-02 04:01 UTC and 05:48 UTC, authorized Google tools w
 | (reviewer note) | Claude reverted the implementer's orchestrator.py change (standing rule: orchestrator.py must never grow); failure text already reaches the history via response.message. |
 | `test_google_batch3.py` | Root-level mock regression test suite covering live per-user availability, unread email body extraction without attachments, approval-gated drafting, and multi-turn context continuity; outside frozen guard scope. |
 
+## 2026-10-02 Batch 4 Capability question conversational handling, unsupported routing correction, web research & presentation routing
+
+Authority: Chetan, 2026-10-02 04:01 UTC and 05:48 UTC, authorized desktop recovery repair and asked Antigravity to implement capability question handling, truthful unsupported outcomes, web research routing, and PPT creation with tests.
+
+| Path | Justification under the 04:01 / 05:48 UTC authorization |
+|---|---|
+| `uri_core/core/tool_schema.py` | Distinguish web_search (general web research without URL) from fetch_url (exact URL required) and update generate_document/google_workspace_create parameter descriptions. |
+| `uri_core/core/decision_engine.py` | Add capability-question and web/PPT routing guidance to DECISION_CONTRACT_SYSTEM_PROMPT; the Brain remains responsible for classification. |
+| `uri_core/core/canonical_execution.py` | Ensure _canonical_nonexecution_envelope only reports 'That capability is not connected right now.' when the Brain contract names a capability and mode is not unsupported; otherwise report the unsupported reason or generic fallback. |
+| `uri_core/core/model_reasoning_adapter.py` | Add routing guidance in REASONING_SYSTEM_PROMPT for web research without URL (web_search), presentations (generate_document vs google_workspace_create), and capability inquiries. |
+| `uri_workspace/capabilities_registry.json` | Update web/PPT routing descriptions and six Google tool entries to reflect live per-user connection availability; outside frozen guard scope. |
+| `uri_core/app/server.py` | Fix the Gmail setup probe to call labels.list with supported arguments. |
+| `test_google_onboarding.py` | Add a mocked successful Gmail setup-probe regression. |
+| `test_capability_questions.py` | Root-level regression suite covering prompt and registry guidance, Brain-contract pass-through, non-execution messaging, and Google registry availability; outside frozen guard scope. |
+| `test_capability_registry.py` | Update the real-registry assertion for fetch_drive_spreadsheet now that static availability is available and live per-user feasibility decides connection usability. |

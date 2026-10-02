@@ -83,8 +83,8 @@ LEGACY_TOOL_PARAMETERS: Dict[str, Dict[str, Any]] = {
     },
     "generate_document": {
         "properties": {
-            "request_text": {"type": "string", "description": "The user's original request, verbatim."},
-            "requested_output": {"type": "string", "description": "What the generated document should contain."},
+            "request_text": {"type": "string", "description": "The user's original request, verbatim. Default tool for creating local presentations (PPT, PPTX, PowerPoint) and office documents (DOCX, XLSX, PDF)."},
+            "requested_output": {"type": "string", "description": "What the generated document or presentation should contain."},
         },
         "required": ["request_text"],
     },
@@ -106,7 +106,7 @@ LEGACY_TOOL_PARAMETERS: Dict[str, Dict[str, Any]] = {
     "read_attached_file": {"properties": {}, "required": []},
     "web_search": {
         "properties": {
-            "request_text": {"type": "string", "description": "What to search the web for."},
+            "request_text": {"type": "string", "description": "What to search the web for. Use for general web search or web research requests (e.g. 'search the web for X', 'do web research on X', 'find online') when no specific URL is provided."},
         },
         "required": ["request_text"],
     },
@@ -129,7 +129,7 @@ LEGACY_TOOL_PARAMETERS: Dict[str, Dict[str, Any]] = {
     "drive_upload": {"properties": {}, "required": []},
     "google_workspace_create": {
         "properties": {
-            "kind": {"type": "string", "enum": ["folder", "sheet", "doc", "slides", "form"], "description": "Google file type to create."},
+            "kind": {"type": "string", "enum": ["folder", "sheet", "doc", "slides", "form"], "description": "Google file type to create ('slides' for Google Slides presentations in Google Drive)."},
             "title": {"type": "string", "description": "Name of the new Google file or folder."},
             "folder_name": {"type": "string", "description": "Optional exact name of a visible folder to reuse or create."},
             "headers": {"type": "array", "items": {"type": "string"}, "description": "Required column headings for a sheet."},
@@ -143,7 +143,7 @@ LEGACY_TOOL_PARAMETERS: Dict[str, Dict[str, Any]] = {
         "required": ["kind", "title"],
     },
     "fetch_url": {
-        "properties": {"request_text": {"type": "string", "description": "The request naming the URL to fetch."}},
+        "properties": {"request_text": {"type": "string", "description": "The request naming the exact URL to fetch. Use ONLY when a specific URL appears in the request or to read a URL returned by web_search; never use for general web search or web research without a URL."}},
         "required": ["request_text"],
     },
 }

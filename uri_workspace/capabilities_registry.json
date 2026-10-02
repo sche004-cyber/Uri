@@ -20,16 +20,16 @@
       "file_path": "uri_core/tools/fetch_drive_spreadsheet.py",
       "class_name": "DriveSpreadsheetFetcher",
       "method": "fetch_rows",
-      "description": "Read rows from a Google Sheets spreadsheet by spreadsheet ID and range.",
+      "description": "Read rows from a Google Sheets spreadsheet by spreadsheet ID and range. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "status": "implemented",
-      "availability": "unavailable_missing_dependency",
+      "availability": "available",
       "permissions": [
         "google_drive_service_account"
       ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
-      "limitations": "No Google service-account credentials are configured at uri_workspace/credentials.json; reports 'unavailable' honestly rather than returning simulated data until they are.",
+      "limitations": "Requires a spreadsheet ID and range. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "interface": null,
       "effect_type": "read_only"
     },
@@ -67,7 +67,7 @@
       "file_path": "uri_core/tools/generate_document.py",
       "class_name": "GenerateDocumentTool",
       "method": "generate",
-      "description": "Generate a real Office file (DOCX, XLSX, PPTX, or PDF) for a general request that is not an institutional note or order - the Brain composes the content (reusing the same policy/evidence/institutional-conventions assembly as note/order drafting); the requested file format is detected from the request and rendered into a real, downloadable file. Not a fixed template.",
+      "description": "Generate a real Office file (PowerPoint presentation / PPT / PPTX, Word DOCX, Excel XLSX, or PDF) for a general document or presentation request. Default tool for creating local presentations (PPT, PPTX, slide decks) and documents. The Brain composes the content and renders a real, downloadable local file. Not a fixed template.",
       "status": "implemented",
       "availability": "available",
       "permissions": [],
@@ -167,16 +167,16 @@
       "file_path": "uri_core/tools/gmail_search.py",
       "class_name": "GmailSearchTool",
       "method": "execute",
-      "description": "Search the user's Gmail for messages matching an administrative query, returning subject/date/snippet as evidence for the Brain to reason from - never an answer URI composes itself.",
+      "description": "Search the user's Gmail for messages matching an administrative query, returning evidence for the Brain to reason from. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "status": "implemented",
-      "availability": "unavailable_missing_dependency",
+      "availability": "available",
       "permissions": [
         "gmail_readonly"
       ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
-      "limitations": "Requires uri_workspace/credentials.json (a Google OAuth client secret) and a completed one-time OAuth consent; honestly reports when credentials are missing, authentication fails, or the search returns no results rather than inventing information.",
+      "limitations": "Read-only search; reports connection or service problems and empty results without inventing information. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "interface": null,
       "effect_type": "read_only"
     },
@@ -184,16 +184,16 @@
       "file_path": "uri_core/tools/gmail_find_draft.py",
       "class_name": "GmailFindDraftTool",
       "method": "execute",
-      "description": "Search the user's existing Gmail drafts (read-only) for one relevant to the request, returning it as evidence for the Brain to reason from. URI cannot create, modify, send, or delete drafts through this capability.",
+      "description": "Search the user's existing Gmail drafts (read-only) for one relevant to the request, returning evidence for the Brain to reason from. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "status": "implemented",
-      "availability": "unavailable_missing_dependency",
+      "availability": "available",
       "permissions": [
         "gmail_readonly"
       ],
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
-      "limitations": "Requires the same Google OAuth credentials as gmail_search; reports 'not found' when Gmail is unavailable or when no relevant draft exists, and cannot distinguish those two cases from the underlying service's return value.",
+      "limitations": "Read-only; cannot create, modify, send, or delete drafts. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "interface": null,
       "effect_type": "read_only"
     },
@@ -201,7 +201,7 @@
       "file_path": "uri_core/tools/web_search.py",
       "class_name": "WebSearchTool",
       "method": "execute",
-      "description": "Search the public Internet for real, current information via a real search API, returning titles/URLs/content snippets as evidence for the Brain to reason from - never an answer URI composes itself.",
+      "description": "Search the public Internet or perform web research for real, current information via Tavily search API. Use this tool for requests to 'search the web for X', 'do web research on X', 'find online', or any general web search/research when no specific URL is given. Returns titles, URLs, and content snippets as evidence for the Brain to reason from.",
       "status": "implemented",
       "availability": "available",
       "permissions": [
@@ -218,7 +218,7 @@
       "file_path": "uri_core/tools/drive_search.py",
       "class_name": "DriveSearchTool",
       "method": "execute",
-      "description": "Search Google Drive (files the user already has access to) by name/content and return real file metadata (id, name, type) as evidence - read-only, the same scope Gmail/Drive already share.",
+      "description": "Search Google Drive files the user can access by name/content and return real file metadata as evidence. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "status": "implemented",
       "availability": "available",
       "permissions": [
@@ -227,7 +227,7 @@
       "approval_requirement": "none",
       "risk": "controlled",
       "platform": "any",
-      "limitations": "Requires a stored Google OAuth token (token.json) on the server host; honestly reports 'unavailable' with the real reason when Drive is not connected rather than inventing results.",
+      "limitations": "Read-only search; reports connection or service problems without inventing results. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "interface": null,
       "effect_type": "read_only"
     },
@@ -235,7 +235,7 @@
       "file_path": "uri_core/tools/gmail_create_draft.py",
       "class_name": "GmailCreateDraftTool",
       "method": "generate",
-      "description": "Create a Gmail DRAFT (never sends it) - the Brain composes the subject/body from the request and any evidence; the recipient is taken directly from an email address in the request text. The user still reviews and sends the draft themselves in Gmail.",
+      "description": "Create a Gmail draft that the user reviews and sends themselves; the Brain composes its subject and body from the request and evidence. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "status": "implemented",
       "availability": "available",
       "permissions": [
@@ -244,7 +244,7 @@
       "approval_requirement": "user_approval_required",
       "risk": "high",
       "platform": "any",
-      "limitations": "Requires a stored Google OAuth token with gmail.compose scope on the server host; creates a draft only - there is no capability anywhere in URI that sends an email.",
+      "limitations": "Requires user approval and creates a draft only; URI does not send email. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "interface": null,
       "effect_type": "external_write"
     },
@@ -252,7 +252,7 @@
       "file_path": "uri_core/tools/drive_upload.py",
       "class_name": "DriveUploadTool",
       "method": "generate",
-      "description": "Upload the most recently generated or attached file in this conversation to Google Drive as a new file - never overwrites, moves, renames, or deletes anything already in Drive.",
+      "description": "Upload the most recently generated or attached file in this conversation to Google Drive as a new file. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "status": "implemented",
       "availability": "available",
       "permissions": [
@@ -261,7 +261,7 @@
       "approval_requirement": "user_approval_required",
       "risk": "high",
       "platform": "any",
-      "limitations": "Requires a stored Google OAuth token with drive.file scope on the server host, and a file already generated or attached in this conversation to upload.",
+      "limitations": "Requires user approval and a generated or attached file; never overwrites existing files. Availability reflects the user's current Google connection; URI reports setup steps if it is not connected.",
       "interface": null,
       "effect_type": "external_write"
     },
@@ -269,7 +269,7 @@
       "file_path": "uri_core/tools/google_workspace_create.py",
       "class_name": "GoogleWorkspaceCreateTool",
       "method": "generate",
-      "description": "Create a new Google Drive folder, professionally formatted Google Sheet with headers and blank rows, Google Doc, Slides presentation, or text-question Form. Optionally place it in an exact-name visible folder, creating that folder if absent. Requires user approval before any write; never changes existing files. Use this for requests to create a Google file in Drive.",
+      "description": "Create a new Google Drive folder, professionally formatted Google Sheet with headers and blank rows, Google Doc, Google Slides presentation (PPT / slideshow in Google Drive), or text-question Form. Optionally place it in an exact-name visible folder, creating that folder if absent. Requires user approval before any write; never changes existing files. Use this when the user explicitly requests creating a presentation or file in Google, Drive, or Google Slides.",
       "status": "implemented",
       "availability": "available",
       "permissions": ["google_drive_file_write"],
@@ -284,7 +284,7 @@
       "file_path": "uri_core/tools/fetch_url.py",
       "class_name": "FetchUrlTool",
       "method": "execute",
-      "description": "Fetch one web page or document by URL and extract its readable text as evidence (HTML, PDF, DOCX, XLSX, plain text, CSV) - lets URI actually read a source web_search found (or one the user gave directly), not just cite its search-result snippet.",
+      "description": "Fetch one web page or document by its exact URL and extract its readable text as evidence (HTML, PDF, DOCX, XLSX, plain text, CSV). Use this tool ONLY when a specific URL appears literally in the request or to read a URL returned by web_search. Do NOT use for general web search or web research when no URL is provided.",
       "status": "implemented",
       "availability": "available",
       "permissions": [

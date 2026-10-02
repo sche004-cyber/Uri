@@ -216,6 +216,20 @@ workflow: {"steps": [{"step_id": "...", "capability": "<name>",
     to that exact page - never just "you may need to check the site
     yourself."
 
+    Routing guidance:
+    - Web research: For requests to search the web, do web research, or find
+      information online when NO URL is provided, propose web_search. Propose
+      fetch_url ONLY when a specific URL appears in the user's request or to read
+      a URL found by a prior step. Never propose fetch_url when no URL is given.
+    - Presentations: For requests to create a presentation or PPT ("Create a PPT
+      about X"), propose generate_document by default (which creates a local
+      .pptx file). Propose google_workspace_create only when the user explicitly
+      requests Google Slides, Google Drive, or Google Workspace.
+    - Capability questions: When the user asks about whether URI CAN do something
+      or what URI can do (e.g. "Can you create a PPT?", "Can you do web research?")
+      with no task inputs to execute, do NOT propose a tool execution without
+      inputs; leave action and workflow null so URI can answer conversationally.
+
 Do not include any text outside the JSON object. Do not invent a
 capability name that is not in available_capabilities.
 """

@@ -188,9 +188,20 @@ picking `mode`:
        INTENT WINS: mode is "single_action" with capability
        "draft_institutional_order", NEVER "workflow_continuation",
        even though active_pointer.kind is not "none".
-    2. Otherwise, does the user simply want discussion, an opinion, or
-       reasoning, with no concrete outcome any capability produces? The
-       answer is "conversation" - stop here.
+    2. Otherwise, is the user asking about URI's capabilities (e.g. "Can
+       you create a PPT?", "Can you do web research?", "What can you do?",
+       "Are you able to search Drive?"), or do they simply want discussion,
+       an opinion, or reasoning, with no concrete task to execute right now?
+       The answer is "conversation" - stop here.
+       - A capability question asks whether URI CAN do something or what
+         URI can do; it is NOT a task request (there are no task inputs like
+         a topic or URL to execute against). Answer conversationally: set
+         mode to "conversation", capability to null, actions to [], and in
+         `reason` explain what URI's real capabilities can do (e.g. for PPT:
+         generate_document can create a local .pptx, google_workspace_create
+         can create Google Slides with approval; for research: web_search via
+         Tavily, then fetch_url to read a found page). Do NOT attempt tool
+         execution without the user's task inputs.
     3. Otherwise, does at least one capability summary plausibly cover
        this goal? Pick your single best real candidate (never invented)
        and continue to question 4.
@@ -198,6 +209,18 @@ picking `mode`:
          "unsupported" - stop here. This must be a genuine absence of
          fit, not mere uncertainty about which one applies (see the
          "clarification" rule below for that case).
+       - Routing guidelines:
+         * Web research / search: when the user asks to search the web,
+           do web research, or find online information and NO URL is
+           provided, pick `web_search`. Use `fetch_url` ONLY when a
+           specific URL appears in the user request or to read a URL
+           returned by a search; never route general web research to
+           `fetch_url`.
+         * Presentations: "Create a PPT about X" (an actual task with a
+           topic) routes to `generate_document` by default (for a local
+           .pptx presentation). Route to `google_workspace_create`
+           (kind="slides") when the user explicitly requests creating in
+           Google, Drive, or Google Slides.
     4. Given your best candidate from question 3, is a concrete,
        specific required input actually missing (e.g. an identifier, a
        search term the user never gave) - not merely "I'm not fully
@@ -241,7 +264,10 @@ goal: the user's actual objective, plain text.
 mode: exactly one of "conversation", "clarification", "unsupported",
     "single_action", "multi_action", "approval_required",
     "workflow_continuation" - chosen via the checklist above.
-    - "conversation": no capability is needed at all.
+    - "conversation": no tool execution is needed. Used for general
+      discussion, opinions, reasoning, and questions inquiring about URI's
+      capabilities (e.g. "Can you create a PPT?", "Can you do web research?")
+      when no specific task inputs are provided to execute.
     - "clarification": a real capability likely applies, but one
       specific, concrete piece of information is genuinely missing -
       never used merely because you are uncertain which capability

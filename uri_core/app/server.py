@@ -3615,7 +3615,7 @@ def google_setup(principal: PrincipalContext = Depends(_resolve_authenticated_pr
             try:
                 client = build(api, "v1" if api == "gmail" else "v3", credentials=creds, cache_discovery=False)
                 if api == "gmail":
-                    client.users().labels().list(userId="me", maxResults=1).execute()
+                    client.users().labels().list(userId="me").execute()
                 else:
                     client.files().list(pageSize=1, fields="files(id)").execute()
                 status, message, link = "ready", f"Google {api.title()} API is available.", api_enable_url(api)

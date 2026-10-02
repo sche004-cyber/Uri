@@ -451,10 +451,10 @@ def _canonical_nonexecution_envelope(
     elif outcome == "APPROVAL_REQUIRED" or contract.get("mode") == "approval_required":
         message = "This action requires your approval before it can run."
         status, execution_status = "approval_required", "not_executed"
-    elif outcome == "DISCONNECTED":
+    elif outcome == "DISCONNECTED" and contract.get("capability") and contract.get("mode") != "unsupported":
         message = "That capability is not connected right now."
         status, execution_status = "unavailable", "not_executed"
-    elif outcome in {"UNSUPPORTED", "UNAVAILABLE", "PERMISSION_DENIED"} or contract.get("mode") == "unsupported":
+    elif outcome in {"UNSUPPORTED", "UNAVAILABLE", "PERMISSION_DENIED", "DISCONNECTED"} or contract.get("mode") == "unsupported":
         message = contract.get("unsupported_reason") or "URI cannot perform that request with an available capability."
         status, execution_status = "unavailable", "not_executed"
     else:

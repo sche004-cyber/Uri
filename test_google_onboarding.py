@@ -151,3 +151,28 @@ def test_setup_classifies_disabled_api(monkeypatch):
     gmail = result["steps"][2]
     assert gmail["status"] == "action_required"
     assert "project=9876" in gmail["help_url"]
+
+
+def test_setup_gmail_probe_uses_supported_labels_list_arguments(monkeypatch):
+    from uri_core.services.gmail_service import GmailService
+    import uri_core.core.google_auth_common as common
+    import googleapiclient.discovery as discovery
+
+    def fake_init(self, user_id=None):
+        self.credentials_path = MagicMock()
+        self.credentials_path.is_file.return_value = True
+        self.token_path = MagicMock()
+        self.token_path.is_file.return_value = True
+        self.SCOPES = ["scope"]
+
+    monkeypatch.setattr(GmailService, "__init__", fake_init)
+    monkeypatch.setattr(common, "load_usable_credentials", lambda **_: SimpleNamespace(valid=True, has_scopes=lambda _: True))
+    gmail = MagicMock()
+    drive = MagicMock()
+    monkeypatch.setattr(discovery, "build", lambda api, *args, **kwargs: gmail if api == "gmail" else drive)
+
+    result = server.google_setup(_principal())
+
+    gmail.users().labels().list.assert_called_once_with(userId="me")
+    gmail.users().labels().list().execute.assert_called_once_with()
+    assert result["steps"][2]["status"] == "ready"

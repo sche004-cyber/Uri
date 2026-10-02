@@ -312,18 +312,14 @@ class CapabilityRegistryTests(unittest.TestCase):
         self.assertFalse(pc_optimization.is_executable)
         self.assertEqual(pc_optimization.gap_reason, "not_implemented")
 
-        # fetch_drive_spreadsheet is "implemented" (a real adapter
-        # exists) but currently unavailable_missing_dependency on this
-        # runtime (no credentials.json) - a genuinely different gap
-        # reason from pc_system_optimization's, and now surfaced by
-        # known_gaps() too, not silently excluded just because its
-        # status is "implemented".
+        # Static availability is available; live per-user feasibility
+        # decides whether the user's Google connection can run it.
         drive_spreadsheet = registry.describe_status(
             "fetch_drive_spreadsheet"
         )
-        self.assertEqual(drive_spreadsheet.gap_reason, "unavailable_runtime")
+        self.assertIsNone(drive_spreadsheet.gap_reason)
         gap_ids = {gap.id for gap in registry.known_gaps()}
-        self.assertIn("fetch_drive_spreadsheet", gap_ids)
+        self.assertNotIn("fetch_drive_spreadsheet", gap_ids)
         self.assertIn("pc_system_optimization", gap_ids)
 
 
