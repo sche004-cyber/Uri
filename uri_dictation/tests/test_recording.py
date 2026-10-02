@@ -23,8 +23,10 @@ def test_levels_are_bounded_padded_and_reset_when_recording_starts(monkeypatch):
 
     class Stream:
         def start(self): pass
-    monkeypatch.setattr("sounddevice.InputStream", lambda **_kwargs: Stream())
+    stream_options = {}
+    monkeypatch.setattr("sounddevice.InputStream", lambda **kwargs: (stream_options.update(kwargs), Stream())[1])
     recorder.start()
+    assert stream_options["blocksize"] == 528
     assert recorder.levels(4) == [0.0] * 4
 
 

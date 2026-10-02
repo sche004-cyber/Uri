@@ -36,7 +36,9 @@ class MemoryRecorder:
             self._chunks = []
             self._levels.clear()
         self.started_at = time.perf_counter()
-        self._stream = sd.InputStream(samplerate=16000, channels=1, dtype="float32", callback=self._callback)
+        self._stream = sd.InputStream(
+            samplerate=16000, channels=1, dtype="float32", blocksize=528, callback=self._callback,
+        )
         self._stream.start()
 
     def _callback(self, indata, frames, time_info, status) -> None:
