@@ -18,10 +18,21 @@ import subprocess
 from pathlib import Path
 
 DESKTOP_RECOVERY_FILES = {
-    "uri_core/app/server.py": "5e71b77fedb2601fc0889ffa836d4fb1519459d9",
+    "uri_core/app/server.py": "873fa70f210e635f7fd7dd944b6edb5b352b3f86",
+    "uri_core/capabilities/gmail/capability.py": "11edf604314ac11792d2123e0beb79728b4bf77d",
+    "uri_core/services/gmail_service.py": "3829624e12dc3a6fe91da9bf0e4c45b082e374e9",
+    "uri_core/services/google_errors.py": "02c20e964072f32bfc7816678b2ae57275a1be4c",
+    "uri_core/tools/drive_search.py": "983f969690b7c938c021befa886c1fbf75d2d4b5",
+    "uri_core/tools/drive_upload.py": "958cde8e4be450fe9568f161f109ac9301995b04",
     "uri_core/core/response_validation.py": "35d1a790f187f4f487bc91483a553670b87ebade",
     "uri_ui/lib/models/uri_turn.dart": "ed841e094f78e628e880949fab4e9026f539dcb8",
-    "uri_ui/lib/services/http_uri_client.dart": "72a91d386cb52840cde8e73e8ed6d57987326fb1",
+    "uri_ui/lib/screens/connections/connections_screen.dart": "57a1cda03ba2fbcb25b56b0bd7af432824244864",
+    "uri_ui/lib/screens/connections/google_setup_card.dart": "f018f9a124382ccf255bb808e001482dcace376a",
+    "uri_ui/lib/services/app_state.dart": "233dce56cc9f6db71785940ea3ac54c05bfda367",
+    "uri_ui/lib/services/http_uri_client.dart": "e8d908777193b65fa79f7d7f2e55f3c8459a1900",
+    "uri_ui/lib/services/mock_uri_client.dart": "9f2faa339cd1a31dfb412619e4ae8e22ed68b679",
+    "uri_ui/lib/services/uri_client.dart": "59d9a044f8041bf36ca7383004224fc9df0bb018",
+    "uri_ui/test/google_setup_card_test.dart": "d42c1a0d50e0276306e99fe6c2c3d22ee87aba1b",
     "uri_ui/lib/widgets/turn_card.dart": "f0a212a47d9392e7da5610eca11dc8ed4e7e19c7",
     "uri_ui/test/chat_lifecycle_test.dart": "e372b0a8edd41d862402d5c8f1d6a69e0ff9b2ad",
     "uri_ui/test/desktop_recovery_failure_reason_test.dart": "2e927dd214a761d53c628c706282a7805fb3dc74",

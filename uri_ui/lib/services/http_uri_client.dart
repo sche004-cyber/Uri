@@ -449,13 +449,16 @@ class HttpUriClient implements UriClient {
           ?.toString();
       final response = body['response'];
       final responseMessage = response is Map ? response['message'] : null;
-      final failureReason = body['error']?.toString() ??
-          (const {'no_brain_configured', 'drafting_provider_unreachable'}
-                  .contains(unavailableReason)
+      final failureReason =
+          body['error']?.toString() ??
+          (const {
+                'no_brain_configured',
+                'drafting_provider_unreachable',
+              }.contains(unavailableReason)
               ? "URI's Brain isn't configured or is unreachable — set an Active Brain in Model Providers."
               : (responseMessage is String
-                  ? responseMessage
-                  : 'URI could not process this request.'));
+                    ? responseMessage
+                    : 'URI could not process this request.'));
       return UriTurn(
         id: id,
         userText: text,
@@ -825,7 +828,9 @@ class HttpUriClient implements UriClient {
     }
 
     if (response.statusCode != 200) {
-      throw TasksFetchException('Server returned ${response.statusCode} fetching tasks');
+      throw TasksFetchException(
+        'Server returned ${response.statusCode} fetching tasks',
+      );
     }
 
     final Map<String, dynamic> body;
@@ -865,18 +870,24 @@ class HttpUriClient implements UriClient {
           .get(Uri.parse('$baseUrl/connections'), headers: _jsonHeaders)
           .timeout(const Duration(seconds: 30));
     } catch (e) {
-      throw ConnectionsFetchException('Failed to connect to connections service: $e');
+      throw ConnectionsFetchException(
+        'Failed to connect to connections service: $e',
+      );
     }
 
     if (response.statusCode != 200) {
-      throw ConnectionsFetchException('Server returned ${response.statusCode} fetching connections');
+      throw ConnectionsFetchException(
+        'Server returned ${response.statusCode} fetching connections',
+      );
     }
 
     final Map<String, dynamic> body;
     try {
       body = jsonDecode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      throw ConnectionsFetchException('Malformed JSON in connections response: $e');
+      throw ConnectionsFetchException(
+        'Malformed JSON in connections response: $e',
+      );
     }
 
     return _connectionsFrom(body['connections']);
@@ -964,7 +975,33 @@ class HttpUriClient implements UriClient {
     return ConnectionAuthorizeOutcome(
       connection: connection,
       explanation: explanation,
+      authUrl: body['auth_url'] as String?,
     );
+  }
+
+  @override
+  Future<Map<String, dynamic>> googleSetup() async {
+    final response = await _http
+        .get(
+          Uri.parse('$baseUrl/connections/google/setup'),
+          headers: _jsonHeaders,
+        )
+        .timeout(const Duration(seconds: 30));
+    if (response.statusCode != 200)
+      throw StateError('Google setup returned HTTP ${response.statusCode}.');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  @override
+  Future<void> cancelGoogleSignIn() async {
+    final response = await _http
+        .post(
+          Uri.parse('$baseUrl/connections/google/cancel'),
+          headers: _jsonHeaders,
+        )
+        .timeout(const Duration(seconds: 30));
+    if (response.statusCode != 200)
+      throw StateError('Could not cancel Google sign-in.');
   }
 
   /// Shared with [listConnections] - both read the exact same

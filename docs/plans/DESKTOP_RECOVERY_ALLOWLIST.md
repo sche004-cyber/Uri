@@ -63,3 +63,30 @@ Changing any listed file later requires updating its pin in
 `desktop_recovery_allowlist.py`, which changes that module's blob and so the
 pins in the M37/M39 guards and the M37 guard hash: a visible, reviewable chain,
 and a new User authorization for anything beyond this scope.
+
+## 2026-10-02 Batch 1 Google onboarding
+
+Authority: Chetan, 2026-10-02 04:01 UTC, authorized Google onboarding and
+help with Google Drive requests. This batch changes onboarding only; Google
+Workspace creation remains in Batch 2. Each frozen path below is pinned to its
+working-tree blob in `desktop_recovery_allowlist.py` for Claude's review.
+
+| Path | Justification under the 04:01 UTC authorization |
+|---|---|
+| `uri_core/app/server.py` | Return and recover a per-user Google sign-in URL, cancel a stuck flow, and report setup steps. |
+| `uri_core/capabilities/gmail/capability.py` | Show the actionable Google failure reason to the user. |
+| `uri_core/services/gmail_service.py` | Publish the loopback OAuth URL before waiting for consent, preserving state and PKCE. |
+| `uri_core/services/google_errors.py` | Share safe classification of consent, token, and API failures. |
+| `uri_core/tools/drive_search.py` | Show the actionable Google failure reason for existing Drive search. |
+| `uri_core/tools/drive_upload.py` | Show the actionable Google failure reason for the existing approved Drive upload. |
+| `uri_ui/lib/screens/connections/connections_screen.dart` | Expose Google setup and open sign-in initiated from the connection row. |
+| `uri_ui/lib/screens/connections/google_setup_card.dart` | Show setup steps, help links, sign-in, reopen, cancel, and refresh actions. |
+| `uri_ui/lib/services/app_state.dart` | Hold per-user setup and sign-in URL presentation state. |
+| `uri_ui/lib/services/http_uri_client.dart` | Read setup, start sign-in, receive the URL, and cancel via HTTP. |
+| `uri_ui/lib/services/mock_uri_client.dart` | Supply offline setup state for the existing UI flows. |
+| `uri_ui/lib/services/uri_client.dart` | Define the setup/cancel client methods and sign-in URL outcome. |
+| `uri_ui/test/google_setup_card_test.dart` | Verify setup presentation and opening the returned URL. |
+
+The root-level `test_google_onboarding.py` is outside the frozen directories
+and checks the Python handoff, cancellation, step classification, and errors.
+The exact-file guard pins are updated only to authorize these paths.

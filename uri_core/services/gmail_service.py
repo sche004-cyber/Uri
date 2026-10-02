@@ -2,6 +2,9 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 import base64
+import time
+import wsgiref.simple_server
+from google_auth_oauthlib.flow import _RedirectWSGIApp, _ExclusiveWSGIServer, _WSGIRequestHandler, WSGITimeoutError
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -9,6 +12,12 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 from uri_core.core.google_auth_common import load_usable_credentials
+
+
+class _QuietOAuthHandler(_WSGIRequestHandler):
+    def log_message(self, format, *args):
+        # The callback path contains the authorization code.
+        pass
 
 
 class GmailService:
@@ -84,7 +93,7 @@ class GmailService:
         self.service = None
 
 
-    def connect(self) -> dict:
+    def connect(self, on_auth_url=None, cancel_event=None) -> dict:
         """
         Connect URI to Gmail using READ_ONLY access.
         """
@@ -123,10 +132,35 @@ class GmailService:
                 )
             )
 
-            creds = flow.run_local_server(
-                port=0
-            )
+            if on_auth_url is None:
+                creds = flow.run_local_server(port=0)
+            else:
+                # Keep Google's own redirect handler and OAuth session (PKCE and
+                # state), but publish the URL before waiting for consent.
+                app = _RedirectWSGIApp("Google sign-in complete. Return to URI.")
+                server = wsgiref.simple_server.make_server(
+                    "127.0.0.1", 0, app, server_class=_ExclusiveWSGIServer,
+                    handler_class=_QuietOAuthHandler,
+                )
+                try:
+                    flow.redirect_uri = f"http://127.0.0.1:{server.server_port}/"
+                    auth_url, _ = flow.authorization_url()
+                    on_auth_url(auth_url)
+                    deadline = time.monotonic() + 300
+                    server.timeout = 0.25
+                    while app.last_request_uri is None:
+                        if (cancel_event is not None and cancel_event.is_set()) or time.monotonic() >= deadline:
+                            raise WSGITimeoutError("Google sign-in cancelled or timed out")
+                        server.handle_request()
+                    if cancel_event is not None and cancel_event.is_set():
+                        raise WSGITimeoutError("Google sign-in cancelled")
+                    flow.fetch_token(authorization_response=app.last_request_uri.replace("http", "https", 1))
+                    creds = flow.credentials
+                finally:
+                    server.server_close()
 
+        if cancel_event is not None and cancel_event.is_set():
+            raise WSGITimeoutError("Google sign-in cancelled")
         self.token_path.parent.mkdir(parents=True, exist_ok=True)
         with open(
             self.token_path,

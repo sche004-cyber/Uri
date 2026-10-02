@@ -12,6 +12,7 @@ import base64
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from uri_core.services.gmail_service import GmailService
+from uri_core.services.google_errors import classify_google_error
 
 from ..base import Action, ActionSchema, ApprovalRequirement, Capability, RiskLevel
 from ..wrong_binding import WrongBindingImpact
@@ -170,15 +171,15 @@ class GmailCapability(Capability):
                 })
             return {"status": "success", "labels": labels}
         except Exception as exc:
-            return {"status": "unavailable", "message": "URI could not list Gmail labels.", "error": str(exc)}
+            return {"status": "unavailable", "message": classify_google_error(exc)["message"], "error": classify_google_error(exc)["kind"]}
 
     def search_messages(self, query: str, max_results: int = 10) -> Dict[str, Any]:
         try:
             result = self.gmail_service.search_evidence([query])
         except Exception as exc:
-            return {"status": "unavailable", "message": "URI could not search Gmail.", "error": str(exc)}
+            return {"status": "unavailable", "message": classify_google_error(exc)["message"], "error": classify_google_error(exc)["kind"]}
         if not result.get("success"):
-            return {"status": "unavailable", "message": "URI could not search Gmail.", "error": result.get("reason")}
+            return {"status": "unavailable", "message": classify_google_error(result.get("reason"))["message"], "error": classify_google_error(result.get("reason"))["kind"]}
         groups = result.get("results", [])
         messages = [message for group in groups if isinstance(group, Mapping) for message in group.get("messages", [])]
         return {"status": "success", "query": query, "messages": messages[:max_results], "results": groups}
@@ -195,7 +196,7 @@ class GmailCapability(Capability):
             raw = client.users().messages().get(userId="me", id=message_id, format="full").execute()
             return {"status": "success", "message": self._message_from_raw(raw)}
         except Exception as exc:
-            return {"status": "unavailable", "message": "URI could not read the Gmail message.", "error": str(exc)}
+            return {"status": "unavailable", "message": classify_google_error(exc)["message"], "error": classify_google_error(exc)["kind"]}
 
     def read_thread(self, thread_id: str) -> Dict[str, Any]:
         method = getattr(self.gmail_service, "get_thread", None)
@@ -204,7 +205,7 @@ class GmailCapability(Capability):
                 return self._normalise_service_result(method(thread_id), "thread")
             return self._normalise_service_result(self.gmail_service.get_thread_evidence(thread_id), "thread")
         except Exception as exc:
-            return {"status": "unavailable", "message": "URI could not read the Gmail thread.", "error": str(exc)}
+            return {"status": "unavailable", "message": classify_google_error(exc)["message"], "error": classify_google_error(exc)["kind"]}
 
     def read_attachment(
         self,
@@ -220,7 +221,7 @@ class GmailCapability(Capability):
             inventory = self._attachment_inventory(message_id, thread_id)
             return {"status": "success", "attachments": inventory}
         except Exception as exc:
-            return {"status": "unavailable", "message": "URI could not inspect the Gmail attachment.", "error": str(exc)}
+            return {"status": "unavailable", "message": classify_google_error(exc)["message"], "error": classify_google_error(exc)["kind"]}
 
     def create_draft(self, to: str, subject: str, body: str, **_: Any) -> Dict[str, Any]:
         result = self.gmail_service.create_draft(to=to, subject=subject, body=body)
@@ -259,7 +260,7 @@ class GmailCapability(Capability):
             response["status"] = "success"
         else:
             response["status"] = "unavailable"
-            response.setdefault("message", f"URI could not read the Gmail {noun}.")
+            response.setdefault("message", classify_google_error(response.get("reason"))["message"])
         return response
 
     @classmethod

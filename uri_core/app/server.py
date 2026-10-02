@@ -3427,20 +3427,32 @@ _LOOPBACK_HOSTS = {
 # per-user - like the connection itself, this is one shared,
 # install-wide flow.
 _google_auth_flow_lock = threading.Lock()
-_google_auth_flow_state: dict = {"running": False, "last_error": None}
+_google_auth_flow_state: dict = {"running": False, "last_error": None, "auth_url": None, "user_id": None, "cancel": None, "ready": None}
 
 
-def _run_google_auth_flow_in_background(user_id: Optional[str] = None) -> None:
+def _run_google_auth_flow_in_background(user_id: Optional[str] = None, state: Optional[dict] = None) -> None:
     from uri_core.services.gmail_service import GmailService
+    from uri_core.services.google_errors import classify_google_error
+
+    state = state or _google_auth_flow_state
+
+    def publish(url: str) -> None:
+        with _google_auth_flow_lock:
+            if _google_auth_flow_state is state and not state["cancel"].is_set():
+                state["auth_url"] = url
+                state["ready"].set()
 
     try:
-        result = GmailService(user_id=user_id).connect()
+        result = GmailService(user_id=user_id).connect(on_auth_url=publish, cancel_event=state["cancel"])
         if not result.get("success", True):
-            _google_auth_flow_state["last_error"] = result.get("reason")
+            state["last_error"] = classify_google_error(result.get("reason"), "gmail")["message"]
     except Exception as exc:  # noqa: BLE001 - reported via status, never raised into the request
-        _google_auth_flow_state["last_error"] = str(exc)
+        state["last_error"] = classify_google_error(exc, "gmail")["message"]
     finally:
-        _google_auth_flow_state["running"] = False
+        with _google_auth_flow_lock:
+            state["running"] = False
+            state["auth_url"] = None
+            state["ready"].set()
 
 
 @app.post("/connections/{connection_id}/authorize")
@@ -3449,6 +3461,7 @@ def authorize_connection(
     request: Request,
     principal: PrincipalContext = Depends(_resolve_authenticated_principal),
 ) -> dict:
+    global _google_auth_flow_state
     """M16 Priority 4, revised for M32 (A1-3): actually
     start Google sign-in for a service on behalf of THIS user.
 
@@ -3516,29 +3529,87 @@ def authorize_connection(
         if _google_auth_flow_state["running"]:
             return {
                 "started": False,
-                "detail": (
-                    "A Google sign-in is already in progress - "
-                    "complete or close that browser window first."
-                ),
+                "auth_url": _google_auth_flow_state["auth_url"] if _google_auth_flow_state["user_id"] == principal.user_id else None,
+                "detail": "A Google sign-in is already in progress. Open its page again or cancel it from Google setup.",
                 "connections": _connection_status_for_user(principal.user_id),
             }
-        _google_auth_flow_state["running"] = True
-        _google_auth_flow_state["last_error"] = None
+        state = {"running": True, "last_error": None, "auth_url": None, "user_id": principal.user_id, "cancel": threading.Event(), "ready": threading.Event()}
+        _google_auth_flow_state = state
         threading.Thread(
             target=_run_google_auth_flow_in_background,
-            args=(principal.user_id,),
+            args=(principal.user_id, state),
             name="google-oauth-consent",
             daemon=True,
         ).start()
 
+    state["ready"].wait(5)
     return {
-        "started": True,
-        "detail": (
-            "Opening your browser for Google sign-in - complete the "
-            "consent there, then refresh this screen."
-        ),
+        "started": bool(state["auth_url"]),
+        "auth_url": state["auth_url"],
+        "detail": "Complete Google sign-in in the opened page, then refresh." if state["auth_url"] else (state["last_error"] or "Google sign-in is starting. Refresh setup shortly."),
         "connections": _connection_status_for_user(principal.user_id),
     }
+
+
+@app.post("/connections/google/cancel")
+def cancel_google_connection(request: Request, principal: PrincipalContext = Depends(_resolve_authenticated_principal)) -> dict:
+    if not request.client or request.client.host not in _LOOPBACK_HOSTS:
+        raise HTTPException(status_code=403, detail="Google sign-in can only be cancelled locally.")
+    with _google_auth_flow_lock:
+        state = _google_auth_flow_state
+        if state["running"] and state["user_id"] != principal.user_id:
+            raise HTTPException(status_code=403, detail="Another user's sign-in is in progress.")
+        if state["running"]:
+            state["cancel"].set()
+            state["auth_url"] = None
+            state["running"] = False
+            state["ready"].set()
+    return {"cancelled": True}
+
+
+@app.get("/connections/google/setup")
+def google_setup(principal: PrincipalContext = Depends(_resolve_authenticated_principal)) -> dict:
+    """Read-only, per-user setup diagnosis. Unknown is never reported as ready."""
+    from uri_core.services.gmail_service import GmailService
+    from uri_core.services.google_errors import CONSENT_URL, api_enable_url, classify_google_error
+    from uri_core.core.google_auth_common import load_usable_credentials
+    from googleapiclient.discovery import build
+
+    service = GmailService(user_id=principal.user_id)
+    steps = []
+    present = service.credentials_path.is_file()
+    steps.append({"id": "client_secret", "status": "ready" if present else "action_required", "message": "Google desktop OAuth credentials are configured." if present else "Add your Google desktop OAuth credentials in URI.", "help_url": "https://console.cloud.google.com/auth/clients"})
+    creds = None
+    if service.token_path.is_file():
+        try:
+            creds = load_usable_credentials(token_path=str(service.token_path), scopes=service.SCOPES, allow_refresh=True)
+        except Exception:
+            pass
+    signed = creds is not None and creds.valid and creds.has_scopes(service.SCOPES)
+    steps.append({"id": "signed_in", "status": "ready" if signed else "action_required", "message": "Google sign-in is valid." if signed else "Sign in with Google again." if service.token_path.is_file() else "Sign in with Google.", "help_url": CONSENT_URL})
+    for api in ("gmail", "drive"):
+        if not signed:
+            status, message, link = "unknown", "Sign in before URI can check this API.", api_enable_url(api)
+        else:
+            try:
+                client = build(api, "v1" if api == "gmail" else "v3", credentials=creds, cache_discovery=False)
+                if api == "gmail":
+                    client.users().labels().list(userId="me", maxResults=1).execute()
+                else:
+                    client.files().list(pageSize=1, fields="files(id)").execute()
+                status, message, link = "ready", f"Google {api.title()} API is available.", api_enable_url(api)
+            except Exception as exc:
+                classified = classify_google_error(exc, api)
+                status = "action_required" if classified["kind"] != "unknown" else "unknown"
+                message, link = classified["message"], classified["help_url"]
+        steps.append({"id": f"{api}_api", "status": status, "message": message, "help_url": link})
+    for api in ("sheets", "docs", "slides", "forms"):
+        steps.append({"id": f"{api}_api", "status": "unknown", "optional": True, "message": "Optional, needed for creating Google files. URI cannot verify this API without additional access.", "help_url": api_enable_url(api)})
+    with _google_auth_flow_lock:
+        pending = _google_auth_flow_state["running"] and _google_auth_flow_state["user_id"] == principal.user_id
+        auth_url = _google_auth_flow_state["auth_url"] if pending else None
+        last_error = _google_auth_flow_state["last_error"] if _google_auth_flow_state["user_id"] == principal.user_id else None
+    return {"steps": steps, "pending": pending, "auth_url": auth_url, "last_error": last_error}
 
 
 @app.delete("/connections/{connection_id}")

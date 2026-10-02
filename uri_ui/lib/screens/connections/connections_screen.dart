@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/connection.dart';
 import '../../services/app_state.dart';
@@ -7,6 +8,7 @@ import '../../theme/uri_theme.dart';
 import '../../widgets/loading_state.dart';
 import '../../widgets/screen_header.dart';
 import '../../widgets/status_pill.dart';
+import 'google_setup_card.dart';
 
 class ConnectionsScreen extends StatefulWidget {
   const ConnectionsScreen({super.key});
@@ -34,6 +36,10 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
   /// it did nothing.
   Future<void> _authorize(AppState state, String connectionId) async {
     final explanation = await state.authorizeConnection(connectionId);
+    final authUrl = Uri.tryParse(state.googleAuthUrl ?? '');
+    if (authUrl != null && authUrl.scheme == 'https') {
+      await launchUrl(authUrl, mode: LaunchMode.externalApplication);
+    }
     if (!mounted) return;
     await showDialog<void>(
       context: context,
@@ -49,7 +55,10 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
               },
               child: const Text('Configure Credentials'),
             ),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('OK')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('OK'),
+          ),
         ],
       ),
     );
@@ -68,49 +77,113 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
         builder: (context, setDialogState) => AlertDialog(
           title: const Text('Configure Credentials'),
           content: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const Text('To connect Google services (Gmail & Drive), create an OAuth 2.0 Client ID (Desktop App) in Google Cloud Console and paste the credentials JSON below.'),
-              const SizedBox(height: UriSpace.md),
-              TextField(controller: rawJson, maxLines: 5, decoration: const InputDecoration(labelText: 'Credentials JSON', border: OutlineInputBorder())),
-              const SizedBox(height: UriSpace.sm),
-              const Text('Or enter the Client ID and Client Secret separately.'),
-              const SizedBox(height: UriSpace.sm),
-              TextField(controller: clientId, decoration: const InputDecoration(labelText: 'Client ID', border: OutlineInputBorder())),
-              const SizedBox(height: UriSpace.sm),
-              TextField(controller: clientSecret, obscureText: true, decoration: const InputDecoration(labelText: 'Client Secret', border: OutlineInputBorder())),
-              if (error != null) Padding(padding: const EdgeInsets.only(top: UriSpace.sm), child: Text(error!, style: const TextStyle(color: Colors.red))),
-            ]),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'To connect Google services (Gmail & Drive), create an OAuth 2.0 Client ID (Desktop App) in Google Cloud Console and paste the credentials JSON below.',
+                ),
+                const SizedBox(height: UriSpace.md),
+                TextField(
+                  controller: rawJson,
+                  maxLines: 5,
+                  decoration: const InputDecoration(
+                    labelText: 'Credentials JSON',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: UriSpace.sm),
+                const Text(
+                  'Or enter the Client ID and Client Secret separately.',
+                ),
+                const SizedBox(height: UriSpace.sm),
+                TextField(
+                  controller: clientId,
+                  decoration: const InputDecoration(
+                    labelText: 'Client ID',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: UriSpace.sm),
+                TextField(
+                  controller: clientSecret,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Client Secret',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                if (error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: UriSpace.sm),
+                    child: Text(
+                      error!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+              ],
+            ),
           ),
           actions: [
-            TextButton(onPressed: saving ? null : () => Navigator.of(dialogContext).pop(), child: const Text('Cancel')),
+            TextButton(
+              onPressed: saving
+                  ? null
+                  : () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
             FilledButton(
-              onPressed: saving ? null : () async {
-                setDialogState(() { saving = true; error = null; });
-                final saveError = await state.saveGoogleCredentials(rawJson: rawJson.text.trim().isEmpty ? null : rawJson.text.trim(), clientId: clientId.text.trim().isEmpty ? null : clientId.text.trim(), clientSecret: clientSecret.text.trim().isEmpty ? null : clientSecret.text.trim());
-                if (!dialogContext.mounted) return;
-                if (saveError == null) {
-                  // Refresh (which rebuilds this dialog's ancestor via
-                  // notifyListeners()) BEFORE popping the dialog, never
-                  // after - popping first and rebuilding an ancestor
-                  // synchronously afterward is exactly the known
-                  // Flutter race that throws
-                  // "Failed assertion: '_dependents.isEmpty'" on this
-                  // route's own inherited-widget dependents.
-                  await state.loadConnections();
-                  if (!dialogContext.mounted) return;
-                  Navigator.of(dialogContext).pop();
-                  if (mounted) messenger.showSnackBar(const SnackBar(content: Text('Google credentials saved.')));
-                } else {
-                  setDialogState(() { saving = false; error = saveError; });
-                }
-              },
+              onPressed: saving
+                  ? null
+                  : () async {
+                      setDialogState(() {
+                        saving = true;
+                        error = null;
+                      });
+                      final saveError = await state.saveGoogleCredentials(
+                        rawJson: rawJson.text.trim().isEmpty
+                            ? null
+                            : rawJson.text.trim(),
+                        clientId: clientId.text.trim().isEmpty
+                            ? null
+                            : clientId.text.trim(),
+                        clientSecret: clientSecret.text.trim().isEmpty
+                            ? null
+                            : clientSecret.text.trim(),
+                      );
+                      if (!dialogContext.mounted) return;
+                      if (saveError == null) {
+                        // Refresh (which rebuilds this dialog's ancestor via
+                        // notifyListeners()) BEFORE popping the dialog, never
+                        // after - popping first and rebuilding an ancestor
+                        // synchronously afterward is exactly the known
+                        // Flutter race that throws
+                        // "Failed assertion: '_dependents.isEmpty'" on this
+                        // route's own inherited-widget dependents.
+                        await state.loadConnections();
+                        if (!dialogContext.mounted) return;
+                        Navigator.of(dialogContext).pop();
+                        if (mounted)
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Google credentials saved.'),
+                            ),
+                          );
+                      } else {
+                        setDialogState(() {
+                          saving = false;
+                          error = saveError;
+                        });
+                      }
+                    },
               child: const Text('Save Credentials'),
             ),
           ],
         ),
       ),
     );
-    rawJson.dispose(); clientId.dispose(); clientSecret.dispose();
+    rawJson.dispose();
+    clientId.dispose();
+    clientSecret.dispose();
   }
 
   /// Deliberately no outer `SingleChildScrollView`/padding of its own:
@@ -151,14 +224,20 @@ class _ConnectionsScreenState extends State<ConnectionsScreen> {
                         connection: state.connections[i],
                         onAuthorize: () =>
                             _authorize(state, state.connections[i].id),
-                        onDisconnect: () => state.disconnectConnection(
-                          state.connections[i].id,
-                        ),
+                        onDisconnect: () =>
+                            state.disconnectConnection(state.connections[i].id),
                       ),
                     ],
                   ],
                 ),
               ),
+            // Google setup guide sits below the service list so the list
+            // keeps its position; it shows the next Google step, if any.
+            const SizedBox(height: UriSpace.md),
+            GoogleSetupCard(
+              state: state,
+              onConfigure: () => _configureCredentials(state),
+            ),
           ],
         );
       },
@@ -260,7 +339,10 @@ class _ConnectionListRow extends StatelessWidget {
   // button sit at a different height depending purely on connection
   // state. Forcing identical padding/minimumSize on all three keeps
   // every row's button visually aligned.
-  static const _actionButtonPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+  static const _actionButtonPadding = EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 8,
+  );
   static const _actionButtonMinSize = Size(0, 36);
 
   Widget _actionFor(ConnectionStatus status) {

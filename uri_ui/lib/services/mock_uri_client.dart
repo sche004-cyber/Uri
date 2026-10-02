@@ -210,7 +210,9 @@ class MockUriClient implements UriClient {
   Future<List<ServiceConnection>> listConnections() async {
     await _latency();
     if (shouldFailConnections) {
-      throw const ConnectionsFetchException('Mock injected connections failure');
+      throw const ConnectionsFetchException(
+        'Mock injected connections failure',
+      );
     }
     return List.unmodifiable(_connections);
   }
@@ -243,6 +245,28 @@ class MockUriClient implements UriClient {
       explanation: 'Connected.',
     );
   }
+
+  @override
+  Future<void> cancelGoogleSignIn() async {}
+
+  @override
+  Future<Map<String, dynamic>> googleSetup() async => <String, dynamic>{
+    'steps': [
+      {
+        'id': 'client_secret',
+        'status': 'ready',
+        'message': 'Google credentials configured.',
+        'help_url': 'https://console.cloud.google.com/auth/clients',
+      },
+      {
+        'id': 'signed_in',
+        'status': 'ready',
+        'message': 'Signed in.',
+        'help_url': 'https://console.cloud.google.com/auth/audience',
+      },
+    ],
+    'pending': false,
+  };
 
   @override
   Future<ServiceConnection> disconnectConnection(String connectionId) async {
@@ -623,13 +647,13 @@ class MockUriClient implements UriClient {
     final pending = shouldFailTasks
         ? null
         : _turns.values
-            .where((t) => t.stage == TurnStage.awaitingApproval)
-            .length;
+              .where((t) => t.stage == TurnStage.awaitingApproval)
+              .length;
     final connected = shouldFailConnections
         ? null
         : _connections
-            .where((c) => c.status == ConnectionStatus.connected)
-            .length;
+              .where((c) => c.status == ConnectionStatus.connected)
+              .length;
     final recent = _turns.values.toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 

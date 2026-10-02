@@ -119,6 +119,8 @@ class AppState extends ChangeNotifier {
   bool isLoadingConnections = false;
   bool connectionsFetchFailed = false;
   String? connectionsError;
+  Map<String, dynamic> googleSetup = <String, dynamic>{'steps': []};
+  String? googleAuthUrl;
 
   /// Hoisted composer draft state (R2).
   /// Preserves draft text across navigation (Chat <-> Home <-> Tasks)
@@ -422,9 +424,21 @@ class AppState extends ChangeNotifier {
   /// UriClient.authorizeConnection).
   Future<String> authorizeConnection(String id) async {
     final outcome = await _client.authorizeConnection(id);
+    googleAuthUrl = outcome.authUrl;
     _replaceConnection(outcome.connection);
     notifyListeners();
     return outcome.explanation;
+  }
+
+  Future<void> loadGoogleSetup() async {
+    googleSetup = await _client.googleSetup();
+    googleAuthUrl = googleSetup['auth_url'] as String?;
+    notifyListeners();
+  }
+
+  Future<void> cancelGoogleSignIn() async {
+    await _client.cancelGoogleSignIn();
+    await loadGoogleSetup();
   }
 
   Future<void> disconnectConnection(String id) async {

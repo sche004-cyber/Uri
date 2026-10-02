@@ -20,6 +20,7 @@ from typing import Any, Dict
 
 from uri_core.core.file_store import FileStore
 from uri_core.services.drive_service import DriveService
+from uri_core.services.google_errors import classify_google_error
 
 
 class DriveUploadTool:
@@ -67,10 +68,11 @@ class DriveUploadTool:
         )
 
         if not result.get("success"):
+            failure = classify_google_error(result.get("reason", "Drive is not connected."), "drive")
             return {
                 "status": "unavailable",
-                "message": "URI could not upload the file to Google Drive.",
-                "error": result.get("reason", "Drive is not connected."),
+                "message": failure["message"],
+                "error": failure["kind"],
             }
 
         return {

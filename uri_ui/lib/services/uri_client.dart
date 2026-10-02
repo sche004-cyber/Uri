@@ -142,6 +142,12 @@ abstract class UriClient {
   /// discarding.
   Future<ConnectionAuthorizeOutcome> authorizeConnection(String connectionId);
 
+  Future<Map<String, dynamic>> googleSetup() async => <String, dynamic>{
+    'steps': [],
+  };
+
+  Future<void> cancelGoogleSignIn() async {}
+
   /// Disconnect a currently-connected service.
   Future<ServiceConnection> disconnectConnection(String connectionId);
 
@@ -573,10 +579,12 @@ class ConnectionAuthorizeOutcome {
   const ConnectionAuthorizeOutcome({
     required this.connection,
     required this.explanation,
+    this.authUrl,
   });
 
   final ServiceConnection connection;
   final String explanation;
+  final String? authUrl;
 }
 
 class AuthOutcome {
