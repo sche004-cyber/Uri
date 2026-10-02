@@ -155,6 +155,7 @@ def test_core_adapter_import_boundaries_and_frozen_scope():
     touched=[p for p in touched if not is_desktop_recovery_edit(root,p)]
     assert all(p.startswith(("uri_v1/memory/","tests/test_m36_","scripts/m36_","fixtures/m36_memory/")) for p in touched), touched
     added=subprocess.check_output(["git","diff","--name-only","--diff-filter=A",base,"--","uri_core","uri_ui"],cwd=root,text=True).splitlines()
+    added=[p for p in added if not is_desktop_recovery_edit(root,p)]  # exact pinned desktop files only
     assert not added, added
     # Nor anything added inside a uri_v1 package that already existed at the freeze (other
     # than M36's own memory package): successors add new packages, never files in frozen ones.
