@@ -3,7 +3,7 @@
 **Status:** Amended Stage 1 audit; independent re-audit pending
 **Milestone:** INT-ARN-1 (Real RAR/reference clarification in desktop `/ask`)  
 **Governance:** [URI Four-Stage Development Lifecycle](../governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md)  
-**Branch:** `experimental/desktop-recovery-repair` | **Planning checkout HEAD:** `a5920b0`
+**Branch:** `experimental/desktop-recovery-repair` | **Planning checkout HEAD:** `74677cc`
 **Date:** 2026-10-02  
 
 ---

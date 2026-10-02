@@ -4,7 +4,7 @@
 **Milestone:** INT-ARN-1 (Real RAR/reference clarification in desktop `/ask`)  
 **Governance:** [URI Four-Stage Development Lifecycle](../governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md)  
 **Prerequisite:** [Stage 1 Root-Cause Audit](../research/INT_ARN_1_ROOT_CAUSE_AUDIT.md)  
-**Branch:** `experimental/desktop-recovery-repair` | **Planning checkout HEAD:** `a5920b0`
+**Branch:** `experimental/desktop-recovery-repair` | **Planning checkout HEAD:** `74677cc`
 **Date:** 2026-10-02  
 
 ---
@@ -116,7 +116,7 @@ To ensure bindings reach the executor and activate the S2 gate:
 3. Exact-file amendment: `uri_core/core/multi_action_dispatch.py` has User approval (09:24 UTC); Stage 4 must register its exact blob pin and allowlist row before guard qualification.
 
 ### 4.2 Approval Record Binding Identity Retention & Resumption Re-check (Addressing H2)
-`ProposedAction` stores a versioned sequence of identities, one for **each affected action and slot**: capability, action, exact argument/slot, `ref_key`, candidate ID, source class/locator, version or fingerprint, binding state, declared impact, round/session and expiry. This is separate from tool arguments. Both proposal sites (`canonical_execution.py:177-180`, `approval_gate.py:186-191`) supply it to the extended `ApprovalStore.propose()` (`approval_store.py:179-205`); `_load()` (`:379-415`) explicitly deserializes and validates it. Old no-reference records still load, while a known reference-bearing record with absent or corrupt identity cannot execute.
+`ProposedAction` stores a versioned sequence of identities, one for **each affected action and slot**: capability, action, exact argument/slot, `ref_key`, candidate ID, source class/locator, version or fingerprint, binding state, declared impact, round/session and expiry. This is separate from tool arguments. Both proposal sites (`canonical_execution.py:177-180`, `approval_gate.py:186-191`) supply it to the extended `ApprovalStore.propose()` (`approval_store.py:179-205`); `_load()` (`:379-415`) explicitly deserializes and validates it. Old no-reference records still load: a persisted boolean `requires_reference_binding` (missing key = False; set True at proposal when any validated slot existed) distinguishes them, and a record with that flag True but absent, corrupt or count-mismatched identity cannot execute. On `/approve`, registered multi-action records (`action_name` set) are never legacy-dispatched by `ApprovalGate.decide()`; the server delegates them to the same resume path as natural-language approval (pre-consumption recheck, then `dispatch_explicit()` with fresh `ReferenceBinding`s), or fails closed if that delegation is unavailable.
 
 The authenticated principal's current grant, action descriptor/impact and each live source locator/version/fingerprint are checked against that saved identity immediately before the **exact consumption** in `ApprovalGate.decide()` (`approval_gate.py:280-285`, `/approve` path) and in `approval_resumption.py:215-220` (natural-language multi-action path). Legacy natural-language approval uses the gate once, avoiding its current double-decision sequence (`approval_resumption.py:170,191`). Drift returns an audited truthful failure with no consumption or dispatch. The multi-action branch passes freshly reconstructed `ReferenceBinding` objects to S2. The legacy branch relies on its independent pre-consumption check; `ToolDispatcher.execute_tool()` has no binding gate and receives no binding metadata as kwargs. Approval is separate from confirmation of a reference.
 
