@@ -3987,7 +3987,7 @@ def verify_provider(provider_id: str, user_id: Optional[str] = Depends(_resolve_
     from uri_core.core.provider_registry import CATALOGUE_BY_ID, ProviderConfigStore
     from uri_core.core.provider_keys import ProviderKeyStore
     from uri_core.core.model_providers import AnthropicProvider, OpenAICompatibleProvider, OllamaProvider
-    from uri_core.core.model_providers.base import ModelProviderConfig
+    from uri_core.core.model_providers.base import ModelProviderConfig, _location_from_base_url
     descriptor = CATALOGUE_BY_ID.get(provider_id)
     if descriptor is None:
         raise HTTPException(status_code=400, detail=f"Unknown provider_id: {provider_id!r}.")
@@ -4002,13 +4002,35 @@ def verify_provider(provider_id: str, user_id: Optional[str] = Depends(_resolve_
         else:
             stored = ProviderConfigStore(user_id).get_provider_config(provider_id)
             key = ProviderKeyStore(user_id).get_key_for_use(provider_id)
+            base_url = stored.get("base_url", descriptor.base_url)
+            model_ids = [item.model_id for item in descriptor.models]
+            if not model_ids and descriptor.adapter == "openai_compatible" and _location_from_base_url(base_url) == "local":
+                import requests
+
+                try:
+                    response = requests.get(
+                        f"{base_url.rstrip('/')}/models",
+                        headers={"Authorization": f"Bearer {key}"},
+                        timeout=5.0,
+                        allow_redirects=False,
+                    )
+                    if response.status_code in (401, 403):
+                        return {"provider_id": provider_id, "verified": False, "verified_models": [], "error": "The provider key was rejected.", "cached": False}
+                    if not response.ok:
+                        return {"provider_id": provider_id, "verified": False, "verified_models": [], "error": f"Model discovery failed (HTTP {response.status_code}).", "cached": False}
+                    model_ids = [item["id"] for item in response.json().get("data", [])
+                                 if isinstance(item, dict) and isinstance(item.get("id"), str) and item["id"]][:5]
+                except (requests.RequestException, ValueError, TypeError, AttributeError):
+                    return {"provider_id": provider_id, "verified": False, "verified_models": [], "error": "Model discovery failed.", "cached": False}
+                if not model_ids:
+                    return {"provider_id": provider_id, "verified": False, "verified_models": [], "error": "No model is loaded in LM Studio.", "cached": False}
             models = []
-            for item in descriptor.models:
+            for model_id in model_ids:
                 provider_cls = AnthropicProvider if provider_id == "anthropic" else OpenAICompatibleProvider
-                probe = provider_cls(ModelProviderConfig(base_url=stored.get("base_url", descriptor.base_url), model=item.model_id, timeout_seconds=5.0), api_key=key)
+                probe = provider_cls(ModelProviderConfig(base_url=base_url, model=model_id, timeout_seconds=5.0), api_key=key)
                 try:
                     probe.complete(system="Reply with OK.", user="OK", max_tokens=1)
-                    models.append(item.model_id)
+                    models.append(model_id)
                 except Exception:
                     continue
         _verified_models_cache[(user_id, provider_id)] = (time.monotonic() + _VERIFIED_MODELS_TTL_SECONDS, models)
@@ -4152,4 +4174,3 @@ def update_provider_config(
     config_store.set_provider_config(payload.provider_id, updates)
 
     return {"provider_id": payload.provider_id, "status": "updated", **updates}
-

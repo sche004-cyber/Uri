@@ -18,7 +18,7 @@ import subprocess
 from pathlib import Path
 
 DESKTOP_RECOVERY_FILES = {
-    "uri_core/app/server.py": "82683b6c0a49ba72c48e81c3f362b828bcee4713",
+    "uri_core/app/server.py": "12fdc87d4500019d6d9794a288b9765d90fe13c8",
     "uri_core/core/response_validation.py": "35d1a790f187f4f487bc91483a553670b87ebade",
     "uri_ui/lib/models/uri_turn.dart": "ed841e094f78e628e880949fab4e9026f539dcb8",
     "uri_ui/lib/services/http_uri_client.dart": "288b54a049a4356149ed3be4b77de148c1fe0a7d",

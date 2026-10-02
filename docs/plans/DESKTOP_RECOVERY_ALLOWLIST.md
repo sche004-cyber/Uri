@@ -31,6 +31,7 @@ any other file under `uri_core`/`uri_ui` still fails the guards.
 | Path | Why |
 |---|---|
 | `uri_core/app/server.py` | `/ask` call-out to the qualified Edge social route after approval resumption and lifecycle handling (S6 decides; any failure continues down the unchanged chain); per-turn model-call telemetry (all calls since turn start, not only the last) and turn duration in the response. |
+| `uri_core/app/server.py` | Bounded LM Studio verification repair: discover model IDs from a loopback `/models` endpoint using the stored key, then probe and cache usable models. |
 | `uri_core/core/response_validation.py` | Pure conversational turns (nothing dispatched) are no longer held to the capability-gap evidence-length cap, which rejected ordinary replies and made the UI show the decision rationale. Success-claim, credential, length and action-id checks unchanged. |
 | `test_response_validation.py` | Root-level test for the validation change (outside guard scope; listed for completeness). |
 | `uri_ui/lib/models/uri_turn.dart` | Carries model-call count and client-measured send-to-response time. |
