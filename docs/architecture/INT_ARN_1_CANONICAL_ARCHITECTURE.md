@@ -1,10 +1,10 @@
 # INT-ARN-1 — Stage 2: Canonical Architecture Design
 
-**Status:** Frozen Stage 2 Architecture Document  
+**Status:** Amended Stage 2 architecture; independent re-audit pending
 **Milestone:** INT-ARN-1 (Real RAR/reference clarification in desktop `/ask`)  
 **Governance:** [URI Four-Stage Development Lifecycle](../governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md)  
 **Prerequisite:** [Stage 1 Root-Cause Audit](../research/INT_ARN_1_ROOT_CAUSE_AUDIT.md)  
-**Branch:** `experimental/desktop-recovery-repair` | **HEAD:** `554041e`  
+**Branch:** `experimental/desktop-recovery-repair` | **Planning checkout HEAD:** `a5920b0`
 **Date:** 2026-10-02  
 
 ---
@@ -13,9 +13,9 @@
 
 This document defines how Reference Anchor Resolution (RAR) and reference clarification canonically integrate into URI's desktop agent loop. Derived strictly from the findings of the [Stage 1 Root-Cause Audit](../research/INT_ARN_1_ROOT_CAUSE_AUDIT.md), this architecture guarantees:
 1. **Model/Runtime Division:** The Brain proposes reference slots and drafts user-facing questions; the deterministic runtime validates proposals, gathers authorized evidence, executes deterministic resolution, enforces binding authority, and gates execution.
-2. **Fail-Closed Binding Enforcement:** Every reference-bearing execution path carries verified `reference_bindings` to `MultiActionExecutor.execute()`; any missing, unconfirmed consequential, or stale binding halts dispatch.
-3. **Approval Integrity:** Resumed approvals (via natural language or API) re-verify source freshness and binding validity immediately before dispatch.
-4. **Exhaustive Route Coverage:** All 8 execution routes across URI either enforce the wrong-binding gate or fail closed with an explicit exclusion.
+2. **Fail-Closed Binding Enforcement:** Multi-action execution carries verified per-action `reference_bindings` to S2. Canonical LEGACY uses `ApprovalGate.execute_tool()` and lacks S2, so a reference-bearing contract needs an independent pre-dispatch check or exclusion. Other unbound routes are excluded at their entry boundaries.
+3. **Approval Integrity:** Both proposal sites retain per-action/per-slot identity; both approval modes revalidate under the authenticated principal immediately before consumption. The legacy dispatcher has no S2 gate.
+4. **Complete Route Coverage:** The Stage 3 entry inventory covers canonical, ready-read, native, stream, legacy descendants, workflow continuation, lifecycle, approvals and Edge, with an entry-boundary proof for each.
 
 ---
 
@@ -60,6 +60,8 @@ Clarification Classification (build_clarification in uri_v1 with action wrong_bi
                                          Await User Response (Halts Dispatch)
 ```
 
+The S2 branch in this diagram describes registered multi-action execution. Canonical LEGACY and approval consumption require the separate checks in sections 4.2-4.3; excluded routes never reach their executor for a pending reference turn.
+
 ---
 
 ## 3. Canonical Loop Completion Rule (The 10 Invariants)
@@ -77,19 +79,27 @@ Clarification Classification (build_clarification in uri_v1 with action wrong_bi
 5. **What runtime state does it need?**  
    - Durable per-user clarification journal (`uri_workspace/users/<user-id>/reference_clarification/`).
    - Session context, validated attachment handles, and live source inventories.
-   - Retained `binding_identity` in `ProposedAction` within `ApprovalStore`.
+   - Versioned per-action/per-slot `binding_identity` in `ProposedAction` within `ApprovalStore`, separate from tool arguments.
 6. **What permissions and approvals apply?**  
    - Source inspection requires caller capability grants (e.g. `gmail_search`, `drive_search`).
    - S2 Wrong-Binding Gate enforces that `TENTATIVE` bindings can only execute declared `NONE/RECOVERABLE` actions; `CONSEQUENTIAL` actions require explicit `CONFIRM_ONE` selection.
    - Standard capability approvals (`USER_APPROVAL_REQUIRED`) remain independently required.
 7. **How does execution happen?**  
-   Execution is performed solely by `MultiActionExecutor.execute()` or `execute_chain()`, receiving explicit, verified `reference_bindings` transported through `canonical_execution.py` and `multi_action_dispatch.py`.
+   Canonical registered single/chain actions use `MultiActionExecutor.execute()`/`execute_chain()` with verified per-action bindings and S2. Canonical LEGACY invokes `ApprovalGate.execute_tool()` (`canonical_execution.py:282-342`) and then `ToolDispatcher`, without S2; slot-bearing actions are excluded before that dispatch unless a complete independent check is implemented at the approved boundary. Legacy fallback, workflows, lifecycle and Edge are not silently treated as MultiActionExecutor routes; they obey section 4.3 exclusions.
 8. **How does the result return to reasoning?**  
    Upon execution completion, the real execution result envelope is returned to the Brain to draft the grounded natural-language response.
 9. **How are follow-up references grounded?**  
-   Executed bindings are recorded in session evidence facts and M36 factual task history, providing stable anchors for subsequent conversational turns.
+   Executed bindings become session evidence for follow-up turns. M36 factual task history may retain a task pointer, but it cannot supply current source authority or learned cross-session tie-breaking (D4); any later reference is reauthorized and revalidated.
 10. **How is it tested end-to-end?**  
-    Validated through an exhaustive 4-level test strategy: component unit tests, route dispatch tests across all 8 execution paths, agent-loop behavioral tests with mocked Brains, and live desktop UI acceptance tests.
+    Validated through component unit tests, entry-boundary tests for every row in the [Stage 3 route inventory](../plans/INT_ARN_1_PLAN.md), agent-loop behavioral tests with mocked Brains, and live desktop UI acceptance tests.
+
+### Remaining Stage 2 lifecycle decisions
+
+- **Graphify, session, durable memory and runtime state:** Graphify may suggest a capability, skill, workflow, service or memory pointer within its proven index scope, but it neither indexes document/email candidates nor proves their identity. Open a pointer through an authorized source before use. Session-selected references and corrections can inform the same-session turn; the versioned per-user clarification journal stores only active round/binding mechanics and TTL, and ApprovalStore stores approval identity. **D4** defers durable cross-session learned reference evidence and learned tie-breaking to URI-Memory; no new learned-reference database or promotion from transcript prose is part of INT-ARN-1. Existing M36 factual history can supply a checked pointer, not current source authority. [D4 ruling](../plans/M33_3_URI_BRAIN_ARCHITECTURE_PROPOSAL.md), [Graphify scope](../plans/M33_3_ARN_ARCHITECTURE_AND_LT1B_RENDERER_PLAN.md).
+- **Progressive discovery:** The Brain discovers optional `reference_slots` in its existing decision schema, not as a new tool. URI first uses validated current-turn attachments and session evidence, then bounded, currently granted FileStore/Gmail/Drive retrieval when the proposed source class requires it; `UNKNOWN` or free input may start a new bounded round over newly checked sources. No silent unbounded search, fabricated candidate, or Graphify document/email grounding.
+- **Model escalation:** No specialist or larger model is invoked just to improve clarification wording. The serving Brain drafts the question from bounded facts; `validate_render()` checks it and the deterministic template is the fallback. Any existing model routing/escalation remains governed by URI's normal decision path and cannot grant binding or approval authority.
+- **Component ownership:** `uri_v1/turn` owns frozen RAR; `uri_v1/reference_clarification` owns frozen builder, binding and safeguards; a thin `uri_desktop_seams/reference_clarification/` adapter owns production evidence, journal and wire mapping; `canonical_execution.py` and `server.py` own entry guards; `MultiActionExecutor` owns S2; `ApprovalStore`/`ApprovalGate` own durable approval and pre-consumption integrity; Flutter owns display and typed response only.
+- **Reuse and retirement:** Reuse frozen RAR/S1, existing FileStore and granted Gmail/Drive reads, TurnState, S2, approval store, and Flutter card. Do not fork their algorithms or create a parallel execution architecture. Keep old no-reference approvals/turns compatible; for reference-bearing turns, replace plain-text-only `MISSING_PARAMETER` handling with a grounded round and exclude unsafe fallback paths. Retire no unrelated capability, workflow or route in this milestone.
 
 ---
 
@@ -103,45 +113,23 @@ To ensure bindings reach the executor and activate the S2 gate:
 2. `uri_core/core/multi_action_dispatch.py`:
    - `dispatch_explicit()` accepts `reference_bindings: Optional[Sequence[ReferenceBinding]] = None` and passes it directly to `executor.execute(..., reference_bindings=reference_bindings)`.
    - `dispatch_chain_explicit()` accepts steps with `"reference_bindings"`; `MultiActionExecutor.execute_chain()` already extracts `step.get("reference_bindings")` and forwards it to `execute()`.
-3. Exact-file amendment: `uri_core/core/multi_action_dispatch.py` is added to the allowlist (pending User approval).
+3. Exact-file amendment: `uri_core/core/multi_action_dispatch.py` has User approval (09:24 UTC); Stage 4 must register its exact blob pin and allowlist row before guard qualification.
 
 ### 4.2 Approval Record Binding Identity Retention & Resumption Re-check (Addressing H2)
-To prevent executing against stale, deleted, or altered entities upon approval:
-1. `uri_core/core/approval_store.py`:
-   - `ProposedAction` dataclass is extended with `binding_identity: Optional[Dict[str, Any]] = None` (storing `ref_key`, `candidate_id`, `source_locator`, `source_version`, `status`, and `declared_impact`).
-2. Natural-Language Approval Resumption (`uri_core/core/approval_resumption.py:~208`):
-   - Before calling `dispatch_explicit()`, if `record.binding_identity` is present:
-     - Verify source freshness: re-check that the entity at `source_locator` exists and its version/fingerprint matches `source_version`.
-     - Re-check caller authorization for the capability and target entity.
-     - Re-verify declared impact against current capability descriptor.
-     - Reconstitute `ReferenceBinding` and pass as `reference_bindings` to `dispatch_explicit()`.
-     - If any check fails (entity missing, modified, permission revoked), fail closed: abort dispatch, log audit failure, and return an explicit error envelope.
-3. API Approval Endpoint (`uri_core/app/server.py:~2248` `/approve`):
-   - Inside `ApprovalGate.decide()`, before calling `dispatcher.execute_tool()`:
-     - Re-verify `binding_identity` and source validity under the same rules as above.
-     - Pass verified `reference_bindings` into `execute_tool()`.
-     - Fail closed if validation fails.
+`ProposedAction` stores a versioned sequence of identities, one for **each affected action and slot**: capability, action, exact argument/slot, `ref_key`, candidate ID, source class/locator, version or fingerprint, binding state, declared impact, round/session and expiry. This is separate from tool arguments. Both proposal sites (`canonical_execution.py:177-180`, `approval_gate.py:186-191`) supply it to the extended `ApprovalStore.propose()` (`approval_store.py:179-205`); `_load()` (`:379-415`) explicitly deserializes and validates it. Old no-reference records still load, while a known reference-bearing record with absent or corrupt identity cannot execute.
 
-### 4.3 Comprehensive Route Coverage Matrix (Addressing H3)
-All 8 execution routes across URI must enforce reference binding validation or fail closed:
+The authenticated principal's current grant, action descriptor/impact and each live source locator/version/fingerprint are checked against that saved identity immediately before the **exact consumption** in `ApprovalGate.decide()` (`approval_gate.py:280-285`, `/approve` path) and in `approval_resumption.py:215-220` (natural-language multi-action path). Legacy natural-language approval uses the gate once, avoiding its current double-decision sequence (`approval_resumption.py:170,191`). Drift returns an audited truthful failure with no consumption or dispatch. The multi-action branch passes freshly reconstructed `ReferenceBinding` objects to S2. The legacy branch relies on its independent pre-consumption check; `ToolDispatcher.execute_tool()` has no binding gate and receives no binding metadata as kwargs. Approval is separate from confirmation of a reference.
 
-| Route | Production Path | Binding Gate Enforcement / Exclusion | Fail-Closed Mechanism |
-|---|---|---|---|
-| **1. Canonical Single** | `canonical_execution.py:223` -> `dispatch_explicit` | Transports verified `reference_bindings` to `executor.execute()`. | S2 gate blocks execution if binding is missing/unconfirmed for consequential action. |
-| **2. Canonical Chain** | `canonical_execution.py:264` -> `dispatch_chain_explicit` | Embeds `reference_bindings` per step; forwarded to `executor.execute_chain()`. | Chain halts at first step with invalid/unconfirmed binding; subsequent steps aborted. |
-| **3. Ready Read Prefix** | `canonical_execution.py:820` -> `_execute_canonical` | Evaluates prefix read actions before main block. | If any prefix action requires an unconfirmed/pending reference, prefix execution is suppressed (returns empty). |
-| **4. Native Tool Loop** | `native_tool_loop.py:223` -> `_execute_canonical` | Translates native tool call into single-action contract with `reference_bindings`. | If native tool call references an unresolved entity, execution returns `unavailable` with gate block. |
-| **5. Legacy Fallback** | `server.py:1878` -> `process_user_input` | Explicit fail-closed exclusion. | If turn context indicates pending reference clarification or unresolved reference slots, legacy fallback is strictly forbidden from executing tools. |
-| **6. Approval Resumption** | `approval_resumption.py:208` -> `dispatch_explicit` | Re-checks retained `binding_identity`, source freshness, and impact before dispatch. | If source is deleted, modified, or expired, aborts dispatch and returns fail-closed error. |
-| **7. API /approve** | `server.py:2248` -> `approval_gate.decide` | Re-checks `binding_identity` and passes `reference_bindings` to `execute_tool()`. | Rejects approval consumption and fails closed if entity state has drifted. |
-| **8. Edge Seam** | `server.py:1739` -> `try_harness_first` | Explicit fail-closed exclusion. | Edge route is strictly social-only. Returns `None` immediately if query contains reference slots or pending clarification. |
+### 4.3 Complete entry coverage (H3)
+
+The [Stage 3 inventory](../plans/INT_ARN_1_PLAN.md) gives the production line, binding decision and entry-boundary test for **each** route. Its canonical single/chain routes use S2. Canonical LEGACY (`canonical_execution.py:282-342`) does not and is excluded on slot-bearing decisions unless independently checked in that approved file. Both ready-prefix branches (`:559-609`, invoked at `:820-845`) and both native sites (`native_tool_loop.py:223,318`) are guarded before execution. `/ask/stream` delegates typed answers/pending rounds to authenticated `/ask`. `server.py` blocks **early M30.7 workflow continuation** (`:1752-1799`) on a pending round, and excludes pending-round or slot-bearing decisions from later legacy fallback and its `multi_action_dispatch.dispatch()`, direct capability, workflow creation/continuation and `workflow_capability_router.py` descendants. Lifecycle state mutations (`server.py:1692-1725`) and social-only Edge (`:1730-1748`) precede Brain slots; their exclusion uses pending-round state and their narrow contracts, never a reference keyword classifier. Natural-language and API approvals use the independent pre-consumption gate above. No change to `orchestrator.py`, `workflow_capability_router.py` or `dispatcher.py` is required or approved.
 
 ### 4.4 Streaming Route Intercept (Addressing M1)
 In `uri_core/app/server.py`:
-- In `POST /ask/stream`: Before evaluating `_ask_stream_eligible()` or launching `stream_first_turn()`, inspect `payload.clarification_response`.
-- If `payload.clarification_response is not None`:
+- In `POST /ask/stream`: Before evaluating `_ask_stream_eligible()` or launching `stream_first_turn()`, inspect `payload.clarification_response` **and** authenticated pending-round state.
+- If a typed response or pending round exists:
   - Bypass streaming entirely and delegate immediately to `_fallback_to_ask()` (which executes the authenticated `ask()` handler synchronously and emits the terminal SSE `message` event).
-- In `_ask_stream_eligible()`: Explicitly return `False` if `payload.clarification_response is not None`.
+- In `_ask_stream_eligible()`: Explicitly return `False` for either condition.
 
 ---
 
@@ -150,7 +138,7 @@ In `uri_core/app/server.py`:
 1. **Durable Clarification Journal:**  
    Persisted under `uri_workspace/users/<user-id>/reference_clarification/` via atomic write/rename. Keyed by `user_id` and `round_id`. Contains round contract, candidate scope IDs, fingerprints, original task pointer, and TTL.
 2. **Approval Store Compatibility:**  
-   Extends `ProposedAction` in `uri_workspace/approvals.json` with backward-compatible optional `binding_identity`. Legacy records without binding identity continue to deserialize safely.
+   Extends `ProposedAction` in `uri_workspace/approvals.json` with backward-compatible optional versioned per-action/per-slot `binding_identity`, explicitly loaded by `_load()`. Legacy no-reference records continue to deserialize safely; known reference-bearing records without valid identity fail closed.
 3. **No Cross-User Leakage:**  
    Path resolution strictly follows `_resolve_context(user_id)`; client-supplied IDs are never used for filesystem paths.
 

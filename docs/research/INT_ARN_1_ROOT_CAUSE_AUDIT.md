@@ -1,9 +1,9 @@
 # INT-ARN-1 — Stage 1: Evidence & Root-Cause Audit
 
-**Status:** Frozen Stage 1 Audit Document  
+**Status:** Amended Stage 1 audit; independent re-audit pending
 **Milestone:** INT-ARN-1 (Real RAR/reference clarification in desktop `/ask`)  
 **Governance:** [URI Four-Stage Development Lifecycle](../governance/URI_FOUR_STAGE_DEVELOPMENT_LIFECYCLE.md)  
-**Branch:** `experimental/desktop-recovery-repair` | **HEAD:** `554041e`  
+**Branch:** `experimental/desktop-recovery-repair` | **Planning checkout HEAD:** `a5920b0`
 **Date:** 2026-10-02  
 
 ---
@@ -20,7 +20,7 @@ When a user query requires entity disambiguation (for example, referring to "the
 Furthermore, an independent pre-audit identified critical execution-path defects:
 - **Binding Transport Disconnect (H1):** Canonical execution single-action and chain-action paths call `dispatch.dispatch_explicit()` and `dispatch.dispatch_chain_explicit()` without passing `reference_bindings`. In turn, `multi_action_dispatch.py` invokes `MultiActionExecutor.execute()` with no reference bindings (`None`). Under `uri_core/capabilities/wrong_binding.py:112`, passing `None` causes the S2 Wrong-Binding Gate to return `GateOutcome.NOT_APPLICABLE`, completely disabling the safety gate in production.
 - **Resumed Approval Bypass (H2):** Natural-language approval resumption (`approval_resumption.py:208-235`) replays stored arguments through `dispatch_explicit()` without renewing binding checks or verifying that referenced entities still exist. Similarly, the direct `/approve` endpoint (`server.py:2248-2289`) consumes and executes the stored action without re-checking source freshness or binding validity.
-- **Incomplete Route Coverage (H3):** Native tool call loops (`native_tool_loop.py:223`), legacy fallback (`server.py:1878`), and the ready read prefix (`canonical_execution.py:820-845`) can execute actions outside the reference-binding verification gate.
+- **Incomplete Route Coverage (H3):** The canonical LEGACY path (`canonical_execution.py:282-342`) executes through `ApprovalGate.execute_tool()` with no MultiActionExecutor/S2 gate. Both ready read branches (`canonical_execution.py:559-609`, call at `:820-845`), both native `_execute_canonical()` sites (`native_tool_loop.py:223-228,318-322`), `/ask/stream` (`server.py:2179-2194`), legacy fallback and its direct/multi-action/workflow routes, M30.7 continuation, lifecycle intents and Edge all need an entry-boundary binding gate or explicit exclusion. Earlier lifecycle/Edge seams cannot see future Brain slots and must use pending-round state plus their narrow contracts, never a text keyword classifier.
 - **Streaming Premature Ingestion (M1):** In `POST /ask/stream` (`server.py:2179,2191`), a typed clarification response payload could enter `stream_first_turn()` instead of being routed to the authenticated `/ask` handler.
 
 INT-ARN-1 connects the verified, deterministic RAR and clarification engine to desktop `/ask` while enforcing fail-closed binding gates across all execution routes.
@@ -43,6 +43,7 @@ The URI repository already contains fully implemented, frozen components designe
 - **Wrong-Binding Gate (`uri_core/capabilities/wrong_binding.py`):** Evaluates action impact against reference bindings. Blocks unconfirmed bindings on consequential actions (`GateOutcome.CONFIRMATION_REQUIRED`), permits tentative bindings on recoverable actions (`ALLOWED_TENTATIVE_RECOVERABLE`), but evaluates to `NOT_APPLICABLE` when `reference_bindings is None`.
 - **Capability Executor (`uri_core/capabilities/executor.py`):** `MultiActionExecutor.execute()` accepts `reference_bindings` and evaluates `evaluate_wrong_binding_gate()`. `execute_chain()` passes `step.get("reference_bindings")` to `self.execute()`.
 - **Approval Gate & Store (`uri_core/core/approval_gate.py`, `approval_store.py`):** `ApprovalStore` persists `ProposedAction` records (`action_id`, `capability_id`, `session_id`, `arguments`, `arguments_fingerprint`, `status`). `ApprovalGate` validates decisions and consumes approvals before dispatch.
+- **Two proposal sites:** `canonical_execution.py:177-180` and `approval_gate.py:186-191` call `ApprovalStore.propose()`; neither supplies per-action/per-slot source identity. `approval_store.py:379-415` explicitly reconstructs fields and would drop a newly added field without a loader change. `ApprovalGate.decide():280-285` consumes before direct `ToolDispatcher.execute_tool()` at `:308-312`, which has no S2 binding gate. Natural-language multi-action resumption consumes at `approval_resumption.py:215-220`; its legacy branch currently calls `decide()` at `:170` and again at `:191`.
 - **Candidate Sources:** `FileStore` (`uri_core/core/file_store.py`), Gmail search (`uri_core/capabilities/gmail/capability.py`), Drive search (`uri_core/tools/drive_search.py`), `TurnState` current-turn attachments (`uri_core/core/turn_state.py`), and Memory retrieval (`uri_v1/memory/`).
 
 ### 2.3 Existing Flutter UI (`uri_ui/`)
@@ -132,7 +133,12 @@ Empirical code inspection verifies each defect cited in the independent audit:
    - `uri_core/core/native_tool_loop.py:223-228`: `_execute_canonical()` is invoked independently per native tool call without reference binding transport.
    - `uri_core/app/server.py:1878-1884`: Legacy fallback invokes `orchestrator.process_user_input()` directly when canonical routing returns fallback, with no reference binding gate.
    - `uri_core/core/canonical_execution.py:820-845`: Ready read prefix dispatches read actions before the normal block without gating on reference dependencies.
-   - `uri_desktop_seams/harness_first/seam.py`: Edge seam is social-only, but needs an explicit fail-closed check to reject any reference-bearing turn.
+   - `uri_core/core/canonical_execution.py:282-342`: Canonical LEGACY tool execution bypasses `MultiActionExecutor` entirely; a slot-bearing decision needs pre-dispatch checking or exclusion in this approved file.
+   - `uri_core/core/canonical_execution.py:559-609`: The web/fetch and Gmail search ready-prefix branches are separate entry cases.
+   - `uri_core/core/native_tool_loop.py:318-322`: A second native chain execution site exists beyond `:223-228`.
+   - `uri_core/app/server.py:1752-1799`: M30.7 early workflow continuation invokes canonical routing **before** native/default canonical or legacy fallback; a fallback-only guard cannot cover it.
+   - `uri_core/core/orchestrator.py:4936,5261-5266,2651,2916,6051-6061` and `uri_core/core/workflow_capability_router.py:510`: Legacy multi-action, direct capability and workflow execution/continuation can execute beneath `server.py:1878-1884`. `orchestrator.py` must not grow; router/dispatcher edits are not approved.
+   - `uri_core/app/server.py:1692-1725`: Lifecycle `enable`, `disable`, `connect`, `disconnect`, `remove` mutate state before canonical Brain slots exist. `:1730-1748` Edge is social-only. Both are excluded by pending-round state and their narrow existing contracts, not a reference keyword classifier.
 
 4. **M1 — Streaming route bypass:**
    - `uri_core/app/server.py:2179,2191`: `_ask_stream_eligible()` does not check for `payload.clarification_response`. A typed clarification response payload submitted to `/ask/stream` could enter `stream_first_turn()` instead of the authenticated clarification intake handler.
@@ -167,8 +173,8 @@ None of these components require rewriting; they require end-to-end integration 
 
 The defect spans three specific dimensions:
 1. **Integration & Transport:** Transporting `reference_bindings` from canonical execution down to `MultiActionExecutor.execute()`.
-2. **Routing & Dispatch Safety:** Ensuring all 8 execution routes in `server.py` and `canonical_execution.py` strictly enforce binding gates or fail closed.
-3. **State & Durability:** Persisting clarification rounds and retaining binding identity in `ProposedAction` so that resumed approvals re-verify source validity before execution.
+2. **Routing & Dispatch Safety:** Every entry in the [Stage 3 complete inventory](../plans/INT_ARN_1_PLAN.md) needs a binding gate or fail-closed exclusion at its entry boundary, including canonical LEGACY, both ready-prefix branches, both native sites, stream, fallback descendants, workflows, lifecycle, approvals and Edge.
+3. **State & Durability:** Persist clarification rounds and per-action/per-slot approval identity through both proposal sites and `_load()`, then revalidate under the authenticated principal **immediately before each `consume()`**, independently of the legacy dispatcher. Drift must leave approval unconsumed.
 
 ---
 
