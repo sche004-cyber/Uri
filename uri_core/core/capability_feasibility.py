@@ -40,13 +40,62 @@ registry itself says a capability doesn't exist, this module never
 overrides that.
 """
 
+import os
 from typing import Any, Dict, List, Optional
 
 from uri_core.core.capability_registry import (
     CapabilityDescriptor,
     CapabilityRegistry,
 )
-from uri_core.core.connection_status import list_connection_status
+from uri_core.core.connection_status import _repo_root, list_connection_status
+from uri_core.core.google_auth_common import (
+    load_usable_credentials,
+    resolve_google_token_path,
+)
+from uri_core.services.google_errors import classify_google_error
+
+_GOOGLE_TOOL_SCOPES = {
+    "gmail_search": ("gmail", "gmail.readonly"),
+    "gmail_find_draft": ("gmail", "gmail.readonly"),
+    "gmail_create_draft": ("gmail", "gmail.compose"),
+    "drive_search": ("drive", "drive.readonly"),
+    "fetch_drive_spreadsheet": ("drive", "drive.readonly"),
+    "drive_upload": ("drive", "drive.file"),
+    "google_workspace_create": ("drive", "drive.file"),
+}
+
+
+def _google_tool_state(capability_id: str, user_id: Optional[str]) -> Optional[str]:
+    """Current user's non-interactive OAuth state; no token content is returned."""
+    service, scope = _GOOGLE_TOOL_SCOPES[capability_id]
+    if not user_id:
+        return "Sign in with Google in URI Connections for this user."
+    if not os.path.isfile(os.path.join(_repo_root(), "credentials.json")):
+        return "Configure credentials.json on the URI server using Google setup in Connections."
+    token_path = resolve_google_token_path(user_id)
+    if not os.path.isfile(token_path):
+        return "Sign in with Google in URI Connections for this user."
+    try:
+        creds = load_usable_credentials(token_path=token_path, allow_refresh=False)
+        if creds is None:
+            creds = load_usable_credentials(token_path=token_path, allow_refresh=True)
+        if creds is not None:
+            required_scope = f"https://www.googleapis.com/auth/{scope}"
+            has_scope = False
+            if hasattr(creds, "has_scopes"):
+                has_scope = creds.has_scopes([required_scope])
+            elif hasattr(creds, "scopes") and creds.scopes:
+                has_scope = required_scope in creds.scopes
+            else:
+                has_scope = True
+            if has_scope:
+                return None
+            return classify_google_error("insufficient authentication scopes", api=service)["message"]
+    except Exception as exc:
+        issue = classify_google_error(exc, api=service)
+        return issue.get("message") or str(exc)
+    return "Sign in with Google in URI Connections for this user."
+
 
 # Maps a registry-declared permission string to the connection_status
 # service id it depends on, by prefix - the two vocabularies are
@@ -133,29 +182,46 @@ def _permission_blocked_by(
 def _feasibility_entry(
     descriptor: CapabilityDescriptor,
     connection_by_service: Dict[str, Dict[str, str]],
+    user_id: Optional[str] = None,
 ) -> Dict[str, Any]:
 
-    try:
-        blocked_by = _permission_blocked_by(
-            list(descriptor.permissions), connection_by_service
-        )
-    except Exception:
-        blocked_by = []
+    if user_id is not None and descriptor.id in _GOOGLE_TOOL_SCOPES:
+        google_reason = _google_tool_state(descriptor.id, user_id)
+        if google_reason:
+            blocked_by = [google_reason]
+            gap_reason = "blocked_by_permission"
+            usable = False
+        else:
+            blocked_by = []
+            if not descriptor.is_executable:
+                gap_reason = descriptor.gap_reason or "not_implemented"
+                usable = False
+            else:
+                gap_reason = None
+                usable = True
+    else:
+        try:
+            blocked_by = _permission_blocked_by(
+                list(descriptor.permissions), connection_by_service
+            )
+        except Exception:
+            blocked_by = []
 
-    usable = (
-        descriptor.is_executable
-        and descriptor.gap_reason is None
-        and not blocked_by
-    )
+        usable = (
+            descriptor.is_executable
+            and descriptor.gap_reason is None
+            and not blocked_by
+        )
+        gap_reason = (
+            None if usable else (descriptor.gap_reason or "blocked_by_permission")
+        )
 
     return {
         "id": descriptor.id,
         "description": descriptor.description,
         "reads_current_attachments": descriptor.reads_current_attachments,
         "usable": usable,
-        "gap_reason": (
-            None if usable else (descriptor.gap_reason or "blocked_by_permission")
-        ),
+        "gap_reason": gap_reason,
         "blocked_by": blocked_by,
         "requires_approval": descriptor.approval_requirement
         == "user_approval_required",
@@ -174,12 +240,14 @@ class CapabilityFeasibility:
         self,
         registry_path: str = "uri_workspace/capabilities_registry.json",
         capability_registry: Optional[CapabilityRegistry] = None,
+        user_id: Optional[str] = None,
     ):
         self.capability_registry = (
             capability_registry
             if capability_registry is not None
             else CapabilityRegistry(registry_path=registry_path)
         )
+        self.user_id = user_id
 
     def snapshot(self) -> Dict[str, Dict[str, Any]]:
         """capability_id -> feasibility entry for every descriptor
@@ -195,10 +263,24 @@ class CapabilityFeasibility:
         except Exception:
             return {}
 
-        connection_by_service = _connection_status_by_service()
+        try:
+            services = (
+                list_connection_status(user_id=self.user_id)
+                if self.user_id
+                else list_connection_status()
+            )
+            connection_by_service = {
+                s["id"]: s
+                for s in services
+                if isinstance(s, dict) and isinstance(s.get("id"), str)
+            }
+        except Exception:
+            connection_by_service = {}
 
         return {
-            descriptor.id: _feasibility_entry(descriptor, connection_by_service)
+            descriptor.id: _feasibility_entry(
+                descriptor, connection_by_service, user_id=self.user_id
+            )
             for descriptor in descriptors
             if isinstance(descriptor, CapabilityDescriptor)
         }
@@ -216,3 +298,4 @@ class CapabilityFeasibility:
             }
         except Exception:
             return set()
+

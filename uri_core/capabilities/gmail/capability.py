@@ -50,7 +50,7 @@ class GmailCapability(Capability):
                 ),
                 "search_messages": Action(
                     name="search_messages",
-                    description="Find or search Gmail messages using Gmail search syntax such as unread, sender, subject, or attachment filters.",
+                    description="Find Gmail messages using Gmail search syntax (is:unread for unread mail). Returns bounded plain-text message bodies for summaries; no attachments are downloaded.",
                     parameters={"query": {"type": "string", "required": True}, "max_results": {"type": "integer"}},
                     returns={"results": "list[message search result]"},
                     read_only=True,
@@ -174,6 +174,26 @@ class GmailCapability(Capability):
             return {"status": "unavailable", "message": classify_google_error(exc)["message"], "error": classify_google_error(exc)["kind"]}
 
     def search_messages(self, query: str, max_results: int = 10) -> Dict[str, Any]:
+        client = self._client_or_none()
+        if client is not None and hasattr(client, "users"):
+            try:
+                limit = max(1, min(int(max_results or 10), 20))
+                listed = client.users().messages().list(userId="me", q=query, maxResults=limit).execute()
+                messages = []
+                for item in listed.get("messages", []):
+                    raw = client.users().messages().get(userId="me", id=item["id"], format="full").execute()
+                    messages.append(self._message_from_raw(raw))
+                return {
+                    "status": "success",
+                    "query": query,
+                    "messages": messages,
+                    "results": [{"query": query, "messages": messages}],
+                    "limit": limit,
+                    "truncated": bool(listed.get("nextPageToken")) or int(max_results or 10) > limit,
+                }
+            except Exception as exc:
+                issue = classify_google_error(exc)
+                return {"status": "unavailable", "message": issue["message"], "error": issue["kind"]}
         try:
             result = self.gmail_service.search_evidence([query])
         except Exception as exc:
@@ -182,7 +202,15 @@ class GmailCapability(Capability):
             return {"status": "unavailable", "message": classify_google_error(result.get("reason"))["message"], "error": classify_google_error(result.get("reason"))["kind"]}
         groups = result.get("results", [])
         messages = [message for group in groups if isinstance(group, Mapping) for message in group.get("messages", [])]
-        return {"status": "success", "query": query, "messages": messages[:max_results], "results": groups}
+        limit = max(1, min(int(max_results or 10), 20))
+        return {
+            "status": "success",
+            "query": query,
+            "messages": messages[:limit],
+            "results": groups,
+            "limit": limit,
+            "truncated": len(messages) > limit or int(max_results or 10) > limit,
+        }
 
     def read_message(self, message_id: str) -> Dict[str, Any]:
         method = getattr(self.gmail_service, "get_message_metadata", None)
@@ -239,7 +267,14 @@ class GmailCapability(Capability):
         return message.get("message", {}).get("attachments", [])
 
     def _client_or_none(self) -> Any:
-        return getattr(self.gmail_service, "service", None)
+        client = getattr(self.gmail_service, "service", None)
+        if client is None and hasattr(self.gmail_service, "ensure_connected_from_token"):
+            try:
+                self.gmail_service.ensure_connected_from_token()
+                client = getattr(self.gmail_service, "service", None)
+            except Exception:
+                pass
+        return client
 
     @staticmethod
     def _disconnected() -> Dict[str, Any]:
@@ -281,12 +316,12 @@ class GmailCapability(Capability):
     @classmethod
     def _body_text(cls, part: Mapping[str, Any]) -> str:
         data = part.get("body", {}).get("data")
-        if data and str(part.get("mimeType", "")).startswith("text/"):
+        if data and part.get("mimeType") == "text/plain" and not part.get("filename"):
             try:
-                return base64.urlsafe_b64decode(str(data) + "==").decode("utf-8", errors="replace")
+                return base64.urlsafe_b64decode(str(data) + "==").decode("utf-8", errors="replace")[:12000]
             except Exception:
                 return ""
-        return "\n".join(filter(None, (cls._body_text(child) for child in part.get("parts", []))))
+        return "\n".join(filter(None, (cls._body_text(child) for child in part.get("parts", []))))[:12000]
 
     @classmethod
     def _attachments(cls, part: Mapping[str, Any]) -> List[Dict[str, Any]]:

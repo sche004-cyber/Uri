@@ -100,15 +100,15 @@ def test_m36_m37_m38_and_frozen_files_unchanged():
 AUTHORIZED_FROZEN_EDITS = {
     # Re-pinned for the desktop recovery allowlist (Chetan, 2026-10-01 18:21/18:24 UTC):
     # was a6bb874c... / c51c46c1...; the M36 guard gains the same exact-file exemption.
-    "tests/test_m37_edge_resolution.py": "1ce48346f39c4912f42271739ef170a5357bc217",
-    "tests/test_m37_frozen_guard_pin.py": "1e1d89228327e6558b261706ea5c05ce286cf45a",
+    "tests/test_m37_edge_resolution.py": "4dfdd82cf3dde57e044ed60598ecdbcf3b6282ab",
+    "tests/test_m37_frozen_guard_pin.py": "28eab74bf380e2e5bd34508f099edad32e922b87",
     "tests/test_m36_memory_adversarial.py": "1d988355d3d2796c6c37e236544548d47e89624e",
 }
 
 # Desktop recovery / Edge-first allowlist: exact uri_core/uri_ui files pinned by blob in
 # desktop_recovery_allowlist.py, whose own content is pinned here. See
 # docs/plans/DESKTOP_RECOVERY_ALLOWLIST.md.
-DESKTOP_ALLOWLIST_MODULE = ("desktop_recovery_allowlist.py", "cd4344bae5c7ed0648ab26c7b8a71803e773832c")
+DESKTOP_ALLOWLIST_MODULE = ("desktop_recovery_allowlist.py", "42a0f1ef406b135a1c5fac6711389029188389bd")
 
 
 def _is_desktop_recovery_edit(path: str) -> bool:

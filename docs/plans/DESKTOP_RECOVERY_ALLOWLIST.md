@@ -112,3 +112,17 @@ Forms API status as unknown until their use can establish availability.
 | `uri_workspace/capabilities_registry.json` | Register the tool, explicit external-write effect, description, and user approval requirement for `/ask` discovery and dispatch; outside frozen guard scope. |
 | `test_google_workspace_create.py` | Root-level mocked regression checks; outside frozen guard scope. |
 | `test_m32_capability_effect_classification.py` | Root-level enumerator accepts an explicit, verified external-write effect from the descriptor because the M33.3 effect-map source is independently frozen; outside guard scope. |
+
+## 2026-10-02 Batch 3 Google catalogue live availability, unread email summarization, and multi-turn context
+
+Authority: Chetan, 2026-10-02 04:01 UTC and 05:48 UTC, authorized Google tools work in URI with live per-user OAuth availability, unread email body summarization, approval-gated drafts, and multi-turn context continuity.
+
+| Path | Justification under the 04:01 / 05:48 UTC authorization |
+|---|---|
+| `uri_core/core/capability_feasibility.py` | Check live per-user OAuth token and credentials.json for Google tools (`gmail_search`, `gmail_find_draft`, `gmail_create_draft`, `drive_search`, `fetch_drive_spreadsheet`, `drive_upload`, `google_workspace_create`), overriding the static registry availability for authenticated users while preserving non-user ambient checks. |
+| `uri_core/capabilities/gmail/capability.py` | Bound search messages queries (limit 1-20), fetch full message payloads to extract and bound plain-text bodies (`<=12,000` chars), skip downloading attachments, and auto-initialize Gmail client from token on demand. |
+| `uri_core/app/server.py` | Supply user-scoped `CapabilityFeasibility` during `_build_user_context` and `refresh_user_external_lifecycle` to align orchestrator and gateway feasibility; safely record canonical execution turns via `_record_conversation_turn_safely` in `ask()`. |
+| `uri_core/core/decision_engine.py` | Use user-scoped `capability_feasibility` from orchestrator or construct with principal `user_id` in `build_turn_state_and_directory`. |
+| (reviewer note) | Claude reverted the implementer's orchestrator.py change (standing rule: orchestrator.py must never grow); failure text already reaches the history via response.message. |
+| `test_google_batch3.py` | Root-level mock regression test suite covering live per-user availability, unread email body extraction without attachments, approval-gated drafting, and multi-turn context continuity; outside frozen guard scope. |
+
