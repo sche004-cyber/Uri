@@ -1046,7 +1046,8 @@ def build_turn_state_and_directory(
         session = orchestrator.session_manager.get_session(session_id)
 
     capability_feasibility = CapabilityFeasibility(
-        capability_registry=getattr(orchestrator, "capability_registry", None)
+        capability_registry=getattr(orchestrator, "capability_registry", None),
+        user_id=getattr(principal, "user_id", None),
     )
     multi_action_registry = None
     dispatch = getattr(orchestrator, "multi_action_dispatch", None)

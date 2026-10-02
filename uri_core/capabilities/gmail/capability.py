@@ -50,7 +50,7 @@ class GmailCapability(Capability):
                 ),
                 "search_messages": Action(
                     name="search_messages",
-                    description="Find or search Gmail messages using Gmail search syntax such as unread, sender, subject, or attachment filters.",
+                    description="Find Gmail messages using Gmail search syntax (is:unread for unread mail). Returns bounded plain-text message bodies for summaries; no attachments are downloaded.",
                     parameters={"query": {"type": "string", "required": True}, "max_results": {"type": "integer"}},
                     returns={"results": "list[message search result]"},
                     read_only=True,
@@ -174,6 +174,21 @@ class GmailCapability(Capability):
             return {"status": "unavailable", "message": classify_google_error(exc)["message"], "error": classify_google_error(exc)["kind"]}
 
     def search_messages(self, query: str, max_results: int = 10) -> Dict[str, Any]:
+        client = self._client_or_none()
+        if client is not None:
+            try:
+                limit = max(1, min(int(max_results), 20))
+                listed = client.users().messages().list(userId="me", q=query, maxResults=limit).execute()
+                messages = []
+                for item in listed.get("messages", []):
+                    raw = client.users().messages().get(userId="me", id=item["id"], format="full").execute()
+                    messages.append(self._message_from_raw(raw))
+                return {"status": "success", "query": query, "messages": messages,
+                        "results": [{"query": query, "messages": messages}],
+                        "limit": limit, "truncated": bool(listed.get("nextPageToken")) or max_results > limit}
+            except Exception as exc:
+                issue = classify_google_error(exc)
+                return {"status": "unavailable", "message": issue["message"], "error": issue["kind"]}
         try:
             result = self.gmail_service.search_evidence([query])
         except Exception as exc:
@@ -281,12 +296,12 @@ class GmailCapability(Capability):
     @classmethod
     def _body_text(cls, part: Mapping[str, Any]) -> str:
         data = part.get("body", {}).get("data")
-        if data and str(part.get("mimeType", "")).startswith("text/"):
+        if data and part.get("mimeType") == "text/plain" and not part.get("filename"):
             try:
-                return base64.urlsafe_b64decode(str(data) + "==").decode("utf-8", errors="replace")
+                return base64.urlsafe_b64decode(str(data) + "==")[:12000].decode("utf-8", errors="replace")
             except Exception:
                 return ""
-        return "\n".join(filter(None, (cls._body_text(child) for child in part.get("parts", []))))
+        return "\n".join(filter(None, (cls._body_text(child) for child in part.get("parts", []))))[:12000]
 
     @classmethod
     def _attachments(cls, part: Mapping[str, Any]) -> List[Dict[str, Any]]:

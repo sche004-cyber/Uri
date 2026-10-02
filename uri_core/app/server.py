@@ -492,6 +492,15 @@ def _build_user_context(user_id: str) -> _UserContext:
         principal=principal,
         graph_store=graph_store,
     )
+    # Google catalogue truth follows this user's current OAuth state, not the
+    # install-time availability recorded in capabilities_registry.json.
+    from uri_core.core.capability_feasibility import CapabilityFeasibility
+
+    google_feasibility = CapabilityFeasibility(
+        capability_registry=_capability_registry, user_id=user_id,
+    )
+    orchestrator.capability_feasibility = google_feasibility
+    orchestrator.model_reasoning_gateway.capability_feasibility = google_feasibility
     # C3: the workflow's compatibility dicts are now derived from this one
     # durable ledger; the orchestrator never owns an independent evidence map.
     orchestrator.evidence_ledger = evidence_ledger
@@ -1848,6 +1857,11 @@ def ask(
                         legacy_fallback = canonical_result
                     else:
                         result = canonical_result
+                        context.orchestrator._record_conversation_turn_safely(
+                            session_id=payload.session_id,
+                            user_text=payload.text,
+                            result=result,
+                        )
         except Exception:
             legacy_fallback = {
                 "fallback_reason": "engine_failure:canonical_route_exception",

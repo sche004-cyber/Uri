@@ -40,6 +40,7 @@ registry itself says a capability doesn't exist, this module never
 overrides that.
 """
 
+import os
 from typing import Any, Dict, List, Optional
 
 from uri_core.core.capability_registry import (
@@ -47,6 +48,37 @@ from uri_core.core.capability_registry import (
     CapabilityRegistry,
 )
 from uri_core.core.connection_status import list_connection_status
+from uri_core.core.connection_status import _repo_root
+from uri_core.core.google_auth_common import load_usable_credentials, resolve_google_token_path
+
+_GOOGLE_TOOL_SCOPES = {
+    "gmail_search": ("gmail", "gmail.readonly"),
+    "gmail_find_draft": ("gmail", "gmail.readonly"),
+    "gmail_create_draft": ("gmail", "gmail.compose"),
+    "drive_search": ("drive", "drive.readonly"),
+    "fetch_drive_spreadsheet": ("drive", "drive.readonly"),
+    "drive_upload": ("drive", "drive.file"),
+    "google_workspace_create": ("drive", "drive.file"),
+}
+
+
+def _google_tool_state(capability_id: str, user_id: Optional[str]) -> Optional[str]:
+    """Current user's non-interactive OAuth state; no token content is returned."""
+    service, scope = _GOOGLE_TOOL_SCOPES[capability_id]
+    if not user_id:
+        return "Sign in with Google in URI Connections for this user."
+    if not os.path.isfile(os.path.join(_repo_root(), "credentials.json")):
+        return "Configure credentials.json on the URI server using Google setup in Connections."
+    token_path = resolve_google_token_path(user_id)
+    if not os.path.isfile(token_path):
+        return "Sign in with Google in URI Connections for this user."
+    try:
+        creds = load_usable_credentials(token_path=token_path, allow_refresh=False)
+        if creds is not None and creds.has_scopes([f"https://www.googleapis.com/auth/{scope}"]):
+            return None
+    except Exception:
+        pass
+    return f"Reconnect Google in URI Connections to grant {service} access for this operation."
 
 # Maps a registry-declared permission string to the connection_status
 # service id it depends on, by prefix - the two vocabularies are
@@ -133,6 +165,7 @@ def _permission_blocked_by(
 def _feasibility_entry(
     descriptor: CapabilityDescriptor,
     connection_by_service: Dict[str, Dict[str, str]],
+    user_id: Optional[str] = None,
 ) -> Dict[str, Any]:
 
     try:
@@ -142,9 +175,15 @@ def _feasibility_entry(
     except Exception:
         blocked_by = []
 
+    google_reason = _google_tool_state(descriptor.id, user_id) if descriptor.id in _GOOGLE_TOOL_SCOPES else None
+    if google_reason:
+        blocked_by.append(google_reason)
+    # The registry's install-time availability is stale for Google tools.
+    # Current per-user OAuth evidence supersedes that one static field only.
+    gap_reason = None if descriptor.id in _GOOGLE_TOOL_SCOPES else descriptor.gap_reason
     usable = (
         descriptor.is_executable
-        and descriptor.gap_reason is None
+        and gap_reason is None
         and not blocked_by
     )
 
@@ -154,7 +193,7 @@ def _feasibility_entry(
         "reads_current_attachments": descriptor.reads_current_attachments,
         "usable": usable,
         "gap_reason": (
-            None if usable else (descriptor.gap_reason or "blocked_by_permission")
+            None if usable else (gap_reason or "blocked_by_permission")
         ),
         "blocked_by": blocked_by,
         "requires_approval": descriptor.approval_requirement
@@ -174,12 +213,14 @@ class CapabilityFeasibility:
         self,
         registry_path: str = "uri_workspace/capabilities_registry.json",
         capability_registry: Optional[CapabilityRegistry] = None,
+        user_id: Optional[str] = None,
     ):
         self.capability_registry = (
             capability_registry
             if capability_registry is not None
             else CapabilityRegistry(registry_path=registry_path)
         )
+        self.user_id = user_id
 
     def snapshot(self) -> Dict[str, Dict[str, Any]]:
         """capability_id -> feasibility entry for every descriptor
@@ -195,10 +236,14 @@ class CapabilityFeasibility:
         except Exception:
             return {}
 
-        connection_by_service = _connection_status_by_service()
+        try:
+            services = list_connection_status(user_id=self.user_id) if self.user_id else list_connection_status()
+            connection_by_service = {s["id"]: s for s in services if isinstance(s, dict) and isinstance(s.get("id"), str)}
+        except Exception:
+            connection_by_service = {}
 
         return {
-            descriptor.id: _feasibility_entry(descriptor, connection_by_service)
+            descriptor.id: _feasibility_entry(descriptor, connection_by_service, self.user_id)
             for descriptor in descriptors
             if isinstance(descriptor, CapabilityDescriptor)
         }
