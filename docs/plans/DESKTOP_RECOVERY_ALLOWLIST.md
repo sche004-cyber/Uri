@@ -293,3 +293,11 @@ Authority: Chetan's INT-ARN-1 approvals (same approved files). Implemented by Co
 | `uri_core/core/approval_resumption.py` | Approved bound dispatches record APPLIED state; a recording failure keeps the true execution result and only blocks later Change. |
 | `uri_core/app/server.py` | Change after execution goes through frozen `authorize_redo` and stops before any repeat dispatch. |
 | `uri_core/core/decision_engine.py` | Original "exactly these keys" contract when the flag is off; flag read through `reference_clarification_enabled()`. |
+
+## 2026-10-02 INT-ARN-1 round-3 repair (durable execution marker)
+
+Authority: Chetan's INT-ARN-1 approvals. Implemented by Codex; reviewed, regression-compared and re-pinned by Claude.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/canonical_execution.py`, `approval_resumption.py`, `uri_core/app/server.py` | Durable per-user "execution pending/unknown" marker written before bound dispatch; APPLIED after success; Change fails closed on pending/unknown, including after restart; render slot released if the worker fails to start. |

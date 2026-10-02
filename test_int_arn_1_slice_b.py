@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import shutil
+from types import SimpleNamespace
+from unittest.mock import patch
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -238,6 +240,31 @@ def test_change_rebind_after_restart(tmp_path):
     rebound = service(tmp_path).respond(user_id=USER, session_id=SESSION, response=answer,
         refresh=lambda: env, impact_reader=lambda: WrongBindingImpact.RECOVERABLE)
     assert rebound.state == BindingState.CONFIRMED
+
+
+def test_execution_record_failure_keeps_durable_unknown_marker_after_restart(tmp_path):
+    from uri_core.core import canonical_execution
+    from uri_v1.reference_clarification.binding import BindingService
+
+    env = envelope("attached", titles=("Alpha", "Beta"))
+    candidate = replace(env.query.candidates[0], is_attachment=True)
+    env = replace(env, query=replace(env.query, candidates=(candidate, env.query.candidates[1])),
+                  inventory=(replace(env.inventory[0], is_current_attachment=True), env.inventory[1]))
+    bound = resolve(service(tmp_path), env, WrongBindingImpact.RECOVERABLE)
+    assert bound.state == BindingState.TENTATIVE
+    principal = SimpleNamespace(user_id=USER)
+    contract = {"actions": [{"_binding_slots": [SimpleNamespace(round_id=bound.binding_id)]}]}
+    assert canonical_execution._reference_mark_pending(contract, principal, SESSION, str(tmp_path))
+    with patch.object(BindingService, "record_execution", side_effect=OSError("write failed")):
+        assert not canonical_execution._reference_record_dispatch(
+            contract, {"execution": {"status": "success"}}, principal, SESSION, str(tmp_path))
+    with ClarificationJournal(root=str(tmp_path)).transaction(USER, SESSION) as restarted:
+        assert restarted.execution_pending[bound.binding_id] == "UNKNOWN"
+        assert restarted.store.bindings[bound.binding_id].state == BindingState.TENTATIVE
+    assert not canonical_execution._reference_mark_pending(contract, principal, SESSION, str(tmp_path))
+    assert service(tmp_path).open_change(user_id=USER, session_id=SESSION,
+        binding_id=bound.binding_id, turn_id="after-restart", refresh=lambda: env,
+        impact_reader=lambda: WrongBindingImpact.RECOVERABLE).reason == "execution outcome unknown"
 
 
 def test_expired_and_corrupt_journal_quarantine(tmp_path):

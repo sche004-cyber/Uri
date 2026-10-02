@@ -76,12 +76,6 @@ LIVE_ENV_VAR = "URI_ENABLE_DECISION_ENGINE_LIVE"
 WORKFLOW_CONTINUATION_ENV_VAR = "URI_ENABLE_WORKFLOW_CONTINUATION_MODE"
 ALLOWLIST_ENV_VAR = "URI_CANONICAL_EXECUTION_ALLOWLIST"
 _REFERENCE_RENDER_SLOTS = threading.BoundedSemaphore(2)
-_UNRECORDED_REFERENCE_EXECUTIONS: set[tuple[str, str, str]] = set()
-
-
-def reference_execution_record_failed(user_id: str, session_id: str, binding_id: str) -> bool:
-    """Prevent a Change from replaying an action whose applied state was not saved."""
-    return (user_id, session_id, binding_id) in _UNRECORDED_REFERENCE_EXECUTIONS
 
 DEFAULT_TELEMETRY_LOG_PATH = os.path.join(
     os.path.dirname(DEFAULT_SHADOW_LOG_PATH) or ".", "canonical_execution_log.jsonl"
@@ -191,8 +185,58 @@ def _reference_render_draft(contract: Any, principal: Any) -> Any:
             _REFERENCE_RENDER_SLOTS.release()
             done.set()
 
-    threading.Thread(target=render, daemon=True, name="uri-reference-render").start()
+    try:
+        threading.Thread(target=render, daemon=True, name="uri-reference-render").start()
+    except Exception:
+        _REFERENCE_RENDER_SLOTS.release()
+        return None
     return result.get("content") if done.wait(budget / 1000) else None
+
+
+def _reference_binding_ids(contract: Dict[str, Any]) -> set[str]:
+    return {slot.round_id for action in contract.get("actions", ()) if isinstance(action, dict)
+            for slot in action.get("_binding_slots", ())}
+
+
+def _reference_mark_pending(contract: Dict[str, Any], principal: Any,
+                            session_id: str, journal_root: Optional[str]) -> bool:
+    """Durably reserve each binding before any bound handler can run."""
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+    from uri_v1.turn.rar_clarification_contract import BindingState
+
+    ids = _reference_binding_ids(contract)
+    if not ids:
+        return True
+    try:
+        journal_store = ClarificationJournal(**({"root": journal_root} if journal_root is not None else {}))
+        with journal_store.transaction(principal.user_id, session_id) as journal:
+            if any((binding_id in journal.execution_pending
+                    or (binding := journal.store.bindings.get(binding_id)) is None
+                    or binding.session_id != session_id
+                    or binding.state not in (BindingState.TENTATIVE, BindingState.CONFIRMED))
+                   for binding_id in ids):
+                return False
+            journal.execution_pending.update({binding_id: "UNKNOWN" for binding_id in ids})
+        return True
+    except Exception:
+        return False
+
+
+def _reference_clear_pending(contract: Dict[str, Any], principal: Any,
+                             session_id: str, journal_root: Optional[str]) -> None:
+    """Clear only after the dispatch result proves no bound action ran."""
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+
+    ids = _reference_binding_ids(contract)
+    if not ids:
+        return
+    try:
+        journal_store = ClarificationJournal(**({"root": journal_root} if journal_root is not None else {}))
+        with journal_store.transaction(principal.user_id, session_id) as journal:
+            for binding_id in ids:
+                journal.execution_pending.pop(binding_id, None)
+    except Exception:
+        pass  # A failed clear leaves the durable fail-closed barrier in place.
 
 
 def _reference_record_dispatch(contract: Dict[str, Any], envelope: Dict[str, Any],
@@ -205,6 +249,9 @@ def _reference_record_dispatch(contract: Dict[str, Any], envelope: Dict[str, Any
 
     execution = envelope.get("execution") or {}
     status = execution.get("status")
+    if status in {"awaiting_approval", "not_executed"}:
+        _reference_clear_pending(contract, principal, session_id, journal_root)
+        return True
     if status not in {"success", "ok", "halted"}:
         return True
     actions = contract.get("actions") or []
@@ -221,8 +268,6 @@ def _reference_record_dispatch(contract: Dict[str, Any], envelope: Dict[str, Any
     if not ids:
         return True
     def failed() -> bool:
-        for binding_id in ids:
-            _UNRECORDED_REFERENCE_EXECUTIONS.add((principal.user_id, session_id, binding_id))
         try:
             from uri_core.core.portable_paths import user_scoped_path
             path = telemetry_path or user_scoped_path(
@@ -244,8 +289,9 @@ def _reference_record_dispatch(contract: Dict[str, Any], envelope: Dict[str, Any
                     return failed()
                 if binding.state in (BindingState.TENTATIVE, BindingState.CONFIRMED):
                     service.record_execution(binding_id, applied_result_exists=True)
+                journal.execution_pending.pop(binding_id, None)
         return True
-    except (ValueError, KeyError, OSError):
+    except Exception:
         return failed()
 
 
@@ -1307,6 +1353,9 @@ def run_canonical_for_ask(
                         for item in current_turn_attachments
                         if isinstance(item, dict) and isinstance(item.get("file_id"), str)
                     ]
+                if (reference_clarification_enabled() and contract.get("reference_slots")
+                        and not _reference_mark_pending(contract, principal, session_id, reference_root)):
+                    return _reference_block(session_id, "EXECUTION_RECORD_UNAVAILABLE")
                 envelope = _execute_canonical(
                     contract, orchestrator=orchestrator, session_id=session_id,
                     user_text=user_text, principal=principal,

@@ -1737,9 +1737,7 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
             rebound = state.store.bindings.get(outcome.binding_id)
             if rebound is None:
                 return _reference_block(payload.session_id, "CHANGE_BINDING_UNAVAILABLE")
-            from uri_core.core.canonical_execution import reference_execution_record_failed
-            if reference_execution_record_failed(principal.user_id, payload.session_id,
-                                                 rebound.prior_binding_id or outcome.binding_id):
+            if (rebound.prior_binding_id or outcome.binding_id) in state.execution_pending:
                 return _reference_block(payload.session_id, "EXECUTION_RECORD_UNAVAILABLE")
             if rebound.from_change:
                 from uri_v1.reference_clarification.binding import BindingService

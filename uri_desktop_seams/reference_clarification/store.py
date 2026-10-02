@@ -85,6 +85,8 @@ class Journal:
     guards: dict[str, ClarificationSafeguards] = field(default_factory=dict)
     origins: dict[str, str] = field(default_factory=dict)
     binding_expires: dict[str, str] = field(default_factory=dict)
+    # A durable uncertainty barrier written before a bound action can run.
+    execution_pending: dict[str, str] = field(default_factory=dict)
 
 
 class ClarificationJournal:
@@ -137,7 +139,8 @@ class ClarificationJournal:
             if path.stat().st_size > MAX_BYTES:
                 raise ValueError("journal size exceeded")
             raw = json.loads(path.read_text(encoding="utf-8"))
-            if (not isinstance(raw, dict) or set(raw) != {"schema", "user_id", "session_id", "rounds", "bindings", "binding_queries", "sources", "impacts", "guards", "origins", "binding_expires"}
+            expected = {"schema", "user_id", "session_id", "rounds", "bindings", "binding_queries", "sources", "impacts", "guards", "origins", "binding_expires"}
+            if (not isinstance(raw, dict) or set(raw) not in (expected, expected | {"execution_pending"})
                     or raw["schema"] != SCHEMA_VERSION or raw["user_id"] != user_id or raw["session_id"] != session_id):
                 raise ValueError("journal schema or scope mismatch")
             for key in ("rounds", "bindings", "binding_queries", "sources", "impacts", "guards", "origins", "binding_expires"):
@@ -165,8 +168,14 @@ class ClarificationJournal:
             journal.guards = {key: _decode(ClarificationSafeguards, item) for key, item in raw["guards"].items()}
             journal.origins = {key: _decode(str, item) for key, item in raw["origins"].items()}
             journal.binding_expires = {key: _decode(str, item) for key, item in raw["binding_expires"].items()}
+            pending = raw.get("execution_pending", {})
+            if (not isinstance(pending, dict) or len(pending) > MAX_RECORDS
+                    or any(type(key) is not str or value != "UNKNOWN" for key, value in pending.items())):
+                raise ValueError("execution marker invalid")
+            journal.execution_pending = pending
             if (set(journal.store.bindings) != set(journal.store.binding_queries)
                     or set(journal.store.bindings) != set(journal.binding_expires)
+                    or not set(journal.execution_pending) <= set(journal.store.bindings)
                     or not set(journal.sources) <= set(journal.store.rounds) | set(journal.store.bindings)
                     or any(item.user_id != user_id for items in journal.sources.values() for item in items)):
                 raise ValueError("journal references invalid")
@@ -192,6 +201,7 @@ class ClarificationJournal:
                 journal.impacts.pop(key, None)
                 journal.origins.pop(key, None)
                 journal.binding_expires.pop(key, None)
+                journal.execution_pending.pop(key, None)
 
     def _save(self, path: Path, journal: Journal) -> None:
         if len(journal.store.rounds) > MAX_RECORDS or len(journal.store.bindings) > MAX_RECORDS:
@@ -204,6 +214,7 @@ class ClarificationJournal:
             "sources": {key: [asdict(item) for item in items] for key, items in journal.sources.items()},
             "impacts": journal.impacts, "guards": {key: asdict(item) for key, item in journal.guards.items()},
             "origins": journal.origins, "binding_expires": journal.binding_expires,
+            "execution_pending": journal.execution_pending,
         }
         data = json.dumps(raw, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_BYTES:

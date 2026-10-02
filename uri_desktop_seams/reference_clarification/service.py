@@ -220,6 +220,8 @@ class ReferenceClarificationService:
             record = journal.store.rounds.get(response.ambiguity_id)
             if record is None or record.contract.session_id != session_id:
                 return TurnOutcome(BindingState.REJECTED, "RETRY_REQUIRED", reason="round unavailable")
+            if record.contract.change_of in journal.execution_pending:
+                return TurnOutcome(BindingState.REJECTED, "RETRY_REQUIRED", reason="execution outcome unknown")
             try:
                 current, impact = refresh(), impact_reader()
             except Exception:
@@ -270,6 +272,8 @@ class ReferenceClarificationService:
             prior = journal.store.bindings.get(binding_id)
             if prior is None or prior.session_id != session_id:
                 return TurnOutcome(BindingState.REJECTED, "RETRY_REQUIRED", reason="binding unavailable")
+            if binding_id in journal.execution_pending:
+                return TurnOutcome(BindingState.REJECTED, "RETRY_REQUIRED", reason="execution outcome unknown")
             try:
                 current, impact = refresh(), impact_reader()
             except Exception:

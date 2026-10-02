@@ -259,13 +259,25 @@ def resume_by_action_id(*, orchestrator: Any, action_id: str,
     dispatch = getattr(orchestrator, "multi_action_dispatch", None)
     if dispatch is None:
         return _error_envelope(session_id, "Approve this action in chat when the dispatcher is available.")
+    bound_contract = None
+    pending_marked = False
     try:
         _recheck_binding(orchestrator, principal, session_id, record)
         decided = store.decide(action_id, approved=True, session_id=session_id)
         bindings = _recheck_binding(orchestrator, principal, session_id, decided)
+        if record.requires_reference_binding and record.binding_identity is not None:
+            from uri_core.core.canonical_execution import _reference_mark_pending
+            bound_contract = {"actions": [{"_binding_slots": record.binding_identity.slots}]}
+            if not _reference_mark_pending(bound_contract, principal, session_id,
+                                           _journal_root(orchestrator)):
+                raise ValueError("reference execution outcome unavailable")
+            pending_marked = True
         store.consume(action_id, capability_id=decided.capability_id,
                       arguments=decided.arguments, session_id=session_id)
     except (ApprovalError, ValueError, TypeError) as exc:
+        if pending_marked:
+            from uri_core.core.canonical_execution import _reference_clear_pending
+            _reference_clear_pending(bound_contract, principal, session_id, _journal_root(orchestrator))
         try:
             gate._record_audit_safely(event_type="capability_execution", status="approval_binding_rejected",
                                       session_id=session_id, capability=record.capability_id,
@@ -283,7 +295,6 @@ def resume_by_action_id(*, orchestrator: Any, action_id: str,
         return _error_envelope(session_id, "Approval was recorded, but the action could not be dispatched.")
     if record.requires_reference_binding and record.binding_identity is not None:
         from uri_core.core.canonical_execution import _reference_record_dispatch
-        bound_contract = {"actions": [{"_binding_slots": record.binding_identity.slots}]}
         _reference_record_dispatch(bound_contract, envelope, principal, session_id,
                                    _journal_root(orchestrator))
     envelope = dict(envelope)

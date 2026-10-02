@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 
 from uri_core.app import server
 from uri_core.capabilities import Action, Capability, MultiActionCapabilityRegistry
+from uri_core.capabilities.base import ApprovalRequirement
 from uri_core.capabilities.executor import MultiActionExecutor
 from uri_core.capabilities.wrong_binding import WrongBindingImpact
 from uri_core.core.approval_store import ApprovalStore
@@ -372,36 +373,33 @@ class SliceCAskTests(unittest.TestCase):
         from uri_desktop_seams.reference_clarification.store import ClarificationJournal
         card = self._pending_card()
         chosen = card["options"][0]
-        # The binding under test must still be CONFIRMED (awaiting approval),
-        # not APPLIED: the frozen lifecycle forbids re-dispatching an applied
-        # binding, so suppress only the applied-state record for this setup turn.
-        with patch("uri_core.core.canonical_execution._reference_record_dispatch",
-                   return_value=True):
-            response = self.client.post("/ask", json={"session_id": "s1", "text": "",
-                "clarification_response": {"ambiguity_id": card["ambiguity_id"],
-                    "response_kind": "CANDIDATE", "candidate_id": chosen["candidate_id"],
-                    "candidate_set_fingerprint": card["candidate_set_fingerprint"]}})
-        self.assertEqual(response.json()["execution"]["status"], "success")
+        self.action.approval_requirement = ApprovalRequirement.USER_APPROVAL_REQUIRED
+        response = self.client.post("/ask", json={"session_id": "s1", "text": "",
+            "clarification_response": {"ambiguity_id": card["ambiguity_id"],
+                "response_kind": "CANDIDATE", "candidate_id": chosen["candidate_id"],
+                "candidate_set_fingerprint": card["candidate_set_fingerprint"]}})
+        self.assertEqual(response.json()["execution"]["status"], "awaiting_approval")
+        self.assertEqual(self.calls, [])
+        record = self.orchestrator.approval_gate.approval_store.get(
+            response.json()["execution"]["action_id"])
         with ClarificationJournal(root=self.tmp).transaction(USER_ID, "s1") as journal:
             binding_id = next(iter(journal.store.bindings))
             binding = journal.store.bindings[binding_id]
             candidate = next(item for item in journal.sources[binding_id]
                              if item.id == chosen["candidate_id"])
             expiry = journal.binding_expires[binding_id]
-        self.calls.clear()
+        self.assertEqual(binding.state.value, "CONFIRMED")
         slot = SlotBindingIdentity(
             "Demo", "open", "file_id", "r1", candidate.id, candidate.source_class,
             candidate.locator, candidate.version, binding.state,
             WrongBindingImpact.CONSEQUENTIAL, USER_ID, "s1", binding_id, expiry,
         )
-        return ApprovalBindingIdentity(1, True, (slot,), (("Demo", "open", "file_id", "r1"),)), candidate
+        identity = ApprovalBindingIdentity(1, True, (slot,), (("Demo", "open", "file_id", "r1"),))
+        self.assertEqual(record.binding_identity, identity)
+        return identity, candidate, record
 
     def test_approve_registered_record_rechecks_and_dispatches_with_binding(self):
-        identity, candidate = self._confirmed_identity()
-        record = self.orchestrator.approval_gate.approval_store.propose(
-            "Demo", {"file_id": candidate.source_id}, session_id="s1", action_name="open",
-            binding_identity=identity, requires_reference_binding=True,
-        )
+        identity, candidate, record = self._confirmed_identity()
         original = MultiActionExecutor.execute
         observed = []
         def inspect(executor, capability, action, inputs, **kwargs):
@@ -414,14 +412,13 @@ class SliceCAskTests(unittest.TestCase):
         self.assertEqual(len(observed), 1)
         self.assertEqual(observed[0][0].candidate_id, candidate.id)
         self.assertEqual(len(self.calls), 1)
+        from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+        with ClarificationJournal(root=self.tmp).transaction(USER_ID, "s1") as journal:
+            self.assertEqual(journal.store.bindings[identity.slots[0].round_id].state.value, "APPLIED")
         self.assertEqual(second.json()["status"], "error")
 
     def test_approve_registered_drift_leaves_record_unconsumed(self):
-        identity, candidate = self._confirmed_identity()
-        record = self.orchestrator.approval_gate.approval_store.propose(
-            "Demo", {"file_id": candidate.source_id}, session_id="s1", action_name="open",
-            binding_identity=identity, requires_reference_binding=True,
-        )
+        identity, candidate, record = self._confirmed_identity()
         Path(self.file_store.path_for(candidate.source_id)).write_bytes(b"changed")
         result = self.client.post("/approve", json={"session_id": "s1", "action_id": record.action_id})
         self.assertEqual(result.json()["status"], "error")
@@ -429,11 +426,7 @@ class SliceCAskTests(unittest.TestCase):
         self.assertEqual(self.calls, [])
 
     def test_natural_language_approval_drift_is_unconsumed(self):
-        identity, candidate = self._confirmed_identity()
-        record = self.orchestrator.approval_gate.approval_store.propose(
-            "Demo", {"file_id": candidate.source_id}, session_id="s1", action_name="open",
-            binding_identity=identity, requires_reference_binding=True,
-        )
+        identity, candidate, record = self._confirmed_identity()
         Path(self.file_store.path_for(candidate.source_id)).write_bytes(b"changed")
         with patch("uri_core.core.approval_resumption.approval_resumption_enabled", return_value=True):
             result = self.client.post("/ask", json={"session_id": "s1", "text": "yes"})
@@ -442,11 +435,7 @@ class SliceCAskTests(unittest.TestCase):
         self.assertEqual(self.calls, [])
 
     def test_natural_language_approval_valid_executes_once(self):
-        identity, candidate = self._confirmed_identity()
-        record = self.orchestrator.approval_gate.approval_store.propose(
-            "Demo", {"file_id": candidate.source_id}, session_id="s1", action_name="open",
-            binding_identity=identity, requires_reference_binding=True,
-        )
+        identity, candidate, record = self._confirmed_identity()
         with patch("uri_core.core.approval_resumption.approval_resumption_enabled", return_value=True):
             response = self.client.post("/ask", json={"session_id": "s1", "text": "yes"})
         self.assertEqual(response.json()["execution"]["status"], "success")
@@ -457,7 +446,7 @@ class SliceCAskTests(unittest.TestCase):
         from uri_desktop_seams.reference_clarification.service import (
             ApprovalBindingIdentity, SlotBindingIdentity,
         )
-        identity, candidate = self._confirmed_identity()
+        identity, candidate, _ = self._confirmed_identity()
         legacy_action = Action(
             "Legacy", "legacy", parameters={"file_id": {"type": "string", "required": True}},
             handler=lambda **_: {"status": "success"},
@@ -485,10 +474,8 @@ class SliceCAskTests(unittest.TestCase):
         gate.dispatcher.execute_tool.assert_not_called()
 
     def test_missing_required_approval_identity_fails_closed(self):
-        identity, candidate = self._confirmed_identity()
+        identity, candidate, record = self._confirmed_identity()
         store = self.orchestrator.approval_gate.approval_store
-        record = store.propose("Demo", {"file_id": candidate.source_id}, session_id="s1",
-            action_name="open", binding_identity=identity, requires_reference_binding=True)
         path = Path(store.storage_path)
         contents = json.loads(path.read_text(encoding="utf-8"))
         contents["actions"][-1]["binding_identity"] = None
