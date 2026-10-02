@@ -50,7 +50,7 @@ class GmailCapability(Capability):
                 ),
                 "search_messages": Action(
                     name="search_messages",
-                    description="Find Gmail messages using Gmail search syntax (is:unread for unread mail). Returns bounded plain-text message bodies for summaries; no attachments are downloaded.",
+                    description="Find Gmail messages using Gmail search syntax. For unread inbox summaries or importance checks, use is:unread in:inbox (newest 10-20); no user-supplied query or message ID is needed. Returns bounded plain-text message bodies; no attachments are downloaded.",
                     parameters={"query": {"type": "string", "required": True}, "max_results": {"type": "integer"}},
                     returns={"results": "list[message search result]"},
                     read_only=True,

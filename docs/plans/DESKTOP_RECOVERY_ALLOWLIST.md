@@ -151,3 +151,17 @@ Authority: Chetan's direct implementer instruction, 2026-10-02, to ground canoni
 | `uri_core/core/canonical_execution.py` | Attach a bounded projection of usable current-user Capability Directory entries to canonical conversation response evidence only; preserve non-conversation envelopes and execution state. |
 | `uri_core/core/response_drafting.py` | Tell the drafting Brain how to use the conversation envelope's capability evidence; its existing payload already forwards outcome.response. |
 | `test_capability_questions.py` | Mock the per-user directory and drafting provider to prove usable-only, bounded conversation evidence, validation acceptance, and unchanged non-conversation response. |
+
+## 2026-10-02 Gmail multi-step read prefix repair
+
+Authority: Chetan's direct implementer instruction, 2026-10-02, for canonical
+Gmail unread-message summarization and safe multi-step execution. Claude
+re-pins frozen-file hashes after review.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/canonical_execution.py` | Independently gate and execute only the ready read-only prefix of a multi-action proposal when later steps lack evidence-derived inputs; carry evidence and deferred-action markers to drafting. |
+| `uri_core/core/decision_engine.py` | Guide the Brain to search unread inbox mail with a concrete Gmail query and use recent conversation for follow-ups. |
+| `uri_core/capabilities/gmail/capability.py` | Advertise unread inbox queries and bounded body evidence in the Gmail search action description. |
+| `uri_core/core/response_drafting.py` | Guide the Brain to summarize actual partial-read evidence, identify messages for follow-up, and describe deferred work accurately. |
+| `test_gmail_multi_step.py` | Root-level mocked regression for read prefix, evidence, missing inputs, approval, and follow-up context; outside frozen guard scope. |

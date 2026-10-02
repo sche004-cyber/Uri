@@ -34,11 +34,16 @@ class ToolSchemaCatalogueTests(unittest.TestCase):
     def test_suppressed_legacy_gmail_overlaps_are_excluded(self):
         schemas = _real_schemas()
         names = {t["function"]["name"] for t in schemas}
-        # 3 of the 4 overlapping legacy ids have names distinct from any
+        # 2 of the overlapping legacy ids have names distinct from any
         # Gmail-action-flattened name, so their absence alone proves
-        # suppression.
-        for suppressed in ("gmail_search", "gmail_find_draft", "drive_search"):
+        # suppression. drive_search is no longer an "overlap": it was only
+        # flagged because its old description mentioned "Gmail"
+        # (capability_directory._find_overlaps is a shared-word heuristic);
+        # Gmail has no Drive-search action, so the Brain must see it
+        # (desktop recovery 2026-10-02, registry text correction 7b56b9b).
+        for suppressed in ("gmail_search", "gmail_find_draft"):
             self.assertNotIn(suppressed, names, f"{suppressed} should be suppressed as a Gmail overlap")
+        self.assertIn("drive_search", names)
         # The 4th, "gmail_create_draft", collides by name with the Gmail
         # multi-action "create_draft" action (gmail_ + create_draft) -
         # exactly one "gmail_create_draft" entry must exist, and it must

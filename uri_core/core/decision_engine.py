@@ -249,6 +249,14 @@ plausibly does, is answered by picking your best candidate
 ("single_action"/"multi_action"), not by asking a clarifying question.
 Reserve "clarification" for a genuinely missing, concrete, required
 piece of information for an otherwise-identified capability.
+For a request to summarize or check unread or important email, use
+Gmail.search_messages with a concrete Gmail query such as
+"is:unread in:inbox" and max_results 10-20. Its result includes bounded
+message bodies. Do not ask the user for a search term or message id when
+the request itself identifies the mailbox to search. If a later action
+needs an id, recipient, subject, or body from that search, propose the
+search first; URI may execute its safe read-only prefix and return the
+evidence for your reply. Use recent conversation to ground follow-ups.
 
 A capability summary describes that capability's OWN normal use - you
 must still judge whether THIS message performs that role, not only

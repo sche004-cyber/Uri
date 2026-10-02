@@ -527,6 +527,62 @@ def _conversation_capability_evidence(capability_directory: Any) -> List[Dict[st
     return evidence
 
 
+def _ready_read_prefix(contract, directory, principal, turn_state_data):
+    """Return a gated read prefix when later inputs must come from its evidence.
+
+    The whole proposal remains blocked. This only selects already-proposed
+    actions; it neither binds missing inputs nor authorizes a later write.
+    """
+    from uri_core.core.decision_engine import DecisionOutcome
+    from uri_core.core.decision_gates import evaluate_gates
+
+    if contract.get("mode") != "multi_action":
+        return []
+    actions = contract.get("actions") or []
+    if len(actions) < 2:
+        return []
+    prefix = []
+    blocked = False
+    # These are fields obtainable from earlier message evidence, not a
+    # judgment about the user's words or an invented argument value.
+    evidence_fields = {"message_id", "thread_id", "attachment_id", "to", "subject", "body", "reply_to", "in_reply_to_thread_id"}
+    for action in actions:
+        if not isinstance(action, dict) or not action.get("name"):
+            return []
+        capability_id = action.get("capability") or contract.get("capability")
+        if not is_allowlisted(capability_id):
+            return []
+        detail = directory.describe(capability_id) if directory is not None else None
+        schema = (detail or {}).get("action_schemas", {}).get(action["name"])
+        if not isinstance(schema, dict):
+            return []
+        one_contract = {**contract, "capability": capability_id, "actions": [action]}
+        verdict = evaluate_gates(
+            DecisionOutcome(status="ok", contract=one_contract),
+            capability_directory=directory, principal=principal,
+            turn_state_data=turn_state_data,
+        )
+        if not blocked and verdict.outcome == "READY" and schema.get("read_only") is True:
+            prefix.append(action)
+            continue
+        if verdict.outcome != "MISSING_PARAMETER" or not prefix:
+            return []
+        inputs = action.get("inputs") or {}
+        missing = set(schema.get("required") or []) - set(inputs)
+        if not missing or not missing <= evidence_fields:
+            return []
+        blocked = True
+    # Gmail's search result contains message ids, sender, subject and
+    # bounded bodies. A label listing, despite being read-only, does not
+    # provide those values and must not unlock a dependent read/draft.
+    has_message_evidence = any(
+        (a.get("capability") or contract.get("capability")) == "Gmail"
+        and a["name"] == "search_messages"
+        for a in prefix
+    )
+    return prefix if blocked and has_message_evidence else []
+
+
 def _execute_canonical(
     contract: Dict[str, Any],
     *,
@@ -733,6 +789,43 @@ def run_canonical_for_ask(
                 reasons=getattr(gate_result, "reasons", ()),
                 capability_ids=capability_ids,
             )
+            read_prefix = (
+                _ready_read_prefix(contract, directory, principal, turn_state_result.data)
+                if gate_result.outcome == "MISSING_PARAMETER" and fallback_reason is None
+                else []
+            )
+            if read_prefix:
+                # Reuse canonical dispatch with a contract containing only
+                # independently gated read actions. The deferred suffix is
+                # evidence for the drafting Brain, never dispatched here.
+                prefix_contract = {
+                    **contract,
+                    "capability": read_prefix[0].get("capability") or capability_id,
+                    "actions": [
+                        {**a, "capability": a.get("capability") or capability_id}
+                        for a in read_prefix
+                    ],
+                }
+                canonical_attempted = True
+                envelope = _execute_canonical(
+                    prefix_contract, orchestrator=orchestrator,
+                    session_id=session_id, user_text=user_text, principal=principal,
+                )
+                if envelope is None:
+                    fallback_reason = "execution_dispatch_returned_none"
+                else:
+                    envelope = dict(envelope)
+                    envelope["plan"] = {
+                        **envelope.get("plan", {}),
+                        "partial_read_only": True,
+                        "deferred_actions": [
+                            {"capability": a.get("capability") or capability_id, "name": a["name"]}
+                            for a in contract["actions"][len(read_prefix):]
+                        ],
+                    }
+                    envelope["execution"] = {
+                        **envelope.get("execution", {}), "partial_read_only": True,
+                    }
             # M32.1: APPROVAL_REQUIRED now also reaches _execute_canonical()
             # - previously only READY did, which meant an approval-required
             # capability never reached ApprovalGate/ApprovalStore (or the
@@ -740,7 +833,7 @@ def run_canonical_for_ask(
             # proposed. decide_fallback_reason() above already applies the
             # same executable-mode/allowlist gate to this outcome now, so
             # this widening cannot reach an un-allowlisted capability.
-            if (
+            if envelope is None and (
                 fallback_reason is None
                 and gate_result.outcome in ("READY", "APPROVAL_REQUIRED")
                 and not (
@@ -779,7 +872,7 @@ def run_canonical_for_ask(
                         query=user_text,
                         state=arn_state,
                     )
-            elif fallback_reason is None:
+            elif envelope is None and fallback_reason is None:
                 envelope = _canonical_nonexecution_envelope(
                     contract, gate_result, capability_directory=directory
                 )

@@ -18,15 +18,15 @@ import subprocess
 from pathlib import Path
 
 DESKTOP_RECOVERY_FILES = {
-    "uri_core/core/response_drafting.py": "ecb3b2955bf77a5f4112766cc3a6ded72253a6b3",
+    "uri_core/core/response_drafting.py": "a48680257be30dde0c014f84c96c186718ced876",
     "uri_core/core/model_reasoning_adapter.py": "a42f3d247cf0bad95943e2cc914c7f9a5a426217",
-    "uri_core/core/decision_engine.py": "e02c9a533cb95a09cd41ae8729e3080c1ac42823",
+    "uri_core/core/decision_engine.py": "2c67334159f0c6f814acc3584b1e3bdb8dca4cc1",
     "uri_core/core/capability_feasibility.py": "5159100a4c4ace884decfd135196220611066d86",
-    "uri_core/core/canonical_execution.py": "00951eb7cf506ca4bc45989e14e6b475e8ac6ce6",
+    "uri_core/core/canonical_execution.py": "8392ed5825415bc2cfc05fcc50622b76b01d2982",
     "uri_core/core/tool_schema.py": "9c0957428d1a4473c4e25d68de1fb23fcb70ca39",
     "uri_core/tools/google_workspace_create.py": "c99f7d26bb7df2bd90c979be41e07b70af43ce68",
     "uri_core/app/server.py": "344a59b3a3d956d652ee1d2dea9818cd3023ade9",
-    "uri_core/capabilities/gmail/capability.py": "c99b45a719a7e791dc854e991e5af34bd64fc7e2",
+    "uri_core/capabilities/gmail/capability.py": "68e9b39b886b11cfdee3c2650476c5edb0b1e709",
     "uri_core/services/gmail_service.py": "3829624e12dc3a6fe91da9bf0e4c45b082e374e9",
     "uri_core/services/google_errors.py": "0dd06f6344c14e6039a21e45e358fda088f22082",
     "uri_core/tools/drive_search.py": "983f969690b7c938c021befa886c1fbf75d2d4b5",
