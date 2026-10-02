@@ -106,13 +106,18 @@ def _binding_principal(orchestrator: Any, principal: Any, session_id: str):
         return bool(dispatch and dispatch._action_permitted(capability_id, action_name, principal))
 
     def read_binding(round_id):
-        root = str(Path(file_store.storage_dir).parent.parent) if file_store is not None else None
+        root = _journal_root(orchestrator)
         journal_store = ClarificationJournal(**({"root": root} if root else {}))
         with journal_store.transaction(principal.user_id, session_id) as journal:
             return journal.store.bindings.get(round_id)
 
     return BindingPrincipal(principal.user_id, session_id, read_source,
                             has_grant, get_action, read_binding)
+
+
+def _journal_root(orchestrator: Any) -> Optional[str]:
+    file_store = getattr(getattr(orchestrator, "approval_gate", None), "file_store", None)
+    return str(Path(file_store.storage_dir).parent.parent) if file_store is not None else None
 
 
 def _recheck_binding(orchestrator: Any, principal: Any, session_id: str,
@@ -276,6 +281,11 @@ def resume_by_action_id(*, orchestrator: Any, action_id: str,
     )
     if envelope is None:
         return _error_envelope(session_id, "Approval was recorded, but the action could not be dispatched.")
+    if record.requires_reference_binding and record.binding_identity is not None:
+        from uri_core.core.canonical_execution import _reference_record_dispatch
+        bound_contract = {"actions": [{"_binding_slots": record.binding_identity.slots}]}
+        _reference_record_dispatch(bound_contract, envelope, principal, session_id,
+                                   _journal_root(orchestrator))
     envelope = dict(envelope)
     envelope.pop("handled", None)
     envelope.setdefault("session_id", session_id)

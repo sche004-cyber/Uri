@@ -372,10 +372,15 @@ class SliceCAskTests(unittest.TestCase):
         from uri_desktop_seams.reference_clarification.store import ClarificationJournal
         card = self._pending_card()
         chosen = card["options"][0]
-        response = self.client.post("/ask", json={"session_id": "s1", "text": "",
-            "clarification_response": {"ambiguity_id": card["ambiguity_id"],
-                "response_kind": "CANDIDATE", "candidate_id": chosen["candidate_id"],
-                "candidate_set_fingerprint": card["candidate_set_fingerprint"]}})
+        # The binding under test must still be CONFIRMED (awaiting approval),
+        # not APPLIED: the frozen lifecycle forbids re-dispatching an applied
+        # binding, so suppress only the applied-state record for this setup turn.
+        with patch("uri_core.core.canonical_execution._reference_record_dispatch",
+                   return_value=True):
+            response = self.client.post("/ask", json={"session_id": "s1", "text": "",
+                "clarification_response": {"ambiguity_id": card["ambiguity_id"],
+                    "response_kind": "CANDIDATE", "candidate_id": chosen["candidate_id"],
+                    "candidate_set_fingerprint": card["candidate_set_fingerprint"]}})
         self.assertEqual(response.json()["execution"]["status"], "success")
         with ClarificationJournal(root=self.tmp).transaction(USER_ID, "s1") as journal:
             binding_id = next(iter(journal.store.bindings))

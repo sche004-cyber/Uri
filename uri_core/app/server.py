@@ -1730,6 +1730,23 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
         if outcome.status != "BOUND" or not outcome.binding_id:
             return _reference_retry_round(context, principal, payload,
                                           outcome.reason or "REFERENCE_REJECTED", metadata_raw)
+        # A Change of an already applied result is a redo. No current result
+        # version or fresh redo approval is available on this /ask path, so
+        # ask the frozen lifecycle to reject it before any repeat dispatch.
+        with service.journal.transaction(principal.user_id, payload.session_id) as state:
+            rebound = state.store.bindings.get(outcome.binding_id)
+            if rebound is None:
+                return _reference_block(payload.session_id, "CHANGE_BINDING_UNAVAILABLE")
+            from uri_core.core.canonical_execution import reference_execution_record_failed
+            if reference_execution_record_failed(principal.user_id, payload.session_id,
+                                                 rebound.prior_binding_id or outcome.binding_id):
+                return _reference_block(payload.session_id, "EXECUTION_RECORD_UNAVAILABLE")
+            if rebound.from_change:
+                from uri_v1.reference_clarification.binding import BindingService
+                BindingService(state.store).authorize_redo(
+                    outcome.binding_id, fresh_authorized=False,
+                    edited_result_status="UNKNOWN")
+                return _reference_block(payload.session_id, "REDO_REQUIRES_AUTHORIZATION_AND_RESULT_VERSION")
         result = run_canonical_for_ask(
             orchestrator=context.orchestrator, session_id=payload.session_id,
             user_text=metadata["text"], principal=principal,

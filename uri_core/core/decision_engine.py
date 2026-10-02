@@ -364,6 +364,10 @@ candidate IDs or claim a binding or approval. Omit the field if no input
 reference needs grounding.
 """
 
+# Preserve the original closed-key contract for flag-OFF calls.
+_BASE_DECISION_PROMPT = DECISION_CONTRACT_SYSTEM_PROMPT.replace(
+    "with these required keys:", "with exactly these keys:")
+
 
 @dataclass(frozen=True)
 class DecisionOutcome:
@@ -547,7 +551,8 @@ def build_decision_request(
                 }
         if affordances:
             request["capability_action_affordances"] = affordances
-        if os.environ.get("URI_INT_ARN_1_ENABLED") == "1":
+        from uri_core.core.canonical_execution import reference_clarification_enabled
+        if reference_clarification_enabled():
             arguments = {}
             for capability_id, actions in affordances.items():
                 detail = capability_directory.describe(capability_id) or {}
@@ -687,6 +692,8 @@ def propose_decision(
     can only narrow what the model SEES, never what a correct proposal
     is allowed to name."""
 
+    from uri_core.core.canonical_execution import reference_clarification_enabled
+
     preselected_ids = (
         preselect_candidate_ids(turn_state_data, capability_directory, limit=preselect_limit)
         if preselect
@@ -709,8 +716,8 @@ def propose_decision(
                 ROLE_REASONING,
                 principal,
                 system=(DECISION_CONTRACT_SYSTEM_PROMPT + _REFERENCE_SLOT_PROMPT
-                        if os.environ.get("URI_INT_ARN_1_ENABLED") == "1"
-                        else DECISION_CONTRACT_SYSTEM_PROMPT),
+                        if reference_clarification_enabled()
+                        else _BASE_DECISION_PROMPT),
                 user=request_json,
                 temperature=0,
                 max_tokens=500,

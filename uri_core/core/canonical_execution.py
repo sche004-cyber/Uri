@@ -60,6 +60,7 @@ import os
 import time
 import json
 import re
+import threading
 from dataclasses import asdict
 from uuid import uuid4
 from typing import Any, Dict, List, Optional, Sequence
@@ -74,6 +75,13 @@ from uri_core.core.decision_engine import (
 LIVE_ENV_VAR = "URI_ENABLE_DECISION_ENGINE_LIVE"
 WORKFLOW_CONTINUATION_ENV_VAR = "URI_ENABLE_WORKFLOW_CONTINUATION_MODE"
 ALLOWLIST_ENV_VAR = "URI_CANONICAL_EXECUTION_ALLOWLIST"
+_REFERENCE_RENDER_SLOTS = threading.BoundedSemaphore(2)
+_UNRECORDED_REFERENCE_EXECUTIONS: set[tuple[str, str, str]] = set()
+
+
+def reference_execution_record_failed(user_id: str, session_id: str, binding_id: str) -> bool:
+    """Prevent a Change from replaying an action whose applied state was not saved."""
+    return (user_id, session_id, binding_id) in _UNRECORDED_REFERENCE_EXECUTIONS
 
 DEFAULT_TELEMETRY_LOG_PATH = os.path.join(
     os.path.dirname(DEFAULT_SHADOW_LOG_PATH) or ".", "canonical_execution_log.jsonl"
@@ -158,16 +166,87 @@ def _reference_render_draft(contract: Any, principal: Any) -> Any:
         return None
     request = make_render_request(contract)
     facts = {key: dict(values) for key, values in request.slots}
-    response = get_router().attempt(
-        ROLE_REASONING, principal,
-        system=("Write a concise clarification question and labels using only these facts. "
-                "Return JSON with question and labels keyed by the supplied option keys. "
-                "Do not add options, IDs, authority, or claims."),
-        user=json.dumps({"kind": request.kind.value, "reference": request.reference,
-                         "facts": facts, "overflow": request.overflow}, ensure_ascii=False),
-        temperature=0, max_tokens=160,
-    )
-    return response.content
+    # A daemon worker lets the request return at the deadline even when a
+    # provider ignores transport timeouts. Bound outstanding slow calls too.
+    if not _REFERENCE_RENDER_SLOTS.acquire(blocking=False):
+        return None
+    done = threading.Event()
+    result = {}
+
+    def render():
+        try:
+            response = get_router().attempt(
+                ROLE_REASONING, principal,
+                system=("Write a concise clarification question and labels using only these facts. "
+                        "Return JSON with question and labels keyed by the supplied option keys. "
+                        "Do not add options, IDs, authority, or claims."),
+                user=json.dumps({"kind": request.kind.value, "reference": request.reference,
+                                 "facts": facts, "overflow": request.overflow}, ensure_ascii=False),
+                temperature=0, max_tokens=160,
+            )
+            result["content"] = response.content
+        except Exception:
+            pass
+        finally:
+            _REFERENCE_RENDER_SLOTS.release()
+            done.set()
+
+    threading.Thread(target=render, daemon=True, name="uri-reference-render").start()
+    return result.get("content") if done.wait(budget / 1000) else None
+
+
+def _reference_record_dispatch(contract: Dict[str, Any], envelope: Dict[str, Any],
+                               principal: Any, session_id: str, journal_root: Optional[str],
+                               telemetry_path: Optional[str] = None) -> bool:
+    """Persist the frozen binding transition after a bound action actually ran."""
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+    from uri_v1.reference_clarification.binding import BindingService
+    from uri_v1.turn.rar_clarification_contract import BindingState
+
+    execution = envelope.get("execution") or {}
+    status = execution.get("status")
+    if status not in {"success", "ok", "halted"}:
+        return True
+    actions = contract.get("actions") or []
+    steps = (execution.get("result") or {}).get("steps")
+    ids = set()
+    for index, action in enumerate(actions):
+        if not isinstance(action, dict):
+            continue
+        if isinstance(steps, dict):
+            step = steps.get(str(action.get("id", index)))
+            if not isinstance(step, dict) or step.get("status") not in {"success", "ok"}:
+                continue
+        ids.update(slot.round_id for slot in action.get("_binding_slots", ()))
+    if not ids:
+        return True
+    def failed() -> bool:
+        for binding_id in ids:
+            _UNRECORDED_REFERENCE_EXECUTIONS.add((principal.user_id, session_id, binding_id))
+        try:
+            from uri_core.core.portable_paths import user_scoped_path
+            path = telemetry_path or user_scoped_path(
+                principal.user_id, "reference_clarification/telemetry.jsonl",
+                root=journal_root or "uri_workspace/users")
+            _record_reference_stage(path=path, session_id=session_id, stage="dispatch",
+                                    outcome=status, started=time.monotonic(),
+                                    reason="EXECUTION_RECORD_UNAVAILABLE")
+        except Exception:
+            pass
+        return False
+    try:
+        journal_store = ClarificationJournal(**({"root": journal_root} if journal_root is not None else {}))
+        with journal_store.transaction(principal.user_id, session_id) as journal:
+            service = BindingService(journal.store)
+            for binding_id in ids:
+                binding = journal.store.bindings.get(binding_id)
+                if binding is None or binding.session_id != session_id:
+                    return failed()
+                if binding.state in (BindingState.TENTATIVE, BindingState.CONFIRMED):
+                    service.record_execution(binding_id, applied_result_exists=True)
+        return True
+    except (ValueError, KeyError, OSError):
+        return failed()
 
 
 def _reference_evidence(slot: Any, *, orchestrator: Any, principal: Any,
@@ -1237,6 +1316,10 @@ def run_canonical_for_ask(
                 if envelope is None:
                     fallback_reason = "execution_dispatch_returned_none"
                 else:
+                    if reference_clarification_enabled() and contract.get("reference_slots"):
+                        _reference_record_dispatch(
+                            contract, envelope, principal, session_id, reference_root,
+                            telemetry_path=log_path)
                     from uri_core.core.arn import attach_not_found_recovery
 
                     envelope = attach_not_found_recovery(

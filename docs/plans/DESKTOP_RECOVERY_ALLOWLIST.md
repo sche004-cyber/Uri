@@ -282,3 +282,14 @@ Authority: Chetan's INT-ARN-1 approvals (same exact files as Slices C and D). Im
 | `uri_core/app/server.py` | Flagged first `/ask/stream` turns go through `/ask`; rejected/unavailable answers rebuild a fresh round or block clearly; history projection and tentative binding. |
 | `uri_core/core/canonical_execution.py` | Bounded Brain render draft validated by the frozen renderer (template fallback); tentative binding projection. |
 | `uri_ui/lib/services/*uri_client.dart`, `app_state.dart`, `screens/ask/ask_uri_screen.dart`, `widgets/clarification_card.dart` | Old card locks after a dead round; typed "Change" request through `/ask`. |
+
+## 2026-10-02 INT-ARN-1 re-audit repair (redo lifecycle, render deadline, flag-OFF prompt)
+
+Authority: Chetan's INT-ARN-1 approvals (same approved files). Implemented by Codex; reviewed, regression-compared and re-pinned by Claude.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/canonical_execution.py` | Record APPLIED binding state after a bound action actually runs; render draft gets a real deadline with template fallback. |
+| `uri_core/core/approval_resumption.py` | Approved bound dispatches record APPLIED state; a recording failure keeps the true execution result and only blocks later Change. |
+| `uri_core/app/server.py` | Change after execution goes through frozen `authorize_redo` and stops before any repeat dispatch. |
+| `uri_core/core/decision_engine.py` | Original "exactly these keys" contract when the flag is off; flag read through `reference_clarification_enabled()`. |
