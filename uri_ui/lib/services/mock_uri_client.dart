@@ -380,6 +380,13 @@ class MockUriClient implements UriClient {
   }
 
   @override
+  Future<UriTurn> changeTentativeBinding(String bindingId, {
+    String? turnId,
+    Object? modelOverride,
+  }) async => ask('Change reference', turnId: turnId,
+                   modelOverride: modelOverride);
+
+  @override
   Future<UriTurn> approve(String turnId) async {
     final existing = _turns[turnId];
     if (existing == null) {

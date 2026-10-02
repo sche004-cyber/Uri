@@ -144,6 +144,32 @@ def _reference_wire(outcome: Any) -> Dict[str, Any]:
     }
 
 
+def _reference_render_draft(contract: Any, principal: Any) -> Any:
+    """One small Brain call for wording; the frozen validator owns the result."""
+    from uri_core.config.model_roles import ROLE_REASONING
+    from uri_core.core.model_router import get_router
+    from uri_v1.reference_clarification.render_contracts import make_render_request
+
+    try:
+        budget = int(os.environ.get("URI_INT_ARN_1_RENDER_BUDGET_MS", "800"))
+    except ValueError:
+        budget = 0
+    if budget <= 0:
+        return None
+    request = make_render_request(contract)
+    facts = {key: dict(values) for key, values in request.slots}
+    response = get_router().attempt(
+        ROLE_REASONING, principal,
+        system=("Write a concise clarification question and labels using only these facts. "
+                "Return JSON with question and labels keyed by the supplied option keys. "
+                "Do not add options, IDs, authority, or claims."),
+        user=json.dumps({"kind": request.kind.value, "reference": request.reference,
+                         "facts": facts, "overflow": request.overflow}, ensure_ascii=False),
+        temperature=0, max_tokens=160,
+    )
+    return response.content
+
+
 def _reference_evidence(slot: Any, *, orchestrator: Any, principal: Any,
                         session_id: str, attachments: Optional[List[Dict[str, Any]]]) -> Any:
     from datetime import datetime, timezone
@@ -267,7 +293,8 @@ def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: 
         else:
             outcome = service.resolve(user_id=principal.user_id, session_id=session_id,
                                       turn_id=uuid4().hex, envelope=envelope,
-                                      wrong_binding_impact=impact)
+                                      wrong_binding_impact=impact,
+                                      render_draft=lambda round_contract: _reference_render_draft(round_contract, principal))
             if outcome.contract is not None:
                 _record_reference_stage(path=telemetry_path, session_id=session_id, stage="resolution",
                     outcome="clarification", started=stage_started, source_class=slot.source_class,
@@ -311,6 +338,15 @@ def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: 
             slot.capability_id, slot.action_name, slot.argument_name, slot.ref_key,
             candidate.id, candidate.source_class, candidate.locator, candidate.version,
             state, impact, principal.user_id, session_id, binding_id, expires_at))
+        if state == BindingState.TENTATIVE:
+            contract.setdefault("_tentative_bindings", []).append({
+                "label": candidate.title, "candidate_id": candidate.id,
+                "binding_id": binding_id,
+            })
+            with service.journal.transaction(principal.user_id, session_id) as journal:
+                journal.origins["binding:" + binding_id] = json.dumps({
+                    "text": user_text, "slot": asdict(slot), "attachments": attachments or [],
+                }, ensure_ascii=False)
         def recheck(slot=slot, binding_id=binding_id, candidate_id=candidate.id,
                     expected_impact=impact):
             live_capability = registry.get_capability(slot.capability_id)
@@ -1243,6 +1279,8 @@ def run_canonical_for_ask(
 
     envelope = dict(envelope)
     envelope["session_id"] = session_id
+    if contract.get("_tentative_bindings"):
+        envelope["tentative_binding"] = contract["_tentative_bindings"][0]
     envelope.setdefault("semantic_analysis", None)
     envelope.setdefault("error", None)
 

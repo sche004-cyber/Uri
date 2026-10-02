@@ -271,3 +271,14 @@ Authority: Chetan, 2026-10-02 (INT-ARN-1 "yes to all" for `ask_uri_screen.dart`,
 | `uri_ui/lib/widgets/clarification_card.dart` | Submit lock, read-only history, retry banner, five-option presentation cap, Semantics labels. |
 | `uri_ui/lib/widgets/status_pill.dart` | One label for the new turn stage (exhaustive switch). |
 | `uri_ui/test/int_arn_1_clarification_test.dart` | 14 widget/state/HTTP-contract tests. |
+
+## 2026-10-02 INT-ARN-1 audit repair (Codex audit REJECT findings 1-5)
+
+Authority: Chetan's INT-ARN-1 approvals (same exact files as Slices C and D). Implemented by Codex; reviewed, regression-compared and re-pinned by Claude.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/decision_engine.py` | One consistent contract (nine required keys, optional `reference_slots`); real action argument names exposed when the flag is on. |
+| `uri_core/app/server.py` | Flagged first `/ask/stream` turns go through `/ask`; rejected/unavailable answers rebuild a fresh round or block clearly; history projection and tentative binding. |
+| `uri_core/core/canonical_execution.py` | Bounded Brain render draft validated by the frozen renderer (template fallback); tentative binding projection. |
+| `uri_ui/lib/services/*uri_client.dart`, `app_state.dart`, `screens/ask/ask_uri_screen.dart`, `widgets/clarification_card.dart` | Old card locks after a dead round; typed "Change" request through `/ask`. |

@@ -55,10 +55,6 @@ class _ClarificationCardState extends State<ClarificationCard> {
       _controller.clear();
       _answeredLabel = null;
       _freeInputOpen = widget.request.kind == ClarificationKind.freeInputOnly;
-    } else if ((widget.retryMessage?.isNotEmpty ?? false) &&
-        widget.retryMessage != oldWidget.retryMessage) {
-      // Re-enable the card if a retry message is received from server
-      _answeredLabel = null;
     }
   }
 

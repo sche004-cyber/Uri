@@ -107,6 +107,8 @@ class AppState extends ChangeNotifier {
   }
 
   final List<UriTurn> conversation = <UriTurn>[];
+  final Set<String> _historicalTurnIds = <String>{};
+  bool isHistoricalTurn(String turnId) => _historicalTurnIds.contains(turnId);
   List<ServiceConnection> connections = <ServiceConnection>[];
   List<ActivityEvent> activity = <ActivityEvent>[];
   List<TaskItem> tasks = <TaskItem>[];
@@ -547,7 +549,7 @@ class AppState extends ChangeNotifier {
   /// The card's turn stays in the conversation as the question that was
   /// asked; the server's answer arrives as a new turn after it, labelled
   /// with what the user picked. A stale, expired or rejected answer keeps
-  /// the card open and shows the server's retry text instead.
+  /// the old card read-only and shows the server's retry text.
   Future<UriTurn?> submitClarificationResponse(
     String turnId,
     ClarificationResponsePayload payload,
@@ -572,14 +574,19 @@ class AppState extends ChangeNotifier {
       );
 
       final current = conversation.indexWhere((t) => t.id == turnId);
-      if (response.stage == TurnStage.failed && current != -1) {
-        final retryMsg = (response.failureReason?.isNotEmpty ?? false)
+      if (current != -1 &&
+          (response.stage == TurnStage.failed ||
+              response.retryMessage?.isNotEmpty == true)) {
+        final retryMsg = (response.retryMessage?.isNotEmpty ?? false)
+            ? response.retryMessage!
+            : (response.failureReason?.isNotEmpty ?? false)
             ? response.failureReason!
-            : 'This choice could not be confirmed. Please try again.';
+            : response.clarification != null
+                ? 'That choice is no longer available. Please use the new choices.'
+                : response.result?.summary ??
+                    'That choice is no longer available. Please make a new request.';
         conversation[current] =
             conversation[current].copyWith(retryMessage: retryMsg);
-        notifyListeners();
-        return conversation[current];
       }
 
       final answered =
@@ -591,6 +598,19 @@ class AppState extends ChangeNotifier {
       _submittingClarificationTurnIds.remove(turnId);
       notifyListeners();
     }
+  }
+
+  Future<UriTurn?> changeTentativeBinding(String turnId) async {
+    final index = conversation.indexWhere((turn) => turn.id == turnId);
+    if (index < 0) return null;
+    final bindingId = conversation[index].tentativeBinding?.bindingId;
+    if (bindingId == null || bindingId.isEmpty) return null;
+    final response = await _client.changeTentativeBinding(bindingId,
+        turnId: 'turn-${DateTime.now().microsecondsSinceEpoch}',
+        modelOverride: conversationModelOverride);
+    conversation.add(response.copyWith(userText: 'Change reference'));
+    notifyListeners();
+    return response;
   }
 
   String _clarificationAnswerLabel(
@@ -978,6 +998,9 @@ class AppState extends ChangeNotifier {
     conversation
       ..clear()
       ..addAll(turns);
+    _historicalTurnIds
+      ..clear()
+      ..addAll(turns.map((turn) => turn.id));
     notifyListeners();
   }
 
@@ -989,6 +1012,7 @@ class AppState extends ChangeNotifier {
   void startNewChat() {
     _client.startNewSession();
     conversation.clear();
+    _historicalTurnIds.clear();
     attachments = <Attachment>[];
     notifyListeners();
   }

@@ -39,6 +39,11 @@ def _outcome(result: BindingResult, journal: Journal, draft: object = None) -> T
     contract = journal.store.rounds[result.next_contract_id].contract if result.next_contract_id else None
     rendered = None
     if contract:
+        if callable(draft):
+            try:
+                draft = draft(contract)
+            except Exception:
+                draft = None
         if validate_render(contract, draft).valid:
             parsed = json.loads(draft) if isinstance(draft, str) else draft
             parsed = (RenderOutput(parsed["question"], tuple(parsed["labels"].items()))

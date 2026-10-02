@@ -238,10 +238,15 @@ class _UriConversationPaneState extends State<UriConversationPane> {
                     compact: widget.compact,
                     onClarificationResponse: (payload) =>
                         state.submitClarificationResponse(turn.id, payload),
+                    onChangeTentativeBinding: !state.isHistoricalTurn(turn.id) &&
+                            turn.tentativeBinding?.bindingId != null
+                        ? () => state.changeTentativeBinding(turn.id)
+                        : null,
                     isSubmittingClarification:
                         state.isSubmittingClarification(turn.id),
                     isReadOnlyClarification:
                         !isLatest ||
+                        state.isHistoricalTurn(turn.id) ||
                         turn.stage != TurnStage.awaitingClarification,
                   );
                 },

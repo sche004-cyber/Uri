@@ -135,6 +135,11 @@ abstract class UriClient {
     Object? modelOverride,
   });
 
+  Future<UriTurn> changeTentativeBinding(String bindingId, {
+    String? turnId,
+    Object? modelOverride,
+  });
+
   /// Approve a previously proposed action, moving it through execution.
   /// Returns the final turn once execution completes.
   Future<UriTurn> approve(String turnId);

@@ -25,6 +25,7 @@ import asyncio
 import json
 import os
 import tempfile
+from uuid import uuid4
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -1019,6 +1020,7 @@ class AskRequest(BaseModel):
     # persisted earlier in the session.
     attached_file_ids: List[str] = Field(default_factory=list)
     clarification_response: Optional[dict] = None
+    clarification_change: Optional[dict] = None
 
 
 class FallbackRoutingRequest(BaseModel):
@@ -1670,7 +1672,8 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
     """Typed response wins all other /ask interpreters and resumes a fresh Brain pass."""
     from types import SimpleNamespace
     from uri_core.core.canonical_execution import (
-        _reference_block, _reference_evidence, _reference_wire, run_canonical_for_ask,
+        _reference_block, _reference_evidence, _reference_render_draft,
+        _reference_wire, run_canonical_for_ask,
     )
     from uri_desktop_seams.reference_clarification.proposal import ReferenceSlot
     from uri_desktop_seams.reference_clarification.service import ReferenceClarificationService
@@ -1680,7 +1683,7 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
     from uri_core.capabilities.wrong_binding import effective_wrong_binding_impact
 
     if pending is None:
-        return _reference_block(payload.session_id, "ROUND_UNAVAILABLE")
+        return _reference_retry_round(context, principal, payload, "ROUND_UNAVAILABLE")
     round_id, contract, metadata_raw = pending
     if payload.clarification_response is None:
         result = _reference_block(payload.session_id)
@@ -1715,6 +1718,7 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
             refresh=lambda: _reference_evidence(slot, orchestrator=context.orchestrator,
                 principal=principal, session_id=payload.session_id, attachments=original_attachments),
             impact_reader=lambda: impact,
+            render_draft=lambda round_contract: _reference_render_draft(round_contract, principal),
         )
         if outcome.contract is not None:
             with service.journal.transaction(principal.user_id, payload.session_id) as state:
@@ -1724,7 +1728,8 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
             result["response"] = {"message": result["clarification"]["question"]}
             return result
         if outcome.status != "BOUND" or not outcome.binding_id:
-            return _reference_block(payload.session_id, outcome.reason or "REFERENCE_REJECTED")
+            return _reference_retry_round(context, principal, payload,
+                                          outcome.reason or "REFERENCE_REJECTED", metadata_raw)
         result = run_canonical_for_ask(
             orchestrator=context.orchestrator, session_id=payload.session_id,
             user_text=metadata["text"], principal=principal,
@@ -1737,7 +1742,92 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
             return _reference_block(payload.session_id, "RESUME_UNAVAILABLE")
         return result
     except (TypeError, KeyError, ValueError, AttributeError):
-        return _reference_block(payload.session_id, "REFERENCE_RESPONSE_INVALID")
+        return _reference_retry_round(context, principal, payload, "REFERENCE_RESPONSE_INVALID")
+
+
+def _reference_retry_round(context, principal, payload, reason, metadata_raw=None):
+    """A rejected card is dead. Rebuild from its saved Brain slot and live source."""
+    from uri_core.core.canonical_execution import _reference_block, _reference_evidence, _reference_render_draft, _reference_wire
+    from uri_desktop_seams.reference_clarification.proposal import ReferenceSlot
+    from uri_desktop_seams.reference_clarification.service import ReferenceClarificationService
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+    from uri_core.capabilities.wrong_binding import effective_wrong_binding_impact
+
+    result = _reference_block(payload.session_id, reason)
+    result["response"] = {"message": "That choice is no longer available. Please make a new request."}
+    try:
+        journal = ClarificationJournal(root=_USER_STATE_ROOT)
+        if metadata_raw is None and isinstance(payload.clarification_response, dict):
+            old_id = payload.clarification_response.get("ambiguity_id")
+            with journal.transaction(principal.user_id, payload.session_id) as state:
+                metadata_raw = state.origins.get("request:" + old_id) if isinstance(old_id, str) else None
+        metadata = json.loads(metadata_raw)
+        slot = ReferenceSlot(**metadata["slot"])
+        dispatch = context.orchestrator.multi_action_dispatch
+        capability = dispatch.registry.get_capability(slot.capability_id)
+        action = capability.get_action(slot.action_name) if capability else None
+        if action is None or not dispatch._action_permitted(slot.capability_id, slot.action_name, principal):
+            return result
+        evidence = _reference_evidence(slot, orchestrator=context.orchestrator,
+            principal=principal, session_id=payload.session_id,
+            attachments=metadata.get("attachments") or [])
+        if evidence.abstained or not evidence.inventory:
+            return result
+        impact, _ = effective_wrong_binding_impact(action)
+        service = ReferenceClarificationService(journal=journal)
+        outcome = service.resolve(user_id=principal.user_id, session_id=payload.session_id,
+            turn_id=uuid4().hex, envelope=evidence, wrong_binding_impact=impact,
+            render_draft=lambda round_contract: _reference_render_draft(round_contract, principal))
+        if outcome.contract is not None:
+            with journal.transaction(principal.user_id, payload.session_id) as state:
+                state.origins["request:" + outcome.contract.ambiguity_id] = metadata_raw
+            result["clarification"] = _reference_wire(outcome)
+            result["response"] = {"message": "That choice expired. Please choose from these current options."}
+    except (TypeError, KeyError, ValueError, AttributeError):
+        pass
+    return result
+
+
+def _reference_change_turn(context, principal, payload):
+    from uri_core.core.canonical_execution import _reference_block, _reference_evidence, _reference_render_draft, _reference_wire
+    from uri_desktop_seams.reference_clarification.proposal import ReferenceSlot
+    from uri_desktop_seams.reference_clarification.service import ReferenceClarificationService
+    from uri_desktop_seams.reference_clarification.store import ClarificationJournal
+    from uri_core.capabilities.wrong_binding import effective_wrong_binding_impact
+
+    blocked = _reference_block(payload.session_id, "CHANGE_UNAVAILABLE")
+    raw = payload.clarification_change
+    binding_id = raw.get("binding_id") if isinstance(raw, dict) else None
+    if not isinstance(binding_id, str) or not binding_id:
+        return blocked
+    try:
+        journal = ClarificationJournal(root=_USER_STATE_ROOT)
+        with journal.transaction(principal.user_id, payload.session_id) as state:
+            metadata_raw = state.origins.get("binding:" + binding_id)
+        metadata = json.loads(metadata_raw)
+        slot = ReferenceSlot(**metadata["slot"])
+        dispatch = context.orchestrator.multi_action_dispatch
+        capability = dispatch.registry.get_capability(slot.capability_id)
+        action = capability.get_action(slot.action_name) if capability else None
+        if action is None or not dispatch._action_permitted(slot.capability_id, slot.action_name, principal):
+            return blocked
+        impact, _ = effective_wrong_binding_impact(action)
+        service = ReferenceClarificationService(journal=journal)
+        outcome = service.open_change(user_id=principal.user_id, session_id=payload.session_id,
+            binding_id=binding_id, turn_id=uuid4().hex,
+            refresh=lambda: _reference_evidence(slot, orchestrator=context.orchestrator,
+                principal=principal, session_id=payload.session_id,
+                attachments=metadata.get("attachments") or []),
+            impact_reader=lambda: impact,
+            render_draft=lambda round_contract: _reference_render_draft(round_contract, principal))
+        if outcome.contract is not None:
+            with journal.transaction(principal.user_id, payload.session_id) as state:
+                state.origins["request:" + outcome.contract.ambiguity_id] = metadata_raw
+            blocked["clarification"] = _reference_wire(outcome)
+            blocked["response"] = {"message": blocked["clarification"]["question"]}
+    except (TypeError, KeyError, ValueError, AttributeError):
+        pass
+    return blocked
 
 
 @app.post("/ask")
@@ -1755,9 +1845,12 @@ def ask(
     reference_enabled = reference_clarification_enabled()
     reference_pending = (_reference_pending(user_id, payload.session_id)
                          if reference_enabled else None)
-    if reference_enabled and (payload.clarification_response is not None or reference_pending is not None):
-        reference_result = _reference_ask_turn(
-            context, principal, payload, reference_pending, current_turn_attachments)
+    if reference_enabled and (payload.clarification_change is not None
+                              or payload.clarification_response is not None or reference_pending is not None):
+        reference_result = (_reference_change_turn(context, principal, payload)
+                            if payload.clarification_change is not None else
+                            _reference_ask_turn(context, principal, payload, reference_pending,
+                                                current_turn_attachments))
         return _finalize_ask_response(
             context, user_id, payload, reference_result, turn_started=turn_started)
 
@@ -2205,7 +2298,49 @@ def _finalize_ask_response(
     }
     if "clarification" in result:
         response["clarification"] = result["clarification"]
+    if "tentative_binding" in result:
+        response["tentative_binding"] = result["tentative_binding"]
+    if "clarification" in response or "tentative_binding" in response:
+        _persist_reference_projection(context, payload, response)
     return response
+
+
+def _persist_reference_projection(context, payload, response):
+    """Keep only display data in the user-scoped transcript, never journal authority."""
+    projection = {}
+    for field in ("clarification", "tentative_binding"):
+        value = response.get(field)
+        if isinstance(value, dict):
+            projection[field] = value
+    if not projection:
+        return
+    try:
+        store = context.orchestrator.conversation_history
+        path = store._path_for(payload.session_id)
+        if path is None:
+            return
+        data = store._load_raw(payload.session_id)
+        turns = data.get("turns", [])
+        if not turns or turns[-1].get("user_text") != payload.text:
+            store.append_turn(session_id=payload.session_id, turn_id=uuid4().hex,
+                user_text=payload.text,
+                response_text=str((response.get("response") or {}).get("message") or ""),
+                status="awaiting_clarification" if "clarification" in projection else response.get("status"))
+            data = store._load_raw(payload.session_id)
+            turns = data.get("turns", [])
+        if not turns:
+            return
+        turns[-1].update(projection)
+        if "clarification" in projection:
+            turns[-1]["status"] = "awaiting_clarification"
+        store._ensure_dir()
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=os.path.dirname(path),
+                                         delete=False) as handle:
+            json.dump(data, handle, ensure_ascii=False)
+            temporary = handle.name
+        os.replace(temporary, path)
+    except (OSError, TypeError, ValueError, AttributeError):
+        return
 
 
 def _sse_event(event: str, data: dict) -> str:
@@ -2296,10 +2431,7 @@ async def ask_stream(
 
     async def _generate():
         from uri_core.core.canonical_execution import reference_clarification_enabled
-        if reference_clarification_enabled() and (
-            payload.clarification_response is not None
-            or _reference_pending(user_id, payload.session_id) is not None
-        ):
+        if reference_clarification_enabled():
             async for chunk in _fallback_to_ask():
                 yield chunk
             return

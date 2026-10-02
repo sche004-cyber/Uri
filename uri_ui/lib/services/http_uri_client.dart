@@ -313,6 +313,7 @@ class HttpUriClient implements UriClient {
     String? turnId,
     Object? modelOverride,
     ClarificationResponsePayload? clarificationResponse,
+    String? clarificationChange,
   }) async {
     final id = turnId ?? 'turn-${DateTime.now().microsecondsSinceEpoch}';
     final timestamp = DateTime.now();
@@ -323,6 +324,7 @@ class HttpUriClient implements UriClient {
         text,
         modelOverride,
         clarificationResponse: clarificationResponse,
+        clarificationChange: clarificationChange,
       );
     } on http.ClientException {
       // A pooled keep-alive connection that went idle (e.g. over a
@@ -337,6 +339,7 @@ class HttpUriClient implements UriClient {
           text,
           modelOverride,
           clarificationResponse: clarificationResponse,
+          clarificationChange: clarificationChange,
         );
       } catch (error) {
         return UriTurn(
@@ -414,10 +417,18 @@ class HttpUriClient implements UriClient {
     );
   }
 
+  @override
+  Future<UriTurn> changeTentativeBinding(String bindingId, {
+    String? turnId,
+    Object? modelOverride,
+  }) => ask('Change reference', turnId: turnId, modelOverride: modelOverride,
+            clarificationChange: bindingId);
+
   Future<http.Response> _askOnce(
     String text,
     Object? modelOverride, {
     ClarificationResponsePayload? clarificationResponse,
+    String? clarificationChange,
   }) {
     return _http
         .post(
@@ -429,6 +440,8 @@ class HttpUriClient implements UriClient {
             'model_override': ?modelOverride,
             if (clarificationResponse != null)
               'clarification_response': clarificationResponse.toJson(),
+            if (clarificationChange != null)
+              'clarification_change': {'binding_id': clarificationChange},
           }),
         )
         // The backend runs a multi-step reasoning chain against a
@@ -557,6 +570,11 @@ class HttpUriClient implements UriClient {
         stage: TurnStage.awaitingClarification,
         understanding: understanding,
         clarification: clarification,
+        retryMessage: responseData is Map &&
+                responseData['message'] is String &&
+                responseData['message'] != clarification.question
+            ? responseData['message'] as String
+            : null,
         tentativeBinding: tentativeBinding,
         servingProvider: servingProvider,
         servingModel: servingModel,

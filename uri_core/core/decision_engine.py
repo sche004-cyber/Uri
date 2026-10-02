@@ -108,7 +108,7 @@ several are needed, never to guess parameters in detail (full schemas
 are still looked up only after you select a capability).
 
 Decide FIRST what kind of situation this is, then only what to do about
-it. Return ONLY a single valid JSON object with exactly these keys:
+it. Return ONLY a single valid JSON object with these required keys:
 goal, mode, capability, actions, clarification, unsupported_reason,
 requires_approval, confidence, reason - every key present, even when
 its value is null. Answer the questions below, in this order, before
@@ -351,14 +351,15 @@ action already happened. Return nothing but the JSON object.
 """
 
 _REFERENCE_SLOT_PROMPT = """
-When a user reference must identify a real action input, you may add optional
+The nine decision keys are required. reference_slots is the only optional key.
+When a user reference must identify a real action input, add
 reference_slots to the decision. Each slot has exactly:
 {"span":{"start":0,"end":1,"text":"..."},"ref_key":"...",
 "target":{"capability_id":"...","action_name":"...","argument_name":"..."},
 "relation":"direct|previous|latest|revision|owner|contrast|same_as",
 "source_class":"any|file|attachment|conversation|gmail|drive|memory"}.
 Offsets index the exact latest user_text. Target a real action and parameter
-from the directory. URI validates and grounds these proposals; do not invent
+from capability_action_arguments. URI validates and grounds these proposals; do not invent
 candidate IDs or claim a binding or approval. Omit the field if no input
 reference needs grounding.
 """
@@ -546,6 +547,24 @@ def build_decision_request(
                 }
         if affordances:
             request["capability_action_affordances"] = affordances
+        if os.environ.get("URI_INT_ARN_1_ENABLED") == "1":
+            arguments = {}
+            for capability_id, actions in affordances.items():
+                detail = capability_directory.describe(capability_id) or {}
+                schemas = detail.get("action_schemas") or {}
+                action_arguments = {}
+                for name, schema in schemas.items():
+                    if name not in actions or not isinstance(schema, dict):
+                        continue
+                    parameters = schema.get("parameters") or {}
+                    if isinstance(parameters, dict):
+                        parameters = parameters.get("properties", parameters)
+                    if isinstance(parameters, dict):
+                        action_arguments[name] = sorted(parameters)
+                if action_arguments:
+                    arguments[capability_id] = action_arguments
+            if arguments:
+                request["capability_action_arguments"] = arguments
 
     return request
 
