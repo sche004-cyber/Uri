@@ -308,3 +308,12 @@ Authority: Chetan's INT-ARN-1 approvals. Implemented by Codex; reviewed, regress
 |---|---|
 | `uri_core/core/decision_engine.py` | Flag-ON decision prompt drops the duplicate mode glossary so it is no larger than flag-OFF plus slot instructions. |
 | `uri_core/core/canonical_execution.py` | With the flag on, an unreachable Brain reports that truthfully (not a reference question) and never executes. |
+
+## 2026-10-03 uploaded-file use and local drafting latency repair
+
+Authority: Chetan's instruction for the two everyday-use defects on `experimental/desktop-recovery-repair`. Claude owns blob pin updates.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/decision_engine.py` | Guide the Brain to read uploaded content before answering and request a filename when multiple files are plausible. |
+| `uri_core/core/response_drafting.py` | Keep outcome, evidence, and authority rules while shortening repeated drafting instructions; ground file answers in extracted text and report truncation or unreadability honestly. |

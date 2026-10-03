@@ -228,6 +228,14 @@ picking `mode`:
            short choice follow-up, use recent_conversation to supply the
            original topic as title, output_format="pptx", the chosen
            theme, and include_images when the user requested photos.
+         * Uploaded files: summarizing, explaining, comparing, or answering
+           questions about a file's contents requires `read_attached_file`
+           first. Conversion capabilities change file format; they do not
+           read content for an answer. Use current_turn_attachments as
+           evidence of filenames only, never as file content. If several
+           attached files could match an unnamed or ambiguous reference,
+           choose clarification and ask which filename the user means in
+           your own words; do not guess or read all of them.
     4. Given your best candidate from question 3, is a concrete,
        specific required input actually missing (e.g. an identifier, a
        search term the user never gave) - not merely "I'm not fully
