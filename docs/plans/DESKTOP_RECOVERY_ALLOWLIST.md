@@ -317,3 +317,11 @@ Authority: Chetan's instruction for the two everyday-use defects on `experimenta
 |---|---|
 | `uri_core/core/decision_engine.py` | Guide the Brain to read uploaded content before answering and request a filename when multiple files are plausible. |
 | `uri_core/core/response_drafting.py` | Keep outcome, evidence, and authority rules while shortening repeated drafting instructions; ground file answers in extracted text and report truncation or unreadability honestly. |
+
+## 2026-10-03 desktop Ollama large-model residency repair
+
+Authority: Chetan's direct desktop change instruction on `experimental/desktop-recovery-repair`. The frozen path below requires User frozen-scope approval before commit; this row records the proposed exception and does not grant it.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/model_providers/ollama_provider.py` | Wrap both Ollama completion paths with the desktop residency guard so large local Brain calls unload other idle large models before inference. |

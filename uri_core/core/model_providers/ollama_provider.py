@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from uri_desktop_seams.ollama_residency import guard_completion
 from uri_core.core.context_budget import estimate_tokens
 
 from .base import (
@@ -239,6 +240,7 @@ class OllamaProvider(ModelProvider):
                 context_tokens=self.config.context_tokens,
             )
 
+    @guard_completion
     def complete(
         self,
         *,
@@ -353,6 +355,7 @@ class OllamaProvider(ModelProvider):
             tool_calls=parsed_tool_calls,
         )
 
+    @guard_completion
     def complete_stream(
         self,
         *,

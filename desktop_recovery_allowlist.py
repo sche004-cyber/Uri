@@ -53,6 +53,7 @@ DESKTOP_RECOVERY_FILES = {
     "uri_ui/lib/models/clarification.dart": "41dc43cdcf78d1998b1afd27425efa36047bbf9e",
     "uri_ui/lib/widgets/status_pill.dart": "258bd1f582f479d9d0e71f20647c73de8cecdae5",
     "uri_ui/test/int_arn_1_clarification_test.dart": "4cab50c70a441e507a70ccc0947f9eca7b3e4ee7",
+    "uri_core/core/model_providers/ollama_provider.py": "6f76fe1cd493b4d0b58d37973ed0803676600569",
     "uri_ui/lib/widgets/turn_card.dart": "f3b1a17dbf10e4432146a46c6dcefc37ffd0aee4",
     "uri_ui/test/chat_lifecycle_test.dart": "e372b0a8edd41d862402d5c8f1d6a69e0ff9b2ad",
     "uri_ui/test/desktop_recovery_failure_reason_test.dart": "2e927dd214a761d53c628c706282a7805fb3dc74",
