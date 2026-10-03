@@ -337,3 +337,15 @@ Authority: Chetan's direct INT-ARN-1 implementer instruction of 2026-10-03. The 
 | `uri_core/app/server.py` | Expose the summary as `reference_diagnostics` only with both INT-ARN-1 and diagnostics flags enabled. |
 
 The root-level `int_arn_1_live_battery.py` and `test_int_arn_1_diagnostics.py` are outside frozen directories.
+
+## 2026-10-03 INT-ARN-1 evidence-built clarification and route repair
+
+Authority: Chetan's direct approved option 1 implementer instruction of 2026-10-03. The flag remains OFF by default. These rows record the frozen paths changed for independent review and pinning.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/canonical_execution.py` | Derive a clarification target from a registered file argument after a Brain clarification, use the existing evidence/RAR/binding path, and keep unresolved reference decisions out of fallback. |
+| `uri_desktop_seams/reference_clarification/service.py` | Accept a bounded, evidence-validated Brain question while retaining frozen render validation and template fallback for every other round. |
+| `uri_core/app/server.py` | Restore ordinary canonical fallback when the flag is on and no reference round is pending or built. |
+| `test_int_arn_1_slice_c.py` | Mocked-Brain card, typed resumption, fallback and flag-state regression coverage. |
+| `docs/plans/INT_ARN_1_PLAN.md` | Record the User-approved design change and acceptance tests. |

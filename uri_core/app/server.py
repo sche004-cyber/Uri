@@ -2093,10 +2093,6 @@ def ask(
                 "gate_outcome": "DEGRADED",
             }
 
-    if result is None and reference_enabled:
-        from uri_core.core.canonical_execution import _reference_block
-        result = _reference_block(payload.session_id, "CANONICAL_REFERENCE_ROUTE_UNAVAILABLE")
-
     if result is None:
         result = context.orchestrator.process_user_input(
             session_id=payload.session_id,

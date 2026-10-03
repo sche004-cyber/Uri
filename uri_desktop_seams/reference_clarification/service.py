@@ -35,7 +35,8 @@ class TurnOutcome:
     reason: str | None = None
 
 
-def _outcome(result: BindingResult, journal: Journal, draft: object = None) -> TurnOutcome:
+def _outcome(result: BindingResult, journal: Journal, draft: object = None,
+             render_validator: Callable[[ClarificationContract, object], bool] | None = None) -> TurnOutcome:
     contract = journal.store.rounds[result.next_contract_id].contract if result.next_contract_id else None
     rendered = None
     if contract:
@@ -44,7 +45,7 @@ def _outcome(result: BindingResult, journal: Journal, draft: object = None) -> T
                 draft = draft(contract)
             except Exception:
                 draft = None
-        if validate_render(contract, draft).valid:
+        if validate_render(contract, draft).valid or (render_validator is not None and render_validator(contract, draft)):
             parsed = json.loads(draft) if isinstance(draft, str) else draft
             parsed = (RenderOutput(parsed["question"], tuple(parsed["labels"].items()))
                       if isinstance(parsed, dict) else parsed)
@@ -177,7 +178,8 @@ class ReferenceClarificationService:
 
     def resolve(self, *, user_id: str, session_id: str, turn_id: str,
                 envelope: EvidenceEnvelope, wrong_binding_impact: WrongBindingImpact | str | None,
-                render_draft: object = None, trusted_selected_id: str | None = None) -> TurnOutcome:
+                render_draft: object = None, trusted_selected_id: str | None = None,
+                render_validator: Callable[[ClarificationContract, object], bool] | None = None) -> TurnOutcome:
         if not turn_id or envelope.abstained or any(item.user_id != user_id for item in envelope.inventory):
             return TurnOutcome(BindingState.REJECTED, "RETRY_REQUIRED", reason="source evidence unavailable")
         query = envelope.query
@@ -211,7 +213,7 @@ class ReferenceClarificationService:
                 if result.binding_id:
                     journal.origins[key] = "RAR_CERTAINTY" if result.state == BindingState.CONFIRMED else "RAR_TENTATIVE"
                     journal.binding_expires[key] = (datetime.now(timezone.utc) + timedelta(seconds=900)).isoformat()
-            return _outcome(result, journal, render_draft)
+            return _outcome(result, journal, render_draft, render_validator)
 
     def respond(self, *, user_id: str, session_id: str, response: ClarificationResponse,
                 refresh: Callable[[], EvidenceEnvelope], impact_reader: Callable[[], WrongBindingImpact | str | None],

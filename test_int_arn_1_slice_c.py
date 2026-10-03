@@ -149,6 +149,66 @@ class SliceCAskTests(unittest.TestCase):
         self.assertEqual(len(self.calls), 1)
         self.orchestrator.process_user_input.assert_not_called()
 
+    def _clarifying_brain(self, **kwargs):
+        return DecisionOutcome("ok", {
+            "goal": "Open a file", "mode": "clarification", "capability": "Demo",
+            "actions": [], "clarification": {"question": "I see two files: alpha.pdf and beta.pdf. Which one would you like me to open?",
+                                           "missing_field": "file_id"},
+            "unsupported_reason": None, "requires_approval": False,
+            "confidence": "high", "reason": "A file choice is needed",
+        })
+
+    def test_evidence_built_round_uses_brain_question_and_resumes_once(self):
+        self.decision.side_effect = self._clarifying_brain
+        first = self.client.post("/ask", json={"session_id": "s1", "text": "Open a file",
+                                                "attached_file_ids": [self.first.file_id, self.second.file_id]})
+        self.assertEqual(first.status_code, 200)
+        card = first.json()["clarification"]
+        self.assertEqual(card["question"], "I see two files: alpha.pdf and beta.pdf. Which one would you like me to open?")
+        self.assertEqual({item["candidate_id"] for item in card["options"]},
+                         {f"file:{USER_ID}:{self.first.file_id}", f"file:{USER_ID}:{self.second.file_id}"})
+        self.assertEqual(self.calls, [])
+        selected = card["options"][0]
+        second = self.client.post("/ask", json={"session_id": "s1", "text": "",
+            "clarification_response": {"ambiguity_id": card["ambiguity_id"],
+                "response_kind": "CANDIDATE", "candidate_id": selected["candidate_id"],
+                "candidate_set_fingerprint": card["candidate_set_fingerprint"]}})
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(second.json()["execution"]["status"], "success")
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(self.calls[0]["file_id"], selected["candidate_id"].split(":")[-1])
+
+    def test_evidence_round_needs_two_files_and_file_argument(self):
+        self.decision.side_effect = self._clarifying_brain
+        self.file_store.delete(self.second.file_id)
+        one = self.client.post("/ask", json={"session_id": "s1", "text": "Open a file",
+                                              "attached_file_ids": [self.first.file_id]})
+        self.assertNotIn("clarification", one.json())
+        self.assertEqual(one.json()["response"]["message"], {
+            "question": "I see two files: alpha.pdf and beta.pdf. Which one would you like me to open?",
+            "missing_field": "file_id"})
+
+    def test_evidence_round_ignores_non_file_action(self):
+        from uri_core.capabilities.base import ActionSchema
+        self.action.parameters = ActionSchema({"query": {"type": "string"}})
+        self.decision.side_effect = self._clarifying_brain
+        result = self.client.post("/ask", json={"session_id": "s1", "text": "Open a file",
+                                                "attached_file_ids": [self.first.file_id, self.second.file_id]})
+        self.assertNotIn("clarification", result.json())
+        self.assertEqual(result.json()["execution"]["status"], "not_executed")
+
+    def test_flag_on_canonical_fallback_reaches_ordinary_route(self):
+        for text in ("compare them", "the one I sent before", "What is 7 plus 5?"):
+            with self.subTest(text=text), patch(
+                "uri_core.core.canonical_execution.run_canonical_for_ask",
+                return_value={"_canonical_fallback": True, "fallback_reason": "engine_failure:INVALID_PROPOSAL"},
+            ):
+                result = self.client.post("/ask", json={"session_id": "s1", "text": text})
+                self.assertEqual(result.status_code, 200)
+                self.assertEqual(result.json()["status"], "legacy")
+        self.assertEqual(self.orchestrator.process_user_input.call_count, 3)
+
+
     def test_invalid_selection_never_dispatches(self):
         first = self.client.post("/ask", json={"session_id": "s1", "text": "open that document"})
         card = first.json()["clarification"]

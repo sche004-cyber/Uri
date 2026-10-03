@@ -361,6 +361,114 @@ def _reference_evidence(slot: Any, *, orchestrator: Any, principal: Any,
     )
 
 
+def _evidence_built_file_slot(contract: Dict[str, Any], *, user_text: str,
+                              session_id: str, orchestrator: Any, principal: Any,
+                              attachments: Optional[List[Dict[str, Any]]],
+                              resumed: Optional[Dict[str, Any]] = None):
+    """Derive a file target from a registered action after a Brain clarification.
+
+    The empty expression means that the Brain supplied no reference span. RAR
+    still decides the ambiguity from the complete, verified file inventory.
+    """
+    from uri_desktop_seams.reference_clarification.proposal import ReferenceSlot
+
+    if principal is None or not getattr(principal, "user_id", None) or not session_id:
+        return None
+    if contract.get("mode") not in ({"clarification", "single_action", "approval_required"}
+                                    if resumed is not None else {"clarification"}):
+        return None
+    capability_id = contract.get("capability")
+    dispatch = getattr(orchestrator, "multi_action_dispatch", None)
+    registry = getattr(dispatch, "registry", None)
+    capability = registry.get_capability(capability_id) if registry and isinstance(capability_id, str) else None
+    if capability is None:
+        return None
+    resume_slot = None
+    if resumed is not None:
+        try:
+            resume_slot = ReferenceSlot(**resumed["slot"])
+        except (KeyError, TypeError, ValueError):
+            return None
+        if resume_slot.capability_id != capability_id or resume_slot.source_class != "file":
+            return None
+    proposed_actions = contract.get("actions") or []
+    if not isinstance(proposed_actions, list) or len(proposed_actions) > 1:
+        return None
+    choices = []
+    for action_name, action in capability.actions.items():
+        if resume_slot is not None and action_name != resume_slot.action_name:
+            continue
+        if proposed_actions and (not isinstance(proposed_actions[0], dict)
+                                 or proposed_actions[0].get("name") != action_name):
+            continue
+        parameters = getattr(getattr(action, "parameters", None), "parameters", {})
+        file_fields = [name for name, spec in parameters.items()
+                       if name in {"file_id", "attachment_id"}
+                       or (isinstance(spec, dict) and spec.get("format") in {"file", "attachment"})]
+        if len(file_fields) != 1 or (resume_slot is not None and file_fields[0] != resume_slot.argument_name):
+            continue
+        if not dispatch._action_permitted(capability_id, action_name, principal):
+            continue
+        choices.append((action_name, file_fields[0]))
+    if len(choices) != 1:
+        return None
+    action_name, argument_name = choices[0]
+    slot = resume_slot or ReferenceSlot(0, 0, "", "evidence_file", capability_id,
+                                        action_name, argument_name, "direct", "file")
+    if resume_slot is None:
+        try:
+            envelope = _reference_evidence(slot, orchestrator=orchestrator, principal=principal,
+                                           session_id=session_id, attachments=attachments)
+        except Exception:
+            return None
+        if envelope.abstained or len(envelope.inventory) < 2:
+            return None
+    original_inputs = proposed_actions[0].get("inputs") if proposed_actions else {}
+    if not isinstance(original_inputs, dict):
+        return None
+    action_contract = {"name": action_name, "inputs": dict(original_inputs)}
+    if argument_name in action_contract["inputs"]:
+        return None
+    reference_slot = {
+        "span": {"start": 0, "end": 0, "text": ""}, "ref_key": slot.ref_key,
+        "target": {"capability_id": capability_id, "action_name": action_name,
+                   "argument_name": argument_name},
+        "relation": "direct", "source_class": "file",
+    }
+    return ({**contract, "mode": "single_action" if resumed is not None else "clarification",
+             "actions": [action_contract], "reference_slots": [reference_slot]}, slot)
+
+
+def _evidence_question_draft(contract: Any, clarification: Any, user_text: str) -> Any:
+    """Use the Brain's bounded question with URI-owned option labels."""
+    from uri_v1.reference_clarification.render_contracts import RenderOutput
+    from uri_v1.reference_clarification.render_validator import _ALLOW, _tokens, validate_render
+    from uri_v1.reference_clarification.render_contracts import make_render_request
+    from uri_v1.reference_clarification.template_renderer import render_template
+
+    question = clarification.get("question") if isinstance(clarification, dict) else None
+    if not isinstance(question, str) or not question.strip() or len(question) > 300:
+        return None
+    if any(ord(char) < 32 and char not in "\t\n" for char in question):
+        return None
+    template = render_template(contract)
+    draft = RenderOutput(question.strip(), template.labels)
+    verdict = validate_render(contract, draft)
+    if verdict.valid:
+        return draft
+    # The frozen validator has a deliberately tiny generic vocabulary. A
+    # Brain question may use the user's own task verb and verified filenames;
+    # admit only that otherwise-unsupported vocabulary, never new facts.
+    if set(verdict.flags) != {"V-UNSUPPORTED-FACT"} or not question.rstrip().endswith("?"):
+        return None
+    request = make_render_request(contract)
+    grounded = (_tokens(user_text) | _tokens(request.reference) | _ALLOW
+                | set().union(*(_tokens(" ".join(value for _, value in facts))
+                                 for _, facts in request.slots))
+                | {"see", "attached", "files", "two" if len(contract.scope_candidate_ids) == 2 else ""})
+    return draft if _tokens(question) <= grounded else None
+
+
 def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: str,
                        orchestrator: Any, principal: Any, directory: Any,
                        attachments: Optional[List[Dict[str, Any]]],
@@ -378,10 +486,18 @@ def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: 
     )
     from uri_v1.turn.rar_clarification_contract import BindingState
 
+    synthetic = None
     if "reference_slots" not in contract:
-        if resumed is not None:
-            return contract, _reference_block(session_id, "RESUMED_SLOT_MISSING")
-        return contract, None
+        synthetic = _evidence_built_file_slot(
+            contract, user_text=user_text, session_id=session_id,
+            orchestrator=orchestrator, principal=principal, attachments=attachments,
+            resumed=resumed,
+        )
+        if synthetic is None:
+            if resumed is not None:
+                return contract, _reference_block(session_id, "RESUMED_SLOT_MISSING")
+            return contract, None
+        contract, synthetic = synthetic
     dispatch = getattr(orchestrator, "multi_action_dispatch", None)
     registry = getattr(dispatch, "registry", None)
     argument_map = {}
@@ -392,7 +508,7 @@ def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: 
         action = registry.get_capability(cap_id).get_action(item.get("name")) if registry and registry.get_capability(cap_id) else None
         parameters = getattr(getattr(action, "parameters", None), "parameters", {}) if action else {}
         argument_map[(cap_id, item.get("name"))] = frozenset(parameters)
-    slots = validate_reference_slots(contract, user_text, argument_map)
+    slots = (synthetic,) if synthetic is not None else validate_reference_slots(contract, user_text, argument_map)
     if not slots:
         return contract, None
     if principal is None or not principal.user_id or not session_id or registry is None:
@@ -424,10 +540,20 @@ def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: 
             candidate_id, state = binding_record.candidate_id, binding_record.state
             resumed_used = True
         else:
+            if synthetic is not None:
+                render_draft = lambda round_contract: _evidence_question_draft(
+                    round_contract, contract.get("clarification"), user_text)
+                render_validator = lambda round_contract, draft: (
+                    draft is not None and draft == _evidence_question_draft(
+                        round_contract, contract.get("clarification"), user_text))
+            else:
+                render_draft = lambda round_contract: _reference_render_draft(round_contract, principal)
+                render_validator = None
             outcome = service.resolve(user_id=principal.user_id, session_id=session_id,
                                       turn_id=uuid4().hex, envelope=envelope,
                                       wrong_binding_impact=impact,
-                                      render_draft=lambda round_contract: _reference_render_draft(round_contract, principal))
+                                      render_draft=render_draft,
+                                      render_validator=render_validator)
             if outcome.contract is not None:
                 _record_reference_stage(path=telemetry_path, session_id=session_id, stage="resolution",
                     outcome="clarification", started=stage_started, source_class=slot.source_class,
@@ -1440,6 +1566,8 @@ def run_canonical_for_ask(
     record_canonical_telemetry(telemetry, path=log_path)
 
     if fallback_required:
+        if reference_clarification_enabled() and contract.get("reference_slots"):
+            return finish_reference(_reference_block(session_id, "REFERENCE_ROUTE_UNAVAILABLE"), fallback=True)
         return finish_reference({
             "_canonical_fallback": True,
             "fallback_reason": fallback_reason,
