@@ -399,6 +399,7 @@ class DecisionOutcome:
     invalid_reason: Optional[str] = None
     error: Optional[str] = None
     raw_text: Optional[str] = None
+    reference_diagnostics: Optional[Dict[str, Any]] = None
 
 
 def _foundational_ids(capability_directory: CapabilityDirectory) -> List[str]:
@@ -734,6 +735,7 @@ def propose_decision(
     try:
         if model_callable is not None:
             raw_text = model_callable(request_json)
+            model_id = None
         else:
             response = get_router().attempt(
                 ROLE_REASONING,
@@ -746,8 +748,13 @@ def propose_decision(
                 max_tokens=500,
             )
             raw_text = response.content
+            model_id = response.model
     except Exception as exc:
-        return DecisionOutcome(status="unavailable", error=str(exc))
+        diagnostics = ({"model_id": None, "decision_mode": None, "capability": None,
+                        "raw_reference_slots": False, "slot_count": 0, "slot_validation": []}
+                       if reference_clarification_enabled() else None)
+        return DecisionOutcome(status="unavailable", error=str(exc),
+                               reference_diagnostics=diagnostics)
 
     text = (raw_text or "").strip()
     if text.startswith("```"):
@@ -756,7 +763,12 @@ def propose_decision(
     try:
         parsed = json.loads(text)
     except (TypeError, ValueError):
-        return DecisionOutcome(status="invalid", invalid_reason="malformed_json", raw_text=text[:500])
+        diagnostics = ({"model_id": model_id, "decision_mode": None, "capability": None,
+                        "raw_reference_slots": '"reference_slots"' in text,
+                        "slot_count": 0, "slot_validation": []}
+                       if reference_clarification_enabled() else None)
+        return DecisionOutcome(status="invalid", invalid_reason="malformed_json",
+                               raw_text=text[:500], reference_diagnostics=diagnostics)
 
     known_ids = set()
     if capability_directory is not None:
@@ -766,9 +778,26 @@ def propose_decision(
             known_ids = set()
 
     outcome = _validate_contract(parsed, known_ids, capability_directory)
+    diagnostics = None
+    if reference_clarification_enabled():
+        raw_slots = parsed.get("reference_slots") if isinstance(parsed, dict) else None
+        diagnostics = {
+            "model_id": model_id,
+            "decision_mode": parsed.get("mode") if outcome.status == "ok" else None,
+            "capability": parsed.get("capability") if outcome.status == "ok" else None,
+            "raw_reference_slots": isinstance(parsed, dict) and "reference_slots" in parsed,
+            "slot_count": len(raw_slots) if isinstance(raw_slots, list) else 0,
+            "slot_validation": [],
+        }
     if outcome.status == "invalid":
+        if diagnostics is not None and isinstance(parsed, dict) and isinstance(parsed.get("reference_slots"), list):
+            diagnostics["slot_validation"] = [
+                {"passed": False, "reason": "DECISION_INVALID"}
+                for _ in parsed["reference_slots"][:8]
+            ]
         return DecisionOutcome(
-            status=outcome.status, invalid_reason=outcome.invalid_reason, raw_text=text[:500]
+            status=outcome.status, invalid_reason=outcome.invalid_reason, raw_text=text[:500],
+            reference_diagnostics=diagnostics,
         )
     if os.environ.get("URI_INT_ARN_1_ENABLED") == "1" and "reference_slots" in parsed:
         from uri_desktop_seams.reference_clarification.proposal import (
@@ -793,8 +822,50 @@ def propose_decision(
         try:
             validate_reference_slots(parsed, str(turn_state_data.get("turn", {}).get("user_text") or ""), action_arguments)
         except (InvalidReferenceProposal, TypeError, ValueError) as exc:
-            return DecisionOutcome(status="invalid", invalid_reason=f"invalid_reference_slots:{exc}")
-    return outcome
+            # Each verdict is checked independently. A whole-list failure (for
+            # example duplicate or excessive slots) is also reflected without
+            # storing spans, expressions, targets, or exception text.
+            category = _reference_rejection_category(str(exc))
+            diagnostics["slot_validation"] = _reference_slot_verdicts(
+                parsed, str(turn_state_data.get("turn", {}).get("user_text") or ""),
+                action_arguments, whole_list_category=category)
+            return DecisionOutcome(status="invalid", invalid_reason=f"invalid_reference_slots:{exc}",
+                                   reference_diagnostics=diagnostics)
+        diagnostics["slot_validation"] = [
+            {"passed": True, "reason": None} for _ in parsed["reference_slots"]
+        ]
+    return (DecisionOutcome(status=outcome.status, contract=outcome.contract,
+                            reference_diagnostics=diagnostics)
+            if diagnostics is not None else outcome)
+
+
+def _reference_rejection_category(reason: str) -> str:
+    """Map validator errors to fixed codes; never expose proposal content."""
+    categories = {
+        "reference_slots must be a bounded list": "SLOT_LIST",
+        "invalid slot shape": "SLOT_SHAPE", "invalid span shape": "SPAN_SHAPE",
+        "invalid target shape": "TARGET_SHAPE", "span does not match the turn": "SPAN_MISMATCH",
+        "invalid action target": "ACTION_TARGET", "unknown action argument": "UNKNOWN_ARGUMENT",
+        "invalid slot metadata": "SLOT_METADATA", "duplicate slot": "DUPLICATE_SLOT",
+    }
+    return categories.get(reason, "OTHER")
+
+
+def _reference_slot_verdicts(parsed, user_text, action_arguments, *, whole_list_category):
+    from uri_desktop_seams.reference_clarification.proposal import validate_reference_slots
+    verdicts = []
+    slots = parsed.get("reference_slots")
+    if not isinstance(slots, list):
+        return verdicts
+    for slot in slots[:8]:
+        try:
+            validate_reference_slots({"reference_slots": [slot]}, user_text, action_arguments)
+            verdicts.append({"passed": True, "reason": None})
+        except (TypeError, ValueError) as exc:
+            verdicts.append({"passed": False, "reason": _reference_rejection_category(str(exc))})
+    if verdicts and all(item["passed"] for item in verdicts):
+        verdicts[-1] = {"passed": False, "reason": whole_list_category}
+    return verdicts
 
 
 # ---------------------------------------------------------------------

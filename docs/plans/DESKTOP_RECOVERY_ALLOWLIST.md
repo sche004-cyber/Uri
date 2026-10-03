@@ -325,3 +325,15 @@ Authority: Chetan's direct desktop change instruction on `experimental/desktop-r
 | Path | Justification |
 |---|---|
 | `uri_core/core/model_providers/ollama_provider.py` | Wrap both Ollama completion paths with the desktop residency guard so large local Brain calls unload other idle large models before inference. |
+
+## 2026-10-03 INT-ARN-1 diagnostic telemetry and live battery
+
+Authority: Chetan's direct INT-ARN-1 implementer instruction of 2026-10-03. The flag remains OFF by default; this row records the exact frozen paths changed for independent review and pinning.
+
+| Path | Justification |
+|---|---|
+| `uri_core/core/decision_engine.py` | Preserve a text-free account of raw Brain reference-slot presence, count, per-slot validation, and serving decision model. |
+| `uri_core/core/canonical_execution.py` | Append one decision summary to the existing user-scoped reference telemetry path and carry it to `/ask` without changing execution authority. |
+| `uri_core/app/server.py` | Expose the summary as `reference_diagnostics` only with both INT-ARN-1 and diagnostics flags enabled. |
+
+The root-level `int_arn_1_live_battery.py` and `test_int_arn_1_diagnostics.py` are outside frozen directories.

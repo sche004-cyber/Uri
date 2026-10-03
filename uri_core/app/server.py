@@ -2313,6 +2313,10 @@ def _finalize_ask_response(
     }
     if "clarification" in result:
         response["clarification"] = result["clarification"]
+    if (os.environ.get("URI_INT_ARN_1_ENABLED") == "1"
+            and os.environ.get("URI_INT_ARN_1_DIAGNOSTICS") == "1"
+            and isinstance(result.get("_reference_diagnostics"), dict)):
+        response["reference_diagnostics"] = result["_reference_diagnostics"]
     if "tentative_binding" in result:
         response["tentative_binding"] = result["tentative_binding"]
     if "clarification" in response or "tentative_binding" in response:

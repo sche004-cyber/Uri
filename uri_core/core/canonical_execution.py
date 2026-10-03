@@ -1219,6 +1219,32 @@ def run_canonical_for_ask(
     fallback_reason: Optional[str] = None
     canonical_attempted = False
     reference_dispatch_started = time.monotonic()
+    decision = None
+    reference_recorded = False
+
+    def finish_reference(result: Optional[Dict[str, Any]], *, fallback: bool = False):
+        nonlocal reference_recorded
+        if not reference_clarification_enabled() or reference_recorded or decision is None:
+            return result
+        details = getattr(decision, "reference_diagnostics", None)
+        if details is None:
+            return result
+        reference_recorded = True
+        outcome = ("card" if isinstance(result, dict) and result.get("clarification") else
+                   "blocked" if fallback or (isinstance(result, dict) and
+                   ((result.get("execution") or {}).get("reason") or
+                    (result.get("execution") or {}).get("status") in
+                    {"not_executed", "blocked", "unavailable"})) else
+                   "bound" if details["raw_reference_slots"] and details["slot_count"] else
+                   "no slot")
+        summary = {
+            "session_id": session_id, **details,
+            "clarification_round_built": outcome == "card", "outcome": outcome,
+        }
+        record_shadow_trace({"event": "int_arn_1_decision", **summary}, path=log_path)
+        if isinstance(result, dict):
+            result["_reference_diagnostics"] = summary
+        return result
 
     try:
         turn_state_result, directory = build_turn_state_and_directory(
@@ -1237,10 +1263,10 @@ def run_canonical_for_ask(
 
         if decision.status != "ok" or decision.contract is None:
             if reference_clarification_enabled() and decision.status == "unavailable":
-                return _reference_block(session_id, "BRAIN_UNAVAILABLE")
+                return finish_reference(_reference_block(session_id, "BRAIN_UNAVAILABLE"))
             detail = str(decision.invalid_reason or decision.status)
             if reference_clarification_enabled() and "reference_slots" in detail:
-                return _reference_block(session_id, "INVALID_REFERENCE_PROPOSAL")
+                return finish_reference(_reference_block(session_id, "INVALID_REFERENCE_PROPOSAL"))
             terminal = "provider" in detail.lower() and "unavailable" in detail.lower()
             fallback_reason = (
                 "MODEL_TERMINALLY_UNAVAILABLE" if terminal
@@ -1257,12 +1283,13 @@ def run_canonical_for_ask(
                         journal_root=reference_root, telemetry_path=log_path,
                     )
                 except Exception:
-                    return _reference_block(session_id, "REFERENCE_VALIDATION_UNAVAILABLE")
+                    return finish_reference(_reference_block(session_id, "REFERENCE_VALIDATION_UNAVAILABLE"))
                 if reference_terminal is not None:
-                    return reference_terminal
+                    return finish_reference(reference_terminal)
                 if contract is not decision.contract:
                     from uri_core.core.decision_engine import DecisionOutcome
-                    decision = DecisionOutcome(status="ok", contract=contract)
+                    decision = DecisionOutcome(status="ok", contract=contract,
+                        reference_diagnostics=decision.reference_diagnostics)
             reference_dispatch_started = time.monotonic()
             gate_result = evaluate_gates(
                 decision, capability_directory=directory, principal=principal,
@@ -1365,7 +1392,7 @@ def run_canonical_for_ask(
                     ]
                 if (reference_clarification_enabled() and contract.get("reference_slots")
                         and not _reference_mark_pending(contract, principal, session_id, reference_root)):
-                    return _reference_block(session_id, "EXECUTION_RECORD_UNAVAILABLE")
+                    return finish_reference(_reference_block(session_id, "EXECUTION_RECORD_UNAVAILABLE"))
                 envelope = _execute_canonical(
                     contract, orchestrator=orchestrator, session_id=session_id,
                     user_text=user_text, principal=principal,
@@ -1413,11 +1440,11 @@ def run_canonical_for_ask(
     record_canonical_telemetry(telemetry, path=log_path)
 
     if fallback_required:
-        return {
+        return finish_reference({
             "_canonical_fallback": True,
             "fallback_reason": fallback_reason,
             "gate_outcome": getattr(gate_result, "outcome", "INVALID_PROPOSAL"),
-        }
+        }, fallback=True)
 
     envelope = dict(envelope)
     envelope["session_id"] = session_id
@@ -1425,6 +1452,7 @@ def run_canonical_for_ask(
         envelope["tentative_binding"] = contract["_tentative_bindings"][0]
     envelope.setdefault("semantic_analysis", None)
     envelope.setdefault("error", None)
+    finish_reference(envelope)
 
     # M32 B1.6: `_draft_narrative_safely` already guarantees (by its own
     # docstring and internal except clauses) that it never raises - any
