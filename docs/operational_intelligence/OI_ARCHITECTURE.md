@@ -98,14 +98,17 @@ OQ overlay + OI files), the same method as the consolidation runbook.
   channel (no action ran).
 - **Multi-step.** NORMAL-tier planner with a JSON schema (thinking + grammar verified to work together on b11425).
   Deterministic validation: ≤ 8 steps, unique ids, backward-only dependencies, known capabilities only, and every
-  action/harness step's `source_span` must match the user's request (case/whitespace-insensitive) and is then
+  action/harness step's `source_span` must match the user's request as whole words (case/whitespace-insensitive) and is then
   replaced by the user's exact characters; a span with a negation or exclusion anywhere earlier in its clause is
   rejected (downgraded to ask_user, fail closed).
   Nothing runs before the user approves the plan. Action steps go to Core with the user's verbatim words, so Intent
-  Discovery, confirmation, gates and approval apply unchanged.
+  Discovery, confirmation, gates and approval apply unchanged. If Core finds no action in an action step
+  (CONVERSATION), the step is REFUSED, not success, and its dependents do not run.
 - **Task ledger.** One JSON file per task (atomic replace + fsync), step state machine, restart recovery. Before an
   approval is handed to Core (`decide_step`) the step is durably EXECUTING, so a crash anywhere after the approval
-  recovers as UNCERTAIN and the step is never started again. Pending approvals that were never given return to
+  recovers as UNCERTAIN and the step is never started again; the ledger has no other route from an approval to an
+  outcome. IN_CORE / EXECUTING are exclusive claims under a cross-process file lock (no double dispatch); the dev
+  server runs recovery before serving. Pending approvals that were never given return to
   PENDING (Core keeps approvals in memory and fails closed after restart). Only VERIFIED / ANSWERED satisfy a
   dependency; dependents of a failed, refused, cancelled, uncertain or skipped step are SKIPPED transitively.
 - **Harness coordination.** Separate from Brain selection. Options carry usable / why_not (policy, qualification,

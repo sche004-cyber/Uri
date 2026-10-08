@@ -157,8 +157,7 @@ def test_multi_step_plan_then_steps_through_core(fake, tmp_path):
     assert r["status"] == "step_waiting_confirmation"
     env = o.core.confirm("s", SEL, r["core"])
     assert o.record_step(tid, "s1", env)["status"] == "step_waiting_approval"
-    final = o.core.decide("x", "s", SEL, env, True)
-    o.record_step(tid, "s1", final)
+    assert o.decide_step(tid, "s1", env, True)["status"] == "step_verified"
     fake.scripts.append({"chunks": [("answer", "Checklist: ...")], "finish": "stop"})
     assert o.advance(tid)["status"] == "step_done"
     assert o.ledger.get(tid)["state"] == "COMPLETED"

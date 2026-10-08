@@ -135,7 +135,9 @@ def main(argv=None):
     r = mgr.status()
     if r.state == R.READY:
         perf.set_baseline(r.pid)   # attached instance: baseline = first observation (weaker than a fresh-start baseline)
-    orch = Orchestrator(client=client, core=None, brain_selection=selection(cfg), ledger=TaskLedger(R.DEFAULT_STATE.parent / "tasks"),
+    ledger = TaskLedger(R.DEFAULT_STATE.parent / "tasks")
+    print("ledger recovery:", ledger.recover(), flush=True)    # restart rules before serving anything
+    orch = Orchestrator(client=client, core=None, brain_selection=selection(cfg), ledger=ledger,
                         capability_ids={"remember_fact", "external_harness_task"}, readiness=mgr.status, perf=perf)
     token = secrets.token_urlsafe(32)
     tok_file = R.DEFAULT_STATE / "oi_server.token"

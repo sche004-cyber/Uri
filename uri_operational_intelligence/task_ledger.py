@@ -24,6 +24,7 @@ TASK_STATES = {"PROPOSED", "AWAITING_PLAN_APPROVAL", "RUNNING", "WAITING_APPROVA
 STEP_STATES = {"PENDING", "IN_CORE", "WAITING_CONFIRMATION", "WAITING_APPROVAL", "EXECUTING", "VERIFIED", "ANSWERED",
                "FAILED", "UNCERTAIN", "REFUSED", "SKIPPED", "CANCELLED", "WAITING_USER_CHOICE"}
 STEP_TERMINAL = {"VERIFIED", "ANSWERED", "FAILED", "UNCERTAIN", "REFUSED", "SKIPPED", "CANCELLED"}
+CLAIM_STATES = {"IN_CORE", "EXECUTING"}
 # Core states after which an effect may exist.
 CORE_MAY_HAVE_RUN = {"ticket_issued", "executing", "execution_uncertain"}
 
@@ -34,8 +35,9 @@ _STEP_TRANSITIONS = {
                 "REFUSED", "ANSWERED", "PENDING", "CANCELLED", "WAITING_USER_CHOICE"},
     "WAITING_CONFIRMATION": {"IN_CORE", "WAITING_CONFIRMATION", "WAITING_APPROVAL", "REFUSED", "CANCELLED", "PENDING",
                              "FAILED", "VERIFIED", "UNCERTAIN", "ANSWERED"},
-    "WAITING_APPROVAL": {"EXECUTING", "VERIFIED", "CANCELLED", "FAILED", "UNCERTAIN", "PENDING", "REFUSED",
-                         "WAITING_USER_CHOICE"},
+    # Outcomes after an approval are reachable only through EXECUTING (Orchestrator.decide_step), so a crash after
+    # the approval always recovers as UNCERTAIN. A denial goes straight to CANCELLED.
+    "WAITING_APPROVAL": {"EXECUTING", "CANCELLED", "PENDING", "REFUSED"},
     "EXECUTING": {"VERIFIED", "FAILED", "UNCERTAIN", "WAITING_USER_CHOICE", "CANCELLED", "REFUSED"},
 }
 
@@ -95,8 +97,36 @@ class TaskLedger:
         task["events"].append({"t": time.time(), "kind": kind, **data})
         del task["events"][:-200]
 
+    def _file_lock(self, task_id):
+        """Cross-process exclusive lock for one task's read-modify-write (Windows byte-range lock on a side file)."""
+        import contextlib
+        import msvcrt
+
+        @contextlib.contextmanager
+        def held():
+            fd = os.open(self.root / (task_id + ".lock"), os.O_RDWR | os.O_CREAT)
+            try:
+                deadline = time.monotonic() + 10
+                while True:
+                    try:
+                        msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                        break
+                    except OSError:
+                        if time.monotonic() > deadline:
+                            raise LedgerError("TASK_LOCK_TIMEOUT") from None
+                        time.sleep(0.02)
+                try:
+                    yield
+                finally:
+                    os.lseek(fd, 0, 0)
+                    msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            finally:
+                os.close(fd)
+        return held()
+
     def update(self, task_id, fn):
-        with self._lock:
+        self._path(task_id)
+        with self._lock, self._file_lock(task_id):
             task = self.get(task_id)
             fn(task)
             task["updated_at"] = time.time()
@@ -129,6 +159,9 @@ class TaskLedger:
             s = self.step(task, step_id)
             if s["state"] in STEP_TERMINAL:
                 raise LedgerError("STEP_TERMINAL")
+            if state in CLAIM_STATES and state == s["state"]:
+                # IN_CORE / EXECUTING are claims: a second claimant (another thread or process) must lose.
+                raise LedgerError("STEP_ALREADY_CLAIMED")
             if state != s["state"] and state not in _STEP_TRANSITIONS.get(s["state"], set()):
                 raise LedgerError("STEP_TRANSITION_%s_TO_%s" % (s["state"], state))
             if state == "IN_CORE" and s["state"] in ("PENDING", "WAITING_USER_CHOICE"):

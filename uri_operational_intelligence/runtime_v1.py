@@ -248,6 +248,7 @@ class RuntimeManager:
         self._lock_fd = None
         self._guard = threading.Lock()
         self.last_artifacts = None
+        self._verified_pid = None
         self.started_at = None
         self.load_seconds = None
 
@@ -274,6 +275,14 @@ class RuntimeManager:
             return Readiness(FAILED, self.url, owned=owned, pid=pid, model_id=model_id,
                              detail="HEALTH_%s" % probe.get("health_status"), live_identity={"process": proc, "server": probe})
         problems = live_identity_problems(self.cfg, probe)
+        if not problems and self._verified_pid != pid:
+            # READY always implies the pinned artifacts verified for THIS live instance (cache-backed, ~ms when
+            # unchanged; a full hash when anything about a file changed).
+            self.last_artifacts = verify_artifacts(self.cfg, self.state_dir)
+            if self.last_artifacts["overall"] == "MATCH":
+                self._verified_pid = pid
+            else:
+                problems.append("ARTIFACT_" + self.last_artifacts["overall"])
         state = READY if not problems else IDENTITY_MISMATCH
         return Readiness(state, self.url, owned=owned, pid=pid, model_id=model_id,
                          detail=",".join(problems) or None, live_identity={"process": proc, "server": probe},
@@ -313,6 +322,7 @@ class RuntimeManager:
                 # Attaching to a running instance still requires the pinned artifacts on disk to verify.
                 self.last_artifacts = verify_artifacts(self.cfg, self.state_dir, full=full_verify)
                 if self.last_artifacts["overall"] != "MATCH":
+                    self._verified_pid = None
                     return Readiness(IDENTITY_MISMATCH, self.url, pid=current.pid, model_id=self.cfg["model"]["id"],
                                      detail="ARTIFACT_" + self.last_artifacts["overall"],
                                      artifact_identity=self.last_artifacts, live_identity=current.live_identity)
@@ -333,6 +343,7 @@ class RuntimeManager:
                 if on_state:
                     on_state(STARTING)
                 self.last_artifacts = verify_artifacts(self.cfg, self.state_dir, full=full_verify)
+                self._verified_pid = None
                 if self.last_artifacts["overall"] != "MATCH":
                     state = ARTIFACT_MISSING if self.last_artifacts["overall"] == "MISSING" else IDENTITY_MISMATCH
                     return Readiness(state, self.url, model_id=self.cfg["model"]["id"],

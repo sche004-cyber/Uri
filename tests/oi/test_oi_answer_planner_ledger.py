@@ -129,6 +129,11 @@ def test_ledger_transitions_and_completion(tmp_path):
     L.set_step(tid, "s1", "WAITING_APPROVAL", core={"state": "approval_required"})
     with pytest.raises(LedgerError):
         L.set_step(tid, "s1", "ANSWERED")             # not a legal transition
+    with pytest.raises(LedgerError):
+        L.set_step(tid, "s1", "VERIFIED")             # outcomes only via EXECUTING (approval made durable first)
+    L.set_step(tid, "s1", "EXECUTING")
+    with pytest.raises(LedgerError):
+        L.set_step(tid, "s1", "EXECUTING")            # a claim cannot be taken twice
     L.set_step(tid, "s1", "VERIFIED")
     with pytest.raises(LedgerError):
         L.set_step(tid, "s1", "PENDING")              # terminal

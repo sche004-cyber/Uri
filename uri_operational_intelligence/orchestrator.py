@@ -22,7 +22,7 @@ from . import planner as P
 from . import reasoning_policy as RP
 from . import triage as T
 from .events import EventSink
-from .task_ledger import TaskLedger
+from .task_ledger import LedgerError, TaskLedger
 
 
 class CoreGateway(Protocol):
@@ -366,8 +366,12 @@ class Orchestrator:
             choice = H.choose(self.harness_statuses(), task_choice_history=[c["provider"] for c in task["provider_choices"]])
             emit("harness.choice_required", **choice.to_dict())
             return {"status": "needs_harness_choice", "step_id": s["step_id"], "choice": choice.to_dict()}
-        # action: the user's verbatim words go to Core
-        self.ledger.set_step(task_id, s["step_id"], "IN_CORE")
+        # action: the user's verbatim words go to Core. The IN_CORE write is an exclusive claim: a concurrent advance()
+        # (thread or process) gets STEP_ALREADY_CLAIMED and never reaches Core.
+        try:
+            self.ledger.set_step(task_id, s["step_id"], "IN_CORE")
+        except LedgerError as exc:
+            return {"status": "not_claimed", "step_id": s["step_id"], "reason": str(exc)}
         env = self.core.begin(s["source_span"], task["session_id"], self.brain_selection)
         return self.record_step(task_id, s["step_id"], env, sink=sink)
 
@@ -393,6 +397,10 @@ class Orchestrator:
     def record_step(self, task_id, step_id, env, *, sink: EventSink | None = None):
         sink = sink or EventSink()
         state = step_state_for(env)
+        kind = self.ledger.step(self.ledger.get(task_id), step_id)["kind"]
+        if kind == "action" and state == "ANSWERED":
+            # Core found nothing to act on. For an ACTION step that is not success: dependents must not run.
+            state = "REFUSED"
         core = {"turn_id": env.get("turn_id"), "state": env.get("state"), "code": env.get("code")}
         self.ledger.set_step(task_id, step_id, state, core=core)
         sink.emit(task_id, "task.step", task_id=task_id, step_id=step_id, state=state, core_code=env.get("code"))

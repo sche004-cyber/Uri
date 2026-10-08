@@ -16,11 +16,13 @@ Codex output is a claim; every finding below was checked against the source befo
 |---|---|---|---|
 | 1 | `467e4e5` | **REJECT** | High: crash between approval and recording could restart a step; SKIPPED satisfied dependencies; attach skipped artifact verification + size/mtime-only cache; negation check limited to two words (counter-example "Do not under any circumstances email Ravi."). Medium: unknown finish reasons / Core codes could read as success; SSE disconnect left inference running; quota pause emitted no provider choice. Low: claim guard is post-response. A10: docs overclaimed on those points; readiness doc missing |
 | repair | `5aad403`, `1953362` | — | all eight repaired with regression tests (`tests/oi/test_oi_audit_r1_regressions.py`); my own SSE fix was itself flaky (sync generator blocked in `queue.get`) and was replaced by an async disconnect-polling stream, 3 consecutive green suite runs |
-| 2 | see §2.1 | see §2.1 | see §2.1 |
+| 2 | `9265d00` | **REJECT** | H1/H3/A10 partially fixed; H2, H4, M1-M3, L1 verified fixed. New: concurrent `advance()` could dispatch twice (High); partial-word span match "activate account" in "deactivate account" (High); approval path bypass via `decide`+`record_step` and no startup recovery (High); `status()` READY without artifact verification (High); Core CONVERSATION on an action step counted as success (Medium) |
+| repair | see git log | — | all repaired with tests (`tests/oi/test_oi_audit_r2_regressions.py`); doc claims narrowed |
+| 3 | see §2.1 | see §2.1 | see §2.1 |
 
-### 2.1 Round 2
+### 2.1 Round 3
 
-Recorded after the run (this section is completed in the same commit series; if empty, round 2 did not complete).
+Recorded after the run (if empty, round 3 did not complete).
 
 ## 3. What was verified, by whom
 

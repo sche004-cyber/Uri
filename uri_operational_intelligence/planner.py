@@ -56,8 +56,14 @@ _CLAUSE_BREAK = re.compile(r"[.;!?\n]|\bbut\b|\bthen\b|\bafter that\b|\balso\b",
 
 
 def _span_regex(span):
-    words = [re.escape(w) for w in (span or "").split()]
-    return re.compile(r"\s+".join(words), re.I) if words else None
+    """Whole-word match only: "activate account" must not match inside "deactivate account"."""
+    words = (span or "").split()
+    if not words:
+        return None
+    body = r"\s+".join(re.escape(w) for w in words)
+    left = r"(?<!\w)" if re.match(r"\w", words[0]) else ""
+    right = r"(?!\w)" if re.search(r"\w$", words[-1]) else ""
+    return re.compile(left + body + right, re.I)
 
 
 def exact_user_span(text, span):
