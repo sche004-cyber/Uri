@@ -265,7 +265,8 @@ def user_exclusions(user_words) -> list:
     out = []
     for m in _EXCLUDE.finditer(user_words or ""):
         phrase = m.group(1).strip()
-        phrase = re.split(r"\b(?:and|but|instead|say|write|use)\b", phrase, flags=re.I)[0].strip()
+        phrase = re.split(r"\b(?:and|but|instead|say|write|use|in|from|anywhere|at all|please|either)\b", phrase,
+                          flags=re.I)[0].strip()
         if phrase and not _GENERIC.search(phrase) and len(phrase.split()) <= 6:
             out.append(phrase)
     return out
@@ -278,10 +279,12 @@ def strip_corrected(user_words) -> str:
     text = user_words or ""
     for m in reversed(list(_CORRECTION_CUES.finditer(text))):
         before = text[:m.start()]
-        words = list(re.finditer(r"[\w'-]+", before))
-        cut = words[-4].start() if len(words) >= 4 else 0
-        clause_start = max(before.rfind(c) for c in ".;:!?\n") + 1
-        text = text[:max(cut, clause_start)] + " " + text[m.end():]
+        # Only the detail closest to the cue is the replaced value ("17 students on Monday, sorry, Tuesday": Monday).
+        words = list(re.finditer(r"[\w'-]+", before))[-4:]
+        for w in reversed(words):
+            if _details(w.group(0)) or canonical_numbers(w.group(0)):
+                text = text[:w.start()] + " " + text[w.end():]
+                break
     return text
 
 

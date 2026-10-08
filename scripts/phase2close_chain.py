@@ -174,6 +174,7 @@ WS_EXACT = frozenset((
     "tests/ws/__init__.py",
     "tests/ws/test_ti_audit_r1_regressions.py",
     "tests/ws/test_ti_audit_r2_regressions.py",
+    "tests/ws/test_ti_audit_r3_regressions.py",
     "tests/ws/test_ti_desk_bridge.py",
     "tests/ws/test_ti_store_verify_input.py",
     "tests/ws/test_ti_text_intent.py",

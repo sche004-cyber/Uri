@@ -61,89 +61,62 @@ _REWRITE = re.compile(_LEAD + r"(?:rewrite|re-write|rephrase|reword|paraphrase|p
                       r"sound |look )*(?:formal|polite|professional|concise|shorter|longer|clearer|diplomatic|friendly|"
                       r"simple|simpler|courteous|firm|respectful|official|crisp|better))\b", re.I)
 
-# Things only Core may do. Their presence sends the turn to the existing path, whatever else the text says.
-#   * an imperative at the start ("send ...", "remember that ...");
-#   * a chained imperative on the document ("... and send it", "then save the letter");
+# Things only Core may do. A request that asks URI to act goes to the existing path (Core), whatever else it says:
+#   * an imperative action at the start of the request or of any sentence of its instruction ("Email the principal.");
+#   * a sequenced action anywhere, also after a colon ("..., then email it to the principal", "Finally, save it.");
+#   * a coordinated action ("... and send it") unless it sits inside a reported request or infinitive that belongs to
+#     the document ("asking parents to sign it and send the form");
 #   * a destination or file format ("to my desktop", "as a PDF").
-# Words inside dictated content ("ask parents to sign and send the form", "look forward to") do not match.
+# The draft desk adds a model-side guard on top (`actions_requested`), like the answer channel's ACTION marker.
 _CORE_VERBS = (r"send|email|e-mail|mail|forward|post|publish|upload|print|share|save|store|attach|schedule|"
                r"remind me|remember|memori[sz]e|note down|overwrite")
 _START_ACTION = re.compile(
-    r"^\s*(?:(?:uri|hey uri)[,:!]?\s+)?(?:(?:please|pls|kindly|now|also|just|then|and)\s+|(?:can|could|would|will) you\s+)*"
-    r"(?:" + _CORE_VERBS + r")\b", re.I)
+    r"^\s*(?:(?:uri|hey uri)[,:!]?\s+)?(?:(?:please|pls|kindly|now|also|just|then|and|finally)[,]?\s+|"
+    r"(?:can|could|would|will) you\s+)*(?:" + _CORE_VERBS + r")\b", re.I)
+# Sequencing words make an instruction to URI even inside dictated content.
+_SEQUENCED = re.compile(r"(?:^|[,;.!?\n]|\b(?:and))\s*(?:then|and then|after that|afterwards|finally|also)[,]?\s+"
+                        r"(?:please\s+)?(?:" + _CORE_VERBS + r")\b", re.I)
 _DESTINATION = re.compile(
     r"\b(?:in|into|to|on) (?:the |my )?(?:shared |google )?(?:desktop|folder|drive|documents|downloads)\b|"
     r"\bas (?:a |an )?(?:file|pdf|docx|word (?:file|document)|text file)\b|\.(?:docx|pdf|txt)\b", re.I)
-_ACT_ANY = re.compile(
-    r"\b(?:and|then|also|after that|afterwards|&)\s+(?:please\s+|also\s+|then\s+)*(?:send|email|e-mail|mail|forward|"
-    r"save|print|upload|share|post|publish|attach|schedule|remind me|remember)\b|"
+_COORDINATED = re.compile(
+    r"\b(?:and|&)\s+(?:please\s+)?(?:send|email|e-mail|mail|forward|save|print|upload|share|post|publish|attach|"
+    r"schedule|remind me|remember)\b|"
     r"\b(?:send|email|e-mail|mail|forward|save|print|upload|share|post)\s+(?:it|this|that)\b", re.I)
 _SENTENCE = re.compile(r"(?:^|[.!?;\n]+)\s*([^.!?;\n]+)")
-# Inside dictated content an action word belongs to the document ("ask parents to sign it and send the form"):
-# an infinitive ("to <verb> ... and send") or a reported request ("asking/requesting/telling X to ...").
 _DETERMINERS = r"(?:the|a|an|my|our|his|her|their|your|this|that|these|those|all|every|him|them|me|us|you|it)"
 _RECIPIENTS = (r"(?:warden|principal|sir|madam|manager|teacher|office|department|hod|dean|director|parents?|students?|"
                r"staff|everyone|committee|accounts|registrar|librarian|admin|management|team|class|hostel|school|college)")
 _INFINITIVE = re.compile(r"\bto\s+(?!" + _DETERMINERS + r"\b|" + _RECIPIENTS + r"\b)[a-z][\w-]*(?:\s+[\w'-]+){0,4}\s*$")
 _REPORTED = re.compile(r"\b(?:ask|asks|asking|asked|request|requests|requesting|requested|tell|tells|telling|told|"
-                       r"instruct\w*|remind\w*|urg\w*|direct\w*|inform\w*|want|wants|expect\w*)\b[^.;:!?]*\bto\b", re.I)
+                       r"instruct\w*|remind\w*|urg\w*|direct\w*|inform\w*|want|wants|expect\w*)\b[^.;:!?,]*\bto\b", re.I)
 
 
 def _content_context(t, pos):
-    clause = re.split(r"[.;:!?\n]", t[:pos])[-1]
+    """The coordinated action at `pos` belongs to a reported request or infinitive in the SAME clause (a comma ends
+    the clause, so "asking parents to sign the form, then email it" is not exempt)."""
+    clause = re.split(r"[.;:!?,\n]", t[:pos])[-1]
     return bool(_INFINITIVE.search(clause) or _REPORTED.search(clause))
+
+
 # Objects that are not the draft: edits to these are actions or code work, never draft revisions.
 _FOREIGN_OBJECT = re.compile(
     r"\b(?:files?|folders?|directory|inbox|mailbox|my emails|calendar|meeting|reminders?|memory|memories|settings?|"
     r"code|bug|function|repo(?:sitory)?|script|app|program|database|spreadsheet|sheet|account|password|"
     r"brain|model|harness)\b", re.I)
-_START_ACTION = re.compile(
-    r"^\s*(?:(?:uri|hey uri)[,:!]?\s+)?(?:(?:please|pls|kindly|now|also|just|then|and)\s+|(?:can|could|would|will) you\s+)*"
-    r"(?:" + _CORE_VERBS + r")\b", re.I)
-_DESTINATION = re.compile(
-    r"\b(?:in|into|to|on) (?:the |my )?(?:shared |google )?(?:desktop|folder|drive|documents|downloads)\b|"
-    r"\bas (?:a |an )?(?:file|pdf|docx|word (?:file|document)|text file)\b|\.(?:docx|pdf|txt)\b", re.I)
-_ACT_ANY = re.compile(
-    r"\b(?:and|then|also|after that|afterwards|&)\s+(?:please\s+|also\s+|then\s+)*(?:send|email|e-mail|mail|forward|"
-    r"save|print|upload|share|post|publish|attach|schedule|remind me|remember)\b|"
-    r"\b(?:send|email|e-mail|mail|forward|save|print|upload|share|post)\s+(?:it|this|that)\b", re.I)
-_SENTENCE = re.compile(r"(?:^|[.!?;\n]+)\s*([^.!?;\n]+)")
-# Inside dictated content an action word belongs to the document ("ask parents to sign it and send the form"):
-# an infinitive ("to <verb> ... and send") or a reported request ("asking/requesting/telling X to ...").
-_DETERMINERS = r"(?:the|a|an|my|our|his|her|their|your|this|that|these|those|all|every|him|them|me|us|you|it)"
-_RECIPIENTS = (r"(?:warden|principal|sir|madam|manager|teacher|office|department|hod|dean|director|parents?|students?|"
-               r"staff|everyone|committee|accounts|registrar|librarian|admin|management|team|class|hostel|school|college)")
-_INFINITIVE = re.compile(r"\bto\s+(?!" + _DETERMINERS + r"\b|" + _RECIPIENTS + r"\b)[a-z][\w-]*(?:\s+[\w'-]+){0,4}\s*$")
-_REPORTED = re.compile(r"\b(?:ask|asks|asking|asked|request|requests|requesting|requested|tell|tells|telling|told|"
-                       r"instruct\w*|remind\w*|urg\w*|direct\w*|inform\w*|want|wants|expect\w*)\b[^.;:!?]*\bto\b", re.I)
-
-
-def _content_context(t, pos):
-    clause = re.split(r"[.;:!?\n]", t[:pos])[-1]
-    return bool(_INFINITIVE.search(clause) or _REPORTED.search(clause))
-# Objects that are not the draft: edits to these are actions or code work, never draft revisions.
-_FOREIGN_OBJECT = re.compile(
-    r"\b(?:files?|folders?|directory|inbox|mailbox|my emails|calendar|meeting|reminders?|memory|memories|settings?|"
-    r"code|bug|function|repo(?:sitory)?|script|app|program|database|spreadsheet|sheet|account|password|"
-    r"brain|model|harness)\b", re.I)
-# A chained action anywhere in the request ("... and email the principal"). Coordination inside dictated content
-# ("ask the parents to sign and send the form") is an infinitive ("to <verb> and send") and is not an instruction to URI.
-_CHAINED = re.compile(r"\b(?:and|then|also|after that|afterwards|&)\s+(?:please\s+|also\s+|then\s+)*(?:send|email|e-mail|"
-                      r"mail|forward|save|print|upload|share|post|publish|attach|schedule|remind me|remember)\b", re.I)
 
 
 def _core_only(t: str) -> bool:
     """True when the request asks URI to act (send, save, file, remember ...): such turns go to Core."""
-    if _DESTINATION.search(t):
+    if _DESTINATION.search(t) or _SEQUENCED.search(t):
         return True
     instruction, payload = split_payload(t)
     head = instruction if payload is not None else t
-    # An imperative action at the start of the request or of any later sentence of the instruction.
     for m in _SENTENCE.finditer(head):
         if _START_ACTION.match(m.group(1)):
             return True
-    for m in _ACT_ANY.finditer(head):
-        if not _content_context(head, m.start()):
+    for m in _COORDINATED.finditer(t):
+        if not _content_context(t, m.start()):
             return True
     return False
 

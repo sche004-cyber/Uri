@@ -37,9 +37,12 @@ _FACT = {"type": "object", "properties": {"key": {"type": "string"}, "value": {"
          "required": ["key", "value", "superseded"], "additionalProperties": False}
 _NULLABLE_STR = {"anyOf": [{"type": "string"}, {"type": "null"}]}
 
+_ACTIONS = {"type": "array", "items": {"type": "string"}}
+
 CREATE_SCHEMA = {
     "type": "object",
     "properties": {
+        "actions_requested": _ACTIONS,
         "clarification": _NULLABLE_STR,
         "facts": {"type": "array", "items": _FACT},
         "exclusions": {"type": "array", "items": {"type": "string"}},
@@ -51,13 +54,15 @@ CREATE_SCHEMA = {
         "missing": {"type": "array", "items": {"type": "string"}},
         "summary": {"type": "string"},
     },
-    "required": ["clarification", "facts", "exclusions", "doc_type", "tone", "blocks", "missing", "summary"],
+    "required": ["actions_requested", "clarification", "facts", "exclusions", "doc_type", "tone", "blocks", "missing",
+                 "summary"],
     "additionalProperties": False,
 }
 
 EDIT_SCHEMA = {
     "type": "object",
     "properties": {
+        "actions_requested": _ACTIONS,
         "action": {"type": "string", "enum": ["edit", "clarify", "not_an_edit"]},
         "clarification": _NULLABLE_STR,
         "fact_updates": {"type": "array", "items": _FACT},
@@ -70,9 +75,14 @@ EDIT_SCHEMA = {
             "required": ["op", "block_id", "role", "text"], "additionalProperties": False}},
         "summary": {"type": "string"},
     },
-    "required": ["action", "clarification", "fact_updates", "exclusions_add", "edits", "summary"],
+    "required": ["actions_requested", "action", "clarification", "fact_updates", "exclusions_add", "edits", "summary"],
     "additionalProperties": False,
 }
+
+_ACTION_RULE = (
+    "`actions_requested`: list every thing the user asks URI to DO beyond writing this text (send, email, forward, "
+    "save, print, upload, share, schedule, remind, remember). Describing such things INSIDE the document (\"ask the "
+    "parents to send the form\") is not a request to URI. Empty list when there is none.\n")
 
 _COMMON_RULES = (
     "Never invent names, dates, days, numbers, places, reference numbers, authorities, signatures, quotations or "
@@ -86,7 +96,7 @@ _COMMON_RULES = (
 
 CREATE_SYSTEM = (
     "You are URI's writing desk. You turn the user's request into a finished, professional document. You only "
-    "write text: you never send, save or file anything, and you never say that you did.\n"
+    "write text: you never send, save or file anything, and you never say that you did.\n" + _ACTION_RULE +
     "The request may be dictated speech. Speakers correct themselves mid-sentence (\"five, sorry, seven\", "
     "\"yesterday, no wait, on the 6th\", \"not Monday but Tuesday\", \"I mean\", \"actually\"). Use only the value "
     "the user finally settled on. Fill `facts` FIRST: every concrete detail from the user's words (people, counts, "
@@ -105,7 +115,7 @@ CREATE_SYSTEM = (
 EDIT_SYSTEM = (
     "You are URI's writing desk, revising an existing document. You only write text: you never send, save or file "
     "anything. You receive the document as blocks with ids and roles, the accepted facts, and the user's "
-    "instruction (possibly dictated speech with self-corrections; the newest value wins).\n"
+    "instruction (possibly dictated speech with self-corrections; the newest value wins).\n" + _ACTION_RULE +
     "Return edit operations. Change ONLY what the instruction asks. Blocks you do not edit stay exactly as they are, "
     "so never list a block you are not changing. For replace, give the complete new text of that block. "
     "\"Paragraph N\" means the N-th block whose role is body. \"Previous sentence\" or \"that\" means the text "
@@ -173,7 +183,7 @@ class DraftDesk:
         intent = self._classify(text, session_id, d)
         if has_question and intent.reasons[:1] != ["answer_to_clarification"]:
             self.pending_new.pop(session_id, None)
-            if d is not None and intent.kind not in (TX.REVISE,):
+            if d is not None:
                 d.pending_question = None
         return intent
 
@@ -339,7 +349,7 @@ class DraftDesk:
         cues = TI.correction_cues(interpreted)
         k = intent.kind
         if k in (TX.DRAFT_NEW, TX.EXPAND):
-            return self._create(turn_id, text, interpreted, session_id, intent, inp, cues, emit)
+            return self._create(turn_id, text, interpreted, session_id, intent, inp, cues, emit, fallback)
         if k in (TX.CORRECT, TX.REWRITE):
             payload = intent.payload
             if payload is None:
@@ -364,7 +374,7 @@ class DraftDesk:
         return self._edit(turn_id, text, interpreted, d, intent, inp, cues, emit, mode=mode, fallback=fallback)
 
     # ---- create ---------------------------------------------------------------------------------------------
-    def _create(self, turn_id, text, interpreted, session_id, intent, inp, cues, emit):
+    def _create(self, turn_id, text, interpreted, session_id, intent, inp, cues, emit, fallback=None):
         # Kept until a draft is created: a Brain failure or a cancel must not lose the user's original request.
         pend = self.pending_new.get(session_id) if intent.reasons[:1] == ["answer_to_clarification"] else None
         request = interpreted
@@ -384,6 +394,9 @@ class DraftDesk:
         if inp.uncertain:
             user["possibly_misheard"] = list(inp.uncertain)
         data, metrics = self._call(turn_id, CREATE_SYSTEM, user, CREATE_SCHEMA, "draft", MAX_DRAFT_TOKENS, emit)
+        if _clean_list(data.get("actions_requested")) and fallback is not None:
+            # Model-side guard: the user also asked URI to act. Core decides; nothing was drafted or shown yet.
+            return fallback()
         q = (data.get("clarification") or "").strip()
         if q and not data.get("blocks"):
             self.pending_new[session_id] = {"request": request, "question": q, "input": inp_dict, "original": original}
@@ -406,6 +419,7 @@ class DraftDesk:
                  + V.check_user_details(V.strip_corrected(source_words), body_text, superseded + exclusions + user_excl)
                  + V.check_correction_accounted(cues, facts, None) + V.check_new_details(body_text, source_words)
                  + V.check_uncertain(inp.uncertain, body_text))
+        exclusions = list(dict.fromkeys(exclusions + user_excl))     # kept on the version: later edits are checked too
         missing = sorted(set(_clean_list(data.get("missing"))) | set("[%s]" % p for p in V.placeholders(body_text)))
         self.pending_new.pop(session_id, None)
         v = draft.push(blocks=blocks, facts=facts, exclusions=exclusions, missing=missing, op="created",
@@ -443,8 +457,8 @@ class DraftDesk:
         system = EDIT_SYSTEM + ("\n" + CORRECT_RULE if mode == "correct" else "\n" + REWRITE_RULE if mode == "rewrite" else "")
         data, metrics = self._call(turn_id, system, user, EDIT_SCHEMA, "edit", MAX_EDIT_TOKENS, emit)
         action = data.get("action")
-        if action == "not_an_edit" and fallback is not None and not q:
-            return fallback()
+        if (action == "not_an_edit" or _clean_list(data.get("actions_requested"))) and fallback is not None and not q:
+            return fallback()           # not an edit, or the user also asked URI to act: the ordinary path / Core
         if action == "clarify" or (action == "not_an_edit"):
             question = (data.get("clarification") or "").strip() or "Which part of the draft should I change?"
             d.pending_question = question
