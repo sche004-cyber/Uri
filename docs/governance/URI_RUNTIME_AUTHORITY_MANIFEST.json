@@ -10,10 +10,10 @@
   "decision_record": "docs/governance/consolidation/URI_CANONICAL_BRANCH_DECISION.md"
  },
  "authoritative_runtime": {
-  "description": "Frozen Phase 1 Core + accepted Phase 2 (closure candidate -f) run through the C1 launcher authority. The frozen runtime_identity.py requires git HEAD == e8e3b65 with the accepted files as an uncommitted overlay, so the runtime checkout is MATERIALIZED from the canonical branch (procedure in URI_UNIFIED_CONSOLIDATION_PLAN.md section 5), never run from a committed branch tip.",
+  "description": "Frozen Phase 1 Core + accepted Phase 2 (operational-qualification candidate -g, 0b49d86d) run through the C1 launcher authority. The frozen runtime_identity.py requires git HEAD == e8e3b65 with the accepted files as an uncommitted overlay, so the runtime checkout is MATERIALIZED from the canonical branch (procedure in URI_UNIFIED_CONSOLIDATION_PLAN.md section 5), never run from a committed branch tip.",
   "source_checkout_candidate": "C:/Users/cheta/Development/uri-canonical-runtime-candidate",
-  "materialized_from_commit": "2325ad791e43db5958658a76000df9921c777361",
-  "materialization_overlay_list": "uri-canonical-evidence/runtime_overlay_files.txt (256 files)",
+  "materialized_from_commit": "759d0d4e4069ddb490e6ce52ac58bf86ef0248f0",
+  "materialization_overlay_list": "uri-canonical-evidence/overlay_oq_759d0d4.txt (273 files; previous: runtime_overlay_files.txt, 256 files from 2325ad7)",
   "authorized_entrypoints": [
    "scripts/uri_server.ps1",
    "scripts/uri_server_launcher.py",
@@ -53,6 +53,9 @@
    "phase2_closure_accepted": {
     "sha256": "fcd0d72e0cd91412c361edec9114e2edaebbf70ede052046b808f3c4fc571298"
    },
+   "phase2_oq_accepted": {
+    "sha256": "0b49d86d89b26d3332fcbfbc9b4b7b981cdc1075d5dc295588a5cef92a82c4cd"
+   },
    "file_ledger": "docs/governance/git_sync_20261008/SYNC_CANDIDATE_LEDGER.json"
   }
  },
@@ -64,6 +67,9 @@
    "llama_server_exe_sha256": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
    "model": "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
    "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "mmproj_sha256": "8971ee4f331ff0a4c609374f32984b3d4e6dc086c0aa35f1d637fad1829e887f",
+   "mtp_draft_sha256": "40ca608fee5134ae13921007bbf5549acd5da5577852975491453983ccc08768",
+   "integration_state": "NOT WIRED into the Core composition (Operational Intelligence milestone not started)",
    "config": "model_lab/integration/local_brain.json",
    "port": 18470
   },

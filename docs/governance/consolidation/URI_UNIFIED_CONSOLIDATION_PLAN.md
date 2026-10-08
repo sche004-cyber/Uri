@@ -65,17 +65,19 @@ the canonical branch:
 git -c core.longpaths=true clone --no-checkout https://github.com/sche004-cyber/Uri.git <runtime-dir>
 cd <runtime-dir>; git config core.autocrlf false
 git checkout --detach e8e3b65
-git diff --name-only e8e3b65 <accepted-commit> | Where-Object { $_ -notmatch '^(model_lab/|docs/evidence/)' } | Set-Content overlay.txt
-git checkout <accepted-commit> --pathspec-from-file=overlay.txt
+git fetch -q origin <canonical-branch>   # the overlay list lives on the branch tip, not at <accepted-commit>
+git show FETCH_HEAD:docs/governance/consolidation/RUNTIME_OVERLAY_PHASE2OQ_G.txt | Set-Content -Encoding ascii ..\overlay.txt   # not '>' (UTF-16 in PowerShell 5.1)
+git checkout <accepted-commit> --pathspec-from-file=..\overlay.txt
 git reset -q          # HEAD stays e8e3b65; accepted files become the uncommitted overlay
 ```
 
-`<accepted-commit>` today is `2325ad7` (Phase 2 closure -f bytes plus the three 08:31 closure-record documents).
-The overlay has 256 files; the candidate used for verification is
-`C:\Users\cheta\Development\uri-canonical-runtime-candidate`. The overlay is taken from the accepted commit, not
-the branch tip, so records added later (`docs/governance/consolidation/`, the authority checker and its tests) and
-the research/evidence trees (`model_lab/`, `docs/evidence/`) stay on the branch and out of the runtime checkout,
-matching the accepted layout. The consolidation tooling runs from the canonical development checkout.
+`<accepted-commit>` today is `759d0d4` (Phase 2 operational-qualification candidate -g bytes, accepted by Codex OQ
+round 7, plus its 14:42 post-acceptance records). Since the consolidation and sync records now precede it in history,
+the overlay is an explicit committed list, `RUNTIME_OVERLAY_PHASE2OQ_G.txt` (273 files: every path changed from
+`e8e3b65` by the Phase 1 freeze and the Phase 2 commits, excluding `model_lab/`, `docs/evidence/`, the git-sync
+records and the consolidation tooling). Materialized from Git on 2026-10-08, those 273 files are byte-identical to
+the live Phase 2 worktree on which chain10 was accepted. The previous overlay (`2325ad7`, 256 files, closure -f) is
+superseded. The consolidation tooling runs from the canonical development checkout, never from the runtime checkout.
 
 ## 6. Work performed in this consolidation (GREEN, reversible)
 

@@ -93,6 +93,10 @@ Note: the Phase 2 worktree keeps its own copy of this ledger; reconcile the two 
 | CONS-12 vault restore drill | proven recovery from `D:\URI-preservation` | PLANNED | salvage ledger section 5 | test restore to a scratch path | — | none | schedule |
 | CONS-13 secret ACL hardening | Codex sandbox cannot read URI secrets | DONE (33 files, reversible) | PC audit section 4 | secrets created later inherit again | — | none | re-run after cutover |
 | CONS-14 Phase 1 provisional checkpoints `work/c1/checkpoints` (11 MB) | fresh-clone reproducibility of `test_phase1_offline_components` | LOCAL ONLY (Phase 1 integration worktree) | verification report section 1.1 | preserve on GitHub | — | **yes** (push) | preserve branch |
+| CONS-15 Phase 2 OQ `-g` in Git | accepted Phase 2 tree recoverable from GitHub | DONE (byte-exact `6dea266`, evidence `fcb619a`, records `759d0d4`; tag `accepted/phase2-oq-g-0b49d86d`) | `URI_SOURCE_OF_TRUTH_MANIFEST.md` | push | — | none (authorized) | — |
+| CONS-16 runtime materialization for OQ `-g` | runtime checkout = accepted tree | DONE (`RUNTIME_OVERLAY_PHASE2OQ_G.txt`, 273 paths; runtime candidate rematerialized) | `URI_RUNTIME_BUILD_AND_ROLLBACK_RUNBOOK.md` | — | — | none | — |
+| CONS-17 Runtime v1 ~140 tok/s recovery | identify and reproduce the reported AMD result | RECOVERED (Runtime v1 MTP; artifacts hash-verified; reproduction 2026-10-08) | `URI_INFERENCE_OPTIMIZATION_RECOVERY.md` | Core wiring = Operational Intelligence milestone | owner | **yes** (start OI) | — |
+| CONS-18 Ollama autostart | no unexpected model service | RECORDED (shared tool, idle, Startup shortcut, update pending) | `URI_CLEANUP_AND_QUARANTINE_MANIFEST.md` §1 | optional removal | — | optional | — |
 
 ## Change log
 
@@ -117,3 +121,4 @@ Note: the Phase 2 worktree keeps its own copy of this ledger; reconcile the two 
 | 2026-10-08 | P2-6 line reconciliation | PLANNED | RESEARCHED, recommendation made | `PHASE2OQ_SHIPPING_LINE_RECOMMENDATION.md` |
 | 2026-10-08 | Operational qualification (EXE-1, OQ-1, SUP-1, D8, C6 Option B, tooling, gate hardening) | IMPLEMENTED, TESTED | INDEPENDENTLY ACCEPTED (Codex OQ round 7 on `-g` 0b49d86d...c4cd after rounds 1-6 rejected); physical gates PENDING | `E:phase2oq_reviewound7\` |
 | 2026-10-08 | CONS-1..CONS-14 | (not tracked) | consolidation items added; CONS-6 IMPLEMENTED, TESTED; CONS-13 DONE | `docs/governance/consolidation/` |
+| 2026-10-08 | CONS-15..CONS-18 | (not tracked) | round 2: Phase 2 OQ `-g` imported and rematerialized; Runtime v1 recovered and reproduced; Ollama origin recorded | `docs/governance/consolidation/URI_CONSOLIDATION_FINAL_AUDIT_20261008.md` |
