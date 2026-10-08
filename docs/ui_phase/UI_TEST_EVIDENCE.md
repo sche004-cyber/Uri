@@ -27,7 +27,8 @@ Commits in this phase (newest last):
 | Living suite at `4544f33` | `flutter test test/living` | `+69: All tests passed!` | COMPLETED_WITH_RESULT |
 | Full suite at `4544f33` | `flutter test` | `+274 ~2: All tests passed!` | COMPLETED_WITH_RESULT |
 | Living suite at `abb6b6d` | `flutter test test/living` | `+72: All tests passed!` | COMPLETED_WITH_RESULT |
-| Full suite at `abb6b6d` | `flutter test` | `+277 ~2: All tests passed!` at `a09f453`; at `838d1dd` only the living suite was re-run (`+72`), the full suite was not re-run before the session's usage limit (205 baseline + 72 living; the 2 skips are pre-existing live-runtime tests). Note: the `a09f453` commit message says 278; the measured number at that commit was 277. | COMPLETED_WITH_RESULT |
+| Full suite at `a09f453` | `flutter test` | `+277 ~2: All tests passed!` (205 baseline + 72 living; the 2 skips are pre-existing live-runtime tests). Note: the `a09f453` commit message says 278; the measured number was 277. | COMPLETED_WITH_RESULT |
+| Full suite at `4aef264` | `flutter test` | `+277 ~2: All tests passed!` | COMPLETED_WITH_RESULT |
 
 Living tests by file (72 at `abb6b6d`):
 
@@ -62,13 +63,11 @@ Run 1 (commit `d0a3751`, before the blur change):
 
 Finding PERF-1: the dashboard janked because every tile used a `BackdropFilter`; with the orb ticking at 60 fps each frame re-blurred eight backdrops. Fix in `4544f33`: `GlassPanel.blur` defaults to false and only the composer opts in.
 
-Run 2 (commit `4544f33`): see the table below, filled from `docs/ui_phase/perf/` when the run completes.
-
 Run 2 (started at commit `4544f33`; `SAMPLE_SECONDS=130`): the particle-only first build. Dashboard with blur opt-in: raster p95 4.4 ms, 0 frames over 16.7 ms per window (was 22.6 ms and ~154). Companion idle/working/reduced: raster p95 3.2 / 4.2 / 3.1 ms, 0 janky frames. Old `mesh` and `swarm` variants: raster p95 8.0 / 8.5 ms, 0-4 janky frames per window. (Logs for the superseded variants were replaced by run 3.)
 
-Run 3 (commit `a09f453` painter, `SAMPLE_SECONDS=100`): the first ribbon build used one `MaskFilter.blur` per ribbon/bolt/thread stroke. Result: every ribbon style janked (raster p95 about 34 ms, 110-156 of ~400-500 frames per window over 16.7 ms; Fluid Plasma 33.5 ms, Particle Intelligence 36.0 ms, Neural Filaments 36.1 ms, Electric Core 33.8 ms, Holographic 33.9 ms, Aurora 35.4 ms, Sun 26.8 ms; working state 16.6 ms). Finding PERF-2, fixed in the final commit: glow is now three widening additive strokes plus a hot core (`_glowStroke`); only hairline blurs (<= 1.6 px) remain. Those run-3 logs were replaced by run 4.
+Run 3 (commit `a09f453` painter, `SAMPLE_SECONDS=100`): the first ribbon build used one `MaskFilter.blur` per ribbon/bolt/thread stroke. Result: every ribbon style janked (raster p95 about 34 ms, 110-156 of ~400-500 frames per window over 16.7 ms; Fluid Plasma 33.5 ms, Particle Intelligence 36.0 ms, Neural Filaments 36.1 ms, Electric Core 33.8 ms, Holographic 33.9 ms, Aurora 35.4 ms, Sun 26.8 ms; working state 16.6 ms). Finding PERF-2, fixed in `838d1dd`: glow is now three widening additive strokes plus a hot core (`_glowStroke`); only hairline blurs (<= 1.6 px) remain. Those run-3 logs were replaced by run 4.
 
-Run 4 (final commit painter, `SAMPLE_SECONDS=100`, first window skipped, medians across windows; `docs/ui_phase/tools/summarize_perf.py` over `docs/ui_phase/perf/`):
+Run 4 (`838d1dd` painter, `SAMPLE_SECONDS=100`, first window skipped, medians across windows; `docs/ui_phase/tools/summarize_perf.py` over `docs/ui_phase/perf/`). Row provenance: `style_*`, `dashboard_plasma_profile` and `reduced_plasma_profile` are run 4 (logs written at `4aef264`); `companion_*`, `dashboard_profile` and `orb_*` are the older run-2 logs of the superseded particle-only variants, kept for comparison (Codex round 6 MINOR 1):
 
 | Scenario (log) | Windows | Frames / window | build p50 / p95 ms | raster p50 / p95 ms | total p95 ms | frames > 16.7 ms per window |
 |---|---|---|---|---|---|---|
@@ -109,7 +108,8 @@ Reading: the ">16.7 ms" column is the measure that matters on this machine; see 
 | 2 | `4544f33` | REJECTED | M1 Approval shown "done" from the simulator's seeded history; M2 `Colors.white` literals in the orb painter; N round-1 B1/B2/M4/M5 confirmed FIXED; N interactions UI-local; N boundary OK | both repaired in `cfdaf70` (`WorkItem.decided`, `UriGlass.specular`) |
 | 3 | `cfdaf70` | ACCEPTED WITH FINDINGS | MINOR: a cancel while awaiting approval was not counted as a recorded decision; N both round-2 repairs present, no regression, boundary OK | repaired in `f32a3b1` |
 | 4 | `a09f453` | REJECTED | M1 cancelling queued/working work counted as a decision; M2 the palette's hot light was not tinted by state; MINOR A1 pixel test only on the default style; N round-3 fix present, one state engine, no `Colors.white`, boundary OK | all repaired in `abb6b6d` |
-| 5 | `abb6b6d` | ACCEPTED WITH FINDINGS (abb6b6d) | MINOR: keep a working-state profile scenario (restored in 838d1dd); N: round-4 repairs FIXED, boundary OK | perf run 4 recorded below |
+| 5 | `abb6b6d` | ACCEPTED WITH FINDINGS | MINOR: keep a working-state profile scenario; N: round-4 repairs FIXED, boundary OK | scenario restored in `838d1dd`, log in run 4 |
+| 6 | `4aef264` | ACCEPTED WITH FINDINGS | MINOR 1: perf table mixed run-2 and run-4 logs under one label; MINOR 2: "fixed in the final commit" wording and a leftover placeholder; N: round-5 MINOR fixed, `_glowStroke` keeps reduced-effects behaviour, no literal colours, boundary OK | both wording issues fixed in the closing commit; full suite at `4aef264` recorded above |
 
 Codex's model config: the account's configured `gpt-6.1-sol` is refused for ChatGPT accounts in this session; `gpt-6-sol` worked. Codex output is a claim, not verification; the items above were checked against the code before being recorded as repaired.
 
