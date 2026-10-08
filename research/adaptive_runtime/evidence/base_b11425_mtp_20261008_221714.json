@@ -1,0 +1,1565 @@
+{
+ "name": "base_b11425_mtp",
+ "stamp": "20261008_221714",
+ "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+ "binary_sha256": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+ "ggml_vulkan_sha256": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+ "model_path": "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+ "model_sha256_pinned": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+ "mtp": true,
+ "vision": true,
+ "ctx": 32768,
+ "server_env": {},
+ "extra_args": [],
+ "gpu_other_owners_before": [
+  {
+   "pid": 5496,
+   "name": "ollama app.exe",
+   "cmd": "C:\\Users\\cheta\\AppData\\Local\\Programs\\Ollama\\ollama app.exe --hide --fast-startup",
+   "started": "2026-10-08T09:42:03"
+  },
+  {
+   "pid": 7956,
+   "name": "llama-server.exe",
+   "cmd": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe -m .lab/models/nomic-embed-text-v1.5.Q8_0.gguf --embeddings --pooling mean -ngl 0 -c 2048 -b 2048 -ub 2048 --host 127.0.0.1 --port 18481 -np 2",
+   "started": "2026-10-08T17:44:49"
+  },
+  {
+   "pid": 15272,
+   "name": "ollama.exe",
+   "cmd": "C:\\Users\\cheta\\AppData\\Local\\Programs\\Ollama\\ollama.exe serve",
+   "started": "2026-10-08T09:42:05"
+  }
+ ],
+ "vram_dedicated_before_mib": 808.9,
+ "system_available_ram_before_mib": 12932.8,
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "32768",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18497",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--metrics",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--cache-ram",
+  "2048",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "--mmproj",
+  "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/mmproj-F16.gguf",
+  "-md",
+  "D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU"
+ ],
+ "load_seconds": 91.62,
+ "props": {
+  "default_generation_settings": {
+   "params": {
+    "seed": 4294967295,
+    "temperature": 1.0,
+    "dynatemp_range": 0.0,
+    "dynatemp_exponent": 1.0,
+    "top_k": 20,
+    "top_p": 0.949999988079071,
+    "min_p": 0.05000000074505806,
+    "top_n_sigma": -1.0,
+    "xtc_probability": 0.0,
+    "xtc_threshold": 0.10000000149011612,
+    "typical_p": 1.0,
+    "repeat_last_n": 64,
+    "repeat_penalty": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "dry_multiplier": 0.0,
+    "dry_base": 1.75,
+    "dry_allowed_length": 2,
+    "dry_penalty_last_n": 64,
+    "mirostat": 0,
+    "mirostat_tau": 5.0,
+    "mirostat_eta": 0.10000000149011612,
+    "adaptive_target": -1.0,
+    "adaptive_decay": 0.8999999761581421,
+    "max_tokens": -1,
+    "n_predict": -1,
+    "n_keep": 0,
+    "n_discard": 0,
+    "ignore_eos": false,
+    "stream": false,
+    "n_probs": 0,
+    "min_keep": 0,
+    "chat_format": "Content-only",
+    "reasoning_format": "none",
+    "reasoning_in_content": false,
+    "generation_prompt": "",
+    "samplers": [
+     "penalties",
+     "dry",
+     "top_n_sigma",
+     "top_k",
+     "typ_p",
+     "top_p",
+     "min_p",
+     "xtc",
+     "temperature"
+    ],
+    "speculative.types": "none",
+    "timings_per_token": false,
+    "post_sampling_probs": false,
+    "backend_sampling": false,
+    "lora": []
+   },
+   "n_ctx": 32768
+  },
+  "total_slots": 1,
+  "model_alias": "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "model_ftype": "IQ3_S - 3.4375 bpw",
+  "model_path": "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "modalities": {
+   "vision": true,
+   "video": true,
+   "audio": false
+  },
+  "media_marker": "<__media_yHrvhb9DH1hxETP8EhpsuKp0TXDx9BJj__>",
+  "endpoint_slots": true,
+  "endpoint_props": false,
+  "endpoint_metrics": true,
+  "ui": false,
+  "ui_settings": {},
+  "chat_template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- set num_sys = 0 %}\n{%- set merged_system = '' %}\n{%- if messages[0].role == 'system' or messages[0].role == 'developer' %}\n    {%- set first = render_content(messages[0].content, false, true)|trim %}\n    {%- if messages|length > 1 and (messages[1].role == 'system' or messages[1].role == 'developer') %}\n        {%- set second = render_content(messages[1].content, false, true)|trim %}\n        {%- set merged_system = first + '\\n' + second %}\n        {%- set num_sys = 2 %}\n    {%- else %}\n        {%- set merged_system = first %}\n        {%- set num_sys = 1 %}\n    {%- endif %}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if merged_system %}\n        {{- '\\n\\n' + merged_system }}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if merged_system %}\n        {{- '<|im_start|>system\\n' + merged_system + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if loop.index0 >= num_sys and message.role != \"system\" and message.role != \"developer\" %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if (preserve_thinking is defined and preserve_thinking is true) or (loop.index0 > ns.last_query_index) %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is mapping %}\n                    {%- for args_name in tool_call.arguments %}\n                        {%- set args_value = tool_call.arguments[args_name] %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}\n{#- Unsloth fixes - developer role, tool calling #}",
+  "chat_template_caps": {
+   "supports_object_arguments": true,
+   "supports_parallel_tool_calls": true,
+   "supports_preserve_reasoning": true,
+   "supports_reasoning_effort": false,
+   "supports_string_content": true,
+   "supports_system_role": true,
+   "supports_tool_calls": true,
+   "supports_tools": true,
+   "supports_typed_content": true
+  },
+  "bos_token": "<|endoftext|>",
+  "eos_token": "<|im_end|>",
+  "build_info": "b11425-e117148a4",
+  "is_sleeping": false,
+  "cors_proxy_enabled": false
+ },
+ "warmup": {
+  "total_s": 0.4143,
+  "ttft_s": 0.3155,
+  "finish": "length",
+  "cancelled": false,
+  "error": null,
+  "n_content_chunks": 4,
+  "text_head": "Hello! How can",
+  "prompt_n": 13,
+  "cache_n": 0,
+  "prompt_ms": 230.404,
+  "prompt_per_second": 56.42263155153557,
+  "predicted_n": 4,
+  "predicted_ms": 97.849,
+  "predicted_per_second": 30.65948553383274,
+  "draft_n": 2,
+  "draft_n_accepted": 2,
+  "usage": {
+   "completion_tokens": 4,
+   "prompt_tokens": 13,
+   "total_tokens": 17,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   }
+  }
+ },
+ "after_load": {
+  "load_seconds": 91.62,
+  "vram_dedicated_now_mib": 15693.6,
+  "system_available_ram_mib": 11160.1,
+  "server_rss_now_mib": 2254.8,
+  "peak_server_rss_mib": 2254.8,
+  "peak_vram_dedicated_mib": 15688.7,
+  "min_system_available_ram_mib": 11152.0
+ },
+ "prefill": {
+  "1000": {
+   "target_tokens": 1000,
+   "measured_tokens": 976,
+   "fresh": {
+    "total_s": 1.6635,
+    "ttft_s": 0.591,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 32,
+    "text_head": "This document appears to be a nonsensical or corrupted text composed of fragmented financial and operational keywords, such as \"audit ledger,\" \"reconcile,\" \"",
+    "prompt_n": 999,
+    "cache_n": 0,
+    "prompt_ms": 534.381,
+    "prompt_per_second": 1869.4526938644901,
+    "predicted_n": 32,
+    "predicted_ms": 1072.279,
+    "predicted_per_second": 28.910386196129924,
+    "draft_n": 24,
+    "draft_n_accepted": 19,
+    "usage": {
+     "completion_tokens": 32,
+     "prompt_tokens": 999,
+     "total_tokens": 1031,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   "repeat": {
+    "total_s": 1.2132,
+    "ttft_s": 0.14,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 32,
+    "text_head": "This document appears to be a nonsensical or corrupted text composed of fragmented financial and operational keywords, such as \"audit ledger,\" \"reconcile,\" \"",
+    "prompt_n": 4,
+    "cache_n": 995,
+    "prompt_ms": 60.405,
+    "prompt_per_second": 66.21968380100985,
+    "predicted_n": 32,
+    "predicted_ms": 1072.828,
+    "predicted_per_second": 28.89559183764779,
+    "draft_n": 24,
+    "draft_n_accepted": 19,
+    "usage": {
+     "completion_tokens": 32,
+     "prompt_tokens": 999,
+     "total_tokens": 1031,
+     "prompt_tokens_details": {
+      "cached_tokens": 995
+     }
+    }
+   },
+   "new_turn": {
+    "total_s": 1.0286,
+    "ttft_s": 0.2237,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 24,
+    "text_head": "The text does not mention any specific vendor names; it only refers to the generic term \"vendor\" as part of a",
+    "prompt_n": 20,
+    "cache_n": 1030,
+    "prompt_ms": 218.845,
+    "prompt_per_second": 91.38888254243872,
+    "predicted_n": 24,
+    "predicted_ms": 804.667,
+    "predicted_per_second": 28.583252451013895,
+    "draft_n": 18,
+    "draft_n_accepted": 14,
+    "usage": {
+     "completion_tokens": 24,
+     "prompt_tokens": 1050,
+     "total_tokens": 1074,
+     "prompt_tokens_details": {
+      "cached_tokens": 1030
+     }
+    }
+   }
+  },
+  "8000": {
+   "target_tokens": 8000,
+   "measured_tokens": 7932,
+   "fresh": {
+    "total_s": 5.4542,
+    "ttft_s": 4.1925,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 26,
+    "text_head": "This document is a nonsensical, repetitive text composed of fragmented financial and operational keywords that lacks coherent meaning or a specific subject.",
+    "prompt_n": 7955,
+    "cache_n": 0,
+    "prompt_ms": 4065.307,
+    "prompt_per_second": 1956.8017864333494,
+    "predicted_n": 27,
+    "predicted_ms": 1261.459,
+    "predicted_per_second": 20.61105434263024,
+    "draft_n": 28,
+    "draft_n_accepted": 12,
+    "usage": {
+     "completion_tokens": 27,
+     "prompt_tokens": 7955,
+     "total_tokens": 7982,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   "repeat": {
+    "total_s": 1.4975,
+    "ttft_s": 0.2179,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 26,
+    "text_head": "This document is a nonsensical, repetitive text composed of fragmented financial and operational keywords that lacks coherent meaning or a specific subject.",
+    "prompt_n": 4,
+    "cache_n": 7951,
+    "prompt_ms": 64.381,
+    "prompt_per_second": 62.13013156055358,
+    "predicted_n": 27,
+    "predicted_ms": 1279.238,
+    "predicted_per_second": 20.324599488132776,
+    "draft_n": 28,
+    "draft_n_accepted": 12,
+    "usage": {
+     "completion_tokens": 27,
+     "prompt_tokens": 7955,
+     "total_tokens": 7982,
+     "prompt_tokens_details": {
+      "cached_tokens": 7951
+     }
+    }
+   },
+   "new_turn": {
+    "total_s": 1.1328,
+    "ttft_s": 0.2605,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 24,
+    "text_head": "The text does not mention any specific vendor names; it only contains the generic phrase \"vendor\" as part of a repetitive",
+    "prompt_n": 19,
+    "cache_n": 7981,
+    "prompt_ms": 246.576,
+    "prompt_per_second": 77.05535007462203,
+    "predicted_n": 24,
+    "predicted_ms": 872.042,
+    "predicted_per_second": 26.37487643943755,
+    "draft_n": 18,
+    "draft_n_accepted": 13,
+    "usage": {
+     "completion_tokens": 24,
+     "prompt_tokens": 8000,
+     "total_tokens": 8024,
+     "prompt_tokens_details": {
+      "cached_tokens": 7981
+     }
+    }
+   }
+  },
+  "30000": {
+   "target_tokens": 30000,
+   "measured_tokens": 30591,
+   "fresh": {
+    "total_s": 21.0943,
+    "ttft_s": 19.5002,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 32,
+    "text_head": "This document consists of a series of highly repetitive, nonsensical text fragments containing disjointed financial and operational keywords, likely representin",
+    "prompt_n": 30614,
+    "cache_n": 0,
+    "prompt_ms": 19263.704,
+    "prompt_per_second": 1589.2063125554669,
+    "predicted_n": 32,
+    "predicted_ms": 1593.294,
+    "predicted_per_second": 19.456547253676973,
+    "draft_n": 33,
+    "draft_n_accepted": 13,
+    "usage": {
+     "completion_tokens": 32,
+     "prompt_tokens": 30614,
+     "total_tokens": 30646,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   "repeat": {
+    "total_s": 2.0168,
+    "ttft_s": 0.4123,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 32,
+    "text_head": "This document consists of a series of highly repetitive, nonsensical text fragments containing disjointed financial and operational keywords, likely representin",
+    "prompt_n": 4,
+    "cache_n": 30610,
+    "prompt_ms": 100.763,
+    "prompt_per_second": 39.69711104274386,
+    "predicted_n": 32,
+    "predicted_ms": 1603.921,
+    "predicted_per_second": 19.327635213953805,
+    "draft_n": 33,
+    "draft_n_accepted": 13,
+    "usage": {
+     "completion_tokens": 32,
+     "prompt_tokens": 30614,
+     "total_tokens": 30646,
+     "prompt_tokens_details": {
+      "cached_tokens": 30610
+     }
+    }
+   },
+   "new_turn": {
+    "total_s": 1.3175,
+    "ttft_s": 0.4674,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 24,
+    "text_head": "The text does not mention any specific vendor names; it only contains the generic word \"vendor\" as part of repetitive,",
+    "prompt_n": 49,
+    "cache_n": 30610,
+    "prompt_ms": 426.487,
+    "prompt_per_second": 114.89213035801794,
+    "predicted_n": 24,
+    "predicted_ms": 849.488,
+    "predicted_per_second": 27.075132314994445,
+    "draft_n": 18,
+    "draft_n_accepted": 13,
+    "usage": {
+     "completion_tokens": 24,
+     "prompt_tokens": 30659,
+     "total_tokens": 30683,
+     "prompt_tokens_details": {
+      "cached_tokens": 30610
+     }
+    }
+   }
+  }
+ },
+ "decode": {
+  "rows": [
+   {
+    "total_s": 10.6947,
+    "ttft_s": 0.6276,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 256,
+    "text_head": "Here is a detailed, 20-step procedure for reconciling a quarterly ledger (Variant 0). This variant assumes a standard accrual-based accounting environment where",
+    "prompt_n": 33,
+    "cache_n": 0,
+    "prompt_ms": 244.981,
+    "prompt_per_second": 134.7043240088007,
+    "predicted_n": 256,
+    "predicted_ms": 10066.756,
+    "predicted_per_second": 25.330901037037158,
+    "draft_n": 226,
+    "draft_n_accepted": 142,
+    "usage": {
+     "completion_tokens": 256,
+     "prompt_tokens": 33,
+     "total_tokens": 289,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   {
+    "total_s": 10.7297,
+    "ttft_s": 0.2281,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 256,
+    "text_head": "Here is a detailed, 20-step procedure for reconciling a quarterly ledger (Variant 1). This variant assumes a standard accrual-based accounting environment where",
+    "prompt_n": 33,
+    "cache_n": 0,
+    "prompt_ms": 194.092,
+    "prompt_per_second": 170.02246357397522,
+    "predicted_n": 256,
+    "predicted_ms": 10501.418,
+    "predicted_per_second": 24.282435000682767,
+    "draft_n": 235,
+    "draft_n_accepted": 136,
+    "usage": {
+     "completion_tokens": 256,
+     "prompt_tokens": 33,
+     "total_tokens": 289,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   {
+    "total_s": 10.5764,
+    "ttft_s": 0.2452,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 256,
+    "text_head": "Here is a detailed, 20-step procedure for reconciling a quarterly ledger (Variant 2). This variant assumes a **hybrid approach** that emphasizes automated data ",
+    "prompt_n": 33,
+    "cache_n": 0,
+    "prompt_ms": 198.327,
+    "prompt_per_second": 166.39186797561604,
+    "predicted_n": 256,
+    "predicted_ms": 10331.033,
+    "predicted_per_second": 24.68291409000436,
+    "draft_n": 232,
+    "draft_n_accepted": 138,
+    "usage": {
+     "completion_tokens": 256,
+     "prompt_tokens": 33,
+     "total_tokens": 289,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   {
+    "total_s": 10.4662,
+    "ttft_s": 0.2351,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 256,
+    "text_head": "Here is a detailed, 20-step procedure for reconciling a quarterly ledger (Variant 3). This variant assumes a **hybrid reconciliation approach** that emphasizes ",
+    "prompt_n": 33,
+    "cache_n": 0,
+    "prompt_ms": 198.632,
+    "prompt_per_second": 166.13637278988278,
+    "predicted_n": 256,
+    "predicted_ms": 10230.582,
+    "predicted_per_second": 24.925268181223707,
+    "draft_n": 227,
+    "draft_n_accepted": 141,
+    "usage": {
+     "completion_tokens": 256,
+     "prompt_tokens": 33,
+     "total_tokens": 289,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   {
+    "total_s": 11.0087,
+    "ttft_s": 0.3201,
+    "finish": "length",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 256,
+    "text_head": "Here is a detailed, 20-step procedure for reconciling a quarterly ledger (Variant 4). This variant assumes a **hybrid approach** that emphasizes automated data ",
+    "prompt_n": 33,
+    "cache_n": 0,
+    "prompt_ms": 201.888,
+    "prompt_per_second": 163.4569662387066,
+    "predicted_n": 256,
+    "predicted_ms": 10688.291,
+    "predicted_per_second": 23.857883360398777,
+    "draft_n": 237,
+    "draft_n_accepted": 136,
+    "usage": {
+     "completion_tokens": 256,
+     "prompt_tokens": 33,
+     "total_tokens": 289,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   }
+  ],
+  "tps": {
+   "n": 5,
+   "p50": 24.6829,
+   "p95": 25.2498,
+   "min": 23.8579,
+   "max": 25.3309,
+   "mean": 24.6159
+  },
+  "ttft": {
+   "n": 5,
+   "p50": 0.2452,
+   "p95": 0.5661,
+   "min": 0.2281,
+   "max": 0.6276,
+   "mean": 0.3312
+  },
+  "errors": 0
+ },
+ "decision": {
+  "rows": [
+   {
+    "total_s": 4.3576,
+    "ttft_s": 0.7048,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 94,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 1020,
+    "cache_n": 0,
+    "prompt_ms": 651.414,
+    "prompt_per_second": 1565.824498705892,
+    "predicted_n": 95,
+    "predicted_ms": 3652.708,
+    "predicted_per_second": 25.734331898416187,
+    "draft_n": 82,
+    "draft_n_accepted": 53,
+    "usage": {
+     "completion_tokens": 95,
+     "prompt_tokens": 1020,
+     "total_tokens": 1115,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   {
+    "total_s": 4.2074,
+    "ttft_s": 0.6325,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.95,\n  \"rationale\": \"The provided text records are incoherent and lack specific data fields such as vendor names ",
+    "prompt_n": 953,
+    "cache_n": 61,
+    "prompt_ms": 553.51,
+    "prompt_per_second": 1721.7394446351466,
+    "predicted_n": 102,
+    "predicted_ms": 3574.798,
+    "predicted_per_second": 28.25334466450972,
+    "draft_n": 80,
+    "draft_n_accepted": 62,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 4.6966,
+    "ttft_s": 0.5848,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive phrases without specific numerical value",
+    "prompt_n": 957,
+    "cache_n": 61,
+    "prompt_ms": 521.574,
+    "prompt_per_second": 1834.8307239241221,
+    "predicted_n": 106,
+    "predicted_ms": 4111.521,
+    "predicted_per_second": 25.537994333483887,
+    "draft_n": 92,
+    "draft_n_accepted": 60,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1018,
+     "total_tokens": 1124,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 4.2444,
+    "ttft_s": 0.6618,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are fragmented and lack specific numerical values or clear vendor-t",
+    "prompt_n": 953,
+    "cache_n": 61,
+    "prompt_ms": 533.45,
+    "prompt_per_second": 1786.4842065798107,
+    "predicted_n": 100,
+    "predicted_ms": 3582.355,
+    "predicted_per_second": 27.635452097851832,
+    "draft_n": 80,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1014,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 5.0694,
+    "ttft_s": 0.5896,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 122,
+    "text_head": "{\n  \"route\": \"action\",\n  \"confidence\": 0.85,\n  \"rationale\": \"The input text is highly repetitive and syntactically broken, making it impossible to reliably extr",
+    "prompt_n": 955,
+    "cache_n": 61,
+    "prompt_ms": 525.148,
+    "prompt_per_second": 1818.5349653811877,
+    "predicted_n": 123,
+    "predicted_ms": 4479.266,
+    "predicted_per_second": 27.236605283097724,
+    "draft_n": 100,
+    "draft_n_accepted": 72,
+    "usage": {
+     "completion_tokens": 123,
+     "prompt_tokens": 1016,
+     "total_tokens": 1139,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 4.7115,
+    "ttft_s": 0.6123,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are fragmented and lack specific numerical values or clear vendor-t",
+    "prompt_n": 957,
+    "cache_n": 61,
+    "prompt_ms": 527.443,
+    "prompt_per_second": 1814.4140693875927,
+    "predicted_n": 107,
+    "predicted_ms": 4099.207,
+    "predicted_per_second": 25.85865997984488,
+    "draft_n": 92,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1018,
+     "total_tokens": 1125,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 4.683,
+    "ttft_s": 0.5686,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 116,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are fragmented and lack specific data points linking vendors to num",
+    "prompt_n": 957,
+    "cache_n": 61,
+    "prompt_ms": 521.52,
+    "prompt_per_second": 1835.0207086976532,
+    "predicted_n": 117,
+    "predicted_ms": 4114.116,
+    "predicted_per_second": 28.195607513254366,
+    "draft_n": 92,
+    "draft_n_accepted": 71,
+    "usage": {
+     "completion_tokens": 117,
+     "prompt_tokens": 1018,
+     "total_tokens": 1135,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 3.7992,
+    "ttft_s": 0.5695,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 92,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.95,\n  \"rationale\": \"The provided text records are incoherent and do not contain specific vendor names or numeric",
+    "prompt_n": 955,
+    "cache_n": 61,
+    "prompt_ms": 514.598,
+    "prompt_per_second": 1855.8175507872165,
+    "predicted_n": 93,
+    "predicted_ms": 3229.54,
+    "predicted_per_second": 28.487029112505187,
+    "draft_n": 72,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 93,
+     "prompt_tokens": 1016,
+     "total_tokens": 1109,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 3.7007,
+    "ttft_s": 0.5745,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 91,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and do not contain specific vendor names or numerica",
+    "prompt_n": 957,
+    "cache_n": 61,
+    "prompt_ms": 519.552,
+    "prompt_per_second": 1841.9715447154472,
+    "predicted_n": 92,
+    "predicted_ms": 3125.873,
+    "predicted_per_second": 29.11186730874863,
+    "draft_n": 70,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 92,
+     "prompt_tokens": 1018,
+     "total_tokens": 1110,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 4.3801,
+    "ttft_s": 0.6368,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 102,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is highly repetitive and fragmented, lacking clear, distinct records with s",
+    "prompt_n": 952,
+    "cache_n": 61,
+    "prompt_ms": 546.998,
+    "prompt_per_second": 1740.4085572524943,
+    "predicted_n": 103,
+    "predicted_ms": 3743.07,
+    "predicted_per_second": 27.25035866280887,
+    "draft_n": 84,
+    "draft_n_accepted": 60,
+    "usage": {
+     "completion_tokens": 103,
+     "prompt_tokens": 1013,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   }
+  ],
+  "ttft": {
+   "n": 10,
+   "p50": 0.6009,
+   "p95": 0.6855,
+   "min": 0.5686,
+   "max": 0.7048,
+   "mean": 0.6135
+  },
+  "total": {
+   "n": 10,
+   "p50": 4.3689,
+   "p95": 4.9083,
+   "min": 3.7007,
+   "max": 5.0694,
+   "mean": 4.385
+  },
+  "prompt_tps": {
+   "n": 10,
+   "p50": 1816.4745,
+   "p95": 1849.5868,
+   "min": 1565.8245,
+   "max": 1855.8176,
+   "mean": 1781.5046
+  },
+  "tps": {
+   "n": 10,
+   "p50": 27.4429,
+   "p95": 28.8307,
+   "min": 25.538,
+   "max": 29.1119,
+   "mean": 27.3301
+  },
+  "errors": 0
+ },
+ "cancel": {
+  "disconnect_mid_generation": {
+   "total_s": 1.5187,
+   "ttft_s": 0.2544,
+   "finish": null,
+   "cancelled": true,
+   "error": null,
+   "n_content_chunks": 34,
+   "text_head": "# The Silent Guardian: The Critical Role of Ledger Reconciliation in Financial Integrity\n\nIn the complex architecture of modern business, financial data serves "
+  },
+  "follow_up_after_disconnect": {
+   "total_s": 0.4636,
+   "ttft_s": 0.3675,
+   "finish": "stop",
+   "cancelled": false,
+   "error": null,
+   "n_content_chunks": 1,
+   "text_head": "OK",
+   "prompt_n": 15,
+   "cache_n": 0,
+   "prompt_ms": 142.797,
+   "prompt_per_second": 105.04422361814323,
+   "predicted_n": 2,
+   "predicted_ms": 95.871,
+   "predicted_per_second": 10.430682896809255,
+   "draft_n": 2,
+   "draft_n_accepted": 0,
+   "usage": {
+    "completion_tokens": 2,
+    "prompt_tokens": 15,
+    "total_tokens": 17,
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    }
+   }
+  },
+  "follow_up_wait_s": 0.464,
+  "healthy_after_disconnect": true,
+  "client_timeout_during_prefill": {
+   "total_s": 1.061,
+   "ttft_s": null,
+   "finish": null,
+   "cancelled": false,
+   "error": "ReadTimeout: timed out",
+   "n_content_chunks": 0,
+   "text_head": ""
+  },
+  "follow_up_after_timeout": {
+   "total_s": 2.2585,
+   "ttft_s": 2.1642,
+   "finish": "stop",
+   "cancelled": false,
+   "error": null,
+   "n_content_chunks": 1,
+   "text_head": "OK",
+   "prompt_n": 16,
+   "cache_n": 0,
+   "prompt_ms": 140.572,
+   "prompt_per_second": 113.82067552570925,
+   "predicted_n": 2,
+   "predicted_ms": 94.138,
+   "predicted_per_second": 10.622702840510739,
+   "draft_n": 2,
+   "draft_n_accepted": 0,
+   "usage": {
+    "completion_tokens": 2,
+    "prompt_tokens": 16,
+    "total_tokens": 18,
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    }
+   }
+  },
+  "follow_up_after_timeout_wait_s": 2.259,
+  "healthy_after_timeout": true
+ },
+ "stability": {
+  "n": 20,
+  "errors": 0,
+  "total": {
+   "n": 20,
+   "p50": 3.87,
+   "p95": 4.4552,
+   "min": 3.5856,
+   "max": 4.5842,
+   "mean": 3.9594
+  },
+  "first_third_total_p50": 4.2991,
+  "last_third_total_p50": 3.8095,
+  "tps": {
+   "n": 20,
+   "p50": 27.3187,
+   "p95": 28.3041,
+   "min": 26.6463,
+   "max": 28.3111,
+   "mean": 27.3591
+  },
+  "rows": [
+   {
+    "total_s": 4.3383,
+    "ttft_s": 0.6929,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 100,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 1018,
+    "cache_n": 0,
+    "prompt_ms": 659.09,
+    "prompt_per_second": 1544.5538545570407,
+    "predicted_n": 101,
+    "predicted_ms": 3645.389,
+    "predicted_per_second": 27.431914673578046,
+    "draft_n": 82,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 101,
+     "prompt_tokens": 1018,
+     "total_tokens": 1119,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   {
+    "total_s": 4.5842,
+    "ttft_s": 0.5682,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 107,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without structured data or spec",
+    "prompt_n": 951,
+    "cache_n": 61,
+    "prompt_ms": 513.153,
+    "prompt_per_second": 1853.248446369796,
+    "predicted_n": 108,
+    "predicted_ms": 4015.574,
+    "predicted_per_second": 26.646252814666095,
+    "draft_n": 90,
+    "draft_n_accepted": 63,
+    "usage": {
+     "completion_tokens": 108,
+     "prompt_tokens": 1012,
+     "total_tokens": 1120,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 4.4484,
+    "ttft_s": 0.6189,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 107,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 961,
+    "cache_n": 61,
+    "prompt_ms": 526.425,
+    "prompt_per_second": 1825.5212043500976,
+    "predicted_n": 108,
+    "predicted_ms": 3829.181,
+    "predicted_per_second": 27.943312159963185,
+    "draft_n": 86,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 108,
+     "prompt_tokens": 1022,
+     "total_tokens": 1130,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 4.2598,
+    "ttft_s": 0.5957,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 953,
+    "cache_n": 61,
+    "prompt_ms": 515.179,
+    "prompt_per_second": 1849.8424819334641,
+    "predicted_n": 102,
+    "predicted_ms": 3663.895,
+    "predicted_per_second": 27.566292156298147,
+    "draft_n": 82,
+    "draft_n_accepted": 60,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 4.1655,
+    "ttft_s": 0.5815,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 960,
+    "cache_n": 61,
+    "prompt_ms": 520.737,
+    "prompt_per_second": 1843.5409813399087,
+    "predicted_n": 100,
+    "predicted_ms": 3583.633,
+    "predicted_per_second": 27.625596705912688,
+    "draft_n": 80,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 3.633,
+    "ttft_s": 0.1546,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 58.464,
+    "prompt_per_second": 68.41817186644774,
+    "predicted_n": 96,
+    "predicted_ms": 3477.979,
+    "predicted_per_second": 27.314713516096564,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 4.0428,
+    "ttft_s": 0.1372,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 57.112,
+    "prompt_per_second": 70.03782042302844,
+    "predicted_n": 106,
+    "predicted_ms": 3905.303,
+    "predicted_per_second": 26.886518152368716,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 3.8653,
+    "ttft_s": 0.1199,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 57.801,
+    "prompt_per_second": 69.20295496617706,
+    "predicted_n": 107,
+    "predicted_ms": 3745.09,
+    "predicted_per_second": 28.303725678154596,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 3.9115,
+    "ttft_s": 0.145,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 58.388,
+    "prompt_per_second": 68.50722751250257,
+    "predicted_n": 102,
+    "predicted_ms": 3766.333,
+    "predicted_per_second": 26.816534809853508,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 3.7741,
+    "ttft_s": 0.1144,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 51.831,
+    "prompt_per_second": 77.17389207231193,
+    "predicted_n": 100,
+    "predicted_ms": 3659.393,
+    "predicted_per_second": 27.053667097248095,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 3.5856,
+    "ttft_s": 0.1215,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.536,
+    "prompt_per_second": 67.18624025799517,
+    "predicted_n": 96,
+    "predicted_ms": 3463.859,
+    "predicted_per_second": 27.426058624210746,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 3.9542,
+    "ttft_s": 0.1108,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 51.093,
+    "prompt_per_second": 78.28861096431996,
+    "predicted_n": 106,
+    "predicted_ms": 3842.97,
+    "predicted_per_second": 27.322617662901354,
+    "draft_n": 86,
+    "draft_n_accepted": 62,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 3.8747,
+    "ttft_s": 0.1214,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 54.589,
+    "prompt_per_second": 73.27483558958765,
+    "predicted_n": 107,
+    "predicted_ms": 3753.085,
+    "predicted_per_second": 28.243431736824505,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 3.86,
+    "ttft_s": 0.11,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 51.088,
+    "prompt_per_second": 78.29627309740056,
+    "predicted_n": 102,
+    "predicted_ms": 3749.715,
+    "predicted_per_second": 26.935380422245427,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 3.7546,
+    "ttft_s": 0.1121,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 50.857,
+    "prompt_per_second": 78.65190632557957,
+    "predicted_n": 100,
+    "predicted_ms": 3642.132,
+    "predicted_per_second": 27.181881381564427,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 3.5988,
+    "ttft_s": 0.124,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 51.094,
+    "prompt_per_second": 78.28707871765765,
+    "predicted_n": 96,
+    "predicted_ms": 3474.382,
+    "predicted_per_second": 27.342992221350443,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 4.0597,
+    "ttft_s": 0.1307,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 50.588,
+    "prompt_per_second": 79.07013520993121,
+    "predicted_n": 106,
+    "predicted_ms": 3928.732,
+    "predicted_per_second": 26.72618035539202,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 3.8567,
+    "ttft_s": 0.1123,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 50.947,
+    "prompt_per_second": 78.51296445325534,
+    "predicted_n": 107,
+    "predicted_ms": 3744.119,
+    "predicted_per_second": 28.311065967721646,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 3.8581,
+    "ttft_s": 0.1141,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 51.069,
+    "prompt_per_second": 78.32540288629109,
+    "predicted_n": 102,
+    "predicted_ms": 3743.63,
+    "predicted_per_second": 26.979161936409312,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 3.7624,
+    "ttft_s": 0.1122,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 51.329,
+    "prompt_per_second": 77.92865631514348,
+    "predicted_n": 100,
+    "predicted_ms": 3649.86,
+    "predicted_per_second": 27.1243280564186,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   }
+  ]
+ },
+ "end": {
+  "load_seconds": 91.62,
+  "vram_dedicated_now_mib": 15824.0,
+  "system_available_ram_mib": 8998.6,
+  "server_rss_now_mib": 4221.8,
+  "peak_server_rss_mib": 4429.2,
+  "peak_vram_dedicated_mib": 15838.3,
+  "min_system_available_ram_mib": 8360.3
+ },
+ "healthy_end": true,
+ "vram_dedicated_after_stop_mib": 808.9,
+ "log": [
+  "[22:17:16] start base_b11425_mtp; VRAM before 808.9 MiB; other GPU-ish owners: [(5496, 'ollama app.exe', 'C:\\\\Users\\\\cheta\\\\AppData\\\\Local\\\\Programs\\\\Ollama\\\\ollama app.exe '), (7956, 'llama-server.exe', 'D:\\\\uri-model-lab\\\\runtime\\\\llama-b11425-bin-win-vulkan-x64\\\\lla'), (15272, 'ollama.exe', 'C:\\\\Users\\\\cheta\\\\AppData\\\\Local\\\\Programs\\\\Ollama\\\\ollama.exe serv')]",
+  "[22:18:48] server healthy after 91.62 s (warm/cold not controlled: see page-cache note)",
+  "[22:18:55] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=534.381 pps=1869.4526938644901 ttft=0.591 | repeat cache_n=995 ttft=0.14 | newturn prompt_n=20 ttft=0.2237",
+  "[22:19:03] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=4065.307 pps=1956.8017864333494 ttft=4.1925 | repeat cache_n=7951 ttft=0.2179 | newturn prompt_n=19 ttft=0.2605",
+  "[22:19:27] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=19263.704 pps=1589.2063125554669 ttft=19.5002 | repeat cache_n=30610 ttft=0.4123 | newturn prompt_n=49 ttft=0.4674",
+  "[22:19:38] decode 0: pred_n=256 tps=25.330901037037158 ttft=0.6276 draft=226/142 finish=length err=None",
+  "[22:19:49] decode 1: pred_n=256 tps=24.282435000682767 ttft=0.2281 draft=235/136 finish=length err=None",
+  "[22:19:59] decode 2: pred_n=256 tps=24.68291409000436 ttft=0.2452 draft=232/138 finish=length err=None",
+  "[22:20:10] decode 3: pred_n=256 tps=24.925268181223707 ttft=0.2351 draft=227/141 finish=length err=None",
+  "[22:20:21] decode 4: pred_n=256 tps=23.857883360398777 ttft=0.3201 draft=237/136 finish=length err=None",
+  "[22:20:25] decision 0: prompt_n=1020 cache_n=0 ttft=0.7048 total=4.3576 pred_n=95 tps=25.734331898416187 err=None",
+  "[22:20:30] decision 1: prompt_n=953 cache_n=61 ttft=0.6325 total=4.2074 pred_n=102 tps=28.25334466450972 err=None",
+  "[22:20:34] decision 2: prompt_n=957 cache_n=61 ttft=0.5848 total=4.6966 pred_n=106 tps=25.537994333483887 err=None",
+  "[22:20:38] decision 3: prompt_n=953 cache_n=61 ttft=0.6618 total=4.2444 pred_n=100 tps=27.635452097851832 err=None",
+  "[22:20:44] decision 4: prompt_n=955 cache_n=61 ttft=0.5896 total=5.0694 pred_n=123 tps=27.236605283097724 err=None",
+  "[22:20:48] decision 5: prompt_n=957 cache_n=61 ttft=0.6123 total=4.7115 pred_n=107 tps=25.85865997984488 err=None",
+  "[22:20:53] decision 6: prompt_n=957 cache_n=61 ttft=0.5686 total=4.683 pred_n=117 tps=28.195607513254366 err=None",
+  "[22:20:57] decision 7: prompt_n=955 cache_n=61 ttft=0.5695 total=3.7992 pred_n=93 tps=28.487029112505187 err=None",
+  "[22:21:00] decision 8: prompt_n=957 cache_n=61 ttft=0.5745 total=3.7007 pred_n=92 tps=29.11186730874863 err=None",
+  "[22:21:05] decision 9: prompt_n=952 cache_n=61 ttft=0.6368 total=4.3801 pred_n=103 tps=27.25035866280887 err=None",
+  "[22:21:07] cancel: disconnected after 1.5187 s (chunks 34); follow-up total 0.4636 s ttft 0.3675 healthy=True",
+  "[22:21:11] timeout: ReadTimeout: timed out ; follow-up total 2.2585 s healthy=True",
+  "[22:22:30] stability: n=20 errors=0 total p50=3.87 p95=4.4552 first/last third p50 4.2991/3.8095"
+ ]
+}

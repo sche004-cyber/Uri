@@ -55,6 +55,26 @@ def gpu_dedicated_mib():
         return None
 
 
+def gpu_process_memory(pid):
+    """Per-process GPU memory split (Windows perf counters): local = VRAM, non-local = system memory
+    reachable over PCIe. A non-zero non-local figure on the server means part of its working set is
+    demoted out of VRAM (the "GPU memory pressure" condition)."""
+    try:
+        bs = chr(92)
+        q = ("$s=(Get-Counter '@@GPU Process Memory(pid_%d*)@@Local Usage','@@GPU Process Memory(pid_%d*)@@Non Local Usage',"
+             "'@@GPU Process Memory(pid_%d*)@@Dedicated Usage','@@GPU Process Memory(pid_%d*)@@Shared Usage').CounterSamples;"
+             "$s | ForEach-Object { $_.Path.Split('@@')[-1] + '=' + [int]($_.CookedValue/1MB) }" % (pid, pid, pid, pid))
+        out = ps(q.replace("@@", bs))
+        d = {}
+        for line in out.splitlines():
+            if "=" in line:
+                k, v = line.rsplit("=", 1)
+                d[k.strip()] = int(v)
+        return d
+    except Exception as e:  # noqa: BLE001
+        return {"error": str(e)}
+
+
 def gpu_other_owners():
     """Processes other than this harness that could hold the GPU (interference record)."""
     owners = []
@@ -134,8 +154,23 @@ class Server:
     def url(self):
         return f"http://127.0.0.1:{self.port}"
 
+    def wait_gpu_released(self, idle_ceiling_mib=2500, timeout=120):
+        """Do not start while a previous llama-server still holds VRAM (release lags process exit by
+        seconds); otherwise the new server's allocations land in non-local memory."""
+        t0 = time.monotonic()
+        v = gpu_dedicated_mib()
+        while time.monotonic() - t0 < timeout:
+            v = gpu_dedicated_mib()
+            if v is not None and v < idle_ceiling_mib:
+                break
+            time.sleep(1.0)
+        self.gpu_release_wait_s = round(time.monotonic() - t0, 1)
+        self.vram_before_start_mib = v
+        return v
+
     def start(self, timeout=600):
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
+        self.wait_gpu_released()
         log = open(self.log_path, "w", encoding="utf-8", errors="replace")
         t0 = time.monotonic()
         self.proc = subprocess.Popen(self.argv(), stdout=log, stderr=subprocess.STDOUT, env=self.env,
@@ -170,6 +205,8 @@ class Server:
             pass
         if self.sampler:
             s.update(self.sampler.summary())
+        if self.proc:
+            s["server_gpu_memory_mib"] = gpu_process_memory(self.proc.pid)
         return s
 
     def stop(self):
@@ -181,7 +218,15 @@ class Server:
                 self.proc.wait(30)
             except subprocess.TimeoutExpired:
                 self.proc.kill()
-        time.sleep(2)
+        # wait for the driver to release the process's GPU memory (lags process exit by seconds)
+        t0 = time.monotonic()
+        while time.monotonic() - t0 < 120:
+            v = gpu_dedicated_mib()
+            if v is not None and v < 2500:
+                break
+            time.sleep(1.0)
+        self.gpu_release_after_stop_s = round(time.monotonic() - t0, 1)
+        time.sleep(1)
 
 
 # ---------------------------------------------------------------- prompts
@@ -381,6 +426,38 @@ def phase_cancel(client, url, srv, log):
     return res
 
 
+def phase_vision(client, url, log, n_rounds=2):
+    """One synthetic 768-px image (PIL, deterministic) with a question; measures image encode + answer."""
+    try:
+        import base64
+        import io
+        from PIL import Image, ImageDraw
+    except Exception as e:  # noqa: BLE001
+        return {"skipped": f"PIL unavailable: {e}"}
+    rows = []
+    for i in range(n_rounds):
+        im = Image.new("RGB", (768, 768), (250, 250, 245))
+        d = ImageDraw.Draw(im)
+        d.rectangle([40, 40, 728, 200], outline=(20, 20, 20), width=4)
+        d.text((60, 80), f"INVOICE 2026-{1040 + i}", fill=(10, 10, 10))
+        d.text((60, 120), "Vendor: Northwind Supplies   Total: EUR 1,284.50", fill=(10, 10, 10))
+        d.text((60, 160), "Due: 30 October 2026   Cost centre: OPS-7", fill=(10, 10, 10))
+        for k in range(8):
+            d.line([60, 260 + k * 50, 700, 260 + k * 50], fill=(120, 120, 120), width=2)
+        buf = io.BytesIO()
+        im.save(buf, format="PNG")
+        b64 = base64.b64encode(buf.getvalue()).decode()
+        msgs = [{"role": "user", "content": [
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64," + b64}},
+            {"type": "text", "text": "What is the invoice total and the vendor? Answer in one short line."}]}]
+        r = chat(client, url, msgs, max_tokens=48)
+        rows.append(r)
+        log(f"vision {i}: prompt_n={r.get('prompt_n')} prompt_ms={r.get('prompt_ms')} ttft={r.get('ttft_s')} total={r.get('total_s')} "
+            f"err={r.get('error')} text={r.get('text_head')!r}")
+    return {"rows": rows, "total": summarize(rows, "total_s"), "ttft": summarize(rows, "ttft_s"),
+            "errors": sum(1 for r in rows if r.get("error"))}
+
+
 def phase_stability(client, url, n_rounds, log):
     rows = []
     for i in range(n_rounds):
@@ -415,7 +492,14 @@ def main():
     ap.add_argument("--extra", default="", help="extra llama-server args appended after the pinned flags")
     ap.add_argument("--skip", default="", help="comma list: prefill,decode,decision,cancel,stability")
     ap.add_argument("--deadline-epoch", type=float, default=None, help="refuse to start if past this unix time")
+    ap.add_argument("--model-dir", default=None,
+                    help="directory holding hash-identical copies of the three pinned GGUF files (e.g. an NVMe copy); "
+                         "only the file location changes, hashes are recorded")
     args = ap.parse_args()
+    if args.model_dir:
+        m = PINNED["model"]
+        for k in ("path", "mmproj", "mtp_draft"):
+            m[k] = str(Path(args.model_dir) / Path(m[k]).name)
 
     if args.deadline_epoch and time.time() > args.deadline_epoch:
         print("DEADLINE PASSED - not starting", file=sys.stderr)
@@ -440,6 +524,7 @@ def main():
         "name": args.name, "stamp": stamp, "binary": binary, "binary_sha256": sha256(binary),
         "ggml_vulkan_sha256": sha256(str(Path(args.binary_dir) / "ggml-vulkan.dll")) if (Path(args.binary_dir) / "ggml-vulkan.dll").exists() else None,
         "model_path": PINNED["model"]["path"], "model_sha256_pinned": PINNED["model"]["sha256"],
+        "model_dir_override": args.model_dir,
         "mtp": not args.no_mtp, "vision": not args.no_vision, "ctx": args.ctx or PINNED["ctx"],
         "server_env": env, "extra_args": extra_args,
         "gpu_other_owners_before": gpu_other_owners(), "vram_dedicated_before_mib": gpu_dedicated_mib(),
@@ -453,7 +538,10 @@ def main():
     record["argv"] = srv.argv()
     try:
         srv.start()
-        log(f"server healthy after {srv.load_seconds} s (warm/cold not controlled: see page-cache note)")
+        record["gpu_release_wait_before_start_s"] = getattr(srv, "gpu_release_wait_s", None)
+        record["vram_dedicated_at_start_mib"] = getattr(srv, "vram_before_start_mib", None)
+        log(f"server healthy after {srv.load_seconds} s (waited {record['gpu_release_wait_before_start_s']} s for VRAM release; "
+            f"VRAM at start {record['vram_dedicated_at_start_mib']} MiB; warm/cold not controlled)")
         record["load_seconds"] = srv.load_seconds
         record["props"] = {}
         try:
@@ -471,6 +559,8 @@ def main():
             record["decode"] = phase_decode(client, srv.url, args.decode_rounds, log)
         if "decision" not in skip:
             record["decision"] = phase_decision(client, srv.url, args.decision_rounds, log)
+        if "vision" not in skip and not args.no_vision:
+            record["vision"] = phase_vision(client, srv.url, log)
         if "cancel" not in skip:
             record["cancel"] = phase_cancel(client, srv.url, srv, log)
         if "stability" not in skip:
