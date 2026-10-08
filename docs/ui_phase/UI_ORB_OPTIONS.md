@@ -38,7 +38,8 @@ The nine states keep their meaning: tints lean every palette hue toward amber (n
 
 * Cursor gust: sweeping the pointer over the orb pushes particles and bends ribbons and threads along the sweep, decaying over 1.4 s (`_Gust`, `_place`, `_gustAt`).
 * Click: poke (core bump, burst ring, outward kick) plus a UI-local question bubble ("Yes? What should I do?") and composer focus. Double-click opens the Workspace.
-* Reduced effects: no shader, no blur, no additive glow passes; structure and tints remain. Reduced motion: still frame.
+* Reduced effects: no shader, no hairline blur, no additive glow passes; structure and tints remain. Reduced motion: still frame.
+* Glow is layered additive strokes, not blur: profile run 3 measured 34 ms raster p95 with one `MaskFilter.blur` per ribbon/bolt/thread; `_glowStroke` (three widening additive strokes + a hot core) replaced them and only hairline blurs (<= 1.6 px) remain (`_blurred`). Numbers in `UI_TEST_EVIDENCE.md` run 4.
 
 ## Recommendation
 
@@ -46,4 +47,4 @@ Fluid Plasma (Signature) as the default companion: the calmest at idle and the c
 
 ## Not done
 
-No Blender/TouchDesigner assets; no audio reactivity (no voice source yet). Performance per style is in `UI_TEST_EVIDENCE.md`; the ribbon styles use blurred additive strokes and cost more than the particle-only first build (numbers there).
+No Blender/TouchDesigner assets; no audio reactivity (no voice source yet). Performance per style is in `UI_TEST_EVIDENCE.md` (run 4, after the blur removal).

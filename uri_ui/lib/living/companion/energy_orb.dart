@@ -826,10 +826,65 @@ class _OrbPainter extends CustomPainter {
   }
 
   Paint _blurred(Paint p, double sigma) {
-    if (!reducedEffects && sigma > 0) {
+    // Only hairline blurs (<= 1.6 px) are kept: each blur is its own
+    // render pass, and wide ones measured 34 ms raster p95 (profile run 3).
+    if (!reducedEffects && sigma > 0 && sigma <= 1.6) {
       p.maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, sigma);
     }
     return p;
+  }
+
+  /// Glow without a blur pass: three widening additive strokes with
+  /// falling alpha, then a thin hot core. A per-stroke `MaskFilter.blur`
+  /// measured 34 ms raster p95 across the ribbon styles (profile run 3);
+  /// this costs about one plain stroke each.
+  void _glowStroke(
+    Canvas c,
+    Path path,
+    double width,
+    Color color,
+    double alpha, {
+    double coreMix = 0.6,
+    double coreAlpha = 0.65,
+  }) {
+    final additive = reducedEffects ? BlendMode.srcOver : BlendMode.plus;
+    if (!reducedEffects) {
+      for (final (mul, a) in const [(3.2, 0.07), (2.0, 0.14), (1.35, 0.22)]) {
+        c.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = width * mul
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..blendMode = additive
+            ..color = color.withValues(alpha: a * alpha),
+        );
+      }
+    }
+    c.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..blendMode = additive
+        ..color = color.withValues(alpha: 0.5 * alpha),
+    );
+    c.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = math.max(1.0, width * 0.28)
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..color = Color.lerp(
+          color,
+          hot,
+          coreMix,
+        )!.withValues(alpha: coreAlpha * alpha),
+    );
   }
 
   @override
@@ -1221,41 +1276,7 @@ class _OrbPainter extends CustomPainter {
       );
       final color = hue(k);
       final w = coreR * width * (0.7 + 0.6 * _hash(k, 6));
-      if (!reducedEffects) {
-        c.drawPath(
-          path,
-          _blurred(
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = w * 2.6
-              ..strokeCap = StrokeCap.round
-              ..blendMode = BlendMode.plus
-              ..color = color.withValues(alpha: 0.22 * alpha),
-            w * 0.9,
-          ),
-        );
-      }
-      c.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = w
-          ..strokeCap = StrokeCap.round
-          ..blendMode = reducedEffects ? BlendMode.srcOver : BlendMode.plus
-          ..color = color.withValues(alpha: 0.55 * alpha),
-      );
-      c.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = math.max(1.0, w * 0.28)
-          ..strokeCap = StrokeCap.round
-          ..color = Color.lerp(
-            color,
-            hot,
-            0.6,
-          )!.withValues(alpha: 0.65 * alpha),
-      );
+      _glowStroke(c, path, w, color, alpha);
     }
     c.restore();
   }
@@ -1328,29 +1349,7 @@ class _OrbPainter extends CustomPainter {
   }
 
   void _strokeBolt(Canvas c, Path p, double width, double alpha, Color color) {
-    if (!reducedEffects) {
-      c.drawPath(
-        p,
-        _blurred(
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = width * 3.5
-            ..strokeCap = StrokeCap.round
-            ..blendMode = BlendMode.plus
-            ..color = color.withValues(alpha: alpha * 0.45),
-          width * 1.5,
-        ),
-      );
-    }
-    c.drawPath(
-      p,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = width
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..color = Color.lerp(color, hot, 0.75)!.withValues(alpha: alpha),
-    );
+    _glowStroke(c, p, width * 1.6, color, alpha, coreMix: 0.8, coreAlpha: 0.9);
   }
 
   /// Electric Core: a hot concentrated centre with bolts passing outward
@@ -1435,28 +1434,7 @@ class _OrbPainter extends CustomPainter {
         tip = pt;
       }
       final color = hue(k);
-      if (!reducedEffects) {
-        c.drawPath(
-          path,
-          _blurred(
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 3.5
-              ..strokeCap = StrokeCap.round
-              ..blendMode = BlendMode.plus
-              ..color = color.withValues(alpha: 0.25),
-            2.0,
-          ),
-        );
-      }
-      c.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.0
-          ..strokeCap = StrokeCap.round
-          ..color = Color.lerp(color, hot, 0.6)!.withValues(alpha: 0.75),
-      );
+      _glowStroke(c, path, 2.2, color, 0.8, coreMix: 0.6, coreAlpha: 0.75);
       if (tip != null) {
         c.drawCircle(tip, 2.2, Paint()..color = hot.withValues(alpha: 0.9));
       }

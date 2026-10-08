@@ -13,6 +13,7 @@ cd "$UI"
 
 run_scenario() {
   local name="$1"; shift
+  if [ -n "$ONLY" ] && [ "$name" != "$ONLY" ]; then return; fi
   echo "=== $name"
   (sleep "${SAMPLE_SECONDS:-70}"; echo q) | env "$@" URI_LIVING_PERF=1 URI_LIVING_SKIP_ONBOARDING=1 \
     flutter run --profile -d windows -t lib/main_living.dart 2>&1 \
@@ -22,6 +23,7 @@ run_scenario() {
 
 # The first scenario includes the profile compile; give it longer.
 SAMPLE_SECONDS=${SAMPLE_SECONDS:-70}
+ONLY=${ONLY:-}
 run_scenario style_plasma_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=nebula
 run_scenario style_particles_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=swarm
 run_scenario style_filaments_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=mesh
@@ -31,4 +33,6 @@ run_scenario style_aurora_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB
 run_scenario style_sun_profile URI_LIVING_START_MODE=companion URI_LIVING_ORB_VARIANT=flow
 run_scenario dashboard_plasma_profile URI_LIVING_START_MODE=dashboard
 run_scenario reduced_plasma_profile URI_LIVING_START_MODE=companion URI_LIVING_REDUCED_EFFECTS=1
+# Active animation (Codex round 5 MINOR): keep one working-state sample.
+run_scenario style_plasma_working_profile URI_LIVING_START_MODE=companion URI_LIVING_DEMO_STATE=working
 echo DONE
