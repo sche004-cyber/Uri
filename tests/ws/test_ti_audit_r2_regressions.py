@@ -62,7 +62,8 @@ def test_b3_self_correction_reported_by_model_has_no_missing_flag(fake, tmp_path
     ok = dict(CREATE, blocks=[{"role": "body", "text": "Seven students left the hostel on Monday."}])
     fake.scripts.append({"json": json.dumps(ok)})
     turn(b, WARDEN)
-    assert last_draft(frames)["current"]["flags"] == []
+    flags = last_draft(frames)["current"]["flags"]
+    assert [(f["code"], f["severity"]) for f in flags] == [("DETAIL_DROPPED", "info")]   # "five" shown as replaced
 
 
 def test_b3_unreported_self_correction_is_review_noise_not_silence(fake, tmp_path):

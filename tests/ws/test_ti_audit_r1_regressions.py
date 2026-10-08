@@ -102,7 +102,9 @@ def test_f6_added_name_in_grammar_only_is_meaning_change():
 def test_f6_revision_that_drops_a_detail_is_flagged():
     assert V.check_details_kept("Seven students left on Monday.", "Some students left.", ["make it vaguer"])[0][
         "code"] == "DETAIL_REMOVED"
-    assert V.check_details_kept("Seven students left on Monday.", "Seven students left.", ["remove monday"]) == []
+    # Removed because the instruction mentioned it: still listed, as an info line (round 9: nothing silent).
+    assert [f["severity"] for f in V.check_details_kept("Seven students left on Monday.", "Seven students left.",
+                                                         ["remove monday"])] == ["info"]
 
 
 # F7: number phrases compare by value.

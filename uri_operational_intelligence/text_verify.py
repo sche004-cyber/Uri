@@ -3,7 +3,7 @@
 Every Brain result is checked against what the USER said, not against what the model says it did. Findings become
 flags shown next to the draft; nothing is rewritten silently.
 
-Flags (severity "error" = probably wrong, "review" = the user should look):
+Flags (severity "error" = probably wrong, "review" = the user should look, "info" = shown so nothing is silent):
   FACT_UNSOURCED            error   a fact the model reported does not occur in the user's words
   FACT_MISSING              error   a fact the user gave (and the model reported) is absent from the text
   SUPERSEDED_VALUE_PRESENT  error   a value the user corrected away still appears
@@ -12,6 +12,8 @@ Flags (severity "error" = probably wrong, "review" = the user should look):
   NEW_DETAIL                review  a number, date or name appears that the user never gave (possible invention)
   CORRECTION_UNCONFIRMED    review  the user corrected themselves but the model reported no superseded value
   POSSIBLE_MISHEARING       review  the recogniser marked a span as uncertain and it is used in the text
+  DETAIL_DROPPED            info    a detail from the user's words is absent because it was corrected or excluded;
+                                    shown, never silent, so a wrong attribution by the model is visible
 """
 from __future__ import annotations
 
@@ -329,6 +331,8 @@ def _detail_kind(word):
     """'date', 'number', 'name' or None for one word (used only to refuse a supersession claim that skips over
     another detail; never to remove a value)."""
     low = word.lower()
+    if low == "may":
+        return None                       # "sorry, may I add ..." (Codex TI round 9)
     if low in WEEKDAYS or low in MONTHS or low in _RELATIVE_DAYS or low in _ORDINAL_WORD or \
             re.fullmatch(r"\d{1,2}(?:st|nd|rd|th)", low):
         return "date"
@@ -346,20 +350,32 @@ def check_supersession(user_words, claimed) -> list:
             for u in unverified]
 
 
+def _absent(details, text, dropped_ok, code, label):
+    """Every absent detail is reported. One the user corrected/excluded/mentioned is an INFO line (visible), every
+    other one a REVIEW flag. Nothing is excused silently (Codex TI rounds 3-9)."""
+    have = {str(x) for x in canonical_numbers(text)} | set(_tokens(text))
+    absent = sorted(d for d in details if d not in have)
+    excused = [d for d in absent if _covered(d, dropped_ok)]
+    unexcused = [d for d in absent if d not in excused]
+    flags = []
+    if unexcused:
+        flags.append(_flag(code, "review", label + ", ".join(unexcused)))
+    if excused:
+        flags.append(_flag("DETAIL_DROPPED", "info", "not in the draft because of your correction or instruction: "
+                           + ", ".join(excused)))
+    return flags
+
+
 def check_user_details(user_words, text, dropped_ok=()) -> list:
     """Independent of what the model reports: numbers, dates, days and mid-sentence names in the user's words must
-    appear in the draft, unless the user corrected or excluded them."""
-    have = {str(x) for x in canonical_numbers(text)} | set(_tokens(text))
-    missing = sorted(d for d in _details(user_words) if d not in have and not _covered(d, dropped_ok))
-    return [_flag("USER_DETAIL_MISSING", "review", "from your words, not in the draft: " + ", ".join(missing))] if missing else []
+    appear in the draft. Absences the user's correction/exclusion explains are still listed (info)."""
+    return _absent(_details(user_words), text, dropped_ok, "USER_DETAIL_MISSING", "from your words, not in the draft: ")
 
 
 def check_details_kept(old_text, new_text, dropped_ok=()) -> list:
-    """Revision: numbers, dates, days and names of the previous version that disappeared, unless the user's
-    instruction mentioned them or they were corrected/excluded."""
-    have = {str(x) for x in canonical_numbers(new_text)} | set(_tokens(new_text))
-    gone = sorted(d for d in _details(old_text) if d not in have and not _covered(d, dropped_ok))
-    return [_flag("DETAIL_REMOVED", "review", "no longer in the draft: " + ", ".join(gone))] if gone else []
+    """Revision: numbers, dates, days and names of the previous version that disappeared. Ones the instruction
+    mentioned or the user corrected/excluded are listed as info ("Keep Monday" + Monday removed is visible)."""
+    return _absent(_details(old_text), new_text, dropped_ok, "DETAIL_REMOVED", "no longer in the draft: ")
 
 
 def check_correction_accounted(cues, facts, clarification) -> list:

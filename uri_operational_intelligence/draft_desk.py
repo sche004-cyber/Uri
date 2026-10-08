@@ -580,7 +580,7 @@ def _status_line(d, v):
     if v.missing:
         parts.append("Missing: " + ", ".join(v.missing[:6]) + ".")
     errs = [f for f in v.flags if f["severity"] == "error"]
-    rev = [f for f in v.flags if f["severity"] == "review"]
+    rev = [f for f in v.flags if f["severity"] == "review"]      # "info" lines are shown in the panel, not counted
     if errs or rev:
         parts.append("%d check(s) need your attention." % (len(errs) + len(rev)))
     parts.append("Nothing has been sent or saved.")

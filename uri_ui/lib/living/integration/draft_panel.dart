@@ -42,7 +42,8 @@ class _DraftPanelState extends State<DraftPanel> {
         if (d == null) return const SizedBox.shrink();
         final cur = d.current;
         final errors = cur.flags.where((f) => f.isError).toList();
-        final reviews = cur.flags.where((f) => !f.isError).toList();
+        final reviews = cur.flags.where((f) => f.severity == 'review').toList();
+        final infos = cur.flags.where((f) => f.severity == 'info').toList();
         return GlassPanel(
           key: const ValueKey('draft-panel'),
           padding: const EdgeInsets.all(UriSpace.md),
@@ -103,6 +104,7 @@ class _DraftPanelState extends State<DraftPanel> {
               if (conv.draftQuestion != null) _Banner(conv.draftQuestion!, tone: c.accent, icon: Icons.help_outline_rounded),
               for (final f in errors) _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.danger, icon: Icons.error_outline_rounded),
               for (final f in reviews) _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.warning, icon: Icons.visibility_outlined),
+              for (final f in infos) _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.inkSoft, icon: Icons.info_outline_rounded),
               if (cur.missing.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
@@ -187,6 +189,10 @@ class _DraftPanelState extends State<DraftPanel> {
         'CORRECTION_UNCONFIRMED' => 'Check your correction',
         'POSSIBLE_MISHEARING' => 'Possibly misheard',
         'EDIT_OUTSIDE_TARGET' => 'Kept unchanged',
+        'DETAIL_DROPPED' => 'Left out',
+        'DETAIL_REMOVED' => 'Removed',
+        'USER_DETAIL_MISSING' => 'Not in the draft',
+        'SUPERSESSION_UNVERIFIED' => 'Check this replacement',
         _ => code,
       };
 }

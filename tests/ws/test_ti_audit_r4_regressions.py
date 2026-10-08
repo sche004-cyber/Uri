@@ -103,3 +103,18 @@ def test_r5_r7_unrelated_values_stay_required(words):
     v, _ = V.verified_superseded(words, ["17"])
     assert v == ["17"]
     assert "anil" in V.check_user_details(words, "Everybody counted 18 students.", v)[0]["detail"]
+
+
+# Codex TI round 9: nothing is excused silently; a modal "may" is not a month.
+def test_r9_excused_details_are_visible_info():
+    flags = V.check_user_details("The meeting is on Monday, sorry, may I add that 18 came", "18 came in May.",
+                                 ["Monday"])
+    assert {f["code"]: f["severity"] for f in flags} == {"DETAIL_DROPPED": "info"}
+    assert "monday" in flags[0]["detail"]
+    assert V.verified_superseded("The meeting is on Monday, sorry, may I also add that 18 students attended?",
+                                 ["Monday"])[0] == []
+
+
+def test_r9_keep_monday_removed_is_visible():
+    flags = V.check_details_kept("The meeting is on Monday.", "The meeting will be held.", ["Keep Monday and make it formal"])
+    assert flags and flags[0]["code"] == "DETAIL_DROPPED" and "monday" in flags[0]["detail"]
