@@ -66,21 +66,21 @@
   "decision_accuracy": 1.0,
   "determinism_mismatches": 0,
   "false_local_success": 0,
-  "latency_ms_p50": 11.15,
-  "latency_ms_p95": 158.6,
+  "latency_ms_p50": 55.400000000000006,
+  "latency_ms_p95": 573.3,
   "local_attempt_failures": 2,
   "original_modified": 0,
   "stale_corrected_or_conflict_not_clarified": 0,
   "unsafe_local_on_ambiguous_or_dynamic": 0
  },
- "platform": "linux",
- "python": "3.11.15",
+ "platform": "win32",
+ "python": "3.13.15",
  "runs": [
   [
    {
     "claim_recorded_as_claim_first": true,
     "id": "E01",
-    "latency_ms": 155.8,
+    "latency_ms": 556.3,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -92,7 +92,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E02",
-    "latency_ms": 152.1,
+    "latency_ms": 754.1,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -104,7 +104,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E03",
-    "latency_ms": 147.6,
+    "latency_ms": 540.9,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -116,7 +116,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E04",
-    "latency_ms": 144.4,
+    "latency_ms": 547.3,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -128,7 +128,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E05",
-    "latency_ms": 130.0,
+    "latency_ms": 549.8,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -140,7 +140,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E06",
-    "latency_ms": 5.9,
+    "latency_ms": 18.5,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -154,7 +154,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E07",
-    "latency_ms": 4.2,
+    "latency_ms": 18.8,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -168,7 +168,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E08",
-    "latency_ms": 4.9,
+    "latency_ms": 19.4,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -182,7 +182,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E09",
-    "latency_ms": 6.3,
+    "latency_ms": 19.3,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -196,7 +196,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E10",
-    "latency_ms": 173.5,
+    "latency_ms": 546.3,
     "local_attempted": true,
     "local_verification": "FAILED",
     "memory_verifier_status": "FAILED",
@@ -210,7 +210,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E11",
-    "latency_ms": 142.5,
+    "latency_ms": 553.6,
     "local_attempted": true,
     "local_verification": "FAILED",
     "memory_verifier_status": "FAILED",
@@ -224,7 +224,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E12",
-    "latency_ms": 3.0,
+    "latency_ms": 23.1,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -238,7 +238,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E13",
-    "latency_ms": 1.9,
+    "latency_ms": 17.7,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -252,7 +252,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E14",
-    "latency_ms": 21.7,
+    "latency_ms": 127.3,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -264,7 +264,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E15",
-    "latency_ms": 17.1,
+    "latency_ms": 96.9,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -276,7 +276,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E16",
-    "latency_ms": 0.8,
+    "latency_ms": 4.4,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -312,7 +312,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E19",
-    "latency_ms": 160.1,
+    "latency_ms": 563.7,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -338,7 +338,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E01",
-    "latency_ms": 158.6,
+    "latency_ms": 573.3,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -350,7 +350,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E02",
-    "latency_ms": 155.6,
+    "latency_ms": 552.9,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -362,7 +362,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E03",
-    "latency_ms": 143.4,
+    "latency_ms": 547.5,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -374,7 +374,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E04",
-    "latency_ms": 140.3,
+    "latency_ms": 567.1,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -386,7 +386,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E05",
-    "latency_ms": 153.8,
+    "latency_ms": 550.1,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -398,7 +398,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E06",
-    "latency_ms": 4.1,
+    "latency_ms": 19.5,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -412,7 +412,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E07",
-    "latency_ms": 4.4,
+    "latency_ms": 19.7,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -426,7 +426,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E08",
-    "latency_ms": 4.0,
+    "latency_ms": 19.5,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -440,7 +440,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E09",
-    "latency_ms": 4.1,
+    "latency_ms": 20.9,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -454,7 +454,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E10",
-    "latency_ms": 142.8,
+    "latency_ms": 575.8,
     "local_attempted": true,
     "local_verification": "FAILED",
     "memory_verifier_status": "FAILED",
@@ -468,7 +468,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E11",
-    "latency_ms": 149.9,
+    "latency_ms": 549.9,
     "local_attempted": true,
     "local_verification": "FAILED",
     "memory_verifier_status": "FAILED",
@@ -482,7 +482,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E12",
-    "latency_ms": 3.8,
+    "latency_ms": 18.7,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -496,7 +496,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E13",
-    "latency_ms": 2.4,
+    "latency_ms": 13.9,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -510,7 +510,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E14",
-    "latency_ms": 24.5,
+    "latency_ms": 110.6,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -522,7 +522,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E15",
-    "latency_ms": 16.0,
+    "latency_ms": 87.7,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
@@ -534,7 +534,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E16",
-    "latency_ms": 0.7,
+    "latency_ms": 3.9,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -558,7 +558,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E18",
-    "latency_ms": 0.1,
+    "latency_ms": 0.0,
     "local_attempted": false,
     "local_verification": null,
     "memory_verifier_status": null,
@@ -570,7 +570,7 @@
    {
     "claim_recorded_as_claim_first": true,
     "id": "E19",
-    "latency_ms": 147.3,
+    "latency_ms": 548.6,
     "local_attempted": true,
     "local_verification": "VERIFIED",
     "memory_verifier_status": "VERIFIED",
