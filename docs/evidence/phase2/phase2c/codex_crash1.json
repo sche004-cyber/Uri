@@ -1,0 +1,211 @@
+{
+ "after_restart": {
+  "admissions": [
+   {
+    "attempt_id": 1,
+    "auth_id": 1,
+    "registration_id": 1,
+    "round": 1
+   }
+  ],
+  "attempts": [
+   {
+    "argv_sha256": "7b3546245ab26ccbc3cce3ec82eb6537b2484ff1fcc386461fd6c039080573a7",
+    "attempt_id": 1,
+    "end_reason": null,
+    "ended_at_us": null,
+    "epoch": 1,
+    "executor_version": "0.158.0",
+    "exit_code": null,
+    "job_name": "Local\\uri-sup-9221efd792ae-1-8607007abad703c8",
+    "pid": 6528,
+    "pid_create_time": 134358204222052187,
+    "resume_of": null,
+    "session_id": "01a11497-4cfe-73e1-99c6-92ac58208c04",
+    "spawned_at_us": 1791346822212569,
+    "status": "FENCED"
+   }
+  ],
+  "authorizations": [
+   {
+    "auth_id": 1,
+    "issued_by": "uri_core.execution_ticket",
+    "scope_json": "{\"allowed_executors\":[\"codex_cli\"],\"allowed_op_classes\":[\"read\",\"local_write\"],\"approval_digest\":\"fae38d448ad73b187ce6fe41d1f4dc2cbd931fa8eb8c08c77186740b2e6b815c\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability\":\"external_harness_task\",\"ticket_digest\":\"51350fbc4b6ab5960af598da1a952fda143485d754af9ab0391820f4821bb802\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_crash1\\\\client\\\\workspace\\\\72cf4e4da5fb48099c5b4de4271fcfdf\"}",
+    "superseded_at_us": 1791346822679681,
+    "valid_from_us": 1791346821000000,
+    "valid_until_us": 1791347421000000
+   },
+   {
+    "auth_id": 2,
+    "issued_by": "uri_supervisor_bridge",
+    "scope_json": "{\"allowed_executors\":[\"codex_cli\"],\"allowed_op_classes\":[\"read\",\"local_write\"],\"approval_digest\":\"fae38d448ad73b187ce6fe41d1f4dc2cbd931fa8eb8c08c77186740b2e6b815c\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability\":\"external_harness_task\",\"ticket_digest\":\"51350fbc4b6ab5960af598da1a952fda143485d754af9ab0391820f4821bb802\",\"workspace\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_crash1\\\\client\\\\workspace\\\\72cf4e4da5fb48099c5b4de4271fcfdf\"}",
+    "superseded_at_us": null,
+    "valid_from_us": 1791346822679681,
+    "valid_until_us": 1791346822679680
+   }
+  ],
+  "completion_records": [],
+  "decisions": [
+   {
+    "action": "RESUME_SESSION",
+    "attempt_id": 1,
+    "decision_id": 1,
+    "evidence_json": "{\"effects\":[{\"intent_id\":1,\"op_class\":\"local_write\",\"reason\":\"LOCAL_WRITE_ABSENCE_PROVEN\",\"safe\":true}],\"postconditions\":[{\"id\":1,\"kind\":\"file_regular_nonempty\",\"required\":true,\"status\":\"FAIL\"}],\"process\":\"DEAD_CONFIRMED\",\"session\":\"01a11497-4cfe-73e1-99c6-92ac58208c04\",\"tail_incomplete\":false,\"terminal_claims\":[]}",
+    "outcome": "RETRY_SAFE",
+    "reason_code": "EXECUTOR_INTERRUPTED_NO_TERMINAL_EVENT_RETRY_SAFE"
+   }
+  ],
+  "evidence": [
+   {
+    "attempt_id": 1,
+    "evidence_id": 1,
+    "kind": "session",
+    "payload": "{\"session_id\":\"01a11497-4cfe-73e1-99c6-92ac58208c04\"}",
+    "source": "executor_report"
+   },
+   {
+    "attempt_id": 1,
+    "evidence_id": 2,
+    "kind": "process_identity",
+    "payload": "{\"active\":0,\"attempt_status_at_recovery\":\"FENCED\",\"create_time\":134358204222052187,\"identity\":\"DEAD\",\"job\":\"Local\\\\uri-sup-9221efd792ae-1-8607007abad703c8\",\"job_exists\":false,\"pid\":6528,\"state\":\"DEAD_CONFIRMED\"}",
+    "source": "uri_observed"
+   },
+   {
+    "attempt_id": 1,
+    "evidence_id": 3,
+    "kind": "postcondition_check",
+    "payload": "{\"kind\":\"file_regular_nonempty\",\"observation\":{\"exists\":false,\"path\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_crash1\\\\client\\\\workspace\\\\72cf4e4da5fb48099c5b4de4271fcfdf\\\\pong.txt\",\"symlink\":false},\"status\":\"FAIL\"}",
+    "source": "uri_observed"
+   },
+   {
+    "attempt_id": 1,
+    "evidence_id": 4,
+    "kind": "effect_absent",
+    "payload": "{\"fingerprints_equal_to_pre_attempt\":true,\"paths\":[\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_crash1\\\\client\\\\workspace\\\\72cf4e4da5fb48099c5b4de4271fcfdf\"]}",
+    "source": "uri_verified"
+   }
+  ],
+  "open_authorizations": 0,
+  "postcondition_results": [
+   {
+    "attempt_id": 1,
+    "checked_at_us": 1791346822677698,
+    "evidence_id": 3,
+    "postcondition_id": 1,
+    "result_id": 1,
+    "status": "FAIL",
+    "task_id": "2d2ce95a-5f73-4a21-9b56-aeddba54b3ff"
+   }
+  ],
+  "stream": [
+   {
+    "attempt_id": 1,
+    "complete": 1,
+    "fence_current": 1,
+    "line_no": 1,
+    "raw": "{\"type\":\"thread.started\",\"thread_id\":\"01a11497-4cfe-73e1-99c6-92ac58208c04\"}\n",
+    "stream": "stdout"
+   }
+  ],
+  "task": {
+   "attempt_count": 1,
+   "base_priority": 0,
+   "basis_kind": null,
+   "basis_ref": null,
+   "completion_ref": null,
+   "created_at_us": 1791346822200263,
+   "current_fence": null,
+   "enqueue_round": 0,
+   "enter_decision_hwm": 0,
+   "enter_evidence_hwm": 4,
+   "max_attempts": 2,
+   "principal": "34d7b341-28bf-4206-b0f3-b71297c1e83d",
+   "reason_code": "AUTHORITY_REVOKED_RESTART",
+   "reason_detail": "EXECUTOR_INTERRUPTED_NO_TERMINAL_EVENT_RETRY_SAFE",
+   "request_json": "{\"action\":\"external_harness_task\",\"approval_digest\":\"fae38d448ad73b187ce6fe41d1f4dc2cbd931fa8eb8c08c77186740b2e6b815c\",\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"capability_id\":\"external_harness_task\",\"expected_file\":\"pong.txt\",\"intent_digest\":\"3f7cf91fda1c6dd6e50e321dee02af69764c8de9d15002d292161c96ddfa7e4c\",\"model\":\"gpt-6-sol\",\"operation_id\":\"2d2ce95a-5f73-4a21-9b56-aeddba54b3ff\",\"provider\":\"codex_cli\",\"run_id\":\"72cf4e4da5fb48099c5b4de4271fcfdf\",\"session_id\":\"0cd36964-7ef6-44c8-9eb2-5303b26a545d\",\"ticket_digest\":\"51350fbc4b6ab5960af598da1a952fda143485d754af9ab0391820f4821bb802\",\"turn_id\":\"013b7085-1d16-4d25-bb12-2f02ff4c5e07\"}",
+   "request_sha256": "2d6a38a4a487ab439afe387299a6395f92ac660b92cf34da6189aa48733e3ec8",
+   "requirements_json": "{\"capabilities\":[\"harness_task\"],\"effects\":[{\"context\":{},\"idempotency_key\":null,\"op_class\":\"local_write\",\"operation\":\"harness_task\",\"params\":{\"argument_digest\":\"ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2\",\"expected_file\":\"pong.txt\"},\"paths\":[\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_crash1\\\\client\\\\workspace\\\\72cf4e4da5fb48099c5b4de4271fcfdf\"],\"target\":\"C:\\\\Users\\\\cheta\\\\.codex\\\\worktrees\\\\uri-phase2a\\\\uri-agent\\\\work\\\\c1\\\\p2c_codex_crash1\\\\client\\\\workspace\\\\72cf4e4da5fb48099c5b4de4271fcfdf\"}],\"executors\":[\"codex_cli\"]}",
+   "state": "FAILED",
+   "state_changed_at_us": 1791346822680043,
+   "task_id": "2d2ce95a-5f73-4a21-9b56-aeddba54b3ff",
+   "task_seq": 1,
+   "timezone": null
+  }
+ },
+ "base": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2c_codex_crash1",
+ "before_restart": {
+  "attempts": [
+   {
+    "attempt_id": 1,
+    "end_reason": null,
+    "pid": 6528,
+    "pid_create_time": 134358204222052187,
+    "status": "RUNNING",
+    "task_id": "2d2ce95a-5f73-4a21-9b56-aeddba54b3ff"
+   }
+  ],
+  "executor_processes_alive": [],
+  "tasks": [
+   {
+    "reason_code": "ADMITTED",
+    "state": "RUNNING",
+    "task_id": "2d2ce95a-5f73-4a21-9b56-aeddba54b3ff"
+   }
+  ]
+ },
+ "child": {
+  "crash_at": "mid_stream",
+  "duration_s": 3.5,
+  "exit": 137,
+  "stderr_tail": "",
+  "stdout_tail": ""
+ },
+ "direct_cli_status": "OK",
+ "direct_probe": {
+  "agent_text": "OK",
+  "auth_status": null,
+  "duration_s": 12.04,
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\codex.CMD",
+  "exit": 0,
+  "failures": [],
+  "forwarded_env_keys": [
+   "COMSPEC",
+   "HOME",
+   "PATH",
+   "PATHEXT",
+   "SHELL",
+   "SYSTEMDRIVE",
+   "SYSTEMROOT",
+   "TEMP",
+   "TERM",
+   "TMP",
+   "USERNAME",
+   "USERPROFILE",
+   "WINDIR"
+  ],
+  "ok": true,
+  "result": null,
+  "status": "OK",
+  "stdout_sha256": "1e5f011b438af3a92666df0a02aee2d011013bd8b2b25d551aed205a22a477e3",
+  "version": "0.158.0"
+ },
+ "finished": "2026-10-07T09:50:22",
+ "interpreter": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+ "mode": "crash",
+ "model": "gpt-6-sol",
+ "provider": "codex_cli",
+ "restart": {
+  "duration_s": 0.01,
+  "startup_report": [
+   {
+    "authority": "revoked",
+    "state": "FAILED",
+    "task_id": "2d2ce95a-5f73-4a21-9b56-aeddba54b3ff",
+    "was": "RETRY_SAFE"
+   }
+  ]
+ },
+ "root": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent",
+ "started": "2026-10-07T09:50:19",
+ "tag": "codex_crash1"
+}

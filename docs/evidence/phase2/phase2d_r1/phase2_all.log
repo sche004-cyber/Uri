@@ -1,0 +1,18 @@
+C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Scripts\python.exe -I -m pytest -c C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\scripts\phase2d_pytest.ini --rootdir C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent -q -rfEs --ignore=work --ignore=evidence --ignore=uri_workspace --ignore=temp_evidence --ignore=reports --ignore=research_notes --ignore=graphify-out --ignore=uri_ui --ignore=.venv tests/phase2a tests/phase2b tests/phase2c tests/phase2d
+........................................................................ [ 19%]
+.................ss..................................................... [ 38%]
+........................................................................ [ 57%]
+........................................................................ [ 76%]
+........................................................................ [ 96%]
+...............                                                          [100%]
+============================== warnings summary ===============================
+tests/phase2b/test_bridge_e2e.py::test_full_chain_verified_once_with_supervisor_evidence
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [2] tests\phase2a\test_live_executors.py:36: live executors are opt-in (URI_PHASE2A_LIVE=1)
+373 passed, 2 skipped, 1 warning in 228.33s (0:03:48)
+
+EXIT=0 DURATION_S=229.1

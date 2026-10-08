@@ -1,0 +1,308 @@
+{
+ "approval_source": "programmatic (this harness echoes the worker's approval + proposal digests), not a human on the UI",
+ "base": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2ops_codex_cli_lifecycle_211838_6588e752",
+ "composition_report": [
+  {
+   "evidence_sha256": "baf4e31133a9ffeb53e2e21cff6a098230af72e5a88c26c3bd20096d83170019",
+   "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\codex.cmd",
+   "executable_sha256": "c54db6755e710c39703f7c37512f9e35ed41042d8080558d2b84b8d2694323c3",
+   "expires_at": 1793980128,
+   "level": "NATIVE_QUALIFIED",
+   "models": [
+    "gpt-6-sol"
+   ],
+   "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2ops_codex_cli_lifecycle_211838_6588e752\\client\\control\\supervisor\\qualification\\codex_cli.json",
+   "pinned_files": 36,
+   "provider": "codex_cli",
+   "qualified_at": 1791388128,
+   "reason": null,
+   "status": "QUALIFIED",
+   "version": "0.158.0"
+  }
+ ],
+ "direct_probe": {
+  "auth_status": null,
+  "duration_s": 7.31,
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\codex.CMD",
+  "executable_sha256": "c54db6755e710c39703f7c37512f9e35ed41042d8080558d2b84b8d2694323c3",
+  "exit": 0,
+  "ok": true,
+  "status": "OK",
+  "version": "0.158.0"
+ },
+ "finished": "2026-10-07T21:18:50",
+ "interpreter": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+ "live_auth_status_probe": true,
+ "model": "gpt-6-sol",
+ "provider": "codex_cli",
+ "qualification_decision": "PERSISTED NATIVE_QUALIFIED",
+ "qualification_record": {
+  "executable_sha256": "c54db6755e710c39703f7c37512f9e35ed41042d8080558d2b84b8d2694323c3",
+  "expires_at": 1793980128,
+  "level": "NATIVE_QUALIFIED",
+  "models": [
+   "gpt-6-sol"
+  ],
+  "record_sha256": "aa758b218729469705ca033de9059cab82c9b4d752176588486a0a93ae4b3c61",
+  "version": "0.158.0"
+ },
+ "registry_discover": [
+  {
+   "auth_state": "AUTH_UNVERIFIED",
+   "harness_id": "claude_code",
+   "installed": true,
+   "qualification": "NATIVE_UNQUALIFIED",
+   "required_user_action": "Run `claude` in the URI client profile terminal and sign in with your subscription (native login).",
+   "usable": false,
+   "version": "2.1.287"
+  },
+  {
+   "auth_state": "AUTHENTICATED",
+   "harness_id": "codex_cli",
+   "installed": true,
+   "qualification": "NATIVE_QUALIFIED",
+   "required_user_action": null,
+   "usable": true,
+   "version": "0.158.0"
+  },
+  {
+   "auth_state": "EXECUTE_REFUSED",
+   "harness_id": "antigravity",
+   "installed": true,
+   "qualification": "REFUSED",
+   "required_user_action": "Antigravity execution is refused until separately qualified.",
+   "usable": false,
+   "version": "1.2.16"
+  }
+ ],
+ "root": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent",
+ "runs": [
+  {
+   "begin_returned_after_s": 0.002,
+   "code": null,
+   "duration_s": 0.3,
+   "execution_list": {
+    "active": null,
+    "executions": [
+     {
+      "cancel_requested": false,
+      "code": null,
+      "corroboration": {
+       "checked": false
+      },
+      "ended_at": 1791388130.534343,
+      "execution_id": "f2eb9ea67a634bceaf8259250f081372",
+      "model": "gpt-6-sol",
+      "provider": "codex_cli",
+      "queued_at": 1791388130.3588915,
+      "reason": "EXCEPTION:TypeError",
+      "recorded_state": "uncertain",
+      "session_id": "589af66a-82c5-4c34-b9bf-96c0297f0074",
+      "state": "uncertain",
+      "task_id": "7b676dd4-fe77-46ee-9490-56b1a4d10b17",
+      "turn_id": "2ecc1fa7-bc2a-4c94-b5f8-b54b0c29df87"
+     }
+    ],
+    "startup": {
+     "executions": [],
+     "journal": null
+    }
+   },
+   "final": {
+    "approving_at": 1791388130.360595,
+    "bridge_outcome": null,
+    "code": null,
+    "ended_at": 1791388130.534343,
+    "evidence": null,
+    "execution_id": "f2eb9ea67a634bceaf8259250f081372",
+    "failure_category": null,
+    "message": null,
+    "queued_at": 1791388130.3588915,
+    "reason": "EXCEPTION:TypeError",
+    "running_at": 1791388130.5234866,
+    "starting_at": 1791388130.4956782,
+    "state": "uncertain",
+    "task_id": "7b676dd4-fe77-46ee-9490-56b1a4d10b17"
+   },
+   "frames": [
+    {
+     "at": 1791388130.1810231,
+     "sent": {
+      "command": "turn_start",
+      "reasoning": {
+       "kind": "client_external_harness",
+       "model": "gpt-6-sol",
+       "provider": "codex_cli"
+      },
+      "session_id": "589af66a-82c5-4c34-b9bf-96c0297f0074",
+      "text": "use the harness to write the single word PONG into pong.txt"
+     }
+    },
+    {
+     "at": 1791388130.3588576,
+     "received": {
+      "approval_request": {
+       "approval_digest": "396f90cd7fc0becfcc989b00701ac9ee0d0e08d5b71aac05eee272e80e3865b6",
+       "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+       "arguments": {
+        "action": "external_harness_task",
+        "inputs": {
+         "expected_file": "pong.txt",
+         "instruction": "write the single word PONG into pong.txt"
+        }
+       },
+       "capability_id": "external_harness_task",
+       "effect": "local_write",
+       "gate": {
+        "action_names": [
+         "external_harness_task"
+        ],
+        "capability_id": "external_harness_task",
+        "expected_type": null,
+        "missing_field": null,
+        "outcome": "APPROVAL_REQUIRED",
+        "overlap_candidates": [],
+        "reasons": [
+         "capability_or_action_requires_approval"
+        ],
+        "sub_results": []
+       },
+       "intent_digest": "0df5022fd2402c403ae84e78c1cef6ec6b639141549f7bf59704882ff7366c05",
+       "rejected_proposal": null,
+       "replanned": false,
+       "reversible": true
+      },
+      "code": null,
+      "execution_proposal": {
+       "action": "external_harness_task",
+       "approval_digest": "396f90cd7fc0becfcc989b00701ac9ee0d0e08d5b71aac05eee272e80e3865b6",
+       "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+       "arguments": {
+        "action": "external_harness_task",
+        "inputs": {
+         "expected_file": "pong.txt",
+         "instruction": "write the single word PONG into pong.txt"
+        }
+       },
+       "capability_id": "external_harness_task",
+       "client_id": "0267d976-df96-403b-8c80-1b95464b4b63",
+       "effect": "local_write",
+       "expected_file": "pong.txt",
+       "instruction": "write the single word PONG into pong.txt",
+       "kind": "client_external_harness",
+       "model": "gpt-6-sol",
+       "proposal_digest": "a7259712d221a0244ebe2e0a1c20873a815f02c22452e62a6afa8dbb83247642",
+       "provider": "codex_cli",
+       "qualification": {
+        "executable_sha256": "c54db6755e710c39703f7c37512f9e35ed41042d8080558d2b84b8d2694323c3",
+        "expires_at": 1793980128,
+        "level": "NATIVE_QUALIFIED",
+        "models": [
+         "gpt-6-sol"
+        ],
+        "qualified_at": 1791388128,
+        "reason": null,
+        "status": "QUALIFIED",
+        "version": "0.158.0"
+       },
+       "reversible": true,
+       "session_id": "589af66a-82c5-4c34-b9bf-96c0297f0074",
+       "turn_id": "2ecc1fa7-bc2a-4c94-b5f8-b54b0c29df87"
+      },
+      "state": "approval_required",
+      "turn_id": "2ecc1fa7-bc2a-4c94-b5f8-b54b0c29df87"
+     }
+    },
+    {
+     "at": 1791388130.3588612,
+     "sent": {
+      "approval_digest": "396f90cd7fc0becfcc989b00701ac9ee0d0e08d5b71aac05eee272e80e3865b6",
+      "command": "execution_begin",
+      "proposal_digest": "a7259712d221a0244ebe2e0a1c20873a815f02c22452e62a6afa8dbb83247642",
+      "turn_id": "2ecc1fa7-bc2a-4c94-b5f8-b54b0c29df87"
+     }
+    },
+    {
+     "at": 1791388130.3605409,
+     "received": {
+      "execution_id": "f2eb9ea67a634bceaf8259250f081372",
+      "proposal_digest": "a7259712d221a0244ebe2e0a1c20873a815f02c22452e62a6afa8dbb83247642",
+      "state": "queued",
+      "turn_id": "2ecc1fa7-bc2a-4c94-b5f8-b54b0c29df87"
+     }
+    }
+   ],
+   "journal_view": {
+    "operation_id": "7b676dd4-fe77-46ee-9490-56b1a4d10b17",
+    "receipted": false,
+    "state": "claimed"
+   },
+   "ledger_view": {
+    "task": null,
+    "task_id": "7b676dd4-fe77-46ee-9490-56b1a4d10b17"
+   },
+   "name": "lifecycle",
+   "proposal": {
+    "action": "external_harness_task",
+    "approval_digest": "396f90cd7fc0becfcc989b00701ac9ee0d0e08d5b71aac05eee272e80e3865b6",
+    "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+    "arguments": {
+     "action": "external_harness_task",
+     "inputs": {
+      "expected_file": "pong.txt",
+      "instruction": "write the single word PONG into pong.txt"
+     }
+    },
+    "capability_id": "external_harness_task",
+    "client_id": "0267d976-df96-403b-8c80-1b95464b4b63",
+    "effect": "local_write",
+    "expected_file": "pong.txt",
+    "instruction": "write the single word PONG into pong.txt",
+    "kind": "client_external_harness",
+    "model": "gpt-6-sol",
+    "proposal_digest": "a7259712d221a0244ebe2e0a1c20873a815f02c22452e62a6afa8dbb83247642",
+    "provider": "codex_cli",
+    "qualification": {
+     "executable_sha256": "c54db6755e710c39703f7c37512f9e35ed41042d8080558d2b84b8d2694323c3",
+     "expires_at": 1793980128,
+     "level": "NATIVE_QUALIFIED",
+     "models": [
+      "gpt-6-sol"
+     ],
+     "qualified_at": 1791388128,
+     "reason": null,
+     "status": "QUALIFIED",
+     "version": "0.158.0"
+    },
+    "reversible": true,
+    "session_id": "589af66a-82c5-4c34-b9bf-96c0297f0074",
+    "turn_id": "2ecc1fa7-bc2a-4c94-b5f8-b54b0c29df87"
+   },
+   "result_files": [],
+   "server_turn_record": {
+    "dispatched": true,
+    "execution_closed": null,
+    "execution_outcome": null,
+    "operation_id": "7b676dd4-fe77-46ee-9490-56b1a4d10b17",
+    "state": "executing"
+   },
+   "transitions": [
+    {
+     "at": 1791388130.3669915,
+     "ledger_task": {},
+     "reason": null,
+     "state": "queued"
+    },
+    {
+     "at": 1791388130.6330457,
+     "ledger_task": null,
+     "reason": "EXCEPTION:TypeError",
+     "state": "uncertain"
+    }
+   ],
+   "turn_state": "approval_required"
+  }
+ ],
+ "started": "2026-10-07T21:18:38",
+ "tag": "codex_cli_lifecycle_211838"
+}

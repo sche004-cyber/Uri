@@ -1,0 +1,471 @@
+"""Phase 2 UI/operations slice: execution lifecycle, mid-run cancellation and reconnect over the worker protocol.
+
+This module adds NO authority. Core (the frozen server turn record and the client's execution journal) still owns
+intent, approval, the ticket and the settlement; the supervisor ledger still owns admission, attempts, containment and
+reconciliation. What is added, worker-side (trusted client code, never the UI):
+
+  * `execution_proposal`: the exact proposal a UI approval is bound to (client, session, turn, kind/provider/model,
+    capability, argument digest, approval digest). `execution_begin` must echo BOTH the approval digest the server
+    issued and this proposal digest; a change of any authority-relevant field (another provider or model, other
+    arguments, another turn) yields another digest, so the earlier approval cannot start it.
+  * `ExecutionController.begin`: the approved turn is dispatched in a worker thread so the single-threaded frame
+    loop keeps answering `execution_status` / `execution_cancel` / `execution_list` while the harness runs. Exactly
+    one execution per client at a time (the harness pool is one slot); every other turn command is refused with
+    `EXECUTION_IN_PROGRESS` meanwhile.
+  * `ExecutionController.cancel`: before the approval is posted the turn is DENIED instead (nothing ever runs);
+    after that and before dispatch the bridge refuses the task (`NOT_STARTED:CANCELLED`); while an attempt runs the
+    executor is killed through its job object (`SupervisorBridge.cancel` -> `Supervisor.request_cancel`) and the
+    outcome is `uncertain` (a kill after dispatch is never a clean close); after a terminal state the request is
+    refused (`EXECUTION_TERMINAL`).
+  * `ExecutionRegister`: one durable JSON record per execution under `<client_root>/control/supervisor/executions/`
+    (worker-owned; the UI holds only ids). `execution_status` always re-reads the record AND the live ledger,
+    journal and server turn state, so a reconnecting UI sees what URI knows, never what the UI remembered. A worker
+    restart marks every non-terminal record `uncertain` (`WORKER_RESTARTED`) after the frozen journal recovery and
+    the bridge's authority revocation have run; nothing is ever re-launched from a record.
+
+Lifecycle: queued -> approving -> starting -> running -> {completed | failed | cancelled | uncertain | quota_paused}.
+`completed` is set only from the server's `SETTLED_VERIFIED` (ledger COMPLETE + verified receipt); every unmapped
+settlement or exception after dispatch is `uncertain`, never success.
+"""
+from __future__ import annotations
+
+import re
+import sqlite3
+import threading
+import time
+import uuid
+from pathlib import Path
+
+from uri_core.client_contracts import digest
+from uri_core.client_runtime.execution_journal import ExecutionJournal
+from uri_core.client_runtime.turn_runner import NOT_STARTED, TurnError
+from uri_core.core.runtime_identity import atomic_json
+
+SCHEMA = "uri.phase2ops.execution.v1"
+ACTIVE_STATES = ("queued", "approving", "starting", "running")
+TERMINAL_STATES = ("completed", "failed", "cancelled", "uncertain", "quota_paused")
+AUTHORITY_FIELDS = ("client_id", "session_id", "turn_id", "kind", "provider", "model", "capability_id",
+                    "argument_digest", "approval_digest")
+_ID = re.compile(r"^[0-9a-f]{32}$")
+_LIST_LIMIT = 50
+
+
+def execution_proposal(client_id, session_id, turn_id, reasoning, approval_request, qualification=None) -> dict:
+    """The proposal a UI approval is bound to. `proposal_digest` covers exactly AUTHORITY_FIELDS; the remaining keys
+    are display material taken verbatim from the server's approval request (bound through `argument_digest`)."""
+    reasoning = reasoning if isinstance(reasoning, dict) else {}
+    request = approval_request if isinstance(approval_request, dict) else {}
+    arguments = request.get("arguments") if isinstance(request.get("arguments"), dict) else {}
+    inputs = arguments.get("inputs") if isinstance(arguments.get("inputs"), dict) else {}
+    core = {"client_id": client_id, "session_id": session_id, "turn_id": turn_id, "kind": reasoning.get("kind"),
+            "provider": reasoning.get("provider"), "model": reasoning.get("model"),
+            "capability_id": request.get("capability_id"), "argument_digest": request.get("argument_digest"),
+            "approval_digest": request.get("approval_digest")}
+    return {**core, "proposal_digest": digest(core), "effect": request.get("effect"), "reversible": request.get("reversible"),
+            "action": arguments.get("action"), "arguments": arguments, "instruction": inputs.get("instruction"),
+            "expected_file": inputs.get("expected_file"), "qualification": qualification}
+
+
+def _now():
+    return time.time()
+
+
+def _ro(path):
+    con = sqlite3.connect(f"file:{Path(path).resolve().as_posix()}?mode=ro", uri=True, timeout=2)
+    con.row_factory = sqlite3.Row
+    return con
+
+
+def ledger_view(ledger_path, task_id):
+    """Read-only view of the supervisor ledger for one task: the authoritative execution facts, never cached."""
+    if not task_id or not Path(ledger_path).is_file():
+        return None
+    try:
+        con = _ro(ledger_path)
+    except sqlite3.Error as exc:
+        return {"error": "LEDGER_UNREADABLE:" + type(exc).__name__}
+    try:
+        task = con.execute("SELECT state, reason_code, request_json FROM task WHERE task_id=?", (task_id,)).fetchone()
+        if task is None:
+            return {"task_id": task_id, "task": None}
+        try:   # the bridge's own request row: which turn/selection/approval this task was submitted for
+            import json
+            req = json.loads(task["request_json"] or "{}")
+            request = {k: req.get(k) for k in ("turn_id", "operation_id", "session_id", "capability_id", "provider", "model",
+                                               "approval_digest", "argument_digest", "expected_file")}
+        except (ValueError, TypeError):
+            request = None
+        attempts = [dict(r) for r in con.execute(
+            "SELECT attempt_id, status, pid, pid_create_time, end_reason, exit_code, spawned_at_us, ended_at_us "
+            "FROM attempt WHERE task_id=? ORDER BY attempt_id", (task_id,))]
+        decision = con.execute("SELECT action, reason_code FROM recovery_decision WHERE task_id=? ORDER BY decision_id DESC LIMIT 1",
+                               (task_id,)).fetchone()
+        now_us = int(time.time() * 1_000_000)
+        open_auth = con.execute("SELECT COUNT(*) FROM authorization WHERE task_id=? AND superseded_at_us IS NULL "
+                                "AND (valid_until_us IS NULL OR valid_until_us>?)", (task_id, now_us)).fetchone()[0]
+        return {"task_id": task_id, "task": {"state": task["state"], "reason_code": task["reason_code"]}, "request": request,
+                "attempts": attempts, "decision": dict(decision) if decision else None, "open_authorizations": open_auth}
+    except sqlite3.Error as exc:
+        return {"error": "LEDGER_QUERY_FAILED:" + type(exc).__name__}
+    finally:
+        con.close()
+
+
+def journal_view(journal_path, operation_id):
+    """Read-only view of the frozen client execution journal for one operation (= the supervisor task id)."""
+    if not operation_id or not Path(journal_path).is_file():
+        return None
+    try:
+        con = _ro(journal_path)
+    except sqlite3.Error as exc:
+        return {"error": "JOURNAL_UNREADABLE:" + type(exc).__name__}
+    try:
+        row = con.execute("SELECT state, receipt_digest IS NOT NULL AS receipted FROM operations WHERE id=?", (operation_id,)).fetchone()
+        return {"operation_id": operation_id, "state": row["state"], "receipted": bool(row["receipted"])} if row else \
+            {"operation_id": operation_id, "state": None}
+    except sqlite3.Error as exc:
+        return {"error": "JOURNAL_QUERY_FAILED:" + type(exc).__name__}
+    finally:
+        con.close()
+
+
+def corroborate(record, ledger, journal, server):
+    """The record's own `completed` is never reported on its own word (review round 1, OPS-1). A harness execution
+    is `completed` only while the ledger says COMPLETE, the journal says `verified` and the server, when it answers,
+    says `reply`; a local (no-task) execution only while the server answers `reply`. Anything less is reported as
+    `uncertain` with the exact gap, the recorded state kept beside it. `server=None` means "not consulted" (listing);
+    an unreachable server is a gap for a local execution and a non-contradiction for a harness one.
+    -> (state, reason, corroboration dict)."""
+    recorded = record.get("state")
+    if recorded != "completed":
+        return recorded, record.get("reason"), {"checked": False}
+    gaps = []
+    task_id = record.get("task_id")
+    if task_id:
+        if not isinstance(ledger, dict) or (ledger.get("task") or {}).get("state") != "COMPLETE":
+            gaps.append("LEDGER_NOT_COMPLETE")
+        else:
+            # The COMPLETE task must be THIS execution's: same turn, session, capability, selection and digests as the
+            # record's proposal (a record pointing at another execution's finished task is not completed).
+            req, prop = ledger.get("request") or {}, record.get("proposal") or {}
+            if not isinstance(req, dict) or req.get("turn_id") != record.get("turn_id") or req.get("operation_id") != task_id \
+                    or any(req.get(k) != prop.get(k) for k in ("session_id", "capability_id", "provider", "model",
+                                                               "approval_digest", "argument_digest")):
+                gaps.append("LEDGER_REQUEST_MISMATCH")
+        if not isinstance(journal, dict) or journal.get("state") != "verified":
+            gaps.append("JOURNAL_NOT_VERIFIED")
+        if isinstance(server, dict) and "error" not in server and server.get("state") != "reply":
+            gaps.append("SERVER_TURN_NOT_REPLY")
+        if isinstance(server, dict) and "error" not in server and server.get("operation_id") not in (None, task_id):
+            gaps.append("SERVER_OPERATION_MISMATCH")
+    else:
+        if server is None or not isinstance(server, dict) or "error" in server:
+            gaps.append("SERVER_UNAVAILABLE")
+        elif server.get("state") != "reply":
+            gaps.append("SERVER_TURN_NOT_REPLY")
+        elif server.get("session_id") not in (None, record.get("session_id")):
+            gaps.append("SERVER_SESSION_MISMATCH")
+    if record.get("code") != "SETTLED_VERIFIED":
+        gaps.append("CODE_NOT_SETTLED_VERIFIED")
+    if gaps:
+        return "uncertain", "UNCORROBORATED_COMPLETION:" + ",".join(gaps), {"checked": True, "gaps": gaps}
+    return "completed", record.get("reason"), {"checked": True, "gaps": []}
+
+
+class ExecutionRegister:
+    """Durable, worker-owned execution records. Atomic JSON per execution; never holds tickets, keys or tokens."""
+
+    def __init__(self, client_root):
+        self.root = Path(client_root).resolve()
+        self.dir = self.root / "control" / "supervisor" / "executions"
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.RLock()
+
+    def path(self, execution_id) -> Path:
+        if not isinstance(execution_id, str) or not _ID.fullmatch(execution_id):
+            raise TurnError("EXECUTION_ID_INVALID")
+        return self.dir / (execution_id + ".json")
+
+    def get(self, execution_id):
+        import json
+        p = self.path(execution_id)
+        with self._lock:
+            if not p.is_file():
+                return None
+            try:
+                rec = json.loads(p.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                return {"schema": SCHEMA, "execution_id": execution_id, "state": "uncertain", "reason": "RECORD_UNREADABLE"}
+        # Valid JSON is not yet a valid record (review round 1, OPS-2): the id must be the file's, the state a string.
+        # Anything else is reported as an uncertain stub so listing and restart reconciliation never abort.
+        if not isinstance(rec, dict) or rec.get("schema") != SCHEMA or rec.get("execution_id") != execution_id \
+                or not isinstance(rec.get("state"), str):
+            return {"schema": SCHEMA, "execution_id": execution_id, "state": "uncertain", "reason": "RECORD_SCHEMA"}
+        return rec
+
+    def write(self, record):
+        with self._lock:
+            atomic_json(self.path(record["execution_id"]), record)
+
+    def update(self, execution_id, **fields):
+        with self._lock:
+            rec = self.get(execution_id)
+            if rec is None:
+                raise TurnError("EXECUTION_UNKNOWN")
+            rec.update(fields)
+            rec["updated_at"] = _now()
+            self.write(rec)
+            return rec
+
+    def list(self, limit=_LIST_LIMIT):
+        with self._lock:
+            ids = sorted(p.stem for p in self.dir.glob("*.json") if _ID.fullmatch(p.stem))
+            recs = [self.get(i) for i in ids]
+        recs = [r for r in recs if r is not None]
+        recs.sort(key=lambda r: (r.get("queued_at") or 0, r["execution_id"]), reverse=True)
+        return recs[:limit]
+
+    def reconcile_restart(self, ledger_path, why="WORKER_RESTARTED"):
+        """Every non-terminal record belongs to a worker that is gone: the attempt (if any) was killed by its
+        kill-on-close job and the bridge has revoked the task's authority. The record becomes `uncertain`; the ledger
+        facts are attached. Nothing is re-launched."""
+        out = []
+        for rec in self.list(limit=10_000):
+            if rec.get("state") in TERMINAL_STATES:
+                continue
+            view = ledger_view(ledger_path, rec.get("task_id"))
+            self.update(rec["execution_id"], state="uncertain", reason=why, ended_at=_now(), restart_ledger=view,
+                        previous_state=rec.get("state"))
+            out.append({"execution_id": rec["execution_id"], "was": rec.get("state"), "state": "uncertain", "reason": why})
+        return out
+
+
+class ExecutionController:
+    """Worker-side lifecycle driver. `service` is the SupervisedWorkerService that owns the pending turns and the
+    runner; `bridge` the SupervisorBridge whose `cancel` kills running attempts."""
+
+    def __init__(self, service, client_root, *, bridge, composition=None, server_status=None, clock=None):
+        self.service, self.bridge, self.composition = service, bridge, composition
+        self.clock = clock or _now
+        self.root = Path(client_root).resolve()
+        self.register = ExecutionRegister(self.root)
+        self.ledger_path = self.root / "control" / "supervisor" / "ledger.db"
+        self.journal_path = self.root / "control" / "execution-journal.sqlite3"
+        self._server_status = server_status
+        self._lock = threading.Lock()
+        self._active = None
+        self._thread = None
+        self._cancel = set()
+        self._task = {}
+        self.startup = self._reconcile_on_start()
+
+    # ---- start-up -----------------------------------------------------------------------------
+    def _reconcile_on_start(self):
+        journal = None
+        if self.journal_path.is_file():
+            try:
+                # Frozen rule (C4 journal): after a restart every claimed operation is uncertain until reconciled.
+                journal = [o for o in ExecutionJournal(self.root).recover() if o["state"] == "execution_uncertain"]
+            except Exception as exc:  # noqa: BLE001  (reported, never hidden; the register still reconciles)
+                journal = {"error": "JOURNAL_RECOVER_FAILED:" + type(exc).__name__}
+        return {"journal": journal, "executions": self.register.reconcile_restart(self.ledger_path)}
+
+    # ---- queries ------------------------------------------------------------------------------
+    @property
+    def active(self):
+        with self._lock:
+            return self._active
+
+    def qualification_of(self, provider, kind="client_external_harness"):
+        """Qualification row for a harness provider; None for non-harness rows (the deterministic local row)."""
+        if self.composition is None or not provider or kind != "client_external_harness":
+            return None
+        for row in self.composition.report:
+            if row.get("provider") == provider:
+                keys = ("status", "reason", "level", "models", "version", "expires_at", "qualified_at", "executable_sha256")
+                return {k: row.get(k) for k in keys}
+        return {"status": "NOT_QUALIFIED", "reason": "NO_RECORD"}
+
+    def proposal(self, turn_id):
+        entry = self.service.pending.get(turn_id)
+        if entry is None:
+            raise TurnError("TURN_NOT_PENDING")
+        _, session, reasoning, turn = entry
+        return execution_proposal(self.service.manifest.data["client_id"], session, turn_id, reasoning,
+                                  turn.get("approval_request"), self.qualification_of(reasoning.get("provider"), reasoning.get("kind")))
+
+    def status(self, execution_id):
+        rec = self.register.get(execution_id)
+        if rec is None:
+            raise TurnError("EXECUTION_UNKNOWN")
+        task_id = rec.get("task_id")
+        ledger, journal = ledger_view(self.ledger_path, task_id), journal_view(self.journal_path, task_id)
+        server = self._server_turn(rec.get("turn_id"))
+        state, reason, corroboration = corroborate(rec, ledger, journal, server)
+        return {**rec, "state": state, "reason": reason, "recorded_state": rec.get("state"), "corroboration": corroboration,
+                "ledger": ledger, "journal": journal, "server_turn": server}
+
+    def list(self):
+        out = []
+        for r in self.register.list():
+            state, reason = r.get("state"), r.get("reason")
+            if state == "completed":
+                # A listed success is held to the same facts as a status (review round 1, OPS-1).
+                task_id = r.get("task_id")
+                ledger, journal = ledger_view(self.ledger_path, task_id), journal_view(self.journal_path, task_id)
+                server = self._server_turn(r.get("turn_id")) if not task_id else None
+                state, reason, _ = corroborate(r, ledger, journal, server)
+            out.append({k: r.get(k) for k in ("execution_id", "turn_id", "session_id", "code", "queued_at", "ended_at",
+                                                 "task_id", "cancel_requested")}
+                       | {"state": state, "reason": reason, "recorded_state": r.get("state"),
+                          "provider": (r.get("proposal") or {}).get("provider"), "model": (r.get("proposal") or {}).get("model")})
+        return out
+
+    def _server_turn(self, turn_id):
+        if not turn_id:
+            return None
+        try:
+            if self._server_status is not None:
+                data = self._server_status(turn_id)
+            else:
+                data = self.service.transport.request("GET", f"/client/v1/turns/{turn_id}/status", None)
+            return {k: data.get(k) for k in ("state", "version", "operation_id", "session_id")} if isinstance(data, dict) else {"error": "BAD_STATUS"}
+        except Exception as exc:  # noqa: BLE001  (the server view is informative; unreachable = reported, not invented)
+            return {"error": "SERVER_STATUS_UNAVAILABLE:" + str(getattr(exc, "code", type(exc).__name__))[:64]}
+
+    # ---- begin ----------------------------------------------------------------------------------
+    def begin(self, turn_id, approval_digest, proposal_digest):
+        with self._lock:
+            if self._active is not None:
+                raise TurnError("EXECUTION_IN_PROGRESS")
+            entry = self.service.pending.get(turn_id)
+            if entry is None or not isinstance(turn_id, str):
+                raise TurnError("TURN_NOT_PENDING")
+            text, session, reasoning, turn = entry
+            prop = execution_proposal(self.service.manifest.data["client_id"], session, turn_id, reasoning,
+                                      turn.get("approval_request"), self.qualification_of(reasoning.get("provider"), reasoning.get("kind")))
+            shown = (turn.get("approval_request") or {}).get("approval_digest")
+            if not isinstance(approval_digest, str) or approval_digest != shown:
+                self.service.pending.pop(turn_id, None)        # same rule as turn_decide: a wrong echo drops the turn
+                raise TurnError("APPROVAL_DIGEST_MISMATCH")
+            if not isinstance(proposal_digest, str) or proposal_digest != prop["proposal_digest"]:
+                self.service.pending.pop(turn_id, None)
+                raise TurnError("PROPOSAL_DIGEST_MISMATCH")
+            self.service.pending.pop(turn_id, None)
+            eid = uuid.uuid4().hex
+            rec = {"schema": SCHEMA, "execution_id": eid, "turn_id": turn_id, "session_id": session, "request_text": text,
+                   "proposal": prop, "state": "queued", "reason": None, "code": None, "message": None, "task_id": None,
+                   "bridge_outcome": None, "failure_category": None, "evidence": None, "cancel_requested": False,
+                   "queued_at": self.clock(), "approving_at": None, "starting_at": None, "running_at": None, "ended_at": None,
+                   "worker_pid": None}
+            import os
+            rec["worker_pid"] = os.getpid()
+            self.register.write(rec)
+            self._active = eid
+            self._thread = threading.Thread(target=self._run, args=(eid, text, session, reasoning, turn), daemon=True,
+                                            name="uri-execution-" + eid[:8])
+            self._thread.start()
+        return {"execution_id": eid, "turn_id": turn_id, "state": "queued", "proposal_digest": prop["proposal_digest"]}
+
+    def _cancel_requested(self, eid):
+        with self._lock:
+            return eid in self._cancel
+
+    def _run(self, eid, text, session, reasoning, turn):
+        runner = None
+        try:
+            runner = self.service._runner()
+            approve = not self._cancel_requested(eid)
+            self.register.update(eid, state="approving", approving_at=self.clock(), decision="approve" if approve else "deny")
+
+            def on_dispatch(work):
+                with self._lock:
+                    self._task[eid] = work.task_id
+                    cancelled = eid in self._cancel
+                self.register.update(eid, task_id=work.task_id, state="running", running_at=self.clock())
+                if cancelled:
+                    self.bridge.cancel(work.task_id)          # arrived between approval and dispatch: never spawns
+
+            def on_outcome(work, outcome, evidence, failure):
+                public = [{k: e.get(k) for k in ("check", "matched", "output_sha256", "output_bytes", "harness",
+                                                  "supervisor_task", "supervisor_attempt", "basis")}
+                          for e in (evidence or []) if isinstance(e, dict)]
+                self.register.update(eid, bridge_outcome=outcome, failure_category=failure, evidence=public)
+
+            def on_starting():
+                self.register.update(eid, state="starting", starting_at=self.clock())
+
+            runner.on_dispatch, runner.on_outcome, runner.on_starting = on_dispatch, on_outcome, on_starting
+            final = runner.decide(text, session, reasoning, turn, approve)
+            rec = self.register.get(eid)
+            state, reason = self._classify(final, rec, approve)
+            self.register.update(eid, state=state, reason=reason, code=final.get("code"), message=final.get("message"),
+                                 server_state=final.get("state"), ended_at=self.clock())
+        except Exception as exc:  # noqa: BLE001
+            code = str(getattr(exc, "code", type(exc).__name__))[:96]
+            rec = self.register.get(eid) or {}
+            # Nothing was sent to the server while `queued`; afterwards the approval, claim or settle may have landed.
+            state = "failed" if rec.get("state") == "queued" else "uncertain"
+            self.register.update(eid, state=state, reason="EXCEPTION:" + code, ended_at=self.clock())
+        finally:
+            if runner is not None:
+                runner.on_dispatch = runner.on_outcome = runner.on_starting = None
+            with self._lock:
+                if self._active == eid:
+                    self._active = None
+                self._task.pop(eid, None)
+                self._cancel.discard(eid)
+
+    @staticmethod
+    def _classify(final, rec, approve):
+        code = final.get("code") if isinstance(final, dict) else None
+        failure = (rec or {}).get("failure_category") or ""
+        cancel = bool((rec or {}).get("cancel_requested")) or not approve
+        if code == "SETTLED_VERIFIED":
+            return "completed", None
+        if code == "APPROVAL_DENIED":
+            return "cancelled", "CANCELLED_BEFORE_APPROVAL" if cancel else "DECLINED"
+        if code == "WAITING_FOR_MODEL":
+            return "quota_paused", "PROVIDER_QUOTA_EXHAUSTED"
+        if code == "SETTLED_EXECUTION_UNCERTAIN":
+            return "uncertain", ("CANCELLED_AFTER_DISPATCH" if cancel and failure.startswith("CANCELLED_AFTER_DISPATCH") else failure or code)
+        if code == "SETTLED_FAILED":
+            if cancel and failure == NOT_STARTED + "CANCELLED":
+                return "cancelled", "CANCELLED_BEFORE_START"
+            return "failed", failure or code
+        return "uncertain", "UNRECOGNISED_SETTLEMENT:" + str(code)[:64]
+
+    # ---- cancel ----------------------------------------------------------------------------------
+    def cancel(self, execution_id):
+        with self._lock:
+            rec = self.register.get(execution_id)
+            if rec is None:
+                raise TurnError("EXECUTION_UNKNOWN")
+            if rec.get("state") in TERMINAL_STATES:
+                raise TurnError("EXECUTION_TERMINAL")
+            if self._active != execution_id:
+                raise TurnError("EXECUTION_NOT_OWNED")       # a record from an earlier worker; restart reconciliation owns it
+            self._cancel.add(execution_id)
+            task = self._task.get(execution_id)
+        self.register.update(execution_id, cancel_requested=True, cancel_requested_at=self.clock())
+        kill = self.bridge.cancel(task)["kill"] if task else {"granted": False, "reason": "NOT_DISPATCHED"}
+        return {"execution_id": execution_id, "cancel": "requested", "kill": kill, "state": self.register.get(execution_id)["state"]}
+
+    # ---- shutdown ---------------------------------------------------------------------------------
+    def close(self, timeout_s=30.0):
+        """The owning worker is going away: withdraw the active execution (kill through the job) and wait, bounded,
+        for its settlement so the record is terminal. The kill-on-close job covers whatever is left."""
+        eid = self.active
+        if eid is None:
+            return {"active": None}
+        try:
+            self.cancel(eid)
+        except TurnError as exc:
+            return {"active": eid, "cancel": str(exc.code)}
+        t = self._thread
+        if t is not None:
+            t.join(timeout_s)
+        rec = self.register.get(eid) or {}
+        if rec.get("state") not in TERMINAL_STATES:
+            self.register.update(eid, state="uncertain", reason="WORKER_CLOSED_DURING_EXECUTION", ended_at=self.clock())
+        return {"active": eid, "state": self.register.get(eid)["state"]}

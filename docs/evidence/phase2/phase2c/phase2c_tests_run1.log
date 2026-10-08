@@ -1,0 +1,43 @@
+......F.......F....                                                      [100%]
+================================== FAILURES ===================================
+______ test_replace_mode_refuses_session_ids_that_do_not_look_like_ids[] ______
+
+bad = ''
+
+    @pytest.mark.parametrize("bad", ["--yolo", "x --dangerously-bypass-approvals-and-sandbox", "a b", "", "-m evil", "../x"])
+    def test_replace_mode_refuses_session_ids_that_do_not_look_like_ids(bad):
+>       with pytest.raises(ExecutorSpecError, match="BAD_SESSION_ID"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ExecutorSpecError
+
+tests\phase2c\test_resume_mode.py:40: Failed
+_ test_provider_swapped_between_begin_and_decide_is_refused_before_any_executor _
+
+bridge_stack = <phase2b.conftest.Stack object at 0x000002767CD9A210>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002767C835260>
+
+    def test_provider_swapped_between_begin_and_decide_is_refused_before_any_executor(bridge_stack, monkeypatch):
+        s = bridge_stack
+        monkeypatch.setenv("URI_FAKE_SCENARIO", "honest")
+        session = uid()
+        turn = s.runner.begin(TEXT, session, CLAUDE)
+        assert turn["state"] == "approval_required"
+        final = s.runner.decide(TEXT, session, CODEX, turn, True)          # user approved CLAUDE's run, caller runs CODEX
+        assert final["code"] == "SETTLED_FAILED", final
+        rec = s.turn_record(final["turn_id"])
+        assert rec["execution_outcome"] == "failed" and rec["execution_closed"] is True
+>       settle = [b for m, p in s.calls if p.endswith("/settle")]
+                  ^
+E       NameError: name 'b' is not defined
+
+tests\phase2c\test_selection_binding.py:34: NameError
+============================== warnings summary ===============================
+tests/phase2c/test_selection_binding.py::test_same_selection_at_begin_and_decide_still_verifies
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/phase2c/test_resume_mode.py::test_replace_mode_refuses_session_ids_that_do_not_look_like_ids[]
+FAILED tests/phase2c/test_selection_binding.py::test_provider_swapped_between_begin_and_decide_is_refused_before_any_executor
+2 failed, 17 passed, 1 warning in 15.84s

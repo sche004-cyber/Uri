@@ -1,0 +1,118 @@
+{
+ "base": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2c_codex_swap",
+ "direct_cli_status": "OK",
+ "direct_probe": {
+  "agent_text": "OK",
+  "auth_status": null,
+  "duration_s": 12.04,
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\codex.CMD",
+  "exit": 0,
+  "failures": [],
+  "forwarded_env_keys": [
+   "COMSPEC",
+   "HOME",
+   "PATH",
+   "PATHEXT",
+   "SHELL",
+   "SYSTEMDRIVE",
+   "SYSTEMROOT",
+   "TEMP",
+   "TERM",
+   "TMP",
+   "USERNAME",
+   "USERPROFILE",
+   "WINDIR"
+  ],
+  "ok": true,
+  "result": null,
+  "status": "OK",
+  "stdout_sha256": "1e5f011b438af3a92666df0a02aee2d011013bd8b2b25d551aed205a22a477e3",
+  "version": "0.158.0"
+ },
+ "finished": "2026-10-07T09:48:54",
+ "interpreter": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+ "mode": "swap",
+ "model": "gpt-6-sol",
+ "provider": "codex_cli",
+ "registry_discover": [
+  {
+   "auth_state": "AUTH_UNVERIFIED",
+   "harness_id": "claude_code",
+   "installed": true,
+   "qualification": "NATIVE_UNQUALIFIED",
+   "required_user_action": "Run `claude` in the URI client profile terminal and sign in with your subscription (native login).",
+   "usable": false,
+   "version": "2.1.287"
+  },
+  {
+   "auth_state": "AUTHENTICATED",
+   "harness_id": "codex_cli",
+   "installed": true,
+   "qualification": "NATIVE_QUALIFIED",
+   "required_user_action": null,
+   "usable": true,
+   "version": "0.158.0"
+  },
+  {
+   "auth_state": "EXECUTE_REFUSED",
+   "harness_id": "antigravity",
+   "installed": true,
+   "qualification": "REFUSED",
+   "required_user_action": "Antigravity execution is refused until separately qualified.",
+   "usable": false,
+   "version": "1.2.16"
+  }
+ ],
+ "root": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent",
+ "run": {
+  "approval_requests_shown": [],
+  "begin_state": "approval_required",
+  "duration_s": 0.3,
+  "final_code": "SETTLED_FAILED",
+  "final_message": "The action failed; nothing was verified.",
+  "final_state": "failed",
+  "receipt_evidence": [],
+  "receipts_sent": [
+   {
+    "client_id": "566ec637-7ebc-4fa0-b015-ee040035bb3a",
+    "evidence": [],
+    "failure_category": "NOT_STARTED:AUTHORITY_SELECTION_MISMATCH",
+    "implementation_digest": "1b7ac269056f8b04905e5762685d09af2095527597ef05c5f5f88dedea045813",
+    "operation_id": "277a6d01-dfa2-4a13-ab1a-7c1edd498937",
+    "outcome": "failed",
+    "principal_id": "059387d3-f30e-4a6f-8e28-d25decea6b0e",
+    "run_id": "d6251dcb-5469-4017-970d-63ea54ad1800",
+    "schema_version": "uri.client.v1",
+    "server_id": "6e28e8df-69d2-4328-b4e0-262b65350218",
+    "session_id": "5b72d1f8-d307-4901-974b-fbae74d77ff7",
+    "state_version": 1,
+    "ticket_digest": "be1dea86973677950a79ddbfa6f13d931d99a3b12a07ff68a5cc147508c3e767",
+    "turn_id": "80683fc9-6174-4c80-a321-34bd37565c98",
+    "verifier_id": "uri.client.harness_output_check.v1"
+   }
+  ],
+  "result_files": [],
+  "server_calls": [
+   "/client/v1/turns",
+   "/client/v1/turns/80683fc9-6174-4c80-a321-34bd37565c98/approval",
+   "/client/v1/turns/80683fc9-6174-4c80-a321-34bd37565c98/claim",
+   "/client/v1/turns/80683fc9-6174-4c80-a321-34bd37565c98/settle"
+  ],
+  "server_turn_record": {
+   "dispatched": true,
+   "execution_closed": true,
+   "execution_outcome": "failed",
+   "execution_reported": null,
+   "operation_id": "277a6d01-dfa2-4a13-ab1a-7c1edd498937",
+   "state": "failed"
+  },
+  "swapped_to": {
+   "kind": "client_external_harness",
+   "model": null,
+   "provider": "claude_code"
+  },
+  "turn_id": "80683fc9-6174-4c80-a321-34bd37565c98"
+ },
+ "started": "2026-10-07T09:48:52",
+ "tag": "codex_swap"
+}

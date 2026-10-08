@@ -1,0 +1,274 @@
+{
+ "approval_source": "programmatic (this harness echoes the worker's approval + proposal digests), not a human on the UI",
+ "base": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2ops_claude_code_lifecycle_190427_631c62b8",
+ "composition_report": [],
+ "direct_probe": {
+  "auth_status": {
+   "analyticsDisabled": false,
+   "apiProvider": "firstParty",
+   "authMethod": "none",
+   "configDirectory": "C:\\Users\\cheta\\.claude",
+   "loggedIn": false,
+   "projectsDirectory": "C:\\Users\\cheta\\.claude\\projects"
+  },
+  "duration_s": 1.51,
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\claude.CMD",
+  "executable_sha256": "7999fba95dbffe167d9e0a043f29057979a0518ebe89b60c4fcfc6401ea8c424",
+  "exit": 1,
+  "ok": false,
+  "status": "AUTH_REQUIRED",
+  "version": "2.1.287"
+ },
+ "finished": "2026-10-07T19:04:32",
+ "interpreter": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe",
+ "live_auth_status_probe": false,
+ "model": null,
+ "provider": "claude_code",
+ "qualification_decision": "NOT PERSISTED: direct probe failed or live auth status not ok -> USER INTERACTION REQUIRED (native login); fail closed expected",
+ "qualification_record": null,
+ "registry_discover": [
+  {
+   "auth_state": "AUTH_UNVERIFIED",
+   "harness_id": "claude_code",
+   "installed": true,
+   "qualification": "NATIVE_UNQUALIFIED",
+   "required_user_action": "Run `claude` in the URI client profile terminal and sign in with your subscription (native login).",
+   "usable": false,
+   "version": "2.1.287"
+  },
+  {
+   "auth_state": "AUTH_UNVERIFIED",
+   "harness_id": "codex_cli",
+   "installed": true,
+   "qualification": "NATIVE_UNQUALIFIED",
+   "required_user_action": "Run `codex login` in the URI client profile terminal (native login).",
+   "usable": false,
+   "version": "0.158.0"
+  },
+  {
+   "auth_state": "EXECUTE_REFUSED",
+   "harness_id": "antigravity",
+   "installed": true,
+   "qualification": "REFUSED",
+   "required_user_action": "Antigravity execution is refused until separately qualified.",
+   "usable": false,
+   "version": "1.2.16"
+  }
+ ],
+ "root": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent",
+ "runs": [
+  {
+   "begin_returned_after_s": 0.003,
+   "code": null,
+   "duration_s": 0.8,
+   "execution_list": {
+    "active": null,
+    "executions": [
+     {
+      "cancel_requested": false,
+      "code": "SETTLED_FAILED",
+      "ended_at": 1791380072.3684566,
+      "execution_id": "6c1cae1c54944666ac081a1bafd0244b",
+      "model": null,
+      "provider": "claude_code",
+      "queued_at": 1791380071.8160355,
+      "reason": "NOT_STARTED:HARNESS_HARNESS_NOT_USABLE",
+      "session_id": "f5aecb5e-3f09-4de3-8a14-5ac77a430099",
+      "state": "failed",
+      "task_id": "4cc14d8b-6de3-4b28-8cf8-d395fd9c6c97",
+      "turn_id": "3e1873f8-424c-476a-9e7d-6382ac5f1521"
+     }
+    ],
+    "startup": {
+     "executions": [],
+     "journal": null
+    }
+   },
+   "final": {
+    "approving_at": 1791380071.819189,
+    "bridge_outcome": "failed",
+    "code": "SETTLED_FAILED",
+    "ended_at": 1791380072.3684566,
+    "evidence": [],
+    "execution_id": "6c1cae1c54944666ac081a1bafd0244b",
+    "failure_category": "NOT_STARTED:HARNESS_HARNESS_NOT_USABLE",
+    "message": "The action failed; nothing was verified.",
+    "queued_at": 1791380071.8160355,
+    "reason": "NOT_STARTED:HARNESS_HARNESS_NOT_USABLE",
+    "running_at": 1791380071.8940938,
+    "starting_at": 1791380071.8504786,
+    "state": "failed",
+    "task_id": "4cc14d8b-6de3-4b28-8cf8-d395fd9c6c97"
+   },
+   "frames": [
+    {
+     "at": 1791380071.5532699,
+     "sent": {
+      "command": "turn_start",
+      "reasoning": {
+       "kind": "client_external_harness",
+       "model": null,
+       "provider": "claude_code"
+      },
+      "session_id": "f5aecb5e-3f09-4de3-8a14-5ac77a430099",
+      "text": "use the harness to write the single word PONG into pong.txt"
+     }
+    },
+    {
+     "at": 1791380071.8159723,
+     "received": {
+      "approval_request": {
+       "approval_digest": "e6dbf1eca5447362c609441bee3bcaf1c1871e8dbffd20f3f8c824d6c38e776a",
+       "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+       "arguments": {
+        "action": "external_harness_task",
+        "inputs": {
+         "expected_file": "pong.txt",
+         "instruction": "write the single word PONG into pong.txt"
+        }
+       },
+       "capability_id": "external_harness_task",
+       "effect": "local_write",
+       "gate": {
+        "action_names": [
+         "external_harness_task"
+        ],
+        "capability_id": "external_harness_task",
+        "expected_type": null,
+        "missing_field": null,
+        "outcome": "APPROVAL_REQUIRED",
+        "overlap_candidates": [],
+        "reasons": [
+         "capability_or_action_requires_approval"
+        ],
+        "sub_results": []
+       },
+       "intent_digest": "79741d98ce99badbbd8c8a51a4c9fd1f81b08fd02e96dbd3451d7e552c596dcc",
+       "rejected_proposal": null,
+       "replanned": false,
+       "reversible": true
+      },
+      "code": null,
+      "execution_proposal": {
+       "action": "external_harness_task",
+       "approval_digest": "e6dbf1eca5447362c609441bee3bcaf1c1871e8dbffd20f3f8c824d6c38e776a",
+       "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+       "arguments": {
+        "action": "external_harness_task",
+        "inputs": {
+         "expected_file": "pong.txt",
+         "instruction": "write the single word PONG into pong.txt"
+        }
+       },
+       "capability_id": "external_harness_task",
+       "client_id": "85e9fc51-3b07-4449-8c93-229a0cb99a5b",
+       "effect": "local_write",
+       "expected_file": "pong.txt",
+       "instruction": "write the single word PONG into pong.txt",
+       "kind": "client_external_harness",
+       "model": null,
+       "proposal_digest": "98dda4aa9a608229a0f20e5eb36cf8522ad4af6c6bd500b0ff4f81c880a5d5d1",
+       "provider": "claude_code",
+       "qualification": {
+        "reason": "NO_RECORD",
+        "status": "NOT_QUALIFIED"
+       },
+       "reversible": true,
+       "session_id": "f5aecb5e-3f09-4de3-8a14-5ac77a430099",
+       "turn_id": "3e1873f8-424c-476a-9e7d-6382ac5f1521"
+      },
+      "state": "approval_required",
+      "turn_id": "3e1873f8-424c-476a-9e7d-6382ac5f1521"
+     }
+    },
+    {
+     "at": 1791380071.8159802,
+     "sent": {
+      "approval_digest": "e6dbf1eca5447362c609441bee3bcaf1c1871e8dbffd20f3f8c824d6c38e776a",
+      "command": "execution_begin",
+      "proposal_digest": "98dda4aa9a608229a0f20e5eb36cf8522ad4af6c6bd500b0ff4f81c880a5d5d1",
+      "turn_id": "3e1873f8-424c-476a-9e7d-6382ac5f1521"
+     }
+    },
+    {
+     "at": 1791380071.8190167,
+     "received": {
+      "execution_id": "6c1cae1c54944666ac081a1bafd0244b",
+      "proposal_digest": "98dda4aa9a608229a0f20e5eb36cf8522ad4af6c6bd500b0ff4f81c880a5d5d1",
+      "state": "queued",
+      "turn_id": "3e1873f8-424c-476a-9e7d-6382ac5f1521"
+     }
+    }
+   ],
+   "journal_view": {
+    "operation_id": "4cc14d8b-6de3-4b28-8cf8-d395fd9c6c97",
+    "receipted": true,
+    "state": "failed"
+   },
+   "ledger_view": {
+    "task": null,
+    "task_id": "4cc14d8b-6de3-4b28-8cf8-d395fd9c6c97"
+   },
+   "name": "lifecycle",
+   "proposal": {
+    "action": "external_harness_task",
+    "approval_digest": "e6dbf1eca5447362c609441bee3bcaf1c1871e8dbffd20f3f8c824d6c38e776a",
+    "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+    "arguments": {
+     "action": "external_harness_task",
+     "inputs": {
+      "expected_file": "pong.txt",
+      "instruction": "write the single word PONG into pong.txt"
+     }
+    },
+    "capability_id": "external_harness_task",
+    "client_id": "85e9fc51-3b07-4449-8c93-229a0cb99a5b",
+    "effect": "local_write",
+    "expected_file": "pong.txt",
+    "instruction": "write the single word PONG into pong.txt",
+    "kind": "client_external_harness",
+    "model": null,
+    "proposal_digest": "98dda4aa9a608229a0f20e5eb36cf8522ad4af6c6bd500b0ff4f81c880a5d5d1",
+    "provider": "claude_code",
+    "qualification": {
+     "reason": "NO_RECORD",
+     "status": "NOT_QUALIFIED"
+    },
+    "reversible": true,
+    "session_id": "f5aecb5e-3f09-4de3-8a14-5ac77a430099",
+    "turn_id": "3e1873f8-424c-476a-9e7d-6382ac5f1521"
+   },
+   "result_files": [],
+   "server_turn_record": {
+    "dispatched": true,
+    "execution_closed": true,
+    "execution_outcome": "failed",
+    "operation_id": "4cc14d8b-6de3-4b28-8cf8-d395fd9c6c97",
+    "state": "failed"
+   },
+   "transitions": [
+    {
+     "at": 1791380071.8291025,
+     "ledger_task": {},
+     "reason": null,
+     "state": "queued"
+    },
+    {
+     "at": 1791380072.10243,
+     "ledger_task": null,
+     "reason": null,
+     "state": "running"
+    },
+    {
+     "at": 1791380072.6303942,
+     "ledger_task": null,
+     "reason": "NOT_STARTED:HARNESS_HARNESS_NOT_USABLE",
+     "state": "failed"
+    }
+   ],
+   "turn_state": "approval_required"
+  }
+ ],
+ "started": "2026-10-07T19:04:27",
+ "tag": "claude_code_lifecycle_190427"
+}

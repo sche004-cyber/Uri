@@ -1,0 +1,12 @@
+........................................................................ [ 25%]
+.................ss..................................................... [ 50%]
+........................................................................ [ 75%]
+.....................................................................    [100%]
+============================== warnings summary ===============================
+tests/phase2b/test_bridge_e2e.py::test_full_chain_verified_once_with_supervisor_evidence
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+283 passed, 2 skipped, 1 warning in 144.49s (0:02:24)
+EXIT=0

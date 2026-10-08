@@ -1,0 +1,67 @@
+.......................................................FF............... [ 80%]
+.................                                                        [100%]
+================================== FAILURES ===================================
+_ test_crash_at_each_point_then_restart_never_relaunches_and_same_ticket_is_dead[after_intents] _
+
+tmp_path = WindowsPath('C:/Users/cheta/AppData/Local/Temp/pytest-of-cheta/pytest-565/test_crash_at_each_point_then_2')
+point = 'after_intents'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000218B33572F0>
+
+    @pytest.mark.parametrize("point", POINTS)
+    def test_crash_at_each_point_then_restart_never_relaunches_and_same_ticket_is_dead(tmp_path, point, monkeypatch):
+        auth = SyntheticAuthority()
+        cfg, signed, request, now = cfg_for(tmp_path, auth)
+        if point.startswith("recovery_"):
+            # leave an unreconciled ended attempt first, then crash during the restart's recovery
+            r = child(cfg, crash_at="after_attempt_ended")
+            assert r.returncode == 137, r.stderr[-500:]
+            r = child({**cfg, "mode": "restart_only"}, crash_at=point)
+        else:
+            r = child(cfg, crash_at=point)
+>       assert r.returncode == 137, (point, r.returncode, r.stderr[-500:])
+E       AssertionError: ('after_intents', 1, b'thority.py", line 15, in <module>\r
+E             from uri_core.core.client_execution_control import Exe...runtime_identity\\__init__.py", line 2, in <module>\r
+E             raise ImportError(\'planted\')\r
+E         ImportError: planted\r
+E         ')
+E       assert 1 == 137
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe', 'C:\...runtime_identity\\__init__.py", line 2, in <module>\r\n    raise ImportError(\'planted\')\r\nImportError: planted\r\n').returncode
+
+tests\phase2b\test_bridge_restart.py:61: AssertionError
+_ test_crash_at_each_point_then_restart_never_relaunches_and_same_ticket_is_dead[after_spawning_marked] _
+
+tmp_path = WindowsPath('C:/Users/cheta/AppData/Local/Temp/pytest-of-cheta/pytest-565/test_crash_at_each_point_then_3')
+point = 'after_spawning_marked'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000218B3467E30>
+
+    @pytest.mark.parametrize("point", POINTS)
+    def test_crash_at_each_point_then_restart_never_relaunches_and_same_ticket_is_dead(tmp_path, point, monkeypatch):
+        auth = SyntheticAuthority()
+        cfg, signed, request, now = cfg_for(tmp_path, auth)
+        if point.startswith("recovery_"):
+            # leave an unreconciled ended attempt first, then crash during the restart's recovery
+            r = child(cfg, crash_at="after_attempt_ended")
+            assert r.returncode == 137, r.stderr[-500:]
+            r = child({**cfg, "mode": "restart_only"}, crash_at=point)
+        else:
+            r = child(cfg, crash_at=point)
+>       assert r.returncode == 137, (point, r.returncode, r.stderr[-500:])
+E       AssertionError: ('after_spawning_marked', 1, b'thority.py", line 15, in <module>\r
+E             from uri_core.core.client_execution_control im...runtime_identity\\__init__.py", line 2, in <module>\r
+E             raise ImportError(\'planted\')\r
+E         ImportError: planted\r
+E         ')
+E       assert 1 == 137
+E        +  where 1 = CompletedProcess(args=['C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe', 'C:\...runtime_identity\\__init__.py", line 2, in <module>\r\n    raise ImportError(\'planted\')\r\nImportError: planted\r\n').returncode
+
+tests\phase2b\test_bridge_restart.py:61: AssertionError
+============================== warnings summary ===============================
+tests/phase2b/test_bridge_e2e.py::test_full_chain_verified_once_with_supervisor_evidence
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/phase2b/test_bridge_restart.py::test_crash_at_each_point_then_restart_never_relaunches_and_same_ticket_is_dead[after_intents]
+FAILED tests/phase2b/test_bridge_restart.py::test_crash_at_each_point_then_restart_never_relaunches_and_same_ticket_is_dead[after_spawning_marked]
+2 failed, 87 passed, 1 warning in 81.40s (0:01:21)

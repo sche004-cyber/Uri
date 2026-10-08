@@ -1,0 +1,19 @@
+Re-extracting code files in . (no LLM needed)...
+  AST extraction: 100/1035 uncached files (9%) [24 workers]
+  AST extraction: 200/1035 uncached files (19%) [24 workers]
+  AST extraction: 300/1035 uncached files (28%) [24 workers]
+  AST extraction: 400/1035 uncached files (38%) [24 workers]
+  AST extraction: 500/1035 uncached files (48%) [24 workers]
+  AST extraction: 600/1035 uncached files (57%) [24 workers]
+  AST extraction: 700/1035 uncached files (67%) [24 workers]
+  AST extraction: 800/1035 uncached files (77%) [24 workers]
+  AST extraction: 900/1035 uncached files (86%) [24 workers]
+  AST extraction: 1000/1035 uncached files (96%) [24 workers]
+  AST extraction: 1035/1035 uncached files (100%) [24 workers]
+Graph has 16199 nodes (above 5000 limit). Building aggregated community view...
+graph.html written (aggregated: 692 community nodes, 1571 cross-community edges)
+Tip: run with --obsidian for full node-level detail.
+[graphify watch] Rebuilt: 16199 nodes, 33392 edges, 692 communities
+[graphify watch] graph.json, graph.html and GRAPH_REPORT.md updated in graphify-out
+Code graph updated. For doc/paper/image changes run /graphify --update in your AI assistant.
+Tip: set GEMINI_API_KEY or GOOGLE_API_KEY to use Gemini for semantic extraction.

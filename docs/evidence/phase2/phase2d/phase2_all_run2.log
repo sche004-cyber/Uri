@@ -1,0 +1,55 @@
+C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Scripts\python.exe -I -m pytest -c C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\scripts\phase2d_pytest.ini --rootdir C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent -q -rfEs --ignore=work --ignore=evidence --ignore=uri_workspace --ignore=temp_evidence --ignore=reports --ignore=research_notes --ignore=graphify-out --ignore=uri_ui --ignore=.venv tests/phase2a tests/phase2b tests/phase2c tests/phase2d
+........................................................................ [ 19%]
+.................ss..................................................... [ 39%]
+........................................................................ [ 59%]
+.F...................................................................... [ 78%]
+........................................................................ [ 98%]
+......                                                                   [100%]
+================================== FAILURES ===================================
+_ test_quota_pause_preserves_task_and_only_an_explicit_other_provider_continues _
+
+bridge_stack = <phase2b.conftest.Stack object at 0x0000020DCF977E50>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000020DCFAA0B90>
+
+    def test_quota_pause_preserves_task_and_only_an_explicit_other_provider_continues(bridge_stack, monkeypatch):
+        s = bridge_stack
+        session = uid()
+        monkeypatch.setenv("URI_FAKE_SCENARIO", "quota")
+>       paused = s.run(session=session)
+                 ^^^^^^^^^^^^^^^^^^^^^^
+
+tests\phase2b\test_bridge_e2e.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\phase2b\conftest.py:192: in run
+    return self.runner.run(text, session or uid(), reasoning, approve)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_core\client_runtime\turn_runner.py:138: in run
+    return self.decide(text, session, reasoning, turn, bool(approve(turn["approval_request"])))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_core\client_runtime\turn_runner.py:125: in decide
+    turn = self._post(f"/client/v1/turns/{turn['turn_id']}/approval", self._control(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <uri_supervisor_bridge.runner.SupervisedTurnRunner object at 0x0000020DCF977750>
+path = '/client/v1/turns/f20269de-97f3-4e60-8bcd-90e069100e44/approval'
+body = {'server_id': 'fbc7517d-ac68-4653-9421-244b970d6dd9', 'client_id': 'c7654fb7-5201-48ad-a818-f78aa933ae68', 'principal_id': 'c8f79d6b-d89c-4300-a8b9-582678f85382', 'session_id': '7aaac470-63bd-4e0f-8356-63e796e8f085', ...}
+
+    def _post(self, path, body):
+        status, data = self.call("POST", path, body)
+        if status != 200:
+>           raise TurnError("SERVER_REFUSED:" + str(data.get("detail") if isinstance(data, dict) else status), data)
+E           uri_core.client_runtime.turn_runner.TurnError: SERVER_REFUSED:TICKET_CLOCK_OR_GENERATION
+
+uri_core\client_runtime\turn_runner.py:54: TurnError
+============================== warnings summary ===============================
+tests/phase2b/test_bridge_e2e.py::test_full_chain_verified_once_with_supervisor_evidence
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/phase2b/test_bridge_e2e.py::test_quota_pause_preserves_task_and_only_an_explicit_other_provider_continues
+SKIPPED [2] tests\phase2a\test_live_executors.py:36: live executors are opt-in (URI_PHASE2A_LIVE=1)
+1 failed, 363 passed, 2 skipped, 1 warning in 226.79s (0:03:46)
+
+EXIT=1 DURATION_S=227.6

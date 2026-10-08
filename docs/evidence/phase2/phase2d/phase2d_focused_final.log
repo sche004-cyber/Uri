@@ -1,0 +1,12 @@
+C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Scripts\python.exe -I -m pytest -c C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\scripts\phase2d_pytest.ini --rootdir C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent -q -rfEs --ignore=work --ignore=evidence --ignore=uri_workspace --ignore=temp_evidence --ignore=reports --ignore=research_notes --ignore=graphify-out --ignore=uri_ui --ignore=.venv tests/phase2d
+........................................................................ [ 88%]
+.........                                                                [100%]
+============================== warnings summary ===============================
+tests/phase2d/test_selfaudit.py::test_rogue_ui_editing_the_approval_envelope_cannot_change_what_runs
+  C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+81 passed, 1 warning in 82.60s (0:01:22)
+
+EXIT=0 DURATION_S=83.4

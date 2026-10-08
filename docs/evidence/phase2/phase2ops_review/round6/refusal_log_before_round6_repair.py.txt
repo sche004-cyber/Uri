@@ -1,0 +1,65 @@
+"""Phase 2 server PROFILE diagnostic (UI/operations slice, review rounds 3-5: VAL-1, LOG-1).
+
+An intermittent HTTP 403 on a `/client/v1` request could not be attributed because the frozen client transport keeps
+the status only. This pure-ASGI wrapper logs, for `/client/v1` responses with status >= 400 ONLY, a line of the form
+
+    CLIENT_REFUSAL <METHOD> <route shape> <status> <CODE>
+
+where the route shape is the request path with every segment that is not a known literal replaced by `{id}` and the
+CODE is the JSON body's `detail` only when it is an upper-case identifier (`^[A-Z][A-Z0-9_]{0,47}$`); any other
+detail is logged as `NON_CODE_DETAIL`. Query strings, request headers, request bodies, 2xx bodies and free text are
+never read into the log (review round 5, LOG-1: an earlier version printed the raw path and detail).
+"""
+from __future__ import annotations
+
+import json
+import re
+import sys
+
+_CODE = re.compile(r"^[A-Z][A-Z0-9_]{0,47}$")
+_METHOD = re.compile(r"^[A-Z]{3,8}$")
+_LITERALS = frozenset({"client", "v1", "turns", "session", "capabilities", "approval", "claim", "settle", "wait",
+                       "continue", "status", "cancel"})
+
+
+def route_shape(path) -> str:
+    """`/client/v1/turns/<uuid>/approval` -> `/client/v1/turns/{id}/approval`; never echoes a non-literal segment."""
+    if not isinstance(path, str):
+        return "/{invalid}"
+    parts = [p for p in path.split("?", 1)[0].split("/") if p]
+    out = [p if p in _LITERALS else "{id}" for p in parts][:8]
+    return "/" + "/".join(out)
+
+
+def refusal_code(body: bytes) -> str:
+    try:
+        detail = json.loads(body).get("detail")
+    except Exception:  # noqa: BLE001  (non-JSON or non-object body)
+        return "NON_JSON_BODY"
+    return detail if isinstance(detail, str) and _CODE.fullmatch(detail) else "NON_CODE_DETAIL"
+
+
+def refusal_line(method, path, status, body) -> str:
+    m = method if isinstance(method, str) and _METHOD.fullmatch(method) else "METHOD"
+    return f"CLIENT_REFUSAL {m} {route_shape(path)} {int(status)} {refusal_code(body)}"
+
+
+class RefusalLog:
+    def __init__(self, app, sink=None):
+        self.app = app
+        self.sink = sink or (lambda line: print(line, file=sys.stderr, flush=True))
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http" or not str(scope.get("path", "")).startswith("/client/v1"):
+            return await self.app(scope, receive, send)
+        status, chunks = [None], []
+
+        async def send_wrapped(message):
+            if message["type"] == "http.response.start":
+                status[0] = message.get("status")
+            elif message["type"] == "http.response.body" and status[0] is not None and status[0] >= 400:
+                chunks.append(message.get("body", b""))
+                if not message.get("more_body"):
+                    self.sink(refusal_line(scope.get("method"), scope.get("path"), status[0], b"".join(chunks)[:4096]))
+            await send(message)
+        await self.app(scope, receive, send_wrapped)
