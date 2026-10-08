@@ -59,11 +59,16 @@ effort) through the local `codex-exec` bridge. Only `COMPLETED_WITH_RESULT` runs
 |---|---|---|---|---|
 | 1 | `b5b331f` | **REJECTED** | A1–A7 PASS (byte-exact import, frozen files, overlay, ledger restore, chain consistency, inference numbers, no overclaim). FAIL: H runbook overlay ref lacked the file; H containment restore lacked `-BackupRoot` and wrong undo order; M manifest EXE-1 stale (+ salvage ledger); M manifest pointed at an uncommitted overlay list; L recovery ref stale | all five confirmed by me and repaired in `aa20afe` |
 | 2 | `aa20afe` | **REJECTED** | the five repairs verified; H `-Restore` without `-BackupRoot` remained in the cleanup manifest and plan §7; M documents implied the push/tags already happened and cited this (then missing) file; L a stray carriage-return byte inside a ledger cell (`E:phase2oq_review\round7`), present in the Phase 2 session's own post-acceptance bytes | all confirmed and repaired in the next commit; the CR fix changes one byte of a post-acceptance record and is labelled as such |
-| 3 | (next) | see section 4a | | |
+| 3 | `093e5fe` | **REJECTED** | H bare `-Restore` in round 1's `URI_PC_CONTAMINATION_AUDIT.md`; M cleanup manifest said candidate and integration tips were equal before the push | confirmed, repaired in `d2c2a78` |
+| 4 | `d2c2a78` | **REJECTED** | three publication-tense statements (plan P-1, authority manifest recovery entry, ledger CONS-15) | confirmed, repaired in `7b320be` |
+| 5 | `7b320be` | **ROUND 2 ACCEPTED WITH FINDINGS** | M runbook said the Phase 1 zip is in Git at `925ad45` (only its files are) | confirmed, repaired in the commit that adds this row |
 
-## 4a. Round 3
+## 4a. Review outcome
 
-Pending at the time of writing; recorded below when complete.
+Codex review round 5: **ROUND 2 ACCEPTED WITH FINDINGS**; the single finding is repaired. A1–A7 (byte-exact
+import, frozen files, overlay, ledger restore, chain consistency, inference numbers, no overclaim) passed from
+round 1 and nothing they depend on changed afterwards. The repair of the round-5 finding was not re-reviewed by
+Codex (documentation wording only); it is self-checked against `git ls-tree` (no zip in Git).
 
 ## 5. Records produced or updated (deliverables 1–7)
 

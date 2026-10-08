@@ -22,8 +22,11 @@ git reset -q                                          # HEAD stays e8e3b65; acce
 Verify before use:
 1. `git rev-parse HEAD` prints `e8e3b65259c45fc823addc3ef8969425a265bd1b`.
 2. `git status --porcelain` lists only overlay paths.
-3. Frozen files: re-hash the 121 files of `work/c1/checkpoints/final-closure-20261005-phase1.zip`
-   (`31a34dcb…98cf7`, also in Git at `925ad45`) against the checkout; zero differences.
+3. Frozen files: compare the checkout with the 121 frozen files. Git holds those files (not the zip) at
+   `925ad45`: `git diff --stat 925ad45 -- $(git diff --name-only 925ad45^ 925ad45)` must be empty for the
+   overlay. The archive itself, `final-closure-20261005-phase1.zip` (`31a34dcb…98cf7`), exists only on local
+   disk (`.codex\worktrees\uri-phase1-integration\uri-agent\work\c1\checkpoints\`, CONS-14); hashing it is a
+   separate prerequisite when the zip is available.
 4. Phase 2 files: hash the 154 tree files of `docs/evidence/phase2/phase2oq-candidate-20261008-g.zip`
    (`0b49d86d…c4cd`) against the checkout; zero differences except the three post-acceptance documents
    (`PHASE2OQ_REPORT.md`, `PHASE2CLOSE_CLOSURE_CHECKLIST.md`, `URI_DEVELOPMENT_TODO.md`, from `759d0d4`).
