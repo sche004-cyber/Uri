@@ -3,7 +3,9 @@
 Branch `phase/operational-intelligence`, worktree `C:\Users\cheta\Development\uri-operational-intelligence`,
 base `037229c1fc04eadc6a2e42e92e6ef0d12520d3fe`. Status classes: 1 researched/proposed, 2 configured/prototyped,
 3 implemented, 4 tested/qualified (development), 5 independently accepted, 6 integrated, 7 production-active.
-Nothing in this phase is class 6 or 7.
+Nothing in this phase is class 6 or 7. Candidate-level: the development candidate as a whole received an
+independent **ACCEPT WITH FINDINGS** (Codex round 7, `OI_INTEGRATION_READINESS.md` §2), i.e. class 5 for development
+scope only; the per-feature classes below are unchanged by that verdict.
 
 ## 1. Plan (as executed)
 

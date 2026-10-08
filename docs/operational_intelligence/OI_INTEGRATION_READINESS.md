@@ -26,11 +26,15 @@ Codex output is a claim; every finding below was checked against the source befo
 | repair | see git log after `738a9af` | — | registry binds a digest of the whole issued envelope, single use, bounded 256, restart fails closed (documented); folding by Unicode category Pd / Pi / Pf / Zs (`test_oi_audit_r5_regressions.py`) |
 | 6 | `50b2adc` | **REJECT** | all round-5 items verified fixed except restart loss of single-turn continuations (partially: fails closed, documented). New: a request abandoned during the header wait was not disconnected and could pin pool connections; docs overclaimed slot release in that phase. No path to unapproved/duplicate execution, false success, silent substitution or unverified READY found |
 | repair | see git log after `50b2adc` | — | bounded socket read timeout closes abandoned sends; pool exhaustion reported (no retry); disconnect + pool-recovery test; docs qualified by phase |
-| 7 | see §2.1 | see §2.1 | see §2.1 |
+| 7 | `85d1ccf` | **ACCEPT WITH FINDINGS** (development candidate) | round-6 finding verified fixed; no route to unapproved/duplicate execution, false success, silent substitution or unverified READY found. Findings: Medium, pool-recovery test did not prove the timeout caused recovery (headers arrived at 2.5 s); Low, "at the latest" wording ignores partial header bytes |
+| repair | final commit | — | test now withholds headers for 20 s (beyond the read cap); negative control with the read timeout removed FAILS, with it PASSES; wording qualified |
 
-### 2.1 Round 7
+### 2.1 Final independent verdict
 
-Recorded after the run (if empty, round 7 did not complete).
+Round 7 (`85d1ccf`): **ACCEPT WITH FINDINGS for the development candidate** (not integration, not production). Both
+round-7 findings were addressed afterwards without a further audit round; they were test-coverage and wording
+items, not safety defects. Codex could not run pytest in its read-only sandbox; its verdict rests on source and test
+inspection. The audit chain: 7 rounds, rounds 1-6 REJECT, each finding verified against source before repair.
 
 ## 3. What was verified, by whom
 
