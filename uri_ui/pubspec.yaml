@@ -68,6 +68,7 @@ flutter:
   # (loaded by lib/living/companion/orb_shader.dart; optional at runtime).
   shaders:
     - shaders/orb_core.frag
+    - shaders/orb_solar.frag
 
   assets:
     - assets/misty_forest_sikkim.jpg

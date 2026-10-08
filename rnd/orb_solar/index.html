@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>URI Solar Orb</title>
+<style>
+  :root {
+    --bg: #07050a;
+    --panel: #110c14;
+    --line: #2a1f2e;
+    --ink: #f2e6dc;
+    --dim: #9b8a86;
+    --hot: #ffb347;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 13px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    display: flex; flex-direction: column;
+  }
+  header {
+    padding: 14px 18px 10px; border-bottom: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+  }
+  h1 { font-size: 13px; margin: 0; letter-spacing: .14em; text-transform: uppercase; color: var(--hot); font-weight: 600; }
+  .grp { display: flex; gap: 6px; align-items: center; }
+  .grp > label { color: var(--dim); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  button {
+    background: #19121c; color: var(--ink); border: 1px solid var(--line);
+    padding: 5px 11px; border-radius: 5px; cursor: pointer;
+    font: inherit; font-size: 12px; letter-spacing: .04em;
+  }
+  button:hover { border-color: #5a3f2a; }
+  button.on { background: #35200f; border-color: var(--hot); color: var(--hot); }
+  input[type=range] { width: 110px; accent-color: var(--hot); }
+  #fps { color: var(--dim); margin-left: auto; font-variant-numeric: tabular-nums; }
+
+  main { flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 1px; background: var(--line); min-height: 0; }
+  .cell { background: #000; position: relative; display: flex; flex-direction: column; min-height: 0; }
+  .cap {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 2;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 12px; pointer-events: none;
+    background: linear-gradient(#000a, #0000);
+  }
+  .cap b { font-weight: 600; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 99px; border: 1px solid var(--line); color: var(--dim); letter-spacing: .08em; }
+  .badge.bad { color: #ff6b5e; border-color: #5e2320; background: #2a1110; }
+  canvas { flex: 1; width: 100%; height: 100%; display: block; min-height: 0; }
+
+  /* solo mode for clean single-prototype captures */
+  body[data-solo="A"] .cell:not([data-cell="A"]),
+  body[data-solo="B"] .cell:not([data-cell="B"]),
+  body[data-solo="C"] .cell:not([data-cell="C"]),
+  body[data-solo="D"] .cell:not([data-cell="D"]) { display: none; }
+  body[data-solo="A"] main, body[data-solo="B"] main,
+  body[data-solo="C"] main, body[data-solo="D"] main { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+
+  #diag {
+    border-top: 1px solid var(--line); padding: 7px 18px; color: var(--dim);
+    font-size: 11px; white-space: pre-wrap; max-height: 86px; overflow: auto;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>URI Solar Orb</h1>
+  <div class="grp">
+    <label>state</label>
+    <button data-state="idle" class="on">idle</button>
+    <button data-state="listening">listening</button>
+    <button data-state="thinking">thinking</button>
+    <button data-state="speaking">speaking</button>
+    <button data-state="acting">acting</button>
+  </div>
+  <div class="grp">
+    <label>time</label>
+    <button id="pause">pause</button>
+    <input id="speed" type="range" min="0.1" max="2" step="0.05" value="1" />
+    <span id="speedVal">1.00x</span>
+  </div>
+  <span id="fps">-- fps</span>
+</header>
+
+<main>
+  <div class="cell" data-cell="A">
+    <div class="cap"><b>A &middot; Solar Intelligence</b><span class="badge" data-badge="A">shader</span></div>
+    <canvas data-proto="A" data-radius="0.40"></canvas>
+  </div>
+  <div class="cell" data-cell="B">
+    <div class="cap"><b>B &middot; Ember Storm</b><span class="badge" data-badge="B">shader</span></div>
+    <canvas data-proto="B" data-radius="0.36"></canvas>
+  </div>
+  <div class="cell" data-cell="C">
+    <div class="cap"><b>C &middot; Magnetic Sun</b><span class="badge" data-badge="C">shader</span></div>
+    <canvas data-proto="C" data-radius="0.38"></canvas>
+  </div>
+  <div class="cell" data-cell="D">
+    <div class="cap"><b>D &middot; Solar Intelligence (refined)</b><span class="badge" data-badge="D">shader</span></div>
+    <canvas data-proto="D" data-radius="0.38"></canvas>
+  </div>
+</main>
+
+<pre id="diag"></pre>
+<script type="module">await import(`./app.js?v=${Date.now()}`);</script>
+</body>
+</html>
