@@ -308,6 +308,22 @@ void main() {
       expect(conv.workerUnresponsive, isFalse);
     });
 
+    test('nothing is sent while the worker is being replaced', () async {
+      final w1 = HardeningRuntime();
+      final gate = Completer<IntegratedRuntime?>();
+      final conv = OiConversation(w1, respawn: () => gate.future);
+      final restarting = conv.restartWorker();
+      await Future<void>.delayed(fast);
+      expect(conv.restarting, isTrue);
+      await conv.send('during restart');
+      expect(w1.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
+      final w2 = HardeningRuntime(name: 'w2');
+      gate.complete(w2);
+      await restarting;
+      await conv.send('after restart');
+      expect(w2.commands.last['command'], 'oi_turn');
+    });
+
     test('a failed restart says so', () async {
       final conv = OiConversation(HardeningRuntime(), respawn: () async => null);
       await conv.restartWorker();

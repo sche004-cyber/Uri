@@ -283,7 +283,7 @@ def test_no_turn_starts_until_the_host_has_acted_on_a_restart(fake, tmp_path):  
     with pytest.raises(BridgeRefused):
         b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
     b._host_report = lambda: (rep, True)
-    rep.update(last_request={"id": "req-1", "result": "DONE", "done_state": "READY"})
+    rep.update(last_request={"id": "req-1", "result": "DONE", "done_state": "READY"}, requests={"req-1": "DONE"})
     fake.scripts.append({"chunks": [("answer", "ok")], "finish": "stop"})
     assert b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})["accepted"]
     b.wait(10)
@@ -298,6 +298,38 @@ def test_restart_gate_opens_when_the_host_is_gone(fake, tmp_path):  # noqa: F811
     assert b._restart_pending()
     state["alive"] = False
     assert not b._restart_pending()
+
+
+def test_the_gate_follows_the_latest_request_and_ignored_requests_open_it(fake, tmp_path):  # noqa: F811
+    rep = {"schema": BH.REPORT_SCHEMA, "state": "READY", "requests": {}}
+    ids = iter(["a", "b", "c"])
+    b, _, _ = make(fake, tmp_path, FakeCore())
+    b._host_report = lambda: (rep, True)
+    b._host_request = lambda a: {"id": next(ids)}
+    b.handle("brain_restart", {"command": "brain_restart", "action": "stop"})       # "a" overwritten before read
+    b.handle("brain_restart", {"command": "brain_restart", "action": "start"})      # "b"
+    assert b._restart_pending()
+    rep["requests"] = {"b": "DONE"}
+    assert not b._restart_pending()
+    b.handle("brain_restart", {"command": "brain_restart", "action": "restart"})    # "c"
+    rep["requests"] = {"b": "DONE", "c": "IGNORED_INVALID_OR_STALE"}
+    assert not b._restart_pending()
+
+
+def test_host_liveness_needs_positive_evidence(monkeypatch):
+    import psutil
+    now = time.time()
+
+    def denied(pid):
+        raise psutil.AccessDenied(pid)
+    monkeypatch.setattr(psutil, "Process", denied)
+    assert BH.host_alive({"host_pid": 1, "updated_at": now - 5}, now=now) is True       # fresh heartbeat
+    assert BH.host_alive({"host_pid": 1, "updated_at": now - 500}, now=now) is False    # stale heartbeat
+
+    def gone(pid):
+        raise psutil.NoSuchProcess(pid)
+    monkeypatch.setattr(psutil, "Process", gone)
+    assert BH.host_alive({"host_pid": 1, "updated_at": now}, now=now) is False
 
 
 def test_restart_refused_while_a_turn_runs_and_status_stays_open(fake, tmp_path):  # noqa: F811

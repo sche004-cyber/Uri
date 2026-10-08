@@ -348,7 +348,7 @@ class OiConversation extends ChangeNotifier {
   /// Sends the user's words as a turn. Never a decision, whatever it says.
   Future<void> send(String text) async {
     final t = text.trim();
-    if (t.isEmpty || busy) return;
+    if (t.isEmpty || busy || restarting) return; // nothing goes to a worker that is being replaced
     messages.add(OiMessage(role: OiRole.user, text: t));
     lastError = null;
     _sendingSince = DateTime.now();

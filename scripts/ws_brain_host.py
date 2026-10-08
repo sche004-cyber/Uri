@@ -34,8 +34,8 @@ if str(REPO) not in sys.path:
 
 from uri_operational_intelligence import gpu_lease as G  # noqa: E402
 from uri_operational_intelligence import runtime_v1 as R  # noqa: E402
-from uri_operational_intelligence.brain_health import (ACTIONS, REPORT_FILE, REPORT_SCHEMA, REQUEST_FILE,  # noqa: E402
-                                                       REQUEST_SCHEMA, write_host_request)
+from uri_operational_intelligence.brain_health import (ACTIONS, HOST_HEARTBEAT_S, REPORT_FILE,  # noqa: E402
+                                                       REPORT_SCHEMA, REQUEST_FILE, REQUEST_SCHEMA, write_host_request)
 REQUEST_MAX_AGE_S = 120.0
 
 # Calibration: one fixed decode right after READY. The threshold is the accepted OI value (perf_monitor
@@ -77,6 +77,8 @@ class Host:
         self.last_contended = None      # monotonic time the GPU was last seen CONTENDED (quiet window)
         self.loaders = []               # (thread, manager) of loads stopped before they finished (Codex H-r1 F1)
         self.stop_requested = False     # a stop request was consumed (possibly inside a wait or a load)
+        self._write_lock = threading.Lock()
+        self._done = threading.Event()
         seen = G.last_contention(lease_dir)       # also seen by an earlier host or another URI GPU workload
         if seen is not None and 0 <= now() - seen < QUIET_S:
             self.last_contended = time.monotonic() - (now() - seen)
@@ -93,12 +95,24 @@ class Host:
         self.write()
 
     def write(self):
-        for d in self.report_dirs:
-            try:
-                d.mkdir(parents=True, exist_ok=True)
-                R._atomic_json(d / REPORT_FILE, self.report)
-            except OSError:
-                pass
+        with self._write_lock:            # the load thread reports too
+            for d in self.report_dirs:
+                try:
+                    d.mkdir(parents=True, exist_ok=True)
+                    R._atomic_json(d / REPORT_FILE, self.report)
+                except OSError:
+                    pass
+
+    def _heartbeat(self):
+        """The report is rewritten at least every HOST_HEARTBEAT_S, whatever the host is doing (liveness evidence)."""
+        while not self._done.wait(HOST_HEARTBEAT_S):
+            self.report["heartbeat_at"] = round(self.now(), 3)
+            self.write()
+
+    def record_request(self, rid, result):
+        reqs = dict(self.report.get("requests") or {})
+        reqs[rid] = result
+        self.report["requests"] = dict(list(reqs.items())[-16:])
 
     # ---- control --------------------------------------------------------------------------------------------
     def should_exit(self):
@@ -119,10 +133,12 @@ class Host:
         self.last_request_id = rid
         age = self.now() - float(req.get("requested_at") or 0)
         if req.get("action") not in ACTIONS or not isinstance(rid, str) or not (0 <= age <= REQUEST_MAX_AGE_S):
+            self.record_request(rid, "IGNORED_INVALID_OR_STALE")
             self.report["last_request"] = {"id": rid, "action": req.get("action"), "result": "IGNORED_INVALID_OR_STALE",
                                            "t": round(self.now(), 3)}
             self.write()
             return None
+        self.record_request(rid, "ACCEPTED")
         self.report["last_request"] = {"id": rid, "action": req["action"], "result": "ACCEPTED", "t": round(self.now(), 3)}
         self.write()
         if req["action"] == "stop":
@@ -136,6 +152,7 @@ class Host:
         if lr.get("result") == "ACCEPTED":
             lr.update(result="DONE", done_state=self.report.get("state"), t_done=round(self.now(), 3))
             self.report["last_request"] = lr
+            self.record_request(lr.get("id"), "DONE")
             self.write()
 
     # ---- GPU ------------------------------------------------------------------------------------------------
@@ -323,6 +340,7 @@ class Host:
 
     # ---- main loop ------------------------------------------------------------------------------------------
     def run(self):
+        threading.Thread(target=self._heartbeat, name="host-heartbeat", daemon=True).start()
         try:
             if not self.acquire_lease():
                 self.set("STOPPED", detail="EXIT_BEFORE_LEASE")
@@ -363,6 +381,7 @@ class Host:
             self.release_lease("host exit", at_exit=True)
             self.set("STOPPED", detail="HOST_EXIT", explain="The Brain host has exited.")
             self.finish_request()
+            self._done.set()
             self.stop_file.unlink(missing_ok=True)
         return 0
 

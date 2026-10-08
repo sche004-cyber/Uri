@@ -29,6 +29,10 @@ REPORT_SCHEMA = "uri.ws.brain_host.v1"
 REQUEST_SCHEMA = "uri.ws.brain_request.v1"
 REPORT_FILE, REQUEST_FILE = "brain_host.json", "brain_request.json"
 ACTIONS = ("restart", "stop", "start")
+# The Brain host rewrites its report at least this often (heartbeat). A report older than HOST_STALE_S whose process
+# cannot be inspected is evidence of a dead host; a fresh one is evidence of a live host.
+HOST_HEARTBEAT_S = 15.0
+HOST_STALE_S = 90.0
 
 READY, BUSY, DEGRADED, UNAVAILABLE, RECOVERING = "READY", "BUSY", "DEGRADED", "UNAVAILABLE", "RECOVERING"
 HOST_RECOVERING = {"STARTING", "LOADING", "CALIBRATING", "RELEASE_WAIT", "STOPPING", "STARTING_HOST"}
@@ -153,14 +157,24 @@ def read_host_report(report_dir) -> tuple[dict | None, bool]:
         return None, False
     if not isinstance(rep, dict) or rep.get("schema") != REPORT_SCHEMA:
         return None, False
-    alive = False
+    return rep, host_alive(rep)
+
+
+def host_alive(rep, now=None) -> bool:
+    """Positive evidence only (Codex H-r3): the process is gone or its start time differs (pid reused) means dead;
+    a successful inspection means alive. When the process cannot be inspected (access denied, transient error), the
+    heartbeat decides: fresh means alive, stale means dead."""
     try:
         import psutil
         p = psutil.Process(int(rep.get("host_pid")))
-        alive = p.is_running() and abs(p.create_time() - float(rep.get("host_started") or 0)) < 5.0
-    except Exception:
-        alive = False
-    return rep, alive
+        return p.is_running() and abs(p.create_time() - float(rep.get("host_started") or 0)) < 5.0
+    except (ImportError, ValueError, TypeError):
+        pass
+    except Exception as exc:
+        if type(exc).__name__ in ("NoSuchProcess", "ZombieProcess"):
+            return False
+    beat = max(float(rep.get("updated_at") or 0), float(rep.get("heartbeat_at") or 0))
+    return ((now or time.time()) - beat) < HOST_STALE_S
 
 
 def write_host_request(report_dir, action) -> dict:

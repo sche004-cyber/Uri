@@ -155,10 +155,10 @@ class IntegratedTurns:
         if r is None:
             return False
         host, alive = self._host()
-        lr = (host or {}).get("last_request") or {}
+        result = ((host or {}).get("requests") or {}).get(r["id"])
         done = (time.time() > r["until"]
-                or (host is not None and not alive)
-                or (lr.get("id") == r["id"] and lr.get("result") in ("DONE", "IGNORED_INVALID_OR_STALE")))
+                or (host is not None and alive is False)
+                or result in ("DONE", "IGNORED_INVALID_OR_STALE"))
         if done:
             self._restart = None
         return not done
@@ -423,8 +423,9 @@ class IntegratedTurns:
             raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
         now = time.time()
         req = self._host_request(action)
-        if action in ("restart", "stop"):
-            self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
+        # The gate follows the LATEST control request (Codex H-r3): a later request overwrites the request file, so
+        # an earlier one may never be read; the host acts on the latest and marks its id.
+        self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
         return {"requested": action, "request_id": req.get("id"), "host_state": host.get("state")}
 
     def _oi_turn_status(self, _c):
