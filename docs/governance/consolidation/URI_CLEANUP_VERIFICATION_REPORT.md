@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **44 passed** (25 original + 9 after Codex round 1 + 7 after round 2 + 3 after round 3). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **45 passed** (25 original + 9, 7, 3 and 1 added after Codex rounds 1-4). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -122,6 +122,19 @@ classified correctly. It found:
 
 3 new tests (44 total, all passing). Negative control: all 3 fail on the round-2 checker. Live run: unchanged (0
 contamination in normal mode; 6 active transitional findings in strict mode). Round 4 result: see §2d.
+
+## 2d. Codex review round 4: REJECT, then repaired
+
+Round 4 confirmed Z-1..Z-3 repaired. It confirmed no regression: the live legacy task and processes stay
+TRANSITIONAL_LEGACY, and the authorized `-File`, `-Command`, encoded and relative forms stay AUTHORIZED. A `..`
+traversal out of the authorized root classifies QUARANTINED. One new finding:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| W-1 | High | An executable inside a donor root with no URI-looking name (`D:/URI-preservation/server.exe --port 9100`) was filtered out before classification, in tasks, Run keys, startup shortcuts, processes and off-range listeners | Anything that launches from or mentions any manifest root is always evaluated. Listeners are evaluated on owner command line and image path. A process is reported when it owns an evaluated listener |
+
+1 new test (45 total, all passing); it fails on the round-3 checker (negative control). Live run unchanged. Round 5
+result: see §2e.
 
 ## 3. Integrity and recoverability
 

@@ -308,6 +308,19 @@ def test_redact_never_raises_on_odd_input():
     assert "abc12345" not in rac.redact(b"token=abc12345")
 
 
+# --- regression for the Codex adversarial review round 4 (2026-10-08, verdict REJECT) ------------------------------
+def test_any_executable_inside_a_manifest_root_is_evaluated_without_a_uri_hint():
+    cmd = "D:/URI-preservation/server.exe --port 9100"
+    for s in (snap(scheduled_tasks=[{"name": r"\Plain", "enabled": True, "action": cmd}]),
+              snap(run_keys=[{"name": "HKCU:Run/Plain", "value": cmd}]),
+              snap(shortcuts=[{"path": r"C:\Startup\plain.lnk", "target": cmd, "startup": True}]),
+              snap(listeners=[{"address": "0.0.0.0", "port": 9100, "pid": 9, "image": "D:/URI-preservation/server.exe", "cmdline": ""}]),
+              snap(processes=[{"pid": 9, "ppid": 1, "image": "D:/URI-preservation/server.exe", "cmdline": cmd}],
+                   listeners=[{"address": "0.0.0.0", "port": 9100, "pid": 9, "image": "D:/URI-preservation/server.exe", "cmdline": cmd}])):
+        rep = verdict(s)
+        assert rep["verdict"] == "CONTAMINATED" and "DONOR_ONLY" in classes(rep), s
+
+
 def test_extended_length_prefix_does_not_change_classification():
     cmd = r"python \\?\C:\Users\cheta\Development\uri-agent\scripts\run_uri_server.py --port 8000"
     assert rac.classify(cmd, M)[0] == "TRANSITIONAL_LEGACY"

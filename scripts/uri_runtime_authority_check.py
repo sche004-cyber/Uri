@@ -359,28 +359,44 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
         f.update(extra or {})
         findings.append(f)
 
+    roots = manifest["roots"]
+
+    def refs_root(text):
+        """True when the command launches from, or mentions, ANY manifest root (any classification)."""
+        if not text:
+            return False
+        return _root_for(text, roots) is not None or any(_root_containing(tg, roots) or _root_containing(ex, roots)
+                                                          for ex, tg in launch_targets(text))
+
     for t in snapshot.get("scheduled_tasks", []):
-        if _autostart_relevant(t["action"]) or URI_HINT.search(t["name"]):
+        if _autostart_relevant(t["action"]) or URI_HINT.search(t["name"]) or refs_root(t["action"]):
             add("scheduled_task", t["name"], t["action"], t.get("enabled", True))
     for r in snapshot.get("run_keys", []):
-        if _autostart_relevant(r["value"]):
+        if _autostart_relevant(r["value"]) or refs_root(r["value"]):
             add("run_key", r["name"], r["value"], True)
     for s in snapshot.get("shortcuts", []):
-        if URI_HINT.search(s["target"]) or URI_HINT.search(s["path"]) or (s.get("startup") and _autostart_relevant(s["target"])):
+        if URI_HINT.search(s["target"]) or URI_HINT.search(s["path"]) or refs_root(s["target"]) or                 (s.get("startup") and _autostart_relevant(s["target"])):
             add("startup_shortcut" if s.get("startup") else "shortcut", s["path"], s["target"], bool(s.get("startup")))
     uri_ports = set(range(manifest["ports"]["uri_range"][0], manifest["ports"]["uri_range"][1] + 1))
     model_ports = set(manifest["ports"].get("model_ports", []))
-    listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if _is_python_like(lst.get("cmdline") or lst.get("image") or "")}
+    def listener_text(lst):
+        return " ".join(x for x in (lst.get("cmdline") or "", lst.get("image") or "") if x)
+
+    def listener_relevant(lst):
+        text = listener_text(lst)
+        return (lst["port"] in uri_ports or lst["port"] in model_ports or _is_python_like(text) or refs_root(text))
+
+    listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if listener_relevant(lst)}
     for p in snapshot.get("processes", []):
         cmd = p["cmdline"]
         if AGENT_SHELL.search(cmd):
             continue
-        if RUNTIME_HINT.search(cmd) or (p.get("pid") in listener_pids and _is_python_like(cmd)):
+        if RUNTIME_HINT.search(cmd) or p.get("pid") in listener_pids:
             add("process", f"pid {p['pid']}", cmd, True)
     for lst in snapshot.get("listeners", []):
         text = lst.get("cmdline") or lst.get("image") or ""
-        # URI and model ports always; any other port only when an interpreter/uvicorn owns it (URI-capable service).
-        if lst["port"] in uri_ports or lst["port"] in model_ports or _is_python_like(text):
+        # URI and model ports always; any other port when an interpreter/uvicorn owns it or it runs from a manifest root.
+        if listener_relevant(lst):
             add("listener", f"{lst['address']}:{lst['port']}", text or "<unknown owner>", True,
                 {"address": lst["address"], "port": lst["port"]})
     prefs = snapshot.get("ui_preferences")
