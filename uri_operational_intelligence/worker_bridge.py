@@ -61,6 +61,26 @@ class BridgeRefused(RuntimeError):
         self.code = code
 
 
+class _Rerouted:
+    """The draft desk handed its turn to the ordinary path (the Brain said the message is not a draft edit). The
+    turn already started, so the orchestrator's second `turn.started` is dropped and its `turn.routed` says where it
+    came from: the UI sees one turn, re-routed, with one `turn.finished`."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    @property
+    def events(self):
+        return self.inner.events
+
+    def emit(self, turn_id, type_, **data):
+        if type_ == "turn.started":
+            return None
+        if type_ == "turn.routed":
+            data.setdefault("rerouted_from", "draft")
+        return self.inner.emit(turn_id, type_, **data)
+
+
 def _is_uuid(value) -> bool:
     try:
         return isinstance(value, str) and str(uuid.UUID(value)) == value.lower()
@@ -189,6 +209,7 @@ class IntegratedTurns:
 
         def ordinary(sink):
             out = self.o.handle_turn(plain, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id)
+            out.events = getattr(sink, "events", out.events)
             self._remember(turn_id, session_id, plain, out.core, out.status)
             answer = (out.answer or {}).get("text")
             self._record_history(session_id, plain, answer if out.status in ("ok", "incomplete") else None)
@@ -200,7 +221,7 @@ class IntegratedTurns:
                 intent = self.desk.classify(plain, session_id) if depth != "deep" else None
                 if intent is not None and intent.is_text_task:
                     out = self.desk.handle(turn_id, text, session_id, intent, inp, sink,
-                                           fallback=lambda: dict(ordinary(sink).__dict__, delegated=True))
+                                           fallback=lambda: dict(ordinary(_Rerouted(sink)).__dict__, delegated=True))
                     if not out.get("delegated"):
                         cur = (out.get("draft") or {}).get("current") or {}
                         note = ("[Draft version %s]\n%s" % (cur.get("n"), cur.get("text", "")))[:2000] if cur \

@@ -60,6 +60,37 @@ def _tokens(s):
     return re.findall(r"[a-z0-9]+(?:'[a-z]+)?", _fold(s))
 
 
+_SCALES = {"hundred": 100, "thousand": 1000, "lakh": 100000, "crore": 10000000}
+
+
+def _phrase_value(toks, i):
+    """Parse an English number phrase starting at toks[i] ("one hundred and five", "eighty five thousand").
+    Returns (value, next_index, word_count) or None."""
+    total, cur, j, used = 0, 0, i, 0
+    while j < len(toks):
+        w = toks[j]
+        if w in _UNITS:
+            cur += _NUMWORD[w]
+        elif w in _TENS:
+            cur += _TENS[w]
+        elif w in _SCALES and (cur or total):
+            if w == "hundred":
+                cur = (cur or 1) * 100
+            else:
+                total += (cur or 1) * _SCALES[w]
+                cur = 0
+        elif w == "and" and used and j + 1 < len(toks) and toks[j + 1] in _NUMWORD and toks[j + 1] not in _SCALES:
+            j += 1
+            continue
+        else:
+            break
+        used += 1
+        j += 1
+    if not used:
+        return None
+    return total + cur, j, used
+
+
 def canonical_numbers(s) -> set:
     """All numbers mentioned in s, as ints (digits, number words incl. 'twenty-five', ordinals, Hindi words)."""
     out = set()
@@ -70,9 +101,10 @@ def canonical_numbers(s) -> set:
     i = 0
     while i < len(toks):
         w = toks[i]
-        if w in _TENS and i + 1 < len(toks) and toks[i + 1] in _NUMWORD and _NUMWORD[toks[i + 1]] < 10:
-            out.add(_TENS[w] + _NUMWORD[toks[i + 1]])
-            i += 2
+        ph = _phrase_value(toks, i) if (w in _UNITS or w in _TENS) else None
+        if ph and ph[2] > 1:                        # "one hundred and five", "twenty five", "eighty five thousand"
+            out.add(ph[0])
+            i = ph[1]
             continue
         if w in _NUMWORD and w not in ("one",):     # "one" is too often a pronoun ("the one who ...")
             out.add(_NUMWORD[w])
@@ -188,9 +220,13 @@ def check_meaning_preserved(original, corrected) -> list:
     lost += sorted(n for n in a["names"] if n not in bwords)
     added = sorted(str(x) for x in (b["numbers"] - a["numbers"]) | (b["months"] - a["months"]) |
                    (b["weekdays"] - a["weekdays"]))
+    awords = set(_tokens(original))
+    added_names = sorted(n for n in b["names"] if n not in awords)
     flags = []
     if lost:
         flags.append(_flag("MEANING_CHANGED", "error", "missing after correction: " + ", ".join(lost)))
+    if added_names:
+        flags.append(_flag("MEANING_CHANGED", "error", "name added by the correction: " + ", ".join(added_names)))
     if added:
         flags.append(_flag("NEW_DETAIL", "review", "added by the correction: " + ", ".join(added)))
     return flags
@@ -206,6 +242,31 @@ def check_new_details(text, known_text) -> list:
     new += sorted((a["months"] - k["months"]) | (a["weekdays"] - k["weekdays"]))
     new += sorted(n for n in a["names"] if n not in kwords)
     return [_flag("NEW_DETAIL", "review", "not in your words: " + ", ".join(new))] if new else []
+
+
+def _details(text):
+    p = protected_tokens(text)
+    return ({str(x) for x in p["numbers"]} | p["months"] | p["weekdays"] | p["relative"] | p["emails"] | p["names"])
+
+
+def _covered(detail, texts):
+    return any(t and (_phrase_present(detail, t) or detail in _tokens(t)) for t in texts)
+
+
+def check_user_details(user_words, text, dropped_ok=()) -> list:
+    """Independent of what the model reports: numbers, dates, days and mid-sentence names in the user's words must
+    appear in the draft, unless the user corrected or excluded them."""
+    have = {str(x) for x in canonical_numbers(text)} | set(_tokens(text))
+    missing = sorted(d for d in _details(user_words) if d not in have and not _covered(d, dropped_ok))
+    return [_flag("USER_DETAIL_MISSING", "review", "from your words, not in the draft: " + ", ".join(missing))] if missing else []
+
+
+def check_details_kept(old_text, new_text, dropped_ok=()) -> list:
+    """Revision: numbers, dates, days and names of the previous version that disappeared, unless the user's
+    instruction mentioned them or they were corrected/excluded."""
+    have = {str(x) for x in canonical_numbers(new_text)} | set(_tokens(new_text))
+    gone = sorted(d for d in _details(old_text) if d not in have and not _covered(d, dropped_ok))
+    return [_flag("DETAIL_REMOVED", "review", "no longer in the draft: " + ", ".join(gone))] if gone else []
 
 
 def check_correction_accounted(cues, facts, clarification) -> list:

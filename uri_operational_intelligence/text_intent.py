@@ -81,6 +81,21 @@ _FOREIGN_OBJECT = re.compile(
     r"\b(?:files?|folders?|directory|inbox|mailbox|my emails|calendar|meeting|reminders?|memory|memories|settings?|"
     r"code|bug|function|repo(?:sitory)?|script|app|program|database|spreadsheet|sheet|account|password|"
     r"brain|model|harness)\b", re.I)
+# A chained action anywhere in the request ("... and email the principal"). Coordination inside dictated content
+# ("ask the parents to sign and send the form") is an infinitive ("to <verb> and send") and is not an instruction to URI.
+_CHAINED = re.compile(r"\b(?:and|then|also|after that|afterwards|&)\s+(?:please\s+|also\s+|then\s+)*(?:send|email|e-mail|"
+                      r"mail|forward|save|print|upload|share|post|publish|attach|schedule|remind me|remember)\b", re.I)
+
+
+def _core_only(t: str) -> bool:
+    if _CORE_ONLY.search(t):
+        return True
+    for m in _CHAINED.finditer(t):
+        if not re.search(r"\bto\s+[\w-]+\s*$", t[:m.start()], re.I):
+            return True
+    return False
+
+
 _CODE = re.compile(r"\b(?:code|bug|function|stack ?trace|compile|repo(?:sitory)?|python|flutter|script)\b", re.I)
 
 _UNDO = re.compile(r"^\s*(?:(?:uri|ok|okay|no|please)[,!]?\s+)*(?:undo|revert|roll back|rollback|go back|take back|"
@@ -134,6 +149,11 @@ _ROLE_REF = {"subject": re.compile(r"\bsubject(?: line)?\b", re.I),
 _GLOBAL = re.compile(r"\b(?:it|whole|entire|overall|everything|throughout|all (?:the )?paragraphs|the (?:letter|email|"
                      r"draft|note|notice|document|text|message|circular|report)|tone|language|wording|style|"
                      r"isko|isse|poora|pura)\b", re.I)
+_EDIT_VERB = re.compile(r"\b(?:make|rewrite|re-write|rephrase|reword|change|shorten|lengthen|expand|simplify|soften|"
+                        r"polish|improve|fix|correct|use|tighten|condense|formali[sz]e|tone (?:it )?down|redo|revise|"
+                        r"karo|kar do|kijiye|rakho)\b", re.I)
+_KEEP_REST = re.compile(r"\b(?:keep|leave)\b.{0,40}\b(?:else|rest|same|as it is|as is|unchanged|untouched)\b", re.I)
+_CLAUSE_SPLIT = re.compile(r"[,;.!?]+|\b(?:and|but|also|then)\b", re.I)
 _PHRASE_SWAP = re.compile(
     r"(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\s+[\"'“‘]?(.{2,120}?)[\"'”’]?\s*[.,;]\s*(?:instead\s+)?(?:say|write|use|put)|"
     r"replace\s+[\"'“‘]?(.{2,120}?)[\"'”’]?\s+with\b|"
@@ -184,11 +204,17 @@ def targets_for(instruction: str) -> dict:
         p = next((g for g in m.groups() if g), None)
         if p:
             phrases.append(p.strip(" \"'“”‘’"))
-    # "it"/"the letter"/"tone" make the edit whole-document unless the only such word is inside a paragraph phrase.
-    stripped = _PARA_REF.sub(" ", instruction)
-    for rx in _ROLE_REF.values():
-        stripped = rx.sub(" ", stripped)
-    is_global = bool(_GLOBAL.search(stripped)) or not (body or roles or phrases)
+    # Explicit parts win. The edit is whole-document only when some clause asks for an edit of the whole ("make it
+    # more diplomatic") without naming a part; "keep everything else the same" never widens it.
+    is_global = not (body or roles or phrases)
+    for clause in _CLAUSE_SPLIT.split(instruction):
+        if not clause or not clause.strip() or _KEEP_REST.search(clause):
+            continue
+        if _PARA_REF.search(clause) or any(rx.search(clause) for rx in _ROLE_REF.values()) or \
+                any(p.lower() in clause.lower() for p in phrases):
+            continue
+        if _GLOBAL.search(clause) and _EDIT_VERB.search(clause):
+            is_global = True
     return {"body": sorted(set(body)), "roles": sorted(set(roles)), "phrases": phrases, "global": is_global}
 
 
@@ -203,7 +229,7 @@ def classify(text: str, *, has_draft: bool) -> TextIntent:
                 return TextIntent(kind, ["draft_operation"], instruction=t)
     if T.triage(t).kind == T.TRIVIAL:
         return TextIntent(NONE, ["trivial"])
-    if _CORE_ONLY.search(head):
+    if _core_only(t):
         return TextIntent(NONE, ["core_only_request"])
     if _CODE.search(head) and not _DRAFT_NEW.match(t):
         return TextIntent(NONE, ["code_work"])

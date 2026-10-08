@@ -165,7 +165,10 @@ class DraftDesk:
     def classify(self, text, session_id) -> TX.TextIntent:
         d = self.active(session_id)
         intent = TX.classify(text, has_draft=d is not None and d.current is not None)
-        if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in ("not_a_text_task", "foreign_object"):
+        answers = ("not_a_text_task", "foreign_object")
+        if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
+            answers += ("trivial",)            # "yes" / "no" / "okay" answer an open question
+        if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers:
             if d is not None and d.pending_question:
                 return TX.TextIntent(TX.REVISE, ["answer_to_clarification"], instruction=text,
                                      targets=TX.targets_for(text))
@@ -338,7 +341,8 @@ class DraftDesk:
 
     # ---- create ---------------------------------------------------------------------------------------------
     def _create(self, turn_id, text, interpreted, session_id, intent, inp, cues, emit):
-        pend = self.pending_new.pop(session_id, None) if intent.reasons[:1] == ["answer_to_clarification"] else None
+        # Kept until a draft is created: a Brain failure or a cancel must not lose the user's original request.
+        pend = self.pending_new.get(session_id) if intent.reasons[:1] == ["answer_to_clarification"] else None
         request = interpreted
         source_words = interpreted
         original = text
@@ -371,10 +375,13 @@ class DraftDesk:
         facts = _clean_facts(data.get("facts"))
         exclusions = _clean_list(data.get("exclusions"))
         body_text = DS.render(blocks)
+        superseded = [s for f in facts for s in f["superseded"]]
         flags = (V.check_facts(facts, body_text, source_words) + V.check_exclusions(exclusions, body_text)
+                 + V.check_user_details(source_words, body_text, superseded + exclusions)
                  + V.check_correction_accounted(cues, facts, None) + V.check_new_details(body_text, source_words)
                  + V.check_uncertain(inp.uncertain, body_text))
         missing = sorted(set(_clean_list(data.get("missing"))) | set("[%s]" % p for p in V.placeholders(body_text)))
+        self.pending_new.pop(session_id, None)
         v = draft.push(blocks=blocks, facts=facts, exclusions=exclusions, missing=missing, op="created",
                        instruction=text, summary=str(data.get("summary") or "Draft created.")[:300],
                        changed=[b.id for b in blocks], removed=(), flags=flags)
@@ -398,6 +405,15 @@ class DraftDesk:
             user["note"] = "The instruction is the user's answer to your question."
         if cues and mode != "correct":
             user["self_correction_cues"] = cues[:4]
+        allowed = None
+        if mode == "revise":
+            allowed, unresolved = _allowed_ids(cur, intent.targets)
+            if unresolved:
+                question = "I could not find %s in the draft. Which part should I change?" % " or ".join(unresolved[:2])
+                d.pending_question = question
+                emit("draft.clarify", question=question, draft=d.to_dict())
+                self._say(emit, question)
+                return {"status": "needs_user", "question": question}
         system = EDIT_SYSTEM + ("\n" + CORRECT_RULE if mode == "correct" else "\n" + REWRITE_RULE if mode == "rewrite" else "")
         data, metrics = self._call(turn_id, system, user, EDIT_SCHEMA, "edit", MAX_EDIT_TOKENS, emit)
         action = data.get("action")
@@ -409,7 +425,6 @@ class DraftDesk:
             emit("draft.clarify", question=question, draft=d.to_dict())
             self._say(emit, question, metrics=metrics)
             return {"status": "needs_user", "question": question}
-        allowed = _allowed_ids(cur, intent.targets) if mode == "revise" else None
         edits = [e for e in (data.get("edits") or []) if isinstance(e, dict)]
         blocks, applied, dropped = DS.apply_edits(d, cur.blocks, edits, allowed_ids=allowed)
         changed, removed = DS.diff_ids(cur.blocks, blocks)
@@ -428,6 +443,8 @@ class DraftDesk:
         if mode == "correct":
             flags += V.check_meaning_preserved(old_text, new_text)
         else:
+            gone = [s for f in facts for s in f["superseded"]] + exclusions
+            flags += V.check_details_kept(old_text, new_text, gone + [interpreted])
             flags += V.check_new_details(new_text, known) + V.check_correction_accounted(
                 cues, _clean_facts(data.get("fact_updates")), None)
         flags += V.check_uncertain(inp.uncertain, new_text)
@@ -445,24 +462,36 @@ class DraftDesk:
         return {"status": "ok", "draft": snap}
 
 
+_SHORT_ANSWER = re.compile(r"^\s*(?:yes|yeah|yep|yup|no|nope|nah|ok(?:ay)?|sure|haan|ha|nahi|theek hai)\b", re.I)
+_ORD_NAME = {0: "the first paragraph", 1: "the second paragraph", 2: "the third paragraph", 3: "the fourth paragraph",
+             4: "the fifth paragraph", -1: "the last paragraph"}
+
+
 def _allowed_ids(version, targets):
-    """Block ids the user named, or None when the instruction is about the whole document."""
+    """(block ids the user named, unresolved part names). ids is None for a whole-document instruction. A named part
+    that does not exist in the draft is reported as unresolved: URI asks instead of widening the edit."""
     if not targets or targets.get("global", True):
-        return None
+        return None, []
     body = version.body_ids()
-    ids = set()
+    ids, unresolved = set(), []
     for i in targets.get("body") or ():
         if -len(body) <= i < len(body):
             ids.add(body[i])
+        else:
+            unresolved.append(_ORD_NAME.get(i, "paragraph %d" % (i + 1)))
     for role in targets.get("roles") or ():
-        ids.update(b.id for b in version.blocks if b.role == role)
+        found = {b.id for b in version.blocks if b.role == role}
+        ids |= found
+        if not found:
+            unresolved.append("the " + role)
     for p in targets.get("phrases") or ():
         toks = [t for t in re.findall(r"[a-z0-9]+", p.lower()) if len(t) > 2]
-        for b in version.blocks:
-            low = b.text.lower()
-            if p.lower() in low or (toks and all(t in low for t in toks)):
-                ids.add(b.id)
-    return ids or None
+        found = {b.id for b in version.blocks
+                 if p.lower() in b.text.lower() or (toks and all(t in b.text.lower() for t in toks))}
+        ids |= found
+        if not found:
+            unresolved.append("'%s'" % p)
+    return ids, unresolved
 
 
 def _clean_list(items):

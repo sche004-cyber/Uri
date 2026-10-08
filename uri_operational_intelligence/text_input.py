@@ -92,7 +92,7 @@ def parse(envelope, text: str) -> TextInput:
     lang = t.get("language")
     if lang is not None and (not isinstance(lang, str) or not re.fullmatch(r"[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*", lang)):
         raise InputRejected("TRANSCRIPT_LANGUAGE")
-    unc = t.get("uncertain") or []
+    unc = t["uncertain"] if "uncertain" in t else []     # a supplied value must be a list (no coercion)
     if not isinstance(unc, list) or len(unc) > MAX_UNCERTAIN or not all(isinstance(u, str) and 0 < len(u) <= 200 and u in raw
                                                                      for u in unc):
         raise InputRejected("TRANSCRIPT_UNCERTAIN")
