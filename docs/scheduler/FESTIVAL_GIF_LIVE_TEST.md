@@ -3,7 +3,7 @@
 Driver: `scripts/scheduler_live_test.py` (real `python -m uri_scheduler.service run` process, real HTTP API, real
 scheduler clock — no manual tick, no injected time). Evidence: `docs/scheduler/evidence/<leg>/` (`journal.json`,
 `result.json`, `events.json`, `attempts.json`, `overview.json`, service logs, GIFs). State databases were moved out of the
-repository to `work/scheduler_evidence_state/` (git-ignored) to keep the commit small.
+repository to `C:\Users\cheta\Development\uri-scheduler-state\evidence_state` (outside the repository) to keep the commit small.
 
 ## 1. Acceptance criteria
 
@@ -40,8 +40,9 @@ creative content (written by `tests/scheduler/helpers/fake_claude.py`; its resea
 
 ### Leg B — `live_blocked_probe` (genuine scheduler + **REAL Claude CLI gate**) — BLOCKED AS EXPECTED
 
-Same driver, `--mode live --qualification probe --client-home work/scheduler_client_home` (an isolated, empty client
-profile). The task was persisted 29.5 s before due and triggered 0.85 s after due. The gate resolved the real native
+Same driver, `--mode live --qualification probe --client-home C:\Users\cheta\Development\uri-scheduler-state\client_home` (an isolated, empty client
+profile; at run time it lived at `work/scheduler_client_home` inside the worktree, as the journal's argv shows, and was
+moved outside the repository afterwards so that a future login's credential file can never be committed). The task was persisted 29.5 s before due and triggered 0.85 s after due. The gate resolved the real native
 executable (`…\@anthropic-ai\claude-code\bin\claude.exe`, version 2.1.287), ran `claude auth status` under the client home
 and got `loggedIn: false`. Result: occurrence `BLOCKED_HARNESS` / `NOT_AUTHENTICATED`, no attempt consumed, event
 `harness.unavailable` with recovery options and `substitution: none (no other or paid provider is ever used)`, automatic
@@ -53,7 +54,7 @@ The Claude CLI on this PC is not authenticated in any profile (owner profile: `O
 refreshed`; client profile: never logged in). Logging in is an owner action. Once done, run:
 
 ```
-python scripts/scheduler_live_test.py --evidence docs/scheduler/evidence/live_claude --mode live --qualification probe --client-home work/scheduler_client_home --lead-s 90
+python scripts/scheduler_live_test.py --evidence docs/scheduler/evidence/live_claude --mode live --qualification probe --client-home C:\Users\cheta\Development\uri-scheduler-state\client_home --lead-s 90
 ```
 
 L-AC3 (real Claude generation) and the live parts of L-AC5 therefore remain **unverified**. This affects the final verdict:
