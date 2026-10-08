@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui show FragmentProgram, FragmentShader;
 
 import 'package:flutter/scheduler.dart';
@@ -112,6 +113,31 @@ class CompanionParams {
     );
   }
 
+  /// The approval attention pulse, applied on top of a state's own values.
+  ///
+  /// [s] is 0..1 through one pulse cycle. It lifts exposure, flare and energy
+  /// together by a small amount, so the companion visibly "leans in" without
+  /// changing shape, colour or motion vocabulary. The amplitudes are small on
+  /// purpose: the pulse is a cue, the label "Needs your approval" is the
+  /// message.
+  CompanionParams withAttention(double s) {
+    final k = s.clamp(0.0, 1.0);
+    return CompanionParams(
+      energy: (energy + 0.08 * k).clamp(0.0, 1.0),
+      turbulence: turbulence,
+      flare: (flare + 0.16 * k).clamp(0.0, 1.0),
+      particles: particles,
+      focus: focus,
+      exposure: (exposure + 0.11 * k).clamp(0.5, 1.5),
+    );
+  }
+
+  /// One attention pulse cycle: a smooth 0..1..0 over [period] seconds.
+  static double attentionWave(double seconds, {double period = 2.8}) {
+    final x = (seconds / period) % 1.0;
+    return 0.5 - 0.5 * math.cos(2 * math.pi * x);
+  }
+
   @override
   bool operator ==(Object other) =>
       other is CompanionParams &&
@@ -156,32 +182,32 @@ class CompanionParams {
           particles: 0.28, focus: 0.85, exposure: 1.00,
         ),
         CompanionState.listening: CompanionParams(
-          energy: 0.36, turbulence: 0.14, flare: 0.14,
-          particles: 0.44, focus: 0.95, exposure: 1.08,
+          energy: 0.15, turbulence: 0.09, flare: 0.05,
+          particles: 0.18, focus: 0.95, exposure: 0.97,
         ),
         CompanionState.thinking: CompanionParams(
-          energy: 0.62, turbulence: 0.48, flare: 0.30,
-          particles: 0.52, focus: 0.70, exposure: 1.06,
+          energy: 0.30, turbulence: 0.46, flare: 0.04,
+          particles: 0.12, focus: 0.97, exposure: 0.84,
         ),
         CompanionState.speaking: CompanionParams(
-          energy: 0.74, turbulence: 0.34, flare: 0.62,
-          particles: 0.60, focus: 0.88, exposure: 1.10,
+          energy: 0.40, turbulence: 0.22, flare: 0.28,
+          particles: 0.40, focus: 0.92, exposure: 1.02,
         ),
         CompanionState.working: CompanionParams(
-          energy: 1.00, turbulence: 0.74, flare: 0.92,
-          particles: 1.00, focus: 0.55, exposure: 1.16,
+          energy: 0.56, turbulence: 0.24, flare: 0.36,
+          particles: 0.46, focus: 0.94, exposure: 1.05,
         ),
         CompanionState.awaitingApproval: CompanionParams(
-          energy: 0.44, turbulence: 0.10, flare: 0.20,
-          particles: 0.34, focus: 1.00, exposure: 1.04,
+          energy: 0.26, turbulence: 0.10, flare: 0.12,
+          particles: 0.24, focus: 0.98, exposure: 1.00,
         ),
         CompanionState.success: CompanionParams(
-          energy: 0.86, turbulence: 0.22, flare: 1.00,
-          particles: 0.86, focus: 0.98, exposure: 1.22,
+          energy: 0.70, turbulence: 0.18, flare: 0.70,
+          particles: 0.70, focus: 0.98, exposure: 1.12,
         ),
         CompanionState.error: CompanionParams(
-          energy: 0.58, turbulence: 0.95, flare: 0.44,
-          particles: 0.42, focus: 0.22, exposure: 0.92,
+          energy: 0.30, turbulence: 0.42, flare: 0.10,
+          particles: 0.16, focus: 0.40, exposure: 0.90,
         ),
       };
 
@@ -196,32 +222,32 @@ class CompanionParams {
           particles: 0.34, focus: 0.80, exposure: 1.00,
         ),
         CompanionState.listening: CompanionParams(
-          energy: 0.38, turbulence: 0.12, flare: 0.16,
-          particles: 0.46, focus: 0.96, exposure: 1.06,
+          energy: 0.16, turbulence: 0.10, flare: 0.05,
+          particles: 0.26, focus: 0.94, exposure: 0.98,
         ),
         CompanionState.thinking: CompanionParams(
-          energy: 0.60, turbulence: 0.42, flare: 0.34,
-          particles: 0.62, focus: 0.72, exposure: 1.05,
+          energy: 0.30, turbulence: 0.42, flare: 0.05,
+          particles: 0.24, focus: 0.97, exposure: 0.85,
         ),
         CompanionState.speaking: CompanionParams(
-          energy: 0.72, turbulence: 0.28, flare: 0.58,
-          particles: 0.58, focus: 0.90, exposure: 1.08,
+          energy: 0.42, turbulence: 0.22, flare: 0.28,
+          particles: 0.44, focus: 0.90, exposure: 1.02,
         ),
         CompanionState.working: CompanionParams(
-          energy: 0.95, turbulence: 0.66, flare: 0.86,
-          particles: 1.00, focus: 0.58, exposure: 1.14,
+          energy: 0.56, turbulence: 0.26, flare: 0.36,
+          particles: 0.56, focus: 0.93, exposure: 1.05,
         ),
         CompanionState.awaitingApproval: CompanionParams(
-          energy: 0.44, turbulence: 0.10, flare: 0.22,
-          particles: 0.38, focus: 1.00, exposure: 1.03,
+          energy: 0.28, turbulence: 0.10, flare: 0.12,
+          particles: 0.32, focus: 0.98, exposure: 1.00,
         ),
         CompanionState.success: CompanionParams(
-          energy: 0.88, turbulence: 0.20, flare: 1.00,
-          particles: 0.95, focus: 0.96, exposure: 1.20,
+          energy: 0.72, turbulence: 0.18, flare: 0.70,
+          particles: 0.80, focus: 0.96, exposure: 1.12,
         ),
         CompanionState.error: CompanionParams(
-          energy: 0.55, turbulence: 0.92, flare: 0.40,
-          particles: 0.40, focus: 0.20, exposure: 0.90,
+          energy: 0.30, turbulence: 0.40, flare: 0.10,
+          particles: 0.24, focus: 0.40, exposure: 0.90,
         ),
       };
 
@@ -236,32 +262,32 @@ class CompanionParams {
           particles: 0.30, focus: 0.55, exposure: 1.00,
         ),
         CompanionState.listening: CompanionParams(
-          energy: 0.32, turbulence: 0.16, flare: 0.18,
-          particles: 0.34, focus: 0.88, exposure: 1.05,
+          energy: 0.15, turbulence: 0.14, flare: 0.07,
+          particles: 0.24, focus: 0.80, exposure: 0.98,
         ),
         CompanionState.thinking: CompanionParams(
-          energy: 0.55, turbulence: 0.52, flare: 0.26,
-          particles: 0.42, focus: 0.45, exposure: 1.02,
+          energy: 0.28, turbulence: 0.46, flare: 0.05,
+          particles: 0.24, focus: 0.44, exposure: 0.85,
         ),
         CompanionState.speaking: CompanionParams(
-          energy: 0.62, turbulence: 0.26, flare: 0.60,
-          particles: 0.40, focus: 0.70, exposure: 1.08,
+          energy: 0.38, turbulence: 0.22, flare: 0.32,
+          particles: 0.34, focus: 0.72, exposure: 1.02,
         ),
         CompanionState.working: CompanionParams(
-          energy: 0.92, turbulence: 0.70, flare: 0.80,
-          particles: 0.60, focus: 0.40, exposure: 1.12,
+          energy: 0.50, turbulence: 0.28, flare: 0.38,
+          particles: 0.38, focus: 0.70, exposure: 1.05,
         ),
         CompanionState.awaitingApproval: CompanionParams(
-          energy: 0.40, turbulence: 0.14, flare: 0.22,
-          particles: 0.32, focus: 0.92, exposure: 1.04,
+          energy: 0.26, turbulence: 0.14, flare: 0.14,
+          particles: 0.28, focus: 0.88, exposure: 1.00,
         ),
         CompanionState.success: CompanionParams(
-          energy: 0.72, turbulence: 0.12, flare: 0.75,
-          particles: 0.45, focus: 1.00, exposure: 1.16,
+          energy: 0.60, turbulence: 0.12, flare: 0.60,
+          particles: 0.40, focus: 1.00, exposure: 1.10,
         ),
         CompanionState.error: CompanionParams(
-          energy: 0.50, turbulence: 0.88, flare: 0.30,
-          particles: 0.30, focus: 0.12, exposure: 0.88,
+          energy: 0.30, turbulence: 0.48, flare: 0.10,
+          particles: 0.22, focus: 0.30, exposure: 0.88,
         ),
       };
 }
@@ -410,11 +436,16 @@ class CompanionOrb extends StatefulWidget {
     this.radius,
     this.transition = const Duration(milliseconds: 900),
     this.fallback,
+    this.attention = false,
   });
 
   final CompanionIdentity identity;
   final CompanionState state;
   final double? radius;
+
+  /// Adds the gentle attention pulse (see [CompanionParams.withAttention]).
+  /// Used for `awaitingApproval`. Faded in and out, never switched.
+  final bool attention;
 
   /// How long the companion takes to settle into a new state.
   final Duration transition;
@@ -434,6 +465,7 @@ class _CompanionOrbState extends State<CompanionOrb>
   late CompanionParams _from;
   late CompanionParams _target;
   double _blend = 1;
+  double _attention = 0;
   Duration _lastTick = Duration.zero;
 
   @override
@@ -471,6 +503,10 @@ class _CompanionOrbState extends State<CompanionOrb>
       }
       final t = Curves.easeInOutCubic.transform(_blend);
       _current = _from.lerpTo(_target, t);
+      // The pulse fades in and out over about a second rather than appearing
+      // mid-cycle at full strength.
+      final goal = widget.attention ? 1.0 : 0.0;
+      _attention += (goal - _attention) * (1 - math.exp(-dt / 0.35));
     });
   }
 
@@ -490,9 +526,17 @@ class _CompanionOrbState extends State<CompanionOrb>
     if (effects.reducedEffects) {
       return widget.fallback ?? const SizedBox.expand();
     }
+    // Reduced motion holds the pulse at its midpoint: the companion still
+    // looks attentive, it just does not throb.
+    final wave = effects.reducedMotion
+        ? 0.5
+        : CompanionParams.attentionWave(_seconds);
+    final params = _attention > 0.001
+        ? _current.withAttention(wave * _attention)
+        : _current;
     return CompanionOrbFrame(
       identity: widget.identity,
-      params: _current,
+      params: params,
       seconds: seconds,
       radius: widget.radius,
       fallback: widget.fallback,
