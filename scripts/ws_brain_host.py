@@ -24,6 +24,7 @@ import argparse
 import json
 import os
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -101,14 +102,17 @@ class Host:
     def should_exit(self):
         return time.monotonic() >= self.deadline or self.stop_file.exists()
 
-    def take_request(self):
+    def take_request(self, only=None):
+        """The next unprocessed request, used once. With `only`, any other action is left for later."""
         path = self.report_dirs[0] / REQUEST_FILE
         try:
             req = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             return None
-        rid = req.get("id")
+        rid = req.get("id") if isinstance(req, dict) else None
         if not isinstance(req, dict) or req.get("schema") != REQUEST_SCHEMA or rid == self.last_request_id:
+            return None
+        if only is not None and req.get("action") != only:
             return None
         self.last_request_id = rid
         age = self.now() - float(req.get("requested_at") or 0)
@@ -190,7 +194,7 @@ class Host:
     def wait_or_request(self, seconds):
         end = time.monotonic() + seconds
         while time.monotonic() < end and not self.should_exit():
-            a = self.take_request()
+            a = self.take_request(only="stop")
             if a == "stop":
                 return "stop"
             time.sleep(0.5)
@@ -202,7 +206,21 @@ class Host:
             return False
         self.mgr = R.RuntimeManager(self.cfg, state_dir=self.state_dir)
         self.set("STARTING", detail=None, explain="Starting the Brain (Runtime v1).")
-        r = self.mgr.ensure_ready(on_state=lambda s: self.set(s) if s in (R.STARTING, R.LOADING) else None)
+        # The accepted ensure_ready() blocks for the whole load. It runs on a thread so a stop (stop file or request)
+        # is honored at once: the owned job is killed and the host does not wait for the load to finish.
+        box = {}
+        t = threading.Thread(target=lambda: box.update(r=self.mgr.ensure_ready(
+            on_state=lambda s: self.set(s) if s in (R.STARTING, R.LOADING) else None)), daemon=True)
+        t.start()
+        while t.is_alive():
+            if self.should_exit() or self.take_request(only="stop") == "stop":
+                self.mgr.stop()
+                self.mgr = None
+                self.stopped_at = self.now()
+                self.set("STOPPED", detail="STOPPED_DURING_LOAD", explain="The Brain load was stopped.")
+                return False
+            t.join(0.5)
+        r = box["r"]
         if r.state != R.READY:
             self.set("FAILED", detail=r.detail or r.state, explain="The Brain did not become ready (%s)." % (r.detail or r.state),
                      server={"pid": r.pid, "owned": self.mgr.owns_instance})

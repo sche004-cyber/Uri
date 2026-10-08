@@ -382,6 +382,43 @@ def test_host_release_wait_is_measured_not_a_fixed_delay(tmp_path):
     assert h.report["release_measurement"]["unattributed_mib"] < H.RELEASE_UNATTRIBUTED_MIB
 
 
+def test_stop_during_load_kills_the_owned_job_without_waiting(tmp_path, monkeypatch):
+    H, h = new_host(tmp_path, Seq([G.census(raw([(1580, 311, 9)], 330), card=CARD)]))
+    events = {"stopped": False}
+
+    class SlowManager:
+        owns_instance = True
+
+        def __init__(self, *a, **k):
+            pass
+
+        def ensure_ready(self, on_state=None):
+            on_state and on_state("LOADING")
+            while not events["stopped"]:
+                time.sleep(0.05)
+            time.sleep(5)              # the accepted manager keeps polling after a kill; the host must not wait
+            return None
+
+        def stop(self):
+            events["stopped"] = True
+            return True
+    monkeypatch.setattr(H.R, "RuntimeManager", SlowManager)
+    (tmp_path / "client").mkdir(parents=True, exist_ok=True)
+    threading.Timer(0.5, lambda: BH.write_host_request(tmp_path / "client", "stop")).start()
+    t0 = time.monotonic()
+    assert h.start_brain() is False
+    assert time.monotonic() - t0 < 3 and events["stopped"] is True
+    assert h.report["detail"] == "STOPPED_DURING_LOAD"
+
+
+def test_a_restart_request_during_load_is_kept_for_later(tmp_path):
+    H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
+    (tmp_path / "client").mkdir(parents=True, exist_ok=True)
+    BH.write_host_request(tmp_path / "client", "restart")
+    assert h.take_request(only="stop") is None
+    assert h.take_request() == "restart"
+
+
 def test_host_requests_are_explicit_fresh_and_used_once(tmp_path):
     H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
     (tmp_path / "client").mkdir(parents=True, exist_ok=True)
