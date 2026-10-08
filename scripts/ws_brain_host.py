@@ -47,6 +47,10 @@ DEGRADED_TPS = 60.0
 # this before a start. Half a 1 GiB demotion block.
 RELEASE_UNATTRIBUTED_MIB = 512.0
 RELEASE_TIMEOUT_S = 300.0
+# Quiet window: after the GPU was seen CONTENDED, it must stay clear this long before a start. A benchmark campaign in
+# another session stops and starts servers back to back with gaps of seconds to tens of seconds; starting in such a
+# gap would take the GPU from under it. 180 s equals the Adaptive Runtime session's own GPU-owner guard.
+QUIET_S = 180.0
 GPU_POLL_S = 10.0
 RESIDENCY_EVERY_S = 60.0
 
@@ -69,13 +73,14 @@ class Host:
             self.report["override"] = {"by": "--override-contention", "at": round(now(), 3)}
         self.last_request_id = None
         self.stopped_at = None          # wall time the last server stop finished (release measurement)
+        self.last_contended = None      # monotonic time the GPU was last seen CONTENDED (quiet window)
         self.stop_file = self.state_dir / "runtime_v1.stop"
 
     # ---- report ---------------------------------------------------------------------------------------------
     def set(self, state, **fields):
-        prev = self.report.get("state")
+        prev = (self.report.get("state"), self.report.get("detail"))
         self.report.update(fields, state=state, updated_at=round(self.now(), 3))
-        if prev != state:
+        if prev != (state, self.report.get("detail")):
             self.report["history"] = (self.report["history"] + [{"t": round(self.now(), 3), "state": state,
                                                                   "detail": fields.get("detail")}])[-20:]
             print("STATE", state, fields.get("detail") or "", flush=True)
@@ -161,7 +166,13 @@ class Host:
                          explain="Waiting for GPU memory from the previous Brain to be released (%.0f MB left)." % unattr,
                          gpu=gpu)
             elif fit["verdict"] == G.CONTENDED and not self.override:
+                self.last_contended = time.monotonic()
                 self.set("WAITING_FOR_GPU", detail="GPU_CONTENDED", explain=gpu["explain"], gpu=gpu)
+            elif (not self.override and self.last_contended is not None
+                  and time.monotonic() - self.last_contended < QUIET_S):
+                left = QUIET_S - (time.monotonic() - self.last_contended)
+                self.set("WAITING_FOR_GPU", detail="GPU_QUIET_WINDOW", gpu=gpu,
+                         explain="The GPU just became free. URI waits %.0f s more to be sure another job has finished." % left)
             else:
                 if self.stopped_at is not None:
                     self.report["release_measurement"] = {"since_stop_s": gpu.get("since_stop_s"),

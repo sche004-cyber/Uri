@@ -309,6 +309,7 @@ class Seq:
 def new_host(tmp_path, census, override=False, port=18470):
     H = load_host()
     H.GPU_POLL_S = 0.05
+    H.QUIET_S = 0.05
     cfg = {"model": {"id": "qwen-test"}, "runtime": {"port": port, "ctx": 32768}}
     h = H.Host(tmp_path / "client", minutes=1, override=override, cfg=cfg, state_dir=tmp_path / "state",
                census=census, lease_dir=tmp_path / "lease")
@@ -325,6 +326,26 @@ def test_host_waits_while_contended_and_explains_then_starts_when_free(tmp_path)
     rep = json.loads((tmp_path / "client" / BH.REPORT_FILE).read_text())
     assert rep["schema"] == BH.REPORT_SCHEMA
     assert "will not stop" in rep["explain"]          # the last waiting explanation stays until the next state
+
+
+def test_host_waits_for_a_quiet_window_after_contention(tmp_path):
+    busy = G.census(raw([(1580, 311, 9), (20036, 13907, 1819)], 14300), card=CARD)    # another session's load
+    gap = G.census(raw([(1580, 311, 9)], 330), card=CARD)                              # between its loads
+    H, h = new_host(tmp_path, Seq([busy, gap, gap, gap]))
+    H.QUIET_S = 1.0
+    t0 = time.monotonic()
+    assert h.wait_for_gpu() is True
+    assert time.monotonic() - t0 >= 1.0
+    details = [x["detail"] for x in h.report["history"]]
+    assert "GPU_CONTENDED" in details and "GPU_QUIET_WINDOW" in details
+
+
+def test_host_starts_at_once_on_a_free_gpu(tmp_path):
+    free = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    H, h = new_host(tmp_path, Seq([free]))
+    t0 = time.monotonic()
+    assert h.wait_for_gpu() is True and time.monotonic() - t0 < 1.0
+    assert "WAITING_FOR_GPU" not in [x["state"] for x in h.report["history"]]
 
 
 def test_host_override_starts_next_to_contention_and_records_it(tmp_path):
