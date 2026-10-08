@@ -15,6 +15,7 @@ supplied by the caller (tests, a materialized runtime); without one, action requ
 from __future__ import annotations
 
 import argparse
+import asyncio
 import json
 import queue
 import secrets
@@ -80,11 +81,16 @@ def create_app(*, token: str, orchestrator: Orchestrator, manager: R.RuntimeMana
 
         threading.Thread(target=run, daemon=True).start()
 
-        def stream():
+        async def stream():
             finished = False
             try:
                 while True:
-                    ev = q.get()
+                    if await request.is_disconnected():
+                        return
+                    try:
+                        ev = await asyncio.to_thread(q.get, True, 0.25)
+                    except queue.Empty:
+                        continue
                     if ev is None:
                         finished = True
                         return
