@@ -140,3 +140,42 @@ def test_worker_crash_mid_run_kills_the_executor_and_the_next_worker_reports_unc
     finally:
         if wp2.poll() is None:
             wp2.kill()
+
+
+def test_cap1_close_and_stdin_eof_release_pending_cards_over_real_frames(procs):
+    """CAP-1 (Phase 2 closure): a UI that closes with an approval card still pending must not leave the server turn
+    holding the session (frozen TURN_CAPACITY) for 15 minutes. Real server process, real worker processes."""
+    wp, client = procs["worker"], procs["client"]
+    cmd = frames(wp)
+    held_session, eof_session = uid(), uid()
+    first = cmd({"command": "turn_start", "session_id": held_session, "text": TEXT, "reasoning": CLAUDE})
+    assert first["result"] == "OK" and first["value"]["state"] == "approval_required", first
+    closed = cmd({"command": "close"})
+    assert closed["result"] == "CLOSED" and closed["execution"] == {"active": None}
+    assert [(r["turn_id"], r["why"], r["released"]) for r in closed["released"]] == [(first["value"]["turn_id"], "WORKER_CLOSED", True)]
+    wp.stdin.close()
+    assert wp.wait(15) == 0
+    wp2 = _spawn_worker(client, "honest")
+    try:
+        cmd = frames(wp2)
+        again = cmd({"command": "turn_start", "session_id": held_session, "text": TEXT, "reasoning": CLAUDE})
+        assert again["result"] == "OK" and again["value"]["state"] == "approval_required", again    # was TURN_CAPACITY
+        pending = cmd({"command": "turn_start", "session_id": eof_session, "text": TEXT, "reasoning": CLAUDE})
+        assert pending["result"] == "OK", pending
+        wp2.stdin.close()                                      # the UI vanished: no close frame, only EOF
+        assert wp2.wait(30) == 0
+    finally:
+        if wp2.poll() is None:
+            wp2.kill()
+    wp3 = _spawn_worker(client, "honest")
+    try:
+        cmd = frames(wp3)
+        for session in (held_session, eof_session):
+            r = cmd({"command": "turn_start", "session_id": session, "text": TEXT, "reasoning": CLAUDE})
+            assert r["result"] == "OK" and r["value"]["state"] == "approval_required", (session, r)
+        assert cmd({"command": "close"})["result"] == "CLOSED"
+        wp3.stdin.close()
+        assert wp3.wait(15) == 0
+    finally:
+        if wp3.poll() is None:
+            wp3.kill()

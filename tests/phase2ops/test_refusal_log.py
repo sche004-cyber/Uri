@@ -74,3 +74,42 @@ def test_known_codes_are_exactly_the_frozen_servers_refusal_codes():
         found |= set(re.findall(r'detail="([A-Z][A-Z0-9_]+)"', s))
         found |= set(re.findall(r'content=\{"detail": "([A-Z][A-Z0-9_]+)"', s))
     assert set(KNOWN_CODES) == found, (set(KNOWN_CODES) ^ found)
+
+
+def test_log3_error_body_retention_is_bounded_whatever_the_chunking():
+    """LOG-3 (Codex round 7): the wrapper keeps at most BODY_CAP bytes of an error body, not every chunk."""
+    from uri_supervisor_bridge import refusal_log as rl
+    import tracemalloc
+    seen = []
+
+    def chunked(status, chunks):
+        async def app(scope, receive, send):
+            await send({"type": "http.response.start", "status": status, "headers": []})
+            for i, c in enumerate(chunks):
+                await send({"type": "http.response.body", "body": c, "more_body": i < len(chunks) - 1})
+        return app
+    lines = []
+    big = [b"x" * 65536 for _ in range(64)]          # 4 MiB error body in 64 chunks
+    wrapper = RefusalLog(chunked(500, big), sink=lines.append)
+    orig = rl.refusal_line
+    rl.refusal_line = lambda m, p, s, body: (seen.append(len(body)), orig(m, p, s, body))[1]
+    tracemalloc.start()
+    try:
+        sent = _run(wrapper, {"type": "http", "method": "GET", "path": "/client/v1/capabilities"})
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+        rl.refusal_line = orig
+    assert peak < 1024 * 1024, peak                   # the 4 MiB body is never joined or copied by the wrapper
+    assert seen == [rl.BODY_CAP] and lines == ["CLIENT_REFUSAL GET /client/v1/capabilities 500 NON_JSON_BODY"]
+    assert sum(len(m.get("body", b"")) for m in sent if m["type"] == "http.response.body") == 64 * 65536   # passed through intact
+    # a known code split across chunks is still found when it lies inside the cap
+    lines.clear()
+    split = RefusalLog(chunked(403, [b'{"detail": "SESSION', b'_SCOPE"}']), sink=lines.append)
+    _run(split, {"type": "http", "method": "POST", "path": "/client/v1/turns/a/approval"})
+    assert lines == ["CLIENT_REFUSAL POST /client/v1/turns/{id}/approval 403 SESSION_SCOPE"]
+    # a body that is not bytes is ignored, never a crash
+    lines.clear()
+    odd = RefusalLog(chunked(403, [None]), sink=lines.append)
+    _run(odd, {"type": "http", "method": "POST", "path": "/client/v1/session"})
+    assert lines == ["CLIENT_REFUSAL POST /client/v1/session 403 NON_JSON_BODY"]

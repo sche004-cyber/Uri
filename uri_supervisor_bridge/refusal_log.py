@@ -35,6 +35,7 @@ TURN_NOT_CLAIMABLE TURN_NOT_CONTINUABLE TURN_NOT_SETTLEABLE TURN_NOT_WAITABLE TU
 TURN_UNKNOWN VERSION_CONFLICT
 """.split())
 KNOWN_METHODS = frozenset({"GET", "POST"})
+BODY_CAP = 4096   # bytes of an error body ever retained for the code lookup (LOG-3)
 _LITERALS = frozenset({"client", "v1", "turns", "session", "capabilities", "approval", "claim", "settle", "wait",
                        "continue", "status", "cancel"})
 
@@ -78,14 +79,19 @@ class RefusalLog:
     async def __call__(self, scope, receive, send):
         if scope.get("type") != "http" or not in_scope(scope.get("path")):
             return await self.app(scope, receive, send)
-        status, chunks = [None], []
+        # LOG-3 (Codex round 7, Low): retain at most BODY_CAP bytes of an error body, whatever its size or chunking;
+        # the earlier version kept every chunk and truncated only after joining them.
+        status, kept = [None], bytearray()
 
         async def send_wrapped(message):
             if message["type"] == "http.response.start":
                 status[0] = message.get("status")
             elif message["type"] == "http.response.body" and status[0] is not None and status[0] >= 400:
-                chunks.append(message.get("body", b""))
+                room = BODY_CAP - len(kept)
+                if room > 0:
+                    body = message.get("body", b"")
+                    kept.extend(body[:room] if isinstance(body, (bytes, bytearray)) else b"")
                 if not message.get("more_body"):
-                    self.sink(refusal_line(scope.get("method"), scope.get("path"), status[0], b"".join(chunks)[:4096]))
+                    self.sink(refusal_line(scope.get("method"), scope.get("path"), status[0], bytes(kept)))
             await send(message)
         await self.app(scope, receive, send_wrapped)

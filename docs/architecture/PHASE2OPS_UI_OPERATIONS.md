@@ -113,3 +113,26 @@ passes `--allow-fixture-qualification`, and `fromManifest` never does. Removing 
 * Physical power loss: unchanged, NOT VERIFIED (SIMULATED abrupt termination only).
 * Chat (`/ask`) is not moved to the paired runtime: C6 owner decision 2 is still open; the slice wires the real UI through
   a dedicated Tasks entry/screen, which is what the C6 contract allows without that decision.
+
+## Phase 2 closure superseding notes (2026-10-08; earlier text kept as history)
+
+Recorded by the Phase 2 closure (`docs/plans/PHASE2CLOSE_REPORT.md`); not yet independently reviewed.
+
+* **Approval refused before anything ran (VAL-1).** The frozen ticket check `issued_at == int(clock())`
+  (`client_execution_control.py:77`) refuses an approval whose ticket was stamped in one wall-clock second and checked
+  in the next, as HTTP 403 `TICKET_CLOCK_OR_GENERATION`, before any version bump or operation write. The execution
+  thread now resends the SAME approval once, only when the server's own status shows the turn still
+  `approval_required` at the approved version and session, no ticket/task was observed and no cancel was requested.
+  A second refusal ends the execution `failed` / `APPROVAL_REFUSED_NOT_APPLIED:<code>` (previously `uncertain`
+  / `EXCEPTION:...`), and the record carries `approval_retries` / `approval_retry_reason`. The row "Terminal states
+  never invent success" is unchanged: `completed` still needs `SETTLED_VERIFIED`.
+* **Abandoned cards are released (CAP-1).** The row "the frozen server holds the session (`TURN_CAPACITY`) while an
+  approval is pending" still holds for a card the user has not decided. When the WORKER abandons a card (wrong digest
+  echo on `execution_begin`/`turn_decide`, `close`, stdin EOF, or the VAL-1 final refusal) it now posts the server's
+  cancel route for that turn (version-checked; never relabels a dispatched turn). Before, four abandoned cards blocked
+  every new turn on the server for up to 15 minutes.
+* **Client-profile isolation of Codex (ISO-1).** The worker pins `CODEX_HOME` to `<client_root>/home/.codex`; without
+  it Codex 0.158.0 read the owner's global login despite the sanitized `USERPROFILE`.
+* **Native execution inside the worker process** remains NOT VERIFIED and is now known to be BLOCKED by EXE-1 (the
+  sanitized PATH cannot start the npm `codex.CMD` shim: `"node" is not recognized`), in addition to the client-profile
+  login already listed under "Deliberate limitations".

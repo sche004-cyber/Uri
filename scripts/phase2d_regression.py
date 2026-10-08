@@ -20,7 +20,7 @@ IGNORES = ["--ignore=work", "--ignore=evidence", "--ignore=uri_workspace", "--ig
            "--ignore=research_notes", "--ignore=graphify-out", "--ignore=uri_ui", "--ignore=.venv"]
 AUTHORITY = ["test_c5_loop.py", "test_c2_uncertain_adversarial.py", "test_c5_intent_adversarial.py", "test_c4_harness.py",
              "test_phase1_fail_closed.py", "test_intent_discovery_unit.py", "test_c5_intent_discovery.py", "test_c7_rollback_boundary.py"]
-PHASE2 = ["tests/phase2a", "tests/phase2b", "tests/phase2c", "tests/phase2d", "tests/phase2ops"]
+PHASE2 = ["tests/phase2a", "tests/phase2b", "tests/phase2c", "tests/phase2d", "tests/phase2ops", "tests/phase2close"]
 KNOWN_BASELINE_FAILURES = [  # the 11 e8e3b65 failures recorded in the Phase 1 final closure report (pre-existing)
     "step3_test.py::test_drive", "step4_test.py::test_download", "test_capability_directory.py", "test_m20_feasibility_validation.py",
     "test_m20_recovery_loop.py", "test_m20_semantic_interpreter_resilience.py", "test_orchestrator_session_workflow.py",

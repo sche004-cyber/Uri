@@ -25,7 +25,11 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                # non-checkpoint UI file that mounts the opt-in entry (uri_ui/lib/app.dart), tests, reports, scripts.
                "tests/phase2ops/*", "docs/plans/PHASE2OPS_*", "docs/architecture/PHASE2OPS_*", "scripts/phase2ops_*",
                "uri_ui/lib/services/supervised_runtime.dart", "uri_ui/lib/screens/tasks/supervised_execution_screen.dart",
-               "uri_ui/test/supervised_*", "uri_ui/lib/app.dart"]
+               "uri_ui/test/supervised_*", "uri_ui/lib/app.dart",
+               # Phase 2 closure (2026-10-08): reports, ledger, runbook, chain/acceptance scripts, power-loss harness and its
+               # tests, and the inert conversation-to-task handoff value (a NEW Dart file; no frozen file is touched).
+               "tests/phase2close/*", "docs/plans/PHASE2CLOSE_*", "docs/architecture/PHASE2CLOSE_*", "scripts/phase2close_*",
+               "docs/plans/URI_DEVELOPMENT_TODO.md", "uri_ui/lib/services/task_handoff.dart"]
 
 needs_zip = pytest.mark.skipif(not CHECKPOINT.exists(), reason="BLOCKED: frozen checkpoint zip not present on this machine")
 

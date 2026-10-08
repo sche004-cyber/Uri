@@ -102,9 +102,10 @@ def test_phase2_profiles_run_the_governed_path_over_real_frames(procs):
     dead = cmd({"command": "turn_decide", "turn_id": turn["value"]["turn_id"], "approve": True})
     assert dead == {"result": "REFUSED", "code": "TURN_NOT_PENDING"}
     assert cmd({"command": "turn_decide", "turn_id": turn["value"]["turn_id"], "approve": True, "ticket": {}})["result"] == "REFUSED"
-    # the dropped turn holds its session until the server expires it (frozen rule): continue in a new session
-    assert cmd({"command": "turn_start", "session_id": session, "text": TEXT, "reasoning": CLAUDE})["code"].startswith("SERVER_REFUSED:")
-    turn = cmd({"command": "turn_start", "session_id": uid(), "text": TEXT, "reasoning": CLAUDE})
+    # Before the Phase 2 closure the dropped turn held its session until the server expired it (frozen rule).
+    # CAP-1 (2026-10-08): the worker now releases it through the server's cancel route, so the SAME session continues;
+    # the released turn was never approved and nothing ran for it.
+    turn = cmd({"command": "turn_start", "session_id": session, "text": TEXT, "reasoning": CLAUDE})
     assert turn["result"] == "OK" and turn["value"]["state"] == "approval_required", turn
     req = turn["value"]["approval_request"]
     done = cmd({"command": "turn_decide", "turn_id": turn["value"]["turn_id"], "approve": True, "approval_digest": req["approval_digest"]})

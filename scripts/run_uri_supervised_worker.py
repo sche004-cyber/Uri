@@ -102,6 +102,10 @@ def main():
         safe = child_environment(root, Path(m["interpreter"]))
         os.environ.clear()
         os.environ.update(safe)
+        # ISO-1 (Phase 2 closure): Codex ignores USERPROFILE and would read the owner's global login; pin its home to
+        # the client profile so probes and executors of this client only ever see the client profile's own login.
+        from uri_supervisor_bridge.qualification import client_cli_homes
+        os.environ.update(client_cli_homes(root))
         # Persisted qualification is re-validated under the client-profile environment BEFORE the fixture guard, so
         # the executable hashes and version/auth probes run once here; the guard then admits exactly those files.
         from uri_supervisor_bridge.qualification import RecordTrust
@@ -147,6 +151,7 @@ def main():
                 "client_id": m["client_id"], "manifest_digest": manifest.digest,
                 "phase2_source_digest": hashlib.sha256(canonical(phase2_source_digests())).hexdigest(),
                 "qualified": composition.qualified(), "fixture_allowed": bool(args.allow_fixture_qualification),
+                "cli_homes_pinned": sorted(client_cli_homes(root, create=False)),
                 "execution_lifecycle": True})
             guard.starting = False
             harnesses = composition.registry
@@ -218,7 +223,8 @@ def main():
                         # An execution still in flight is withdrawn (job kill) and its record made terminal before
                         # the worker goes away; the UI's reconnect then finds `uncertain`, never a forgotten run.
                         closed = turns.executions.close(30.0)
-                        write_frame(sys.stdout.buffer, {"result": "CLOSED", "execution": closed})
+                        released = turns.release_pending("WORKER_CLOSED")      # CAP-1: abandoned cards free the server
+                        write_frame(sys.stdout.buffer, {"result": "CLOSED", "execution": closed, "released": released})
                         break
                     write_frame(sys.stdout.buffer, {"result": "OK", "value": result})
                 except (PersistenceError, TransportError, StatePortError, RuntimeIdentityError, TurnError) as error:
@@ -226,6 +232,7 @@ def main():
                 except Exception:
                     write_frame(sys.stdout.buffer, {"result": "REFUSED", "code": "CLIENT_COMMAND_REFUSED"})
             turns.executions.close(30.0)       # stdin EOF (the UI is gone): same withdrawal before the ledger closes
+            turns.release_pending("WORKER_STDIN_EOF")
             bridge.close()
         return 0
     except Exception:

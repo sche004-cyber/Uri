@@ -207,8 +207,10 @@ def corroborate(record, ledger, journal, server, task_exists=None, operation_own
 
 
 _STR_OR_NONE = ("turn_id", "session_id", "request_text", "reason", "code", "message", "task_id", "bridge_outcome",
-                "failure_category", "decision", "previous_state", "server_state", "operation_id", "operation_owner")
-_NUM_OR_NONE = ("queued_at", "approving_at", "starting_at", "running_at", "ended_at", "updated_at", "cancel_requested_at", "worker_pid")
+                "failure_category", "decision", "previous_state", "server_state", "operation_id", "operation_owner",
+                "approval_retry_reason")
+_NUM_OR_NONE = ("queued_at", "approving_at", "starting_at", "running_at", "ended_at", "updated_at", "cancel_requested_at", "worker_pid",
+                "approval_retries")
 _DICT_OR_NONE = ("proposal", "restart_ledger")
 _LIST_OR_NONE = ("evidence",)
 
@@ -479,9 +481,11 @@ class ExecutionController:
             shown = (turn.get("approval_request") or {}).get("approval_digest")
             if not isinstance(approval_digest, str) or approval_digest != shown:
                 self.service.pending.pop(turn_id, None)        # same rule as turn_decide: a wrong echo drops the turn
+                self._release(entry, "APPROVAL_DIGEST_MISMATCH")
                 raise TurnError("APPROVAL_DIGEST_MISMATCH")
             if not isinstance(proposal_digest, str) or proposal_digest != prop["proposal_digest"]:
                 self.service.pending.pop(turn_id, None)
+                self._release(entry, "PROPOSAL_DIGEST_MISMATCH")
                 raise TurnError("PROPOSAL_DIGEST_MISMATCH")
             self.service.pending.pop(turn_id, None)
             eid = uuid.uuid4().hex
@@ -499,6 +503,11 @@ class ExecutionController:
                                             name="uri-execution-" + eid[:8])
             self._thread.start()
         return {"execution_id": eid, "turn_id": turn_id, "state": "queued", "proposal_digest": prop["proposal_digest"]}
+
+    def _release(self, entry, why):
+        """CAP-1: the turn this worker just abandoned is released on the server (see worker_service)."""
+        release = getattr(self.service, "release_turn", None)
+        return release(entry, why) if release is not None else None
 
     def _cancel_requested(self, eid):
         with self._lock:
@@ -531,7 +540,7 @@ class ExecutionController:
 
             runner.on_dispatch, runner.on_outcome, runner.on_starting = on_dispatch, on_outcome, on_starting
             runner.dispatch_context = {"execution_id": eid}       # the bridge records it in the ledger task row
-            final = runner.decide(text, session, reasoning, turn, approve)
+            final = self._decide(eid, runner, text, session, reasoning, turn, approve)
             rec = self.register.get(eid)
             state, reason = self._classify(final, rec, approve)
             self.register.update(eid, state=state, reason=reason, code=final.get("code"), message=final.get("message"),
@@ -539,9 +548,16 @@ class ExecutionController:
         except Exception as exc:  # noqa: BLE001
             code = str(getattr(exc, "code", type(exc).__name__))[:96]
             rec = self.register.get(eid) or {}
-            # Nothing was sent to the server while `queued`; afterwards the approval, claim or settle may have landed.
-            state = "failed" if rec.get("state") == "queued" else "uncertain"
-            self.register.update(eid, state=state, reason="EXCEPTION:" + code, ended_at=self.clock())
+            # Nothing was sent to the server while `queued`; afterwards the approval, claim or settle may have landed,
+            # unless the server itself shows the turn still awaiting approval at the version we approved (VAL-1).
+            if rec.get("state") == "queued":
+                state, reason = "failed", "EXCEPTION:" + code
+            elif self._approval_provably_unapplied(rec, turn, session):
+                state, reason = "failed", "APPROVAL_REFUSED_NOT_APPLIED:" + code
+                self._release((text, session, reasoning, turn), "APPROVAL_REFUSED_NOT_APPLIED")   # CAP-1
+            else:
+                state, reason = "uncertain", "EXCEPTION:" + code
+            self.register.update(eid, state=state, reason=reason, ended_at=self.clock())
         finally:
             if runner is not None:
                 runner.on_dispatch = runner.on_outcome = runner.on_starting = runner.dispatch_context = None
@@ -550,6 +566,37 @@ class ExecutionController:
                     self._active = None
                 self._task.pop(eid, None)
                 self._cancel.discard(eid)
+
+    # ---- VAL-1: the frozen ticket clock boundary --------------------------------------------------
+    # The frozen coordinator stamps `issued_at = int(clock())` and the frozen control refuses the ticket unless the
+    # same whole second is read again after the authority callback (`client_execution_control.py:77`); crossing a
+    # second boundary in between is `TICKET_CLOCK_OR_GENERATION`, re-raised as HTTP 403 BEFORE any version bump,
+    # idempotency record or operation write (`paired_coordinator.py:314-316`, `client_service.py:256-261`).
+    # `tests/phase2ops/test_val1_clock_boundary.py` reproduces it. The worker may resend the user's SAME approval once,
+    # and only when nothing can have been applied: no ticket observed, no task, no cancel, and the server's own turn
+    # status is still `approval_required` at the version and session the approval was built for. Every server gate
+    # runs again on the resend; a second refusal ends the execution `failed` (nothing ran), never `uncertain`.
+    APPROVAL_RETRY_CODES = ("SERVER_REFUSED:HTTP_403", "SERVER_REFUSED:TICKET_CLOCK_OR_GENERATION")
+
+    def _approval_provably_unapplied(self, rec, turn, session):
+        if not isinstance(rec, dict) or rec.get("state") != "approving":
+            return False
+        if rec.get("operation_id") or rec.get("task_id") or rec.get("starting_at") or rec.get("running_at"):
+            return False
+        server = self._server_turn(turn.get("turn_id")) or {}
+        return (server.get("state") == "approval_required" and type(server.get("version")) is int
+                and server.get("version") == turn.get("version") and server.get("session_id") in (None, session))
+
+    def _decide(self, eid, runner, text, session, reasoning, turn, approve):
+        try:
+            return runner.decide(text, session, reasoning, turn, approve)
+        except TurnError as exc:
+            code = str(getattr(exc, "code", ""))
+            if (not approve or code not in self.APPROVAL_RETRY_CODES or self._cancel_requested(eid)
+                    or not self._approval_provably_unapplied(self.register.get(eid), turn, session)):
+                raise
+            self.register.update(eid, approval_retries=1, approval_retry_reason=code[:96])
+        return runner.decide(text, session, reasoning, turn, approve)
 
     @staticmethod
     def _classify(final, rec, approve):

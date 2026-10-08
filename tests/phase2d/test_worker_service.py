@@ -47,7 +47,9 @@ def test_wrong_approval_digest_drops_the_pending_turn_and_runs_nothing(stack, mo
     with pytest.raises(TurnError, match="TURN_NOT_PENDING"):             # the turn is gone: a retry cannot approve it
         stack.decide(turn, True, digest=turn["approval_request"]["approval_digest"])
     assert stack.tasks() == 0 and stack.result_files() == []
-    assert stack.turn_record(turn["turn_id"])["state"] == "approval_required"   # server never saw an approval
+    # Server never saw an approval. CAP-1 (Phase 2 closure, 2026-10-08): the worker releases the dropped turn through
+    # the server's cancel route instead of leaving it `approval_required` (holding the session) for 15 minutes.
+    assert stack.turn_record(turn["turn_id"])["state"] == "cancelled"
 
 
 def test_duplicate_decide_frame_cannot_execute_twice(stack, monkeypatch):

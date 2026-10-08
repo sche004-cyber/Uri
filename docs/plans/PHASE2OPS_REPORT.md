@@ -257,3 +257,20 @@ physical-qualification item, not a slice blocker; rejected on LOG-1R (the refusa
 check, not an allow-list) and LOG-2 (`/client/v1evil` treated as in scope). Repairs: `PHASE2OPS_REVIEW_REPAIR_ROUND6.md`
 (`KNOWN_CODES` allow-list of the frozen server's refusal codes, GET/POST only, exact `/client/v1` scope). Candidate
 `-r6` and regressions: `evidence\phase2ops_r6\`.
+
+## Acceptance record (appended after independent review round 7, 2026-10-08)
+
+Codex CLI 0.158.0 (gpt-6-sol), fresh session, workspace-write sandbox, thread `01a117b5-20d7-79a0-9b38-a7678ba3d8da`,
+on candidate `C:\Users\cheta\.codex\worktrees\uri-phase2a\evidence\phase2ops-candidate-20261008-r6.zip`
+(SHA-256 `9a0be52c1ae5e59bf9ae16617e283c5a9f58ba098a1c2ae1d9649e184affb50a`, 117 tree + 152 evidence files):
+**UI/OPERATIONS SLICE ACCEPTED — MORE PHASE 2 WORK REMAINS** (`evidence\phase2ops_review\round7\CODEX_REVIEW_round7.md`).
+Dispositions: OPS-1, OPS-2, OPS-3, OPS-1R, OPS-2R, OPS-4, OPS-5, LOG-1, LOG-1R, LOG-2 REPAIRED within their reviewed
+boundaries; VAL-1 OPEN observation (physical-qualification item, not a slice blocker); LOG-3 (Low, pre-existing since the
+diagnostic: refusal body chunks buffered before the 4096-byte cap) NOT REPAIRED, recorded for a later hardening.
+Reviewer's truth table: (a) YES, (b) YES (Phase 2D/native path; Phase 2C wrapper source-compatible, not rerun), (c) YES,
+(d) PARTIAL (no observed human click), (e) NO. USER-PHYSICAL: human Approve/Cancel/reopen on the running app;
+client-profile native login + execution inside the isolated worker; controlled power-loss campaign. Context Capsule /
+Task Compiler: design-only, later, no 2E/2F numbering. Final regressions on the accepted tree (`evidence\phase2ops_r6\`):
+Phase 2 415 passed / 2 skipped; Phase 1 authority 134; Phase 1 full 2675 / 12 / 11 (baseline IDs); Flutter 191 / 2;
+live Dart bridge 10/10; refusal log empty; real Codex lifecycle `SETTLED_VERIFIED` + mid-run cancel `uncertain`.
+Phase 2 is NOT complete and NOT frozen; nothing committed, pushed or cut over.

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/paired_runtime.dart';
 import '../../services/supervised_runtime.dart';
+import '../../services/task_handoff.dart';
 import '../../theme/uri_theme.dart';
 
 /// Phase 2 UI/operations: the URI UI driving the supervised execution path.
@@ -25,12 +26,17 @@ class SupervisedExecutionScreen extends StatefulWidget {
     this.runtimeOverride,
     this.sessionId,
     this.pollInterval = const Duration(milliseconds: 500),
+    this.draft,
   });
 
   /// Tests inject a runtime; production resolves URI_CLIENT_MANIFEST + opt-in.
   final SupervisedRuntime? runtimeOverride;
   final String? sessionId;
   final Duration pollInterval;
+
+  /// Conversation-to-task handoff (Phase 2 closure): pre-fills the composer
+  /// only. Nothing is sent, chosen, confirmed or approved because of it.
+  final TaskHandoff? draft;
 
   @override
   State<SupervisedExecutionScreen> createState() => _SupervisedExecutionScreenState();
@@ -76,6 +82,8 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
   @override
   void initState() {
     super.initState();
+    final draft = widget.draft;
+    if (draft != null && !draft.isEmpty) _text.text = draft.text;
     _connect();
   }
 
@@ -391,6 +399,9 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
           Text('Execution ${_shortId(x.id)} · ${x.state.toUpperCase()}',
               key: const Key('sx-state'), style: textTheme.titleSmall),
           if (x.reason != null) Text('Reason: ${x.reason}', key: const Key('sx-reason')),
+          if (x.reason != null && x.reason!.startsWith('APPROVAL_REFUSED_NOT_APPLIED'))
+            const Text('The server refused the approval before anything ran, and its own record shows the request '
+                'still waiting. Nothing was executed. You may ask again.', key: Key('sx-approval-not-applied')),
           if (x.recordedState != null && x.recordedState != x.state)
             Text('The local record says "${x.recordedState}", but the ledger/journal/server do not confirm it; '
                 'URI reports what it can prove.', key: const Key('sx-uncorroborated')),
@@ -500,6 +511,8 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
           ]),
         ),
         const SizedBox(height: UriSpace.md),
+        if (widget.draft != null && !widget.draft!.isEmpty)
+          Text(widget.draft!.banner, key: const Key('sx-draft-banner')),
         TextField(
           key: const Key('sx-input'),
           controller: _text,
@@ -535,6 +548,17 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
 class SupervisedExecutionEntry extends StatelessWidget {
   const SupervisedExecutionEntry({super.key, this.configured, this.runtimeOverride});
 
+  /// Opens the supervised screen, optionally with an unsent conversation
+  /// draft. The single navigation seam a future Chat action would call
+  /// (C6 owner decision 2); the Tasks entry uses it without a draft.
+  static Future<void> open(BuildContext context, {SupervisedRuntime? runtimeOverride, TaskHandoff? draft}) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Supervised execution')),
+          body: SupervisedExecutionScreen(runtimeOverride: runtimeOverride, draft: draft),
+        ),
+      ));
+
   /// Tests override the opt-in probe; production checks the manifest + file.
   final bool? configured;
   final SupervisedRuntime? runtimeOverride;
@@ -553,12 +577,7 @@ class SupervisedExecutionEntry extends StatelessWidget {
           subtitle: const Text('Run a task through the supervised worker with a digest-bound approval, live status, '
               'cancellation and a receipt.'),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-            builder: (_) => Scaffold(
-              appBar: AppBar(title: const Text('Supervised execution')),
-              body: SupervisedExecutionScreen(runtimeOverride: runtimeOverride),
-            ),
-          )),
+          onTap: () => SupervisedExecutionEntry.open(context, runtimeOverride: runtimeOverride),
         ),
       ),
     );

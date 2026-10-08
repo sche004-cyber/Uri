@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:uri_ui/screens/tasks/supervised_execution_screen.dart';
 import 'package:uri_ui/services/paired_runtime.dart';
 import 'package:uri_ui/services/supervised_runtime.dart';
+import 'package:uri_ui/services/task_handoff.dart';
 
 /// Test double for the worker boundary ONLY. It records every frame the UI
 /// sends so the tests can assert the UI never approves, chooses or cancels on
@@ -10,6 +11,7 @@ import 'package:uri_ui/services/supervised_runtime.dart';
 /// authoritative state (never UI memory) can be checked.
 class _FakeSupervised implements SupervisedRuntime {
   final started = <ReasoningChoice>[];
+  final sessions = <String>[];
   final begun = <List<String>>[];
   final decided = <bool>[];
   final cancelled = <String>[];
@@ -89,6 +91,7 @@ class _FakeSupervised implements SupervisedRuntime {
   @override
   Future<TurnResult> startTurn(String sessionId, String text, ReasoningChoice choice) async {
     started.add(choice);
+    sessions.add(sessionId);
     if (turnState != 'approval_required') {
       return SupervisedTurn(state: 'reply', code: turnState, message: 'held');
     }
@@ -415,5 +418,65 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     await tester.pumpAndSettle();
     expect(rt.closed, isTrue);
+  });
+
+  // ---- Phase 2 closure: conversation-to-task handoff (C6 decision 2, the no-decision part) and VAL-1 display ----
+
+  testWidgets('a conversation handoff pre-fills the composer only: no frame, no executor, no approval', (tester) async {
+    _tall(tester);
+    final rt = _FakeSupervised();
+    final draft = TaskHandoff(text: '  please write a greeting into out.txt  ', conversationSessionId: 'chat-1', messageId: 'm7');
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: SupervisedExecutionScreen(
+                runtimeOverride: rt, sessionId: 's1', pollInterval: const Duration(seconds: 1), draft: draft))));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sx-draft-banner')), findsOneWidget);
+    expect(tester.widget<TextField>(find.byKey(const Key('sx-input'))).controller!.text, 'please write a greeting into out.txt');
+    // Nothing was sent or decided because of the draft, and no executor was chosen for the user.
+    expect(rt.started, isEmpty);
+    expect(rt.begun, isEmpty);
+    expect(rt.decided, isEmpty);
+    expect(tester.widget<FilledButton>(find.byKey(const Key('sx-send'))).onPressed, isNull);
+    expect(find.text('Choose an executor first'), findsOneWidget);
+    // The conversation's session id is never reused as the supervised session.
+    await tester.tap(find.byKey(const Key('sx-choice-codex_cli')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('sx-send')));
+    await tester.pumpAndSettle();
+    expect(rt.started.length, 1);
+    expect(rt.sessions, ['s1']);
+    expect(find.byKey(const Key('sx-approval')), findsOneWidget);
+    expect(rt.begun, isEmpty); // the approval is still the user's to give
+  });
+
+  test('a handoff is bounded, trimmed and carries no authority fields', () {
+    final h = TaskHandoff(text: 'x' * (TaskHandoff.maxChars + 10));
+    expect(h.text.length, TaskHandoff.maxChars);
+    expect(TaskHandoff(text: '   ').isEmpty, isTrue);
+    expect(TaskHandoff(text: 'a', source: 'voice').banner, contains('voice'));
+  });
+
+  testWidgets('an empty handoff shows no banner and leaves the composer empty', (tester) async {
+    final rt = _FakeSupervised();
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(body: SupervisedExecutionScreen(runtimeOverride: rt, sessionId: 's1', draft: TaskHandoff(text: ' ')))));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sx-draft-banner')), findsNothing);
+    expect(tester.widget<TextField>(find.byKey(const Key('sx-input'))).controller!.text, '');
+  });
+
+  testWidgets('VAL-1: an approval refused before anything ran is explained as not executed', (tester) async {
+    final rt = _FakeSupervised();
+    rt.script['e1'] = [rt.status('e1', 'queued'),
+      rt.status('e1', 'failed', reason: 'APPROVAL_REFUSED_NOT_APPLIED:SERVER_REFUSED:HTTP_403', server: 'approval_required')];
+    await _sendWithCodex(tester, rt);
+    await tester.tap(find.byKey(const Key('sx-approve')));
+    await tester.pump();
+    await _tick(tester);
+    await _tick(tester);
+    expect(find.textContaining('FAILED'), findsWidgets);
+    expect(find.byKey(const Key('sx-approval-not-applied')), findsOneWidget);
+    expect(find.byKey(const Key('sx-uncertain')), findsNothing);
   });
 }

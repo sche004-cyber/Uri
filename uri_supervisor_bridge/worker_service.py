@@ -16,6 +16,14 @@ frozen UI client (`uri_ui/lib/services/paired_runtime.dart`) could drive it unch
     in flight every turn command is refused with `EXECUTION_IN_PROGRESS` (one execution per client at a time).
     `turn_decide` (blocking, frozen semantics) remains available and cannot be cancelled mid-run.
 
+Phase 2 closure, CAP-1: the frozen server lets each (client, session) hold ONE active turn and the whole server FOUR
+(`client_service.py:169-174`), and an `approval_required` turn that nobody decides stays active for 15 minutes idle.
+Whenever this worker abandons a pending turn on its own (a wrong digest echo, or `close`/stdin EOF with turns still
+pending) it now releases it through the frozen server's own cancel route (`POST /client/v1/turns/{id}/cancel`,
+version-checked; the server never relabels a dispatched turn). Before this, four abandoned cards blocked every new
+turn on the server for up to 15 minutes. A worker that dies without `close` still cannot release (pending state is
+memory-only); the server's 15-minute expiry remains the backstop.
+
 Pending state is memory-only, exactly as in the frozen service: a worker restart or reconnect drops every pending
 turn (fail closed, `TURN_NOT_PENDING`), and the frozen server's own guards (`INTENT_EXECUTION_UNCERTAIN`,
 `INTENT_ALREADY_EXECUTED`, duplicate operation ids) prevent a second execution of the same work. Execution records
@@ -48,6 +56,32 @@ class SupervisedWorkerService(SupervisedTurnService):
         self.composition = composition
         self.executions = ExecutionController(self, manifest.data["client_root"], bridge=bridge, composition=composition,
                                               server_status=server_status, clock=clock) if executions else None
+        self.released = []      # last releases (CAP-1), for diagnostics only: ids, codes, never content
+
+    def release_turn(self, entry, why):
+        """CAP-1: release an abandoned, never-dispatched `approval_required` turn on the server. Best effort, never
+        raises: a refusal (`VERSION_CONFLICT`, `TURN_TERMINAL`, unreachable server) is recorded and the server's own
+        expiry stays the backstop. Nothing is approved, denied or executed by it."""
+        turn_id = None
+        try:
+            text, session, reasoning, turn = entry
+            turn_id = turn.get("turn_id")
+            runner = self._runner()
+            status, data = runner.call("POST", f"/client/v1/turns/{turn_id}/cancel", runner._control(session, turn))
+            state = data.get("state") if isinstance(data, dict) else None
+            detail = data.get("detail") if isinstance(data, dict) else None
+            out = {"turn_id": turn_id, "why": why, "released": status == 200 and state == "cancelled",
+                   "status": status, "server_state": state if isinstance(state, str) else None,
+                   "code": detail[:64] if isinstance(detail, str) else None}
+        except Exception as exc:  # noqa: BLE001  (best effort; reported, never hidden)
+            out = {"turn_id": turn_id, "why": why, "released": False, "error": type(exc).__name__}
+        self.released = (self.released + [out])[-20:]
+        return out
+
+    def release_pending(self, why="WORKER_CLOSED"):
+        """Release every turn still pending in this worker (close / stdin EOF)."""
+        entries = [self.pending.pop(t, None) for t in list(self.pending)]
+        return [self.release_turn(entry, why) for entry in entries if entry is not None]
 
     @property
     def execution_active(self):
@@ -78,13 +112,16 @@ class SupervisedWorkerService(SupervisedTurnService):
         if kind == "turn_decide":
             turn_id = command["turn_id"]
             if not isinstance(turn_id, str) or not isinstance(command["approve"], bool):
-                self.pending.pop(turn_id, None) if isinstance(turn_id, str) else None
+                dropped = self.pending.pop(turn_id, None) if isinstance(turn_id, str) else None
+                if dropped is not None:
+                    self.release_turn(dropped, "DECIDE_SCHEMA")
                 raise TurnError("TURN_NOT_PENDING")
             if "approval_digest" in command:
                 entry = self.pending.get(turn_id)
                 shown = ((entry[3].get("approval_request") or {}).get("approval_digest")) if entry else None
                 if entry is None or not isinstance(command["approval_digest"], str) or command["approval_digest"] != shown:
-                    self.pending.pop(turn_id, None)
+                    if self.pending.pop(turn_id, None) is not None:
+                        self.release_turn(entry, "APPROVAL_DIGEST_MISMATCH")
                     raise TurnError("APPROVAL_DIGEST_MISMATCH" if entry is not None else "TURN_NOT_PENDING")
                 command = {k: v for k, v in command.items() if k != "approval_digest"}
         result = super().handle(kind, command)

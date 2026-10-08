@@ -300,6 +300,23 @@ def load_records(client_root) -> list:
     return out
 
 
+def client_cli_homes(client_root, create=True) -> dict:
+    """ISO-1 (Phase 2 closure, 2026-10-08): the CLI homes of the CLIENT PROFILE, to be set in the worker's environment.
+
+    The worker's sanitized environment points USERPROFILE/HOME at `<client_root>/home`, which isolates Claude Code
+    (it resolves its config through the process home). Codex 0.158.0 does NOT: without CODEX_HOME it resolves the
+    Windows user profile itself and reads the OWNER's global login (observed: `codex login status` -> "Logged in using
+    ChatGPT" with only the profile variables overridden; "Not logged in" once CODEX_HOME names the client profile).
+    Pinning CODEX_HOME keeps every Codex probe and executor of this client on the client profile's own login, so a
+    shared owner login can never qualify or run a client executor (C7 stop condition "shared client authentication")."""
+    home = Path(client_root) / "home"
+    pins = {"CODEX_HOME": str(home / ".codex")}
+    if create:
+        for value in pins.values():
+            Path(value).mkdir(parents=True, exist_ok=True)
+    return pins
+
+
 def native_auth_probe(provider, executable, environ=None, timeout_s=30):
     """Live read-only authentication status. True / False / None (unknown). Never logs in, never reads a credential
     file: the CLI's own status command decides, under the same environment allow-list the executor gets."""
