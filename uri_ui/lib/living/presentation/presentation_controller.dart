@@ -5,10 +5,10 @@ enum UiPresentationMode { companion, workspace, dashboard }
 
 extension UiPresentationModeLabel on UiPresentationMode {
   String get label => switch (this) {
-        UiPresentationMode.companion => 'Companion',
-        UiPresentationMode.workspace => 'Workspace',
-        UiPresentationMode.dashboard => 'Dashboard',
-      };
+    UiPresentationMode.companion => 'Companion',
+    UiPresentationMode.workspace => 'Workspace',
+    UiPresentationMode.dashboard => 'Dashboard',
+  };
 }
 
 /// Where a mode change came from. Kept so the UI can tell the user when
@@ -56,20 +56,34 @@ UiCommand? parseLocalUiCommand(String text) {
   if (!t.startsWith('uri ')) return null;
   final word = t.substring(4).replaceAll(RegExp(r'[.!,]+$'), '').trim();
   return switch (word) {
-    'dashboard' || 'overview' => const ShowModeCommand(UiPresentationMode.dashboard),
-    'workspace' || 'work' => const ShowModeCommand(UiPresentationMode.workspace),
-    'companion' || 'minimize' || 'orb' || 'minimise' =>
-      const ShowModeCommand(UiPresentationMode.companion),
-    'tasks' => const ShowModeCommand(UiPresentationMode.workspace,
-        focus: WorkspaceFocus.tasks),
-    'documents' || 'docs' => const ShowModeCommand(UiPresentationMode.workspace,
-        focus: WorkspaceFocus.documents),
-    'intelligence' || 'brain' => const ShowModeCommand(UiPresentationMode.workspace,
-        focus: WorkspaceFocus.intelligence),
-    'settings' => const ShowModeCommand(UiPresentationMode.workspace,
-        focus: WorkspaceFocus.settings),
-    'chat' || 'conversation' => const ShowModeCommand(UiPresentationMode.workspace,
-        focus: WorkspaceFocus.conversation),
+    'dashboard' ||
+    'overview' => const ShowModeCommand(UiPresentationMode.dashboard),
+    'workspace' ||
+    'work' => const ShowModeCommand(UiPresentationMode.workspace),
+    'companion' ||
+    'minimize' ||
+    'orb' ||
+    'minimise' => const ShowModeCommand(UiPresentationMode.companion),
+    'tasks' => const ShowModeCommand(
+      UiPresentationMode.workspace,
+      focus: WorkspaceFocus.tasks,
+    ),
+    'documents' || 'docs' => const ShowModeCommand(
+      UiPresentationMode.workspace,
+      focus: WorkspaceFocus.documents,
+    ),
+    'intelligence' || 'brain' => const ShowModeCommand(
+      UiPresentationMode.workspace,
+      focus: WorkspaceFocus.intelligence,
+    ),
+    'settings' => const ShowModeCommand(
+      UiPresentationMode.workspace,
+      focus: WorkspaceFocus.settings,
+    ),
+    'chat' || 'conversation' => const ShowModeCommand(
+      UiPresentationMode.workspace,
+      focus: WorkspaceFocus.conversation,
+    ),
     _ => null,
   };
 }
@@ -87,8 +101,8 @@ class UiPresentationController extends ChangeNotifier {
     UiPresentationMode initialMode = UiPresentationMode.companion,
     this.commandCooldown = const Duration(milliseconds: 600),
     DateTime Function()? clock,
-  })  : _mode = initialMode,
-        _clock = clock ?? DateTime.now;
+  }) : _mode = initialMode,
+       _clock = clock ?? DateTime.now;
 
   final Duration commandCooldown;
   final DateTime Function() _clock;
@@ -120,7 +134,10 @@ class UiPresentationController extends ChangeNotifier {
 
   /// Command from URI (local parser today; Brain adapter later).
   /// Returns false when refused (cooldown) so the caller can tell.
-  bool apply(UiCommand command, {UiCommandOrigin origin = UiCommandOrigin.localCommand}) {
+  bool apply(
+    UiCommand command, {
+    UiCommandOrigin origin = UiCommandOrigin.localCommand,
+  }) {
     final now = _clock();
     final last = _lastCommandAt;
     if (last != null && now.difference(last) < commandCooldown) return false;
@@ -142,7 +159,11 @@ class UiPresentationController extends ChangeNotifier {
     return true;
   }
 
-  void _transition(UiPresentationMode mode, WorkspaceFocus? focus, UiCommandOrigin origin) {
+  void _transition(
+    UiPresentationMode mode,
+    WorkspaceFocus? focus,
+    UiCommandOrigin origin,
+  ) {
     var changed = false;
     if (focus != null && focus != _focus) {
       _focus = focus;

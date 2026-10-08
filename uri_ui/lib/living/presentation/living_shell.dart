@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../services/attachment_opener_service.dart';
 import '../../services/file_picker_service.dart';
@@ -31,7 +32,11 @@ class OrbDock {
         final cx = shell.width / 2;
         final cy = shell.height * 0.36;
         return OrbDock(
-          rect: Rect.fromCenter(center: Offset(cx, cy), width: size, height: size),
+          rect: Rect.fromCenter(
+            center: Offset(cx, cy),
+            width: size,
+            height: size,
+          ),
           lightAt: const Alignment(0, -0.45),
         );
       case UiPresentationMode.workspace:
@@ -78,74 +83,104 @@ class _LivingShellState extends State<LivingShell> {
           builder: (context, constraints) {
             final shellSize = Size(constraints.maxWidth, constraints.maxHeight);
             final dock = OrbDock.forMode(mode, shellSize);
-            return Scaffold(
-              backgroundColor: Colors.transparent,
-              body: AmbientBackground(
-                lightAt: dock.lightAt,
-                lightStrength: mode == UiPresentationMode.companion ? 1 : 0.6,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Mode content, cross-faded with a small drift so it
-                    // feels like the space re-arranging, not a page flip.
-                    AnimatedSwitcher(
-                      duration: UriMotion.mode,
-                      switchInCurve: UriMotion.enter,
-                      switchOutCurve: Curves.easeIn,
-                      transitionBuilder: (child, animation) {
-                        final drift = Tween<Offset>(
-                          begin: const Offset(0, 0.015),
-                          end: Offset.zero,
-                        ).animate(animation);
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(position: drift, child: child),
-                        );
-                      },
-                      layoutBuilder: (current, previous) => Stack(
-                        fit: StackFit.expand,
-                        children: [...previous, ?current],
-                      ),
-                      child: KeyedSubtree(
-                        key: ValueKey(mode),
-                        child: switch (mode) {
-                          UiPresentationMode.companion => CompanionModeView(
-                              orbRect: dock.rect,
-                              filePicker: widget.filePicker,
-                            ),
-                          UiPresentationMode.workspace => WorkspaceModeView(
-                              filePicker: widget.filePicker,
-                              attachmentOpener: widget.attachmentOpener,
-                            ),
-                          UiPresentationMode.dashboard => DashboardModeView(
-                              orbRect: dock.rect,
-                            ),
-                        },
-                      ),
-                    ),
-                    // The travelling orb.
-                    AnimatedPositioned.fromRect(
-                      duration: UriMotion.mode,
-                      curve: UriMotion.move,
-                      rect: dock.rect,
-                      child: IgnorePointer(
-                        ignoring: mode != UiPresentationMode.companion,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => services.presentation.setMode(
-                            UiPresentationMode.workspace,
+            return CallbackShortcuts(
+              // Keyboard: Esc -> Companion, Ctrl+1/2/3 -> the three forms.
+              bindings: {
+                const SingleActivator(LogicalKeyboardKey.escape): () =>
+                    services.presentation.setMode(UiPresentationMode.companion),
+                const SingleActivator(
+                  LogicalKeyboardKey.digit1,
+                  control: true,
+                ): () =>
+                    services.presentation.setMode(UiPresentationMode.companion),
+                const SingleActivator(
+                  LogicalKeyboardKey.digit2,
+                  control: true,
+                ): () =>
+                    services.presentation.setMode(UiPresentationMode.workspace),
+                const SingleActivator(
+                  LogicalKeyboardKey.digit3,
+                  control: true,
+                ): () =>
+                    services.presentation.setMode(UiPresentationMode.dashboard),
+              },
+              child: Focus(
+                autofocus: true,
+                child: Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: AmbientBackground(
+                    lightAt: dock.lightAt,
+                    lightStrength: mode == UiPresentationMode.companion
+                        ? 1
+                        : 0.6,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Mode content, cross-faded with a small drift so it
+                        // feels like the space re-arranging, not a page flip.
+                        AnimatedSwitcher(
+                          duration: UriMotion.mode,
+                          switchInCurve: UriMotion.enter,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, animation) {
+                            final drift = Tween<Offset>(
+                              begin: const Offset(0, 0.015),
+                              end: Offset.zero,
+                            ).animate(animation);
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: drift,
+                                child: child,
+                              ),
+                            );
+                          },
+                          layoutBuilder: (current, previous) => Stack(
+                            fit: StackFit.expand,
+                            children: [...previous, ?current],
                           ),
-                          child: EnergyOrb(
-                            key: LivingShell.orbKey,
-                            state: signal.state,
-                            progress: signal.progress,
-                            size: dock.rect.width,
+                          child: KeyedSubtree(
+                            key: ValueKey(mode),
+                            child: switch (mode) {
+                              UiPresentationMode.companion => CompanionModeView(
+                                orbRect: dock.rect,
+                                filePicker: widget.filePicker,
+                              ),
+                              UiPresentationMode.workspace => WorkspaceModeView(
+                                filePicker: widget.filePicker,
+                                attachmentOpener: widget.attachmentOpener,
+                              ),
+                              UiPresentationMode.dashboard => DashboardModeView(
+                                orbRect: dock.rect,
+                              ),
+                            },
                           ),
                         ),
-                      ),
+                        // The travelling orb.
+                        AnimatedPositioned.fromRect(
+                          duration: UriMotion.mode,
+                          curve: UriMotion.move,
+                          rect: dock.rect,
+                          child: IgnorePointer(
+                            ignoring: mode != UiPresentationMode.companion,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => services.presentation.setMode(
+                                UiPresentationMode.workspace,
+                              ),
+                              child: EnergyOrb(
+                                key: LivingShell.orbKey,
+                                state: signal.state,
+                                progress: signal.progress,
+                                size: dock.rect.width,
+                              ),
+                            ),
+                          ),
+                        ),
+                        _CommandNotice(services: services),
+                      ],
                     ),
-                    _CommandNotice(services: services),
-                  ],
+                  ),
                 ),
               ),
             );

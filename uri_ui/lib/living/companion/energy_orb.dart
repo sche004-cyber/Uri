@@ -153,8 +153,9 @@ class _EnergyOrbState extends State<EnergyOrb> with TickerProviderStateMixin {
               glow: glow,
               ink: colors.ink,
               canvas: colors.canvas,
-              progress:
-                  widget.state == CompanionState.working ? widget.progress : null,
+              progress: widget.state == CompanionState.working
+                  ? widget.progress
+                  : null,
               reducedEffects: effects.reducedEffects,
               program: effects.reducedEffects ? null : _program,
               field: _field,
@@ -166,12 +167,12 @@ class _EnergyOrbState extends State<EnergyOrb> with TickerProviderStateMixin {
   }
 
   static Color _tintFor(CompanionState state, UriColors c) => switch (state) {
-        CompanionState.awaitingApproval => c.warning,
-        CompanionState.success => c.success,
-        CompanionState.error => c.danger,
-        CompanionState.unavailable => c.inkFaint,
-        _ => c.accent,
-      };
+    CompanionState.awaitingApproval => c.warning,
+    CompanionState.success => c.success,
+    CompanionState.error => c.danger,
+    CompanionState.unavailable => c.inkFaint,
+    _ => c.accent,
+  };
 }
 
 /// Everything that varies between states. Lerp-able so transitions are
@@ -232,142 +233,142 @@ class OrbParams {
   final double coreScale;
 
   static OrbParams forState(CompanionState state) => switch (state) {
-        CompanionState.unavailable => const OrbParams(
-            breathRate: 0.12,
-            breathDepth: 0.015,
-            particleSpeed: 0.15,
-            particleSpread: 1.05,
-            particleAlpha: 0.25,
-            energy: 0.05,
-            turbulence: 0.0,
-            tintMix: 0.85,
-            ringStrength: 0,
-            orbitArc: 0,
-            bloom: 0,
-            rippleStrength: 0,
-            coreScale: 0.9,
-          ),
-        CompanionState.idle => const OrbParams(
-            breathRate: 0.18,
-            breathDepth: 0.035,
-            particleSpeed: 0.35,
-            particleSpread: 1.25,
-            particleAlpha: 0.55,
-            energy: 0.2,
-            turbulence: 0.1,
-            tintMix: 0,
-            ringStrength: 0,
-            orbitArc: 0,
-            bloom: 0,
-            rippleStrength: 0,
-            coreScale: 1,
-          ),
-        CompanionState.listening => const OrbParams(
-            breathRate: 0.5,
-            breathDepth: 0.05,
-            particleSpeed: 0.6,
-            particleSpread: 1.5,
-            particleAlpha: 0.7,
-            energy: 0.45,
-            turbulence: 0.1,
-            tintMix: 0,
-            ringStrength: 0.35,
-            orbitArc: 0,
-            bloom: 0,
-            rippleStrength: -1,
-            coreScale: 1.04,
-          ),
-        CompanionState.thinking => const OrbParams(
-            breathRate: 0.9,
-            breathDepth: 0.03,
-            particleSpeed: 1.6,
-            particleSpread: 1.1,
-            particleAlpha: 0.9,
-            energy: 0.85,
-            turbulence: 0.35,
-            tintMix: 0,
-            ringStrength: 0,
-            orbitArc: 0,
-            bloom: 0,
-            rippleStrength: 0,
-            coreScale: 1.02,
-          ),
-        CompanionState.speaking => const OrbParams(
-            breathRate: 2.2,
-            breathDepth: 0.06,
-            particleSpeed: 0.8,
-            particleSpread: 1.35,
-            particleAlpha: 0.8,
-            energy: 0.6,
-            turbulence: 0.15,
-            tintMix: 0,
-            ringStrength: 0,
-            orbitArc: 0,
-            bloom: 0,
-            rippleStrength: 1,
-            coreScale: 1.05,
-          ),
-        CompanionState.working => const OrbParams(
-            breathRate: 0.6,
-            breathDepth: 0.025,
-            particleSpeed: 1.1,
-            particleSpread: 1.4,
-            particleAlpha: 0.85,
-            energy: 0.7,
-            turbulence: 0.2,
-            tintMix: 0,
-            ringStrength: 0,
-            orbitArc: 1,
-            bloom: 0,
-            rippleStrength: 0,
-            coreScale: 1,
-          ),
-        CompanionState.awaitingApproval => const OrbParams(
-            breathRate: 0.45,
-            breathDepth: 0.02,
-            particleSpeed: 0.12,
-            particleSpread: 1.3,
-            particleAlpha: 0.6,
-            energy: 0.3,
-            turbulence: 0.0,
-            tintMix: 0.8,
-            ringStrength: 1,
-            orbitArc: 0,
-            bloom: 0,
-            rippleStrength: 0,
-            coreScale: 1,
-          ),
-        CompanionState.success => const OrbParams(
-            breathRate: 0.3,
-            breathDepth: 0.03,
-            particleSpeed: 0.9,
-            particleSpread: 1.6,
-            particleAlpha: 0.9,
-            energy: 0.75,
-            turbulence: 0.05,
-            tintMix: 0.9,
-            ringStrength: 0,
-            orbitArc: 0,
-            bloom: 1,
-            rippleStrength: 0,
-            coreScale: 1.08,
-          ),
-        CompanionState.error => const OrbParams(
-            breathRate: 0.25,
-            breathDepth: 0.02,
-            particleSpeed: 0.25,
-            particleSpread: 0.95,
-            particleAlpha: 0.5,
-            energy: 0.35,
-            turbulence: 0.9,
-            tintMix: 0.9,
-            ringStrength: 0.5,
-            orbitArc: 0,
-            bloom: 0,
-            rippleStrength: 0,
-            coreScale: 0.94,
-          ),
-      };
+    CompanionState.unavailable => const OrbParams(
+      breathRate: 0.12,
+      breathDepth: 0.015,
+      particleSpeed: 0.15,
+      particleSpread: 1.05,
+      particleAlpha: 0.25,
+      energy: 0.05,
+      turbulence: 0.0,
+      tintMix: 0.85,
+      ringStrength: 0,
+      orbitArc: 0,
+      bloom: 0,
+      rippleStrength: 0,
+      coreScale: 0.9,
+    ),
+    CompanionState.idle => const OrbParams(
+      breathRate: 0.18,
+      breathDepth: 0.035,
+      particleSpeed: 0.35,
+      particleSpread: 1.25,
+      particleAlpha: 0.55,
+      energy: 0.2,
+      turbulence: 0.1,
+      tintMix: 0,
+      ringStrength: 0,
+      orbitArc: 0,
+      bloom: 0,
+      rippleStrength: 0,
+      coreScale: 1,
+    ),
+    CompanionState.listening => const OrbParams(
+      breathRate: 0.5,
+      breathDepth: 0.05,
+      particleSpeed: 0.6,
+      particleSpread: 1.5,
+      particleAlpha: 0.7,
+      energy: 0.45,
+      turbulence: 0.1,
+      tintMix: 0,
+      ringStrength: 0.35,
+      orbitArc: 0,
+      bloom: 0,
+      rippleStrength: -1,
+      coreScale: 1.04,
+    ),
+    CompanionState.thinking => const OrbParams(
+      breathRate: 0.9,
+      breathDepth: 0.03,
+      particleSpeed: 1.6,
+      particleSpread: 1.1,
+      particleAlpha: 0.9,
+      energy: 0.85,
+      turbulence: 0.35,
+      tintMix: 0,
+      ringStrength: 0,
+      orbitArc: 0,
+      bloom: 0,
+      rippleStrength: 0,
+      coreScale: 1.02,
+    ),
+    CompanionState.speaking => const OrbParams(
+      breathRate: 2.2,
+      breathDepth: 0.06,
+      particleSpeed: 0.8,
+      particleSpread: 1.35,
+      particleAlpha: 0.8,
+      energy: 0.6,
+      turbulence: 0.15,
+      tintMix: 0,
+      ringStrength: 0,
+      orbitArc: 0,
+      bloom: 0,
+      rippleStrength: 1,
+      coreScale: 1.05,
+    ),
+    CompanionState.working => const OrbParams(
+      breathRate: 0.6,
+      breathDepth: 0.025,
+      particleSpeed: 1.1,
+      particleSpread: 1.4,
+      particleAlpha: 0.85,
+      energy: 0.7,
+      turbulence: 0.2,
+      tintMix: 0,
+      ringStrength: 0,
+      orbitArc: 1,
+      bloom: 0,
+      rippleStrength: 0,
+      coreScale: 1,
+    ),
+    CompanionState.awaitingApproval => const OrbParams(
+      breathRate: 0.45,
+      breathDepth: 0.02,
+      particleSpeed: 0.12,
+      particleSpread: 1.3,
+      particleAlpha: 0.6,
+      energy: 0.3,
+      turbulence: 0.0,
+      tintMix: 0.8,
+      ringStrength: 1,
+      orbitArc: 0,
+      bloom: 0,
+      rippleStrength: 0,
+      coreScale: 1,
+    ),
+    CompanionState.success => const OrbParams(
+      breathRate: 0.3,
+      breathDepth: 0.03,
+      particleSpeed: 0.9,
+      particleSpread: 1.6,
+      particleAlpha: 0.9,
+      energy: 0.75,
+      turbulence: 0.05,
+      tintMix: 0.9,
+      ringStrength: 0,
+      orbitArc: 0,
+      bloom: 1,
+      rippleStrength: 0,
+      coreScale: 1.08,
+    ),
+    CompanionState.error => const OrbParams(
+      breathRate: 0.25,
+      breathDepth: 0.02,
+      particleSpeed: 0.25,
+      particleSpread: 0.95,
+      particleAlpha: 0.5,
+      energy: 0.35,
+      turbulence: 0.9,
+      tintMix: 0.9,
+      ringStrength: 0.5,
+      orbitArc: 0,
+      bloom: 0,
+      rippleStrength: 0,
+      coreScale: 0.94,
+    ),
+  };
 
   static OrbParams lerp(OrbParams a, OrbParams b, double t) {
     double l(double x, double y) => x + (y - x) * t;
@@ -441,7 +442,8 @@ class _OrbPainter extends CustomPainter {
   void paint(Canvas c, Size size) {
     final center = size.center(Offset.zero);
     final outer = size.shortestSide / 2;
-    final breath = 1 +
+    final breath =
+        1 +
         params.breathDepth * math.sin(time * params.breathRate * math.pi * 2);
     final coreR = outer * 0.30 * params.coreScale * breath;
 
@@ -487,11 +489,7 @@ class _OrbPainter extends CustomPainter {
       // so the sphere's uv origin is the rect's top-left.
       c.save();
       c.translate(rect.left, rect.top);
-      c.drawCircle(
-        Offset(coreR, coreR),
-        coreR,
-        Paint()..shader = shader,
-      );
+      c.drawCircle(Offset(coreR, coreR), coreR, Paint()..shader = shader);
       c.restore();
     } else {
       final bright = Color.lerp(glow, Colors.white, 0.7)!;
@@ -502,8 +500,11 @@ class _OrbPainter extends CustomPainter {
           coreR * 1.15,
           [
             bright.withValues(alpha: 0.95),
-            Color.lerp(glow, bright, 0.25 + 0.25 * wobble)!
-                .withValues(alpha: 0.9),
+            Color.lerp(
+              glow,
+              bright,
+              0.25 + 0.25 * wobble,
+            )!.withValues(alpha: 0.9),
             glow.withValues(alpha: 0.75),
             Color.lerp(glow, canvas, 0.55)!.withValues(alpha: 0.9),
           ],
@@ -534,22 +535,31 @@ class _OrbPainter extends CustomPainter {
     final rim = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
-      ..color = Color.lerp(glow, Colors.white, 0.4)!
-          .withValues(alpha: 0.35 + params.energy * 0.3);
+      ..color = Color.lerp(
+        glow,
+        Colors.white,
+        0.4,
+      )!.withValues(alpha: 0.35 + params.energy * 0.3);
     if (!reducedEffects) {
       rim.maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 1.2);
     }
     c.drawCircle(center, coreR, rim);
   }
 
-  void _paintParticles(Canvas c, Offset center, double coreR,
-      {required bool behind}) {
+  void _paintParticles(
+    Canvas c,
+    Offset center,
+    double coreR, {
+    required bool behind,
+  }) {
     final paint = Paint();
     for (var i = 0; i < _particleCount; i++) {
-      final a = field.baseAngle[i] +
+      final a =
+          field.baseAngle[i] +
           time * field.speed[i] * params.particleSpeed * 0.8;
       final spread = params.particleSpread * field.radiusJitter[i];
-      final wob = math.sin(time * 1.3 + field.phase[i]) *
+      final wob =
+          math.sin(time * 1.3 + field.phase[i]) *
           (0.03 + params.turbulence * 0.12);
       final r = coreR * (spread + wob);
       // Tilted elliptical orbit: y is foreshortened by the tilt.
@@ -563,16 +573,25 @@ class _OrbPainter extends CustomPainter {
       if (behind && inside) continue; // occluded by the core
       final dAlpha = 0.45 + 0.55 * (depth + 1) / 2;
       final alpha = (params.particleAlpha * dAlpha).clamp(0.0, 1.0);
-      paint.color = Color.lerp(glow, Colors.white, 0.35 * dAlpha)!
-          .withValues(alpha: alpha);
-      final ps = field.size[i] * (0.7 + 0.5 * (depth + 1) / 2) *
+      paint.color = Color.lerp(
+        glow,
+        Colors.white,
+        0.35 * dAlpha,
+      )!.withValues(alpha: alpha);
+      final ps =
+          field.size[i] *
+          (0.7 + 0.5 * (depth + 1) / 2) *
           (coreR / 60).clamp(0.6, 2.2);
       c.drawCircle(center + Offset(x, y), ps, paint);
     }
   }
 
   void _paintStateOverlays(
-      Canvas c, Offset center, double coreR, double outer) {
+    Canvas c,
+    Offset center,
+    double coreR,
+    double outer,
+  ) {
     // Approval / error: pulsing attention ring just outside the halo core.
     if (params.ringStrength > 0.01) {
       final pulse = 0.5 + 0.5 * math.sin(time * math.pi * 1.6);
@@ -581,7 +600,8 @@ class _OrbPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.6
         ..color = glow.withValues(
-            alpha: params.ringStrength * (0.35 + 0.45 * pulse));
+          alpha: params.ringStrength * (0.35 + 0.45 * pulse),
+        );
       c.drawCircle(center, ringR, ring);
       final dots = Paint()..color = glow.withValues(alpha: params.ringStrength);
       for (var i = 0; i < 3; i++) {
@@ -606,8 +626,13 @@ class _OrbPainter extends CustomPainter {
       if (p == null) {
         final start = time * 2.4;
         c.drawArc(arcRect, start, math.pi * 0.55, false, arc);
-        c.drawArc(arcRect, start + math.pi, math.pi * 0.25, false,
-            arc..color = glow.withValues(alpha: 0.4 * params.orbitArc));
+        c.drawArc(
+          arcRect,
+          start + math.pi,
+          math.pi * 0.25,
+          false,
+          arc..color = glow.withValues(alpha: 0.4 * params.orbitArc),
+        );
       } else {
         final track = Paint()
           ..style = PaintingStyle.stroke
@@ -647,7 +672,8 @@ class _OrbPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2
           ..color = glow.withValues(
-              alpha: strength * 0.5 * (inward ? cycle : (1 - cycle)));
+            alpha: strength * 0.5 * (inward ? cycle : (1 - cycle)),
+          );
         c.drawCircle(center, rr, rp);
       }
     }

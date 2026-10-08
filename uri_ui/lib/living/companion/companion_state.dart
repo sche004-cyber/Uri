@@ -39,16 +39,16 @@ enum CompanionState {
 extension CompanionStateLabel on CompanionState {
   /// Short human label used by badges and semantics.
   String get label => switch (this) {
-        CompanionState.unavailable => 'Unavailable',
-        CompanionState.idle => 'Idle',
-        CompanionState.listening => 'Listening',
-        CompanionState.thinking => 'Thinking',
-        CompanionState.speaking => 'Speaking',
-        CompanionState.working => 'Working',
-        CompanionState.awaitingApproval => 'Needs your approval',
-        CompanionState.success => 'Done',
-        CompanionState.error => 'Attention needed',
-      };
+    CompanionState.unavailable => 'Unavailable',
+    CompanionState.idle => 'Idle',
+    CompanionState.listening => 'Listening',
+    CompanionState.thinking => 'Thinking',
+    CompanionState.speaking => 'Speaking',
+    CompanionState.working => 'Working',
+    CompanionState.awaitingApproval => 'Needs your approval',
+    CompanionState.success => 'Done',
+    CompanionState.error => 'Attention needed',
+  };
 
   /// States in which URI is waiting on the user rather than on itself.
   bool get needsUser => this == CompanionState.awaitingApproval;
@@ -73,11 +73,11 @@ class CompanionSignal {
   });
 
   const CompanionSignal.idle()
-      : state = CompanionState.idle,
-        detail = null,
-        progress = null,
-        simulated = false,
-        sourceName = 'none';
+    : state = CompanionState.idle,
+      detail = null,
+      progress = null,
+      simulated = false,
+      sourceName = 'none';
 
   final CompanionState state;
 
@@ -119,7 +119,8 @@ class CompanionSignal {
       other.sourceName == sourceName;
 
   @override
-  int get hashCode => Object.hash(state, detail, progress, simulated, sourceName);
+  int get hashCode =>
+      Object.hash(state, detail, progress, simulated, sourceName);
 
   @override
   String toString() =>

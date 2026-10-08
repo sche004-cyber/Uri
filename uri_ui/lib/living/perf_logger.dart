@@ -32,12 +32,19 @@ class PerfLogger {
 
   void _flush() {
     if (_frames.isEmpty) {
-      debugPrint('[perf] no frames in the last ${window.inSeconds}s (idle, nothing repainted)');
+      debugPrint(
+        '[perf] no frames in the last ${window.inSeconds}s (idle, nothing repainted)',
+      );
       return;
     }
-    final build = _frames.map((f) => f.buildDuration.inMicroseconds / 1000).toList()..sort();
-    final raster = _frames.map((f) => f.rasterDuration.inMicroseconds / 1000).toList()..sort();
-    final total = _frames.map((f) => f.totalSpan.inMicroseconds / 1000).toList()..sort();
+    final build =
+        _frames.map((f) => f.buildDuration.inMicroseconds / 1000).toList()
+          ..sort();
+    final raster =
+        _frames.map((f) => f.rasterDuration.inMicroseconds / 1000).toList()
+          ..sort();
+    final total = _frames.map((f) => f.totalSpan.inMicroseconds / 1000).toList()
+      ..sort();
     double p(List<double> xs, double q) => xs[((xs.length - 1) * q).round()];
     final janky = total.where((t) => t > 16.7).length;
     debugPrint(

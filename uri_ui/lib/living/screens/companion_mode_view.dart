@@ -35,7 +35,10 @@ class CompanionModeView extends StatelessWidget {
         return LayoutBuilder(
           builder: (context, constraints) {
             final narrow = constraints.maxWidth < 520;
-            final composerWidth = (constraints.maxWidth - 32).clamp(200.0, 560.0);
+            final composerWidth = (constraints.maxWidth - 32).clamp(
+              200.0,
+              560.0,
+            );
             return Column(
               children: [
                 // Space the shell's orb occupies.
@@ -72,7 +75,9 @@ class CompanionModeView extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: composerWidth),
+                            constraints: BoxConstraints(
+                              maxWidth: composerWidth,
+                            ),
                             child: Text(
                               signal.detail!,
                               textAlign: TextAlign.center,
@@ -117,21 +122,26 @@ class CompanionModeView extends StatelessWidget {
                     _ModeChip(
                       icon: Icons.view_sidebar_outlined,
                       label: 'Workspace',
-                      onTap: () => services.presentation
-                          .setMode(UiPresentationMode.workspace),
+                      onTap: () => services.presentation.setMode(
+                        UiPresentationMode.workspace,
+                      ),
                     ),
                     _ModeChip(
                       icon: Icons.grid_view_rounded,
                       label: 'Dashboard',
-                      onTap: () => services.presentation
-                          .setMode(UiPresentationMode.dashboard),
+                      onTap: () => services.presentation.setMode(
+                        UiPresentationMode.dashboard,
+                      ),
                     ),
                   ],
                 ),
                 SizedBox(height: narrow ? 14 : 22),
                 Text(
                   'Tap the orb to open the workspace',
-                  style: TextStyle(fontSize: 11, color: glass.isDark ? c.inkFaint : c.inkSoft),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: glass.isDark ? c.inkFaint : c.inkSoft,
+                  ),
                 ),
                 const SizedBox(height: 10),
               ],
@@ -163,14 +173,20 @@ class _StateDot extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
-        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 6)],
+        boxShadow: [
+          BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 6),
+        ],
       ),
     );
   }
 }
 
 class _ModeChip extends StatelessWidget {
-  const _ModeChip({required this.icon, required this.label, required this.onTap});
+  const _ModeChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -192,7 +208,14 @@ class _ModeChip extends StatelessWidget {
             children: [
               Icon(icon, size: 15, color: c.inkSoft),
               const SizedBox(width: 7),
-              Text(label, style: TextStyle(fontSize: 12.5, color: c.ink, fontWeight: FontWeight.w600)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: c.ink,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),

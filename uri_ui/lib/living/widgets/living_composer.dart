@@ -45,7 +45,9 @@ class _LivingComposerState extends State<LivingComposer> {
   void initState() {
     super.initState();
     // initState may not register an inherited dependency; read without one.
-    final appState = context.getInheritedWidgetOfExactType<AppStateScope>()!.notifier!;
+    final appState = context
+        .getInheritedWidgetOfExactType<AppStateScope>()!
+        .notifier!;
     _controller = TextEditingController(text: appState.composerDraft);
   }
 

@@ -5,14 +5,22 @@ void main() {
   group('parseLocalUiCommand', () {
     test('recognises the brief\'s demo phrases, case/space insensitive', () {
       expect(parseLocalUiCommand('URI dashboard'), isA<ShowModeCommand>());
-      expect((parseLocalUiCommand('  uri   Dashboard. ') as ShowModeCommand).mode,
-          UiPresentationMode.dashboard);
-      expect((parseLocalUiCommand('URI workspace') as ShowModeCommand).mode,
-          UiPresentationMode.workspace);
-      expect((parseLocalUiCommand('uri companion') as ShowModeCommand).mode,
-          UiPresentationMode.companion);
-      expect((parseLocalUiCommand('uri minimize') as ShowModeCommand).mode,
-          UiPresentationMode.companion);
+      expect(
+        (parseLocalUiCommand('  uri   Dashboard. ') as ShowModeCommand).mode,
+        UiPresentationMode.dashboard,
+      );
+      expect(
+        (parseLocalUiCommand('URI workspace') as ShowModeCommand).mode,
+        UiPresentationMode.workspace,
+      );
+      expect(
+        (parseLocalUiCommand('uri companion') as ShowModeCommand).mode,
+        UiPresentationMode.companion,
+      );
+      expect(
+        (parseLocalUiCommand('uri minimize') as ShowModeCommand).mode,
+        UiPresentationMode.companion,
+      );
       final tasks = parseLocalUiCommand('URI tasks') as ShowModeCommand;
       expect(tasks.mode, UiPresentationMode.workspace);
       expect(tasks.focus, WorkspaceFocus.tasks);
@@ -40,26 +48,40 @@ void main() {
       expect(notified, 1);
     });
 
-    test('a command moves the mode, records its origin, and respects the cooldown', () {
-      var now = DateTime(2026, 10, 8, 12);
-      final c = UiPresentationController(
-        commandCooldown: const Duration(seconds: 1),
-        clock: () => now,
-      );
-      expect(c.apply(const ShowModeCommand(UiPresentationMode.dashboard)), isTrue);
-      expect(c.mode, UiPresentationMode.dashboard);
-      expect(c.lastCommandOrigin, UiCommandOrigin.localCommand);
-      // Second command inside the cooldown is refused.
-      expect(c.apply(const ShowModeCommand(UiPresentationMode.workspace)), isFalse);
-      expect(c.mode, UiPresentationMode.dashboard);
-      now = now.add(const Duration(seconds: 2));
-      expect(
-        c.apply(const ShowModeCommand(UiPresentationMode.workspace, focus: WorkspaceFocus.documents)),
-        isTrue,
-      );
-      expect(c.mode, UiPresentationMode.workspace);
-      expect(c.focus, WorkspaceFocus.documents);
-    });
+    test(
+      'a command moves the mode, records its origin, and respects the cooldown',
+      () {
+        var now = DateTime(2026, 10, 8, 12);
+        final c = UiPresentationController(
+          commandCooldown: const Duration(seconds: 1),
+          clock: () => now,
+        );
+        expect(
+          c.apply(const ShowModeCommand(UiPresentationMode.dashboard)),
+          isTrue,
+        );
+        expect(c.mode, UiPresentationMode.dashboard);
+        expect(c.lastCommandOrigin, UiCommandOrigin.localCommand);
+        // Second command inside the cooldown is refused.
+        expect(
+          c.apply(const ShowModeCommand(UiPresentationMode.workspace)),
+          isFalse,
+        );
+        expect(c.mode, UiPresentationMode.dashboard);
+        now = now.add(const Duration(seconds: 2));
+        expect(
+          c.apply(
+            const ShowModeCommand(
+              UiPresentationMode.workspace,
+              focus: WorkspaceFocus.documents,
+            ),
+          ),
+          isTrue,
+        );
+        expect(c.mode, UiPresentationMode.workspace);
+        expect(c.focus, WorkspaceFocus.documents);
+      },
+    );
 
     test('back returns to the previous mode and hands control to the user', () {
       final c = UiPresentationController();

@@ -17,17 +17,24 @@ import '../companion/companion_sources.dart';
 /// `simulated: true`.
 enum WorkItemKind { letter, spreadsheet, document, email, research, other }
 
-enum WorkItemState { queued, working, awaitingApproval, completed, failed, cancelled }
+enum WorkItemState {
+  queued,
+  working,
+  awaitingApproval,
+  completed,
+  failed,
+  cancelled,
+}
 
 extension WorkItemStateLabel on WorkItemState {
   String get label => switch (this) {
-        WorkItemState.queued => 'Queued',
-        WorkItemState.working => 'In progress',
-        WorkItemState.awaitingApproval => 'Needs approval',
-        WorkItemState.completed => 'Completed',
-        WorkItemState.failed => 'Failed',
-        WorkItemState.cancelled => 'Cancelled',
-      };
+    WorkItemState.queued => 'Queued',
+    WorkItemState.working => 'In progress',
+    WorkItemState.awaitingApproval => 'Needs approval',
+    WorkItemState.completed => 'Completed',
+    WorkItemState.failed => 'Failed',
+    WorkItemState.cancelled => 'Cancelled',
+  };
 
   bool get isTerminal =>
       this == WorkItemState.completed ||
@@ -132,8 +139,8 @@ class MockWorkSimulator extends WorkItemSource {
     this.successHold = const Duration(seconds: 3),
     DateTime Function()? clock,
     bool seed = true,
-  })  : companion = companion ?? MockCompanionSource(),
-        _clock = clock ?? DateTime.now {
+  }) : companion = companion ?? MockCompanionSource(),
+       _clock = clock ?? DateTime.now {
     if (seed) _seed();
   }
 
@@ -157,43 +164,48 @@ class MockWorkSimulator extends WorkItemSource {
   List<WorkDocument> get documents => List.unmodifiable(_documents);
 
   WorkItem? get active => _items.cast<WorkItem?>().firstWhere(
-        (i) => i!.state == WorkItemState.working || i.state == WorkItemState.queued,
-        orElse: () => null,
-      );
+    (i) => i!.state == WorkItemState.working || i.state == WorkItemState.queued,
+    orElse: () => null,
+  );
 
   WorkItem? get awaiting => _items.cast<WorkItem?>().firstWhere(
-        (i) => i!.state == WorkItemState.awaitingApproval,
-        orElse: () => null,
-      );
+    (i) => i!.state == WorkItemState.awaitingApproval,
+    orElse: () => null,
+  );
 
   void _seed() {
     final now = _clock();
     _documents.addAll([
       WorkDocument(
-          id: 'doc-1',
-          name: 'Tender reply, Gangtok office.docx',
-          kind: WorkItemKind.letter,
-          modifiedAt: now.subtract(const Duration(hours: 3))),
+        id: 'doc-1',
+        name: 'Tender reply, Gangtok office.docx',
+        kind: WorkItemKind.letter,
+        modifiedAt: now.subtract(const Duration(hours: 3)),
+      ),
       WorkDocument(
-          id: 'doc-2',
-          name: 'Q3 expenses.xlsx',
-          kind: WorkItemKind.spreadsheet,
-          modifiedAt: now.subtract(const Duration(days: 1))),
+        id: 'doc-2',
+        name: 'Q3 expenses.xlsx',
+        kind: WorkItemKind.spreadsheet,
+        modifiedAt: now.subtract(const Duration(days: 1)),
+      ),
       WorkDocument(
-          id: 'doc-3',
-          name: 'Vendor comparison notes.md',
-          kind: WorkItemKind.document,
-          modifiedAt: now.subtract(const Duration(days: 2))),
+        id: 'doc-3',
+        name: 'Vendor comparison notes.md',
+        kind: WorkItemKind.document,
+        modifiedAt: now.subtract(const Duration(days: 2)),
+      ),
     ]);
-    _items.add(WorkItem(
-      id: 'w-seed-1',
-      title: 'Summarise unread supplier emails',
-      kind: WorkItemKind.email,
-      state: WorkItemState.completed,
-      createdAt: now.subtract(const Duration(minutes: 40)),
-      outputName: 'Supplier summary.md',
-      detail: 'Completed 40 minutes ago',
-    ));
+    _items.add(
+      WorkItem(
+        id: 'w-seed-1',
+        title: 'Summarise unread supplier emails',
+        kind: WorkItemKind.email,
+        state: WorkItemState.completed,
+        createdAt: now.subtract(const Duration(minutes: 40)),
+        outputName: 'Supplier summary.md',
+        detail: 'Completed 40 minutes ago',
+      ),
+    );
   }
 
   @override
@@ -236,11 +248,14 @@ class MockWorkSimulator extends WorkItemSource {
   void _startWorking(String id) {
     final item = _get(id);
     if (item == null || item.state != WorkItemState.queued) return;
-    _update(id, (w) => w.copyWith(
-          state: WorkItemState.working,
-          progress: 0.05,
-          detail: 'Drafting ${w.kind.name}',
-        ));
+    _update(
+      id,
+      (w) => w.copyWith(
+        state: WorkItemState.working,
+        progress: 0.05,
+        detail: 'Drafting ${w.kind.name}',
+      ),
+    );
     _pushCompanion();
     _schedule(id, () => _tick(id));
   }
@@ -250,12 +265,15 @@ class MockWorkSimulator extends WorkItemSource {
     if (item == null || item.state != WorkItemState.working) return;
     final next = ((item.progress ?? 0) + 0.23).clamp(0.0, 1.0);
     if (next >= 1.0) {
-      _update(id, (w) => w.copyWith(
-            state: WorkItemState.awaitingApproval,
-            progress: 1,
-            detail: 'Draft ready',
-            approvalSummary: 'Save "${_outputNameFor(w)}" to your documents',
-          ));
+      _update(
+        id,
+        (w) => w.copyWith(
+          state: WorkItemState.awaitingApproval,
+          progress: 1,
+          detail: 'Draft ready',
+          approvalSummary: 'Save "${_outputNameFor(w)}" to your documents',
+        ),
+      );
       _pushCompanion();
       return;
     }
@@ -279,14 +297,22 @@ class MockWorkSimulator extends WorkItemSource {
     final item = _get(id);
     if (item == null || item.state != WorkItemState.awaitingApproval) return;
     final name = _outputNameFor(item);
-    _update(id, (w) => w.copyWith(
-          state: WorkItemState.completed,
-          detail: 'Saved',
-          outputName: name,
-        ));
+    _update(
+      id,
+      (w) => w.copyWith(
+        state: WorkItemState.completed,
+        detail: 'Saved',
+        outputName: name,
+      ),
+    );
     _documents.insert(
       0,
-      WorkDocument(id: 'doc-$id', name: name, kind: item.kind, modifiedAt: _clock()),
+      WorkDocument(
+        id: 'doc-$id',
+        name: name,
+        kind: item.kind,
+        modifiedAt: _clock(),
+      ),
     );
     companion.emit(CompanionState.success, detail: 'Saved $name');
     _successTimer?.cancel();
@@ -299,7 +325,10 @@ class MockWorkSimulator extends WorkItemSource {
     final item = _get(id);
     if (item == null || item.state.isTerminal) return;
     _timers.remove(id)?.cancel();
-    _update(id, (w) => w.copyWith(state: WorkItemState.cancelled, detail: 'Cancelled'));
+    _update(
+      id,
+      (w) => w.copyWith(state: WorkItemState.cancelled, detail: 'Cancelled'),
+    );
     _pushCompanion();
   }
 
@@ -308,7 +337,10 @@ class MockWorkSimulator extends WorkItemSource {
     if (_successTimer?.isActive ?? false) return; // let the bloom finish
     final waiting = awaiting;
     if (waiting != null) {
-      companion.emit(CompanionState.awaitingApproval, detail: waiting.approvalSummary);
+      companion.emit(
+        CompanionState.awaitingApproval,
+        detail: waiting.approvalSummary,
+      );
       return;
     }
     final running = active;

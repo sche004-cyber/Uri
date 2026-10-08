@@ -153,7 +153,7 @@ class UriColors extends ThemeExtension<UriColors> {
   static const obsidianCyan = UriColors(
     ink: Color(0xFFE6EEF5),
     inkSoft: Color(0xFF9FB0C0),
-    inkFaint: Color(0xFF5F6F80),
+    inkFaint: Color(0xFF70849A),
     canvas: Color(0xFF070A0F),
     surface: Color(0xFF0E131A),
     surfaceSunken: Color(0xFF141B24),

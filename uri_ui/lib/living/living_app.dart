@@ -93,7 +93,9 @@ class _LivingAppState extends State<LivingApp> {
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
-    final done = widget.skipOnboarding || (prefs.getBool(LivingPrefs.onboardingDone) ?? false);
+    final done =
+        widget.skipOnboarding ||
+        (prefs.getBool(LivingPrefs.onboardingDone) ?? false);
     final reduced = prefs.getBool(LivingPrefs.reducedEffects);
     final themeName = prefs.getString(LivingPrefs.themeChoice);
     setState(() {
@@ -148,9 +150,9 @@ class _LivingAppState extends State<LivingApp> {
                 null => const Scaffold(body: SizedBox.shrink()),
                 false => LivingOnboardingFlow(onFinished: _finishOnboarding),
                 true => LivingShell(
-                    filePicker: widget.filePicker,
-                    attachmentOpener: widget.attachmentOpener,
-                  ),
+                  filePicker: widget.filePicker,
+                  attachmentOpener: widget.attachmentOpener,
+                ),
               },
             ),
           ),

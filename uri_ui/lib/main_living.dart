@@ -49,15 +49,27 @@ Future<void> main() async {
       .where((f) => f.name == env['URI_LIVING_START_FOCUS'])
       .firstOrNull;
   if (mode != null || focus != null) {
-    services.presentation.setMode(mode ?? services.presentation.mode, focus: focus);
+    services.presentation.setMode(
+      mode ?? services.presentation.mode,
+      focus: focus,
+    );
   }
   final demoState = CompanionState.values
       .where((s) => s.name == env['URI_LIVING_DEMO_STATE'])
       .firstOrNull;
   if (demoState != null) {
-    services.demo.emit(demoState, detail: 'Demo state from URI_LIVING_DEMO_STATE');
+    services.demo.emit(
+      demoState,
+      detail: 'Demo state from URI_LIVING_DEMO_STATE',
+    );
   }
-  if (flag('URI_LIVING_REDUCED_EFFECTS')) services.effects.setReducedEffects(true);
+  if (flag('URI_LIVING_REDUCED_EFFECTS')) {
+    services.effects.setReducedEffects(true);
+  }
+  // Accessibility: the OS "reduce motion" signal stops the orb's continuous
+  // ticker from the first frame (state still shows by tint, ring and badge).
+  final a11y = WidgetsBinding.instance.platformDispatcher.accessibilityFeatures;
+  if (a11y.disableAnimations) services.effects.setReducedMotion(true);
   if (flag('URI_LIVING_PERF')) PerfLogger().install();
 
   runApp(

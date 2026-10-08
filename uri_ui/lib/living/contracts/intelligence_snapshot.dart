@@ -10,21 +10,30 @@ import 'package:flutter/foundation.dart';
 /// current; it never shows invented reasoning text, token streams or
 /// made-up timings. When no execution is in flight, every stage is
 /// [StageState.idle].
-enum PipelineStage { request, intent, route, harness, model, approval, execution, receipt }
+enum PipelineStage {
+  request,
+  intent,
+  route,
+  harness,
+  model,
+  approval,
+  execution,
+  receipt,
+}
 
 enum StageState { idle, active, done, blocked, failed }
 
 extension PipelineStageLabel on PipelineStage {
   String get label => switch (this) {
-        PipelineStage.request => 'Request',
-        PipelineStage.intent => 'Intent',
-        PipelineStage.route => 'Route (Edge / Core)',
-        PipelineStage.harness => 'Harness',
-        PipelineStage.model => 'Model',
-        PipelineStage.approval => 'Approval',
-        PipelineStage.execution => 'Execution',
-        PipelineStage.receipt => 'Receipt',
-      };
+    PipelineStage.request => 'Request',
+    PipelineStage.intent => 'Intent',
+    PipelineStage.route => 'Route (Edge / Core)',
+    PipelineStage.harness => 'Harness',
+    PipelineStage.model => 'Model',
+    PipelineStage.approval => 'Approval',
+    PipelineStage.execution => 'Execution',
+    PipelineStage.receipt => 'Receipt',
+  };
 }
 
 @immutable

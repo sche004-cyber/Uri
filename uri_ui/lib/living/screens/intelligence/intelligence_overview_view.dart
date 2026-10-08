@@ -26,11 +26,16 @@ IntelligenceSnapshot deriveIntelligenceSnapshot({
   required AppState appState,
   required LivingServices services,
 }) {
-  final hasRequest = appState.conversation.isNotEmpty ||
+  final hasRequest =
+      appState.conversation.isNotEmpty ||
       services.work.items.any((i) => !i.state.isTerminal);
-  final lastTurn = appState.conversation.isEmpty ? null : appState.conversation.last;
+  final lastTurn = appState.conversation.isEmpty
+      ? null
+      : appState.conversation.last;
   final harnessId = services.selectedHarness.value;
-  final harness = services.readiness.harnesses.where((h) => h.id == harnessId).toList();
+  final harness = services.readiness.harnesses
+      .where((h) => h.id == harnessId)
+      .toList();
   final st = signal.state;
 
   StageState s(PipelineStage stage) {
@@ -41,14 +46,22 @@ IntelligenceSnapshot deriveIntelligenceSnapshot({
         if (st == CompanionState.thinking) return StageState.active;
         return hasRequest ? StageState.done : StageState.idle;
       case PipelineStage.route:
-        return hasRequest && st != CompanionState.thinking ? StageState.done : StageState.idle;
+        return hasRequest && st != CompanionState.thinking
+            ? StageState.done
+            : StageState.idle;
       case PipelineStage.harness:
-        return harness.isNotEmpty && hasRequest ? StageState.done : StageState.idle;
+        return harness.isNotEmpty && hasRequest
+            ? StageState.done
+            : StageState.idle;
       case PipelineStage.model:
-        return appState.activeBrain != null && hasRequest ? StageState.done : StageState.idle;
+        return appState.activeBrain != null && hasRequest
+            ? StageState.done
+            : StageState.idle;
       case PipelineStage.approval:
         if (st == CompanionState.awaitingApproval) return StageState.blocked;
-        if (st == CompanionState.working || st == CompanionState.success) return StageState.done;
+        if (st == CompanionState.working || st == CompanionState.success) {
+          return StageState.done;
+        }
         return StageState.idle;
       case PipelineStage.execution:
         if (st == CompanionState.working) return StageState.active;
@@ -76,22 +89,28 @@ IntelligenceSnapshot deriveIntelligenceSnapshot({
           state: s(stage),
           detail: switch (stage) {
             PipelineStage.route => hasRequest ? 'Core (mock client)' : null,
-            PipelineStage.harness => harness.isEmpty ? null : harness.first.displayName,
+            PipelineStage.harness =>
+              harness.isEmpty ? null : harness.first.displayName,
             PipelineStage.model => appState.activeBrain?.model,
-            PipelineStage.approval => st == CompanionState.awaitingApproval ? signal.detail : null,
-            PipelineStage.execution => st == CompanionState.working ? signal.detail : null,
+            PipelineStage.approval =>
+              st == CompanionState.awaitingApproval ? signal.detail : null,
+            PipelineStage.execution =>
+              st == CompanionState.working ? signal.detail : null,
             _ => null,
           },
         ),
     ],
     routing: hasRequest ? 'core' : 'none',
     harnessName: harness.isEmpty ? null : harness.first.displayName,
-    providerName: appState.activeBrain?.displayName ?? appState.activeBrain?.providerId,
+    providerName:
+        appState.activeBrain?.displayName ?? appState.activeBrain?.providerId,
     modelName: appState.activeBrain?.model,
     memoryNodes: nodes,
     memoryEdges: edges,
     simulated: services.appDataIsMock || signal.simulated,
-    lastError: st == CompanionState.error ? signal.detail : appState.lastConnectionErrorDetail,
+    lastError: st == CompanionState.error
+        ? signal.detail
+        : appState.lastConnectionErrorDetail,
   );
 }
 
@@ -110,7 +129,9 @@ List<MemoryEdge> _sharedTermEdges(List<MemoryEntry> memories) {
     for (var j = i + 1; j < ids.length; j++) {
       final shared = words[ids[i]]!.intersection(words[ids[j]]!);
       if (shared.isNotEmpty) {
-        edges.add(MemoryEdge(ids[i], ids[j], reason: 'shares "${shared.first}"'));
+        edges.add(
+          MemoryEdge(ids[i], ids[j], reason: 'shares "${shared.first}"'),
+        );
       }
     }
   }
@@ -123,7 +144,8 @@ class IntelligenceOverviewView extends StatefulWidget {
   const IntelligenceOverviewView({super.key});
 
   @override
-  State<IntelligenceOverviewView> createState() => _IntelligenceOverviewViewState();
+  State<IntelligenceOverviewView> createState() =>
+      _IntelligenceOverviewViewState();
 }
 
 class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
@@ -161,8 +183,12 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
         final left = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Eyebrow('Request pipeline',
-                trailing: snap.simulated ? const StatusBadge.simulated(compact: true) : null),
+            Eyebrow(
+              'Request pipeline',
+              trailing: snap.simulated
+                  ? const StatusBadge.simulated(compact: true)
+                  : null,
+            ),
             const SizedBox(height: 8),
             GlassPanel(child: _PipelineStrip(stages: snap.stages)),
             const SizedBox(height: UriSpace.lg),
@@ -172,13 +198,20 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _Fact('Routing', snap.routing == 'none' ? 'No request in flight' : 'Core'),
-                  _Fact('Edge', 'Not present in this tree (Edge routing is a Core-side decision)'),
+                  _Fact(
+                    'Routing',
+                    snap.routing == 'none' ? 'No request in flight' : 'Core',
+                  ),
+                  _Fact(
+                    'Edge',
+                    'Not present in this tree (Edge routing is a Core-side decision)',
+                  ),
                   _Fact('Harness', snap.harnessName ?? 'None selected'),
                   _Fact('Provider', snap.providerName ?? 'Not set'),
                   _Fact('Model', snap.modelName ?? '—'),
                   _Fact('Reasoning', services.reasoningMode.value.label),
-                  if (snap.lastError != null) _Fact('Last error', snap.lastError!, danger: true),
+                  if (snap.lastError != null)
+                    _Fact('Last error', snap.lastError!, danger: true),
                 ],
               ),
             ),
@@ -196,22 +229,32 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                         children: [
                           SizedBox(
                             width: 110,
-                            child: Text(s.sourceName ?? 'none',
-                                style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
+                            child: Text(
+                              s.sourceName ?? 'none',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: c.inkFaint,
+                              ),
+                            ),
                           ),
                           Expanded(
-                            child: Text('${s.state.label}${s.detail != null ? ' · ${s.detail}' : ''}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12.5, color: c.ink)),
+                            child: Text(
+                              '${s.state.label}${s.detail != null ? ' · ${s.detail}' : ''}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12.5, color: c.ink),
+                            ),
                           ),
-                          if (s.simulated) const StatusBadge.simulated(compact: true),
+                          if (s.simulated)
+                            const StatusBadge.simulated(compact: true),
                         ],
                       ),
                     ),
                   const SizedBox(height: 4),
-                  Text('The orb shows the highest-priority signal above. Nothing here is URI\'s internal reasoning; these are observed states.',
-                      style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
+                  Text(
+                    'The orb shows the highest-priority signal above. Nothing here is URI\'s internal reasoning; these are observed states.',
+                    style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                  ),
                 ],
               ),
             ),
@@ -260,7 +303,9 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final w in services.work.items.where((i) => !i.state.isTerminal))
+                  for (final w in services.work.items.where(
+                    (i) => !i.state.isTerminal,
+                  ))
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 3),
                       child: Row(
@@ -270,16 +315,21 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                                 ? Icons.rule_rounded
                                 : Icons.autorenew_rounded,
                             size: 14,
-                            color: w.state == WorkItemState.awaitingApproval ? c.warning : c.accent,
+                            color: w.state == WorkItemState.awaitingApproval
+                                ? c.warning
+                                : c.accent,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text('${w.title} · ${w.state.label}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12.5, color: c.ink)),
+                            child: Text(
+                              '${w.title} · ${w.state.label}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12.5, color: c.ink),
+                            ),
                           ),
-                          if (w.simulated) const StatusBadge.simulated(compact: true),
+                          if (w.simulated)
+                            const StatusBadge.simulated(compact: true),
                         ],
                       ),
                     ),
@@ -291,23 +341,34 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                           Icon(Icons.rule_rounded, size: 14, color: c.warning),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text('${t.description} · Needs approval',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12.5, color: c.ink)),
+                            child: Text(
+                              '${t.description} · Needs approval',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12.5, color: c.ink),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  if (services.work.items.every((i) => i.state.isTerminal) && appState.tasks.isEmpty)
-                    Text('Nothing active.', style: TextStyle(fontSize: 12.5, color: c.inkFaint)),
+                  if (services.work.items.every((i) => i.state.isTerminal) &&
+                      appState.tasks.isEmpty)
+                    Text(
+                      'Nothing active.',
+                      style: TextStyle(fontSize: 12.5, color: c.inkFaint),
+                    ),
                 ],
               ),
             ),
           ],
         );
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(UriSpace.md, 0, UriSpace.md, UriSpace.lg),
+          padding: const EdgeInsets.fromLTRB(
+            UriSpace.md,
+            0,
+            UriSpace.md,
+            UriSpace.lg,
+          ),
           child: wide
               ? Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -317,7 +378,13 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                     Expanded(child: right),
                   ],
                 )
-              : Column(children: [left, const SizedBox(height: UriSpace.lg), right]),
+              : Column(
+                  children: [
+                    left,
+                    const SizedBox(height: UriSpace.lg),
+                    right,
+                  ],
+                ),
         );
       },
     );
@@ -336,8 +403,15 @@ class _PrototypeBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: c.warning.withValues(alpha: 0.4)),
       ),
-      child: Text('PROTOTYPE',
-          style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: c.warning)),
+      child: Text(
+        'PROTOTYPE',
+        style: TextStyle(
+          fontSize: 9.5,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.6,
+          color: c.warning,
+        ),
+      ),
     );
   }
 }
@@ -355,10 +429,18 @@ class _Fact extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 90, child: Text(k, style: TextStyle(fontSize: 11.5, color: c.inkFaint))),
+          SizedBox(
+            width: 90,
+            child: Text(k, style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
+          ),
           Expanded(
-            child: Text(v,
-                style: TextStyle(fontSize: 12.5, color: danger ? c.danger : c.ink)),
+            child: Text(
+              v,
+              style: TextStyle(
+                fontSize: 12.5,
+                color: danger ? c.danger : c.ink,
+              ),
+            ),
           ),
         ],
       ),
@@ -385,7 +467,9 @@ class _PipelineStrip extends StatelessWidget {
               Semantics(
                 label: '${f.stage.label}: ${f.state.name}',
                 child: SizedBox(
-                  width: narrow ? (constraints.maxWidth - 6) / 2 : (constraints.maxWidth - 6 * 3) / 4,
+                  width: narrow
+                      ? (constraints.maxWidth - 6) / 2
+                      : (constraints.maxWidth - 6 * 3) / 4,
                   child: Row(
                     children: [
                       _StageDot(state: f.state),
@@ -394,18 +478,29 @@ class _PipelineStrip extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(f.stage.label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: f.state == StageState.active ? FontWeight.w700 : FontWeight.w500,
-                                  color: f.state == StageState.idle ? c.inkFaint : c.ink,
-                                )),
-                            Text(f.detail ?? f.state.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 10.5, color: c.inkFaint)),
+                            Text(
+                              f.stage.label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: f.state == StageState.active
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: f.state == StageState.idle
+                                    ? c.inkFaint
+                                    : c.ink,
+                              ),
+                            ),
+                            Text(
+                              f.detail ?? f.state.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: c.inkFaint,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -467,10 +562,16 @@ class _MemoryGraphPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (nodes.isEmpty) {
       final tp = TextPainter(
-        text: TextSpan(text: 'No memory entries', style: TextStyle(color: faint, fontSize: 12)),
+        text: TextSpan(
+          text: 'No memory entries',
+          style: TextStyle(color: faint, fontSize: 12),
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
-      tp.paint(canvas, size.center(Offset.zero) - Offset(tp.width / 2, tp.height / 2));
+      tp.paint(
+        canvas,
+        size.center(Offset.zero) - Offset(tp.width / 2, tp.height / 2),
+      );
       return;
     }
     final center = size.center(Offset.zero);
@@ -494,15 +595,26 @@ class _MemoryGraphPainter extends CustomPainter {
       final p = positions[n.id]!;
       canvas.drawCircle(p, 9, haloPaint);
       canvas.drawCircle(p, 4, nodePaint);
-      final label = n.label.length > 22 ? '${n.label.substring(0, 21)}…' : n.label;
+      final label = n.label.length > 22
+          ? '${n.label.substring(0, 21)}…'
+          : n.label;
       final tp = TextPainter(
-        text: TextSpan(text: label, style: TextStyle(color: ink, fontSize: 10.5)),
+        text: TextSpan(
+          text: label,
+          style: TextStyle(color: ink, fontSize: 10.5),
+        ),
         textDirection: TextDirection.ltr,
         maxLines: 1,
         ellipsis: '…',
       )..layout(maxWidth: 120);
       final toRight = p.dx >= center.dx;
-      tp.paint(canvas, Offset(toRight ? p.dx + 10 : p.dx - 10 - tp.width, p.dy - tp.height / 2));
+      tp.paint(
+        canvas,
+        Offset(
+          toRight ? p.dx + 10 : p.dx - 10 - tp.width,
+          p.dy - tp.height / 2,
+        ),
+      );
     }
   }
 

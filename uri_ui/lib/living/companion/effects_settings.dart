@@ -15,8 +15,8 @@ import 'package:flutter/widgets.dart';
 /// and particles stop orbiting (they still render, statically).
 class EffectsSettings extends ChangeNotifier {
   EffectsSettings({bool reducedEffects = false, bool reducedMotion = false})
-      : _reducedEffects = reducedEffects,
-        _reducedMotion = reducedMotion;
+    : _reducedEffects = reducedEffects,
+      _reducedMotion = reducedMotion;
   // ignore_for_file: prefer_initializing_formals
 
   bool _reducedEffects;
@@ -38,8 +38,8 @@ class EffectsSettings extends ChangeNotifier {
   }
 
   static EffectsSettings of(BuildContext context) {
-    final scope =
-        context.dependOnInheritedWidgetOfExactType<EffectsSettingsScope>();
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<EffectsSettingsScope>();
     return scope?.notifier ?? _fallback;
   }
 

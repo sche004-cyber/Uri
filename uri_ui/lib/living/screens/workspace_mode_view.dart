@@ -81,15 +81,18 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
                           child: KeyedSubtree(
                             key: ValueKey(focus),
                             child: switch (focus) {
-                              WorkspaceFocus.conversation => _ConversationRegion(
+                              WorkspaceFocus.conversation =>
+                                _ConversationRegion(
                                   filePicker: widget.filePicker,
                                   attachmentOpener: widget.attachmentOpener,
                                 ),
                               WorkspaceFocus.tasks => const TasksRegion(),
-                              WorkspaceFocus.documents => const DocumentsRegion(),
+                              WorkspaceFocus.documents =>
+                                const DocumentsRegion(),
                               WorkspaceFocus.intelligence =>
                                 const IntelligenceOverviewView(),
-                              WorkspaceFocus.settings => const WorkspaceSettingsRegion(),
+                              WorkspaceFocus.settings =>
+                                const WorkspaceSettingsRegion(),
                             },
                           ),
                         ),
@@ -123,7 +126,11 @@ class _Rail extends StatelessWidget {
     final glass = UriGlass.of(context);
     final width = expanded ? 200.0 : 88.0;
     const items = [
-      (WorkspaceFocus.conversation, Icons.chat_bubble_outline_rounded, 'Conversation'),
+      (
+        WorkspaceFocus.conversation,
+        Icons.chat_bubble_outline_rounded,
+        'Conversation',
+      ),
       (WorkspaceFocus.tasks, Icons.check_circle_outline_rounded, 'Tasks'),
       (WorkspaceFocus.documents, Icons.description_outlined, 'Documents'),
       (WorkspaceFocus.intelligence, Icons.hub_outlined, 'Intelligence'),
@@ -179,14 +186,16 @@ class _Rail extends StatelessWidget {
             label: 'Dashboard',
             expanded: expanded,
             selected: false,
-            onTap: () => services.presentation.setMode(UiPresentationMode.dashboard),
+            onTap: () =>
+                services.presentation.setMode(UiPresentationMode.dashboard),
           ),
           _RailItem(
             icon: Icons.blur_circular_rounded,
             label: 'Companion',
             expanded: expanded,
             selected: false,
-            onTap: () => services.presentation.setMode(UiPresentationMode.companion),
+            onTap: () =>
+                services.presentation.setMode(UiPresentationMode.companion),
           ),
           const SizedBox(height: 10),
         ],
@@ -213,9 +222,14 @@ class _RailItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = UriColors.of(context);
     final child = Padding(
-      padding: EdgeInsets.symmetric(horizontal: expanded ? 14 : 0, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: expanded ? 14 : 0,
+        vertical: 10,
+      ),
       child: Row(
-        mainAxisAlignment: expanded ? MainAxisAlignment.start : MainAxisAlignment.center,
+        mainAxisAlignment: expanded
+            ? MainAxisAlignment.start
+            : MainAxisAlignment.center,
         children: [
           Icon(icon, size: 19, color: selected ? c.accent : c.inkSoft),
           if (expanded) ...[
@@ -277,12 +291,21 @@ class _FocusHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: UriSpace.md),
         child: Row(
           children: [
-            Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: c.ink)),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: c.ink,
+              ),
+            ),
             const Spacer(),
             IconButton(
               tooltip: contextOpen ? 'Hide context' : 'Show context',
               icon: Icon(
-                contextOpen ? Icons.view_sidebar_rounded : Icons.view_sidebar_outlined,
+                contextOpen
+                    ? Icons.view_sidebar_rounded
+                    : Icons.view_sidebar_outlined,
                 size: 18,
               ),
               color: c.inkSoft,
@@ -315,7 +338,12 @@ class _ConversationRegion extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(UriSpace.md, 0, UriSpace.md, UriSpace.md),
+          padding: const EdgeInsets.fromLTRB(
+            UriSpace.md,
+            0,
+            UriSpace.md,
+            UriSpace.md,
+          ),
           child: LivingComposer(filePicker: filePicker, autofocus: true),
         ),
       ],
@@ -339,19 +367,32 @@ class TasksRegion extends StatelessWidget {
       listenable: Listenable.merge([services.work, appState]),
       builder: (context, _) {
         final items = services.work.items;
-        final waiting = items.where((i) => i.state == WorkItemState.awaitingApproval).toList();
+        final waiting = items
+            .where((i) => i.state == WorkItemState.awaitingApproval)
+            .toList();
         final running = items
-            .where((i) => i.state == WorkItemState.working || i.state == WorkItemState.queued)
+            .where(
+              (i) =>
+                  i.state == WorkItemState.working ||
+                  i.state == WorkItemState.queued,
+            )
             .toList();
         final done = items.where((i) => i.state.isTerminal).toList();
         final pending = appState.tasks;
         return ListView(
-          padding: const EdgeInsets.fromLTRB(UriSpace.md, 0, UriSpace.md, UriSpace.lg),
+          padding: const EdgeInsets.fromLTRB(
+            UriSpace.md,
+            0,
+            UriSpace.md,
+            UriSpace.lg,
+          ),
           children: [
             Eyebrow(
               'Needs your decision',
-              trailing: Text('${waiting.length + pending.length}',
-                  style: TextStyle(fontSize: 11, color: c.inkFaint)),
+              trailing: Text(
+                '${waiting.length + pending.length}',
+                style: TextStyle(fontSize: 11, color: c.inkFaint),
+              ),
             ),
             const SizedBox(height: 8),
             if (waiting.isEmpty && pending.isEmpty)
@@ -367,7 +408,8 @@ class TasksRegion extends StatelessWidget {
             Eyebrow(
               'History',
               trailing: TextButton(
-                onPressed: () => services.presentation.setFocus(WorkspaceFocus.documents),
+                onPressed: () =>
+                    services.presentation.setFocus(WorkspaceFocus.documents),
                 child: const Text('New work'),
               ),
             ),
@@ -386,9 +428,12 @@ class _EmptyLine extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Text(text, style: TextStyle(fontSize: 13, color: UriColors.of(context).inkFaint)),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    child: Text(
+      text,
+      style: TextStyle(fontSize: 13, color: UriColors.of(context).inkFaint),
+    ),
+  );
 }
 
 class _WorkApprovalCard extends StatelessWidget {
@@ -411,15 +456,19 @@ class _WorkApprovalCard extends StatelessWidget {
                 Icon(Icons.rule_rounded, size: 16, color: c.warning),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(item.title,
-                      style: TextStyle(fontWeight: FontWeight.w600, color: c.ink)),
+                  child: Text(
+                    item.title,
+                    style: TextStyle(fontWeight: FontWeight.w600, color: c.ink),
+                  ),
                 ),
                 if (item.simulated) const StatusBadge.simulated(compact: true),
               ],
             ),
             const SizedBox(height: 6),
-            Text(item.approvalSummary ?? 'Approve to continue',
-                style: TextStyle(fontSize: 13, color: c.inkSoft)),
+            Text(
+              item.approvalSummary ?? 'Approve to continue',
+              style: TextStyle(fontSize: 13, color: c.inkSoft),
+            ),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -467,15 +516,20 @@ class _PendingTaskCard extends StatelessWidget {
                 Icon(Icons.rule_rounded, size: 16, color: c.warning),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(task.description,
-                      style: TextStyle(fontWeight: FontWeight.w600, color: c.ink)),
+                  child: Text(
+                    task.description,
+                    style: TextStyle(fontWeight: FontWeight.w600, color: c.ink),
+                  ),
                 ),
-                if (services.appDataIsMock) const StatusBadge.simulated(compact: true),
+                if (services.appDataIsMock)
+                  const StatusBadge.simulated(compact: true),
               ],
             ),
             const SizedBox(height: 4),
-            Text('${task.capabilityId} · risk ${task.risk}',
-                style: TextStyle(fontSize: 12, color: c.inkFaint)),
+            Text(
+              '${task.capabilityId} · risk ${task.risk}',
+              style: TextStyle(fontSize: 12, color: c.inkFaint),
+            ),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -514,10 +568,15 @@ class _WorkProgressCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(item.title,
-                      style: TextStyle(fontWeight: FontWeight.w600, color: c.ink)),
+                  child: Text(
+                    item.title,
+                    style: TextStyle(fontWeight: FontWeight.w600, color: c.ink),
+                  ),
                 ),
-                Text(item.state.label, style: TextStyle(fontSize: 12, color: c.inkSoft)),
+                Text(
+                  item.state.label,
+                  style: TextStyle(fontSize: 12, color: c.inkSoft),
+                ),
                 const SizedBox(width: 8),
                 if (item.simulated) const StatusBadge.simulated(compact: true),
                 IconButton(
@@ -540,7 +599,10 @@ class _WorkProgressCard extends StatelessWidget {
             ),
             if (item.detail != null) ...[
               const SizedBox(height: 6),
-              Text(item.detail!, style: TextStyle(fontSize: 12, color: c.inkFaint)),
+              Text(
+                item.detail!,
+                style: TextStyle(fontSize: 12, color: c.inkFaint),
+              ),
             ],
           ],
         ),
@@ -568,10 +630,16 @@ class _WorkHistoryRow extends StatelessWidget {
           Icon(icon, size: 16, color: color),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(item.title, style: TextStyle(fontSize: 13, color: c.ink)),
+            child: Text(
+              item.title,
+              style: TextStyle(fontSize: 13, color: c.ink),
+            ),
           ),
           if (item.outputName != null)
-            Text(item.outputName!, style: TextStyle(fontSize: 12, color: c.inkFaint)),
+            Text(
+              item.outputName!,
+              style: TextStyle(fontSize: 12, color: c.inkFaint),
+            ),
         ],
       ),
     );
@@ -590,17 +658,42 @@ class DocumentsRegion extends StatelessWidget {
     final services = LivingScope.of(context);
     final c = UriColors.of(context);
     const templates = [
-      (WorkItemKind.letter, Icons.mail_outline_rounded, 'Letter', 'Draft a letter'),
-      (WorkItemKind.spreadsheet, Icons.table_chart_outlined, 'Spreadsheet', 'Build a sheet'),
-      (WorkItemKind.document, Icons.article_outlined, 'Document', 'Write a document'),
-      (WorkItemKind.research, Icons.travel_explore_rounded, 'Research', 'Research a topic'),
+      (
+        WorkItemKind.letter,
+        Icons.mail_outline_rounded,
+        'Letter',
+        'Draft a letter',
+      ),
+      (
+        WorkItemKind.spreadsheet,
+        Icons.table_chart_outlined,
+        'Spreadsheet',
+        'Build a sheet',
+      ),
+      (
+        WorkItemKind.document,
+        Icons.article_outlined,
+        'Document',
+        'Write a document',
+      ),
+      (
+        WorkItemKind.research,
+        Icons.travel_explore_rounded,
+        'Research',
+        'Research a topic',
+      ),
     ];
     return ListenableBuilder(
       listenable: services.work,
       builder: (context, _) {
         final docs = services.work.documents;
         return ListView(
-          padding: const EdgeInsets.fromLTRB(UriSpace.md, 0, UriSpace.md, UriSpace.lg),
+          padding: const EdgeInsets.fromLTRB(
+            UriSpace.md,
+            0,
+            UriSpace.md,
+            UriSpace.lg,
+          ),
           children: [
             Eyebrow(
               'Start new work',
@@ -632,19 +725,26 @@ class DocumentsRegion extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: GlassPanel(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   child: Row(
                     children: [
                       Icon(_iconFor(d.kind), size: 18, color: c.accentInk),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(d.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 13, color: c.ink)),
+                        child: Text(
+                          d.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 13, color: c.ink),
+                        ),
                       ),
-                      Text(_relative(d.modifiedAt),
-                          style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
+                      Text(
+                        _relative(d.modifiedAt),
+                        style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                      ),
                       if (d.simulated) ...[
                         const SizedBox(width: 8),
                         const StatusBadge.simulated(compact: true),
@@ -660,13 +760,13 @@ class DocumentsRegion extends StatelessWidget {
   }
 
   static IconData _iconFor(WorkItemKind k) => switch (k) {
-        WorkItemKind.letter => Icons.mail_outline_rounded,
-        WorkItemKind.spreadsheet => Icons.table_chart_outlined,
-        WorkItemKind.document => Icons.article_outlined,
-        WorkItemKind.email => Icons.alternate_email_rounded,
-        WorkItemKind.research => Icons.travel_explore_rounded,
-        WorkItemKind.other => Icons.insert_drive_file_outlined,
-      };
+    WorkItemKind.letter => Icons.mail_outline_rounded,
+    WorkItemKind.spreadsheet => Icons.table_chart_outlined,
+    WorkItemKind.document => Icons.article_outlined,
+    WorkItemKind.email => Icons.alternate_email_rounded,
+    WorkItemKind.research => Icons.travel_explore_rounded,
+    WorkItemKind.other => Icons.insert_drive_file_outlined,
+  };
 
   static String _relative(DateTime t) {
     final d = DateTime.now().difference(t);
@@ -678,7 +778,11 @@ class DocumentsRegion extends StatelessWidget {
 }
 
 class _TemplateTile extends StatelessWidget {
-  const _TemplateTile({required this.icon, required this.label, required this.onTap});
+  const _TemplateTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -706,7 +810,14 @@ class _TemplateTile extends StatelessWidget {
             children: [
               Icon(icon, size: 20, color: c.accent),
               const SizedBox(height: 10),
-              Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.ink)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: c.ink,
+                ),
+              ),
               Text('New', style: TextStyle(fontSize: 11, color: c.inkFaint)),
             ],
           ),
@@ -724,7 +835,8 @@ class WorkspaceSettingsRegion extends StatefulWidget {
   const WorkspaceSettingsRegion({super.key});
 
   @override
-  State<WorkspaceSettingsRegion> createState() => _WorkspaceSettingsRegionState();
+  State<WorkspaceSettingsRegion> createState() =>
+      _WorkspaceSettingsRegionState();
 }
 
 class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
@@ -733,7 +845,10 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
   @override
   void initState() {
     super.initState();
-    _providers = context.getInheritedWidgetOfExactType<AppStateScope>()!.notifier!.listProviders();
+    _providers = context
+        .getInheritedWidgetOfExactType<AppStateScope>()!
+        .notifier!
+        .listProviders();
   }
 
   @override
@@ -752,29 +867,43 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
       ]),
       builder: (context, _) {
         return ListView(
-          padding: const EdgeInsets.fromLTRB(UriSpace.md, 0, UriSpace.md, UriSpace.lg),
+          padding: const EdgeInsets.fromLTRB(
+            UriSpace.md,
+            0,
+            UriSpace.md,
+            UriSpace.lg,
+          ),
           children: [
-            Eyebrow('Harness',
-                trailing: services.readiness.isSimulated
-                    ? const StatusBadge.simulated(compact: true)
-                    : null),
+            Eyebrow(
+              'Harness',
+              trailing: services.readiness.isSimulated
+                  ? const StatusBadge.simulated(compact: true)
+                  : null,
+            ),
             const SizedBox(height: 8),
             for (final h in services.readiness.harnesses) HarnessRow(fact: h),
             const SizedBox(height: UriSpace.lg),
-            Eyebrow('Brain / provider',
-                trailing: services.appDataIsMock ? const StatusBadge.simulated(compact: true) : null),
+            Eyebrow(
+              'Brain / provider',
+              trailing: services.appDataIsMock
+                  ? const StatusBadge.simulated(compact: true)
+                  : null,
+            ),
             const SizedBox(height: 8),
             FutureBuilder<List<ProviderEntry>>(
               future: _providers,
               builder: (context, snap) {
                 final providers = snap.data ?? const <ProviderEntry>[];
-                if (providers.isEmpty) return _EmptyLine('No providers reported.');
+                if (providers.isEmpty) {
+                  return _EmptyLine('No providers reported.');
+                }
                 return Column(
                   children: [
                     for (final p in providers)
                       _ProviderRow(
                         provider: p,
-                        active: appState.activeBrain?.providerId == p.providerId,
+                        active:
+                            appState.activeBrain?.providerId == p.providerId,
                         onSelect: p.configured && p.available
                             ? () => appState.setActiveBrain(p.providerId)
                             : null,
@@ -784,7 +913,10 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
               },
             ),
             const SizedBox(height: UriSpace.lg),
-            const Eyebrow('Reasoning mode', trailing: StatusBadge.simulated(compact: true)),
+            const Eyebrow(
+              'Reasoning mode',
+              trailing: StatusBadge.simulated(compact: true),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -798,8 +930,10 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
               ],
             ),
             const SizedBox(height: 6),
-            Text('The mock does not change behaviour with this choice.',
-                style: TextStyle(fontSize: 12, color: c.inkFaint)),
+            Text(
+              'The mock does not change behaviour with this choice.',
+              style: TextStyle(fontSize: 12, color: c.inkFaint),
+            ),
             const SizedBox(height: UriSpace.lg),
             const Eyebrow('Approval boundary'),
             const SizedBox(height: 8),
@@ -810,18 +944,25 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
                 groupValue: appState.preferences.autonomyLevel,
                 // ignore: deprecated_member_use
                 onChanged: (v) => appState.updatePreferences(
-                    appState.preferences.copyWith(autonomyLevel: v)),
+                  appState.preferences.copyWith(autonomyLevel: v),
+                ),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                title: Text(_autonomyLabel(level), style: TextStyle(fontSize: 13, color: c.ink)),
+                title: Text(
+                  _autonomyLabel(level),
+                  style: TextStyle(fontSize: 13, color: c.ink),
+                ),
               ),
             const SizedBox(height: 8),
-            Eyebrow('Permissions',
-                trailing: services.readiness.isSimulated
-                    ? const StatusBadge.simulated(compact: true)
-                    : null),
+            Eyebrow(
+              'Permissions',
+              trailing: services.readiness.isSimulated
+                  ? const StatusBadge.simulated(compact: true)
+                  : null,
+            ),
             const SizedBox(height: 8),
-            for (final p in services.readiness.permissions) PermissionRow(fact: p),
+            for (final p in services.readiness.permissions)
+              PermissionRow(fact: p),
             const SizedBox(height: UriSpace.lg),
             const Eyebrow('Appearance'),
             const SizedBox(height: 8),
@@ -833,7 +974,10 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
                   for (final t in UriThemeChoice.values)
                     if (t != UriThemeChoice.system)
                       ChoiceChip(
-                        avatar: CircleAvatar(backgroundColor: t.swatch, radius: 6),
+                        avatar: CircleAvatar(
+                          backgroundColor: t.swatch,
+                          radius: 6,
+                        ),
                         label: Text(t.label),
                         selected: themeCtl.current == t,
                         onSelected: (_) => themeCtl.setTheme(t),
@@ -844,18 +988,28 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
               key: const ValueKey('reduced-effects-switch'),
               dense: true,
               contentPadding: EdgeInsets.zero,
-              title: Text('Reduced visual effects', style: TextStyle(fontSize: 13, color: c.ink)),
-              subtitle: Text('No shader, blur or glow. Every state stays readable.',
-                  style: TextStyle(fontSize: 12, color: c.inkFaint)),
+              title: Text(
+                'Reduced visual effects',
+                style: TextStyle(fontSize: 13, color: c.ink),
+              ),
+              subtitle: Text(
+                'No shader, blur or glow. Every state stays readable.',
+                style: TextStyle(fontSize: 12, color: c.inkFaint),
+              ),
               value: services.effects.reducedEffects,
               onChanged: (v) => services.effects.setReducedEffects(v),
             ),
             SwitchListTile(
               dense: true,
               contentPadding: EdgeInsets.zero,
-              title: Text('Reduced motion', style: TextStyle(fontSize: 13, color: c.ink)),
-              subtitle: Text('The orb holds still; state shows by colour and badge.',
-                  style: TextStyle(fontSize: 12, color: c.inkFaint)),
+              title: Text(
+                'Reduced motion',
+                style: TextStyle(fontSize: 13, color: c.ink),
+              ),
+              subtitle: Text(
+                'The orb holds still; state shows by colour and badge.',
+                style: TextStyle(fontSize: 12, color: c.inkFaint),
+              ),
               value: services.effects.reducedMotion,
               onChanged: (v) => services.effects.setReducedMotion(v),
             ),
@@ -866,9 +1020,10 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
   }
 
   static String _autonomyLabel(AutonomyLevel l) => switch (l) {
-        AutonomyLevel.askEveryTime => 'Ask me before every action',
-        AutonomyLevel.routineAutoApprove => 'Auto-approve routine actions, ask for the rest',
-      };
+    AutonomyLevel.askEveryTime => 'Ask me before every action',
+    AutonomyLevel.routineAutoApprove =>
+      'Auto-approve routine actions, ask for the rest',
+  };
 }
 
 class HarnessRow extends StatelessWidget {
@@ -894,14 +1049,22 @@ class HarnessRow extends StatelessWidget {
                 // ignore: deprecated_member_use
                 groupValue: services.selectedHarness.value,
                 // ignore: deprecated_member_use
-                onChanged: fact.usable ? (v) => services.selectedHarness.value = v : null,
+                onChanged: fact.usable
+                    ? (v) => services.selectedHarness.value = v
+                    : null,
               ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(fact.displayName,
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.ink)),
+                  Text(
+                    fact.displayName,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: c.ink,
+                    ),
+                  ),
                   Text(
                     '${fact.installed ? 'installed' : 'not installed'} · ${fact.authState} · ${fact.qualification}',
                     style: TextStyle(fontSize: 11.5, color: c.inkFaint),
@@ -909,14 +1072,19 @@ class HarnessRow extends StatelessWidget {
                   if (fact.requiredAction != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Text(fact.requiredAction!,
-                          style: TextStyle(fontSize: 12, color: c.warning)),
+                      child: Text(
+                        fact.requiredAction!,
+                        style: TextStyle(fontSize: 12, color: c.warning),
+                      ),
                     ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            StatusBadge(fact.simulated ? TruthStatus.simulated : fact.truth, compact: true),
+            StatusBadge(
+              fact.simulated ? TruthStatus.simulated : fact.truth,
+              compact: true,
+            ),
           ],
         ),
       ),
@@ -925,7 +1093,11 @@ class HarnessRow extends StatelessWidget {
 }
 
 class _ProviderRow extends StatelessWidget {
-  const _ProviderRow({required this.provider, required this.active, this.onSelect});
+  const _ProviderRow({
+    required this.provider,
+    required this.active,
+    this.onSelect,
+  });
   final ProviderEntry provider;
   final bool active;
   final VoidCallback? onSelect;
@@ -936,8 +1108,8 @@ class _ProviderRow extends StatelessWidget {
     final status = !provider.configured
         ? TruthStatus.pending
         : provider.available
-            ? TruthStatus.configured
-            : TruthStatus.unavailable;
+        ? TruthStatus.configured
+        : TruthStatus.unavailable;
     final local = provider.adapter == 'ollama';
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -946,14 +1118,24 @@ class _ProviderRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            Icon(local ? Icons.computer_rounded : Icons.cloud_outlined, size: 18, color: c.accentInk),
+            Icon(
+              local ? Icons.computer_rounded : Icons.cloud_outlined,
+              size: 18,
+              color: c.accentInk,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(provider.displayName,
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.ink)),
+                  Text(
+                    provider.displayName,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: c.ink,
+                    ),
+                  ),
                   Text(
                     '${local ? 'Local' : 'External'} · ${provider.activeModel ?? (provider.models.isNotEmpty ? provider.models.first.displayName : 'no model')}',
                     style: TextStyle(fontSize: 11.5, color: c.inkFaint),
@@ -964,7 +1146,14 @@ class _ProviderRow extends StatelessWidget {
             StatusBadge(status, compact: true),
             const SizedBox(width: 8),
             if (active)
-              Text('Active', style: TextStyle(fontSize: 12, color: c.accent, fontWeight: FontWeight.w600))
+              Text(
+                'Active',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: c.accent,
+                  fontWeight: FontWeight.w600,
+                ),
+              )
             else
               TextButton(onPressed: onSelect, child: const Text('Use')),
           ],
@@ -991,7 +1180,12 @@ class PermissionRow extends StatelessWidget {
             color: fact.granted ? c.success : c.inkFaint,
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(fact.label, style: TextStyle(fontSize: 13, color: c.ink))),
+          Expanded(
+            child: Text(
+              fact.label,
+              style: TextStyle(fontSize: 13, color: c.ink),
+            ),
+          ),
           Text(
             fact.requiresApproval ? 'asks each time' : 'no approval needed',
             style: TextStyle(fontSize: 11.5, color: c.inkFaint),
@@ -1037,12 +1231,20 @@ class _ContextPanel extends StatelessWidget {
           final signal = services.companion.signal;
           final harness = services.readiness.harnesses
               .cast<HarnessFact?>()
-              .firstWhere((h) => h!.id == services.selectedHarness.value, orElse: () => null);
+              .firstWhere(
+                (h) => h!.id == services.selectedHarness.value,
+                orElse: () => null,
+              );
           final results = services.work.items
-              .where((i) => i.state == WorkItemState.completed && i.outputName != null)
+              .where(
+                (i) =>
+                    i.state == WorkItemState.completed && i.outputName != null,
+              )
               .take(4)
               .toList();
-          final lastTurn = appState.conversation.isEmpty ? null : appState.conversation.last;
+          final lastTurn = appState.conversation.isEmpty
+              ? null
+              : appState.conversation.last;
           return ListView(
             padding: const EdgeInsets.all(UriSpace.md),
             children: [
@@ -1051,31 +1253,54 @@ class _ContextPanel extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(signal.state.label,
-                        key: const ValueKey('context-now-state'),
-                        style: TextStyle(fontWeight: FontWeight.w600, color: c.ink)),
+                    child: Text(
+                      signal.state.label,
+                      key: const ValueKey('context-now-state'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: c.ink,
+                      ),
+                    ),
                   ),
-                  if (signal.simulated) const StatusBadge.simulated(compact: true),
+                  if (signal.simulated)
+                    const StatusBadge.simulated(compact: true),
                 ],
               ),
               if (signal.detail != null)
-                Text(signal.detail!, style: TextStyle(fontSize: 12.5, color: c.inkSoft)),
-              Text('source: ${signal.sourceName ?? 'none'}',
-                  style: TextStyle(fontSize: 11, color: c.inkFaint)),
+                Text(
+                  signal.detail!,
+                  style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                ),
+              Text(
+                'source: ${signal.sourceName ?? 'none'}',
+                style: TextStyle(fontSize: 11, color: c.inkFaint),
+              ),
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Executor'),
               const SizedBox(height: 6),
               _KeyValue('Harness', harness?.displayName ?? 'None selected'),
-              _KeyValue('Brain', appState.activeBrain?.displayName ?? appState.activeBrain?.providerId ?? 'Not set'),
+              _KeyValue(
+                'Brain',
+                appState.activeBrain?.displayName ??
+                    appState.activeBrain?.providerId ??
+                    'Not set',
+              ),
               _KeyValue('Model', appState.activeBrain?.model ?? '—'),
               _KeyValue('Reasoning', services.reasoningMode.value.label),
-              _KeyValue('Approvals',
-                  appState.preferences.autonomyLevel == AutonomyLevel.askEveryTime ? 'Ask every time' : 'Routine auto-approve'),
+              _KeyValue(
+                'Approvals',
+                appState.preferences.autonomyLevel == AutonomyLevel.askEveryTime
+                    ? 'Ask every time'
+                    : 'Routine auto-approve',
+              ),
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Context & files'),
               const SizedBox(height: 6),
               if (appState.attachments.isEmpty)
-                Text('No attachments staged.', style: TextStyle(fontSize: 12.5, color: c.inkFaint)),
+                Text(
+                  'No attachments staged.',
+                  style: TextStyle(fontSize: 12.5, color: c.inkFaint),
+                ),
               for (final a in appState.attachments)
                 _KeyValue('Attached', a.filename),
               for (final d in services.work.documents.take(3))
@@ -1084,7 +1309,10 @@ class _ContextPanel extends StatelessWidget {
               const Eyebrow('Results'),
               const SizedBox(height: 6),
               if (results.isEmpty && lastTurn?.result == null)
-                Text('No results yet.', style: TextStyle(fontSize: 12.5, color: c.inkFaint)),
+                Text(
+                  'No results yet.',
+                  style: TextStyle(fontSize: 12.5, color: c.inkFaint),
+                ),
               if (lastTurn?.result != null)
                 _KeyValue('Last reply', lastTurn!.result!.summary),
               for (final r in results) _KeyValue('Saved', r.outputName!),
@@ -1114,10 +1342,12 @@ class _KeyValue extends StatelessWidget {
             child: Text(k, style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
           ),
           Expanded(
-            child: Text(v,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12.5, color: c.ink)),
+            child: Text(
+              v,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12.5, color: c.ink),
+            ),
           ),
         ],
       ),

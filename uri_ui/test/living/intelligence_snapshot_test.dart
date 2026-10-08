@@ -35,17 +35,27 @@ void main() {
     services.work.create(title: 'Letter', kind: WorkItemKind.letter);
 
     var snap = deriveIntelligenceSnapshot(
-      signal: const CompanionSignal(state: CompanionState.awaitingApproval, detail: 'Save it', simulated: true),
+      signal: const CompanionSignal(
+        state: CompanionState.awaitingApproval,
+        detail: 'Save it',
+        simulated: true,
+      ),
       appState: appState,
       services: services,
     );
     expect(stateOf(snap, PipelineStage.request), StageState.done);
     expect(stateOf(snap, PipelineStage.approval), StageState.blocked);
     expect(stateOf(snap, PipelineStage.execution), StageState.idle);
-    expect(snap.stages.firstWhere((f) => f.stage == PipelineStage.approval).detail, 'Save it');
+    expect(
+      snap.stages.firstWhere((f) => f.stage == PipelineStage.approval).detail,
+      'Save it',
+    );
 
     snap = deriveIntelligenceSnapshot(
-      signal: const CompanionSignal(state: CompanionState.working, simulated: true),
+      signal: const CompanionSignal(
+        state: CompanionState.working,
+        simulated: true,
+      ),
       appState: appState,
       services: services,
     );

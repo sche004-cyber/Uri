@@ -13,10 +13,10 @@ enum ReasoningMode { fast, balanced, deep }
 
 extension ReasoningModeLabel on ReasoningMode {
   String get label => switch (this) {
-        ReasoningMode.fast => 'Fast',
-        ReasoningMode.balanced => 'Balanced',
-        ReasoningMode.deep => 'Deep',
-      };
+    ReasoningMode.fast => 'Fast',
+    ReasoningMode.balanced => 'Balanced',
+    ReasoningMode.deep => 'Deep',
+  };
 }
 
 /// Everything the living UI shares below its root, in one place, so
@@ -86,5 +86,6 @@ class LivingScope extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(LivingScope oldWidget) => services != oldWidget.services;
+  bool updateShouldNotify(LivingScope oldWidget) =>
+      services != oldWidget.services;
 }

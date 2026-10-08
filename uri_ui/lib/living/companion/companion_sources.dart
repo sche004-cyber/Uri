@@ -32,7 +32,10 @@ abstract class CompanionStateSource extends ChangeNotifier {
 /// There is no listening/speaking fact on AppState, so this source never
 /// emits those states.
 class AppStateCompanionSource extends CompanionStateSource {
-  AppStateCompanionSource(this._appState, {this.successHold = const Duration(seconds: 4)}) {
+  AppStateCompanionSource(
+    this._appState, {
+    this.successHold = const Duration(seconds: 4),
+  }) {
     _appState.addListener(_recompute);
     _recompute();
   }
@@ -86,7 +89,8 @@ class AppStateCompanionSource extends CompanionStateSource {
       case TurnStage.awaitingApproval:
         return CompanionSignal(
           state: CompanionState.awaitingApproval,
-          detail: last.proposedAction?.title ?? 'A proposal needs your decision',
+          detail:
+              last.proposedAction?.title ?? 'A proposal needs your decision',
           sourceName: 'UriTurn.stage',
         );
       case TurnStage.executing:
@@ -144,7 +148,7 @@ class AppStateCompanionSource extends CompanionStateSource {
 /// the state showcase and tests.
 class MockCompanionSource extends CompanionStateSource {
   MockCompanionSource([CompanionSignal? initial])
-      : _signal = initial ?? const CompanionSignal.idle();
+    : _signal = initial ?? const CompanionSignal.idle();
 
   CompanionSignal _signal;
 
@@ -155,13 +159,15 @@ class MockCompanionSource extends CompanionStateSource {
   CompanionSignal get signal => _signal;
 
   void emit(CompanionState state, {String? detail, double? progress}) {
-    set(CompanionSignal(
-      state: state,
-      detail: detail,
-      progress: progress,
-      simulated: true,
-      sourceName: 'mock',
-    ));
+    set(
+      CompanionSignal(
+        state: state,
+        detail: detail,
+        progress: progress,
+        simulated: true,
+        sourceName: 'mock',
+      ),
+    );
   }
 
   void set(CompanionSignal signal) {

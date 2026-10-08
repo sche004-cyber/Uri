@@ -9,12 +9,12 @@ enum TruthStatus { configured, qualified, unavailable, simulated, pending }
 
 extension TruthStatusLabel on TruthStatus {
   String get label => switch (this) {
-        TruthStatus.configured => 'Configured',
-        TruthStatus.qualified => 'Qualified',
-        TruthStatus.unavailable => 'Unavailable',
-        TruthStatus.simulated => 'Simulated',
-        TruthStatus.pending => 'Not checked',
-      };
+    TruthStatus.configured => 'Configured',
+    TruthStatus.qualified => 'Qualified',
+    TruthStatus.unavailable => 'Unavailable',
+    TruthStatus.simulated => 'Simulated',
+    TruthStatus.pending => 'Not checked',
+  };
 }
 
 class StatusBadge extends StatelessWidget {
@@ -22,7 +22,7 @@ class StatusBadge extends StatelessWidget {
 
   /// Shorthand used by every mock-backed region.
   const StatusBadge.simulated({super.key, this.compact = false})
-      : status = TruthStatus.simulated;
+    : status = TruthStatus.simulated;
 
   final TruthStatus status;
   final bool compact;

@@ -74,26 +74,33 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
   }
 
   CompanionState _previewFor(int step) => switch (step) {
-        0 => _preview,
-        1 => CompanionState.thinking,
-        2 => CompanionState.working,
-        3 => CompanionState.idle,
-        4 => CompanionState.awaitingApproval,
-        5 => CompanionState.error,
-        6 => CompanionState.listening,
-        _ => CompanionState.success,
-      };
+    0 => _preview,
+    1 => CompanionState.thinking,
+    2 => CompanionState.working,
+    3 => CompanionState.idle,
+    4 => CompanionState.awaitingApproval,
+    5 => CompanionState.error,
+    6 => CompanionState.listening,
+    _ => CompanionState.success,
+  };
 
   void _go(int delta) {
-    setState(() => _step = (_step + delta).clamp(0, LivingOnboardingFlow.stepTitles.length - 1));
+    setState(
+      () => _step = (_step + delta).clamp(
+        0,
+        LivingOnboardingFlow.stepTitles.length - 1,
+      ),
+    );
   }
 
   Future<void> _finish() async {
     final s = AppStateScope.of(context);
-    await s.updatePreferences(s.preferences.copyWith(
-      focusAreas: _focusAreas.toList(),
-      completedOnboarding: true,
-    ));
+    await s.updatePreferences(
+      s.preferences.copyWith(
+        focusAreas: _focusAreas.toList(),
+        completedOnboarding: true,
+      ),
+    );
     await widget.onFinished();
   }
 
@@ -134,9 +141,15 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                     size: 150,
                   ),
                   const SizedBox(height: 6),
-                  Text(_previewFor(_step).label, style: TextStyle(fontSize: 12.5, color: c.inkSoft)),
+                  Text(
+                    _previewFor(_step).label,
+                    style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                  ),
                   const SizedBox(height: 12),
-                  _StepDots(count: LivingOnboardingFlow.stepTitles.length, index: _step),
+                  _StepDots(
+                    count: LivingOnboardingFlow.stepTitles.length,
+                    index: _step,
+                  ),
                   const SizedBox(height: 12),
                   Expanded(
                     child: GlassPanel(
@@ -150,11 +163,20 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                                 child: Text(
                                   LivingOnboardingFlow.stepTitles[_step],
                                   key: const ValueKey('onboarding-step-title'),
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: c.ink),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: c.ink,
+                                  ),
                                 ),
                               ),
-                              Text('${_step + 1} / ${LivingOnboardingFlow.stepTitles.length}',
-                                  style: TextStyle(fontSize: 12, color: c.inkFaint)),
+                              Text(
+                                '${_step + 1} / ${LivingOnboardingFlow.stepTitles.length}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: c.inkFaint,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -187,7 +209,10 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                               const SizedBox(width: 8),
                               FilledButton(
                                 key: const ValueKey('onboarding-next'),
-                                style: FilledButton.styleFrom(backgroundColor: glass.glow, foregroundColor: c.canvas),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: glass.glow,
+                                  foregroundColor: c.canvas,
+                                ),
                                 onPressed: last ? _finish : () => _go(1),
                                 child: Text(last ? 'Start using URI' : 'Next'),
                               ),
@@ -221,7 +246,10 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
             ),
             const SizedBox(height: 10),
             _Bullet('Companion', 'a small floating orb for quick questions.'),
-            _Bullet('Workspace', 'conversation, tasks, documents and settings side by side.'),
+            _Bullet(
+              'Workspace',
+              'conversation, tasks, documents and settings side by side.',
+            ),
             _Bullet('Dashboard', 'what URI can do, is doing, and is made of.'),
             const SizedBox(height: 12),
             Text('Tap a state to see how the orb shows it:', style: body),
@@ -244,7 +272,12 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
               children: [
                 const StatusBadge.simulated(compact: true),
                 const SizedBox(width: 6),
-                Expanded(child: Text('Listening and Speaking have no source in this build; they are previews.', style: TextStyle(fontSize: 11.5, color: c.inkFaint))),
+                Expanded(
+                  child: Text(
+                    'Listening and Speaking have no source in this build; they are previews.',
+                    style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                  ),
+                ),
               ],
             ),
           ],
@@ -253,12 +286,17 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('This client talks to a URI server. On this PC that is the local server; a phone needs the PC\'s address.', style: body),
+            Text(
+              'This client talks to a URI server. On this PC that is the local server; a phone needs the PC\'s address.',
+              style: body,
+            ),
             const SizedBox(height: 10),
             TextField(
               key: const ValueKey('onboarding-address'),
               controller: _address,
-              decoration: const InputDecoration(labelText: 'URI server address'),
+              decoration: const InputDecoration(
+                labelText: 'URI server address',
+              ),
             ),
             const SizedBox(height: 10),
             Row(
@@ -273,7 +311,9 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                   StatusBadge(
                     services.appDataIsMock
                         ? TruthStatus.simulated
-                        : (_connection!.reachable ? TruthStatus.configured : TruthStatus.unavailable),
+                        : (_connection!.reachable
+                              ? TruthStatus.configured
+                              : TruthStatus.unavailable),
                     compact: true,
                   ),
                 if (_connection != null) ...[
@@ -281,7 +321,9 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                   Expanded(
                     child: Text(
                       _connection!.reachable
-                          ? (services.appDataIsMock ? 'Mock client answered; no real server was contacted.' : 'Server reachable.')
+                          ? (services.appDataIsMock
+                                ? 'Mock client answered; no real server was contacted.'
+                                : 'Server reachable.')
                           : (_connection!.detail ?? 'Not reachable'),
                       style: TextStyle(fontSize: 12, color: c.inkSoft),
                     ),
@@ -295,7 +337,10 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('A harness is an external agent URI can hand qualified work to. Only a qualified, signed-in harness can be selected; the required action for the others is shown as reported.', style: body),
+            Text(
+              'A harness is an external agent URI can hand qualified work to. Only a qualified, signed-in harness can be selected; the required action for the others is shown as reported.',
+              style: body,
+            ),
             const SizedBox(height: 10),
             for (final h in services.readiness.harnesses) HarnessRow(fact: h),
           ],
@@ -304,13 +349,18 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('The Brain is the model URI thinks with. A local Brain keeps everything on this machine; an external provider needs a key you add in Settings.', style: body),
+            Text(
+              'The Brain is the model URI thinks with. A local Brain keeps everything on this machine; an external provider needs a key you add in Settings.',
+              style: body,
+            ),
             const SizedBox(height: 10),
             FutureBuilder<List<ProviderEntry>>(
               future: _providers,
               builder: (context, snap) {
                 final list = snap.data ?? const <ProviderEntry>[];
-                if (list.isEmpty) return Text('No providers reported.', style: body);
+                if (list.isEmpty) {
+                  return Text('No providers reported.', style: body);
+                }
                 return ListenableBuilder(
                   listenable: s,
                   builder: (context, _) => Column(
@@ -327,12 +377,17 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                               : null,
                           dense: true,
                           contentPadding: EdgeInsets.zero,
-                          title: Text(p.displayName, style: TextStyle(fontSize: 13, color: c.ink)),
+                          title: Text(
+                            p.displayName,
+                            style: TextStyle(fontSize: 13, color: c.ink),
+                          ),
                           subtitle: Text(
                             '${p.adapter == 'ollama' ? 'Local' : 'External'} · ${p.configured ? (p.available ? 'available' : 'configured, not reachable') : 'needs a key'}',
                             style: TextStyle(fontSize: 11.5, color: c.inkFaint),
                           ),
-                          secondary: services.appDataIsMock ? const StatusBadge.simulated(compact: true) : null,
+                          secondary: services.appDataIsMock
+                              ? const StatusBadge.simulated(compact: true)
+                              : null,
                         ),
                     ],
                   ),
@@ -347,7 +402,10 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
           builder: (context, _) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('URI proposes; you decide. Choose how often it should ask. Typed or spoken words never approve anything; only the Approve button does.', style: body),
+              Text(
+                'URI proposes; you decide. Choose how often it should ask. Typed or spoken words never approve anything; only the Approve button does.',
+                style: body,
+              ),
               const SizedBox(height: 8),
               for (final level in AutonomyLevel.values)
                 RadioListTile<AutonomyLevel>(
@@ -356,7 +414,9 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                   // ignore: deprecated_member_use
                   groupValue: s.preferences.autonomyLevel,
                   // ignore: deprecated_member_use
-                  onChanged: (v) => s.updatePreferences(s.preferences.copyWith(autonomyLevel: v)),
+                  onChanged: (v) => s.updatePreferences(
+                    s.preferences.copyWith(autonomyLevel: v),
+                  ),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                   title: Text(
@@ -367,7 +427,8 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                   ),
                 ),
               const SizedBox(height: 8),
-              for (final p in services.readiness.permissions) PermissionRow(fact: p),
+              for (final p in services.readiness.permissions)
+                PermissionRow(fact: p),
             ],
           ),
         );
@@ -375,28 +436,68 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('URI never signs in for you and never reads your credentials. Each harness reports its own sign-in and qualification state; when something is required, the exact action is shown.', style: body),
+            Text(
+              'URI never signs in for you and never reads your credentials. Each harness reports its own sign-in and qualification state; when something is required, the exact action is shown.',
+              style: body,
+            ),
             const SizedBox(height: 10),
             Table(
-              columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1.2), 2: FlexColumnWidth(1.4), 3: IntrinsicColumnWidth()},
+              columnWidths: const {
+                0: FlexColumnWidth(2),
+                1: FlexColumnWidth(1.2),
+                2: FlexColumnWidth(1.4),
+                3: IntrinsicColumnWidth(),
+              },
               children: [
-                TableRow(children: [
-                  for (final h in ['Harness', 'Sign-in', 'Qualification', ''])
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(h, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: c.inkFaint)),
-                    ),
-                ]),
+                TableRow(
+                  children: [
+                    for (final h in ['Harness', 'Sign-in', 'Qualification', ''])
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          h,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: c.inkFaint,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 for (final h in services.readiness.harnesses)
-                  TableRow(children: [
-                    Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Text(h.displayName, style: TextStyle(fontSize: 13, color: c.ink))),
-                    Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Text(h.authState, style: TextStyle(fontSize: 12, color: c.inkSoft))),
-                    Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Text(h.qualification, style: TextStyle(fontSize: 12, color: c.inkSoft))),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: StatusBadge(h.simulated ? TruthStatus.simulated : h.truth, compact: true),
-                    ),
-                  ]),
+                  TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(
+                          h.displayName,
+                          style: TextStyle(fontSize: 13, color: c.ink),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(
+                          h.authState,
+                          style: TextStyle(fontSize: 12, color: c.inkSoft),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Text(
+                          h.qualification,
+                          style: TextStyle(fontSize: 12, color: c.inkSoft),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: StatusBadge(
+                          h.simulated ? TruthStatus.simulated : h.truth,
+                          compact: true,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ],
@@ -406,7 +507,10 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('What will you mostly use URI for? This shapes what it looks for first.', style: body),
+            Text(
+              'What will you mostly use URI for? This shapes what it looks for first.',
+              style: body,
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 6,
@@ -417,12 +521,21 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                     key: ValueKey('focus-$f'),
                     label: Text(f),
                     selected: _focusAreas.contains(f),
-                    onSelected: (v) => setState(() => v ? _focusAreas.add(f) : _focusAreas.remove(f)),
+                    onSelected: (v) => setState(
+                      () => v ? _focusAreas.add(f) : _focusAreas.remove(f),
+                    ),
                   ),
               ],
             ),
             const SizedBox(height: 14),
-            Text('Appearance', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.ink)),
+            Text(
+              'Appearance',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: c.ink,
+              ),
+            ),
             const SizedBox(height: 6),
             if (themeCtl != null)
               Wrap(
@@ -432,7 +545,10 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                   for (final t in UriThemeChoice.values)
                     if (t != UriThemeChoice.system)
                       ChoiceChip(
-                        avatar: CircleAvatar(backgroundColor: t.swatch, radius: 6),
+                        avatar: CircleAvatar(
+                          backgroundColor: t.swatch,
+                          radius: 6,
+                        ),
                         label: Text(t.label),
                         selected: themeCtl.current == t,
                         onSelected: (_) => themeCtl.setTheme(t),
@@ -445,8 +561,14 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                 key: const ValueKey('onboarding-reduced-effects'),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                title: Text('Reduced visual effects', style: TextStyle(fontSize: 13, color: c.ink)),
-                subtitle: Text('Turn off the shader, blur and glow. Good for older GPUs or remote desktops.', style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
+                title: Text(
+                  'Reduced visual effects',
+                  style: TextStyle(fontSize: 13, color: c.ink),
+                ),
+                subtitle: Text(
+                  'Turn off the shader, blur and glow. Good for older GPUs or remote desktops.',
+                  style: TextStyle(fontSize: 11.5, color: c.inkFaint),
+                ),
                 value: services.effects.reducedEffects,
                 onChanged: (v) async {
                   services.effects.setReducedEffects(v);
@@ -463,7 +585,10 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
           builder: (context, _) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Readiness, as currently known. Anything marked Simulated comes from the mock and will be re-checked against the real server when URI is connected.', style: body),
+              Text(
+                'Readiness, as currently known. Anything marked Simulated comes from the mock and will be re-checked against the real server when URI is connected.',
+                style: body,
+              ),
               const SizedBox(height: 10),
               for (final ch in services.readiness.checks)
                 Padding(
@@ -472,13 +597,15 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                     children: [
                       Icon(
                         switch (ch.status) {
-                          TruthStatus.qualified || TruthStatus.configured => Icons.check_circle_rounded,
+                          TruthStatus.qualified ||
+                          TruthStatus.configured => Icons.check_circle_rounded,
                           TruthStatus.unavailable => Icons.cancel_rounded,
                           _ => Icons.help_outline_rounded,
                         },
                         size: 16,
                         color: switch (ch.status) {
-                          TruthStatus.qualified || TruthStatus.configured => c.success,
+                          TruthStatus.qualified ||
+                          TruthStatus.configured => c.success,
                           TruthStatus.unavailable => c.danger,
                           _ => c.warning,
                         },
@@ -488,9 +615,18 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(ch.label, style: TextStyle(fontSize: 13, color: c.ink)),
+                            Text(
+                              ch.label,
+                              style: TextStyle(fontSize: 13, color: c.ink),
+                            ),
                             if (ch.detail != null)
-                              Text(ch.detail!, style: TextStyle(fontSize: 11.5, color: c.inkFaint)),
+                              Text(
+                                ch.detail!,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: c.inkFaint,
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -530,7 +666,10 @@ class _Bullet extends StatelessWidget {
               text: TextSpan(
                 style: TextStyle(fontSize: 13.5, color: c.inkSoft, height: 1.5),
                 children: [
-                  TextSpan(text: '$title: ', style: TextStyle(fontWeight: FontWeight.w600, color: c.ink)),
+                  TextSpan(
+                    text: '$title: ',
+                    style: TextStyle(fontWeight: FontWeight.w600, color: c.ink),
+                  ),
                   TextSpan(text: text),
                 ],
               ),

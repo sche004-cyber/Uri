@@ -113,7 +113,8 @@ abstract class ReadinessSource extends ChangeNotifier {
 /// exercise every badge (qualified / configured / unavailable) so the
 /// screens are tested against the full vocabulary.
 class MockReadinessSource extends ReadinessSource {
-  MockReadinessSource({DateTime Function()? clock}) : _clock = clock ?? DateTime.now;
+  MockReadinessSource({DateTime Function()? clock})
+    : _clock = clock ?? DateTime.now;
 
   final DateTime Function() _clock;
   bool _refreshing = false;
@@ -124,69 +125,114 @@ class MockReadinessSource extends ReadinessSource {
 
   @override
   List<HarnessFact> get harnesses => const [
-        HarnessFact(
-          id: 'codex_native',
-          displayName: 'Codex (native CLI)',
-          installed: true,
-          authState: 'logged_in',
-          qualification: 'native_qualified',
-          usable: true,
-          models: ['gpt-5-codex'],
-        ),
-        HarnessFact(
-          id: 'claude_cli',
-          displayName: 'Claude Code CLI',
-          installed: true,
-          authState: 'logged_out',
-          qualification: 'not_qualified',
-          usable: false,
-          requiredAction: 'Sign in to the CLI in the client profile, then re-run qualification.',
-        ),
-        HarnessFact(
-          id: 'antigravity',
-          displayName: 'Antigravity',
-          installed: false,
-          authState: 'unknown',
-          qualification: 'not_qualified',
-          usable: false,
-          requiredAction: 'Not installed on this machine.',
-        ),
-      ];
+    HarnessFact(
+      id: 'codex_native',
+      displayName: 'Codex (native CLI)',
+      installed: true,
+      authState: 'logged_in',
+      qualification: 'native_qualified',
+      usable: true,
+      models: ['gpt-5-codex'],
+    ),
+    HarnessFact(
+      id: 'claude_cli',
+      displayName: 'Claude Code CLI',
+      installed: true,
+      authState: 'logged_out',
+      qualification: 'not_qualified',
+      usable: false,
+      requiredAction: 'Sign in to the CLI in the client profile, then re-run qualification.',
+    ),
+    HarnessFact(
+      id: 'antigravity',
+      displayName: 'Antigravity',
+      installed: false,
+      authState: 'unknown',
+      qualification: 'not_qualified',
+      usable: false,
+      requiredAction: 'Not installed on this machine.',
+    ),
+  ];
 
   @override
   List<ClientFact> get clients => [
-        ClientFact(
-          deviceId: 'this-pc',
-          label: 'This PC',
-          platform: 'Windows',
-          lastSeen: _clock(),
-          isThisDevice: true,
-        ),
-        ClientFact(
-          deviceId: 'phone-1',
-          label: 'Pixel (demo)',
-          platform: 'Android',
-          lastSeen: _clock().subtract(const Duration(hours: 2)),
-          isThisDevice: false,
-        ),
-      ];
+    ClientFact(
+      deviceId: 'this-pc',
+      label: 'This PC',
+      platform: 'Windows',
+      lastSeen: _clock(),
+      isThisDevice: true,
+    ),
+    ClientFact(
+      deviceId: 'phone-1',
+      label: 'Pixel (demo)',
+      platform: 'Android',
+      lastSeen: _clock().subtract(const Duration(hours: 2)),
+      isThisDevice: false,
+    ),
+  ];
 
   @override
   List<PermissionFact> get permissions => const [
-        PermissionFact(id: 'files.read', label: 'Read files you share', granted: true, requiresApproval: false),
-        PermissionFact(id: 'files.write', label: 'Save documents', granted: true, requiresApproval: true),
-        PermissionFact(id: 'email.send', label: 'Send email', granted: false, requiresApproval: true),
-        PermissionFact(id: 'harness.run', label: 'Run a qualified harness', granted: true, requiresApproval: true),
-      ];
+    PermissionFact(
+      id: 'files.read',
+      label: 'Read files you share',
+      granted: true,
+      requiresApproval: false,
+    ),
+    PermissionFact(
+      id: 'files.write',
+      label: 'Save documents',
+      granted: true,
+      requiresApproval: true,
+    ),
+    PermissionFact(
+      id: 'email.send',
+      label: 'Send email',
+      granted: false,
+      requiresApproval: true,
+    ),
+    PermissionFact(
+      id: 'harness.run',
+      label: 'Run a qualified harness',
+      granted: true,
+      requiresApproval: true,
+    ),
+  ];
 
   @override
   List<ReadinessCheck> get checks => const [
-        ReadinessCheck(id: 'server', label: 'URI server reachable', status: TruthStatus.simulated, detail: 'Mock client, no server'),
-        ReadinessCheck(id: 'brain', label: 'Brain selected', status: TruthStatus.simulated, detail: 'Mock provider'),
-        ReadinessCheck(id: 'harness', label: 'One qualified harness', status: TruthStatus.simulated, detail: 'Codex (native) in the mock'),
-        ReadinessCheck(id: 'approvals', label: 'Approval boundary set', status: TruthStatus.configured, detail: 'Ask every time'),
-        ReadinessCheck(id: 'voice', label: 'Voice', status: TruthStatus.unavailable, detail: 'No listener in this build'),
-      ];
+    ReadinessCheck(
+      id: 'server',
+      label: 'URI server reachable',
+      status: TruthStatus.simulated,
+      detail: 'Mock client, no server',
+    ),
+    ReadinessCheck(
+      id: 'brain',
+      label: 'Brain selected',
+      status: TruthStatus.simulated,
+      detail: 'Mock provider',
+    ),
+    ReadinessCheck(
+      id: 'harness',
+      label: 'One qualified harness',
+      status: TruthStatus.simulated,
+      detail: 'Codex (native) in the mock',
+    ),
+    ReadinessCheck(
+      id: 'approvals',
+      label: 'Approval boundary set',
+      status: TruthStatus.configured,
+      detail: 'Ask every time',
+    ),
+    ReadinessCheck(
+      id: 'voice',
+      label: 'Voice',
+      status: TruthStatus.unavailable,
+      detail: 'No listener in this build',
+    ),
+  ];
 
   @override
   Future<void> refresh() async {
