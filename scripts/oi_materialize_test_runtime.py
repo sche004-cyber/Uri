@@ -42,6 +42,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("dest")
     ap.add_argument("--venv", default=str(SRC / ".venv"))
+    ap.add_argument("--exclude-oi-tests", action="store_true",
+                    help="regression-gate checkout: copy the OI package but not tests/oi, so the accepted Phase 1/2 "
+                         "gates collect exactly their accepted test set in the presence of the OI package")
     a = ap.parse_args(argv)
     dest = Path(a.dest).resolve()
     if dest.exists():
@@ -57,6 +60,8 @@ def main(argv=None):
     lst.unlink()
     collisions, copied = [], {}
     for rel in OI_PATHS:
+        if a.exclude_oi_tests and rel == "tests/oi":
+            continue
         s, d = SRC / rel, dest / rel
         if not s.exists():
             continue
@@ -80,7 +85,8 @@ def main(argv=None):
     receipt = {"dest": str(dest), "head": head, "head_is_base": head == BASE, "overlay_commit": OVERLAY_COMMIT,
                "overlay_paths": len(paths), "candidate_source": str(SRC),
                "candidate_head": git("rev-parse", "HEAD").strip(), "oi_files_copied": copied,
-               "porcelain_entries": len(status), "venv_source": a.venv}
+               "porcelain_entries": len(status), "venv_source": a.venv,
+               "oi_tests_included": not a.exclude_oi_tests}
     (dest / "OI_MATERIALIZATION_RECEIPT.json").write_text(json.dumps(receipt, indent=1), encoding="utf-8")
     print(json.dumps({k: v for k, v in receipt.items() if k != "oi_files_copied"}, indent=1))
     return 0

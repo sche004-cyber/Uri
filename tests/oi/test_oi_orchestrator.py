@@ -205,3 +205,34 @@ def test_core_path_with_brain_down_fails_fast_without_calling_core(fake, tmp_pat
     out = orch(fake, tmp_path, core, ready=False).handle_turn("remember that the lab is closed", "s")
     assert out.status == "error" and core.calls == []
     assert [e for e in out.events if e["type"] == "error"][0]["data"]["code"] == "BRAIN_UNAVAILABLE"
+
+
+def test_perf_monitor_detects_throughput_and_residency_degradation():
+    from uri_operational_intelligence.perf_monitor import PerfMonitor
+    samples = iter([(15534.0, 1101.0), (14845.0, 1895.0)])
+    pm = PerfMonitor(sampler=lambda pid: next(samples))
+    pm.set_baseline(42)
+    for _ in range(3):
+        pm.record({"predicted_n": 400, "predicted_per_second": 37.0})
+    pm.record({"predicted_n": 10, "predicted_per_second": 5.0})     # short calls are ignored
+    h = pm.assess(pid=42)
+    assert h["state"] == "DEGRADED" and set(h["reasons"]) == {"DECODE_THROUGHPUT_LOW", "VRAM_RESIDENCY_EVICTED"}
+    assert h["residency"]["dedicated_drop_mib"] == 689.0 and "restart_brain" in h["recovery_options"]
+    ok = PerfMonitor(sampler=lambda pid: (15534.0, 1101.0))
+    for _ in range(3):
+        ok.record({"predicted_n": 400, "predicted_per_second": 115.0})
+    assert ok.assess(sample=False)["state"] == "HEALTHY"
+    assert PerfMonitor().assess(sample=False)["state"] == "UNKNOWN"
+
+
+def test_orchestrator_surfaces_degraded_brain(fake, tmp_path):
+    from uri_operational_intelligence.perf_monitor import PerfMonitor
+    pm = PerfMonitor(sampler=lambda pid: (None, None))
+    for _ in range(3):
+        pm.record({"predicted_n": 400, "predicted_per_second": 30.0})
+    o = orch(fake, tmp_path, FakeCore())
+    o.perf = pm
+    fake.scripts.append({"chunks": [("answer", "ok")], "finish": "stop"})
+    out = o.handle_turn("What is VRAM?", "s")
+    st = [e for e in out.events if e["type"] == "brain.status"]
+    assert st and st[0]["data"]["state"] == "DEGRADED" and out.status == "ok"

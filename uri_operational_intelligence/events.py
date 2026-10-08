@@ -13,7 +13,8 @@ import time
 SCHEMA = "uri.oi.event.v1"
 
 EVENT_TYPES = {
-    "brain.status": "state, model_id, owned, detail, identity {artifacts, live}",
+    "brain.status": "state (READY|LOADING|STOPPED|DEGRADED|...), model_id, owned, detail, identity {artifacts, live}, "
+                    "performance? {state, reasons, decode_tps_median, residency, recovery_options}",
     "turn.started": "text_chars, depth",
     "turn.routed": "route (answer|core|plan|harness_choice|escalation_offer), triage, tier {tier, selected_by, reason}",
     "companion.state": "state (idle|listening|thinking|speaking|waiting_user|error)",

@@ -106,12 +106,13 @@ class TurnOutcome:
 class Orchestrator:
     def __init__(self, *, client: BC.BrainClient, core: CoreGateway | None, brain_selection: dict,
                  ledger: TaskLedger, capability_ids=(), readiness: Callable | None = None,
-                 harness_statuses: Callable | None = None, deadlines: BC.Deadlines | None = None):
+                 harness_statuses: Callable | None = None, deadlines: BC.Deadlines | None = None, perf=None):
         self.client, self.core, self.brain_selection = client, core, brain_selection
         self.ledger, self.capability_ids = ledger, set(capability_ids)
         self.readiness = readiness
         self.harness_statuses = harness_statuses or (lambda: H.documented_status())
         self.deadlines = deadlines or BC.Deadlines()
+        self.perf = perf       # optional PerfMonitor (OI-PERF-1): throughput health from finished answers
         self.cancels = {}      # turn_id -> CancelToken
 
     # ---- public API ---------------------------------------------------------------------------
@@ -204,6 +205,12 @@ class Orchestrator:
                                    RP.decide(T.ACTION), emit, turn_id, history, cancel, rerouted_from="answer")
         emit("answer.done", status=res.status, complete=res.complete, escalation_candidate=res.escalation_candidate,
              flags=res.flags, metrics=res.metrics)
+        if self.perf is not None:
+            self.perf.record(res.metrics)
+            health = self.perf.assess(sample=False)
+            if health["state"] == "DEGRADED":
+                emit("brain.status", state="DEGRADED", model_id=self.brain_selection.get("model"), owned=None,
+                     detail=",".join(health["reasons"]), identity={}, performance=health)
         if res.escalation_candidate:
             emit("escalation.offer", reason="normal_budget_exhausted", options=H.choose(self.harness_statuses()).to_dict())
         if res.status not in (BC.COMPLETE, BC.INCOMPLETE_LENGTH, BC.CANCELLED):

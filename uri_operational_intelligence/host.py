@@ -31,6 +31,9 @@ def main(argv=None):
     if r.state != READY or not mgr.owns_instance:
         mgr.stop()
         return 0 if r.state == READY else 2
+    from .perf_monitor import gpu_process_memory
+    d, s = gpu_process_memory(r.pid)
+    print(json.dumps({"residency_at_ready": {"pid": r.pid, "dedicated_mib": d, "shared_mib": s}}), flush=True)
     deadline = time.monotonic() + a.minutes * 60
     try:
         while time.monotonic() < deadline and not stop_file.exists():

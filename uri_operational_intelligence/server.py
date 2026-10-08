@@ -40,6 +40,7 @@ class TurnBody(BaseModel):
 
 
 def create_app(*, token: str, orchestrator: Orchestrator, manager: R.RuntimeManager | None = None):
+    perf = orchestrator.perf
     app = FastAPI()
 
     def auth(request: Request):
@@ -51,7 +52,12 @@ def create_app(*, token: str, orchestrator: Orchestrator, manager: R.RuntimeMana
         auth(request)
         if manager is None:
             return {"state": "NOT_CONFIGURED"}
-        return manager.status().to_dict()
+        r = manager.status().to_dict()
+        if perf is not None and r["state"] == R.READY:
+            r["performance"] = perf.assess(pid=r["pid"], sample=True)
+            if r["performance"]["state"] == "DEGRADED":
+                r["state"] = "DEGRADED"
+        return r
 
     @app.post("/oi/v1/turns")
     def turn(body: TurnBody, request: Request):
@@ -111,8 +117,13 @@ def main(argv=None):
     mgr = R.RuntimeManager(cfg)
     client = BC.BrainClient(R.base_url(cfg))
     from .core_provider import selection
+    from .perf_monitor import PerfMonitor
+    perf = PerfMonitor()
+    r = mgr.status()
+    if r.state == R.READY:
+        perf.set_baseline(r.pid)   # attached instance: baseline = first observation (weaker than a fresh-start baseline)
     orch = Orchestrator(client=client, core=None, brain_selection=selection(cfg), ledger=TaskLedger(R.DEFAULT_STATE.parent / "tasks"),
-                        capability_ids={"remember_fact", "external_harness_task"}, readiness=mgr.status)
+                        capability_ids={"remember_fact", "external_harness_task"}, readiness=mgr.status, perf=perf)
     token = secrets.token_urlsafe(32)
     tok_file = R.DEFAULT_STATE / "oi_server.token"
     tok_file.parent.mkdir(parents=True, exist_ok=True)
