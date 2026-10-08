@@ -120,6 +120,7 @@ class IntegratedTurns:
         self._last_event = None       # monotonic time of the job's last event frame
         self._job_events = 0
         self._restart = None          # {"id", "t", "until"} of a Brain request the host has not finished
+        self._perf_ident = None       # (pid, create_time) of the server the timing samples belong to
 
     # ---- state ---------------------------------------------------------------------------------
     @property
@@ -394,15 +395,23 @@ class IntegratedTurns:
             readiness = self._status().to_dict()
         except Exception as exc:
             readiness = {"state": "UNKNOWN", "detail": type(exc).__name__}
-        readiness.pop("live_identity", None)
+        proc = ((readiness.pop("live_identity", None) or {}).get("process") or {})
         host, alive = self._host()
-        # Real-turn timings of the CURRENT instance only: samples older than this instance's calibration belong to a
-        # previous process (a restart resets the evidence).
-        since = ((host or {}).get("calibration") or {}).get("t") if alive else None
+        # Real-turn timings of the CURRENT instance only (Codex H-r4). The instance is the verified server process
+        # (pid + start time from the accepted readiness check); when it changes the samples are dropped, and when it
+        # cannot be established none is used. With a live host, samples older than its calibration are excluded too.
+        ident = (proc.get("pid"), proc.get("create_time")) if readiness.get("state") == "READY" else None
+        if ident is None or None in ident:
+            samples = []
+        else:
+            if ident != self._perf_ident:
+                self._perf_ident = ident
+                self._perf = deque((s for s in self._perf if s[0] >= (proc.get("create_time") or 0)), maxlen=PERF_SAMPLES)
+            since = ((host or {}).get("calibration") or {}).get("t") if alive else None
+            samples = [timings for t, timings in list(self._perf) if since is None or t >= since]
         mon = PerfMonitor(sampler=lambda _pid: (None, None))
-        for t, timings in list(self._perf):
-            if since is None or t >= since:
-                mon.record(timings)
+        for timings in samples:
+            mon.record(timings)
         perf = mon.assess(sample=False)
         out = brain_health.assess(readiness=readiness, host=host, host_alive=alive, perf=perf, busy=self.busy,
                                   selected=self.selected, cfg=self.cfg)

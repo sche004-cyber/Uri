@@ -395,7 +395,17 @@ def main(argv=None):
         print(json.dumps({"refused": exc.code, "holder": exc.holder}), file=sys.stderr)
         return 75
     with lease:
-        return subprocess.call(cmd)
+        # The workload lives in a kill-on-close job owned by this holder (the accepted Supervisor containment): if
+        # the holder dies, the OS ends the workload with it, so the workload never keeps using the GPU
+        # after its lease is gone (Codex H-r4).
+        import uuid
+        from uri_supervisor.winproc import spawn_contained
+        c = spawn_contained(cmd, "uri-gpu-lease-" + uuid.uuid4().hex, stdin=subprocess.DEVNULL,
+                            stdout=sys.stdout, stderr=sys.stderr)
+        try:
+            return c.proc.wait()
+        finally:
+            c.close()
 
 
 if __name__ == "__main__":

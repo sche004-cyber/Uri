@@ -120,6 +120,28 @@ def test_override_is_recorded(tmp_path):
         assert lease.record["override"]
 
 
+def test_cli_workload_dies_with_its_lease_holder(tmp_path):
+    import psutil
+    env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
+    marker = tmp_path / "child.pid"
+    child = "import os,time; open(%r,'w').write(str(os.getpid())); time.sleep(120)" % str(marker)
+    p = subprocess.Popen([sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "run", "--purpose", "benchmark",
+                          "--", sys.executable, "-c", child], env=env, cwd=REPO)
+    t0 = time.monotonic()
+    while not marker.exists() and time.monotonic() - t0 < 30:
+        time.sleep(0.2)
+    workload = int(marker.read_text())
+    assert G.status(tmp_path)["state"] == "HELD"
+    holder = json.loads((tmp_path / "lease.json").read_text())["pid"]
+    psutil.Process(holder).kill()                            # the holder crashes
+    p.wait(30)
+    t0 = time.monotonic()
+    while psutil.pid_exists(workload) and time.monotonic() - t0 < 10:
+        time.sleep(0.2)
+    assert not psutil.pid_exists(workload)                   # the workload went with it
+    assert G.status(tmp_path)["state"] == "FREE"
+
+
 def test_cli_run_refuses_while_held_and_runs_when_free(tmp_path):
     env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
     cmd = [sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "run", "--purpose", "benchmark", "--",
@@ -242,6 +264,9 @@ def test_bridge_health_restart_and_turn_status(fake, tmp_path):  # noqa: F811
     b, frames, _ = make(fake, tmp_path, FakeCore())
     b._host_report = lambda: (rep, True)
     b._host_request = lambda a: requests.append(a) or {"id": "r1"}
+    from uri_operational_intelligence.runtime_v1 import Readiness
+    b._status = lambda: Readiness("READY", fake.url, model_id="qwen-test",
+                                  live_identity={"process": {"pid": 77, "create_time": time.time() - 3600}})
     h = b.handle("brain_health", {"command": "brain_health"})
     assert h["state"] == "READY" and h["performance"]["calibration_tps"] == 119.0
     # samples of a previous instance (before this calibration) never count
@@ -330,6 +355,25 @@ def test_host_liveness_needs_positive_evidence(monkeypatch):
         raise psutil.NoSuchProcess(pid)
     monkeypatch.setattr(psutil, "Process", gone)
     assert BH.host_alive({"host_pid": 1, "updated_at": now}, now=now) is False
+
+
+def test_timings_belong_to_the_verified_server_instance(fake, tmp_path):  # noqa: F811
+    from uri_operational_intelligence.runtime_v1 import Readiness
+    ident = {"pid": 4242, "create_time": time.time() - 100}
+    b, _, _ = make(fake, tmp_path, FakeCore())
+    b._status = lambda: Readiness("READY", fake.url, model_id="qwen-test",
+                                  live_identity={"process": dict(ident)})
+    b._host_report = lambda: (None, False)                    # no host: identity alone decides
+    for _ in range(3):
+        b._perf.append((time.time(), {"predicted_n": 200, "predicted_per_second": 25.0}))
+    assert b.handle("brain_health", {"command": "brain_health"})["state"] == "DEGRADED"
+    ident.update(pid=5151, create_time=time.time())           # a new instance: old samples are dropped
+    h = b.handle("brain_health", {"command": "brain_health"})
+    assert h["state"] == "READY" and h["performance"]["decode_samples"] == 0
+    b._status = lambda: Readiness("READY", fake.url, model_id="qwen-test")      # identity not established
+    for _ in range(3):
+        b._perf.append((time.time(), {"predicted_n": 200, "predicted_per_second": 25.0}))
+    assert b.handle("brain_health", {"command": "brain_health"})["performance"]["decode_samples"] == 0
 
 
 def test_restart_refused_while_a_turn_runs_and_status_stays_open(fake, tmp_path):  # noqa: F811
