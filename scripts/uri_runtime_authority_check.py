@@ -365,7 +365,7 @@ def _is_agent_shell(cmd: str, roots: list | None = None) -> bool:
             for path in (ex, tg):
                 if path and not path.startswith(("module:", "inline-code", "encoded:")) and _root_containing(path, roots):
                     return False
-    return True
+    return not uri_named(cmd)  # a shell that launches a URI-named program is evaluated like any other process
 
 
 def uri_named(cmd: str) -> bool:
@@ -431,24 +431,27 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
 
     listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if listener_relevant(lst)}
 
-    def launched_from_nonactive_root(cmd, image):
+    def launched_from_root(cmd, image):
         outer = _tokens(WD.sub("", cmd or ""))[:1]  # the outer executable itself (e.g. a cmd.exe or shell copy)
         for ex, tg in launch_targets(cmd) + [(image, image)] + [(o, o) for o in outer]:
             for path in (tg, ex):
                 r = _root_containing(path, roots) if path and not path.startswith(("module:", "inline-code", "encoded:")) else None
-                if r is not None and r["classification"] != "ACTIVE_AUTHORITATIVE":
+                if r is not None:
                     return True
         return False
     for p in snapshot.get("processes", []):
         cmd = p["cmdline"]
+        img = p.get("image", "") or ""
         if _is_agent_shell(cmd, roots):
             continue
-        if RUNTIME_HINT.search(cmd) or uri_named(cmd) or p.get("pid") in listener_pids:
-            add("process", f"pid {p['pid']}", cmd, True)
-        elif launched_from_nonactive_root(cmd, p.get("image", "")):
-            # No name-based exemption: anything executing from a donor or quarantined root counts, including
-            # development test runs (Codex rounds 6-7 showed every name/argument exemption can be abused).
-            add("process", f"pid {p['pid']}", cmd, True)
+        # Classify on the command line plus the real image path, so a neutral command line cannot hide a URI-named
+        # or root-located executable.
+        text = cmd if not img or norm(img) in norm(cmd) else f"{cmd} {img}"
+        if (RUNTIME_HINT.search(cmd) or uri_named(cmd) or uri_named(img) or p.get("pid") in listener_pids
+                or launched_from_root(cmd, img)):
+            # No name-based exemption: anything executing from ANY manifest root is classified (an active root
+            # admits only its listed entrypoints), including development test runs (Codex rounds 6-9).
+            add("process", f"pid {p['pid']}", text, True)
     for lst in snapshot.get("listeners", []):
         text = lst.get("cmdline") or lst.get("image") or ""
         # URI and model ports always; any other port when an interpreter/uvicorn owns it or it runs from a manifest root.
@@ -501,6 +504,7 @@ def live_snapshot(roots: list | None = None) -> dict:
     out, err = child.communicate(timeout=240)
     r = subprocess.CompletedProcess(child.args, child.returncode, out, err)
     self_pids = {os.getpid(), child.pid}
+    me = _basename(sys.argv[0] or "")
     if r.returncode != 0 or not r.stdout.strip():
         raise SystemExit(f"probe failed: {r.stderr.decode(errors='replace')[:400]}")
     snap = json.loads(r.stdout.decode("utf-8", errors="replace"))
@@ -510,6 +514,11 @@ def live_snapshot(roots: list | None = None) -> dict:
     # The probe's own PowerShell process carries this source text, which mentions URI paths; drop it.
     # Privacy: keep only command lines that look like URI runtimes; never persist unrelated process command lines.
     listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict)}
+    # A Windows venv python.exe is a redirector whose child is the real interpreter: exclude our direct parent only
+    # when it is that redirector running this same script.
+    for p in snap.get("processes") or []:
+        if p.get("pid") == os.getppid() and any(_basename(tg) == me for _, tg in launch_targets(p.get("cmdline", ""))):
+            self_pids.add(p.get("pid"))
     snap["processes"] = [p for p in snap.get("processes") or [] if p.get("pid") not in self_pids
                          and not _is_agent_shell(p["cmdline"], roots)
                          and (RUNTIME_HINT.search(p["cmdline"]) or uri_named(p["cmdline"]) or uri_named(p.get("image", ""))

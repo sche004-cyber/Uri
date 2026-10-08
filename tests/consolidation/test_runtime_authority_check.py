@@ -389,3 +389,29 @@ def test_bash_c_and_powershell_dot_sourcing_are_parsed():
     assert rac.launch_targets("powershell -Command . D:/URI-preservation/w.ps1")[0][1] == "D:/URI-preservation/w.ps1"
     shell = r'"C:\Program Files\Git\bin\bash.exe" -c "D:/URI-preservation/worker.exe CLAUDE_CODE_SHELL"'
     assert verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "bash.exe", "cmdline": shell}]))["verdict"] == "CONTAMINATED"
+
+
+# --- regressions for the Codex adversarial review round 9 (2026-10-08, verdict REJECT) -----------------------------
+def test_unlisted_program_inside_the_authoritative_root_fails_without_a_listener():
+    cmd = f"{RUNTIME}/tools/plain_worker.exe --work"
+    rep = verdict(snap(processes=[{"pid": 2, "ppid": 1, "image": f"{RUNTIME}/tools/plain_worker.exe", "cmdline": cmd}]))
+    assert classes(rep) == ["UNACCOUNTED"] and rep["verdict"] == "CONTAMINATED"
+
+
+def test_trusted_shell_launching_a_uri_named_program_is_not_skipped():
+    cmd = r'"C:\Program Files\Git\bin\bash.exe" -c "/d/rogue/uri_worker.exe --serve CLAUDE_CODE_SHELL"'
+    assert verdict(snap(processes=[{"pid": 2, "ppid": 1, "image": "bash.exe", "cmdline": cmd}]))["verdict"] == "CONTAMINATED"
+
+
+def test_uri_named_image_with_a_neutral_command_line_is_evaluated():
+    rep = verdict(snap(processes=[{"pid": 2, "ppid": 1, "image": r"D:\rogue\uri_worker.exe", "cmdline": "worker --serve"}]))
+    assert rep["verdict"] == "CONTAMINATED"
+
+
+def test_consolidation_tools_may_run_from_the_development_checkout_but_nothing_else():
+    dev = f"{DEV}/uri-canonical-candidate"
+    ok = [rf"C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -File {dev}/scripts/uri_authorized_start.ps1 -Action validate",
+          f"{dev}/.venv/Scripts/python.exe {dev}/scripts/uri_runtime_authority_check.py --strict"]
+    for c in ok:
+        assert rac.classify(c, M)[0] == "AUTHORIZED", c
+    assert rac.classify(f"{dev}/.venv/Scripts/python.exe {dev}/scripts/run_uri_phase2_server.py", M)[0] == "UNACCOUNTED"

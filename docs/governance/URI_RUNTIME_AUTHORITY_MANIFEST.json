@@ -90,8 +90,12 @@
    "id": "canonical-dev",
    "path": "C:/Users/cheta/Development/uri-canonical-candidate",
    "classification": "ACTIVE_AUTHORITATIVE",
-   "purpose": "Canonical development checkout (branch candidate). Records + source of truth; not a runtime. Nothing may be launched from it (empty entrypoint list); run only from canonical-runtime.",
-   "entrypoints": []
+   "purpose": "Canonical development checkout (branch candidate). Records + source of truth; not a runtime. Only the consolidation tools (start gate, checker, containment) may run from it.",
+   "entrypoints": [
+    "scripts/uri_authorized_start.ps1",
+    "scripts/uri_runtime_authority_check.py",
+    "scripts/uri_containment.ps1"
+   ]
   },
   {
    "id": "canonical-runtime",

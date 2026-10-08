@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **54 passed** (25 original + 29 added or updated across Codex rounds 1-8). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **58 passed** (25 original + 33 added or updated across Codex rounds 1-9). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -190,6 +190,27 @@ processes count by design. It found:
 2 new tests (54 total, all passing); both fail on the round-7 checker. The live run at 10:52 IST showed no new false
 positives from the wider selection. Its findings: 8 transitional (unchanged), 6 DONOR_ONLY Phase 2 dev processes
 (the other session's running chain), and Ollama shared. Round 9 result: see §2i.
+
+## 2i. Codex review round 9: REJECT, then repaired
+
+Round 8 repairs were confirmed, and no false positives were added on the live snapshot. Findings:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| S-1 | High | A non-entrypoint program running inside the *authoritative* root without a listener was not selected | Every process launched from ANY manifest root is classified. An active root admits only its listed entrypoints. The development checkout lists only the three consolidation tools |
+| S-2 | High | The agent-shell skip ran before URI-name selection (a trusted shell launching `uri_worker.exe` was skipped) | A shell that launches a URI-named program is never skipped |
+| S-3 | High | A URI-named image with a neutral command line (`worker --serve`) passed the probe but was not evaluated | The image path is included in selection and classification |
+
+4 new tests (58 total, all passing); 3 fail on the round-8 checker. The fourth confirms the tools are allowed. Two live
+observations during this round:
+- **Real catch:** the repaired checker found an orphaned `tests\phase2a\helpers\fake_executor.py` from my own
+  first (stopped) gate run on the committed candidate, still running since 09:50:39 in the authoritative development
+  root. I verified it was mine and stopped it. Stopping a pytest parent can leave helper children running (compare
+  Phase 2 finding SUP-1).
+- The Windows venv `python.exe` is a redirector whose child runs the checker, so the redirector parent was reported.
+  The probe now excludes its direct parent only when that parent runs the same checker script.
+Live run afterwards: 8 TRANSITIONAL_LEGACY, 8 DONOR_ONLY (the Phase 2 session's running chain), Ollama shared, 0
+unaccounted. Round 10 result: see §2j.
 
 ## 3. Integrity and recoverability
 
