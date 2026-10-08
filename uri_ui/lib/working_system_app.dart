@@ -46,6 +46,7 @@ class WorkingSystemRoot extends StatefulWidget {
     this.filePicker,
     this.attachmentOpener,
     this.statusInterval = const Duration(seconds: 15),
+    this.healthInterval = const Duration(seconds: 5),
     this.skipOnboarding = false,
   });
 
@@ -57,6 +58,9 @@ class WorkingSystemRoot extends StatefulWidget {
   final FilePickerFn? filePicker;
   final AttachmentOpenerFn? attachmentOpener;
   final Duration statusInterval;
+
+  /// Health polling and liveness monitor period (WS hardening).
+  final Duration healthInterval;
   final bool skipOnboarding;
 
   @override
@@ -96,7 +100,8 @@ class _WorkingSystemRootState extends State<WorkingSystemRoot> {
     try {
       final rt = await widget.connect();
       if (rt == null) throw IntegratedRuntimeException('INTEGRATED_PROFILE_NOT_CONFIGURED');
-      final conv = OiConversation(rt);
+      // Restart URI (R-BUSY) starts a fresh worker through the same connect path.
+      final conv = OiConversation(rt, respawn: widget.connect);
       _runtime = rt;
       _conv = conv;
       _appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
@@ -104,6 +109,7 @@ class _WorkingSystemRootState extends State<WorkingSystemRoot> {
       await conv.refreshStatus();
       unawaited(_services!.readiness.refresh()); // harness discovery for the readiness views (read-only)
       _status = Timer.periodic(widget.statusInterval, (_) => conv.refreshStatus());
+      conv.startMonitor(widget.healthInterval);
     } on IntegratedRuntimeException catch (e) {
       _error = e.code;
     } catch (e) {
@@ -115,7 +121,7 @@ class _WorkingSystemRootState extends State<WorkingSystemRoot> {
   Future<void> _disconnect() async {
     _status?.cancel();
     _status = null;
-    final rt = _runtime;
+    final rt = _conv?.runtime ?? _runtime; // a restarted worker replaces the first one
     _runtime = null;
     _services?.dispose();
     _services = null;

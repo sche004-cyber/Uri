@@ -4,6 +4,7 @@ import '../../services/app_state_scope.dart';
 import '../../theme/uri_theme.dart';
 import '../companion/companion_state.dart';
 import '../contracts/work_items.dart';
+import '../integration/oi_health_widgets.dart';
 import '../living_scope.dart';
 import '../presentation/presentation_controller.dart';
 import '../widgets/glass_panel.dart';
@@ -212,6 +213,18 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                           ],
                         ),
                       ),
+                      if (services.oi != null)
+                        // Working system: the real worker report (WS hardening, L-DASH).
+                        ListenableBuilder(
+                          listenable: services.oi!,
+                          builder: (context, _) => _Tile(
+                            title: 'Brain & models',
+                            source: 'integrated worker · brain_health',
+                            simulated: false,
+                            child: OiBrainCard(conversation: services.oi!),
+                          ),
+                        )
+                      else
                       _Tile(
                         title: 'Brain & models',
                         source: 'GET /providers/active-brain',

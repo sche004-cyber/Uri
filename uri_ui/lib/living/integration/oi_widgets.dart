@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../theme/uri_theme.dart';
 import '../widgets/glass_panel.dart';
 import 'oi_conversation.dart';
+import 'oi_health_widgets.dart';
+import 'oi_markdown.dart';
 
 /// Working-system conversation surfaces (WS blueprint W9). Every control
 /// here maps to one structured worker command; no widget infers an outcome
@@ -42,6 +44,8 @@ class _OiConversationPaneState extends State<OiConversationPane> {
         return Column(
           children: [
             OiBrainBar(conversation: conv),
+            OiWorkerBanner(conversation: conv),
+            OiHealthBanner(conversation: conv),
             Expanded(
               child: conv.messages.isEmpty
                   ? Center(
@@ -123,11 +127,16 @@ class _MessageTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (chips.isNotEmpty) Wrap(spacing: 6, runSpacing: 4, children: chips),
-            if (m.text.isNotEmpty || m.coreMessage != null)
+            if (m.text.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: OiMarkdown(m.text, key: ValueKey('oi-text-${m.turnId}')),
+              )
+            else if (m.coreMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: SelectableText(
-                  m.text.isNotEmpty ? m.text : (m.coreMessage ?? ''),
+                  m.coreMessage!,
                   key: ValueKey('oi-text-${m.turnId}'),
                   style: TextStyle(color: c.ink, height: 1.4),
                 ),
@@ -310,6 +319,7 @@ class OiBrainBar extends StatelessWidget {
     final c = UriColors.of(context);
     final conv = conversation;
     final state = conv.brainStatus['state'] as String? ?? 'checking';
+    final health = conv.healthState;
     final rows = [for (final r in (conv.catalog['rows'] as List? ?? const [])) if (r is Map) r];
     final selectable = [for (final r in rows) if (r['selectable'] == true) r];
     final ready = state == 'READY';
@@ -320,12 +330,15 @@ class OiBrainBar extends StatelessWidget {
         runSpacing: 6,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Icon(Icons.circle, size: 10, color: ready ? c.success : (state == 'checking' ? c.inkFaint : c.warning)),
+          Icon(Icons.circle,
+              size: 10,
+              color: health != null ? healthColor(c, health) : (ready ? c.success : (state == 'checking' ? c.inkFaint : c.warning))),
           Text(
             'Brain: ${conv.brainStatus['model_id'] ?? 'Runtime v1'} · $state',
             key: const ValueKey('oi-brain-state'),
             style: TextStyle(color: c.inkSoft, fontSize: 12),
           ),
+          if (health != null) OiHealthChip(conversation: conv),
           if (selectable.length > 1)
             DropdownButton<String>(
               key: const ValueKey('oi-brain-picker'),

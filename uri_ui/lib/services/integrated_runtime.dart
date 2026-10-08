@@ -42,6 +42,10 @@ abstract class IntegratedRuntime {
   /// True once the worker process has gone away.
   bool get closed;
   Future<void> close();
+
+  /// Forceful end of an unresponsive worker (WS hardening R-BUSY). Only the
+  /// explicit "Restart worker" action calls it.
+  Future<void> kill();
 }
 
 class WorkerIntegratedRuntime implements IntegratedRuntime {
@@ -176,6 +180,13 @@ class WorkerIntegratedRuntime implements IntegratedRuntime {
     }
     final v = reply['value'];
     return v is Map<String, dynamic> ? v : <String, dynamic>{};
+  }
+
+  @override
+  Future<void> kill() async {
+    _closed = true;
+    _process.kill();
+    await _process.exitCode.timeout(const Duration(seconds: 10), onTimeout: () => -1);
   }
 
   @override

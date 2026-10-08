@@ -15,6 +15,14 @@ import '../../services/integrated_runtime.dart';
 ///   digest of the card the user saw. [send] never decides anything.
 /// * Reasoning text is never received; only the tier and a progress count.
 /// * The Brain selection changes only through [selectBrain] (explicit).
+/// * Health (WS hardening): [brainHealth] is the worker's READY / BUSY /
+///   DEGRADED / UNAVAILABLE / RECOVERING report. A Brain restart is an
+///   explicit request ([brainAction]) the worker refuses while a turn runs.
+/// * Liveness (R-BUSY): while a turn runs and nothing arrives, the monitor
+///   asks the worker for the job's state with a bound longer than the
+///   worker's longest legitimate block. No answer = unresponsive; an answer
+///   with a long-silent job = stalled. Both offer Restart worker. A restart
+///   never retries the interrupted turn; its outcome is reported as unknown.
 
 enum OiRole { user, uri, system }
 
@@ -74,13 +82,47 @@ class OiConfirmation {
 enum OiDepth { auto, fast, normal, deep }
 
 class OiConversation extends ChangeNotifier {
-  OiConversation(this.runtime, {String? sessionId}) : sessionId = sessionId ?? _uuid4() {
+  OiConversation(
+    this.runtime, {
+    String? sessionId,
+    this.respawn,
+    this.probeAfter = const Duration(seconds: 20),
+    this.probeTimeout = const Duration(seconds: 40),
+    this.stalledAfter = const Duration(seconds: 90),
+  }) : sessionId = sessionId ?? _uuid4() {
     _sub = runtime.events.listen(_onEvent);
   }
 
-  final IntegratedRuntime runtime;
+  /// The current worker. Replaced only by [restartWorker].
+  IntegratedRuntime runtime;
   final String sessionId;
-  late final StreamSubscription<Map<String, dynamic>> _sub;
+  late StreamSubscription<Map<String, dynamic>> _sub;
+
+  /// Starts a fresh worker for [restartWorker] (null: restart unavailable).
+  final Future<IntegratedRuntime?> Function()? respawn;
+
+  /// Silence before the monitor probes a running turn.
+  final Duration probeAfter;
+
+  /// Probe bound. Longer than the worker's longest legitimate block (a
+  /// continuation joins its finishing job for up to 30 s, `JOIN_S`).
+  final Duration probeTimeout;
+
+  /// A job that is alive but has sent nothing for this long is "stalled".
+  final Duration stalledAfter;
+
+  Timer? _monitor;
+  bool _probing = false;
+  DateTime _lastFrame = DateTime.now();
+
+  /// The worker did not answer a status probe within [probeTimeout].
+  bool workerUnresponsive = false;
+
+  /// The worker answers, but the running job has been silent for [stalledAfter].
+  bool turnStalled = false;
+  bool restarting = false;
+  Map<String, dynamic> turnStatus = const {};
+  Map<String, dynamic> brainHealth = const {};
 
   final List<OiMessage> messages = [];
   final Map<String, OiMessage> _byTurn = {};
@@ -111,6 +153,13 @@ class OiConversation extends ChangeNotifier {
 
   bool get busy => activeTurnId != null;
   bool get brainReady => brainStatus['state'] == 'READY';
+
+  /// READY / BUSY / DEGRADED / UNAVAILABLE / RECOVERING, or null before the
+  /// first health report.
+  String? get healthState => brainHealth['state'] as String?;
+
+  /// The worker needs the user's attention (offer Restart worker).
+  bool get workerTrouble => workerUnresponsive || turnStalled || workerExited;
   String get selectedRowId {
     final rows = (catalog['rows'] as List?) ?? const [];
     for (final r in rows) {
@@ -129,7 +178,145 @@ class OiConversation extends ChangeNotifier {
     } on IntegratedRuntimeException catch (e) {
       lastError = e.code;
     }
+    await refreshHealth(notify: false);
     notifyListeners();
+  }
+
+  Future<void> refreshHealth({bool notify = true}) async {
+    try {
+      brainHealth = await runtime.call({'command': 'brain_health'}).timeout(probeTimeout);
+    } on IntegratedRuntimeException catch (e) {
+      lastError = e.code;
+    } on TimeoutException {
+      // The liveness probe decides about the worker; a slow health read alone does not.
+    }
+    if (notify) notifyListeners();
+  }
+
+  /// Explicit Brain host request: 'restart', 'stop' or 'start'.
+  Future<void> brainAction(String action) async {
+    if (busy) return;
+    try {
+      await runtime.call({'command': 'brain_restart', 'action': action});
+      lastError = null;
+    } on IntegratedRuntimeException catch (e) {
+      lastError = e.code;
+      messages.add(OiMessage(role: OiRole.system, text: 'Brain $action refused: ${e.code}'));
+    }
+    await refreshHealth();
+  }
+
+  /// Health polling and the liveness monitor (one timer).
+  void startMonitor([Duration every = const Duration(seconds: 5)]) {
+    _monitor?.cancel();
+    _monitor = Timer.periodic(every, (_) => monitorTick());
+  }
+
+  /// One monitor step (public for tests).
+  Future<void> monitorTick() async {
+    if (_probing || restarting || workerExited) return;
+    _probing = true;
+    try {
+      if (busy && DateTime.now().difference(_lastFrame) >= probeAfter) {
+        await _probe();
+      } else if (!busy) {
+        turnStalled = false;
+        await refreshHealth(notify: false);
+        notifyListeners();
+      }
+    } finally {
+      _probing = false;
+    }
+  }
+
+  Future<void> _probe() async {
+    final Map<String, dynamic> st;
+    try {
+      st = await runtime.call({'command': 'oi_turn_status'}).timeout(probeTimeout);
+    } on TimeoutException {
+      workerUnresponsive = true;
+      notifyListeners();
+      return;
+    } on IntegratedRuntimeException catch (e) {
+      lastError = e.code;
+      notifyListeners();
+      return;
+    }
+    workerUnresponsive = false;
+    turnStatus = st;
+    final t = activeTurnId;
+    if (st['busy'] != true && t != null) {
+      // The job ended but its turn.finished never arrived: stop waiting, claim nothing about the outcome.
+      final m = _byTurn[t];
+      m?.streaming = false;
+      m?.finishedStatus ??= 'unknown';
+      activeTurnId = null;
+      turnStalled = false;
+      messages.add(OiMessage(
+          role: OiRole.system,
+          text: 'URI finished this turn but its result did not arrive. Check before repeating any action.'));
+    } else {
+      final idle = (st['idle_s'] as num?)?.toDouble() ?? 0;
+      turnStalled = idle >= stalledAfter.inSeconds;
+    }
+    notifyListeners();
+  }
+
+  /// Explicit user action: end the current worker and start a fresh one.
+  /// The interrupted turn is never retried; pending cards lived in the old
+  /// worker and are withdrawn (the server's expiry releases them).
+  Future<void> restartWorker() async {
+    final start = respawn;
+    if (start == null || restarting) return;
+    restarting = true;
+    notifyListeners();
+    final t = activeTurnId;
+    if (t != null) {
+      final m = _byTurn[t];
+      m?.streaming = false;
+      m?.finishedStatus = 'interrupted';
+      final action = m?.route != null && m!.route != 'answer';
+      messages.add(OiMessage(
+          role: OiRole.system,
+          text: action
+              ? 'URI was restarted. The interrupted request was not retried and its outcome is unknown: '
+                  'check whether the action happened before asking again.'
+              : 'URI was restarted. The interrupted request was not retried.'));
+    }
+    if (pendingApproval != null || pendingConfirmation != null) {
+      messages.add(OiMessage(role: OiRole.system, text: 'The open approval was withdrawn by the restart; nothing was approved.'));
+    }
+    activeTurnId = null;
+    pendingApproval = null;
+    pendingConfirmation = null;
+    await _sub.cancel();
+    final old = runtime;
+    try {
+      await old.kill();
+    } catch (_) {}
+    IntegratedRuntime? fresh;
+    try {
+      fresh = await start();
+    } catch (_) {
+      fresh = null;
+    }
+    if (fresh == null) {
+      lastError = 'WORKER_RESTART_FAILED';
+      workerExited = true;
+      restarting = false;
+      messages.add(OiMessage(role: OiRole.system, text: 'URI could not restart its worker. Close and reopen the app.'));
+      notifyListeners();
+      return;
+    }
+    runtime = fresh;
+    _sub = runtime.events.listen(_onEvent);
+    workerExited = false;
+    workerUnresponsive = false;
+    turnStalled = false;
+    restarting = false;
+    lastError = null;
+    _lastFrame = DateTime.now();
+    await refreshStatus();
   }
 
   Future<void> refreshMemory() async {
@@ -175,6 +362,7 @@ class OiConversation extends ChangeNotifier {
 
   void _begin(String turnId) {
     activeTurnId = turnId;
+    _lastFrame = DateTime.now();
     _jobs[turnId] = (_jobs[turnId] ?? 0) + 1;
     final m = OiMessage(role: OiRole.uri, text: '', turnId: turnId)..streaming = true;
     messages.add(m);
@@ -291,6 +479,11 @@ class OiConversation extends ChangeNotifier {
 
   void _onEvent(Map<String, dynamic> ev) {
     final type = ev['type'];
+    _lastFrame = DateTime.now();
+    if (workerUnresponsive || turnStalled) {
+      workerUnresponsive = false;
+      turnStalled = false;
+    }
     if (type == 'worker.exited') {
       workerExited = true;
       activeTurnId = null;
@@ -369,6 +562,7 @@ class OiConversation extends ChangeNotifier {
 
   @override
   void dispose() {
+    _monitor?.cancel();
     _sub.cancel();
     super.dispose();
   }

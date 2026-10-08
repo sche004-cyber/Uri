@@ -65,6 +65,12 @@ class FakeRuntime implements IntegratedRuntime {
     _closed = true;
     commands.add({'command': 'close'});
   }
+
+  @override
+  Future<void> kill() async {
+    _closed = true;
+    commands.add({'command': '<kill>'});
+  }
 }
 
 Widget host(Widget child) {
