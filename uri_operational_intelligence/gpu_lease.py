@@ -40,8 +40,15 @@ SCHEMA = "uri.gpu.lease.v1"
 RUNTIME_V1_DEVICE_MIB = 15626
 # A process below this is not listed as a separate consumer (it still counts in the budget).
 LIST_MIN_MIB = 128
-# Margin below which a fitting start is reported as AT_RISK (half a demotion block; R1 blocks are 1 GiB).
+# Margin below which a start is reported as AT_RISK (half a demotion block; R1 blocks are 1 GiB).
 AT_RISK_MARGIN_MIB = 512
+# Shortfall at which a start is refused as CONTENDED: one whole 1 GiB demotion block. Measured on this card: the frozen
+# server stays healthy while the driver demotes 250-950 MiB of it (Adaptive Runtime R1) and in WS runs with the desktop
+# plus the URI window open (others ~0.7 GB, shortfall ~0.1 GB: 111-131 tok/s); it collapses to ~25 tok/s next to a
+# 1.6 GB consumer (others ~2.1 GB, shortfall ~1.2-1.4 GB; R1, R2, WS). Between the two the outcome is not decided by
+# the budget (R2: which buffers are demoted is nondeterministic), so those starts are AT_RISK and the post-start
+# calibration classifies the instance.
+CONTENDED_SHORTFALL_MIB = 1024
 DESKTOP = {"dwm.exe": "desktop compositor"}
 
 FITS, AT_RISK, CONTENDED, UNKNOWN = "FITS", "AT_RISK", "CONTENDED", "UNKNOWN"
@@ -299,9 +306,10 @@ def owner_pids(lease_pid=None, extra=()):
 
 def assess_fit(c: dict, *, owners=(), required_mib=RUNTIME_V1_DEVICE_MIB) -> dict:
     """Budget rule: free = card - (dedicated memory of every non-owner process) - unattributed adapter memory
-    (memory still committed after a process exit). CONTENDED when free < required (the measured request), AT_RISK
-    when the margin is below half a demotion block. Owner processes (the lease holder and its children, e.g. our own
-    server) are excluded, so an already loaded Brain does not count against itself."""
+    (memory still committed after a process exit); margin = free - required (the measured request). CONTENDED when the
+    shortfall reaches one demotion block, AT_RISK when the margin is below half a block, FITS otherwise. Owner
+    processes (the lease holder and its children, e.g. our own server) are excluded, so an already loaded Brain does
+    not count against itself."""
     if not c.get("ok") or not c.get("card_mib"):
         return {"verdict": UNKNOWN, "reason": c.get("error") or "CARD_SIZE_UNKNOWN"}
     owners = set(owners)
@@ -310,7 +318,7 @@ def assess_fit(c: dict, *, owners=(), required_mib=RUNTIME_V1_DEVICE_MIB) -> dic
     owner_mib = round(sum(p["dedicated_mib"] for p in c["processes"] if p["pid"] in owners), 1)
     free = round(c["card_mib"] - others_mib - c["unattributed_mib"], 1)
     margin = round(free - required_mib, 1)
-    verdict = CONTENDED if margin < 0 else AT_RISK if margin < AT_RISK_MARGIN_MIB else FITS
+    verdict = CONTENDED if margin <= -CONTENDED_SHORTFALL_MIB else AT_RISK if margin < AT_RISK_MARGIN_MIB else FITS
     consumers = [{"pid": p["pid"], "name": p.get("name"), "parent": p.get("parent"),
                   "dedicated_mib": p["dedicated_mib"], "role": DESKTOP.get((p.get("name") or "").lower())}
                  for p in others if p["dedicated_mib"] >= LIST_MIN_MIB]
@@ -335,6 +343,9 @@ def explain(fit: dict) -> str:
                 "URI will not stop them." % (fit["required_mib"] / 1024, max(0, fit["free_mib"]) / 1024,
                                              ", ".join(named) or "unattributed memory still being released"))
     if v == AT_RISK:
+        if fit["margin_mib"] < 0:
+            return ("GPU memory is %.0f MB short of the Brain's full request; it may run slowly. URI checks its speed "
+                    "after loading." % -fit["margin_mib"])
         return "The Brain fits with a small margin (%.0f MB); other GPU apps may slow it down." % fit["margin_mib"]
     return "The Brain fits in GPU memory (margin %.0f MB)." % fit["margin_mib"]
 

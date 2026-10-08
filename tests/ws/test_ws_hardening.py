@@ -145,7 +145,12 @@ def test_fit_desktop_only_fits_and_a_1gb_consumer_contends():
     assert f["verdict"] == G.AT_RISK and 0 < f["margin_mib"] < G.AT_RISK_MARGIN_MIB     # 281 MB margin, measured case
     ollama = G.census(raw([(1580, 311.3, 9), (18372, 1601.9, 349)], 1920), card=CARD)
     f2 = G.assess_fit(ollama)
-    assert f2["verdict"] == G.CONTENDED and f2["margin_mib"] < 0
+    assert f2["verdict"] == G.CONTENDED and f2["margin_mib"] <= -G.CONTENDED_SHORTFALL_MIB
+    # measured live 2026-10-09: desktop + an open URI window, 15.2 GB free: a small shortfall starts AT_RISK
+    ui_open = G.census(raw([(1580, 318, 9), (3144, 84, 23), (5384, 66, 1), (9999, 210, 5), (7777, 440, 12), (9252, 33, 1)], 1160), card=CARD)
+    f3 = G.assess_fit(ui_open)
+    assert f3["verdict"] == G.AT_RISK and -G.CONTENDED_SHORTFALL_MIB < f3["margin_mib"] < 0
+    assert "short" in G.explain(f3)
     text = G.explain(f2)
     assert "llama-server" in text or "pid 18372" in text
     assert "will not stop" in text
