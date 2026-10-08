@@ -137,6 +137,23 @@ def test_deadline_and_cancel_work_while_waiting_for_response_headers(fake):
     assert r.status == BC.CANCELLED and time.monotonic() - t0 < 1.5
 
 
+def test_abandoned_header_wait_disconnects_and_pool_recovers(fake):
+    """Round-6 audit: an abandoned send must not keep its connection (and the server's queued request) forever."""
+    c = BC.BrainClient(fake.url)
+    for _ in range(10):        # more abandons than the 8-connection pool
+        fake.scripts.append({"chunks": [("answer", "late")], "finish": "stop", "header_delay": 2.5})
+        r = c.stream_chat(body(), deadlines=BC.Deadlines(first_token_s=0.2, idle_s=0.2, total_s=5))
+        assert r.status in (BC.TIMEOUT_FIRST_TOKEN, BC.HTTP_ERROR)
+    deadline = time.monotonic() + 8
+    while fake.disconnects < 1 and time.monotonic() < deadline:
+        time.sleep(0.1)
+    assert fake.disconnects >= 1          # the server observed abandoned requests going away
+    time.sleep(1.5)                        # read cap (0.2 + 1.0 s) has passed for every abandoned send
+    fake.scripts.append({"chunks": [("answer", "ok")], "finish": "stop"})
+    r = c.stream_chat(body())
+    assert r.status == BC.COMPLETE and r.text == "ok"
+
+
 def test_seam_timeout_disconnects_so_the_server_can_drop_the_generation(fake):
     fake.scripts.append({"chunks": [("answer", "x")] * 200, "finish": "stop", "delay": 0.02})
     r = BC.BrainClient(fake.url).complete_json(body(), timeout_s=0.5)

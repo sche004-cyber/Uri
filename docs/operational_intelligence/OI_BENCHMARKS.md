@@ -20,9 +20,10 @@ Live run at `ebd978f` on a degraded runtime (decode 24 tok/s): 3 live tests fail
 (seam calls hit the 60 s deadline) and one answer turn took 495 s despite a 60 s first-token deadline. Cause (code,
 confirmed by tests): (a) a non-streamed seam request that timed out on the client kept generating on the server's
 single slot, so every later request queued behind it; (b) while queued, llama-server sent no response headers and the
-blocking `send()` could not be interrupted by the deadline or a cancel. Fix: seams run over SSE (a timeout closes the
-stream and the server drops the generation) and the send runs in a helper thread so deadlines/cancel act during the
-header wait (tests with a fake server that withholds headers). Re-run on the same degraded runtime: live 8/8
+blocking `send()` could not be interrupted by the deadline or a cancel. Fix: seams run over SSE (a timeout after
+headers closes the stream and the server drops the generation); the send runs in a helper thread so deadlines/cancel
+return immediately during the header wait, and the abandoned request disconnects within a bounded read timeout
+(tests with a fake server that withholds headers: prompt return, disconnect observed, pool recovery). Re-run on the same degraded runtime: live 8/8
 (`core_live` evidence: action to approval 5.2–7.5 s, verified loop 7.8 s, question 2.0 s).
 
 GPU contention: from 17:44 another session runs an embeddings `llama-server` (nomic-embed, port 18481, started via

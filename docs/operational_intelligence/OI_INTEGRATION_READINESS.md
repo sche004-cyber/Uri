@@ -24,11 +24,13 @@ Codex output is a claim; every finding below was checked against the source befo
 | repair | `738a9af` | — | single-turn allowlist, Unicode folding, one writer process per ledger (real second-process test) |
 | 5 | `738a9af` | **REJECT** | ownership, scan removal, quota documentation verified fixed. Remaining: a plan step's confirmation payload spliced under a registered single-turn id (High); U+201B / U+2015 not folded (High); in-memory registry lost on restart (Medium); unbounded registry (Low) |
 | repair | see git log after `738a9af` | — | registry binds a digest of the whole issued envelope, single use, bounded 256, restart fails closed (documented); folding by Unicode category Pd / Pi / Pf / Zs (`test_oi_audit_r5_regressions.py`) |
-| 6 | see §2.1 | see §2.1 | see §2.1 |
+| 6 | `50b2adc` | **REJECT** | all round-5 items verified fixed except restart loss of single-turn continuations (partially: fails closed, documented). New: a request abandoned during the header wait was not disconnected and could pin pool connections; docs overclaimed slot release in that phase. No path to unapproved/duplicate execution, false success, silent substitution or unverified READY found |
+| repair | see git log after `50b2adc` | — | bounded socket read timeout closes abandoned sends; pool exhaustion reported (no retry); disconnect + pool-recovery test; docs qualified by phase |
+| 7 | see §2.1 | see §2.1 | see §2.1 |
 
-### 2.1 Round 6
+### 2.1 Round 7
 
-Recorded after the run (if empty, round 6 did not complete).
+Recorded after the run (if empty, round 7 did not complete).
 
 ## 3. What was verified, by whom
 

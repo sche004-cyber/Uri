@@ -172,7 +172,13 @@ class BrainClient:
         w.start()
         text, reasoning = [], []
         try:
-            req = self._get().build_request("POST", "/v1/chat/completions", json=body)
+            # Bounded socket read timeout: an abandoned send (cancel/deadline during the header wait) closes its own
+            # connection at the latest after max(first_token_s, idle_s) + 1 s, so the server sees the disconnect and
+            # the pool slot is returned. While streaming, the watcher's shorter idle deadline acts first.
+            read_cap = max(deadlines.first_token_s, deadlines.idle_s) + 1.0
+            req = self._get().build_request("POST", "/v1/chat/completions", json=body,
+                                            timeout=httpx.Timeout(connect=self.connect_timeout, read=read_cap,
+                                                                  write=30.0, pool=5.0))
             # Measured 2026-10-08: with the single slot busy, llama-server may not send response headers for minutes,
             # and a blocking send() cannot be interrupted. The send runs in a helper thread so cancellation and
             # deadlines act immediately; an abandoned send closes its response as soon as headers arrive (the server
@@ -266,6 +272,15 @@ class BrainClient:
                 res.status, res.error = INTERRUPTED, "STREAM_ENDED_WITHOUT_FINISH"
         except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
             res.status, res.error = (state["why"] or UNREACHABLE), type(exc).__name__
+        except httpx.PoolTimeout as exc:
+            # All pooled connections busy (e.g. abandoned requests still waiting): reported as such, never retried.
+            res.status, res.error = (state["why"] or HTTP_ERROR), "POOL_EXHAUSTED:" + type(exc).__name__
+        except httpx.ReadTimeout as exc:
+            if state["why"]:
+                res.status = state["why"]
+            else:
+                res.status = TIMEOUT_FIRST_TOKEN if state["first"] is None else STALLED
+            res.error = type(exc).__name__
         except (httpx.TransportError, httpx.StreamError, httpx.RemoteProtocolError) as exc:
             if state["why"]:
                 res.status = state["why"]
