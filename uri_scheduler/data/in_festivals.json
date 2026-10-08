@@ -1,0 +1,932 @@
+{
+ "schema": "uri.scheduler.calendar.v1",
+ "calendar_id": "in_festivals",
+ "version": "2026-10-09.1",
+ "timezone": "Asia/Kolkata",
+ "notes": [
+  "Dates are the dates notified for government holiday purposes. Lunar-calendar festivals move every year and can differ by region and by moon sighting; every activation shows the dates for owner approval.",
+  "A record with status 'unverified' is never scheduled until the owner confirms it (status -> published).",
+  "'solemn' observances are listed for completeness and are not offered for greeting GIFs by default."
+ ],
+ "sources": [
+  {
+   "id": "dopt_2026_closed",
+   "title": "DoP&T O.M. F.No.12/2/2023-JCA dated 03.07.2025, Annexure-I (Closed Holidays 2026, Delhi/New Delhi)",
+   "url": "https://www.staffnews.in/2025/07/list-of-holidays-2026-closed-holidays.html",
+   "authority": "Government of India, Department of Personnel and Training",
+   "retrieved_at": "2026-10-09",
+   "verification": "secondary_transcription_of_official_om",
+   "notes": "Primary annexure PDF not fetched; india.gov.in/calendar returned HTTP 403 to the research tool."
+  },
+  {
+   "id": "dopt_2026_restricted",
+   "title": "DoP&T O.M. F.No.12/2/2023-JCA dated 03.07.2025, Annexure-II (Restricted Holidays 2026)",
+   "url": "https://www.staffnews.in/2025/07/list-of-holidays-2026-restricted-holidays.html",
+   "authority": "Government of India, Department of Personnel and Training",
+   "retrieved_at": "2026-10-09",
+   "verification": "secondary_transcription_of_official_om",
+   "notes": ""
+  },
+  {
+   "id": "dopt_2027_closed",
+   "title": "DoP&T O.M. F.No.12/2/2023-JCA dated 16.07.2026, Annexure-I (Gazetted Holidays 2027)",
+   "url": "https://www.staffnews.in/2026/07/list-of-holidays-for-the-year-2027-gazetted.html",
+   "authority": "Government of India, Department of Personnel and Training",
+   "retrieved_at": "2026-10-09",
+   "verification": "secondary_transcription_of_official_om",
+   "notes": "Independence Day and Milad-un-Nabi coincide on 2027-08-15."
+  },
+  {
+   "id": "dopt_2027_restricted",
+   "title": "DoP&T O.M. dated 16.07.2026, Annexure-II (Restricted Holidays 2027)",
+   "url": "https://www.staffnews.in/2026/07/list-of-restricted-holidays-for-the-year-2027.html",
+   "authority": "Government of India, Department of Personnel and Training",
+   "retrieved_at": "2026-10-09",
+   "verification": "secondary_transcription_of_official_om",
+   "notes": ""
+  },
+  {
+   "id": "sikkim_2026_secondary",
+   "title": "Government of Sikkim Notification 89/Home/2025 dated 11.10.2025 (Sikkim Government Gazette Extraordinary No. 391), public holidays 2026",
+   "url": "https://www.greythr.com/wiki/acts/st-sikkim/holidays/2026/",
+   "authority": "Government of Sikkim, Home Department",
+   "retrieved_at": "2026-10-09",
+   "verification": "aggregator_conflicting",
+   "notes": "The aggregator's table is internally inconsistent with the Government of India list (it shows Tihar/Laxmi Puja on 2026-10-13 while Diwali is 2026-11-08). Sikkim dates here are UNVERIFIED and must be confirmed against the gazette before use."
+  }
+ ],
+ "festivals": [
+  {
+   "festival_key": "holi",
+   "name": "Holi",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-03-04",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-03-23",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "ram_navami",
+   "name": "Ram Navami",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-03-26",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-04-15",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "mahavir_jayanti",
+   "name": "Mahavir Jayanti",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-03-31",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-04-19",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "buddha_purnima",
+   "name": "Buddha Purnima",
+   "category": "major",
+   "regions": [
+    "national",
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-05-01",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-05-20",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "eid_ul_fitr",
+   "name": "Id-ul-Fitr",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-03-21",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-03-10",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "eid_ul_zuha",
+   "name": "Id-ul-Zuha (Bakrid)",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-05-27",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-05-17",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "janmashtami",
+   "name": "Janmashtami",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-09-04",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-08-25",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "dussehra",
+   "name": "Dussehra (Vijaya Dashami)",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-10-20",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-10-09",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "diwali",
+   "name": "Diwali (Deepavali)",
+   "category": "major",
+   "regions": [
+    "national",
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-11-08",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-10-29",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "guru_nanak_jayanti",
+   "name": "Guru Nanak Jayanti",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-11-24",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-11-14",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "christmas",
+   "name": "Christmas",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-12-25",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-12-25",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "milad_un_nabi",
+   "name": "Milad-un-Nabi (Id-e-Milad)",
+   "category": "major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-08-26",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-08-15",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "good_friday",
+   "name": "Good Friday",
+   "category": "solemn",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": false,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-04-03",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-03-26",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "muharram",
+   "name": "Muharram",
+   "category": "solemn",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": false,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-06-26",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-06-16",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "republic_day",
+   "name": "Republic Day",
+   "category": "national_observance",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-01-26",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-01-26",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "independence_day",
+   "name": "Independence Day",
+   "category": "national_observance",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-08-15",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-08-15",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "gandhi_jayanti",
+   "name": "Gandhi Jayanti",
+   "category": "national_observance",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-10-02",
+     "end": null,
+     "source": "dopt_2026_closed",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-10-02",
+     "end": null,
+     "source": "dopt_2027_closed",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "makar_sankranti",
+   "name": "Makar Sankranti",
+   "category": "regional_major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-01-14",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-01-14",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "pongal",
+   "name": "Pongal",
+   "category": "regional_major",
+   "regions": [
+    "tamil_nadu"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-01-14",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-01-15",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "basant_panchami",
+   "name": "Basant Panchami",
+   "category": "regional_major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-01-23",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-02-11",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "maha_shivratri",
+   "name": "Maha Shivratri",
+   "category": "regional_major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-02-15",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-03-06",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "ugadi_gudi_padwa",
+   "name": "Ugadi / Gudi Padwa",
+   "category": "regional_major",
+   "regions": [
+    "karnataka",
+    "andhra_pradesh",
+    "telangana",
+    "maharashtra"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-03-19",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-04-07",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "vaisakhi",
+   "name": "Vaisakhi",
+   "category": "regional_major",
+   "regions": [
+    "punjab"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-04-14",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-04-14",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "rath_yatra",
+   "name": "Rath Yatra",
+   "category": "regional_major",
+   "regions": [
+    "odisha"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-07-16",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-07-05",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "onam",
+   "name": "Onam",
+   "category": "regional_major",
+   "regions": [
+    "kerala"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-08-26",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-09-12",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "raksha_bandhan",
+   "name": "Raksha Bandhan",
+   "category": "regional_major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-08-28",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-08-17",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "ganesh_chaturthi",
+   "name": "Ganesh Chaturthi",
+   "category": "regional_major",
+   "regions": [
+    "national",
+    "maharashtra"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-09-14",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-09-04",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "karva_chauth",
+   "name": "Karva Chauth",
+   "category": "regional_major",
+   "regions": [
+    "north_india"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-10-29",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-10-18",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "govardhan_puja",
+   "name": "Govardhan Puja",
+   "category": "regional_major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-11-09",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-10-30",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "bhai_dooj",
+   "name": "Bhai Dooj",
+   "category": "regional_major",
+   "regions": [
+    "national"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-11-11",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-10-31",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "chhath_puja",
+   "name": "Chhath Puja",
+   "category": "regional_major",
+   "regions": [
+    "bihar",
+    "jharkhand"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-11-15",
+     "end": null,
+     "source": "dopt_2026_restricted",
+     "status": "published"
+    },
+    {
+     "year": 2027,
+     "start": "2027-11-04",
+     "end": null,
+     "source": "dopt_2027_restricted",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "losar",
+   "name": "Losar",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-02-18",
+     "end": null,
+     "source": "sikkim_2026_secondary",
+     "status": "unverified"
+    }
+   ]
+  },
+  {
+   "festival_key": "saga_dawa",
+   "name": "Saga Dawa",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-06-04",
+     "end": null,
+     "source": "sikkim_2026_secondary",
+     "status": "unverified"
+    }
+   ]
+  },
+  {
+   "festival_key": "pang_lhabsol",
+   "name": "Pang Lhabsol",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-09-02",
+     "end": null,
+     "source": "sikkim_2026_secondary",
+     "status": "unverified"
+    }
+   ]
+  },
+  {
+   "festival_key": "lhabab_duechen",
+   "name": "Lhabab Duechen",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-12-10",
+     "end": null,
+     "source": "sikkim_2026_secondary",
+     "status": "unverified"
+    }
+   ]
+  },
+  {
+   "festival_key": "losoong_namsoong",
+   "name": "Losoong / Namsoong",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-12-09",
+     "end": null,
+     "source": "sikkim_2026_secondary",
+     "status": "unverified"
+    }
+   ]
+  }
+ ]
+}
