@@ -68,14 +68,59 @@ _REWRITE = re.compile(_LEAD + r"(?:rewrite|re-write|rephrase|reword|paraphrase|p
 # Words inside dictated content ("ask parents to sign and send the form", "look forward to") do not match.
 _CORE_VERBS = (r"send|email|e-mail|mail|forward|post|publish|upload|print|share|save|store|attach|schedule|"
                r"remind me|remember|memori[sz]e|note down|overwrite")
-_CORE_ONLY = re.compile(
-    r"^\s*(?:(?:uri|hey uri)[,:!]?\s+)?(?:(?:please|pls|kindly|now|also|just)\s+|(?:can|could|would|will) you\s+)*"
-    r"(?:" + _CORE_VERBS + r")\b|"
-    r"\b(?:and|then|also|after that|afterwards)\s+(?:please\s+)?(?:" + _CORE_VERBS + r")\s+(?:it|this|that|them|"
-    r"the (?:letter|draft|email|e-mail|mail|note|notice|document|file|circular|memo|report|reply)|a copy|my)\b|"
-    r"\b(?:send|email|e-mail|mail|forward|save|print|upload|share|post)\s+(?:it|this|that)\b|"
+_START_ACTION = re.compile(
+    r"^\s*(?:(?:uri|hey uri)[,:!]?\s+)?(?:(?:please|pls|kindly|now|also|just|then|and)\s+|(?:can|could|would|will) you\s+)*"
+    r"(?:" + _CORE_VERBS + r")\b", re.I)
+_DESTINATION = re.compile(
     r"\b(?:in|into|to|on) (?:the |my )?(?:shared |google )?(?:desktop|folder|drive|documents|downloads)\b|"
     r"\bas (?:a |an )?(?:file|pdf|docx|word (?:file|document)|text file)\b|\.(?:docx|pdf|txt)\b", re.I)
+_ACT_ANY = re.compile(
+    r"\b(?:and|then|also|after that|afterwards|&)\s+(?:please\s+|also\s+|then\s+)*(?:send|email|e-mail|mail|forward|"
+    r"save|print|upload|share|post|publish|attach|schedule|remind me|remember)\b|"
+    r"\b(?:send|email|e-mail|mail|forward|save|print|upload|share|post)\s+(?:it|this|that)\b", re.I)
+_SENTENCE = re.compile(r"(?:^|[.!?;\n]+)\s*([^.!?;\n]+)")
+# Inside dictated content an action word belongs to the document ("ask parents to sign it and send the form"):
+# an infinitive ("to <verb> ... and send") or a reported request ("asking/requesting/telling X to ...").
+_DETERMINERS = r"(?:the|a|an|my|our|his|her|their|your|this|that|these|those|all|every|him|them|me|us|you|it)"
+_RECIPIENTS = (r"(?:warden|principal|sir|madam|manager|teacher|office|department|hod|dean|director|parents?|students?|"
+               r"staff|everyone|committee|accounts|registrar|librarian|admin|management|team|class|hostel|school|college)")
+_INFINITIVE = re.compile(r"\bto\s+(?!" + _DETERMINERS + r"\b|" + _RECIPIENTS + r"\b)[a-z][\w-]*(?:\s+[\w'-]+){0,4}\s*$")
+_REPORTED = re.compile(r"\b(?:ask|asks|asking|asked|request|requests|requesting|requested|tell|tells|telling|told|"
+                       r"instruct\w*|remind\w*|urg\w*|direct\w*|inform\w*|want|wants|expect\w*)\b[^.;:!?]*\bto\b", re.I)
+
+
+def _content_context(t, pos):
+    clause = re.split(r"[.;:!?\n]", t[:pos])[-1]
+    return bool(_INFINITIVE.search(clause) or _REPORTED.search(clause))
+# Objects that are not the draft: edits to these are actions or code work, never draft revisions.
+_FOREIGN_OBJECT = re.compile(
+    r"\b(?:files?|folders?|directory|inbox|mailbox|my emails|calendar|meeting|reminders?|memory|memories|settings?|"
+    r"code|bug|function|repo(?:sitory)?|script|app|program|database|spreadsheet|sheet|account|password|"
+    r"brain|model|harness)\b", re.I)
+_START_ACTION = re.compile(
+    r"^\s*(?:(?:uri|hey uri)[,:!]?\s+)?(?:(?:please|pls|kindly|now|also|just|then|and)\s+|(?:can|could|would|will) you\s+)*"
+    r"(?:" + _CORE_VERBS + r")\b", re.I)
+_DESTINATION = re.compile(
+    r"\b(?:in|into|to|on) (?:the |my )?(?:shared |google )?(?:desktop|folder|drive|documents|downloads)\b|"
+    r"\bas (?:a |an )?(?:file|pdf|docx|word (?:file|document)|text file)\b|\.(?:docx|pdf|txt)\b", re.I)
+_ACT_ANY = re.compile(
+    r"\b(?:and|then|also|after that|afterwards|&)\s+(?:please\s+|also\s+|then\s+)*(?:send|email|e-mail|mail|forward|"
+    r"save|print|upload|share|post|publish|attach|schedule|remind me|remember)\b|"
+    r"\b(?:send|email|e-mail|mail|forward|save|print|upload|share|post)\s+(?:it|this|that)\b", re.I)
+_SENTENCE = re.compile(r"(?:^|[.!?;\n]+)\s*([^.!?;\n]+)")
+# Inside dictated content an action word belongs to the document ("ask parents to sign it and send the form"):
+# an infinitive ("to <verb> ... and send") or a reported request ("asking/requesting/telling X to ...").
+_DETERMINERS = r"(?:the|a|an|my|our|his|her|their|your|this|that|these|those|all|every|him|them|me|us|you|it)"
+_RECIPIENTS = (r"(?:warden|principal|sir|madam|manager|teacher|office|department|hod|dean|director|parents?|students?|"
+               r"staff|everyone|committee|accounts|registrar|librarian|admin|management|team|class|hostel|school|college)")
+_INFINITIVE = re.compile(r"\bto\s+(?!" + _DETERMINERS + r"\b|" + _RECIPIENTS + r"\b)[a-z][\w-]*(?:\s+[\w'-]+){0,4}\s*$")
+_REPORTED = re.compile(r"\b(?:ask|asks|asking|asked|request|requests|requesting|requested|tell|tells|telling|told|"
+                       r"instruct\w*|remind\w*|urg\w*|direct\w*|inform\w*|want|wants|expect\w*)\b[^.;:!?]*\bto\b", re.I)
+
+
+def _content_context(t, pos):
+    clause = re.split(r"[.;:!?\n]", t[:pos])[-1]
+    return bool(_INFINITIVE.search(clause) or _REPORTED.search(clause))
 # Objects that are not the draft: edits to these are actions or code work, never draft revisions.
 _FOREIGN_OBJECT = re.compile(
     r"\b(?:files?|folders?|directory|inbox|mailbox|my emails|calendar|meeting|reminders?|memory|memories|settings?|"
@@ -88,10 +133,17 @@ _CHAINED = re.compile(r"\b(?:and|then|also|after that|afterwards|&)\s+(?:please\
 
 
 def _core_only(t: str) -> bool:
-    if _CORE_ONLY.search(t):
+    """True when the request asks URI to act (send, save, file, remember ...): such turns go to Core."""
+    if _DESTINATION.search(t):
         return True
-    for m in _CHAINED.finditer(t):
-        if not re.search(r"\bto\s+[\w-]+\s*$", t[:m.start()], re.I):
+    instruction, payload = split_payload(t)
+    head = instruction if payload is not None else t
+    # An imperative action at the start of the request or of any later sentence of the instruction.
+    for m in _SENTENCE.finditer(head):
+        if _START_ACTION.match(m.group(1)):
+            return True
+    for m in _ACT_ANY.finditer(head):
+        if not _content_context(head, m.start()):
             return True
     return False
 
@@ -117,6 +169,15 @@ _SHOW = re.compile(r"^\s*(?:(?:uri|please)[,!]?\s+)*(?:show|display|read out|let
                    r"(?:current |latest )?(?:draft|letter|email|document|version)\s*[.?!]?\s*$", re.I)
 
 # Revision cues: only consulted when a draft is active.
+_DROP_QUESTION = re.compile(r"^\s*(?:(?:uri|ok|okay|no)[,!]?\s+)*(?:cancel|never ?mind|forget (?:it|that|about it)|skip (?:it|that)|"
+                            r"leave it|drop (?:it|that)|no thanks|chhodo|rehne do|jane do)\b(?:\s+(?:that|the|this|my))?"
+                            r"(?:\s+(?:question|request|draft|one))?\s*[.!]?\s*$", re.I)
+
+
+def drops_question(text: str) -> bool:
+    return bool(_DROP_QUESTION.match(text or ""))
+
+
 _REVISE_START = re.compile(
     r"^\s*(?:(?:uri|ok|okay|no|also|and|but|now|please|pls|kindly|sorry|hmm|actually|wait|then|oh)[,!.]?\s+)*"
     r"(?:(?:can|could|would) you\s+(?:please\s+)?)?"
@@ -206,14 +267,22 @@ def targets_for(instruction: str) -> dict:
             phrases.append(p.strip(" \"'“”‘’"))
     # Explicit parts win. The edit is whole-document only when some clause asks for an edit of the whole ("make it
     # more diplomatic") without naming a part; "keep everything else the same" never widens it.
+    # "it" refers back to a part named in an EARLIER clause ("change the first paragraph and make it shorter"); in a
+    # clause before any named part it means the document ("make it more diplomatic and shorten the second
+    # paragraph"). Explicit whole-document words ("whole", "the letter", "tone") are global wherever they occur.
     is_global = not (body or roles or phrases)
+    named_before = False
     for clause in _CLAUSE_SPLIT.split(instruction):
         if not clause or not clause.strip() or _KEEP_REST.search(clause):
             continue
         if _PARA_REF.search(clause) or any(rx.search(clause) for rx in _ROLE_REF.values()) or \
                 any(p.lower() in clause.lower() for p in phrases):
+            named_before = True
             continue
-        if _GLOBAL.search(clause) and _EDIT_VERB.search(clause):
+        if not _EDIT_VERB.search(clause):
+            continue
+        explicit = _GLOBAL.search(re.sub(r"\b(?:it|isko|isse)\b", " ", clause, flags=re.I))
+        if explicit or (_GLOBAL.search(clause) and not named_before):
             is_global = True
     return {"body": sorted(set(body)), "roles": sorted(set(roles)), "phrases": phrases, "global": is_global}
 

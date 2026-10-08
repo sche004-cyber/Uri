@@ -190,7 +190,9 @@ class OiConversation extends ChangeNotifier {
     String? language,
     List<String> uncertain = const [],
   }) {
-    final t = raw.trim();
+    // The raw transcript is kept byte for byte (contract: turn text == transcript.raw); only emptiness is
+    // judged on a trimmed copy.
+    final t = raw;
     final input = {
       'schema': 'uri.text_input.v1',
       'source': 'transcript',
@@ -206,7 +208,7 @@ class OiConversation extends ChangeNotifier {
   }
 
   Future<void> _turn(String t, Map<String, dynamic>? input, String? label) async {
-    if (t.isEmpty || busy) return;
+    if (t.trim().isEmpty || busy) return;
     messages.add(OiMessage(role: OiRole.user, text: t)..inputLabel = label);
     lastError = null;
     draftProgress = 0;

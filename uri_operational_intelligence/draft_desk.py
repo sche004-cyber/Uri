@@ -26,6 +26,7 @@ from . import text_intent as TX
 from . import text_verify as V
 from .reasoning_policy import FAST, tier_params
 
+DROP = "DROP_QUESTION"
 MAX_DRAFT_TOKENS = 1800
 MAX_EDIT_TOKENS = 1500
 MAX_SESSIONS = 64
@@ -163,12 +164,27 @@ class DraftDesk:
                 self.drafts.pop(next(iter(self.drafts)))
 
     def classify(self, text, session_id) -> TX.TextIntent:
+        """An open question (draft.pending_question or a pending create) lives for ONE user turn: the next turn either
+        answers it, drops it explicitly ("never mind"), or goes elsewhere, which also drops it."""
         d = self.active(session_id)
+        has_question = (d is not None and bool(d.pending_question)) or session_id in self.pending_new
+        if has_question and TX.drops_question(text):
+            return TX.TextIntent(DROP, ["drop_open_question"], instruction=text)
+        intent = self._classify(text, session_id, d)
+        if has_question and intent.reasons[:1] != ["answer_to_clarification"]:
+            self.pending_new.pop(session_id, None)
+            if d is not None and intent.kind not in (TX.REVISE,):
+                d.pending_question = None
+        return intent
+
+    def _classify(self, text, session_id, d):
         intent = TX.classify(text, has_draft=d is not None and d.current is not None)
         answers = ("not_a_text_task", "foreign_object")
         if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
             answers += ("trivial",)            # "yes" / "no" / "okay" answer an open question
-        if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers:
+        # A question of the user's own ("what is ...?") is not an answer to URI's question.
+        own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
+        if intent.kind == TX.NONE and intent.reasons and intent.reasons[0] in answers and not own_question:
             if d is not None and d.pending_question:
                 return TX.TextIntent(TX.REVISE, ["answer_to_clarification"], instruction=text,
                                      targets=TX.targets_for(text))
@@ -217,7 +233,15 @@ class DraftDesk:
         emit("turn.routed", route="draft", triage={"kind": "TEXT_TASK", "text_kind": intent.kind,
                                                    "reasons": intent.reasons, "source": inp.source}, tier=tier)
         try:
-            if intent.kind in TX.DETERMINISTIC:
+            if intent.kind == DROP:
+                d = self.active(session_id)
+                self.pending_new.pop(session_id, None)
+                if d is not None:
+                    d.pending_question = None
+                emit("draft.clarify", question=None, draft=d.to_dict() if d is not None else None)
+                self._say(emit, "Okay, I have dropped that question. Nothing was changed.")
+                out = {"status": "ok", "draft": d.to_dict() if d is not None else None}
+            elif intent.kind in TX.DETERMINISTIC:
                 out = self._deterministic(intent, session_id, emit)
             else:
                 out = self._brain_turn(turn_id, text, session_id, intent, inp, emit, fallback)
@@ -376,8 +400,10 @@ class DraftDesk:
         exclusions = _clean_list(data.get("exclusions"))
         body_text = DS.render(blocks)
         superseded = [s for f in facts for s in f["superseded"]]
-        flags = (V.check_facts(facts, body_text, source_words) + V.check_exclusions(exclusions, body_text)
-                 + V.check_user_details(source_words, body_text, superseded + exclusions)
+        user_excl = V.user_exclusions(source_words)
+        flags = (V.check_facts(facts, body_text, source_words)
+                 + V.check_exclusions(list(dict.fromkeys(exclusions + user_excl)), body_text)
+                 + V.check_user_details(V.strip_corrected(source_words), body_text, superseded + exclusions + user_excl)
                  + V.check_correction_accounted(cues, facts, None) + V.check_new_details(body_text, source_words)
                  + V.check_uncertain(inp.uncertain, body_text))
         missing = sorted(set(_clean_list(data.get("missing"))) | set("[%s]" % p for p in V.placeholders(body_text)))
@@ -439,6 +465,7 @@ class DraftDesk:
         new_text, old_text = DS.render(blocks), DS.render(cur.blocks)
         user_words = "\n".join([d.original_text] + [v.instruction for v in d.versions] + [text, interpreted])
         known = user_words + "\n" + old_text
+        exclusions = list(dict.fromkeys(exclusions + V.user_exclusions(interpreted)))
         flags = V.check_facts(facts, new_text, user_words) + V.check_exclusions(exclusions, new_text)
         if mode == "correct":
             flags += V.check_meaning_preserved(old_text, new_text)
@@ -463,6 +490,7 @@ class DraftDesk:
 
 
 _SHORT_ANSWER = re.compile(r"^\s*(?:yes|yeah|yep|yup|no|nope|nah|ok(?:ay)?|sure|haan|ha|nahi|theek hai)\b", re.I)
+_OWN_QUESTION = re.compile(r"^\s*(?:what|why|how|who|whom|whose|when|where|which|can you|could you|do you|does|is there)\b", re.I)
 _ORD_NAME = {0: "the first paragraph", 1: "the second paragraph", 2: "the third paragraph", 3: "the fourth paragraph",
              4: "the fifth paragraph", -1: "the last paragraph"}
 

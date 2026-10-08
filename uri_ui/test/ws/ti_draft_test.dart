@@ -68,11 +68,12 @@ void main() {
     await conv.send('  um write a letter, no wait, an email  ');
     final c = rt.commands.last;
     expect(c['command'], 'oi_turn');
-    expect(c['text'], 'um write a letter, no wait, an email');
+    // The raw transcript is kept byte for byte, spaces included (Codex TI round 2, C1).
+    expect(c['text'], '  um write a letter, no wait, an email  ');
     expect(c['input'], {
       'schema': 'uri.text_input.v1',
       'source': 'transcript',
-      'transcript': {'raw': 'um write a letter, no wait, an email', 'engine': 'simulated', 'simulated': true},
+      'transcript': {'raw': '  um write a letter, no wait, an email  ', 'engine': 'simulated', 'simulated': true},
     });
     expect(conv.messages.lastWhere((m) => m.role == OiRole.user).inputLabel, 'Simulated transcript');
 

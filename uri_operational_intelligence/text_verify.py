@@ -253,6 +253,38 @@ def _covered(detail, texts):
     return any(t and (_phrase_present(detail, t) or detail in _tokens(t)) for t in texts)
 
 
+_EXCLUDE = re.compile(r"\b(?:don'?t|do not|dont|never|without)\s+(?:mention(?:ing)?|say(?:ing)?|use|using|include|including|"
+                      r"write|writing|name|naming)\s+[\"'“‘]?([^.,;!?\"”’]{2,60})", re.I)
+_GENERIC = re.compile(r"\b(?:name|names|details?|number|numbers|date|dates|amount|reason|anything|that|this|it|"
+                      r"his|her|their|the student'?s?|the person'?s?)\b", re.I)
+
+
+def user_exclusions(user_words) -> list:
+    """Literal phrases the USER asked to leave out ("don't mention Monday"), found without the model. A description
+    rather than a literal ("don't mention the student's name") is left to the model's exclusion list."""
+    out = []
+    for m in _EXCLUDE.finditer(user_words or ""):
+        phrase = m.group(1).strip()
+        phrase = re.split(r"\b(?:and|but|instead|say|write|use)\b", phrase, flags=re.I)[0].strip()
+        if phrase and not _GENERIC.search(phrase) and len(phrase.split()) <= 6:
+            out.append(phrase)
+    return out
+
+
+def strip_corrected(user_words) -> str:
+    """Remove the few words just before each spoken correction cue ("five, sorry, seven" -> "seven"), so a value
+    the user replaced is not demanded in the draft even when the model did not report the correction."""
+    from .text_input import _CORRECTION_CUES
+    text = user_words or ""
+    for m in reversed(list(_CORRECTION_CUES.finditer(text))):
+        before = text[:m.start()]
+        words = list(re.finditer(r"[\w'-]+", before))
+        cut = words[-4].start() if len(words) >= 4 else 0
+        clause_start = max(before.rfind(c) for c in ".;:!?\n") + 1
+        text = text[:max(cut, clause_start)] + " " + text[m.end():]
+    return text
+
+
 def check_user_details(user_words, text, dropped_ok=()) -> list:
     """Independent of what the model reports: numbers, dates, days and mid-sentence names in the user's words must
     appear in the draft, unless the user corrected or excluded them."""
