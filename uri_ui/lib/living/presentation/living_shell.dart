@@ -1,0 +1,209 @@
+import 'package:flutter/material.dart';
+
+import '../../services/attachment_opener_service.dart';
+import '../../services/file_picker_service.dart';
+import '../../theme/glass_theme.dart';
+import '../../theme/uri_theme.dart';
+import '../companion/energy_orb.dart';
+import '../living_scope.dart';
+import '../widgets/glass_panel.dart';
+import '../screens/companion_mode_view.dart';
+import '../screens/dashboard_mode_view.dart';
+import '../screens/workspace_mode_view.dart';
+import 'presentation_controller.dart';
+
+/// Where the one orb sits in each form, as a fraction of the shell.
+///
+/// The orb is a single widget instance under a [GlobalKey]; the shell
+/// only moves and resizes it, so a mode change reads as the companion
+/// travelling to a new place in the same space, not as a different
+/// screen with a different mascot.
+@immutable
+class OrbDock {
+  const OrbDock({required this.rect, required this.lightAt});
+  final Rect rect;
+  final Alignment lightAt;
+
+  static OrbDock forMode(UiPresentationMode mode, Size shell) {
+    switch (mode) {
+      case UiPresentationMode.companion:
+        final size = (shell.shortestSide * 0.58).clamp(180.0, 320.0);
+        final cx = shell.width / 2;
+        final cy = shell.height * 0.36;
+        return OrbDock(
+          rect: Rect.fromCenter(center: Offset(cx, cy), width: size, height: size),
+          lightAt: const Alignment(0, -0.45),
+        );
+      case UiPresentationMode.workspace:
+        const size = 72.0;
+        return const OrbDock(
+          rect: Rect.fromLTWH(8, 10, size, size),
+          lightAt: Alignment(-0.95, -0.95),
+        );
+      case UiPresentationMode.dashboard:
+        const size = 128.0;
+        return OrbDock(
+          rect: Rect.fromLTWH(shell.width / 2 - size / 2, 18, size, size),
+          lightAt: const Alignment(0, -1),
+        );
+    }
+  }
+}
+
+/// Root of the living experience below the theme: ambient background,
+/// the current mode's content, and the travelling orb on top.
+class LivingShell extends StatefulWidget {
+  const LivingShell({super.key, this.filePicker, this.attachmentOpener});
+
+  final FilePickerFn? filePicker;
+  final AttachmentOpenerFn? attachmentOpener;
+
+  /// The one orb. Tests assert the same element survives mode changes.
+  static final GlobalKey orbKey = GlobalKey(debugLabel: 'living-orb');
+
+  @override
+  State<LivingShell> createState() => _LivingShellState();
+}
+
+class _LivingShellState extends State<LivingShell> {
+  @override
+  Widget build(BuildContext context) {
+    final services = LivingScope.of(context);
+    return ListenableBuilder(
+      listenable: Listenable.merge([services.presentation, services.companion]),
+      builder: (context, _) {
+        final mode = services.presentation.mode;
+        final signal = services.companion.signal;
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final shellSize = Size(constraints.maxWidth, constraints.maxHeight);
+            final dock = OrbDock.forMode(mode, shellSize);
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              body: AmbientBackground(
+                lightAt: dock.lightAt,
+                lightStrength: mode == UiPresentationMode.companion ? 1 : 0.6,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Mode content, cross-faded with a small drift so it
+                    // feels like the space re-arranging, not a page flip.
+                    AnimatedSwitcher(
+                      duration: UriMotion.mode,
+                      switchInCurve: UriMotion.enter,
+                      switchOutCurve: Curves.easeIn,
+                      transitionBuilder: (child, animation) {
+                        final drift = Tween<Offset>(
+                          begin: const Offset(0, 0.015),
+                          end: Offset.zero,
+                        ).animate(animation);
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(position: drift, child: child),
+                        );
+                      },
+                      layoutBuilder: (current, previous) => Stack(
+                        fit: StackFit.expand,
+                        children: [...previous, ?current],
+                      ),
+                      child: KeyedSubtree(
+                        key: ValueKey(mode),
+                        child: switch (mode) {
+                          UiPresentationMode.companion => CompanionModeView(
+                              orbRect: dock.rect,
+                              filePicker: widget.filePicker,
+                            ),
+                          UiPresentationMode.workspace => WorkspaceModeView(
+                              filePicker: widget.filePicker,
+                              attachmentOpener: widget.attachmentOpener,
+                            ),
+                          UiPresentationMode.dashboard => DashboardModeView(
+                              orbRect: dock.rect,
+                            ),
+                        },
+                      ),
+                    ),
+                    // The travelling orb.
+                    AnimatedPositioned.fromRect(
+                      duration: UriMotion.mode,
+                      curve: UriMotion.move,
+                      rect: dock.rect,
+                      child: IgnorePointer(
+                        ignoring: mode != UiPresentationMode.companion,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => services.presentation.setMode(
+                            UiPresentationMode.workspace,
+                          ),
+                          child: EnergyOrb(
+                            key: LivingShell.orbKey,
+                            state: signal.state,
+                            progress: signal.progress,
+                            size: dock.rect.width,
+                          ),
+                        ),
+                      ),
+                    ),
+                    _CommandNotice(services: services),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+/// "URI opened Dashboard · Back": shown only after a command (not a
+/// user gesture) moved the presentation, so the user always knows why
+/// the UI changed and can undo it with one tap.
+class _CommandNotice extends StatelessWidget {
+  const _CommandNotice({required this.services});
+  final LivingServices services;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = services.presentation;
+    final show = p.lastCommandOrigin != UiCommandOrigin.user;
+    final c = UriColors.of(context);
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 14,
+      child: IgnorePointer(
+        ignoring: !show,
+        child: AnimatedOpacity(
+          duration: UriMotion.fast,
+          opacity: show ? 1 : 0,
+          child: Center(
+            child: Material(
+              color: c.surfaceSunken.withValues(alpha: 0.92),
+              borderRadius: BorderRadius.circular(999),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.auto_awesome, size: 14, color: c.accent),
+                    const SizedBox(width: 8),
+                    Text(
+                      'URI opened ${p.mode.label}',
+                      style: TextStyle(fontSize: 12.5, color: c.ink),
+                    ),
+                    const SizedBox(width: 6),
+                    TextButton(
+                      onPressed: () => p.back(),
+                      child: const Text('Back'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

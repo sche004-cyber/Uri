@@ -64,6 +64,11 @@ flutter:
 
   uses-material-design: true
 
+  # UI Living Companion phase: runtime fragment shader for the Energy Orb core
+  # (loaded by lib/living/companion/orb_shader.dart; optional at runtime).
+  shaders:
+    - shaders/orb_core.frag
+
   assets:
     - assets/misty_forest_sikkim.jpg
     - assets/uri_app_logo_refined_v2.png
