@@ -10,14 +10,15 @@ the candidate report's claims on trust.
 | Branch | `phase/companion-voice` (local) |
 | Worktree | `C:\Users\cheta\Development\uri-companion-voice` |
 | Base | `d7a052f` — `phase/living-companions`, itself an **unaccepted** candidate |
-| Candidate tip | `TIP_COMMIT` |
+| Candidate code commit | `4c463e6` (all code, tests, evidence) |
+| Package commit | the commit that adds this filled-in package (docs only); see `git log --oneline d7a052f..phase/companion-voice` |
 | Report | `docs/companions/voice/VOICE_PRESENCE_REPORT.md` |
 | Evidence | `docs/companions/voice/evidence/` |
 
 ## Scope of change
 
 ```
-git diff --stat d7a052f..TIP_COMMIT
+git diff --stat d7a052f..4c463e6
 ```
 
 Expected: new files under `uri_ui/lib/living/voice/`, `uri_ui/shaders/voice_waveform.frag`,
@@ -30,11 +31,12 @@ modified only `uri_ui/lib/living/companion/companion_orb.dart`,
 Integrity checks to run:
 
 ```
-git diff --name-only d7a052f..TIP_COMMIT -- uri_ui/lib | grep -v "^uri_ui/lib/living/voice/" 
+git diff --name-only d7a052f..4c463e6 -- uri_ui/lib | grep -v "^uri_ui/lib/living/voice/" 
 # expected: only uri_ui/lib/living/companion/companion_orb.dart
-git diff --name-only d7a052f..TIP_COMMIT -- uri_v1 uri_agent scripts uri_ui/lib/living/companion/companion_state.dart uri_ui/lib/living/companion/companion_sources.dart uri_ui/lib/living/companion/energy_orb.dart uri_ui/lib/living/presentation uri_ui/shaders/companion_*.frag uri_ui/shaders/orb_*.frag
+# (checked by the candidate before submitting: as expected)
+git diff --name-only d7a052f..4c463e6 -- uri_v1 uri_agent scripts uri_ui/lib/living/companion/companion_state.dart uri_ui/lib/living/companion/companion_sources.dart uri_ui/lib/living/companion/energy_orb.dart uri_ui/lib/living/presentation uri_ui/shaders/companion_*.frag uri_ui/shaders/orb_*.frag
 # expected: empty (no Core/Runtime, no state contract, no accepted orb, no
-# presentation controller, no existing shader touched)
+# presentation controller, no existing shader touched; checked: empty)
 ```
 
 ## Reproduce (from `uri_ui/`, Windows desktop, Flutter 3.47.2)

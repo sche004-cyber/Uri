@@ -4,10 +4,13 @@
 # so contention from other processes (the local Brain) is visible.
 #
 # Usage:
-#   powershell -NoProfile -File rnd/voice/sample_process.ps1 -Name uri_ui \
+#   powershell -NoProfile -File rnd/voice/sample_process.ps1 -ProcessId <pid> `
 #     -Seconds 90 -Out samples.csv
-#
-# The process is found by name once it exists; sampling starts then.
+# (-Name finds a process by name instead; prefer -ProcessId when another
+# instance of the same executable may be running.) Each row also records any
+# other process holding more than 1 GB of VRAM, so overlap with a model server
+# is visible. System-wide CPU is attempted but the Processor counter fails on
+# the reference machine (PDH c0000bb8) and is then recorded as 0.
 param(
   [string]$Name = '',
   [int]$ProcessId = 0,
