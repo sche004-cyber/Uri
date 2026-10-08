@@ -1,0 +1,60 @@
+{
+ "taken": "2026-10-08T04:53:37",
+ "checks": {
+  "accepted_candidate": {
+   "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\evidence\\phase2ops-candidate-20261008-r6.zip",
+   "sha256_ok": true
+  },
+  "frozen_phase1_checkpoint": {
+   "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase1-integration\\uri-agent\\work\\c1\\checkpoints\\final-closure-20261005-phase1.zip",
+   "sha256_ok": true
+  },
+  "frozen_files_byte_identical": {
+   "ok": true,
+   "drift": []
+  },
+  "git_head": {
+   "exit": 0,
+   "stdout": "e8e3b65",
+   "stderr": ""
+  },
+  "venv_interpreter": {
+   "ok": true
+  },
+  "flutter": {
+   "ok": true,
+   "path": "C:\\Users\\cheta\\flutter\\bin\\flutter.bat"
+  },
+  "windows_release_build": {
+   "present": false
+  },
+  "codex_cli": {
+   "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\codex.CMD",
+   "version": {
+    "exit": 0,
+    "stdout": "codex-cli 0.158.0",
+    "stderr": ""
+   },
+   "shell_login_status": {
+    "exit": 0,
+    "logged_in": true
+   }
+  },
+  "claude_code": {
+   "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\claude.CMD",
+   "version": {
+    "exit": 0,
+    "stdout": "2.1.287 (Claude Code)",
+    "stderr": ""
+   },
+   "shell_login_status": {
+    "exit": 1,
+    "logged_in": false
+   }
+  },
+  "hyper_v_cmdlets": {
+   "present": false
+  }
+ },
+ "ready_for_session": true
+}

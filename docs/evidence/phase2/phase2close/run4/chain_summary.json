@@ -1,0 +1,138 @@
+{
+ "started": "2026-10-08T05:04:10",
+ "gates": {
+  "phase2": {
+   "exit": 0,
+   "passed": 439,
+   "failed": 0,
+   "skipped": 2,
+   "errors": 0,
+   "line": "439 passed, 2 skipped, 1 warning in 379.39s (0:06:19)",
+   "PASS": true
+  },
+  "authority": {
+   "exit": 0,
+   "passed": 134,
+   "failed": 0,
+   "skipped": 0,
+   "errors": 0,
+   "line": "134 passed, 1 warning in 163.43s (0:02:43)",
+   "PASS": true
+  },
+  "phase1-full": {
+   "exit": 1,
+   "passed": 2675,
+   "failed": 11,
+   "skipped": 12,
+   "errors": 0,
+   "line": "11 failed, 2675 passed, 12 skipped, 3 warnings, 88 subtests passed in 882.19s (0:14:42)",
+   "failed_ids": [
+    "step3_test.py::test_drive",
+    "step4_test.py::test_download",
+    "test_capability_directory.py::PrivacyTests::test_no_credentials_tokens_or_secrets_appear_in_serialized_output",
+    "test_m20_feasibility_validation.py::UnavailableCapabilityIsNotPromotedTests::test_strict_single_action_proposal_for_unavailable_capability_falls_back",
+    "test_m20_recovery_loop.py::CapabilityPlannerFailureReachesRecoveryTests::test_capability_planner_failure_reaches_recovery_loop",
+    "test_m20_recovery_loop.py::LearnedSkillFailureReachesRecoveryTests::test_learned_skill_failure_reaches_recovery_loop",
+    "test_m20_semantic_interpreter_resilience.py::SemanticInterpreterFailureDegradesHonestlyTests::test_capability_planner_gets_the_degraded_result_without_raising",
+    "test_m20_semantic_interpreter_resilience.py::SemanticInterpreterFailureDegradesHonestlyTests::test_raising_interpreter_does_not_fail_the_whole_turn",
+    "test_orchestrator_session_workflow.py::TestOrchestratorSessionWorkflow::test_session_facts_are_used_for_clarification",
+    "test_usage_import_boundary.py::test_orchestrator_newline_count_does_not_increase",
+    "test_workflow_restart_recovery.py::TestWorkflowRestartRecovery::test_workflow_survives_restart_and_resumes"
+   ],
+   "baseline_log": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\evidence\\phase2ops_r6\\phase1_full.log",
+   "SAME_FAILURE_SET": true,
+   "PASS": true
+  },
+  "residue": {
+   "removed": [],
+   "PASS": true
+  },
+  "flutter": {
+   "exit": 0,
+   "passed": 195,
+   "skipped": 2,
+   "failed": 0,
+   "verdict": "All tests passed!",
+   "PASS": true
+  },
+  "bridge": {
+   "runs": 10,
+   "passed": 10,
+   "refusal_lines": 0,
+   "results": [
+    {
+     "run": 1,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 2,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 3,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 4,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 5,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 6,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 7,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 8,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 9,
+     "exit": 0,
+     "flutter_exit": 0
+    },
+    {
+     "run": 10,
+     "exit": 0,
+     "flutter_exit": 0
+    }
+   ],
+   "PASS": true
+  },
+  "native": {
+   "exit": 0,
+   "runs": {
+    "lifecycle": {
+     "state": null,
+     "reason": null,
+     "code": null,
+     "pid_after_cancel": null
+    },
+    "mid_run_cancel": {
+     "state": null,
+     "reason": null,
+     "code": null,
+     "pid_after_cancel": null
+    },
+    "_qualification": "PERSISTED NATIVE_QUALIFIED"
+   },
+   "PASS": false
+  }
+ },
+ "finished": "2026-10-08T05:30:51",
+ "ALL_PASS": false
+}

@@ -1,0 +1,7 @@
+candidate=C:\Users\cheta\.codex\worktrees\uri-phase2a\evidence\phase2close-candidate-20261008-a.zip
+sha256=8fc1d5e818dc99bb15511d7e29bb3786678cab85c69f6f8f17249329099e2470
+files=136 evidence_files=39
+previous_accepted=phase2ops-candidate-20261008-r6.zip 9a0be52c1ae5e59bf9ae16617e283c5a9f58ba098a1c2ae1d9649e184affb50a
+superseded_before_review=phase2close-candidate-20261008.zip 8982c9f8c13abe23d4ff1bd364c9c410ef5e9e3c1c494014e41cc9b7ccad7777 (same tree minus report record H)
+note=orchestrator logs in evidence\phase2close\run4\ and run4b\ (see run4\CORRECTION.txt); aborted run1-run3 are not evidence
+note2=implementer finding recorded after the cut, not in the candidate: SUP-1 (Low) uri_supervisor\winproc.py spawn_contained creates the executor CREATE_SUSPENDED before AssignProcessToJobObject; a supervisor killed in that window leaves a suspended, never-resumed orphan outside the job (observed once in the SIMULATED power-loss test, killed by the orchestrator). Not repaired.

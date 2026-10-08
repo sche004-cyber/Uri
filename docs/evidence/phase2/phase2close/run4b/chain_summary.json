@@ -1,0 +1,29 @@
+{
+ "started": "2026-10-08T05:31:18",
+ "gates": {
+  "native": {
+   "exit": 0,
+   "runs": {
+    "lifecycle": {
+     "state": "completed",
+     "reason": null,
+     "code": "SETTLED_VERIFIED",
+     "pid_after_cancel": null
+    },
+    "mid_run_cancel": {
+     "state": "uncertain",
+     "reason": "CANCELLED_AFTER_DISPATCH",
+     "code": "SETTLED_EXECUTION_UNCERTAIN",
+     "pid_after_cancel": "DEAD"
+    },
+    "_qualification": "PERSISTED NATIVE_QUALIFIED",
+    "_report": [
+     "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\evidence\\phase2close\\run4b\\native\\codex_cli_lifecycle_053119.json"
+    ]
+   },
+   "PASS": true
+  }
+ },
+ "finished": "2026-10-08T05:31:57",
+ "ALL_PASS": true
+}
