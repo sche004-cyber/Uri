@@ -45,8 +45,6 @@ RUNTIME_HINT = re.compile(r"(?i)(run_uri_server|uri_server_launcher|run_uri_isol
                           r"run_desktop_server|run_uri_client_worker|run_uri_supervised_worker|uri_client_launcher|"
                           r"launch_uri\.ps1|launch_desktop\.ps1|uri_server_ctl\.ps1|uri_server\.ps1|uri_client\.ps1|"
                           r"launch uri\.bat|uri_ui\.exe|uvicorn\s+uri_core|uri_core\.app\.server|llama-server)")
-TEST_RUNNER = re.compile(r"(?i)(-m\s+pytest|\bpytest(\.exe)?\b|[\\/]tests?[\\/]|\btest_\w+\.py|_regression\.py|_chain\.py|"
-                         r"fake_harness\.py|-m\s+unittest)")
 AGENT_SHELL = re.compile(r"(?i)(\.claude[\\/]shell-snapshots|CLAUDE_CODE_SHELL|__claudeCodeScript)")
 REQUIRED_KEYS =("schema", "authoritative_runtime", "roots", "transitional_legacy", "shared_dependencies", "ports")
 
@@ -337,6 +335,40 @@ def classify(text: str, manifest: dict) -> tuple[str, str]:
     return max(results, key=lambda r: RANK[r[0]])
 
 
+SHELL_EXES = {"bash.exe", "bash", "sh.exe", "sh", "cmd.exe", "cmd", "powershell.exe", "powershell", "pwsh.exe", "pwsh"}
+DEV_TEST_SCRIPTS = {"phase2d_regression.py", "phase2close_chain.py"}
+
+
+def _basename(path: str) -> str:
+    return path.replace(chr(92), "/").rsplit("/", 1)[-1].lower()
+
+
+def _is_agent_shell(cmd: str) -> bool:
+    """An interactive agent shell: the executable itself is a shell AND it carries the agent marker."""
+    toks = _tokens(cmd)
+    return bool(toks) and _basename(toks[0]) in SHELL_EXES and bool(AGENT_SHELL.search(cmd))
+
+
+def _is_self_probe(cmd: str) -> bool:
+    toks = _tokens(cmd)
+    if not toks:
+        return False
+    if _basename(toks[0]) in SHELL_EXES and "$o.scheduled_tasks" in cmd:
+        return True
+    return any(_basename(tg) == "uri_runtime_authority_check.py" for _, tg in launch_targets(cmd))
+
+
+def _is_test_runner(cmd: str) -> bool:
+    """Every launch in the command is an interpreter running pytest/unittest or an allow-listed dev regression script."""
+    targets = launch_targets(cmd)
+    for ex, tg in targets:
+        if not (_basename(ex) in INTERPRETERS or _basename(ex).startswith("python")):
+            return False
+        if tg not in ("module:pytest", "module:unittest") and _basename(tg) not in DEV_TEST_SCRIPTS:
+            return False
+    return bool(targets)
+
+
 def _is_python_like(cmd: str) -> bool:
     exe, target = launch_target(cmd)
     base = exe.replace("\\", "/").rsplit("/", 1)[-1].lower()
@@ -399,12 +431,12 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
         return False
     for p in snapshot.get("processes", []):
         cmd = p["cmdline"]
-        if AGENT_SHELL.search(cmd):
+        if _is_agent_shell(cmd):
             continue
         if RUNTIME_HINT.search(cmd) or p.get("pid") in listener_pids:
             add("process", f"pid {p['pid']}", cmd, True)
         elif launched_from_nonactive_root(cmd, p.get("image", "")):
-            if TEST_RUNNER.search(cmd):
+            if _is_test_runner(cmd):
                 # Development test runs of donor code are reported, not counted: they are not a URI runtime. Any
                 # server or worker they spawn is evaluated on its own command line or listener.
                 add("process", f"pid {p['pid']}", cmd, False, {"note": "DEV_TEST_ACTIVITY (reported, not counted)"})
@@ -468,8 +500,8 @@ def live_snapshot(roots: list | None = None) -> dict:
     # The probe's own PowerShell process carries this source text, which mentions URI paths; drop it.
     # Privacy: keep only command lines that look like URI runtimes; never persist unrelated process command lines.
     listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict)}
-    snap["processes"] = [p for p in snap.get("processes") or [] if "uri_runtime_authority_check" not in p["cmdline"]
-                         and "$o.scheduled_tasks" not in p["cmdline"] and not AGENT_SHELL.search(p["cmdline"])
+    snap["processes"] = [p for p in snap.get("processes") or [] if not _is_self_probe(p["cmdline"])
+                         and not _is_agent_shell(p["cmdline"])
                          and (RUNTIME_HINT.search(p["cmdline"]) or (p.get("pid") in listen_pids and _is_python_like(p["cmdline"]))
                               or (roots and any(_root_containing(x, roots) for ex, tg in launch_targets(p["cmdline"])
                                                 for x in (ex, tg, p.get("image", "")) if x)))]

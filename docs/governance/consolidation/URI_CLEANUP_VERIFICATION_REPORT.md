@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **47 passed** (25 original + 9, 7, 3, 1 and 2 added after Codex rounds 1-5). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **50 passed** (25 original + 25 added across Codex rounds 1-6). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -145,6 +145,19 @@ result: see §2e.
 2 new tests (47 total, all passing); both fail on the round-4 checker. Live run unchanged. Consequence for
 operators: while the Phase 2 session runs bridge/server tests, the checker correctly reports those donor servers.
 Run it when development is idle, or read the findings. Round 6 result: see §2f.
+
+## 2f. Codex review round 6: REJECT, then repaired
+
+Round 6 confirmed the round-5 finding repaired, and confirmed no regression on the live snapshot or the authorized
+launcher forms. It found:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| V-1 | High | The test-runner exemption matched anywhere in the command (`\tests\`, `test_*.py`, `_chain.py`, an incidental `-m pytest`), so a donor worker could hide | Exempt only when every launch is an interpreter running `-m pytest`, `-m unittest`, or an allow-listed dev regression script (`phase2d_regression.py`, `phase2close_chain.py`). A non-interpreter executable is never exempt |
+| V-2 | High | The agent-shell marker anywhere in the arguments skipped a process; the probe also dropped any process mentioning the checker's name | Only a process whose executable is itself a shell AND that carries the agent marker is skipped. The probe drops only its own PowerShell and the checker script itself |
+
+3 new tests (50 total, all passing); all 3 fail on the round-5 checker. Live run unchanged, and the saved snapshot
+contains no agent-shell command lines. Round 7 result: see §2g.
 
 ## 3. Integrity and recoverability
 

@@ -337,3 +337,23 @@ def test_donor_test_runs_are_reported_but_not_counted():
     cmd = "C:/Users/cheta/.codex/worktrees/uri-phase2a/uri-agent/.venv/Scripts/python.exe -I -m pytest tests/phase2a"
     rep = verdict(snap(processes=[{"pid": 6, "ppid": 1, "image": "python.exe", "cmdline": cmd}]))
     assert rep["findings"] and rep["findings"][0]["note"].startswith("DEV_TEST_ACTIVITY") and rep["verdict"] != "CONTAMINATED"
+
+
+# --- regressions for the Codex adversarial review round 6 (2026-10-08, verdict REJECT) -----------------------------
+def test_test_runner_exemption_cannot_hide_a_donor_worker():
+    for cmd in ("D:/URI-preservation/tests/worker.exe --work",
+                "C:/Users/cheta/Development/Uri/_V1/.venv/Scripts/python.exe C:/Users/cheta/Development/Uri/_V1/test_worker.py",
+                "C:/Users/cheta/Development/Uri/_V1/.venv/Scripts/python.exe C:/Users/cheta/Development/Uri/_V1/worker_chain.py",
+                "D:/URI-preservation/worker.exe -m pytest"):
+        rep = verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "x.exe", "cmdline": cmd}]))
+        assert rep["verdict"] == "CONTAMINATED", cmd
+
+
+def test_agent_shell_marker_in_an_argument_does_not_hide_a_donor_worker():
+    cmd = "D:/URI-preservation/worker.exe --env CLAUDE_CODE_SHELL=1 --note .claude/shell-snapshots/x"
+    assert verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "worker.exe", "cmdline": cmd}]))["verdict"] == "CONTAMINATED"
+
+
+def test_checker_name_in_an_argument_does_not_hide_a_process_from_the_probe_filter():
+    assert not rac._is_self_probe("D:/URI-preservation/worker.exe --tag uri_runtime_authority_check")
+    assert rac._is_self_probe(r"C:\py\python.exe C:\x\scripts\uri_runtime_authority_check.py --strict")
