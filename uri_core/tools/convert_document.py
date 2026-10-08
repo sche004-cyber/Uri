@@ -56,6 +56,23 @@ class ConvertDocumentTool:
 
     def convert(self, **kwargs: Any) -> Dict[str, Any]:
         session_id = kwargs.get("session_id")
+        chosen_id = kwargs.get("file_id")
+        if chosen_id is not None and chosen_id != "":
+            if not isinstance(chosen_id, str) or not session_id:
+                return {"status": "invalid_attachment_context",
+                        "message": "The selected attachment id is invalid."}
+            source = self._file_store.get(chosen_id)
+            if source is None or source.session_id != session_id:
+                return {"status": "invalid_attachment_context",
+                        "message": "The selected attachment is unavailable for this session."}
+            if not source.filename.lower().endswith(".pdf"):
+                return {"status": "input_required",
+                        "message": "The selected attachment is not a PDF."}
+        elif chosen_id is not None and not isinstance(chosen_id, str):
+            return {"status": "invalid_attachment_context",
+                    "message": "The selected attachment id is invalid."}
+        else:
+            source = None
         original_request_text = kwargs.get("request_text", "") or ""
         requested_output = (kwargs.get("requested_output", "") or "").lower()
         request_text = original_request_text.lower()
@@ -75,25 +92,23 @@ class ConvertDocumentTool:
                 ),
             }
 
-        attachments = (
-            self._file_store.list_for_session(session_id) if session_id else []
-        )
-        pdf_attachments = [
-            record for record in attachments if record.filename.lower().endswith(".pdf")
-        ]
-
-        if not pdf_attachments:
-            return {
-                "status": "input_required",
-                "message": (
-                    "URI needs a PDF attached to this conversation to "
-                    "convert - attach the file, then ask again."
-                ),
-            }
-
-        # Most recently attached PDF - StoredFile records are appended
-        # in upload order, so the last match is the most recent one.
-        source = pdf_attachments[-1]
+        if source is None:
+            attachments = (
+                self._file_store.list_for_session(session_id) if session_id else []
+            )
+            pdf_attachments = [
+                record for record in attachments if record.filename.lower().endswith(".pdf")
+            ]
+            if not pdf_attachments:
+                return {
+                    "status": "input_required",
+                    "message": (
+                        "URI needs a PDF attached to this conversation to "
+                        "convert - attach the file, then ask again."
+                    ),
+                }
+            # Preserve the historical most-recent-PDF selection.
+            source = pdf_attachments[-1]
         source_path = self._file_store.path_for(source.file_id)
 
         if source_path is None:

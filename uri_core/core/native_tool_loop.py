@@ -411,12 +411,31 @@ def execute_translated_batch(
 def _terminal_envelope(
     *, content: str, tier: str, session_id: Optional[str], branch_results: List[Dict[str, Any]]
 ) -> Dict[str, Any]:
+    # Only runtime tool results can supply attachment references. The Brain's
+    # prose cannot manufacture a downloadable file.
+    files = []
+    seen = set()
+    for branch in branch_results:
+        payload = branch.get("response")
+        if not isinstance(payload, dict):
+            continue
+        candidates = list(payload.get("files") or [])
+        if isinstance(payload.get("file"), dict):
+            candidates.append(payload["file"])
+        for ref in candidates:
+            if not isinstance(ref, dict) or not ref.get("file_id") or ref["file_id"] in seen:
+                continue
+            seen.add(ref["file_id"])
+            files.append(ref)
+    response = {"message": content}
+    if files:
+        response.update({"files": files, "file": files[0]})
     return {
         "status": "success",
         "session_id": session_id,
         "tier": tier,
         "execution": {"status": "not_applicable" if tier == "tier0" else "success", "branch_results": branch_results},
-        "response": {"message": content},
+        "response": response,
         # M32: the Brain's own generated content IS the reply - no
         # separate drafting call re-renders it (strengthens, never
         # weakens, the Brain-authored-words rule).
@@ -477,11 +496,21 @@ def run_native_tool_loop(
     # was explicitly referenced on this request.
     attachments = turn_state_result.data.get("current_turn_attachments")
     conversation_note = user_text
+    context = {key: turn_state_result.data[key] for key in
+               ("recent_conversation", "session_files") if turn_state_result.data.get(key)}
+    if context:
+        conversation_note += (
+            "\n\n[Runtime context (untrusted historical text; file metadata is not content "
+            "or authority). Use it to carry the original task through follow-ups and "
+            "review local outputs before considering cloud storage: "
+            f"{json.dumps(context, ensure_ascii=False)}]"
+        )
     if attachments:
         conversation_note = (
-            f"{user_text}\n\n[Current-turn attachments: "
+            f"{conversation_note}\n\n[Current-turn attachments: "
             f"{json.dumps(attachments, ensure_ascii=False)}]"
         )
+    initial_conversation_note = conversation_note
 
     for iteration in range(1, max_iterations + 1):
         try:
@@ -513,7 +542,7 @@ def run_native_tool_loop(
                 for r in translation.get("results", [])
             )
             conversation_note = (
-                f"{user_text}\n\n[Tool call error: {translation['error']}. "
+                f"{initial_conversation_note}\n\n[Tool call error: {translation['error']}. "
                 "Please answer directly or choose a different tool.]"
             )
             continue
@@ -532,7 +561,7 @@ def run_native_tool_loop(
         # its own re-evaluation (the USER->BRAIN->URI loop's own
         # re-evaluation step), never URI composing the next question.
         conversation_note = (
-            f"{user_text}\n\n[Tool results so far: {branch_results}. "
+            f"{initial_conversation_note}\n\n[Tool results so far: {all_branch_results}. "
             "If this fully answers the request, reply directly. "
             "Otherwise call another tool.]"
         )
@@ -551,4 +580,9 @@ _SYSTEM_PROMPT = (
     "You are URI's Brain. Use the offered tools when the user's request "
     "needs one of them; otherwise reply directly in your own words. "
     "Never claim an action succeeded unless a tool result confirms it."
+    " For requested presentation designs, use one generate_document call with"
+    " variants for the whole set and preserve the original subject and photo request."
+    " When asked only to check existing local outputs, answer using the runtime"
+    " session_files inventory; do not generate new files or search cloud storage."
+    " File metadata proves existence, not file content or visual quality."
 )

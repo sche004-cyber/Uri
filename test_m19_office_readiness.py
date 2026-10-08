@@ -281,6 +281,19 @@ class GmailDraftAndDriveUploadSafetyTests(unittest.TestCase):
     argument-boundary discipline only."""
 
     def setUp(self):
+        # Service token resolution no longer uses connection_status._repo_root.
+        # Never allow an installed account to turn this unit suite into writes.
+        for target in (
+            'uri_core.services.gmail_service.GmailService.create_draft',
+            'uri_core.services.drive_service.DriveService.upload_file',
+        ):
+            guard = patch(target, return_value={'success': False, 'reason': 'Not connected (mock).'})
+            guard.start()
+            self.addCleanup(guard.stop)
+        composition = patch('uri_core.services.document_composer.DocumentComposer.compose',
+                            return_value={'body': 'Disposable mock draft', 'composed_by': 'mock'})
+        composition.start()
+        self.addCleanup(composition.stop)
         self.tmp_dir = tempfile.mkdtemp()
         self.approval_gate = ApprovalGate(
             dispatcher=ToolDispatcher(),

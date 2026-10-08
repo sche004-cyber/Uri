@@ -418,11 +418,16 @@ class HttpUriClient implements UriClient {
   }
 
   @override
-  Future<UriTurn> changeTentativeBinding(String bindingId, {
+  Future<UriTurn> changeTentativeBinding(
+    String bindingId, {
     String? turnId,
     Object? modelOverride,
-  }) => ask('Change reference', turnId: turnId, modelOverride: modelOverride,
-            clarificationChange: bindingId);
+  }) => ask(
+    'Change reference',
+    turnId: turnId,
+    modelOverride: modelOverride,
+    clarificationChange: bindingId,
+  );
 
   Future<http.Response> _askOnce(
     String text,
@@ -536,13 +541,14 @@ class HttpUriClient implements UriClient {
             : 'URI processed this request.');
 
     final clarificationData = body['clarification'] as Map<String, dynamic>?;
-    final tentativeData = (body['tentative_binding'] ??
-            body['tentative_choice'] ??
-            (responseData is Map
-                ? (responseData['tentative_binding'] ??
-                    responseData['tentative_choice'])
-                : null))
-        as Map<String, dynamic>?;
+    final tentativeData =
+        (body['tentative_binding'] ??
+                body['tentative_choice'] ??
+                (responseData is Map
+                    ? (responseData['tentative_binding'] ??
+                          responseData['tentative_choice'])
+                    : null))
+            as Map<String, dynamic>?;
     final tentativeBinding = tentativeData != null
         ? TentativeBinding.fromJson(tentativeData)
         : null;
@@ -570,7 +576,8 @@ class HttpUriClient implements UriClient {
         stage: TurnStage.awaitingClarification,
         understanding: understanding,
         clarification: clarification,
-        retryMessage: responseData is Map &&
+        retryMessage:
+            responseData is Map &&
                 responseData['message'] is String &&
                 responseData['message'] != clarification.question
             ? responseData['message'] as String
@@ -721,6 +728,7 @@ class HttpUriClient implements UriClient {
             : null,
         sources: _sourcesFrom(responseData),
         generatedFile: _generatedFileFrom(responseData),
+        generatedFiles: _generatedFilesFrom(responseData),
         draftText: _draftTextFrom(responseData),
       ),
     );
@@ -756,7 +764,21 @@ class HttpUriClient implements UriClient {
   /// reference is present; never synthesised.
   static Attachment? _generatedFileFrom(dynamic responseData) {
     if (responseData is! Map) return null;
-    final file = responseData['file'];
+    return _attachmentFromReference(responseData['file']);
+  }
+
+  static List<Attachment> _generatedFilesFrom(dynamic responseData) {
+    if (responseData is! Map) return const [];
+    final refs = responseData['files'];
+    final seen = <String>{};
+    return [
+      for (final ref in [if (refs is List) ...refs, responseData['file']])
+        if (_attachmentFromReference(ref) case final Attachment file)
+          if (seen.add(file.fileId)) file,
+    ];
+  }
+
+  static Attachment? _attachmentFromReference(dynamic file) {
     if (file is! Map) return null;
 
     final fileId = file['file_id'];
@@ -785,17 +807,30 @@ class HttpUriClient implements UriClient {
     if (responseData is! Map) return const [];
 
     final raw = responseData['results'];
-    if (raw is! List) return const [];
-
     final sources = <ResultSource>[];
-
-    for (final item in raw) {
+    final items = [
+      if (raw is List) ...raw,
+      if (responseData['webViewLink'] is String)
+        {'url': responseData['webViewLink'], 'title': responseData['name']},
+    ];
+    final seen = <String>{};
+    for (final item in items) {
       if (item is! Map) continue;
       final url = item['url'];
       if (url is! String || url.isEmpty) continue;
+      final parsed = Uri.tryParse(url);
+      if (parsed == null ||
+          !const ['http', 'https'].contains(parsed.scheme) ||
+          parsed.host.isEmpty ||
+          parsed.userInfo.isNotEmpty ||
+          !seen.add(url)) {
+        continue;
+      }
       sources.add(
         ResultSource(
-          title: (item['title'] as String?)?.trim().isNotEmpty == true
+          title:
+              item['title'] is String &&
+                  (item['title'] as String).trim().isNotEmpty
               ? item['title'] as String
               : url,
           url: url,
@@ -837,11 +872,40 @@ class HttpUriClient implements UriClient {
       body = null;
     }
 
+    final data = body?['data'] is Map
+        ? body!['data'] as Map
+        : body?['response'] is Map
+        ? body!['response'] as Map
+        : body;
+    final execution = body?['execution'];
+    final statuses = [
+      body?['status'],
+      if (execution is Map) execution['status'],
+      if (data is Map) data['status'],
+    ].whereType<String>();
+    final unsuccessful =
+        approved &&
+        (statuses.isEmpty ||
+            statuses.any(
+              (status) => !const [
+                'success',
+                'completed',
+                'executed',
+                'already_exists',
+              ].contains(status),
+            ));
     if (response.statusCode != 200 ||
         body == null ||
-        body['status'] == 'error') {
+        body['status'] == 'error' ||
+        unsuccessful) {
       final reason =
-          body?['message'] as String? ??
+          (data is Map && data['message'] is String
+              ? data['message'] as String
+              : null) ??
+          (body?['message'] is String ? body!['message'] as String : null) ??
+          (unsuccessful
+              ? 'URI did not complete this action (${statuses.join(', ')}).'
+              : null) ??
           'URI backend returned HTTP ${response.statusCode}.';
       final failed = (existing ?? _placeholderTurn(actionId)).copyWith(
         stage: TurnStage.failed,
@@ -868,13 +932,16 @@ class HttpUriClient implements UriClient {
     // (e.g. {"status": "success", "data": {...}}), plus an additive
     // "narrative" field (Milestone 8A) explaining that same outcome
     // in URI's voice when drafting+validation both succeeded.
-    final narrative = body['narrative'] as String?;
-    final data = body['data'];
+    final narrative = body['narrative'];
     final String summary;
-    if (narrative != null) {
+    if (narrative is String && narrative.trim().isNotEmpty) {
       summary = narrative;
-    } else if (data is Map && data['message'] != null) {
-      summary = data['message'].toString();
+    } else if (data is Map &&
+        data['message'] is String &&
+        (data['message'] as String).trim().isNotEmpty) {
+      summary = data['message'] as String;
+    } else if (data is Map && data['name'] is String) {
+      summary = 'Result: ${data['name']}';
     } else if (data is Map && _bestTextualField(data) != null) {
       // M15 correction: see the identical fix in _turnFromResponse -
       // relay the tool's own real, readable content rather than
@@ -888,7 +955,13 @@ class HttpUriClient implements UriClient {
 
     final completed = (existing ?? _placeholderTurn(actionId)).copyWith(
       stage: TurnStage.completed,
-      result: ActionResult(summary: summary),
+      result: ActionResult(
+        summary: summary,
+        sources: _sourcesFrom(data),
+        generatedFile: _generatedFileFrom(data),
+        generatedFiles: _generatedFilesFrom(data),
+        draftText: _draftTextFrom(data),
+      ),
     );
     _turns[actionId] = completed;
     return completed;
@@ -1483,8 +1556,9 @@ class HttpUriClient implements UriClient {
         final responseText = turn['response_text'] as String? ?? '';
         final clarificationJson =
             turn['clarification'] as Map<String, dynamic>?;
-        final tentativeJson = (turn['tentative_binding'] ??
-            turn['tentative_choice']) as Map<String, dynamic>?;
+        final tentativeJson =
+            (turn['tentative_binding'] ?? turn['tentative_choice'])
+                as Map<String, dynamic>?;
         ClarificationRequest? clarification;
         if (clarificationJson != null) {
           try {

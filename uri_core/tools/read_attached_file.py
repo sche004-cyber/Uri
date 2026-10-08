@@ -8,12 +8,8 @@ the real text as evidence. It never decides what the document means,
 never drafts an answer, and never invents content when extraction
 fails or the document is empty.
 
-Argument boundary, unchanged from every other capability: URI supplies
-the arguments deterministically (session_id, from the real session),
-never the model's proposed arguments - see orchestrator.py's
-"only a plain capability-name string ever crosses this boundary".
-Which file is read therefore follows from what the user actually
-attached to THIS session, not from anything the Brain asserted.
+URI supplies the session and user-scoped FileStore. An optional file_id
+selects one record only after checking that it belongs to this session.
 
 Reuses services/file_extraction.extract_file_text (which in turn
 reuses PDFReader/openpyxl/pytesseract) and core/file_store.FileStore
@@ -50,7 +46,26 @@ class ReadAttachedFileTool:
             }
 
         current_turn_ids = kwargs.get("current_turn_attachment_ids")
-        if current_turn_ids is not None:
+        chosen_id = kwargs.get("file_id")
+        if chosen_id is not None and chosen_id != "":
+            if not isinstance(chosen_id, str):
+                return {
+                    "status": "invalid_attachment_context",
+                    "message": "The selected attachment id is invalid.",
+                }
+            selected = self._file_store.get(chosen_id)
+            if selected is None or selected.session_id != session_id:
+                return {
+                    "status": "invalid_attachment_context",
+                    "message": "The selected attachment is unavailable for this session.",
+                }
+            attachments = [selected]
+        elif chosen_id is not None and not isinstance(chosen_id, str):
+            return {
+                "status": "invalid_attachment_context",
+                "message": "The selected attachment id is invalid.",
+            }
+        elif current_turn_ids is not None:
             # Explicit mode is only entered by URI runtime context, after
             # /ask has validated every handle.  Do not accept model action
             # inputs and do not fall back to session history on any error.

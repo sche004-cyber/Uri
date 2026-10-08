@@ -349,3 +349,57 @@ Authority: Chetan's direct approved option 1 implementer instruction of 2026-10-
 | `uri_core/app/server.py` | Restore ordinary canonical fallback when the flag is on and no reference round is pending or built. |
 | `test_int_arn_1_slice_c.py` | Mocked-Brain card, typed resumption, fallback and flag-state regression coverage. |
 | `docs/plans/INT_ARN_1_PLAN.md` | Record the User-approved design change and acceptance tests. |
+
+## 2026-10-03 INT-ARN-1 selected attachment execution
+
+Authority: Chetan's direct INT-ARN-1 implementer instruction of 2026-10-03, explicitly approving both file tools and the already allowlisted schema source. The flag remains OFF by default; frozen edits require independent review and new blob pins.
+
+| Path | Justification |
+|---|---|
+| `uri_core/tools/read_attached_file.py` | Validate an optional `file_id` in the caller's session and read only the selected attachment. |
+| `uri_core/tools/convert_document.py` | Validate an optional `file_id` in the caller's session and convert only the selected PDF. |
+| `uri_workspace/capabilities_registry.json` | Declare the optional file argument on both legacy action interfaces and give the Brain concise descriptions. |
+| `uri_core/core/tool_schema.py` | Expose the optional file argument to native Brain tool calls. |
+| `uri_core/core/canonical_execution.py` | Let evidence-built cards target the two registered legacy file actions and pass a rechecked binding to their existing approval gate. |
+| `uri_core/app/server.py` | Recheck the same legacy file action on typed card answers, retry, and change before resumption. |
+| `test_int_arn_1_file_selection.py` | Cover default selection, selected file isolation, invalid IDs and action schemas. |
+| `test_int_arn_1_slice_c.py` | Cover a mocked-Brain evidence card that resumes one real attached-file read. |
+
+## 2026-10-03 separate presentation drafts repair candidate
+
+Authority: Chetan directly assigned Codex to repair the running
+`uri-m37-m39-integration` checkout after the single-PPT/Drive-follow-up defect.
+This records candidate scope for independent Claude review; it does not re-pin
+or accept frozen code. See `PRESENTATION_VARIANTS_CLAUDE_REVIEW_PACKAGE.md`.
+
+| Path | Justification |
+|---|---|
+| `uri_core/tools/generate_document.py` | Validate and render a bounded requested design set into separate real files, with truthful counts and embedded-photo status. |
+| `uri_core/core/tool_schema.py` | Declare content-only visual variant inputs; preserve concurrent attachment-identity restrictions. |
+| `uri_core/core/decision_engine.py` | Expose the actual generator content schema and own-session file metadata; guide one generation call and inventory-only follow-ups. |
+| `uri_core/core/model_reasoning_adapter.py`, `uri_core/core/response_drafting.py` | Preserve original topic/photo intent and ground delivery claims in actual outputs. |
+| `uri_core/core/response_validation.py` | Reject the observed contradiction between embedded pictures and a reply claiming files have none. |
+| `uri_core/core/native_tool_loop.py` | Carry bounded dialogue/metadata and actual runtime file results through continuation and return. |
+| `uri_core/services/document_composer.py` | A real live run exposed institutional-note prompt contamination: use slide headings and requested count for PPTX without inventing office/reference content. Other document-format prompts retain their existing path. |
+| `uri_ui/lib/models/uri_turn.dart`, `uri_ui/lib/services/http_uri_client.dart`, `uri_ui/lib/widgets/turn_card.dart` | Parse/show/open every actual result file while retaining single-file compatibility. |
+
+M38 adapter code, frozen guard implementation and accepted blob pins are untouched.
+
+## 2026-10-03 bounded layout review and approval result candidate
+
+Authority: the User's overlap/recheck and clicked-approval repair instructions.
+Candidate only; no new pins or release acceptance. See the Claude review package.
+
+| Path | Justification |
+|---|---|
+| `uri_core/services/office_document_writer.py` | Fit wrapped text/images, preserve bullets, inspect actual geometry with explicit estimated-only status. |
+| `uri_core/services/document_composer.py`, `uri_core/tools/generate_document.py` | Bounded content review and at most one correction before existing own-user storage. |
+| `uri_core/core/approval_store.py` | Bind the same nested data-class representation that the existing serializer persists; never rebind old mismatches. |
+| `uri_core/core/decision_engine.py` | Discover the existing Google content schema without identity/authority fields. |
+| `uri_core/core/orchestrator.py` | Record actual approval outcome/link in the existing own-session transcript for follow-ups. |
+| `uri_ui/lib/services/http_uri_client.dart` | Surface failed approval outcomes and actual links/files instead of silent completion. |
+| `test_m19_office_readiness.py` | Mock write-service calls explicitly; the old path patch no longer prevented installed-account writes. |
+
+M38 code and accepted pins remain unchanged. No existing user/cloud data or stale
+approval record is modified by the repair. New cloud execution requires a fresh
+user request and explicit approval through the existing gate.

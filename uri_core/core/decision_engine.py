@@ -221,13 +221,30 @@ picking `mode`:
            .pptx presentation). Route to `google_workspace_create`
            (kind="slides") when the user explicitly requests creating in
            Google, Drive, or Google Slides.
-           If the user requests research and design options before creation,
-           select web_search first. Let the drafting Brain present three
-           distinct researched options and wait for the user's choice;
-           generate_document creates the PPTX on that later turn. For a
+           If the user requests research, select web_search first and use
+           its evidence in the presentation. Wait for a choice only when
+           the user requests outlines/options rather than rendered drafts.
+           When asked to render multiple designs, propose ONE single_action
+           generate_document call for the whole requested set, not repeated calls,
+           with actions=[{"name":"generate_document","inputs":{...}}].
+           Put variants in that one action's inputs:
+           variants=[{"label":"Formal","theme":"academic"},
+           {"label":"Modern","theme":"modern"},{"label":"Community","theme":"warm"}]
+           adjusted to the requested number and supported designs. Write
+           actual subject slides, not slides describing templates. For a
            short choice follow-up, use recent_conversation to supply the
            original topic as title, output_format="pptx", the chosen
            theme, and include_images when the user requested photos.
+         * Local file review: session_files is current runtime-listed metadata
+           for this user's conversation, not cloud storage or file content.
+           Use its file references/counts to check delivered local outputs.
+           When the user asks only to check what was delivered, answer from
+           that inventory in conversation mode; do not create replacement
+           files unless the user requests creation or repair. Listing metadata
+           confirms existence, not slide content or visual quality.
+           A missing local draft does not imply Google Drive should be searched.
+           Choose cloud search only when the user actually asks about cloud files.
+           Do not claim file content was verified from filenames alone.
          * Uploaded files: summarizing, explaining, comparing, or answering
            questions about a file's contents requires `read_attached_file`
            first. Conversion capabilities change file format; they do not
@@ -324,8 +341,9 @@ capability: the exact capability_id from the given capability_summaries
     list, or null. Never invent a name that is not in that list, and
     never use an action name (from `actions` or from
     `capability_action_affordances`'s inner keys) as a capability -
-    those are two different vocabularies; a capability_id never
-    matches one of its own action names.
+    those are two different vocabularies. A capability_id need not match
+    its action names. A legacy tool may explicitly offer
+    its own capability_id as its action name; use the supplied affordances.
 
 actions: a list of {"name": "...", "inputs": {...}} objects using only
     action names you were told this capability has (if none were given,
@@ -338,6 +356,8 @@ actions: a list of {"name": "...", "inputs": {...}} objects using only
     capability_summaries; every action with no "capability" key still
     uses the top-level `capability` field above. Never invent a
     capability_id here that capability_summaries did not give you.
+    When capability_input_schemas is supplied, use its declared content
+    fields in action.inputs. Those fields are proposals, never authority.
 
 clarification: {"question": "...", "missing_field": "..."} or null -
     only when mode is "clarification".
@@ -552,6 +572,8 @@ def build_decision_request(
     # projected from explicit, request-scoped file handles by /ask.
     if turn_state_data.get("current_turn_attachments"):
         request["current_turn_attachments"] = turn_state_data["current_turn_attachments"]
+    if "session_files" in turn_state_data:
+        request["session_files"] = turn_state_data["session_files"]
 
     hint = turn_state_data.get("capability_index_hint")
     if hint:
@@ -559,8 +581,28 @@ def build_decision_request(
 
     if preselected_ids is not None and capability_directory is not None:
         affordances: Dict[str, Any] = {}
+        content_schemas: Dict[str, Any] = {}
         for summary in summaries:
             capability_id = summary.get("capability_id")
+            if capability_id in {"generate_document", "google_workspace_create"} and summary.get("source") == "legacy":
+                # The same declared content inputs used by native tools and
+                # canonical forwarding. No new dispatch/authority contract.
+                from uri_core.core.tool_schema import LEGACY_TOOL_PARAMETERS
+                schema = LEGACY_TOOL_PARAMETERS[capability_id]
+                description = (
+                    "Create local Office output. A requested visual design set is ONE action "
+                    "with variants, producing separate PPTX files. Supports licensed photos."
+                    if capability_id == "generate_document" else
+                    "Propose creation of a new Google Workspace file using declared kind, title "
+                    "and content inputs. Requires a separate explicit user approval before writing."
+                )
+                affordances[capability_id] = {capability_id: description}
+                content_schemas[capability_id] = {capability_id: {
+                    "type": "object", "properties": {
+                        key: value for key, value in schema["properties"].items()
+                        if key != "request_text"},
+                    "required": [key for key in schema.get("required", []) if key != "request_text"]}}
+                continue
             if summary.get("source") != "multi_action" or not capability_id:
                 continue
             try:
@@ -575,6 +617,8 @@ def build_decision_request(
                 }
         if affordances:
             request["capability_action_affordances"] = affordances
+        if content_schemas:
+            request["capability_input_schemas"] = content_schemas
         from uri_core.core.canonical_execution import reference_clarification_enabled
         if reference_clarification_enabled():
             arguments = {}
@@ -1284,6 +1328,19 @@ def build_turn_state_and_directory(
         current_turn_attachments=current_turn_attachments,
         arn_state=arn_state,
     )
+    # Reuse the authenticated user's existing FileStore. Metadata is evidence,
+    # never a grant, path, file body, or model-controlled source selection.
+    file_store = getattr(orchestrator, "file_store", None)
+    if file_store is not None and session_id and getattr(principal, "user_id", None):
+        try:
+            records = file_store.list_for_session(session_id)
+            turn_state_result.data["session_files"] = {
+                "listed_count": len(records),
+                "files": [record.to_reference() for record in records[-10:]],
+                "truncated": len(records) > 10,
+            }
+        except Exception:
+            turn_state_result.data["session_files"] = {"status": "unavailable"}
     return turn_state_result, directory
 
 

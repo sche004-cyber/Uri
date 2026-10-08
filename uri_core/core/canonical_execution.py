@@ -361,6 +361,35 @@ def _reference_evidence(slot: Any, *, orchestrator: Any, principal: Any,
     )
 
 
+def _reference_action(orchestrator: Any, capability_id: str, action_name: str,
+                      principal: Any) -> tuple[Any, bool]:
+    """Resolve a registered action or one of the two session-file tools."""
+    dispatch = getattr(orchestrator, "multi_action_dispatch", None)
+    registry = getattr(dispatch, "registry", None)
+    capability = registry.get_capability(capability_id) if registry else None
+    if capability is not None:
+        action = capability.get_action(action_name)
+        return action, bool(action is not None and dispatch._action_permitted(
+            capability_id, action_name, principal))
+    if capability_id not in {"read_attached_file", "convert_document"} or action_name != capability_id:
+        return None, False
+    gate = getattr(orchestrator, "approval_gate", None)
+    descriptor = (gate.capability_registry.describe_status(capability_id)
+                  if gate is not None and getattr(gate, "capability_registry", None) else None)
+    if descriptor is None or not descriptor.is_executable or descriptor.gap_reason is not None:
+        return None, False
+    from uri_core.capabilities.registry import LegacyCapabilityAdapter
+    from uri_core.core.capability_resolver import CapabilityResolver
+
+    action = LegacyCapabilityAdapter.from_descriptor(descriptor).get_action(action_name)
+    allowed = CapabilityResolver.is_allowed(
+        capability_id, principal=principal,
+        capability_registry=gate.capability_registry,
+        grants_store=getattr(gate, "capability_grants_store", None),
+    )
+    return action, allowed
+
+
 def _evidence_built_file_slot(contract: Dict[str, Any], *, user_text: str,
                               session_id: str, orchestrator: Any, principal: Any,
                               attachments: Optional[List[Dict[str, Any]]],
@@ -381,7 +410,7 @@ def _evidence_built_file_slot(contract: Dict[str, Any], *, user_text: str,
     dispatch = getattr(orchestrator, "multi_action_dispatch", None)
     registry = getattr(dispatch, "registry", None)
     capability = registry.get_capability(capability_id) if registry and isinstance(capability_id, str) else None
-    if capability is None:
+    if capability is None and capability_id not in {"read_attached_file", "convert_document"}:
         return None
     resume_slot = None
     if resumed is not None:
@@ -395,7 +424,11 @@ def _evidence_built_file_slot(contract: Dict[str, Any], *, user_text: str,
     if not isinstance(proposed_actions, list) or len(proposed_actions) > 1:
         return None
     choices = []
-    for action_name, action in capability.actions.items():
+    action_names = capability.actions if capability is not None else (capability_id,)
+    for action_name in action_names:
+        action, permitted = _reference_action(orchestrator, capability_id, action_name, principal)
+        if action is None:
+            continue
         if resume_slot is not None and action_name != resume_slot.action_name:
             continue
         if proposed_actions and (not isinstance(proposed_actions[0], dict)
@@ -407,7 +440,7 @@ def _evidence_built_file_slot(contract: Dict[str, Any], *, user_text: str,
                        or (isinstance(spec, dict) and spec.get("format") in {"file", "attachment"})]
         if len(file_fields) != 1 or (resume_slot is not None and file_fields[0] != resume_slot.argument_name):
             continue
-        if not dispatch._action_permitted(capability_id, action_name, principal):
+        if not permitted:
             continue
         choices.append((action_name, file_fields[0]))
     if len(choices) != 1:
@@ -505,13 +538,13 @@ def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: 
         if not isinstance(item, dict):
             continue
         cap_id = item.get("capability") or contract.get("capability")
-        action = registry.get_capability(cap_id).get_action(item.get("name")) if registry and registry.get_capability(cap_id) else None
+        action, _ = _reference_action(orchestrator, cap_id, item.get("name"), principal)
         parameters = getattr(getattr(action, "parameters", None), "parameters", {}) if action else {}
         argument_map[(cap_id, item.get("name"))] = frozenset(parameters)
     slots = (synthetic,) if synthetic is not None else validate_reference_slots(contract, user_text, argument_map)
     if not slots:
         return contract, None
-    if principal is None or not principal.user_id or not session_id or registry is None:
+    if principal is None or not principal.user_id or not session_id:
         return contract, _reference_block(session_id, "REFERENCE_AUTHORITY_UNAVAILABLE")
     service = ReferenceClarificationService(journal=ClarificationJournal(
         **({"root": journal_root} if journal_root is not None else {})))
@@ -519,9 +552,9 @@ def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: 
     resumed_used = False
     for slot in slots:
         stage_started = time.monotonic()
-        capability = registry.get_capability(slot.capability_id)
-        action = capability.get_action(slot.action_name) if capability else None
-        if action is None or not getattr(dispatch, "_action_permitted", lambda *_: False)(slot.capability_id, slot.action_name, principal):
+        action, permitted = _reference_action(
+            orchestrator, slot.capability_id, slot.action_name, principal)
+        if action is None or not permitted:
             return contract, _reference_block(session_id, "REFERENCE_ACTION_UNAVAILABLE")
         impact, declared = effective_wrong_binding_impact(action)
         envelope = _reference_evidence(slot, orchestrator=orchestrator, principal=principal,
@@ -608,11 +641,12 @@ def _reference_prepare(contract: Dict[str, Any], *, user_text: str, session_id: 
                 }, ensure_ascii=False)
         def recheck(slot=slot, binding_id=binding_id, candidate_id=candidate.id,
                     expected_impact=impact):
-            live_capability = registry.get_capability(slot.capability_id)
-            live_action = live_capability.get_action(slot.action_name) if live_capability else None
+            live_action, permitted = _reference_action(
+                orchestrator, slot.capability_id, slot.action_name, principal)
             current_impact, current_declared = effective_wrong_binding_impact(live_action)
             if (live_action is None or current_impact != expected_impact
-                    or not dispatch._action_permitted(slot.capability_id, slot.action_name, principal)):
+                    or slot.argument_name not in live_action.parameters.parameters
+                    or not permitted):
                 return False
             current = _reference_evidence(slot, orchestrator=orchestrator, principal=principal,
                                           session_id=session_id, attachments=attachments)
@@ -879,6 +913,29 @@ def _execute_legacy_capability(
     # legacy turns so read_attached_file retains its historic session scan.
     if current_turn_attachment_ids is not None:
         runtime_context["current_turn_attachment_ids"] = current_turn_attachment_ids
+    if capability_id in {"read_attached_file", "convert_document"}:
+        action = actions[0]
+        # Only a URI-created, rechecked reference binding may select a file.
+        # The Brain's action inputs are never attachment identity authority.
+        from uri_desktop_seams.reference_clarification.service import ApprovalBindingIdentity
+        binding = action.get("_binding_identity")
+        if isinstance(binding, ApprovalBindingIdentity):
+            checks = action.get("_reference_rechecks", ())
+            if not checks or any(not check() for check in checks):
+                return _reference_block(session_id, "REFERENCE_STALE")
+            file_slots = [slot for slot in binding.slots
+                          if slot.capability_id == capability_id
+                          and slot.action_name == capability_id
+                          and slot.argument_name == "file_id"]
+            if len(file_slots) != 1 or principal is None:
+                return _reference_block(session_id, "REFERENCE_STALE")
+            slot = file_slots[0]
+            if (slot.user_id != getattr(principal, "user_id", None)
+                    or slot.session_id != session_id
+                    or slot.source_class != "file"
+                    or slot.candidate_id != f"file:{slot.user_id}:{slot.locator}"):
+                return _reference_block(session_id, "REFERENCE_STALE")
+            runtime_context["file_id"] = slot.locator
     if capability_id == "generate_document":
         if recent_conversation:
             runtime_context["decision_context"] = {
@@ -901,7 +958,12 @@ def _execute_legacy_capability(
             return None
         allowed = LEGACY_TOOL_PARAMETERS[capability_id]["properties"]
         runtime_context.update({key: value for key, value in proposed_inputs.items() if key in allowed})
-    result = approval_gate.execute_tool(capability_id, **runtime_context)
+    result = approval_gate.execute_tool(
+        capability_id,
+        **({"binding_identity": actions[0]["_binding_identity"]}
+           if actions[0].get("_binding_identity") else {}),
+        **runtime_context,
+    )
     status = result.get("status")
     if status == "awaiting_approval":
         execution_status = "awaiting_approval"
@@ -1234,7 +1296,8 @@ def _execute_canonical(
             contract, capability_id=capability_id, orchestrator=orchestrator,
             session_id=session_id, user_text=user_text, principal=principal,
         )
-    if reference_clarification_enabled() and contract.get("reference_slots"):
+    if (reference_clarification_enabled() and contract.get("reference_slots")
+            and capability_id not in {"read_attached_file", "convert_document"}):
         return _reference_block(session_id, "LEGACY_REFERENCE_UNSUPPORTED")
     return _execute_legacy_capability(
         contract, orchestrator=orchestrator, session_id=session_id,

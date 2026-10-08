@@ -129,6 +129,11 @@ def validate_drafted_response(
         raise ResponseValidationError("draft is empty.")
 
     text = draft_text.strip()
+    artifact = outcome.get("response")
+    if (isinstance(artifact, dict) and isinstance(artifact.get("images_added"), int)
+            and artifact["images_added"] > 0
+            and re.search(r"\b(?:without|no)\s+(?:photos|images|pictures)\b", text, re.I)):
+        raise ResponseValidationError("draft denies images that were actually embedded.")
 
     if len(text) > MAX_NARRATIVE_LENGTH:
         raise ResponseValidationError(

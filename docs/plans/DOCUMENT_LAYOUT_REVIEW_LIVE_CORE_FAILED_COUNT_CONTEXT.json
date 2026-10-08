@@ -1,0 +1,151 @@
+{
+  "scope": "real Core and local Ollama Brain; native UI not tested by this script",
+  "turns": [
+    {
+      "status": "success",
+      "duration_ms": 9986.9,
+      "tier": null,
+      "execution_status": "not_applicable",
+      "branches": [],
+      "capability": null,
+      "requested_count": null,
+      "created_count": null,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "reported_slide_count": null,
+      "quality_review": null,
+      "narrative": "I have received your brief for the \"Student Welfare at NIT Sikkim\" presentation. I have noted the specific topics (student information, wellbeing, and campus activities), the requirement to treat them as suggested rather than verified services, and your request for an academic, modern, and warm visual style with licensed illustrative photos. I will wait for your next instruction before proceeding.",
+      "files_before": 0,
+      "files_after": 0,
+      "returned_file_count": 0
+    },
+    {
+      "status": "unavailable",
+      "duration_ms": 28078.8,
+      "tier": null,
+      "execution_status": "error",
+      "branches": [],
+      "capability": "generate_document",
+      "requested_count": null,
+      "created_count": 0,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "reported_slide_count": null,
+      "quality_review": {
+        "status": "needs_repair",
+        "brain_review": "revised",
+        "review_error_type": null,
+        "correction_passes": 1,
+        "visual_review": "not_performed",
+        "issues": [
+          "Slide count mismatch: request specifies exactly two slides per file, but evidence shows 3 slides (inclusion of an 'Image credits' slide).",
+          "Content consolidation: The request asks to combine student information and wellbeing on the first slide, which is done, but the extra slide violates the 'exactly two' constraint."
+        ],
+        "layout_checks": [
+          {
+            "theme": "academic",
+            "status": "estimated_pass",
+            "issues": []
+          },
+          {
+            "theme": "modern",
+            "status": "estimated_pass",
+            "issues": []
+          },
+          {
+            "theme": "warm",
+            "status": "estimated_pass",
+            "issues": []
+          }
+        ]
+      },
+      "narrative": "I was unable to generate the presentation files because the draft did not pass the required quality review. The system identified a conflict between the request for exactly two slides and the automatic inclusion of an image credits slide.",
+      "files_before": 0,
+      "files_after": 0,
+      "returned_file_count": 0
+    },
+    {
+      "status": "success",
+      "duration_ms": 10193.0,
+      "tier": null,
+      "execution_status": "not_applicable",
+      "branches": [],
+      "capability": null,
+      "requested_count": null,
+      "created_count": null,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "reported_slide_count": null,
+      "quality_review": null,
+      "narrative": "I cannot find any PowerPoint files in the current session. It appears the previous attempt to generate the three PPTX files failed because the system could not reconcile the request for exactly two slides with the automatic inclusion of an image credit slide.",
+      "files_before": 0,
+      "files_after": 0,
+      "returned_file_count": 0
+    }
+  ],
+  "files": [],
+  "passed": false,
+  "dispatch_trace": [
+    {
+      "timestamp": 1791024983.6624095,
+      "session_id": "presentation-qualification-276cec2942b2fe1d",
+      "user_text_length_bucket": 380,
+      "canonical_mode": "conversation",
+      "selected_capability": null,
+      "selected_actions": [],
+      "action_capabilities": [],
+      "candidate_recall_at_5": null,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": false,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": false,
+      "grounded_final_response": false
+    },
+    {
+      "timestamp": 1791025012.7077272,
+      "session_id": "presentation-qualification-276cec2942b2fe1d",
+      "user_text_length_bucket": 300,
+      "canonical_mode": "single_action",
+      "selected_capability": "generate_document",
+      "selected_actions": [
+        "generate_document"
+      ],
+      "action_capabilities": [
+        {
+          "action": "generate_document",
+          "capability": "generate_document"
+        }
+      ],
+      "candidate_recall_at_5": true,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": true,
+      "canonical_execution_result": "unavailable",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": true,
+      "grounded_final_response": true
+    },
+    {
+      "timestamp": 1791025022.297577,
+      "session_id": "presentation-qualification-276cec2942b2fe1d",
+      "user_text_length_bucket": 80,
+      "canonical_mode": "conversation",
+      "selected_capability": null,
+      "selected_actions": [],
+      "action_capabilities": [],
+      "candidate_recall_at_5": null,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": false,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": false,
+      "grounded_final_response": false
+    }
+  ]
+}

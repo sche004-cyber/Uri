@@ -20,7 +20,8 @@ String _metadataCaption(UriTurn turn) {
   // Edge-handled turn), how many model calls the turn made, their summed
   // time, and the Send-to-reply time measured on this client.
   final calls = turn.modelCallCount;
-  final model = turn.servingModel ??
+  final model =
+      turn.servingModel ??
       (calls == 0 ? 'no model (URI deterministic)' : 'URI Auto');
   final parts = <String>['Model: $model'];
   if (calls != null && calls > 1) {
@@ -114,7 +115,8 @@ class TurnCard extends StatelessWidget {
     // (2026-09-14, User directive).
     // INT-ARN-1: awaitingClarification renders the interactive ClarificationCard
     // with its own distinct header, so omit the standard status pill.
-    final showStatusPill = turn.stage != TurnStage.completed &&
+    final showStatusPill =
+        turn.stage != TurnStage.completed &&
         turn.stage != TurnStage.awaitingClarification;
 
     return Container(
@@ -257,7 +259,7 @@ class TurnCard extends StatelessWidget {
           if (turn.result != null &&
               (turn.result!.detail != null ||
                   turn.result!.sources.isNotEmpty ||
-                  turn.result!.generatedFile != null ||
+                  turn.result!.allGeneratedFiles.isNotEmpty ||
                   turn.result!.draftText != null ||
                   turn.understanding == null)) ...[
             const SizedBox(height: UriSpace.md),
@@ -681,15 +683,22 @@ class _ResultBlock extends StatelessWidget {
           // M19: the real file a generation capability produced
           // (generate_document/draft_institutional_note/order) - tap
           // to open/verify, same as any other attachment.
-          if (result.generatedFile != null) ...[
+          if (result.allGeneratedFiles.isNotEmpty) ...[
             const SizedBox(height: UriSpace.sm),
-            ActionChip(
-              avatar: const Icon(Icons.description_outlined, size: 18),
-              label: Text(
-                '${result.generatedFile!.filename} · '
-                '${_formatFileSize(result.generatedFile!.sizeBytes)}',
-              ),
-              onPressed: () => onOpenAttachment(result.generatedFile!),
+            Wrap(
+              spacing: UriSpace.sm,
+              runSpacing: UriSpace.sm,
+              children: [
+                for (final file in result.allGeneratedFiles)
+                  ActionChip(
+                    avatar: const Icon(Icons.description_outlined, size: 18),
+                    label: Text(
+                      '${file.filename} · '
+                      '${_formatFileSize(file.sizeBytes)}',
+                    ),
+                    onPressed: () => onOpenAttachment(file),
+                  ),
+              ],
             ),
           ],
         ],
@@ -770,10 +779,7 @@ class _CopyMessageActionState extends State<_CopyMessageAction> {
 
 /// INT-ARN-1: Renders a compact "Using X · Change" chip for tentative bindings.
 class _TentativeBindingBlock extends StatelessWidget {
-  const _TentativeBindingBlock({
-    required this.binding,
-    this.onChange,
-  });
+  const _TentativeBindingBlock({required this.binding, this.onChange});
 
   final TentativeBinding binding;
   final VoidCallback? onChange;
@@ -825,4 +831,3 @@ class _TentativeBindingBlock extends StatelessWidget {
     );
   }
 }
-

@@ -1,0 +1,176 @@
+{
+  "scope": "real Core and local Ollama Brain; native UI not tested by this script",
+  "turns": [
+    {
+      "status": "success",
+      "duration_ms": 21182.8,
+      "tier": null,
+      "execution_status": "not_applicable",
+      "branches": [],
+      "capability": null,
+      "requested_count": null,
+      "created_count": null,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "narrative": "I have received and noted your brief for the Student Welfare at NIT Sikkim presentation. I understand the focus areas (student information, wellbeing, and campus activities), the desired academic, modern, and warm aesthetic, and the requirement for licensed illustrative photos. I will wait for your next instruction before proceeding.",
+      "files_before": 0,
+      "files_after": 0,
+      "returned_file_count": 0
+    },
+    {
+      "status": "success",
+      "duration_ms": 31093.1,
+      "tier": null,
+      "execution_status": "success",
+      "branches": [],
+      "capability": "generate_document",
+      "requested_count": 3,
+      "created_count": 3,
+      "images_requested": true,
+      "images_added": 2,
+      "image_note": null,
+      "narrative": "I have generated the three design templates for your presentation on Student Welfare at NIT Sikkim. Each file contains two content slides and was created with your requested themes:\n\n1. **Student_Welfare_at_NIT_Sikkim_Academic Design.pptx** (Academic Design)\n2. **Student_Welfare_at_NIT_Sikkim_Modern Design.pptx** (Modern Design)\n3. **Student_Welfare_at_NIT_Sikkim_Warm Design.pptx** (Warm Design)\n\nPlease note that while photos were requested, the files were created without images.",
+      "files_before": 0,
+      "files_after": 3,
+      "returned_file_count": 3
+    },
+    {
+      "status": "success",
+      "duration_ms": 11868.0,
+      "tier": null,
+      "execution_status": "not_applicable",
+      "branches": [],
+      "capability": null,
+      "requested_count": null,
+      "created_count": null,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "narrative": "I can confirm that there are three PowerPoint files currently available in this session:\n\n1. Student_Welfare_at_NIT_Sikkim_Academic Design.pptx\n2. Student_Welfare_at_NIT_Sikkim_Modern Design.pptx\n3. Student_Welfare_at_NIT_Sikkim_Warm Design.pptx",
+      "files_before": 3,
+      "files_after": 3,
+      "returned_file_count": 0
+    }
+  ],
+  "files": [
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Academic Design.pptx",
+      "size_bytes": 143872,
+      "slide_count": 4,
+      "picture_count": 2,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Information",
+        "\u2022 Overview of student demographics and academic profiles",
+        "\u2022 Identification of student needs and support requirements",
+        "\u2022 Suggested: Integration of personalized student profiles",
+        "\u2022 Suggested: Development of a centralized information portal",
+        "1"
+      ],
+      "theme_color": "183454"
+    },
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Modern Design.pptx",
+      "size_bytes": 143876,
+      "slide_count": 4,
+      "picture_count": 2,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Information",
+        "\u2022 Overview of student demographics and academic profiles",
+        "\u2022 Identification of student needs and support requirements",
+        "\u2022 Suggested: Integration of personalized student profiles",
+        "\u2022 Suggested: Development of a centralized information portal",
+        "1"
+      ],
+      "theme_color": "10243E"
+    },
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Warm Design.pptx",
+      "size_bytes": 143878,
+      "slide_count": 4,
+      "picture_count": 2,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Information",
+        "\u2022 Overview of student demographics and academic profiles",
+        "\u2022 Identification of student needs and support requirements",
+        "\u2022 Suggested: Integration of personalized student profiles",
+        "\u2022 Suggested: Development of a centralized information portal",
+        "1"
+      ],
+      "theme_color": "4F3041"
+    }
+  ],
+  "passed": false,
+  "dispatch_trace": [
+    {
+      "timestamp": 1790998929.3781116,
+      "session_id": "presentation-qualification-9ebb7a6c084d450c",
+      "user_text_length_bucket": 380,
+      "canonical_mode": "conversation",
+      "selected_capability": null,
+      "selected_actions": [],
+      "action_capabilities": [],
+      "candidate_recall_at_5": null,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": false,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": false,
+      "grounded_final_response": false
+    },
+    {
+      "timestamp": 1790998959.160027,
+      "session_id": "presentation-qualification-9ebb7a6c084d450c",
+      "user_text_length_bucket": 180,
+      "canonical_mode": "single_action",
+      "selected_capability": "generate_document",
+      "selected_actions": [
+        "generate_document"
+      ],
+      "action_capabilities": [
+        {
+          "action": "generate_document",
+          "capability": "generate_document"
+        }
+      ],
+      "candidate_recall_at_5": true,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": true,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": true,
+      "grounded_final_response": true
+    },
+    {
+      "timestamp": 1790998971.4796963,
+      "session_id": "presentation-qualification-9ebb7a6c084d450c",
+      "user_text_length_bucket": 80,
+      "canonical_mode": "conversation",
+      "selected_capability": null,
+      "selected_actions": [],
+      "action_capabilities": [],
+      "candidate_recall_at_5": null,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": false,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": false,
+      "grounded_final_response": false
+    }
+  ]
+}

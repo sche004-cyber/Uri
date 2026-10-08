@@ -44,7 +44,7 @@ import hashlib
 import json
 import os
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -116,7 +116,11 @@ def _fingerprint(capability_id: str, arguments: Dict[str, Any]) -> str:
     canonical = json.dumps(
         {"capability_id": capability_id, "arguments": arguments},
         sort_keys=True,
-        default=str,
+        # _serialize_action uses asdict(), which turns nested runtime data
+        # classes into maps. Bind exactly that persisted representation so
+        # an unchanged proposal survives the JSON round trip. All fields
+        # remain covered; existing mismatched approvals are not repaired.
+        default=lambda value: asdict(value) if is_dataclass(value) and not isinstance(value, type) else str(value),
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 

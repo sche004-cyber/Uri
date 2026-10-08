@@ -1,0 +1,232 @@
+{
+  "scope": "real Core and local Ollama Brain; native UI not tested by this script",
+  "turns": [
+    {
+      "status": "success",
+      "duration_ms": 22001.8,
+      "tier": null,
+      "execution_status": "not_applicable",
+      "branches": [],
+      "capability": null,
+      "requested_count": null,
+      "created_count": null,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "reported_slide_count": null,
+      "quality_review": null,
+      "narrative": "I have received your brief for the \"Student Welfare at NIT Sikkim\" presentation. I have noted the specific topics (student information, wellbeing, and campus activities), the requirement to treat them as suggested rather than verified, and your request for an academic, modern, and warm visual style with licensed illustrative photos. I will wait for your instructions before proceeding.",
+      "files_before": 0,
+      "files_after": 0,
+      "returned_file_count": 0
+    },
+    {
+      "status": "success",
+      "duration_ms": 27450.3,
+      "tier": null,
+      "execution_status": "success",
+      "branches": [],
+      "capability": "generate_document",
+      "requested_count": 3,
+      "created_count": 3,
+      "images_requested": true,
+      "images_added": 1,
+      "image_note": null,
+      "reported_slide_count": 3,
+      "quality_review": {
+        "status": "provisional",
+        "brain_review": "unavailable",
+        "correction_passes": 0,
+        "visual_review": "not_performed",
+        "issues": [],
+        "layout_checks": [
+          {
+            "theme": "academic",
+            "status": "estimated_pass",
+            "issues": []
+          },
+          {
+            "theme": "modern",
+            "status": "estimated_pass",
+            "issues": []
+          },
+          {
+            "theme": "warm",
+            "status": "estimated_pass",
+            "issues": []
+          }
+        ]
+      },
+      "narrative": "I have created three separate PowerPoint files for your review, each featuring the Academic, Modern, and Warm design templates. Each file contains two slides: the first combines student information and wellbeing, and the second covers campus activities. Please note that the files were created with only one image included.\n\n1. Student_Welfare_at_NIT_Sikkim_Academic.pptx\n2. Student_Welfare_at_NIT_Sikkim_Modern.pptx\n3. Student_Welfare_at_NIT_Sikkim_Warm.pptx",
+      "files_before": 0,
+      "files_after": 3,
+      "returned_file_count": 3
+    },
+    {
+      "status": "success",
+      "duration_ms": 11630.7,
+      "tier": null,
+      "execution_status": "not_applicable",
+      "branches": [],
+      "capability": null,
+      "requested_count": null,
+      "created_count": null,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "reported_slide_count": null,
+      "quality_review": null,
+      "narrative": "I have confirmed that there are three PowerPoint files currently available in this session:\n\n1. Student_Welfare_at_NIT_Sikkim_Academic.pptx\n2. Student_Welfare_at_NIT_Sikkim_Modern.pptx\n3. Student_Welfare_at_NIT_Sikkim_Warm.pptx",
+      "files_before": 3,
+      "files_after": 3,
+      "returned_file_count": 0
+    }
+  ],
+  "files": [
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Academic.pptx",
+      "size_bytes": 55043,
+      "layout": {
+        "status": "estimated_pass",
+        "issues": [],
+        "slide_count": 3,
+        "visual_review": "not_performed"
+      },
+      "slide_count": 3,
+      "content_slide_count": 2,
+      "slide_titles": [
+        "Student Welfare at NIT Sikkim",
+        "Campus Activities",
+        "Image credits"
+      ],
+      "picture_count": 1,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Welfare at NIT Sikkim",
+        "\u2022 Overview of student information and demographic data\n\u2022 Suggested initiatives for student wellbeing\n\u2022 Support systems for mental and physical health\n\u2022 Proposed resources for student success",
+        "1"
+      ],
+      "theme_color": "183454"
+    },
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Modern.pptx",
+      "size_bytes": 55046,
+      "layout": {
+        "status": "estimated_pass",
+        "issues": [],
+        "slide_count": 3,
+        "visual_review": "not_performed"
+      },
+      "slide_count": 3,
+      "content_slide_count": 2,
+      "slide_titles": [
+        "Student Welfare at NIT Sikkim",
+        "Campus Activities",
+        "Image credits"
+      ],
+      "picture_count": 1,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Welfare at NIT Sikkim",
+        "\u2022 Overview of student information and demographic data\n\u2022 Suggested initiatives for student wellbeing\n\u2022 Support systems for mental and physical health\n\u2022 Proposed resources for student success",
+        "1"
+      ],
+      "theme_color": "10243E"
+    },
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Warm.pptx",
+      "size_bytes": 55045,
+      "layout": {
+        "status": "estimated_pass",
+        "issues": [],
+        "slide_count": 3,
+        "visual_review": "not_performed"
+      },
+      "slide_count": 3,
+      "content_slide_count": 2,
+      "slide_titles": [
+        "Student Welfare at NIT Sikkim",
+        "Campus Activities",
+        "Image credits"
+      ],
+      "picture_count": 1,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Welfare at NIT Sikkim",
+        "\u2022 Overview of student information and demographic data\n\u2022 Suggested initiatives for student wellbeing\n\u2022 Support systems for mental and physical health\n\u2022 Proposed resources for student success",
+        "1"
+      ],
+      "theme_color": "4F3041"
+    }
+  ],
+  "passed": false,
+  "dispatch_trace": [
+    {
+      "timestamp": 1791024718.9355874,
+      "session_id": "presentation-qualification-7f2d81399d179b18",
+      "user_text_length_bucket": 380,
+      "canonical_mode": "conversation",
+      "selected_capability": null,
+      "selected_actions": [],
+      "action_capabilities": [],
+      "candidate_recall_at_5": null,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": false,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": false,
+      "grounded_final_response": false
+    },
+    {
+      "timestamp": 1791024745.464489,
+      "session_id": "presentation-qualification-7f2d81399d179b18",
+      "user_text_length_bucket": 300,
+      "canonical_mode": "single_action",
+      "selected_capability": "generate_document",
+      "selected_actions": [
+        "generate_document"
+      ],
+      "action_capabilities": [
+        {
+          "action": "generate_document",
+          "capability": "generate_document"
+        }
+      ],
+      "candidate_recall_at_5": true,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": true,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": true,
+      "grounded_final_response": true
+    },
+    {
+      "timestamp": 1791024757.6808565,
+      "session_id": "presentation-qualification-7f2d81399d179b18",
+      "user_text_length_bucket": 80,
+      "canonical_mode": "conversation",
+      "selected_capability": null,
+      "selected_actions": [],
+      "action_capabilities": [],
+      "candidate_recall_at_5": null,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": false,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": false,
+      "grounded_final_response": false
+    }
+  ]
+}

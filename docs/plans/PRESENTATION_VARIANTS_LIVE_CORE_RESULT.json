@@ -1,0 +1,197 @@
+{
+  "scope": "real Core and local Ollama Brain; native UI not tested by this script",
+  "turns": [
+    {
+      "status": "success",
+      "duration_ms": 20891.4,
+      "tier": null,
+      "execution_status": "not_applicable",
+      "branches": [],
+      "capability": null,
+      "requested_count": null,
+      "created_count": null,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "reported_slide_count": null,
+      "narrative": "I have received your brief for the Student Welfare at NIT Sikkim presentation. I have noted the specific topics (student information, wellbeing, and campus activities), the requested academic, modern, and warm visual style, and the inclusion of licensed illustrative photos. I will wait for your next instruction before proceeding.",
+      "files_before": 0,
+      "files_after": 0,
+      "returned_file_count": 0
+    },
+    {
+      "status": "success",
+      "duration_ms": 26798.7,
+      "tier": null,
+      "execution_status": "success",
+      "branches": [],
+      "capability": "generate_document",
+      "requested_count": 3,
+      "created_count": 3,
+      "images_requested": true,
+      "images_added": 1,
+      "image_note": null,
+      "reported_slide_count": 3,
+      "narrative": "I have generated three separate PowerPoint files for your review, each featuring the requested content structure and a distinct visual style:\n\n1. **Student_Welfare_at_NIT_Sikkim_Academic.pptx** (Academic style)\n2. **Student_Welfare_at_NIT_Sikkim_Modern.pptx** (Modern style)\n3. **Student_Welfare_at_NIT_Sikkim_Warm.pptx** (Warm style)\n\nEach file contains two content slides: the first combines student information and wellbeing, and the second covers campus activities. Please note that while photos were requested, only one was successfully included in the files.",
+      "files_before": 0,
+      "files_after": 3,
+      "returned_file_count": 3
+    },
+    {
+      "status": "success",
+      "duration_ms": 11778.1,
+      "tier": null,
+      "execution_status": "not_applicable",
+      "branches": [],
+      "capability": null,
+      "requested_count": null,
+      "created_count": null,
+      "images_requested": null,
+      "images_added": null,
+      "image_note": null,
+      "reported_slide_count": null,
+      "narrative": "I can confirm that there are three PowerPoint files currently available in this session:\n\n1. **Student_Welfare_at_NIT_Sikkim_Academic.pptx**\n2. **Student_Welfare_at_NIT_Sikkim_Modern.pptx**\n3. **Student_Welfare_at_NIT_Sikkim_Warm.pptx**",
+      "files_before": 3,
+      "files_after": 3,
+      "returned_file_count": 0
+    }
+  ],
+  "files": [
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Academic.pptx",
+      "size_bytes": 93688,
+      "slide_count": 3,
+      "content_slide_count": 2,
+      "slide_titles": [
+        "Student Welfare at NIT Sikkim",
+        "Campus Activities",
+        "Image credits"
+      ],
+      "picture_count": 1,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Welfare at NIT Sikkim",
+        "\u2022 Student information and wellbeing",
+        "\u2022 Support systems for student health",
+        "\u2022 Mental health resources and counseling",
+        "\u2022 Academic support initiatives",
+        "1"
+      ],
+      "theme_color": "183454"
+    },
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Modern.pptx",
+      "size_bytes": 93690,
+      "slide_count": 3,
+      "content_slide_count": 2,
+      "slide_titles": [
+        "Student Welfare at NIT Sikkim",
+        "Campus Activities",
+        "Image credits"
+      ],
+      "picture_count": 1,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Welfare at NIT Sikkim",
+        "\u2022 Student information and wellbeing",
+        "\u2022 Support systems for student health",
+        "\u2022 Mental health resources and counseling",
+        "\u2022 Academic support initiatives",
+        "1"
+      ],
+      "theme_color": "10243E"
+    },
+    {
+      "filename": "Student_Welfare_at_NIT_Sikkim_Warm.pptx",
+      "size_bytes": 93691,
+      "slide_count": 3,
+      "content_slide_count": 2,
+      "slide_titles": [
+        "Student Welfare at NIT Sikkim",
+        "Campus Activities",
+        "Image credits"
+      ],
+      "picture_count": 1,
+      "first_slide_text": [
+        "",
+        "",
+        "",
+        "",
+        "Student Welfare at NIT Sikkim",
+        "\u2022 Student information and wellbeing",
+        "\u2022 Support systems for student health",
+        "\u2022 Mental health resources and counseling",
+        "\u2022 Academic support initiatives",
+        "1"
+      ],
+      "theme_color": "4F3041"
+    }
+  ],
+  "passed": true,
+  "dispatch_trace": [
+    {
+      "timestamp": 1790999173.2781005,
+      "session_id": "presentation-qualification-e2e047483c8f2511",
+      "user_text_length_bucket": 380,
+      "canonical_mode": "conversation",
+      "selected_capability": null,
+      "selected_actions": [],
+      "action_capabilities": [],
+      "candidate_recall_at_5": null,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": false,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": false,
+      "grounded_final_response": false
+    },
+    {
+      "timestamp": 1790999198.4583838,
+      "session_id": "presentation-qualification-e2e047483c8f2511",
+      "user_text_length_bucket": 300,
+      "canonical_mode": "single_action",
+      "selected_capability": "generate_document",
+      "selected_actions": [
+        "generate_document"
+      ],
+      "action_capabilities": [
+        {
+          "action": "generate_document",
+          "capability": "generate_document"
+        }
+      ],
+      "candidate_recall_at_5": true,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": true,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": true,
+      "grounded_final_response": true
+    },
+    {
+      "timestamp": 1790999211.0056632,
+      "session_id": "presentation-qualification-e2e047483c8f2511",
+      "user_text_length_bucket": 80,
+      "canonical_mode": "conversation",
+      "selected_capability": null,
+      "selected_actions": [],
+      "action_capabilities": [],
+      "candidate_recall_at_5": null,
+      "gate_outcome": "READY",
+      "canonical_execution_attempted": false,
+      "canonical_execution_result": "success",
+      "fallback_used": false,
+      "fallback_reason": null,
+      "execution_evidence_returned": false,
+      "grounded_final_response": false
+    }
+  ]
+}

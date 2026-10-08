@@ -1672,7 +1672,7 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
     """Typed response wins all other /ask interpreters and resumes a fresh Brain pass."""
     from types import SimpleNamespace
     from uri_core.core.canonical_execution import (
-        _reference_block, _reference_evidence, _reference_render_draft,
+        _reference_action, _reference_block, _reference_evidence, _reference_render_draft,
         _reference_wire, run_canonical_for_ask,
     )
     from uri_desktop_seams.reference_clarification.proposal import ReferenceSlot
@@ -1705,10 +1705,9 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
             candidate_set_fingerprint=response_raw.get("candidate_set_fingerprint"),
             axis=response_raw.get("axis"), value=response_raw.get("value"),
         )
-        dispatch = context.orchestrator.multi_action_dispatch
-        capability = dispatch.registry.get_capability(slot.capability_id)
-        action = capability.get_action(slot.action_name) if capability else None
-        if action is None or not dispatch._action_permitted(slot.capability_id, slot.action_name, principal):
+        action, permitted = _reference_action(
+            context.orchestrator, slot.capability_id, slot.action_name, principal)
+        if action is None or not permitted:
             raise ValueError("action no longer authorized")
         impact, declared = effective_wrong_binding_impact(action)
         original_attachments = metadata.get("attachments") or []
@@ -1762,7 +1761,7 @@ def _reference_ask_turn(context, principal, payload: AskRequest, pending, attach
 
 def _reference_retry_round(context, principal, payload, reason, metadata_raw=None):
     """A rejected card is dead. Rebuild from its saved Brain slot and live source."""
-    from uri_core.core.canonical_execution import _reference_block, _reference_evidence, _reference_render_draft, _reference_wire
+    from uri_core.core.canonical_execution import _reference_action, _reference_block, _reference_evidence, _reference_render_draft, _reference_wire
     from uri_desktop_seams.reference_clarification.proposal import ReferenceSlot
     from uri_desktop_seams.reference_clarification.service import ReferenceClarificationService
     from uri_desktop_seams.reference_clarification.store import ClarificationJournal
@@ -1778,10 +1777,9 @@ def _reference_retry_round(context, principal, payload, reason, metadata_raw=Non
                 metadata_raw = state.origins.get("request:" + old_id) if isinstance(old_id, str) else None
         metadata = json.loads(metadata_raw)
         slot = ReferenceSlot(**metadata["slot"])
-        dispatch = context.orchestrator.multi_action_dispatch
-        capability = dispatch.registry.get_capability(slot.capability_id)
-        action = capability.get_action(slot.action_name) if capability else None
-        if action is None or not dispatch._action_permitted(slot.capability_id, slot.action_name, principal):
+        action, permitted = _reference_action(
+            context.orchestrator, slot.capability_id, slot.action_name, principal)
+        if action is None or not permitted:
             return result
         evidence = _reference_evidence(slot, orchestrator=context.orchestrator,
             principal=principal, session_id=payload.session_id,
@@ -1804,7 +1802,7 @@ def _reference_retry_round(context, principal, payload, reason, metadata_raw=Non
 
 
 def _reference_change_turn(context, principal, payload):
-    from uri_core.core.canonical_execution import _reference_block, _reference_evidence, _reference_render_draft, _reference_wire
+    from uri_core.core.canonical_execution import _reference_action, _reference_block, _reference_evidence, _reference_render_draft, _reference_wire
     from uri_desktop_seams.reference_clarification.proposal import ReferenceSlot
     from uri_desktop_seams.reference_clarification.service import ReferenceClarificationService
     from uri_desktop_seams.reference_clarification.store import ClarificationJournal
@@ -1821,10 +1819,9 @@ def _reference_change_turn(context, principal, payload):
             metadata_raw = state.origins.get("binding:" + binding_id)
         metadata = json.loads(metadata_raw)
         slot = ReferenceSlot(**metadata["slot"])
-        dispatch = context.orchestrator.multi_action_dispatch
-        capability = dispatch.registry.get_capability(slot.capability_id)
-        action = capability.get_action(slot.action_name) if capability else None
-        if action is None or not dispatch._action_permitted(slot.capability_id, slot.action_name, principal):
+        action, permitted = _reference_action(
+            context.orchestrator, slot.capability_id, slot.action_name, principal)
+        if action is None or not permitted:
             return blocked
         impact, _ = effective_wrong_binding_impact(action)
         service = ReferenceClarificationService(journal=journal)

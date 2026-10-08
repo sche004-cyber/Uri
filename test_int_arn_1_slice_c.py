@@ -178,6 +178,47 @@ class SliceCAskTests(unittest.TestCase):
         self.assertEqual(len(self.calls), 1)
         self.assertEqual(self.calls[0]["file_id"], selected["candidate_id"].split(":")[-1])
 
+    def test_evidence_built_legacy_read_executes_selected_file_once(self):
+        from uri_core.core.capability_registry import CapabilityRegistry
+        from uri_core.tools.read_attached_file import ReadAttachedFileTool
+
+        self.orchestrator.approval_gate.capability_registry = CapabilityRegistry()
+        reads = []
+
+        def execute_tool(name, **kwargs):
+            self.assertEqual(name, "read_attached_file")
+            result = ReadAttachedFileTool(self.file_store).execute(**kwargs)
+            return {"status": "success", "data": result}
+
+        self.orchestrator.approval_gate.execute_tool = Mock(side_effect=execute_tool)
+        question = "Which report should I read, alpha.pdf or beta.pdf?"
+        self.decision.side_effect = lambda **kwargs: DecisionOutcome("ok", {
+            "goal": "Read a report", "mode": "clarification",
+            "capability": "read_attached_file", "actions": [],
+            "clarification": {"question": question, "missing_field": "file_id"},
+            "unsupported_reason": None, "requires_approval": False,
+            "confidence": "high", "reason": "A file choice is needed",
+        })
+        with patch("uri_core.core.capability_resolver.CapabilityResolver.is_allowed", return_value=True), \
+             patch("uri_core.tools.read_attached_file.extract_file_text",
+                   side_effect=lambda path: reads.append(path) or {"status": "success", "text": "report"}):
+            first = self.client.post("/ask", json={"session_id": "s1", "text": "Read a report",
+                "attached_file_ids": [self.first.file_id, self.second.file_id]})
+            self.assertEqual(first.status_code, 200)
+            card = first.json()["clarification"]
+            self.assertEqual(card["question"], question)
+            self.assertEqual(len(card["options"]), 2)
+            chosen = card["options"][0]
+            second = self.client.post("/ask", json={"session_id": "s1", "text": "",
+                "clarification_response": {"ambiguity_id": card["ambiguity_id"],
+                    "response_kind": "CANDIDATE", "candidate_id": chosen["candidate_id"],
+                    "candidate_set_fingerprint": card["candidate_set_fingerprint"]}})
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(second.json()["execution"]["status"], "success")
+        self.assertEqual(len(reads), 1)
+        self.assertEqual(reads[0], self.file_store.path_for(chosen["candidate_id"].split(":")[-1]))
+        self.orchestrator.approval_gate.execute_tool.assert_called_once()
+
     def test_evidence_round_needs_two_files_and_file_argument(self):
         self.decision.side_effect = self._clarifying_brain
         self.file_store.delete(self.second.file_id)

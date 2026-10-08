@@ -6060,6 +6060,35 @@ class UriOrchestrator:
         if workflow_continuation is not None:
             result["workflow_continuation"] = workflow_continuation
 
+        if approved and proposed is not None:
+            # Approval outcomes must reach the same own-session transcript as
+            # /ask results, including the tool's actual URL for follow-ups.
+            # Neither the narrative nor this metadata grants execution authority.
+            from urllib.parse import urlsplit
+            from uri_core.core.dispatcher import real_tool_status
+            status = real_tool_status(result)
+            data = result.get("data") if isinstance(result.get("data"), dict) else result
+            summary = f"Approval execution outcome: {status}."
+            message = data.get("message")
+            if isinstance(message, str):
+                summary += " " + message
+            name = data.get("name")
+            if isinstance(name, str):
+                summary += " Result: " + name
+            link = data.get("webViewLink")
+            if isinstance(link, str):
+                try:
+                    url = urlsplit(link)
+                    if url.scheme == "https" and url.hostname and not url.username and not url.password:
+                        summary += " " + link
+                except ValueError:
+                    pass
+            self._record_conversation_turn_safely(
+                session_id=session_id, user_text=original_request_text,
+                result={"response": {"message": summary},
+                        "execution": {"status": status, "capability": proposed.capability_id}},
+            )
+
         return result
 
     # ==========================================================

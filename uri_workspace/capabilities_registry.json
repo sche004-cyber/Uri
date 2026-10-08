@@ -134,7 +134,7 @@
       "file_path": "uri_core/tools/convert_document.py",
       "class_name": "ConvertDocumentTool",
       "method": "convert",
-      "description": "Convert an already-attached document into a different file format - today, an attached PDF into a real DOCX, using its actual extracted text (OCR fallback for scanned pages).",
+      "description": "Convert an attached PDF to Word (.docx).",
       "status": "implemented",
       "availability": "available",
       "permissions": [],
@@ -142,7 +142,7 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "PDF-to-DOCX only today; requires the source PDF already attached to this conversation.",
-      "interface": null,
+      "interface": {"parameters": {"file_id": {"type": "string"}}},
       "effect_type": "local_write"
     },
     "read_attached_file": {
@@ -160,7 +160,7 @@
       "risk": "controlled",
       "platform": "any",
       "limitations": "Reads only files the user actually attached to the current conversation; honestly reports when nothing is attached, when a file type has no text extractor, when a document contains no readable text, or when extraction fails, rather than inventing content.",
-      "interface": null,
+      "interface": {"parameters": {"file_id": {"type": "string"}}},
       "effect_type": "read_only"
     },
     "gmail_search": {

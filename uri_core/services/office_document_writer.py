@@ -21,11 +21,14 @@ prompt) and these functions parse:
 
 import io
 import ipaddress
+import os
+from functools import lru_cache
+from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
 import requests
-from PIL import Image
+from PIL import Image, ImageFont
 
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -191,17 +194,116 @@ def find_openverse_images(queries: List[str], *, diagnostics: dict = None) -> Li
     return images
 
 
-def _text_box(slide, x, y, width, height, text, *, size, color, bold=False):
+@lru_cache(maxsize=64)
+def _layout_font(size, bold=False):
+    filename = "arialbd.ttf" if bold else "arial.ttf"
+    candidates = [str(Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts" / filename),
+                  filename, "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"]
+    for candidate in candidates:
+        try:
+            return ImageFont.truetype(candidate, round(size * 96 / 72))
+        except OSError:
+            pass
+    return ImageFont.load_default()
+
+
+def _wrapped_lines(text, width, font):
+    """Explicit soft wraps, so PowerPoint cannot spill into a following row."""
+    lines = []
+    for raw in str(text).splitlines() or [""]:
+        line = ""
+        for word in raw.split():
+            # Break long URLs/tokens too; preserve every character.
+            pieces = []
+            piece = ""
+            for char in word:
+                if piece and font.getlength(piece + char) > width:
+                    pieces.append(piece); piece = ""
+                piece += char
+            pieces.append(piece)
+            for piece in pieces:
+                candidate = f"{line} {piece}" if line else piece
+                if line and font.getlength(candidate) > width:
+                    lines.append(line); line = piece
+                else:
+                    line = candidate
+        lines.append(line)
+    return lines
+
+
+def _paragraph_box(slide, x, y, width, height, texts, *, size, minimum, color, bold=False):
     box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(width), Inches(height))
     frame = box.text_frame
     frame.word_wrap = True
-    paragraph = frame.paragraphs[0]
-    paragraph.text = text
-    paragraph.font.name = "Aptos"
-    paragraph.font.size = Pt(size)
-    paragraph.font.bold = bold
-    paragraph.font.color.rgb = color
+    frame.margin_left = frame.margin_right = Inches(0.04)
+    frame.margin_top = frame.margin_bottom = Inches(0.04)
+    texts = texts or [""]
+    for chosen in range(int(size), int(minimum) - 1, -1):
+        font = _layout_font(chosen, bold)
+        wrapped = [_wrapped_lines(text, (width - 0.08) * 96, font) for text in texts]
+        needed = sum(len(lines) for lines in wrapped) * chosen / 72 * 1.25 + 0.10 * (len(texts) - 1) + 0.08
+        if needed <= height:
+            break
+    for index, lines in enumerate(wrapped):
+        paragraph = frame.paragraphs[0] if index == 0 else frame.add_paragraph()
+        paragraph.text = "\v".join(lines)
+        paragraph.font.name = "Arial"
+        paragraph.font.size = Pt(chosen)
+        paragraph.font.bold = bold
+        paragraph.font.color.rgb = color
+        paragraph.line_spacing = Pt(chosen * 1.25)
+        paragraph.space_after = Pt(7.2 if index < len(wrapped) - 1 else 0)
     return box
+
+
+def _text_box(slide, x, y, width, height, text, *, size, color, bold=False):
+    return _paragraph_box(slide, x, y, width, height, [text], size=size,
+                          minimum=22 if size >= 30 else 14 if size >= 20 else 10,
+                          color=color, bold=bold)
+
+
+def inspect_pptx_layout(content):
+    """Actual geometry/text plus estimated font metrics; never raster visual QA."""
+    deck = Presentation(io.BytesIO(content))
+    issues, extracted = [], []
+    titles = [next((shape.text.strip() for shape in slide.shapes
+                    if shape.has_text_frame and shape.text.strip()), '') for slide in deck.slides]
+    for number, slide in enumerate(deck.slides, 1):
+        regions = []
+        for shape in slide.shapes:
+            text = shape.text if shape.has_text_frame else ""
+            if not text.strip() and shape.shape_type != 13:
+                continue
+            if text.strip():
+                extracted.append(text)
+            x, y, w, h = [v / 914400 for v in (shape.left, shape.top, shape.width, shape.height)]
+            if x < 0 or y < 0 or x + w > deck.slide_width / 914400 + .01 or y + h > deck.slide_height / 914400 + .01:
+                issues.append({"slide": number, "code": "out_of_bounds"})
+            if text.strip():
+                frame = shape.text_frame
+                needed = (frame.margin_top + frame.margin_bottom) / 914400
+                for paragraph in frame.paragraphs:
+                    size = paragraph.font.size.pt if paragraph.font.size else 20
+                    lines = paragraph.text.splitlines() or [""]
+                    needed += len(lines) * size / 72 * 1.25
+                    needed += (paragraph.space_after or 0) / 914400
+                    font = _layout_font(size, bool(paragraph.font.bold))
+                    usable = max(0, (shape.width - frame.margin_left - frame.margin_right) / 914400 * 96)
+                    if any(font.getlength(line) > usable + 2 for line in lines):
+                        issues.append({"slide": number, "code": "text_width_overflow"})
+                if needed > h + .02:
+                    issues.append({"slide": number, "code": "text_height_overflow"})
+            for previous in regions:
+                px, py, pw, ph = previous
+                if min(x + w, px + pw) - max(x, px) > .02 and min(y + h, py + ph) - max(y, py) > .02:
+                    issues.append({"slide": number, "code": "content_regions_overlap"})
+            regions.append((x, y, w, h))
+    return {"status": "needs_repair" if issues else "estimated_pass", "issues": issues[:30],
+            "slide_count": len(deck.slides),
+            "content_slide_count": sum(title != 'Image credits' for title in titles),
+            "credit_slide_count": titles.count('Image credits'),
+            "extracted_text": "\n".join(extracted)[:12000],
+            "visual_review": "not_performed"}
 
 
 def render_pptx_bytes(content: str, *, theme: str = "modern", images: List[dict] = None) -> bytes:
@@ -262,17 +364,25 @@ def render_pptx_bytes(content: str, *, theme: str = "modern", images: List[dict]
             icon.fill.solid()
             icon.fill.fore_color.rgb = accent
             icon.line.fill.background()
-        _text_box(slide, 0.7, 0.6 if number == 1 else 0.45, 11.7, 1.2, title,
+        _text_box(slide, 0.7, 0.6 if number == 1 else 0.45, 10.0, 1.2, title,
                   size=36 if number == 1 else 30, color=ink, bold=True)
         picture = images[number - 2] if number > 1 and number - 2 < len(images) else None
         content_width = 7.5 if picture else 11.5
-        for index, bullet in enumerate(bullets[:7]):
-            _text_box(slide, 0.85, 2.05 + index * 0.66, content_width, 0.59,
-                      "• " + bullet, size=20, color=ink)
+        _paragraph_box(slide, 0.85, 2.05, content_width, 4.55,
+                       ["• " + bullet for bullet in bullets], size=20, minimum=14, color=ink)
         if picture:
             try:
                 stream = io.BytesIO(picture["data"]) if "data" in picture else picture["path"]
-                slide.shapes.add_picture(stream, Inches(8.75), Inches(2.05), width=Inches(3.8))
+                if hasattr(stream, "seek"):
+                    stream.seek(0)
+                with Image.open(stream) as photo:
+                    ratio = photo.width / photo.height
+                if hasattr(stream, "seek"):
+                    stream.seek(0)
+                width = min(3.8, 4.4 * ratio)
+                height = width / ratio
+                slide.shapes.add_picture(stream, Inches(8.75 + (3.8 - width) / 2),
+                                        Inches(2.05), width=Inches(width), height=Inches(height))
                 if picture.get("credit"):
                     used_credits.append(str(picture["credit"]))
             except (KeyError, ValueError, OSError):
@@ -284,9 +394,8 @@ def render_pptx_bytes(content: str, *, theme: str = "modern", images: List[dict]
         slide.background.fill.solid()
         slide.background.fill.fore_color.rgb = background
         _text_box(slide, 0.7, 0.5, 11.6, 0.8, "Image credits", size=30, color=title_color, bold=True)
-        for index, credit in enumerate(used_credits[:6]):
-            _text_box(slide, 0.85, 1.6 + index * 0.83, 11.7, 0.76,
-                      credit, size=13, color=title_color)
+        _paragraph_box(slide, 0.85, 1.6, 11.7, 4.95, used_credits,
+                       size=13, minimum=10, color=title_color)
 
     buffer = io.BytesIO()
     presentation.save(buffer)

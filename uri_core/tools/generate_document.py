@@ -16,10 +16,13 @@ so the result is downloadable via the existing GET
 """
 
 import re
+import io
+import zipfile
 from typing import Any, Dict, Optional
 
 from uri_core.config.institutional_rules import load_institutional_rules
 from uri_core.core.file_store import FileStore, FileValidationError, sanitize_filename
+from uri_core.core.document_validation import validate_drafted_document
 from uri_core.services.document_composer import DocumentComposer
 from uri_core.services.drafting_guidance import build_drafting_brief
 from uri_core.services.document_writer_service import DocumentWriterService
@@ -34,6 +37,7 @@ from uri_core.services.office_document_writer import (
     render_pdf_bytes,
     render_pptx_bytes,
     render_xlsx_bytes,
+    inspect_pptx_layout,
 )
 
 
@@ -140,6 +144,29 @@ def _derive_filename(request_text: str, output_format: str) -> str:
     return sanitize_filename(f"{stem}.{output_format}")
 
 
+def validate_variants(value, output_format):
+    """Physical renderer bounds; never infer the user's requested variants."""
+    if value is None:
+        return None
+    if output_format != "pptx" or not isinstance(value, list) or not 1 <= len(value) <= 3:
+        raise ValueError("Variants require one to three PPTX designs.")
+    labels, themes = set(), set()
+    result = []
+    for item in value:
+        if not isinstance(item, dict) or set(item) != {"label", "theme"}:
+            raise ValueError("Each variant must contain only label and theme.")
+        label, theme = item["label"], item["theme"]
+        if (not isinstance(label, str) or not label.strip() or len(label) > 80
+                or not isinstance(theme, str) or theme not in {"modern", "academic", "warm"}):
+            raise ValueError("A variant requires a label and a supported theme.")
+        label = sanitize_filename(label)
+        if label.casefold() in labels or theme in themes:
+            raise ValueError("Variant labels and designs must be distinct.")
+        labels.add(label.casefold()); themes.add(theme)
+        result.append({"label": label, "theme": theme})
+    return result
+
+
 class GenerateDocumentTool:
     """Detects the requested file format, has the Brain author the
     content (reusing the exact M17 drafting assembly), renders it into
@@ -175,7 +202,20 @@ class GenerateDocumentTool:
                     break
         output_format = proposed_format if proposed_format in _MEDIA_TYPES else infer_output_format(fallback_request, requested_output)
         document_type = _KIND_LABELS.get(output_format, "report")
+        try:
+            variants = validate_variants(kwargs.get("variants"), output_format)
+        except ValueError as error:
+            return {"status": "error", "message": str(error), "files": [], "created_count": 0}
         composition_request = f"{title}\n{request_text}" if title else request_text
+        if output_format == "pptx" and title:
+            composition_request += f"\nUse the supplied subject '{title}' in the first slide heading."
+        if variants:
+            composition_request += (
+                "\nRender instruction: write the actual presentation slides about the original "
+                "subject established in the request and conversation. The renderer will apply "
+                "the requested alternative visual designs to these slides. Do not write slides "
+                "describing design options, templates, or how to create a presentation."
+            )
 
         rules = load_institutional_rules()
         policy_rules = extract_drafting_rules(read_text_file(POLICY_PATH))
@@ -259,10 +299,61 @@ class GenerateDocumentTool:
                         "offline" if failure_reasons and all(reason == "offline" for reason in failure_reasons) else
                         "no_results"
                     )
-            content_bytes = self._render(
-                output_format, body, theme=theme, include_images=include_images,
+            designs = variants or [{"label": None, "theme": theme}]
+            rendered = [(design, self._render(
+                output_format, body, theme=design["theme"], include_images=include_images,
                 images=images,
-            )
+            )) for design in designs]
+            quality_review = {"status": "not_performed", "visual_review": "not_performed"}
+            if output_format == "pptx":
+                corrections = 0
+                review = {"status": "unavailable"}
+                for review_attempt in range(2):
+                    reports = [inspect_pptx_layout(content_bytes) for _, content_bytes in rendered]
+                    review_method = getattr(composer, "review_document", None)
+                    if review_method is None:
+                        break
+                    # All designs share authored text. Avoid sending duplicate
+                    # text to the Brain; retain each actual layout finding.
+                    render_evidence = {"extracted_text": reports[0]["extracted_text"],
+                        "variants": [{"theme": design["theme"], **{k: v for k, v in report.items()
+                                     if k != "extracted_text"}}
+                                     for (design, _), report in zip(rendered, reports)]}
+                    review = review_method(request_text=composition_request, body=body,
+                        render_evidence=render_evidence, evidence=evidence, principal=principal)
+                    if review.get("status") != "revised" or review_attempt == 1:
+                        break
+                    proposed_body = review.get("body")
+                    if not validate_drafted_document(proposed_body, brief)["valid"]:
+                        review = {"status": "invalid_revision"}
+                        break
+                    body = proposed_body
+                    corrections += 1
+                    rendered = [(design, self._render(output_format, body, theme=design["theme"],
+                        include_images=include_images, images=images)) for design in designs]
+                quality_review = {"status": "reviewed_estimated" if review.get("status") == "accepted" else "provisional",
+                    "brain_review": review.get("status"), "review_error_type": review.get("detail"), "correction_passes": corrections,
+                    "visual_review": "not_performed", "issues": review.get("issues", []),
+                    "layout_checks": [{"theme": design["theme"], "status": report["status"], "issues": report["issues"]}
+                                      for (design, _), report in zip(rendered, reports)]}
+                if any(report["issues"] for report in reports) or review.get("status") in {"revised", "invalid_revision"}:
+                    quality_review["status"] = "needs_repair"
+                    return {"status": "error", "message": "The generated presentation did not pass its bounded review; no files were published.",
+                            "quality_review": quality_review, "files": [], "created_count": 0}
+            embedded_images = []
+            rendered_slide_counts = []
+            if output_format == "pptx":
+                for _, content_bytes in rendered:
+                    with zipfile.ZipFile(io.BytesIO(content_bytes)) as package:
+                        rendered_slide_counts.append(sum(
+                            bool(re.fullmatch(r"ppt/slides/slide\d+\.xml", name))
+                            for name in package.namelist()))
+                        # Count actual picture placements, including reuse of
+                        # one media part on several slides; retrieval is not proof.
+                        embedded_images.append(sum(
+                            package.read(name).count(b"<p:pic>")
+                            for name in package.namelist()
+                            if re.fullmatch(r"ppt/slides/slide\d+\.xml", name)))
         except Exception as error:
             return {
                 "status": "error",
@@ -272,27 +363,38 @@ class GenerateDocumentTool:
 
         filename = _derive_filename(title or request_text, output_format)
 
+        records = []
         try:
-            record = self._file_store.save(
-                filename=filename,
-                content=content_bytes,
-                media_type=_MEDIA_TYPES.get(output_format, "application/octet-stream"),
-                session_id=session_id,
-            )
+            for design, content_bytes in rendered:
+                variant_filename = filename
+                if design["label"] is not None:
+                    variant_filename = sanitize_filename(
+                        f'{filename[:-len(output_format)-1]}_{design["label"]}.{output_format}'
+                    )
+                records.append(self._file_store.save(
+                    filename=variant_filename,
+                    content=content_bytes,
+                    media_type=_MEDIA_TYPES.get(output_format, "application/octet-stream"),
+                    session_id=session_id,
+                ))
         except FileValidationError as error:
             return {
                 "status": "error",
                 "message": "URI generated the document but could not store it.",
                 "error": str(error),
+                "files": [record.to_reference() for record in records],
+                "requested_count": len(rendered), "created_count": len(records),
+                "complete": False,
             }
 
         image_note = None
-        if output_format == "pptx" and include_images and not images:
+        images_added = min(embedded_images, default=0)
+        if output_format == "pptx" and include_images and images_added == 0:
             image_note = {
                 "offline": "Image search was unavailable, so the presentation was created without photos.",
                 "downloads_failed": "Licensed images were found, but their downloads failed; the presentation was created without photos.",
                 "no_results": "Image search found no usable licensed images; the presentation was created without photos.",
-            }.get(image_diagnostics.get("reason"), "Images could not be added; the presentation was created without photos.")
+            }.get(image_diagnostics.get("reason"), "Images could not be embedded; the presentation was created without photos.")
 
         return {
             # Propagates the composer's own honest status - "success"
@@ -301,13 +403,20 @@ class GenerateDocumentTool:
             # template was rendered instead. See docs/plans/
             # URI_NATIVE_TOOL_AUDIT.md Root Cause A.
             "status": result["status"],
-            "file": record.to_reference(),
+            "file": records[0].to_reference(),
+            "quality_review": quality_review,
+            **({"files": [record.to_reference() for record in records],
+                "variants": variants, "requested_count": len(variants),
+                "created_count": len(records), "complete": len(records) == len(variants)}
+               if variants else {}),
             "output_format": output_format,
             "composed_by": result["composed_by"],
             "detail": result.get("detail"),
             "preview": body[:500],
             "images_requested": include_images if output_format == "pptx" else False,
-            "images_added": len(images) if output_format == "pptx" else 0,
+            "images_added": images_added,
+            **({"slide_count": min(rendered_slide_counts), "slide_count_includes_image_credits": True}
+               if rendered_slide_counts else {}),
             "image_note": image_note,
             "image_queries_tried": image_queries_tried,
         }

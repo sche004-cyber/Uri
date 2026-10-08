@@ -68,6 +68,7 @@ class ActionResult {
     this.detail,
     this.sources = const <ResultSource>[],
     this.generatedFile,
+    this.generatedFiles = const <Attachment>[],
     this.draftText,
   });
 
@@ -91,6 +92,10 @@ class ActionResult {
   /// mechanism a user-attached file already uses. Null for every
   /// result that produced no file.
   final Attachment? generatedFile;
+  final List<Attachment> generatedFiles;
+
+  List<Attachment> get allGeneratedFiles =>
+      generatedFiles.isNotEmpty ? generatedFiles : [?generatedFile];
 }
 
 /// A tentative reference binding proposed by URI that the user can accept
@@ -268,7 +273,8 @@ class UriTurn {
     'serving_call_count': modelCallCount,
     'elapsed_seconds': elapsedSeconds,
     if (clarification != null) 'clarification': clarification!.toJson(),
-    if (tentativeBinding != null) 'tentative_binding': tentativeBinding!.toJson(),
+    if (tentativeBinding != null)
+      'tentative_binding': tentativeBinding!.toJson(),
     if (retryMessage != null) 'retry_message': retryMessage,
   };
 
@@ -278,8 +284,9 @@ class UriTurn {
       (value) => value.name == stageName,
     );
     final clarificationJson = json['clarification'] as Map<String, dynamic>?;
-    final tentativeBindingJson = (json['tentative_binding'] ??
-        json['tentative_choice']) as Map<String, dynamic>?;
+    final tentativeBindingJson =
+        (json['tentative_binding'] ?? json['tentative_choice'])
+            as Map<String, dynamic>?;
     return UriTurn(
       id: json['id'] as String? ?? json['turn_id'] as String? ?? '',
       userText: json['user_text'] as String? ?? '',
