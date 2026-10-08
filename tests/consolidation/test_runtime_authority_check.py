@@ -238,3 +238,52 @@ def test_secret_arguments_are_redacted_from_findings():
 def test_cmd_wrapped_legacy_task_is_still_recognised_as_transitional():
     t = {"name": r"\URIServer", "enabled": True, "action": r'cmd.exe /c ""C:\Users\cheta\Development\uri-agent\.venv\Scripts\python.exe" "C:\Users\cheta\Development\uri-agent\scripts\run_uri_server.py" --port 8000 >> "C:\Users\cheta\Development\uri-agent\uri_workspace\logs\uri_server.log" 2>&1"'}
     assert classes(verdict(snap(scheduled_tasks=[t]))) == ["TRANSITIONAL_LEGACY"]
+
+
+# --- regressions for the Codex adversarial review round 2 (2026-10-08, verdict REJECT) -----------------------------
+def test_chained_cmd_command_cannot_hide_a_second_server_behind_an_authorized_one():
+    for first in (f"python {RUNTIME}/scripts/run_uri_isolated_server.py",
+                  "python C:/Users/cheta/Development/uri-agent/scripts/run_uri_server.py"):
+        for sep in (" & ", " && ", " || ", " | ", " ; "):
+            action = f"cmd.exe /c {first}{sep}python D:/copies/uri-agent/scripts/run_uri_server.py --port 9191"
+            rep = verdict(snap(scheduled_tasks=[{"name": r"\Chained", "enabled": True, "action": action}]))
+            assert rep["verdict"] == "CONTAMINATED", (first, sep)
+
+
+def test_redirection_is_not_mistaken_for_a_command_separator():
+    action = r'cmd.exe /c ""C:\Users\cheta\Development\uri-agent\.venv\Scripts\python.exe" "C:\Users\cheta\Development\uri-agent\scripts\run_uri_server.py" >> "x.log" 2>&1"'
+    assert classes(verdict(snap(scheduled_tasks=[{"name": r"\URIServer", "enabled": True, "action": action}]))) == ["TRANSITIONAL_LEGACY"]
+
+
+def test_bearer_and_encoded_secrets_are_redacted():
+    import base64
+    assert "abc123xyz" not in rac.redact('curl -H "Authorization: Bearer abc123xyz" http://x')
+    enc = base64.b64encode("python run.py --api-key secret123456".encode("utf-16-le")).decode()
+    out = rac.redact(f"powershell -EncodedCommand {enc}")
+    assert enc not in out and "secret123456" not in out
+
+
+def test_shared_dependency_requires_its_exact_install_directory():
+    rep = verdict(snap(listeners=[listener(1234, r"C:\Tools\LM Studio Evil\server.exe --port 1234")]))
+    assert classes(rep) == ["UNACCOUNTED"] and rep["verdict"] == "CONTAMINATED"
+
+
+def test_powershell_command_and_encoded_forms_of_the_authorized_launcher_are_authorized():
+    import base64
+    script = f"{RUNTIME}/scripts/uri_server.ps1"
+    cmd = f"powershell.exe -NoProfile -Command \"& '{script}' -Manifest m.json\""
+    assert rac.classify(cmd, M)[0] == "AUTHORIZED"
+    enc = base64.b64encode(f"& '{script}' -Manifest m.json".encode("utf-16-le")).decode()
+    assert rac.classify(f"powershell.exe -EncodedCommand {enc}", M)[0] == "AUTHORIZED"
+
+
+def test_relative_entrypoint_is_resolved_against_the_working_directory():
+    cmd = r"python scripts\run_uri_isolated_server.py [wd=C:\Users\cheta\Development\uri-canonical-runtime-candidate]"
+    assert rac.classify(cmd, M)[0] == "AUTHORIZED"
+    cmd2 = r"python scripts\run_uri_server.py [wd=C:\Users\cheta\Development\uri-canonical-runtime-candidate]"
+    assert rac.classify(cmd2, M)[0] == "UNACCOUNTED"
+
+
+def test_extended_length_prefix_does_not_change_classification():
+    cmd = r"python \\?\C:\Users\cheta\Development\uri-agent\scripts\run_uri_server.py --port 8000"
+    assert rac.classify(cmd, M)[0] == "TRANSITIONAL_LEGACY"

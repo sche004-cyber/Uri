@@ -122,29 +122,65 @@ def _root_for(text: str, roots: list[dict]) -> dict | None:
 
 
 CLS = {"ACTIVE_AUTHORITATIVE": "AUTHORIZED", "PRESERVED_DONOR_ONLY": "DONOR_ONLY", "QUARANTINED_UNTRUSTED": "QUARANTINED"}
-TOKEN = re.compile(r'"([^"]*)"|(\S+)')
+# Worst first: when one command line contains several launches, the most severe classification wins.
+RANK = {"QUARANTINED": 6, "DONOR_ONLY": 5, "UNACCOUNTED": 4, "TRANSITIONAL_LEGACY": 3, "SHARED_DEPENDENCY": 2, "AUTHORIZED": 1}
+TOKEN = re.compile(r'"([^"]*)"|\'([^\']*)\'|(\S+)')
 INTERPRETERS = {"python.exe", "pythonw.exe", "python", "pythonw", "py.exe", "py", "python3.exe", "python3"}
 SHELLS = {"powershell.exe", "powershell", "pwsh.exe", "pwsh"}
 SECRET_ARG = re.compile(r"(?i)((?:--?|/)?(?:api[-_]?key|access[-_]?token|refresh[-_]?token|token|secret|password|passwd|pwd|"
-                        r"client[-_]?secret|bearer|authorization)\s*[=: ]\s*)(\"[^\"]*\"|'[^']*'|\S+)")
+                        r"client[-_]?secret|authorization)\s*[=: ]\s*)(?:bearer\s+|basic\s+)?(\"[^\"]*\"|'[^']*'|\S+)")
+BEARER = re.compile(r"(?i)\b(bearer|basic)\s+[A-Za-z0-9._~+/=-]{6,}")
+ENCODED = re.compile(r"(?i)(-(?:encodedcommand|enc|ec|e)\s+)([A-Za-z0-9+/=]{8,})")
 
 
 def redact(text: str) -> str:
-    """Remove secret-looking argument values before anything is stored or printed."""
-    return SECRET_ARG.sub(lambda m: m.group(1) + "<redacted>", text or "")
+    """Remove secret-looking values before anything is stored or printed. Encoded PowerShell payloads are replaced
+    by their decoded, redacted text so nothing recoverable remains."""
+    import base64
+
+    def enc(m):
+        try:
+            decoded = base64.b64decode(m.group(2)).decode("utf-16-le", errors="replace")
+        except (ValueError, TypeError):
+            decoded = "<undecodable>"
+        return m.group(1) + "<encoded; decoded: " + _redact_plain(decoded).replace(">", ")") + ">"
+    return _redact_plain(ENCODED.sub(enc, text or ""))
+
+
+def _redact_plain(text: str) -> str:
+    text = BEARER.sub(lambda m: m.group(1) + " <redacted>", text)
+    return SECRET_ARG.sub(lambda m: m.group(1) + "<redacted>", text)
 
 
 PATH_WITH_SPACES = re.compile(r"^\s*([A-Za-z]:[\\/][^\"]*?\.(?:exe|bat|cmd|ps1|py|pyw|lnk))(?=\s|$)", re.I)
+WD = re.compile(r"\s*\[wd=([^\]]*)\]\s*$")
+# Unquoted command separators for cmd.exe and PowerShell: & && | || ; and newlines. '>&' / '<&' are redirections.
+SEPARATORS = re.compile(r"(?<![<>0-9])&&|(?<![<>0-9])&(?![0-9])|\|\||\||;|\r?\n")
+
+
+def _split_commands(text: str) -> list[str]:
+    out, buf, q = [], [], None
+    i = 0
+    while i < len(text):
+        c = text[i]
+        if c in "\"'":
+            q = None if q == c else (c if q is None else q)
+        if q is None:
+            m = SEPARATORS.match(text, i)
+            if m and m.group(0):
+                out.append("".join(buf)); buf = []; i = m.end(); continue
+        buf.append(c); i += 1
+    out.append("".join(buf))
+    return [x.strip() for x in out if x.strip()]
 
 
 def _tokens(text: str) -> list[str]:
-    text = re.sub(r"\s*\[wd=[^\]]*\]\s*$", "", text or "")
     text = text.replace('""', '"')  # cmd.exe /c ""a" "b"" quoting
     head = []
     m = PATH_WITH_SPACES.match(text)
     if m and not text.lstrip().startswith('"'):
         head, text = [m.group(1)], text[m.end():]  # unquoted executable path that contains spaces
-    return head + [a if a else b for a, b in TOKEN.findall(text) if (a or b)]
+    return head + [a or b or c for a, b, c in TOKEN.findall(text) if (a or b or c)]
 
 
 def _decode_encoded_command(tokens: list[str]) -> str | None:
@@ -158,29 +194,63 @@ def _decode_encoded_command(tokens: list[str]) -> str | None:
     return None
 
 
-def launch_target(text: str, depth: int = 0) -> tuple[str, str]:
-    """(executable, target) of a command line. The target is what actually runs: the script for an interpreter,
-    the -File script for PowerShell, the inner command for cmd /c, the module for python -m, else the executable.
-    Classification uses the TARGET, so a path mentioned as a mere argument can never authorize a command."""
+def _absolute(path: str, wd: str) -> str:
+    p = path.strip()
+    if p.startswith("\\\\?\\"):
+        p = p[4:]
+    if wd and not re.match(r"^([A-Za-z]:|[\\/])", p) and not p.startswith(("module:", "inline-code", "encoded:")):
+        p = wd.rstrip("\\/") + "/" + p
+    return p
+
+
+def launch_targets(text: str, depth: int = 0) -> list[tuple[str, str]]:
+    """Every (executable, target) launched by a command line. The target is what actually runs: the script for an
+    interpreter, the -File script or -Command program for PowerShell, each chained command for cmd /c, the module for
+    python -m, else the executable. Relative targets are resolved against a trailing [wd=...]."""
+    text = text or ""
+    wdm = WD.search(text)
+    wd = wdm.group(1).strip() if wdm else ""
+    text = WD.sub("", text)
+    results = []
+    for part in _split_commands(text) or [""]:
+        for exe, target in _launch_one(part, depth):
+            results.append((_absolute(exe, wd), _absolute(target, wd)))
+    return results or [("", "")]
+
+
+def _launch_one(text: str, depth: int) -> list[tuple[str, str]]:
     toks = _tokens(text)
     if not toks:
-        return "", ""
+        return []
+    if toks[0] == "&" and len(toks) > 1:  # PowerShell call operator
+        toks = toks[1:]
     exe = toks[0]
     base = exe.replace("\\", "/").rsplit("/", 1)[-1].lower()
     rest = toks[1:]
-    if depth < 3 and base in ("cmd.exe", "cmd") :
+    if depth < 4 and base in ("cmd.exe", "cmd"):
         for i, tk in enumerate(rest):
             if tk.lower() in ("/c", "/k"):
-                inner = " ".join(f'"{x}"' if " " in x else x for x in rest[i + 1:])
-                return launch_target(inner, depth + 1)
+                inner = (text.split(tk, 1)[1] if tk in text else " ".join(rest[i + 1:])).strip()
+                if inner.startswith('""') and inner.endswith('"'):
+                    inner = inner[1:-1]  # cmd /c ""prog" args" -> "prog" args
+                return launch_targets(inner, depth + 1)
+        return [(exe, exe)]
     if base in SHELLS:
         decoded = _decode_encoded_command(rest)
         if decoded is not None:
-            return exe, "encoded:" + decoded if depth >= 3 else launch_target(decoded, depth + 1)[1] or "encoded:" + decoded
+            return launch_targets(decoded, depth + 1) if depth < 4 else [(exe, "encoded:" + decoded)]
         for i, tk in enumerate(rest):
-            if tk.lower() in ("-file", "-f") and i + 1 < len(rest):
-                return exe, rest[i + 1]
-        return exe, " ".join(rest) or exe
+            low = tk.lower()
+            if low in ("-file", "-f") and i + 1 < len(rest):
+                return [(exe, rest[i + 1])]
+            if low in ("-command", "-c") and i + 1 < len(rest):
+                cmd = text[text.lower().index(low) + len(low):] if low in text.lower() else " ".join(rest[i + 1:])
+                cmd = cmd.strip()
+                if len(cmd) >= 2 and cmd[0] == cmd[-1] and cmd[0] in "\"'":
+                    cmd = cmd[1:-1]
+                return launch_targets(cmd, depth + 1) if depth < 4 else [(exe, cmd)]
+        positional = [t for t in rest if not t.startswith("-")]
+        return [(exe, positional[0])] if positional else [(exe, exe)]
     if base in INTERPRETERS or base.startswith("python"):
         skip_next = False
         for i, tk in enumerate(rest):
@@ -188,15 +258,20 @@ def launch_target(text: str, depth: int = 0) -> tuple[str, str]:
                 skip_next = False
                 continue
             if tk == "-m" and i + 1 < len(rest):
-                return exe, "module:" + rest[i + 1]
-            if tk in ("-c",):
-                return exe, "inline-code"
+                return [(exe, "module:" + rest[i + 1])]
+            if tk == "-c":
+                return [(exe, "inline-code")]
             if tk.startswith("-"):
                 skip_next = tk in ("-W", "-X")
                 continue
-            return exe, tk
-        return exe, exe
-    return exe, exe
+            return [(exe, tk)]
+        return [(exe, exe)]
+    return [(exe, exe)]
+
+
+def launch_target(text: str) -> tuple[str, str]:
+    """First launched (executable, target); kept for callers that need one."""
+    return launch_targets(text)[0]
 
 
 def _root_containing(path: str, roots: list[dict]) -> dict | None:
@@ -210,13 +285,12 @@ def _root_containing(path: str, roots: list[dict]) -> dict | None:
     return best
 
 
-def classify(text: str, manifest: dict) -> tuple[str, str]:
+def _classify_one(exe: str, target: str, text: str, manifest: dict) -> tuple[str, str]:
     roots = manifest["roots"]
-    exe, target = launch_target(text)
     t_target = norm(target)
     target_root = _root_containing(target, roots) or (_root_containing(exe, roots) if target.startswith(("module:", "inline-code")) else None)
-    # Any donor/quarantined root referenced ANYWHERE (state dir, model, argument) that does not contain the target
-    # is a contamination signal of its own: an authorized or legacy prefix can never launder it.
+    # Any donor/quarantined root referenced ANYWHERE in the command (state dir, model, argument) that does not contain
+    # the target is a contamination signal of its own: an authorized or legacy prefix can never launder it.
     other = _root_for(text, [r for r in roots if r is not target_root and r["classification"] != "ACTIVE_AUTHORITATIVE"])
     for legacy in manifest["transitional_legacy"]:
         if t_target == norm(legacy["match"]):
@@ -235,9 +309,16 @@ def classify(text: str, manifest: dict) -> tuple[str, str]:
     if other is not None:
         return CLS[other["classification"]], other["id"] + " (referenced as an argument)"
     for dep in manifest["shared_dependencies"]:
-        if norm(dep["match"]) in t_target and URI_HINT.search(text) is None:
+        dp = norm(dep["path"])
+        if (t_target == dp or t_target.startswith(dp + "/")) and URI_HINT.search(text) is None:
             return "SHARED_DEPENDENCY", dep["id"]
     return "UNACCOUNTED", "no manifest entry"
+
+
+def classify(text: str, manifest: dict) -> tuple[str, str]:
+    """Classify every launch in the command line; the most severe result wins (chained commands cannot hide)."""
+    results = [_classify_one(exe, target, text, manifest) for exe, target in launch_targets(text)]
+    return max(results, key=lambda r: RANK[r[0]])
 
 
 def _is_python_like(cmd: str) -> bool:

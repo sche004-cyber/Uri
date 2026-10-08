@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **34 passed** (25 original + 9 after the Codex review). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **41 passed** (25 original + 9 after Codex round 1 + 7 after round 2). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -91,6 +91,23 @@ Round 1 (2026-10-08): **REJECT.** Findings, each confirmed by me against the cod
 Repairs are covered by 9 new tests (34 total, all passing). A negative control ran the new tests against the
 pre-repair checker: 8 failed there, which proves they test the repaired behaviour. The ninth test, for the
 `cmd /c`-wrapped legacy task, guards against regression. Round 2 result: see §2b.
+
+## 2b. Codex review round 2: REJECT, then repaired
+
+Round 2 confirmed X-1, X-3, X-4, X-6 and X-8 repaired and X-5 accepted as a limitation. It reported these new gaps,
+each confirmed before repair:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| Y-1 | High | `cmd /c A & B` (also `&&`, `||`, `|`, `;`) classified only A, so an authorized or legacy first command hid a second server | Every chained command is parsed and classified. The most severe result wins (QUARANTINED > DONOR > UNACCOUNTED > TRANSITIONAL > SHARED > AUTHORIZED). Redirections such as `2>&1` are not treated as separators |
+| Y-2 | Med | `Authorization: Bearer x` and secrets inside `-EncodedCommand` payloads survived redaction | Bearer/Basic values are redacted. Encoded payloads are replaced by their decoded, redacted text |
+| Y-3 | Med | Shared dependencies matched by substring (`C:\Tools\LM Studio Evil\server.exe`) | Shared dependencies are exact install directories with path-boundary matching |
+| Y-4 | Med | PowerShell `-Command "& 'script'"` and its encoded form were not recognised as the authorized launcher | `-Command` content and decoded payloads are parsed as commands (call operator `&` handled) |
+| Y-5 | Low | Relative targets with `[wd=...]` and `\\?\` paths misclassified (fail-closed) | Resolved against the working directory; `\\?\` stripped. UNC admin-share and 8.3 short-name forms remain fail-closed (reported UNACCOUNTED), which is safe but can over-report |
+
+7 new tests (41 total, all passing). Negative control: 6 of them fail on the round-1 checker. The seventh, a
+redirection guard, passes on both. Live run after the repair matched the earlier live run: normal mode found 0
+contamination, and strict mode found 6 active transitional findings. Round 3 result: see §2c.
 
 ## 3. Integrity and recoverability
 
