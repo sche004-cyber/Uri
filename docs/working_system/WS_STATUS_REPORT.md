@@ -7,19 +7,32 @@ ids, hashes and receipts in `WS_INTEGRATION_RECEIPT.md`.
 **Verdict.** URI runs as one coordinated application on this PC, in the materialized development runtime. The real
 Flutter Living Companion drives the real integrated worker. That worker reaches real Core (Intent Discovery,
 approval, signed ticket, client execution, independent verification) and real Runtime v1, which is the default Brain.
-Every journey in the mandate was demonstrated live: from the real Flutter UI (automated widget-level driving of the
-real app tree and the built Windows app) and from the real worker:
-- normal response;
-- reasoning;
-- supervised action (approve and deny);
-- refusal;
-- cancellation;
-- restart (worker and Brain);
-- unavailable runtime.
-
-The candidate passed the accepted regression chain and was accepted with findings by the independent Codex review.
 It is **not production**: there is no cutover, the live PC still runs the legacy `\URIServer`, and no shortcut was
 changed. Remaining gaps are listed in §4.
+
+**Evidence boundaries.** Each claim below names the surface it was shown on.
+- **Worker** means a scripted driver of the real integrated worker (`tests/ws/test_ws_worker_live.py`).
+- **UI-widget** means the real Living widgets, driven in the Flutter test harness against the real worker
+  (`uri_ui/test/ws_live`).
+- **App** means the built Windows executable, driven by keyboard and mouse and captured
+  (`tools/capture_ws.ps1`, screenshots).
+
+The independent Codex review accepted the code at `fcfed5c` (round 4). Round 5 reviewed the later diff and the
+reports: candidate ACCEPT WITH FINDINGS; its report findings are repaired in this version. The combined regression
+chain and the live runtime used the tree materialized from `abe2f9b`. Changes made after `abe2f9b` are listed in
+`WS_INTEGRATION_RECEIPT.md` §1: the identity tool's error path, the launcher default root, the capture tool's
+attach checks, and stricter live-test assertions. None of them is in a Phase 1/2 test scope. The A and G labels
+below refer to those commits.
+
+| Journey (mandate) | Worker | UI-widget | App |
+|---|---|---|---|
+| Normal response | yes | yes | yes (02) |
+| Reasoning | yes | yes | yes (03, 04) |
+| Supervised action, approve / deny | yes / yes | yes / yes | approve (05, 06) |
+| Refusal | `REFUSED_UNSUPPORTED` (fresh session) | no card, nothing executed; Core asked about the just-denied intent (`INTENT_CONFIRMED_NOT_EXECUTED`) | not captured |
+| Cancellation | yes | yes (Stop pressed while streaming, asserted) | Stop button visible while thinking (03); press not captured |
+| Restart | worker restart: memory kept | worker restart: memory kept | Brain stop and restart in one PID-verified app process (07a, 07, 08) |
+| Unavailable runtime | yes | yes | yes (07) |
 
 ## 1. What each item has reached
 
@@ -35,9 +48,9 @@ gate passed) · **M** still mocked or simulated
 | Reasoning tier (Fast/Thinking chip, progress count, no reasoning text) | I T L A G | live: NORMAL tier, 3,040 reasoning characters counted and not shown, 120-131 tok/s; screenshots 03, 04 |
 | Supervised action: approve → `SETTLED_VERIFIED`; deny → `APPROVAL_DENIED`, nothing changed | I T L A G | live through the **Runtime v1 row** (Brain READY) and through the explicit deterministic row (Brain stopped); screenshots 05, 06 |
 | Typed text never approves; approval bound to the card's digest; forged digest refused | I T L A G | unit tests; live `forged_digest` journey → `APPROVAL_DIGEST_MISMATCH`, memory unchanged |
-| Refusal (destructive request with no qualified capability) | I T L A G | live: `REFUSED_UNSUPPORTED` (fresh session) / `INTENT_CONFIRMED_NOT_EXECUTED` (session holding a just-denied intent); no approval card in either case |
+| Refusal (destructive request with no qualified capability) | I T L A G | worker: `REFUSED_UNSUPPORTED` in a fresh session. UI-widget: in a session holding a just-denied intent Core returned `INTENT_CONFIRMED_NOT_EXECUTED`; asserted no card and memory unchanged |
 | Unavailable runtime | I T L A G | live: `BRAIN_UNAVAILABLE` and nothing sent to a model; Brain status shows STOPPED; screenshot 07 |
-| Restart: worker and Brain | I T L G | worker: a fresh process over the same client root kept memory. Brain: Runtime v1 stopped under the open app, which then refused honestly; restarted (READY in 92 s), and the same window answered again; screenshots 07, 08 |
+| Restart: worker and Brain | I T L G | worker: a fresh process over the same client root kept memory. Brain (app, PID 11272, provenance in `screenshots/capture_run_11272_*.json`): 111 tok/s, then stopped and refused honestly, then restarted after a 60 s VRAM-release wait and answered at 117 tok/s; screenshots 07a, 07, 08 |
 | Memory: remember (approval-gated) and list (deterministic client read) | I T L A G | live; Settings panel (screenshot 09) |
 | Readiness and performance indicators | I T L A G | Brain state, model id, artifact match, and per-answer first-token time and tok/s shown live. **Degradation (OI-PERF-1) is not surfaced**: see PERF-W1 |
 | Runtime v1 as the default Brain; explicit selection; no fallback | I T L A G | catalog live (screenshot 09); deterministic row only by explicit choice; other local models NOT_QUALIFIED |
@@ -82,7 +95,7 @@ gate passed) · **M** still mocked or simulated
 | ID | Item | Affects |
 |---|---|---|
 | GPU-1 | Another session's benchmarks shared the GPU. Two concurrent 13.7 GB loads stalled both (`LOCAL_BRAIN_START_TIMEOUT`); I stopped my host and, on your instruction, waited for the GPU to be free. The OI start lock is per state directory, so it does not serialize starts across trees or other tools. A machine-wide GPU-use policy is still an owner decision (OI readiness §4) | GPU residency predictability |
-| PERF-W1 | After a Brain restart, Runtime v1 ran at **27 tok/s** (first start: 124). This matches the VRAM-block-demotion state documented by the Adaptive Runtime research (restart before the previous VRAM was released). The integrated worker has no OI `PerfMonitor`, so the UI shows the speed but no DEGRADED state or recovery option | responsiveness after restart |
+| PERF-W1 | An immediate Brain restart gave **27 tok/s** (first start: 124). After a 60 s wait it gave 117 tok/s. This matches the VRAM-block-demotion state documented by the Adaptive Runtime research. The integrated worker has no OI `PerfMonitor`, so the UI shows the speed but no DEGRADED state or recovery option | responsiveness after restart |
 | L-MD | Answer markdown renders as plain text (`**`) | readability |
 | OI-SEC-1 | Runtime v1 has no API key and CORS `*` (frozen argv). Accepted as a recorded limitation (WS-D2) | local exposure |
 | R-BUSY | The UI stays busy if the worker stays alive but never replies and never finishes a turn. A worker exit clears it. There is no in-app recovery control yet (Codex r4 residual) | responsiveness |

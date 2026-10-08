@@ -18,9 +18,14 @@ Date: 2026-10-08/09. Recorded by Claude, from the primary evidence listed below.
 | Code reviewed by Codex r4 | `fcfed5c` |
 | Final chain and live runtime materialized from | `abe2f9b1e8a69e411c48f6b91e86e249b3cd8949` |
 
-The only code change after `abe2f9b` that reaches the runtime is `cfe4e88` (`scripts/ws_server_identity.py`, error
-path). It was copied into `uri-ws-final` by hand; its SHA-256 prefix `2509ca4ad6ea6ef1` equals the committed file.
-It is outside every Phase 1/2 test scope.
+Changes after `abe2f9b` (none is in a Phase 1/2 test scope; Codex round 5 reviewed them):
+- `cfe4e88` `scripts/ws_server_identity.py` error path. It reaches the runtime: copied into `uri-ws-final` by hand,
+  and its SHA-256 prefix `2509ca4ad6ea6ef1` equals the committed file.
+- `fc30e9e` launcher default `-RuntimeRoot` changed from `uri-ws-rt` to `uri-ws-final` (behavioral). The committed
+  self-test (`evidence/launcher_selftest.json`) ran against `uri-ws-final` after this change.
+- Round-5 repairs: `tools/capture_ws.ps1` `-Attach` now requires `-AttachPid`, verifies the executable and writes
+  `capture_run_<pid>_*.json`; `ws_ui_live_test.dart` asserts that Stop is pressed while the turn is unfinished, and
+  asserts the refusal code and unchanged memory. Rerun with Runtime v1 READY: passed (`evidence/ui_live_brain_ready.json`).
 
 ## 2. Frozen and accepted boundaries
 
@@ -45,7 +50,7 @@ It is outside every Phase 1/2 test scope.
 | Live UI, Brain READY (`evidence/ui_live_brain_ready.json`) | `uri-ws-final` | passed |
 | Live worker / UI, Brain stopped (`worker_live_20261008-232829.json`, `ui_live_brain_stopped.json`) | `uri-ws-final` | passed |
 | Launcher self-test (`evidence/launcher_selftest.json`) | `uri-ws-final` | exit 0: real installation ok; legacy root, foreign UI and port 8000 refused; listener identity proven; wrong-key proof refused |
-| Real-app captures | built Windows app over `uri-ws-final` | `screenshots/01..10` |
+| Real-app captures | built Windows app over `uri-ws-final` | `screenshots/01..10`, `07a`; the restart sequence 07a/07/08 comes from one PID-verified process (`capture_run_11272_*.json`) |
 
 Accepted-chain steps not run: flutter (covered by the full Flutter run above), bridge and native (no change to
 those packages; native needs a client-profile Codex login, PA-8/9).
@@ -58,6 +63,7 @@ those packages; native needs a client-profile Codex login, PA-8/9).
 | 2 | `56c58b1` | REJECT | F3/F4 FIXED; F1/F2/F5 partial; new MEDIUM (late original `turn.finished`), LOW (self-test missed the signature check) → repaired in `6bed5a3` |
 | 3 | `6bed5a3` | ACCEPT WITH FINDINGS | all prior items FIXED; F2 residual accepted as a recorded limitation; new MEDIUM (timeout treated as not started) → repaired in `fcfed5c` |
 | 4 | `fcfed5c` | **ACCEPT WITH FINDINGS** | MEDIUM FIXED; residual R-BUSY recorded; coverage note → tests in `abe2f9b` |
+| 5 | `154b952` (diff after `fcfed5c` + reports) | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | report boundaries overclaimed (review and chain commits); unverified `-Attach` capture provenance; UI refusal journey overstated; cancel-probe assertion; launcher default omitted → all repaired in the commit after `154b952` (attach captures 07a/07/08 retaken with PID verification) |
 
 Every Codex finding was checked against source before repair. Codex could not run tests in its sandbox; its verdicts
 rest on source inspection. The test results above come from this session's own runs.

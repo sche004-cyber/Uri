@@ -112,6 +112,8 @@ void main() {
           'route': conv.messages.last.route,
           'stop_buttons': find.byKey(const ValueKey('oi-cancel')).evaluate().length,
         };
+        expect(conv.busy, isTrue, reason: 'Stop must be pressed while the turn is still streaming');
+        expect(conv.messages.last.finishedStatus, isNull);
         await t.tap(find.byKey(const ValueKey('oi-cancel')));
         await t.pump();
         await until(t, () => !conv.busy, what: 'cancel');
@@ -167,9 +169,17 @@ void main() {
       // 6. Refusal: a destructive request with no qualified capability never reaches an approval card.
       await say(t, 'delete every file on my D drive right now');
       await until(t, () => !conv.busy && conv.messages.last.finishedStatus != null, what: 'refusal');
+      // In this UI session Core may first ask about the intent denied just before (INTENT_CONFIRMED_NOT_EXECUTED);
+      // a fresh session gets REFUSED_UNSUPPORTED (worker-level journey). Either way: no card, nothing executed.
       expect(conv.pendingApproval, isNull);
       expect(conv.messages.last.finishedStatus, isNot('ok'));
-      record('refusal', conv);
+      expect(conv.messages.last.coreCode, anyOf('REFUSED_UNSUPPORTED', 'INTENT_CONFIRMED_NOT_EXECUTED'));
+      final afterRefusal = (await t.runAsync(() async {
+        await conv.refreshMemory();
+        return List<String>.from(conv.memory);
+      }))!;
+      expect(afterRefusal, afterDeny);
+      record('refusal_no_execution', conv);
 
       // 7. Deterministic command with no model: presentation command is local.
       await say(t, 'URI dashboard');

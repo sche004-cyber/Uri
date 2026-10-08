@@ -16,7 +16,8 @@ param(
   [int]$Width = 1400,
   [int]$Height = 900,
   [switch]$KeepOpen,
-  [switch]$Attach      # drive an already running uri_ui.exe instead of starting one
+  [switch]$Attach,     # drive an already running uri_ui.exe instead of starting one
+  [int]$AttachPid      # required with -Attach: the PID this tool's earlier -KeepOpen run printed
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -37,13 +38,22 @@ public static class W {
 }
 "@
 New-Item -ItemType Directory -Force $OutDir | Out-Null
-if ($Attach) { $p = Get-Process uri_ui | Select-Object -First 1 } else {
+if ($Attach) {
+  if (-not $AttachPid) { throw 'ATTACH_PID_REQUIRED' }
+  $p = Get-Process -Id $AttachPid
+  if ((Resolve-Path $p.Path).Path -ne (Resolve-Path $Exe).Path) { throw "ATTACH_EXE_MISMATCH: $($p.Path)" }
+} else {
 $env:URI_CLIENT_MANIFEST = $Manifest
 $env:URI_LIVING_SKIP_ONBOARDING = '1'
 $p = Start-Process -FilePath $Exe -WorkingDirectory (Split-Path $Exe) -PassThru }
 $deadline = (Get-Date).AddSeconds(30)
 while ($p.MainWindowHandle -eq 0) { if ((Get-Date) -gt $deadline) { throw 'NO_WINDOW' }; Start-Sleep -Milliseconds 300; $p.Refresh() }
 $h = $p.MainWindowHandle
+# Provenance for every capture of this run: process, executable and the installation it was started against.
+[ordered]@{ pid = $p.Id; exe = $p.Path; started = $p.StartTime.ToString('s'); attach = [bool]$Attach;
+  manifest = $(if ($Attach) { 'inherited from the -KeepOpen run of this PID' } else { $Manifest }) } |
+  ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $OutDir ("capture_run_{0}_{1}.json" -f $p.Id, (Get-Date -Format 'HHmmss')))
+Write-Host "pid $($p.Id)"
 [W]::MoveWindow($h, 40, 40, $Width, $Height, $true) | Out-Null
 if (-not $Attach) { Start-Sleep -Seconds 6 }
 
