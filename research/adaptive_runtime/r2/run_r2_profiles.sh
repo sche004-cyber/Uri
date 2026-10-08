@@ -12,7 +12,7 @@ WHICH=${1:-all}
 export URI_BENCH_IDLE_CEILING_MIB=3500
 mkdir -p evidence/r2_watch
 vram() { powershell -NoProfile -Command "[int64](((Get-Counter '\GPU Adapter Memory(*)\Dedicated Usage').CounterSamples | Measure-Object -Property CookedValue -Maximum).Maximum/1MB)"; }
-guard() { $PY r2/gpu_guard.py --min-mib 1500 --allow ollama --timeout -1 --interval 20 --quiet-s "${1:-0}" --block-cmd uri_operational_intelligence.host --json; }
+guard() { $PY r2/gpu_guard.py --min-mib 1500 --allow ollama --timeout -1 --interval 20 --quiet-s "${1:-0}" --block-cmd uri_operational_intelligence.host --max-cpu 30 --json; }
 consumer_on() { curl -s -o /dev/null -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: application/json" -d '{"model":"qwen3.5:0.8b","prompt":"Say OK.","stream":false,"keep_alive":"180m","options":{"num_predict":4,"num_ctx":4096}}'; sleep 3; curl -s http://127.0.0.1:11434/api/ps | head -c 200; echo; }
 consumer_check() { curl -s http://127.0.0.1:11434/api/ps | grep -q '"size_vram"' || { echo "consumer dropped; reloading"; consumer_on; }; }
 consumer_off() { curl -s -o /dev/null -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: application/json" -d '{"model":"qwen3.5:0.8b","keep_alive":0}'; sleep 5; }
@@ -36,7 +36,9 @@ one() {   # name args...
   local n=$1; shift
   guard 0 > /dev/null
   echo "=== $n $(date -u +%H:%M:%SZ) VRAM before $(vram) MiB"
-  $PY r2/residency_watchdog.py --port 18497 --seconds 900 --interval 5 --expected-tps 110 --out "evidence/r2_watch/$n" --stop-when-gone > "evidence/r2_watch/$n.console.txt" 2>&1 &
+  local HV=872 ET=110
+  case "$n" in *no_mtp*) HV=498; ET=100 ;; *vision_cpu*) HV=900 ;; esac
+  $PY r2/residency_watchdog.py --port 18497 --seconds 900 --interval 5 --expected-tps $ET --host-visible-mib $HV --out "evidence/r2_watch/$n" --stop-when-gone > "evidence/r2_watch/$n.console.txt" 2>&1 &
   local WD=$!
   $PY bench_runtime.py --name "$n" --binary-dir "$B11425" --model-dir "$MD" "$@" \
     --skip cancel,stability --sizes 1000,8000,30000 --decode-rounds 3 --decision-rounds 4 2>&1 | grep -E "healthy after|FATAL|wrote"
@@ -64,16 +66,16 @@ if [ "$WHICH" = all ] || [ "$WHICH" = pressure ]; then
   echo "=== pressure phase; VRAM $(vram) MiB $(date -u +%H:%M:%SZ)"
   for i in 1 2 3; do
     consumer_check
-    one "r2V_vision_cpu_no_mtp_r$i" --extra=--no-mmproj-offload --no-mtp
+    one "${PFX:-r2V}_vision_cpu_no_mtp_r$i" --extra=--no-mmproj-offload --no-mtp
   done
   for i in 1 2; do
     consumer_check
-    one "r2V_vision_cpu_r$i" --extra=--no-mmproj-offload
+    one "${PFX:-r2V}_vision_cpu_r$i" --extra=--no-mmproj-offload
     consumer_check
-    one "r2V_no_mtp_r$i" --no-mtp
+    one "${PFX:-r2V}_no_mtp_r$i" --no-mtp
   done
   consumer_check
-  one "r2V_vision_cpu_no_mtp_sub128_r1" --extra=--no-mmproj-offload --no-mtp $S128
+  one "${PFX:-r2V}_vision_cpu_no_mtp_sub128_r1" --extra=--no-mmproj-offload --no-mtp $S128
   consumer_off
 fi
 echo "=== R2PROFILES_DONE $(date -u +%H:%M:%SZ) VRAM $(vram) MiB"

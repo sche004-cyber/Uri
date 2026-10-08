@@ -1,0 +1,13 @@
+ts,t,local_mib,nonlocal_mib,adapter_mib,demoted_mib,tokens_total,window_tokens,window_tps,requests_processing,residency,throughput,state,source
+2026-10-09T00:40:31,0.0,4816,0,6868,0,,,,,resident,unknown,OK,passive
+2026-10-09T00:40:39,7.4,13365,403,15418,0,,,,,resident,unknown,OK,passive
+2026-10-09T00:40:46,14.9,14042,2387,16094,1515,,,,,partially_demoted,unknown,AT_RISK,passive
+2026-10-09T00:40:54,22.4,14145,2784,16198,1912,4.0,,,1.0,partially_demoted,unknown,AT_RISK,passive
+2026-10-09T00:41:01,29.8,14176,2790,16228,1918,170.0,166.0,93.78,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:41:08,37.1,14200,2790,16252,1918,170.0,0.0,,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:41:16,44.5,14220,2790,16272,1918,170.0,0.0,,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:41:23,51.8,14174,2846,16226,1974,170.0,0.0,,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:41:30,59.1,14175,2872,16227,2000,258.0,88.0,71.08,1.0,partially_demoted,slow_but_above_threshold,AT_RISK,passive
+2026-10-09T00:41:38,66.4,14175,2872,16230,2000,770.0,512.0,92.15,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:41:45,73.8,14175,2872,16227,2000,1426.0,656.0,96.81,0.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:41:52,81.2,14177,2872,16229,2000,1468.0,42.0,113.54,0.0,partially_demoted,healthy,AT_RISK,passive

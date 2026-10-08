@@ -1,0 +1,7 @@
+[watchdog] {'ts': '2026-10-09T01:40:49', 't': 8.4, 'event': 'residency', 'frm': 'unknown', 'to': 'resident', 'demoted_mib': 0}
+[watchdog] {'ts': '2026-10-09T01:41:14', 't': 34.1, 'event': 'residency', 'frm': 'resident', 'to': 'partially_demoted', 'demoted_mib': 482}
+[watchdog] {'ts': '2026-10-09T01:41:14', 't': 34.1, 'event': 'state', 'frm': 'OK', 'to': 'AT_RISK', 'demoted_mib': 482, 'window_tps': None}
+[watchdog] {'ts': '2026-10-09T01:41:39', 't': 58.9, 'event': 'throughput', 'frm': 'unknown', 'to': 'suspect', 'window_tps': 56.1}
+[watchdog] {'ts': '2026-10-09T01:42:02', 't': 81.7, 'event': 'throughput', 'frm': 'suspect', 'to': 'degraded', 'window_tps': 61.0}
+[watchdog] {'ts': '2026-10-09T01:42:02', 't': 81.7, 'event': 'state', 'frm': 'AT_RISK', 'to': 'DEGRADED', 'demoted_mib': 497, 'window_tps': 61.0}
+{"pid": 6196, "url": "http://127.0.0.1:18497", "config": {"pid": 6196, "url": "http://127.0.0.1:18497", "interval_s": 5.0, "host_visible_mib": 872, "demoted_warn_mib": 256, "expected_decode_tps": 110.0, "degraded_ratio": 0.6, "recover_ratio": 0.8, "consecutive": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24, "engine_util": true}, "n_samples": 10, "final_state": "DEGRADED", "ever_degraded": true, "ever_at_risk": true, "first_demoted_at_s": 26.7, "first_degraded_at_s": 75.2, "window_tps": {"n": 4, "min": 56.1, "p50": 59.3, "max": 61.0}, "demoted_mib": {"min": 0, "max": 497}, "other_gpu_util_max": 2.7, "cpu_pct_max": 74.9, "step_s_max": 8.52, "local_mib_last": null, "nonlocal_mib_last": null}

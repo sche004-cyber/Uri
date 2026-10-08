@@ -1,0 +1,78 @@
+=== R2 profiles start 19:31:32Z which=all
+[gpu_guard] waiting: foreign GPU owner(s) [] blockers [] clear_for=0.0s
+[gpu_guard] waiting: foreign GPU owner(s) [] blockers [] clear_for=88.0s
+[gpu_guard] waiting: foreign GPU owner(s) [] blockers [] clear_for=176.0s
+[gpu_guard] waiting: foreign GPU owner(s) [] blockers [] clear_for=265.0s
+{"clear": true, "waited_s": 310.7, "polls": 15, "quiet_s": 300.0}
+=== idle phase; VRAM 425 MiB
+=== r2I_sub128_r1 19:36:47Z VRAM before 425 MiB
+[01:07:15] server healthy after 18.91 s (waited 4.1 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:08:27] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_sub128_r1_20261009_010650.json
+R2LOAD r2I_sub128_r1 load_s 18.91 vram_at_start 424.9 decode_p50 115.8504 decision_p50 1.3562 vision_p50 0.7884 prefill(pps,ttft) {'1000': (2143, 0.523), '8000': (2018, 4.0847), '30000': (933, 33.0299)} load_local/non 15725 1160 end_local/non 15801 1248 healthy_end True fatal None
+=== r2I_default_r1 19:38:29Z VRAM before 425 MiB
+[01:08:56] server healthy after 17.83 s (waited 4.1 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:09:53] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_default_r1_20261009_010831.json
+R2LOAD r2I_default_r1 load_s 17.83 vram_at_start 424.9 decode_p50 112.3417 decision_p50 1.3464 vision_p50 1.858 prefill(pps,ttft) {'1000': (2025, 0.5658), '8000': (2276, 3.6104), '30000': (1791, 17.3192)} load_local/non 15553 1121 end_local/non 15689 1149 healthy_end True fatal None
+=== r2I_sub128_r2 19:39:56Z VRAM before 425 MiB
+[01:10:24] server healthy after 18.6 s (waited 4.1 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:11:37] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_sub128_r2_20261009_010958.json
+R2LOAD r2I_sub128_r2 load_s 18.6 vram_at_start 424.9 decode_p50 111.9346 decision_p50 1.419 vision_p50 0.8314 prefill(pps,ttft) {'1000': (1987, 0.5598), '8000': (1948, 4.218), '30000': (916, 33.6008)} load_local/non 15725 1160 end_local/non 15801 1248 healthy_end True fatal None
+=== r2I_default_r2 19:41:40Z VRAM before 428 MiB
+[01:12:09] server healthy after 19.85 s (waited 4.1 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:13:07] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_default_r2_20261009_011142.json
+R2LOAD r2I_default_r2 load_s 19.85 vram_at_start 424.9 decode_p50 114.7055 decision_p50 1.3974 vision_p50 1.8756 prefill(pps,ttft) {'1000': (2047, 0.5454), '8000': (2279, 3.5979), '30000': (1771, 17.5344)} load_local/non 15553 1121 end_local/non 15689 1149 healthy_end True fatal None
+=== r2I_sub128_r3 19:43:09Z VRAM before 425 MiB
+[01:13:38] server healthy after 19.03 s (waited 4.1 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:14:50] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_sub128_r3_20261009_011312.json
+R2LOAD r2I_sub128_r3 load_s 19.03 vram_at_start 424.9 decode_p50 113.9728 decision_p50 1.3925 vision_p50 0.8086 prefill(pps,ttft) {'1000': (2066, 0.5395), '8000': (1989, 4.1306), '30000': (915, 33.6585)} load_local/non 15725 1160 end_local/non 15801 1248 healthy_end True fatal None
+=== r2I_default_r3 19:44:52Z VRAM before 425 MiB
+[01:15:55] server healthy after 53.18 s (waited 4.1 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:18:56] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_default_r3_20261009_011455.json
+R2LOAD r2I_default_r3 load_s 53.18 vram_at_start 424.9 decode_p50 33.4351 decision_p50 5.6509 vision_p50 5.3764 prefill(pps,ttft) {'1000': (537, 2.2604), '8000': (1335, 7.0359), '30000': (1087, 30.1354)} load_local/non 15553 1121 end_local/non 15689 1149 healthy_end True fatal None
+=== r2I_vision_cpu_r1 19:49:08Z VRAM before 425 MiB
+[01:19:49] server healthy after 18.76 s (waited 4.1 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:20:53] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_vision_cpu_r1_20261009_011918.json
+R2LOAD r2I_vision_cpu_r1 load_s 18.76 vram_at_start 424.9 decode_p50 115.2661 decision_p50 1.3481 vision_p50 5.0908 prefill(pps,ttft) {'1000': (2075, 0.5423), '8000': (2279, 3.6635), '30000': (1776, 17.4525)} load_local/non 14693 872 end_local/non 14826 900 healthy_end True fatal None
+=== r2I_vision_cpu_r2 19:50:56Z VRAM before 425 MiB
+[01:21:25] server healthy after 19.69 s (waited 4.2 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:22:31] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_vision_cpu_r2_20261009_012058.json
+R2LOAD r2I_vision_cpu_r2 load_s 19.69 vram_at_start 424.9 decode_p50 105.8797 decision_p50 1.4711 vision_p50 5.1167 prefill(pps,ttft) {'1000': (1543, 0.69), '8000': (2237, 3.6916), '30000': (1753, 17.6999)} load_local/non 14693 872 end_local/non 14826 900 healthy_end True fatal None
+=== r2I_no_mtp_r1 19:52:33Z VRAM before 425 MiB
+[01:22:59] server healthy after 16.88 s (waited 4.1 s for VRAM release; VRAM at start 424.9 MiB; warm/cold not controlled)
+[01:23:55] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2I_no_mtp_r1_20261009_012236.json
+R2LOAD r2I_no_mtp_r1 load_s 16.88 vram_at_start 424.9 decode_p50 101.8834 decision_p50 1.5945 vision_p50 0.8805 prefill(pps,ttft) {'1000': (2344, 0.4757), '8000': (2458, 3.4021), '30000': (1936, 16.0249)} load_local/non 14532 498 end_local/non 14661 512 healthy_end True fatal None
+{"models":[{"name":"qwen3.5:0.8b","model":"qwen3.5:0.8b","size":1086869994,"digest":"f3817196d142eaf72ce79dfebe53dcb20bd21da87ce13e138a8f8e10a866b3a4","details":{"parent_model":"","format":"gguf","fam
+=== pressure phase; VRAM 2027 MiB 19:54:11Z
+=== r2V_vision_cpu_no_mtp_r1 19:54:14Z VRAM before 2027 MiB
+[01:24:40] server healthy after 16.48 s (waited 4.2 s for VRAM release; VRAM at start 2026.9 MiB; warm/cold not controlled)
+[01:26:02] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2V_vision_cpu_no_mtp_r1_20261009_012416.json
+R2LOAD r2V_vision_cpu_no_mtp_r1 load_s 16.48 vram_at_start 2026.9 decode_p50 99.7243 decision_p50 1.6004 vision_p50 5.0739 prefill(pps,ttft) {'1000': (2315, 0.4933), '8000': (2457, 3.3558), '30000': (1930, 16.0943)} load_local/non 13424 498 end_local/non 13550 512 healthy_end True fatal None
+=== r2V_vision_cpu_no_mtp_r2 19:56:15Z VRAM before 2027 MiB
+[01:27:18] server healthy after 24.51 s (waited 15.1 s for VRAM release; VRAM at start 2026.9 MiB; warm/cold not controlled)
+[01:28:42] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2V_vision_cpu_no_mtp_r2_20261009_012625.json
+R2LOAD r2V_vision_cpu_no_mtp_r2 load_s 24.51 vram_at_start 2026.9 decode_p50 62.7002 decision_p50 2.4634 vision_p50 7.4475 prefill(pps,ttft) {'1000': (2299, 0.5134), '8000': (2450, 3.4184), '30000': (1885, 16.6203)} load_local/non 13424 498 end_local/non 13550 512 healthy_end True fatal None
+=== r2V_vision_cpu_no_mtp_r3 19:58:48Z VRAM before 2027 MiB
+[01:29:31] server healthy after 29.1 s (waited 5.8 s for VRAM release; VRAM at start 2026.9 MiB; warm/cold not controlled)
+[01:31:02] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2V_vision_cpu_no_mtp_r3_20261009_012852.json
+R2LOAD r2V_vision_cpu_no_mtp_r3 load_s 29.1 vram_at_start 2026.9 decode_p50 56.478 decision_p50 2.6534 vision_p50 7.57 prefill(pps,ttft) {'1000': (1863, 0.6439), '8000': (2346, 3.7026), '30000': (1879, 16.5783)} load_local/non 13424 498 end_local/non 13550 512 healthy_end True fatal None
+=== r2V_vision_cpu_r1 20:01:07Z VRAM before 2027 MiB
+[01:32:00] server healthy after 38.63 s (waited 6.1 s for VRAM release; VRAM at start 2026.9 MiB; warm/cold not controlled)
+[01:34:45] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2V_vision_cpu_r1_20261009_013111.json
+R2LOAD r2V_vision_cpu_r1 load_s 38.63 vram_at_start 2026.9 decode_p50 16.0936 decision_p50 5.8481 vision_p50 8.0131 prefill(pps,ttft) {'1000': (1435, 0.8382), '8000': (1698, 4.9629), '30000': (1413, 22.2778)} load_local/non 13774 1792 end_local/non 13907 1820 healthy_end True fatal None
+=== r2V_no_mtp_r1 20:04:50Z VRAM before 2027 MiB
+[01:35:39] server healthy after 32.99 s (waited 6.0 s for VRAM release; VRAM at start 2026.9 MiB; warm/cold not controlled)
+[01:36:58] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2V_no_mtp_r1_20261009_013454.json
+R2LOAD r2V_no_mtp_r1 load_s 32.99 vram_at_start 2026.9 decode_p50 57.5577 decision_p50 2.392 vision_p50 2.4203 prefill(pps,ttft) {'1000': (1916, 0.6331), '8000': (2323, 3.6931), '30000': (1864, 16.9585)} load_local/non 13675 1356 end_local/non 13803 1369 healthy_end True fatal None
+=== r2V_vision_cpu_r2 20:07:03Z VRAM before 2041 MiB
+[01:37:50] server healthy after 34.04 s (waited 5.8 s for VRAM release; VRAM at start 2041.1 MiB; warm/cold not controlled)
+[01:40:20] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2V_vision_cpu_r2_20261009_013706.json
+R2LOAD r2V_vision_cpu_r2 load_s 34.04 vram_at_start 2041.1 decode_p50 20.568 decision_p50 5.5899 vision_p50 8.8489 prefill(pps,ttft) {'1000': (1419, 0.8438), '8000': (1719, 4.9761), '30000': (1335, 23.3885)} load_local/non 13434 2132 end_local/non 13567 2160 healthy_end True fatal None
+=== r2V_no_mtp_r2 20:10:25Z VRAM before 2027 MiB
+[01:41:20] server healthy after 40.18 s (waited 6.4 s for VRAM release; VRAM at start 2026.9 MiB; warm/cold not controlled)
+[01:42:39] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2V_no_mtp_r2_20261009_014029.json
+R2LOAD r2V_no_mtp_r2 load_s 40.18 vram_at_start 2026.9 decode_p50 59.8797 decision_p50 2.4787 vision_p50 2.4689 prefill(pps,ttft) {'1000': (1956, 0.6106), '8000': (2324, 3.6283), '30000': (1871, 16.7543)} load_local/non 13675 1356 end_local/non 13803 1369 healthy_end True fatal None
+=== r2V_vision_cpu_no_mtp_sub128_r1 20:12:49Z VRAM before 2045 MiB
+[01:43:36] server healthy after 33.03 s (waited 6.3 s for VRAM release; VRAM at start 2045.1 MiB; warm/cold not controlled)
+[01:45:06] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2V_vision_cpu_no_mtp_sub128_r1_20261009_014253.json
+R2LOAD r2V_vision_cpu_no_mtp_sub128_r1 load_s 33.03 vram_at_start 2045.1 decode_p50 59.6571 decision_p50 2.4284 vision_p50 7.5008 prefill(pps,ttft) {'1000': (2016, 0.586), '8000': (2355, 3.6561), '30000': (1872, 16.7045)} load_local/non 13434 498 end_local/non 13560 512 healthy_end True fatal None
+=== R2PROFILES_DONE 20:15:14Z VRAM 443 MiB

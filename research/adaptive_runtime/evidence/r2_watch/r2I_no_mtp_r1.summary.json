@@ -1,0 +1,55 @@
+{
+ "pid": 13864,
+ "url": "http://127.0.0.1:18497",
+ "config": {
+  "pid": 13864,
+  "url": "http://127.0.0.1:18497",
+  "interval_s": 5.0,
+  "host_visible_mib": 872,
+  "demoted_warn_mib": 256,
+  "expected_decode_tps": 110.0,
+  "degraded_ratio": 0.6,
+  "recover_ratio": 0.8,
+  "consecutive": 2,
+  "min_window_tokens": 32,
+  "active_probe": false,
+  "probe_idle_s": 300,
+  "probe_tokens": 24
+ },
+ "n_samples": 10,
+ "final_state": "OK",
+ "ever_degraded": false,
+ "ever_at_risk": false,
+ "first_demoted_at_s": null,
+ "first_degraded_at_s": null,
+ "window_tps": {
+  "n": 5,
+  "min": 91.2,
+  "p50": 98.2,
+  "max": 101.4
+ },
+ "demoted_mib": {
+  "min": 0,
+  "max": 0
+ },
+ "local_mib_last": null,
+ "nonlocal_mib_last": null,
+ "events": [
+  {
+   "ts": "2026-10-09T01:22:45",
+   "t": 2.5,
+   "event": "residency",
+   "frm": "unknown",
+   "to": "resident",
+   "demoted_mib": 0
+  },
+  {
+   "ts": "2026-10-09T01:23:08",
+   "t": 24.9,
+   "event": "throughput",
+   "frm": "unknown",
+   "to": "healthy",
+   "window_tps": 98.2
+  }
+ ]
+}

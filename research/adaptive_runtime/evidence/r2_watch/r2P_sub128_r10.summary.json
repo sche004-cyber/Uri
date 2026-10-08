@@ -1,0 +1,88 @@
+{
+ "pid": 2092,
+ "url": "http://127.0.0.1:18497",
+ "config": {
+  "pid": 2092,
+  "url": "http://127.0.0.1:18497",
+  "interval_s": 5.0,
+  "host_visible_mib": 872,
+  "demoted_warn_mib": 256,
+  "expected_decode_tps": 110.0,
+  "degraded_ratio": 0.6,
+  "recover_ratio": 0.8,
+  "consecutive": 2,
+  "min_window_tokens": 32,
+  "active_probe": false,
+  "probe_idle_s": 300,
+  "probe_tokens": 24
+ },
+ "n_samples": 13,
+ "final_state": "AT_RISK",
+ "ever_degraded": false,
+ "ever_at_risk": true,
+ "first_demoted_at_s": 14.8,
+ "first_degraded_at_s": null,
+ "window_tps": {
+  "n": 5,
+  "min": 69.5,
+  "p50": 94.4,
+  "max": 106.0
+ },
+ "demoted_mib": {
+  "min": 0,
+  "max": 1936
+ },
+ "local_mib_last": 14241,
+ "nonlocal_mib_last": 2808,
+ "events": [
+  {
+   "ts": "2026-10-09T00:48:26",
+   "t": 2.3,
+   "event": "residency",
+   "frm": "unknown",
+   "to": "resident",
+   "demoted_mib": 0
+  },
+  {
+   "ts": "2026-10-09T00:48:41",
+   "t": 17.4,
+   "event": "residency",
+   "frm": "resident",
+   "to": "partially_demoted",
+   "demoted_mib": 1451
+  },
+  {
+   "ts": "2026-10-09T00:48:41",
+   "t": 17.4,
+   "event": "state",
+   "frm": "OK",
+   "to": "AT_RISK",
+   "demoted_mib": 1451,
+   "window_tps": null
+  },
+  {
+   "ts": "2026-10-09T00:48:55",
+   "t": 32.0,
+   "event": "throughput",
+   "frm": "unknown",
+   "to": "healthy",
+   "window_tps": 94.4
+  },
+  {
+   "ts": "2026-10-09T00:49:32",
+   "t": 68.9,
+   "event": "throughput",
+   "frm": "healthy",
+   "to": "slow_but_above_threshold",
+   "window_tps": 69.6
+  },
+  {
+   "ts": "2026-10-09T00:49:40",
+   "t": 76.4,
+   "event": "throughput",
+   "frm": "slow_but_above_threshold",
+   "to": "healthy",
+   "window_tps": 92.4
+  }
+ ]
+}

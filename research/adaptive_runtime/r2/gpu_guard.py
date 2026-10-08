@@ -96,7 +96,8 @@ def blocking_commands(substrings: tuple[str, ...]) -> list[dict]:
 
 
 def wait_clear(min_mib=1500, allow_names=("ollama",), allow_pids=(), timeout_s: float | None = None,
-               interval_s=15.0, log=print, quiet_s: float = 0.0, block_cmds: tuple[str, ...] = ()) -> dict:
+               interval_s=15.0, log=print, quiet_s: float = 0.0, block_cmds: tuple[str, ...] = (),
+               max_cpu: float | None = None) -> dict:
     """Block until no foreign owner holds >= min_mib and no blocking command runs, continuously for quiet_s.
     Returns a record of the wait (never raises)."""
     t0 = time.monotonic()
@@ -105,18 +106,21 @@ def wait_clear(min_mib=1500, allow_names=("ollama",), allow_pids=(), timeout_s: 
     while True:
         owners = foreign_owners(min_mib, allow_names, allow_pids)
         blockers = blocking_commands(block_cmds)
+        cpu = psutil.cpu_percent(2.0) if max_cpu is not None else None
+        busy_cpu = cpu is not None and cpu > max_cpu
         now = time.monotonic()
-        if not owners and not blockers:
+        if not owners and not blockers and not busy_cpu:
             clear_since = clear_since or now
             if now - clear_since >= quiet_s:
                 return {"clear": True, "waited_s": round(now - t0, 1), "polls": waits + 1, "quiet_s": quiet_s}
         else:
             clear_since = None
         if timeout_s is not None and now - t0 >= timeout_s:
-            return {"clear": False, "waited_s": round(now - t0, 1), "polls": waits + 1, "owners": owners, "blockers": blockers}
+            return {"clear": False, "waited_s": round(now - t0, 1), "polls": waits + 1, "owners": owners, "blockers": blockers,
+                    "cpu_pct": cpu}
         if waits % 4 == 0:
             log(f"[gpu_guard] waiting: foreign GPU owner(s) {[(o['pid'], o['name'], o['local_mib']) for o in owners]} "
-                f"blockers {[(b['pid'], b['cmd'][:60]) for b in blockers]} clear_for={round(now - clear_since, 0) if clear_since else 0}s")
+                f"blockers {[(b['pid'], b['cmd'][:60]) for b in blockers]} cpu={cpu} clear_for={round(now - clear_since, 0) if clear_since else 0}s")
         waits += 1
         time.sleep(interval_s)
 
@@ -131,10 +135,11 @@ def main():
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--quiet-s", type=float, default=0.0, help="GPU must stay clear this long before 'clear'")
     ap.add_argument("--block-cmd", action="append", default=[], help="command-line substring that blocks a start")
+    ap.add_argument("--max-cpu", type=float, default=None, help="system CPU %% above which the host counts as busy")
     a = ap.parse_args()
     timeout = None if a.timeout < 0 else a.timeout
     rec = wait_clear(a.min_mib, tuple(a.allow), tuple(a.allow_pid), timeout, a.interval,
-                     log=lambda m: print(m, file=sys.stderr, flush=True), quiet_s=a.quiet_s, block_cmds=tuple(a.block_cmd))
+                     log=lambda m: print(m, file=sys.stderr, flush=True), quiet_s=a.quiet_s, block_cmds=tuple(a.block_cmd), max_cpu=a.max_cpu)
     if a.json:
         print(json.dumps(rec))
     else:

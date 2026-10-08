@@ -1,0 +1,11 @@
+ts,t,local_mib,nonlocal_mib,adapter_mib,demoted_mib,tokens_total,window_tokens,window_tps,requests_processing,residency,throughput,state,source
+2026-10-09T01:11:52,0.0,3095,0,3520,0,,,,,resident,unknown,OK,passive
+2026-10-09T01:11:59,7.4,13327,403,13752,0,,,,,resident,unknown,OK,passive
+2026-10-09T01:12:07,14.9,15531,850,15956,0,,,,,resident,unknown,OK,passive
+2026-10-09T01:12:14,22.4,15553,1121,15978,249,4.0,,,1.0,resident,unknown,OK,passive
+2026-10-09T01:12:22,29.8,15642,1126,16067,254,170.0,166.0,115.1,1.0,resident,healthy,OK,passive
+2026-10-09T01:12:29,37.2,15660,1126,16085,254,170.0,0.0,,1.0,resident,healthy,OK,passive
+2026-10-09T01:12:36,44.5,15682,1126,16107,254,170.0,0.0,,1.0,resident,healthy,OK,passive
+2026-10-09T01:12:44,51.9,15686,1149,16114,277,514.0,344.0,106.11,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T01:12:51,59.3,15686,1149,16111,277,1220.0,706.0,115.86,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T01:12:58,66.7,15689,1149,16114,277,1468.0,248.0,124.0,0.0,partially_demoted,healthy,AT_RISK,passive

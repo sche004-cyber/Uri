@@ -44,3 +44,57 @@ R2LOAD r2P_default_r2 load_s 19.66 vram_at_start 2054.4 decode_p50 24.7055 decod
 ive": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 17, "final_state": "DEGRADED", "ever_degraded": true, "ever_at_risk": true, "first_demoted_at_s": 14.8, "first_degraded_at_s": 37.1, "window_tps": {"n": 8, "min": 21.8, "p50": 25.5, "max": 29.9}, "demoted_mib": {"min": 0, "max": 1805}, "local_mib_last": 13533, "nonlocal_mib_last": 495}
 
 === r2P_sub128_r5 19:03:56Z VRAM before 2052 MiB
+[00:34:26] server healthy after 20.46 s (waited 4.1 s for VRAM release; VRAM at start 2066.4 MiB; warm/cold not controlled)
+[00:35:58] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_sub128_r5_20261009_003359.json
+R2LOAD r2P_sub128_r5 load_s 20.46 vram_at_start 2066.4 decode_p50 97.8417 decode_min 95.7511 decision_p50 1.6061 decision_p95 1.6316 vision_p50 2.6199 prefill(pps,ttft,repeat_ttft) {'1000': (1790.1365091083721, 0.6129, 0.1268), '8000': (1529.3585902755094, 5.3428, 0.1922), '30000': (686.5243856426389, 44.8257, 0.4053)} load_local/non 14181 2704 end_local/non 14247 2803 errors 0 healthy_end True fatal None
+": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 15, "final_state": "AT_RISK", "ever_degraded": false, "ever_at_risk": true, "first_demoted_at_s": 14.7, "first_degraded_at_s": null, "window_tps": {"n": 6, "min": 49.0, "p50": 105.4, "max": 123.0}, "demoted_mib": {"min": 0, "max": 1931}, "local_mib_last": 14247, "nonlocal_mib_last": 2803}
+
+=== r2P_sub128_r6 19:06:00Z VRAM before 2054 MiB
+[00:36:31] server healthy after 21.28 s (waited 4.1 s for VRAM release; VRAM at start 2054.4 MiB; warm/cold not controlled)
+[00:37:58] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_sub128_r6_20261009_003603.json
+R2LOAD r2P_sub128_r6 load_s 21.28 vram_at_start 2054.4 decode_p50 98.4342 decode_min 95.3519 decision_p50 1.5844 decision_p95 1.661 vision_p50 2.6734 prefill(pps,ttft,repeat_ttft) {'1000': (1829.3319367662757, 0.5964, 0.1266), '8000': (1485.8047280902636, 5.4701, 0.1923), '30000': (764.8909698067448, 40.2501, 0.3757)} load_local/non 14181 2704 end_local/non 14251 2799 errors 0 healthy_end True fatal None
+": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 14, "final_state": "AT_RISK", "ever_degraded": false, "ever_at_risk": true, "first_demoted_at_s": 14.9, "first_degraded_at_s": null, "window_tps": {"n": 6, "min": 45.4, "p50": 101.6, "max": 113.5}, "demoted_mib": {"min": 0, "max": 1927}, "local_mib_last": 14251, "nonlocal_mib_last": 2799}
+
+=== r2P_default_r3 19:08:01Z VRAM before 2052 MiB
+[00:38:29] server healthy after 18.52 s (waited 4.1 s for VRAM release; VRAM at start 2052.1 MiB; warm/cold not controlled)
+[00:40:13] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_default_r3_20261009_003803.json
+R2LOAD r2P_default_r3 load_s 18.52 vram_at_start 2052.1 decode_p50 24.9637 decode_min 24.576 decision_p50 4.1716 decision_p95 4.5432 vision_p50 2.362 prefill(pps,ttft,repeat_ttft) {'1000': (1843.1870345906611, 0.6002, 0.1066), '8000': (1966.2016000506196, 4.1544, 0.1958), '30000': (1571.8169231193403, 19.6766, 0.3602)} load_local/non 14024 2649 end_local/non 14160 2677 errors 0 healthy_end True fatal None
+ive": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 17, "final_state": "DEGRADED", "ever_degraded": true, "ever_at_risk": true, "first_demoted_at_s": 14.8, "first_degraded_at_s": 37.1, "window_tps": {"n": 8, "min": 22.1, "p50": 25.8, "max": 30.0}, "demoted_mib": {"min": 0, "max": 1805}, "local_mib_last": null, "nonlocal_mib_last": null}
+
+=== r2P_sub128_r7 19:10:19Z VRAM before 2052 MiB
+[00:40:48] server healthy after 19.6 s (waited 4.1 s for VRAM release; VRAM at start 2052.1 MiB; warm/cold not controlled)
+[00:42:01] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_sub128_r7_20261009_004022.json
+R2LOAD r2P_sub128_r7 load_s 19.6 vram_at_start 2052.1 decode_p50 91.8468 decode_min 89.4512 decision_p50 1.6713 decision_p95 1.7101 vision_p50 2.7108 prefill(pps,ttft,repeat_ttft) {'1000': (1742.6191618333262, 0.6229, 0.1364), '8000': (1854.2509781727506, 4.4043, 0.165), '30000': (1183.2071925887494, 26.1053, 0.392)} load_local/non 14101 2784 end_local/non 14177 2872 errors 0 healthy_end True fatal None
+e": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 12, "final_state": "AT_RISK", "ever_degraded": false, "ever_at_risk": true, "first_demoted_at_s": 14.9, "first_degraded_at_s": null, "window_tps": {"n": 5, "min": 71.1, "p50": 93.8, "max": 113.5}, "demoted_mib": {"min": 0, "max": 2000}, "local_mib_last": 14177, "nonlocal_mib_last": 2872}
+
+=== r2P_sub128_r8 19:12:03Z VRAM before 2052 MiB
+[00:42:32] server healthy after 19.65 s (waited 4.1 s for VRAM release; VRAM at start 2052.1 MiB; warm/cold not controlled)
+[00:43:53] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_sub128_r8_20261009_004206.json
+R2LOAD r2P_sub128_r8 load_s 19.65 vram_at_start 2052.1 decode_p50 91.814 decode_min 91.1763 decision_p50 1.675 decision_p95 1.7172 vision_p50 2.6526 prefill(pps,ttft,repeat_ttft) {'1000': (1767.7473696131483, 0.6095, 0.118), '8000': (1655.8459062098075, 4.9356, 0.1881), '30000': (902.0144055360007, 34.1639, 0.3949)} load_local/non 14165 2720 end_local/non 14241 2808 errors 0 healthy_end True fatal None
+e": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 13, "final_state": "AT_RISK", "ever_degraded": false, "ever_at_risk": true, "first_demoted_at_s": 14.7, "first_degraded_at_s": null, "window_tps": {"n": 6, "min": 66.5, "p50": 95.4, "max": 102.3}, "demoted_mib": {"min": 0, "max": 1936}, "local_mib_last": 14241, "nonlocal_mib_last": 2808}
+
+=== r2P_default_r4 19:13:56Z VRAM before 2025 MiB
+[00:44:23] server healthy after 18.61 s (waited 4.1 s for VRAM release; VRAM at start 2024.6 MiB; warm/cold not controlled)
+[00:46:09] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_default_r4_20261009_004358.json
+R2LOAD r2P_default_r4 load_s 18.61 vram_at_start 2024.6 decode_p50 24.9538 decode_min 24.5386 decision_p50 4.2088 decision_p95 4.5493 vision_p50 2.4026 prefill(pps,ttft,repeat_ttft) {'1000': (1820.6106244202385, 0.5953, 0.131), '8000': (1961.2512955846084, 4.1694, 0.1701), '30000': (1569.8055838806083, 19.6963, 0.462)} load_local/non 14024 2649 end_local/non 14160 2677 errors 0 healthy_end True fatal None
+nsecutive": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 17, "final_state": "DEGRADED", "ever_degraded": true, "ever_at_risk": true, "first_demoted_at_s": 14.8, "first_degraded_at_s": 37.1, "window_tps": {"n": 8, "min": 21.8, "p50": 25.7, "max": 29.9}, "demoted_mib": {"min": 0, "max": 1805}, "local_mib_last": 0, "nonlocal_mib_last": 0}
+
+=== r2P_sub128_r9 19:16:14Z VRAM before 2025 MiB
+[00:46:44] server healthy after 20.19 s (waited 4.1 s for VRAM release; VRAM at start 2024.6 MiB; warm/cold not controlled)
+[00:48:11] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_sub128_r9_20261009_004617.json
+R2LOAD r2P_sub128_r9 load_s 20.19 vram_at_start 2024.6 decode_p50 99.517 decode_min 97.0845 decision_p50 1.5953 decision_p95 1.617 vision_p50 2.6818 prefill(pps,ttft,repeat_ttft) {'1000': (1823.2655251333229, 0.6037, 0.1129), '8000': (1597.9231618912097, 5.1101, 0.2203), '30000': (748.3018322151052, 41.137, 0.3831)} load_local/non 14181 2704 end_local/non 14257 2792 errors 0 healthy_end True fatal None
+": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 14, "final_state": "AT_RISK", "ever_degraded": false, "ever_at_risk": true, "first_demoted_at_s": 14.9, "first_degraded_at_s": null, "window_tps": {"n": 6, "min": 45.6, "p50": 101.2, "max": 112.3}, "demoted_mib": {"min": 0, "max": 1920}, "local_mib_last": 14257, "nonlocal_mib_last": 2792}
+
+=== r2P_sub128_r10 19:18:14Z VRAM before 2025 MiB
+[00:48:42] server healthy after 19.37 s (waited 4.1 s for VRAM release; VRAM at start 2024.6 MiB; warm/cold not controlled)
+[00:50:04] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_sub128_r10_20261009_004816.json
+R2LOAD r2P_sub128_r10 load_s 19.37 vram_at_start 2024.6 decode_p50 91.1573 decode_min 90.7227 decision_p50 1.6856 decision_p95 1.7308 vision_p50 2.9077 prefill(pps,ttft,repeat_ttft) {'1000': (1839.738348323794, 0.5917, 0.1217), '8000': (1643.0620645782258, 4.9407, 0.1685), '30000': (902.328044080909, 34.167, 0.4451)} load_local/non 14165 2720 end_local/non 14241 2808 errors 0 healthy_end True fatal None
+e": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 13, "final_state": "AT_RISK", "ever_degraded": false, "ever_at_risk": true, "first_demoted_at_s": 14.8, "first_degraded_at_s": null, "window_tps": {"n": 5, "min": 69.5, "p50": 94.4, "max": 106.0}, "demoted_mib": {"min": 0, "max": 1936}, "local_mib_last": 14241, "nonlocal_mib_last": 2808}
+
+=== r2P_default_r5 19:20:07Z VRAM before 2027 MiB
+[00:50:37] server healthy after 20.79 s (waited 4.1 s for VRAM release; VRAM at start 2026.9 MiB; warm/cold not controlled)
+[00:52:25] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\r2P_default_r5_20261009_005009.json
+R2LOAD r2P_default_r5 load_s 20.79 vram_at_start 2026.9 decode_p50 24.6987 decode_min 24.1824 decision_p50 4.2244 decision_p95 4.6336 vision_p50 3.2928 prefill(pps,ttft,repeat_ttft) {'1000': (1821.599908099464, 0.5982, 0.1183), '8000': (1950.2744971515694, 4.2, 0.1864), '30000': (1556.5787442547328, 19.9048, 0.4156)} load_local/non 13776 2898 end_local/non 13912 2926 errors 0 healthy_end True fatal None
+ve": 2, "min_window_tokens": 32, "active_probe": false, "probe_idle_s": 300, "probe_tokens": 24}, "n_samples": 17, "final_state": "DEGRADED", "ever_degraded": true, "ever_at_risk": true, "first_demoted_at_s": 14.8, "first_degraded_at_s": 36.8, "window_tps": {"n": 9, "min": 20.1, "p50": 25.5, "max": 31.3}, "demoted_mib": {"min": 0, "max": 2054}, "local_mib_last": 13912, "nonlocal_mib_last": 2926}
+
+=== consumer stopped; VRAM 440 MiB; R2PRESSURE_DONE 19:22:32Z

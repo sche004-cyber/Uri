@@ -16,7 +16,7 @@ export URI_BENCH_IDLE_CEILING_MIB=3500
 mkdir -p evidence/r2_watch
 
 vram() { powershell -NoProfile -Command "[int64](((Get-Counter '\GPU Adapter Memory(*)\Dedicated Usage').CounterSamples | Measure-Object -Property CookedValue -Maximum).Maximum/1MB)"; }
-guard() { $PY r2/gpu_guard.py --min-mib 1500 --allow ollama --timeout -1 --interval 20 --quiet-s "${1:-0}" --block-cmd uri_operational_intelligence.host --json; }
+guard() { $PY r2/gpu_guard.py --min-mib 1500 --allow ollama --timeout -1 --interval 20 --quiet-s "${1:-0}" --block-cmd uri_operational_intelligence.host --max-cpu 30 --json; }
 consumer_on() {
   curl -s -o evidence/r2_consumer_generate.json -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: application/json" \
     -d '{"model":"qwen3.5:0.8b","prompt":"Say OK.","stream":false,"keep_alive":"180m","options":{"num_predict":4,"num_ctx":4096}}'
@@ -54,7 +54,7 @@ echo "=== consumer resident; VRAM $(vram) MiB $(date -u +%H:%M:%SZ)"
 i128=0; idef=0
 for k in $SEQ; do
   # never keep the consumer resident next to a foreign GPU process: drop it, wait for a quiet GPU, reload it
-  if ! $PY r2/gpu_guard.py --min-mib 1500 --allow ollama --timeout 0 --block-cmd uri_operational_intelligence.host --json > /dev/null 2>&1; then
+  if ! $PY r2/gpu_guard.py --min-mib 1500 --allow ollama --timeout 0 --block-cmd uri_operational_intelligence.host --max-cpu 30 --json > /dev/null 2>&1; then
     echo "=== foreign GPU owner appeared $(date -u +%H:%M:%SZ): consumer unloaded, waiting for a quiet GPU"
     consumer_off
     guard 300 > /dev/null

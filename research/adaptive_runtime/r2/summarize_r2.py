@@ -53,7 +53,7 @@ def fmt(v, nd=1):
 def table_loads(prefix, title):
     rows = load_records(prefix)
     print(f"\n### {title}\n")
-    print("| run | blocks | load s | VRAM at start | local / non-local MiB (end) | decode tok/s p50 (min) | decision s p50 / p95 | prefill tok/s 1k / 8k / 30k | TTFT 30k fresh / repeat | vision s p50 | errors | watchdog state (first degraded s) |")
+    print("| run | blocks | load s | VRAM at start | local / non-local MiB (end) | decode tok/s p50 (min) | decision s p50 / p95 | prefill tok/s 1k / 8k / 30k | TTFT 30k fresh / repeat | vision s p50 | errors | watchdog worst state (first degraded s) |")
     print("|---|---|---|---|---|---|---|---|---|---|---|---|")
     stats = {}
     for name, r in rows:
@@ -72,7 +72,7 @@ def table_loads(prefix, title):
         wf = EV / "r2_watch" / f"{r['name']}.summary.json"
         if wf.exists():
             wd = json.load(open(wf, encoding="utf-8"))
-        wstate = f"{wd.get('final_state', '-')} ({fmt(wd.get('first_degraded_at_s'))})" if wd else "-"
+        wstate = ("DEGRADED" if wd.get("ever_degraded") else ("AT_RISK" if wd.get("ever_at_risk") else "OK")) + f" ({fmt(wd.get('first_degraded_at_s'))})" if wd else "-"
         fatal = f" FATAL: {r['fatal'][:60]}" if r.get("fatal") else ""
         print(f"| {r['name']}{fatal} | {blocks} | {fmt(r.get('load_seconds'))} | {fmt(r.get('vram_dedicated_at_start_mib'), 0)} | "
               f"{end.get('local usage', '-')} / {end.get('non local usage', '-')} | {fmt(d50)} ({fmt(dmin)}) | {fmt(dc50, 2)} / {fmt(dc95, 2)} | "

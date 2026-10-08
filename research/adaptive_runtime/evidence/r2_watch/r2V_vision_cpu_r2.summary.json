@@ -1,0 +1,93 @@
+{
+ "pid": 18008,
+ "url": "http://127.0.0.1:18497",
+ "config": {
+  "pid": 18008,
+  "url": "http://127.0.0.1:18497",
+  "interval_s": 5.0,
+  "host_visible_mib": 872,
+  "demoted_warn_mib": 256,
+  "expected_decode_tps": 110.0,
+  "degraded_ratio": 0.6,
+  "recover_ratio": 0.8,
+  "consecutive": 2,
+  "min_window_tokens": 32,
+  "active_probe": false,
+  "probe_idle_s": 300,
+  "probe_tokens": 24,
+  "engine_util": true
+ },
+ "n_samples": 15,
+ "final_state": "DEGRADED",
+ "ever_degraded": true,
+ "ever_at_risk": true,
+ "first_demoted_at_s": 23.8,
+ "first_degraded_at_s": 57.7,
+ "window_tps": {
+  "n": 8,
+  "min": 12.8,
+  "p50": 21.3,
+  "max": 22.9
+ },
+ "demoted_mib": {
+  "min": 0,
+  "max": 1288
+ },
+ "other_gpu_util_max": 12.0,
+ "cpu_pct_max": 90.8,
+ "step_s_max": 9.12,
+ "local_mib_last": 13567,
+ "nonlocal_mib_last": 2160,
+ "events": [
+  {
+   "ts": "2026-10-09T01:37:24",
+   "t": 7.7,
+   "event": "residency",
+   "frm": "unknown",
+   "to": "resident",
+   "demoted_mib": 0
+  },
+  {
+   "ts": "2026-10-09T01:37:46",
+   "t": 29.9,
+   "event": "residency",
+   "frm": "resident",
+   "to": "partially_demoted",
+   "demoted_mib": 1237
+  },
+  {
+   "ts": "2026-10-09T01:37:46",
+   "t": 29.9,
+   "event": "state",
+   "frm": "OK",
+   "to": "AT_RISK",
+   "demoted_mib": 1237,
+   "window_tps": null
+  },
+  {
+   "ts": "2026-10-09T01:38:09",
+   "t": 52.7,
+   "event": "throughput",
+   "frm": "unknown",
+   "to": "suspect",
+   "window_tps": 22.0
+  },
+  {
+   "ts": "2026-10-09T01:38:20",
+   "t": 64.0,
+   "event": "throughput",
+   "frm": "suspect",
+   "to": "degraded",
+   "window_tps": 18.3
+  },
+  {
+   "ts": "2026-10-09T01:38:20",
+   "t": 64.0,
+   "event": "state",
+   "frm": "AT_RISK",
+   "to": "DEGRADED",
+   "demoted_mib": 1265,
+   "window_tps": 18.3
+  }
+ ]
+}

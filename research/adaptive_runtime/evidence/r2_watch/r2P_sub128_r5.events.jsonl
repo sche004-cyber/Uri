@@ -1,0 +1,7 @@
+{"ts": "2026-10-09T00:34:08", "t": 2.3, "event": "residency", "frm": "unknown", "to": "resident", "demoted_mib": 0}
+{"ts": "2026-10-09T00:34:23", "t": 17.3, "event": "residency", "frm": "resident", "to": "partially_demoted", "demoted_mib": 1435}
+{"ts": "2026-10-09T00:34:23", "t": 17.3, "event": "state", "frm": "OK", "to": "AT_RISK", "demoted_mib": 1435, "window_tps": null}
+{"ts": "2026-10-09T00:34:38", "t": 31.9, "event": "throughput", "frm": "unknown", "to": "healthy", "window_tps": 109.9}
+{"ts": "2026-10-09T00:34:45", "t": 39.2, "event": "throughput", "frm": "healthy", "to": "slow_but_above_threshold", "window_tps": 76.1}
+{"ts": "2026-10-09T00:35:29", "t": 83.6, "event": "throughput", "frm": "slow_but_above_threshold", "to": "suspect", "window_tps": 49.0}
+{"ts": "2026-10-09T00:35:37", "t": 90.9, "event": "throughput", "frm": "suspect", "to": "healthy", "window_tps": 98.4}

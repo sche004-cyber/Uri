@@ -79,6 +79,7 @@ class FakeWatchdog(rw.Watchdog):
         res, met = next(self.feed)
         rw.residency_for_pid = lambda pid: res
         rw.read_metrics = lambda url, timeout=5.0: met
+        rw.engine_utilisation = lambda: {}
         return super().step(probe_fn)
 
 
@@ -182,3 +183,15 @@ def test_guard_allow_list(monkeypatch):
     owners = gpu_guard.foreign_owners(1500, ("ollama",))
     assert [o["pid"] for o in owners] == [16100]
     assert gpu_guard.foreign_owners(1500, ("ollama", "llama-server")) == []
+
+
+def test_process_exit_keeps_last_state(tmp_path):
+    # regression: counters vanish while the server exits; the state must not flip back to OK
+    cfg = rw.WatchConfig(pid=1, url="u")
+    res = {"local": 14181, "nonlocal": 2704, "adapter": 16300}
+    gone = {"local": None, "nonlocal": None, "adapter": 500}
+    feed = [(res, _metrics(0, 0)), (res, _metrics(300, 3.0)), (gone, {})]
+    wd = FakeWatchdog(cfg, tmp_path, feed)
+    states = [wd.step().state for _ in feed]
+    assert states[-1] == "AT_RISK"
+    wd.close()

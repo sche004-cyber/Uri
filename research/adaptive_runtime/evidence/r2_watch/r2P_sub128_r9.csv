@@ -1,0 +1,15 @@
+ts,t,local_mib,nonlocal_mib,adapter_mib,demoted_mib,tokens_total,window_tokens,window_tps,requests_processing,residency,throughput,state,source
+2026-10-09T00:46:26,0.0,5310,0,7448,0,,,,,resident,unknown,OK,passive
+2026-10-09T00:46:34,7.4,13337,403,15362,0,,,,,resident,unknown,OK,passive
+2026-10-09T00:46:41,14.9,14122,2307,16147,1435,,,,,partially_demoted,unknown,AT_RISK,passive
+2026-10-09T00:46:49,22.5,14181,2704,16209,1832,4.0,,,1.0,partially_demoted,unknown,AT_RISK,passive
+2026-10-09T00:46:56,29.9,14240,2726,16265,1854,119.0,115.0,101.21,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:47:04,37.2,14254,2728,16279,1856,170.0,51.0,80.18,1.0,partially_demoted,slow_but_above_threshold,AT_RISK,passive
+2026-10-09T00:47:11,44.7,14254,2742,16279,1870,170.0,0.0,,1.0,partially_demoted,slow_but_above_threshold,AT_RISK,passive
+2026-10-09T00:47:18,52.0,14254,2752,16279,1880,170.0,0.0,,1.0,partially_demoted,slow_but_above_threshold,AT_RISK,passive
+2026-10-09T00:47:26,59.3,14254,2758,16279,1886,170.0,0.0,,1.0,partially_demoted,slow_but_above_threshold,AT_RISK,passive
+2026-10-09T00:47:33,66.7,14254,2766,16291,1894,170.0,0.0,,1.0,partially_demoted,slow_but_above_threshold,AT_RISK,passive
+2026-10-09T00:47:40,74.1,14254,2792,16279,1920,234.0,64.0,45.58,1.0,partially_demoted,suspect,AT_RISK,passive
+2026-10-09T00:47:48,81.5,14255,2792,16279,1920,770.0,536.0,97.63,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:47:55,88.9,14255,2792,16279,1920,1326.0,556.0,102.56,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T00:48:02,96.3,14257,2792,16282,1920,1468.0,142.0,112.33,0.0,partially_demoted,healthy,AT_RISK,passive

@@ -1,0 +1,11 @@
+ts,t,local_mib,nonlocal_mib,adapter_mib,demoted_mib,tokens_total,window_tokens,window_tps,requests_processing,residency,throughput,state,source
+2026-10-09T01:08:41,0.0,4089,0,4514,0,,,,,resident,unknown,OK,passive
+2026-10-09T01:08:48,7.4,13381,403,13806,0,,,,,resident,unknown,OK,passive
+2026-10-09T01:08:56,14.9,15531,850,15956,0,0.0,,,0.0,resident,unknown,OK,passive
+2026-10-09T01:09:03,22.3,15608,1121,16038,249,92.0,92.0,127.68,1.0,resident,healthy,OK,passive
+2026-10-09T01:09:11,29.7,15642,1126,16067,254,170.0,78.0,102.93,1.0,resident,healthy,OK,passive
+2026-10-09T01:09:18,37.0,15666,1126,16091,254,170.0,0.0,,1.0,resident,healthy,OK,passive
+2026-10-09T01:09:25,44.3,15686,1147,16111,275,170.0,0.0,,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T01:09:33,51.6,15686,1149,16111,277,770.0,600.0,110.01,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T01:09:40,59.1,15686,1149,16111,277,1426.0,656.0,120.02,1.0,partially_demoted,healthy,AT_RISK,passive
+2026-10-09T01:09:47,66.4,15689,1149,16114,277,1468.0,42.0,140.7,0.0,partially_demoted,healthy,AT_RISK,passive

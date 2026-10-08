@@ -1,0 +1,4 @@
+{"ts": "2026-10-09T01:11:52", "t": 2.4, "event": "residency", "frm": "unknown", "to": "resident", "demoted_mib": 0}
+{"ts": "2026-10-09T01:12:22", "t": 32.2, "event": "throughput", "frm": "unknown", "to": "healthy", "window_tps": 115.1}
+{"ts": "2026-10-09T01:12:44", "t": 54.3, "event": "residency", "frm": "resident", "to": "partially_demoted", "demoted_mib": 277}
+{"ts": "2026-10-09T01:12:44", "t": 54.3, "event": "state", "frm": "OK", "to": "AT_RISK", "demoted_mib": 277, "window_tps": 106.1}

@@ -51,6 +51,7 @@ class WatchConfig:
     active_probe: bool = False
     probe_idle_s: float = 300.0
     probe_tokens: int = 24
+    engine_util: bool = True
 
 
 @dataclass
@@ -70,6 +71,11 @@ class Sample:
     throughput: str
     state: str
     source: str = "passive"
+    own_gpu_util: float | None = None
+    other_gpu_util_max: float | None = None
+    other_gpu_pid: int | None = None
+    cpu_pct: float | None = None
+    step_s: float | None = None
 
 
 def residency_for_pid(pid: int) -> dict:
@@ -97,6 +103,30 @@ def residency_for_pid(pid: int) -> dict:
     if not seen:
         r["local"] = r["nonlocal"] = None
     return r
+
+
+_QE = ("(Get-Counter '@@GPU Engine(*)@@Utilization Percentage').CounterSamples | Where-Object { $_.CookedValue -gt 0.5 } "
+       "| ForEach-Object { $_.InstanceName + '=' + [math]::Round($_.CookedValue,1) }")
+
+
+def engine_utilisation() -> dict[int, float]:
+    """{pid: max engine utilisation %} over all GPU engines (3D/compute/copy), for attribution of contention."""
+    try:
+        out = subprocess.run(["powershell", "-NoProfile", "-Command", _QE.replace("@@", _BS)], capture_output=True, text=True,
+                             timeout=40).stdout
+    except Exception:
+        return {}
+    util: dict[int, float] = {}
+    for line in out.splitlines():
+        if "=" not in line or not line.startswith("pid_"):
+            continue
+        inst, v = line.rsplit("=", 1)
+        try:
+            pid = int(inst.split("_")[1])
+            util[pid] = max(util.get(pid, 0.0), float(v))
+        except ValueError:
+            continue
+    return util
 
 
 def read_metrics(url: str, timeout=5.0) -> dict[str, float]:
@@ -145,7 +175,7 @@ class Watchdog:
         self.first_demoted_at = None
         out_base.parent.mkdir(parents=True, exist_ok=True)
         self._csv = open(str(out_base) + ".csv", "w", encoding="utf-8")
-        self._csv.write("ts,t,local_mib,nonlocal_mib,adapter_mib,demoted_mib,tokens_total,window_tokens,window_tps,requests_processing,residency,throughput,state,source\n")
+        self._csv.write("ts,t,local_mib,nonlocal_mib,adapter_mib,demoted_mib,tokens_total,window_tokens,window_tps,requests_processing,residency,throughput,state,source,own_gpu_util,other_gpu_util_max,other_gpu_pid,cpu_pct,step_s\n")
 
     def _event(self, kind, **kw):
         ev = {"ts": dt.datetime.now().isoformat(timespec="seconds"), "t": round(time.monotonic() - self.t0, 1), "event": kind, **kw}
@@ -168,6 +198,8 @@ class Watchdog:
     def step(self, probe_fn=None) -> Sample:
         now = time.monotonic()
         res = residency_for_pid(self.cfg.pid)
+        eng = engine_utilisation() if self.cfg.engine_util else {}
+        cpu = psutil.cpu_percent(None)
         met = read_metrics(self.cfg.url)
         tokens = met.get("tokens_predicted_total")
         secs = met.get("tokens_predicted_seconds_total")
@@ -196,7 +228,8 @@ class Watchdog:
             demoted = max(0, res["nonlocal"] - self.cfg.host_visible_mib)
             residency = "partially_demoted" if demoted >= self.cfg.demoted_warn_mib else "resident"
         else:
-            residency = "unknown"
+            # counters vanished (process exiting): keep the last known residency, do not flip the state to OK
+            residency = self.residency if self.residency != "unknown" else "unknown"
         new_tp = self.classify_throughput(win_tps)
         if residency != self.residency:
             if residency == "partially_demoted" and self.first_demoted_at is None:
@@ -217,10 +250,17 @@ class Watchdog:
         s = Sample(dt.datetime.now().isoformat(timespec="seconds"), round(now - self.t0, 1), res.get("local"), res.get("nonlocal"),
                    res.get("adapter"), demoted, tokens, secs, win_tokens, round(win_tps, 2) if win_tps else None, rp,
                    residency, self.throughput, self.state, source)
+        others = {k: v for k, v in eng.items() if k != self.cfg.pid}
+        s.own_gpu_util = eng.get(self.cfg.pid)
+        if others:
+            s.other_gpu_pid, s.other_gpu_util_max = max(others.items(), key=lambda kv: kv[1])
+        s.cpu_pct = cpu
+        s.step_s = round(time.monotonic() - now, 2)
         self.samples.append(s)
         self._csv.write(",".join("" if v is None else str(v) for v in (s.ts, s.t, s.local_mib, s.nonlocal_mib, s.adapter_mib, s.demoted_mib,
                                                                        s.tokens_total, s.window_tokens, s.window_tps, s.requests_processing,
-                                                                       s.residency, s.throughput, s.state, s.source)) + "\n")
+                                                                       s.residency, s.throughput, s.state, s.source, s.own_gpu_util,
+                                                                       s.other_gpu_util_max, s.other_gpu_pid, s.cpu_pct, s.step_s)) + "\n")
         self._csv.flush()
         return s
 
@@ -234,6 +274,9 @@ class Watchdog:
                 "window_tps": {"n": len(tps), "min": round(min(tps), 1) if tps else None, "p50": round(sorted(tps)[len(tps) // 2], 1) if tps else None,
                                "max": round(max(tps), 1) if tps else None},
                 "demoted_mib": {"min": min(dem) if dem else None, "max": max(dem) if dem else None},
+                "other_gpu_util_max": max((x.other_gpu_util_max or 0) for x in self.samples) if self.samples else None,
+                "cpu_pct_max": max((x.cpu_pct or 0) for x in self.samples) if self.samples else None,
+                "step_s_max": max((x.step_s or 0) for x in self.samples) if self.samples else None,
                 "local_mib_last": self.samples[-1].local_mib if self.samples else None,
                 "nonlocal_mib_last": self.samples[-1].nonlocal_mib if self.samples else None,
                 "events": self.events}
