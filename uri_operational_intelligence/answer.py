@@ -1,0 +1,124 @@
+"""Answer channel: language-only replies from Runtime v1 (conversation, questions, analysis, drafting in the reply).
+
+This channel has NO tools and NO authority. Two guards keep it honest:
+  1. ACTION_MARKER: the system prompt tells the model to reply with exactly `<<ACTION>>` when the user asks URI to
+     DO something (save, send, delete, schedule, change files, run...). The first characters of the answer are held
+     back until they cannot be the marker; on the marker the generation is cancelled and the turn is handed to Core.
+     This catches action requests that deterministic triage missed, at no extra model call.
+  2. Action-claim check: a reply that claims a completed action ("I've saved...") although no Core execution
+     happened in this turn is flagged UNVERIFIED_ACTION_CLAIM and a correction is appended. URI never lets the
+     answer channel fabricate a tool outcome.
+
+Prompt layout follows the v1 context architecture (stable system message first, current turn last) so the
+prompt cache reuses the prefix across turns.
+"""
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+
+from . import brain_client as BC
+from .reasoning_policy import FAST, NORMAL, after_result, tier_params
+
+ACTION_MARKER = "<<ACTION>>"
+
+URI_SYSTEM = (
+    "You are URI, a local assistant running on the user's own computer. In this reply channel you can only talk: "
+    "you cannot save, send, delete, schedule, open, change files, run programs or use any tool, and you must never "
+    "say that you did. URI's controller performs actions separately, with the user's confirmation.\n"
+    "If the user's message asks you to DO something that changes anything outside this conversation (remember or "
+    "save information, send or reply to messages, create, edit, move or delete files, schedule, install, run or "
+    "fix code, change settings), reply with exactly " + ACTION_MARKER + " and nothing else. URI can do many of "
+    "these, so never refuse them yourself: \"remember that ...\", \"note down ...\" and \"tell X ...\" are such "
+    "requests.\n"
+    "Otherwise answer directly and concisely. Write drafts, explanations, plans and analysis in the reply itself. "
+    "If you are unsure or lack information, say so plainly instead of guessing.")
+
+_CLAIM = re.compile(
+    r"\b(i(?:'ve| have)|i(?:'ll| will) now|i just|done[.!,]?\s+i)\s+(?:successfully\s+)?"
+    r"(saved|sent|deleted|removed|created|scheduled|emailed|stored|remembered|booked|moved|renamed|updated|"
+    r"installed|ran|executed|uploaded|downloaded|forwarded|replied|written to|changed|set up|cancelled)\b|"
+    r"\b(has|have) been (saved|sent|deleted|scheduled|emailed|stored|booked|moved|created|uploaded)\b", re.I)
+
+CLAIM_CORRECTION = ("\n\n[URI: no action was performed in this reply. Ask URI to do it explicitly if you want it done; "
+                    "URI will confirm before acting.]")
+
+
+@dataclass
+class AnswerOutcome:
+    status: str                       # brain_client status, or "ACTION_REQUESTED"
+    tier: str
+    text: str = ""
+    complete: bool = False
+    escalation_candidate: bool = False
+    flags: list = field(default_factory=list)
+    metrics: dict = field(default_factory=dict)
+    error: str | None = None
+
+    def to_dict(self):
+        return {"status": self.status, "tier": self.tier, "text": self.text, "complete": self.complete,
+                "escalation_candidate": self.escalation_candidate, "flags": list(self.flags),
+                "metrics": dict(self.metrics), "error": self.error}
+
+
+def build_messages(user_text, history=(), system=URI_SYSTEM):
+    msgs = [{"role": "system", "content": system}]
+    for turn in list(history)[-12:]:
+        if turn.get("role") in ("user", "assistant") and isinstance(turn.get("content"), str):
+            msgs.append({"role": turn["role"], "content": turn["content"]})
+    msgs.append({"role": "user", "content": user_text})
+    return msgs
+
+
+def answer(client: BC.BrainClient, user_text, *, tier=FAST, use="answer", history=(), cancel=None,
+           deadlines=None, on_delta=None, executed_action=False, max_tokens=None) -> AnswerOutcome:
+    """Stream an answer. `on_delta(kind, text)` receives "answer" text only after the marker check, and
+    "reasoning" deltas (NORMAL tier) as they arrive."""
+    cancel = cancel or BC.CancelToken()
+    held = {"buf": "", "released": False, "marker": False}
+
+    def relay(kind, text):
+        if kind == "reasoning":
+            if on_delta:
+                on_delta("reasoning", text)
+            return
+        if held["released"]:
+            if on_delta:
+                on_delta("answer", text)
+            return
+        held["buf"] += text
+        probe = held["buf"].lstrip()
+        if probe.startswith(ACTION_MARKER) or (ACTION_MARKER.startswith(probe) and probe):
+            if probe.startswith(ACTION_MARKER):
+                held["marker"] = True
+                cancel.cancel("action_marker")
+            return
+        held["released"] = True
+        if on_delta:
+            on_delta("answer", held["buf"])
+
+    body = {"model": "local", "messages": build_messages(user_text, history),
+            **tier_params(tier, use=use, max_tokens=max_tokens)}
+    res = client.stream_chat(body, cancel=cancel, deadlines=deadlines, on_delta=relay)
+    metrics = {"ttft_s": res.ttft_s, "first_answer_s": res.first_answer_s, "total_s": res.total_s,
+               "prompt_n": res.timings.get("prompt_n"), "prompt_per_second": res.timings.get("prompt_per_second"),
+               "predicted_n": res.timings.get("predicted_n"),
+               "predicted_per_second": res.timings.get("predicted_per_second"),
+               "cache_n": res.timings.get("cache_n"), "draft_n": res.timings.get("draft_n"),
+               "draft_n_accepted": res.timings.get("draft_n_accepted"),
+               "reasoning_chars": len(res.reasoning), "retried": res.retried}
+    if held["marker"] or (res.text.strip() == ACTION_MARKER):
+        return AnswerOutcome("ACTION_REQUESTED", tier, metrics=metrics)
+    if not held["released"] and held["buf"] and on_delta:
+        on_delta("answer", held["buf"])        # short reply that was a strict prefix of the marker (e.g. "<")
+    text = res.text
+    flags = []
+    if res.status in (BC.COMPLETE, BC.INCOMPLETE_LENGTH) and not executed_action and _CLAIM.search(text):
+        flags.append("UNVERIFIED_ACTION_CLAIM")
+        text += CLAIM_CORRECTION
+        if on_delta:
+            on_delta("answer", CLAIM_CORRECTION)
+    post = after_result(tier, res.status)
+    return AnswerOutcome(res.status, tier, text=text, complete=post["complete"],
+                         escalation_candidate=post["escalation_candidate"], flags=flags, metrics=metrics,
+                         error=res.error)
