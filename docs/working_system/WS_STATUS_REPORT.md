@@ -1,6 +1,6 @@
 # URI Working System — status report
 
-Date: 2026-10-08. Branch `integration/working-system-20261008` (local only, not pushed). Code tip `cfe4e88`.
+Date: 2026-10-08. Branch `integration/working-system-20261008` (local only, not pushed). Reviewed code `fcfed5c` (Codex r4); chain/runtime tree `abe2f9b`; branch HEAD = the commit carrying this report (later commits: tools, tests and docs only, listed in the receipt §1).
 The blueprint and acceptance criteria are in `WS_BLUEPRINT.md`, the inputs in `WS_PROVENANCE.md`, and the commit
 ids, hashes and receipts in `WS_INTEGRATION_RECEIPT.md`.
 
@@ -36,19 +36,19 @@ below refer to those commits.
 
 ## 1. What each item has reached
 
-Legend: **I** implemented · **T** automated tests pass · **L** live-demonstrated in this session · **A** accepted by
-the independent Codex review of this candidate · **G** integrated (on the integration branch, combined regression
-gate passed) · **M** still mocked or simulated
+Legend: **I** implemented · **T** automated tests pass · **L** live-demonstrated in this session · **A** accepted with findings by
+the independent Codex review of the code at `fcfed5c` (round 4; later tool/test/doc changes checked in rounds 5-6) ·
+**G** integrated (on the integration branch; the combined regression chain passed on the tree materialized from `abe2f9b`) · **M** still mocked or simulated
 
 | Capability | State | Evidence |
 |---|---|---|
 | UI ↔ Core/OI over the stdio integrated worker (WS-D1) | I T L A G | `run_uri_integrated_worker.py`, `worker_bridge.py`, `integrated_runtime.dart`; live UI test (real widgets, real worker) |
 | Streaming answers (`answer.delta`) | I T L A G | live: 42 deltas, first token 0.45-0.79 s, 124-129 tok/s; screenshot 02 |
 | Cancellation (Stop button → `oi_cancel`) | I T L A G | live: Stop pressed mid-stream in the UI, `CANCELLED` (worker and UI runs) |
-| Reasoning tier (Fast/Thinking chip, progress count, no reasoning text) | I T L A G | live: NORMAL tier, 3,040 reasoning characters counted and not shown, 120-131 tok/s; screenshots 03, 04 |
+| Reasoning tier (Fast/Thinking chip, progress count, no reasoning text) | I T L A G | live: NORMAL tier, about 3,000 reasoning characters counted and not shown (3,274 in the latest UI receipt), 120-131 tok/s; screenshots 03, 04 |
 | Supervised action: approve → `SETTLED_VERIFIED`; deny → `APPROVAL_DENIED`, nothing changed | I T L A G | live through the **Runtime v1 row** (Brain READY) and through the explicit deterministic row (Brain stopped); screenshots 05, 06 |
 | Typed text never approves; approval bound to the card's digest; forged digest refused | I T L A G | unit tests; live `forged_digest` journey → `APPROVAL_DIGEST_MISMATCH`, memory unchanged |
-| Refusal (destructive request with no qualified capability) | I T L A G | worker: `REFUSED_UNSUPPORTED` in a fresh session. UI-widget: in a session holding a just-denied intent Core returned `INTENT_CONFIRMED_NOT_EXECUTED`; asserted no card and memory unchanged |
+| Refusal of a destructive request with no qualified capability | I T L A G (worker); UI-widget shows *no execution*, not the refusal code | worker: Core returned `REFUSED_UNSUPPORTED` in a fresh session. UI-widget: in a session holding a just-denied intent, Core returned `INTENT_CONFIRMED_NOT_EXECUTED` (asking about that intent); asserted no approval card and memory unchanged. The refusal code itself was not shown through the UI |
 | Unavailable runtime | I T L A G | live: `BRAIN_UNAVAILABLE` and nothing sent to a model; Brain status shows STOPPED; screenshot 07 |
 | Restart: worker and Brain | I T L G | worker: a fresh process over the same client root kept memory. Brain (app, PID 11272, provenance in `screenshots/capture_run_11272_*.json`): 111 tok/s, then stopped and refused honestly, then restarted after a 60 s VRAM-release wait and answered at 117 tok/s; screenshots 07a, 07, 08 |
 | Memory: remember (approval-gated) and list (deterministic client read) | I T L A G | live; Settings panel (screenshot 09) |

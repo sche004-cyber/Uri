@@ -64,6 +64,7 @@ those packages; native needs a client-profile Codex login, PA-8/9).
 | 3 | `6bed5a3` | ACCEPT WITH FINDINGS | all prior items FIXED; F2 residual accepted as a recorded limitation; new MEDIUM (timeout treated as not started) → repaired in `fcfed5c` |
 | 4 | `fcfed5c` | **ACCEPT WITH FINDINGS** | MEDIUM FIXED; residual R-BUSY recorded; coverage note → tests in `abe2f9b` |
 | 5 | `154b952` (diff after `fcfed5c` + reports) | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | report boundaries overclaimed (review and chain commits); unverified `-Attach` capture provenance; UI refusal journey overstated; cancel-probe assertion; launcher default omitted → all repaired in the commit after `154b952` (attach captures 07a/07/08 retaken with PID verification) |
+| 6 | `04864c6` | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | findings 2, 4 and 5 FIXED; stale code-tip and "A" wording, UI refusal label and reasoning-character count corrected in the next commit |
 
 Every Codex finding was checked against source before repair. Codex could not run tests in its sandbox; its verdicts
 rest on source inspection. The test results above come from this session's own runs.
