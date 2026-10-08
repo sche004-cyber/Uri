@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **63 passed** (25 original + 38 added or updated across Codex rounds 1-11). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **65 passed** (25 original + 40 added or updated across Codex rounds 1-12). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -242,6 +242,18 @@ R-b was confirmed repaired. R-a and R-c were partial, and one new item was found
 3 new tests (63 total, all passing); all 3 fail on the round-10 checker. An older test was corrected to give its
 shell sample a real shell image. Live: the gate refuses (exit 3) with 6 transitional findings and 6 DONOR_ONLY
 findings from the Phase 2 session's running chain, and no self-report. Round 12 result: see §2l.
+
+## 2l. Codex review round 12: REJECT, then repaired
+
+Q-1 and Q-3 were confirmed repaired. One end-to-end gap remained:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| P-1 (Q-2 residual) | High | The live probe's privacy filter called the shell skip without the real image, so a rogue image claiming a trusted shell command line was dropped before `evaluate()` saw it | The filter is now `keep_process()`, which applies exactly `evaluate()`'s selection tests (shell skip with real image, runtime/URI names, relevant listener ownership, any root). Listener command lines are kept exactly when `evaluate()` would select that listener |
+
+2 new tests (65 total, all passing); both fail on the round-11 checker. Live: the snapshot keeps 10 processes (the
+legacy server tree, Ollama, the Phase 2 session's chain) and 2 of 25 listener command lines. The gate refuses with
+no self-report. Round 13 result: see §2m.
 
 ## 3. Integrity and recoverability
 

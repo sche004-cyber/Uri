@@ -452,3 +452,20 @@ def test_gate_self_exclusion_requires_the_exact_gate_script_path():
     src = open(rac.__file__, encoding="utf-8").read()
     assert 'gate_path = norm(os.path.join(os.path.dirname(os.path.abspath(__file__)), "uri_authorized_start.ps1"))' in src
     assert '_basename(tg) == "uri_authorized_start.ps1"' not in src
+
+
+# --- regression for the Codex adversarial review round 12 (2026-10-08, verdict REJECT) -----------------------------
+def test_live_privacy_filter_uses_the_real_image_for_the_agent_shell_skip():
+    fake_shell = {"pid": 2, "ppid": 1, "image": r"D:\rogue\uri_worker.exe",
+                  "cmdline": r'"C:\Program Files\Git\bin\bash.exe" -c "echo CLAUDE_CODE_SHELL"'}
+    real_shell = dict(fake_shell, pid=3, image=r"C:\Program Files\Git\bin\bash.exe")
+    assert rac.keep_process(fake_shell, M["roots"], set(), set()) is True
+    assert rac.keep_process(real_shell, M["roots"], set(), set()) is False
+
+
+def test_live_privacy_filter_keeps_everything_evaluate_would_select():
+    cases = [proc(f"{RUNTIME}/tools/plain_worker.exe"), proc("D:/URI-preservation/worker.exe --work"),
+             {"pid": 4, "ppid": 1, "image": r"D:\rogue\uri_worker.exe", "cmdline": "worker --serve"},
+             proc("python D:/rogue/uri_runtime_authority_check.py")]
+    for c in cases:
+        assert rac.keep_process(c, M["roots"], set(), set()), c

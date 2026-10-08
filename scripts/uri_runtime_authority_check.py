@@ -520,7 +520,27 @@ $o | ConvertTo-Json -Depth 5 -Compress
 """
 
 
-def live_snapshot(roots: list | None = None) -> dict:
+def keep_process(p: dict, roots: list | None, listen_pids: set, self_pids: set) -> bool:
+    """Live-probe privacy filter: keep a process record only when evaluate() could select it. It uses the same
+    tests evaluate() uses (agent-shell skip with the REAL image, runtime/URI names, listener ownership, any root)
+    so the filter can never drop something evaluate() would have counted."""
+    cmd = p.get("cmdline", "") or ""
+    img = p.get("image", "") or ""
+    if p.get("pid") in self_pids or _is_agent_shell(cmd, roots, img):
+        return False
+    if RUNTIME_HINT.search(cmd) or uri_named(cmd) or uri_named(img) or p.get("pid") in listen_pids:
+        return True
+    if roots:
+        outer = _tokens(WD.sub("", cmd))[:1]
+        for ex, tg in launch_targets(cmd) + [(img, img)] + [(o, o) for o in outer]:
+            for x in (ex, tg):
+                if x and not x.startswith(("module:", "inline-code", "encoded:")) and _root_containing(x, roots):
+                    return True
+    return False
+
+
+def live_snapshot(manifest: dict | None = None) -> dict:
+    roots = manifest["roots"] if manifest else None
     if os.name != "nt":
         raise SystemExit("live probe is Windows-only; use --snapshot")
     child = subprocess.Popen(["powershell", "-NoProfile", "-NonInteractive", "-Command", PS_PROBE], stdout=subprocess.PIPE,
@@ -538,7 +558,6 @@ def live_snapshot(roots: list | None = None) -> dict:
         snap[k] = [] if v is None else (v if isinstance(v, list) else [v])
     # The probe's own PowerShell process carries this source text, which mentions URI paths; drop it.
     # Privacy: keep only command lines that look like URI runtimes; never persist unrelated process command lines.
-    listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict)}
     # Exclude only true ANCESTORS of this checker process (walking the parent chain, at most 4 levels), and only when
     # an ancestor is (a) the Windows venv python.exe redirector running this exact checker file, or (b) a trusted
     # system shell running the start gate uri_authorized_start.ps1. Nothing else can hide by name or by PID.
@@ -556,16 +575,22 @@ def live_snapshot(roots: list | None = None) -> dict:
         if is_redirector or is_gate:
             self_pids.add(cur)
         cur, depth = anc.get("ppid"), depth + 1
-    snap["processes"] = [p for p in snap.get("processes") or [] if p.get("pid") not in self_pids
-                         and not _is_agent_shell(p["cmdline"], roots)
-                         and (RUNTIME_HINT.search(p["cmdline"]) or uri_named(p["cmdline"]) or uri_named(p.get("image", ""))
-                              or (p.get("pid") in listen_pids and _is_python_like(p["cmdline"]))
-                              or (roots and any(_root_containing(x, roots) for ex, tg in launch_targets(p["cmdline"])
-                                                for x in (ex, tg, p.get("image", "")) if x)))]
+    if manifest is not None:
+        lo, hi = manifest["ports"]["uri_range"]
+        ports = set(range(lo, hi + 1)) | set(manifest["ports"].get("model_ports", []))
+    else:
+        ports = set()
+
+    def relevant_listener(l):
+        t = " ".join(x for x in (l.get("cmdline") or "", l.get("image") or "") if x)
+        return (l.get("port") in ports or _is_python_like(t) or _is_interpreter_image(l.get("image") or "")
+                or uri_named(t) or bool(roots and _root_for(t, roots)))
+
+    listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict) and relevant_listener(l)}
+    snap["processes"] = [p for p in snap.get("processes") or [] if keep_process(p, roots, listen_pids, self_pids)]
     for lst in snap.get("listeners") or []:
-        c = lst.get("cmdline", "")
-        if not (RUNTIME_HINT.search(c) or URI_HINT.search(c) or _is_python_like(c)):
-            lst["cmdline"] = ""  # keep only the image path for non-URI listeners
+        if not relevant_listener(lst):
+            lst["cmdline"] = ""  # keep only the image path for listeners evaluate() would not select
     # Redact secret-looking argument values everywhere before the snapshot can be saved or printed.
     for p in snap["processes"]:
         p["cmdline"] = redact(p["cmdline"])
@@ -596,7 +621,7 @@ def main(argv=None) -> int:
     except ManifestError as exc:
         print(f"MANIFEST_INVALID: {exc}")
         return 2
-    snap = json.loads(Path(a.snapshot).read_text(encoding="utf-8")) if a.snapshot else live_snapshot(manifest["roots"])
+    snap = json.loads(Path(a.snapshot).read_text(encoding="utf-8")) if a.snapshot else live_snapshot(manifest)
     if a.save_snapshot:
         Path(a.save_snapshot).write_text(json.dumps(snap, indent=1), encoding="utf-8")
     rep = evaluate(snap, manifest, strict=a.strict)
