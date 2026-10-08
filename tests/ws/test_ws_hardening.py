@@ -311,10 +311,10 @@ class Seq:
         return s
 
 
-def new_host(tmp_path, census, override=False, port=18470):
+def new_host(tmp_path, census, override=False, port=18470, quiet=0.05):
     H = load_host()
     H.GPU_POLL_S = 0.05
-    H.QUIET_S = 0.05
+    H.QUIET_S = quiet
     cfg = {"model": {"id": "qwen-test"}, "runtime": {"port": port, "ctx": 32768}}
     h = H.Host(tmp_path / "client", minutes=1, override=override, cfg=cfg, state_dir=tmp_path / "state",
                census=census, lease_dir=tmp_path / "lease")
@@ -343,6 +343,18 @@ def test_host_waits_for_a_quiet_window_after_contention(tmp_path):
     assert time.monotonic() - t0 >= 1.0
     details = [x["detail"] for x in h.report["history"]]
     assert "GPU_CONTENDED" in details and "GPU_QUIET_WINDOW" in details
+
+
+def test_quiet_window_survives_a_host_restart(tmp_path):
+    busy = G.census(raw([(1580, 311, 9), (20036, 13907, 1819)], 14300), card=CARD)
+    gap = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    H, h = new_host(tmp_path, Seq([busy]), quiet=600)
+    h.deadline = time.monotonic() + 0.2
+    assert h.wait_for_gpu() is False                       # saw contention, then the host exited
+    H2, h2 = new_host(tmp_path, Seq([gap]), quiet=600)     # a fresh host process on a momentarily free GPU
+    h2.deadline = time.monotonic() + 0.3
+    assert h2.wait_for_gpu() is False
+    assert h2.report["detail"] == "GPU_QUIET_WINDOW"
 
 
 def test_host_starts_at_once_on_a_free_gpu(tmp_path):

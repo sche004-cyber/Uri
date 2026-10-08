@@ -74,6 +74,9 @@ class Host:
         self.last_request_id = None
         self.stopped_at = None          # wall time the last server stop finished (release measurement)
         self.last_contended = None      # monotonic time the GPU was last seen CONTENDED (quiet window)
+        seen = G.last_contention(lease_dir)       # also seen by an earlier host or another URI GPU workload
+        if seen is not None and 0 <= now() - seen < QUIET_S:
+            self.last_contended = time.monotonic() - (now() - seen)
         self.stop_file = self.state_dir / "runtime_v1.stop"
 
     # ---- report ---------------------------------------------------------------------------------------------
@@ -167,6 +170,7 @@ class Host:
                          gpu=gpu)
             elif fit["verdict"] == G.CONTENDED and not self.override:
                 self.last_contended = time.monotonic()
+                G.record_contention(self.lease_dir, fit)
                 self.set("WAITING_FOR_GPU", detail="GPU_CONTENDED", explain=gpu["explain"], gpu=gpu)
             elif (not self.override and self.last_contended is not None
                   and time.monotonic() - self.last_contended < QUIET_S):

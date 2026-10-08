@@ -221,6 +221,21 @@ def acquire(purpose, *, label="", session="", expected_vram_mib=None, max_hold_s
     return GpuLease(fd, record, d)
 
 
+def record_contention(directory=None, fit=None):
+    """Machine-wide memory of the last time a URI GPU workload saw the GPU CONTENDED (wall time), so a quiet window
+    survives a restart of the process that observed it."""
+    d = Path(directory or lease_dir())
+    d.mkdir(parents=True, exist_ok=True)
+    _atomic_json(d / "contention.json", {"t": round(time.time(), 3), "pid": os.getpid(),
+                                         "consumers": (fit or {}).get("consumers")})
+
+
+def last_contention(directory=None):
+    rec = _read_json(Path(directory or lease_dir()) / "contention.json") or {}
+    t = rec.get("t")
+    return float(t) if isinstance(t, (int, float)) else None
+
+
 # ---- census and budget -------------------------------------------------------------------------------------------
 _PS_CENSUS = (
     "$ErrorActionPreference='SilentlyContinue';"
