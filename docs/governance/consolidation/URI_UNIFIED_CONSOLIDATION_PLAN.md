@@ -93,7 +93,7 @@ superseded. The consolidation tooling runs from the canonical development checko
 
 | Step | Action | Reversible by |
 |---|---|---|
-| P-1 | Approve the canonical decision; push `canonical/candidate-20261008` + tags (new refs, no force) | delete the new refs |
+| P-1 | Superseded in round 2: the owner authorized fast-forwarding `integration/git-sync-20261008` with accepted work; that push and the `accepted/*` tags follow the round-2 review (status in `URI_CONSOLIDATION_FINAL_AUDIT_20261008.md` section 6). Approving the canonical decision itself (`main`, `donor/*` tags) stays with the owner | reset the ref to its previous tip only with owner approval; delete new tags |
 | P-2 | Run `scripts/uri_containment.ps1 -Apply` (disable `\URIServer`, move `URI.lnk` ×2); keep the backup folder it prints | `-Restore -BackupRoot <that folder>` |
 | P-3 | Stop the running legacy server (PID tree under the task) at a convenient time | re-enable task / log on |
 | P-4 | Choose the authoritative install directory, state root and port; provision with `scripts/provision_uri_server.py` / `provision_uri_client.py` | delete the fresh roots (no legacy data touched) |
