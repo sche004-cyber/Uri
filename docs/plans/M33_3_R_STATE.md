@@ -1,5 +1,12 @@
 # M33.3-R — State
 
+**Independent closing audit (2026-09-27): IN_PROGRESS.** Codex is auditing
+Claude's candidate `d1feaf72f7b1322fe30cc21e2808d5eab09bcdf4` under the
+User's direct independent-audit/repair/requalification/conditional-freeze
+instruction. Bounded repairs are being requalified; no closure is asserted.
+Historical implementer state and evidence follow unchanged.
+
+
 **Current state:** `M33_3_R_IMPLEMENTATION_CANDIDATE_AWAITING_INDEPENDENT_CLOSING_AUDIT` (all authorized stages complete at implementer level; integrated qualification passed; report `docs/plans/M33_3_R_IMPLEMENTATION_REPORT.md`). M33.3 is NOT closed or frozen.
 **State history:** `M33_3_R_IN_PROGRESS` -> `M33_3_R_S5_USER_TOUCHPOINT_PENDING` -> `M33_3_R_S5_GATE_FROZEN` -> `M33_3_R_S5_FINAL_REQUALIFICATION_RUNNING` -> `M33_3_R_IMPLEMENTATION_CANDIDATE_AWAITING_INDEPENDENT_CLOSING_AUDIT`.
 **Plan:** `docs/plans/M33_3_R_CONTINUOUS_EXECUTION_PLAN.md`. **Canonical state:** `docs/governance/URI_STATE.yaml` (`M33.3` status `M33_3_R_IN_PROGRESS`).

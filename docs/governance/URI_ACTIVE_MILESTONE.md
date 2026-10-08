@@ -959,6 +959,17 @@ blueprint, not a new decision invented here.
 
 ## 1c. Roadmap Reservations, 2026-09-18: M32.1, M34, M35
 
+**Current M33.3 correction (2026-09-27, independent closing audit in progress):**
+M33.3 is Edge Intelligence Qualification & Integration. Candidate `d1feaf7`
+is under independent Codex closing audit and bounded repair/requalification
+under the User's explicit one-session task package. It is not closed yet.
+The current scope is S5/S6/S7/S8/S10/S11/S12 plus the authorized S1-A1
+amendment. S9 remains URI-Memory/D4; S13 remains a future INT-* milestone;
+no production integration is authorized. See `docs/plans/M33_3_R_STATE.md`
+and canonical machine state `URI_STATE.yaml`. Historical reservations below
+remain history, not the current milestone identity.
+
+
 Recorded per direct User instruction ("Approve the consolidated
 governance/planning proposal... Apply the pending roadmap items").
 All three are reservations/scope records only — **none is started,

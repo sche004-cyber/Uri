@@ -216,8 +216,8 @@ active_continuation:
   s2_repairs_verified: true
   s2_audit_pending: false
   s2_closed_frozen: true
-  next_slice_authorized: true
-  next_slice_authorization_note: "GD-1 (2026-09-27, M33.3-R). Previously false while later_slice_implementation_authorized was true (stale contradiction; both keys predate S4 closure). Reconciled: the User authorized M33.3-R, so both keys are true, scoped exactly to S5, S6, S7, S8, S10, S11 and S12. S9 (URI-Memory / D4) and S13 (INT-* gated production integration) are NOT authorized. No /ask or agent-loop integration, no URI-RAR adoption, no INT-* event."
+  next_slice_authorized: false
+  next_slice_authorization_note: "GD-1 closing-audit correction (2026-09-27): implementation completed; both next/later-slice flags are now false, audit-side repairs remain explicitly authorized by the User task package. Historical implementation authorization follows: Previously false while later_slice_implementation_authorized was true (stale contradiction; both keys predate S4 closure). Reconciled: the User authorized M33.3-R, so both keys are true, scoped exactly to S5, S6, S7, S8, S10, S11 and S12. S9 (URI-Memory / D4) and S13 (INT-* gated production integration) are NOT authorized. No /ask or agent-loop integration, no URI-RAR adoption, no INT-* event."
   s2_state: "docs/plans/M33_3_S2_STATE.md"
   s2_implementation_evidence: "docs/plans/M33_3_S2_IMPLEMENTATION_REPORT.md"
   s2_closure_evidence: "docs/plans/M33_3_S2_REPAIR_REQUALIFICATION_AUDIT_REPORT.md"
@@ -229,13 +229,14 @@ active_continuation:
   s1_repairs_verified: true
   s1_closed_frozen: true
   m33_3_complete: false
-  later_slice_implementation_authorized: true
+  later_slice_implementation_authorized: false
   later_slice_authorized_scope: "S5, S6, S7, S8, S10, S11, S12"
   later_slice_excluded: "S9 (re-homed to URI-Memory / D4); S13 (separate future INT-* gated milestone)"
   m33_3_r_state: "docs/plans/M33_3_R_STATE.md"
   m33_3_r_plan: "docs/plans/M33_3_R_CONTINUOUS_EXECUTION_PLAN.md"
   m33_3_r_rar_hash_pins: "GD-3: current active uri_v1/turn/rar_deterministic.py SHA-256 4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95 (S4 RC-5 re-pin) is the anchor all M33.3-R work pins. Historical Batch A / A9 SHA-256 e02af25bb7009d12d829c8b8fc92e487d3da75aeaa160092db617458278fb649 stays the historical anchor for frozen Batch A evidence and is not re-pinned or rewritten."
-  m33_3_r_independent_closing_audit_status: "NOT_STARTED"
+  m33_3_r_independent_closing_audit_status: "IN_PROGRESS_BOUNDED_REPAIRS_REQUALIFYING"
+  m33_3_r_audit_authority: "Direct User task package 2026-09-27: independent inspection, reproduction, bounded repair, affected requalification, integrated regression, and conditional closure/commit/push by Codex this session only. No S9/S13 authorization."
   s1_closure_evidence: "docs/plans/M33_3_S1_REPAIR_REQUALIFICATION_AUDIT_REPORT.md"
   previous_status: "M33_3_S1_IMPLEMENTATION_COMPLETE_AWAITING_INDEPENDENT_AUDIT"
   rg0r_note: "Updated 2026-09-26 (additive). The focused independent re-audit RG-0R returned RG_0R_ACCEPTED: no blocking defects; RG-0-F1, RG-0-F2, RG-0-F3 and the B-R7 clarification accepted; the two conservative repair calls consistent and safe; planning phase closed (record: docs/plans/M33_3_RG0R_FOCUSED_INDEPENDENT_REAUDIT_REPORT.md; full report text not stored, verdict recorded as relayed). The S1 pre-implementation scoping audit returned S1_SCOPE_READY_WITH_BOUNDED_FOLLOWUP; User decisions D5 (CONFIRMED authority by RAR rule class) and D6 (full state-file S1, no S1/S1b split) and findings F-1..F-6 are recorded in Plan A revision R4. S1 scope frozen in docs/plans/M33_3_S1_STATE.md as S1_SCOPE_READY_FOR_IMPLEMENTATION_REVIEW. CODE_IMPLEMENTATION_AUTHORIZED: NO. S1_IMPLEMENTATION_AUTHORIZED: NO. Next: a separate User/governance implementation-authorization review of S1. No slice S1-S13 open; no INT-* event; URI-RAR not adopted. A9 rar_deterministic.py, rar_contracts.py and the frozen Batch A battery verified unchanged."
