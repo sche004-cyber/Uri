@@ -3,8 +3,12 @@
   Start the URI working system (development; NOT a production cutover). WS blueprint W7 / AC-11.
 
 .DESCRIPTION
-  Order: verify the materialized runtime -> Runtime v1 (attach, or start through uri_operational_intelligence.host)
-  -> integrated paired server (scripts\run_uri_integrated_server.py) -> the Flutter app with URI_CLIENT_MANIFEST set.
+  Order: verify the materialized runtime -> Brain host (scripts\ws_brain_host.py: GPU lease, contention wait,
+  measured VRAM release wait, Runtime v1 through the accepted RuntimeManager, calibration) -> integrated paired server
+  (scripts\run_uri_integrated_server.py) -> the Flutter app with URI_CLIENT_MANIFEST set.
+
+  A second launch reuses what is running: a live Brain host is not duplicated, and a second window of the same UI
+  build is not opened.
 
   Refuses, before starting anything:
     * a runtime root that is the legacy checkout (uri-agent) or the M37-M39 donor, or that is not HEAD e8e3b65 with a
@@ -16,12 +20,17 @@
 
 .PARAMETER SelfTest
   Run only the verification and refusal checks (including negative cases) and print JSON. Starts nothing.
+
+.PARAMETER OverrideGpu
+  Owner-authorized: start the Brain even when other GPU processes leave too little memory. Recorded in the GPU lease
+  and the Brain host report; the speed check still classifies the result. No process is ever stopped.
 #>
 param(
-  [string]$RuntimeRoot = 'C:\Users\cheta\Development\uri-ws-final',
-  [string]$UiExe = 'C:\Users\cheta\Development\uri-working-system\uri_ui\build\windows\x64\runner\Release\uri_ui.exe',
+  [string]$RuntimeRoot = 'C:\Users\cheta\Development\uri-ws-hard',
+  [string]$UiExe = '',
   [int]$BrainMinutes = 480,
   [switch]$NoBrain,
+  [switch]$OverrideGpu,
   [switch]$NoUi,
   [switch]$SelfTest
 )
@@ -29,7 +38,8 @@ $ErrorActionPreference = 'Stop'
 $Base = 'e8e3b65259c45fc823addc3ef8969425a265bd1b'
 $LegacyRoots = @('C:\Users\cheta\Development\uri-agent', 'C:\Users\cheta\Development\uri-m37-m39-integration')
 $LegacyPorts = @(8000, 8018, 8021)
-$UiRoot = 'C:\Users\cheta\Development\uri-working-system'
+$UiRoot = 'C:\Users\cheta\Development\uri-ws-hardening'   # fixed: the UI must come from the integration worktree
+if (-not $UiExe) { $UiExe = Join-Path $UiRoot 'uri_ui\build\windows\x64\runner\Release\uri_ui.exe' }
 
 function Norm([string]$p) { return [IO.Path]::GetFullPath($p).TrimEnd('\').ToLowerInvariant() }
 
@@ -58,6 +68,19 @@ function Test-Installation([string]$root, [string]$uiExe) {
     if (-not $u.StartsWith((Norm $UiRoot) + '\')) { $problems += 'UI_OUTSIDE_INTEGRATION_WORKTREE' }
   }
   return [pscustomobject]@{ ok = ($problems.Count -eq 0); problems = $problems; installation = $cur }
+}
+
+function Get-LiveBrainHost([string]$reportDir) {
+  # The Brain host report names its process; it counts only if that process still exists with the recorded start.
+  $f = Join-Path $reportDir 'brain_host.json'
+  if (-not (Test-Path $f)) { return $null }
+  try { $r = Get-Content -Raw -Encoding UTF8 $f | ConvertFrom-Json } catch { return $null }
+  if ($r.schema -ne 'uri.ws.brain_host.v1') { return $null }
+  $p = Get-Process -Id ([int]$r.host_pid) -ErrorAction SilentlyContinue
+  if (-not $p) { return $null }
+  $started = [DateTimeOffset]::FromUnixTimeMilliseconds([int64]([double]$r.host_started * 1000)).LocalDateTime
+  if ([Math]::Abs(($p.StartTime - $started).TotalSeconds) -gt 5) { return $null }
+  return $r
 }
 
 function Test-Http([string]$url) {
@@ -98,6 +121,7 @@ if ($SelfTest) {
     listener_identity_proven = $idOk
     wrong_key_proof_refused = $idForeign
     legacy_port_8000_contacted = $false
+    gpu_lease = $(try { (& (Join-Path $RuntimeRoot '.venv\Scripts\python.exe') -m uri_operational_intelligence.gpu_lease status 2>$null | Out-String | ConvertFrom-Json).state } catch { 'UNREADABLE' })
   }
   $out | ConvertTo-Json -Depth 5
   if ($real.ok -and -not $negLegacy.ok -and -not $negUi.ok -and $out.negative_legacy_port.refused -and ($idOk -ne $false) -and ($idForeign -ne $false)) { exit 0 } else { exit 1 }
@@ -108,13 +132,21 @@ if (-not $check.ok) { Write-Error ("REFUSED: " + ($check.problems -join ', ')); 
 $cur = $check.installation
 $py = Join-Path $RuntimeRoot '.venv\Scripts\python.exe'
 
-# 1. Runtime v1: attach if something answers on its port (the worker verifies identity and reports a foreign
-#    instance; nothing here adopts or stops it), otherwise start it through the OI host (frozen argv, job object).
+# 1. Brain. A live Brain host is reused (never duplicated). Something else answering on the Runtime v1 port is
+#    attached, not adopted or stopped (the worker verifies its identity). Otherwise the Brain host starts: it takes
+#    the machine-wide GPU lease, waits while other GPU processes leave too little memory (explaining who), waits for
+#    measured VRAM release, starts Runtime v1 through the accepted RuntimeManager and measures its speed.
+$cli0 = Get-Content -Raw -Encoding UTF8 $cur.client_manifest | ConvertFrom-Json
+$reportDir = Join-Path $cli0.client_root 'control\oi'
+$liveHost = Get-LiveBrainHost $reportDir
 $brain = Test-Http 'http://127.0.0.1:18470/health'
-if ($brain -eq 0 -and -not $NoBrain) {
-  Start-Process -FilePath $py -ArgumentList @('-m', 'uri_operational_intelligence.host', '--minutes', "$BrainMinutes") `
-    -WorkingDirectory $RuntimeRoot -WindowStyle Hidden | Out-Null
-  Write-Host "Runtime v1: starting (loads in the background; URI reports its state)"
+if ($liveHost) {
+  Write-Host "Brain host: already running (pid $($liveHost.host_pid), $($liveHost.state)); reused"
+} elseif ($brain -eq 0 -and -not $NoBrain) {
+  $hostArgs = @((Join-Path $RuntimeRoot 'scripts\ws_brain_host.py'), '--report-dir', $reportDir, '--minutes', "$BrainMinutes")
+  if ($OverrideGpu) { $hostArgs += '--override-contention'; Write-Host 'GPU override: owner-authorized start next to other GPU processes (recorded)' }
+  Start-Process -FilePath $py -ArgumentList $hostArgs -WorkingDirectory $RuntimeRoot -WindowStyle Hidden | Out-Null
+  Write-Host "Brain host: starting (GPU check, load and speed check run in the background; URI shows the state)"
 } else { Write-Host "Runtime v1: health $brain (attach; identity verified by the worker)" }
 
 # 2. Integrated server. An existing listener is accepted only with this installation's signed identity proof
@@ -136,6 +168,12 @@ Write-Host "Integrated server: port $($srv.port), identity proven"
 # 3. UI.
 if (-not $NoUi) {
   if (-not (Test-Path $UiExe)) { Write-Error "UI_NOT_BUILT: $UiExe (flutter build windows in $UiRoot\uri_ui)"; exit 4 }
+  $open = @(Get-Process uri_ui -ErrorAction SilentlyContinue | Where-Object { $_.Path -and ((Norm $_.Path) -eq (Norm $UiExe)) })
+  if ($open.Count -gt 0) {
+    # One worker per installation (L-MUTEX): a second window would only fail to start its worker.
+    Write-Host "URI is already open (pid $($open[0].Id)); not starting a second window."
+    exit 0
+  }
   $env:URI_CLIENT_MANIFEST = $cur.client_manifest
   Start-Process -FilePath $UiExe -WorkingDirectory (Split-Path $UiExe) | Out-Null
   Write-Host "URI started (Living Companion)."
