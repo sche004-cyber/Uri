@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **65 passed** (25 original + 40 added or updated across Codex rounds 1-12). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **66 passed** (25 original + 41 added or updated across Codex rounds 1-13). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -254,6 +254,18 @@ Q-1 and Q-3 were confirmed repaired. One end-to-end gap remained:
 2 new tests (65 total, all passing); both fail on the round-11 checker. Live: the snapshot keeps 10 processes (the
 legacy server tree, Ollama, the Phase 2 session's chain) and 2 of 25 listener command lines. The gate refuses with
 no self-report. Round 13 result: see §2m.
+
+## 2m. Codex review round 13: ACCEPT WITH FINDINGS, then the finding repaired
+
+Codex confirmed P-1 repaired and found **no further High-impact false negative** within the stated scope. One Medium:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| O-1 | Medium | The live listener filter used a narrower root test than `evaluate()`: a donor command parsed through `bash -c` on an off-range port lost its command line in the snapshot. The verdict was still CONTAMINATED through the owning process | A single module-level `listener_selected()` rule is used by both `evaluate()` and the live filter |
+
+1 new test (66 total, all passing). Live (11:00 IST): 8 transitional findings, 6 DONOR_ONLY (the Phase 2 session's
+running chain), and Ollama shared (process and listener). The gate refuses with no self-report. Round 14 confirmation:
+see §2n.
 
 ## 3. Integrity and recoverability
 

@@ -427,11 +427,7 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
     roots = manifest["roots"]
 
     def refs_root(text):
-        """True when the command launches from, or mentions, ANY manifest root (any classification)."""
-        if not text:
-            return False
-        return _root_for(text, roots) is not None or any(_root_containing(tg, roots) or _root_containing(ex, roots)
-                                                          for ex, tg in launch_targets(text))
+        return refs_any_root(text, roots)
 
     for t in snapshot.get("scheduled_tasks", []):
         if _autostart_relevant(t["action"]) or URI_HINT.search(t["name"]) or refs_root(t["action"]):
@@ -448,10 +444,7 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
         return " ".join(x for x in (lst.get("cmdline") or "", lst.get("image") or "") if x)
 
     def listener_relevant(lst):
-        text = listener_text(lst)
-        img = lst.get("image") or ""
-        return (lst["port"] in uri_ports or lst["port"] in model_ports or _is_python_like(text) or refs_root(text)
-                or uri_named(text) or (bool(img) and _is_interpreter_image(img)))
+        return listener_selected(lst, manifest)
 
     listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if listener_relevant(lst)}
 
@@ -520,6 +513,24 @@ $o | ConvertTo-Json -Depth 5 -Compress
 """
 
 
+def refs_any_root(text: str, roots: list) -> bool:
+    """True when the command launches from, or mentions, ANY manifest root (any classification)."""
+    if not text or not roots:
+        return False
+    return _root_for(text, roots) is not None or any(_root_containing(tg, roots) or _root_containing(ex, roots)
+                                                      for ex, tg in launch_targets(text))
+
+
+def listener_selected(lst: dict, manifest: dict) -> bool:
+    """Single listener-selection rule shared by evaluate() and the live probe's privacy filter."""
+    lo, hi = manifest["ports"]["uri_range"]
+    ports = set(range(lo, hi + 1)) | set(manifest["ports"].get("model_ports", []))
+    text = " ".join(x for x in (lst.get("cmdline") or "", lst.get("image") or "") if x)
+    img = lst.get("image") or ""
+    return (lst.get("port") in ports or _is_python_like(text) or refs_any_root(text, manifest["roots"])
+            or uri_named(text) or (bool(img) and _is_interpreter_image(img)))
+
+
 def keep_process(p: dict, roots: list | None, listen_pids: set, self_pids: set) -> bool:
     """Live-probe privacy filter: keep a process record only when evaluate() could select it. It uses the same
     tests evaluate() uses (agent-shell skip with the REAL image, runtime/URI names, listener ownership, any root)
@@ -582,9 +593,7 @@ def live_snapshot(manifest: dict | None = None) -> dict:
         ports = set()
 
     def relevant_listener(l):
-        t = " ".join(x for x in (l.get("cmdline") or "", l.get("image") or "") if x)
-        return (l.get("port") in ports or _is_python_like(t) or _is_interpreter_image(l.get("image") or "")
-                or uri_named(t) or bool(roots and _root_for(t, roots)))
+        return manifest is not None and listener_selected(l, manifest)
 
     listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict) and relevant_listener(l)}
     snap["processes"] = [p for p in snap.get("processes") or [] if keep_process(p, roots, listen_pids, self_pids)]

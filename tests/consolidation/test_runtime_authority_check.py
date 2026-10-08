@@ -469,3 +469,12 @@ def test_live_privacy_filter_keeps_everything_evaluate_would_select():
              proc("python D:/rogue/uri_runtime_authority_check.py")]
     for c in cases:
         assert rac.keep_process(c, M["roots"], set(), set()), c
+
+
+# --- regression for the Codex adversarial review round 13 (ACCEPT WITH FINDINGS, Medium) ---------------------------
+def test_live_listener_filter_and_evaluate_share_one_selection_rule():
+    lst = {"address": "0.0.0.0", "port": 9100, "pid": 11, "image": r"C:\Program Files\Git\bin\bash.exe",
+           "cmdline": "bash -c '/d/URI-preservation/worker.exe --serve'"}
+    assert rac.listener_selected(lst, M)
+    rep = verdict(snap(listeners=[lst]))
+    assert "DONOR_ONLY" in classes(rep)
