@@ -26,7 +26,11 @@ OVERLAY_COMMIT = "759d0d4e4069ddb490e6ce52ac58bf86ef0248f0"
 OVERLAY_LIST = "docs/governance/consolidation/RUNTIME_OVERLAY_PHASE2OQ_G.txt"
 # New Operational Intelligence paths copied from the candidate working tree (none exists at BASE or in the overlay).
 OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration", "model_lab/lab",
-            "model_lab/__init__.py"]
+            "model_lab/__init__.py",
+            # Working-system integration (docs/working_system/WS_BLUEPRINT.md): new paths only.
+            "scripts/run_uri_integrated_worker.py", "scripts/run_uri_integrated_server.py", "scripts/ws_provision.py",
+            "scripts/ws_frozen_check.py", "tests/ws", "work/oi/.gitignore"]
+TEST_PATHS = ("tests/oi", "tests/ws")
 
 
 def git(*args, cwd=SRC, **kw):
@@ -60,7 +64,7 @@ def main(argv=None):
     lst.unlink()
     collisions, copied = [], {}
     for rel in OI_PATHS:
-        if a.exclude_oi_tests and rel == "tests/oi":
+        if a.exclude_oi_tests and rel in TEST_PATHS:
             continue
         s, d = SRC / rel, dest / rel
         if not s.exists():
