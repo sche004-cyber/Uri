@@ -46,6 +46,10 @@ def test_1_action_guard_wins_over_a_pending_question(fake, tmp_path):
     ("Draft a report: The meeting is on Monday. Attendance was 17, sorry, by Tuesday it was 18.", ["Monday", "17"],
      ["17"]),
     ("Report for Anil with 17 students, sorry, Everybody counted 18 students", ["Anil"], []),
+    # Codex TI round 8: an apology is not a correction; a same-kind replacement must follow the cue.
+    ("Draft a report: The meeting is on Monday, sorry for the late notice, and attendance was 18 on Tuesday.",
+     ["Monday"], []),
+    ("The meeting is on Monday, sorry, the hall is booked", ["Monday"], []),
 ])
 def test_2_only_verifiable_supersessions_are_excused(words, claimed, verified):
     assert V.verified_superseded(words, claimed)[0] == verified

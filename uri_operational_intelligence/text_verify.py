@@ -284,23 +284,32 @@ def verified_superseded(user_words, claimed) -> tuple:
     required and is shown to the user as a review flag."""
     from .text_input import _CORRECTION_CUES
     text = user_words or ""
-    cues = [m.start() for m in _CORRECTION_CUES.finditer(text)]
+    # A cue counts only as a correction, never as an apology or a phrase ("sorry for the late notice", "actually
+    # happened"): the words right after it must hold a replacement value of the same kind.
+    cues = [(m.start(), m.end()) for m in _CORRECTION_CUES.finditer(text) if not _APOLOGY.match(text, m.start())]
     verified, unverified = [], []
     for value in claimed or ():
-        v = " ".join(_tokens(value))
+        kind = next((k for k in (_detail_kind(w) for w in re.findall(r"[\w'-]+", value)) if k), None)
         ok = False
-        if v:
+        if kind is not None:
             for m in re.finditer(r"(?<![\w])" + re.escape(value.strip()) + r"(?![\w])", text, re.I):
-                for c in cues:
-                    gap = text[m.end():c]
+                for c0, c1 in cues:
+                    gap = text[m.end():c0]
                     words = re.findall(r"[\w'-]+", gap)
-                    # The claimed value must be the LAST detail before the cue: "Anil with 17 students, sorry"
-                    # corrects 17, not Anil.
-                    if c >= m.end() and not re.search(r"[.!?;\n]", gap) and len(words) <= 4 and \
-                            not any(_detail_kind(w) for w in words):
+                    after = re.split(r"[.!?;\n]", text[c1:])[0]
+                    after_words = re.findall(r"[\w'-]+", after)[:5]
+                    # The claimed value must be the LAST detail before the cue ("Anil with 17 students, sorry"
+                    # corrects 17, not Anil) and a same-kind value must follow the cue.
+                    if c0 >= m.end() and not re.search(r"[.!?;\n]", gap) and len(words) <= 4 and \
+                            not any(_detail_kind(w) for w in words) and \
+                            any(_detail_kind(w) == kind for w in after_words):
                         ok = True
         (verified if ok else unverified).append(value)
     return verified, unverified
+
+
+_APOLOGY = re.compile(r"sorry\s+(?:for|to|about|that|if|i|we|but)\b|actually\s+(?:happened|is|was|were|did|do|does)\b",
+                      re.I)
 
 
 _ORDINAL_WORD = set(_ORD) | {"1st", "2nd", "3rd"}
