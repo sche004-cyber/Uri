@@ -52,6 +52,11 @@ COMMANDS = {
 }
 OPEN_WHILE_BUSY = {"oi_cancel", "brain_status", "brain_catalog", "cloud_policy", "brain_health", "oi_turn_status"}
 PERF_SAMPLES = 48
+# A Brain restart/stop request blocks new turns until the host has acted on it (Codex H-r1 F2): the busy check and
+# the request are made on the worker's single command thread, and no turn can start between them or after them while
+# the host has not finished. Bounded: a host that never answers releases the gate after this long.
+RESTART_GATE_S = 600.0
+HOST_SETTLED = {"READY", "DEGRADED", "FAILED", "STOPPED", "WAITING_FOR_GPU", "WAITING_FOR_LEASE"}
 # A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
 # the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
 CONTINUATIONS = {"oi_decide", "oi_confirm", "oi_abandon"}
@@ -115,6 +120,7 @@ class IntegratedTurns:
         self._job_started = None      # monotonic start of the running job
         self._last_event = None       # monotonic time of the job's last event frame
         self._job_events = 0
+        self._restart = None          # {"id", "t", "until"} of a Brain request the host has not finished
 
     # ---- state ---------------------------------------------------------------------------------
     @property
@@ -138,7 +144,21 @@ class IntegratedTurns:
                 job[1].join(JOIN_S)
         if kind not in OPEN_WHILE_BUSY and self.busy:
             raise BridgeRefused("TURN_IN_PROGRESS")
+        if kind == "oi_turn" and self._restart_pending():
+            raise BridgeRefused("BRAIN_RESTARTING")
         return getattr(self, "_" + kind)(command)
+
+    def _restart_pending(self):
+        r = self._restart
+        if r is None:
+            return False
+        host, alive = self._host()
+        done = (not alive or time.time() > r["until"] or
+                (((host or {}).get("last_request") or {}).get("id") == r["id"]
+                 and (host or {}).get("state") in HOST_SETTLED and (host or {}).get("updated_at", 0) > r["t"]))
+        if done:
+            self._restart = None
+        return not done
 
     def _start(self, turn_id, fn):
         with self._lock:
@@ -383,6 +403,9 @@ class IntegratedTurns:
         perf = mon.assess(sample=False)
         out = brain_health.assess(readiness=readiness, host=host, host_alive=alive, perf=perf, busy=self.busy,
                                   selected=self.selected, cfg=self.cfg)
+        if self._restart_pending() and out["state"] != brain_health.RECOVERING:
+            out.update(state=brain_health.RECOVERING, reasons=["RESTART_REQUESTED"] + list(out.get("reasons") or []),
+                       recovery_options=[], explain="The Brain restart was requested; URI is waiting for it.")
         out["checked_at"] = round(time.time(), 3)
         return out
 
@@ -396,6 +419,9 @@ class IntegratedTurns:
         if not alive:
             raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
         req = self._host_request(action)
+        if action in ("restart", "stop"):
+            now = time.time()
+            self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
         return {"requested": action, "request_id": req.get("id"), "host_state": host.get("state")}
 
     def _oi_turn_status(self, _c):

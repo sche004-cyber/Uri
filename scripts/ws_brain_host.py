@@ -75,6 +75,7 @@ class Host:
         self.last_request_id = None
         self.stopped_at = None          # wall time the last server stop finished (release measurement)
         self.last_contended = None      # monotonic time the GPU was last seen CONTENDED (quiet window)
+        self.loaders = []               # (thread, manager) of loads stopped before they finished (Codex H-r1 F1)
         seen = G.last_contention(lease_dir)       # also seen by an earlier host or another URI GPU workload
         if seen is not None and 0 <= now() - seen < QUIET_S:
             self.last_contended = time.monotonic() - (now() - seen)
@@ -148,7 +149,23 @@ class Host:
                     return False
         return False
 
+    def reap_loaders(self):
+        """Kill anything a stopped load spawned after the stop, and forget loaders whose thread has ended. True when
+        none is left. The accepted ensure_ready() may spawn after a stop that arrived before its spawn."""
+        alive = []
+        for t, m in self.loaders:
+            if m._contained is not None:
+                m.stop()
+            if t.is_alive():
+                alive.append((t, m))
+        self.loaders = alive
+        return not alive
+
     def release_lease(self, reason):
+        # Never hand the GPU to another workload while a stopped load could still spawn Runtime v1.
+        deadline = time.monotonic() + 330.0          # ensure_ready's own wait is bounded at 300 s
+        while not self.reap_loaders() and time.monotonic() < deadline:
+            time.sleep(0.5)
         if self.lease is not None:
             self.lease.release(reason)
             self.lease = None
@@ -164,13 +181,17 @@ class Host:
             unattr = fit.get("unattributed_mib") or 0.0
             if self.stopped_at is not None:
                 gpu["since_stop_s"] = round(self.now() - self.stopped_at, 1)
-            if fit["verdict"] == G.UNKNOWN:
-                # Cannot measure: proceed (the calibration still classifies the instance) but say so.
-                self.set("STARTING", detail="GPU_UNMEASURED", gpu=gpu)
-                return True
-            if unattr >= RELEASE_UNATTRIBUTED_MIB and self.now() - t0 < RELEASE_TIMEOUT_S:
-                self.set("RELEASE_WAIT", detail="VRAM_STILL_RELEASING",
-                         explain="Waiting for GPU memory from the previous Brain to be released (%.0f MB left)." % unattr,
+            if fit["verdict"] == G.UNKNOWN and not self.override:
+                # Cannot measure: wait and retry (Codex H-r1 F3). Only the owner's override starts blind.
+                self.set("WAITING_FOR_GPU", detail="GPU_UNMEASURED", gpu=gpu,
+                         explain="GPU memory cannot be measured right now (%s); URI waits." % fit.get("reason"))
+            elif unattr >= RELEASE_UNATTRIBUTED_MIB and not self.override:
+                # Release not finished: keep waiting; after the timeout say so (Codex H-r1 F5), never start anyway.
+                late = self.now() - t0 >= RELEASE_TIMEOUT_S
+                self.set("WAITING_FOR_GPU" if late else "RELEASE_WAIT",
+                         detail="VRAM_RELEASE_TIMEOUT" if late else "VRAM_STILL_RELEASING",
+                         explain=("GPU memory (%.0f MB) has not been released after %.0f s. URI keeps waiting." % (unattr, self.now() - t0))
+                         if late else "Waiting for GPU memory from the previous Brain to be released (%.0f MB left)." % unattr,
                          gpu=gpu)
             elif fit["verdict"] == G.CONTENDED and not self.override:
                 self.last_contended = time.monotonic()
@@ -215,6 +236,7 @@ class Host:
         while t.is_alive():
             if self.should_exit() or self.take_request(only="stop") == "stop":
                 self.mgr.stop()
+                self.loaders.append((t, self.mgr))
                 self.mgr = None
                 self.stopped_at = self.now()
                 self.set("STOPPED", detail="STOPPED_DURING_LOAD", explain="The Brain load was stopped.")
@@ -290,6 +312,7 @@ class Host:
             self.start_brain()
             last_res = time.monotonic()
             while not self.should_exit():
+                self.reap_loaders()
                 if self.mgr is not None and self.mgr._contained is not None and self.mgr._contained.proc.poll() is not None:
                     code = self.mgr._contained.proc.returncode
                     self.mgr.stop()

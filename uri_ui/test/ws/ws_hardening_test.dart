@@ -210,6 +210,20 @@ void main() {
       expect(DateTime.now().difference(t0), lessThan(const Duration(seconds: 2)));
     });
 
+    test('a worker that hangs before replying to the turn is detected; the request is not repeated', () async {
+      final rt = HardeningRuntime()..responsive = false;
+      final conv = OiConversation(rt, probeAfter: Duration.zero, probeTimeout: shortProbe);
+      final sending = conv.send('hello'); // never answered
+      await Future<void>.delayed(fast);
+      expect(conv.busy, isTrue);
+      await conv.send('second'); // refused locally while the first is outstanding
+      expect(rt.commands.where((c) => c['command'] == 'oi_turn').length, 1);
+      await conv.monitorTick();
+      expect(conv.workerUnresponsive, isTrue);
+      expect(conv.workerTrouble, isTrue);
+      unawaited(sending);
+    });
+
     test('a probe that answers clears the alarm; a long-silent job is stalled, not unresponsive', () async {
       final rt = HardeningRuntime()..turnStatus = {'busy': true, 'idle_s': 120.0, 'age_s': 130.0};
       final conv = OiConversation(rt, probeAfter: Duration.zero, probeTimeout: shortProbe);

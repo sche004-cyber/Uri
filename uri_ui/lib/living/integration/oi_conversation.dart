@@ -151,7 +151,10 @@ class OiConversation extends ChangeNotifier {
   List<String> memory = const [];
   Map<String, dynamic> cloud = const {};
 
-  bool get busy => activeTurnId != null;
+  /// When the `oi_turn` that is awaiting its reply was sent (Codex H-r1 F4).
+  DateTime? _sendingSince;
+
+  bool get busy => activeTurnId != null || _sendingSince != null;
   bool get brainReady => brainStatus['state'] == 'READY';
 
   /// READY / BUSY / DEGRADED / UNAVAILABLE / RECOVERING, or null before the
@@ -286,7 +289,11 @@ class OiConversation extends ChangeNotifier {
     if (pendingApproval != null || pendingConfirmation != null) {
       messages.add(OiMessage(role: OiRole.system, text: 'The open approval was withdrawn by the restart; nothing was approved.'));
     }
+    if (_sendingSince != null) {
+      messages.add(OiMessage(role: OiRole.system, text: 'A request was still being sent; it was not repeated and may not have started.'));
+    }
     activeTurnId = null;
+    _sendingSince = null;
     pendingApproval = null;
     pendingConfirmation = null;
     await _sub.cancel();
@@ -344,18 +351,31 @@ class OiConversation extends ChangeNotifier {
     if (t.isEmpty || busy) return;
     messages.add(OiMessage(role: OiRole.user, text: t));
     lastError = null;
+    _sendingSince = DateTime.now();
+    _lastFrame = DateTime.now();
     notifyListeners();
+    final rt = runtime;
     try {
-      final r = await runtime.call({
+      final r = await rt.call({
         'command': 'oi_turn',
         'session_id': sessionId,
         'text': t,
         'depth': depth.name,
       });
-      _begin(r['turn_id'] as String);
+      _sendingSince = null;
+      if (identical(rt, runtime)) _begin(r['turn_id'] as String);
     } on IntegratedRuntimeException catch (e) {
+      _sendingSince = null;
       lastError = e.code;
-      messages.add(OiMessage(role: OiRole.system, text: 'Not sent: ${e.code}'));
+      if (e.code == 'WORKER_TIMEOUT') {
+        // The worker said nothing for the whole bound: it may or may not have started the turn.
+        workerUnresponsive = true;
+        messages.add(OiMessage(
+            role: OiRole.system,
+            text: 'No reply from URI. The request may or may not have started; it was not repeated.'));
+      } else if (identical(rt, runtime)) {
+        messages.add(OiMessage(role: OiRole.system, text: 'Not sent: ${e.code}'));
+      }
       notifyListeners();
     }
   }

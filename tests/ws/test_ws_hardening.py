@@ -266,6 +266,36 @@ def test_bridge_health_restart_and_turn_status(fake, tmp_path):  # noqa: F811
     assert st["busy"] is False and st["turn_id"] is None
 
 
+def test_no_turn_starts_until_the_host_has_acted_on_a_restart(fake, tmp_path):  # noqa: F811
+    rep = {"schema": BH.REPORT_SCHEMA, "state": "READY", "updated_at": time.time() - 10}
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    b._host_report = lambda: (rep, True)
+    b._host_request = lambda a: {"id": "req-1"}
+    b.handle("brain_restart", {"command": "brain_restart", "action": "restart"})
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
+    assert e.value.code == "BRAIN_RESTARTING"
+    assert b.handle("brain_health", {"command": "brain_health"})["state"] == "RECOVERING"
+    rep.update(state="STOPPING", last_request={"id": "req-1"}, updated_at=time.time())
+    with pytest.raises(BridgeRefused):
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
+    rep.update(state="READY", updated_at=time.time() + 1)
+    fake.scripts.append({"chunks": [("answer", "ok")], "finish": "stop"})
+    assert b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})["accepted"]
+    b.wait(10)
+
+
+def test_restart_gate_opens_when_the_host_is_gone(fake, tmp_path):  # noqa: F811
+    state = {"alive": True}
+    b, _, _ = make(fake, tmp_path, FakeCore())
+    b._host_report = lambda: ({"schema": BH.REPORT_SCHEMA, "state": "READY"}, state["alive"])
+    b._host_request = lambda a: {"id": "req-2"}
+    b.handle("brain_restart", {"command": "brain_restart", "action": "stop"})
+    assert b._restart_pending()
+    state["alive"] = False
+    assert not b._restart_pending()
+
+
 def test_restart_refused_while_a_turn_runs_and_status_stays_open(fake, tmp_path):  # noqa: F811
     fake.scripts.append({"chunks": [("answer", "x")] * 3, "finish": "stop", "first_delay": 1.5})
     b, frames, _ = make(fake, tmp_path, FakeCore())
@@ -417,6 +447,50 @@ def test_a_restart_request_during_load_is_kept_for_later(tmp_path):
     BH.write_host_request(tmp_path / "client", "restart")
     assert h.take_request(only="stop") is None
     assert h.take_request() == "restart"
+
+
+def test_unmeasurable_gpu_and_unfinished_release_wait_instead_of_starting(tmp_path):
+    H, h = new_host(tmp_path, Seq([{"ok": False, "error": "TimeoutExpired"}]))
+    h.deadline = time.monotonic() + 0.3
+    assert h.wait_for_gpu() is False and h.report["detail"] == "GPU_UNMEASURED"
+    releasing = G.census(raw([(1580, 311, 9)], 9000), card=CARD)
+    H, h = new_host(tmp_path, Seq([releasing]))
+    H.RELEASE_TIMEOUT_S = 0.0
+    h.deadline = time.monotonic() + 0.3
+    assert h.wait_for_gpu() is False and h.report["detail"] == "VRAM_RELEASE_TIMEOUT"
+
+
+def test_a_load_stopped_before_its_spawn_is_reaped_before_the_lease_goes(tmp_path, monkeypatch):
+    H, h = new_host(tmp_path, Seq([G.census(raw([(1580, 311, 9)], 330), card=CARD)]))
+    killed = []
+
+    class Contained:
+        pass
+
+    class LateSpawner:
+        owns_instance = True
+
+        def __init__(self, *a, **k):
+            self._contained = None
+
+        def ensure_ready(self, on_state=None):
+            time.sleep(1.0)                    # the stop arrives before the spawn
+            self._contained = Contained()      # ... and the spawn still happens
+            time.sleep(0.5)
+            return None
+
+        def stop(self):
+            if self._contained is not None:
+                killed.append(True)
+            self._contained = None
+            return True
+    monkeypatch.setattr(H.R, "RuntimeManager", LateSpawner)
+    assert h.acquire_lease()
+    (tmp_path / "client").mkdir(parents=True, exist_ok=True)
+    threading.Timer(0.3, lambda: BH.write_host_request(tmp_path / "client", "stop")).start()
+    assert h.start_brain() is False
+    h.release_lease("test")
+    assert killed == [True] and h.loaders == [] and G.status(tmp_path / "lease")["state"] == "FREE"
 
 
 def test_host_requests_are_explicit_fresh_and_used_once(tmp_path):
