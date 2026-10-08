@@ -385,15 +385,13 @@ class _ConnectProviderOverview extends StatelessWidget {
           const _ConnectionMethodCard(
             title: 'Subscription',
             tag: 'OAuth account',
-            detail:
-                'OpenAI, Claude, Gemini\nNot currently available — no officially supported direct connection exists yet.',
+            detail: 'OpenAI, Claude, Gemini\nNot currently available — no officially supported direct connection exists yet.',
             enabled: false,
           ),
           _ConnectionMethodCard(
             title: 'API Key',
             tag: 'Encrypted credential',
-            detail:
-                'Groq, OpenAI API, Anthropic API, Gemini API, OpenRouter',
+            detail: 'Groq, OpenAI API, Anthropic API, Gemini API, OpenRouter',
             enabled: true,
             onContinue: onContinueApiKey,
           ),
@@ -1177,8 +1175,21 @@ class _ConfigDialogState extends State<_ConfigDialog> {
     if (!mounted) return;
 
     if (ok) {
+      final verification = await widget.state.verifyProvider(
+        widget.provider.providerId,
+      );
+      if (!mounted) return;
+      if (verification?.verified != true) {
+        setState(() {
+          _saving = false;
+          _dialogError =
+              'Configuration saved, but model verification failed: '
+              '${verification?.error ?? 'URI could not reach a usable model.'}';
+        });
+        return;
+      }
       widget.onSuccess(
-        'Updated configuration for ${widget.provider.displayName}.',
+        'Updated configuration and verified models for ${widget.provider.displayName}.',
       );
       Navigator.of(context).pop();
     } else {

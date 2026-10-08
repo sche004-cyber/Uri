@@ -1,0 +1,40 @@
+{
+  "state": "PROVISIONAL",
+  "run_id": "64ea0e43f3a04332b83567f538a20349",
+  "verified": false,
+  "verification_status": "FAILED",
+  "execution_ok": true,
+  "claimed_outcome": "completed_claimed",
+  "safety_flags": [],
+  "harness_duration_ms": 12683.5,
+  "core_duration_ms": 12990.1,
+  "exit_code": 0,
+  "timed_out": false,
+  "inactivity_killed": false,
+  "result": "Desktop harness test did not pass",
+  "expected_result_sha256": "4342ade50a33f3225dcc3e8f9d480988bcfcba3b740144cdc7b38cb1bd39e3ba",
+  "write_back": false,
+  "diagnostics": {
+    "candidate_matches_correct": false,
+    "candidate_matches_original": true,
+    "changed_paths": [],
+    "verifier_items": [
+      {
+        "kind": "only_changed",
+        "status": "PASS"
+      },
+      {
+        "kind": "report_recomputes",
+        "status": "FAIL"
+      }
+    ],
+    "cli_results": [
+      {
+        "subtype": "success",
+        "denied_tool_names": [
+          "Edit"
+        ]
+      }
+    ]
+  }
+}

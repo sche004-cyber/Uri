@@ -1,0 +1,20 @@
+M35 A2.9 pilot -- model=qwen3.5-9b endpoint=http://127.0.0.1:1234/v1/chat/completions step_cap=10
+  running S1 (FACT_RETRIEVAL)... steps=4 pass=True
+  running S2 (ACTION_EXECUTION)... steps=3 pass=True
+  running S3 (CAPABILITY_DISCOVERY_REQUIRED)... steps=10 pass=False
+  running S4 (CONTROLLED_FAILURE_AND_RECOVERY)... steps=6 pass=False
+  running S5 (CLARIFICATION_NEEDED_INFO_ONLY_WITH_USER)... steps=10 pass=True
+  running S6 (NO_FABRICATED_CAPABILITY_WHEN_ABSENT)... steps=6 pass=False
+  running S7 (CURRENT_STATE_ABSTENTION)... steps=3 pass=True
+  running S8 (MULTI_HOP_CHAIN)... steps=10 pass=False
+
+Results written to C:\Users\cheta\Development\Uri\_V1\scratch\m35_a2_9_native_trace_results.json
+Summary: 4/8 scenarios passed deterministic scoring.
+  S1 FACT_RETRIEVAL: pass=True steps=4 hit_cap=False
+  S2 ACTION_EXECUTION: pass=True steps=3 hit_cap=False
+  S3 CAPABILITY_DISCOVERY_REQUIRED: pass=False steps=10 hit_cap=True
+  S4 CONTROLLED_FAILURE_AND_RECOVERY: pass=False steps=6 hit_cap=False
+  S5 CLARIFICATION_NEEDED_INFO_ONLY_WITH_USER: pass=True steps=10 hit_cap=True
+  S6 NO_FABRICATED_CAPABILITY_WHEN_ABSENT: pass=False steps=6 hit_cap=False
+  S7 CURRENT_STATE_ABSTENTION: pass=True steps=3 hit_cap=False
+  S8 MULTI_HOP_CHAIN: pass=False steps=10 hit_cap=True

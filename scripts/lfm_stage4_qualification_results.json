@@ -1,0 +1,1157 @@
+{
+  "timestamp": "2026-09-22 17:26:28",
+  "model": "lfm2.5-350m",
+  "endpoint": "http://127.0.0.1:1234/v1/chat/completions",
+  "batteries": {
+    "context_envelope": {
+      "breakpoint_case": null,
+      "records": [
+        {
+          "case_id": "ENV-L0",
+          "approx_tokens": 15,
+          "relevant_tokens": 15,
+          "noise_tokens": 0,
+          "latency_ms": 164.19120000000476,
+          "rar_latency_ms": 9.999985195463523e-05,
+          "calls_made": 2,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review the draft order",
+            "actual_req_ops": [
+              "draft"
+            ],
+            "actual_pro_ops": [
+              "send"
+            ]
+          }
+        },
+        {
+          "case_id": "ENV-L1",
+          "approx_tokens": 45,
+          "relevant_tokens": 45,
+          "noise_tokens": 0,
+          "latency_ms": 139.77479999994102,
+          "rar_latency_ms": 0.00020000015865662135,
+          "calls_made": 2,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": true,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review the draft order",
+            "actual_req_ops": [
+              "send",
+              "review"
+            ],
+            "actual_pro_ops": [
+              "don't send",
+              "do not delete"
+            ]
+          }
+        },
+        {
+          "case_id": "ENV-L2",
+          "approx_tokens": 85,
+          "relevant_tokens": 85,
+          "noise_tokens": 0,
+          "latency_ms": 311.0646000000088,
+          "rar_latency_ms": 0.46340000017153216,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": true,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review the draft order",
+            "actual_req_ops": [
+              "send",
+              "review"
+            ],
+            "actual_pro_ops": [
+              "don't send",
+              "do not delete"
+            ]
+          }
+        },
+        {
+          "case_id": "ENV-L3",
+          "approx_tokens": 140,
+          "relevant_tokens": 140,
+          "noise_tokens": 0,
+          "latency_ms": 284.8306999999295,
+          "rar_latency_ms": 0.12590000005729962,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": true,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review the draft order",
+            "actual_req_ops": [
+              "send",
+              "review"
+            ],
+            "actual_pro_ops": [
+              "don't send",
+              "do not delete"
+            ]
+          }
+        },
+        {
+          "case_id": "ENV-L4",
+          "approx_tokens": 240,
+          "relevant_tokens": 240,
+          "noise_tokens": 0,
+          "latency_ms": 282.97040000006746,
+          "rar_latency_ms": 0.1778000000740576,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": true,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review the draft order",
+            "actual_req_ops": [
+              "send",
+              "review"
+            ],
+            "actual_pro_ops": [
+              "don't send",
+              "do not delete"
+            ]
+          }
+        },
+        {
+          "case_id": "ENV-L5",
+          "approx_tokens": 420,
+          "relevant_tokens": 240,
+          "noise_tokens": 180,
+          "latency_ms": 305.12739999994665,
+          "rar_latency_ms": 0.2672000000529806,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": true,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review the draft order",
+            "actual_req_ops": [
+              "send",
+              "review"
+            ],
+            "actual_pro_ops": [
+              "don't send",
+              "do not delete"
+            ]
+          }
+        },
+        {
+          "case_id": "ENV-L6",
+          "approx_tokens": 680,
+          "relevant_tokens": 240,
+          "noise_tokens": 440,
+          "latency_ms": 291.33790000014415,
+          "rar_latency_ms": 0.4380000000310247,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": true,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review the draft order",
+            "actual_req_ops": [
+              "send",
+              "review"
+            ],
+            "actual_pro_ops": [
+              "don't send",
+              "do not delete"
+            ]
+          }
+        },
+        {
+          "case_id": "ENV-L7",
+          "approx_tokens": 1150,
+          "relevant_tokens": 240,
+          "noise_tokens": 910,
+          "latency_ms": 282.2487000003093,
+          "rar_latency_ms": 0.6988000000092143,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": true,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review the draft order",
+            "actual_req_ops": [
+              "send",
+              "review"
+            ],
+            "actual_pro_ops": [
+              "don't send",
+              "do not delete"
+            ]
+          }
+        }
+      ]
+    },
+    "noise_sensitivity": [
+      {
+        "case_id": "NOISE-0",
+        "useful_tokens": 300,
+        "noise_tokens": 0,
+        "total_tokens": 300,
+        "latency_ms": 271.71880000014426,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": true,
+          "pro_ops_ok": true,
+          "polarity_inverted": false,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": false,
+          "structural_ok": true,
+          "critical_semantic_ok": true,
+          "actual_goal": "Draft email",
+          "actual_req_ops": [
+            "draft"
+          ],
+          "actual_pro_ops": [
+            "send"
+          ]
+        }
+      },
+      {
+        "case_id": "NOISE-300",
+        "useful_tokens": 300,
+        "noise_tokens": 300,
+        "total_tokens": 600,
+        "latency_ms": 291.61470000008194,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": true,
+          "pro_ops_ok": true,
+          "polarity_inverted": false,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": false,
+          "structural_ok": true,
+          "critical_semantic_ok": true,
+          "actual_goal": "Draft email",
+          "actual_req_ops": [
+            "draft"
+          ],
+          "actual_pro_ops": [
+            "send"
+          ]
+        }
+      },
+      {
+        "case_id": "NOISE-600",
+        "useful_tokens": 300,
+        "noise_tokens": 600,
+        "total_tokens": 900,
+        "latency_ms": 295.64529999970546,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": true,
+          "pro_ops_ok": true,
+          "polarity_inverted": false,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": false,
+          "structural_ok": true,
+          "critical_semantic_ok": true,
+          "actual_goal": "Draft email",
+          "actual_req_ops": [
+            "draft"
+          ],
+          "actual_pro_ops": [
+            "send"
+          ]
+        }
+      },
+      {
+        "case_id": "NOISE-1200",
+        "useful_tokens": 300,
+        "noise_tokens": 1200,
+        "total_tokens": 1500,
+        "latency_ms": 299.27760000009584,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": true,
+          "pro_ops_ok": true,
+          "polarity_inverted": false,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": false,
+          "structural_ok": true,
+          "critical_semantic_ok": true,
+          "actual_goal": "Draft email",
+          "actual_req_ops": [
+            "draft"
+          ],
+          "actual_pro_ops": [
+            "send"
+          ]
+        }
+      }
+    ],
+    "complexity_ladder": {
+      "breakpoint_case": "CMPLX-C3",
+      "records": [
+        {
+          "case_id": "CMPLX-C0",
+          "description": "C0: Single positive operation.",
+          "latency_ms": 211.9873000001462,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Calculator",
+            "actual_req_ops": [
+              "open",
+              "calculator"
+            ],
+            "actual_pro_ops": [
+              "don't calculate",
+              "don't open"
+            ]
+          }
+        },
+        {
+          "case_id": "CMPLX-C1",
+          "description": "C1: Two positive operations.",
+          "latency_ms": 136.11560000026657,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.5,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Draft memo",
+            "actual_req_ops": [
+              "draft",
+              "compare"
+            ],
+            "actual_pro_ops": [
+              "send",
+              "delete"
+            ]
+          }
+        },
+        {
+          "case_id": "CMPLX-C2",
+          "description": "C2: Three operations.",
+          "latency_ms": 144.07290000008288,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Archive",
+            "actual_req_ops": [
+              "archive",
+              "revise",
+              "compare"
+            ],
+            "actual_pro_ops": [
+              "send",
+              "delete"
+            ]
+          }
+        },
+        {
+          "case_id": "CMPLX-C3",
+          "description": "C3: One positive + one prohibited operation.",
+          "latency_ms": 121.84750000005806,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Draft email",
+            "actual_req_ops": [
+              "draft"
+            ],
+            "actual_pro_ops": [
+              "send"
+            ]
+          }
+        },
+        {
+          "case_id": "CMPLX-C4",
+          "description": "C4: Multiple positive + multiple prohibited operations.",
+          "latency_ms": 132.34020000027158,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Compare the orders",
+            "actual_req_ops": [
+              "revise",
+              "compare"
+            ],
+            "actual_pro_ops": [
+              "send",
+              "delete"
+            ]
+          }
+        },
+        {
+          "case_id": "CMPLX-C5",
+          "description": "C5: Conditional operation with temporal guard.",
+          "latency_ms": 288.69010000016715,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Send the email",
+            "actual_req_ops": [
+              "approve"
+            ],
+            "actual_pro_ops": [
+              "send",
+              "delete"
+            ]
+          }
+        },
+        {
+          "case_id": "CMPLX-C6",
+          "description": "C6: Multiple distinct targets.",
+          "latency_ms": 160.40449999991324,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Format the document",
+            "actual_req_ops": [
+              "format",
+              "review"
+            ],
+            "actual_pro_ops": [
+              "delete"
+            ]
+          }
+        },
+        {
+          "case_id": "CMPLX-C7",
+          "description": "C7: Cross-target relational dataflow and binding.",
+          "latency_ms": 142.78579999972862,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.5,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Compare the earlier order with the revised order",
+            "actual_req_ops": [
+              "draft",
+              "compare"
+            ],
+            "actual_pro_ops": [
+              "send",
+              "delete"
+            ]
+          }
+        },
+        {
+          "case_id": "CMPLX-C8",
+          "description": "C8: Multi-operation + negation + temporal constraint + multi-target binding.",
+          "latency_ms": 293.95759999988513,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.6666666666666666,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Revise draft and archive old notes",
+            "actual_req_ops": [
+              "archive",
+              "draft",
+              "compare"
+            ],
+            "actual_pro_ops": [
+              "don't send",
+              "do not delete"
+            ]
+          }
+        }
+      ]
+    },
+    "negation_ladder": [
+      {
+        "case_id": "NEG-N1",
+        "text": "Don't send it.",
+        "expected_pro": [
+          "send"
+        ],
+        "expected_req": [],
+        "actual_pro": [
+          "don't"
+        ],
+        "actual_req": [
+          "send"
+        ],
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": true,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": false,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Don't send it",
+          "actual_req_ops": [
+            "send"
+          ],
+          "actual_pro_ops": [
+            "don't"
+          ]
+        },
+        "latency_ms": 166.69920000003913
+      },
+      {
+        "case_id": "NEG-N2",
+        "text": "Don't send it; draft it.",
+        "expected_pro": [
+          "send"
+        ],
+        "expected_req": [
+          "draft"
+        ],
+        "actual_pro": [
+          "don't send",
+          "do not delete"
+        ],
+        "actual_req": [
+          "draft"
+        ],
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": true,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": false,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Draft email to warden",
+          "actual_req_ops": [
+            "draft"
+          ],
+          "actual_pro_ops": [
+            "don't send",
+            "do not delete"
+          ]
+        },
+        "latency_ms": 131.90609999992375
+      },
+      {
+        "case_id": "NEG-N3",
+        "text": "Don't send or delete it; only revise it.",
+        "expected_pro": [
+          "send",
+          "delete"
+        ],
+        "expected_req": [
+          "revise"
+        ],
+        "actual_pro": [
+          "send",
+          "delete"
+        ],
+        "actual_req": [
+          "draft",
+          "compare"
+        ],
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": true,
+          "polarity_inverted": false,
+          "operation_retention_rate": 0.0,
+          "omitted_ops_count": 1,
+          "reference_ok": true,
+          "hallucination": true,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Revise message",
+          "actual_req_ops": [
+            "draft",
+            "compare"
+          ],
+          "actual_pro_ops": [
+            "send",
+            "delete"
+          ]
+        },
+        "latency_ms": 283.3639000000403
+      },
+      {
+        "case_id": "NEG-N4",
+        "text": "Send it only after approval.",
+        "expected_pro": [],
+        "expected_req": [
+          "send"
+        ],
+        "actual_pro": [
+          "don't send",
+          "do not delete"
+        ],
+        "actual_req": [
+          "approve",
+          "send"
+        ],
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": true,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Send it only after approval",
+          "actual_req_ops": [
+            "approve",
+            "send"
+          ],
+          "actual_pro_ops": [
+            "don't send",
+            "do not delete"
+          ]
+        },
+        "latency_ms": 315.08860000030836
+      },
+      {
+        "case_id": "NEG-N5",
+        "text": "Do not send the previous version; send the revised version.",
+        "expected_pro": [
+          "send"
+        ],
+        "expected_req": [
+          "send"
+        ],
+        "actual_pro": [
+          "send",
+          "delete"
+        ],
+        "actual_req": [
+          "draft",
+          "compare"
+        ],
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 0.0,
+          "omitted_ops_count": 1,
+          "reference_ok": true,
+          "hallucination": true,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Send the revised version",
+          "actual_req_ops": [
+            "draft",
+            "compare"
+          ],
+          "actual_pro_ops": [
+            "send",
+            "delete"
+          ]
+        },
+        "latency_ms": 157.98610000001645
+      },
+      {
+        "case_id": "NEG-N6",
+        "text": "Don't summarize it unless the figures differ.",
+        "expected_pro": [
+          "summarize"
+        ],
+        "expected_req": [],
+        "actual_pro": [
+          "do not delete",
+          "don't summarize"
+        ],
+        "actual_req": [
+          "draft",
+          "compare"
+        ],
+        "scores": {
+          "goal_ok": false,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": true,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Identify the primary goal phrase",
+          "actual_req_ops": [
+            "draft",
+            "compare"
+          ],
+          "actual_pro_ops": [
+            "do not delete",
+            "don't summarize"
+          ]
+        },
+        "latency_ms": 293.239700000413
+      }
+    ],
+    "operation_retention": [
+      {
+        "case_id": "RET-OR1",
+        "expected_ops_count": 1,
+        "actual_ops_count": 2,
+        "retention_rate": 1.0,
+        "omitted_count": 0,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 1.0,
+          "omitted_ops_count": 0,
+          "reference_ok": true,
+          "hallucination": true,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Draft email to warden",
+          "actual_req_ops": [
+            "draft",
+            "compare"
+          ],
+          "actual_pro_ops": [
+            "send",
+            "delete"
+          ]
+        },
+        "latency_ms": 172.36670000011145
+      },
+      {
+        "case_id": "RET-OR2",
+        "expected_ops_count": 2,
+        "actual_ops_count": 2,
+        "retention_rate": 0.5,
+        "omitted_count": 1,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 0.5,
+          "omitted_ops_count": 1,
+          "reference_ok": true,
+          "hallucination": true,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Draft email to warden",
+          "actual_req_ops": [
+            "draft",
+            "compare"
+          ],
+          "actual_pro_ops": [
+            "send",
+            "delete"
+          ]
+        },
+        "latency_ms": 138.4527000000162
+      },
+      {
+        "case_id": "RET-OR3",
+        "expected_ops_count": 3,
+        "actual_ops_count": 2,
+        "retention_rate": 0.6666666666666666,
+        "omitted_count": 1,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 0.6666666666666666,
+          "omitted_ops_count": 1,
+          "reference_ok": true,
+          "hallucination": false,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Compare",
+          "actual_req_ops": [
+            "draft",
+            "compare"
+          ],
+          "actual_pro_ops": [
+            "send",
+            "delete"
+          ]
+        },
+        "latency_ms": 163.07469999992463
+      },
+      {
+        "case_id": "RET-OR4",
+        "expected_ops_count": 4,
+        "actual_ops_count": 3,
+        "retention_rate": 0.5,
+        "omitted_count": 2,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 0.5,
+          "omitted_ops_count": 2,
+          "reference_ok": true,
+          "hallucination": true,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Compare",
+          "actual_req_ops": [
+            "draft",
+            "send",
+            "compare"
+          ],
+          "actual_pro_ops": [
+            "don't",
+            "do not"
+          ]
+        },
+        "latency_ms": 143.7127000003784
+      },
+      {
+        "case_id": "RET-OR5",
+        "expected_ops_count": 5,
+        "actual_ops_count": 3,
+        "retention_rate": 0.6,
+        "omitted_count": 2,
+        "scores": {
+          "goal_ok": true,
+          "req_ops_ok": false,
+          "pro_ops_ok": false,
+          "polarity_inverted": false,
+          "operation_retention_rate": 0.6,
+          "omitted_ops_count": 2,
+          "reference_ok": true,
+          "hallucination": false,
+          "structural_ok": true,
+          "critical_semantic_ok": false,
+          "actual_goal": "Compare the guidelines",
+          "actual_req_ops": [
+            "archive",
+            "draft",
+            "compare"
+          ],
+          "actual_pro_ops": [
+            "send",
+            "delete"
+          ]
+        },
+        "latency_ms": 137.15499999989333
+      }
+    ],
+    "feed_width": [
+      {
+        "case_id": "WIDTH-O0",
+        "prompt_tokens": 189,
+        "completion_tokens": 23,
+        "latency_ms": 90.7508999998754,
+        "req_ok": false,
+        "pro_ok": true,
+        "extracted_req": [
+          "draft"
+        ],
+        "extracted_pro": [
+          "send"
+        ]
+      },
+      {
+        "case_id": "WIDTH-O1",
+        "prompt_tokens": 200,
+        "completion_tokens": 33,
+        "latency_ms": 118.25009999984104,
+        "req_ok": false,
+        "pro_ok": false,
+        "extracted_req": [
+          "review",
+          "send"
+        ],
+        "extracted_pro": [
+          "don't send",
+          "do not delete"
+        ]
+      },
+      {
+        "case_id": "WIDTH-O2",
+        "prompt_tokens": 216,
+        "completion_tokens": 33,
+        "latency_ms": 107.57570000032501,
+        "req_ok": false,
+        "pro_ok": false,
+        "extracted_req": [
+          "review",
+          "send"
+        ],
+        "extracted_pro": [
+          "don't send",
+          "do not delete"
+        ]
+      },
+      {
+        "case_id": "WIDTH-O3",
+        "prompt_tokens": 230,
+        "completion_tokens": 33,
+        "latency_ms": 112.92569999977786,
+        "req_ok": false,
+        "pro_ok": false,
+        "extracted_req": [
+          "review",
+          "send"
+        ],
+        "extracted_pro": [
+          "don't send",
+          "do not delete"
+        ]
+      },
+      {
+        "case_id": "WIDTH-O4",
+        "prompt_tokens": 228,
+        "completion_tokens": 33,
+        "latency_ms": 108.7800000000243,
+        "req_ok": false,
+        "pro_ok": false,
+        "extracted_req": [
+          "review",
+          "send"
+        ],
+        "extracted_pro": [
+          "don't send",
+          "do not delete"
+        ]
+      },
+      {
+        "case_id": "WIDTH-O5",
+        "prompt_tokens": 219,
+        "completion_tokens": 33,
+        "latency_ms": 95.80749999986438,
+        "req_ok": false,
+        "pro_ok": false,
+        "extracted_req": [
+          "review",
+          "send"
+        ],
+        "extracted_pro": [
+          "don't send",
+          "do not delete"
+        ]
+      }
+    ],
+    "mode_comparison": {
+      "Mode A": [
+        {
+          "case_id": "COMP-01",
+          "latency_ms": 883.82109999975,
+          "critical_ok": false,
+          "tokens": 613
+        },
+        {
+          "case_id": "COMP-02",
+          "latency_ms": 552.3665000000619,
+          "critical_ok": false,
+          "tokens": 427
+        },
+        {
+          "case_id": "COMP-03",
+          "latency_ms": 897.387300000446,
+          "critical_ok": false,
+          "tokens": 637
+        }
+      ],
+      "Mode B": [
+        {
+          "case_id": "COMP-01",
+          "latency_ms": 929.4920000002094,
+          "critical_ok": false,
+          "tokens": 665
+        },
+        {
+          "case_id": "COMP-02",
+          "latency_ms": 831.5677000000505,
+          "critical_ok": false,
+          "tokens": 661
+        },
+        {
+          "case_id": "COMP-03",
+          "latency_ms": 912.1712000001025,
+          "critical_ok": false,
+          "tokens": 702
+        }
+      ],
+      "Mode D_seq": [
+        {
+          "case_id": "COMP-01",
+          "latency_ms": 167.1759000005295,
+          "critical_ok": false,
+          "tokens": 377,
+          "calls": 2
+        },
+        {
+          "case_id": "COMP-02",
+          "latency_ms": 347.7289000006749,
+          "critical_ok": false,
+          "tokens": 631,
+          "calls": 3
+        },
+        {
+          "case_id": "COMP-03",
+          "latency_ms": 593.3147000000645,
+          "critical_ok": false,
+          "tokens": 985,
+          "calls": 4
+        }
+      ],
+      "Mode D_par": [
+        {
+          "case_id": "COMP-01",
+          "latency_ms": 109.14099999990867,
+          "critical_ok": false,
+          "tokens": 377,
+          "calls": 2
+        },
+        {
+          "case_id": "COMP-02",
+          "latency_ms": 267.97700000042823,
+          "critical_ok": false,
+          "tokens": 631,
+          "calls": 3
+        },
+        {
+          "case_id": "COMP-03",
+          "latency_ms": 476.19769999982964,
+          "critical_ok": false,
+          "tokens": 985,
+          "calls": 4
+        }
+      ]
+    }
+  }
+}

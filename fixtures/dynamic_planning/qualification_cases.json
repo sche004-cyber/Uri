@@ -1,0 +1,208 @@
+{
+  "schema_version": "uri.plan.qualification_cases.v1",
+  "battery_description": "Dynamic Planning Stage 2 Slice 1 qualification battery covering G1-G5 gates and adversarial probes",
+  "cases": {
+    "valid_two_workbook_compare": {
+      "description": "Canonical valid two-workbook comparison with repeated inspect and select, join and write",
+      "proposal": {
+        "schema_version": "uri.plan.proposal.v1",
+        "nodes": [
+          {
+            "id": "inspect_1",
+            "action": "uri.plan.workbook.inspect_structure",
+            "action_version": "1",
+            "inputs": {
+              "source": { "source": "src_fin_2025" }
+            },
+            "literals": {}
+          },
+          {
+            "id": "inspect_2",
+            "action": "uri.plan.workbook.inspect_structure",
+            "action_version": "1",
+            "inputs": {
+              "source": { "source": "src_fin_2026" }
+            },
+            "literals": {}
+          },
+          {
+            "id": "select_1",
+            "action": "uri.plan.structure.select",
+            "action_version": "1",
+            "inputs": {
+              "structure": { "from": "inspect_1.structure" }
+            },
+            "literals": {
+              "sheets": ["Summary", "Personnel"]
+            }
+          },
+          {
+            "id": "select_2",
+            "action": "uri.plan.structure.select",
+            "action_version": "1",
+            "inputs": {
+              "structure": { "from": "inspect_2.structure" }
+            },
+            "literals": {
+              "sheets": ["Summary", "Personnel"]
+            }
+          },
+          {
+            "id": "compare_1",
+            "action": "uri.plan.structure.compare",
+            "action_version": "1",
+            "inputs": {
+              "left": { "from": "select_1.selection" },
+              "right": { "from": "select_2.selection" }
+            },
+            "literals": {
+              "match_on": "sheet_name"
+            }
+          },
+          {
+            "id": "write_1",
+            "action": "uri.plan.report.write",
+            "action_version": "1",
+            "inputs": {
+              "item_1": { "from": "compare_1.comparison" }
+            },
+            "literals": {}
+          }
+        ],
+        "outputs": [
+          { "node_id": "write_1", "port": "report" }
+        ],
+        "cannot": []
+      },
+      "expected_compiler": "COMPILED",
+      "expected_execution": "VERIFIED"
+    },
+    "unsupported_cannot_only": {
+      "description": "Unsupported goal with cannot[] declaration only",
+      "proposal": {
+        "schema_version": "uri.plan.proposal.v1",
+        "nodes": [],
+        "outputs": [],
+        "cannot": [
+          {
+            "reason_code": "UNSUPPORTED_REQUEST",
+            "text": "Cannot fetch weather data: no weather capabilities available"
+          }
+        ]
+      },
+      "expected_compiler": "REJECTED",
+      "expected_rejection_code": "UNSUPPORTED_GOAL"
+    },
+    "unknown_action": {
+      "description": "Proposal specifies action not present in CapabilitySnapshot",
+      "proposal": {
+        "schema_version": "uri.plan.proposal.v1",
+        "nodes": [
+          {
+            "id": "node_1",
+            "action": "uri.plan.nonexistent.action",
+            "action_version": "1",
+            "inputs": {},
+            "literals": {}
+          }
+        ],
+        "outputs": [
+          { "node_id": "node_1", "port": "output" }
+        ],
+        "cannot": []
+      },
+      "expected_compiler": "REJECTED",
+      "expected_rejection_code": "UNKNOWN_ACTION"
+    },
+    "cycle_detection": {
+      "description": "Cyclic dependency between node A and node B with compatible port types",
+      "proposal": {
+        "schema_version": "uri.plan.proposal.v1",
+        "nodes": [
+          {
+            "id": "node_a",
+            "action": "test.action.transform",
+            "action_version": "1",
+            "inputs": {
+              "item": { "from": "node_b.item" }
+            },
+            "literals": {}
+          },
+          {
+            "id": "node_b",
+            "action": "test.action.transform",
+            "action_version": "1",
+            "inputs": {
+              "item": { "from": "node_a.item" }
+            },
+            "literals": {}
+          }
+        ],
+        "outputs": [
+          { "node_id": "node_a", "port": "item" }
+        ],
+        "cannot": []
+      },
+      "expected_compiler": "REJECTED",
+      "expected_rejection_code": "CYCLE_DETECTED"
+    },
+    "unknown_source_candidate": {
+      "description": "SourceRef references source_id not in trusted candidate list",
+      "proposal": {
+        "schema_version": "uri.plan.proposal.v1",
+        "nodes": [
+          {
+            "id": "inspect_1",
+            "action": "uri.plan.workbook.inspect_structure",
+            "action_version": "1",
+            "inputs": {
+              "source": { "source": "untrusted_arbitrary_source" }
+            },
+            "literals": {}
+          }
+        ],
+        "outputs": [
+          { "node_id": "inspect_1", "port": "structure" }
+        ],
+        "cannot": []
+      },
+      "expected_compiler": "REJECTED",
+      "expected_rejection_code": "UNKNOWN_SOURCE_CANDIDATE"
+    },
+    "port_type_mismatch": {
+      "description": "Port type incompatible: passing WORKBOOK_STRUCTURE to compare which expects STRUCTURE_SELECTION",
+      "proposal": {
+        "schema_version": "uri.plan.proposal.v1",
+        "nodes": [
+          {
+            "id": "inspect_1",
+            "action": "uri.plan.workbook.inspect_structure",
+            "action_version": "1",
+            "inputs": {
+              "source": { "source": "src_fin_2025" }
+            },
+            "literals": {}
+          },
+          {
+            "id": "compare_1",
+            "action": "uri.plan.structure.compare",
+            "action_version": "1",
+            "inputs": {
+              "left": { "from": "inspect_1.structure" },
+              "right": { "from": "inspect_1.structure" }
+            },
+            "literals": {
+              "match_on": "sheet_name"
+            }
+          }
+        ],
+        "outputs": [
+          { "node_id": "compare_1", "port": "comparison" }
+        ],
+        "cannot": []
+      },
+      "expected_compiler": "REJECTED",
+      "expected_rejection_code": "TYPE_MISMATCH"
+    }
+  }
+}

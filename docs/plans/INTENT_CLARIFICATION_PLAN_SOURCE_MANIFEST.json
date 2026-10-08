@@ -1,0 +1,100 @@
+{
+  "notice": "Dirty candidate files pinned individually; HEAD alone is not the experiment revision. No implementation or tests executed.",
+  "files": [
+    {
+      "path": "experimental/intent_workflow/controller.py",
+      "sha256": "a435ab8ec0f1c001f390569b51a7db0b89585f60806b1a6e4f0289697f3530b7"
+    },
+    {
+      "path": "experimental/intent_workflow/context.py",
+      "sha256": "ecc56facad17d1ae98e1b0c13d0cff268ffde4b8befd505bd35b4828a988e7d4"
+    },
+    {
+      "path": "experimental/intent_workflow/routes.py",
+      "sha256": "cff63edee3dc35f06ddf32a212a2695c60efb107d80a7827b5a4a83c49e8772a"
+    },
+    {
+      "path": "scripts/run_intent_workflow_candidate.py",
+      "sha256": "51dafee29a30c2b50e6da81a3dd1ee816e4e21704c3707067d54657718adb96c"
+    },
+    {
+      "path": "uri_ui/lib/widgets/intent_preparation.dart",
+      "sha256": "2ddbe5a343ce2bf71462e9e9d57f7a786df5d75fe6bfbd1d97665229c965f927"
+    },
+    {
+      "path": "uri_ui/lib/services/desktop_harness_test_client.dart",
+      "sha256": "05f27e348a8aef75cf0ad02d5fb8cea601fe7f2f739d2e5dc7043b84301b7f12"
+    },
+    {
+      "path": "tests/test_intent_workflow.py",
+      "sha256": "e4b77494f35cf0bd3943f69f7eeb31952e6c921d7e041a6bce6de4eabe5b3534"
+    },
+    {
+      "path": "uri_ui/test/intent_preparation_test.dart",
+      "sha256": "752744cabeb2e689ed9bc77045c5d43d6e43f1586b5b90ec18ef906fd4f75839"
+    },
+    {
+      "path": "uri_v1/turn/rar_deterministic.py",
+      "sha256": "4db775666868e09a9f7232707d67ec3b4070970a30145ad3c5b41bb86b5e1b95"
+    },
+    {
+      "path": "uri_v1/turn/rar_contracts.py",
+      "sha256": "4cc9aa43726a870ca2e9ab1b19f6bf9d72dcb74c8a2818856776af95195b6819"
+    },
+    {
+      "path": "uri_v1/turn/rar_clarification_contract.py",
+      "sha256": "114c6b735823ed93cd958eea7b081ca845c9fa601dff880623a46a586bf49e11"
+    },
+    {
+      "path": "uri_v1/reference_clarification/binding.py",
+      "sha256": "cba395d282c03ef3006203519f151021d3c91642a86c08ded5dcbd1ea5f8a655"
+    },
+    {
+      "path": "uri_v1/reference_clarification/store.py",
+      "sha256": "928a972a6ef71e9dabe1e7bbf9980d2caa8f25a1753dd00509e0fe3f804ccf43"
+    },
+    {
+      "path": "uri_v1/reference_clarification/builder.py",
+      "sha256": "d564fbb2227fd21b6eeed68e574ed3eebd8aeddd1e5b4eb07047a68192478f59"
+    },
+    {
+      "path": "uri_v1/memory/uri_adapter/envelope.py",
+      "sha256": "2632611c6713033fb3ca3de507b05208bdc72d453e48113076c07a217e8e36df"
+    },
+    {
+      "path": "uri_core/core/arn/engine.py",
+      "sha256": "68a7d9d98a4cbe3d7481df53810cfbcc0bae445b2a2c882d28c415e3a54cfbc8"
+    },
+    {
+      "path": "uri_core/core/arn/models.py",
+      "sha256": "decb503bd5b896abc72d912a0f764c847517fcd06a9f5b4c6aa74624251f8164"
+    },
+    {
+      "path": "uri_core/core/arn/integration.py",
+      "sha256": "334e27aadffa9a64d916b9d6d4faccacd32c242e0977df605147f83a0c507110"
+    },
+    {
+      "path": "uri_core/core/facts.py",
+      "sha256": "0464b021abd0e544cfd4efdcafeea73618e0fde867eb1c23684dd9c51dd34a88"
+    },
+    {
+      "path": "uri_core/core/fact_manager.py",
+      "sha256": "949bab85f78272f59850818b5ad1880846c71eef84c8dd50b192de636e9312c4"
+    },
+    {
+      "path": "uri_core/core/state.py",
+      "sha256": "a1c6e50777c8643da1f0f65e72d9b732e997dcb7aba580ea7d541595d65f56e0"
+    },
+    {
+      "path": "uri_core/core/model_reasoning_gateway.py",
+      "sha256": "39cd0df5ca36490033c2de2cbdd845dcf8639edb90c7b417dc8349331005df72"
+    },
+    {
+      "path": "uri_core/core/model_reasoning_adapter.py",
+      "sha256": "6c3f2e02ee479c9ca893b9babaa789f8efb2a1fd8fcd89ae654e402495c70489"
+    }
+  ],
+  "checkout": "C:/Users/cheta/.codex/worktrees/intent-discovery/_V1",
+  "head": "62d564cf9d2fa25e5a9860d20dcc7070b112badb",
+  "date": "2026-10-04"
+}

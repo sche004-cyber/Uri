@@ -1,0 +1,80 @@
+{
+  "timestamp": "2026-09-28T15:01:07Z",
+  "experiment": "Repaired Capsule Tiny-Model Comparison (Case 02 Enum Bias Repair)",
+  "architectural_lesson": "URI tiny-model capsules should minimize positional priors and choice ambiguity; task-family selection should occur upstream through deterministic logic or Needle whenever grounded.",
+  "terminology_note": "Qwen3.5-9B is a resident reference/capable model, not the Main Brain.",
+  "arms": {
+    "lfm25_350m_repaired": {
+      "worker_model": "LFM2.5-350M",
+      "total_battery_cases": 30,
+      "total_correct_cases": 28,
+      "overall_accuracy": 0.9333,
+      "verified_local_successes": 14,
+      "effective_escalations": 15,
+      "false_candidate_successes": 1,
+      "false_verified_successes": 0,
+      "worker_metrics": {
+        "total_assigned": 9,
+        "total_invoked": 8,
+        "gated_by_needle": 1,
+        "correct_outputs": 7,
+        "incorrect_outputs": 1,
+        "worker_accuracy": 0.875,
+        "claimed_success": 8,
+        "false_claimed_success": 1,
+        "schema_failures": 0,
+        "mean_worker_latency_ms": 329.7,
+        "p95_worker_latency_ms": 403.7
+      },
+      "full_system_latency_ms": {
+        "mean_total": 122.7,
+        "median_total": 0.2,
+        "p95_total": 628.7
+      }
+    },
+    "qwen35_08b_repaired": {
+      "worker_model": "Qwen3.5-0.8B",
+      "total_battery_cases": 30,
+      "total_correct_cases": 28,
+      "overall_accuracy": 0.9333,
+      "verified_local_successes": 14,
+      "effective_escalations": 15,
+      "false_candidate_successes": 1,
+      "false_verified_successes": 0,
+      "worker_metrics": {
+        "total_assigned": 9,
+        "total_invoked": 8,
+        "gated_by_needle": 1,
+        "correct_outputs": 7,
+        "incorrect_outputs": 1,
+        "worker_accuracy": 0.875,
+        "claimed_success": 8,
+        "false_claimed_success": 1,
+        "schema_failures": 0,
+        "mean_worker_latency_ms": 498.2,
+        "p95_worker_latency_ms": 590.7
+      },
+      "full_system_latency_ms": {
+        "mean_total": 162.0,
+        "median_total": 0.1,
+        "p95_total": 734.3
+      }
+    }
+  },
+  "environment": {
+    "ram_before": {
+      "used_ram_mb": 16786.6,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 68
+    },
+    "ram_after": {
+      "used_ram_mb": 16850.0,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 68
+    },
+    "vram_footprints": {
+      "lfm25_350m": "~379 MB (LM Studio Q8_0)",
+      "qwen35_08b": "~1,000 MB (Ollama Q8_0)"
+    }
+  }
+}

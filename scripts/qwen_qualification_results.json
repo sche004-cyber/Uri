@@ -1,0 +1,1803 @@
+{
+  "model_id": "qwen-semantic-decoder",
+  "endpoint": "http://127.0.0.1:1234/v1/chat/completions",
+  "constrained_mode": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": true,
+      "latency_ms": 1667.8716999958851,
+      "prompt_tokens": 238,
+      "completion_tokens": 195,
+      "reasoning_tokens": 86,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Convert text to PDF\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\n    \"convert_to_pdf\"\n  ],\n  \"prohibited_operations\": [],\n  \"output_preferences\": {\n    \"language\": \"English\",\n    \"structure\": \"standard_pdf_format\"\n  },\n  \"references\": [\n    \"this text content\",\n    \"the user's request for PDF conversion\"\n  ]\n}",
+      "reasoning_content": "The user wants me to convert text to PDF. This is a standard conversion task that I can perform using tools like `convert-to-pdf`.\n\nI need to:\n1. Extract what the user means (text content)\n2. Identify any constraints or preferences\n3. Output only valid JSON in the specified schema\n\nSince this is a simple request with no special constraints, I'll output the conversion result as JSON.\n",
+      "wire": {
+        "goal": "Convert text to PDF",
+        "intent_family": "create",
+        "requested_operations": [
+          "convert_to_pdf"
+        ],
+        "prohibited_operations": [],
+        "output_preferences": {
+          "language": "English",
+          "structure": "standard_pdf_format"
+        },
+        "references": [
+          "this text content",
+          "the user's request for PDF conversion"
+        ]
+      },
+      "decoded": {
+        "goal": "Convert text to PDF",
+        "intent_family": "create",
+        "requested_operations": [
+          "convert_to_pdf"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          "this text content",
+          "the user's request for PDF conversion"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": "English",
+          "language_variant": null,
+          "length": null,
+          "structure": "standard_pdf_format"
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: this text content",
+          "unresolved reference: the user's request for PDF conversion"
+        ]
+      }
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "ok": true,
+      "latency_ms": 2016.6241000042646,
+      "prompt_tokens": 238,
+      "completion_tokens": 277,
+      "reasoning_tokens": 174,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Bring that file up\",\n  \"intent_family\": \"retrieve\",\n  \"requested_operations\": [\n    \"bring_file_up\"\n  ],\n  \"prohibited_operations\": [],\n  \"constraints\": {\n    \"excluded_items\": []\n  },\n  \"output_preferences\": {\n    \"language\": \"natural_language\",\n    \"structure\": \"simple_object_with_action_and_location\"\n  }\n}",
+      "reasoning_content": "The user is asking me to bring a file up. This is an action request - they want me to take something (a file) and move it somewhere, likely into a specific location or context.\n\nLooking at my instructions:\n- I should not execute the task directly\n- I need to extract what the user means in structured JSON format\n- The \"referencing expressions\" like 'this', 'that' are UNRESOLVED - I must keep them as is\n- There's no explicit constraint about where the file goes, so I'll leave that empty\n\nSince this is an action request (bringing a file up), it falls under \"requested_operations\". I need to extract what the user wants in JSON format. The most reasonable interpretation would be:\n- Action: bring a file up\n- Location/destination: not specified \u2192 empty object\n",
+      "wire": {
+        "goal": "Bring that file up",
+        "intent_family": "retrieve",
+        "requested_operations": [
+          "bring_file_up"
+        ],
+        "prohibited_operations": [],
+        "constraints": {
+          "excluded_items": []
+        },
+        "output_preferences": {
+          "language": "natural_language",
+          "structure": "simple_object_with_action_and_location"
+        }
+      },
+      "decoded": {
+        "goal": "Bring that file up",
+        "intent_family": "retrieve",
+        "requested_operations": [
+          "bring_file_up"
+        ],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": "natural_language",
+          "language_variant": null,
+          "length": null,
+          "structure": "simple_object_with_action_and_location"
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": []
+      }
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "latency_ms": 1742.88499999966,
+      "prompt_tokens": 240,
+      "completion_tokens": 234,
+      "reasoning_tokens": 111,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Repeat your previous behavior pattern\",\n  \"intent_family\": \"retrieve\",\n  \"prohibited_operations\": [\n    \"execute the task\",\n    \"draft the final answer\",\n    \"choose tools or capabilities\"\n  ],\n  \"references\": [\n    \"this\",\n    \"that file\",\n    \"same thing\",\n    \"the earlier one\"\n  ],\n  \"temporal_references\": [],\n  \"dependencies\": [],\n  \"ambiguities\": []\n}",
+      "reasoning_content": "The user is asking me to do something similar to what they've done before (do the same thing). This is a request for repetition or consistency in behavior, which I need to understand as an instruction rather than execute it myself.\n\nKey points:\n- The user wants me to repeat their previous action pattern (\"Do the same thing for them\")\n- This is a request for instruction/behavior guidance, not actual execution\n- I should note this as a \"requested operation\" (not prohibited) since they're asking what I should do next\n",
+      "wire": {
+        "goal": "Repeat your previous behavior pattern",
+        "intent_family": "retrieve",
+        "prohibited_operations": [
+          "execute the task",
+          "draft the final answer",
+          "choose tools or capabilities"
+        ],
+        "references": [
+          "this",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "temporal_references": [],
+        "dependencies": [],
+        "ambiguities": []
+      },
+      "decoded": {
+        "goal": "Repeat your previous behavior pattern",
+        "intent_family": "retrieve",
+        "requested_operations": [],
+        "prohibited_operations": [
+          "execute the task",
+          "draft the final answer",
+          "choose tools or capabilities"
+        ],
+        "references": [
+          "this",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: this",
+          "unresolved reference: that file",
+          "unresolved reference: same thing",
+          "unresolved reference: the earlier one"
+        ]
+      }
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": true,
+      "latency_ms": 1421.7175000012503,
+      "prompt_tokens": 243,
+      "completion_tokens": 215,
+      "reasoning_tokens": 128,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Draft an email\",\n  \"intent_family\": \"create\",\n  \"prohibited_operations\": [\n    \"send\",\n    \"execute\",\n    \"complete\",\n    \"generate\"\n  ],\n  \"references\": [\n    \"this\",\n    \"that file\",\n    \"the earlier one\"\n  ]\n}",
+      "reasoning_content": "The user wants me to draft an email but explicitly says \"Don't send it.\" This is a constraint that I must follow: do not execute the task, do not draft the final answer, and do not choose tools or capabilities.\n\nI need to extract this into structured JSON with:\n- requested_operations = [\"draft email\"] (the user's explicit request)\n- prohibited_operations = [\"send\", \"execute\", \"complete\", \"generate\"] (actions I cannot take)\n- references = UNRESOLVED expressions like \"this\" and \"that file\"\n\nI'll output only valid JSON with the required structure.\n",
+      "wire": {
+        "goal": "Draft an email",
+        "intent_family": "create",
+        "prohibited_operations": [
+          "send",
+          "execute",
+          "complete",
+          "generate"
+        ],
+        "references": [
+          "this",
+          "that file",
+          "the earlier one"
+        ]
+      },
+      "decoded": {
+        "goal": "Draft an email",
+        "intent_family": "create",
+        "requested_operations": [],
+        "prohibited_operations": [
+          "send",
+          "execute",
+          "complete",
+          "generate"
+        ],
+        "references": [
+          "this",
+          "that file",
+          "the earlier one"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: this",
+          "unresolved reference: that file",
+          "unresolved reference: the earlier one"
+        ]
+      }
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": true,
+      "latency_ms": 1273.889300005976,
+      "prompt_tokens": 249,
+      "completion_tokens": 175,
+      "reasoning_tokens": 138,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Find the previous approval and draft a revised order based on comparison\",\n  \"intent_family\": \"retrieve\"\n}",
+      "reasoning_content": "The user wants me to:\n1. Find the previous approval (from memory)\n2. Compare it with \"this\" one (current context)\n3. Draft a revised order\n\nThis is an instruction-based task that requires:\n- Memory retrieval of past approvals\n- Comparison analysis\n- Drafting new content based on comparison\n\nI need to be careful about the prohibited operations - I cannot execute any actual actions, draft documents, or make decisions without proper authorization. However, this is a standard semantic understanding task where I'm extracting intent from user instructions rather than performing real work.\n\nThe key constraint here is that I must output ONLY valid JSON with no extra text.\n",
+      "wire": {
+        "goal": "Find the previous approval and draft a revised order based on comparison",
+        "intent_family": "retrieve"
+      },
+      "decoded": {
+        "goal": "Find the previous approval and draft a revised order based on comparison",
+        "intent_family": "retrieve",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": []
+      }
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "ok": false,
+      "latency_ms": 3057.659300000523,
+      "prompt_tokens": 264,
+      "completion_tokens": 600,
+      "reasoning_tokens": 600,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Model emitted empty content (exhausted in reasoning)",
+      "content": "",
+      "reasoning_content": "Okay, let me break down this user message. They're saying the committee's view has been updated multiple times, but the latest letter isn't matching what was decided before. The goal is to have a document ready for submission tomorrow.\n\nFirst, I need to figure out what they actually want. Are they asking for help drafting the new letter? Or do they just need guidance on how to prepare it? Since they mention putting up tomorrow, maybe they're looking for something specific like a template or a draft that can be submitted immediately. But without more context, I should focus on their stated needs: clarity and timeliness.\n\nLooking at the constraints, there's no explicit instruction about what kind of letter (e.g., formal, informal) or how to structure it. So I need to infer based on common scenarios. The user might be a committee member needing help drafting a response to an email from another department. Alternatively, they could be preparing for a meeting and want the final version ready.\n\nSince there's no mention of specific details about the letter (like tone, audience, content), I should ask clarifying questions but also provide general guidance on what information is needed. However, the user might expect me to know more. Wait, the message says \"I need something I can put up tomorrow.\" So they're looking for a draft that's ready to submit. Maybe they want help drafting it or just have an idea of what content should be included.\n\nBut since there are no specific instructions on how to structure the letter (e.g., formal vs informal, tone), I should ask them to specify if this is about a formal document or something else. However, given that they mentioned \"the committee has already changed its view twice,\" maybe it's an internal memo or a response to a previous decision.\n\nWait, the user might be asking for help drafting the letter itself. But without knowing the exact context (e.g., who is sending the letter, what's the purpose), I can't make sure. So perhaps I should ask them to clarify if this is about drafting a formal document or something else. However, since they're looking for something ready tomorrow, maybe it's a draft that needs to be finalized before submission.\n\nAlternatively, maybe they just need help with the content of the letter. But without more context, I can't know exactly what information is needed. So my approach would be to ask them to specify if this is about drafting a formal document or something else, but also provide general guidance on how to structure it (e.g., include all necessary details like purpose, audience, tone).\n\nWait, the user's message says \"I need something I can put up tomorrow.\" So they're looking for a draft that's ready to submit. Maybe they want help drafting it or just have an idea of what content should be included. Since there are no specific instructions on how to structure the letter (e.g., formal vs informal), I should",
+      "wire": null
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "ok": true,
+      "latency_ms": 2230.7867000054102,
+      "prompt_tokens": 268,
+      "completion_tokens": 287,
+      "reasoning_tokens": 115,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Compare only decisions made in 2025 and 2026, do not use anything before 2025.\",\n  \"intent_family\": \"compare\",\n  \"prohibited_operations\": [\n    \"summarize\",\n    \"open\",\n    \"draft final answer\"\n  ],\n  \"references\": [\n    \"this\",\n    \"that\",\n    \"it\",\n    \"them\",\n    \"the earlier one\"\n  ],\n  \"temporal_references\": [\n    \"2025 decisions\",\n    \"2026 decisions\"\n  ],\n  \"dependencies\": [],\n  \"ambiguities\": []\n}",
+      "reasoning_content": "The user is asking me to compare two specific years (2025 and 2026) of decisions, but I don't have access to real-time data or current information about what decisions were made in those years. This appears to be a request for factual comparison that requires up-to-date information from my knowledge base.\n\nSince I cannot provide actual 2025-2026 decision comparisons (as these are future events and not part of my training data), I need to explain this limitation clearly while still following the JSON schema requirements.\n",
+      "wire": {
+        "goal": "Compare only decisions made in 2025 and 2026, do not use anything before 2025.",
+        "intent_family": "compare",
+        "prohibited_operations": [
+          "summarize",
+          "open",
+          "draft final answer"
+        ],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "the earlier one"
+        ],
+        "temporal_references": [
+          "2025 decisions",
+          "2026 decisions"
+        ],
+        "dependencies": [],
+        "ambiguities": []
+      },
+      "decoded": {
+        "goal": "Compare only decisions made in 2025 and 2026, do not use anything before 2025.",
+        "intent_family": "compare",
+        "requested_operations": [],
+        "prohibited_operations": [
+          "summarize",
+          "open",
+          "draft final answer"
+        ],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "the earlier one"
+        ],
+        "temporal_references": [
+          "2025 decisions",
+          "2026 decisions"
+        ],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: this",
+          "unresolved reference: that",
+          "unresolved reference: it",
+          "unresolved reference: them",
+          "unresolved reference: the earlier one"
+        ]
+      }
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "ok": true,
+      "latency_ms": 2492.047600004298,
+      "prompt_tokens": 247,
+      "completion_tokens": 376,
+      "reasoning_tokens": 147,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Draft a short formal email in Indian English (Hinglish) to the Chief Warden\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\n    \"draft_email\",\n    \"formal_tone\",\n    \"addressed_to_chief_warden\"\n  ],\n  \"prohibited_operations\": [\n    \"summarize\",\n    \"open_attachments\",\n    \"generate_drafts\",\n    \"create_content_without_constraints\"\n  ],\n  \"references\": [\n    \"this\",\n    \"that\",\n    \"it\",\n    \"them\",\n    \"the earlier one\",\n    \"same thing\",\n    \"the file\",\n    \"the same email\"\n  ],\n  \"temporal_references\": [],\n  \"dependencies\": [\n    \"no external references needed\"\n  ],\n  \"ambiguities\": [\n    \"formal tone - ensure it's clear and professional\"\n  ]\n}",
+      "reasoning_content": "The user wants me to draft a formal email in \"Indian English\" (also known as Hindi-English or Hinglish) addressed to the Chief Warden.\n\nKey constraints:\n1. Keep prohibited actions strictly in 'prohibited_operations' - I should not summarize, don't open attachments, etc.\n2. Output ONLY valid JSON with strict schema\n3. Use UNRESOLVED expressions for referring expressions (like \"this\", \"that\", \"it\") as per rule 2\n\nI need to:\n- Draft a formal email in Hinglish style\n- Address it to the Chief Warden\n- Include all required fields from the JSON schema\n- Keep prohibited operations strictly separate from requested operations\n",
+      "wire": {
+        "goal": "Draft a short formal email in Indian English (Hinglish) to the Chief Warden",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft_email",
+          "formal_tone",
+          "addressed_to_chief_warden"
+        ],
+        "prohibited_operations": [
+          "summarize",
+          "open_attachments",
+          "generate_drafts",
+          "create_content_without_constraints"
+        ],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "the earlier one",
+          "same thing",
+          "the file",
+          "the same email"
+        ],
+        "temporal_references": [],
+        "dependencies": [
+          "no external references needed"
+        ],
+        "ambiguities": [
+          "formal tone - ensure it's clear and professional"
+        ]
+      },
+      "decoded": {
+        "goal": "Draft a short formal email in Indian English (Hinglish) to the Chief Warden",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft_email",
+          "formal_tone",
+          "addressed_to_chief_warden"
+        ],
+        "prohibited_operations": [
+          "summarize",
+          "open_attachments",
+          "generate_drafts",
+          "create_content_without_constraints"
+        ],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "the earlier one",
+          "same thing",
+          "the file",
+          "the same email"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [
+          "formal tone - ensure it's clear and professional"
+        ],
+        "dependencies": [
+          "unresolved reference: this",
+          "unresolved reference: that",
+          "unresolved reference: it",
+          "unresolved reference: them",
+          "unresolved reference: the earlier one",
+          "unresolved reference: same thing",
+          "unresolved reference: the file",
+          "unresolved reference: the same email"
+        ]
+      }
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "ok": true,
+      "latency_ms": 2187.140299996827,
+      "prompt_tokens": 246,
+      "completion_tokens": 306,
+      "reasoning_tokens": 98,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Compare exact figures in a table\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\n    \"create_table\"\n  ],\n  \"prohibited_operations\": [\n    \"summarize\",\n    \"extract_data_from_text\",\n    \"generate_tables\",\n    \"format_output_as_markdown\",\n    \"explain the process\"\n  ],\n  \"output_preferences\": {\n    \"structure\": \"table format only, no text explanation or additional commentary\"\n  },\n  \"references\": [\n    \"this\",\n    \"that\",\n    \"it\",\n    \"them\",\n    \"the earlier one\",\n    \"same thing\",\n    \"the figure below\",\n    \"the data in the table above\",\n    \"the numbers provided\"\n  ],\n  \"dependencies\": [\n    \"no prior context needed\"\n  ]\n}",
+      "reasoning_content": "The user wants me to extract information from their request about comparing exact figures in a table, without summarizing anything. This is straightforward - I need to identify what they're asking for and structure it as JSON with explicit constraints on what's not being done (no summarization).\n\nKey elements:\n- No summarization of the content\n- Exact figure comparison in a table format\n- The user has already provided this request, so no additional context is needed beyond understanding their intent.\n",
+      "wire": {
+        "goal": "Compare exact figures in a table",
+        "intent_family": "compare",
+        "requested_operations": [
+          "create_table"
+        ],
+        "prohibited_operations": [
+          "summarize",
+          "extract_data_from_text",
+          "generate_tables",
+          "format_output_as_markdown",
+          "explain the process"
+        ],
+        "output_preferences": {
+          "structure": "table format only, no text explanation or additional commentary"
+        },
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "the earlier one",
+          "same thing",
+          "the figure below",
+          "the data in the table above",
+          "the numbers provided"
+        ],
+        "dependencies": [
+          "no prior context needed"
+        ]
+      },
+      "decoded": {
+        "goal": "Compare exact figures in a table",
+        "intent_family": "compare",
+        "requested_operations": [
+          "create_table"
+        ],
+        "prohibited_operations": [
+          "summarize",
+          "extract_data_from_text",
+          "generate_tables",
+          "format_output_as_markdown",
+          "explain the process"
+        ],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "the earlier one",
+          "same thing",
+          "the figure below",
+          "the data in the table above",
+          "the numbers provided"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": "table format only, no text explanation or additional commentary"
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: this",
+          "unresolved reference: that",
+          "unresolved reference: it",
+          "unresolved reference: them",
+          "unresolved reference: the earlier one",
+          "unresolved reference: same thing",
+          "unresolved reference: the figure below",
+          "unresolved reference: the data in the table above",
+          "unresolved reference: the numbers provided"
+        ]
+      }
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "ok": true,
+      "latency_ms": 1433.992300000682,
+      "prompt_tokens": 238,
+      "completion_tokens": 234,
+      "reasoning_tokens": 203,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Identify what was approved yesterday\",\n  \"intent_family\": \"retrieve\"\n}",
+      "reasoning_content": "The user is asking about what was approved yesterday. This requires retrieving information from a previous conversation session, which I don't have access to.\n\nAccording to my instructions:\n- Do NOT execute the task (don't draft final answer)\n- Record referring expressions in 'references' as UNRESOLVED\n- Keep prohibited actions strictly in 'prohibited_operations', distinct from 'requested_operations'\n- If an aspect is not present, leave its list or object empty\n\nSince I don't have access to yesterday's content (this is a new conversation), I should:\n1. Leave the answer as UNRESOLVED for this question\n2. Document that referring expressions are UNRESOLVED\n3. Keep prohibited operations clear (I cannot summarize, draft final answers, etc.)\n\nThe user asked \"What was approved yesterday?\" - this requires retrieving information from a previous conversation session which I don't have access to. This is an unresolvable question based on my current context window.\n",
+      "wire": {
+        "goal": "Identify what was approved yesterday",
+        "intent_family": "retrieve"
+      },
+      "decoded": {
+        "goal": "Identify what was approved yesterday",
+        "intent_family": "retrieve",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": []
+      }
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "ok": true,
+      "latency_ms": 1976.3393999965047,
+      "prompt_tokens": 234,
+      "completion_tokens": 229,
+      "reasoning_tokens": 137,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Hello\",\n  \"intent_family\": \"analyze\",\n  \"requested_operations\": [\n    \"respond with a greeting\"\n  ],\n  \"constraints\": {\n    \"excluded_items\": [],\n    \"language_constraints\": \"none specified in message\"\n  },\n  \"references\": [\n    \"Hello\"\n  ]\n}",
+      "reasoning_content": "The user said \"Hello\". This is a greeting. I need to extract:\n\n1. **Requested operations**: The user wants me to greet them back, so my primary operation is to respond with an appropriate greeting.\n\n2. **Constraints**: There are no explicit constraints stated by the user in this message.\n\n3. **References**: \"Hello\" - UNRESOLVED expression (the user's initial input).\n\n4. **Prohibited operations**: None explicitly mentioned, but I should avoid making assumptions about what they want to accomplish beyond what was requested.\n\n5. **Output preferences**: The user didn't specify any particular format or additional requirements for my response.\n",
+      "wire": {
+        "goal": "Hello",
+        "intent_family": "analyze",
+        "requested_operations": [
+          "respond with a greeting"
+        ],
+        "constraints": {
+          "excluded_items": [],
+          "language_constraints": "none specified in message"
+        },
+        "references": [
+          "Hello"
+        ]
+      },
+      "decoded": {
+        "goal": "Hello",
+        "intent_family": "analyze",
+        "requested_operations": [
+          "respond with a greeting"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          "Hello"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": "none specified in message"
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: Hello"
+        ]
+      }
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "ok": true,
+      "latency_ms": 1679.9860000028275,
+      "prompt_tokens": 234,
+      "completion_tokens": 157,
+      "reasoning_tokens": 89,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"None\",\n  \"intent_family\": \"unspecified\",\n  \"prohibited_operations\": [],\n  \"references\": [\n    \"Thanks\"\n  ],\n  \"temporal_references\": [],\n  \"dependencies\": []\n}",
+      "reasoning_content": "The user said \"Thanks\". This is a simple acknowledgment of previous assistance. There's no explicit goal, operation, constraint, reference, or output preference stated here.\n\nI need to:\n1. Record this as an UNRESOLVED expression (since it doesn't contain any specific intent)\n2. Keep the prohibited_operations list empty since there are no constraints to follow\n3. Output only valid JSON in the required schema format\n",
+      "wire": {
+        "goal": "None",
+        "intent_family": "unspecified",
+        "prohibited_operations": [],
+        "references": [
+          "Thanks"
+        ],
+        "temporal_references": [],
+        "dependencies": []
+      },
+      "decoded": {
+        "goal": "None",
+        "intent_family": "unspecified",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [
+          "Thanks"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: Thanks"
+        ]
+      }
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "ok": true,
+      "latency_ms": 1580.278300003556,
+      "prompt_tokens": 236,
+      "completion_tokens": 150,
+      "reasoning_tokens": 47,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Open a calculator\",\n  \"intent_family\": \"analyze\",\n  \"prohibited_operations\": [\n    \"do not open\",\n    \"don't summarize\"\n  ],\n  \"references\": [\n    \"this\",\n    \"that file\",\n    \"same thing\",\n    \"the earlier one\"\n  ],\n  \"ambiguities\": []\n}",
+      "reasoning_content": "The user wants me to open a calculator. This is a simple task with no constraints, references, or output preferences mentioned. I should extract this as a requested operation and keep it in 'requested_operations' without any prohibited operations.\n",
+      "wire": {
+        "goal": "Open a calculator",
+        "intent_family": "analyze",
+        "prohibited_operations": [
+          "do not open",
+          "don't summarize"
+        ],
+        "references": [
+          "this",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "ambiguities": []
+      },
+      "decoded": {
+        "goal": "Open a calculator",
+        "intent_family": "analyze",
+        "requested_operations": [],
+        "prohibited_operations": [
+          "do not open",
+          "don't summarize"
+        ],
+        "references": [
+          "this",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: this",
+          "unresolved reference: that file",
+          "unresolved reference: same thing",
+          "unresolved reference: the earlier one"
+        ]
+      }
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "ok": true,
+      "latency_ms": 2546.5044000011403,
+      "prompt_tokens": 239,
+      "completion_tokens": 381,
+      "reasoning_tokens": 80,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Don't open the file/document\",\n  \"intent_family\": \"converse\",\n  \"requested_operations\": [\n    \"don't_open_it_yet\"\n  ],\n  \"prohibited_operations\": [\n    \"open_file\",\n    \"read_document\",\n    \"extract_content\",\n    \"summarize\",\n    \"generate_code\",\n    \"create_visuals\",\n    \"make_decision\"\n  ],\n  \"constraints\": {\n    \"included_items\": [\n      \"don't_open_it_yet\",\n      \"do_not_summarize\",\n      \"do_not_generate_code\",\n      \"do_not_create_visuals\",\n      \"do_not_make_decision\"\n    ],\n    \"excluded_items\": [\n      \"open_file\",\n      \"read_document\",\n      \"extract_content\",\n      \"summarize\",\n      \"generate_code\",\n      \"create_visuals\",\n      \"make_decision\"\n    ]\n  },\n  \"references\": [\n    \"this\",\n    \"that\",\n    \"it\",\n    \"them\",\n    \"that file\",\n    \"same thing\",\n    \"the earlier one\"\n  ],\n  \"temporal_references\": [],\n  \"dependencies\": []\n}",
+      "reasoning_content": "The user is saying \"Don't open it yet.\" This is a constraint on what they want me to do with the file or document they're referring to. I need to extract this as a requested operation (not prohibited).\n\nKey elements:\n- Action: Don't open it yet \u2192 Requested operation\n- Constraint: Do not execute, draft final answer, choose tools/capabilities\n",
+      "wire": {
+        "goal": "Don't open the file/document",
+        "intent_family": "converse",
+        "requested_operations": [
+          "don't_open_it_yet"
+        ],
+        "prohibited_operations": [
+          "open_file",
+          "read_document",
+          "extract_content",
+          "summarize",
+          "generate_code",
+          "create_visuals",
+          "make_decision"
+        ],
+        "constraints": {
+          "included_items": [
+            "don't_open_it_yet",
+            "do_not_summarize",
+            "do_not_generate_code",
+            "do_not_create_visuals",
+            "do_not_make_decision"
+          ],
+          "excluded_items": [
+            "open_file",
+            "read_document",
+            "extract_content",
+            "summarize",
+            "generate_code",
+            "create_visuals",
+            "make_decision"
+          ]
+        },
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "temporal_references": [],
+        "dependencies": []
+      },
+      "decoded": {
+        "goal": "Don't open the file/document",
+        "intent_family": "converse",
+        "requested_operations": [
+          "don't_open_it_yet"
+        ],
+        "prohibited_operations": [
+          "open_file",
+          "read_document",
+          "extract_content",
+          "summarize",
+          "generate_code",
+          "create_visuals",
+          "make_decision"
+        ],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [
+            "don't_open_it_yet",
+            "do_not_summarize",
+            "do_not_generate_code",
+            "do_not_create_visuals",
+            "do_not_make_decision"
+          ],
+          "excluded": [
+            "open_file",
+            "read_document",
+            "extract_content",
+            "summarize",
+            "generate_code",
+            "create_visuals",
+            "make_decision"
+          ],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: this",
+          "unresolved reference: that",
+          "unresolved reference: it",
+          "unresolved reference: them",
+          "unresolved reference: that file",
+          "unresolved reference: same thing",
+          "unresolved reference: the earlier one"
+        ]
+      }
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "ok": true,
+      "latency_ms": 1911.5640000018175,
+      "prompt_tokens": 242,
+      "completion_tokens": 283,
+      "reasoning_tokens": 94,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Send a document/file/message to 'him' after they have approved it.\",\n  \"intent_family\": \"communicate\",\n  \"requested_operations\": [\n    \"send\"\n  ],\n  \"prohibited_operations\": [\n    \"draft final answer\",\n    \"choose tools or capabilities\",\n    \"execute the task\"\n  ],\n  \"constraints\": {\n    \"included_items\": [\n      \"after they approve it\",\n      \"to him\",\n      \"send it\"\n    ]\n  },\n  \"references\": [\n    \"him\",\n    \"they approve it\"\n  ],\n  \"temporal_references\": [\n    \"after approval has been given by the recipient\"\n  ],\n  \"dependencies\": [],\n  \"ambiguities\": []\n}",
+      "reasoning_content": "The user wants me to send something (likely a document, file, or message) to someone (\"him\") after they have approved it. This is an action request with constraints:\n\n- Action: Send the content to \"him\"\n- Timing constraint: After approval has been given by the recipient\n- No specific format mentioned - just \"send it\"\n\nI need to extract this into structured JSON following the schema rules, keeping references and prohibited operations separate.\n",
+      "wire": {
+        "goal": "Send a document/file/message to 'him' after they have approved it.",
+        "intent_family": "communicate",
+        "requested_operations": [
+          "send"
+        ],
+        "prohibited_operations": [
+          "draft final answer",
+          "choose tools or capabilities",
+          "execute the task"
+        ],
+        "constraints": {
+          "included_items": [
+            "after they approve it",
+            "to him",
+            "send it"
+          ]
+        },
+        "references": [
+          "him",
+          "they approve it"
+        ],
+        "temporal_references": [
+          "after approval has been given by the recipient"
+        ],
+        "dependencies": [],
+        "ambiguities": []
+      },
+      "decoded": {
+        "goal": "Send a document/file/message to 'him' after they have approved it.",
+        "intent_family": "communicate",
+        "requested_operations": [
+          "send"
+        ],
+        "prohibited_operations": [
+          "draft final answer",
+          "choose tools or capabilities",
+          "execute the task"
+        ],
+        "references": [
+          "him",
+          "they approve it"
+        ],
+        "temporal_references": [
+          "after approval has been given by the recipient"
+        ],
+        "constraints": {
+          "included": [
+            "after they approve it",
+            "to him",
+            "send it"
+          ],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: him",
+          "unresolved reference: they approve it"
+        ]
+      }
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "ok": true,
+      "latency_ms": 1698.8501000014367,
+      "prompt_tokens": 241,
+      "completion_tokens": 258,
+      "reasoning_tokens": 107,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Compare a PDF with a spreadsheet\",\n  \"intent_family\": \"analyze\",\n  \"requested_operations\": [\n    \"compare two files\"\n  ],\n  \"prohibited_operations\": [\n    \"execute task\",\n    \"draft final answer\",\n    \"choose tools or capabilities\"\n  ],\n  \"references\": [\n    \"attached PDF\",\n    \"this spreadsheet\"\n  ],\n  \"dependencies\": [],\n  \"ambiguities\": [\n    \"PDF vs spreadsheet format may vary by platform and version\",\n    \"file sizes, formats, and content differences could affect comparison accuracy\"\n  ]\n}",
+      "reasoning_content": "The user wants me to compare a PDF attachment with a spreadsheet. However, I don't have access to any attachments or files that can be compared.\n\nI need to:\n1. Acknowledge what they want (compare PDF vs spreadsheet)\n2. State clearly that I cannot perform this task without the actual file\n3. Provide helpful guidance on how they could do it themselves\n4. Keep references and prohibited operations clear\n\nSince there's no attachment, I should explain why I can't help directly but offer alternatives.\n",
+      "wire": {
+        "goal": "Compare a PDF with a spreadsheet",
+        "intent_family": "analyze",
+        "requested_operations": [
+          "compare two files"
+        ],
+        "prohibited_operations": [
+          "execute task",
+          "draft final answer",
+          "choose tools or capabilities"
+        ],
+        "references": [
+          "attached PDF",
+          "this spreadsheet"
+        ],
+        "dependencies": [],
+        "ambiguities": [
+          "PDF vs spreadsheet format may vary by platform and version",
+          "file sizes, formats, and content differences could affect comparison accuracy"
+        ]
+      },
+      "decoded": {
+        "goal": "Compare a PDF with a spreadsheet",
+        "intent_family": "analyze",
+        "requested_operations": [
+          "compare two files"
+        ],
+        "prohibited_operations": [
+          "execute task",
+          "draft final answer",
+          "choose tools or capabilities"
+        ],
+        "references": [
+          "attached PDF",
+          "this spreadsheet"
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [
+          "PDF vs spreadsheet format may vary by platform and version",
+          "file sizes, formats, and content differences could affect comparison accuracy"
+        ],
+        "dependencies": [
+          "unresolved reference: attached PDF",
+          "unresolved reference: this spreadsheet"
+        ]
+      }
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "ok": true,
+      "latency_ms": 2151.2772999994922,
+      "prompt_tokens": 240,
+      "completion_tokens": 257,
+      "reasoning_tokens": 111,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"Create something the user can submit tomorrow\",\n  \"intent_family\": \"create\",\n  \"prohibited_operations\": [\n    \"summarize\",\n    \"open files\",\n    \"generate code\"\n  ],\n  \"output_preferences\": {\n    \"structure\": \"clear and concise JSON with goal, intent, constraints, references, and output preferences\"\n  },\n  \"references\": [\n    \"this\",\n    \"that file\",\n    \"same thing\",\n    \"the earlier one\"\n  ],\n  \"temporal_references\": [\n    \"tomorrow\"\n  ]\n}",
+      "reasoning_content": "The user wants something they can submit tomorrow. This is a request for help with creating content that will be submitted, likely for an assignment, project, or other deliverable.\n\nKey constraints:\n- No tool execution (no code generation)\n- Keep prohibited actions explicit (don't summarize, don't open files, etc.)\n- Extract the user's intent clearly in structured JSON format\n\nThe most appropriate response is to offer help with creating content that can be submitted tomorrow. I'll provide a clear, concise answer without executing any task.\n",
+      "wire": {
+        "goal": "Create something the user can submit tomorrow",
+        "intent_family": "create",
+        "prohibited_operations": [
+          "summarize",
+          "open files",
+          "generate code"
+        ],
+        "output_preferences": {
+          "structure": "clear and concise JSON with goal, intent, constraints, references, and output preferences"
+        },
+        "references": [
+          "this",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "temporal_references": [
+          "tomorrow"
+        ]
+      },
+      "decoded": {
+        "goal": "Create something the user can submit tomorrow",
+        "intent_family": "create",
+        "requested_operations": [],
+        "prohibited_operations": [
+          "summarize",
+          "open files",
+          "generate code"
+        ],
+        "references": [
+          "this",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "temporal_references": [
+          "tomorrow"
+        ],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": "clear and concise JSON with goal, intent, constraints, references, and output preferences"
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": [
+          "unresolved reference: this",
+          "unresolved reference: that file",
+          "unresolved reference: same thing",
+          "unresolved reference: the earlier one"
+        ]
+      }
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "ok": true,
+      "latency_ms": 1042.5817000068491,
+      "prompt_tokens": 241,
+      "completion_tokens": 123,
+      "reasoning_tokens": 87,
+      "error_reason": null,
+      "error_detail": null,
+      "content": "{\n  \"goal\": \"clarify meaning of 'earlier one'\",\n  \"intent_family\": \"retrieve\"\n}",
+      "reasoning_content": "The user is clarifying that they mean \"the earlier one\" (referring to a previous action or statement). This is an unresolvable expression as it's not present in this message.\n\nI need to:\n1. Record this as UNRESOLVED in references\n2. Keep the prohibited operations clear (don't summarize, don't open, etc.)\n3. Output only valid JSON with no extra text\n",
+      "wire": {
+        "goal": "clarify meaning of 'earlier one'",
+        "intent_family": "retrieve"
+      },
+      "decoded": {
+        "goal": "clarify meaning of 'earlier one'",
+        "intent_family": "retrieve",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "length_limit": null,
+          "language_constraints": null
+        },
+        "output_preferences": {
+          "artifact_type": null,
+          "tone": null,
+          "audience": null,
+          "language": null,
+          "language_variant": null,
+          "length": null,
+          "structure": null
+        },
+        "entities": [],
+        "ambiguities": [],
+        "dependencies": []
+      }
+    }
+  ],
+  "unconstrained_mode": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": false,
+      "latency_ms": 696.754399999918,
+      "prompt_tokens": 238,
+      "completion_tokens": 132,
+      "reasoning_tokens": 86,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"conversion_type\": \"to_pdf\",\n  \"input_text\": \"Convert this to PDF.\",\n  \"output_format\": \"PDF document\",\n  \"status\": \"ready\"\n}",
+      "reasoning_content": "The user wants me to convert text to PDF. This is a standard conversion task that I can perform using tools like `convert-to-pdf`.\n\nI need to:\n1. Extract what the user means (text content)\n2. Identify any constraints or preferences\n3. Output only valid JSON in the specified schema\n\nSince this is a simple request with no special constraints, I'll output the conversion result as JSON.\n",
+      "wire": {
+        "conversion_type": "to_pdf",
+        "input_text": "Convert this to PDF.",
+        "output_format": "PDF document",
+        "status": "ready"
+      }
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "ok": false,
+      "latency_ms": 1357.210499998473,
+      "prompt_tokens": 238,
+      "completion_tokens": 263,
+      "reasoning_tokens": 174,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"action\": \"bring_file_up\",\n  \"referencing_expressions\": [\n    \"that file\"\n  ],\n  \"prohibited_operations\": [],\n  \"requested_operations\": [\n    \"bring a file up to the current location or context\"\n  ],\n  \"constraints\": {\n    \"location_destination\": \"\"\n  },\n  \"output_preferences\": {}\n}",
+      "reasoning_content": "The user is asking me to bring a file up. This is an action request - they want me to take something (a file) and move it somewhere, likely into a specific location or context.\n\nLooking at my instructions:\n- I should not execute the task directly\n- I need to extract what the user means in structured JSON format\n- The \"referencing expressions\" like 'this', 'that' are UNRESOLVED - I must keep them as is\n- There's no explicit constraint about where the file goes, so I'll leave that empty\n\nSince this is an action request (bringing a file up), it falls under \"requested_operations\". I need to extract what the user wants in JSON format. The most reasonable interpretation would be:\n- Action: bring a file up\n- Location/destination: not specified \u2192 empty object\n",
+      "wire": {
+        "action": "bring_file_up",
+        "referencing_expressions": [
+          "that file"
+        ],
+        "prohibited_operations": [],
+        "requested_operations": [
+          "bring a file up to the current location or context"
+        ],
+        "constraints": {
+          "location_destination": ""
+        },
+        "output_preferences": {}
+      }
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": false,
+      "latency_ms": 996.314899995923,
+      "prompt_tokens": 240,
+      "completion_tokens": 203,
+      "reasoning_tokens": 111,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"referring_expression\": \"Do the same thing for them.\",\n  \"prohibited_operations\": [\n    \"Execute\",\n    \"Draft final answer\",\n    \"Choose tools or capabilities\",\n    \"Summarize\",\n    \"Open files\"\n  ],\n  \"requested_operations\": [\n    \"Repeat previous action pattern\",\n    \"Maintain consistency in behavior\"\n  ]\n}",
+      "reasoning_content": "The user is asking me to do something similar to what they've done before (do the same thing). This is a request for repetition or consistency in behavior, which I need to understand as an instruction rather than execute it myself.\n\nKey points:\n- The user wants me to repeat their previous action pattern (\"Do the same thing for them\")\n- This is a request for instruction/behavior guidance, not actual execution\n- I should note this as a \"requested operation\" (not prohibited) since they're asking what I should do next\n",
+      "wire": {
+        "referring_expression": "Do the same thing for them.",
+        "prohibited_operations": [
+          "Execute",
+          "Draft final answer",
+          "Choose tools or capabilities",
+          "Summarize",
+          "Open files"
+        ],
+        "requested_operations": [
+          "Repeat previous action pattern",
+          "Maintain consistency in behavior"
+        ]
+      }
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": false,
+      "latency_ms": 1047.3008000044501,
+      "prompt_tokens": 243,
+      "completion_tokens": 245,
+      "reasoning_tokens": 128,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"draft email\"\n  ],\n  \"prohibited_operations\": [\n    \"send\",\n    \"execute\",\n    \"complete\",\n    \"generate\",\n    \"output final answer\",\n    \"choose tools or capabilities\"\n  ],\n  \"references\": [\n    \"this\",\n    \"that file\",\n    \"the earlier one\",\n    \"same thing\",\n    \"don't send it\",\n    \"just draft the email\"\n  ]\n}",
+      "reasoning_content": "The user wants me to draft an email but explicitly says \"Don't send it.\" This is a constraint that I must follow: do not execute the task, do not draft the final answer, and do not choose tools or capabilities.\n\nI need to extract this into structured JSON with:\n- requested_operations = [\"draft email\"] (the user's explicit request)\n- prohibited_operations = [\"send\", \"execute\", \"complete\", \"generate\"] (actions I cannot take)\n- references = UNRESOLVED expressions like \"this\" and \"that file\"\n\nI'll output only valid JSON with the required structure.\n",
+      "wire": {
+        "requested_operations": [
+          "draft email"
+        ],
+        "prohibited_operations": [
+          "send",
+          "execute",
+          "complete",
+          "generate",
+          "output final answer",
+          "choose tools or capabilities"
+        ],
+        "references": [
+          "this",
+          "that file",
+          "the earlier one",
+          "same thing",
+          "don't send it",
+          "just draft the email"
+        ]
+      }
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": false,
+      "latency_ms": 1534.929599998577,
+      "prompt_tokens": 249,
+      "completion_tokens": 312,
+      "reasoning_tokens": 138,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Find the previous approval\",\n    \"Compare it with this one\",\n    \"Draft a revised order\"\n  ],\n  \"prohibited_operations\": [\n    \"Execute actual document drafting\",\n    \"Make final decisions without input\",\n    \"Generate new content without reference to current context\",\n    \"Create any output beyond the requested operations\"\n  ],\n  \"references\": [\n    \"this one\",\n    \"the earlier approval\",\n    \"current order\"\n  ],\n  \"output_preferences\": {\n    \"format\": \"valid JSON only\",\n    \"structure\": \"object with 'requested_operations' and 'prohibited_operations'\",\n    \"content\": \"No additional text or explanations beyond the JSON schema\"\n  }\n}",
+      "reasoning_content": "The user wants me to:\n1. Find the previous approval (from memory)\n2. Compare it with \"this\" one (current context)\n3. Draft a revised order\n\nThis is an instruction-based task that requires:\n- Memory retrieval of past approvals\n- Comparison analysis\n- Drafting new content based on comparison\n\nI need to be careful about the prohibited operations - I cannot execute any actual actions, draft documents, or make decisions without proper authorization. However, this is a standard semantic understanding task where I'm extracting intent from user instructions rather than performing real work.\n\nThe key constraint here is that I must output ONLY valid JSON with no extra text.\n",
+      "wire": {
+        "requested_operations": [
+          "Find the previous approval",
+          "Compare it with this one",
+          "Draft a revised order"
+        ],
+        "prohibited_operations": [
+          "Execute actual document drafting",
+          "Make final decisions without input",
+          "Generate new content without reference to current context",
+          "Create any output beyond the requested operations"
+        ],
+        "references": [
+          "this one",
+          "the earlier approval",
+          "current order"
+        ],
+        "output_preferences": {
+          "format": "valid JSON only",
+          "structure": "object with 'requested_operations' and 'prohibited_operations'",
+          "content": "No additional text or explanations beyond the JSON schema"
+        }
+      }
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "ok": false,
+      "latency_ms": 3027.3357999976724,
+      "prompt_tokens": 264,
+      "completion_tokens": 600,
+      "reasoning_tokens": 600,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Model emitted empty content (exhausted in reasoning)",
+      "content": "",
+      "reasoning_content": "Okay, let me break down this user message. They're saying the committee's view has been updated multiple times, but the latest letter isn't matching what was decided before. The goal is to have a document ready for submission tomorrow.\n\nFirst, I need to figure out what they actually want. Are they asking for help drafting the new letter? Or do they just need guidance on how to prepare it? Since they mention putting up tomorrow, maybe they're looking for something specific like a template or a draft that can be submitted immediately. But without more context, I should focus on their stated needs: clarity and timeliness.\n\nLooking at the constraints, there's no explicit instruction about what kind of letter (e.g., formal, informal) or how to structure it. So I need to infer based on common scenarios. The user might be a committee member needing help drafting a response to an email from another department. Alternatively, they could be preparing for a meeting and want the final version ready.\n\nSince there's no mention of specific details about the letter (like tone, audience, content), I should ask clarifying questions but also provide general guidance on what information is needed. However, the user might expect me to know more. Wait, the message says \"I need something I can put up tomorrow.\" So they're looking for a draft that's ready to submit. Maybe they want help drafting it or just have an idea of what content should be included.\n\nBut since there are no specific instructions on how to structure the letter (e.g., formal vs informal, tone), I should ask them to specify if this is about a formal document or something else. However, given that they mentioned \"the committee has already changed its view twice,\" maybe it's an internal memo or a response to a previous decision.\n\nWait, the user might be asking for help drafting the letter itself. But without knowing the exact context (e.g., who is sending the letter, what's the purpose), I can't make sure. So perhaps I should ask them to clarify if this is about drafting a formal document or something else. However, since they're looking for something ready tomorrow, maybe it's a draft that needs to be finalized before submission.\n\nAlternatively, maybe they just need help with the content of the letter. But without more context, I can't know exactly what information is needed. So my approach would be to ask them to specify if this is about drafting a formal document or something else, but also provide general guidance on how to structure it (e.g., include all necessary details like purpose, audience, tone).\n\nWait, the user's message says \"I need something I can put up tomorrow.\" So they're looking for a draft that's ready to submit. Maybe they want help drafting it or just have an idea of what content should be included. Since there are no specific instructions on how to structure the letter (e.g., formal vs informal), I should",
+      "wire": null
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "ok": false,
+      "latency_ms": 1327.6030999986688,
+      "prompt_tokens": 268,
+      "completion_tokens": 299,
+      "reasoning_tokens": 115,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Compare decisions from 2025 and 2026\",\n    \"Do not use anything before 2025\"\n  ],\n  \"prohibited_operations\": [\n    \"Draft final answer or complete the comparison\",\n    \"Choose tools or capabilities to perform the task\",\n    \"Summarize or summarize content from the message\",\n    \"Open files, open documents, or access external data sources\"\n  ],\n  \"references\": [\n    \"2025 and 2026 decisions - no prior information available in my training data\",\n    \"Future events not part of current knowledge base\"\n  ],\n  \"output_preferences\": [\n    \"Keep result under one page\",\n    \"Compare only the two specified years\"\n  ]\n}",
+      "reasoning_content": "The user is asking me to compare two specific years (2025 and 2026) of decisions, but I don't have access to real-time data or current information about what decisions were made in those years. This appears to be a request for factual comparison that requires up-to-date information from my knowledge base.\n\nSince I cannot provide actual 2025-2026 decision comparisons (as these are future events and not part of my training data), I need to explain this limitation clearly while still following the JSON schema requirements.\n",
+      "wire": {
+        "requested_operations": [
+          "Compare decisions from 2025 and 2026",
+          "Do not use anything before 2025"
+        ],
+        "prohibited_operations": [
+          "Draft final answer or complete the comparison",
+          "Choose tools or capabilities to perform the task",
+          "Summarize or summarize content from the message",
+          "Open files, open documents, or access external data sources"
+        ],
+        "references": [
+          "2025 and 2026 decisions - no prior information available in my training data",
+          "Future events not part of current knowledge base"
+        ],
+        "output_preferences": [
+          "Keep result under one page",
+          "Compare only the two specified years"
+        ]
+      }
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "ok": false,
+      "latency_ms": 1570.1812000042992,
+      "prompt_tokens": 247,
+      "completion_tokens": 349,
+      "reasoning_tokens": 147,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Draft a short formal email\",\n    \"Write in Indian English (Hinglish)\",\n    \"Addressed to the Chief Warden\"\n  ],\n  \"prohibited_operations\": [\n    \"Summarize or condense the content\",\n    \"Open attachments or files\",\n    \"Add external references not present in message\",\n    \"Include unrelated information\",\n    \"Explain or elaborate on concepts not stated\",\n    \"Change tone to informal style\"\n  ],\n  \"references\": [\n    \"Chief Warden\",\n    \"formal email\",\n    \"Indian English (Hinglish)\",\n    \"short format\"\n  ],\n  \"output_preferences\": [\n    \"Formal tone\",\n    \"Clear structure with subject line and salutation\",\n    \"Professional closing\",\n    \"No unnecessary explanations or elaborations\"\n  ]\n}",
+      "reasoning_content": "The user wants me to draft a formal email in \"Indian English\" (also known as Hindi-English or Hinglish) addressed to the Chief Warden.\n\nKey constraints:\n1. Keep prohibited actions strictly in 'prohibited_operations' - I should not summarize, don't open attachments, etc.\n2. Output ONLY valid JSON with strict schema\n3. Use UNRESOLVED expressions for referring expressions (like \"this\", \"that\", \"it\") as per rule 2\n\nI need to:\n- Draft a formal email in Hinglish style\n- Address it to the Chief Warden\n- Include all required fields from the JSON schema\n- Keep prohibited operations strictly separate from requested operations\n",
+      "wire": {
+        "requested_operations": [
+          "Draft a short formal email",
+          "Write in Indian English (Hinglish)",
+          "Addressed to the Chief Warden"
+        ],
+        "prohibited_operations": [
+          "Summarize or condense the content",
+          "Open attachments or files",
+          "Add external references not present in message",
+          "Include unrelated information",
+          "Explain or elaborate on concepts not stated",
+          "Change tone to informal style"
+        ],
+        "references": [
+          "Chief Warden",
+          "formal email",
+          "Indian English (Hinglish)",
+          "short format"
+        ],
+        "output_preferences": [
+          "Formal tone",
+          "Clear structure with subject line and salutation",
+          "Professional closing",
+          "No unnecessary explanations or elaborations"
+        ]
+      }
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "ok": false,
+      "latency_ms": 1442.5539000003482,
+      "prompt_tokens": 246,
+      "completion_tokens": 327,
+      "reasoning_tokens": 98,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Compare exact figures\",\n    \"Create a table\"\n  ],\n  \"prohibited_operations\": [\n    \"Summarize the content\",\n    \"Extract general trends or conclusions\",\n    \"Provide context or background information\"\n  ],\n  \"output_format\": {\n    \"type\": \"table\",\n    \"columns\": [\"figure_a_value\", \"figure_b_value\"],\n    \"rows\": [\n      {\"label\": \"Figure A\", \"value\": \"...\"},\n      {\"label\": \"Figure B\", \"value\": \"...\"}\n    ]\n  },\n  \"constraints\": [\n    \"Do not summarize the content\",\n    \"Provide exact figures only\",\n    \"Present in a table format\"\n  ],\n  \"references\": [\n    \"this\",\n    \"that\",\n    \"it\",\n    \"them\",\n    \"the earlier one\",\n    \"same thing\",\n    \"the figure below\",\n    \"compare the figures\"\n  ]\n}",
+      "reasoning_content": "The user wants me to extract information from their request about comparing exact figures in a table, without summarizing anything. This is straightforward - I need to identify what they're asking for and structure it as JSON with explicit constraints on what's not being done (no summarization).\n\nKey elements:\n- No summarization of the content\n- Exact figure comparison in a table format\n- The user has already provided this request, so no additional context is needed beyond understanding their intent.\n",
+      "wire": {
+        "requested_operations": [
+          "Compare exact figures",
+          "Create a table"
+        ],
+        "prohibited_operations": [
+          "Summarize the content",
+          "Extract general trends or conclusions",
+          "Provide context or background information"
+        ],
+        "output_format": {
+          "type": "table",
+          "columns": [
+            "figure_a_value",
+            "figure_b_value"
+          ],
+          "rows": [
+            {
+              "label": "Figure A",
+              "value": "..."
+            },
+            {
+              "label": "Figure B",
+              "value": "..."
+            }
+          ]
+        },
+        "constraints": [
+          "Do not summarize the content",
+          "Provide exact figures only",
+          "Present in a table format"
+        ],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "the earlier one",
+          "same thing",
+          "the figure below",
+          "compare the figures"
+        ]
+      }
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "ok": false,
+      "latency_ms": 1508.2897999964189,
+      "prompt_tokens": 238,
+      "completion_tokens": 349,
+      "reasoning_tokens": 203,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"question\": \"What was approved yesterday?\",\n  \"references\": [\n    \"this\",\n    \"that\",\n    \"it\",\n    \"them\",\n    \"that file\",\n    \"same thing\",\n    \"the earlier one\"\n  ],\n  \"prohibited_operations\": [\n    \"summarize\",\n    \"draft final answer\",\n    \"choose tools or capabilities\",\n    \"execute the task\",\n    \"generate content beyond current context window\"\n  ],\n  \"requested_operations\": [\n    \"retrieve information from previous conversation session\",\n    \"extract intent and goal of user question\"\n  ]\n}",
+      "reasoning_content": "The user is asking about what was approved yesterday. This requires retrieving information from a previous conversation session, which I don't have access to.\n\nAccording to my instructions:\n- Do NOT execute the task (don't draft final answer)\n- Record referring expressions in 'references' as UNRESOLVED\n- Keep prohibited actions strictly in 'prohibited_operations', distinct from 'requested_operations'\n- If an aspect is not present, leave its list or object empty\n\nSince I don't have access to yesterday's content (this is a new conversation), I should:\n1. Leave the answer as UNRESOLVED for this question\n2. Document that referring expressions are UNRESOLVED\n3. Keep prohibited operations clear (I cannot summarize, draft final answers, etc.)\n\nThe user asked \"What was approved yesterday?\" - this requires retrieving information from a previous conversation session which I don't have access to. This is an unresolvable question based on my current context window.\n",
+      "wire": {
+        "question": "What was approved yesterday?",
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "prohibited_operations": [
+          "summarize",
+          "draft final answer",
+          "choose tools or capabilities",
+          "execute the task",
+          "generate content beyond current context window"
+        ],
+        "requested_operations": [
+          "retrieve information from previous conversation session",
+          "extract intent and goal of user question"
+        ]
+      }
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "ok": false,
+      "latency_ms": 852.3504000040703,
+      "prompt_tokens": 234,
+      "completion_tokens": 189,
+      "reasoning_tokens": 137,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Greet the user\"\n  ],\n  \"prohibited_operations\": [],\n  \"references\": [\n    \"Hello\"\n  ],\n  \"constraints\": []\n}",
+      "reasoning_content": "The user said \"Hello\". This is a greeting. I need to extract:\n\n1. **Requested operations**: The user wants me to greet them back, so my primary operation is to respond with an appropriate greeting.\n\n2. **Constraints**: There are no explicit constraints stated by the user in this message.\n\n3. **References**: \"Hello\" - UNRESOLVED expression (the user's initial input).\n\n4. **Prohibited operations**: None explicitly mentioned, but I should avoid making assumptions about what they want to accomplish beyond what was requested.\n\n5. **Output preferences**: The user didn't specify any particular format or additional requirements for my response.\n",
+      "wire": {
+        "requested_operations": [
+          "Greet the user"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          "Hello"
+        ],
+        "constraints": []
+      }
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "ok": false,
+      "latency_ms": 825.6865000003017,
+      "prompt_tokens": 234,
+      "completion_tokens": 188,
+      "reasoning_tokens": 89,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"referring_expressions\": [\n    \"Thanks\"\n  ],\n  \"prohibited_operations\": [],\n  \"requested_operations\": [],\n  \"constraints\": {\n    \"output_format\": \"JSON\",\n    \"schema\": \"structured_json_schema\"\n  },\n  \"output_preferences\": {\n    \"format\": \"valid_json_only\",\n    \"structure\": \"strictly_adherent_to_schema\"\n  }\n}",
+      "reasoning_content": "The user said \"Thanks\". This is a simple acknowledgment of previous assistance. There's no explicit goal, operation, constraint, reference, or output preference stated here.\n\nI need to:\n1. Record this as an UNRESOLVED expression (since it doesn't contain any specific intent)\n2. Keep the prohibited_operations list empty since there are no constraints to follow\n3. Output only valid JSON in the required schema format\n",
+      "wire": {
+        "referring_expressions": [
+          "Thanks"
+        ],
+        "prohibited_operations": [],
+        "requested_operations": [],
+        "constraints": {
+          "output_format": "JSON",
+          "schema": "structured_json_schema"
+        },
+        "output_preferences": {
+          "format": "valid_json_only",
+          "structure": "strictly_adherent_to_schema"
+        }
+      }
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "ok": false,
+      "latency_ms": 810.871199995745,
+      "prompt_tokens": 236,
+      "completion_tokens": 194,
+      "reasoning_tokens": 47,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Open calculator\"\n  ],\n  \"prohibited_operations\": [],\n  \"references\": [\n    \"this\",\n    \"that\",\n    \"it\",\n    \"them\",\n    \"that file\",\n    \"same thing\",\n    \"the earlier one\"\n  ],\n  \"output_preferences\": {\n    \"format\": \"text\",\n    \"style\": \"simple instructions\",\n    \"constraints\": [\n      \"no tools or capabilities to choose\",\n      \"do not draft final answer\",\n      \"do not summarize\",\n      \"do not open\"\n    ]\n  }\n}",
+      "reasoning_content": "The user wants me to open a calculator. This is a simple task with no constraints, references, or output preferences mentioned. I should extract this as a requested operation and keep it in 'requested_operations' without any prohibited operations.\n",
+      "wire": {
+        "requested_operations": [
+          "Open calculator"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "that file",
+          "same thing",
+          "the earlier one"
+        ],
+        "output_preferences": {
+          "format": "text",
+          "style": "simple instructions",
+          "constraints": [
+            "no tools or capabilities to choose",
+            "do not draft final answer",
+            "do not summarize",
+            "do not open"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "ok": false,
+      "latency_ms": 801.1632999987341,
+      "prompt_tokens": 239,
+      "completion_tokens": 184,
+      "reasoning_tokens": 80,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Don't open the file/document\"\n  ],\n  \"prohibited_operations\": [],\n  \"constraints\": [\n    \"Do not summarize\",\n    \"Do not open\",\n    \"Do not draft final answer\",\n    \"Do not choose tools or capabilities\"\n  ],\n  \"references\": [\n    \"this file\",\n    \"that document\",\n    \"the earlier one\"\n  ]\n}",
+      "reasoning_content": "The user is saying \"Don't open it yet.\" This is a constraint on what they want me to do with the file or document they're referring to. I need to extract this as a requested operation (not prohibited).\n\nKey elements:\n- Action: Don't open it yet \u2192 Requested operation\n- Constraint: Do not execute, draft final answer, choose tools/capabilities\n",
+      "wire": {
+        "requested_operations": [
+          "Don't open the file/document"
+        ],
+        "prohibited_operations": [],
+        "constraints": [
+          "Do not summarize",
+          "Do not open",
+          "Do not draft final answer",
+          "Do not choose tools or capabilities"
+        ],
+        "references": [
+          "this file",
+          "that document",
+          "the earlier one"
+        ]
+      }
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "ok": false,
+      "latency_ms": 1026.7875999998068,
+      "prompt_tokens": 242,
+      "completion_tokens": 221,
+      "reasoning_tokens": 94,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Send content to 'him'\"\n  ],\n  \"prohibited_operations\": [\n    \"Draft final answer\",\n    \"Choose tools or capabilities\"\n  ],\n  \"references\": [\n    \"them\",\n    \"that file\",\n    \"the earlier one\"\n  ],\n  \"output_preferences\": {\n    \"format\": \"structured JSON\",\n    \"constraints\": \"strictly follow schema, no tool usage\",\n    \"timing\": \"after approval has been given by the recipient\"\n  }\n}",
+      "reasoning_content": "The user wants me to send something (likely a document, file, or message) to someone (\"him\") after they have approved it. This is an action request with constraints:\n\n- Action: Send the content to \"him\"\n- Timing constraint: After approval has been given by the recipient\n- No specific format mentioned - just \"send it\"\n\nI need to extract this into structured JSON following the schema rules, keeping references and prohibited operations separate.\n",
+      "wire": {
+        "requested_operations": [
+          "Send content to 'him'"
+        ],
+        "prohibited_operations": [
+          "Draft final answer",
+          "Choose tools or capabilities"
+        ],
+        "references": [
+          "them",
+          "that file",
+          "the earlier one"
+        ],
+        "output_preferences": {
+          "format": "structured JSON",
+          "constraints": "strictly follow schema, no tool usage",
+          "timing": "after approval has been given by the recipient"
+        }
+      }
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "ok": false,
+      "latency_ms": 1360.3226999985054,
+      "prompt_tokens": 241,
+      "completion_tokens": 277,
+      "reasoning_tokens": 107,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"task\": \"Compare attached PDF with spreadsheet\",\n  \"prohibited_operations\": [\n    \"Execute file comparison\",\n    \"Open attachments or files\",\n    \"Analyze content of external documents\"\n  ],\n  \"requested_operations\": [\n    \"Compare two document formats (PDF vs. Spreadsheet)\",\n    \"Extract data from both sources\",\n    \"Identify differences between the two formats\",\n    \"Summarize key findings and recommendations\"\n  ],\n  \"references\": [\n    \"attached PDF file\",\n    \"spreadsheet file\"\n  ],\n  \"output_preferences\": [\n    \"Provide a structured comparison table\",\n    \"Highlight data discrepancies or formatting differences\",\n    \"Offer suggestions for alignment between formats\"\n  ]\n}",
+      "reasoning_content": "The user wants me to compare a PDF attachment with a spreadsheet. However, I don't have access to any attachments or files that can be compared.\n\nI need to:\n1. Acknowledge what they want (compare PDF vs spreadsheet)\n2. State clearly that I cannot perform this task without the actual file\n3. Provide helpful guidance on how they could do it themselves\n4. Keep references and prohibited operations clear\n\nSince there's no attachment, I should explain why I can't help directly but offer alternatives.\n",
+      "wire": {
+        "task": "Compare attached PDF with spreadsheet",
+        "prohibited_operations": [
+          "Execute file comparison",
+          "Open attachments or files",
+          "Analyze content of external documents"
+        ],
+        "requested_operations": [
+          "Compare two document formats (PDF vs. Spreadsheet)",
+          "Extract data from both sources",
+          "Identify differences between the two formats",
+          "Summarize key findings and recommendations"
+        ],
+        "references": [
+          "attached PDF file",
+          "spreadsheet file"
+        ],
+        "output_preferences": [
+          "Provide a structured comparison table",
+          "Highlight data discrepancies or formatting differences",
+          "Offer suggestions for alignment between formats"
+        ]
+      }
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "ok": false,
+      "latency_ms": 1349.5990000010352,
+      "prompt_tokens": 240,
+      "completion_tokens": 289,
+      "reasoning_tokens": 111,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"requested_operations\": [\n    \"Create something for submission\",\n    \"Draft content ready for submission\"\n  ],\n  \"prohibited_operations\": [\n    \"Execute code or generate files directly\",\n    \"Summarize the request\",\n    \"Open any file system\",\n    \"Send attachments without explicit instruction\"\n  ],\n  \"references\": [\n    \"this\",\n    \"that\",\n    \"it\",\n    \"them\",\n    \"the earlier one\",\n    \"same thing\",\n    \"the request above\"\n  ],\n  \"output_preferences\": {\n    \"format\": \"structured JSON with clear sections for requested operations, prohibited actions, and references\",\n    \"clarity\": \"explicit instructions on what to do without executing any task\"\n  }\n}",
+      "reasoning_content": "The user wants something they can submit tomorrow. This is a request for help with creating content that will be submitted, likely for an assignment, project, or other deliverable.\n\nKey constraints:\n- No tool execution (no code generation)\n- Keep prohibited actions explicit (don't summarize, don't open files, etc.)\n- Extract the user's intent clearly in structured JSON format\n\nThe most appropriate response is to offer help with creating content that can be submitted tomorrow. I'll provide a clear, concise answer without executing any task.\n",
+      "wire": {
+        "requested_operations": [
+          "Create something for submission",
+          "Draft content ready for submission"
+        ],
+        "prohibited_operations": [
+          "Execute code or generate files directly",
+          "Summarize the request",
+          "Open any file system",
+          "Send attachments without explicit instruction"
+        ],
+        "references": [
+          "this",
+          "that",
+          "it",
+          "them",
+          "the earlier one",
+          "same thing",
+          "the request above"
+        ],
+        "output_preferences": {
+          "format": "structured JSON with clear sections for requested operations, prohibited actions, and references",
+          "clarity": "explicit instructions on what to do without executing any task"
+        }
+      }
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "ok": false,
+      "latency_ms": 881.7594000065583,
+      "prompt_tokens": 241,
+      "completion_tokens": 212,
+      "reasoning_tokens": 87,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "content": "{\n  \"references\": [\n    \"the earlier one\"\n  ],\n  \"prohibited_operations\": [\n    \"summarize\",\n    \"open\",\n    \"draft final answer\",\n    \"choose tools or capabilities\",\n    \"execute the task\",\n    \"generate content beyond what's in the message\"\n  ],\n  \"requested_operations\": [],\n  \"constraints\": [\n    \"Do not execute the task, do not draft the final answer, do not choose tools or capabilities.\"\n  ],\n  \"output_preferences\": []\n}",
+      "reasoning_content": "The user is clarifying that they mean \"the earlier one\" (referring to a previous action or statement). This is an unresolvable expression as it's not present in this message.\n\nI need to:\n1. Record this as UNRESOLVED in references\n2. Keep the prohibited operations clear (don't summarize, don't open, etc.)\n3. Output only valid JSON with no extra text\n",
+      "wire": {
+        "references": [
+          "the earlier one"
+        ],
+        "prohibited_operations": [
+          "summarize",
+          "open",
+          "draft final answer",
+          "choose tools or capabilities",
+          "execute the task",
+          "generate content beyond what's in the message"
+        ],
+        "requested_operations": [],
+        "constraints": [
+          "Do not execute the task, do not draft the final answer, do not choose tools or capabilities."
+        ],
+        "output_preferences": []
+      }
+    }
+  ]
+}

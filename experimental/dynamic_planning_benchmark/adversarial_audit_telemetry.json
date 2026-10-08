@@ -1,0 +1,637 @@
+{
+  "benchmark_name": "URI Dynamic Planning Generalization & Anti-Hardcoding Audit",
+  "timestamp": "2026-09-28T22:49:14+0530",
+  "aggregate_summary": {
+    "total_adversarial_cases": 18,
+    "legacy_planner_accuracy": 0.5556,
+    "contract_planner_accuracy": 1.0,
+    "decision_accuracy": 1.0,
+    "tool_perturbation_accuracy": 1.0,
+    "partial_escalation_accuracy": 1.0,
+    "false_verified_commits": 0,
+    "max_tool_chain_depth_validated": 10,
+    "depth_summaries": {
+      "Depth_0": {
+        "samples": 7,
+        "mean_ms": 413.18,
+        "median_ms": 376.18,
+        "p95_ms": 581.02
+      },
+      "Depth_4": {
+        "samples": 2,
+        "mean_ms": 1117.48,
+        "median_ms": 1117.48,
+        "p95_ms": 1214.54
+      },
+      "Depth_5": {
+        "samples": 4,
+        "mean_ms": 956.77,
+        "median_ms": 957.04,
+        "p95_ms": 1005.14
+      },
+      "Depth_6": {
+        "samples": 1,
+        "mean_ms": 993.17,
+        "median_ms": 993.17,
+        "p95_ms": 993.17
+      },
+      "Depth_7": {
+        "samples": 2,
+        "mean_ms": 882.48,
+        "median_ms": 882.48,
+        "p95_ms": 969.81
+      },
+      "Depth_8": {
+        "samples": 1,
+        "mean_ms": 3198.93,
+        "median_ms": 3198.93,
+        "p95_ms": 3198.93
+      },
+      "Depth_10": {
+        "samples": 1,
+        "mean_ms": 1059.83,
+        "median_ms": 1059.83,
+        "p95_ms": 1059.83
+      }
+    }
+  },
+  "cases_telemetry": [
+    {
+      "id": "ADV_01_EQUIPMENT_CHECKOUT_RECON",
+      "domain": "equipment_fleet",
+      "category": "core_domain_1",
+      "target_depth": 7,
+      "actual_depth": 8,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "merge_date_intervals",
+        "join_tables",
+        "aggregate",
+        "calculate",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "merge_date_intervals",
+        "join_tables",
+        "aggregate",
+        "calculate",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 2.28,
+        "needle_gate": 418.05,
+        "granite_grounding": 2538.87,
+        "deterministic_exec": 0.19,
+        "total": 3198.93
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_02_PURCHASE_VENDOR_RECON",
+      "domain": "procurement",
+      "category": "core_domain_2",
+      "target_depth": 7,
+      "actual_depth": 7,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": false,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "filter_rows",
+        "join_tables",
+        "aggregate",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "filter_rows",
+        "join_tables",
+        "aggregate",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.69,
+        "needle_gate": 362.12,
+        "granite_grounding": 412.52,
+        "deterministic_exec": 0.07,
+        "total": 969.81
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_03_TRAINING_REIMBURSEMENT",
+      "domain": "corporate_education",
+      "category": "core_domain_3",
+      "target_depth": 6,
+      "actual_depth": 6,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "filter_rows",
+        "join_tables",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "filter_rows",
+        "join_tables",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.52,
+        "needle_gate": 372.01,
+        "granite_grounding": 416.26,
+        "deterministic_exec": 0.06,
+        "total": 993.17
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_04_ASSET_INTAKE_DISPATCH",
+      "domain": "it_assets",
+      "category": "core_domain_4",
+      "target_depth": 4,
+      "actual_depth": 4,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "compare_datasets",
+        "calculate_date_span",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "compare_datasets",
+        "calculate_date_span",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.67,
+        "needle_gate": 394.76,
+        "granite_grounding": 438.86,
+        "deterministic_exec": 0.05,
+        "total": 1020.43
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_05_FELLOWSHIP_GRANT_MATCHING",
+      "domain": "academic_awards",
+      "category": "core_domain_5",
+      "target_depth": 5,
+      "actual_depth": 5,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "compare_datasets",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "compare_datasets",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.49,
+        "needle_gate": 387.96,
+        "granite_grounding": 428.18,
+        "deterministic_exec": 0.08,
+        "total": 1005.14
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_06_COMMERCIAL_BILLING_RECON",
+      "domain": "accounts_receivable",
+      "category": "core_domain_6",
+      "target_depth": 5,
+      "actual_depth": 5,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "filter_rows",
+        "join_tables",
+        "calculate",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "filter_rows",
+        "join_tables",
+        "calculate",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.27,
+        "needle_gate": 307.97,
+        "granite_grounding": 420.6,
+        "deterministic_exec": 0.11,
+        "total": 907.88
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_07_DEEP_FLEET_AUDIT_10_STEPS",
+      "domain": "multi_facility_operations",
+      "category": "deep_chain",
+      "target_depth": 10,
+      "actual_depth": 10,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": false,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "find_file",
+        "read_sheet_range",
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "group_rows",
+        "merge_date_intervals",
+        "calculate_date_span",
+        "calculate",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "find_file",
+        "read_sheet_range",
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "group_rows",
+        "merge_date_intervals",
+        "calculate_date_span",
+        "calculate",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.42,
+        "needle_gate": 385.2,
+        "granite_grounding": 463.57,
+        "deterministic_exec": 0.13,
+        "total": 1059.83
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_P01_PARAPHRASE_VENDOR_RECON_A",
+      "domain": "procurement",
+      "category": "paraphrase_variation",
+      "target_depth": 7,
+      "actual_depth": 7,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": false,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "filter_rows",
+        "join_tables",
+        "aggregate",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "filter_rows",
+        "join_tables",
+        "aggregate",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.32,
+        "needle_gate": 169.68,
+        "granite_grounding": 418.65,
+        "deterministic_exec": 0.07,
+        "total": 795.14
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_P02_PARAPHRASE_VENDOR_RECON_B",
+      "domain": "procurement",
+      "category": "paraphrase_variation",
+      "target_depth": 7,
+      "actual_depth": 0,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT_ESCALATE",
+      "legacy_planner_ok": false,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "filter_rows",
+        "join_tables",
+        "aggregate",
+        "create_output_draft"
+      ],
+      "tools_invoked": [],
+      "latencies_ms": {
+        "contract_planning": 0.38,
+        "needle_gate": 375.45,
+        "granite_grounding": 0.0,
+        "deterministic_exec": 0.0,
+        "total": 376.18
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_P03_PARAPHRASE_EQUIPMENT_RECON_A",
+      "domain": "equipment_fleet",
+      "category": "paraphrase_variation",
+      "target_depth": 7,
+      "actual_depth": 0,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT_ESCALATE",
+      "legacy_planner_ok": false,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "deduplicate_rows",
+        "merge_date_intervals",
+        "join_tables",
+        "aggregate",
+        "calculate",
+        "create_output_draft"
+      ],
+      "tools_invoked": [],
+      "latencies_ms": {
+        "contract_planning": 0.55,
+        "needle_gate": 380.75,
+        "granite_grounding": 0.0,
+        "deterministic_exec": 0.0,
+        "total": 581.02
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_C01_COUNTEREXAMPLE_DESTRUCTIVE",
+      "domain": "equipment_fleet",
+      "category": "counterexample",
+      "target_depth": 0,
+      "actual_depth": 0,
+      "expected_decision": "ESCALATE",
+      "contract_decision": "ESCALATE",
+      "final_verdict": "COMMIT_ESCALATE",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [],
+      "tools_invoked": [],
+      "latencies_ms": {
+        "contract_planning": 0.07,
+        "needle_gate": 305.57,
+        "granite_grounding": 0.0,
+        "deterministic_exec": 0.0,
+        "total": 459.58
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_C02_COUNTEREXAMPLE_EXTERNAL_DISPATCH",
+      "domain": "procurement",
+      "category": "counterexample",
+      "target_depth": 0,
+      "actual_depth": 0,
+      "expected_decision": "ESCALATE",
+      "contract_decision": "ESCALATE",
+      "final_verdict": "COMMIT_ESCALATE",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [],
+      "tools_invoked": [],
+      "latencies_ms": {
+        "contract_planning": 0.06,
+        "needle_gate": 308.79,
+        "granite_grounding": 0.0,
+        "deterministic_exec": 0.0,
+        "total": 309.12
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_C03_COUNTEREXAMPLE_NONEXISTENT_DATASET",
+      "domain": "procurement",
+      "category": "counterexample",
+      "target_depth": 0,
+      "actual_depth": 0,
+      "expected_decision": "ESCALATE",
+      "contract_decision": "ESCALATE",
+      "final_verdict": "COMMIT_ESCALATE",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [],
+      "tools_invoked": [],
+      "latencies_ms": {
+        "contract_planning": 0.07,
+        "needle_gate": 303.61,
+        "granite_grounding": 0.0,
+        "deterministic_exec": 0.0,
+        "total": 303.97
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_C04_COUNTEREXAMPLE_DISCRETIONARY_RULE",
+      "domain": "equipment_fleet",
+      "category": "counterexample",
+      "target_depth": 0,
+      "actual_depth": 0,
+      "expected_decision": "ESCALATE",
+      "contract_decision": "ESCALATE",
+      "final_verdict": "COMMIT_ESCALATE",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [],
+      "tools_invoked": [],
+      "latencies_ms": {
+        "contract_planning": 0.06,
+        "needle_gate": 374.23,
+        "granite_grounding": 0.0,
+        "deterministic_exec": 0.0,
+        "total": 374.56
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_T01_TOOL_PERTURBATION_RENAME",
+      "domain": "corporate_education",
+      "category": "tool_perturbation",
+      "target_depth": 3,
+      "actual_depth": 4,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "COMMIT",
+      "legacy_planner_ok": true,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "remove_duplicates",
+        "filter_rows",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "remove_duplicates",
+        "filter_rows",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.24,
+        "needle_gate": 293.52,
+        "granite_grounding": 743.58,
+        "deterministic_exec": 0.04,
+        "total": 1214.54
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_T02_TOOL_PERTURBATION_MISSING_ESSENTIAL",
+      "domain": "it_assets",
+      "category": "tool_perturbation",
+      "target_depth": 0,
+      "actual_depth": 0,
+      "expected_decision": "ESCALATE",
+      "contract_decision": "ESCALATE",
+      "final_verdict": "COMMIT_ESCALATE",
+      "legacy_planner_ok": false,
+      "contract_planner_ok": true,
+      "tools_planned": [],
+      "tools_invoked": [],
+      "latencies_ms": {
+        "contract_planning": 0.31,
+        "needle_gate": 334.82,
+        "granite_grounding": 0.0,
+        "deterministic_exec": 0.0,
+        "total": 487.81
+      },
+      "partial_escalation_report": null
+    },
+    {
+      "id": "ADV_PE01_PARTIAL_ESCALATION_EQUIPMENT",
+      "domain": "equipment_fleet",
+      "category": "partial_escalation",
+      "target_depth": 4,
+      "actual_depth": 5,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "PARTIAL_COMMIT_AND_ESCALATE",
+      "legacy_planner_ok": false,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "filter_rows",
+        "merge_date_intervals",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "normalize_identifier",
+        "filter_rows",
+        "merge_date_intervals",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.35,
+        "needle_gate": 350.23,
+        "granite_grounding": 417.62,
+        "deterministic_exec": 0.07,
+        "total": 953.71
+      },
+      "partial_escalation_report": {
+        "verified_cohort_committed": true,
+        "isolated_anomaly": "OP-UNKNOWN",
+        "escalation_target": "CONFIGURED_CAPABLE_PROVIDER",
+        "reason": "Anomaly OP-UNKNOWN isolated for non-blocking escalation."
+      }
+    },
+    {
+      "id": "ADV_PE02_PARTIAL_ESCALATION_PURCHASE",
+      "domain": "procurement",
+      "category": "partial_escalation",
+      "target_depth": 5,
+      "actual_depth": 5,
+      "expected_decision": "CAN_DO",
+      "contract_decision": "CAN_DO",
+      "final_verdict": "PARTIAL_COMMIT_AND_ESCALATE",
+      "legacy_planner_ok": false,
+      "contract_planner_ok": true,
+      "tools_planned": [
+        "read_table",
+        "normalize_identifier",
+        "filter_rows",
+        "join_tables",
+        "create_output_draft"
+      ],
+      "tools_invoked": [
+        "read_table",
+        "normalize_identifier",
+        "filter_rows",
+        "join_tables",
+        "create_output_draft"
+      ],
+      "latencies_ms": {
+        "contract_planning": 0.34,
+        "needle_gate": 356.47,
+        "granite_grounding": 416.48,
+        "deterministic_exec": 0.05,
+        "total": 960.37
+      },
+      "partial_escalation_report": {
+        "verified_cohort_committed": true,
+        "isolated_anomaly": "PR-505",
+        "escalation_target": "CONFIGURED_CAPABLE_PROVIDER",
+        "reason": "Anomaly PR-505 isolated for non-blocking escalation."
+      }
+    }
+  ]
+}

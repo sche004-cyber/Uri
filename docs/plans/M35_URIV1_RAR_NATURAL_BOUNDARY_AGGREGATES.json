@@ -1,0 +1,582 @@
+{
+  "schema": "m35.uriv1.rar_natural_boundary.aggregates.v1",
+  "post_run_sha256": "0ea5447354481041181538244ef70b6dc58a72267dd95263d61dbdb55ab07380",
+  "cells": {
+    "S1xC1": {
+      "cell": "S1xC1",
+      "total_rows": 91,
+      "rate_denominator": 91,
+      "scoring_class_counts": {
+        "SILENT_STEP1_MISS": 71,
+        "MISSED_RESOLVABLE_CASE": 9,
+        "CORRECT_ABSTENTION": 9,
+        "K_FALSE_POSITIVE_SAFE_ABSTENTION": 2
+      },
+      "correct_resolution": 0,
+      "correct_ambiguity": 9,
+      "correct_unknown_or_abstention_total": 11,
+      "no_reference_correct": 9,
+      "incorrect_confident_binding": 0,
+      "invented_candidate": 0,
+      "missed_resolvable_case": 9,
+      "silent_step1_miss": 71,
+      "not_applicable_no_gt_ref": 0,
+      "resolution_coverage": 0.0,
+      "safe_abstention_rate": 0.1209,
+      "wrong_binding_rate": 0.0
+    },
+    "S1xC2": {
+      "cell": "S1xC2",
+      "total_rows": 91,
+      "rate_denominator": 91,
+      "scoring_class_counts": {
+        "SILENT_STEP1_MISS": 71,
+        "MISSED_RESOLVABLE_CASE": 9,
+        "CORRECT_ABSTENTION": 8,
+        "K_FALSE_POSITIVE_SAFE_ABSTENTION": 2,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 1
+      },
+      "correct_resolution": 0,
+      "correct_ambiguity": 8,
+      "correct_unknown_or_abstention_total": 11,
+      "no_reference_correct": 8,
+      "incorrect_confident_binding": 0,
+      "invented_candidate": 0,
+      "missed_resolvable_case": 9,
+      "silent_step1_miss": 71,
+      "not_applicable_no_gt_ref": 0,
+      "resolution_coverage": 0.0,
+      "safe_abstention_rate": 0.1209,
+      "wrong_binding_rate": 0.0
+    },
+    "S1xC3": {
+      "cell": "S1xC3",
+      "total_rows": 91,
+      "rate_denominator": 91,
+      "scoring_class_counts": {
+        "SILENT_STEP1_MISS": 71,
+        "CORRECT_ABSTENTION": 18,
+        "K_FALSE_POSITIVE_SAFE_ABSTENTION": 2
+      },
+      "correct_resolution": 0,
+      "correct_ambiguity": 18,
+      "correct_unknown_or_abstention_total": 20,
+      "no_reference_correct": 18,
+      "incorrect_confident_binding": 0,
+      "invented_candidate": 0,
+      "missed_resolvable_case": 0,
+      "silent_step1_miss": 71,
+      "not_applicable_no_gt_ref": 0,
+      "resolution_coverage": 0.0,
+      "safe_abstention_rate": 0.2198,
+      "wrong_binding_rate": 0.0
+    },
+    "S2xC1": {
+      "cell": "S2xC1",
+      "total_rows": 91,
+      "rate_denominator": 84,
+      "scoring_class_counts": {
+        "CORRECT_RESOLUTION": 47,
+        "MISSED_RESOLVABLE_CASE": 17,
+        "INCORRECT_CONFIDENT_BINDING": 5,
+        "CORRECT_ABSTENTION": 15,
+        "NOT_APPLICABLE_NO_GT_REF": 7
+      },
+      "correct_resolution": 47,
+      "correct_ambiguity": 15,
+      "correct_unknown_or_abstention_total": 15,
+      "no_reference_correct": null,
+      "incorrect_confident_binding": 5,
+      "invented_candidate": 0,
+      "missed_resolvable_case": 17,
+      "silent_step1_miss": 0,
+      "not_applicable_no_gt_ref": 7,
+      "resolution_coverage": 0.5595,
+      "safe_abstention_rate": 0.1786,
+      "wrong_binding_rate": 0.0595
+    },
+    "S2xC2": {
+      "cell": "S2xC2",
+      "total_rows": 91,
+      "rate_denominator": 84,
+      "scoring_class_counts": {
+        "CORRECT_RESOLUTION": 26,
+        "MISSED_RESOLVABLE_CASE": 30,
+        "INCORRECT_CONFIDENT_BINDING": 5,
+        "CORRECT_ABSTENTION": 15,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 8,
+        "NOT_APPLICABLE_NO_GT_REF": 7
+      },
+      "correct_resolution": 26,
+      "correct_ambiguity": 15,
+      "correct_unknown_or_abstention_total": 23,
+      "no_reference_correct": null,
+      "incorrect_confident_binding": 5,
+      "invented_candidate": 0,
+      "missed_resolvable_case": 30,
+      "silent_step1_miss": 0,
+      "not_applicable_no_gt_ref": 7,
+      "resolution_coverage": 0.3095,
+      "safe_abstention_rate": 0.2738,
+      "wrong_binding_rate": 0.0595
+    }
+  },
+  "failure_class_distribution": {
+    "S1xC1": {
+      "PRONOUN_BINDING": 15
+    },
+    "S1xC2": {
+      "PRONOUN_BINDING": 15
+    },
+    "S1xC3": {
+      "PRONOUN_BINDING": 15
+    },
+    "S2xC1": {
+      "NO_CANDIDATE": 19,
+      "PRONOUN_BINDING": 5,
+      "MULTIPLE_PLAUSIBLE": 8
+    },
+    "S2xC2": {
+      "NO_CANDIDATE": 21,
+      "PRONOUN_BINDING": 12,
+      "MULTIPLE_PLAUSIBLE": 20
+    }
+  },
+  "stage_attribution": {
+    "S1xC1": {
+      "STEP1_EXTRACTION_FAILURE": 71,
+      "RAR_RESOLUTION_FAILURE": 9,
+      "SUCCESS_SAFE_ABSTENTION": 11
+    },
+    "S1xC2": {
+      "STEP1_EXTRACTION_FAILURE": 71,
+      "RAR_RESOLUTION_FAILURE": 9,
+      "SUCCESS_SAFE_ABSTENTION": 10,
+      "SUCCESS_SAFE_ABSTENTION_SOFT": 1
+    },
+    "S1xC3": {
+      "STEP1_EXTRACTION_FAILURE": 71,
+      "SUCCESS_SAFE_ABSTENTION": 20
+    },
+    "S2xC1": {
+      "SUCCESS": 47,
+      "RAR_RESOLUTION_FAILURE": 22,
+      "SUCCESS_SAFE_ABSTENTION": 15,
+      "NOT_APPLICABLE": 7
+    },
+    "S2xC2": {
+      "SUCCESS": 26,
+      "RAR_RESOLUTION_FAILURE": 35,
+      "SUCCESS_SAFE_ABSTENTION": 15,
+      "SUCCESS_SAFE_ABSTENTION_SOFT": 8,
+      "NOT_APPLICABLE": 7
+    }
+  },
+  "paired_c1_c2": {
+    "S1": {
+      "s_axis": "S1",
+      "paired_reference_count": 84,
+      "buckets": {
+        "fails_in_both": 84
+      },
+      "distractor_induced_wrong_binding_count": 0,
+      "distractor_induced_wrong_binding_examples": [],
+      "distractor_induced_safe_abstention_count": 0,
+      "distractor_induced_safe_abstention_examples": []
+    },
+    "S2": {
+      "s_axis": "S2",
+      "paired_reference_count": 84,
+      "buckets": {
+        "correct_in_both": 26,
+        "fails_in_both": 37,
+        "correct_c1_fails_c2": 21
+      },
+      "distractor_induced_wrong_binding_count": 2,
+      "distractor_induced_wrong_binding_examples": [
+        "NB-D-01:r1",
+        "NB-D-02:r1"
+      ],
+      "distractor_induced_safe_abstention_count": 19,
+      "distractor_induced_safe_abstention_examples": [
+        "NB-B-01:r1",
+        "NB-B-03:r1",
+        "NB-B-04:r1",
+        "NB-B-05:r1",
+        "NB-D-03:r1",
+        "NB-D-04:r1",
+        "NB-D-05:r1",
+        "NB-D-07:r1",
+        "NB-E-01:r1",
+        "NB-E-02:r1"
+      ]
+    }
+  },
+  "paired_s1_s2": {
+    "C1": {
+      "c_axis": "C1",
+      "paired_reference_count": 84,
+      "buckets": {
+        "s1_fails_s2_succeeds": 47,
+        "s1_fails_s2_fails": 37
+      },
+      "s1_fails_s2_succeeds_examples": [
+        "NB-A-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-A-02:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-A-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-A-05:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-B-01:r1 (S1=MISSED_RESOLVABLE_CASE)",
+        "NB-B-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-B-04:r1 (S1=MISSED_RESOLVABLE_CASE)",
+        "NB-B-05:r1 (S1=MISSED_RESOLVABLE_CASE)",
+        "NB-B-05:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-C-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-C-02:r1 (S1=MISSED_RESOLVABLE_CASE)",
+        "NB-C-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-D-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-D-02:r1 (S1=MISSED_RESOLVABLE_CASE)",
+        "NB-D-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-D-04:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-D-05:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-D-06:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-D-07:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-E-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-E-02:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-E-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-F-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-F-02:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-F-04:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-F-05:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-G-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-G-02:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-G-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-G-04:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-H-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-I-02:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-I-06:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-01:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-02:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-04:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-04:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-05:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-06:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-08:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-08:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-08:r3 (S1=SILENT_STEP1_MISS)",
+        "NB-L-09:r1 (S1=MISSED_RESOLVABLE_CASE)",
+        "NB-L-10:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-10:r2 (S1=SILENT_STEP1_MISS)"
+      ]
+    },
+    "C2": {
+      "c_axis": "C2",
+      "paired_reference_count": 84,
+      "buckets": {
+        "s1_fails_s2_succeeds": 26,
+        "s1_fails_s2_fails": 58
+      },
+      "s1_fails_s2_succeeds_examples": [
+        "NB-A-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-A-02:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-A-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-A-05:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-B-05:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-C-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-C-02:r1 (S1=MISSED_RESOLVABLE_CASE)",
+        "NB-C-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-D-06:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-F-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-F-02:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-F-04:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-F-05:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-G-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-G-04:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-H-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-I-02:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-I-06:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-01:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-01:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-03:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-04:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-04:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-08:r1 (S1=SILENT_STEP1_MISS)",
+        "NB-L-08:r2 (S1=SILENT_STEP1_MISS)",
+        "NB-L-10:r2 (S1=SILENT_STEP1_MISS)"
+      ]
+    }
+  },
+  "sensitivity": {
+    "excluded_case_ids": [
+      "NB-C-06",
+      "NB-C-07",
+      "NB-I-06",
+      "NB-I-07"
+    ],
+    "cells": {
+      "S1xC1": {
+        "cell": "S1xC1",
+        "total_rows": 86,
+        "rate_denominator": 86,
+        "scoring_class_counts": {
+          "SILENT_STEP1_MISS": 67,
+          "MISSED_RESOLVABLE_CASE": 9,
+          "CORRECT_ABSTENTION": 8,
+          "K_FALSE_POSITIVE_SAFE_ABSTENTION": 2
+        },
+        "correct_resolution": 0,
+        "correct_ambiguity": 8,
+        "correct_unknown_or_abstention_total": 10,
+        "no_reference_correct": 8,
+        "incorrect_confident_binding": 0,
+        "invented_candidate": 0,
+        "missed_resolvable_case": 9,
+        "silent_step1_miss": 67,
+        "not_applicable_no_gt_ref": 0,
+        "resolution_coverage": 0.0,
+        "safe_abstention_rate": 0.1163,
+        "wrong_binding_rate": 0.0
+      },
+      "S1xC2": {
+        "cell": "S1xC2",
+        "total_rows": 86,
+        "rate_denominator": 86,
+        "scoring_class_counts": {
+          "SILENT_STEP1_MISS": 67,
+          "MISSED_RESOLVABLE_CASE": 9,
+          "CORRECT_ABSTENTION": 7,
+          "K_FALSE_POSITIVE_SAFE_ABSTENTION": 2,
+          "CORRECT_ABSTENTION_FAMILY_MISMATCH": 1
+        },
+        "correct_resolution": 0,
+        "correct_ambiguity": 7,
+        "correct_unknown_or_abstention_total": 10,
+        "no_reference_correct": 7,
+        "incorrect_confident_binding": 0,
+        "invented_candidate": 0,
+        "missed_resolvable_case": 9,
+        "silent_step1_miss": 67,
+        "not_applicable_no_gt_ref": 0,
+        "resolution_coverage": 0.0,
+        "safe_abstention_rate": 0.1163,
+        "wrong_binding_rate": 0.0
+      },
+      "S1xC3": {
+        "cell": "S1xC3",
+        "total_rows": 86,
+        "rate_denominator": 86,
+        "scoring_class_counts": {
+          "SILENT_STEP1_MISS": 67,
+          "CORRECT_ABSTENTION": 17,
+          "K_FALSE_POSITIVE_SAFE_ABSTENTION": 2
+        },
+        "correct_resolution": 0,
+        "correct_ambiguity": 17,
+        "correct_unknown_or_abstention_total": 19,
+        "no_reference_correct": 17,
+        "incorrect_confident_binding": 0,
+        "invented_candidate": 0,
+        "missed_resolvable_case": 0,
+        "silent_step1_miss": 67,
+        "not_applicable_no_gt_ref": 0,
+        "resolution_coverage": 0.0,
+        "safe_abstention_rate": 0.2209,
+        "wrong_binding_rate": 0.0
+      },
+      "S2xC1": {
+        "cell": "S2xC1",
+        "total_rows": 86,
+        "rate_denominator": 79,
+        "scoring_class_counts": {
+          "CORRECT_RESOLUTION": 46,
+          "MISSED_RESOLVABLE_CASE": 16,
+          "INCORRECT_CONFIDENT_BINDING": 5,
+          "CORRECT_ABSTENTION": 12,
+          "NOT_APPLICABLE_NO_GT_REF": 7
+        },
+        "correct_resolution": 46,
+        "correct_ambiguity": 12,
+        "correct_unknown_or_abstention_total": 12,
+        "no_reference_correct": null,
+        "incorrect_confident_binding": 5,
+        "invented_candidate": 0,
+        "missed_resolvable_case": 16,
+        "silent_step1_miss": 0,
+        "not_applicable_no_gt_ref": 7,
+        "resolution_coverage": 0.5823,
+        "safe_abstention_rate": 0.1519,
+        "wrong_binding_rate": 0.0633
+      },
+      "S2xC2": {
+        "cell": "S2xC2",
+        "total_rows": 86,
+        "rate_denominator": 79,
+        "scoring_class_counts": {
+          "CORRECT_RESOLUTION": 25,
+          "MISSED_RESOLVABLE_CASE": 30,
+          "INCORRECT_CONFIDENT_BINDING": 5,
+          "CORRECT_ABSTENTION": 12,
+          "CORRECT_ABSTENTION_FAMILY_MISMATCH": 7,
+          "NOT_APPLICABLE_NO_GT_REF": 7
+        },
+        "correct_resolution": 25,
+        "correct_ambiguity": 12,
+        "correct_unknown_or_abstention_total": 19,
+        "no_reference_correct": null,
+        "incorrect_confident_binding": 5,
+        "invented_candidate": 0,
+        "missed_resolvable_case": 30,
+        "silent_step1_miss": 0,
+        "not_applicable_no_gt_ref": 7,
+        "resolution_coverage": 0.3165,
+        "safe_abstention_rate": 0.2405,
+        "wrong_binding_rate": 0.0633
+      }
+    },
+    "paired_c1_c2": {
+      "S1": {
+        "s_axis": "S1",
+        "paired_reference_count": 79,
+        "buckets": {
+          "fails_in_both": 79
+        },
+        "distractor_induced_wrong_binding_count": 0,
+        "distractor_induced_wrong_binding_examples": [],
+        "distractor_induced_safe_abstention_count": 0,
+        "distractor_induced_safe_abstention_examples": []
+      },
+      "S2": {
+        "s_axis": "S2",
+        "paired_reference_count": 79,
+        "buckets": {
+          "correct_in_both": 25,
+          "fails_in_both": 33,
+          "correct_c1_fails_c2": 21
+        },
+        "distractor_induced_wrong_binding_count": 2,
+        "distractor_induced_wrong_binding_examples": [
+          "NB-D-01:r1",
+          "NB-D-02:r1"
+        ],
+        "distractor_induced_safe_abstention_count": 19,
+        "distractor_induced_safe_abstention_examples": [
+          "NB-B-01:r1",
+          "NB-B-03:r1",
+          "NB-B-04:r1",
+          "NB-B-05:r1",
+          "NB-D-03:r1",
+          "NB-D-04:r1",
+          "NB-D-05:r1",
+          "NB-D-07:r1",
+          "NB-E-01:r1",
+          "NB-E-02:r1"
+        ]
+      }
+    },
+    "paired_s1_s2": {
+      "C1": {
+        "c_axis": "C1",
+        "paired_reference_count": 79,
+        "buckets": {
+          "s1_fails_s2_succeeds": 46,
+          "s1_fails_s2_fails": 33
+        },
+        "s1_fails_s2_succeeds_examples": [
+          "NB-A-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-A-02:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-A-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-A-05:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-B-01:r1 (S1=MISSED_RESOLVABLE_CASE)",
+          "NB-B-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-B-04:r1 (S1=MISSED_RESOLVABLE_CASE)",
+          "NB-B-05:r1 (S1=MISSED_RESOLVABLE_CASE)",
+          "NB-B-05:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-C-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-C-02:r1 (S1=MISSED_RESOLVABLE_CASE)",
+          "NB-C-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-D-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-D-02:r1 (S1=MISSED_RESOLVABLE_CASE)",
+          "NB-D-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-D-04:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-D-05:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-D-06:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-D-07:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-E-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-E-02:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-E-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-F-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-F-02:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-F-04:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-F-05:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-G-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-G-02:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-G-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-G-04:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-H-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-I-02:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-01:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-02:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-04:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-04:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-05:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-06:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-08:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-08:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-08:r3 (S1=SILENT_STEP1_MISS)",
+          "NB-L-09:r1 (S1=MISSED_RESOLVABLE_CASE)",
+          "NB-L-10:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-10:r2 (S1=SILENT_STEP1_MISS)"
+        ]
+      },
+      "C2": {
+        "c_axis": "C2",
+        "paired_reference_count": 79,
+        "buckets": {
+          "s1_fails_s2_succeeds": 25,
+          "s1_fails_s2_fails": 54
+        },
+        "s1_fails_s2_succeeds_examples": [
+          "NB-A-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-A-02:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-A-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-A-05:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-B-05:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-C-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-C-02:r1 (S1=MISSED_RESOLVABLE_CASE)",
+          "NB-C-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-D-06:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-F-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-F-02:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-F-04:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-F-05:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-G-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-G-04:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-H-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-I-02:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-01:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-01:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-03:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-04:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-04:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-08:r1 (S1=SILENT_STEP1_MISS)",
+          "NB-L-08:r2 (S1=SILENT_STEP1_MISS)",
+          "NB-L-10:r2 (S1=SILENT_STEP1_MISS)"
+        ]
+      }
+    }
+  },
+  "global_safety": {
+    "total_invoked_rows": 213,
+    "total_invented_candidate": 0,
+    "total_incorrect_confident_binding": 10
+  },
+  "no_reference_false_positive_summary": {
+    "total_k_rows_all_cells": 35,
+    "step1_found_something_rows": 6,
+    "k_false_positive_binding": 0,
+    "k_false_positive_safe_abstention": 6
+  }
+}

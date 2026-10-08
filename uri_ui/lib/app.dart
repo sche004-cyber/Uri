@@ -42,9 +42,13 @@ class UriApp extends StatefulWidget {
     this.filePicker,
     this.attachmentOpener,
     this.onCompactModeChanged,
+    this.integrationTestBuilder,
+    this.integrationNavigatorKey,
   });
 
   final AppState appState;
+  final TransitionBuilder? integrationTestBuilder;
+  final GlobalKey<NavigatorState>? integrationNavigatorKey;
 
   /// M16: how the user picks a file to attach. Supplied by main.dart in
   /// the real app; null in tests, where the attach control is simply
@@ -117,6 +121,8 @@ class _UriAppState extends State<UriApp> with WidgetsBindingObserver {
             platformBrightness,
           );
           return MaterialApp(
+            navigatorKey: widget.integrationNavigatorKey,
+            builder: widget.integrationTestBuilder,
             title: 'URI',
             debugShowCheckedModeBanner: false,
             // Appearance → one of the 4 real Hybrid themes, or `system`
@@ -243,6 +249,8 @@ class UriHome extends StatefulWidget {
 }
 
 class _UriHomeState extends State<UriHome> {
+  final _voiceShellKey = GlobalKey<AppShellState>();
+  int _lastVoiceRequest = 0;
   AppState? _appState;
   bool _lastIsCompact = false;
 
@@ -270,6 +278,12 @@ class _UriHomeState extends State<UriHome> {
   /// Compact/Workspace transition, so this only calls out on the edge,
   /// never on every notification.
   void _handleCompactEdge() {
+    final voiceRequest = _appState!.voiceConversationRequest;
+    if (voiceRequest != _lastVoiceRequest) {
+      _lastVoiceRequest = voiceRequest;
+      _appState!.setCompact(false);
+      _voiceShellKey.currentState?.goTo(1);
+    }
     final isCompact = _appState!.isCompact;
     if (isCompact != _lastIsCompact) {
       _lastIsCompact = isCompact;
@@ -306,6 +320,7 @@ class _UriHomeState extends State<UriHome> {
 
   Widget _buildShell() {
     return AppShell(
+      key: _voiceShellKey,
       sections: [
         const UriSection(
           label: 'Home',

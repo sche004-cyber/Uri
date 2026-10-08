@@ -1,0 +1,1336 @@
+{
+  "metadata": {
+    "model": "base-needle-3-generation-3",
+    "date": "2026-09-21 20:20:34",
+    "architecture": "TurnFrame + ActiveContext + Scaffolded Needle"
+  },
+  "variant_a_baseline": [
+    {
+      "id": "P1",
+      "text": "Convert report.pdf to text format",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1124.7560999981943,
+      "called_views": [
+        "goal",
+        "operations",
+        "output_scope"
+      ],
+      "skipped_views": [
+        "references"
+      ],
+      "view_latencies_ms": {
+        "goal": 390.5411000014283,
+        "operations": 495.0821000020369,
+        "output_scope": 238.98499999631895
+      },
+      "contradictions": [
+        "Action 'convert' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'",
+        "select_output_scope call missing or malformed"
+      ],
+      "goal": "Convert report.pdf to text format",
+      "intent_family": "converse",
+      "requested_ops": [
+        "convert"
+      ],
+      "prohibited_ops": [
+        "convert"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P2",
+      "text": "Draft an email to Prof. Rao about the meeting tomorrow, but do not send it",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1888.7125000037486,
+      "called_views": [
+        "goal",
+        "operations",
+        "references",
+        "output_scope"
+      ],
+      "skipped_views": [],
+      "view_latencies_ms": {
+        "goal": 320.4580000019632,
+        "operations": 508.9337999961572,
+        "references": 547.2449000008055,
+        "output_scope": 511.8284999989555
+      },
+      "contradictions": [
+        "Action 'draft' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'send' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [],
+      "goal": "Prof. Rao",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "draft",
+        "send"
+      ],
+      "prohibited_ops": [
+        "draft",
+        "send"
+      ],
+      "references_count": 1,
+      "unresolved_refs": [
+        "it"
+      ],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P3",
+      "text": "Summarize the attached PDF and highlight key findings",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1324.0173000012874,
+      "called_views": [
+        "goal",
+        "operations",
+        "output_scope"
+      ],
+      "skipped_views": [
+        "references"
+      ],
+      "view_latencies_ms": {
+        "goal": 425.2568000010797,
+        "operations": 602.6388999962364,
+        "output_scope": 296.0017000004882
+      },
+      "contradictions": [
+        "Action 'summarize' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'",
+        "select_output_scope call missing or malformed"
+      ],
+      "goal": "Summarize the attached PDF and highlight key findings",
+      "intent_family": "unspecified",
+      "requested_ops": [
+        "summarize"
+      ],
+      "prohibited_ops": [
+        "summarize"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P4",
+      "text": "Compare the quarterly figures in 2025 vs 2026",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1672.024200001033,
+      "called_views": [
+        "goal",
+        "operations",
+        "output_scope"
+      ],
+      "skipped_views": [
+        "references"
+      ],
+      "view_latencies_ms": {
+        "goal": 498.7452999994275,
+        "operations": 554.9059999975725,
+        "output_scope": 618.2130000015604
+      },
+      "contradictions": [
+        "Action 'compare' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'"
+      ],
+      "goal": "Compare quarterly figures 2025 vs 2026",
+      "intent_family": "compare",
+      "requested_ops": [
+        "compare"
+      ],
+      "prohibited_ops": [
+        "compare"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P5",
+      "text": "Find all files modified yesterday in the project folder",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1349.818700000469,
+      "called_views": [
+        "goal",
+        "operations",
+        "output_scope"
+      ],
+      "skipped_views": [
+        "references"
+      ],
+      "view_latencies_ms": {
+        "goal": 443.39400000171736,
+        "operations": 602.8589999987162,
+        "output_scope": 303.42759999621194
+      },
+      "contradictions": [
+        "Action 'find' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'",
+        "select_output_scope call missing or malformed"
+      ],
+      "goal": "Find all files modified yesterday in the project folder",
+      "intent_family": "communicate",
+      "requested_ops": [
+        "find"
+      ],
+      "prohibited_ops": [
+        "find"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P6",
+      "text": "Schedule a sync with the team for next Tuesday at 10 AM",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1387.6537999967695,
+      "called_views": [
+        "goal",
+        "operations",
+        "output_scope"
+      ],
+      "skipped_views": [
+        "references"
+      ],
+      "view_latencies_ms": {
+        "goal": 474.3986999965273,
+        "operations": 614.9367000034545,
+        "output_scope": 298.192399997788
+      },
+      "contradictions": [
+        "Action 'schedule' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'",
+        "select_output_scope call missing or malformed"
+      ],
+      "goal": "schedule",
+      "intent_family": "create",
+      "requested_ops": [
+        "schedule"
+      ],
+      "prohibited_ops": [
+        "schedule"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P7",
+      "text": "Rewrite this paragraph to make it more professional",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1534.0980000037234,
+      "called_views": [
+        "goal",
+        "operations",
+        "references"
+      ],
+      "skipped_views": [
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 375.55060000158846,
+        "operations": 599.339799999143,
+        "references": 559.0489999958663
+      },
+      "contradictions": [
+        "Action 'make' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'rewrite' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [],
+      "goal": "intent family",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "make",
+        "rewrite"
+      ],
+      "prohibited_ops": [
+        "make",
+        "rewrite"
+      ],
+      "references_count": 2,
+      "unresolved_refs": [
+        "this",
+        "it"
+      ],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P8",
+      "text": "Don't submit the form yet; first check for errors",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1098.5548000026029,
+      "called_views": [
+        "goal",
+        "operations"
+      ],
+      "skipped_views": [
+        "references",
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 481.5512999994098,
+        "operations": 616.8914999943809
+      },
+      "contradictions": [
+        "Action 'submit' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'check' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [],
+      "goal": "navigate",
+      "intent_family": "unspecified",
+      "requested_ops": [
+        "submit",
+        "check"
+      ],
+      "prohibited_ops": [
+        "submit",
+        "check"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P9",
+      "text": "Explain how the authentication middleware works",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1098.746100004064,
+      "called_views": [
+        "goal",
+        "operations"
+      ],
+      "skipped_views": [
+        "references",
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 456.56700000108685,
+        "operations": 642.0788000032189
+      },
+      "contradictions": [
+        "Action 'explain' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'"
+      ],
+      "goal": "Explain how the authentication middleware works",
+      "intent_family": "execute",
+      "requested_ops": [
+        "explain"
+      ],
+      "prohibited_ops": [
+        "explain"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P10",
+      "text": "Translate the welcome message to Spanish and French",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1090.3402999974787,
+      "called_views": [
+        "goal",
+        "operations"
+      ],
+      "skipped_views": [
+        "references",
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 471.04760000365786,
+        "operations": 619.1946999970241
+      },
+      "contradictions": [
+        "Action 'translate' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'"
+      ],
+      "goal": "Translate the welcome message to Spanish and French",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "translate"
+      ],
+      "prohibited_ops": [
+        "translate"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P11",
+      "text": "Archive all logs older than 30 days",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1463.4904999984428,
+      "called_views": [
+        "goal",
+        "operations",
+        "output_scope"
+      ],
+      "skipped_views": [
+        "references"
+      ],
+      "view_latencies_ms": {
+        "goal": 394.60369999869727,
+        "operations": 612.3225000046659,
+        "output_scope": 456.422899995232
+      },
+      "contradictions": [
+        "Action 'archive' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'"
+      ],
+      "goal": "Archive all logs older than 30 days",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "archive"
+      ],
+      "prohibited_ops": [
+        "archive"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P12",
+      "text": "Send the weekly status update to the engineering lead",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1025.2742000011494,
+      "called_views": [
+        "goal",
+        "operations"
+      ],
+      "skipped_views": [
+        "references",
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 401.2430000002496,
+        "operations": 623.918400000548
+      },
+      "contradictions": [
+        "Action 'send' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'update' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [],
+      "goal": "Send the weekly status update to the engineering lead",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "send",
+        "update"
+      ],
+      "prohibited_ops": [
+        "send",
+        "update"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P13",
+      "text": "Generate a bar chart showing monthly revenue",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1182.5843000042369,
+      "called_views": [
+        "goal",
+        "operations"
+      ],
+      "skipped_views": [
+        "references",
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 562.4544000020251,
+        "operations": 620.0196999998298
+      },
+      "contradictions": [
+        "Action 'generate' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'"
+      ],
+      "goal": "Generate a bar chart showing monthly revenue",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "generate"
+      ],
+      "prohibited_ops": [
+        "generate"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P14",
+      "text": "Please don't delete the backup files, just move them",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1710.392100001627,
+      "called_views": [
+        "goal",
+        "operations",
+        "references"
+      ],
+      "skipped_views": [
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 492.72609999752603,
+        "operations": 626.3926999963587,
+        "references": 591.1301000014646
+      },
+      "contradictions": [
+        "Action 'delete' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'move' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [],
+      "goal": "don't delete backup files",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "delete",
+        "move"
+      ],
+      "prohibited_ops": [
+        "delete",
+        "move"
+      ],
+      "references_count": 1,
+      "unresolved_refs": [
+        "them"
+      ],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P15",
+      "text": "Review this code for potential security vulnerabilities",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1704.6906000032322,
+      "called_views": [
+        "goal",
+        "operations",
+        "references"
+      ],
+      "skipped_views": [
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 452.72059999842895,
+        "operations": 598.1948000044213,
+        "references": 653.6372999980813
+      },
+      "contradictions": [
+        "Action 'review' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'"
+      ],
+      "goal": "Review this code for potential security vulnerabilities",
+      "intent_family": "communicate",
+      "requested_ops": [
+        "review"
+      ],
+      "prohibited_ops": [
+        "review"
+      ],
+      "references_count": 1,
+      "unresolved_refs": [
+        "this"
+      ],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P16",
+      "text": "Create a markdown table comparing product features",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1409.9678999991738,
+      "called_views": [
+        "goal",
+        "operations",
+        "output_scope"
+      ],
+      "skipped_views": [
+        "references"
+      ],
+      "view_latencies_ms": {
+        "goal": 393.16900000267196,
+        "operations": 717.5856999965617,
+        "output_scope": 299.1009000033955
+      },
+      "contradictions": [],
+      "unknown_ids": [
+        "Unknown prohibited action ID: 'don'",
+        "select_output_scope call missing or malformed"
+      ],
+      "goal": "Markdown table comparing product features",
+      "intent_family": "create",
+      "requested_ops": [
+        "create"
+      ],
+      "prohibited_ops": [],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "low"
+    },
+    {
+      "id": "P17",
+      "text": "Shorten the introduction section to under 200 words",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1410.0814000048558,
+      "called_views": [
+        "goal",
+        "operations",
+        "output_scope"
+      ],
+      "skipped_views": [
+        "references"
+      ],
+      "view_latencies_ms": {
+        "goal": 492.0457000043825,
+        "operations": 626.1555000019143,
+        "output_scope": 291.76539999753004
+      },
+      "contradictions": [
+        "Action 'shorten' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'",
+        "select_output_scope call missing or malformed"
+      ],
+      "goal": "Shorten the introduction section to under 200 words",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "shorten"
+      ],
+      "prohibited_ops": [
+        "shorten"
+      ],
+      "references_count": 0,
+      "unresolved_refs": [],
+      "overall_confidence": "uncertain"
+    },
+    {
+      "id": "P18",
+      "text": "Do not reply to this email under any circumstances",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 2010.9398999993573,
+      "called_views": [
+        "goal",
+        "operations",
+        "references",
+        "output_scope"
+      ],
+      "skipped_views": [],
+      "view_latencies_ms": {
+        "goal": 345.52180000173394,
+        "operations": 612.4098000000231,
+        "references": 536.0519000023487,
+        "output_scope": 516.7660000006435
+      },
+      "contradictions": [
+        "Action 'reply' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'"
+      ],
+      "goal": "intent family",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "reply"
+      ],
+      "prohibited_ops": [
+        "reply"
+      ],
+      "references_count": 1,
+      "unresolved_refs": [
+        "this"
+      ],
+      "overall_confidence": "uncertain"
+    }
+  ],
+  "variant_b_active_context": [
+    {
+      "id": "C1",
+      "text": "Send the invoice we discussed earlier to finance",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 2395.1499999966472,
+      "called_views": [
+        "goal",
+        "operations",
+        "references",
+        "output_scope"
+      ],
+      "skipped_views": [],
+      "view_latencies_ms": {
+        "goal": 379.3824999956996,
+        "operations": 631.545999996888,
+        "references": 743.1001999939326,
+        "output_scope": 640.9503999966546
+      },
+      "contradictions": [
+        "Action 'send' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'",
+        "select_references call missing or malformed"
+      ],
+      "goal": "Send the invoice",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "send"
+      ],
+      "prohibited_ops": [
+        "send"
+      ],
+      "references": []
+    },
+    {
+      "id": "C2",
+      "text": "Update the hostel allocation order with the new roll numbers",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 2319.635100000596,
+      "called_views": [
+        "goal",
+        "operations",
+        "references",
+        "output_scope"
+      ],
+      "skipped_views": [],
+      "view_latencies_ms": {
+        "goal": 466.18820000003325,
+        "operations": 622.5582000042778,
+        "references": 760.234200002742,
+        "output_scope": 470.4842999999528
+      },
+      "contradictions": [
+        "Action 'update' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'",
+        "select_references call missing or malformed"
+      ],
+      "goal": "Update the hostel allocation order with the new roll numbers",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "update"
+      ],
+      "prohibited_ops": [
+        "update"
+      ],
+      "references": []
+    },
+    {
+      "id": "C3",
+      "text": "Revise it to sound more formal and add Dean's approval note",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 2579.419699999562,
+      "called_views": [
+        "goal",
+        "operations",
+        "references",
+        "output_scope"
+      ],
+      "skipped_views": [],
+      "view_latencies_ms": {
+        "goal": 488.02710000018124,
+        "operations": 615.0826000011875,
+        "references": 796.0210000019288,
+        "output_scope": 680.1264999958221
+      },
+      "contradictions": [
+        "Action 'revise' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'",
+        "select_references call missing or malformed"
+      ],
+      "goal": "Revise it to sound more formal and add Dean's approval note",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "revise"
+      ],
+      "prohibited_ops": [
+        "revise"
+      ],
+      "references": []
+    },
+    {
+      "id": "C4",
+      "text": "Can you check if there are any conflicts in the schedule we drafted?",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 1776.0609000033583,
+      "called_views": [
+        "goal",
+        "operations",
+        "references"
+      ],
+      "skipped_views": [
+        "output_scope"
+      ],
+      "view_latencies_ms": {
+        "goal": 462.4050999991596,
+        "operations": 550.8770999949775,
+        "references": 762.6415999984602
+      },
+      "contradictions": [
+        "Action 'check' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'schedule' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [],
+      "goal": "schedule",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "check",
+        "schedule"
+      ],
+      "prohibited_ops": [
+        "check",
+        "schedule"
+      ],
+      "references": []
+    },
+    {
+      "id": "C5",
+      "text": "Don't send the revised letter yet; wait for Prof. Rao's confirmation",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 2124.9941999994917,
+      "called_views": [
+        "goal",
+        "operations",
+        "references",
+        "output_scope"
+      ],
+      "skipped_views": [],
+      "view_latencies_ms": {
+        "goal": 354.4638999956078,
+        "operations": 636.5816999968956,
+        "references": 613.552199996775,
+        "output_scope": 520.2222000007168
+      },
+      "contradictions": [
+        "Action 'send' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "Unknown requested action ID: 'a2'",
+        "Unknown prohibited action ID: 'a2'"
+      ],
+      "goal": "intent family",
+      "intent_family": "retrieve",
+      "requested_ops": [
+        "send"
+      ],
+      "prohibited_ops": [
+        "send"
+      ],
+      "references": []
+    },
+    {
+      "id": "C6",
+      "text": "Export that table to CSV and share it with the team",
+      "ok": true,
+      "error": null,
+      "total_latency_ms": 2053.3383000001777,
+      "called_views": [
+        "goal",
+        "operations",
+        "references",
+        "output_scope"
+      ],
+      "skipped_views": [],
+      "view_latencies_ms": {
+        "goal": 431.699300002947,
+        "operations": 532.2740999981761,
+        "references": 805.6018999996013,
+        "output_scope": 283.6167999994359
+      },
+      "contradictions": [
+        "Action 'export' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+        "Action 'share' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+      ],
+      "unknown_ids": [
+        "select_references call missing or malformed",
+        "select_output_scope call missing or malformed"
+      ],
+      "goal": "Export that table to CSV and share it with the team",
+      "intent_family": "execute",
+      "requested_ops": [
+        "export",
+        "share"
+      ],
+      "prohibited_ops": [
+        "export",
+        "share"
+      ],
+      "references": []
+    }
+  ],
+  "variant_c_id_vs_freetext": [
+    {
+      "id": "P2",
+      "text": "Draft an email to Prof. Rao about the meeting tomorrow, but do not send it",
+      "id_selection": {
+        "ok": true,
+        "contradictions": [
+          "Action 'draft' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+          "Action 'send' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+        ],
+        "unknown_ids": [],
+        "raw_operations_call": [
+          {
+            "name": "select_operations",
+            "arguments": {
+              "requested_action_ids": [
+                "a1",
+                "a2"
+              ],
+              "prohibited_action_ids": [
+                "a1",
+                "a2"
+              ]
+            }
+          }
+        ]
+      },
+      "free_text": {
+        "latency_ms": 483.38150000199676,
+        "raw_call": [
+          {
+            "name": "select_operations_freetext",
+            "arguments": {
+              "requested_operations": [
+                "Draft an email to Prof. Rao about the meeting tomorrow"
+              ],
+              "prohibited_operations": [
+                "Draft an email to Prof. Rao about the meeting tomorrow"
+              ]
+            }
+          }
+        ],
+        "reasoning": "requested_operations ['Draft an email to Prof. Rao about the meeting tomorrow'] from query; prohibited_operations ['Draft an email to Prof. Rao about the meeting tomorrow'] from query."
+      }
+    },
+    {
+      "id": "P8",
+      "text": "Don't submit the form yet; first check for errors",
+      "id_selection": {
+        "ok": true,
+        "contradictions": [
+          "Action 'submit' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+          "Action 'check' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+        ],
+        "unknown_ids": [],
+        "raw_operations_call": [
+          {
+            "name": "select_operations",
+            "arguments": {
+              "requested_action_ids": [
+                "a1",
+                "a2"
+              ],
+              "prohibited_action_ids": [
+                "a1",
+                "a2"
+              ]
+            }
+          }
+        ]
+      },
+      "free_text": {
+        "latency_ms": 259.8593000002438,
+        "raw_call": [
+          {
+            "name": "select_operations_freetext",
+            "arguments": {
+              "requested_operations": [
+                "Don't submit the form yet"
+              ],
+              "prohibited_operations": [
+                "Errors"
+              ]
+            }
+          }
+        ],
+        "reasoning": "requested_operations ['Don't submit the form yet'] from query; prohibited_operations ['Errors'] from query."
+      }
+    },
+    {
+      "id": "P14",
+      "text": "Please don't delete the backup files, just move them",
+      "id_selection": {
+        "ok": true,
+        "contradictions": [
+          "Action 'delete' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+          "Action 'move' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+        ],
+        "unknown_ids": [],
+        "raw_operations_call": [
+          {
+            "name": "select_operations",
+            "arguments": {
+              "requested_action_ids": [
+                "a1",
+                "a2"
+              ],
+              "prohibited_action_ids": [
+                "a1",
+                "a2"
+              ]
+            }
+          }
+        ]
+      },
+      "free_text": {
+        "latency_ms": 260.1948000010452,
+        "raw_call": [
+          {
+            "name": "select_operations_freetext",
+            "arguments": {
+              "requested_operations": [
+                "don't delete the backup files"
+              ],
+              "prohibited_operations": [
+                "move them"
+              ]
+            }
+          }
+        ],
+        "reasoning": "requested_operations ['don't delete the backup files'] from query; prohibited_operations ['move them'] from query"
+      }
+    },
+    {
+      "id": "C3",
+      "text": "Revise it to sound more formal and add Dean's approval note",
+      "id_selection": {
+        "ok": true,
+        "contradictions": [
+          "Action 'revise' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+          "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+        ],
+        "unknown_ids": [
+          "Unknown requested action ID: 'a2'",
+          "Unknown prohibited action ID: 'a2'",
+          "select_references call missing or malformed"
+        ],
+        "raw_operations_call": [
+          {
+            "name": "select_operations",
+            "arguments": {
+              "requested_action_ids": [
+                "a1",
+                "a2"
+              ],
+              "prohibited_action_ids": [
+                "a1",
+                "a2"
+              ]
+            }
+          }
+        ]
+      },
+      "free_text": {
+        "latency_ms": 349.4716999994125,
+        "raw_call": [
+          {
+            "name": "select_operations_freetext",
+            "arguments": {
+              "requested_operations": [
+                "Revise it to sound more formal",
+                "Dean's approval note"
+              ],
+              "prohibited_operations": [
+                "Revise it to sound more formal",
+                "Dean's approval note"
+              ]
+            }
+          }
+        ],
+        "reasoning": "requested_operations ['Revise it to sound more formal', 'Dean's approval note'] from query. Prohibited_operations array."
+      }
+    },
+    {
+      "id": "C5",
+      "text": "Don't send the revised letter yet; wait for Prof. Rao's confirmation",
+      "id_selection": {
+        "ok": true,
+        "contradictions": [
+          "Action 'send' (id 'a1') was selected as both REQUESTED and PROHIBITED",
+          "Action 'a2' (id 'a2') was selected as both REQUESTED and PROHIBITED"
+        ],
+        "unknown_ids": [
+          "Unknown requested action ID: 'a2'",
+          "Unknown prohibited action ID: 'a2'"
+        ],
+        "raw_operations_call": [
+          {
+            "name": "select_operations",
+            "arguments": {
+              "requested_action_ids": [
+                "a1",
+                "a2"
+              ],
+              "prohibited_action_ids": [
+                "a1",
+                "a2"
+              ]
+            }
+          }
+        ]
+      },
+      "free_text": {
+        "latency_ms": 470.0504000065848,
+        "raw_call": [
+          {
+            "name": "select_operations_freetext",
+            "arguments": {
+              "requested_operations": [
+                "Don't send the revised letter yet",
+                "wait for Prof. Rao's confirmation"
+              ],
+              "prohibited_operations": [
+                "Don't send the revised letter yet",
+                "wait for Prof. Rao's confirmation"
+              ]
+            }
+          }
+        ],
+        "reasoning": "requested_operations ['Don't send the revised letter yet','wait for Prof. Rao's confirmation'] from query. Prohibited_operations ['Don't send the revised letter yet','wait for Prof. Rao's confirmation'] from query."
+      }
+    }
+  ],
+  "variant_d_reset_vs_stale": {
+    "reset_run": [
+      {
+        "step": 1,
+        "prompt": "Draft an email to Prof. Rao about the meeting tomorrow, but do not send it",
+        "goal": "Prof. Rao",
+        "ops": [
+          "draft",
+          "send",
+          "draft",
+          "send"
+        ],
+        "prohibited": [
+          "draft",
+          "send"
+        ]
+      },
+      {
+        "step": 2,
+        "prompt": "Convert report.pdf to text format",
+        "goal": "Convert report.pdf to text format",
+        "ops": [
+          "convert",
+          "convert"
+        ],
+        "prohibited": [
+          "convert"
+        ]
+      },
+      {
+        "step": 3,
+        "prompt": "Don't submit the form yet; first check for errors",
+        "goal": "navigate",
+        "ops": [
+          "submit",
+          "check",
+          "submit",
+          "check"
+        ],
+        "prohibited": [
+          "submit",
+          "check"
+        ]
+      },
+      {
+        "step": 4,
+        "prompt": "Archive all logs older than 30 days",
+        "goal": "Archive all logs older than 30 days",
+        "ops": [
+          "archive",
+          "archive"
+        ],
+        "prohibited": [
+          "archive"
+        ]
+      },
+      {
+        "step": 5,
+        "prompt": "Please don't delete the backup files, just move them",
+        "goal": "don't delete backup files",
+        "ops": [
+          "delete",
+          "move",
+          "delete",
+          "move"
+        ],
+        "prohibited": [
+          "delete",
+          "move"
+        ]
+      }
+    ],
+    "stale_run": [
+      {
+        "step": 1,
+        "prompt": "Draft an email to Prof. Rao about the meeting tomorrow, but do not send it",
+        "goal": "Prof. Rao",
+        "ops": [
+          "draft",
+          "send",
+          "draft",
+          "send"
+        ],
+        "prohibited": [
+          "draft",
+          "send"
+        ]
+      },
+      {
+        "step": 2,
+        "prompt": "Convert report.pdf to text format",
+        "goal": "Convert report.pdf to text format",
+        "ops": [
+          "convert",
+          "convert"
+        ],
+        "prohibited": [
+          "convert"
+        ]
+      },
+      {
+        "step": 3,
+        "prompt": "Don't submit the form yet; first check for errors",
+        "goal": "navigate",
+        "ops": [
+          "submit",
+          "check",
+          "submit",
+          "check"
+        ],
+        "prohibited": [
+          "submit",
+          "check"
+        ]
+      },
+      {
+        "step": 4,
+        "prompt": "Archive all logs older than 30 days",
+        "goal": "Archive all logs older than 30 days",
+        "ops": [
+          "archive",
+          "archive"
+        ],
+        "prohibited": [
+          "archive"
+        ]
+      },
+      {
+        "step": 5,
+        "prompt": "Please don't delete the backup files, just move them",
+        "goal": "don't delete backup files",
+        "ops": [
+          "delete",
+          "move",
+          "delete",
+          "move"
+        ],
+        "prohibited": [
+          "delete",
+          "move"
+        ]
+      }
+    ]
+  },
+  "summary_metrics": {
+    "total_turns": 24,
+    "successful_turns": 24,
+    "success_rate": 1.0,
+    "contradiction_turns": 23,
+    "contradiction_rate": 0.9583333333333334,
+    "unknown_id_turns": 18,
+    "unknown_id_rate": 0.75,
+    "average_latency_ms": 1613.9475375008867,
+    "min_latency_ms": 1025.2742000011494,
+    "max_latency_ms": 2579.419699999562,
+    "view_call_frequencies": {
+      "goal": 24,
+      "operations": 24,
+      "references": 11,
+      "output_scope": 15
+    },
+    "average_calls_per_turn": 3.0833333333333335
+  }
+}

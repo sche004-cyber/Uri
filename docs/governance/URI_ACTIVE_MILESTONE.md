@@ -1,5 +1,17 @@
 # URI Active Milestone Control
 
+**2026-10-04 — Direct camera/voice/Gemma assignment (partial, uncommitted):** User authorizes this bounded implementation separately from intent-clarification planning. Windows voice input adapter and selected-speaker acknowledgement implemented; User heard “Yes Chetan.”. Camera 2 TCP 554 refusal and insufficient recording headroom stop affected camera/storage work. Gemma selection/live qualification and final User acceptance remain pending. [Implementation handoff](../plans/CAMERA_VOICE_GEMMA_IMPLEMENTATION_REPORT.md) preserves evidence and exact acceptance steps. No frozen backend edits, independent milestone verification, commit, push or milestone promotion.
+
+**2026-10-04 — Formal intent clarification plan awaiting User approval:** User temporarily authorizes Codex as planning agent while Claude is unavailable. [Formal minimal integration plan](../plans/INTENT_CLARIFICATION_INTEGRATION_PLAN.md) and [critical self-review, not independent audit](../plans/INTENT_CLARIFICATION_INTEGRATION_SELF_REVIEW.md) are prepared. State: `DRAFT_FOR_USER_APPROVAL`; no implementation or live inference authority granted by this planning assignment. Existing production/frozen/harness boundaries remain in force.
+
+**2026-10-04 — Intent clarification next-milestone direction (planning only):** User accepts **MINIMAL EXTENSION**, closes the standalone Generic Clarification-State Contract Revision 3 proposal, and directs the next milestone toward connecting existing components and testing their combined behavior. [Scope and formal-plan handoff](../plans/INTENT_CLARIFICATION_MINIMAL_EXTENSION_SCOPE.md). State: `USER_DIRECTION_ACCEPTED / FORMAL_PLAN_REVIEW_PENDING`; no numbered implementation milestone or production integration is opened. Existing delivery/freeze and harness containment records remain in effect. Revision 3 is preserved as historical evidence, not an accepted implementation specification.
+
+**2026-10-03 — Harness desktop completion (provisional, acceptance blocked):** Direct User assignment authorizes Codex implementation of desktop management/selection and adapter completion. Existing `_V1` seam now has live discovery, explicit harness choice, persisted execution/checkpoints, cancellation and recovery. Fresh Claude repair is quota-blocked; Antigravity execution remains disabled pending containment. No production promotion, independent verification, commit, push or freeze. See [completion report](../plans/HARNESS_DESKTOP_COMPLETION_REPORT.md).
+
+
+**2026-10-02 — Desktop Claude Code qualification (provisional):** Direct User instruction assigns the isolated test integration and authentication/layout repairs to Codex. Work is in `_V1` at `62d564c`; the installed Core is a different checkout, `uri-m37-m39-integration`. No frozen M38/Core edits, production promotion, commit or push. Self-tests: 105 Python / 7 Flutter pass; fixed-task real native desktop path passed (11.367 s response, 11.369 s displayed); independent Claude review and production canonical-loop acceptance pending. See [review package](../plans/DESKTOP_HARNESS_CLAUDE_REVIEW_PACKAGE.md) and the stage artifacts it links.
+
+
 **Single Authoritative Record of the Current Approved Development Milestone**  
 *This file records permissions, scope, and state that have already been approved by the User or accepted project governance. It does NOT grant new permissions by itself.*
 

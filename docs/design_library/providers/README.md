@@ -45,4 +45,5 @@ Gmail connection status-pill sit indistinguishably side by side.
 
 ## Decisions
 
-None yet.
+[Harness management, 2026-10-03](../approved/harness_management_2026-10-03.md):
+separate execution registry, live status and qualification, explicit selection.

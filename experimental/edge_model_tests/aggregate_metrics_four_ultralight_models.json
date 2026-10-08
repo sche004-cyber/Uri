@@ -1,0 +1,146 @@
+{
+  "LFM25_350M": {
+    "label": "LFM2.5-350M (Liquid AI)",
+    "full_system": {
+      "total_cases": 30,
+      "full_correct": 28,
+      "full_correct_pct": 93.3,
+      "verified_local_success": 14,
+      "verified_local_success_pct": 46.7,
+      "escalated_confirmed": 15,
+      "rejected": 1,
+      "false_candidate_successes": 1,
+      "false_verified_successes": 0,
+      "mean_turn_latency_ms": 121.88,
+      "p95_turn_latency_ms": 598.67
+    },
+    "worker": {
+      "worker_eligible_assigned": 9,
+      "worker_needle_admitted": 8,
+      "worker_correct": 7,
+      "worker_correct_pct": 87.5,
+      "worker_claimed_success": 8,
+      "worker_false_claimed": 1,
+      "worker_false_verified": 0,
+      "schema_errors": 0,
+      "negation_errors": 0,
+      "hallucinations": 0,
+      "referent_failures": 1,
+      "mean_worker_latency_ms": 326.84,
+      "p95_worker_latency_ms": 381.14
+    },
+    "ram_info": {
+      "used_ram_mb": 18565.3,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 75
+    }
+  },
+  "GRANITE4_350M_H": {
+    "label": "Granite 4.0-H-350M (IBM Mamba-2/Transformer Hybrid)",
+    "full_system": {
+      "total_cases": 30,
+      "full_correct": 29,
+      "full_correct_pct": 96.7,
+      "verified_local_success": 15,
+      "verified_local_success_pct": 50.0,
+      "escalated_confirmed": 15,
+      "rejected": 0,
+      "false_candidate_successes": 0,
+      "false_verified_successes": 0,
+      "mean_turn_latency_ms": 131.93,
+      "p95_turn_latency_ms": 581.9
+    },
+    "worker": {
+      "worker_eligible_assigned": 9,
+      "worker_needle_admitted": 8,
+      "worker_correct": 8,
+      "worker_correct_pct": 100.0,
+      "worker_claimed_success": 8,
+      "worker_false_claimed": 0,
+      "worker_false_verified": 0,
+      "schema_errors": 0,
+      "negation_errors": 0,
+      "hallucinations": 0,
+      "referent_failures": 0,
+      "mean_worker_latency_ms": 384.29,
+      "p95_worker_latency_ms": 414.35
+    },
+    "ram_info": {
+      "used_ram_mb": 18610.1,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 75
+    }
+  },
+  "SMOLLM2_360M": {
+    "label": "SmolLM2-360M-Instruct (HuggingFace)",
+    "full_system": {
+      "total_cases": 30,
+      "full_correct": 25,
+      "full_correct_pct": 83.3,
+      "verified_local_success": 11,
+      "verified_local_success_pct": 36.7,
+      "escalated_confirmed": 15,
+      "rejected": 4,
+      "false_candidate_successes": 2,
+      "false_verified_successes": 0,
+      "mean_turn_latency_ms": 160.83,
+      "p95_turn_latency_ms": 907.03
+    },
+    "worker": {
+      "worker_eligible_assigned": 9,
+      "worker_needle_admitted": 8,
+      "worker_correct": 4,
+      "worker_correct_pct": 50.0,
+      "worker_claimed_success": 6,
+      "worker_false_claimed": 2,
+      "worker_false_verified": 0,
+      "schema_errors": 2,
+      "negation_errors": 0,
+      "hallucinations": 0,
+      "referent_failures": 2,
+      "mean_worker_latency_ms": 491.48,
+      "p95_worker_latency_ms": 848.78
+    },
+    "ram_info": {
+      "used_ram_mb": 18610.7,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 75
+    }
+  },
+  "GEMMA3_270M": {
+    "label": "Gemma 3 270M-IT (Google DeepMind)",
+    "full_system": {
+      "total_cases": 30,
+      "full_correct": 27,
+      "full_correct_pct": 90.0,
+      "verified_local_success": 13,
+      "verified_local_success_pct": 43.3,
+      "escalated_confirmed": 15,
+      "rejected": 2,
+      "false_candidate_successes": 2,
+      "false_verified_successes": 0,
+      "mean_turn_latency_ms": 153.76,
+      "p95_turn_latency_ms": 653.29
+    },
+    "worker": {
+      "worker_eligible_assigned": 9,
+      "worker_needle_admitted": 8,
+      "worker_correct": 6,
+      "worker_correct_pct": 75.0,
+      "worker_claimed_success": 8,
+      "worker_false_claimed": 2,
+      "worker_false_verified": 0,
+      "schema_errors": 0,
+      "negation_errors": 0,
+      "hallucinations": 0,
+      "referent_failures": 2,
+      "mean_worker_latency_ms": 463.44,
+      "p95_worker_latency_ms": 509.62
+    },
+    "ram_info": {
+      "used_ram_mb": 18617.4,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 75
+    }
+  }
+}

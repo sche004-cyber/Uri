@@ -1,0 +1,783 @@
+{
+  "timestamp": "2026-09-22 21:32:08",
+  "benchmark_cases_count": 12,
+  "cases": [
+    {
+      "case_id": "A28A-01-SIMPLE",
+      "category": "Simple",
+      "user_text": "Review the email.",
+      "latency_ms": 0.03139999898849055,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "review"
+        }
+      ],
+      "uncertainties": [],
+      "questions_method_a": [],
+      "questions_method_b": [],
+      "questions_method_c": [],
+      "validation_method_b_flags": []
+    },
+    {
+      "case_id": "A28A-02-EXPLICIT-NEG",
+      "category": "Explicit_Negation",
+      "user_text": "Draft the reply but don't send it.",
+      "latency_ms": 2563.96390000009,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "draft"
+        },
+        {
+          "type": "CONTRAST_MARKER",
+          "span": "but"
+        },
+        {
+          "type": "NEGATION_MARKER",
+          "span": "don't"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "send"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-NEG-SCOPE",
+          "type": "NEGATION_SCOPE",
+          "desc": "Scope of negation marker 'don't' (candidate verbs: draft, send)."
+        },
+        {
+          "id": "UNC-002-OP-POLARITY",
+          "type": "OPERATION_POLARITY",
+          "desc": "Intended polarity of operations governed by 'don't'."
+        },
+        {
+          "id": "UNC-003-CONTRAST-REL",
+          "type": "CONTRAST_RELATIONSHIP",
+          "desc": "Relational contrast or exception introduced by 'but'."
+        },
+        {
+          "id": "UNC-004-OP-TARGET",
+          "type": "OPERATION_TARGET",
+          "desc": "Coupling between operations (draft, send) and respective targets."
+        }
+      ],
+      "questions_method_a": [
+        "Does the negation marker \"don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"don't\" (requested, prohibited, or deferred)?",
+        "How does the directive following \"but\" qualify or oppose the preceding clause?",
+        "Which specific target object is associated with each candidate operation (draft, send)?"
+      ],
+      "questions_method_b": [
+        "Does the instruction to not send the reply also apply to drafting it?",
+        "Should I draft the reply without sending it, or should I not draft it at all?",
+        "What specific action should be taken regarding the drafted reply, considering the instruction not to send it?",
+        "Should I draft a reply for you to review without sending it?"
+      ],
+      "questions_method_c": [
+        "Does the negation marker \"don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"don't\" (requested, prohibited, or deferred)?",
+        "How does the directive following \"but\" qualify or oppose the preceding clause?",
+        "Should I draft a reply for you to review without sending it?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "VALID"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-03-MULTI-NEG",
+      "category": "Multiple_Negation",
+      "user_text": "Review it, don't send it, and don't upload anything.",
+      "latency_ms": 3397.2388000001956,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "review"
+        },
+        {
+          "type": "NEGATION_MARKER",
+          "span": "don't"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "send"
+        },
+        {
+          "type": "COORDINATION_MARKER",
+          "span": "and"
+        },
+        {
+          "type": "NEGATION_MARKER",
+          "span": "don't"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "upload"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-NEG-SCOPE",
+          "type": "NEGATION_SCOPE",
+          "desc": "Scope of negation marker 'don't' (candidate verbs: review, send, upload)."
+        },
+        {
+          "id": "UNC-002-OP-POLARITY",
+          "type": "OPERATION_POLARITY",
+          "desc": "Intended polarity of operations governed by 'don't'."
+        },
+        {
+          "id": "UNC-003-NEG-SCOPE",
+          "type": "NEGATION_SCOPE",
+          "desc": "Scope of negation marker 'don't' (candidate verbs: review, send, upload)."
+        },
+        {
+          "id": "UNC-004-OP-POLARITY",
+          "type": "OPERATION_POLARITY",
+          "desc": "Intended polarity of operations governed by 'don't'."
+        },
+        {
+          "id": "UNC-005-OP-TARGET",
+          "type": "OPERATION_TARGET",
+          "desc": "Coupling between operations (review, send, upload) and respective targets."
+        }
+      ],
+      "questions_method_a": [
+        "Does the negation marker \"don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"don't\" (requested, prohibited, or deferred)?",
+        "Does the negation marker \"don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"don't\" (requested, prohibited, or deferred)?",
+        "Which specific target object is associated with each candidate operation (review, send, upload)?"
+      ],
+      "questions_method_b": [
+        "Does the instruction to \"Review it\" apply before or after the prohibitions against sending and uploading?",
+        "Does the instruction to review imply that sending or uploading should also be avoided?",
+        "Does the instruction to \"Review it\" apply before or after the prohibitions against sending and uploading?",
+        "Does the instruction to review imply that sending or uploading should also be avoided?",
+        "Does the instruction to review apply only to the current content or also to any previously uploaded files?"
+      ],
+      "questions_method_c": [
+        "Does the negation marker \"don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"don't\" (requested, prohibited, or deferred)?",
+        "Does the negation marker \"don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"don't\" (requested, prohibited, or deferred)?",
+        "Does the instruction to review apply only to the current content or also to any previously uploaded files?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "DUPLICATE_QUESTION"
+        ],
+        [
+          "DUPLICATE_QUESTION"
+        ],
+        [
+          "VALID"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-04-CONDITIONAL",
+      "category": "Conditional",
+      "user_text": "Send it if the Dean approves.",
+      "latency_ms": 1378.9429000025848,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "send"
+        },
+        {
+          "type": "CONDITIONAL_MARKER",
+          "span": "if"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "approve"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-COND-DEP",
+          "type": "CONDITIONAL_DEPENDENCY",
+          "desc": "Contingency condition introduced by marker 'if'."
+        },
+        {
+          "id": "UNC-002-OP-TARGET",
+          "type": "OPERATION_TARGET",
+          "desc": "Coupling between operations (send, approve) and respective targets."
+        }
+      ],
+      "questions_method_a": [
+        "Under what prerequisite condition introduced by \"if\" is the action contingent?",
+        "Which specific target object is associated with each candidate operation (send, approve)?"
+      ],
+      "questions_method_b": [
+        "Does the user intend to send the item only upon the Dean's approval, or regardless of that outcome?",
+        "What specific item or document is intended to be sent upon the Dean's approval?"
+      ],
+      "questions_method_c": [
+        "Under what prerequisite condition introduced by \"if\" is the action contingent?",
+        "Which specific target object is associated with each candidate operation (send, approve)?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "LOST_CRITICAL_SIGNAL",
+          "NOT_ADDRESSING_UNCERTAINTY"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-05-UNLESS",
+      "category": "Unless",
+      "user_text": "Don't send it unless the Dean approves.",
+      "latency_ms": 2602.2602999983064,
+      "signals": [
+        {
+          "type": "NEGATION_MARKER",
+          "span": "Don't"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "send"
+        },
+        {
+          "type": "CONDITIONAL_MARKER",
+          "span": "unless"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "approve"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-NEG-SCOPE",
+          "type": "NEGATION_SCOPE",
+          "desc": "Scope of negation marker 'Don't' (candidate verbs: send, approve)."
+        },
+        {
+          "id": "UNC-002-OP-POLARITY",
+          "type": "OPERATION_POLARITY",
+          "desc": "Intended polarity of operations governed by 'Don't'."
+        },
+        {
+          "id": "UNC-003-COND-DEP",
+          "type": "CONDITIONAL_DEPENDENCY",
+          "desc": "Contingency condition introduced by marker 'unless'."
+        },
+        {
+          "id": "UNC-004-OP-TARGET",
+          "type": "OPERATION_TARGET",
+          "desc": "Coupling between operations (send, approve) and respective targets."
+        }
+      ],
+      "questions_method_a": [
+        "Does the negation marker \"Don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"Don't\" (requested, prohibited, or deferred)?",
+        "Under what prerequisite condition introduced by \"unless\" is the action contingent?",
+        "Which specific target object is associated with each candidate operation (send, approve)?"
+      ],
+      "questions_method_b": [
+        "Does the instruction to not send apply only if the Dean does not approve, or is it a general prohibition regardless of approval?",
+        "Does the instruction mean to withhold sending until approval, or is there a different intended action?",
+        "Does the instruction require sending the item only if the Dean gives approval?",
+        "Who must approve the sending of the item?"
+      ],
+      "questions_method_c": [
+        "Does the negation marker \"Don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"Don't\" (requested, prohibited, or deferred)?",
+        "Under what prerequisite condition introduced by \"unless\" is the action contingent?",
+        "Who must approve the sending of the item?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "VALID"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-06-TEMPORAL",
+      "category": "Temporal",
+      "user_text": "Don't send it until Monday.",
+      "latency_ms": 1963.665499999479,
+      "signals": [
+        {
+          "type": "NEGATION_MARKER",
+          "span": "Don't"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "send"
+        },
+        {
+          "type": "TEMPORAL_MARKER",
+          "span": "until"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-NEG-SCOPE",
+          "type": "NEGATION_SCOPE",
+          "desc": "Scope of negation marker 'Don't' (candidate verbs: send)."
+        },
+        {
+          "id": "UNC-002-OP-POLARITY",
+          "type": "OPERATION_POLARITY",
+          "desc": "Intended polarity of operations governed by 'Don't'."
+        },
+        {
+          "id": "UNC-003-TEMP-DEP",
+          "type": "TEMPORAL_DEPENDENCY",
+          "desc": "Temporal constraint or gating trigger introduced by 'until'."
+        }
+      ],
+      "questions_method_a": [
+        "Does the negation marker \"Don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"Don't\" (requested, prohibited, or deferred)?",
+        "What is the temporal constraint or gating trigger introduced by \"until\"?"
+      ],
+      "questions_method_b": [
+        "Does the instruction to not send apply only to sending, or does it also affect other actions?",
+        "Does the instruction mean to withhold sending the item until Monday, or does it imply a different action?",
+        "What specific time on Monday is the intended deadline for sending?"
+      ],
+      "questions_method_c": [
+        "Does the negation marker \"Don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"Don't\" (requested, prohibited, or deferred)?",
+        "What is the temporal constraint or gating trigger introduced by \"until\"?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-07-REFERENCE",
+      "category": "Reference",
+      "user_text": "Use the revised approval and draft the order from it.",
+      "latency_ms": 593.8438000011956,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "use"
+        },
+        {
+          "type": "COORDINATION_MARKER",
+          "span": "and"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "draft"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-OP-TARGET",
+          "type": "OPERATION_TARGET",
+          "desc": "Coupling between operations (use, draft) and respective targets."
+        }
+      ],
+      "questions_method_a": [
+        "Which specific target object is associated with each candidate operation (use, draft)?"
+      ],
+      "questions_method_b": [
+        "What specific elements of the revised approval should be incorporated into the drafted order?"
+      ],
+      "questions_method_c": [
+        "What specific elements of the revised approval should be incorporated into the drafted order?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "VALID"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-08-CONTRAST",
+      "category": "Contrast",
+      "user_text": "Use the revised approval, not the earlier one.",
+      "latency_ms": 2111.0049999988405,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "use"
+        },
+        {
+          "type": "CONTRAST_MARKER",
+          "span": ", not"
+        },
+        {
+          "type": "NEGATION_MARKER",
+          "span": "not"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-NEG-SCOPE",
+          "type": "NEGATION_SCOPE",
+          "desc": "Scope of negation marker 'not' (candidate verbs: use)."
+        },
+        {
+          "id": "UNC-002-OP-POLARITY",
+          "type": "OPERATION_POLARITY",
+          "desc": "Intended polarity of operations governed by 'not'."
+        },
+        {
+          "id": "UNC-003-CONTRAST-REL",
+          "type": "CONTRAST_RELATIONSHIP",
+          "desc": "Relational contrast or exception introduced by ', not'."
+        }
+      ],
+      "questions_method_a": [
+        "Does the negation marker \"not\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"not\" (requested, prohibited, or deferred)?",
+        "How does the directive following \", not\" qualify or oppose the preceding clause?"
+      ],
+      "questions_method_b": [
+        "Does the instruction to use the revised approval apply only when the earlier one is explicitly rejected, or does it override the earlier approval regardless?",
+        "Does the instruction mean to apply only the revised approval and disregard the earlier one?",
+        "Does the instruction to use the revised approval exclude the earlier version entirely?"
+      ],
+      "questions_method_c": [
+        "Does the negation marker \"not\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"not\" (requested, prohibited, or deferred)?",
+        "How does the directive following \", not\" qualify or oppose the preceding clause?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-09-MULTI-OBJECT",
+      "category": "Multi_Object",
+      "user_text": "Sign the affidavit and shred the draft notes.",
+      "latency_ms": 777.160500001628,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "sign"
+        },
+        {
+          "type": "COORDINATION_MARKER",
+          "span": "and"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "shred"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-OP-TARGET",
+          "type": "OPERATION_TARGET",
+          "desc": "Coupling between operations (sign, shred) and respective targets."
+        }
+      ],
+      "questions_method_a": [
+        "Which specific target object is associated with each candidate operation (sign, shred)?"
+      ],
+      "questions_method_b": [
+        "Does the instruction to sign apply only to the affidavit, or does it also apply to the draft notes?"
+      ],
+      "questions_method_c": [
+        "Does the instruction to sign apply only to the affidavit, or does it also apply to the draft notes?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "VALID"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-10-AMBIGUOUS-REF",
+      "category": "Ambiguous_Reference",
+      "user_text": "Don't do that yet.",
+      "latency_ms": 2012.1584000007715,
+      "signals": [
+        {
+          "type": "NEGATION_MARKER",
+          "span": "Don't"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "do"
+        },
+        {
+          "type": "AMBIGUOUS_REFERENCE",
+          "span": "that"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-NEG-SCOPE",
+          "type": "NEGATION_SCOPE",
+          "desc": "Scope of negation marker 'Don't' (candidate verbs: do)."
+        },
+        {
+          "id": "UNC-002-OP-POLARITY",
+          "type": "OPERATION_POLARITY",
+          "desc": "Intended polarity of operations governed by 'Don't'."
+        },
+        {
+          "id": "UNC-003-UNRES-REF",
+          "type": "UNRESOLVED_REFERENCE",
+          "desc": "Target entity bound to reference expression 'that'."
+        }
+      ],
+      "questions_method_a": [
+        "Does the negation marker \"Don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"Don't\" (requested, prohibited, or deferred)?",
+        "Which known entity or document in context does the reference \"that\" bind to?"
+      ],
+      "questions_method_b": [
+        "Does the instruction \"Don't do that yet\" apply to all actions mentioned or only specific ones?",
+        "Does the instruction to not perform an action apply immediately or is it conditional on a future event?",
+        "What specific action does the pronoun 'that' refer to in this context?"
+      ],
+      "questions_method_c": [
+        "Does the instruction \"Don't do that yet\" apply to all actions mentioned or only specific ones?",
+        "What is the intended operational polarity for actions associated with \"Don't\" (requested, prohibited, or deferred)?",
+        "What specific action does the pronoun 'that' refer to in this context?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "VALID"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "VALID"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-11-IMPLICIT-SEMANTICS",
+      "category": "Implicit_Semantics",
+      "user_text": "Deal with the Dean's email appropriately.",
+      "latency_ms": 653.3639000008407,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "deal"
+        },
+        {
+          "type": "MODIFIER_MARKER",
+          "span": "appropriately"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-MOD-SCOPE",
+          "type": "MODIFIER_SCOPE",
+          "desc": "Concrete operational scope required by implicit qualifier 'appropriately'."
+        }
+      ],
+      "questions_method_a": [
+        "What concrete operations are required by the qualifier \"appropriately\"?"
+      ],
+      "questions_method_b": [
+        "What specific actions or responses does the user consider appropriate for handling the Dean's email?"
+      ],
+      "questions_method_c": [
+        "What specific actions or responses does the user consider appropriate for handling the Dean's email?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "VALID"
+        ]
+      ]
+    },
+    {
+      "case_id": "A28A-12-COMBINED-ADVERSARIAL",
+      "category": "Combined_Adversarial",
+      "user_text": "Sign the amended contract, but don't execute or distribute it until the board approves next Friday.",
+      "latency_ms": 4421.50330000004,
+      "signals": [
+        {
+          "type": "ACTION_VERB",
+          "span": "sign"
+        },
+        {
+          "type": "CONTRAST_MARKER",
+          "span": "but"
+        },
+        {
+          "type": "NEGATION_MARKER",
+          "span": "don't"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "execute"
+        },
+        {
+          "type": "COORDINATION_MARKER",
+          "span": "or"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "distribute"
+        },
+        {
+          "type": "TEMPORAL_MARKER",
+          "span": "until"
+        },
+        {
+          "type": "ACTION_VERB",
+          "span": "approve"
+        },
+        {
+          "type": "TEMPORAL_MARKER",
+          "span": "next Friday"
+        }
+      ],
+      "uncertainties": [
+        {
+          "id": "UNC-001-NEG-SCOPE",
+          "type": "NEGATION_SCOPE",
+          "desc": "Scope of negation marker 'don't' (candidate verbs: sign, execute, distribute, approve)."
+        },
+        {
+          "id": "UNC-002-OP-POLARITY",
+          "type": "OPERATION_POLARITY",
+          "desc": "Intended polarity of operations governed by 'don't'."
+        },
+        {
+          "id": "UNC-003-TEMP-DEP",
+          "type": "TEMPORAL_DEPENDENCY",
+          "desc": "Temporal constraint or gating trigger introduced by 'until'."
+        },
+        {
+          "id": "UNC-004-TEMP-DEP",
+          "type": "TEMPORAL_DEPENDENCY",
+          "desc": "Temporal constraint or gating trigger introduced by 'next Friday'."
+        },
+        {
+          "id": "UNC-005-CONTRAST-REL",
+          "type": "CONTRAST_RELATIONSHIP",
+          "desc": "Relational contrast or exception introduced by 'but'."
+        },
+        {
+          "id": "UNC-006-OP-TARGET",
+          "type": "OPERATION_TARGET",
+          "desc": "Coupling between operations (sign, execute, distribute, approve) and respective targets."
+        }
+      ],
+      "questions_method_a": [
+        "Does the negation marker \"don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"don't\" (requested, prohibited, or deferred)?",
+        "What is the temporal constraint or gating trigger introduced by \"until\"?",
+        "What is the temporal constraint or gating trigger introduced by \"next Friday\"?",
+        "How does the directive following \"but\" qualify or oppose the preceding clause?",
+        "Which specific target object is associated with each candidate operation (sign, execute, distribute, approve)?"
+      ],
+      "questions_method_b": [
+        "Does the instruction to not act apply only to executing and distributing the contract after signing, or does it also prohibit signing until board approval?",
+        "Does the instruction to not execute or distribute apply only after the board's approval, or does it also prohibit signing before that time?",
+        "What specific event must occur before the amended contract can be executed and distributed?",
+        "What specific date does \"next Friday\" refer to in this context?",
+        "What is the relationship between signing the contract and executing or distributing it before the board's approval?",
+        "Does signing the contract require execution or distribution before the board's approval on next Friday?"
+      ],
+      "questions_method_c": [
+        "Does the negation marker \"don't\" govern the adjacent operation?",
+        "What is the intended operational polarity for actions associated with \"don't\" (requested, prohibited, or deferred)?",
+        "What is the temporal constraint or gating trigger introduced by \"until\"?",
+        "What is the temporal constraint or gating trigger introduced by \"next Friday\"?",
+        "What is the relationship between signing the contract and executing or distributing it before the board's approval?",
+        "Does signing the contract require execution or distribution before the board's approval on next Friday?"
+      ],
+      "validation_method_b_flags": [
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL"
+        ],
+        [
+          "LOST_CRITICAL_SIGNAL",
+          "NOT_ADDRESSING_UNCERTAINTY"
+        ],
+        [
+          "NOT_ADDRESSING_UNCERTAINTY"
+        ],
+        [
+          "VALID"
+        ],
+        [
+          "VALID"
+        ]
+      ]
+    }
+  ],
+  "metrics": {
+    "signal_preservation_pct": 100.0,
+    "uncertainty_coverage_pct": 100.0,
+    "critical_uncertainty_omission_rate_pct": 0.0,
+    "method_a": {
+      "total_questions": 33,
+      "valid_pct": 93.93939393939394,
+      "presuppositions_count": 0,
+      "neutrality_pct": 100.0,
+      "atomicity_pct": 100.0
+    },
+    "method_b": {
+      "total_questions": 33,
+      "valid_pct": 30.303030303030305,
+      "presuppositions_count": 0,
+      "neutrality_pct": 100.0
+    },
+    "method_c": {
+      "total_questions": 33,
+      "valid_pct": 93.93939393939394,
+      "presuppositions_count": 0,
+      "neutrality_pct": 100.0,
+      "atomicity_pct": 100.0
+    }
+  }
+}

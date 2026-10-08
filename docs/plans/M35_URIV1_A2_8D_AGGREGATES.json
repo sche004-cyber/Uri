@@ -1,0 +1,1125 @@
+{
+  "schema": "m35.uriv1.a2_8d.aggregates.v1",
+  "pre_run_sha256": "0ea5447354481041181538244ef70b6dc58a72267dd95263d61dbdb55ab07380",
+  "post_run_sha256": "0ea5447354481041181538244ef70b6dc58a72267dd95263d61dbdb55ab07380",
+  "d2_availability": "AVAILABLE",
+  "d2_batch_elapsed_s": 15.4775214,
+  "cells": {
+    "D0xC1": {
+      "cell": "D0xC1",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 71,
+        "MISSED_RESOLVABLE_CASE": 9,
+        "CORRECT_ABSTENTION": 4
+      },
+      "k_scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 5,
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 2
+      },
+      "correct_resolution": 0,
+      "incorrect_confident_binding": 0,
+      "silent_detection_miss": 71,
+      "missed_resolvable_case": 9,
+      "correct_abstention_total": 4,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.0,
+      "detection_recall": 0.1548
+    },
+    "D0xC2": {
+      "cell": "D0xC2",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 71,
+        "MISSED_RESOLVABLE_CASE": 9,
+        "CORRECT_ABSTENTION": 3,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 1
+      },
+      "k_scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 5,
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 2
+      },
+      "correct_resolution": 0,
+      "incorrect_confident_binding": 0,
+      "silent_detection_miss": 71,
+      "missed_resolvable_case": 9,
+      "correct_abstention_total": 4,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.0,
+      "detection_recall": 0.1548
+    },
+    "D0xC3": {
+      "cell": "D0xC3",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 71,
+        "CORRECT_ABSTENTION": 13
+      },
+      "k_scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 5,
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 2
+      },
+      "correct_resolution": 0,
+      "incorrect_confident_binding": 0,
+      "silent_detection_miss": 71,
+      "missed_resolvable_case": 0,
+      "correct_abstention_total": 13,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.0,
+      "detection_recall": 0.1548
+    },
+    "D1xC1": {
+      "cell": "D1xC1",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 27,
+        "CORRECT_RESOLUTION": 12,
+        "MISSED_RESOLVABLE_CASE": 28,
+        "CORRECT_ABSTENTION": 13,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 3,
+        "INCORRECT_CONFIDENT_BINDING": 1
+      },
+      "k_scoring_class_counts": {
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 6,
+        "SILENT_DETECTION_MISS": 1
+      },
+      "correct_resolution": 12,
+      "incorrect_confident_binding": 1,
+      "silent_detection_miss": 27,
+      "missed_resolvable_case": 28,
+      "correct_abstention_total": 16,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.1429,
+      "detection_recall": 0.6786
+    },
+    "D1xC2": {
+      "cell": "D1xC2",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 27,
+        "CORRECT_RESOLUTION": 7,
+        "MISSED_RESOLVABLE_CASE": 27,
+        "INCORRECT_CONFIDENT_BINDING": 1,
+        "CORRECT_ABSTENTION": 15,
+        "CORRECT_ABSTENTION_FAMILY_MISMATCH": 7
+      },
+      "k_scoring_class_counts": {
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 6,
+        "SILENT_DETECTION_MISS": 1
+      },
+      "correct_resolution": 7,
+      "incorrect_confident_binding": 1,
+      "silent_detection_miss": 27,
+      "missed_resolvable_case": 27,
+      "correct_abstention_total": 22,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.0833,
+      "detection_recall": 0.6786
+    },
+    "D1xC3": {
+      "cell": "D1xC3",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 27,
+        "CORRECT_ABSTENTION": 57
+      },
+      "k_scoring_class_counts": {
+        "DETECTOR_FALSE_POSITIVE_SAFE_ABSTENTION": 6,
+        "SILENT_DETECTION_MISS": 1
+      },
+      "correct_resolution": 0,
+      "incorrect_confident_binding": 0,
+      "silent_detection_miss": 27,
+      "missed_resolvable_case": 0,
+      "correct_abstention_total": 57,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.0,
+      "detection_recall": 0.6786
+    },
+    "D2xC1": {
+      "cell": "D2xC1",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 81,
+        "MISSED_RESOLVABLE_CASE": 3
+      },
+      "k_scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 7
+      },
+      "correct_resolution": 0,
+      "incorrect_confident_binding": 0,
+      "silent_detection_miss": 81,
+      "missed_resolvable_case": 3,
+      "correct_abstention_total": 0,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.0,
+      "detection_recall": 0.0357
+    },
+    "D2xC2": {
+      "cell": "D2xC2",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 81,
+        "MISSED_RESOLVABLE_CASE": 3
+      },
+      "k_scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 7
+      },
+      "correct_resolution": 0,
+      "incorrect_confident_binding": 0,
+      "silent_detection_miss": 81,
+      "missed_resolvable_case": 3,
+      "correct_abstention_total": 0,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.0,
+      "detection_recall": 0.0357
+    },
+    "D2xC3": {
+      "cell": "D2xC3",
+      "gt_rows": 84,
+      "k_rows": 7,
+      "scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 81,
+        "CORRECT_ABSTENTION": 3
+      },
+      "k_scoring_class_counts": {
+        "SILENT_DETECTION_MISS": 7
+      },
+      "correct_resolution": 0,
+      "incorrect_confident_binding": 0,
+      "silent_detection_miss": 81,
+      "missed_resolvable_case": 0,
+      "correct_abstention_total": 3,
+      "invented_candidate": 0,
+      "resolution_coverage": 0.0,
+      "detection_recall": 0.0357
+    }
+  },
+  "precision": {
+    "D0": {
+      "detector": "D0",
+      "c_axis": "C1",
+      "total_spans_produced": 31,
+      "attributed_to_real_reference": 13,
+      "false_positive_or_unattributed": 18,
+      "precision": 0.4194
+    },
+    "D1": {
+      "detector": "D1",
+      "c_axis": "C1",
+      "total_spans_produced": 109,
+      "attributed_to_real_reference": 57,
+      "false_positive_or_unattributed": 52,
+      "precision": 0.5229
+    },
+    "D2": {
+      "detector": "D2",
+      "c_axis": "C1",
+      "total_spans_produced": 3,
+      "attributed_to_real_reference": 3,
+      "false_positive_or_unattributed": 0,
+      "precision": 1.0
+    }
+  },
+  "overlap": {
+    "C1": {
+      "c_axis": "C1",
+      "paired_count": 84,
+      "buckets": {
+        "neither_detects": 27,
+        "only_d1_correct": 12,
+        "only_d1_detects": 42,
+        "both_detect_rar_fails_or_abstains": 3
+      },
+      "detail": [
+        {
+          "case_id": "NB-A-01",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-A-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-A-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-A-04",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-A-05",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-B-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-B-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-B-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-B-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-B-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-B-05",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-C-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-C-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-C-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-C-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-C-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-C-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-C-07",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-04",
+          "ref_key": "r1",
+          "bucket": "both_detect_rar_fails_or_abstains"
+        },
+        {
+          "case_id": "NB-D-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-07",
+          "ref_key": "r1",
+          "bucket": "both_detect_rar_fails_or_abstains"
+        },
+        {
+          "case_id": "NB-E-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-E-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-E-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-E-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-E-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-E-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-F-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-F-02",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-F-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-F-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-F-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-F-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-G-01",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-G-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-G-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-G-04",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-G-04",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-G-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-G-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-H-01",
+          "ref_key": "r1",
+          "bucket": "both_detect_rar_fails_or_abstains"
+        },
+        {
+          "case_id": "NB-H-02",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-H-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-H-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-H-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-H-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-02",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-I-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-06",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-I-07",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-J-01",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-J-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-J-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-J-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-J-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-J-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-L-01",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-02",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-L-04",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-04",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-L-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-07",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-08",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-L-08",
+          "ref_key": "r2",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-L-08",
+          "ref_key": "r3",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-09",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-09",
+          "ref_key": "r2",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-10",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-10",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-11",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-11",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        }
+      ]
+    },
+    "C2": {
+      "c_axis": "C2",
+      "paired_count": 84,
+      "buckets": {
+        "neither_detects": 27,
+        "only_d1_correct": 7,
+        "only_d1_detects": 47,
+        "both_detect_rar_fails_or_abstains": 3
+      },
+      "detail": [
+        {
+          "case_id": "NB-A-01",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-A-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-A-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-A-04",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-A-05",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-B-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-B-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-B-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-B-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-B-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-B-05",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-C-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-C-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-C-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-C-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-C-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-C-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-C-07",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-04",
+          "ref_key": "r1",
+          "bucket": "both_detect_rar_fails_or_abstains"
+        },
+        {
+          "case_id": "NB-D-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-D-07",
+          "ref_key": "r1",
+          "bucket": "both_detect_rar_fails_or_abstains"
+        },
+        {
+          "case_id": "NB-E-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-E-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-E-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-E-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-E-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-E-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-F-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-F-02",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-F-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-F-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-F-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-F-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-G-01",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-G-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-G-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-G-04",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-G-04",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-G-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-G-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-H-01",
+          "ref_key": "r1",
+          "bucket": "both_detect_rar_fails_or_abstains"
+        },
+        {
+          "case_id": "NB-H-02",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-H-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-H-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-H-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-H-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-02",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-I-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-I-06",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-I-07",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-J-01",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-J-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-J-03",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-J-04",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-J-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-J-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-01",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-L-01",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-02",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-02",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-03",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-04",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-04",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-05",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-06",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-07",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-08",
+          "ref_key": "r1",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-L-08",
+          "ref_key": "r2",
+          "bucket": "only_d1_correct"
+        },
+        {
+          "case_id": "NB-L-08",
+          "ref_key": "r3",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-09",
+          "ref_key": "r1",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-09",
+          "ref_key": "r2",
+          "bucket": "only_d1_detects"
+        },
+        {
+          "case_id": "NB-L-10",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-10",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-11",
+          "ref_key": "r1",
+          "bucket": "neither_detects"
+        },
+        {
+          "case_id": "NB-L-11",
+          "ref_key": "r2",
+          "bucket": "neither_detects"
+        }
+      ]
+    }
+  },
+  "residual_rar_limitation_visibility": {
+    "D0": {
+      "NB-J-04:r1": "SILENT_DETECTION_MISS",
+      "NB-H-06:r1": "SILENT_DETECTION_MISS",
+      "NB-L-09:r2": "CORRECT_ABSTENTION",
+      "NB-D-01:r1": "SILENT_DETECTION_MISS",
+      "NB-D-02:r1": "MISSED_RESOLVABLE_CASE",
+      "NB-J-02:r1": "SILENT_DETECTION_MISS"
+    },
+    "D1": {
+      "NB-J-04:r1": "CORRECT_ABSTENTION",
+      "NB-H-06:r1": "INCORRECT_CONFIDENT_BINDING",
+      "NB-L-09:r2": "CORRECT_ABSTENTION",
+      "NB-D-01:r1": "MISSED_RESOLVABLE_CASE",
+      "NB-D-02:r1": "MISSED_RESOLVABLE_CASE",
+      "NB-J-02:r1": "CORRECT_ABSTENTION"
+    },
+    "D2": {
+      "NB-J-04:r1": "SILENT_DETECTION_MISS",
+      "NB-H-06:r1": "SILENT_DETECTION_MISS",
+      "NB-L-09:r2": "SILENT_DETECTION_MISS",
+      "NB-D-01:r1": "SILENT_DETECTION_MISS",
+      "NB-D-02:r1": "SILENT_DETECTION_MISS",
+      "NB-J-02:r1": "SILENT_DETECTION_MISS"
+    }
+  },
+  "boundary_violations_total": 0
+}

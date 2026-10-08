@@ -1,0 +1,803 @@
+<USER_REQUEST>
+M35 — URIv1 Parallel Architecture
+
+Batch A2.5 Stage 3 — Deterministic RAR + LFM2.5-350M Semantic Decoder Qualification
+
+Primary Question
+
+Determine whether URIv1's newly implemented deterministic Reference Anchor Resolution layer materially reduces the semantic burden enough for a sub-1B model to serve as the Step-1 Semantic Decoder.
+
+Candidate:
+
+"C:\Users\cheta\.lmstudio\models\LiquidAI\LFM2.5-350M-GGUF"
+
+This is not a generic LLM benchmark.
+
+The production question is:
+
+«Can LFM2.5-350M reliably decode the semantic residual after URI deterministically resolves everything it can prove?»
+
+---
+
+1. Worktree
+
+Work only inside:
+
+"C:\Users\cheta\Development\Uri\_V1"
+
+Branch:
+
+"m35-uri-v1-parallel-architecture"
+
+Baseline HEAD:
+
+"e8e3b65259c45fc823addc3ef8969425a265bd1b"
+
+Protected prototype:
+
+"C:\Users\cheta\Development\uri-agent"
+
+The prototype is read-only.
+
+No commit.
+No push.
+No merge.
+No PR.
+
+---
+
+2. Preserve Accepted Architecture
+
+Current Step-1 architecture under qualification:
+
+User Turn
+   ↓
+TurnFrame
+   ↓
+ActiveContext
+   ↓
+Deterministic RAR
+   ↓
+Resolved Anchors
++
+Unresolved / Ambiguous Semantic Residual
+   ↓
+Semantic Decoder
+   ↓
+Deterministic Validation
+   ↓
+DecodedRequest
+
+Principle:
+
+«Code observes structure and resolves mechanically provable relationships.
+AI interprets semantic relationships that genuinely require language understanding.»
+
+Do not move semantic reasoning into deterministic code merely to make the model pass.
+
+---
+
+3. Phase 0 — RAR Safety Gate
+
+Before using RAR output as model ground truth, challenge the deterministic engine with a NEW held-out adversarial set.
+
+Do not modify the existing 24 qualification fixtures.
+
+Create at least 20 new cases containing combinations of:
+
+- duplicate titles
+- candidate order shuffling
+- misleading lexical overlap
+- stale active pointer
+- two equally plausible "previous" candidates
+- missing timestamps
+- contradictory recency metadata
+- irrelevant distractor candidates
+- same title across different target types
+- multiple pronouns
+- multiple references of different types
+- negated candidate
+- "not that one"
+- "the other one"
+- revised/original/latest/earlier relationships
+- candidate with strong TF-IDF overlap but wrong semantic identity
+- insufficient metadata
+- zero candidates
+- one valid candidate among many distractors
+- ambiguous ownership
+
+Primary safety metric:
+
+WRONG BINDING RATE = 0
+
+Secondary metrics:
+
+safe deterministic resolution coverage
+safe UNKNOWN rate
+safe AMBIGUOUS rate
+mean latency
+P95 latency
+
+A safe abstention is preferable to a wrong deterministic binding.
+
+Do not optimize for maximum deterministic coverage.
+
+---
+
+4. RAR Authority Policy
+
+Audit and enforce the following distinction.
+
+Hard/High-Certainty Binding
+
+May directly provide a resolved anchor when unique and mechanically supported:
+
+- exact ID
+- exact alias
+- current attachment
+- active UI selection
+- unique exact title
+- unique schema/type-constrained candidate
+
+Conditional Binding
+
+May resolve only when metadata makes the result unique and non-conflicting:
+
+- active pointer
+- contrast elimination
+- temporal relation
+- revision relation
+
+Ranking Only
+
+TF-IDF / discriminating-term overlap should normally narrow or rank candidates.
+
+Do NOT silently bind solely because one candidate receives the highest lexical score unless an already-defined deterministic uniqueness rule independently justifies it.
+
+If confidence is insufficient:
+
+UNKNOWN
+or
+AMBIGUOUS
+
+then pass the bounded candidate set forward.
+
+---
+
+5. Phase 0 Stop Rule
+
+If the adversarial RAR suite produces ANY unexplained wrong deterministic binding:
+
+STOP before LFM qualification.
+
+Report:
+
+"DETERMINISTIC_RAR_REQUIRES_HARDENING"
+
+Do not hide the error behind model correction.
+
+If wrong binding = 0:
+
+continue.
+
+---
+
+6. Inspect LFM Candidate
+
+Inspect:
+
+"C:\Users\cheta\.lmstudio\models\LiquidAI\LFM2.5-350M-GGUF"
+
+Determine actual GGUF filename and metadata.
+
+Report:
+
+- exact filename
+- architecture
+- parameter count
+- quantization
+- file size
+- context length
+- chat template
+- instruct characteristics
+- structured-output capability exposed by runtime
+
+Do not assume filename from folder name.
+
+If no valid LFM2.5-350M GGUF exists:
+
+STOP.
+
+Do not download or substitute another model.
+
+---
+
+7. Core Experiment — RAR Benefit Ablation
+
+The central comparison is:
+
+Mode A — LFM without deterministic RAR
+
+User Turn
++
+TurnFrame where applicable
++
+ActiveContext where legitimately available
+↓
+LFM2.5-350M
+↓
+DecodedRequest
+
+Mode B — LFM with deterministic RAR
+
+User Turn
++
+TurnFrame
++
+ActiveContext
+↓
+Deterministic RAR
+↓
+Resolved Anchors + Residual Semantic Problem
+↓
+LFM2.5-350M
+↓
+DecodedRequest
+
+Use ONE LFM inference in both modes.
+
+Do not introduce Needle-style multi-call decomposition.
+
+---
+
+8. Critical Experimental Requirement
+
+Mode B must not simply hand the expected answer to the model.
+
+RAR may provide facts it has mechanically established, for example:
+
+resolved_anchors:
+  r1 -> artifact:x1
+  r2 -> entity:e1
+
+It may also provide:
+
+unresolved:
+  r3
+
+ambiguous_candidates:
+  r4 -> [x2, x3]
+
+The LFM must still determine:
+
+- user's goal
+- requested operations
+- prohibited operations
+- operation-target relationships
+- constraints
+- output preferences
+- ambiguity semantics
+- contextual dependency semantics
+
+RAR must not decide these semantic answers for it.
+
+---
+
+9. Use Architecture-Aligned Scoring
+
+Classify each fixture as:
+
+SELF_CONTAINED
+CURRENT_TURN_CONTEXT
+ACTIVE_CONTEXT_REQUIRED
+STEP2_CONTEXT_REQUIRED
+AMBIGUOUS
+
+Do not penalize the model for refusing to resolve unavailable information.
+
+Correct unresolved state is a PASS.
+
+Example:
+
+"What was approved yesterday?"
+
+without historical evidence:
+
+Correct:
+
+goal = determine what was approved
+temporal_reference = yesterday
+dependency = prior/external context required
+
+Not:
+
+an invented approval.
+
+---
+
+10. Test Corpus
+
+Use three tranches.
+
+Tranche A — Existing 18 semantic prompts
+
+Reuse the established A2-family corpus unchanged.
+
+Score architecture-aligned behaviour.
+
+Tranche B — Original 6 active-context fixtures
+
+Use exactly the original A2.3 fixtures unchanged.
+
+Tranche C — RAR Residual Stress Suite
+
+Create at least 15 new cases specifically designed so that:
+
+- RAR resolves part of the turn,
+- but genuine semantic interpretation remains.
+
+Examples should include:
+
+Example 1
+
+RAR:
+"it" -> x1
+
+User:
+"Don't send it. Just revise it and make it shorter."
+
+LFM must determine:
+
+requested = revise, shorten
+prohibited = send
+target = x1
+
+Example 2
+
+RAR:
+"the earlier order" -> x2
+"him" -> e1
+
+User:
+"Compare the earlier order with this one and send the summary to him."
+
+LFM must understand operation relationships.
+
+Example 3
+
+RAR:
+"that file" unresolved
+candidates = [x1, x2]
+
+User:
+
+"Use that file."
+
+Correct semantic behaviour:
+
+preserve ambiguity.
+
+Example 4
+
+RAR:
+"it" -> x1
+
+User:
+
+"Do not modify it; only prepare a summary."
+
+Tests negation independently of reference resolution.
+
+---
+
+11. Negation Remains a Hard Gate
+
+RAR does not rescue incorrect semantic polarity.
+
+Test extensively:
+
+- don't send, draft
+- don't delete, move
+- don't summarize, compare
+- don't modify, only review
+- not that file, the other one
+- send only after approval
+
+Score requested vs prohibited operations independently.
+
+Hard target:
+
+NEGATION / PROHIBITED OPERATION ACCURACY >= 90%
+
+No deterministic post-hoc correction.
+
+---
+
+12. Operation Binding
+
+Add cases where multiple operations apply to different objects.
+
+Example:
+
+Compare x1 with x2 and send the revised summary to e1.
+
+The decoder must preserve relationships, not merely emit:
+
+["compare", "send", "revise"]
+
+without bindings.
+
+Assess whether current "DecodedRequest" can truthfully represent the relationships.
+
+If the frozen contract cannot represent them sufficiently, STOP and report the contract limitation rather than inventing a hidden representation.
+
+---
+
+13. RAR Benefit Metrics
+
+For every relevant dimension calculate:
+
+WITHOUT RAR
+vs
+WITH RAR
+
+Report absolute percentage-point change for:
+
+- goal
+- requested operations
+- prohibited operations
+- references
+- active-context grounding
+- unresolved honesty
+- ambiguity preservation
+- operation binding
+- context invention
+- structural reliability
+
+Example:
+
+Reference accuracy:
+without RAR = 68%
+with RAR    = 97%
+gain        = +29 pp
+
+The purpose is to measure RAR's actual contribution.
+
+---
+
+14. Residual Workload Analysis
+
+For each test, classify what RAR removed from the model's workload:
+
+REFERENCE_SEARCH_REMOVED
+TEMPORAL_SELECTION_REMOVED
+VERSION_SELECTION_REMOVED
+ACTIVE_POINTER_BINDING_REMOVED
+CONTRAST_ELIMINATION_REMOVED
+CANDIDATE_SET_REDUCED
+NOTHING_REMOVED
+
+Then determine where LFM still fails.
+
+This is crucial.
+
+We want to know whether remaining failures arise from:
+
+goal understanding
+operation semantics
+negation
+binding
+constraints
+ambiguity
+structured output
+
+rather than reference search.
+
+---
+
+15. Structured Output
+
+Use native JSON Schema / constrained structured output if reliably supported by the runtime.
+
+Keep the prompt compact.
+
+Do not provide numerous demonstrations that can contaminate a tiny model.
+
+Prefer semantic field definitions and invariants.
+
+Do not request chain-of-thought.
+
+---
+
+16. No Semantic Repair
+
+URI deterministic code may:
+
+- validate
+- normalize representation
+- reject contradictions
+- attach mechanically proven RAR anchors
+- preserve ambiguity
+
+It may NOT:
+
+- change "send" from requested to prohibited
+- invent a missing operation
+- repair incorrect semantic target relationships
+- rewrite the model's semantic interpretation to expected answers
+
+Failures must remain visible.
+
+---
+
+17. Acceptance Gates
+
+For the RAR-assisted production path:
+
+Goal accuracy                    >= 90%
+Requested operations             >= 90%
+Negation/prohibited operations   >= 90%
+Reference correctness            >= 95%
+Unresolved honesty               >= 95%
+Active-context grounding         >= 95%
+Ambiguity preservation           >= 90%
+Context invention                ~0%
+Structural reliability           >= 99%
+Wrong deterministic RAR binding  = 0
+
+Do not average critical gates together.
+
+---
+
+18. Latency
+
+Measure full production-path latency:
+
+TurnFrame
++
+ActiveContext preparation
++
+Deterministic RAR
++
+LFM inference
++
+normalization
+=
+TOTAL STEP-1 LATENCY
+
+Record:
+
+- cold load
+- TTFT
+- warm min
+- warm median
+- warm mean
+- warm max
+- tokens/sec
+- prompt tokens
+- completion tokens
+- RAM
+- VRAM
+- RAR latency independently
+
+Desired:
+
+<250 ms   excellent
+<500 ms   strong
+<1000 ms  acceptable
+>1000 ms  investigate
+
+Semantic correctness remains primary.
+
+---
+
+19. Compare Against Controls
+
+Final table:
+
+Needle best prior result
+Qwen3.5-0.8B prior result
+Qwen3-14B control
+LFM2.5-350M without RAR
+LFM2.5-350M with RAR
+
+Compare:
+
+- footprint
+- semantic accuracy
+- negation
+- operations
+- references
+- ambiguity
+- invention
+- latency
+- calls/turn
+
+Do not compare old scores blindly where test methodology differs.
+
+Clearly mark:
+
+LEGACY TEST METHODOLOGY
+ARCHITECTURE-ALIGNED METHODOLOGY
+
+---
+
+20. Key Questions To Answer
+
+A. How much semantic workload does deterministic RAR actually remove?
+
+B. Does LFM2.5 improve materially when reference resolution is removed from its burden?
+
+C. Are its remaining failures primarily reference-related or true semantic-language failures?
+
+D. Can a 350M model reliably distinguish requested vs prohibited operations?
+
+E. Can it preserve ambiguity and unresolved dependencies honestly?
+
+F. Can it complete Step 1 in one inference?
+
+G. What is the real end-to-end latency?
+
+H. Is deterministic RAR + LFM2.5 superior to using a larger decoder without deterministic resolution?
+
+---
+
+21. Required Verdicts
+
+RAR
+
+Choose:
+
+DETERMINISTIC_RAR_VALIDATED_FOR_CURRENT_SCOPE
+
+DETERMINISTIC_RAR_PROMISING
+
+DETERMINISTIC_RAR_REQUIRES_HARDENING
+
+LFM without RAR
+
+Choose:
+
+PASS
+PARTIAL
+FAIL
+
+LFM with RAR
+
+Choose:
+
+ACCEPT LFM2.5-350M AS STEP-1 DECODER
+
+ACCEPT LFM2.5-350M WITH CONDITIONS
+
+REJECT LFM2.5-350M AS STEP-1 DECODER
+
+Architecture
+
+Choose:
+
+RAR_MATERIALLY_REDUCES_MODEL_REQUIREMENT
+
+RAR_IMPROVES_RESULTS_BUT_NOT_ENOUGH
+
+RAR_DOES_NOT_MATERIALLY_CHANGE_DECODER_REQUIREMENT
+
+---
+
+22. Tests
+
+Run all previous M35 tests.
+
+Current known baseline:
+
+"170 tests passing"
+
+Add tests for:
+
+- RAR adversarial safety
+- LFM transport/schema
+- without-RAR path
+- with-RAR path
+- residual workload preservation
+- no semantic repair
+- ambiguity
+- negation
+- operation binding
+
+Explain final test-count increase.
+
+---
+
+23. Report
+
+Create:
+
+"docs/plans/M35_URIV1_A2_5_STAGE3_RAR_LFM350M_REPORT.md"
+
+Also persist raw machine-readable results.
+
+The report must contain:
+
+1. RAR adversarial result
+2. wrong-binding count
+3. LFM model metadata
+4. runtime configuration
+5. without-RAR results
+6. with-RAR results
+7. percentage-point improvements
+8. residual semantic failures
+9. negation results
+10. operation-binding results
+11. ambiguity results
+12. hallucination/context-invention results
+13. latency
+14. memory
+15. control comparison
+16. final verdicts
+17. recommendation for next architectural action
+
+---
+
+24. Clarification / No-Guess Rule
+
+Inspect existing code, tests, accepted plans, contracts and prior qualification artifacts before implementing.
+
+Do not guess about:
+
+- contract semantics
+- accepted fixture expectations
+- RAR authority boundaries
+- previous model results
+- runtime configuration
+- test baselines
+
+If a genuine ambiguity remains that could materially affect architecture, semantic behaviour, safety boundaries, tests or acceptance criteria, state exactly what is unclear and why it matters before making an architectural assumption.
+
+Do not interrupt for ordinary implementation details that can be resolved from repository precedent.
+
+---
+
+25. Stop Rule
+
+After Stage 3:
+
+STOP.
+
+Do not download another model.
+
+Do not test another candidate.
+
+Do not begin Step 2.
+
+Do not commit or push.
+
+Return:
+
+1. RAR adversarial coverage
+2. wrong deterministic bindings
+3. exact LFM model
+4. model footprint
+5. without-RAR metrics
+6. with-RAR metrics
+7. RAR contribution by dimension
+8. best semantic mode
+9. negation accuracy
+10. operation accuracy
+11. reference accuracy
+12. ambiguity accuracy
+13. context-invention rate
+14. total Step-1 latency
+15. RAM/VRAM
+16. test result
+17. RAR verdict
+18. LFM verdict
+19. architecture verdict
+20. report path
+21. confirmation original URI untouched
+22. confirmation no commit/push
+
+STOP.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-22T09:56:42+05:30.
+</ADDITIONAL_METADATA>

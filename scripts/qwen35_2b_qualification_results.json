@@ -1,0 +1,1384 @@
+{
+  "timestamp": "2026-09-22 18:02:20",
+  "model": "qwen3.5-2b",
+  "endpoint": "http://127.0.0.1:1234/v1/completions",
+  "batteries": {
+    "context_envelope": {
+      "breakpoint_case": null,
+      "records": [
+        {
+          "case_id": "ENV-L0",
+          "approx_tokens": 15,
+          "relevant_tokens": 15,
+          "noise_tokens": 0,
+          "latency_ms": 339.09199999925477,
+          "rar_latency_ms": 0.00019999970390927047,
+          "calls_made": 2,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "ENV-L1",
+          "approx_tokens": 45,
+          "relevant_tokens": 45,
+          "noise_tokens": 0,
+          "latency_ms": 286.09139999934996,
+          "rar_latency_ms": 0.00030000046535860747,
+          "calls_made": 2,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "ENV-L2",
+          "approx_tokens": 85,
+          "relevant_tokens": 85,
+          "noise_tokens": 0,
+          "latency_ms": 620.5401999995956,
+          "rar_latency_ms": 0.4484999999476713,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "ENV-L3",
+          "approx_tokens": 140,
+          "relevant_tokens": 140,
+          "noise_tokens": 0,
+          "latency_ms": 573.8079000002472,
+          "rar_latency_ms": 0.12030000016238773,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "ENV-L4",
+          "approx_tokens": 240,
+          "relevant_tokens": 240,
+          "noise_tokens": 0,
+          "latency_ms": 567.0372000004136,
+          "rar_latency_ms": 0.1905999997688923,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "ENV-L5",
+          "approx_tokens": 420,
+          "relevant_tokens": 240,
+          "noise_tokens": 180,
+          "latency_ms": 578.0316999998831,
+          "rar_latency_ms": 0.267100000201026,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "ENV-L6",
+          "approx_tokens": 680,
+          "relevant_tokens": 240,
+          "noise_tokens": 440,
+          "latency_ms": 561.8040000008477,
+          "rar_latency_ms": 0.4166999997323728,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "ENV-L7",
+          "approx_tokens": 1150,
+          "relevant_tokens": 240,
+          "noise_tokens": 910,
+          "latency_ms": 560.9710999997333,
+          "rar_latency_ms": 0.7328000001507462,
+          "calls_made": 3,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ]
+    },
+    "noise_sensitivity": {
+      "records": [
+        {
+          "case_id": "NOISE-0",
+          "noise_tokens": 0,
+          "latency_ms": 786.7256999998062,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Formal response draft",
+            "actual_req_ops": [
+              "draft",
+              "formal_response"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "NOISE-300",
+          "noise_tokens": 300,
+          "latency_ms": 753.6536999996315,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Formal response draft",
+            "actual_req_ops": [
+              "draft",
+              "formal_response"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "NOISE-600",
+          "noise_tokens": 600,
+          "latency_ms": 755.7111000005534,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Formal response draft",
+            "actual_req_ops": [
+              "draft",
+              "formal_response"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "NOISE-1200",
+          "noise_tokens": 1200,
+          "latency_ms": 757.5123000005988,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Formal response draft",
+            "actual_req_ops": [
+              "draft",
+              "formal_response"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ]
+    },
+    "complexity_ladder": {
+      "breakpoint_case": "CMPLX-C7",
+      "records": [
+        {
+          "case_id": "CMPLX-C0",
+          "complexity_level": "CMPLX-C0",
+          "latency_ms": 391.0681999996086,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Open the calculator",
+            "actual_req_ops": [
+              "open"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C1",
+          "complexity_level": "CMPLX-C1",
+          "latency_ms": 293.2985000006738,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "draft",
+              "summarize"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C2",
+          "complexity_level": "CMPLX-C2",
+          "latency_ms": 384.67360000049666,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.6666666666666666,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Revise report numbers",
+            "actual_req_ops": [
+              "archive",
+              "compare"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C3",
+          "complexity_level": "CMPLX-C3",
+          "latency_ms": 269.260299999587,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Draft email",
+            "actual_req_ops": [
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C4",
+          "complexity_level": "CMPLX-C4",
+          "latency_ms": 315.0761999995666,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.5,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Compare orders and revise draft",
+            "actual_req_ops": [
+              "compare",
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C5",
+          "complexity_level": "CMPLX-C5",
+          "latency_ms": 803.9813999994294,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Wait for approval before sending",
+            "actual_req_ops": [
+              "send"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C6",
+          "complexity_level": "CMPLX-C6",
+          "latency_ms": 417.67999999956373,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Format document",
+            "actual_req_ops": [
+              "format",
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C7",
+          "complexity_level": "CMPLX-C7",
+          "latency_ms": 373.45619999996416,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Compare orders",
+            "actual_req_ops": [
+              "compare",
+              "copy"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C8",
+          "complexity_level": "CMPLX-C8",
+          "latency_ms": 951.9721999995454,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.3333333333333333,
+            "omitted_ops_count": 2,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Revise draft and archive notes",
+            "actual_req_ops": [
+              "compare",
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ]
+    },
+    "negation_ladder": {
+      "records": [
+        {
+          "case_id": "NEG-N1",
+          "latency_ms": 343.93700000055105,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Reject sending",
+            "actual_req_ops": [],
+            "actual_pro_ops": [
+              "send"
+            ]
+          }
+        },
+        {
+          "case_id": "NEG-N2",
+          "latency_ms": 285.9294999998383,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "NEG-N3",
+          "latency_ms": 750.1445999996577,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Revise draft",
+            "actual_req_ops": [],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "NEG-N4",
+          "latency_ms": 752.0207999996273,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Confirm sending action",
+            "actual_req_ops": [
+              "send"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "NEG-N5",
+          "latency_ms": 309.6903999994538,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": true,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Send revised version",
+            "actual_req_ops": [
+              "send"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "NEG-N6",
+          "latency_ms": 722.3573999999644,
+          "scores": {
+            "goal_ok": false,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Ignore summary generation",
+            "actual_req_ops": [],
+            "actual_pro_ops": []
+          }
+        }
+      ]
+    },
+    "operation_retention": {
+      "records": [
+        {
+          "case_id": "RET-OR1",
+          "expected_ops_count": 1,
+          "retention_rate": 1.0,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "RET-OR2",
+          "expected_ops_count": 2,
+          "retention_rate": 1.0,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "draft",
+              "shorten"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "RET-OR3",
+          "expected_ops_count": 3,
+          "retention_rate": 0.6666666666666666,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.6666666666666666,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "compare",
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "RET-OR4",
+          "expected_ops_count": 4,
+          "retention_rate": 1.0,
+          "scores": {
+            "goal_ok": false,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "compare",
+              "revise",
+              "send",
+              "shorten"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "RET-OR5",
+          "expected_ops_count": 5,
+          "retention_rate": 0.6,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.6,
+            "omitted_ops_count": 2,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "compare",
+              "draft",
+              "send"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ]
+    },
+    "feed_width": {
+      "records": [
+        {
+          "case_id": "WIDTH-O0",
+          "feed_count": 2,
+          "latency_ms": 278.16359999997076,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "WIDTH-O1",
+          "feed_count": 2,
+          "latency_ms": 227.5417999999263,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "WIDTH-O2",
+          "feed_count": 2,
+          "latency_ms": 225.28150000016467,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "WIDTH-O3",
+          "feed_count": 2,
+          "latency_ms": 227.8175999999803,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "WIDTH-O4",
+          "feed_count": 2,
+          "latency_ms": 229.22859999926004,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "WIDTH-O5",
+          "feed_count": 2,
+          "latency_ms": 228.98759999952745,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review draft order",
+            "actual_req_ops": [
+              "review"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ]
+    },
+    "mode_comparison": {
+      "mode_a": [
+        {
+          "case_id": "CMPLX-C0",
+          "latency_ms": 2354.9419999999373,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Launch the calculator application",
+            "actual_req_ops": [
+              "open_calculator"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C1",
+          "latency_ms": 2158.5274999997637,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.5,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Create a memo and provide a summary of its contents.",
+            "actual_req_ops": [
+              "draft_memo",
+              "summarize"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C2",
+          "latency_ms": 1912.8655000004073,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 3,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review and update a report with revised numerical data before archiving.",
+            "actual_req_ops": [
+              "review_report",
+              "update_numbers"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C3",
+          "latency_ms": 1664.9428000000626,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Create an email draft without sending it.",
+            "actual_req_ops": [
+              "draft_email"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C4",
+          "latency_ms": 2255.502400000296,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 2,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review and update a draft document while preserving all existing content.",
+            "actual_req_ops": [
+              "review_draft"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ],
+      "mode_b": [
+        {
+          "case_id": "CMPLX-C0",
+          "latency_ms": 1717.6605000004201,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Open the calculator",
+            "actual_req_ops": [
+              "open_calculator"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C1",
+          "latency_ms": 1800.085300000319,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.5,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Create a memo document and provide a summary of its contents.",
+            "actual_req_ops": [
+              "draft_memo",
+              "summarize"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C2",
+          "latency_ms": 2118.2717000001503,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 3,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review and update a report with revised numerical data before archiving.",
+            "actual_req_ops": [
+              "review_report",
+              "update_numbers"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C3",
+          "latency_ms": 1638.5540999999648,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Create an email draft without sending it",
+            "actual_req_ops": [
+              "draft_email"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C4",
+          "latency_ms": 1816.178399999444,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.0,
+            "omitted_ops_count": 2,
+            "reference_ok": true,
+            "hallucination": true,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Review and update a draft document while preserving all existing content.",
+            "actual_req_ops": [
+              "review_draft"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ],
+      "mode_c": [
+        {
+          "case_id": "CMPLX-C0",
+          "latency_ms": 465.05009999964386,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Open the calculator",
+            "actual_req_ops": [
+              "open"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C1",
+          "latency_ms": 403.9302000001044,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "draft",
+              "summarize"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C2",
+          "latency_ms": 497.3526000003403,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.6666666666666666,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Revise report numbers",
+            "actual_req_ops": [
+              "archive",
+              "compare"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C3",
+          "latency_ms": 373.7159000002066,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Draft email",
+            "actual_req_ops": [
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C4",
+          "latency_ms": 439.0699000005043,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.5,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Compare orders and revise draft",
+            "actual_req_ops": [
+              "compare",
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ],
+      "mode_d": [
+        {
+          "case_id": "CMPLX-C0",
+          "latency_ms": 269.02549999977055,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Open the calculator",
+            "actual_req_ops": [
+              "open"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C1",
+          "latency_ms": 256.58370000019204,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": true,
+            "actual_goal": "Draft email to warden",
+            "actual_req_ops": [
+              "draft",
+              "summarize"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C2",
+          "latency_ms": 295.1329999996233,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": true,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.6666666666666666,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Revise report numbers",
+            "actual_req_ops": [
+              "archive",
+              "compare"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C3",
+          "latency_ms": 210.84950000022218,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": true,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 1.0,
+            "omitted_ops_count": 0,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Draft email",
+            "actual_req_ops": [
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        },
+        {
+          "case_id": "CMPLX-C4",
+          "latency_ms": 241.92180000045482,
+          "scores": {
+            "goal_ok": true,
+            "req_ops_ok": false,
+            "pro_ops_ok": false,
+            "polarity_inverted": false,
+            "operation_retention_rate": 0.5,
+            "omitted_ops_count": 1,
+            "reference_ok": true,
+            "hallucination": false,
+            "structural_ok": true,
+            "critical_semantic_ok": false,
+            "actual_goal": "Compare orders and revise draft",
+            "actual_req_ops": [
+              "compare",
+              "draft"
+            ],
+            "actual_pro_ops": []
+          }
+        }
+      ]
+    }
+  },
+  "summary": {
+    "model_metadata": {
+      "model_name": "Qwen3.5-2B",
+      "source": "openresearchtools/Qwen3.5-2B-GGUF",
+      "gguf_filename": "Qwen3.5-2B-Q4_K_M.gguf",
+      "file_size_bytes": 1274396608,
+      "file_size_mb": 1215.36,
+      "architecture": "qwen35",
+      "parameters": "1.9B",
+      "quantization": "Q4_K_M"
+    },
+    "system_resources": {
+      "ram_used_mb": 11241.2,
+      "ram_total_mb": 24500.8,
+      "ram_load_pct": 45,
+      "gpu_device": "AMD Radeon RX 7900 GRE (16 GB VRAM)",
+      "model_vram_footprint_mb": 1274.0
+    },
+    "total_evaluated_cases": 38,
+    "goal_accuracy_pct": 94.73684210526315,
+    "requested_ops_accuracy_pct": 73.68421052631578,
+    "prohibited_ops_accuracy_pct": 34.21052631578947,
+    "negation_accuracy_pct": 33.33333333333333,
+    "operation_retention_pct": 85.33333333333333,
+    "reference_correctness_pct": 100.0,
+    "structural_reliability_pct": 100.0,
+    "critical_semantic_accuracy_pct": 23.684210526315788,
+    "hallucination_rate_pct": 10.526315789473683,
+    "rar_wrong_bindings": 0,
+    "latencies_ms": {
+      "mode_a_mean": 2069.3560400000933,
+      "mode_b_mean": 1818.1500000000597,
+      "mode_c_mean_sequential": 435.8237400001599,
+      "mode_d_mean_parallel": 254.70270000005257
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "task_id": "cb03a28caa65487c9f0c9f0494dcdb2c",
+  "provider": "claude_code",
+  "status": "QUOTA_INTERRUPTED",
+  "created_at": 1791030084.73193,
+  "receipt": {
+    "state": "PROVISIONAL",
+    "run_id": "9fe01bc849784d3c9f39378dd30f50b8",
+    "verified": false,
+    "verification_status": "FAILED",
+    "execution_ok": false,
+    "permission_denial_count": 0,
+    "api_key_source": "none",
+    "claimed_outcome": "failed",
+    "safety_flags": [],
+    "harness_duration_ms": 4538.8,
+    "core_duration_ms": 4903.7,
+    "exit_code": 1,
+    "timed_out": false,
+    "inactivity_killed": false,
+    "cancelled": false,
+    "error_family": "QUOTA",
+    "result": "Quota interrupted; work retained. Explicit recovery required.",
+    "expected_result_sha256": "4342ade50a33f3225dcc3e8f9d480988bcfcba3b740144cdc7b38cb1bd39e3ba",
+    "write_back": false
+  },
+  "result": "Quota interrupted; work retained. Explicit recovery required.",
+  "potentially_non_idempotent": true,
+  "recovery_choices": [
+    "choose",
+    "wait",
+    "local",
+    "stop"
+  ],
+  "verified_completed_work": false,
+  "progress": "Settled; inspect verification outcome",
+  "recommendation": "Retain work and wait; no alternative is qualified for this fixed repair",
+  "classification_repair": {
+    "source": "same native run events; no new submission",
+    "log_sha256": "211d6fe16717c4c59415e0690e23806640578f9887d302dbf210cc8cfb3cd27c",
+    "original_status": "FAILED"
+  }
+}

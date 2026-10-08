@@ -1,0 +1,83 @@
+{
+  "schema_version": "experimental.supplementary_battery.v1",
+  "authored": "2026-09-28",
+  "description": "Supplementary bounded worker challenge set for ultra-light model discrimination",
+  "cases": [
+    {
+      "id": "SUPP_01_MULTI_ENTITY",
+      "category": "multi_entity_extraction",
+      "prompt": "Assign ticket TKT-409 from customer ACME Corp to agent Sarah Jenkins with priority HIGH.",
+      "instruction": "Extract ticket, customer, agent, and priority.",
+      "schema": "{\"decision\": \"LOCAL\", \"ticket\": \"<id>\", \"customer\": \"<name>\", \"agent\": \"<name>\", \"priority\": \"<level>\"}",
+      "expected_values": {
+        "ticket": "TKT-409",
+        "customer": "ACME Corp",
+        "agent": "Sarah Jenkins",
+        "priority": "HIGH"
+      }
+    },
+    {
+      "id": "SUPP_02_DATE_CURRENCY_ID",
+      "category": "argument_normalization",
+      "prompt": "Record transaction TX-88219 settled on 2026-04-15 with net amount $1,420.50.",
+      "instruction": "Extract transaction id, date, and amount.",
+      "schema": "{\"decision\": \"LOCAL\", \"tx_id\": \"<id>\", \"date\": \"<YYYY-MM-DD>\", \"amount\": \"<currency_amount>\"}",
+      "expected_values": {
+        "tx_id": "TX-88219",
+        "date": "2026-04-15",
+        "amount": "$1,420.50"
+      }
+    },
+    {
+      "id": "SUPP_03_DUAL_NEGATION",
+      "category": "negation_preservation",
+      "prompt": "Summarize user telemetry from app_logs.json, but strictly do not include IP addresses and do not export user emails.",
+      "instruction": "Separate requested operation from prohibited operations.",
+      "schema": "{\"decision\": \"LOCAL\", \"requested_operations\": [\"<op>\"], \"prohibited_operations\": [\"<op1>\", \"<op2>\"]}",
+      "expected_requested": ["summarize"],
+      "expected_prohibited": ["include_ip_addresses", "export_user_emails"]
+    },
+    {
+      "id": "SUPP_04_MULTI_ARG",
+      "category": "argument_extraction",
+      "prompt": "Filter employees.csv where department='Engineering', status='Active', min_tenure_years=3, and location='Remote'.",
+      "instruction": "Extract file and all 4 filters.",
+      "schema": "{\"decision\": \"LOCAL\", \"file\": \"<filename>\", \"filters\": {\"department\": \"<dep>\", \"status\": \"<stat>\", \"min_tenure_years\": <int>, \"location\": \"<loc>\"}}",
+      "expected_file": "employees.csv",
+      "expected_filters": {
+        "department": "Engineering",
+        "status": "Active",
+        "min_tenure_years": 3,
+        "location": "Remote"
+      }
+    },
+    {
+      "id": "SUPP_05_DISTRACTOR_FILLING",
+      "category": "distractor_robustness",
+      "prompt": "Yesterday we met John at the coffee shop, who mentioned that our server cluster server_node_9 had failed with error code ERR_CONN_RESET at 14:02. Anyway, what a rainy day.",
+      "instruction": "Extract the failing server node and error code from the conversation.",
+      "schema": "{\"decision\": \"LOCAL\", \"server_node\": \"<node_name>\", \"error_code\": \"<code_name>\"}",
+      "expected_values": {
+        "server_node": "server_node_9",
+        "error_code": "ERR_CONN_RESET"
+      }
+    },
+    {
+      "id": "SUPP_06_COMPLEX_FILENAME",
+      "category": "filename_grounding",
+      "prompt": "Please parse and validate the file 'Quarterly Financials. Final Rev. 2.0.xlsx' for the executive board.",
+      "instruction": "Extract the exact target filename.",
+      "schema": "{\"decision\": \"LOCAL\", \"target\": \"<filename>\"}",
+      "expected_target": "Quarterly Financials. Final Rev. 2.0.xlsx"
+    },
+    {
+      "id": "SUPP_07_EXACT_REWRITE",
+      "category": "bounded_rewrite",
+      "prompt": "Generate a one-sentence compliance summary using: Auditor Dr. Patel, Case ID #774-B, Date 2026-09-01, Verdict Cleared.",
+      "instruction": "Write exactly one concise sentence containing: Dr. Patel, #774-B, 2026-09-01, Cleared.",
+      "schema": "{\"decision\": \"LOCAL\", \"sentence\": \"<one sentence summary>\"}",
+      "required_fields": ["Dr. Patel", "#774-B", "2026-09-01", "Cleared"],
+      "max_sentences": 1
+    }
+  ]
+}

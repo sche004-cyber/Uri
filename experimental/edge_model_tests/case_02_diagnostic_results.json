@@ -1,0 +1,425 @@
+{
+  "metadata": {
+    "task": "Calculate total revenue for Q3 from revenue.csv",
+    "expected_intent": "CALCULATE",
+    "expected_target": "revenue.csv",
+    "repeats": 3,
+    "terminology_note": "Qwen3.5-9B is a resident reference/capable model, not the Main Brain."
+  },
+  "workers": {
+    "lfm25_350m": {
+      "variant_1_current_order": {
+        "variant_name": "Variant 1 (Current Order: EXTRACT | CALCULATE)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": \"EXTRACT\"|\"CALCULATE\", \"target\": \"<filename>\"}",
+        "instruction_used": "Extract the exact intent and target filename.",
+        "consistent_intent": "EXTRACT",
+        "is_correct": false,
+        "mean_latency_ms": 344.1,
+        "p95_latency_ms": 413.7,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 413.71
+          },
+          {
+            "run": 2,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 302.28
+          },
+          {
+            "run": 3,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 316.24
+          }
+        ]
+      },
+      "variant_2_reversed_order": {
+        "variant_name": "Variant 2 (Reversed Order: CALCULATE | EXTRACT)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": \"CALCULATE\"|\"EXTRACT\", \"target\": \"<filename>\"}",
+        "instruction_used": "Extract the exact intent and target filename.",
+        "consistent_intent": "CALCULATE",
+        "is_correct": true,
+        "mean_latency_ms": 314.7,
+        "p95_latency_ms": 319.9,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "PASS",
+            "final_decision": "VERIFIED_LOCAL_SUCCESS",
+            "is_correct": true,
+            "failure_reason": null,
+            "latency_ms": 319.87
+          },
+          {
+            "run": 2,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "PASS",
+            "final_decision": "VERIFIED_LOCAL_SUCCESS",
+            "is_correct": true,
+            "failure_reason": null,
+            "latency_ms": 306.66
+          },
+          {
+            "run": 3,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "PASS",
+            "final_decision": "VERIFIED_LOCAL_SUCCESS",
+            "is_correct": true,
+            "failure_reason": null,
+            "latency_ms": 317.57
+          }
+        ]
+      },
+      "variant_3_definitions_current_order": {
+        "variant_name": "Variant 3 (Definitions + Current Order: EXTRACT | CALCULATE)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": \"EXTRACT\"|\"CALCULATE\", \"target\": \"<filename>\"}",
+        "instruction_used": "Identify the exact intent and target filename.\nDefinitions:\n- EXTRACT: read/select an existing value without deriving a new result\n- CALCULATE: derive a new numeric result from provided data",
+        "consistent_intent": "EXTRACT",
+        "is_correct": false,
+        "mean_latency_ms": 312.7,
+        "p95_latency_ms": 315.4,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 315.4
+          },
+          {
+            "run": 2,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 312.55
+          },
+          {
+            "run": 3,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 310.15
+          }
+        ]
+      },
+      "variant_4_definitions_reversed_order": {
+        "variant_name": "Variant 4 (Definitions + Reversed Order: CALCULATE | EXTRACT)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": \"CALCULATE\"|\"EXTRACT\", \"target\": \"<filename>\"}",
+        "instruction_used": "Identify the exact intent and target filename.\nDefinitions:\n- EXTRACT: read/select an existing value without deriving a new result\n- CALCULATE: derive a new numeric result from provided data",
+        "consistent_intent": "CALCULATE",
+        "is_correct": false,
+        "mean_latency_ms": 322.0,
+        "p95_latency_ms": 328.4,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "```json\n{\n  \"decision\": \"CALCULATE\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "FAIL",
+            "final_decision": "ESCALATE",
+            "is_correct": false,
+            "failure_reason": "refused_safe_local_task",
+            "latency_ms": 328.4
+          },
+          {
+            "run": 2,
+            "raw_output": "```json\n{\n  \"decision\": \"CALCULATE\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "FAIL",
+            "final_decision": "ESCALATE",
+            "is_correct": false,
+            "failure_reason": "refused_safe_local_task",
+            "latency_ms": 318.45
+          },
+          {
+            "run": 3,
+            "raw_output": "```json\n{\n  \"decision\": \"CALCULATE\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "FAIL",
+            "final_decision": "ESCALATE",
+            "is_correct": false,
+            "failure_reason": "refused_safe_local_task",
+            "latency_ms": 319.27
+          }
+        ]
+      },
+      "variant_5_neutral_list_definitions": {
+        "variant_name": "Variant 5 (Neutral List + Definitions: string schema)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": string, \"target\": \"<filename>\"}",
+        "instruction_used": "Identify the target filename and select the exact intent from options: ['CALCULATE', 'EXTRACT'].\nDefinitions:\n- EXTRACT: read/select an existing value without deriving a new result\n- CALCULATE: derive a new numeric result from provided data",
+        "consistent_intent": "EXTRACT",
+        "is_correct": false,
+        "mean_latency_ms": 313.0,
+        "p95_latency_ms": 321.7,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 321.73
+          },
+          {
+            "run": 2,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 312.71
+          },
+          {
+            "run": 3,
+            "raw_output": "```json\n{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}\n```",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 304.54
+          }
+        ]
+      }
+    },
+    "qwen35_08b": {
+      "variant_1_current_order": {
+        "variant_name": "Variant 1 (Current Order: EXTRACT | CALCULATE)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": \"EXTRACT\"|\"CALCULATE\", \"target\": \"<filename>\"}",
+        "instruction_used": "Extract the exact intent and target filename.",
+        "consistent_intent": "EXTRACT",
+        "is_correct": false,
+        "mean_latency_ms": 1302.1,
+        "p95_latency_ms": 3028.4,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 3028.36
+          },
+          {
+            "run": 2,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 433.1
+          },
+          {
+            "run": 3,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 444.82
+          }
+        ]
+      },
+      "variant_2_reversed_order": {
+        "variant_name": "Variant 2 (Reversed Order: CALCULATE | EXTRACT)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": \"CALCULATE\"|\"EXTRACT\", \"target\": \"<filename>\"}",
+        "instruction_used": "Extract the exact intent and target filename.",
+        "consistent_intent": "CALCULATE",
+        "is_correct": true,
+        "mean_latency_ms": 435.6,
+        "p95_latency_ms": 439.6,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "PASS",
+            "final_decision": "VERIFIED_LOCAL_SUCCESS",
+            "is_correct": true,
+            "failure_reason": null,
+            "latency_ms": 433.33
+          },
+          {
+            "run": 2,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "PASS",
+            "final_decision": "VERIFIED_LOCAL_SUCCESS",
+            "is_correct": true,
+            "failure_reason": null,
+            "latency_ms": 439.59
+          },
+          {
+            "run": 3,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"CALCULATE\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "CALCULATE",
+            "verifier_status": "PASS",
+            "final_decision": "VERIFIED_LOCAL_SUCCESS",
+            "is_correct": true,
+            "failure_reason": null,
+            "latency_ms": 433.94
+          }
+        ]
+      },
+      "variant_3_definitions_current_order": {
+        "variant_name": "Variant 3 (Definitions + Current Order: EXTRACT | CALCULATE)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": \"EXTRACT\"|\"CALCULATE\", \"target\": \"<filename>\"}",
+        "instruction_used": "Identify the exact intent and target filename.\nDefinitions:\n- EXTRACT: read/select an existing value without deriving a new result\n- CALCULATE: derive a new numeric result from provided data",
+        "consistent_intent": "EXTRACT",
+        "is_correct": false,
+        "mean_latency_ms": 395.4,
+        "p95_latency_ms": 404.6,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "{\"decision\": \"LOCAL\", \"intent\": \"EXTRACT\", \"target\": \"revenue.csv\"}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 399.23
+          },
+          {
+            "run": 2,
+            "raw_output": "{\"decision\": \"LOCAL\", \"intent\": \"EXTRACT\", \"target\": \"revenue.csv\"}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 404.6
+          },
+          {
+            "run": 3,
+            "raw_output": "{\"decision\": \"LOCAL\", \"intent\": \"EXTRACT\", \"target\": \"revenue.csv\"}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 382.26
+          }
+        ]
+      },
+      "variant_4_definitions_reversed_order": {
+        "variant_name": "Variant 4 (Definitions + Reversed Order: CALCULATE | EXTRACT)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": \"CALCULATE\"|\"EXTRACT\", \"target\": \"<filename>\"}",
+        "instruction_used": "Identify the exact intent and target filename.\nDefinitions:\n- EXTRACT: read/select an existing value without deriving a new result\n- CALCULATE: derive a new numeric result from provided data",
+        "consistent_intent": "EXTRACT",
+        "is_correct": false,
+        "mean_latency_ms": 441.9,
+        "p95_latency_ms": 455.4,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 437.97
+          },
+          {
+            "run": 2,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 455.38
+          },
+          {
+            "run": 3,
+            "raw_output": "{\n  \"decision\": \"LOCAL\",\n  \"intent\": \"EXTRACT\",\n  \"target\": \"revenue.csv\"\n}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "REJECT",
+            "is_correct": false,
+            "failure_reason": "wrong_intent: expected 'CALCULATE', got 'EXTRACT'",
+            "latency_ms": 432.42
+          }
+        ]
+      },
+      "variant_5_neutral_list_definitions": {
+        "variant_name": "Variant 5 (Neutral List + Definitions: string schema)",
+        "schema_used": "{\"decision\": \"LOCAL\", \"intent\": string, \"target\": \"<filename>\"}",
+        "instruction_used": "Identify the target filename and select the exact intent from options: ['CALCULATE', 'EXTRACT'].\nDefinitions:\n- EXTRACT: read/select an existing value without deriving a new result\n- CALCULATE: derive a new numeric result from provided data",
+        "consistent_intent": "EXTRACT",
+        "is_correct": false,
+        "mean_latency_ms": 392.3,
+        "p95_latency_ms": 407.3,
+        "runs": [
+          {
+            "run": 1,
+            "raw_output": "{\"decision\": \"CALCULATE\", \"intent\": \"EXTRACT\", \"target\": \"revenue.csv\"}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "ESCALATE",
+            "is_correct": false,
+            "failure_reason": "refused_safe_local_task",
+            "latency_ms": 407.28
+          },
+          {
+            "run": 2,
+            "raw_output": "{\"decision\": \"CALCULATE\", \"intent\": \"EXTRACT\", \"target\": \"revenue.csv\"}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "ESCALATE",
+            "is_correct": false,
+            "failure_reason": "refused_safe_local_task",
+            "latency_ms": 385.17
+          },
+          {
+            "run": 3,
+            "raw_output": "{\"decision\": \"CALCULATE\", \"intent\": \"EXTRACT\", \"target\": \"revenue.csv\"}",
+            "extracted_intent": "EXTRACT",
+            "verifier_status": "FAIL",
+            "final_decision": "ESCALATE",
+            "is_correct": false,
+            "failure_reason": "refused_safe_local_task",
+            "latency_ms": 384.46
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,5005 @@
+{
+  "timestamp": "2026-09-22 21:49:12",
+  "benchmark_cases_count": 12,
+  "models": {
+    "lfm2.5-350m": {
+      "model_name": "lfm2.5-350m",
+      "description": "350M Lower-bound probe",
+      "modes": {
+        "MODE_A_RAW": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 350.8966000008513,
+            "tokens": 413,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "analyze",
+                "review"
+              ],
+              "actual_pro_ops": [
+                "delete",
+                "send"
+              ],
+              "actual_goal": "Review the email",
+              "actual_conditions": [
+                "if the email is reviewed"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 390.81390000137617,
+            "tokens": 446,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": false,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "invert",
+                "send"
+              ],
+              "actual_goal": "use revised approval",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 298.22389999753796,
+            "tokens": 402,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "draft the reply",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 321.4272999975947,
+            "tokens": 398,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "review",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 284.31409999757307,
+            "tokens": 391,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Send it if the Dean approves",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 296.2681999997585,
+            "tokens": 394,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Don't send",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 417.1394999975746,
+            "tokens": 438,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "invent",
+                "send"
+              ],
+              "actual_goal": "hold the announcement",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 301.9939000005252,
+            "tokens": 401,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": false,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "use revised approval",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 307.42040000041015,
+            "tokens": 413,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "sign the affidavit and shred the draft notes",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 322.29390000065905,
+            "tokens": 395,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Don't do that yet",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 365.7591999981378,
+            "tokens": 431,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "invert",
+                "send"
+              ],
+              "actual_goal": "Deal with the Dean's email appropriately",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 377.40199999825563,
+            "tokens": 435,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "distribute",
+                "execute"
+              ],
+              "actual_goal": "sign the amended contract",
+              "actual_conditions": [
+                "if the board approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          }
+        ],
+        "MODE_B_RAR": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 312.0742999999493,
+            "tokens": 465,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "invert",
+                "send"
+              ],
+              "actual_goal": "Review the email",
+              "actual_conditions": [
+                "the email"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 367.95770000026096,
+            "tokens": 526,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft",
+                "use"
+              ],
+              "actual_pro_ops": [
+                "invent",
+                "send"
+              ],
+              "actual_goal": "Use the revised approval",
+              "actual_conditions": [
+                "if the candidate is approved"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 333.5928000014974,
+            "tokens": 511,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft",
+                "send"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Draft the reply",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 319.5709999999963,
+            "tokens": 503,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "review",
+                "send",
+                "upload"
+              ],
+              "actual_pro_ops": [
+                "send",
+                "upload"
+              ],
+              "actual_goal": "Review it",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 355.4550999979256,
+            "tokens": 489,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_pro_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_goal": "Send if the Dean approves",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 350.58870000284514,
+            "tokens": 504,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_pro_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_goal": "Don't send it unless the Dean approves",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 333.6140000028536,
+            "tokens": 491,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "announce",
+                "hold"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Hold the announcement",
+              "actual_conditions": [
+                "until next friday"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 349.6699000024819,
+            "tokens": 537,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "use"
+              ],
+              "actual_pro_ops": [
+                "not use"
+              ],
+              "actual_goal": "use",
+              "actual_conditions": [
+                "if the revised approval is approved"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 382.1146000009321,
+            "tokens": 532,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Sign the affidavit and shred the draft notes",
+              "actual_conditions": [
+                "if the candidate approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 380.97879999986617,
+            "tokens": 514,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "do"
+              ],
+              "actual_pro_ops": [
+                "don't"
+              ],
+              "actual_goal": "Don't do that yet",
+              "actual_conditions": [
+                "don't"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 361.9890000009036,
+            "tokens": 486,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "deal"
+              ],
+              "actual_pro_ops": [
+                "invent",
+                "send"
+              ],
+              "actual_goal": "Deal with the Dean's email appropriately",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 490.4733000003034,
+            "tokens": 637,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approve",
+                "distribute",
+                "execute",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "distribute it",
+                "send"
+              ],
+              "actual_goal": "sign the amended contract",
+              "actual_conditions": [
+                "if the board approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          }
+        ],
+        "MODE_C_RAR_ARN": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 299.4832000003953,
+            "tokens": 485,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "invert",
+                "send"
+              ],
+              "actual_goal": "Review the email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 371.2058999990404,
+            "tokens": 646,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft",
+                "use"
+              ],
+              "actual_pro_ops": [
+                "invent",
+                "send"
+              ],
+              "actual_goal": "Resolve semantic uncertainties",
+              "actual_conditions": [
+                "if the candidate is approved"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 377.6826000030269,
+            "tokens": 795,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft",
+                "send"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Draft a response",
+              "actual_conditions": [
+                "if the candidate operation is governed by 'don't'"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 427.10430000079214,
+            "tokens": 932,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "review",
+                "send",
+                "upload"
+              ],
+              "actual_pro_ops": [
+                "send",
+                "upload"
+              ],
+              "actual_goal": "Review it",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 378.350800001499,
+            "tokens": 661,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_pro_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_goal": "Send it if the Dean approves",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 402.76599999924656,
+            "tokens": 787,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_pro_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_goal": "Don't send it",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 397.50830000048154,
+            "tokens": 722,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "announce",
+                "hold"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Hold the announcement until next Friday",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 417.37339999963297,
+            "tokens": 757,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "use"
+              ],
+              "actual_pro_ops": [
+                "deadline",
+                "send"
+              ],
+              "actual_goal": "Use the revised approval",
+              "actual_conditions": [
+                "if the candidate operation is governed by 'not'"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 395.7878000001074,
+            "tokens": 648,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Sign the affidavit and shred the draft notes",
+              "actual_conditions": [
+                "if the candidate is qualified"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 493.67269999856944,
+            "tokens": 781,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "archive",
+                "delete",
+                "do",
+                "send"
+              ],
+              "actual_pro_ops": [
+                "archive",
+                "delete",
+                "send"
+              ],
+              "actual_goal": "Don't do that yet",
+              "actual_conditions": [
+                "if the dean approves",
+                "until next friday"
+              ],
+              "actual_temporal": [
+                "until"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 357.91040000185603,
+            "tokens": 597,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "appropriately",
+                "deal"
+              ],
+              "actual_pro_ops": [
+                "invent",
+                "send"
+              ],
+              "actual_goal": "Deal with the Dean's email appropriately",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 556.4236999998684,
+            "tokens": 1089,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approve",
+                "distribute",
+                "execute",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "distribute not",
+                "send"
+              ],
+              "actual_goal": "Sign the amended contract",
+              "actual_conditions": [
+                "if the board approves",
+                "until next friday"
+              ],
+              "actual_temporal": [
+                "until",
+                "next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          }
+        ],
+        "MODE_D_FULL_HARNESS": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 156.26609999890206,
+            "tokens": 379,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "do not delete",
+                "don't send"
+              ],
+              "actual_goal": "Review the email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 310.66479999935837,
+            "tokens": 647,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft",
+                "use"
+              ],
+              "actual_pro_ops": [
+                "do not send",
+                "not delete"
+              ],
+              "actual_goal": "Draft email to warden",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 112.90089999965858,
+            "tokens": 389,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Draft email to warden",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 130.02630000119098,
+            "tokens": 409,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "review",
+                "send",
+                "upload"
+              ],
+              "actual_pro_ops": [
+                "do not delete",
+                "don't send"
+              ],
+              "actual_goal": "Review it",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 116.46730000211392,
+            "tokens": 393,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "compare",
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_goal": "Send it if the Dean approves",
+              "actual_conditions": [
+                "the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 261.76349999877857,
+            "tokens": 734,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "compare",
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "approve",
+                "send"
+              ],
+              "actual_goal": "Draft email to warden",
+              "actual_conditions": [
+                "dean",
+                "approval",
+                "unless the dean approves"
+              ],
+              "actual_temporal": [
+                "only after approval"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 132.09350000033737,
+            "tokens": 394,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "announce",
+                "hold"
+              ],
+              "actual_pro_ops": [
+                "don't announce",
+                "don't hold"
+              ],
+              "actual_goal": "Hold the announcement",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 313.7079000007361,
+            "tokens": 645,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approval"
+              ],
+              "actual_pro_ops": [
+                "not",
+                "use"
+              ],
+              "actual_goal": "Revised approval",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 121.65829999867128,
+            "tokens": 401,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_goal": "Sign the affidavit",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 116.84099999911268,
+            "tokens": 386,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "compare",
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "do not",
+                "don't"
+              ],
+              "actual_goal": "Don't do that yet",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "yet"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 127.27069999891683,
+            "tokens": 400,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "classify",
+                "deal"
+              ],
+              "actual_pro_ops": [
+                "do not delete",
+                "don't send"
+              ],
+              "actual_goal": "Deal with the Dean's email appropriately",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 142.3399999985122,
+            "tokens": 427,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approve",
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "distribute",
+                "execute"
+              ],
+              "actual_goal": "sign the amended contract",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ]
+      },
+      "metrics": {
+        "MODE_A_RAW": {
+          "critical_semantic_accuracy_pct": 16.666666666666664,
+          "critical_passes": 2,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 50.0,
+          "prohibited_ops_accuracy_pct": 25.0,
+          "polarity_inversions_count": 0,
+          "hallucinations_count": 4,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 41.66666666666667,
+          "mean_latency_ms": 336.1627416658545,
+          "mean_tokens_per_turn": 413.0833333333333
+        },
+        "MODE_B_RAR": {
+          "critical_semantic_accuracy_pct": 0.0,
+          "critical_passes": 0,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 41.66666666666667,
+          "prohibited_ops_accuracy_pct": 16.666666666666664,
+          "polarity_inversions_count": 6,
+          "hallucinations_count": 4,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 66.66666666666666,
+          "mean_latency_ms": 361.50660000081797,
+          "mean_tokens_per_turn": 516.25
+        },
+        "MODE_C_RAR_ARN": {
+          "critical_semantic_accuracy_pct": 0.0,
+          "critical_passes": 0,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 33.33333333333333,
+          "prohibited_ops_accuracy_pct": 16.666666666666664,
+          "polarity_inversions_count": 6,
+          "hallucinations_count": 6,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 8.333333333333332,
+          "mean_latency_ms": 406.27242500037636,
+          "mean_tokens_per_turn": 741.6666666666666
+        },
+        "MODE_D_FULL_HARNESS": {
+          "critical_semantic_accuracy_pct": 8.333333333333332,
+          "critical_passes": 1,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 25.0,
+          "prohibited_ops_accuracy_pct": 16.666666666666664,
+          "polarity_inversions_count": 2,
+          "hallucinations_count": 7,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 100.0,
+          "mean_latency_ms": 170.16669166635742,
+          "mean_tokens_per_turn": 467.0
+        },
+        "gains": {
+          "rar_gain_pct": -16.666666666666664,
+          "arn_gain_pct": 0.0,
+          "full_harness_gain_pct": -8.333333333333332
+        }
+      }
+    },
+    "qwen3.5-2b": {
+      "model_name": "qwen3.5-2b",
+      "description": "2B Sub-threshold candidate",
+      "modes": {
+        "MODE_A_RAW": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 769.2724000007729,
+            "tokens": 382,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Extract semantic structure from user's request to review an email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 894.2287999998371,
+            "tokens": 404,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Extract semantic structure for user's request to use a revised approval document to create an order.",
+              "actual_conditions": [
+                "based on the revised approval document"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 896.2280000014289,
+            "tokens": 383,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Create a draft response without sending it",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 614.254100000835,
+            "tokens": 365,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Review the provided text without sending or uploading any content.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 1296.5026000019861,
+            "tokens": 390,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Request to send a document with conditional approval from the Dean",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 735.9232999988308,
+            "tokens": 368,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Request to withhold sending a document until Dean approval is obtained",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 767.0501000029617,
+            "tokens": 366,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [],
+              "actual_goal": "Schedule an announcement for release on a specific date",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 879.171699998551,
+            "tokens": 407,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Select a specific approval document based on user instruction to use the revised version instead of an older one.",
+              "actual_conditions": [
+                "user specifies to use revised approval"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 867.4566000008781,
+            "tokens": 406,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Execute two actions: sign an affidavit document and destroy physical copies of draft notes.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 646.8132999980298,
+            "tokens": 358,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "do"
+              ],
+              "actual_goal": "User is requesting to stop an action they previously initiated.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 765.7197999978962,
+            "tokens": 386,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "handle"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Handle the Dean's email according to protocol",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 854.5727000018815,
+            "tokens": 407,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Execute signing of an amended contract pending board approval",
+              "actual_conditions": [
+                "board must approve next friday"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ],
+        "MODE_B_RAR": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 700.5901999982598,
+            "tokens": 430,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Review the provided email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 818.4562999995251,
+            "tokens": 475,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Use the approved document and create a new order based on it.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 727.2143000009237,
+            "tokens": 462,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Draft a message but do not send it",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 894.2303999974683,
+            "tokens": 495,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "send",
+                "upload"
+              ],
+              "actual_goal": "Review the document and prevent sending or uploading it.",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 789.3117999992683,
+            "tokens": 445,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Send the document if the Dean approves",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 803.6103999984334,
+            "tokens": 458,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "User is requesting that a document not be sent without Dean approval.",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 762.6240999998117,
+            "tokens": 449,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "hold"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Hold the announcement until next Friday",
+              "actual_conditions": [
+                "until next friday"
+              ],
+              "actual_temporal": [
+                "next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 753.3798999975261,
+            "tokens": 487,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "use"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Select the revised approval document instead of the older version for use.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 781.0483999965072,
+            "tokens": 461,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "User wants to sign an affidavit and shred draft notes",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 796.2302999985695,
+            "tokens": 452,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "do"
+              ],
+              "actual_goal": "User is requesting to prevent an action from being performed.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 726.4820999989752,
+            "tokens": 444,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Process and respond to the Dean's unread email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 905.1691000022402,
+            "tokens": 540,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "User wants to sign an amended contract but with conditions",
+              "actual_conditions": [
+                "board must approve next friday before signing is finalized"
+              ],
+              "actual_temporal": [
+                "signing pending board approval until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ],
+        "MODE_C_RAR_ARN": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 676.1106999983895,
+            "tokens": 450,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Review the provided email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 960.0623000005726,
+            "tokens": 613,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "draft",
+                "use"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Extract order from revised approval using 'use' and 'draft' operations",
+              "actual_conditions": [
+                "the revised approval is available"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 766.984500001854,
+            "tokens": 718,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Draft a reply message without sending it",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 751.2629999982892,
+            "tokens": 819,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Review the user's message without sending or uploading anything.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 871.7553999995289,
+            "tokens": 601,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Resolve conditional action 'send' contingent on Dean approval by identifying target objects for both operations.",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 838.2863000006182,
+            "tokens": 718,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Resolve ambiguity between 'Don't send it' and conditional approval requirement",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 1078.0543000000762,
+            "tokens": 678,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [],
+              "actual_goal": "Resolve temporal constraint 'until next Friday' for announcement hold action",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 946.131200002128,
+            "tokens": 707,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "use"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Determine which approval document to use based on a revised version, clarifying whether 'not' negates an action.",
+              "actual_conditions": [
+                "if the user specifies 'the revised approval' or 'the earlier one'"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 981.2295000010636,
+            "tokens": 594,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Execute two actions on document objects: sign an affidavit and shred draft notes.",
+              "actual_conditions": [
+                "affidavit is signed",
+                "draft notes are shredded"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 1085.6684999998834,
+            "tokens": 688,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [],
+              "actual_goal": "Clarify whether the negation marker 'Don't' applies to a specific action verb, determine the intended polarity of operations governed by this marker, identify which entity the ambiguous reference 'that' binds to, and resolve all semantic uncertainties.",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 782.6849000011862,
+            "tokens": 540,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Process the Dean's unread email appropriately",
+              "actual_conditions": [
+                "if the dean's email is unread"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 1134.0902000010828,
+            "tokens": 993,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Sign an amended contract pending board approval",
+              "actual_conditions": [
+                "if the board approves next friday"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ],
+        "MODE_D_FULL_HARNESS": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 237.71730000225944,
+            "tokens": 368,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Review the email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 1524.8485000010987,
+            "tokens": 625,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "approve",
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Draft order",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 310.5662999987544,
+            "tokens": 382,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Draft email to warden",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 325.78300000022864,
+            "tokens": 396,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "send",
+                "upload"
+              ],
+              "actual_goal": "Review document",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 329.72159999917494,
+            "tokens": 382,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Send email",
+              "actual_conditions": [
+                "the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 850.2805999996781,
+            "tokens": 736,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [],
+              "actual_goal": "Confirm approval before sending",
+              "actual_conditions": [
+                "dean approval required",
+                "unless the dean approves"
+              ],
+              "actual_temporal": [
+                "only after dean approval"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 314.77819999781786,
+            "tokens": 379,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": true,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "announce",
+                "hold"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Hold announcement",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 677.8246999965631,
+            "tokens": 605,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "use"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Revoke previous approval",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 313.3931999982451,
+            "tokens": 383,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "sign affidavit",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 340.72439999727067,
+            "tokens": 373,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "do"
+              ],
+              "actual_goal": "Stop current action",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "yet"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 326.65649999762536,
+            "tokens": 379,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "deal"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Respond to Dean's email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 334.2932000014116,
+            "tokens": 411,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Approve signed contract",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ]
+      },
+      "metrics": {
+        "MODE_A_RAW": {
+          "critical_semantic_accuracy_pct": 33.33333333333333,
+          "critical_passes": 4,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 58.333333333333336,
+          "prohibited_ops_accuracy_pct": 66.66666666666666,
+          "polarity_inversions_count": 0,
+          "hallucinations_count": 1,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 91.66666666666666,
+          "mean_latency_ms": 832.2661166669908,
+          "mean_tokens_per_turn": 385.1666666666667
+        },
+        "MODE_B_RAR": {
+          "critical_semantic_accuracy_pct": 50.0,
+          "critical_passes": 6,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 83.33333333333334,
+          "prohibited_ops_accuracy_pct": 75.0,
+          "polarity_inversions_count": 0,
+          "hallucinations_count": 1,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 91.66666666666666,
+          "mean_latency_ms": 788.1956083322924,
+          "mean_tokens_per_turn": 466.5
+        },
+        "MODE_C_RAR_ARN": {
+          "critical_semantic_accuracy_pct": 41.66666666666667,
+          "critical_passes": 5,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 75.0,
+          "prohibited_ops_accuracy_pct": 50.0,
+          "polarity_inversions_count": 1,
+          "hallucinations_count": 1,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 100.0,
+          "mean_latency_ms": 906.0267333337227,
+          "mean_tokens_per_turn": 676.5833333333334
+        },
+        "MODE_D_FULL_HARNESS": {
+          "critical_semantic_accuracy_pct": 58.333333333333336,
+          "critical_passes": 7,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 83.33333333333334,
+          "prohibited_ops_accuracy_pct": 66.66666666666666,
+          "polarity_inversions_count": 1,
+          "hallucinations_count": 2,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 100.0,
+          "mean_latency_ms": 490.54895833251067,
+          "mean_tokens_per_turn": 451.5833333333333
+        },
+        "gains": {
+          "rar_gain_pct": 16.66666666666667,
+          "arn_gain_pct": -8.333333333333329,
+          "full_harness_gain_pct": 25.000000000000007
+        }
+      }
+    },
+    "qwen3.5-9b": {
+      "model_name": "qwen3.5-9b",
+      "description": "9B Qualified Resident Main-Brain provider",
+      "modes": {
+        "MODE_A_RAW": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 1621.1894000007305,
+            "tokens": 374,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Review an email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 2015.0481999990006,
+            "tokens": 405,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Draft an order based on a provided revised approval.",
+              "actual_conditions": [
+                "based on the revised approval"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 1824.9638999986928,
+            "tokens": 386,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Draft a reply without sending it",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 1562.8684000002977,
+            "tokens": 371,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "send",
+                "upload"
+              ],
+              "actual_goal": "Request to review content without sending or uploading",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 2157.1675000013784,
+            "tokens": 374,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Conditionally send a document based on approval status.",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 1526.2544999968668,
+            "tokens": 364,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Extract semantic structure of user message",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 1572.665199997573,
+            "tokens": 361,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [],
+              "actual_goal": "Defer an announcement to a specific future date.",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 1545.5990000009479,
+            "tokens": 373,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": false,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [],
+              "actual_goal": "Select and use a specific document version (revised approval) over another.",
+              "actual_conditions": [
+                "use the revised approval instead of the earlier one"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 2144.8216999997385,
+            "tokens": 422,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": false,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Execute two distinct actions on specific documents.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 1373.3395999988716,
+            "tokens": 352,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "execute"
+              ],
+              "actual_goal": "Pause current action",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 1283.8149999988673,
+            "tokens": 353,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [],
+              "actual_goal": "Handle the Dean's email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 1853.4839999992982,
+            "tokens": 405,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "distribute",
+                "execute"
+              ],
+              "actual_goal": "sign the amended contract",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "until the board approves next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ],
+        "MODE_B_RAR": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 1820.110200002091,
+            "tokens": 436,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Review the incoming email from the Dean",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 2044.7825000010198,
+            "tokens": 491,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Draft an order based on the revised approval.",
+              "actual_conditions": [
+                "based on the revised approval (approval_revised_2026)"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 1881.8780000001425,
+            "tokens": 474,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Draft a reply without sending it",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 1671.7759000021033,
+            "tokens": 456,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "send",
+                "upload"
+              ],
+              "actual_goal": "Review the document without sending or uploading it",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 1918.428799999674,
+            "tokens": 457,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Send the document if approval is granted.",
+              "actual_conditions": [
+                "if the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 2047.5819999992382,
+            "tokens": 476,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "User wants to prevent sending a document unless approval is obtained.",
+              "actual_conditions": [
+                "if the dean approves doc_report_2026"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 1975.9001000020362,
+            "tokens": 460,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "hold"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Delay the publication of an announcement",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 2001.328199999989,
+            "tokens": 493,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "use"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Select the revised approval document over the earlier version",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 2270.1789000020653,
+            "tokens": 488,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Sign the affidavit and shred the draft notes.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 1351.8772999996145,
+            "tokens": 426,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "do"
+              ],
+              "actual_goal": "User requests to pause or defer a pending action.",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "yet"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 1705.1197000000684,
+            "tokens": 440,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [],
+              "actual_pro_ops": [],
+              "actual_goal": "Handle the Dean's unread email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 2391.782200000307,
+            "tokens": 557,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "distribute",
+                "execute"
+              ],
+              "actual_goal": "Sign the amended contract with a condition to delay execution and distribution until board approval next Friday.",
+              "actual_conditions": [
+                "until the board approves"
+              ],
+              "actual_temporal": [
+                "next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ],
+        "MODE_C_RAR_ARN": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 1909.5345999994606,
+            "tokens": 466,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Review the incoming email from the Dean",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 2250.277399998595,
+            "tokens": 614,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Draft an order based on a revised approval document.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 1655.7382000028156,
+            "tokens": 703,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Draft a reply without sending it.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 1924.6825999980501,
+            "tokens": 813,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "send",
+                "upload"
+              ],
+              "actual_goal": "Review a document without sending or uploading it.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 2044.5641000005708,
+            "tokens": 607,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Send document_report_2026 if the Dean approves.",
+              "actual_conditions": [
+                "the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 2132.2452000022167,
+            "tokens": 720,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Do not send doc_report_2026 unless the Dean approves",
+              "actual_conditions": [
+                "the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 1998.567999999068,
+            "tokens": 649,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "hold"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Delay an announcement until next Friday.",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 2274.3671999996877,
+            "tokens": 704,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "use"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Use the revised approval document instead of the earlier one.",
+              "actual_conditions": [
+                "exclude approval_earlier_2026"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 2319.111500000872,
+            "tokens": 602,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "shred",
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Sign the affidavit and shred the draft notes.",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 2046.665199999552,
+            "tokens": 666,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "do"
+              ],
+              "actual_goal": "Clarify which specific action is being negated by 'Don't do that yet' and identify the target entity for 'that'.",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "yet"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 2037.5168999999005,
+            "tokens": 559,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": false,
+              "hallucination": true,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "respond"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Handle the Dean's email in a suitable manner.",
+              "actual_conditions": [
+                "response must be appropriate to the context of the dean's email"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 2383.0262000010407,
+            "tokens": 963,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Sign the amended contract while deferring execution and distribution until board approval next Friday.",
+              "actual_conditions": [
+                "board approves"
+              ],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ],
+        "MODE_D_FULL_HARNESS": [
+          {
+            "case_id": "A28B-01-SIMPLE",
+            "latency_ms": 707.1020000003045,
+            "tokens": 368,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Review email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-02-REFERENCE",
+            "latency_ms": 1772.4863000003097,
+            "tokens": 631,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Draft order based on revised approval",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-03-EXPLICIT-NEG",
+            "latency_ms": 728.1014000000141,
+            "tokens": 381,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "draft"
+              ],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Draft reply",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-04-MULTI-NEG",
+            "latency_ms": 790.2312999976857,
+            "tokens": 397,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "review"
+              ],
+              "actual_pro_ops": [
+                "send",
+                "upload"
+              ],
+              "actual_goal": "Review document",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-05-CONDITIONAL",
+            "latency_ms": 736.6284000017913,
+            "tokens": 377,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "send"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Send message upon approval",
+              "actual_conditions": [
+                "the dean approves"
+              ],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-06-UNLESS",
+            "latency_ms": 1935.1467999986198,
+            "tokens": 721,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": false,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "send"
+              ],
+              "actual_goal": "Wait for Dean approval before sending",
+              "actual_conditions": [
+                "unless the dean approves"
+              ],
+              "actual_temporal": [
+                "only after dean approves"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-07-TEMPORAL",
+            "latency_ms": 760.1283000003605,
+            "tokens": 375,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "hold"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Delay announcement",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "until next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-08-CONTRAST",
+            "latency_ms": 1765.3829000009864,
+            "tokens": 623,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "use"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Select revised approval",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-09-MULTI-OBJECT",
+            "latency_ms": 779.5752999991237,
+            "tokens": 386,
+            "critical_semantic_ok": false,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": false,
+              "pro_ops_ok": false,
+              "polarity_inverted": false,
+              "negation_handling": false,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": false,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "shred"
+              ],
+              "actual_goal": "Sign affidavit and shred draft notes",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-10-AMBIGUOUS-REF",
+            "latency_ms": 753.0158000008669,
+            "tokens": 373,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [],
+              "actual_pro_ops": [
+                "do"
+              ],
+              "actual_goal": "Pause current action",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "yet"
+              ],
+              "actual_unresolved": true
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-11-IMPLICIT-SEMANTICS",
+            "latency_ms": 780.3679999997257,
+            "tokens": 379,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": true,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "deal"
+              ],
+              "actual_pro_ops": [],
+              "actual_goal": "Respond to Dean's email",
+              "actual_conditions": [],
+              "actual_temporal": [],
+              "actual_unresolved": false
+            },
+            "error": null
+          },
+          {
+            "case_id": "A28B-12-COMBINED-ADVERSARIAL",
+            "latency_ms": 810.3181000005861,
+            "tokens": 412,
+            "critical_semantic_ok": true,
+            "scores": {
+              "goal_ok": true,
+              "req_ops_ok": true,
+              "pro_ops_ok": true,
+              "polarity_inverted": false,
+              "negation_handling": true,
+              "conditional_handling": false,
+              "temporal_handling": true,
+              "reference_correctness": true,
+              "target_binding_ok": true,
+              "contrast_preservation": true,
+              "unresolved_honesty": true,
+              "hallucination": false,
+              "critical_semantic_ok": true,
+              "actual_req_ops": [
+                "sign"
+              ],
+              "actual_pro_ops": [
+                "distribute",
+                "execute"
+              ],
+              "actual_goal": "Sign amended contract pending approval",
+              "actual_conditions": [],
+              "actual_temporal": [
+                "next friday"
+              ],
+              "actual_unresolved": false
+            },
+            "error": null
+          }
+        ]
+      },
+      "metrics": {
+        "MODE_A_RAW": {
+          "critical_semantic_accuracy_pct": 41.66666666666667,
+          "critical_passes": 5,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 66.66666666666666,
+          "prohibited_ops_accuracy_pct": 83.33333333333334,
+          "polarity_inversions_count": 0,
+          "hallucinations_count": 0,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 50.0,
+          "mean_latency_ms": 1706.7680333326887,
+          "mean_tokens_per_turn": 378.3333333333333
+        },
+        "MODE_B_RAR": {
+          "critical_semantic_accuracy_pct": 75.0,
+          "critical_passes": 9,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 83.33333333333334,
+          "prohibited_ops_accuracy_pct": 91.66666666666666,
+          "polarity_inversions_count": 0,
+          "hallucinations_count": 0,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 100.0,
+          "mean_latency_ms": 1923.3953166673625,
+          "mean_tokens_per_turn": 471.1666666666667
+        },
+        "MODE_C_RAR_ARN": {
+          "critical_semantic_accuracy_pct": 66.66666666666666,
+          "critical_passes": 8,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 83.33333333333334,
+          "prohibited_ops_accuracy_pct": 83.33333333333334,
+          "polarity_inversions_count": 0,
+          "hallucinations_count": 1,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 91.66666666666666,
+          "mean_latency_ms": 2081.3580916668193,
+          "mean_tokens_per_turn": 672.1666666666666
+        },
+        "MODE_D_FULL_HARNESS": {
+          "critical_semantic_accuracy_pct": 75.0,
+          "critical_passes": 9,
+          "total_cases": 12,
+          "requested_ops_accuracy_pct": 83.33333333333334,
+          "prohibited_ops_accuracy_pct": 83.33333333333334,
+          "polarity_inversions_count": 0,
+          "hallucinations_count": 0,
+          "target_binding_accuracy_pct": 100.0,
+          "unresolved_honesty_pct": 100.0,
+          "mean_latency_ms": 1026.5403833333646,
+          "mean_tokens_per_turn": 451.9166666666667
+        },
+        "gains": {
+          "rar_gain_pct": 33.33333333333333,
+          "arn_gain_pct": -8.333333333333343,
+          "full_harness_gain_pct": 33.33333333333333
+        }
+      }
+    }
+  },
+  "summary_matrix": {
+    "lfm2.5-350m": {
+      "Mode_A_Raw": "16.7%",
+      "Mode_B_RAR": "0.0%",
+      "Mode_C_RAR_ARN": "0.0%",
+      "Mode_D_Full_Harness": "8.3%",
+      "RAR_Gain": "-16.7%",
+      "ARN_Gain": "+0.0%",
+      "Full_Harness_Gain": "-8.3%"
+    },
+    "qwen3.5-2b": {
+      "Mode_A_Raw": "33.3%",
+      "Mode_B_RAR": "50.0%",
+      "Mode_C_RAR_ARN": "41.7%",
+      "Mode_D_Full_Harness": "58.3%",
+      "RAR_Gain": "+16.7%",
+      "ARN_Gain": "-8.3%",
+      "Full_Harness_Gain": "+25.0%"
+    },
+    "qwen3.5-9b": {
+      "Mode_A_Raw": "41.7%",
+      "Mode_B_RAR": "75.0%",
+      "Mode_C_RAR_ARN": "66.7%",
+      "Mode_D_Full_Harness": "75.0%",
+      "RAR_Gain": "+33.3%",
+      "ARN_Gain": "-8.3%",
+      "Full_Harness_Gain": "+33.3%"
+    }
+  }
+}

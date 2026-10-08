@@ -1,0 +1,35 @@
+Independently audit the completed URI Dynamic Planning Slice 1 implementation.
+
+Find and review:
+- the latest Dynamic Planning Stage 2 canonical plan;
+- the Codex dynamic-planning canonical review in docs/research/;
+- the newly implemented Slice 1 code, tests, fixtures, qualification results and repo status.
+
+Audit against the Stage 2 plan and current governance.
+
+Focus on:
+- no hard-coded/domain-specific planning;
+- typed capability contracts and real producer→consumer DAG bindings;
+- repeated action instances and multiple sources;
+- scoped runtime handles with no fuzzy/latest/first-match fallback;
+- failed/error execution never becoming VERIFIED;
+- independent recomputation actually independent from the runner;
+- safety counters derived from observed events;
+- no uri_v1→uri_core import;
+- no frozen/M36-M38/production wiring changes.
+
+Run required qualification and relevant regressions.
+
+If defects are found, make only bounded repairs consistent with the approved Slice 1 plan, rerun qualification, and document every repair.
+
+If a repair requires changing Stage 2 architecture, frozen boundaries, or existing production interfaces outside authorized scope, stop and report the required decision instead of widening scope.
+
+Then:
+1. give the independent verdict;
+2. list findings and repairs;
+3. report qualification/safety/regression results;
+4. confirm exact files changed;
+5. confirm repository/governance status;
+6. if accepted, commit and push the audited Slice 1 implementation and audit evidence.
+
+Do not implement Slice 2 or production integration.

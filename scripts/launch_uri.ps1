@@ -40,12 +40,23 @@
 #>
 
 param(
-    [int]$Port = 8000
+    [int]$Port = 8000,
+    [switch]$HarnessManagement,
+    [switch]$Voice,
+    [string]$VoiceSpeaker = ''
 )
 
 $ErrorActionPreference = "Stop"
 
 $RepoRoot = Split-Path -Parent $PSScriptRoot
+if ($Voice) {
+    $env:URI_VOICE_SCRIPT = Join-Path $PSScriptRoot 'uri_voice_listener.ps1'
+    if ($VoiceSpeaker) { $env:URI_VOICE_SPEAKER = $VoiceSpeaker }
+}
+if ($HarnessManagement) {
+    & (Join-Path $PSScriptRoot 'launch_uri_harness.ps1')
+    exit $LASTEXITCODE
+}
 $CtlScript = Join-Path $PSScriptRoot "uri_server_ctl.ps1"
 $ExePath = Join-Path $RepoRoot "uri_ui\build\windows\x64\runner\Release\uri_ui.exe"
 $HealthUrl = "http://127.0.0.1:$Port/health"

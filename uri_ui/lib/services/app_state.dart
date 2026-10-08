@@ -49,6 +49,13 @@ enum BackendConnectionStatus { unknown, reachable, unreachable }
 /// about their preferences (persisted locally on-device via
 /// [PreferencesStore] — not a backend, nothing sensitive).
 class AppState extends ChangeNotifier {
+  int voiceConversationRequest = 0;
+
+  /// Navigation only; voice cannot authenticate or approve an action.
+  void requestVoiceConversation() {
+    voiceConversationRequest++;
+    notifyListeners();
+  }
   AppState(
     this._client, {
     PreferencesStore? preferencesStore,

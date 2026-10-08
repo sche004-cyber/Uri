@@ -1,5 +1,17 @@
 # URI Milestone Tracker
 
+**2026-10-04 — Non-milestone direct camera/voice/Gemma work:** Partial uncommitted input adapter and hardware evidence recorded in [implementation handoff](docs/plans/CAMERA_VOICE_GEMMA_IMPLEMENTATION_REPORT.md). Camera/storage stop conditions remain active; Gemma live qualification and final User acceptance pending. No numbered milestone state, independent verification or release checkpoint changed.
+
+**2026-10-04 — Intent clarification formal plan, DRAFT_FOR_USER_APPROVAL:** Codex plans under the User's temporary planning assignment. [Plan](docs/plans/INTENT_CLARIFICATION_INTEGRATION_PLAN.md), [self-review](docs/plans/INTENT_CLARIFICATION_INTEGRATION_SELF_REVIEW.md), [source pins](docs/plans/INTENT_CLARIFICATION_PLAN_SOURCE_MANIFEST.json). No implementation/test/model execution; self-review is not independent verification.
+
+**2026-10-04 — Next-milestone direction accepted, planning only:** Intent clarification proceeds as **MINIMAL EXTENSION** of existing controller, binding, retrieval, context and preparation boundaries, followed by combined behavior qualification. Standalone Revision 3 proposal closed; evidence preserved. [Scope](docs/plans/INTENT_CLARIFICATION_MINIMAL_EXTENSION_SCOPE.md). Formal Claude planning/pre-audit pending; no implementation, model qualification, production promotion or completion claimed.
+
+**2026-10-03 — Harness desktop completion (provisional, acceptance blocked):** Direct User assignment authorizes Codex implementation of desktop management/selection and adapter completion. Existing `_V1` seam now has live discovery, explicit harness choice, persisted execution/checkpoints, cancellation and recovery. Fresh Claude repair is quota-blocked; Antigravity execution remains disabled pending containment. No production promotion, independent verification, commit, push or freeze. See [completion report](docs/plans/HARNESS_DESKTOP_COMPLETION_REPORT.md).
+
+
+**2026-10-02 — Desktop Claude Code qualification (provisional):** Direct User instruction assigns the isolated test integration and authentication/layout repairs to Codex. Work is in `_V1` at `62d564c`; the installed Core is a different checkout, `uri-m37-m39-integration`. No frozen M38/Core edits, production promotion, commit or push. Self-tests: 105 Python / 7 Flutter pass; fixed-task real native desktop path passed (11.367 s response, 11.369 s displayed); independent Claude review and production canonical-loop acceptance pending. See [review package](docs/plans/DESKTOP_HARNESS_CLAUDE_REVIEW_PACKAGE.md) and the stage artifacts it links.
+
+
 **Batch handoff — 2026-09-28: M38 Harness Execution Minimum implemented, PROVISIONAL / NOT FROZEN; batch stopped before the Office demonstrator.**
 State: `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN`. Built on unaudited M36 (`405db1f`) and M37 (`5460d64`), dependencies recorded. [Plan](docs/plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](docs/plans/M38_IMPLEMENTATION_REPORT.md), [Codex audit package](docs/plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md). Next: one independent Codex audit of the M36 -> M37 -> M38 chain. No freeze, no production integration.
 

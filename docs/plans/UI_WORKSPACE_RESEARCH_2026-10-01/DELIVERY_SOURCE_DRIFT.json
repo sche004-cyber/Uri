@@ -1,0 +1,37 @@
+{
+  "captured_at": "2026-10-01T22:35:39.6161424+05:30",
+  "head": "3c8087bc00da31b5e265f38f690db5b1f9275703",
+  "status": [
+    " M config/desktop_model_roles.json",
+    " M launch_desktop.ps1",
+    " M run_desktop_server.py",
+    " M stop_desktop.ps1",
+    " M tests_desktop_recovery.py",
+    " M uri_desktop_adapter.py",
+    " M uri_workspace/model_roles.json",
+    "?? docs/plans/DESKTOP_RECOVERY_REAUDIT_VERDICT.md"
+  ],
+  "changed_snapshot_files": [
+    {
+      "path": "uri_desktop_adapter.py",
+      "baseline_sha256": "8B81CE315C97D112F2D94F32643E237BBD5128AED9E6F6A5FC31873E8A72E3FE",
+      "delivery_sha256": "AF964FF47AB4C7E3270EB210E32F06C578C021425962927FBC8DFD50F1F26B0D"
+    },
+    {
+      "path": "run_desktop_server.py",
+      "baseline_sha256": "F988CFC6E3E05889854F6D9A804FEF0C3B329C75A1D1AED3459C4353DED25BCA",
+      "delivery_sha256": "9A2C4CC4615E8A7E9CD9973374055578031A8D41A2CA1D14DFC72790721B4D46"
+    },
+    {
+      "path": "launch_desktop.ps1",
+      "baseline_sha256": "00368CF96266F6BBC3BFAC7C5CD3F0A271045BEA7FC836E506E7CADE7138DEF7",
+      "delivery_sha256": "F85FC59A7C88307CC2B085A05854612143A4A77A9D2C83B1D8BB71F8BB899F65"
+    },
+    {
+      "path": "stop_desktop.ps1",
+      "baseline_sha256": "617DBA6D1C2779795E3FD02386AD99401DFCB38219B378B30F6EB24D6A4BE5DA",
+      "delivery_sha256": "D2CB0086526793E4BEF85ED51EACC1BD43DB7035BBD12BEF8624B4DF4C8D6512"
+    }
+  ],
+  "interpretation": "Concurrent recovery edits observed; no implementation/re-audit acceptance claimed. Original baseline evidence preserved."
+}

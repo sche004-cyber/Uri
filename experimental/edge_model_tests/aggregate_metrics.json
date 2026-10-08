@@ -1,0 +1,111 @@
+{
+  "timestamp": "2026-09-28T14:20:33Z",
+  "commit": "62d564cf9d2fa25e5a9860d20dcc7070b112badb",
+  "arms": {
+    "deterministic": {
+      "arm": "Deterministic_Baseline",
+      "total_cases": 30,
+      "correct_cases": 29,
+      "accuracy": 0.9667,
+      "candidate_claimed_successes": 16,
+      "verified_local_successes": 15,
+      "verified_local_completion_rate": 0.5,
+      "false_candidate_successes": 1,
+      "false_verified_successes": 0,
+      "correct_escalations": 14,
+      "unnecessary_escalations": 0,
+      "escalation_rate": 0.4667,
+      "false_success_rate": 0.0333,
+      "malformed_outputs": 0,
+      "latency_ms": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "min": 0.0,
+        "max": 0.1,
+        "mean_inference": 0.0,
+        "mean_verification": 0.01
+      },
+      "tokens": {
+        "mean_prompt_tokens": 0,
+        "mean_eval_tokens": 0,
+        "total_eval_tokens": 0
+      }
+    },
+    "qwen35_08b": {
+      "arm": "Qwen3.5_0.8B_Edge",
+      "total_cases": 30,
+      "correct_cases": 3,
+      "accuracy": 0.1,
+      "candidate_claimed_successes": 29,
+      "verified_local_successes": 2,
+      "verified_local_completion_rate": 0.0667,
+      "false_candidate_successes": 27,
+      "false_verified_successes": 0,
+      "correct_escalations": 14,
+      "unnecessary_escalations": 0,
+      "escalation_rate": 0.4667,
+      "false_success_rate": 0.9,
+      "malformed_outputs": 0,
+      "latency_ms": {
+        "mean": 549.8,
+        "median": 532.9,
+        "p95": 719.2,
+        "min": 413.6,
+        "max": 785.6,
+        "mean_inference": 549.7,
+        "mean_verification": 0.02
+      },
+      "tokens": {
+        "mean_prompt_tokens": 200.6,
+        "mean_eval_tokens": 48.6,
+        "total_eval_tokens": 1459
+      }
+    },
+    "qwen35_9b": {
+      "arm": "Qwen3.5_9B_Resident",
+      "total_cases": 30,
+      "correct_cases": 24,
+      "accuracy": 0.8,
+      "candidate_claimed_successes": 18,
+      "verified_local_successes": 12,
+      "verified_local_completion_rate": 0.4,
+      "false_candidate_successes": 6,
+      "false_verified_successes": 0,
+      "correct_escalations": 14,
+      "unnecessary_escalations": 0,
+      "escalation_rate": 0.4667,
+      "false_success_rate": 0.2,
+      "malformed_outputs": 0,
+      "latency_ms": {
+        "mean": 1039.4,
+        "median": 1075.4,
+        "p95": 1305.2,
+        "min": 718.6,
+        "max": 1514.9,
+        "mean_inference": 1039.4,
+        "mean_verification": 0.02
+      },
+      "tokens": {
+        "mean_prompt_tokens": 200.6,
+        "mean_eval_tokens": 47.0,
+        "total_eval_tokens": 1409
+      }
+    }
+  },
+  "environment": {
+    "os": "Windows 11",
+    "python": "3.13.15 (tags/v3.13.15:4061bc4, Aug  5 2026, 13:05:39) [MSC v.1944 64 bit (AMD64)]",
+    "gpu": "AMD Radeon RX 7900 GRE (16GB VRAM, ROCm gfx1100)",
+    "ram_before": {
+      "used_ram_mb": 22874.3,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 93
+    },
+    "ram_after": {
+      "used_ram_mb": 23679.5,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 96
+    }
+  }
+}

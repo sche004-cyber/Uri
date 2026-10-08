@@ -1,0 +1,74 @@
+{
+  "timestamp": "2026-09-28T14:43:44Z",
+  "architecture": "Needle 3 + Qwen3.5-0.8B Edge Combination",
+  "cluster_components": {
+    "model_job_matching_gate": "URI Deterministic Dispatcher",
+    "narrow_decision_specialist": "Needle 3 (cactus-needle 3.0.2, CPU native)",
+    "bounded_semantic_worker": "Qwen3.5-0.8B Q8_0 (Ollama, GPU)",
+    "deterministic_baseline": "URI Deterministic Baseline Engine",
+    "independent_verifier": "URI EdgeTaskVerifier (Authoritative)"
+  },
+  "model_job_matching_metrics": {
+    "total_cases": 30,
+    "role_selection_accuracy": 1.0,
+    "correct_role_selections": 30,
+    "wrong_model_routing_count": 0,
+    "unnecessary_model_invocation_count": 0,
+    "deterministic_bypass_mistakes": 0,
+    "unnecessary_main_brain_escalations": 0,
+    "unsafe_edge_admissions": 0
+  },
+  "needle_metrics": {
+    "cando_count": 14,
+    "escalate_count": 5,
+    "mean_latency_ms": 47.7,
+    "median_latency_ms": 0.7,
+    "p95_latency_ms": 284.7
+  },
+  "worker_metrics": {
+    "worker_model": "qwen3.5:0.8b",
+    "total_assigned": 9,
+    "total_invoked": 8,
+    "gated_by_needle": 1,
+    "correct_outputs": 7,
+    "incorrect_outputs": 1,
+    "claimed_success": 8,
+    "false_claimed_success": 1,
+    "schema_failures": 0,
+    "mean_latency_ms": 511.6,
+    "median_latency_ms": 519.6,
+    "p95_latency_ms": 582.8,
+    "mean_eval_tokens": 39.9,
+    "mean_prompt_tokens": 104.1
+  },
+  "combination_overall_metrics": {
+    "total_cases": 30,
+    "correct_cases": 28,
+    "accuracy": 0.9333,
+    "verified_local_successes": 14,
+    "verified_local_completion_rate": 0.4667,
+    "effective_escalations": 15,
+    "escalation_rate": 0.5,
+    "false_candidate_successes": 1,
+    "false_verified_successes": 0,
+    "latency_ms": {
+      "mean_total": 172.9,
+      "median_total": 0.2,
+      "p95_total": 785.6,
+      "mean_gate": 0.01,
+      "mean_needle": 47.7,
+      "mean_worker": 511.6,
+      "mean_verifier": 0.01
+    },
+    "ram_before": {
+      "used_ram_mb": 17123.5,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 69
+    },
+    "ram_after": {
+      "used_ram_mb": 17023.1,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 69
+    }
+  }
+}

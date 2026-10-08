@@ -1,0 +1,2248 @@
+{
+  "metadata": {
+    "model_id": "qwen3-14b",
+    "model_file": "Qwen3-14B-Q4_K_M.gguf",
+    "architecture": "qwen3",
+    "parameters": "14.77B",
+    "quantization": "Q4_K_M",
+    "date": "2026-09-21 20:44:33"
+  },
+  "mode_a_raw": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 5239.735799994378,
+      "prompt_tokens": 197,
+      "completion_tokens": 262,
+      "reasoning_tokens": 192,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user said \"Convert this to PDF.\" So first, I need to figure out what they mean by \"this.\" Since there's no explicit mention of a file or document name, it's probably referring to something previously mentioned or currently open. But according to the rules, if there's no active context provided, the target_id should be empty.\n\nThe main action here is converting something to PDF. The requested operation is clearly 'convert'. I need to check if there's any prohibited actions, but the user didn't mention anything forbidden. The word 'this' is a pronoun, so it goes into 'references' with an empty target_id because there's no specific context given. \n\nSo putting it all together: requested_operations should have 'convert', prohibited_operations is empty, and references includes 'this' with target_id as empty string. I need to make sure the JSON follows the schema correctly without any extra fields.\n",
+      "raw_content": "{\n  \"goal\": \"Convert a document or file to PDF format\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [\"convert\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"this\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Convert a document or file to PDF format",
+        "intent_family": "modify",
+        "requested_operations": [
+          "convert"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "this",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "ok": false,
+      "mode": "mode_a_raw",
+      "latency_ms": 15356.683600002725,
+      "prompt_tokens": 197,
+      "completion_tokens": 800,
+      "reasoning_tokens": 798,
+      "error": "MISSING_REQUIRED_STRUCTURE: Qwen3-14B emitted empty content (tokens exhausted in reasoning)",
+      "reasoning_content": "Okay, let's see. The user said \"Bring that file up.\" So first, I need to figure out what they mean by \"that file.\" They probably referring to a specific file mentioned earlier or in the current context. Since there's no explicit mention of the file's name or ID here, I should note it as a reference.\n\nLooking at the rules, I need to extract pronouns and deictic phrases. \"That file\" is a deictic noun phrase. So in the 'references' part, I'll put \"that file\" with target_id as empty string because there's no explicit active context provided.\n\nNext, check for requested operations. The user wants to bring up the file, which could be interpreted as opening or displaying it. But the exact action isn't specified. However, the instruction says to put explicitly requested actions into 'requested_operations'. Since \"bring up\" is a bit vague, but maybe they want it opened. However, without more context, I should stick strictly to what's mentioned. The word \"up\" might imply opening or bringing to the forefront. But since the allowed operations are draft, convert, compare, and the prohibited ones are send, open, delete. Wait, the user is asking to bring up the file, which might be equivalent to 'open' but that's in prohibited_operations. However, the rule says not to put negated actions into requested_operations. Wait, no, the prohibited operations are those explicitly forbidden. The user's request is to bring up the file, which may or may not be allowed. But according to the schema, I need to check if any of the allowed operations (draft, convert, compare) are mentioned. Since \"bring up\" isn't one of them, maybe there's no requested operation here. Alternatively, perhaps 'open' is a prohibited action, but the user is asking for it. However, according to the rules, I should not put negated actions into prohibited_operations unless explicitly forbidden. The user hasn't said anything about prohibiting actions, so maybe 'prohibited_operations' remains empty. Wait, the initial instruction says that prohibited_operations are those explicitly prohibited, forbidden, or negated. Since the user is asking to bring up the file, which might be an action not in the allowed list. But the allowed operations are draft, convert, compare. So if \"bring up\" isn't one of them, then maybe there's no requested operation here. However, perhaps 'open' is a prohibited operation, but the user wants it done. But according to the rules, I should only put explicitly prohibited actions into prohibited_operations. Since the user hasn't mentioned anything about prohibiting actions, maybe prohibited_operations is empty. \n\nWait, the user's instruction says that if the action is explicitly requested, put into 'requested_operations'. If the action is prohibited (like send, open, delete), then put into prohibited_operations. But in this case, the user wants to bring up the file, which might be equivalent to opening it. However, 'open' is in prohibited_operations as per the example given. So if the user is asking to do something that's prohibited, but they didn't explicitly say \"don't open\", then maybe I should not put it into prohibited_operations unless they said so. Wait, no. The rule says: \"Put explicitly prohibited, forbidden, or negated actions into 'prohibited_operations' (e.g. 'send', 'open', 'delete'). NEVER put negated actions into requested_operations.\" So if the user is asking to do something that's in prohibited_operations, like open, but they didn't say it's prohibited, then maybe I should not include it. But the example shows that 'prohibited_operations' includes actions like send, open, delete as examples. However, the actual prohibited operations would be those explicitly mentioned by the user as forbidden. Since the user hasn't said anything about prohibiting actions,",
+      "raw_content": "",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 8482.360400004836,
+      "prompt_tokens": 199,
+      "completion_tokens": 431,
+      "reasoning_tokens": 364,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's query: \"Do the same thing for them.\" \n\nFirst, I need to identify any explicitly requested actions. The phrase \"do the same thing\" suggests that there was a previous action taken, and now the user wants that exact action applied again, but this time for \"them.\" However, the problem is that the original action isn't specified here. Without knowing what the previous action was, I can't determine what needs to be done. But according to the rules, if the user says \"do the same thing,\" maybe there's an implied action from context. Wait, but the rules say not to invent outside context. So if the original action wasn't mentioned in this message, I shouldn't assume it.\n\nLooking at the critical rules again: Rule 1 says to put explicitly requested actions into 'requested_operations.' The user is asking to \"do the same thing,\" which might be a reference to a prior action. However, since there's no explicit mention of what that action was in this message, I can't list it as a requested operation. Unless \"same thing\" refers to an action previously mentioned in the conversation history, but according to Rule 4, I shouldn't invent context not provided here.\n\nNext, prohibited operations: The user didn't mention anything forbidden, so 'prohibited_operations' should be empty.\n\nReferences: The pronoun \"them\" is present. So I need to extract that into 'references' with a target_id of an empty string since there's no explicit active context provided in the message.\n\nSo putting it all together, the JSON would have 'requested_operations' as empty because the action isn't explicitly stated here, 'prohibited_operations' as empty, and 'references' including \"them\" with target_id \"\".\n",
+      "raw_content": "{\n  \"goal\": \"Do the same thing for them.\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"them\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Do the same thing for them.",
+        "intent_family": "execute",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "them",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 6821.345199998177,
+      "prompt_tokens": 202,
+      "completion_tokens": 339,
+      "reasoning_tokens": 247,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They said, \"Don't send it. Just draft the email.\" So first, I need to identify the actions they're asking for and any prohibitions.\n\nThe first part is \"Don't send it.\" That's a prohibition against sending the email. So 'send' should go into prohibited_operations. Then, \"Just draft the email\" explicitly asks for drafting, so 'draft' goes into requested_operations. \n\nNext, checking for pronouns or references. The user uses \"it\" and \"the email.\" But since there's no specific context provided about which email they're referring to, I can't assign a target_id. So in 'references', I'll note the pronouns and deictic phrases mentioned.\n\nI need to make sure not to include any actions that aren't explicitly mentioned. They didn't mention converting or comparing, so those aren't needed here. Also, no other files or contexts are referenced, so 'target_id' remains empty. \n\nPutting it all together: prohibited_operations has 'send', requested_operations has 'draft', and references include 'it' and 'the email'. Target_id is empty because there's no explicit context provided.\n",
+      "raw_content": "{\n  \"goal\": \"Draft an email without sending it\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [\"send\"],\n  \"references\": [\n    {\"expression\": \"it\", \"target_id\": \"\"},\n    {\"expression\": \"the email\", \"target_id\": \"\"}\n  ],\n  \"constraints\": {\n    \"excluded_items\": []\n  }\n}",
+      "decoded": {
+        "goal": "Draft an email without sending it",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [
+          "send"
+        ],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "the email",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": [
+            "send"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 8246.522000001278,
+      "prompt_tokens": 208,
+      "completion_tokens": 418,
+      "reasoning_tokens": 311,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They want me to find the previous approval, compare it with the current one, and then draft a revised order.\n\nFirst, I need to identify the actions involved. The user explicitly mentions three steps: finding the previous approval, comparing it with the current one, and drafting a revised order. According to the rules, these should be listed in 'requested_operations'. So 'find', 'compare', and 'draft' would go there.\n\nNext, checking for any prohibited operations. The user didn't mention anything that's forbidden, so 'prohibited_operations' stays empty.\n\nNow, looking for references. The user uses 'previous approval' and 'this one'. These are pronouns or deictic phrases. 'Previous approval' refers to a past document, and 'this one' refers to the current approval. I need to extract these into 'references'. Since there's no explicit target ID provided, I'll leave 'target_id' as an empty string.\n\nI should make sure not to add any extra context or files that aren't mentioned. The user only talks about the previous and current approvals, so I don't assume any other documents exist. Also, ensuring that negated actions aren't in 'requested_operations'. Since there are no negatives here, that's not an issue.\n\nPutting it all together, the JSON should have the three operations in requested_operations, empty prohibited_operations, and the references listed with their respective IDs. The target_id remains empty as there's no specific context provided.\n",
+      "raw_content": "{\n  \"goal\": \"Find the previous approval, compare it with this one and draft a revised order\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"find\", \"compare\", \"draft\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"previous approval\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"this one\",\n      \"target_id\": \"\"\n    }\n  ],\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Find the previous approval, compare it with this one and draft a revised order",
+        "intent_family": "compare",
+        "requested_operations": [
+          "find",
+          "compare",
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "previous approval",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "this one",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 7435.579200006032,
+      "prompt_tokens": 223,
+      "completion_tokens": 374,
+      "reasoning_tokens": 284,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's message. They mention that the committee changed its view twice and the latest letter doesn't align with previous decisions. The user needs something to present tomorrow.\n\nFirst, looking for requested operations. The user says they \"need something I can put up tomorrow.\" That sounds like a request to draft or create a document, maybe a summary or a report. So 'draft' would be in requested_operations.\n\nProhibited operations: There's no explicit mention of actions that are forbidden. The user is frustrated with the committee's changes but isn't saying they can't do something. So prohibited_operations might be empty here.\n\nReferences: The user refers to \"the latest letter\" and \"what was decided earlier.\" These are deictic references. 'latest letter' could be a reference, and 'earlier decisions' as well. But the schema requires 'references' to include pronouns and deictic phrases. However, the example in the rules uses things like 'that file' or 'earlier one.' Here, \"the latest letter\" and \"what was decided earlier\" are references. So I should extract those into 'references'. The target_id is empty unless there's an explicit context, which there isn't here.\n\nSo structuring the JSON: requested_operations includes 'draft', prohibited_operations is empty, and references include \"latest letter\" and \"earlier decisions\".\n",
+      "raw_content": "{\n  \"goal\": \"Create a document to present tomorrow that addresses discrepancies between the latest committee letter and prior decisions\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\"expression\": \"latest letter\", \"target_id\": \"\"},\n    {\"expression\": \"what was decided earlier\", \"target_id\": \"\"}\n  ]\n}",
+      "decoded": {
+        "goal": "Create a document to present tomorrow that addresses discrepancies between the latest committee letter and prior decisions",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "latest letter",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "what was decided earlier",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 10896.73860000039,
+      "prompt_tokens": 227,
+      "completion_tokens": 552,
+      "reasoning_tokens": 448,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They want to compare only the 2025 and 2026 decisions. First, I need to make sure that the operations reflect this. The user explicitly says \"compare,\" so that goes into requested_operations. They also mention not using anything before 2025, which means any actions related to earlier years should be prohibited. The 'prohibited_operations' should include anything prior to 2025.\n\nNext, looking for references. The user didn't use pronouns like 'this' or 'that,' so the 'references' section might be empty. But I need to check again. They mentioned \"the 2025 and 2026 decisions,\" which are specific years, so maybe those are considered deictic noun phrases. However, since they're explicit years without prior context, perhaps there's no need to add them as references unless the system has a way to track those. But according to the rules, only pronouns and deictic phrases not tied to an active context should be in 'references.' Since the user didn't use any pronouns here, maybe 'references' stays empty.\n\nAlso, the user wants the result under one page. That's more of a formatting instruction, but the schema doesn't have a field for that. The JSON structure only includes requested_operations, prohibited_operations, and references. So I'll focus on those three parts.\n\nDouble-checking: requested_operations is 'compare', prohibited_operations should include any actions related to years before 2025, like 'use_2024' or similar. But the exact terms might depend on how the system's operations are named. Since the user said \"do not use anything before 2025,\" maybe the prohibited operations are 'use_previous_decisions' or 'include_prior_years'. However, without knowing the exact operation names, I'll use a generic term like 'use_earlier_than_2025' as a prohibited operation.\n\nReferences: No pronouns or deictic phrases mentioned, so leave it empty. Target_id is not provided, so keep it as an empty string.\n",
+      "raw_content": "{\n  \"goal\": \"Compare only the 2025 and 2026 decisions\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"compare\"],\n  \"prohibited_operations\": [\"use_previous_decisions\", \"include_prior_years\"],\n  \"references\": [],\n  \"constraints\": {\n    \"excluded_items\": [\"anything before 2025\"],\n    \"length_limit\": \"one page\"\n  },\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Compare only the 2025 and 2026 decisions",
+        "intent_family": "compare",
+        "requested_operations": [
+          "compare"
+        ],
+        "prohibited_operations": [
+          "use_previous_decisions",
+          "include_prior_years"
+        ],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [
+            "anything before 2025"
+          ],
+          "prohibited_actions": [
+            "use_previous_decisions",
+            "include_prior_years"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 6188.991800001531,
+      "prompt_tokens": 206,
+      "completion_tokens": 307,
+      "reasoning_tokens": 229,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user wants me to draft a short formal email in Indian English to the Chief Warden. First, I need to make sure I understand what they're asking for. They mentioned \"Indian English,\" so I should use appropriate salutations and language that's common in India.\n\nThe main action here is \"draft,\" which goes into requested_operations. There's no mention of prohibited actions, so that section can be left empty. The user didn't use any pronouns or deictic phrases like \"this\" or \"that file,\" so references might not be needed unless there's an implicit context I'm missing. But since the query is straightforward, maybe there are no references to extract.\n\nI should structure the JSON accordingly. Check if there's any hidden context, but the user just asked for a draft without referring to previous messages or files. So target_id can stay empty. Let me confirm the rules again: requested_operations includes explicit actions like 'draft', prohibited_operations only if there are negations, and references for pronouns. Since none of those are present except 'draft', the JSON should reflect that.\n",
+      "raw_content": "{\n  \"goal\": \"Draft a short formal email in Indian English to the Chief Warden\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [],\n  \"references\": [],\n  \"entities\": [\n    {\"name\": \"Chief Warden\", \"category\": \"recipient\"}\n  ]\n}",
+      "decoded": {
+        "goal": "Draft a short formal email in Indian English to the Chief Warden",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": [
+          {
+            "name": "Chief Warden",
+            "category": "other"
+          }
+        ]
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 7646.826299998793,
+      "prompt_tokens": 205,
+      "completion_tokens": 383,
+      "reasoning_tokens": 310,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user said, \"Do not summarize this; compare the exact figures in a table.\" So first, I need to parse this instruction according to the rules given.\n\nStarting with rule 1: Put explicitly requested actions into 'requested_operations'. The user is asking to compare exact figures in a table. So \"compare\" should be in requested_operations. Also, since they mention not summarizing, maybe that's related to prohibited operations? Wait, rule 2 says to put explicitly prohibited actions into 'prohibited_operations'. The user said \"Do not summarize\", so \"summarize\" is prohibited here. But the main action is comparing figures in a table, which is requested.\n\nRule 3: Extract pronouns and deictic phrases. The user didn't use any pronouns like 'this' or 'that', nor did they refer to specific files or previous actions. So 'references' might be empty here unless there's an implicit context. But the instruction says not to invent outside context, so if there's no explicit mention of a file or prior action, then references should be empty.\n\nSo putting it all together: requested_operations is [\"compare\"], prohibited_operations is [\"summarize\"], and references is empty. The target_id isn't mentioned, so it stays as an empty string. Let me double-check to make sure I didn't miss any deictic phrases. The user said \"exact figures\" but that's not a pronoun or reference to something else. Alright, looks good.\n",
+      "raw_content": "{\n  \"goal\": \"compare the exact figures in a table\",\n  \"intent_family\": \"analyze\",\n  \"requested_operations\": [\"compare\"],\n  \"prohibited_operations\": [\"summarize\"],\n  \"references\": [],\n  \"constraints\": {\n    \"excluded_items\": []\n  },\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "compare the exact figures in a table",
+        "intent_family": "analyze",
+        "requested_operations": [
+          "compare"
+        ],
+        "prohibited_operations": [
+          "summarize"
+        ],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": [
+            "summarize"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 10991.650899995875,
+      "prompt_tokens": 197,
+      "completion_tokens": 560,
+      "reasoning_tokens": 495,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user is asking, \"What was approved yesterday?\" So first, I need to figure out what they're referring to. They mention \"approved,\" which could relate to a document, proposal, or some action taken in the past.\n\nLooking at the rules for the Semantic Decoder, I need to check if there are any explicitly requested actions. The user is asking about something that was approved, but they aren't directly asking to perform an action like draft or convert. So maybe 'requested_operations' might be empty here because they're just inquiring rather than requesting an operation.\n\nNext, prohibited operations. There's no mention of anything being forbidden or negated, so 'prohibited_operations' should also be empty unless there's a hidden context I'm missing. But according to the rules, I shouldn't assume prior actions not mentioned.\n\nNow, references. The user uses \"yesterday,\" which is a time reference. However, the schema might expect pronouns or deictic phrases like 'that file' or 'earlier one.' Since they're referring to a past event, maybe \"yesterday\" is a deictic noun phrase here. But the example in the rules includes things like 'that file,' so perhaps \"yesterday\" isn't considered a reference unless it's part of a noun phrase. The user didn't mention any specific documents or items, just the time frame.\n\nSo, putting this together: no requested operations, no prohibited operations, and maybe no references since there's no explicit pronoun or deictic noun phrase pointing to a specific item. However, \"yesterday\" might be considered a reference to a time, but I'm not sure if that's what the schema expects. The example in the rules includes 'that file,' which is a noun phrase, so maybe \"yesterday\" isn't included here.\n\nTherefore, the JSON would have empty arrays for requested_operations, prohibited_operations, and references. But wait, the user is asking about something approved, which might be a reference to a prior action. However, since there's no explicit mention of a document or item, maybe it's not necessary to include anything in 'references.' The target_id is left as an empty string because there's no active context provided.\n\nI think that's all. Let me make sure I didn't miss any rules. No actions are explicitly requested or prohibited, and the references aren't clear enough to include.\n",
+      "raw_content": "{\n  \"goal\": \"What was approved yesterday?\",\n  \"intent_family\": \"retrieve\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"yesterday\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "What was approved yesterday?",
+        "intent_family": "retrieve",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "yesterday",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "ok": false,
+      "mode": "mode_a_raw",
+      "latency_ms": 5799.110899999505,
+      "prompt_tokens": 193,
+      "completion_tokens": 264,
+      "reasoning_tokens": 181,
+      "error": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "reasoning_content": "Okay, let's see. The user sent \"Hello\". I need to process this according to the rules given.\n\nFirst, check for explicitly requested actions. The user just said hello, so there's no action like draft, convert, or compare mentioned. So 'requested_operations' should be empty.\n\nNext, prohibited operations. The message doesn't mention anything forbidden either. So 'prohibited_operations' is also empty.\n\nNow, references. The user didn't use any pronouns or deictic phrases like 'this', 'that', or 'it'. So 'references' should be an empty array.\n\nTarget_id isn't mentioned anywhere, so it stays as an empty string.\n\nI need to make sure I'm not adding any extra context or files that aren't in the message. Since there's nothing else, the JSON should have all empty arrays and strings. Alright, that should cover it.\n",
+      "raw_content": "{\n  \"goal\": \"\",\n  \"intent_family\": \"unspecified\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [],\n  \"constraints\": {\n    \"language_constraints\": \"en\"\n  },\n  \"entities\": [\n    {\n      \"name\": \"user\",\n      \"category\": \"person\"\n    }\n  ]\n}",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "ok": false,
+      "mode": "mode_a_raw",
+      "latency_ms": 5187.332599998626,
+      "prompt_tokens": 193,
+      "completion_tokens": 253,
+      "reasoning_tokens": 188,
+      "error": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "reasoning_content": "Okay, let's see. The user said \"Thanks\". So I need to process this according to the rules given.\n\nFirst, check for any explicitly requested actions. \"Thanks\" is a gratitude expression, so there's no action like draft, convert, or compare being asked here. So 'requested_operations' should be empty.\n\nNext, prohibited operations. The user isn't forbidding anything either. They're just thanking, so 'prohibited_operations' stays empty too.\n\nNow, references. The user didn't use any pronouns or deictic phrases like \"this\" or \"that file\". So 'references' should be an empty array.\n\nTarget_id is part of references, but since there's no explicit context mentioned, it remains an empty string.\n\nSo the JSON should have all empty arrays and strings. No operations requested or prohibited, no references. Just a straightforward response to the user's thanks without any further actions needed.\n",
+      "raw_content": "{\n  \"goal\": \"\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [],\n  \"constraints\": {\n    \"language_constraints\": \"en\"\n  },\n  \"entities\": []\n}",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 7559.696200005419,
+      "prompt_tokens": 195,
+      "completion_tokens": 380,
+      "reasoning_tokens": 309,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user said \"Open calculator.\" So I need to process this according to the rules given.\n\nFirst, check for requested operations. The verb here is \"open,\" and the object is \"calculator.\" So the action is to open the calculator. According to rule 1, that should go into 'requested_operations'. But wait, the example in rule 1 mentions actions like 'draft', 'convert', 'compare'. However, the rule says to put explicitly requested actions into that field. Since \"open\" is an action, even if it's not in the examples, it should be included. So 'open' is the operation here.\n\nNext, prohibited operations. The user didn't mention anything forbidden, so 'prohibited_operations' stays empty.\n\nReferences: The user didn't use any pronouns or deictic phrases like \"this\" or \"that file.\" So 'references' is an empty list.\n\nTarget ID: Since there's no explicit context provided, like a specific calculator mentioned before, 'target_id' should be an empty string.\n\nWait, but the example in rule 3 mentions extracting pronouns and deictic noun phrases. Here, the user just says \"calculator,\" which is a common noun, not a pronoun or deictic phrase. So no references here.\n\nPutting it all together: The JSON should have 'requested_operations' with ['open'], 'prohibited_operations' as empty, 'references' as empty list, and 'target_id' as empty string.\n",
+      "raw_content": "{\n  \"goal\": \"Open calculator\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [\"open\"],\n  \"prohibited_operations\": [],\n  \"references\": [],\n  \"entities\": [\n    {\n      \"name\": \"calculator\",\n      \"category\": \"application\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Open calculator",
+        "intent_family": "execute",
+        "requested_operations": [
+          "open"
+        ],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": [
+          {
+            "name": "calculator",
+            "category": "other"
+          }
+        ]
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 5941.375700000208,
+      "prompt_tokens": 198,
+      "completion_tokens": 292,
+      "reasoning_tokens": 226,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user said, \"Don't open it yet.\" So first, I need to parse this according to the rules given.\n\nThe critical rules mention prohibited operations. The user is telling not to open something, so 'open' should be in prohibited_operations. The action here is negated, so it's forbidden. \n\nNext, looking for pronouns or deictic phrases. The word \"it\" is a pronoun here. But the reference isn't clear because the user didn't specify what \"it\" refers to. So in 'references', I should note that there's a reference to 'it' with target_id as empty string since no explicit context was provided.\n\nThere's no explicit request for an action, so requested_operations should be empty. The user is just prohibiting an action, not asking for anything else. \n\nI need to make sure I don't add any extra information. The JSON should have prohibited_operations with 'open', references with 'it' and empty target_id, and no requested operations. Let me check the rules again to confirm. Yes, that's correct.\n",
+      "raw_content": "{\n  \"goal\": \"Prohibit an action\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [\"open\"],\n  \"references\": [\n    {\n      \"expression\": \"it\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Prohibit an action",
+        "intent_family": "modify",
+        "requested_operations": [],
+        "prohibited_operations": [
+          "open"
+        ],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": [
+            "open"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": false,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 6699.1933999961475,
+      "prompt_tokens": 201,
+      "completion_tokens": 338,
+      "reasoning_tokens": 249,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. The sentence is \"Send it to him after they approve it.\" \n\nFirst, I need to identify any explicitly requested actions. The verb here is \"send,\" which is a direct action. So \"send\" should go into 'requested_operations'. \n\nNext, check for prohibited actions. The sentence doesn't mention anything that's forbidden or negated, so 'prohibited_operations' stays empty.\n\nNow, look for pronouns and deictic phrases. The word \"it\" is a pronoun, and \"him\" is another pronoun. There's also \"they\" which refers to some group. These should be placed in the 'references' array. However, the user didn't specify any target IDs, so each entry's 'target_id' remains an empty string.\n\nI need to make sure I'm not adding any extra context or files that aren't mentioned. The user only talks about sending something after approval, but doesn't reference specific files or prior actions. So no need to infer anything else.\n\nPutting it all together: 'requested_operations' includes 'send', 'prohibited_operations' is empty, and 'references' list the pronouns with empty target IDs.\n",
+      "raw_content": "{\n  \"goal\": \"Send it to him after they approve it\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [\"send\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\"expression\": \"it\", \"target_id\": \"\"},\n    {\"expression\": \"him\", \"target_id\": \"\"},\n    {\"expression\": \"they\", \"target_id\": \"\"}\n  ]\n}",
+      "decoded": {
+        "goal": "Send it to him after they approve it",
+        "intent_family": "execute",
+        "requested_operations": [
+          "send"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "him",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "they",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 6843.759300005331,
+      "prompt_tokens": 200,
+      "completion_tokens": 346,
+      "reasoning_tokens": 258,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user wants me to compare an attached PDF with a spreadsheet. First, I need to check what operations are requested. The verb here is \"compare,\" so that should go into 'requested_operations'. Are there any prohibited actions? The message doesn't mention anything forbidden, so 'prohibited_operations' stays empty.\n\nNext, references. The user mentions \"the attached PDF\" and \"this spreadsheet.\" Both are deictic noun phrases. The PDF is referred to as \"attached,\" which might be a file, but since the user didn't specify a target ID, I'll leave that blank. Similarly, \"this spreadsheet\" is another reference. So I need to list both in 'references' with empty target IDs.\n\nWait, the schema says 'target_id' should be empty unless an explicit active context was provided. Since the user just says \"attached\" and \"this,\" there's no specific ID mentioned. So yes, both entries in references will have empty target_id.\n\nLet me make sure I didn't miss any other operations. The user isn't asking to draft or convert anything, just compare. So 'requested_operations' is ['compare'], and prohibited is empty. References are [\"attached PDF\", \"this spreadsheet\"]. That should cover it.\n",
+      "raw_content": "{\n  \"goal\": \"Compare the attached PDF with this spreadsheet\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"compare\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"attached PDF\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"this spreadsheet\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Compare the attached PDF with this spreadsheet",
+        "intent_family": "compare",
+        "requested_operations": [
+          "compare"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "attached PDF",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "this spreadsheet",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 6253.109899997071,
+      "prompt_tokens": 199,
+      "completion_tokens": 297,
+      "reasoning_tokens": 218,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They want something they can submit tomorrow. The key action here is \"make,\" which translates to creating a document or draft. Since they mention submitting it tomorrow, the intended use is likely for an academic or professional purpose, maybe an assignment or report.\n\nLooking at the schema, I need to identify requested operations. The user didn't specify the type of document, but \"make\" implies drafting. So 'draft' would be a suitable operation here. There's no mention of prohibited actions, so that array stays empty.\n\nReferences: The user didn't use pronouns or deictic phrases like \"this\" or \"that file,\" so the references section is empty. Target_id isn't provided either since there's no explicit context mentioned.\n\nI should ensure that I'm not adding any extra information. The user's message is straightforward, so the JSON should reflect just the draft operation without any assumptions about the document type. Double-checking the rules to make sure negated actions aren't in requested_operations and that everything is correctly structured.\n",
+      "raw_content": "{\n  \"goal\": \"Create a submission-ready document for tomorrow\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [],\n  \"references\": [],\n  \"constraints\": {\n    \"language_constraints\": \"English (default, unless specified otherwise)\"\n  },\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Create a submission-ready document for tomorrow",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": true,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "ok": false,
+      "mode": "mode_a_raw",
+      "latency_ms": 5437.768900002993,
+      "prompt_tokens": 200,
+      "completion_tokens": 273,
+      "reasoning_tokens": 213,
+      "error": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "reasoning_content": "Okay, let's see. The user said, \"No, I meant the earlier one.\" So they're correcting themselves and pointing to something mentioned before.\n\nFirst, I need to check for any explicitly requested actions. The user isn't asking to do anything like draft or convert here. They're just clarifying which item they mean. So 'requested_operations' should be empty.\n\nNext, prohibited operations. There's no mention of actions that are forbidden, so 'prohibited_operations' is also empty.\n\nNow, references. The key words here are \"the earlier one.\" That's a deictic noun phrase referring back to something previously mentioned. The pronoun or reference is \"earlier one,\" and since they didn't specify an ID, 'target_id' stays as an empty string.\n\nI need to make sure I'm not adding any extra context or files that aren't mentioned. The user only refers to \"the earlier one,\" so no other references are needed. The JSON should capture the reference correctly without assuming any prior information beyond what's given.\n",
+      "raw_content": "{\n  \"goal\": \"\",\n  \"intent_family\": \"navigate\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"the earlier one\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    }
+  ],
+  "mode_b_turn_frame": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 8689.94229999953,
+      "prompt_tokens": 186,
+      "completion_tokens": 408,
+      "reasoning_tokens": 307,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. The message is \"Convert this to PDF.\" The pre-semantic surface cues give me some structure to work with.\n\nFirst, looking at the clauses: there's only one clause here, \"Convert this to PDF\". The main action verb here is \"convert\", which is also listed in the candidate action verbs. Since there's no negation token mentioned, like \"don't\" or \"not\", I don't need to classify \"convert\" as prohibited. So, \"convert\" goes into requested_operations.\n\nNext, the referring expressions. The user says \"this\". In the pre-semantic cues, \"this\" is a candidate referring expression. I need to record that into the 'references' list. The target_id is left empty because we don't have specific information about what \"this\" refers to. It could be a document, a file, or something else, but the user hasn't specified. So I just note that there's a reference to \"this\" without assigning an ID.\n\nThe format cue is \"PDF\", which is straightforward. The user wants the conversion to PDF format. That's part of the requested operation, so it's covered under the 'convert' action in the requested_operations list.\n\nI should make sure not to add any extra information or assume what \"this\" refers to. The task is just to decode the semantic elements based on the provided cues. No prohibited operations here since there's no negation. Everything seems clear and direct.\n",
+      "raw_content": "{\n  \"goal\": \"Convert this to PDF\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [\n    \"convert\"\n  ],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"this\",\n      \"target_id\": \"\"\n    }\n  ],\n  \"constraints\": {\n    \"included_items\": [\"PDF\"],\n    \"excluded_items\": []\n  },\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Convert this to PDF",
+        "intent_family": "modify",
+        "requested_operations": [
+          "convert"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "this",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [
+            "PDF"
+          ],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 6440.332300000591,
+      "prompt_tokens": 183,
+      "completion_tokens": 322,
+      "reasoning_tokens": 233,
+      "error": null,
+      "reasoning_content": "Okay, let's break this down. The user said, \"Bring that file up.\" The pre-semantic cues have the clause as [\"Bring that file up\"], candidate verbs are [\"bring\"], and referring expressions are [\"that file\", \"that\"].\n\nFirst, I need to classify the candidate verbs. The only verb here is \"bring\". There's no negation token mentioned, so it's not prohibited. So \"bring\" goes into requested_operations.\n\nNext, the referring expressions. The user mentioned \"that file\" and \"that\". According to the rules, these should be recorded in 'references' with target_id as empty string. Even though \"that\" is a pronoun, it's part of the referring expression here. So both \"that file\" and \"that\" go into references.\n\nWait, but \"that\" alone might refer to something previously mentioned. However, the user message includes \"that file\", which is more specific. The instructions say not to invent entities or files, so I just record them as they are without assuming any target_id.\n\nSo the final output should have requested_operations with 'bring' and references with both expressions.\n",
+      "raw_content": "{\n  \"goal\": \"Bring that file up\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [\n    \"bring\"\n  ],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"that file\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"that\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Bring that file up",
+        "intent_family": "modify",
+        "requested_operations": [
+          "bring"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "that file",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "that",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 8605.19260000001,
+      "prompt_tokens": 179,
+      "completion_tokens": 439,
+      "reasoning_tokens": 362,
+      "error": null,
+      "reasoning_content": "Okay, let's tackle this user message. The user said, \"Do the same thing for them.\" The pre-semantic cues include the clause \"Do the same thing for them,\" and the candidate referring expressions are \"same thing\" and \"them.\"\n\nFirst, I need to classify the verbs into requested_operations or prohibited_operations. The main verb here is \"do,\" which is in the imperative form. Since there's no negation token like \"don't\" or \"not,\" this should be a requested operation. So \"do\" goes into requested_operations.\n\nNext, looking at the referring expressions. \"Same thing\" is a referring expression that points back to something previously mentioned. The target_id isn't specified here, so I'll note that in 'references' with an empty target_id. Similarly, \"them\" is another referring expression; it refers to a group of people or entities mentioned earlier. Again, the target_id is unknown, so I'll add both to the references list.\n\nI need to make sure not to invent any new entities or files. The user isn't mentioning any specific files or new objects, just \"them\" and \"the same thing.\" So no additional entities are needed here.\n\nWait, the candidate verbs might include \"do,\" but maybe there's more? The original message only has \"Do the same thing for them,\" so the main verb is \"do.\" The other parts are referring expressions. So prohibited_operations would be empty since there's no negation.\n\nDouble-checking the rules: No negation cues, so prohibited_operations remains empty. Referring expressions are correctly identified as 'same thing' and 'them,' both with target_id=''. \n\nI think that's all. The semantic decoder should output the requested operation and the references without any prohibited actions.\n",
+      "raw_content": "{\n  \"goal\": \"Do the same thing for them\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [\"do\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\"expression\": \"same thing\", \"target_id\": \"\"},\n    {\"expression\": \"them\", \"target_id\": \"\"}\n  ]\n}",
+      "decoded": {
+        "goal": "Do the same thing for them",
+        "intent_family": "execute",
+        "requested_operations": [
+          "do"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "same thing",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "them",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 9149.390400001721,
+      "prompt_tokens": 209,
+      "completion_tokens": 462,
+      "reasoning_tokens": 390,
+      "error": null,
+      "reasoning_content": "Okay, let's break this down. The user said, \"Don't send it. Just draft the email.\" So first, I need to look at the clauses provided: [\"Don't send it\", 'Just draft the email']. The negation cue here is \"Don't,\" which applies to the verb \"send.\" According to rule 1, I have to classify the verbs into requested_operations or prohibited_operations. Since \"Don't\" is a negation, the action \"send\" should be in prohibited_operations. Then, \"draft\" is in the second clause without any negation, so that's a requested_operation.\n\nNext, looking at referring expressions. The user mentioned \"it\" and \"the email.\" But according to rule 2, I need to record detected referring expressions into 'references' with target_id=''. However, the instructions say not to invent entities or files. So \"it\" is a referring expression, but since there's no specific entity mentioned, I just note it as a reference without an ID. The same goes for \"the email,\" but maybe that's part of the format cues? Wait, the format cues are ['email'], so perhaps that's separate.\n\nWait, candidate referring expressions are given as ['it']. So I should include 'it' in references with target_id empty. The other reference is 'the email,' but since it's not in the candidate list, maybe I shouldn't add it? Hmm, the user message has \"the email,\" but the pre-semantic cues only list 'it' as a referring expression. So maybe I should only record 'it' here.\n\nSo putting it all together: prohibited_operations includes 'send', requested_operations includes 'draft'. References include 'it' with target_id empty. The format cue is 'email', which might be handled elsewhere, but the user didn't mention any specific file names or entities, so no need to invent those.\n",
+      "raw_content": "{\n  \"goal\": \"Draft an email without sending it\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [\"send\"],\n  \"references\": [\n    {\"expression\": \"it\", \"target_id\": \"\"}\n  ],\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Draft an email without sending it",
+        "intent_family": "compare",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [
+          "send"
+        ],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": [
+            "send"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 11466.904900000372,
+      "prompt_tokens": 226,
+      "completion_tokens": 588,
+      "reasoning_tokens": 440,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's message step by step. The user wants me to process their query using the given rules for the Step-1 Semantic Decoder.\n\nFirst, looking at the clauses provided: \"Find the previous approval\" and \"compare it with this one and draft a revised order\". The candidate verbs here are 'find', 'draft', and 'compare'. I need to classify these into requested_operations or prohibited_operations. Since there's no negation in the user message (like \"do not find\" or similar), all these actions are requested. So, they should go under requested_operations.\n\nNext, checking for negation tokens. The pre-semantic cues don't mention any negations, so none of the verbs are prohibited. That means 'prohibited_operations' will be empty here.\n\nNow, referring expressions: the user mentions \"previous approval\", \"this one\", \"this\", and \"it\". According to rule 2, these should be recorded in 'references' with target_id as an empty string. I need to list each of these expressions under 'references', making sure not to invent any entities or files. The user hasn't mentioned specific files or entities beyond what's given, so just the references as they are.\n\nNumber cues: there's a mention of 'one' in \"this one\". That probably refers to the current approval being compared. But since the rule says not to invent entities, I don't need to do anything with the number cue except note it if necessary. However, the main task here is handling verbs and references.\n\nPutting it all together: requested_operations include find, compare, draft. Prohibited_operations are none. References list each of the mentioned expressions. Need to make sure that 'it' in \"compare it with this one\" refers back to the previous approval, but since target_id isn't specified, leave them as empty strings.\n\nWait, should I check if any verbs are negated? The original message doesn't have any negation words like 'not', so all verbs are allowed. So yes, all three verbs are in requested_operations. Also, ensuring that the referring expressions are correctly captured without adding anything extra.\n",
+      "raw_content": "{\n  \"goal\": \"Find the previous approval, compare it with this one and draft a revised order\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\n    \"find\",\n    \"compare\",\n    \"draft\"\n  ],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"previous approval\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"this one\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"this\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"it\",\n      \"target_id\": \"\"\n    }\n  ],\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Find the previous approval, compare it with this one and draft a revised order",
+        "intent_family": "create",
+        "requested_operations": [
+          "find",
+          "compare",
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "previous approval",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "this one",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "this",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "ok": false,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 15518.45830000093,
+      "prompt_tokens": 254,
+      "completion_tokens": 800,
+      "reasoning_tokens": 798,
+      "error": "MISSING_REQUIRED_STRUCTURE: Qwen3-14B emitted empty content (tokens exhausted in reasoning)",
+      "reasoning_content": "Okay, let's tackle this step by step. First, the user message is about a committee changing its view twice and a latest letter not matching earlier decisions. The user needs something to put up tomorrow.\n\nLooking at the pre-semantic surface cues, there are two clauses. The first talks about the committee changing views and the latest letter not matching earlier decisions. The second clause is the user needing something for tomorrow. \n\nCandidate referring expressions include 'latest letter'. So I need to note that as a reference with target_id empty since it's just a placeholder here.\n\nNow, candidate verbs: in the first clause, \"changed\" is used. Since there's no negation token mentioned here, but the context says \"has already changed,\" which might imply that changing is an action taken. However, the user is talking about the committee's actions, so maybe 'change' is a prohibited operation? Wait, the rules say to classify verbs into requested or prohibited based on negation cues and meaning. The original message doesn't have explicit negation tokens like \"don't\" or \"not,\" but the latest letter not matching could be a negative aspect. However, the verb here is 'changed' which is past tense. Maybe the prohibited operations are actions that shouldn't be done again? But I'm not sure. Alternatively, since the user needs something to put up tomorrow, maybe the requested operation is 'put up' or 'prepare document'. \n\nWait, looking at the clauses again: \"I need something I can put up tomorrow.\" The verb here is 'put up', which might be a requested operation. So that would go into requested_operations. The other verbs are 'changed' and 'match'. Since the latest letter doesn't match, but 'match' isn't in the candidate verbs list. The candidate verbs from the user message aren't listed here, so maybe I need to check the original instructions again.\n\nWait, the pre-semantic surface cues mention candidate verbs? Wait no, the user provided \"candidate referring expressions\" and other cues. Oh, the initial problem says that the assistant is given candidate verbs, but in this case, the user message doesn't list them. Wait, looking back at the user's input: the original instruction says that the assistant is provided with \"deterministic pre-semantic surface observations (clauses, negation tokens, candidate verbs, candidate referring expressions).\" But in the current example, under Pre-semantic surface cues, there are clauses, candidate referring expressions, temporal spans, and number cues. There's no mention of candidate verbs here. Hmm, maybe that's an oversight? Or perhaps the candidate verbs are inferred from the text.\n\nWait, the user message includes \"changed its view\" and \"doesn't seem to match\". The verb 'change' is in the first clause, and 'match' in the second part. But since there's no explicit negation token (like \"don't change\"), but the latest letter doesn't match. However, the rules say that prohibited_operations are those that are negated or prohibited by meaning. For example, if the user says \"I don't want to do X,\" then 'do X' is prohibited. But in this case, the committee has already changed its view twice, which might be a past action, not necessarily prohibited. The latest letter doesn't match earlier decisions\u2014maybe that's a negative outcome, but the verb here is 'match', which isn't being negated directly. Wait, \"doesn't seem to match\" uses 'not' as a negation token. So the verb 'match' is negated here. Therefore, 'match' would be in prohibited_operations because it's negated.\n\nBut wait, the user message says \"the latest letter doesn't seem to match what was decided earlier.\" The verb here is 'match', and the negation is 'doesn't'. So according to rule 1, that should be classified as",
+      "raw_content": "",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 9835.230500000762,
+      "prompt_tokens": 296,
+      "completion_tokens": 463,
+      "reasoning_tokens": 307,
+      "error": null,
+      "reasoning_content": "Okay, let's tackle this step by step. The user wants me to compare only the 2025 and 2026 decisions, not use anything before 2025, and keep the result under one page.\n\nFirst, looking at the candidate verbs: 'compare' and 'use'. The negation cues are 'do not' and 'not', so I need to check if these verbs are prohibited. The first clause says \"Compare only the 2025 and 2026 decisions\" \u2013 that's a request to compare, so 'compare' should be in requested_operations. Then there's \"do not use anything before 2025\", which uses 'use' with a negation. So 'use' is prohibited because of the 'do not'.\n\nNext, referring expressions. The user mentions \"the 2025 and 2026 decisions\" but doesn't refer to any specific entities like 'it' or 'that file'. The clauses mention years and pages, but no explicit references that need target IDs. So maybe there are no referring expressions here.\n\nTemporal spans: 2025 and 2026 are the focus, and anything before 2025 is excluded. Number cues include the years and 'one page', which relates to the output length.\n\nSo putting it all together: requested_operations has 'compare', prohibited_operations has 'use'. References might be empty since there's no explicit referring expressions mentioned.\n",
+      "raw_content": "{\n  \"goal\": \"Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\n    \"compare\"\n  ],\n  \"prohibited_operations\": [\n    \"use\"\n  ],\n  \"references\": [],\n  \"temporal_references\": [\n    \"before 2025\",\n    \"2025\",\n    \"2026\"\n  ],\n  \"constraints\": {\n    \"excluded_items\": [\"anything before 2025\"],\n    \"length_limit\": \"one page\"\n  },\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page",
+        "intent_family": "compare",
+        "requested_operations": [
+          "compare"
+        ],
+        "prohibited_operations": [
+          "use"
+        ],
+        "references": [],
+        "temporal_references": [
+          "before 2025",
+          "2025",
+          "2026"
+        ],
+        "constraints": {
+          "included": [],
+          "excluded": [
+            "anything before 2025"
+          ],
+          "prohibited_actions": [
+            "use"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 8488.407999997435,
+      "prompt_tokens": 207,
+      "completion_tokens": 429,
+      "reasoning_tokens": 367,
+      "error": null,
+      "reasoning_content": "Okay, let's start by looking at the user message and the pre-semantic surface cues. The user wants a short formal email in Indian English to the Chief Warden.\n\nFirst, I need to classify the candidate verbs. The only verb here is 'draft'. Since there's no negation token mentioned, like 'do not draft' or anything similar, this should go into 'requested_operations'. No prohibited operations here.\n\nNext, check for referring expressions. The user message doesn't have any pronouns like 'it', 'that file', or 'this'. So the 'references' list will be empty. \n\nNow, the format cues are important. The email needs to be formal, short, in Indian English, and addressed to the Chief Warden. I should make sure the language is appropriate, maybe using terms common in Indian contexts. Also, keeping it concise.\n\nI need to structure the email properly: subject line, salutation, body paragraphs, closing. Since it's short, maybe one or two paragraphs. Use formal greetings like \"Dear Chief Warden,\" and a polite sign-off. Avoid any slang but keep it natural for Indian English.\n\nWait, should I include placeholders for the sender's details? The user didn't mention that, so maybe not. Just focus on the content as per the request. Also, ensure that the tone is respectful and clear about the purpose of the email, though the exact reason isn't specified. Maybe keep it general unless more info is provided.\n\nDouble-checking the clauses: 'Draft a short formal email...' So the main action is drafting, which we've already categorized. No other verbs to consider. \n\nNo negation tokens found, so prohibited_operations remains empty. References are none. \n\nAlright, putting it all together into a structured email format with the specified elements.\n",
+      "raw_content": "{\n  \"goal\": \"Draft a short formal email in Indian English to the Chief Warden\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [],\n  \"references\": [],\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Draft a short formal email in Indian English to the Chief Warden",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 9135.104200002388,
+      "prompt_tokens": 220,
+      "completion_tokens": 452,
+      "reasoning_tokens": 345,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's message and the provided cues. The user said, \"Do not summarize this; compare the exact figures in a table.\" The clauses are split into two parts: \"Do not summarize this\" and \"compare the exact figures in a table.\" The negation cues here are \"Do not\" and \"not,\" which clearly indicate that summarizing is prohibited. The candidate verbs are 'summarize' and 'compare.' \n\nFirst, I need to classify these verbs. Since the user explicitly says \"Do not summarize,\" that action should go into 'prohibited_operations.' On the other hand, 'compare' is requested because the user wants a comparison in a table. So 'compare' goes into 'requested_operations.'\n\nNext, looking at referring expressions. The candidate here is 'this,' which refers to something mentioned earlier. However, the target_id isn't specified, so I just note it as a reference without an ID.\n\nThe format cue is 'table,' which should be included in the output under 'format_cues.' Also, there's a mention of \"exact figures,\" but since that's part of the instruction for comparing, maybe it's covered under the action verb 'compare' or as a separate note. But according to the rules, I don't need to handle that unless specified.\n\nI should make sure not to invent any entities or files. The user hasn't mentioned specific files, so I just stick to the given information. \n\nPutting it all together: prohibited_operations includes 'summarize,' requested_operations has 'compare,' references include 'this' with an empty target_id, and format_cues is 'table.' No other elements are needed here.\n",
+      "raw_content": "{\n  \"goal\": \"Compare exact figures in a table\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"compare\"],\n  \"prohibited_operations\": [\"summarize\"],\n  \"references\": [{\"expression\": \"this\", \"target_id\": \"\"}],\n  \"constraints\": {\n    \"excluded_items\": [\"summary\"],\n    \"language_constraints\": \"exact figures\"\n  },\n  \"output_preferences\": {\n    \"structure\": \"table\"\n  }\n}",
+      "decoded": {
+        "goal": "Compare exact figures in a table",
+        "intent_family": "compare",
+        "requested_operations": [
+          "compare"
+        ],
+        "prohibited_operations": [
+          "summarize"
+        ],
+        "references": [
+          {
+            "expression": "this",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [
+            "summary"
+          ],
+          "prohibited_actions": [
+            "summarize"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 6823.759900005825,
+      "prompt_tokens": 173,
+      "completion_tokens": 343,
+      "reasoning_tokens": 293,
+      "error": null,
+      "reasoning_content": "Okay, let's tackle this user query step by step. The user is asking, \"What was approved yesterday?\" So first, I need to parse the message according to the given rules.\n\nLooking at the pre-semantic surface cues, there's one clause: [\"What was approved yesterday\"] and a temporal span [\"yesterday\"]. The main verb here is \"approved.\" Since there's no negation token mentioned in the clauses or temporal spans, the verb \"approve\" isn't prohibited. So according to rule 1, \"approved\" should go into 'requested_operations' because it's a positive action.\n\nNext, checking for referring expressions. The user didn't use any pronouns like \"it,\" \"that file,\" or \"this.\" The question is straightforward about what was approved, so there are no references to track here. Rule 2 says to record detected referring expressions, but since none are present, the 'references' list remains empty.\n\nI also need to ensure that I'm not inventing any entities or files. The user isn't mentioning specific files or items, just asking about approvals from yesterday. So no new entities are introduced here.\n\nPutting it all together: the verb \"approved\" is in the requested operations, there are no prohibited verbs, and no references. The temporal information is captured as part of the clause, but since the rules don't mention handling time spans beyond noting them, I just need to make sure that's acknowledged.\n",
+      "raw_content": "{\n  \"goal\": \"What was approved yesterday\",\n  \"intent_family\": \"retrieve\",\n  \"requested_operations\": [\"approve\"],\n  \"prohibited_operations\": [],\n  \"references\": []\n}",
+      "decoded": {
+        "goal": "What was approved yesterday",
+        "intent_family": "retrieve",
+        "requested_operations": [
+          "approve"
+        ],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "ok": false,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 5269.877700004145,
+      "prompt_tokens": 157,
+      "completion_tokens": 266,
+      "reasoning_tokens": 223,
+      "error": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "reasoning_content": "Okay, let's see. The user sent \"Hello\" and the pre-semantic surface cues have a clause ['Hello']. So I need to process this according to the rules.\n\nFirst, checking for candidate verbs. The message is just a greeting, so there are no verbs here. The 'Clauses' list only has 'Hello', which is an interjection, not a verb. Therefore, there's nothing to classify into requested_operations or prohibited_operations. Both lists should be empty.\n\nNext, looking for referring expressions. The user didn't use any pronouns like 'it' or 'this', nor did they mention any files or entities. So the 'references' list remains empty as well.\n\nI need to make sure I'm not adding any extra information. Since there's no negation here, prohibited_operations is definitely empty. No verbs to classify, so requested_operations is also empty. References are none because there's nothing being referred to.\n\nJust to double-check: the user message is a simple greeting with no implicit requests or references. So all the output lists should be empty. That makes sense.\n",
+      "raw_content": "{\n  \"goal\": \"\",\n  \"intent_family\": \"unspecified\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": []\n}",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "ok": false,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 6868.0657999939285,
+      "prompt_tokens": 157,
+      "completion_tokens": 347,
+      "reasoning_tokens": 302,
+      "error": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "reasoning_content": "Okay, let's see. The user sent \"Thanks\" and the pre-semantic surface cues have a clause [\"Thanks\"]. So I need to process this according to the rules given.\n\nFirst, checking for candidate verbs. The message is just \"Thanks,\" which is an expression of gratitude. There are no explicit verbs here that indicate an action. The only thing is the word \"Thanks\" itself, but that's not a verb. So maybe there are no candidate verbs to classify into requested or prohibited operations. Since there's no negation token mentioned in the cues, but the user message doesn't have any negations either. So prohibited_operations would be empty here.\n\nNext, looking for referring expressions. The user didn't use any pronouns like \"it,\" \"that file,\" \"this,\" or \"same thing.\" The message is just a thank you, so there's nothing to reference. Therefore, the 'references' list should also be empty.\n\nI need to make sure I'm not inventing any entities or files. Since the user didn't mention anything specific, there's nothing to record under references. The main point here is that the message doesn't contain any actions or references, so both prohibited_operations and references will be empty. The only thing in the clauses is \"Thanks,\" which isn't a verb but a noun, so no operations are derived from it.\n\nSo the final output should have empty lists for both requested_operations, prohibited_operations, and references. I think that's all.\n",
+      "raw_content": "{\n  \"goal\": \"\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": []\n}",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 5476.483600003121,
+      "prompt_tokens": 167,
+      "completion_tokens": 274,
+      "reasoning_tokens": 226,
+      "error": null,
+      "reasoning_content": "Okay, let's break this down. The user said \"Open calculator.\" The pre-semantic cues have a clause \"Open calculator\" and the candidate verb is \"open\". \n\nFirst, I need to classify the verb. Since there's no negation token mentioned, like \"don't\" or \"not\", the action 'open' is allowed. So it goes into requested_operations.\n\nNext, check for referring expressions. The user just said \"calculator\", which is a noun here. There's no pronoun like 'it' or 'that file', so references might be empty. But wait, maybe 'calculator' is a referring expression? However, the instructions say to record detected referring expressions like 'it', 'that file', etc. Since 'calculator' is a common noun and not a pronoun or specific reference, it's probably not a referring expression here. So references would be an empty list.\n\nMake sure not to add any entities or files that aren't mentioned. The user just wants the calculator opened, no other files involved. So the answer should have requested_operations with 'open' and empty references.\n",
+      "raw_content": "{\n  \"goal\": \"Open calculator\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [\"open\"],\n  \"prohibited_operations\": [],\n  \"references\": []\n}",
+      "decoded": {
+        "goal": "Open calculator",
+        "intent_family": "execute",
+        "requested_operations": [
+          "open"
+        ],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "ok": false,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 5808.321600001364,
+      "prompt_tokens": 190,
+      "completion_tokens": 291,
+      "reasoning_tokens": 227,
+      "error": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "reasoning_content": "Okay, let's break this down. The user said, \"Don't open it yet.\" The pre-semantic cues include the clause \"Don't open it yet,\" negation cue \"Don't,\" candidate verb 'open,' and referring expression 'it.'\n\nFirst, I need to classify the verbs. The negation cue is \"Don't,\" which directly negates the action of opening. So 'open' should go into prohibited_operations because the user is telling not to do it.\n\nNext, the referring expressions. The word 'it' is mentioned, so I need to record that as a reference. The target_id is left empty since we don't have specific information about what 'it' refers to. The user might be referring to a file or object mentioned earlier, but without more context, we can't specify.\n\nI should make sure not to add any entities or files that aren't explicitly mentioned. The only thing here is 'it,' so the references list just includes that. No other verbs are present, so prohibited_operations has 'open' and requested_operations is empty. That's all according to the rules provided.\n",
+      "raw_content": "{\n  \"goal\": \"\",\n  \"intent_family\": \"navigate\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [\"open\"],\n  \"references\": [\n    {\n      \"expression\": \"it\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 7837.504499999341,
+      "prompt_tokens": 205,
+      "completion_tokens": 389,
+      "reasoning_tokens": 277,
+      "error": null,
+      "reasoning_content": "Okay, let's break this down. The user message is \"Send it to him after they approve it.\" The pre-semantic cues give me clauses, candidate verbs, referring expressions, and temporal spans.\n\nFirst, the candidate action verb here is 'send'. I need to check if there's any negation. The original message doesn't have any negative words like 'not' or 'don't', so 'send' should be in requested_operations. \n\nNext, looking at referring expressions: 'it', 'him', 'they'. According to the rules, I should record these into 'references' with target_id empty. So each of these gets added as a reference without any specific ID.\n\nTemporal span is 'after they approve it'. That's part of the timing context for the action. Since there's no negation in the temporal clause, the operation remains requested. \n\nWait, but I need to make sure that 'approve' isn't a prohibited action. However, the candidate verbs only list 'send', so 'approve' isn't considered here. The user might be referring to someone else approving it, which is part of the condition for sending. Since there's no negation in the clause, everything stays as requested.\n\nSo final classification: 'send' is a requested operation. References are 'it', 'him', 'they'. No prohibited operations detected.\n",
+      "raw_content": "{\n  \"goal\": \"Send it to him after they approve it\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [\n    \"send\"\n  ],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\"expression\": \"it\", \"target_id\": \"\"},\n    {\"expression\": \"him\", \"target_id\": \"\"},\n    {\"expression\": \"they\", \"target_id\": \"\"}\n  ],\n  \"temporal_references\": [\n    \"after they approve it\"\n  ]\n}",
+      "decoded": {
+        "goal": "Send it to him after they approve it",
+        "intent_family": "execute",
+        "requested_operations": [
+          "send"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "him",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "they",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [
+          "after they approve it"
+        ],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 8064.282799998182,
+      "prompt_tokens": 200,
+      "completion_tokens": 408,
+      "reasoning_tokens": 325,
+      "error": null,
+      "reasoning_content": "Okay, let's break down what the user is asking. The message is \"Compare the attached PDF with this spreadsheet.\" So first, I need to look at the pre-semantic surface cues provided.\n\nThe clauses are just that one sentence. The candidate action verb here is 'compare', which seems straightforward. Now, checking for negation tokens\u2014there aren't any in the user's message. So according to rule 1, since there's no negation, 'compare' should go into 'requested_operations'. No prohibited actions here.\n\nNext, referring expressions. The user mentions \"this spreadsheet\" and \"this\". The instruction says to record these into 'references' with target_id empty. So I'll list both 'this spreadsheet' and 'this' under references. Even though 'this' is a bit vague, the rule says not to invent entities, so just note them as they are.\n\nFormats mentioned are PDF and spreadsheet. Those should be noted in the format cues, which they already are in the input. No need for changes there.\n\nWait, the user might be referring to specific files, but since the system can't assume or invent entities, I just capture the references as given. The 'attached PDF' is a referring expression too, but it's not in the candidate list provided. The candidates are 'this spreadsheet' and 'this', so those are the ones to include.\n\nSo putting it all together: requested_operations has 'compare', prohibited_operations is empty, references include 'this spreadsheet' and 'this', and format cues are PDF and spreadsheet. That should cover everything without violating any rules.\n",
+      "raw_content": "{\n  \"goal\": \"Compare the attached PDF with this spreadsheet\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"compare\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\"expression\": \"this spreadsheet\", \"target_id\": \"\"},\n    {\"expression\": \"this\", \"target_id\": \"\"}\n  ],\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Compare the attached PDF with this spreadsheet",
+        "intent_family": "compare",
+        "requested_operations": [
+          "compare"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "this spreadsheet",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "this",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "ok": true,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 11221.02630000154,
+      "prompt_tokens": 188,
+      "completion_tokens": 576,
+      "reasoning_tokens": 526,
+      "error": null,
+      "reasoning_content": "Okay, let's break this down. The user says, \"Make something I can submit tomorrow.\" The pre-semantic cues give me clauses, candidate verbs, and a temporal span.\n\nFirst, looking at the candidate verbs: 'make' and 'submit'. The user is asking to create something that can be submitted tomorrow. The verb 'make' here is part of the request, so it should go into requested_operations. 'Submit' is mentioned in the context of what the user wants to do with the created item, but since the main action is making, maybe 'submit' isn't a direct operation here. Wait, but the instruction says to classify based on negation cues and meaning. There's no negation here, so both verbs are allowed. However, the user is asking to make something that can be submitted. So 'make' is the primary action, and 'submit' might be part of the purpose. But according to the rules, I need to check if any verbs are prohibited. Since there's no negation tokens mentioned, neither is prohibited. So both would be in requested_operations? Wait, but the user isn't directly asking to submit, just to make something that can be submitted. So maybe 'submit' isn't a required action here. The candidate verbs are 'make' and 'submit', but the user's main request is 'make'. The 'submit' part is more of a condition or purpose. Therefore, 'make' is in requested_operations, and 'submit' might not be necessary unless it's implied. But according to the rules, I should classify based on the presence in the message. Since 'submit' is in the user message as part of the clause, maybe both are considered. Wait, but the instruction says \"candidate verbs\" which are provided. The user message includes 'make' and 'submit' as parts of the sentence. However, the action being requested is 'make', while 'submit' is part of the description of what the made thing should be able to do. So perhaps only 'make' is a requested operation. But I need to check if there's any negation. The pre-semantic cues don't mention any negation tokens, so no prohibited operations. \n\nNext, referring expressions: the user says \"something\" and \"I can submit tomorrow\". There are no explicit references like 'it', 'that file', etc., so the 'references' list would be empty. The target_id remains empty as per rules.\n\nSo final classification: requested_operations includes 'make', prohibited_operations is empty, and references is empty.\n",
+      "raw_content": "{\n  \"goal\": \"Make something I can submit tomorrow\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"make\"],\n  \"prohibited_operations\": [],\n  \"references\": []\n}",
+      "decoded": {
+        "goal": "Make something I can submit tomorrow",
+        "intent_family": "create",
+        "requested_operations": [
+          "make"
+        ],
+        "prohibited_operations": [],
+        "references": [],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": false,
+      "context_invented": false
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "ok": false,
+      "mode": "mode_b_turn_frame",
+      "latency_ms": 9955.552200000966,
+      "prompt_tokens": 210,
+      "completion_tokens": 497,
+      "reasoning_tokens": 398,
+      "error": "MISSING_REQUIRED_STRUCTURE: Wire payload has no non-empty 'goal' field",
+      "reasoning_content": "Okay, let's break this down. The user said, \"No, I meant the earlier one.\" The pre-semantic cues include clauses, negation tokens, candidate verbs, etc.\n\nFirst, looking at the negation cues: 'No' is present. That probably indicates a prohibition or negation of some action. But wait, in this context, the user is correcting themselves, so maybe the 'No' isn't about an operation but rather rejecting a previous statement. However, according to the rules, I need to classify candidate verbs into requested or prohibited operations based on negation cues. But where are the candidate verbs here? The pre-semantic cues list candidate referring expressions as 'the earlier one' and 'earlier one', not verbs. Hmm, maybe there are no candidate verbs in this case. The user message doesn't contain any verbs that are being requested or prohibited. So perhaps 'prohibited_operations' would be empty here.\n\nNext, the referring expressions: 'the earlier one' and 'earlier one'. Both should be recorded into 'references' with target_id=''. The temporal surface span is 'earlier', which might relate to the reference, but the rule says not to invent entities. So just list them as references without assigning any target ID.\n\nAlso, check if there are any candidate verbs. The user message doesn't have any verbs that are actions being requested or prohibited. The main action here is the user clarifying their previous statement, which might involve referring back to a prior item. Since there's no explicit verb in the message that's being negated or requested, 'requested_operations' and 'prohibited_operations' might both be empty. But wait, maybe \"meant\" is a verb? However, \"meant\" here is part of the referring expression, not an action to be performed. So probably no verbs to classify.\n\nSo the final output would have 'references' with the two expressions, and no operations listed.\n",
+      "raw_content": "{\n  \"goal\": \"\",\n  \"intent_family\": \"retrieve\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\"expression\": \"the earlier one\", \"target_id\": \"\"},\n    {\"expression\": \"earlier one\", \"target_id\": \"\"}\n  ],\n  \"temporal_references\": [\"earlier\"],\n  \"constraints\": {\n    \"excluded_items\": []\n  }\n}",
+      "goal_correct": false,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": false,
+      "references_detected": false,
+      "context_invented": false
+    }
+  ],
+  "mode_c_active_context": [
+    {
+      "id": "C1",
+      "text": "Bring that file up.",
+      "ok": true,
+      "mode": "mode_c_active_context",
+      "latency_ms": 6349.275300002773,
+      "prompt_tokens": 220,
+      "completion_tokens": 318,
+      "reasoning_tokens": 225,
+      "error": null,
+      "reasoning_content": "Okay, let's break this down. The user says, \"Bring that file up.\" The surface cues mention the clause \"Bring that file up\" with the action verb \"bring\" and referring expressions \"that file\" and \"that\". \n\nLooking at the active session working memory, there's an artifact x1 named 'Hostel_Order_21Sep.docx'. The user is referring to \"that file\", which should match the artifact x1. So according to rule 1, target_id would be x1.\n\nFor the requested operations, since the action verb is \"bring\" and the object is the file, the operation would be to bring up the file. But I need to check if there's any prohibited actions. The user didn't mention anything that's prohibited here. So requested_operations should include bringing up x1. No prohibited operations in this case.\n\nI need to make sure not to add any new artifacts. Since x1 is already present, it's correct to reference it. So the final answer should have target_id as x1 and requested_operations as [('bring', 'x1')].\n",
+      "raw_content": "{\n  \"goal\": \"Bring that file up\",\n  \"intent_family\": \"retrieve\",\n  \"requested_operations\": [\n    \"bring(x1)\"\n  ],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"that file\",\n      \"target_id\": \"x1\"\n    },\n    {\n      \"expression\": \"that\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Bring that file up",
+        "intent_family": "retrieve",
+        "requested_operations": [
+          "bring(x1)"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "that file",
+            "is_resolved": true,
+            "referent_hint": "Hostel_Order_21Sep.docx"
+          },
+          {
+            "expression": "that",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "target_ref": "that file",
+      "expected_target_id": "x1",
+      "resolved_correctly": true
+    },
+    {
+      "id": "C2",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "mode": "mode_c_active_context",
+      "latency_ms": 14679.740699997637,
+      "prompt_tokens": 216,
+      "completion_tokens": 743,
+      "reasoning_tokens": 653,
+      "error": null,
+      "reasoning_content": "Okay, let's break this down. The user says, \"Do the same thing for them.\" The surface cues mention the clauses and referring expressions. The active session has an entity e1, which is Prof. Rao, and the prior operation was generate_report.\n\nFirst, looking at the referring expressions: 'same thing' and 'them'. The instruction is to check if these refer to active artifacts or entities. \n\nFor 'them', the active entities have e1 as Prof. Rao. So 'them' likely refers to e1. But wait, 'them' is plural, and e1 is a single person. Maybe there's another entity not mentioned? But according to the active session working memory, only e1 is listed. Hmm, maybe the user is referring to Prof. Rao even though it's singular vs. plural. Alternatively, maybe 'them' doesn't match any entity here. \n\nThen there's 'same thing'. The prior operation was generate_report. If \"the same thing\" refers to that operation, then target_id would be the operation's ID. But the active session working memory mentions prior operation as generate_report, but does that have an ID? The problem is that the instructions say to look for active session artifacts or entities. The prior operation might not be an artifact or entity but part of the session history. \n\nSo 'same thing' might refer to the prior operation, but since operations aren't listed as artifacts or entities in the active context, it's unclear. Therefore, target_id would be empty for both unless there's a match. \n\nFor 'them', if e1 is Prof. Rao, and 'them' is plural, maybe it's not a direct reference. So target_id remains empty. \n\nRequested operations: The user wants to do the same thing (generate_report) for them (e1). But since the prior operation was generate_report, maybe the requested action is another generate_report for e1. However, according to the rules, we need to check if 'them' refers to an entity. If it does, then target_id is e1. \n\nBut the user says \"do the same thing for them\" \u2013 so the action would be generate_report again, targeting e1. So requested_operations should include generate_report with target e1. But according to the rules, we need to set target_id if referring expressions match. Since 'them' refers to e1, then target_id is e1. \n\nWait, but the prior operation was generate_report, which might be an artifact? The active session working memory includes prior operation as generate_report, but in the active entities, it's listed as e1 (Prof. Rao). So maybe the 'same thing' refers to the prior operation, but since operations aren't artifacts or entities, that's not applicable. \n\nSo for 'them', target_id is e1. For 'same thing', no match. Therefore, requested_operations would be generate_report again, targeting e1. But how does that translate into the JSON structure? The user message is a command to perform an action (generate_report) on the entity e1. So in the output, requested_operations should include the operation and target_id as e1.\n",
+      "raw_content": "{\n  \"goal\": \"Do the same thing for them\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [\"generate_report\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"same thing\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"them\",\n      \"target_id\": \"e1\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Do the same thing for them",
+        "intent_family": "execute",
+        "requested_operations": [
+          "generate_report"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "same thing",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "them",
+            "is_resolved": true,
+            "referent_hint": "Prof. Rao"
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "target_ref": "them",
+      "expected_target_id": "e1",
+      "resolved_correctly": true
+    },
+    {
+      "id": "C3",
+      "text": "Don't send it. Just draft the email.",
+      "ok": true,
+      "mode": "mode_c_active_context",
+      "latency_ms": 7792.417399999977,
+      "prompt_tokens": 226,
+      "completion_tokens": 383,
+      "reasoning_tokens": 282,
+      "error": null,
+      "reasoning_content": "Okay, let's break this down. The user said, \"Don't send it. Just draft the email.\" So first, I need to look at the referring expressions here. The word \"it\" is probably referring to something in the active session artifacts. The active artifacts listed are x2, which is Dean_Notification.eml.\n\nSo, \"it\" likely refers to that email file. Now, checking the candidate action verbs: 'send' and 'draft'. The user is telling not to send it, so that's a prohibited operation. Then, they want to draft the email, which is a requested operation. \n\nFor the first part, \"Don't send it\" \u2013 since \"it\" refers to x2, the target_id would be x2. But the action is 'send', which is prohibited. So in prohibited_operations, I should have 'send' with target_id x2.\n\nThen, \"Just draft the email\" \u2013 the action here is 'draft', and again, the email is x2. So requested_operations would include 'draft' with target_id x2. \n\nI need to make sure that there are no other references or actions. The user isn't mentioning anything else, so I don't need to consider other artifacts. Also, checking if any other entities are involved, but active session only has x2. So everything points to x2 here.\n",
+      "raw_content": "{\n  \"goal\": \"Decoding conversational follow-up\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [\n    \"{\\\"action\\\":\\\"draft\\\",\\\"target_id\\\":\\\"x2\\\"}\"\n  ],\n  \"prohibited_operations\": [\n    \"{\\\"action\\\":\\\"send\\\",\\\"target_id\\\":\\\"x2\\\"}\"\n  ],\n  \"references\": [\n    {\n      \"expression\": \"it\",\n      \"target_id\": \"x2\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Decoding conversational follow-up",
+        "intent_family": "modify",
+        "requested_operations": [
+          "{\"action\":\"draft\",\"target_id\":\"x2\"}"
+        ],
+        "prohibited_operations": [
+          "{\"action\":\"send\",\"target_id\":\"x2\"}"
+        ],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": true,
+            "referent_hint": "Dean_Notification.eml"
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": [
+            "{\"action\":\"send\",\"target_id\":\"x2\"}"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "target_ref": "it",
+      "expected_target_id": "x2",
+      "resolved_correctly": true
+    },
+    {
+      "id": "C4",
+      "text": "Revise it to sound more formal and add Dean's approval note.",
+      "ok": true,
+      "mode": "mode_c_active_context",
+      "latency_ms": 6563.732999995409,
+      "prompt_tokens": 248,
+      "completion_tokens": 317,
+      "reasoning_tokens": 212,
+      "error": null,
+      "reasoning_content": "Okay, let's tackle this user message. The user wants to revise something to sound more formal and add Dean's approval note.\n\nFirst, looking at the referring expressions. The user says \"Revise it...\" where \"it\" is the referring expression. In the active session working memory, there's an artifact x1: 'Hostel_Order_21Sep.docx'. Since \"it\" likely refers to this document, I should set target_id to x1.\n\nNext, the action verbs. The candidate action verb is 'revise', which matches the user's request. So the requested operation would be to revise x1. Also, adding Dean's approval note would involve another action, maybe 'add_note' or similar, but since the candidate verbs only list 'revise', I'll stick with that and note the additional requirement in the operations.\n\nProhibited operations aren't mentioned here, so that should be empty. Making sure not to invent new entities; Dean Academics is already an active entity e2, so referencing that is okay.\n",
+      "raw_content": "{\n  \"goal\": \"Revise document to sound more formal and add Dean's approval note\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [\n    \"revise(x1, formality_level=high)\",\n    \"add_approval_note(e2, artifact=x1)\"\n  ],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"it\",\n      \"target_id\": \"x1\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Revise document to sound more formal and add Dean's approval note",
+        "intent_family": "modify",
+        "requested_operations": [
+          "revise(x1, formality_level=high)",
+          "add_approval_note(e2, artifact=x1)"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": true,
+            "referent_hint": "Hostel_Order_21Sep.docx"
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "target_ref": "it",
+      "expected_target_id": "x1",
+      "resolved_correctly": true
+    },
+    {
+      "id": "C5",
+      "text": "Compare it with the earlier draft.",
+      "ok": true,
+      "mode": "mode_c_active_context",
+      "latency_ms": 6188.228099999833,
+      "prompt_tokens": 240,
+      "completion_tokens": 304,
+      "reasoning_tokens": 206,
+      "error": null,
+      "reasoning_content": "Okay, let's tackle this step by step. The user message is \"Compare it with the earlier draft.\" First, I need to look at the surface cues and active session working memory.\n\nThe candidate referring expressions are ['it']. In the active artifacts, there are two files: x1 (Hostel_Order_21Sep.docx) and x3 (Hostel_Order_15Aug_Draft.docx). The user mentions \"the earlier draft.\" Since the file names include dates, 15Aug is earlier than 21Sep. So, the earlier draft is likely x3. \n\nNow, 'it' would refer to the other document, which is x1. The action verb here is 'compare', so the requested operation should be comparing x1 and x3. I need to check if there's any prohibited actions, but the message doesn't mention anything negative. So, target_id for 'it' is x1, and the requested operation is compare between x1 and x3.\n",
+      "raw_content": "{\n  \"goal\": \"Compare two documents\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"compare(x1, x3)\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"it\",\n      \"target_id\": \"x1\"\n    },\n    {\n      \"expression\": \"the earlier draft\",\n      \"target_id\": \"x3\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Compare two documents",
+        "intent_family": "compare",
+        "requested_operations": [
+          "compare(x1, x3)"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": true,
+            "referent_hint": "Hostel_Order_21Sep.docx"
+          },
+          {
+            "expression": "the earlier draft",
+            "is_resolved": true,
+            "referent_hint": "Hostel_Order_15Aug_Draft.docx"
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "target_ref": "earlier draft",
+      "expected_target_id": "x3",
+      "resolved_correctly": true
+    },
+    {
+      "id": "C6",
+      "text": "No, I meant the earlier one.",
+      "ok": true,
+      "mode": "mode_c_active_context",
+      "latency_ms": 5423.430399998324,
+      "prompt_tokens": 239,
+      "completion_tokens": 264,
+      "reasoning_tokens": 166,
+      "error": null,
+      "reasoning_content": "Okay, let's tackle this. The user said, \"No, I meant the earlier one.\" The surface cues mention candidate referring expressions as 'the earlier one' and 'earlier one'. \n\nLooking at the active artifacts, there are two files: x1 (Hostel_Order_21Sep.docx) and x3 (Hostel_Order_15Aug_Draft.docx). The names have dates: 21Sep and 15Aug. Since August is earlier than September, the 'earlier one' would be the 15Aug file, which is x3.\n\nSo, the referring expression 'the earlier one' refers to x3. Therefore, target_id should be x3. There's no action requested here, just a clarification, so requested_operations and prohibited_operations are empty.\n",
+      "raw_content": "{\n  \"goal\": \"Clarify reference to an earlier artifact\",\n  \"intent_family\": \"retrieve\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"the earlier one\",\n      \"target_id\": \"x3\"\n    },\n    {\n      \"expression\": \"earlier one\",\n      \"target_id\": \"x3\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Clarify reference to an earlier artifact",
+        "intent_family": "retrieve",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "the earlier one",
+            "is_resolved": true,
+            "referent_hint": "Hostel_Order_15Aug_Draft.docx"
+          },
+          {
+            "expression": "earlier one",
+            "is_resolved": true,
+            "referent_hint": "Hostel_Order_15Aug_Draft.docx"
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "target_ref": "earlier one",
+      "expected_target_id": "x3",
+      "resolved_correctly": true
+    }
+  ],
+  "repeatability": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 5209.23309999489,
+      "prompt_tokens": 197,
+      "completion_tokens": 262,
+      "reasoning_tokens": 192,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user said \"Convert this to PDF.\" So first, I need to figure out what they mean by \"this.\" Since there's no explicit mention of a file or document name, it's probably referring to something previously mentioned or currently open. But according to the rules, if there's no active context provided, the target_id should be empty.\n\nThe main action here is converting something to PDF. The requested operation is clearly 'convert'. I need to check if there's any prohibited actions, but the user didn't mention anything forbidden. The word 'this' is a pronoun, so it goes into 'references' with an empty target_id because there's no specific context given. \n\nSo putting it all together: requested_operations should have 'convert', prohibited_operations is empty, and references includes 'this' with target_id as empty string. I need to make sure the JSON follows the schema correctly without any extra fields.\n",
+      "raw_content": "{\n  \"goal\": \"Convert a document or file to PDF format\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [\"convert\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"this\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Convert a document or file to PDF format",
+        "intent_family": "modify",
+        "requested_operations": [
+          "convert"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "this",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 1
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 8510.707499997807,
+      "prompt_tokens": 199,
+      "completion_tokens": 431,
+      "reasoning_tokens": 364,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's query: \"Do the same thing for them.\" \n\nFirst, I need to identify any explicitly requested actions. The phrase \"do the same thing\" suggests that there was a previous action taken, and now the user wants that exact action applied again, but this time for \"them.\" However, the problem is that the original action isn't specified here. Without knowing what the previous action was, I can't determine what needs to be done. But according to the rules, if the user says \"do the same thing,\" maybe there's an implied action from context. Wait, but the rules say not to invent outside context. So if the original action wasn't mentioned in this message, I shouldn't assume it.\n\nLooking at the critical rules again: Rule 1 says to put explicitly requested actions into 'requested_operations.' The user is asking to \"do the same thing,\" which might be a reference to a prior action. However, since there's no explicit mention of what that action was in this message, I can't list it as a requested operation. Unless \"same thing\" refers to an action previously mentioned in the conversation history, but according to Rule 4, I shouldn't invent context not provided here.\n\nNext, prohibited operations: The user didn't mention anything forbidden, so 'prohibited_operations' should be empty.\n\nReferences: The pronoun \"them\" is present. So I need to extract that into 'references' with a target_id of an empty string since there's no explicit active context provided in the message.\n\nSo putting it all together, the JSON would have 'requested_operations' as empty because the action isn't explicitly stated here, 'prohibited_operations' as empty, and 'references' containing \"them\" with target_id \"\".\n",
+      "raw_content": "{\n  \"goal\": \"Do the same thing for them.\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"them\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Do the same thing for them.",
+        "intent_family": "execute",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "them",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 1
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 7135.257400004775,
+      "prompt_tokens": 202,
+      "completion_tokens": 339,
+      "reasoning_tokens": 247,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They said, \"Don't send it. Just draft the email.\" So first, I need to identify the actions they're asking for and any prohibitions.\n\nThe first part is \"Don't send it.\" That's a prohibition against sending the email. So 'send' should go into prohibited_operations. Then, \"Just draft the email\" explicitly asks for drafting, so 'draft' goes into requested_operations. \n\nNext, checking for pronouns or references. The user uses \"it\" and \"the email.\" But since there's no specific context provided about which email they're referring to, I can't assign a target_id. So in 'references', I'll note the pronouns and deictic phrases mentioned.\n\nI need to make sure not to include any actions that aren't explicitly mentioned. They didn't mention converting or comparing, so those aren't needed here. Also, no other files or contexts are referenced, so 'target_id' remains empty. \n\nPutting it all together: prohibited_operations has 'send', requested_operations has 'draft', and references include 'it' and 'the email'. Target_id is empty because there's no explicit context provided.\n",
+      "raw_content": "{\n  \"goal\": \"Draft an email without sending it\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [\"send\"],\n  \"references\": [\n    {\"expression\": \"it\", \"target_id\": \"\"},\n    {\"expression\": \"the email\", \"target_id\": \"\"}\n  ],\n  \"constraints\": {\n    \"excluded_items\": []\n  }\n}",
+      "decoded": {
+        "goal": "Draft an email without sending it",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [
+          "send"
+        ],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "the email",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": [
+            "send"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 1
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 8251.370400001178,
+      "prompt_tokens": 208,
+      "completion_tokens": 418,
+      "reasoning_tokens": 311,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They want me to find the previous approval, compare it with the current one, and then draft a revised order.\n\nFirst, I need to identify the actions involved. The user explicitly mentions three steps: finding the previous approval, comparing it with the current one, and drafting a revised order. According to the rules, these should be listed in 'requested_operations'. So 'find', 'compare', and 'draft' would go there.\n\nNext, checking for any prohibited operations. The user didn't mention anything that's forbidden, so 'prohibited_operations' stays empty.\n\nNow, looking for references. The user uses 'previous approval' and 'this one'. These are pronouns or deictic phrases. 'Previous approval' refers to a past document, and 'this one' refers to the current approval. I need to extract these into 'references'. Since there's no explicit target ID provided, I'll leave 'target_id' as an empty string.\n\nI should make sure not to add any extra context or files that aren't mentioned. The user only talks about the previous and current approvals, so I don't assume any other documents exist. Also, ensuring that negated actions aren't in 'requested_operations'. Since there are no negatives here, that's not an issue.\n\nPutting it all together, the JSON should have the three operations in requested_operations, empty prohibited_operations, and the references listed with their respective IDs. The target_id remains empty as there's no specific context provided.\n",
+      "raw_content": "{\n  \"goal\": \"Find the previous approval, compare it with this one and draft a revised order\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"find\", \"compare\", \"draft\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"previous approval\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"this one\",\n      \"target_id\": \"\"\n    }\n  ],\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Find the previous approval, compare it with this one and draft a revised order",
+        "intent_family": "compare",
+        "requested_operations": [
+          "find",
+          "compare",
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "previous approval",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "this one",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 1
+    },
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 5154.556800000137,
+      "prompt_tokens": 197,
+      "completion_tokens": 262,
+      "reasoning_tokens": 192,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user said \"Convert this to PDF.\" So first, I need to figure out what they mean by \"this.\" Since there's no explicit mention of a file or document name, it's probably referring to something previously mentioned or currently open. But according to the rules, if there's no active context provided, the target_id should be empty.\n\nThe main action here is converting something to PDF. The requested operation is clearly 'convert'. I need to check if there's any prohibited actions, but the user didn't mention anything forbidden. The word 'this' is a pronoun, so it goes into 'references' with an empty target_id because there's no specific context given. \n\nSo putting it all together: requested_operations should have 'convert', prohibited_operations is empty, and references includes 'this' with target_id as empty string. I need to make sure the JSON follows the schema correctly without any extra fields.\n",
+      "raw_content": "{\n  \"goal\": \"Convert a document or file to PDF format\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [\"convert\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"this\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Convert a document or file to PDF format",
+        "intent_family": "modify",
+        "requested_operations": [
+          "convert"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "this",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 2
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 8456.288800000038,
+      "prompt_tokens": 199,
+      "completion_tokens": 431,
+      "reasoning_tokens": 364,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's query: \"Do the same thing for them.\" \n\nFirst, I need to identify any explicitly requested actions. The phrase \"do the same thing\" suggests that there was a previous action taken, and now the user wants that exact action applied again, but this time for \"them.\" However, the problem is that the original action isn't specified here. Without knowing what the previous action was, I can't determine what needs to be done. But according to the rules, if the user says \"do the same thing,\" maybe there's an implied action from context. Wait, but the rules say not to invent outside context. So if the original action wasn't mentioned in this message, I shouldn't assume it.\n\nLooking at the critical rules again: Rule 1 says to put explicitly requested actions into 'requested_operations.' The user is asking to \"do the same thing,\" which might be a reference to a prior action. However, since there's no explicit mention of what that action was in this message, I can't list it as a requested operation. Unless \"same thing\" refers to an action previously mentioned in the conversation history, but according to Rule 4, I shouldn't invent context not provided here.\n\nNext, prohibited operations: The user didn't mention anything forbidden, so 'prohibited_operations' should be empty.\n\nReferences: The pronoun \"them\" is present. So I need to extract that into 'references' with a target_id of an empty string since there's no explicit active context provided in the message.\n\nSo putting it all together, the JSON would have 'requested_operations' as empty because the action isn't explicitly stated here, 'prohibited_operations' as empty, and 'references' including \"them\" with target_id \"\".\n",
+      "raw_content": "{\n  \"goal\": \"Do the same thing for them.\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"them\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Do the same thing for them.",
+        "intent_family": "execute",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "them",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 2
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 6703.22060000035,
+      "prompt_tokens": 202,
+      "completion_tokens": 339,
+      "reasoning_tokens": 247,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They said, \"Don't send it. Just draft the email.\" So first, I need to identify the actions they're asking for and any prohibitions.\n\nThe first part is \"Don't send it.\" That's a prohibition against sending the email. So 'send' should go into prohibited_operations. Then, \"Just draft the email\" explicitly asks for drafting, so 'draft' goes into requested_operations. \n\nNext, checking for pronouns or references. The user uses \"it\" and \"the email.\" But since there's no specific context provided about which email they're referring to, I can't assign a target_id. So in 'references', I'll note the pronouns and deictic phrases mentioned.\n\nI need to make sure not to include any actions that aren't explicitly mentioned. They didn't mention converting or comparing, so those aren't needed here. Also, no other files or contexts are referenced, so 'target_id' remains empty. \n\nPutting it all together: prohibited_operations has 'send', requested_operations has 'draft', and references include 'it' and 'the email'. Target_id is empty because there's no explicit context provided.\n",
+      "raw_content": "{\n  \"goal\": \"Draft an email without sending it\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [\"send\"],\n  \"references\": [\n    {\"expression\": \"it\", \"target_id\": \"\"},\n    {\"expression\": \"the email\", \"target_id\": \"\"}\n  ],\n  \"constraints\": {\n    \"excluded_items\": []\n  }\n}",
+      "decoded": {
+        "goal": "Draft an email without sending it",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [
+          "send"
+        ],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "the email",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": [
+            "send"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 2
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 8198.88450000144,
+      "prompt_tokens": 208,
+      "completion_tokens": 418,
+      "reasoning_tokens": 311,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They want me to find the previous approval, compare it with the current one, and then draft a revised order.\n\nFirst, I need to identify the actions involved. The user explicitly mentions three steps: finding the previous approval, comparing it with the current one, and drafting a revised order. According to the rules, these should be listed in 'requested_operations'. So 'find', 'compare', and 'draft' would go there.\n\nNext, checking for any prohibited operations. The user didn't mention anything that's forbidden, so 'prohibited_operations' stays empty.\n\nNow, looking for references. The user uses 'previous approval' and 'this one'. These are pronouns or deictic phrases. 'Previous approval' refers to a past document, and 'this one' refers to the current approval. I need to extract these into 'references'. Since there's no explicit target ID provided, I'll leave 'target_id' as an empty string.\n\nI should make sure not to add any extra context or files that aren't mentioned. The user only talks about the previous and current approvals, so I don't assume any other documents exist. Also, ensuring that negated actions aren't in 'requested_operations'. Since there are no negatives here, that's not an issue.\n\nPutting it all together, the JSON should have the three operations in requested_operations, empty prohibited_operations, and the references listed with their respective IDs. The target_id remains empty as there's no specific context provided.\n",
+      "raw_content": "{\n  \"goal\": \"Find the previous approval, compare it with this one and draft a revised order\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"find\", \"compare\", \"draft\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"previous approval\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"this one\",\n      \"target_id\": \"\"\n    }\n  ],\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Find the previous approval, compare it with this one and draft a revised order",
+        "intent_family": "compare",
+        "requested_operations": [
+          "find",
+          "compare",
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "previous approval",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "this one",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 2
+    },
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 5143.258699994476,
+      "prompt_tokens": 197,
+      "completion_tokens": 262,
+      "reasoning_tokens": 192,
+      "error": null,
+      "reasoning_content": "Okay, let's see. The user said \"Convert this to PDF.\" So first, I need to figure out what they mean by \"this.\" Since there's no explicit mention of a file or document name, it's probably referring to something previously mentioned or currently open. But according to the rules, if there's no active context provided, the target_id should be empty.\n\nThe main action here is converting something to PDF. The requested operation is clearly 'convert'. I need to check if there's any prohibited actions, but the user didn't mention anything forbidden. The word 'this' is a pronoun, so it goes into 'references' with an empty target_id because there's no specific context given. \n\nSo putting it all together: requested_operations should have 'convert', prohibited_operations is empty, and references includes 'this' with target_id as empty string. I need to make sure the JSON follows the schema correctly without any extra fields.\n",
+      "raw_content": "{\n  \"goal\": \"Convert a document or file to PDF format\",\n  \"intent_family\": \"modify\",\n  \"requested_operations\": [\"convert\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"this\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Convert a document or file to PDF format",
+        "intent_family": "modify",
+        "requested_operations": [
+          "convert"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "this",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 3
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 8436.313899997913,
+      "prompt_tokens": 199,
+      "completion_tokens": 431,
+      "reasoning_tokens": 364,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's query: \"Do the same thing for them.\" \n\nFirst, I need to identify any explicitly requested actions. The phrase \"do the same thing\" suggests that there was a previous action taken, and now the user wants that exact action applied again, but this time for \"them.\" However, the problem is that the original action isn't specified here. Without knowing what the previous action was, I can't determine what needs to be done. But according to the rules, if the user says \"do the same thing,\" maybe there's an implied action from context. Wait, but the rules say not to invent outside context. So if the original action wasn't mentioned in this message, I shouldn't assume it.\n\nLooking at the critical rules again: Rule 1 says to put explicitly requested actions into 'requested_operations.' The user is asking to \"do the same thing,\" which might be a reference to a prior action. However, since there's no explicit mention of what that action was in this message, I can't list it as a requested operation. Unless \"same thing\" refers to an action previously mentioned in the conversation history, but according to Rule 4, I shouldn't invent context not provided here.\n\nNext, prohibited operations: The user didn't mention anything forbidden, so 'prohibited_operations' should be empty.\n\nReferences: The pronoun \"them\" is present. So I need to extract that into 'references' with a target_id of an empty string since there's no explicit active context provided in the message.\n\nSo putting it all together, the JSON would have 'requested_operations' as empty because the action isn't explicitly stated here, 'prohibited_operations' as empty, and 'references' including \"them\" with target_id \"\".\n",
+      "raw_content": "{\n  \"goal\": \"Do the same thing for them.\",\n  \"intent_family\": \"execute\",\n  \"requested_operations\": [],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"them\",\n      \"target_id\": \"\"\n    }\n  ]\n}",
+      "decoded": {
+        "goal": "Do the same thing for them.",
+        "intent_family": "execute",
+        "requested_operations": [],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "them",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": false,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 3
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 6711.624799994752,
+      "prompt_tokens": 202,
+      "completion_tokens": 339,
+      "reasoning_tokens": 247,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They said, \"Don't send it. Just draft the email.\" So first, I need to identify the actions they're asking for and any prohibitions.\n\nThe first part is \"Don't send it.\" That's a prohibition against sending the email. So 'send' should go into prohibited_operations. Then, \"Just draft the email\" explicitly asks for drafting, so 'draft' goes into requested_operations. \n\nNext, checking for pronouns or references. The user uses \"it\" and \"the email.\" But since there's no specific context provided about which email they're referring to, I can't assign a target_id. So in 'references', I'll note the pronouns and deictic phrases mentioned.\n\nI need to make sure not to include any actions that aren't explicitly mentioned. They didn't mention converting or comparing, so those aren't needed here. Also, no other files or contexts are referenced, so 'target_id' remains empty. \n\nPutting it all together: prohibited_operations has 'send', requested_operations has 'draft', and references include 'it' and 'the email'. Target_id is empty because there's no explicit context provided.\n",
+      "raw_content": "{\n  \"goal\": \"Draft an email without sending it\",\n  \"intent_family\": \"create\",\n  \"requested_operations\": [\"draft\"],\n  \"prohibited_operations\": [\"send\"],\n  \"references\": [\n    {\"expression\": \"it\", \"target_id\": \"\"},\n    {\"expression\": \"the email\", \"target_id\": \"\"}\n  ],\n  \"constraints\": {\n    \"excluded_items\": []\n  }\n}",
+      "decoded": {
+        "goal": "Draft an email without sending it",
+        "intent_family": "create",
+        "requested_operations": [
+          "draft"
+        ],
+        "prohibited_operations": [
+          "send"
+        ],
+        "references": [
+          {
+            "expression": "it",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "the email",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": [
+            "send"
+          ]
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 3
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": true,
+      "mode": "mode_a_raw",
+      "latency_ms": 8206.3582999981,
+      "prompt_tokens": 208,
+      "completion_tokens": 418,
+      "reasoning_tokens": 311,
+      "error": null,
+      "reasoning_content": "Okay, let's break down the user's request. They want me to find the previous approval, compare it with the current one, and then draft a revised order.\n\nFirst, I need to identify the actions involved. The user explicitly mentions three steps: finding the previous approval, comparing it with the current one, and drafting a revised order. According to the rules, these should be listed in 'requested_operations'. So 'find', 'compare', and 'draft' would go there.\n\nNext, checking for any prohibited operations. The user didn't mention anything that's forbidden, so 'prohibited_operations' stays empty.\n\nNow, looking for references. The user uses 'previous approval' and 'this one'. These are pronouns or deictic phrases. 'Previous approval' refers to a past document, and 'this one' refers to the current approval. I need to extract these into 'references'. Since there's no explicit target ID provided, I'll leave 'target_id' as an empty string.\n\nI should make sure not to add any extra context or files that aren't mentioned. The user only talks about the previous and current approvals, so I don't assume any other documents exist. Also, ensuring that negated actions aren't in 'requested_operations'. Since there are no negatives here, that's not an issue.\n\nPutting it all together, the JSON should have the three operations in requested_operations, empty prohibited_operations, and the references listed with their respective IDs. The target_id remains empty as there's no specific context provided.\n",
+      "raw_content": "{\n  \"goal\": \"Find the previous approval, compare it with this one and draft a revised order\",\n  \"intent_family\": \"compare\",\n  \"requested_operations\": [\"find\", \"compare\", \"draft\"],\n  \"prohibited_operations\": [],\n  \"references\": [\n    {\n      \"expression\": \"previous approval\",\n      \"target_id\": \"\"\n    },\n    {\n      \"expression\": \"this one\",\n      \"target_id\": \"\"\n    }\n  ],\n  \"entities\": []\n}",
+      "decoded": {
+        "goal": "Find the previous approval, compare it with this one and draft a revised order",
+        "intent_family": "compare",
+        "requested_operations": [
+          "find",
+          "compare",
+          "draft"
+        ],
+        "prohibited_operations": [],
+        "references": [
+          {
+            "expression": "previous approval",
+            "is_resolved": false,
+            "referent_hint": null
+          },
+          {
+            "expression": "this one",
+            "is_resolved": false,
+            "referent_hint": null
+          }
+        ],
+        "temporal_references": [],
+        "constraints": {
+          "included": [],
+          "excluded": [],
+          "prohibited_actions": []
+        },
+        "entities": []
+      },
+      "goal_correct": true,
+      "requested_ops_correct": true,
+      "prohibited_ops_correct": true,
+      "references_detected": true,
+      "context_invented": false,
+      "run_index": 3
+    }
+  ],
+  "summary": {
+    "mode_a_raw": {
+      "total": 18,
+      "ok_rate": 0.7777777777777778,
+      "goal_accuracy": 0.7222222222222222,
+      "requested_ops_accuracy": 0.6111111111111112,
+      "prohibited_ops_accuracy": 0.7777777777777778,
+      "reference_detection_accuracy": 0.6666666666666666,
+      "context_invention_rate": 0.0,
+      "latency": {
+        "min_ms": 5187.3,
+        "median_ms": 6832.6,
+        "mean_ms": 7612.7,
+        "max_ms": 15356.7
+      },
+      "reasoning_tokens": {
+        "min": 181,
+        "median": 253.5,
+        "mean": 306.7,
+        "max": 798
+      },
+      "completion_tokens": {
+        "min": 253,
+        "median": 342.5,
+        "mean": 381.6,
+        "max": 800
+      }
+    },
+    "mode_b_turn_frame": {
+      "total": 18,
+      "ok_rate": 0.7222222222222222,
+      "goal_accuracy": 0.7222222222222222,
+      "requested_ops_accuracy": 0.6666666666666666,
+      "prohibited_ops_accuracy": 0.7222222222222222,
+      "reference_detection_accuracy": 0.6666666666666666,
+      "context_invention_rate": 0.0,
+      "latency": {
+        "min_ms": 5269.9,
+        "median_ms": 8546.8,
+        "mean_ms": 8591.9,
+        "max_ms": 15518.5
+      },
+      "reasoning_tokens": {
+        "min": 223,
+        "median": 316.0,
+        "mean": 352.6,
+        "max": 798
+      },
+      "completion_tokens": {
+        "min": 266,
+        "median": 418.5,
+        "mean": 430.8,
+        "max": 800
+      }
+    },
+    "mode_c_active_context": {
+      "total": 6,
+      "ok_rate": 1.0,
+      "goal_accuracy": 1.0,
+      "requested_ops_accuracy": 1.0,
+      "prohibited_ops_accuracy": 1.0,
+      "reference_detection_accuracy": 1.0,
+      "context_invention_rate": 0.0,
+      "latency": {
+        "min_ms": 5423.4,
+        "median_ms": 6456.5,
+        "mean_ms": 7832.8,
+        "max_ms": 14679.7
+      },
+      "reasoning_tokens": {
+        "min": 166,
+        "median": 218.5,
+        "mean": 290.7,
+        "max": 653
+      },
+      "completion_tokens": {
+        "min": 264,
+        "median": 317.5,
+        "mean": 388.2,
+        "max": 743
+      },
+      "target_resolution_rate": 1.0
+    },
+    "repeatability": {
+      "total": 12,
+      "ok_rate": 1.0,
+      "goal_accuracy": 1.0,
+      "requested_ops_accuracy": 0.75,
+      "prohibited_ops_accuracy": 1.0,
+      "reference_detection_accuracy": 1.0,
+      "context_invention_rate": 0.0,
+      "latency": {
+        "min_ms": 5143.3,
+        "median_ms": 7667.1,
+        "mean_ms": 7176.4,
+        "max_ms": 8510.7
+      },
+      "reasoning_tokens": {
+        "min": 192,
+        "median": 279.0,
+        "mean": 278.5,
+        "max": 364
+      },
+      "completion_tokens": {
+        "min": 262,
+        "median": 378.5,
+        "mean": 362.5,
+        "max": 431
+      }
+    }
+  }
+}

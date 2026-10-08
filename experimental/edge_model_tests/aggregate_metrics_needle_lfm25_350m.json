@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-09-28T14:35:33Z",
+  "architecture": "Needle 3 + LFM2.5-350M Edge Combination",
+  "cluster_components": {
+    "model_job_matching_gate": "URI Deterministic Dispatcher",
+    "narrow_decision_specialist": "Needle 3 (cactus-needle 3.0.2, CPU native)",
+    "bounded_semantic_worker": "LiquidAI LFM2.5-350M-Q8_0 (LM Studio, GPU)",
+    "deterministic_baseline": "URI Deterministic Baseline Engine",
+    "independent_verifier": "URI EdgeTaskVerifier (Authoritative)"
+  },
+  "model_job_matching_metrics": {
+    "total_cases": 30,
+    "role_selection_accuracy": 1.0,
+    "correct_role_selections": 30,
+    "wrong_model_routing_count": 0,
+    "unnecessary_model_invocation_count": 0,
+    "deterministic_bypass_mistakes": 0,
+    "unnecessary_main_brain_escalations": 0,
+    "unsafe_edge_admissions": 0
+  },
+  "needle_metrics": {
+    "cando_count": 14,
+    "escalate_count": 5,
+    "mean_latency_ms": 45.0,
+    "median_latency_ms": 0.7,
+    "p95_latency_ms": 271.1
+  },
+  "lfm_metrics": {
+    "total_invoked": 8,
+    "correct_outputs": 6,
+    "incorrect_outputs": 2,
+    "claimed_success": 8,
+    "false_claimed_success": 2,
+    "schema_failures": 0,
+    "mean_latency_ms": 334.9,
+    "median_latency_ms": 337.0,
+    "p95_latency_ms": 397.9
+  },
+  "combination_overall_metrics": {
+    "total_cases": 30,
+    "correct_cases": 27,
+    "accuracy": 0.9,
+    "verified_local_successes": 13,
+    "verified_local_completion_rate": 0.4333,
+    "effective_escalations": 15,
+    "escalation_rate": 0.5,
+    "false_candidate_successes": 2,
+    "false_verified_successes": 0,
+    "latency_ms": {
+      "mean_total": 123.2,
+      "median_total": 0.1,
+      "p95_total": 617.5,
+      "mean_gate": 0.01,
+      "mean_needle": 45.0,
+      "mean_lfm": 334.9,
+      "mean_verifier": 0.02
+    },
+    "ram_before": {
+      "used_ram_mb": 16407.4,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 66
+    },
+    "ram_after": {
+      "used_ram_mb": 16425.9,
+      "total_ram_mb": 24500.8,
+      "ram_load_pct": 67
+    }
+  }
+}

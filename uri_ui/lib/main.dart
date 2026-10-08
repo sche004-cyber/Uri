@@ -12,6 +12,11 @@ import 'app.dart';
 import 'services/app_state.dart';
 import 'services/device_identity.dart';
 import 'services/http_uri_client.dart';
+import 'services/desktop_harness_test_client.dart';
+import 'services/desktop_harness_test_session.dart';
+import 'widgets/desktop_harness_test.dart';
+import 'widgets/desktop_voice.dart';
+import 'dart:io' show Platform;
 import 'services/platform_attachment_opener.dart';
 import 'services/platform_file_picker.dart';
 import 'services/platform_window_controller.dart';
@@ -31,13 +36,35 @@ void main() async {
   // As of M16 nothing in HttpUriClient falls back to mock data. Widget/
   // unit tests build their own AppState with MockUriClient directly and
   // are unaffected by this.
-  final appState = AppState(HttpUriClient(deviceId: deviceId));
+  final uriClient = HttpUriClient(deviceId: deviceId);
+  const harnessTestEnabled = bool.fromEnvironment('URI_DESKTOP_HARNESS_TEST');
+  final appState = AppState(
+    uriClient,
+    sessionStore: harnessTestEnabled ? DesktopHarnessTestSession() : null,
+  );
+  final harnessTestClient = harnessTestEnabled
+      ? DesktopHarnessTestClient(uriClient)
+      : null;
+  final harnessNavigatorKey = harnessTestEnabled
+      ? GlobalKey<NavigatorState>()
+      : null;
+  final voiceScript = Platform.isWindows
+      ? Platform.environment['URI_VOICE_SCRIPT']
+      : null;
   // Resolve any previously persisted onboarding/preferences/server
   // address before the first frame, so a returning user never sees
   // onboarding flash by and a phone already pointed at its PC never
   // silently falls back to localhost.
   await appState.loadPersistedPreferences();
   await appState.loadPersistedServerAddress();
+  if (harnessTestEnabled) {
+    uriClient.setBaseUrl(
+      const String.fromEnvironment(
+        'URI_DESKTOP_HARNESS_CORE_URL',
+        defaultValue: 'http://127.0.0.1:8018',
+      ),
+    );
+  }
   await appState.loadPersistedThemeMode();
   // M22.9 (§0.3): restores and proactively revalidates a still-valid
   // login from a previous launch, so closing/reopening the app does
@@ -51,6 +78,21 @@ void main() async {
   runApp(
     UriApp(
       appState: appState,
+      integrationNavigatorKey: harnessNavigatorKey,
+      integrationTestBuilder: harnessTestClient == null && voiceScript == null
+          ? null
+          : (context, child) {
+              Widget result = child!;
+              if (harnessTestClient != null) {
+                result = DesktopHarnessTest(client: harnessTestClient,
+                  navigatorKey: harnessNavigatorKey, child: result);
+              }
+              if (voiceScript != null) {
+                result = DesktopVoice(script: voiceScript,
+                  appState: appState, child: result);
+              }
+              return result;
+            },
       filePicker: pickPlatformFile,
       attachmentOpener: openPlatformAttachment,
       onCompactModeChanged: setCompactWindowMode,

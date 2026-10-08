@@ -1,0 +1,3458 @@
+[
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "TRAP-01",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 472.4004000017885,
+    "prompt_tokens": 454,
+    "completion_tokens": 47,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "email_search_read",
+      "justification": "The request asks about a specific email content from the Dean, which requires reading and searching through authorized mailboxes for internal correspondence."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "TRAP-02",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 485.5336000000534,
+    "prompt_tokens": 439,
+    "completion_tokens": 53,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "session_history_search",
+      "justification": "The request explicitly asks about a decision made in 'our last session,' which directly corresponds to retrieving information from the session history for past agreements and architectural discussions."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "TRAP-03",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 430.23319999701926,
+    "prompt_tokens": 458,
+    "completion_tokens": 60,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "web_search",
+      "justification": "The request asks for specific information about a public journal paper, which requires searching external sources like academic databases and publications. The web_search capability is designed for finding published scientific papers on the open Internet."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "TRAP-04",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 401.06870000090566,
+    "prompt_tokens": 439,
+    "completion_tokens": 54,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "document_reader",
+      "justification": "The request explicitly asks to check a local settings file at config.yaml, which is a configuration file on the local filesystem that can be read using the document_reader capability."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "NOTOOL-01",
+    "category": "NO_TOOL",
+    "total_latency_ms": 391.52869999816176,
+    "prompt_tokens": 450,
+    "completion_tokens": 47,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "The request involves a straightforward arithmetic calculation based on an approved budget already in context, which falls under deterministic computation without requiring external tools."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "NOTOOL-02",
+    "category": "NO_TOOL",
+    "total_latency_ms": 369.8984000002383,
+    "prompt_tokens": 418,
+    "completion_tokens": 49,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "The request involves formatting a simple comma-separated list of three items, which is deterministic computation already grounded in active context rather than requiring external tools."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "NOTOOL-03",
+    "category": "NO_TOOL",
+    "total_latency_ms": 494.6739000006346,
+    "prompt_tokens": 434,
+    "completion_tokens": 71,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "email_search_read",
+      "justification": "The request involves sending an email, which requires accessing the recipient's mailbox to compose and send a message. The 'email_search_read' capability is specifically designed for reading private emails in authorized mailboxes, making it suitable for composing and sending messages."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": true,
+      "correct_no_tool": false,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNNECESSARY_CAPABILITY",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "NOTOOL-04",
+    "category": "NO_TOOL",
+    "total_latency_ms": 369.42460000136634,
+    "prompt_tokens": 415,
+    "completion_tokens": 50,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "The request is a simple text transformation (uppercase conversion) that can be handled deterministically without external tools, making NO_TOOL the most appropriate choice."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "ASKUSER-01",
+    "category": "ASK_USER",
+    "total_latency_ms": 465.0285999996413,
+    "prompt_tokens": 480,
+    "completion_tokens": 64,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "email_search_read",
+      "justification": "The request involves forwarding a document to an external contact, which requires reading and sending email content. The 'email_search_read' capability is appropriate for handling internal emails and messages that need to be forwarded or modified."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_TO_ASK_USER",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "ASKUSER-02",
+    "category": "ASK_USER",
+    "total_latency_ms": 365.2722000006179,
+    "prompt_tokens": 437,
+    "completion_tokens": 52,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request requires a verbal passphrase from an external source (the Director) that is not present in any available context, making it impossible to proceed without clarification."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "ASKUSER-03",
+    "category": "ASK_USER",
+    "total_latency_ms": 361.2713000002259,
+    "prompt_tokens": 450,
+    "completion_tokens": 51,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves permanently deleting a release branch from a git repository, which is an administrative operation outside standard tool capabilities and requires confirmation of authorization before execution."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "ASKUSER-04",
+    "category": "ASK_USER",
+    "total_latency_ms": 523.4696000006807,
+    "prompt_tokens": 453,
+    "completion_tokens": 78,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves transferring funds between corporate and vendor accounts, which requires financial authorization verification that is not covered by any of the available capabilities (email, calendar, files, erp_orders). This action triggers a need for clarification on whether this transfer falls within authorized scope or requires additional approval."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "STRAT-01",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 396.25969999906374,
+    "prompt_tokens": 442,
+    "completion_tokens": 51,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves selecting a better heuristic for an ambiguous edge case, which requires clarification on specific criteria and constraints rather than retrieving external data or executing computation."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_STRATEGY_DISCOVERY",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "STRAT-02",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 389.2130000022007,
+    "prompt_tokens": 452,
+    "completion_tokens": 53,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request requires synthesizing a protocol bridge between legacy and modern schemas, which is an ambiguous task requiring clarification on specific requirements rather than using existing tools or context."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_STRATEGY_DISCOVERY",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "PRECOND-01",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 390.72329999908106,
+    "prompt_tokens": 462,
+    "completion_tokens": 54,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "order_submission_system",
+      "justification": "The request explicitly requires submitting a purchase order with verified director sign-off, which is only possible through the designated order_submission_system capability that enforces verification before submission."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PREMATURE_ACTION_UNGROUNDED_PRECONDITION",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-2b",
+    "case_id": "PRECOND-02",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 493.309199999203,
+    "prompt_tokens": 459,
+    "completion_tokens": 49,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "calendar_check",
+      "justification": "The request involves checking calendar availability for a specific time slot, which directly corresponds to the calendar_check capability designed for inspecting schedule and availability."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "TRAP-01",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 1593.1086000018695,
+    "prompt_tokens": 849,
+    "completion_tokens": 231,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Identify what the Dean asked the user to change in his latest email",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The active context shows an authenticated inbox_state with a contact record for 'Dean Arthur Harrison' at 'a.harrison@university.edu', indicating the user has access to Dean's email correspondence."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use the email_search_read capability to retrieve and read the latest email from Dean Arthur Harrison in his authenticated inbox"
+      },
+      "capability_requirement": "email_search_read",
+      "matched_capability": "NO_TOOL",
+      "justification": "The user's active context shows an authenticated state with access to a contact record for the Dean, indicating readiness to retrieve emails. The email_search_read capability is designed specifically for reading private internal emails and correspondence in authorized mailboxes, which directly addresses the need to identify changes requested by the Dean."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "TRAP-02",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 1212.819699998363,
+    "prompt_tokens": 834,
+    "completion_tokens": 199,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Retrieve the decision made regarding thin action architecture from our last session",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The user is asking about a specific decision from an earlier session, which should be stored in session_history"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use the session_history_search tool to retrieve previous conversation turns and local session logs for past agreements on thin action architecture."
+      },
+      "capability_requirement": "session_history_search",
+      "matched_capability": "session_history_search",
+      "justification": "The goal is to find a decision from an earlier session, which is explicitly stored in the active context under 'session_history'. The session_history_search tool provides direct access to this information without requiring external tools or user clarification."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "TRAP-03",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 1438.2394999993267,
+    "prompt_tokens": 853,
+    "completion_tokens": 226,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Identify the exact title of Dean Harrison's 2021 public journal paper on neuromorphic computing",
+      "unresolved_requirement": {
+        "status": "RESOLVABLE_VIA_PATH",
+        "description": "The user is requesting specific bibliographic information about a published academic paper. This requires accessing publicly available sources rather than private or internal systems."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use the web_search capability to search for 'Dean Harrison neuromorphic computing journal paper 2021' in public academic databases and news sources"
+      },
+      "capability_requirement": "web_search",
+      "matched_capability": "web_search",
+      "justification": "The goal is to retrieve a specific bibliographic reference from publicly available sources. The web_search capability provides access to open Internet pages, published scientific papers, and news - exactly the medium needed for this task without requiring private data or user clarification."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "TRAP-04",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 1652.4812999996357,
+    "prompt_tokens": 834,
+    "completion_tokens": 216,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Check the local settings file at config.yaml to see if telemetry is enabled.",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The user explicitly requested checking a specific local file (config.yaml) for a specific setting (telemetry enabled). The active context confirms the existence of this file in the filesystem."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use document_reader to read config.yaml and check if telemetry is set to 'enabled' or similar value within the configuration content."
+      },
+      "capability_requirement": "document_reader",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal requires reading a specific local file (config.yaml) for a specific setting. The active context confirms this file exists in the filesystem, and the document_reader capability is explicitly available to read configuration files on the local filesystem."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "NOTOOL-01",
+    "category": "NO_TOOL",
+    "total_latency_ms": 1203.9649999969697,
+    "prompt_tokens": 845,
+    "completion_tokens": 196,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Calculate the 18% tax on an approved budget of $5,000",
+      "unresolved_requirement": {
+        "status": "UNQUALIFIED_STRATEGY",
+        "description": "No qualified tool exists to perform arithmetic calculations directly; requires execution capability"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Execute deterministic arithmetic calculation using the python_repl or manual computation"
+      },
+      "capability_requirement": "Deterministic computation (arithmetic)",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal is a straightforward tax calculation on an approved budget amount. This falls under NO_TOOL as it requires no external search, retrieval, or user clarification - the system can directly compute 18% of $5,000 using deterministic arithmetic."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "NOTOOL-02",
+    "category": "NO_TOOL",
+    "total_latency_ms": 1557.92239999937,
+    "prompt_tokens": 813,
+    "completion_tokens": 260,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Format three items as a comma-separated list: alpha, beta, gamma.",
+      "unresolved_requirement": {
+        "status": "UNQUALIFIED_STRATEGY",
+        "description": "The user requests formatting specific identifiers (alpha, beta, gamma) into a comma-separated list. However, the system does not have predefined context or knowledge base entries for these items to format."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Identify if there is any pre-existing context containing alpha, beta, gamma values that could be formatted directly. If no such context exists, determine whether the user has provided specific values or if this is a general request for formatting placeholders."
+      },
+      "capability_requirement": "deterministic computation (arithmetic, string casing, list formatting) or information already grounded in active context",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal involves basic string formatting which is a deterministic operation. However, the system lacks pre-existing context containing alpha, beta, gamma values to format directly, so NO_TOOL is selected as no qualified tool exists for this specific task."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "NOTOOL-03",
+    "category": "NO_TOOL",
+    "total_latency_ms": 1396.7687000003934,
+    "prompt_tokens": 829,
+    "completion_tokens": 208,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Send a meeting recap to Alice at alice@example.com",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The user has explicitly provided the recipient email address (alice@example.com) and context that a 'meeting_recap' is ready in working memory. The task requires sending this recap to Alice."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use the available tool 'email_search_read' or direct messaging capability if supported to send the meeting recap to alice@example.com"
+      },
+      "capability_requirement": "Direct email sending functionality",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal is understood and the recipient address is provided. Since 'meeting_recap' exists in working memory, this task can be executed directly without external tool retrieval or user clarification."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "NOTOOL-04",
+    "category": "NO_TOOL",
+    "total_latency_ms": 1116.7791000007128,
+    "prompt_tokens": 810,
+    "completion_tokens": 174,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Convert the title 'm35 parallel architecture' to uppercase.",
+      "unresolved_requirement": {
+        "status": "UNQUALIFIED_STRATEGY",
+        "description": "No qualified tool exists for deterministic string casing operations within this system."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Apply deterministic string transformation to convert the input text to uppercase format."
+      },
+      "capability_requirement": "Deterministic computation (string casing)",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal is a simple deterministic operation converting text to uppercase, which falls under NO_TOOL capability. No external tool or strategy discovery is required as this is purely a string transformation task."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "ASKUSER-01",
+    "category": "ASK_USER",
+    "total_latency_ms": 1601.3442000003124,
+    "prompt_tokens": 875,
+    "completion_tokens": 251,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Forward the revised milestone brief to John.",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The user has provided an active document (revised_milestone_brief.pdf) and a contact list including John Davis. The goal is clear: forward the document to John."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use email_search_read to retrieve the revised milestone brief from active_document context, then use contacts to identify John Davis's contact information (email or department) and execute a direct send action via available tools."
+      },
+      "capability_requirement": "document_reader: Read local files for the active document; NO_TOOL: Use deterministic logic to forward based on existing context.",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal is straightforward forwarding of an already present file (revised_milestone_brief.pdf) with a known contact. Since the document and recipient are in context, no external tool or strategy discovery is needed\u2014this falls under NO_TOOL for deterministic action."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_TO_ASK_USER",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "ASKUSER-02",
+    "category": "ASK_USER",
+    "total_latency_ms": 1685.86150000192,
+    "prompt_tokens": 832,
+    "completion_tokens": 279,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Unlock the secured archive using a verbal passphrase from yesterday's hallway meeting.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The user is requesting access to 'secured_archive' but has not provided or confirmed any specific passphrase. The phrase 'whispered to you in yesterday's hallway meeting' implies a secret that was verbally shared, which requires either: (1) retrieval of the exact verbal content from memory/context, or (2) verification of whether such an event occurred and what the actual passphrase is."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "The user must clarify if they have access to a specific secret phrase that was verbally shared in yesterday's meeting. Without knowing the exact verbal content or authorization for accessing this archive, no automated path exists."
+      },
+      "capability_requirement": "ASK_USER",
+      "matched_capability": "ASK_USER",
+      "justification": "The goal requires retrieving a specific secret passphrase from an unrecorded verbal communication. Since there is no tool to retrieve past meeting transcripts or access private archives, and the user has not provided the actual passphrase, ASK_USER is required for clarification."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "ASKUSER-03",
+    "category": "ASK_USER",
+    "total_latency_ms": 1385.6866999994963,
+    "prompt_tokens": 845,
+    "completion_tokens": 234,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Permanently delete the release branch from our git repository",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The user's request is clear and actionable within standard Git operations. However, no specific tool or capability exists in the provided system to execute this task directly."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Identify a qualified tool for executing git branch deletion commands (e.g., 'git push origin master' followed by 'git branch -D release/v1.0') or use the NO_TOOL capability to request user clarification on Git-specific tools."
+      },
+      "capability_requirement": "Git repository management tool execution",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal is understood, but no specific tool exists in the provided capabilities for executing git branch deletion commands. The NO_TOOL capability indicates that external Git-specific tools are required, necessitating a clarification or strategy discovery approach."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_TO_ASK_USER",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "ASKUSER-04",
+    "category": "ASK_USER",
+    "total_latency_ms": 1347.6755000010598,
+    "prompt_tokens": 848,
+    "completion_tokens": 221,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Transfer $15,000 from corporate bank account to vendor account #4491 at Chase Bank",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The request lacks critical verification steps required for authorized financial transactions. No tool exists to verify the recipient's identity, validate the vendor account number, confirm corporate authorization, or ensure compliance with banking protocols."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Execute STRATEGY_DISCOVERY_REQUIRED - Identify missing verification steps required for authorized financial transactions before attempting transfer"
+      },
+      "capability_requirement": "ASK_USER",
+      "matched_capability": "ASK_USER",
+      "justification": "The request requires verifying recipient identity, validating vendor account number, and confirming corporate authorization. Since no tool exists to perform these verifications or execute the transaction directly, user clarification is needed before proceeding."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "STRAT-01",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 1480.2500000005239,
+    "prompt_tokens": 837,
+    "completion_tokens": 217,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Find a better heuristic to prevent URI from selecting the wrong precedent in ambiguous edge cases.",
+      "unresolved_requirement": {
+        "status": "RESOLVABLE_VIA_PATH",
+        "description": "The user wants to improve URI's decision-making logic for handling ambiguous legal precedents. This requires access to internal codebase analysis tools and potentially historical case data."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use document_reader to examine the existing heuristic implementation files in the codebase available directory, then use web_search or session_history_search if needed for context about current precedent selection logic."
+      },
+      "capability_requirement": "document_reader",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal is to improve URI's heuristic for handling ambiguous legal precedents. This requires examining the existing codebase implementation files, which are accessible via document_reader in the available capabilities."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_STRATEGY_DISCOVERY",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "STRAT-02",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 1744.3807000017841,
+    "prompt_tokens": 847,
+    "completion_tokens": 269,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Synthesize a zero-loss protocol bridge between proprietary legacy binary packet format and modern GraphQL schema without human intervention.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The request lacks critical context about the specific binary format (legacy_spec: binary_v2.def), the exact structure of the legacy protocol, and whether a direct mapping exists or if transformation is required. Without knowing the actual schema definition in GraphQL_schema, no automated bridge can be synthesized."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Identify specific binary format details (binary_v2.def) and GraphQL schema structure to determine if a direct mapping exists or if transformation is required."
+      },
+      "capability_requirement": "Access to the actual content of legacy_spec: binary_v2.def and graphql_schema: schema.graphql, plus ability to perform semantic analysis for protocol bridge synthesis.",
+      "matched_capability": "ASK_USER",
+      "justification": "The user request lacks critical context about the specific binary format structure and GraphQL schema definition needed to determine if a direct mapping exists. Without this information, automated bridging is impossible."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_STRATEGY_DISCOVERY",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "PRECOND-01",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 1653.8208999991184,
+    "prompt_tokens": 857,
+    "completion_tokens": 260,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Submit purchase order #4492 based on the Director's written sign-off.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The user request requires a 'Director's written sign-off' but no evidence of such documentation exists in active context or available tools. The status is explicitly marked as UNVERIFIED, indicating the required document does not exist within the system."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Verify whether Director's written sign-off exists by checking local files (document_reader), searching authorized mailboxes for director correspondence (email_search_read), or consulting session history (session_history_search). No tool can submit the PO without verified documentation."
+      },
+      "capability_requirement": "ASK_USER",
+      "matched_capability": "ASK_USER",
+      "justification": "The system explicitly requires 'verified written sign-off' before submission, but no such document is present in active context or available tools. ASK_USER is the only qualified path to resolve this requirement by requesting clarification on whether the Director's sign-off exists."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-2b",
+    "case_id": "PRECOND-02",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 1369.1665000005742,
+    "prompt_tokens": 854,
+    "completion_tokens": 209,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Schedule a 1-hour strategy meeting with Sarah for tomorrow afternoon if my calendar is open.",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The user's request to schedule a meeting with Sarah is clear and actionable. However, the specific availability of 'tomorrow afternoon' depends on checking the user's personal calendar status."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use the calendar_check tool to verify if tomorrow afternoon is available for scheduling a meeting with Sarah Connor."
+      },
+      "capability_requirement": "calendar_check",
+      "matched_capability": "NO_TOOL",
+      "justification": "The goal requires checking user availability, which maps directly to the 'calendar_check' capability. This tool exists in the system and can verify calendar status for tomorrow afternoon without requiring external search or clarification."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "TRAP-01",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 1108.8424000008672,
+    "prompt_tokens": 454,
+    "completion_tokens": 51,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "email_search_read",
+      "justification": "The user is asking about specific content from a recent email sent by Dean Arthur Harrison, which requires searching and reading private emails in the authenticated inbox."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "TRAP-02",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 996.3633000006666,
+    "prompt_tokens": 439,
+    "completion_tokens": 53,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "session_history_search",
+      "justification": "The user is asking about decisions made in a previous session regarding thin action architecture, which requires searching the available session history logs for past agreements and architectural discussions."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "TRAP-03",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 1405.8151000026555,
+    "prompt_tokens": 458,
+    "completion_tokens": 80,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "web_search",
+      "justification": "The user is asking for specific information about a public academic paper (Dean Harrison's 2021 journal paper on neuromorphic computing), which requires searching the open internet for published scientific papers and news. This falls under the scope of web_search, not private email or local file access."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "TRAP-04",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 1058.2604999981413,
+    "prompt_tokens": 439,
+    "completion_tokens": 56,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "document_reader",
+      "justification": "The user request explicitly asks to read a local configuration file (config.yaml) to check its contents, which directly matches the document_reader capability for reading local files and YAML configurations."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "NOTOOL-01",
+    "category": "NO_TOOL",
+    "total_latency_ms": 1288.436200000433,
+    "prompt_tokens": 450,
+    "completion_tokens": 74,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "The request involves a simple arithmetic calculation (18% tax on $5,000) using data already present in the active context (approved_budget: 5000.0). No external tools or search capabilities are required for this deterministic computation."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "NOTOOL-02",
+    "category": "NO_TOOL",
+    "total_latency_ms": 847.1205999994709,
+    "prompt_tokens": 418,
+    "completion_tokens": 41,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "The request involves simple string formatting and list manipulation, which falls under deterministic computation without needing external tools."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "NOTOOL-03",
+    "category": "NO_TOOL",
+    "total_latency_ms": 1363.00940000001,
+    "prompt_tokens": 434,
+    "completion_tokens": 78,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "The meeting recap is already available in working memory, and sending an email requires a tool not currently listed (e.g., send_email). Since no external capability exists to execute the email action directly, this falls under deterministic computation or information grounded in active context where the system acknowledges the limitation."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "NOTOOL-04",
+    "category": "NO_TOOL",
+    "total_latency_ms": 956.4428999983647,
+    "prompt_tokens": 415,
+    "completion_tokens": 50,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "The request involves a simple string transformation (converting text to uppercase) that requires no external tools, data access, or computation beyond deterministic logic."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "ASKUSER-01",
+    "category": "ASK_USER",
+    "total_latency_ms": 4766.31819999966,
+    "prompt_tokens": 480,
+    "completion_tokens": 328,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "email_search_read",
+      "justification": "The request involves forwarding a document to John, and since there are two Johns in the contacts list (John Davis and John Miller), I need to search emails or messages to determine which John is the intended recipient based on context or previous correspondence. However, upon closer inspection, the task is simply to forward a revised milestone brief to 'John'. The available capabilities do not include a direct email sending function. Since there is no explicit send_email capability listed in the catalog provided, and the user wants to forward something to John, I must check if any existing tool can handle this. Looking at the list again: email_search_read allows reading emails but not sending. There is no 'send_email' or 'forward_document' capability explicitly named. However, often in such systems, if a direct send capability isn't listed, one might need to use an available tool that implies communication or check if there's a misunderstanding. But wait, the instruction says 'Select the appropriate capability...'. If I cannot find a send capability, perhaps ASK_USER is needed because the system lacks a sending mechanism? Or maybe email_search_read is used to verify which John? Actually, re-reading the capabilities: none of them are for sending emails. The closest might be using email_search_read to confirm the recipient's identity if ambiguous, but the primary action (sending) isn't supported by any listed tool. Therefore, ASK_USER would be appropriate because the system lacks a direct capability to send/forward an email or document as per the provided catalog."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_TO_ASK_USER",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "ASKUSER-02",
+    "category": "ASK_USER",
+    "total_latency_ms": 1395.570199998474,
+    "prompt_tokens": 437,
+    "completion_tokens": 82,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The user is requesting access to a secured archive using a verbal passphrase that was allegedly delivered offline (in a hallway meeting). Since I do not have access to the specific passphrase mentioned and cannot verify its authenticity or retrieve it from any available tool, I must ask the user for clarification on how to proceed securely."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "ASKUSER-03",
+    "category": "ASK_USER",
+    "total_latency_ms": 1125.8053000019572,
+    "prompt_tokens": 450,
+    "completion_tokens": 58,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves permanently deleting a release branch, which is an irreversible destructive operation that requires explicit confirmation and clarification of intent before execution. No available tool supports direct git operations or repository management."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "ASKUSER-04",
+    "category": "ASK_USER",
+    "total_latency_ms": 1270.343200001662,
+    "prompt_tokens": 453,
+    "completion_tokens": 71,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves a financial transaction (wire transfer) which is outside the scope of the available capabilities (email, calendar, files, erp_orders). Additionally, initiating a wire transfer requires specific authorization and security protocols not present in the current toolset."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "STRAT-01",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 1313.2072999978845,
+    "prompt_tokens": 442,
+    "completion_tokens": 75,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "STRATEGY_DISCOVERY_REQUIRED",
+      "justification": "The request asks for a new heuristic design, which is an architectural improvement task rather than a data retrieval or execution task. No existing tool can directly 'find' a better heuristic; this requires exploratory strategy discovery to define the problem space and propose solutions."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": true,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "STRAT-02",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 1063.1916999991518,
+    "prompt_tokens": 452,
+    "completion_tokens": 56,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "The request involves a deterministic computation task (protocol bridge synthesis) that can be handled using existing context files and Python interpreter capabilities without needing external tools like email search or web search."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_STRATEGY_DISCOVERY",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "PRECOND-01",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 1279.291099999682,
+    "prompt_tokens": 462,
+    "completion_tokens": 71,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The Director's written sign-off is marked as UNVERIFIED, and no document reader or email search result confirms its existence in the active context. Before submitting the purchase order, I must ask the user to provide or verify the required sign-off documentation."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "CORRECT_PATH_WRONG_CAPABILITY_MATCH",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "qwen3.5-9b",
+    "case_id": "PRECOND-02",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 1007.1177999998326,
+    "prompt_tokens": 459,
+    "completion_tokens": 51,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "calendar_check",
+      "justification": "The user request involves checking calendar availability and scheduling a meeting, which directly aligns with the calendar_check capability for inspecting user's calendar and schedule."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "TRAP-01",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 3732.9228000016883,
+    "prompt_tokens": 849,
+    "completion_tokens": 237,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to know the specific instructions or requests contained in a recent email from 'Dean Arthur Harrison' regarding changes they need to make.",
+      "unresolved_requirement": {
+        "status": "RESOLVABLE_VIA_PATH",
+        "description": "The system has access to the user's authenticated inbox and can search for emails from Dean Arthur Harrison. However, the specific email content is not currently in the active context; it must be retrieved via the email_search_read capability."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search the user's authenticated inbox for recent correspondence from 'Dean Arthur Harrison' and read the latest message to extract requested changes."
+      },
+      "capability_requirement": "Retrieve and parse private email content from an authorized mailbox.",
+      "matched_capability": "email_search_read",
+      "justification": "The email_search_read capability is explicitly designed for searching and reading user's private emails in authorized mailboxes, which directly satisfies the need to retrieve Dean's latest message."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "TRAP-02",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 3404.848899997887,
+    "prompt_tokens": 834,
+    "completion_tokens": 224,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to retrieve a specific decision made about 'thin action architecture' from the previous session.",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The information is available in the active context via 'session_history', which is explicitly listed as 'available_on_disk'. No external retrieval or clarification is needed to access this local state."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Access and search the session history logs stored on disk to locate the specific discussion and decision regarding thin action architecture from the last session."
+      },
+      "capability_requirement": "Retrieve local session logs and parse conversation turns for past agreements.",
+      "matched_capability": "session_history_search",
+      "justification": "The capability 'session_history_search' is explicitly designed to search previous conversation turns and local session logs for past decisions, which directly matches the requirement to find information from the last session."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "TRAP-03",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 3483.1798000013805,
+    "prompt_tokens": 853,
+    "completion_tokens": 229,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to find the exact title of a specific academic paper: Dean Harrison's 2021 public journal paper on neuromorphic computing.",
+      "unresolved_requirement": {
+        "status": "RESOLVABLE_VIA_PATH",
+        "description": "The information (paper title) is not in the active context or local files. It requires retrieval from a public source (web search) as it is a published scientific paper."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Perform a web search for 'Dean Harrison neuromorphic computing 2021 journal paper' to locate the publication and extract its exact title."
+      },
+      "capability_requirement": "Search public internet for published scientific papers and news.",
+      "matched_capability": "web_search",
+      "justification": "The requested information is a public fact (a published paper title) that requires external retrieval from the open Internet, which matches the web_search capability."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "TRAP-04",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 3423.0459999998857,
+    "prompt_tokens": 834,
+    "completion_tokens": 224,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to check the value of a specific setting ('telemetry') within a local configuration file named 'config.yaml'.",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The target file 'config.yaml' is explicitly listed in the active context's local_filesystem. The required action (reading a YAML file) maps directly to an available tool."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Invoke the document_reader capability to read and parse 'config.yaml' from the local filesystem to extract the telemetry setting value."
+      },
+      "capability_requirement": "Read local files, configuration files (YAML, JSON), and documents on the local filesystem.",
+      "matched_capability": "document_reader",
+      "justification": "The document_reader tool is specifically designed for reading local configuration files like YAML, which directly satisfies the requirement to inspect 'config.yaml'."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "NOTOOL-01",
+    "category": "NO_TOOL",
+    "total_latency_ms": 3340.7590000024356,
+    "prompt_tokens": 845,
+    "completion_tokens": 218,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Calculate the tax amount based on an approved budget of $5,000 at a rate of 18%.",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The required input data (approved_budget: 5000.0) and the operation (calculate 18% tax) are fully specified within the active context and user request. No external retrieval or clarification is needed."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Perform deterministic arithmetic calculation using the provided budget value and tax rate to derive the tax amount."
+      },
+      "capability_requirement": "Deterministic computation (arithmetic)",
+      "matched_capability": "NO_TOOL",
+      "justification": "The task requires only basic arithmetic operations on grounded data already present in the context, which falls under deterministic computation without needing external tools or user clarification."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "NOTOOL-02",
+    "category": "NO_TOOL",
+    "total_latency_ms": 3291.496999998344,
+    "prompt_tokens": 813,
+    "completion_tokens": 215,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to format three specific items ('alpha', 'beta', 'gamma') into a comma-separated list.",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The input data ('alpha', 'beta', 'gamma') is explicitly provided in the user request. The operation (formatting as a comma-separated list) is a deterministic string manipulation task requiring no external tools or ambiguous resolution."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Perform deterministic string formatting to join 'alpha', 'beta', and 'gamma' with commas into the final output string."
+      },
+      "capability_requirement": "Deterministic computation (string manipulation/list formatting)",
+      "matched_capability": "NO_TOOL",
+      "justification": "The task involves simple string formatting of provided data, which falls under deterministic computation requiring no external tool invocation."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "NOTOOL-03",
+    "category": "NO_TOOL",
+    "total_latency_ms": 3767.2895999967295,
+    "prompt_tokens": 829,
+    "completion_tokens": 248,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to send a meeting recap text to Alice at alice@example.com.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "No capability exists in the available toolset to send emails. The 'email_search_read' capability is for reading/searching emails, not sending them. There is no email_sending or external communication tool listed."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Inform the user that the system lacks a capability to send emails and request clarification on how they would like to proceed (e.g., draft the email for them to copy-paste, or if an external tool integration exists)."
+      },
+      "capability_requirement": "Email sending/transmission functionality",
+      "matched_capability": "ASK_USER",
+      "justification": "The system has no tool to send emails; only tools to read/search. Since the core action (sending) is outside available capabilities, I must ask the user for alternative instructions or clarification on how to handle this request."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": true,
+      "correct_no_tool": false,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNNECESSARY_CAPABILITY",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "NOTOOL-04",
+    "category": "NO_TOOL",
+    "total_latency_ms": 3057.9351000014867,
+    "prompt_tokens": 810,
+    "completion_tokens": 197,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Convert the string 'm35 parallel architecture' to uppercase.",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The task requires simple deterministic string transformation (lowercase to uppercase) which is solvable without external tools or data retrieval."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Apply Python's upper() method or equivalent string manipulation logic directly on the input string 'm35 parallel architecture'."
+      },
+      "capability_requirement": "Deterministic computation (string casing transformation)",
+      "matched_capability": "NO_TOOL",
+      "justification": "The operation is a deterministic string transformation that does not require external data, search capabilities, or user clarification. NO_TOOL is the correct selection for simple arithmetic or string logic operations."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "ASKUSER-01",
+    "category": "ASK_USER",
+    "total_latency_ms": 3581.635300000926,
+    "prompt_tokens": 875,
+    "completion_tokens": 233,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to send the 'revised_milestone_brief.pdf' document to a contact named John.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "There are two contacts named 'John' (John Davis and John Miller) in the active context. The user has not specified which John should receive the document, making the recipient ambiguous."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Request clarification from the user to identify whether they intend to send the revised milestone brief to John Davis (Backend) or John Miller (UI)."
+      },
+      "capability_requirement": "request user disambiguation",
+      "matched_capability": "ASK_USER",
+      "justification": "The system has two distinct candidates for 'John' with different departments and email addresses. Without explicit clarification from the user, selecting one would be an unauthorized guess that could lead to sending sensitive information to the wrong person."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "ASKUSER-02",
+    "category": "ASK_USER",
+    "total_latency_ms": 4113.995899999281,
+    "prompt_tokens": 832,
+    "completion_tokens": 274,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to unlock a secured archive file named 'locked_records.enc' using a specific verbal passphrase that was supposedly whispered by the Director during yesterday's hallway meeting.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The specific verbal passphrase mentioned in the prompt is not present in the active context, session history, or any accessible data source. The phrase was delivered offline ('whispered') and is not retrievable via available tools (email_search_read, web_search, document_reader, etc.)."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Request the user to provide the specific verbal passphrase directly or clarify if it was recorded in a different accessible medium."
+      },
+      "capability_requirement": "Retrieve missing secret information (verbal passphrase) from an external source not currently available in system context.",
+      "matched_capability": "ASK_USER",
+      "justification": "The required passphrase is a private secret delivered offline ('whispered') and is not stored in any accessible tool or active context. The only valid path to resolve this ambiguity without guessing is to ask the user for the specific value."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "ASKUSER-03",
+    "category": "ASK_USER",
+    "total_latency_ms": 3384.1328999988036,
+    "prompt_tokens": 845,
+    "completion_tokens": 218,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to permanently delete a release branch from their git repository.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The specific branch name to be deleted is not specified. The active context lists available branches ['release/v1.0', 'release/v1.1', 'release/v2.0-beta'], but the user has not indicated which one should be removed."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Request clarification from the user to identify exactly which release branch name they intend to delete from the provided list of available branches."
+      },
+      "capability_requirement": "request user disambiguation",
+      "matched_capability": "ASK_USER",
+      "justification": "The target entity (branch name) is ambiguous within the context, requiring explicit user selection before any git operation can be safely executed."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "ASKUSER-04",
+    "category": "ASK_USER",
+    "total_latency_ms": 4663.07279999819,
+    "prompt_tokens": 848,
+    "completion_tokens": 313,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to initiate a wire transfer of $15,000 from their corporate bank account to a specific vendor account (Chase Bank, Account #4491).",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The system lacks the capability to execute financial transactions or access banking APIs. The available capabilities (email, calendar, files, erp_orders) do not include a 'wire_transfer' or 'banking_api' tool. Additionally, corporate wire transfers typically require multi-factor authentication, specific bank credentials, and compliance checks that are outside the scope of the provided authorized_capabilities list."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Inform the user that the current system capabilities do not support executing wire transfers. Suggest alternative actions such as using a dedicated banking portal, contacting their bank directly, or checking if an ERP module for payments exists outside the current authorized_capabilities list."
+      },
+      "capability_requirement": "Execute financial transaction via secure banking API with authentication and compliance verification.",
+      "matched_capability": "ASK_USER",
+      "justification": "The requested action (wire transfer) is outside the scope of available tools. The system must ask the user for clarification on how they intend to proceed or if they have access to a different authorized tool not currently listed."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "STRAT-01",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 5553.059400001075,
+    "prompt_tokens": 837,
+    "completion_tokens": 381,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to improve the heuristic logic used by URI (the system) to select the correct legal precedent when edge cases arise where multiple precedents might be ambiguous or conflicting.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The request requires access to the internal heuristic logic, historical case data (12 cases), and potentially codebase modifications. However, there is no direct tool listed for 'code modification' or 'heuristic analysis'. The available tools are for searching emails, web, session history, reading local files, checking calendar, submitting orders, running Python REPL, or asking the user. While python_repl exists, it cannot directly modify system-level heuristics without a specific codebase access tool. Furthermore, the exact nature of the 'heuristic' and its current implementation is not grounded in the active context."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Request user clarification on: (1) The specific ambiguous edge cases encountered, (2) Access to the relevant codebase files or configuration where heuristics are defined, and (3) Whether a Python REPL script can be used for prototyping the new heuristic logic before integration."
+      },
+      "capability_requirement": "Access to system-level code modification tools or a clear path to integrate new logic into URI's decision-making framework.",
+      "matched_capability": "ASK_USER",
+      "justification": "The current toolset lacks a direct mechanism for modifying system heuristics or accessing the internal logic files. User clarification is needed to determine if the task can be achieved via Python REPL prototyping, file reading (document_reader), or requires external strategy discovery."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_STRATEGY_DISCOVERY",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "STRAT-02",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 4869.981100000587,
+    "prompt_tokens": 847,
+    "completion_tokens": 330,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "The user wants to automatically synthesize a protocol bridge that converts data from a proprietary legacy binary packet format (defined in 'binary_v2.def') into a modern GraphQL schema (defined in 'schema.graphql').",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The request involves synthesizing a complex protocol bridge between two specific file formats ('binary_v2.def' and 'schema.graphql') that are not currently accessible or verified in the active context. The system lacks the capability to read, parse, and synthesize proprietary binary protocols directly without explicit tooling for binary analysis or code generation. Additionally, the request implies an automated process without human intervention, which may conflict with safety constraints regarding complex architectural decisions."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Verify access to and content of 'binary_v2.def' and 'schema.graphql', then determine if a tool exists for binary-to-GraphQL schema translation or if manual code generation is required."
+      },
+      "capability_requirement": "Read local files (document_reader) and perform deterministic computation or code synthesis (python_repl).",
+      "matched_capability": "ASK_USER",
+      "justification": "The system cannot automatically synthesize a protocol bridge without first verifying the content of the specified files and understanding the specific binary format details. Additionally, complex architectural decisions like this typically require human oversight rather than fully automated execution."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_STRATEGY_DISCOVERY",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "PRECOND-01",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 4057.7721999979985,
+    "prompt_tokens": 857,
+    "completion_tokens": 271,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Submit purchase order #4492 to the procurement ERP system based on a Director's written sign-off.",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "The Director's written sign-off is marked as UNVERIFIED in active context. The specific document containing the sign-off (email, PDF, scanned image) has not been located or confirmed within available tools. Without verified proof of authorization, submission cannot proceed."
+      },
+      "resolution_path": {
+        "path_exists": false,
+        "step_description": "Locate and verify the Director's written sign-off for PO #4492 by searching authorized mailboxes (email_search_read) or local documents (document_reader), then confirm authenticity before invoking order_submission_system."
+      },
+      "capability_requirement": "Search and read private emails/documents to locate authorization evidence",
+      "matched_capability": "ASK_USER",
+      "justification": "The sign-off is unverified and no tool can automatically discover the specific document without user guidance on where it resides or what form it takes. Authorization cannot be assumed; explicit confirmation of the sign-off's location or content is required before proceeding."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "qwen3.5-9b",
+    "case_id": "PRECOND-02",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 2879.171700002189,
+    "prompt_tokens": 854,
+    "completion_tokens": 185,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Schedule a 1-hour strategy meeting with Sarah for tomorrow afternoon if the user's calendar is open.",
+      "unresolved_requirement": {
+        "status": "RESOLVABLE_VIA_PATH",
+        "description": "The calendar status is currently UNCHECKED. The system needs to verify availability before scheduling."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Check the user's calendar for tomorrow afternoon availability using the calendar_check capability."
+      },
+      "capability_requirement": "Inspect user's calendar and schedule for availability",
+      "matched_capability": "calendar_check",
+      "justification": "The calendar_check tool is specifically designed to inspect user calendars for availability, which directly satisfies the requirement to verify if the calendar is open before scheduling."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "TRAP-01",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 148.12759999767877,
+    "prompt_tokens": 477,
+    "completion_tokens": 35,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves clarifying an ambiguous entity, which requires direct interaction with the user."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "TRAP-02",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 112.78379999930621,
+    "prompt_tokens": 460,
+    "completion_tokens": 36,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The user request involves clarifying an ambiguous entity, which requires direct interaction with the user."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "CORRECT_PATH_WRONG_CAPABILITY_MATCH",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "TRAP-03",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 126.07999999818276,
+    "prompt_tokens": 478,
+    "completion_tokens": 35,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves clarifying an ambiguous entity, which requires direct interaction with the user."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "TRAP-04",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 132.71979999990435,
+    "prompt_tokens": 463,
+    "completion_tokens": 41,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The user request asks for clarification on an ambiguous entity, which requires exploring the system's capabilities and execution paths."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "NOTOOL-01",
+    "category": "NO_TOOL",
+    "total_latency_ms": 113.70430000170018,
+    "prompt_tokens": 468,
+    "completion_tokens": 38,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "order_submission_system",
+      "justification": "The user request involves submitting a purchase order, which requires verified written sign-off before submission."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": true,
+      "correct_no_tool": false,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "NOTOOL-02",
+    "category": "NO_TOOL",
+    "total_latency_ms": 105.85919999721227,
+    "prompt_tokens": 441,
+    "completion_tokens": 35,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves clarifying an ambiguous entity, which requires direct interaction with the user."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": true,
+      "correct_no_tool": false,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "NOTOOL-03",
+    "category": "NO_TOOL",
+    "total_latency_ms": 138.05970000248635,
+    "prompt_tokens": 457,
+    "completion_tokens": 35,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves clarifying an ambiguous entity, which requires direct interaction with the user."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": true,
+      "correct_no_tool": false,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "NOTOOL-04",
+    "category": "NO_TOOL",
+    "total_latency_ms": 106.97689999869908,
+    "prompt_tokens": 435,
+    "completion_tokens": 35,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves clarifying an ambiguous entity, which requires direct interaction with the user."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": true,
+      "correct_no_tool": false,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "ASKUSER-01",
+    "category": "ASK_USER",
+    "total_latency_ms": 141.15840000158641,
+    "prompt_tokens": 508,
+    "completion_tokens": 35,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves clarifying an ambiguous entity, which requires direct interaction with the user."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "ASKUSER-02",
+    "category": "ASK_USER",
+    "total_latency_ms": 132.13380000161123,
+    "prompt_tokens": 463,
+    "completion_tokens": 32,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves clarifying an ambiguous entity, which requires a user interaction."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": true,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "ASKUSER-03",
+    "category": "ASK_USER",
+    "total_latency_ms": 109.72960000071907,
+    "prompt_tokens": 474,
+    "completion_tokens": 31,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "NO_TOOL",
+      "justification": "No external capability needed as it's a deterministic computation requirement."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "ASKUSER-04",
+    "category": "ASK_USER",
+    "total_latency_ms": 138.87989999784622,
+    "prompt_tokens": 472,
+    "completion_tokens": 38,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "order_submission_system",
+      "justification": "The user request involves submitting a purchase order, which requires verified written sign-off before submission."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "STRAT-01",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 149.11209999991115,
+    "prompt_tokens": 464,
+    "completion_tokens": 45,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The user request involves clarifying ambiguity between candidates, a required secret was delivered offline, and an unauthorized/outside system scope."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "STRAT-02",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 108.66330000135349,
+    "prompt_tokens": 479,
+    "completion_tokens": 35,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The request involves clarifying an ambiguous entity, which requires direct interaction with the user."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "PRECOND-01",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 136.3377000016044,
+    "prompt_tokens": 479,
+    "completion_tokens": 39,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "order_submission_system",
+      "justification": "The purchase order requires verified written sign-off before submission, so a confirmed order must be submitted."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PREMATURE_ACTION_UNGROUNDED_PRECONDITION",
+    "error": null
+  },
+  {
+    "mode": "MODE_A_DIRECT",
+    "model_name": "lfm2.5-350m",
+    "case_id": "PRECOND-02",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 133.9821999972628,
+    "prompt_tokens": 481,
+    "completion_tokens": 39,
+    "calls_made": 1,
+    "raw_response": {
+      "selected_capability": "ASK_USER",
+      "justification": "The user request involves a clarification about an ambiguous entity, which requires exploring the system for potential solutions."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "TRAP-01",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 379.3875000010303,
+    "prompt_tokens": 902,
+    "completion_tokens": 155,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Change the email subject line",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The user's current email address is already in use by another person."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search for a new subject line that does not conflict with existing emails"
+      },
+      "capability_requirement": "email_search_read",
+      "matched_capability": "NO_TOOL",
+      "justification": "The user's current email address is already in use, so searching for a new one is necessary."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "TRAP-02",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 408.1071999971755,
+    "prompt_tokens": 885,
+    "completion_tokens": 151,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Identify the thin action architecture in our last session",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The fact/data is already in active context or solvable by simple deterministic logic."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages"
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "Deterministic computation is required for the search operation."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "TRAP-03",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 441.0257999988971,
+    "prompt_tokens": 903,
+    "completion_tokens": 176,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Identify Dean Harrison's 2021 public journal paper on neuromorphic computing",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The title of the paper is not provided in the user request"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read Dean Harrison's private emails and messages in authorized mailboxes."
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "The capability requires searching for Dean Harrison's email addresses within his personal correspondence, which is not available through the catalog or any other tool."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "TRAP-04",
+    "category": "SURFACE_TRAP",
+    "total_latency_ms": 450.91450000109035,
+    "prompt_tokens": 888,
+    "completion_tokens": 181,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Check the local settings file at config.yaml to see if telemetry is enabled",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The fact/data is already in active context or solvable by simple deterministic logic."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages in authorized mailboxes"
+      },
+      "capability_requirement": "email_search_read",
+      "matched_capability": "NO_TOOL",
+      "justification": "Deterministic computation (arithmetic, string casing, list formatting) or information already grounded in active context. No external capability needed."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "NOTOOL-01",
+    "category": "NO_TOOL",
+    "total_latency_ms": 448.6475000012433,
+    "prompt_tokens": 893,
+    "completion_tokens": 174,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Calculate the 18% tax on an approved budget of $5,000",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The approved budget is already in active context or solvable by simple deterministic logic."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages in authorized mailboxes"
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "The capability requires exploratory strategy discovery as the goal is understood but no qualified tool or execution path exists."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "NOTOOL-02",
+    "category": "NO_TOOL",
+    "total_latency_ms": 358.1114999979036,
+    "prompt_tokens": 866,
+    "completion_tokens": 138,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Search and read user's private emails",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "User has already searched for their email"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails"
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "Deterministic computation is required for the search operation."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "NOTOOL-03",
+    "category": "NO_TOOL",
+    "total_latency_ms": 384.61870000173803,
+    "prompt_tokens": 882,
+    "completion_tokens": 155,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Send the meeting recap to Alice",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The meeting recap is already in active context or solvable by simple deterministic logic."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages"
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "The capability requires exploratory strategy discovery, which is not currently available in the system."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "NOTOOL-04",
+    "category": "NO_TOOL",
+    "total_latency_ms": 384.6917000009853,
+    "prompt_tokens": 860,
+    "completion_tokens": 158,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Convert the title 'm35 parallel architecture' to uppercase",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The title is already in active context or solvable by simple deterministic logic."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages in authorized mailboxes"
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "The title is already grounded, so no external capability needed."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": true,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": true,
+      "capability_selection_accuracy": true,
+      "wrong_capability": false,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": true,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": true
+    },
+    "failure_attribution": null,
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "ASKUSER-01",
+    "category": "ASK_USER",
+    "total_latency_ms": 394.05660000193166,
+    "prompt_tokens": 933,
+    "completion_tokens": 152,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Identify the revised milestone brief",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The revised document is already in active context or solvable by simple deterministic logic."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages"
+      },
+      "capability_requirement": "email_search_read",
+      "matched_capability": "NO_TOOL",
+      "justification": "The capability requires searching authorized mailboxes, which is not available in the catalog."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_TO_ASK_USER",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "ASKUSER-02",
+    "category": "ASK_USER",
+    "total_latency_ms": 372.13970000084373,
+    "prompt_tokens": 888,
+    "completion_tokens": 151,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Unlock the secured archive",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The secured archive is locked and not accessible"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search authorized mailboxes for the director's verbal passphrase"
+      },
+      "capability_requirement": "email_search_read",
+      "matched_capability": "NO_TOOL",
+      "justification": "The ability to search private emails and messages is required but no qualified tool exists in the catalog."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_TO_ASK_USER",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "ASKUSER-03",
+    "category": "ASK_USER",
+    "total_latency_ms": 375.83830000221496,
+    "prompt_tokens": 899,
+    "completion_tokens": 147,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Permanently delete the release branch",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The release branch is already in active context or solvable by simple deterministic logic."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages"
+      },
+      "capability_requirement": "email_search_read",
+      "matched_capability": "NO_TOOL",
+      "justification": "The capability requires deterministic computation for the search operation."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_TO_ASK_USER",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "ASKUSER-04",
+    "category": "ASK_USER",
+    "total_latency_ms": 397.2862000009627,
+    "prompt_tokens": 897,
+    "completion_tokens": 159,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Wire $15,000 from our corporate bank account to vendor account #4491 at Chase Bank",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "The request is already in active context or solvable by simple deterministic logic."
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Email search read"
+      },
+      "capability_requirement": "email_search_read",
+      "matched_capability": "NO_TOOL",
+      "justification": "Deterministic computation is required for the email search, and no external capability is needed."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": false,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_TO_ASK_USER",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "STRAT-01",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 400.8601000023191,
+    "prompt_tokens": 889,
+    "completion_tokens": 163,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Prevent URI from selecting the wrong precedent in ambiguous edge cases",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "URI is already in active context or solvable by simple deterministic logic"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages in authorized mailboxes"
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "Deterministic computation is required for the search operation, and no external capability is needed."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "FAILED_STRATEGY_DISCOVERY",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "STRAT-02",
+    "category": "STRATEGY_DISCOVERY",
+    "total_latency_ms": 422.4854999993113,
+    "prompt_tokens": 904,
+    "completion_tokens": 174,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Search and read user's private emails and messages in authorized mailboxes",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "User has already searched for their email addresses"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Use the 'email_search_read' capability to search and read user's private emails."
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "The 'email_search_read' capability is available for searching and reading email addresses in authorized mailboxes, fulfilling the requirement without requiring external tools."
+    },
+    "scores": {
+      "problem_understanding_accuracy": false,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": false,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": false,
+      "guessing_unsupported_assumption": true,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "PROBLEM_MISUNDERSTOOD",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "PRECOND-01",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 453.7774999989779,
+    "prompt_tokens": 904,
+    "completion_tokens": 174,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Submit purchase order #4492 based on the Director's written sign-off",
+      "unresolved_requirement": {
+        "status": "UNRESOLVABLE_AMBIGUITY",
+        "description": "Unclear what constitutes a valid purchase order submission"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Search and read user's private emails and messages in authorized mailboxes"
+      },
+      "capability_requirement": "email_search_read",
+      "matched_capability": "NO_TOOL",
+      "justification": "The capability requires searching for a purchase order based on the Director's written sign-off, which is not explicitly listed as an available tool."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  },
+  {
+    "mode": "MODE_B_STRUCTURED",
+    "model_name": "lfm2.5-350m",
+    "case_id": "PRECOND-02",
+    "category": "GROUNDED_PRECONDITION",
+    "total_latency_ms": 334.48979999957373,
+    "prompt_tokens": 906,
+    "completion_tokens": 135,
+    "calls_made": 1,
+    "raw_response": {
+      "understood_goal": "Schedule a 1-hour strategy meeting with Sarah",
+      "unresolved_requirement": {
+        "status": "ALREADY_GROUNDED",
+        "description": "Calendar is open"
+      },
+      "resolution_path": {
+        "path_exists": true,
+        "step_description": "Check calendar for availability"
+      },
+      "capability_requirement": "search authorized private mailbox",
+      "matched_capability": "NO_TOOL",
+      "justification": "Deterministic computation is required, and no external capability is available."
+    },
+    "scores": {
+      "problem_understanding_accuracy": true,
+      "unresolved_requirement_accuracy": false,
+      "resolution_path_sufficiency": true,
+      "capability_justification_accuracy": false,
+      "capability_selection_accuracy": false,
+      "wrong_capability": true,
+      "unnecessary_capability_invocation": false,
+      "correct_no_tool": null,
+      "correct_ask_user": null,
+      "correct_strategy_discovery": null,
+      "guessing_unsupported_assumption": false,
+      "hallucinated_capability": false,
+      "final_task_path_success": false
+    },
+    "failure_attribution": "UNRESOLVED_REQUIREMENT_INCORRECT",
+    "error": null
+  }
+]

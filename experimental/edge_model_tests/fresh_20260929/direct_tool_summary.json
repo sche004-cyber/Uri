@@ -1,0 +1,59 @@
+{
+  "Granite_native": {
+    "total": 60,
+    "correct": 33,
+    "candidate_correct": 33,
+    "positive_correct": 33,
+    "positive_candidate_correct": 33,
+    "positive_total": 36,
+    "negative_correct": 0,
+    "negative_candidate_correct": 0,
+    "negative_total": 24,
+    "mean_ms": 145.30576333321127,
+    "median_ms": 142.17459999781568,
+    "p95_ms": 165.12300001340918,
+    "suppressed": 0,
+    "errors": 0,
+    "failed_cases": [
+      "T06",
+      "T13",
+      "T14",
+      "T15",
+      "T16",
+      "T17",
+      "T18",
+      "T19",
+      "T20"
+    ]
+  },
+  "Needle_native": {
+    "total": 60,
+    "correct": 24,
+    "candidate_correct": 24,
+    "positive_correct": 21,
+    "positive_candidate_correct": 24,
+    "positive_total": 36,
+    "negative_correct": 3,
+    "negative_candidate_correct": 0,
+    "negative_total": 24,
+    "mean_ms": 219.73795166607792,
+    "median_ms": 176.05365000781603,
+    "p95_ms": 496.9162000052165,
+    "suppressed": 6,
+    "errors": 0,
+    "failed_cases": [
+      "T05",
+      "T09",
+      "T10",
+      "T11",
+      "T12",
+      "T13",
+      "T14",
+      "T16",
+      "T17",
+      "T18",
+      "T19",
+      "T20"
+    ]
+  }
+}

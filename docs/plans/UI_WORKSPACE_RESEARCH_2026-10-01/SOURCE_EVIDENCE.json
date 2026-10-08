@@ -1,0 +1,144 @@
+{
+  "captured_at": "2026-10-01T22:18:21.3096542+05:30",
+  "primary_root": "C:\\Users\\cheta\\Development\\uri-m37-m39-integration",
+  "head": "3c8087bc00da31b5e265f38f690db5b1f9275703",
+  "branch": "experimental/desktop-recovery-repair",
+  "status": [
+    "?? docs/plans/DESKTOP_RECOVERY_REAUDIT_VERDICT.md"
+  ],
+  "impeccable_sha": "c74755d920985f7a92cef691ca970ba95f90126e",
+  "gui": "NOT_OBSERVED: native control unavailable",
+  "health": "Connection refused on 127.0.0.1:8000 during read-only probe",
+  "files": [
+    {
+      "path": "uri_ui/lib/main.dart",
+      "sha256": "6F2931E9E1F8B7E89BA448E23977FF404BF30FE80E638E659A45BF6380407B12",
+      "length": 2503
+    },
+    {
+      "path": "uri_ui/lib/app.dart",
+      "sha256": "FB5CC64FB97CCE28790549C625B5FF5A35E74518AC96CC91FFC71C89586DB917",
+      "length": 12893
+    },
+    {
+      "path": "uri_ui/lib/services/http_uri_client.dart",
+      "sha256": "B5D845D72A69FE47DCD0AF508D56397E4DB7B03797ACC53E8E116ECFBC3F5584",
+      "length": 71801
+    },
+    {
+      "path": "uri_ui/lib/services/app_state.dart",
+      "sha256": "AA3B41ABB00AF3B754A927BA57AC0ADC2D18A7EEFEBC2E3C0EDBC0850A17E439",
+      "length": 37938
+    },
+    {
+      "path": "uri_ui/lib/models/uri_turn.dart",
+      "sha256": "AD8FB5AF6EF5B139D461C95C9E2680285B6D15AB2998E24FE89C2C46D03708DF",
+      "length": 8344
+    },
+    {
+      "path": "uri_ui/lib/widgets/turn_card.dart",
+      "sha256": "C772B7429F6D799A0D3BE56CC29C9A5A5074FDDFA2E86BAE70ABE4D3CDF67818",
+      "length": 25729
+    },
+    {
+      "path": "uri_ui/lib/widgets/compact_overlay.dart",
+      "sha256": "60E06F88C75F5A2C1EEEDE2D8252896B62AAEE3213D2E451148320E476BEA787",
+      "length": 3586
+    },
+    {
+      "path": "uri_ui/lib/widgets/app_shell.dart",
+      "sha256": "71D4CEB7270B8881480830893C22E40DFDE1FF9B01DB8062E718BA5D5B4272D7",
+      "length": 14910
+    },
+    {
+      "path": "uri_ui/lib/services/platform_window_controller.dart",
+      "sha256": "DC8CCE12686930A1EA7C2A1EA3B2CC1FB8FFE0D5F024B41E6A7F151E23F269CE",
+      "length": 3520
+    },
+    {
+      "path": "uri_ui/lib/screens/ask/ask_uri_screen.dart",
+      "sha256": "62EDB8C8A6C43F9C7BC723D842979FFAF8D9A5BFAA80A5218DAEDEB4DAAAB995",
+      "length": 23897
+    },
+    {
+      "path": "uri_ui/lib/screens/home/home_screen.dart",
+      "sha256": "45D08050AAC604D5F2EFC2C1D17533724C1E01A2291CF810E78486FCF74C6DB5",
+      "length": 19092
+    },
+    {
+      "path": "uri_ui/lib/screens/settings/capabilities_settings_screen.dart",
+      "sha256": "0E5C8066E0FAEC51BBE0F7FB0B7239BEEFE7B24CCD7357A8314424FC1D7B5D48",
+      "length": 7060
+    },
+    {
+      "path": "uri_ui/lib/theme/uri_theme.dart",
+      "sha256": "6383CEFD33C5390E9BDD76E75E43BA87D2CA7D5D9B08227D4E5270B6D5611C9F",
+      "length": 15915
+    },
+    {
+      "path": "uri_ui/pubspec.yaml",
+      "sha256": "909435E37556357E1CC543B234391BC603A558417AEF405FA829D556338CB4F6",
+      "length": 3981
+    },
+    {
+      "path": "uri_core/app/server.py",
+      "sha256": "404AAD61CF9F0391DBA52DAD15766D97CAF0A96715703D6CDAD715902872A42A",
+      "length": 166939
+    },
+    {
+      "path": "uri_core/core/approval_gate.py",
+      "sha256": "7B8F85B79F15AA9B11CFB1C7351362844F81A7F3B9360E04662CF79BA967D260",
+      "length": 13338
+    },
+    {
+      "path": "uri_core/core/usage_aggregator.py",
+      "sha256": "F8CDC0ADC99586DA12A52701568CD6685C2743C23ED87C1CFE2CBC0217A91167",
+      "length": 2673
+    },
+    {
+      "path": "uri_core/core/arn/integration.py",
+      "sha256": "334E27AADFFA9A64D916B9D6D4FACCACD32C242E0977DF605147F83A0C507110",
+      "length": 2500
+    },
+    {
+      "path": "uri_workspace/capabilities_registry.json",
+      "sha256": "7FBBD93F0872BA0049F08492AF4C0B411B8C8FC86D1166288A30C0351817610A",
+      "length": 15832
+    },
+    {
+      "path": "uri_desktop_adapter.py",
+      "sha256": "8B81CE315C97D112F2D94F32643E237BBD5128AED9E6F6A5FC31873E8A72E3FE",
+      "length": 20936
+    },
+    {
+      "path": "run_desktop_server.py",
+      "sha256": "F988CFC6E3E05889854F6D9A804FEF0C3B329C75A1D1AED3459C4353DED25BCA",
+      "length": 3343
+    },
+    {
+      "path": "launch_desktop.ps1",
+      "sha256": "00368CF96266F6BBC3BFAC7C5CD3F0A271045BEA7FC836E506E7CADE7138DEF7",
+      "length": 5259
+    },
+    {
+      "path": "stop_desktop.ps1",
+      "sha256": "617DBA6D1C2779795E3FD02386AD99401DFCB38219B378B30F6EB24D6A4BE5DA",
+      "length": 2234
+    },
+    {
+      "path": "docs/plans/DESKTOP_RECOVERY_REAUDIT_VERDICT.md",
+      "sha256": "33F2CBECDBB456FA60BFCD7B0CC5D9B3495A829D1D336792D9EAEEEA1567B78A",
+      "length": 4907
+    },
+    {
+      "path": "docs/plans/URI_BATCH_M36_M37_M38_FREEZE_RECORD.md",
+      "sha256": "D8B7E13A36DC7338BE5D50353131CC17E7241C9636232A9046178F55AB09B3E0",
+      "length": 13638
+    },
+    {
+      "path": "docs/reviews/M39_RECHECK_e9c891f.md",
+      "sha256": "63F6F6930C3831122764CCD931895CD31CA6774F81B2B6615701BC6C419E9391",
+      "length": 12932
+    }
+  ]
+}

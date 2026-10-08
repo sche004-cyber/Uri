@@ -26,6 +26,22 @@ class _FailingKeySubmitMockClient extends MockUriClient {
   }
 }
 
+class _EndpointVerificationClient extends MockUriClient {
+  _EndpointVerificationClient({this.succeeds = true});
+  final bool succeeds;
+  bool verified = false;
+  @override
+  Future<ProviderVerificationResult?> verifyProvider(String providerId) async {
+    verified = true;
+    return ProviderVerificationResult(
+      providerId: providerId,
+      verified: succeeds,
+      models: succeeds ? const ['test-model'] : const [],
+      error: succeeds ? null : 'Model unavailable',
+    );
+  }
+}
+
 Future<AppState> _pumpProvidersScreen(
   WidgetTester tester, {
   UriClient? client,
@@ -177,7 +193,8 @@ void main() {
   });
 
   testWidgets('allows saving endpoint config overrides', (tester) async {
-    await _pumpProvidersScreen(tester);
+    final client = _EndpointVerificationClient();
+    await _pumpProvidersScreen(tester, client: client);
 
     final endpointConfig = find.text('Endpoint').first;
     await _scrollTo(tester, endpointConfig);
@@ -191,5 +208,32 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AlertDialog), findsNothing);
+    expect(client.verified, isTrue);
   });
+
+  testWidgets(
+    'saved endpoint cannot claim success if model verification fails',
+    (tester) async {
+      final client = _EndpointVerificationClient(succeeds: false);
+      await _pumpProvidersScreen(tester, client: client);
+      final endpoint = find.text('Endpoint').first;
+      await _scrollTo(tester, endpoint);
+      await tester.tap(endpoint);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save Overrides'));
+      await tester.pumpAndSettle();
+      expect(client.verified, isTrue);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(
+        find.textContaining(
+          'Configuration saved, but model verification failed',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Updated configuration and verified'),
+        findsNothing,
+      );
+    },
+  );
 }

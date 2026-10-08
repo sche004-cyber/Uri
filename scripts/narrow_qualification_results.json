@@ -1,0 +1,3647 @@
+{
+  "runtime_info": {
+    "status": "ready",
+    "package": "cactus-needle",
+    "package_version": "3.0.2",
+    "generation": 3,
+    "telemetry_disabled": true,
+    "offline_mode": true
+  },
+  "schema_a": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": false,
+      "goal": "",
+      "intent_family": "unspecified",
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 1.0,
+      "latency_ms": 242.5100000036764,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_goal",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No file conversion or calculator tool available.",
+        "confidence": 1.0,
+        "prefill_tps": 1404.9,
+        "decode_tps": 370.4,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 57.58399999467656,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "ok": false,
+      "goal": "",
+      "intent_family": "unspecified",
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.9642,
+      "latency_ms": 74.09390000248095,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_goal",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "File conversion requested. No file tool available.",
+        "confidence": 0.9642,
+        "prefill_tps": 1030.8,
+        "decode_tps": 338.5,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 73.83810000465019,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "goal": "convert",
+      "intent_family": "retrieve",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.3275,
+      "latency_ms": 134.16410000354517,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "convert",
+              "intent_family": "retrieve"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "File conversion done. User wants to use the file to convert.",
+        "confidence": 0.3275,
+        "prefill_tps": 1056.5,
+        "decode_tps": 388.2,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 133.9278999948874,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": false,
+      "goal": "",
+      "intent_family": "unspecified",
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.7526,
+      "latency_ms": 50.9712999992189,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_goal",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No email tool available.",
+        "confidence": 0.7526,
+        "prefill_tps": 1281.6,
+        "decode_tps": 380.0,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 50.75999999826308,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": true,
+      "goal": "retrieve",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.8656,
+      "latency_ms": 198.44120000198018,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "retrieve",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "No prior call to compare. Follow-up: extract_goal with 'retrieve' as a new call.",
+        "confidence": 0.8656,
+        "prefill_tps": 1115.3,
+        "decode_tps": 350.9,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [
+            "extract_goal.goal"
+          ],
+          "negation": false
+        },
+        "_bridge_latency_ms": 198.19499999721302,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "ok": true,
+      "goal": "retrieve",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.5548,
+      "latency_ms": 226.06220000307076,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "retrieve",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier compare with 'retrieve' for committee. Follow-up re-compliant with same tool.",
+        "confidence": 0.5548,
+        "prefill_tps": 941.8,
+        "decode_tps": 354.8,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [
+            "extract_goal.goal"
+          ],
+          "negation": false
+        },
+        "_bridge_latency_ms": 225.80059999745572,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.7045,
+      "latency_ms": 212.35020000312943,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "compare",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier compare with committee; follow-up changes to compare with '2025 and 2026' and no other args.",
+        "confidence": 0.7045,
+        "prefill_tps": 820.3,
+        "decode_tps": 346.5,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 212.0809000043664,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "ok": false,
+      "goal": "",
+      "intent_family": "unspecified",
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.979,
+      "latency_ms": 62.442800001008436,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_goal",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No tool available for email generation.",
+        "confidence": 0.979,
+        "prefill_tps": 1269.2,
+        "decode_tps": 392.2,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 62.237400001322385,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.8767,
+      "latency_ms": 226.36709999642335,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "compare",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier compare with '2025 and 2026' for Chief Warden. Follow-up changes intent_family to 'compare' and intent_family to 'comparison'.",
+        "confidence": 0.8767,
+        "prefill_tps": 965.2,
+        "decode_tps": 350.1,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 226.1341999983415,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "ok": true,
+      "goal": "approval",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.3629,
+      "latency_ms": 158.40749999915715,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "approval",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "No prior approval tool; user wants a new approval call.",
+        "confidence": 0.3629,
+        "prefill_tps": 890.2,
+        "decode_tps": 321.7,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 158.13280000293162,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "ok": true,
+      "goal": "approval",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.5308,
+      "latency_ms": 150.91860000393353,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "approval",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "No prior approval call; user wants to re-call the same goal.",
+        "confidence": 0.5308,
+        "prefill_tps": 838.7,
+        "decode_tps": 345.1,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 150.68719999544555,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.691,
+      "latency_ms": 189.79220000619534,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "compare",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier turn 1 used 'compare' with 'comparison'. Follow-up changes intent_family to 'three' (comparison).",
+        "confidence": 0.691,
+        "prefill_tps": 949.5,
+        "decode_tps": 360.1,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 189.53760000295006,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "ok": true,
+      "goal": "calculator",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.9672,
+      "latency_ms": 183.73119999887422,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "calculator",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier turn 1 used 'compare' with 'comparison'. Follow-up changes to 'calculator'.",
+        "confidence": 0.9672,
+        "prefill_tps": 1015.5,
+        "decode_tps": 340.2,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 183.4956000020611,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.9322,
+      "latency_ms": 168.48580000078073,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "compare",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (compare) and turn 2 (comparison). Follow-up reverses to compare.",
+        "confidence": 0.9322,
+        "prefill_tps": 942.3,
+        "decode_tps": 390.5,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 168.2723999983864,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.8238,
+      "latency_ms": 185.0373999986914,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "compare",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Turn 1 created compare with 'comparison' intent_family. Follow-up sends same goal to 'him' (implied from context).",
+        "confidence": 0.8238,
+        "prefill_tps": 1305.6,
+        "decode_tps": 382.4,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 184.80730000010226,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "ok": true,
+      "goal": "comparison",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.55,
+      "latency_ms": 193.71830000454793,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "comparison",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Turn 1 created compare with 'comparison' intent_family. Follow-up changes intent_family to 'comparison' with same intent_family.",
+        "confidence": 0.55,
+        "prefill_tps": 1426.9,
+        "decode_tps": 369.7,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [
+            "extract_goal.goal"
+          ],
+          "negation": false
+        },
+        "_bridge_latency_ms": 193.4767999991891,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "ok": true,
+      "goal": "comparison",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.3974,
+      "latency_ms": 208.01419999770587,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "comparison",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Turn 1 created compare with 'comparison' intent_family. Follow-up changes intent_family to 'submit tomorrow' (no tool for submit, so only the submit call is made).",
+        "confidence": 0.3974,
+        "prefill_tps": 1398.4,
+        "decode_tps": 389.1,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [
+            "extract_goal.goal"
+          ],
+          "negation": false
+        },
+        "_bridge_latency_ms": 207.75049999792827,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "ok": true,
+      "goal": "retrieve",
+      "intent_family": "compare",
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.4971,
+      "latency_ms": 187.95110000064597,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_goal",
+            "arguments": {
+              "goal": "retrieve",
+              "intent_family": "compare"
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (compare with 'comparison' intent_family). Changes intent_family from 'compare' to 'retrieve'.",
+        "confidence": 0.4971,
+        "prefill_tps": 1206.4,
+        "decode_tps": 394.1,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [
+            "extract_goal.goal"
+          ],
+          "negation": false
+        },
+        "_bridge_latency_ms": 187.7057000019704,
+        "_bridge_load_time_ms": 184.67940000118688
+      }
+    }
+  ],
+  "schema_b": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 1.0,
+      "latency_ms": 266.8804999993881,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_operations",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No file conversion or calculator tool available.",
+        "confidence": 1.0,
+        "prefill_tps": 1350.1,
+        "decode_tps": 405.5,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 52.70060000475496,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.9574,
+      "latency_ms": 63.09109999710927,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_operations",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "File conversion requested. No file tool available.",
+        "confidence": 0.9574,
+        "prefill_tps": 1259.0,
+        "decode_tps": 394.0,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 62.82890000147745,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.205,
+      "latency_ms": 148.8307999970857,
+      "error_reason": "OPERATION_ERROR",
+      "error_detail": "OPERATION_ERROR: operation(s) marked both requested and prohibited: ['convert']",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "convert"
+              ],
+              "prohibited_operations": [
+                "convert"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "File conversion requested. User wants to convert to PDF.",
+        "confidence": 0.205,
+        "prefill_tps": 1269.1,
+        "decode_tps": 368.5,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 148.55769999849144,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.6626,
+      "latency_ms": 60.46970000170404,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_operations",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No email tool available.",
+        "confidence": 0.6626,
+        "prefill_tps": 952.4,
+        "decode_tps": 341.9,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 60.24060000345344,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.1924,
+      "latency_ms": 220.8491999990656,
+      "error_reason": "OPERATION_ERROR",
+      "error_detail": "OPERATION_ERROR: operation(s) marked both requested and prohibited: ['draft the email']",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "draft the email"
+              ],
+              "prohibited_operations": [
+                "draft the email"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "No prior approval tool. Follow-up is a new request to extract a requested approval from the previous result.",
+        "confidence": 0.1924,
+        "prefill_tps": 1067.0,
+        "decode_tps": 353.9,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 220.58480000123382,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.9188,
+      "latency_ms": 257.6467999970191,
+      "error_reason": "OPERATION_ERROR",
+      "error_detail": "OPERATION_ERROR: operation(s) marked both requested and prohibited: ['draft the email']",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "draft the email"
+              ],
+              "prohibited_operations": [
+                "draft the email"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier requested_operations was ['draft the email']; user now wants 'draft the email' instead. Prohibited_operations unchanged.",
+        "confidence": 0.9188,
+        "prefill_tps": 1122.3,
+        "decode_tps": 359.7,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 257.39929999690503,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "ok": true,
+      "requested_operations": [
+        "draft the email"
+      ],
+      "prohibited_operations": [
+        "2026"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.4971,
+      "latency_ms": 223.34739999496378,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "draft the email"
+              ],
+              "prohibited_operations": [
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (2025 and 2026) and turn 2 (2026). Changes date to 2026, keeps date.",
+        "confidence": 0.4971,
+        "prefill_tps": 1091.8,
+        "decode_tps": 354.9,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 223.0857999966247,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.46,
+      "latency_ms": 333.4402999971644,
+      "error_reason": "OPERATION_ERROR",
+      "error_detail": "OPERATION_ERROR: operation(s) marked both requested and prohibited: ['draft the email']",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "draft the email",
+                "draft the email"
+              ],
+              "prohibited_operations": [
+                "draft the email",
+                "draft the email in Indian English"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (draft email) and turn 2 (Indian English). Changes prohibited_operations to 'draft the email' and prohibited_operations to 'draft the email' in Indian English.",
+        "confidence": 0.46,
+        "prefill_tps": 816.1,
+        "decode_tps": 363.6,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 333.18720000534086,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.7556,
+      "latency_ms": 322.12869999784743,
+      "error_reason": "OPERATION_ERROR",
+      "error_detail": "OPERATION_ERROR: operation(s) marked both requested and prohibited: ['draft the email']",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "draft the email",
+                "draft the email"
+              ],
+              "prohibited_operations": [
+                "draft the email",
+                "draft the email"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 2 (draft email) and turn 3 (Indian English). Changes prohibited_operations to 'draft the email' and prohibited_operations to 'draft the email'.",
+        "confidence": 0.7556,
+        "prefill_tps": 1129.0,
+        "decode_tps": 334.0,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 321.8796000001021,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.903,
+      "latency_ms": 162.03289999975823,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_operations",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 2 (draft email) and turn 3 (Indian English). Follow-up asks for approval history, but no tool exists for retrieving past approval history.",
+        "confidence": 0.903,
+        "prefill_tps": 837.1,
+        "decode_tps": 350.9,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 161.7917000039597,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.7276,
+      "latency_ms": 111.67820000264328,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_operations",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "Turn 2 had no approval history; user wants to re-check approval history. No tool to retrieve past approval history, so no call.",
+        "confidence": 0.7276,
+        "prefill_tps": 1262.0,
+        "decode_tps": 383.3,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 111.39369999727933,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.4895,
+      "latency_ms": 186.35459999495652,
+      "error_reason": "OPERATION_ERROR",
+      "error_detail": "OPERATION_ERROR: operation(s) marked both requested and prohibited: ['draft the email']",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "draft the email",
+                "draft the email"
+              ],
+              "prohibited_operations": [
+                "draft the email"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Turn 2 had no approval history; user wants same tool with no prohibited_operations.",
+        "confidence": 0.4895,
+        "prefill_tps": 1233.9,
+        "decode_tps": 378.5,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 186.10619999526534,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "ok": true,
+      "requested_operations": [
+        "open calculator"
+      ],
+      "prohibited_operations": [
+        "draft the email"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.8252,
+      "latency_ms": 194.66639999882318,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "open calculator"
+              ],
+              "prohibited_operations": [
+                "draft the email"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier turn 1 used 'draft the email' and 'draft the email'. Follow-up changes to 'open calculator'.",
+        "confidence": 0.8252,
+        "prefill_tps": 1222.1,
+        "decode_tps": 381.3,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 194.432099997357,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "ok": true,
+      "requested_operations": [
+        "open calculator"
+      ],
+      "prohibited_operations": [
+        "draft the email"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.6634,
+      "latency_ms": 168.20000000006985,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "open calculator"
+              ],
+              "prohibited_operations": [
+                "draft the email"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Turn 1 opened 'draft the email'. Follow-up reverses to open.",
+        "confidence": 0.6634,
+        "prefill_tps": 1065.1,
+        "decode_tps": 392.9,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 167.94389999995474,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.2931,
+      "latency_ms": 234.14739999861922,
+      "error_reason": "OPERATION_ERROR",
+      "error_detail": "OPERATION_ERROR: operation(s) marked both requested and prohibited: ['send approval to him']",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "send approval to him"
+              ],
+              "prohibited_operations": [
+                "send approval to him"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Turn 1 opened 'draft the email' and turn 2 approved it. Follow-up sends same approval to 'him' (no recipient).",
+        "confidence": 0.2931,
+        "prefill_tps": 1023.8,
+        "decode_tps": 372.0,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 233.8739999977406,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "ok": true,
+      "requested_operations": [
+        "don't open it"
+      ],
+      "prohibited_operations": [
+        "open calculator"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.4376,
+      "latency_ms": 267.7373999977135,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "don't open it"
+              ],
+              "prohibited_operations": [
+                "open calculator"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Turn 2 had 'open calculator' and 'send approval' with 'don't open it'. Follow-up reuses 'open calculator' and 'don't open it' but changes to 'don't open it'.",
+        "confidence": 0.4376,
+        "prefill_tps": 1087.3,
+        "decode_tps": 391.2,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 267.50629999878583,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "ok": false,
+      "requested_operations": [],
+      "prohibited_operations": [],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.5068,
+      "latency_ms": 217.33609999500914,
+      "error_reason": "OPERATION_ERROR",
+      "error_detail": "OPERATION_ERROR: operation(s) marked both requested and prohibited: ['submit tomorrow']",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "submit tomorrow"
+              ],
+              "prohibited_operations": [
+                "submit tomorrow"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Turn 1 created 'submit tomorrow' with no prohibited_operations. Follow-up creates 'submit tomorrow' with no prohibited_operations.",
+        "confidence": 0.5068,
+        "prefill_tps": 990.1,
+        "decode_tps": 380.7,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 217.08960000250954,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "ok": true,
+      "requested_operations": [
+        "don't open it"
+      ],
+      "prohibited_operations": [
+        "open calculator"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.4952,
+      "latency_ms": 234.35299999982817,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_operations",
+            "arguments": {
+              "requested_operations": [
+                "don't open it"
+              ],
+              "prohibited_operations": [
+                "open calculator"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (open calculator) and turn 2 (don't open it). Changes prohibited_operations from ['open calculator'] to ['don't open it'].",
+        "confidence": 0.4952,
+        "prefill_tps": 1295.4,
+        "decode_tps": 400.1,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 234.07910000241827,
+        "_bridge_load_time_ms": 213.92829999967944
+      }
+    }
+  ],
+  "schema_c": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": false,
+      "references": [],
+      "temporal_references": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 1.0,
+      "latency_ms": 308.16459999914514,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_references",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No file conversion or calculator tool available.",
+        "confidence": 1.0,
+        "prefill_tps": 1360.6,
+        "decode_tps": 402.4,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 52.96520000410965,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "ok": false,
+      "references": [],
+      "temporal_references": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.9654,
+      "latency_ms": 68.72369999473449,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_references",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "File conversion requested. No file tool available.",
+        "confidence": 0.9654,
+        "prefill_tps": 861.8,
+        "decode_tps": 392.6,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 68.497500004014,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": true,
+      "references": [
+        "this"
+      ],
+      "temporal_references": [
+        "tomorrow"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.1182,
+      "latency_ms": 138.90790000004927,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "this"
+              ],
+              "temporal_references": [
+                "tomorrow"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "File conversion done. User wants to convert to PDF.",
+        "confidence": 0.1182,
+        "prefill_tps": 1049.3,
+        "decode_tps": 373.5,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 138.63929999934044,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": false,
+      "references": [],
+      "temporal_references": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.7584,
+      "latency_ms": 52.13299999741139,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_references",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No email tool available.",
+        "confidence": 0.7584,
+        "prefill_tps": 1201.2,
+        "decode_tps": 379.2,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 51.903999999922235,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": false,
+      "references": [],
+      "temporal_references": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.526,
+      "latency_ms": 62.0275000037509,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_references",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No email tool available.",
+        "confidence": 0.526,
+        "prefill_tps": 1218.7,
+        "decode_tps": 351.1,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 61.81279999873368,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "ok": false,
+      "references": [],
+      "temporal_references": [],
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.6646,
+      "latency_ms": 89.59419999882812,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_references",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No email tool available.",
+        "confidence": 0.6646,
+        "prefill_tps": 884.8,
+        "decode_tps": 339.8,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 89.36759999778587,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "ok": true,
+      "references": [
+        "2026",
+        "2025"
+      ],
+      "temporal_references": [
+        "2025",
+        "2026"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.3767,
+      "latency_ms": 333.47549999598414,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2026",
+                "2025",
+                "2026"
+              ],
+              "temporal_references": [
+                "2025",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier compare_references with temporal_references [2025,2026]; user wants to re-execute with same temporal_references [2026,2026] and temporal_references [2025,2026].",
+        "confidence": 0.3767,
+        "prefill_tps": 935.1,
+        "decode_tps": 340.6,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 333.2245999990846,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "ok": true,
+      "references": [
+        "2025",
+        "2026"
+      ],
+      "temporal_references": [
+        "2025",
+        "2026"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.4365,
+      "latency_ms": 208.4298999980092,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2025",
+                "2026"
+              ],
+              "temporal_references": [
+                "2025",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "No email tool available; user wants a formal email to the Chief Warden.",
+        "confidence": 0.4365,
+        "prefill_tps": 922.9,
+        "decode_tps": 324.7,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 208.17689999967115,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "ok": true,
+      "references": [
+        "2025",
+        "2026"
+      ],
+      "temporal_references": [
+        "2025",
+        "2026"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.5123,
+      "latency_ms": 309.45239999709884,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2025",
+                "2026"
+              ],
+              "temporal_references": [
+                "2025",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier compare_references used temporal_references [2026,2025]; user wants same temporal_references but temporal_references [2025,2026]; temporal_references unchanged.",
+        "confidence": 0.5123,
+        "prefill_tps": 841.1,
+        "decode_tps": 340.3,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 309.16720000095665,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "ok": true,
+      "references": [
+        "2025",
+        "2026"
+      ],
+      "temporal_references": [
+        "2025",
+        "2026"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.4792,
+      "latency_ms": 277.7235999965342,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2025",
+                "2026"
+              ],
+              "temporal_references": [
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier extract_references had temporal_references [2025,2026]; user wants same temporal_references for yesterday.",
+        "confidence": 0.4792,
+        "prefill_tps": 753.6,
+        "decode_tps": 351.6,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 277.4669999998878,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "ok": true,
+      "references": [
+        "2025",
+        "2026"
+      ],
+      "temporal_references": [
+        "2025",
+        "2026"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.6199,
+      "latency_ms": 323.64370000141207,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ],
+              "temporal_references": [
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (extract_references for '2025' and '2026'). User wants same temporal_references for '2025' and '2026'.",
+        "confidence": 0.6199,
+        "prefill_tps": 1032.0,
+        "decode_tps": 362.7,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 323.38809999782825,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "ok": true,
+      "references": [
+        "2025",
+        "2026"
+      ],
+      "temporal_references": [
+        "2026",
+        "2016",
+        "2025"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.1847,
+      "latency_ms": 470.3584000017145,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ],
+              "temporal_references": [
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2016",
+                "2016",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (extract_references for '2025' and '2026'). User says 'thanks' meaning no further action.",
+        "confidence": 0.1847,
+        "prefill_tps": 1228.7,
+        "decode_tps": 312.4,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 470.08840000489727,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "ok": true,
+      "references": [
+        "2025",
+        "2026"
+      ],
+      "temporal_references": [
+        "2026",
+        "2016",
+        "2025"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.3944,
+      "latency_ms": 464.8687000008067,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ],
+              "temporal_references": [
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2016",
+                "2016",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier turn 1 used 'references' for '2025' and '2026'. User now wants 'calculator'.",
+        "confidence": 0.3944,
+        "prefill_tps": 854.3,
+        "decode_tps": 307.3,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 464.5897000009427,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "ok": true,
+      "references": [
+        "2025",
+        "2026"
+      ],
+      "temporal_references": [
+        "2026",
+        "2016",
+        "2025"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.466,
+      "latency_ms": 428.65890000393847,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ],
+              "temporal_references": [
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2016",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (references '2025' and '2026'). User wants to re-open the same references.",
+        "confidence": 0.466,
+        "prefill_tps": 965.4,
+        "decode_tps": 332.9,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 428.3724999986589,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "ok": true,
+      "references": [
+        "2025",
+        "2026"
+      ],
+      "temporal_references": [
+        "2026",
+        "2016",
+        "2025"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.4089,
+      "latency_ms": 441.18600000365404,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ],
+              "temporal_references": [
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2016",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2025",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (references '2025' and '2026'). User wants to send to 'him' (references 'him').",
+        "confidence": 0.4089,
+        "prefill_tps": 1094.9,
+        "decode_tps": 337.8,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 440.9360999998171,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "ok": false,
+      "references": [],
+      "temporal_references": [],
+      "declined": false,
+      "call_count": 0,
+      "raw_confidence": 0.2057,
+      "latency_ms": 647.0283000016934,
+      "error_reason": "MALFORMED_OUTPUT",
+      "error_detail": "MALFORMED_OUTPUT: tool call truncated: token budget exhausted",
+      "raw_wire": {
+        "type": "call",
+        "success": false,
+        "error": "tool call truncated: token budget exhausted",
+        "error_code": "truncated",
+        "reason": "runtime_failure",
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 2 (attached PDF with attachment). Copies attachment_url from turn 2, changes temporal_references to ['2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026',",
+        "confidence": 0.2057,
+        "prefill_tps": 1050.1,
+        "decode_tps": 399.0,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 646.7410999975982,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "ok": false,
+      "references": [],
+      "temporal_references": [],
+      "declined": false,
+      "call_count": 0,
+      "raw_confidence": 0.9494,
+      "latency_ms": 690.1137000022572,
+      "error_reason": "MALFORMED_OUTPUT",
+      "error_detail": "MALFORMED_OUTPUT: tool call truncated: token budget exhausted",
+      "raw_wire": {
+        "type": "call",
+        "success": false,
+        "error": "tool call truncated: token budget exhausted",
+        "error_code": "truncated",
+        "reason": "runtime_failure",
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "Extract_references from turn 2: references ['2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026",
+        "confidence": 0.9494,
+        "prefill_tps": 1346.3,
+        "decode_tps": 369.2,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 689.862200000789,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "ok": true,
+      "references": [
+        "2026",
+        "2016",
+        "2027"
+      ],
+      "temporal_references": [
+        "2026",
+        "2016",
+        "2027"
+      ],
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.2411,
+      "latency_ms": 543.020199998864,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_references",
+            "arguments": {
+              "references": [
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2016",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2027",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ],
+              "temporal_references": [
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2016",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2027",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026",
+                "2026"
+              ]
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier extract_references used '2026' and '2026' for '2026'. Follow-up corrects to '2026' and '2026'.",
+        "confidence": 0.2411,
+        "prefill_tps": 1055.0,
+        "decode_tps": 344.5,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 542.7806000006967,
+        "_bridge_load_time_ms": 254.9423000018578
+      }
+    }
+  ],
+  "schema_d": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "ok": false,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": null,
+        "language_constraints": null
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": null,
+        "language_variant": null,
+        "length": null,
+        "structure": null
+      },
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 1.0,
+      "latency_ms": 341.23169999656966,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_constraints",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No file conversion or calculator tool available.",
+        "confidence": 1.0,
+        "prefill_tps": 917.0,
+        "decode_tps": 324.5,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 67.62879999587312,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "ok": false,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": null,
+        "language_constraints": null
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": null,
+        "language_variant": null,
+        "length": null,
+        "structure": null
+      },
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.9559,
+      "latency_ms": 77.49060000060126,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_constraints",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "File conversion requested. No file tool available.",
+        "confidence": 0.9559,
+        "prefill_tps": 862.4,
+        "decode_tps": 335.0,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 77.23860000260174,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "ok": false,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": null,
+        "language_constraints": null
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": null,
+        "language_variant": null,
+        "length": null,
+        "structure": null
+      },
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.0001,
+      "latency_ms": 796.8508999983897,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_constraints",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "included_items": [
+                  "file_id"
+                ]
+              },
+              "output_preferences": {
+                "length": "",
+                "language_variant": ""
+              }
+            }
+          }
+        ],
+        "reasoning": "File conversion done. User wants to extract a file.",
+        "confidence": 0.0001,
+        "prefill_tps": 1036.0,
+        "decode_tps": 97.3,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 796.5430000040215,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "ok": false,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": null,
+        "language_constraints": null
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": null,
+        "language_variant": null,
+        "length": null,
+        "structure": null
+      },
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.7695,
+      "latency_ms": 91.18570000282489,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_constraints",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "File conversion done. User wants to send email. No email tool available.",
+        "confidence": 0.7695,
+        "prefill_tps": 908.0,
+        "decode_tps": 385.5,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 90.7320999976946,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "ok": false,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": null,
+        "language_constraints": null
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": null,
+        "language_variant": null,
+        "length": null,
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 0,
+      "raw_confidence": 0.0835,
+      "latency_ms": 812.9693000009866,
+      "error_reason": "MALFORMED_OUTPUT",
+      "error_detail": "MALFORMED_OUTPUT: tool call truncated: token budget exhausted",
+      "raw_wire": {
+        "type": "call",
+        "success": false,
+        "error": "tool call truncated: token budget exhausted",
+        "error_code": "truncated",
+        "reason": "runtime_failure",
+        "function_calls": [],
+        "suppressed_calls": [],
+        "reasoning": "No prior call to compare. Follow-up: extract_constraints with extracted_constraints=[\"file_id\"], length=\"\"\"",
+        "confidence": 0.0835,
+        "prefill_tps": 1002.2,
+        "decode_tps": 319.6,
+        "peak_ram_mb": 101.2,
+        "_bridge_latency_ms": 812.3913000017637,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "ok": false,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": null,
+        "language_constraints": null
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": null,
+        "language_variant": null,
+        "length": null,
+        "structure": null
+      },
+      "declined": true,
+      "call_count": 0,
+      "raw_confidence": 0.0,
+      "latency_ms": 629.1660999995656,
+      "error_reason": "MISSING_REQUIRED_STRUCTURE",
+      "error_detail": "MISSING_REQUIRED_STRUCTURE: Needle declined to call extract_constraints",
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [],
+        "suppressed_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "reasoning": "Earlier extract_constraints had length '10' and language 'F'. Follow-up changes length to '10' and language to 'F'.",
+        "confidence": 0.0,
+        "prefill_tps": 886.8,
+        "decode_tps": 161.0,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 628.8582999986829,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "12",
+        "language_constraints": "F"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "12",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.649,
+      "latency_ms": 291.9008999961079,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "12",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "12",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier extract_constraints had length '10', language 'F'; follow-up changes to '12', language unchanged.",
+        "confidence": 0.649,
+        "prefill_tps": 976.6,
+        "decode_tps": 343.1,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 291.6401000038604,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "Indian"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "Indian",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.3933,
+      "latency_ms": 325.7967999961693,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "Indian"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "Indian"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier extract_constraints had length '10', language 'F'; follow-up changes language_constraints to 'Indian', length and output_preferences unchanged.",
+        "confidence": 0.3933,
+        "prefill_tps": 887.6,
+        "decode_tps": 356.2,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 325.52230000146665,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "F"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.5556,
+      "latency_ms": 293.3091000013519,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (figure 1 with language 'F', length '10', language 'F'). Changes language_constraints to 'F', keeps length and language.",
+        "confidence": 0.5556,
+        "prefill_tps": 1235.5,
+        "decode_tps": 359.6,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 293.04200000478886,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "F"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": "F",
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.2531,
+      "latency_ms": 290.71010000188835,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F",
+                "language_variant": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Earlier turn 1 used approval_type 'excluded_items'. Follow-up changes to 'approved_items', keeps same tool.",
+        "confidence": 0.2531,
+        "prefill_tps": 955.7,
+        "decode_tps": 362.0,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 290.4668000046513,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "Hello"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.8628,
+      "latency_ms": 287.1649000007892,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "Hello"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (excluded_items) and turn 2 (excluded_items). Changes language_constraints to 'Hello' and keeps length 10 and language 'F'.",
+        "confidence": 0.8628,
+        "prefill_tps": 954.4,
+        "decode_tps": 383.0,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 286.90069999720436,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "Hello"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.9411,
+      "latency_ms": 287.07050000230083,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "Hello"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (excluded_items) and turn 2 (excluded_items). Changes language_constraints to 'Hello', keeps length 10 and language 'F'.",
+        "confidence": 0.9411,
+        "prefill_tps": 1332.9,
+        "decode_tps": 373.6,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 286.82430000480963,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "Hello"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.749,
+      "latency_ms": 279.37889999884646,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "Hello"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (excluded_items) and turn 2 (excluded_items). Changes length_limit to '10', language_constraints unchanged.",
+        "confidence": 0.749,
+        "prefill_tps": 1151.5,
+        "decode_tps": 373.7,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 279.119200000423,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "F"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.9252,
+      "latency_ms": 276.2070000026142,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (excluded_items) and turn 2 (excluded_items). Changes length_limit to '10', keeps language 'F'.",
+        "confidence": 0.9252,
+        "prefill_tps": 1042.0,
+        "decode_tps": 361.0,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": true
+        },
+        "_bridge_latency_ms": 275.9503000052064,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "F"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.6133,
+      "latency_ms": 287.9130000001169,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 1 (excluded_items) and turn 2 (send_constraints). Changes excluded_items to ['send_constraints'], keeps instructions.",
+        "confidence": 0.6133,
+        "prefill_tps": 1113.5,
+        "decode_tps": 373.6,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 287.642399998731,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "F"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.5336,
+      "latency_ms": 257.84830000338843,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 2 (excluded_items) and turn 3 (excluded_items). Compare: same tool, different extension.",
+        "confidence": 0.5336,
+        "prefill_tps": 1366.2,
+        "decode_tps": 372.0,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 257.59020000259625,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "F"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.7629,
+      "latency_ms": 264.1192000010051,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 2 (excluded_items) and turn 3 (excluded_items). Changes excluded_items to ['submit tomorrow'].",
+        "confidence": 0.7629,
+        "prefill_tps": 1165.9,
+        "decode_tps": 373.5,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 263.82700000249315,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "ok": true,
+      "constraints": {
+        "included_items": [],
+        "excluded_items": [],
+        "length_limit": "10",
+        "language_constraints": "F"
+      },
+      "output_preferences": {
+        "artifact_type": null,
+        "tone": null,
+        "audience": null,
+        "language": "F",
+        "language_variant": null,
+        "length": "10",
+        "structure": null
+      },
+      "declined": false,
+      "call_count": 1,
+      "raw_confidence": 0.7195,
+      "latency_ms": 260.22509999893373,
+      "error_reason": null,
+      "error_detail": null,
+      "raw_wire": {
+        "type": "call",
+        "success": true,
+        "error": null,
+        "error_code": null,
+        "reason": null,
+        "function_calls": [
+          {
+            "name": "extract_constraints",
+            "arguments": {
+              "constraints": {
+                "length_limit": "10",
+                "language_constraints": "F"
+              },
+              "output_preferences": {
+                "length": "10",
+                "language": "F"
+              }
+            }
+          }
+        ],
+        "suppressed_calls": [],
+        "reasoning": "Reaches back to turn 2 (excluded_items) and turn 3 (excluded_items). Changes excluded_items to ['submit tomorrow'].",
+        "confidence": 0.7195,
+        "prefill_tps": 1197.3,
+        "decode_tps": 380.1,
+        "peak_ram_mb": 101.2,
+        "validation": {
+          "ungrounded": [],
+          "negation": false
+        },
+        "_bridge_latency_ms": 259.9636000013561,
+        "_bridge_load_time_ms": 273.2985999973607
+      }
+    }
+  ],
+  "merged": [
+    {
+      "id": "R1",
+      "text": "Convert this to PDF.",
+      "merge_ok": true,
+      "goal": "",
+      "intent_family": "unspecified",
+      "operations_count": 0,
+      "references_count": 0,
+      "temporal_count": 0,
+      "dependencies_count": 0,
+      "confidence_overall": "high",
+      "total_sequential_latency_ms": 1158.7867999987793
+    },
+    {
+      "id": "R2",
+      "text": "Bring that file up.",
+      "merge_ok": true,
+      "goal": "",
+      "intent_family": "unspecified",
+      "operations_count": 0,
+      "references_count": 0,
+      "temporal_count": 0,
+      "dependencies_count": 0,
+      "confidence_overall": "high",
+      "total_sequential_latency_ms": 283.39929999492597
+    },
+    {
+      "id": "R3",
+      "text": "Do the same thing for them.",
+      "merge_ok": true,
+      "goal": "convert",
+      "intent_family": "retrieve",
+      "operations_count": 0,
+      "references_count": 1,
+      "temporal_count": 1,
+      "dependencies_count": 1,
+      "confidence_overall": "uncertain",
+      "total_sequential_latency_ms": 1218.7536999990698
+    },
+    {
+      "id": "R4",
+      "text": "Don't send it. Just draft the email.",
+      "merge_ok": true,
+      "goal": "",
+      "intent_family": "unspecified",
+      "operations_count": 0,
+      "references_count": 0,
+      "temporal_count": 0,
+      "dependencies_count": 0,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 254.75970000115922
+    },
+    {
+      "id": "R5",
+      "text": "Find the previous approval, compare it with this one and draft a revised order.",
+      "merge_ok": true,
+      "goal": "retrieve",
+      "intent_family": "compare",
+      "operations_count": 0,
+      "references_count": 0,
+      "temporal_count": 0,
+      "dependencies_count": 0,
+      "confidence_overall": "low",
+      "total_sequential_latency_ms": 1294.2872000057832
+    },
+    {
+      "id": "R6",
+      "text": "The committee has already changed its view twice and the latest letter doesn't seem to match what was decided earlier. I need something I can put up tomorrow.",
+      "merge_ok": true,
+      "goal": "retrieve",
+      "intent_family": "compare",
+      "operations_count": 0,
+      "references_count": 0,
+      "temporal_count": 0,
+      "dependencies_count": 0,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 1202.4692999984836
+    },
+    {
+      "id": "R7",
+      "text": "Compare only the 2025 and 2026 decisions, do not use anything before 2025, and keep the result under one page.",
+      "merge_ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "operations_count": 2,
+      "references_count": 2,
+      "temporal_count": 2,
+      "dependencies_count": 2,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 1061.0739999901853
+    },
+    {
+      "id": "R8",
+      "text": "Draft a short formal email in Indian English to the Chief Warden.",
+      "merge_ok": true,
+      "goal": "",
+      "intent_family": "unspecified",
+      "operations_count": 0,
+      "references_count": 2,
+      "temporal_count": 2,
+      "dependencies_count": 2,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 930.1097999923513
+    },
+    {
+      "id": "R9",
+      "text": "Do not summarize this; compare the exact figures in a table.",
+      "merge_ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "operations_count": 0,
+      "references_count": 2,
+      "temporal_count": 2,
+      "dependencies_count": 2,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 1151.2572999927215
+    },
+    {
+      "id": "R10",
+      "text": "What was approved yesterday?",
+      "merge_ok": true,
+      "goal": "approval",
+      "intent_family": "compare",
+      "operations_count": 0,
+      "references_count": 2,
+      "temporal_count": 2,
+      "dependencies_count": 2,
+      "confidence_overall": "low",
+      "total_sequential_latency_ms": 888.8740999973379
+    },
+    {
+      "id": "S1",
+      "text": "Hello",
+      "merge_ok": true,
+      "goal": "approval",
+      "intent_family": "compare",
+      "operations_count": 0,
+      "references_count": 2,
+      "temporal_count": 2,
+      "dependencies_count": 2,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 873.4054000087781
+    },
+    {
+      "id": "S2",
+      "text": "Thanks",
+      "merge_ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "operations_count": 0,
+      "references_count": 2,
+      "temporal_count": 3,
+      "dependencies_count": 2,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 1133.5757000051672
+    },
+    {
+      "id": "S3",
+      "text": "Open calculator.",
+      "merge_ok": true,
+      "goal": "calculator",
+      "intent_family": "compare",
+      "operations_count": 2,
+      "references_count": 2,
+      "temporal_count": 3,
+      "dependencies_count": 2,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 1122.6451999973506
+    },
+    {
+      "id": "S4",
+      "text": "Don't open it yet.",
+      "merge_ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "operations_count": 2,
+      "references_count": 2,
+      "temporal_count": 3,
+      "dependencies_count": 2,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 1041.5517000074033
+    },
+    {
+      "id": "S5",
+      "text": "Send it to him after they approve it.",
+      "merge_ok": true,
+      "goal": "compare",
+      "intent_family": "compare",
+      "operations_count": 0,
+      "references_count": 2,
+      "temporal_count": 3,
+      "dependencies_count": 2,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 1148.2838000010815
+    },
+    {
+      "id": "S6",
+      "text": "Compare the attached PDF with this spreadsheet.",
+      "merge_ok": true,
+      "goal": "comparison",
+      "intent_family": "compare",
+      "operations_count": 2,
+      "references_count": 0,
+      "temporal_count": 0,
+      "dependencies_count": 0,
+      "confidence_overall": "low",
+      "total_sequential_latency_ms": 1366.3323000073433
+    },
+    {
+      "id": "S7",
+      "text": "Make something I can submit tomorrow.",
+      "merge_ok": true,
+      "goal": "comparison",
+      "intent_family": "compare",
+      "operations_count": 0,
+      "references_count": 0,
+      "temporal_count": 0,
+      "dependencies_count": 0,
+      "confidence_overall": "medium",
+      "total_sequential_latency_ms": 1379.5831999959773
+    },
+    {
+      "id": "S8",
+      "text": "No, I meant the earlier one.",
+      "merge_ok": true,
+      "goal": "retrieve",
+      "intent_family": "compare",
+      "operations_count": 2,
+      "references_count": 3,
+      "temporal_count": 3,
+      "dependencies_count": 3,
+      "confidence_overall": "low",
+      "total_sequential_latency_ms": 1225.5493999982718
+    }
+  ]
+}

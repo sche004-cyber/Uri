@@ -1,0 +1,341 @@
+{
+  "review_date": "2026-09-28",
+  "head": "62d564cf9d2fa25e5a9860d20dcc7070b112badb",
+  "python": "3.13.15 (tags/v3.13.15:4061bc4, Aug  5 2026, 13:05:39) [MSC v.1944 64 bit (AMD64)]",
+  "method": "Offline calls of reviewed classes; no live model or external account access; expected fixture data used only for score recomputation. No application/test edits.",
+  "source_sha256": {
+    "experimental/dynamic_planning_benchmark/adversarial_audit_telemetry.json": "82b72599ddabbfd42734a070f28683d8ce8ca7085ace7197a130e060a08f48cb",
+    "experimental/dynamic_planning_benchmark/adversarial_data_store.py": "746188fd1045d3cede23bfe7951b2ceb725c9f57c050ea33dd9da56c0a5ef99d",
+    "experimental/dynamic_planning_benchmark/adversarial_generalization_battery.json": "33da1a98ab3fa9eaeac8a8499934fae29d6b67f9155132a4a617d01f908e42a7",
+    "experimental/dynamic_planning_benchmark/adversarial_runner.py": "5298711ce9f88677e304b4507c458003396156def10df2a4693f80284f4e0d0a",
+    "experimental/dynamic_planning_benchmark/benchmark_cases.json": "2b014090eb931c85952a35d84cdc0b5c58f51db9a9333d9de4f06cfd956d5a2e",
+    "experimental/dynamic_planning_benchmark/benchmark_runner.py": "96ab9f5963d927a110d6f2271c285c2c8b09f84396d0f88b5ee78ca171a6f6e3",
+    "experimental/dynamic_planning_benchmark/contract_driven_planner.py": "086a5a8c74ea45160a2b3d13662314ffa0006b0e12a853e77b230c0e93fec8c1",
+    "experimental/dynamic_planning_benchmark/dynamic_planner.py": "8680bb57b91585aeef89a6fbd2f045d2a68324090386a58a83019e227ce42677",
+    "experimental/dynamic_planning_benchmark/dynamic_planning_telemetry.json": "aa7db78d7c5f34e79b5c83431f3870c7af3f1a76b5c8051cd13fe2cfe82a00c9",
+    "experimental/dynamic_planning_benchmark/expanded_tool_registry.py": "38975df30f8606aa30253b936592d185c1a0a5bd9e8d325aa888a8ff15076fdc",
+    "experimental/dynamic_planning_benchmark/EXPERIMENTAL_DYNAMIC_PLANNING_BENCHMARK_REPORT.md": "e4b77846db225bb03ab2e8cc5574fec4a61bb68717c4aed05287983565447e31",
+    "experimental/dynamic_planning_benchmark/EXPERIMENTAL_PLANNER_GENERALIZATION_AUDIT.md": "b26729e8065426d7ff4c6f8bafb3da70fe7a2687ef2d982a89d119b207612b58",
+    "experimental/dynamic_planning_benchmark/mock_data_store.py": "424b44555c25622906140aa3619c8295068d8eab5defe7b0d9b91de8dc8b0f42",
+    "experimental/edge_model_tests/aggregate_metrics.json": "1f0da170bed8f957acff4066b429bab54f46bdf20f8e48e2295859de9cd94b09",
+    "experimental/edge_model_tests/aggregate_metrics_four_ultralight_models.json": "11606a2b498bd3f07c15599cd4c996dff6f34b944bbedae7a9294f19378d6b11",
+    "experimental/edge_model_tests/aggregate_metrics_needle_lfm25_350m.json": "06f637ccd57f612b5fca6f17ccaa5d6b40aec9fd6f21c9565a43300451027249",
+    "experimental/edge_model_tests/aggregate_metrics_needle_qwen35_08b.json": "6e78d3c81155d68c322b56c296b34c55a6af407b41933499a610edaf3dbe2a65",
+    "experimental/edge_model_tests/aggregate_metrics_repaired_capsule_comparison.json": "f74ca6de0f4c50fd4ce63800838668738d6086103f6efc1593d9b5554be61cf6",
+    "experimental/edge_model_tests/battery.json": "e70fa8df09a8c9fb0f2f9cc2f2e303d16698e4309fd859b29054e473399f687e",
+    "experimental/edge_model_tests/case_02_diagnostic.py": "b187c7003c9a52d36825d710f44767a09d29be57fb72020a692ecd842f76b821",
+    "experimental/edge_model_tests/CASE_02_DIAGNOSTIC_REPORT.md": "94804d4e94f900f6454af89174d5f3aae56630e084c79c3b31fa746fbbcffe11",
+    "experimental/edge_model_tests/case_02_diagnostic_results.json": "93668bee07351aaa7e77a93a14dbd0ac304eb30e8de766e22c63f4b5ad7373da",
+    "experimental/edge_model_tests/cpu_only_granite_benchmark.py": "38573ca2012d91761ae24c547afdaad463ea8366a414877accad3e4525ee3d2d",
+    "experimental/edge_model_tests/cpu_only_granite_results.json": "b2ec8e03c4410eec1f60f30389b3513a266b67a4b5a2b617c9f8bd5642a196eb",
+    "experimental/edge_model_tests/deterministic_path.py": "8ddecc7d7589d01dbb3c125b1a1e971059764a33440040d52f46b002096b5902",
+    "experimental/edge_model_tests/edge_candidate.py": "d7f5a0fe4203aca4cb8a8d80c7778426224aaed3e02de0ac0eb1b44e27fc1597",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_COMBINATION_REPORT_NEEDLE3_LFM25_350M.md": "79a5ba9c0f11400acd798e6d29895e6cb8b85532717345f98fa04e57fbfc7850",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_COMBINATION_REPORT_NEEDLE3_QWEN35_08B.md": "550391b3948a29fec8352c6ca201e8c755096bd50d9815ef965f48d146e092a9",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_FOUR_ULTRALIGHT_REPORT.md": "b7b9f0ba8b1e051d6563dc2328dc9eddd1b8177b9fbff9b9ddefc2057422a85f",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_GRANITE_CPU_ONLY_REPORT.md": "e53961ce48d8b34acc957ab45621864342d0eb9dafe8fa79e391fc1f2df620ac",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_GRANITE_REPAIRED_ORCHESTRATION_REPORT.md": "f6953a262c0121fcbb18809a7e78d75e36d038d65fe14cc47062f6592c25b802",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_GRANITE_TOOL_CALLING_REPORT.md": "d5325c899d68f04249d895b7ccffc0c48632855000e8e3ba5ab7e01e18434f59",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_QUALIFICATION_REPORT_QWEN35_08B.md": "07c829c1254d74c5602dc842834a7a376877c2bf07fd33aedfb0fd6c6361603b",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_QWEN3_06B_REPORT.md": "0567daa898a3eb45a611902dbed906772ce199146c7a8056b6de23a62a6f28bf",
+    "experimental/edge_model_tests/EXPERIMENTAL_EDGE_REPAIRED_CAPSULE_REPORT.md": "02b333dd21792c9726b70bd941892c4fdb9bf64220a4383dd3c7a5dbd0dbeef6",
+    "experimental/edge_model_tests/experimental_needle_bridge_runtime.py": "fa08a2f917318204a368c6eabe49f09a3db834c9fe84c9f9a4b0be656301fd00",
+    "experimental/edge_model_tests/four_model_ultralight_runner.py": "cbfec99b373f9a62aff3e911bcab79ecc4ae096b2e9a408343f258dc286c4787",
+    "experimental/edge_model_tests/granite_mock_tool_results.json": "2e7c58f735914403c839e91b64af6b986827b1038a2c22ab465dfbbb6fab11a6",
+    "experimental/edge_model_tests/granite_mock_tool_runner.py": "25a08d0eccba1a6334e766da89257aaab987901a1c20db4b4c28d0aef3bd8710",
+    "experimental/edge_model_tests/granite_repaired_orchestration_results.json": "87401089ec2be1a350be30c702512998b7538c1c2f0a7b23803853015db5822b",
+    "experimental/edge_model_tests/granite_repaired_orchestration_runner.py": "bca22d4a2d60fe8fc979e2cd6b8236fd88ccc1ee6bc11090a0aee99411a0b71c",
+    "experimental/edge_model_tests/inspect_failures.py": "d5b62f8ab63072c2daaf26fe692fb8fe2daa712f7104a8c631cad8dd6af9791b",
+    "experimental/edge_model_tests/mock_capability_registry.py": "04950b679d4f2254f09b529e4573377b7856191cf3e6499985cce04348b37ea1",
+    "experimental/edge_model_tests/mock_tool_battery.json": "2e375c3b80ce3f72a94c7531c7f07b55ecf2d53fe09ed5913ac77bb6021e87f1",
+    "experimental/edge_model_tests/needle_lfm25_350m_runner.py": "793b10f141ca2c1c6ed01581430196f31c3cc1e1f1933b7dd71d9ecbfd566235",
+    "experimental/edge_model_tests/needle_qwen35_08b_runner.py": "e5b0496ae72b9807ccd2433e691a91a60645a097e2eb5e5a63075ede21f97b92",
+    "experimental/edge_model_tests/probe_runtime.py": "d2ac76e38fd0c3aaea5746d5767d6716d6f08adf432b7ce14582ab193612bcf1",
+    "experimental/edge_model_tests/prompt_builder.py": "513ae1dbfb79e8ebb074e26e4839daff893b9ecbbea93f139594cd9a0db5aa0c",
+    "experimental/edge_model_tests/qwen06b_canonical_and_supplementary_results.json": "fc81f9f573df627a0ccc0636de1ff2b3a15c6eb1913ccf2ba233e62fb4d3edbb",
+    "experimental/edge_model_tests/qwen06b_comprehensive_benchmark.py": "491c0b90d3ee7542cb6af47cd7d4c810908e7704cbad4a79eccff4bc2f8974d0",
+    "experimental/edge_model_tests/raw_results.json": "f85294de245f6fc151a1ac4a9712494f546d41262f7cd86dec76a2e07b32e5e2",
+    "experimental/edge_model_tests/raw_results_four_ultralight_models.json": "7068a3a7eb8f34e9ae6ef0e1e56abfccbda004d426de5aa51e283216264771a7",
+    "experimental/edge_model_tests/raw_results_needle_lfm25_350m.json": "e961888a88291298d938afb541032213b45ecc50bc359d556ad6885d49f2e230",
+    "experimental/edge_model_tests/raw_results_needle_qwen35_08b.json": "112e5ed9b3760cce305c14c793e890ae8f5222c8ea22ed0b6fbaaf8da276dfe5",
+    "experimental/edge_model_tests/raw_results_repaired_capsule_comparison.json": "88fc4d3b217e70bc94fb0ac326c6a8ec0a0198b415d448077b8ff51838ba8450",
+    "experimental/edge_model_tests/repaired_capsule_comparison_runner.py": "da31760d92216d24620b3eb2b85527f12e986cf17562b0de8dbe48d39eed59a0",
+    "experimental/edge_model_tests/resident_candidate.py": "9db289468e7fa26ef3310222107735d4080462320cc9bf54945d176533637598",
+    "experimental/edge_model_tests/runner.py": "0878dcfe0868daac0b8db6b85fc1d9862650085e1fc077d01629a3a2e3fbb9dc",
+    "experimental/edge_model_tests/supplementary_worker_battery.json": "b48dbc36954906af787bf30fdf987ebe02bec2622e4dd92591b1ed4fd2322ea1",
+    "experimental/edge_model_tests/verifier.py": "6747674a7d1794b3e136bc6f23f0f077ed7deb3308b5bfcc3b461ee9af32a6af",
+    "experimental/real_tool_pilot/pilot_runner.py": "6f9589ef7ccf24b6572a7af5484ced8d82dd5e0d9440d64ba0f4c9c519cb7351",
+    "experimental/real_tool_pilot/pilot_telemetry.json": "74e2743eb57422d52c48e2173382cf82581d8dd7ee4a830cd3964698d34a9a9a",
+    "experimental/real_tool_pilot/pilot_test_cases.json": "9a79e4e4ac959cc51383d77ed0de310eebde0f620ef686d9203298398f50e4ee",
+    "experimental/real_tool_pilot/real_tool_executor.py": "858bc25bd6deaab7cb2740f22549a5e1009d667c2dd056efa7d6f1719ee8d765",
+    "experimental/real_tool_pilot/pilot_outputs/August_Mess_Summary.md": "9ccfba08ca8ef6fdeafec9d9bd1298e5cde1a953724619f39ff79b7856edbf55"
+  },
+  "fresh_probes": [
+    {
+      "prompt": "Tell me the weather in Mumbai",
+      "decision": "CAN_DO",
+      "selected_tools": [],
+      "plan": []
+    },
+    {
+      "prompt": "Do not delete anything; read records from the table",
+      "decision": "ESCALATE",
+      "selected_tools": [],
+      "plan": []
+    },
+    {
+      "prompt": "Read archive records from 2022",
+      "decision": "ESCALATE",
+      "selected_tools": [],
+      "plan": []
+    },
+    {
+      "prompt": "Read records from table lakes; sort by amount, then deduplicate rows",
+      "decision": "CAN_DO",
+      "selected_tools": [
+        "read_table",
+        "deduplicate_rows",
+        "sort_rows"
+      ],
+      "plan": [
+        {
+          "step": 1,
+          "tool": "read_table",
+          "tier": "DETERMINISTIC_CORE",
+          "action": "read a structured tabular dataset by table name.",
+          "depends_on": []
+        },
+        {
+          "step": 2,
+          "tool": "deduplicate_rows",
+          "tier": "DETERMINISTIC_CORE",
+          "action": "remove duplicate rows based on unique key columns.",
+          "depends_on": [
+            1
+          ]
+        },
+        {
+          "step": 3,
+          "tool": "sort_rows",
+          "tier": "DETERMINISTIC_CORE",
+          "action": "sort table rows by one or more columns.",
+          "depends_on": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "Read records from table lakes; deduplicate rows, then sort by amount",
+      "decision": "CAN_DO",
+      "selected_tools": [
+        "read_table",
+        "deduplicate_rows",
+        "sort_rows"
+      ],
+      "plan": [
+        {
+          "step": 1,
+          "tool": "read_table",
+          "tier": "DETERMINISTIC_CORE",
+          "action": "read a structured tabular dataset by table name.",
+          "depends_on": []
+        },
+        {
+          "step": 2,
+          "tool": "deduplicate_rows",
+          "tier": "DETERMINISTIC_CORE",
+          "action": "remove duplicate rows based on unique key columns.",
+          "depends_on": [
+            1
+          ]
+        },
+        {
+          "step": 3,
+          "tool": "sort_rows",
+          "tier": "DETERMINISTIC_CORE",
+          "action": "sort table rows by one or more columns.",
+          "depends_on": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "prompt": "Read table lakes twice and join the two datasets",
+      "decision": "CAN_DO",
+      "selected_tools": [
+        "read_table",
+        "join_tables"
+      ],
+      "plan": [
+        {
+          "step": 1,
+          "tool": "read_table",
+          "tier": "DETERMINISTIC_CORE",
+          "action": "read a structured tabular dataset by table name.",
+          "depends_on": []
+        },
+        {
+          "step": 2,
+          "tool": "join_tables",
+          "tier": "DETERMINISTIC_CORE",
+          "action": "join two tables on a shared key column.",
+          "depends_on": [
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "arbitrary_compatible_rename",
+      "result": {
+        "decision": "ESCALATE",
+        "escalation_type": "full",
+        "reason": "Essential capabilities ['data_loading_tabular'] missing from active tool registry.",
+        "delegation": {
+          "execution": "CONFIGURED_CAPABLE_PROVIDER"
+        },
+        "plan": [],
+        "selected_tools": []
+      }
+    },
+    {
+      "probe": "remove_after_construction",
+      "result": {
+        "decision": "CAN_DO",
+        "escalation_type": "none",
+        "is_partial_escalation": false,
+        "partial_target": "",
+        "reason": "Dynamically assembled execution DAG from generic tool contracts.",
+        "selected_tools": [
+          "join_tables"
+        ],
+        "shortlist_definitions": [
+          {
+            "type": "function",
+            "function": {
+              "name": "join_tables",
+              "description": "Join two tables on a shared key column.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "left_table": {
+                    "type": "string",
+                    "description": "Handle to left table"
+                  },
+                  "right_table": {
+                    "type": "string",
+                    "description": "Handle to right table"
+                  },
+                  "on_key": {
+                    "type": "string",
+                    "description": "Shared key column (e.g. 'roll_no')"
+                  },
+                  "how": {
+                    "type": "string",
+                    "enum": [
+                      "inner",
+                      "left",
+                      "outer"
+                    ],
+                    "description": "Join type"
+                  }
+                },
+                "required": [
+                  "left_table",
+                  "right_table",
+                  "on_key"
+                ]
+              }
+            }
+          }
+        ],
+        "plan": [
+          {
+            "step": 1,
+            "tool": "join_tables",
+            "tier": "DETERMINISTIC_CORE",
+            "action": "join two tables on a shared key column.",
+            "depends_on": []
+          }
+        ],
+        "delegation": {
+          "semantic_mapping": "GRANITE_EDGE",
+          "safety_screening": "NEEDLE",
+          "deterministic_continuation": "DETERMINISTIC_CORE",
+          "escalation": "NONE"
+        }
+      }
+    },
+    {
+      "probe": "unknown_handle",
+      "result": {
+        "status": "ok",
+        "table_handle": "deduped_001",
+        "removed": 0,
+        "count": 0,
+        "rows": []
+      }
+    },
+    {
+      "probe": "failed_tool_commit",
+      "case": {
+        "id": "audit_fake",
+        "workflow_type": "one_step",
+        "expected_needle_decision": "CAN_DO",
+        "expected_tool": "find_file",
+        "expected_args": {
+          "name_or_pattern": "lakes.csv"
+        }
+      },
+      "injected_agent_result": {
+        "tool_invocations": [
+          {
+            "tool": "find_file",
+            "arguments": {
+              "name_or_pattern": "lakes.csv"
+            },
+            "result": {
+              "status": "error",
+              "error": "permission_denied"
+            }
+          }
+        ]
+      },
+      "result": {
+        "verdict": "COMMIT",
+        "correct": true,
+        "false_local_commit_attempt": false,
+        "false_verified_commit": false,
+        "reason": "1-step tool call verified and executed successfully.",
+        "details": {
+          "tool": "find_file",
+          "arguments": {
+            "name_or_pattern": "lakes.csv"
+          },
+          "result": {
+            "status": "error",
+            "error": "permission_denied"
+          }
+        }
+      }
+    }
+  ],
+  "retained_metric_recomputation": {
+    "count": 18,
+    "subset_metric_matches": 18,
+    "exact_tool_set_matches": 14,
+    "positive_planner_final_escalations": [
+      "ADV_P02_PARAPHRASE_VENDOR_RECON_B",
+      "ADV_P03_PARAPHRASE_EQUIPMENT_RECON_A"
+    ]
+  },
+  "existing_regression": {
+    "command": "python -B -m pytest -q -p no:cacheprovider test_multi_action_capabilities.py test_m33_p1_permission_seam.py tests/test_m37_edge_execution.py tests/test_m38_harness.py tests/governance/test_uri_state_validator.py",
+    "exit_code": 0,
+    "passed": 107,
+    "duration_seconds": 34.63,
+    "evidence": "Captured execution output in this review session; not new implementation qualification."
+  }
+}
