@@ -18,6 +18,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 EVID = HERE / "evidence"
 PINNED = json.loads((HERE / "pinned_runtime_v1.json").read_text(encoding="utf-8"))
+NVME = Path("C:/Users/cheta/Development/uri-adaptive-lab/models") / Path(PINNED["model"]["path"]).name
+MODEL = str(NVME) if NVME.exists() else PINNED["model"]["path"]
 
 
 def sha256(path):
@@ -48,10 +50,10 @@ def main():
     env = dict(os.environ)
     env.update(dict(kv.split("=", 1) for kv in args.env))
     exe = str(Path(args.binary_dir) / "llama-bench.exe")
-    base = [exe, "-m", PINNED["model"]["path"], "-ngl", "99", "-fa", "1", "-ctk", "q8_0", "-ctv", "q8_0",
+    base = [exe, "-m", MODEL, "-ngl", "99", "-fa", "1", "-ctk", "q8_0", "-ctv", "q8_0",
             "-b", "2048", "-ub", "1024", "-o", "json"] + (args.extra.split() if args.extra else [])
     stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
-    rec = {"name": args.name, "stamp": stamp, "binary": exe, "binary_sha256": sha256(exe), "env": {k: env[k] for k in env if k.startswith("GGML_")},
+    rec = {"name": args.name, "stamp": stamp, "binary": exe, "binary_sha256": sha256(exe), "model": MODEL, "model_sha256_pinned": PINNED["model"]["sha256"], "env": {k: env[k] for k in env if k.startswith("GGML_")},
            "runs": []}
     plans = [(args.pp, args.tg, args.reps), (args.pp_long, "0", args.reps_long)]
     for pp, tg, reps in plans:

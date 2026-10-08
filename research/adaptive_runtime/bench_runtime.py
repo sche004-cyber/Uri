@@ -154,7 +154,8 @@ class Server:
     def url(self):
         return f"http://127.0.0.1:{self.port}"
 
-    def wait_gpu_released(self, idle_ceiling_mib=2500, timeout=120):
+    def wait_gpu_released(self, idle_ceiling_mib=None, timeout=120):
+        idle_ceiling_mib = idle_ceiling_mib or int(os.environ.get("URI_BENCH_IDLE_CEILING_MIB", "2500"))
         """Do not start while a previous llama-server still holds VRAM (release lags process exit by
         seconds); otherwise the new server's allocations land in non-local memory."""
         t0 = time.monotonic()
@@ -222,7 +223,7 @@ class Server:
         t0 = time.monotonic()
         while time.monotonic() - t0 < 120:
             v = gpu_dedicated_mib()
-            if v is not None and v < 2500:
+            if v is not None and v < int(os.environ.get("URI_BENCH_IDLE_CEILING_MIB", "2500")):
                 break
             time.sleep(1.0)
         self.gpu_release_after_stop_s = round(time.monotonic() - t0, 1)

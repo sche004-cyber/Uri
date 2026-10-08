@@ -1,0 +1,57 @@
+=== expN_b11425_mmproj_cpu 17:16:10Z
+[22:46:37] server healthy after 19.87 s (waited 4.2 s for VRAM release; VRAM at start 608.2 MiB; warm/cold not controlled)
+[22:46:44] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=475.553 pps=2100.7122234535373 ttft=0.5254 | repeat cache_n=995 ttft=0.1131 | newturn prompt_n=20 ttft=0.2
+[22:46:49] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3505.614 pps=2269.217318278624 ttft=3.6191 | repeat cache_n=7951 ttft=0.1752 | newturn prompt_n=19 ttft=0.2339
+[22:47:08] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=17383.012 pps=1761.144731419388 ttft=17.6159 | repeat cache_n=30610 ttft=0.3837 | newturn prompt_n=49 ttft=0.4251
+[22:47:11] decode 0: pred_n=256 tps=116.04111404930246 ttft=0.5571 draft=226/142 finish=length err=None
+[22:47:14] decode 1: pred_n=256 tps=110.555060105101 ttft=0.1694 draft=235/136 finish=length err=None
+[22:47:16] decode 2: pred_n=256 tps=112.25562939970531 ttft=0.1639 draft=232/138 finish=length err=None
+[22:47:18] decode 3: pred_n=256 tps=114.10851048120229 ttft=0.1778 draft=227/141 finish=length err=None
+[22:47:20] decision 0: prompt_n=1020 cache_n=0 ttft=0.6383 total=1.4189 pred_n=92 tps=116.62838863142355 err=None
+[22:47:21] decision 1: prompt_n=953 cache_n=61 ttft=0.5737 total=1.384 pred_n=96 tps=117.26353807547083 err=None
+[22:47:23] decision 2: prompt_n=957 cache_n=61 ttft=0.5389 total=1.4815 pred_n=108 tps=113.54459702810283 err=None
+[22:47:24] decision 3: prompt_n=953 cache_n=61 ttft=0.6095 total=1.4414 pred_n=100 tps=119.0494800904776 err=None
+[22:47:26] decision 4: prompt_n=955 cache_n=61 ttft=0.5498 total=1.3717 pred_n=101 tps=121.70632264346133 err=None
+[22:47:27] decision 5: prompt_n=957 cache_n=61 ttft=0.5589 total=1.4958 pred_n=107 tps=113.18776248081947 err=None
+[22:47:32] vision 0: prompt_n=605 prompt_ms=5074.226 ttft=5.139 total=5.3035 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[22:47:38] vision 1: prompt_n=605 prompt_ms=4991.503 ttft=5.0419 total=5.1999 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[22:47:48] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\expN_b11425_mmproj_cpu_20261008_224611.json
+REPEAT expN_b11425_mmproj_cpu load 19.87 decode_tps_p50 113.1821 local 14826 nonlocal 900 vram_peak 15442.5 fatal None
+=== rep1_plain 17:17:48Z
+[22:48:14] server healthy after 18.89 s (waited 4.2 s for VRAM release; VRAM at start 599.5 MiB; warm/cold not controlled)
+REPEAT rep1_plain load 18.89 decode_tps_p50 116.0232 local 15562 nonlocal 1121 vram_peak 16173.2 fatal None
+=== rep1_memprio 17:18:35Z
+[22:48:54] server healthy after 12.15 s (waited 4.2 s for VRAM release; VRAM at start 613.0 MiB; warm/cold not controlled)
+REPEAT rep1_memprio load 12.15 decode_tps_p50 112.1578 local 15562 nonlocal 1121 vram_peak 16175.2 fatal None
+=== rep2_plain 17:19:14Z
+[22:49:34] server healthy after 12.27 s (waited 4.2 s for VRAM release; VRAM at start 617.7 MiB; warm/cold not controlled)
+REPEAT rep2_plain load 12.27 decode_tps_p50 115.3759 local 15562 nonlocal 1121 vram_peak 16177.9 fatal None
+=== rep2_memprio 17:19:54Z
+[22:50:17] server healthy after 14.96 s (waited 4.2 s for VRAM release; VRAM at start 612.2 MiB; warm/cold not controlled)
+REPEAT rep2_memprio load 14.96 decode_tps_p50 115.6016 local 15562 nonlocal 1121 vram_peak 16179.1 fatal None
+=== rep3_plain 17:20:37Z
+[22:50:58] server healthy after 12.97 s (waited 4.2 s for VRAM release; VRAM at start 622.0 MiB; warm/cold not controlled)
+REPEAT rep3_plain load 12.97 decode_tps_p50 113.5815 local 15562 nonlocal 1121 vram_peak 16190.7 fatal None
+=== rep3_memprio 17:21:18Z
+[22:51:42] server healthy after 16.18 s (waited 4.2 s for VRAM release; VRAM at start 616.2 MiB; warm/cold not controlled)
+REPEAT rep3_memprio load 16.18 decode_tps_p50 115.7008 local 14953 nonlocal 1730 vram_peak 15566.9 fatal None
+=== rep4_plain 17:22:02Z
+[22:52:30] server healthy after 20.15 s (waited 4.2 s for VRAM release; VRAM at start 612.2 MiB; warm/cold not controlled)
+REPEAT rep4_plain load 20.15 decode_tps_p50 114.9505 local 15562 nonlocal 1121 vram_peak 16172.4 fatal None
+=== rep4_memprio 17:22:50Z
+[22:53:13] server healthy after 15.82 s (waited 4.3 s for VRAM release; VRAM at start 600.5 MiB; warm/cold not controlled)
+REPEAT rep4_memprio load 15.82 decode_tps_p50 111.4895 local 14953 nonlocal 1730 vram_peak 15639.9 fatal None
+=== llama-bench base_b11425 17:23:34Z
+1024/0: 2664.266154 +- 23.594653 t/s  (build e117148a4)
+8192/0: 2437.426176 +- 4.910191 t/s  (build e117148a4)
+0/128: 102.928432 +- 0.990724 t/s  (build e117148a4)
+32768/0: 1848.109487 +- 25.784222 t/s  (build e117148a4)
+wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\llama_bench_base_b11425_20261008_225334.json
+=== llama-bench b11510 17:25:18Z
+1024/0: 2777.785035 +- 54.870237 t/s  (build c35b66744)
+8192/0: 2461.995556 +- 18.751496 t/s  (build c35b66744)
+0/128: 103.861886 +- 0.582909 t/s  (build c35b66744)
+32768/0: 1928.034476 +- 2.685588 t/s  (build c35b66744)
+wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\llama_bench_b11510_20261008_225518.json
+=== DONE2 17:26:54Z
+=== expS_memprio_soak 17:26:54Z

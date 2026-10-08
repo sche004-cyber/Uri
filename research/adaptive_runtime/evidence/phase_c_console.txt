@@ -1,0 +1,89 @@
+=== expM_b11425_memlog 17:08:50Z
+[22:39:16] server healthy after 18.77 s (waited 4.2 s for VRAM release; VRAM at start 626.5 MiB; warm/cold not controlled)
+[22:39:23] decode 0: pred_n=256 tps=118.63373022131472 ttft=0.2084 draft=224/143 finish=length err=None
+[22:39:26] decode 1: pred_n=256 tps=114.49389433246243 ttft=0.1977 draft=231/138 finish=length err=None
+[22:39:36] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\expM_b11425_memlog_20261008_223850.json
+SUMMARY expM_b11425_memlog load 18.77 waited 4.2 decode_tps_p50 116.5638 decision_total_p50 None decision_ttft_p50 None pp30k None gpu_after_load {'local usage': 14943, 'non local usage': 1730, 'dedicated usage': 14943, 'shared usage': 1730} gpu_end {'local usage': 14953, 'non local usage': 1730, 'dedicated usage': 14953, 'shared usage': 1730} vram_peak 15575.4 rss 2433.8 fatal None
+=== expA_b11425_memprio 17:09:36Z
+[22:40:03] server healthy after 19.69 s (waited 4.1 s for VRAM release; VRAM at start 631.5 MiB; warm/cold not controlled)
+[22:40:10] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=504.705 pps=1979.3740898148424 ttft=0.5482 | repeat cache_n=995 ttft=0.1347 | newturn prompt_n=20 ttft=0.2263
+[22:40:15] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3487.818 pps=2280.795614908805 ttft=3.6327 | repeat cache_n=7951 ttft=0.1616 | newturn prompt_n=19 ttft=0.2146
+[22:40:34] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=17157.019 pps=1784.3426063700226 ttft=17.3746 | repeat cache_n=30610 ttft=0.4287 | newturn prompt_n=49 ttft=0.474
+[22:40:37] decode 0: pred_n=256 tps=116.21775470032453 ttft=0.5283 draft=226/142 finish=length err=None
+[22:40:39] decode 1: pred_n=256 tps=112.76639402258512 ttft=0.1757 draft=235/136 finish=length err=None
+[22:40:42] decode 2: pred_n=256 tps=117.20619050924022 ttft=0.16 draft=232/138 finish=length err=None
+[22:40:44] decode 3: pred_n=256 tps=119.30444107272939 ttft=0.1628 draft=227/141 finish=length err=None
+[22:40:45] decision 0: prompt_n=1020 cache_n=0 ttft=0.6215 total=1.3666 pred_n=92 tps=122.15716122865942 err=None
+[22:40:47] decision 1: prompt_n=953 cache_n=61 ttft=0.5451 total=1.3098 pred_n=96 tps=124.2795059170127 err=None
+[22:40:48] decision 2: prompt_n=957 cache_n=61 ttft=0.5041 total=1.4123 pred_n=108 tps=117.84296708767076 err=None
+[22:40:50] decision 3: prompt_n=953 cache_n=61 ttft=0.5591 total=1.3207 pred_n=100 tps=130.04311126173343 err=None
+[22:40:51] decision 4: prompt_n=955 cache_n=61 ttft=0.5061 total=1.2957 pred_n=101 tps=126.68153907935458 err=None
+[22:40:52] decision 5: prompt_n=957 cache_n=61 ttft=0.5112 total=1.4005 pred_n=107 tps=119.21645546984217 err=None
+[22:40:54] vision 0: prompt_n=605 prompt_ms=1618.505 ttft=1.7194 total=1.8632 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+[22:40:56] vision 1: prompt_n=605 prompt_ms=1578.13 ttft=1.6205 total=1.7839 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[22:41:06] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\expA_b11425_memprio_20261008_223937.json
+SUMMARY expA_b11425_memprio load 19.69 waited 4.1 decode_tps_p50 116.712 decision_total_p50 1.3437 decision_ttft_p50 0.5282 pp30k 1784.3426063700226 gpu_after_load {'local usage': 15553, 'non local usage': 1121, 'dedicated usage': 15553, 'shared usage': 1121} gpu_end {'local usage': 15689, 'non local usage': 1149, 'dedicated usage': 15689, 'shared usage': 1149} vram_peak 16312.8 rss 3557.9 fatal None
+=== expU_b11425_ub512 17:11:06Z
+[22:41:23] server healthy after 9.72 s (waited 4.1 s for VRAM release; VRAM at start 612.7 MiB; warm/cold not controlled)
+[22:41:30] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=563.683 pps=1772.2727135641842 ttft=0.6219 | repeat cache_n=995 ttft=0.1478 | newturn prompt_n=19 ttft=0.2984
+[22:41:35] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=4063.896 pps=1957.4811953849212 ttft=4.1955 | repeat cache_n=7951 ttft=0.2491 | newturn prompt_n=51 ttft=0.3128
+[22:42:22] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=45098.025 pps=678.8323878928179 ttft=45.3286 | repeat cache_n=30610 ttft=0.4655 | newturn prompt_n=20 ttft=0.3534
+[22:42:25] decode 0: pred_n=256 tps=120.95632338313413 ttft=0.5666 draft=220/145 finish=length err=None
+[22:42:28] decode 1: pred_n=256 tps=114.78425736160956 ttft=0.1681 draft=233/137 finish=length err=None
+[22:42:30] decode 2: pred_n=256 tps=117.24499099512491 ttft=0.1852 draft=228/140 finish=length err=None
+[22:42:32] decode 3: pred_n=256 tps=115.96227542541102 ttft=0.1877 draft=227/141 finish=length err=None
+[22:42:34] decision 0: prompt_n=1020 cache_n=0 ttft=0.7412 total=1.5656 pred_n=96 tps=115.26454426219165 err=None
+[22:42:35] decision 1: prompt_n=953 cache_n=61 ttft=0.6262 total=1.3827 pred_n=91 tps=119.03612481863524 err=None
+[22:42:37] decision 2: prompt_n=957 cache_n=61 ttft=0.7066 total=1.5697 pred_n=102 tps=117.04458935311426 err=None
+[22:42:38] decision 3: prompt_n=953 cache_n=61 ttft=0.595 total=1.4389 pred_n=105 tps=123.28702167006497 err=None
+[22:42:40] decision 4: prompt_n=955 cache_n=61 ttft=0.6189 total=1.4226 pred_n=101 tps=124.47115318789295 err=None
+[22:42:41] decision 5: prompt_n=957 cache_n=61 ttft=0.6082 total=1.351 pred_n=96 tps=127.93527283206947 err=None
+[22:42:42] vision 0: prompt_n=605 prompt_ms=696.144 ttft=0.8448 total=1.0056 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[22:42:43] vision 1: prompt_n=605 prompt_ms=618.826 ttft=0.6716 total=0.8265 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[22:42:53] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\expU_b11425_ub512_20261008_224107.json
+SUMMARY expU_b11425_ub512 load 9.72 waited 4.1 decode_tps_p50 116.6036 decision_total_p50 1.4308 decision_ttft_p50 0.6225 pp30k 678.8323878928179 gpu_after_load {'local usage': 15616, 'non local usage': 784, 'dedicated usage': 15616, 'shared usage': 784} gpu_end {'local usage': 15670, 'non local usage': 872, 'dedicated usage': 15670, 'shared usage': 872} vram_peak 16296.9 rss 3359.9 fatal None
+=== expN_b11425_mmproj_cpu 17:12:53Z
+                        [--no-mtp] [--no-vision] [--ctx CTX] [--sizes SIZES]
+                        [--stability-rounds STABILITY_ROUNDS] [--env ENV]
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+IndexError: list index out of range
+=== expB_b11510_plain 17:12:54Z
+[22:43:25] server healthy after 24.6 s (waited 4.1 s for VRAM release; VRAM at start 612.7 MiB; warm/cold not controlled)
+[22:43:38] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=2543.773 pps=392.72372181008285 ttft=2.5884 | repeat cache_n=995 ttft=0.1189 | newturn prompt_n=20 ttft=0.2127
+[22:43:43] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3490.835 pps=2278.8244073409373 ttft=3.6126 | repeat cache_n=7951 ttft=0.1849 | newturn prompt_n=19 ttft=0.2534
+[22:44:04] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=18161.3 pps=1685.6722811692996 ttft=18.3673 | repeat cache_n=30610 ttft=0.5221 | newturn prompt_n=49 ttft=0.7878
+[22:44:06] decode 0: pred_n=256 tps=113.5180903319091 ttft=0.5282 draft=226/142 finish=length err=None
+[22:44:09] decode 1: pred_n=256 tps=107.23522361698103 ttft=0.1723 draft=235/136 finish=length err=None
+[22:44:11] decode 2: pred_n=256 tps=110.15351944814383 ttft=0.1753 draft=232/138 finish=length err=None
+[22:44:14] decode 3: pred_n=256 tps=109.36161124391757 ttft=0.2062 draft=227/141 finish=length err=None
+[22:44:15] decision 0: prompt_n=1020 cache_n=0 ttft=0.674 total=1.4667 pred_n=92 tps=114.87230239439323 err=None
+[22:44:17] decision 1: prompt_n=953 cache_n=61 ttft=0.5326 total=1.3781 pred_n=96 tps=112.37589856359945 err=None
+[22:44:18] decision 2: prompt_n=957 cache_n=61 ttft=0.5658 total=1.5335 pred_n=108 tps=110.61569522998244 err=None
+[22:44:20] decision 3: prompt_n=953 cache_n=61 ttft=0.5819 total=1.3922 pred_n=100 tps=122.20592809847577 err=None
+[22:44:21] decision 4: prompt_n=955 cache_n=61 ttft=0.537 total=1.3593 pred_n=101 tps=121.66042143169985 err=None
+[22:44:22] decision 5: prompt_n=957 cache_n=61 ttft=0.5285 total=1.4272 pred_n=107 tps=117.98004801565351 err=None
+[22:44:25] vision 0: prompt_n=605 prompt_ms=2502.813 ttft=2.5689 total=2.7149 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+[22:44:27] vision 1: prompt_n=605 prompt_ms=1605.534 ttft=1.6701 total=1.838 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[22:44:38] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\expB_b11510_plain_20261008_224254.json
+SUMMARY expB_b11510_plain load 24.6 waited 4.1 decode_tps_p50 109.7576 decision_total_p50 1.4097 decision_ttft_p50 0.5514 pp30k 1685.6722811692996 gpu_after_load {'local usage': 15553, 'non local usage': 1121, 'dedicated usage': 15553, 'shared usage': 1121} gpu_end {'local usage': 15689, 'non local usage': 1149, 'dedicated usage': 15689, 'shared usage': 1149} vram_peak 16296.6 rss 3665.6 fatal None
+=== expC_b11510_memprio 17:14:38Z
+[22:45:04] server healthy after 19.46 s (waited 4.2 s for VRAM release; VRAM at start 612.2 MiB; warm/cold not controlled)
+[22:45:11] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=503.029 pps=1985.9689997992164 ttft=0.5482 | repeat cache_n=995 ttft=0.1128 | newturn prompt_n=20 ttft=0.2
+[22:45:16] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3604.182 pps=2207.158240066678 ttft=3.731 | repeat cache_n=7951 ttft=0.1599 | newturn prompt_n=19 ttft=0.2495
+[22:45:36] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=17449.296 pps=1754.4547355950638 ttft=17.6485 | repeat cache_n=30610 ttft=0.4564 | newturn prompt_n=49 ttft=0.4533
+[22:45:38] decode 0: pred_n=256 tps=118.52416498563765 ttft=0.4873 draft=226/142 finish=length err=None
+[22:45:41] decode 1: pred_n=256 tps=111.87556979763245 ttft=0.1568 draft=235/136 finish=length err=None
+[22:45:43] decode 2: pred_n=256 tps=111.7336550094141 ttft=0.1905 draft=232/138 finish=length err=None
+[22:45:46] decode 3: pred_n=256 tps=111.58838850613341 ttft=0.1745 draft=227/141 finish=length err=None
+[22:45:47] decision 0: prompt_n=1020 cache_n=0 ttft=0.6776 total=1.4857 pred_n=92 tps=112.6669885723483 err=None
+[22:45:48] decision 1: prompt_n=953 cache_n=61 ttft=0.5586 total=1.3648 pred_n=96 tps=117.88209308962762 err=None
+[22:45:50] decision 2: prompt_n=957 cache_n=61 ttft=0.5237 total=1.5008 pred_n=108 tps=109.55650094966033 err=None
+[22:45:51] decision 3: prompt_n=953 cache_n=61 ttft=0.5706 total=1.3773 pred_n=100 tps=122.780799067362 err=None
+[22:45:53] decision 4: prompt_n=955 cache_n=61 ttft=0.5499 total=1.3792 pred_n=101 tps=120.64268772605425 err=None
+[22:45:54] decision 5: prompt_n=957 cache_n=61 ttft=0.5173 total=1.4267 pred_n=107 tps=116.59421692684043 err=None
+[22:45:56] vision 0: prompt_n=605 prompt_ms=1630.248 ttft=1.7156 total=1.861 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+[22:45:58] vision 1: prompt_n=605 prompt_ms=1546.347 ttft=1.5914 total=1.7533 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[22:46:08] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\expC_b11510_memprio_20261008_224438.json
+SUMMARY expC_b11510_memprio load 19.46 waited 4.2 decode_tps_p50 111.8046 decision_total_p50 1.403 decision_ttft_p50 0.5543 pp30k 1754.4547355950638 gpu_after_load {'local usage': 14943, 'non local usage': 1730, 'dedicated usage': 14943, 'shared usage': 1730} gpu_end {'local usage': 15079, 'non local usage': 1758, 'dedicated usage': 15079, 'shared usage': 1758} vram_peak 15690.6 rss 4172.2 fatal None
+=== DONE 17:16:08Z
