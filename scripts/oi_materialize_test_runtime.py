@@ -31,8 +31,10 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             "scripts/run_uri_integrated_worker.py", "scripts/run_uri_integrated_server.py", "scripts/ws_provision.py",
             "scripts/ws_frozen_check.py", "scripts/ws_server_identity.py", "tests/ws", "work/oi/.gitignore",
             # WS hardening (docs/working_system/WS_HARDENING_PLAN.md): new paths only.
-            "scripts/ws_brain_host.py"]
-TEST_PATHS = ("tests/oi", "tests/ws")
+            "scripts/ws_brain_host.py",
+            # URI Scheduler (docs/scheduler/SCHEDULER_ARCHITECTURE.md): new paths only.
+            "uri_scheduler", "tests/scheduler", "scripts/scheduler_live_test.py"]
+TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler")
 # Accepted files the owner authorized to extend (WS-D3: exact-path scope guards). They replace the overlay copy; the
 # receipt records both digests so the replacement is auditable.
 REPLACED_PATHS = ("tests/phase2a/test_frozen_core.py", "scripts/phase2close_chain.py")

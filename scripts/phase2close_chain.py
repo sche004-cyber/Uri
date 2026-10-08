@@ -202,7 +202,26 @@ WS_EXACT = frozenset((
     "uri_operational_intelligence/task_ledger.py",
     "uri_operational_intelligence/triage.py",
     "uri_operational_intelligence/worker_bridge.py",
-    "work/oi/.gitignore"))
+    "work/oi/.gitignore",
+    # URI Scheduler (docs/scheduler/SCHEDULER_ARCHITECTURE.md): EXACT new paths, same WS-D3 rule.
+    "scripts/scheduler_live_test.py",
+    "tests/scheduler/fixtures/diwali_scene.json",
+    "tests/scheduler/helpers/fake_claude.py",
+    "tests/scheduler/test_engine.py",
+    "tests/scheduler/test_renderer_gif.py",
+    "tests/scheduler/test_service_process.py",
+    "tests/scheduler/test_supervised.py",
+    "tests/scheduler/test_timespec_calendar.py",
+    "uri_scheduler/__init__.py",
+    "uri_scheduler/calendar_store.py",
+    "uri_scheduler/data/in_festivals.json",
+    "uri_scheduler/engine.py",
+    "uri_scheduler/gif_task.py",
+    "uri_scheduler/harness.py",
+    "uri_scheduler/renderer.py",
+    "uri_scheduler/service.py",
+    "uri_scheduler/store.py",
+    "uri_scheduler/timespec.py"))
 
 
 
