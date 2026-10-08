@@ -58,12 +58,15 @@ or refused:
 - the UI bound to a port with no accounted listener, or to a donor server;
 - the authorized binary started with a quarantined model;
 - the authorized launcher pointed at a legacy state root (no laundering through an authorized prefix);
-- anything launched from the canonical development checkout;
-- manifests with conflicting or unknown classifications, which are rejected with exit code 2.
+- anything launched from the canonical development checkout other than the three consolidation tools;
+- manifests with conflicting or unknown classifications, which are rejected with exit code 2;
+- the bypass attempts from Codex rounds 1–13 (§2a–§2m).
 
-Shared Ollama and test runners/agent shells are correctly not flagged.
+Not flagged: shared Ollama; test runners that run outside every manifest root; and a genuine system shell carrying
+the agent marker that launches nothing from a root and no URI-named program. Test runs of donor code inside a donor
+root **are** counted (§2g).
 
-Live checks on this PC (10:18 IST):
+Live checks on this PC at 10:18 IST, before the Codex rounds (later live results are in §2a–§2m):
 
 | Check | Result |
 |---|---|
@@ -264,8 +267,18 @@ Codex confirmed P-1 repaired and found **no further High-impact false negative**
 | O-1 | Medium | The live listener filter used a narrower root test than `evaluate()`: a donor command parsed through `bash -c` on an off-range port lost its command line in the snapshot. The verdict was still CONTAMINATED through the owning process | A single module-level `listener_selected()` rule is used by both `evaluate()` and the live filter |
 
 1 new test (66 total, all passing). Live (11:00 IST): 8 transitional findings, 6 DONOR_ONLY (the Phase 2 session's
-running chain), and Ollama shared (process and listener). The gate refuses with no self-report. Round 14 confirmation:
-see §2n.
+running chain), and Ollama shared (process and listener). The gate refuses with no self-report.
+
+## 2n. Codex confirmation round 14: ACCEPT WITH FINDINGS (documentation only)
+
+Codex confirmed O-1 repaired. It confirmed that `evaluate()` selects and classifies the same records as before the
+refactor, and found no High-impact regression. It reconciled the 66 collected tests: 59 test functions, plus
+parameterized cases. It found two documentation inaccuracies, both corrected in this version:
+- a dangling reference to a missing section;
+- the §2 summary still said test runners are never flagged; it now says donor-root test runs count.
+
+**Independent review outcome:** after 14 rounds the checker stands at ACCEPT WITH FINDINGS, with no open High or
+Medium finding, under the accepted limitations listed in §2a (X-5) and §4.
 
 ## 3. Integrity and recoverability
 
