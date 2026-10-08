@@ -3,7 +3,7 @@
 /// when READY, Runtime v1. Journeys are typed into the real composer and
 /// decided with the real buttons.
 ///
-///   set URI_WS_LIVE=1 & set URI_CLIENT_MANIFEST=<client manifest> & flutter test test/ws_live
+///   `set URI_WS_LIVE=1 & set URI_CLIENT_MANIFEST=<client manifest> & flutter test test/ws_live`
 ///
 /// Evidence: a JSON receipt (`URI_WS_EVIDENCE` path, default build/ws_ui_live.json)
 /// with every journey's observed state and the event types seen.
