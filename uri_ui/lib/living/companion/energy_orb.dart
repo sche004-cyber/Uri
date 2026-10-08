@@ -313,7 +313,7 @@ class _EnergyOrbState extends State<EnergyOrb> with TickerProviderStateMixin {
                   time: time,
                   params: params,
                   hues: hues,
-                  hot: palette.hot,
+                  hot: Color.lerp(palette.hot, tint, params.tintMix * 0.7)!,
                   tint: tint,
                   tintMix: params.tintMix,
                   style: character.style,

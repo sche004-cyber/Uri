@@ -13,7 +13,7 @@
 * "Obsidian Cyan" added as a fifth `UriThemeChoice`; the four approved Hybrid themes are unchanged.
 * A restricted UI-state controller (`ShowModeCommand` only) with a local "URI <mode>" parser; the user can always switch or go Back.
 * Every mock-backed region carries a Simulated badge; the memory graph is labelled PROTOTYPE.
-* Six orb variants (nebula, halo, swarm, glass, flow, mesh) on one state engine, mapped to the owner's reference image (`docs/ui_phase/references/owner_orb_reference_2026-10-08.jpg`); the owner picks one (`docs/ui_phase/UI_ORB_OPTIONS.md`). Cursor gust and click poke + question bubble on every variant (owner requests, mid-session).
+* Seven orb styles and ten palettes on one state engine, built from the owner's three reference images (`docs/ui_phase/references/`); the owner picks a style and a palette (`docs/ui_phase/UI_ORB_OPTIONS.md`). Cursor gust and click poke + question bubble on every style (owner requests, mid-session).
 
 ## Reference and evidence
 

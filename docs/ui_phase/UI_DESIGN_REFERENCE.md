@@ -61,9 +61,9 @@ One drawing, nine parameter sets (`OrbParams.forState`), tweened on change. What
 
 Under reduced effects the shader and blur masks are off; the gradient core, particles, tint, ring, arc, bloom and ripples remain, so every state is still distinct (tested). Under reduced motion the orb is a still frame; state is carried by tint, ring, badge and the status line.
 
-### 3.1 Variants and interactions (added after the owner's mid-session input)
+### 3.1 Styles, palettes and interactions (owner's mid-session input, three reference images under `references/`)
 
-Six visual families share the state engine: nebula, halo, swarm, glass, flow, mesh; compared with screenshots in `UI_ORB_OPTIONS.md`, mapped to the owner's reference image (`references/owner_orb_reference_2026-10-08.jpg`). Two interactions, every variant: a cursor gust (particles pushed along a pointer sweep, decaying over 1.4 s) and a click poke (core bump, burst ring, outward kick) with a UI-local question bubble and composer focus. Double-click opens the Workspace.
+Seven styles share the state engine (Fluid Plasma, Particle Intelligence, Neural Filaments, Electric Core, Holographic Atmosphere, Aurora Vortex, Sun / Flow), each with its own structure and energy behaviour; ten colour palettes are independent of style (the owner's board: "the same orb style expressed in different colour palettes"). The orb's colours therefore come from `OrbPalette` (a declared token table named after the board) rather than from the UI theme accent; the UI chrome keeps the Obsidian Cyan tokens. Energy is drawn as glowing ribbons under a translucent surface (soft additive pass + thin hot core, smoothed quadratic curves), bolts, threads, shells or embers depending on the style. Details and screenshots: `UI_ORB_OPTIONS.md`. Two interactions on every style: a cursor gust (particles, ribbons and threads pushed along a pointer sweep, decaying over 1.4 s) and a click poke (core bump, burst ring, outward kick) with a UI-local question bubble and composer focus. Double-click opens the Workspace.
 
 ### 3.2 Blur policy (changed after the first profile run)
 

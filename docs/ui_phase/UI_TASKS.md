@@ -8,7 +8,7 @@ Status vocabulary (per brief): Researched/proposed, Prototyped, Implemented, Tes
 | T1 | Obsidian Cyan palette + `UriGlass` + `GlassPanel` + `EffectsSettings` | Tested | `test/living/energy_orb_test.dart` (theme test), screenshots |
 | T2 | `CompanionState`, `CompanionSignal`, sources | Tested | `living_shell_test.dart` (priority, AppState-derived thinking) |
 | T3 | `EnergyOrb` painter + shader + reduced mode | Tested | `energy_orb_test.dart`, screenshots 01-03, 12 |
-| T3b | Orb variants (6), cursor gust, click poke + question (owner mid-session requests) | Tested | `UI_ORB_OPTIONS.md`, `screenshots/orb_*.png`, shell/orb tests |
+| T3b | Orb styles (7) x palettes (10), cursor gust, click poke + question (owner mid-session requests and three reference images) | Tested | `UI_ORB_OPTIONS.md`, `screenshots/orb_*.png`, `palette_*.png`, shell/orb tests |
 | T2b | `SupervisedCompanionSource` (section-3 contract) | Tested with fake runtime, not wired | `companion_sources_test.dart` |
 | T4 | `UiPresentationController`, command parser | Tested | `presentation_controller_test.dart` (6) |
 | T5 | `LivingShell` spatial transitions + keyboard | Tested | `living_shell_test.dart` (orb identity, Back, Esc/Ctrl+N) |
@@ -24,7 +24,7 @@ Status vocabulary (per brief): Researched/proposed, Prototyped, Implemented, Tes
 
 ## Open items for the owner
 
-* Choose the orb variant (`UI_ORB_OPTIONS.md`); current default `nebula`.
+* Choose the orb style and palette (`UI_ORB_OPTIONS.md`); current default Fluid Plasma / Signature.
 
 * Accept or reject the visual direction (Obsidian Cyan + orb).
 * P2-6 target line and C6 decisions (see `UI_INTEGRATION_PLAN.md` section 0).

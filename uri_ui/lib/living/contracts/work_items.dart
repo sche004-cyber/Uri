@@ -333,13 +333,16 @@ class MockWorkSimulator extends WorkItemSource {
   void cancel(String id) {
     final item = _get(id);
     if (item == null || item.state.isTerminal) return;
+    // A cancel is a recorded decision only when the item was waiting for
+    // one; cancelling queued/working work is withdrawal, not a decision.
+    final wasAwaiting = item.state == WorkItemState.awaitingApproval;
     _timers.remove(id)?.cancel();
     _update(
       id,
       (w) => w.copyWith(
         state: WorkItemState.cancelled,
         detail: 'Cancelled',
-        decided: true,
+        decided: wasAwaiting,
       ),
     );
     _pushCompanion();

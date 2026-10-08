@@ -80,44 +80,57 @@ void main() {
     services.dispose();
   });
 
-  test('seeded history never counts as a recorded decision or receipt (Codex round 2, finding 1)', () {
-    final appState = testAppState();
-    // Default simulator: seeds one completed item nobody approved in this session.
-    final services = testServices(appState);
-    expect(services.work.items.single.state, WorkItemState.completed);
-    expect(services.work.items.single.decided, isFalse);
-    final snap = deriveIntelligenceSnapshot(
-      signal: const CompanionSignal.idle(),
-      appState: appState,
-      services: services,
-    );
-    expect(stateOf(snap, PipelineStage.approval), StageState.idle);
-    expect(stateOf(snap, PipelineStage.receipt), StageState.idle);
-    expect(
-      snap.stages.firstWhere((f) => f.stage == PipelineStage.approval).detail,
-      'not observed',
-    );
+  testWidgets(
+    'seeded history never counts as a recorded decision; only a decision on a waiting item does (Codex rounds 2-4)',
+    (tester) async {
+      final appState = testAppState();
+      // Default simulator: seeds one completed item nobody approved in this session.
+      final services = testServices(
+        appState,
+        work: MockWorkSimulator(stepInterval: const Duration(milliseconds: 50)),
+      );
+      expect(services.work.items.single.state, WorkItemState.completed);
+      expect(services.work.items.single.decided, isFalse);
+      IntelligenceSnapshot snap() => deriveIntelligenceSnapshot(
+        signal: const CompanionSignal.idle(),
+        appState: appState,
+        services: services,
+      );
+      expect(stateOf(snap(), PipelineStage.approval), StageState.idle);
+      expect(stateOf(snap(), PipelineStage.receipt), StageState.idle);
 
-    // An in-session structured decision does count.
-    final id = services.work.create(
-      title: 'Sheet',
-      kind: WorkItemKind.spreadsheet,
-    );
-    // Drive it to awaitingApproval without timers: cancel is also a decision.
-    services.work.cancel(id);
-    expect(services.work.items.firstWhere((i) => i.id == id).decided, isTrue);
-    final after = deriveIntelligenceSnapshot(
-      signal: const CompanionSignal.idle(),
-      appState: appState,
-      services: services,
-    );
-    // Codex round 3 MINOR: a cancel is a recorded decision too.
-    expect(stateOf(after, PipelineStage.approval), StageState.done);
-    expect(
-      stateOf(after, PipelineStage.receipt),
-      StageState.idle,
-      reason: 'cancelled work has no output',
-    );
-    services.dispose();
-  });
+      // Cancel while working: withdrawal, not a decision (Codex round 4, finding 1).
+      final a = services.work.create(title: 'A', kind: WorkItemKind.document);
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(
+        services.work.items.firstWhere((i) => i.id == a).state,
+        WorkItemState.working,
+      );
+      services.work.cancel(a);
+      expect(services.work.items.firstWhere((i) => i.id == a).decided, isFalse);
+      expect(stateOf(snap(), PipelineStage.approval), StageState.idle);
+
+      // Cancel while awaiting approval: a recorded decision (Codex round 3).
+      final b = services.work.create(
+        title: 'B',
+        kind: WorkItemKind.spreadsheet,
+      );
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(
+        services.work.items.firstWhere((i) => i.id == b).state,
+        WorkItemState.awaitingApproval,
+      );
+      services.work.cancel(b);
+      expect(services.work.items.firstWhere((i) => i.id == b).decided, isTrue);
+      expect(stateOf(snap(), PipelineStage.approval), StageState.done);
+      expect(
+        stateOf(snap(), PipelineStage.receipt),
+        StageState.idle,
+        reason: 'cancelled work has no output',
+      );
+      services.dispose();
+    },
+  );
 }

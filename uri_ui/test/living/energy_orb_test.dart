@@ -125,13 +125,22 @@ void main() {
   testWidgets(
     'A1: every state renders visibly different pixels, with and without effects',
     (tester) async {
-      Future<List<int>> render(CompanionState state, bool reduced) async {
+      Future<List<int>> render(
+        CompanionState state,
+        bool reduced,
+        OrbVariant variant,
+      ) async {
         final key = GlobalKey();
         await tester.pumpWidget(
           host(
             RepaintBoundary(
               key: key,
-              child: EnergyOrb(state: state, size: 160, animate: false),
+              child: EnergyOrb(
+                state: state,
+                size: 160,
+                animate: false,
+                variant: variant,
+              ),
             ),
             reducedEffects: reduced,
             reducedMotion: true,
@@ -154,32 +163,34 @@ void main() {
         return bytes;
       }
 
-      for (final reduced in [false, true]) {
-        final images = <CompanionState, List<int>>{};
-        for (final s in CompanionState.values) {
-          images[s] = await render(s, reduced);
-        }
-        final states = CompanionState.values;
-        for (var i = 0; i < states.length; i++) {
-          for (var j = i + 1; j < states.length; j++) {
-            final a = images[states[i]]!;
-            final b = images[states[j]]!;
-            var differing = 0;
-            for (var k = 0; k < a.length; k += 4) {
-              if ((a[k] - b[k]).abs() +
-                      (a[k + 1] - b[k + 1]).abs() +
-                      (a[k + 2] - b[k + 2]).abs() >
-                  24) {
-                differing++;
+      for (final variant in OrbVariant.values) {
+        for (final reduced in [false, true]) {
+          final images = <CompanionState, List<int>>{};
+          for (final s in CompanionState.values) {
+            images[s] = await render(s, reduced, variant);
+          }
+          final states = CompanionState.values;
+          for (var i = 0; i < states.length; i++) {
+            for (var j = i + 1; j < states.length; j++) {
+              final a = images[states[i]]!;
+              final b = images[states[j]]!;
+              var differing = 0;
+              for (var k = 0; k < a.length; k += 4) {
+                if ((a[k] - b[k]).abs() +
+                        (a[k + 1] - b[k + 1]).abs() +
+                        (a[k + 2] - b[k + 2]).abs() >
+                    24) {
+                  differing++;
+                }
               }
+              final fraction = differing / (a.length / 4);
+              expect(
+                fraction,
+                greaterThan(0.01),
+                reason:
+                    '${states[i].name} vs ${states[j].name} (${variant.name}, reduced=$reduced) differ in only ${(fraction * 100).toStringAsFixed(2)}% of pixels',
+              );
             }
-            final fraction = differing / (a.length / 4);
-            expect(
-              fraction,
-              greaterThan(0.01),
-              reason:
-                  '${states[i].name} vs ${states[j].name} (reduced=$reduced) differ in only ${(fraction * 100).toStringAsFixed(2)}% of pixels',
-            );
           }
         }
       }
