@@ -352,12 +352,14 @@ TRUSTED_SHELL_PATHS = ("c:/program files/git/bin/bash.exe", "c:/program files/gi
                        "c:/program files/powershell/7/pwsh.exe")
 
 
-def _is_agent_shell(cmd: str, roots: list | None = None) -> bool:
+def _is_agent_shell(cmd: str, roots: list | None = None, image: str | None = None) -> bool:
     """An interactive agent shell: the executable is a genuine system shell at a trusted absolute path, it carries
     the agent marker, and nothing it launches lives in any manifest root. Anything else is evaluated normally."""
     toks = _tokens(cmd)
     if not toks or not AGENT_SHELL.search(cmd):
         return False
+    if image is not None and norm(image) not in TRUSTED_SHELL_PATHS:
+        return False  # the real image must be the trusted shell too; a claimed shell command line is not enough
     exe = norm(toks[0])
     if exe not in TRUSTED_SHELL_PATHS:
         return False
@@ -367,6 +369,11 @@ def _is_agent_shell(cmd: str, roots: list | None = None) -> bool:
                 if path and not path.startswith(("module:", "inline-code", "encoded:")) and _root_containing(path, roots):
                     return False
     return not uri_named(cmd)  # a shell that launches a URI-named program is evaluated like any other process
+
+
+def _is_interpreter_image(image: str) -> bool:
+    base = _basename(image)
+    return base in INTERPRETERS or bool(re.fullmatch(r"pythonw?(\d+(\.\d+)?)?\.exe", base))
 
 
 def _trusted_host_image(image: str) -> bool:
@@ -442,8 +449,9 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
 
     def listener_relevant(lst):
         text = listener_text(lst)
+        img = lst.get("image") or ""
         return (lst["port"] in uri_ports or lst["port"] in model_ports or _is_python_like(text) or refs_root(text)
-                or uri_named(text))
+                or uri_named(text) or (bool(img) and _is_interpreter_image(img)))
 
     listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if listener_relevant(lst)}
 
@@ -458,7 +466,7 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
     for p in snapshot.get("processes", []):
         cmd = p["cmdline"]
         img = p.get("image", "") or ""
-        if _is_agent_shell(cmd, roots):
+        if _is_agent_shell(cmd, roots, img):
             continue
         # Classify on the command line plus the real image path, so a neutral command line cannot hide a URI-named
         # or root-located executable.
@@ -521,6 +529,7 @@ def live_snapshot(roots: list | None = None) -> dict:
     r = subprocess.CompletedProcess(child.args, child.returncode, out, err)
     self_pids = {os.getpid(), child.pid}
     me_path = norm(os.path.abspath(__file__))
+    gate_path = norm(os.path.join(os.path.dirname(os.path.abspath(__file__)), "uri_authorized_start.ps1"))
     if r.returncode != 0 or not r.stdout.strip():
         raise SystemExit(f"probe failed: {r.stderr.decode(errors='replace')[:400]}")
     snap = json.loads(r.stdout.decode("utf-8", errors="replace"))
@@ -542,8 +551,8 @@ def live_snapshot(roots: list | None = None) -> dict:
         is_redirector = (norm(launch_target(cmdl)[0]) == norm(sys.executable)
                          and any(norm(os.path.abspath(tg)) == me_path for _, tg in targets if tg))
         toks = _tokens(cmdl)
-        is_gate = bool(toks) and norm(toks[0]) in set(TRUSTED_SHELL_PATHS) | {"powershell", "powershell.exe"} and \
-            any(_basename(tg) == "uri_authorized_start.ps1" for _, tg in targets)
+        is_gate = bool(toks) and norm(anc.get("image", "") or toks[0]) in set(TRUSTED_SHELL_PATHS) and \
+            any(norm(os.path.abspath(tg)) == gate_path for _, tg in targets if tg)
         if is_redirector or is_gate:
             self_pids.add(cur)
         cur, depth = anc.get("ppid"), depth + 1

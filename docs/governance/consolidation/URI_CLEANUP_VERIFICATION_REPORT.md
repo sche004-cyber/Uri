@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **60 passed** (25 original + 35 added or updated across Codex rounds 1-10). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **63 passed** (25 original + 38 added or updated across Codex rounds 1-11). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -228,6 +228,20 @@ S-1..S-3 were confirmed repaired, with no regression. Findings:
   processes, counted by design) and Ollama (shared).
 
 Round 11 result: see §2k.
+
+## 2k. Codex review round 11: REJECT, then repaired
+
+R-b was confirmed repaired. R-a and R-c were partial, and one new item was found:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| Q-1 (R-a residual) | High | The gate exception accepted any `uri_authorized_start.ps1` (for example under `D:/rogue`) | The ancestor must run the exact gate file next to this checker (full path) and its real image must be a trusted system shell |
+| Q-2 (R-c residual) | High | The agent-shell skip ignored the real image, so a rogue image claiming a shell command line was skipped | The skip requires the real image to be a trusted shell as well |
+| Q-3 | High | An interpreter-image listener with a neutral command line on an off-range port was missed | Listener selection includes any interpreter image |
+
+3 new tests (63 total, all passing); all 3 fail on the round-10 checker. An older test was corrected to give its
+shell sample a real shell image. Live: the gate refuses (exit 3) with 6 transitional findings and 6 DONOR_ONLY
+findings from the Phase 2 session's running chain, and no self-report. Round 12 result: see §2l.
 
 ## 3. Integrity and recoverability
 

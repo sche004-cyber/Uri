@@ -81,7 +81,7 @@ matching the accepted layout. The consolidation tooling runs from the canonical 
 
 1. Fresh GitHub clone → `C:\Users\cheta\Development\uri-canonical-candidate` (also the reproducibility test).
 2. Materialized runtime checkout → `C:\Users\cheta\Development\uri-canonical-runtime-candidate`.
-3. Authority manifest, checker (+60 adversarial tests), start gate, containment script (plan-only default).
+3. Authority manifest, checker (+63 adversarial tests), start gate, containment script (plan-only default).
 4. PC audit; ACL hardening of 33 secret files; git exclusion rules for runtime state.
 5. Local tags `accepted/*` and `donor/*` in the candidate clone.
 6. Regression gates on the materialized runtime; results in `URI_CLEANUP_VERIFICATION_REPORT.md`.

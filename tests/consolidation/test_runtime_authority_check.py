@@ -173,7 +173,8 @@ def test_authorized_c1_launcher_in_the_runtime_root_is_clean():
 
 def test_test_runners_outside_roots_and_genuine_agent_shells_are_not_runtimes():
     rep = verdict(snap(processes=[proc(rf"{PY} -m pytest {DEV}\uri-agent\test_x.py"),
-                                  proc(r'"C:\Program Files\Git\bin\bash.exe" -c "source /c/Users/cheta/.claude/shell-snapshots/s.sh && grep run_uri_server.py x"')]))
+                                  {"pid": 101, "ppid": 1, "image": r"C:\Program Files\Git\bin\bash.exe",
+                                   "cmdline": r'"C:\Program Files\Git\bin\bash.exe" -c "source /c/Users/cheta/.claude/shell-snapshots/s.sh && grep run_uri_server.py x"'}]))
     assert rep["findings"] == []
 
 
@@ -430,3 +431,24 @@ def test_authorized_command_line_cannot_mask_a_rogue_process_image():
     assert rep["verdict"] == "CONTAMINATED"
     ok = verdict(snap(processes=[{"pid": 8, "ppid": 1, "image": r"C:\Users\cheta\AppData\Local\Programs\Python\Python313\python.exe", "cmdline": cmd}]))
     assert classes(ok) == ["AUTHORIZED"]
+
+
+# --- regressions for the Codex adversarial review round 11 (2026-10-08, verdict REJECT) ----------------------------
+def test_agent_shell_skip_requires_the_real_image_to_be_the_trusted_shell():
+    cmd = r'"C:\Program Files\Git\bin\bash.exe" -c "echo CLAUDE_CODE_SHELL"'
+    rep = verdict(snap(processes=[{"pid": 2, "ppid": 1, "image": "D:/rogue/uri_worker.exe", "cmdline": cmd}]))
+    assert rep["verdict"] == "CONTAMINATED"
+    ok = verdict(snap(processes=[{"pid": 3, "ppid": 1, "image": r"C:\Program Files\Git\bin\bash.exe", "cmdline": cmd}]))
+    assert ok["findings"] == []
+
+
+def test_interpreter_image_listener_with_a_neutral_command_line_is_evaluated():
+    rep = verdict(snap(listeners=[{"address": "0.0.0.0", "port": 9100, "pid": 9, "image": "C:/Python313/python.exe",
+                                   "cmdline": "neutral-service"}]))
+    assert rep["verdict"] == "CONTAMINATED"
+
+
+def test_gate_self_exclusion_requires_the_exact_gate_script_path():
+    src = open(rac.__file__, encoding="utf-8").read()
+    assert 'gate_path = norm(os.path.join(os.path.dirname(os.path.abspath(__file__)), "uri_authorized_start.ps1"))' in src
+    assert '_basename(tg) == "uri_authorized_start.ps1"' not in src
