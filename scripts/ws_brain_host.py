@@ -76,6 +76,7 @@ class Host:
         self.stopped_at = None          # wall time the last server stop finished (release measurement)
         self.last_contended = None      # monotonic time the GPU was last seen CONTENDED (quiet window)
         self.loaders = []               # (thread, manager) of loads stopped before they finished (Codex H-r1 F1)
+        self.stop_requested = False     # a stop request was consumed (possibly inside a wait or a load)
         seen = G.last_contention(lease_dir)       # also seen by an earlier host or another URI GPU workload
         if seen is not None and 0 <= now() - seen < QUIET_S:
             self.last_contended = time.monotonic() - (now() - seen)
@@ -124,7 +125,18 @@ class Host:
             return None
         self.report["last_request"] = {"id": rid, "action": req["action"], "result": "ACCEPTED", "t": round(self.now(), 3)}
         self.write()
+        if req["action"] == "stop":
+            self.stop_requested = True
         return req["action"]
+
+    def finish_request(self):
+        """Mark the accepted request as done, with the state it left. The worker opens its turn gate on this marker
+        only (Codex H-r2), never on an ACCEPTED request or an unreadable report."""
+        lr = self.report.get("last_request") or {}
+        if lr.get("result") == "ACCEPTED":
+            lr.update(result="DONE", done_state=self.report.get("state"), t_done=round(self.now(), 3))
+            self.report["last_request"] = lr
+            self.write()
 
     # ---- GPU ------------------------------------------------------------------------------------------------
     def owners(self):
@@ -161,10 +173,16 @@ class Host:
         self.loaders = alive
         return not alive
 
-    def release_lease(self, reason):
-        # Never hand the GPU to another workload while a stopped load could still spawn Runtime v1.
-        deadline = time.monotonic() + 330.0          # ensure_ready's own wait is bounded at 300 s
-        while not self.reap_loaders() and time.monotonic() < deadline:
+    def release_lease(self, reason, at_exit=False):
+        # Never hand the GPU to another workload while a stopped load could still spawn Runtime v1 (Codex H-r2 F1):
+        # wait for the loader to end, however long. When the host itself is exiting, the lease is not released
+        # explicitly while a loader lives: process exit closes the lock handle and the kill-on-close job together.
+        while not self.reap_loaders():
+            if at_exit or self.should_exit():
+                self.report["lease"] = {"held": True, "released_by": "process exit (loader still alive)"}
+                return
+            self.set("STOPPING", detail="WAITING_FOR_STOPPED_LOAD",
+                     explain="Waiting for the stopped Brain load to end before freeing the GPU.")
             time.sleep(0.5)
         if self.lease is not None:
             self.lease.release(reason)
@@ -326,10 +344,13 @@ class Host:
                     if self.lease is None and not self.acquire_lease():
                         break
                     self.start_brain()
-                elif action == "stop":
+                if action == "stop" or self.stop_requested:       # also a stop consumed inside a wait or a load
+                    self.stop_requested = False
                     self.stop_brain()
                     self.release_lease("stop requested")
                     self.set("STOPPED", detail="STOP_REQUESTED", explain="The Brain is stopped. Use Start Brain.")
+                if action is not None or self.report.get("last_request", {}).get("result") == "ACCEPTED":
+                    self.finish_request()
                 if (self.mgr is not None and self.mgr.owns_instance and time.monotonic() - last_res >= RESIDENCY_EVERY_S):
                     self.residency(self.report.get("server", {}).get("pid"))
                     if self.lease is not None:
@@ -339,8 +360,9 @@ class Host:
                 time.sleep(0.5)
         finally:
             self.stop_brain()
-            self.release_lease("host exit")
+            self.release_lease("host exit", at_exit=True)
             self.set("STOPPED", detail="HOST_EXIT", explain="The Brain host has exited.")
+            self.finish_request()
             self.stop_file.unlink(missing_ok=True)
         return 0
 

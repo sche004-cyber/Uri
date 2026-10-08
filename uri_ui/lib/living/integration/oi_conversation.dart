@@ -362,9 +362,12 @@ class OiConversation extends ChangeNotifier {
         'text': t,
         'depth': depth.name,
       });
+      // A late reply from a worker that was replaced by Restart URI changes nothing (Codex H-r2).
+      if (!identical(rt, runtime)) return;
       _sendingSince = null;
-      if (identical(rt, runtime)) _begin(r['turn_id'] as String);
+      _begin(r['turn_id'] as String);
     } on IntegratedRuntimeException catch (e) {
+      if (!identical(rt, runtime)) return;
       _sendingSince = null;
       lastError = e.code;
       if (e.code == 'WORKER_TIMEOUT') {
@@ -373,7 +376,7 @@ class OiConversation extends ChangeNotifier {
         messages.add(OiMessage(
             role: OiRole.system,
             text: 'No reply from URI. The request may or may not have started; it was not repeated.'));
-      } else if (identical(rt, runtime)) {
+      } else {
         messages.add(OiMessage(role: OiRole.system, text: 'Not sent: ${e.code}'));
       }
       notifyListeners();

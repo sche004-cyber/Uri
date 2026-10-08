@@ -56,7 +56,6 @@ PERF_SAMPLES = 48
 # the request are made on the worker's single command thread, and no turn can start between them or after them while
 # the host has not finished. Bounded: a host that never answers releases the gate after this long.
 RESTART_GATE_S = 600.0
-HOST_SETTLED = {"READY", "DEGRADED", "FAILED", "STOPPED", "WAITING_FOR_GPU", "WAITING_FOR_LEASE"}
 # A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
 # the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
 CONTINUATIONS = {"oi_decide", "oi_confirm", "oi_abandon"}
@@ -149,13 +148,17 @@ class IntegratedTurns:
         return getattr(self, "_" + kind)(command)
 
     def _restart_pending(self):
+        """Open the gate only on positive evidence (Codex H-r2): the host marked THIS request DONE, or a readable
+        report names a host process that no longer exists, or the bounded gate expired. An unreadable report keeps
+        the gate closed."""
         r = self._restart
         if r is None:
             return False
         host, alive = self._host()
-        done = (not alive or time.time() > r["until"] or
-                (((host or {}).get("last_request") or {}).get("id") == r["id"]
-                 and (host or {}).get("state") in HOST_SETTLED and (host or {}).get("updated_at", 0) > r["t"]))
+        lr = (host or {}).get("last_request") or {}
+        done = (time.time() > r["until"]
+                or (host is not None and not alive)
+                or (lr.get("id") == r["id"] and lr.get("result") in ("DONE", "IGNORED_INVALID_OR_STALE")))
         if done:
             self._restart = None
         return not done
@@ -418,9 +421,9 @@ class IntegratedTurns:
         host, alive = self._host()
         if not alive:
             raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
+        now = time.time()
         req = self._host_request(action)
         if action in ("restart", "stop"):
-            now = time.time()
             self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
         return {"requested": action, "request_id": req.get("id"), "host_state": host.get("state")}
 

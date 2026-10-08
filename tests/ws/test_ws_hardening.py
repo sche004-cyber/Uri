@@ -276,10 +276,14 @@ def test_no_turn_starts_until_the_host_has_acted_on_a_restart(fake, tmp_path):  
         b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
     assert e.value.code == "BRAIN_RESTARTING"
     assert b.handle("brain_health", {"command": "brain_health"})["state"] == "RECOVERING"
-    rep.update(state="STOPPING", last_request={"id": "req-1"}, updated_at=time.time())
+    rep.update(state="READY", last_request={"id": "req-1", "result": "ACCEPTED"}, updated_at=time.time() + 1)
+    with pytest.raises(BridgeRefused):            # accepted but not acted on yet: still gated
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
+    b._host_report = lambda: (None, False)          # an unreadable report is not evidence of a dead host
     with pytest.raises(BridgeRefused):
         b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
-    rep.update(state="READY", updated_at=time.time() + 1)
+    b._host_report = lambda: (rep, True)
+    rep.update(last_request={"id": "req-1", "result": "DONE", "done_state": "READY"})
     fake.scripts.append({"chunks": [("answer", "ok")], "finish": "stop"})
     assert b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})["accepted"]
     b.wait(10)
@@ -489,8 +493,42 @@ def test_a_load_stopped_before_its_spawn_is_reaped_before_the_lease_goes(tmp_pat
     (tmp_path / "client").mkdir(parents=True, exist_ok=True)
     threading.Timer(0.3, lambda: BH.write_host_request(tmp_path / "client", "stop")).start()
     assert h.start_brain() is False
-    h.release_lease("test")
+    assert h.loaders and G.status(tmp_path / "lease")["state"] == "HELD"     # still held while the loader lives
+    h.release_lease("test")                                                   # waits for the loader, however long
     assert killed == [True] and h.loaders == [] and G.status(tmp_path / "lease")["state"] == "FREE"
+
+
+def test_a_long_living_loader_keeps_the_lease_and_exit_leaves_release_to_the_os(tmp_path):
+    H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
+    assert h.acquire_lease()
+    stop = threading.Event()
+    t = threading.Thread(target=stop.wait, daemon=True)
+    t.start()
+
+    class M:
+        _contained = None
+
+        def stop(self):
+            return True
+    h.loaders.append((t, M()))
+    h.deadline = time.monotonic() - 1            # host exiting
+    h.release_lease("host exit", at_exit=True)
+    assert G.status(tmp_path / "lease")["state"] == "HELD" and h.report["lease"]["released_by"].startswith("process exit")
+    stop.set()
+    t.join(2)
+    h.release_lease("later")
+    assert G.status(tmp_path / "lease")["state"] == "FREE"
+
+
+def test_requests_are_marked_done_with_the_state_they_left(tmp_path):
+    H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
+    (tmp_path / "client").mkdir(parents=True, exist_ok=True)
+    BH.write_host_request(tmp_path / "client", "stop")
+    assert h.take_request() == "stop" and h.report["last_request"]["result"] == "ACCEPTED"
+    h.set("STOPPED", detail="STOP_REQUESTED")
+    h.finish_request()
+    lr = json.loads((tmp_path / "client" / BH.REPORT_FILE).read_text())["last_request"]
+    assert lr["result"] == "DONE" and lr["done_state"] == "STOPPED"
 
 
 def test_host_requests_are_explicit_fresh_and_used_once(tmp_path):

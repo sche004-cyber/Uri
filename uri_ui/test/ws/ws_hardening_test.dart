@@ -45,10 +45,24 @@ class HardeningRuntime implements IntegratedRuntime {
   @override
   bool get closed => _closed;
 
+  final _hung = <Completer<Map<String, dynamic>>>[];
+
+  /// Completes every unanswered call with an error (a late failure after the test moved on).
+  void failPending(String code) {
+    for (final c in _hung) {
+      c.completeError(IntegratedRuntimeException(code));
+    }
+    _hung.clear();
+  }
+
   @override
   Future<Map<String, dynamic>> call(Map<String, dynamic> command) {
     commands.add(command);
-    if (!responsive) return Completer<Map<String, dynamic>>().future; // never answers
+    if (!responsive) {
+      final c = Completer<Map<String, dynamic>>(); // never answers unless failPending()
+      _hung.add(c);
+      return c.future;
+    }
     switch (command['command']) {
       case 'oi_turn':
         return Future.value({'turn_id': '$name-t${++_turn}', 'accepted': true});
@@ -274,6 +288,24 @@ void main() {
       await conv.send('next question');
       expect(w2.commands.last['command'], 'oi_turn');
       expect(conv.sessionId, isNotEmpty);
+    });
+
+    test('a late reply or timeout from the replaced worker does not touch the new worker state', () async {
+      final w1 = HardeningRuntime()..responsive = false;
+      final w2 = HardeningRuntime(name: 'w2');
+      final conv = OiConversation(w1, respawn: () async => w2, probeAfter: Duration.zero, probeTimeout: shortProbe);
+      unawaited(conv.send('first')); // outstanding on w1
+      await Future<void>.delayed(fast);
+      await conv.restartWorker();
+      w2.responsive = false; // keep the new send outstanding
+      unawaited(conv.send('second'));
+      await Future<void>.delayed(fast);
+      expect(conv.busy, isTrue);
+      // the old worker's pending call now fails late: nothing about w2 may change
+      w1.failPending('WORKER_TIMEOUT');
+      await Future<void>.delayed(fast);
+      expect(conv.busy, isTrue);
+      expect(conv.workerUnresponsive, isFalse);
     });
 
     test('a failed restart says so', () async {
