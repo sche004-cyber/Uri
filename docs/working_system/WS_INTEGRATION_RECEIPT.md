@@ -18,7 +18,7 @@ Date: 2026-10-08/09. Recorded by Claude, from the primary evidence listed below.
 | Code reviewed by Codex r4 | `fcfed5c` |
 | Final chain and live runtime materialized from | `abe2f9b1e8a69e411c48f6b91e86e249b3cd8949` |
 
-Changes after `abe2f9b` (none is in a Phase 1/2 test scope; Codex round 5 reviewed them):
+Changes after `abe2f9b` (none is in a Phase 1/2 test scope; Codex round 5 reviewed those present at `154b952`, and rounds 6-8 checked the later repairs):
 - `cfe4e88` `scripts/ws_server_identity.py` error path. It reaches the runtime: copied into `uri-ws-final` by hand,
   and its SHA-256 prefix `2509ca4ad6ea6ef1` equals the committed file.
 - `fc30e9e` launcher default `-RuntimeRoot` changed from `uri-ws-rt` to `uri-ws-final` (behavioral). The committed
@@ -67,6 +67,7 @@ those packages; native needs a client-profile Codex login, PA-8/9).
 | 5 | `154b952` (diff after `fcfed5c` + reports) | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | report boundaries overclaimed (review and chain commits); unverified `-Attach` capture provenance; UI refusal journey overstated; cancel-probe assertion; launcher default omitted → all repaired in the commit after `154b952` (attach captures 07a/07/08 retaken with PID verification) |
 | 6 | `04864c6` | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | findings 2, 4 and 5 FIXED; stale code-tip and "A" wording, UI refusal label and reasoning-character count corrected in the next commit |
 | 7 | `d6537c5` | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | four round-6 corrections verified; remaining: the receipt and the regression table still called the UI journey a demonstrated refusal → reworded to "not executed" in the next commit |
+| 8 | `6fa5993` | candidate **ACCEPT WITH FINDINGS**; reports **ACCEPT WITH FINDINGS** | round-7 finding FIXED; minor: round-5 scope sentence narrowed in the next commit |
 
 Every Codex finding was checked against source before repair. Codex could not run tests in its sandbox; its verdicts
 rest on source inspection. The test results above come from this session's own runs.

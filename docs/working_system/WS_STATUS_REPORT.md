@@ -77,7 +77,7 @@ the independent Codex review of the code at `fcfed5c` (round 4; later tool/test/
 | OI + WS Python | 182 passed, 16 skipped (opt-in live tests) |
 | Live worker (final tree) | Brain stopped: 6 passed, 2 skipped; Brain READY: **8/8 passed** |
 | Live UI journeys (final tree) | Brain stopped: passed (unavailable runtime, approve, deny, destructive request not executed, local command, restart). Brain READY: **passed** (normal response, reasoning, Stop/cancel, approve and deny through Runtime v1, destructive request not executed, local command, restart). The refusal code itself (`REFUSED_UNSUPPORTED`) is demonstrated through the worker only |
-| Independent review (Codex `gpt-6-sol`, medium, read-only clone) | r1 REJECT (5) → r2 REJECT (3 partial + 2 new) → r3 ACCEPT WITH FINDINGS (1 new MEDIUM) → r4 **ACCEPT WITH FINDINGS** at `fcfed5c`; every finding confirmed in source, repaired and tested (`WS_INTEGRATION_RECEIPT.md` §4) |
+| Independent review (Codex `gpt-6-sol`, medium, read-only clone) | code: r1 REJECT (5) → r2 REJECT (3 partial + 2 new) → r3 ACCEPT WITH FINDINGS (1 new MEDIUM) → r4 **ACCEPT WITH FINDINGS** at `fcfed5c`; later diff and reports: r5-r7 report corrections → r8 candidate and reports **ACCEPT WITH FINDINGS** at `6fa5993`; every finding confirmed in source, repaired and tested (`WS_INTEGRATION_RECEIPT.md` §4) |
 | Not run | flutter/bridge/native steps of the accepted chain (unchanged packages; the native step needs a client-profile Codex login, PA-8/9) |
 
 ## 3. Defects found and repaired in this session (beyond the Codex rounds)
