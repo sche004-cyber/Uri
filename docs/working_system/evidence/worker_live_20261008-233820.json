@@ -1,0 +1,2653 @@
+{
+ "journeys": [
+  {
+   "journey": "question",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482883.423,
+     "data": {
+      "depth": "auto",
+      "text_chars": 30
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482883.423,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482883.673,
+     "data": {
+      "route": "answer",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "simple_language_task",
+       "selected_by": "policy",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 0,
+       "kind": "QUESTION",
+       "reasons": [
+        "default_conversation"
+       ]
+      }
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791482884.463,
+     "data": {
+      "state": "speaking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 5,
+     "t": 1791482884.463,
+     "data": {
+      "text": "VR"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 6,
+     "t": 1791482884.484,
+     "data": {
+      "text": "AM"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 7,
+     "t": 1791482884.484,
+     "data": {
+      "text": " ("
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 8,
+     "t": 1791482884.504,
+     "data": {
+      "text": "Video"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 9,
+     "t": 1791482884.504,
+     "data": {
+      "text": " Random"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 10,
+     "t": 1791482884.504,
+     "data": {
+      "text": " Access"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 11,
+     "t": 1791482884.524,
+     "data": {
+      "text": " Memory"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 12,
+     "t": 1791482884.524,
+     "data": {
+      "text": ")"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 13,
+     "t": 1791482884.524,
+     "data": {
+      "text": " is"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 14,
+     "t": 1791482884.543,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 15,
+     "t": 1791482884.543,
+     "data": {
+      "text": " specialized"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 16,
+     "t": 1791482884.543,
+     "data": {
+      "text": " type"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 17,
+     "t": 1791482884.563,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 18,
+     "t": 1791482884.563,
+     "data": {
+      "text": " memory"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 19,
+     "t": 1791482884.563,
+     "data": {
+      "text": " used"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 20,
+     "t": 1791482884.582,
+     "data": {
+      "text": " by"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 21,
+     "t": 1791482884.582,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 22,
+     "t": 1791482884.582,
+     "data": {
+      "text": " computer"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 23,
+     "t": 1791482884.602,
+     "data": {
+      "text": "'s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 24,
+     "t": 1791482884.602,
+     "data": {
+      "text": " graphics"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 25,
+     "t": 1791482884.602,
+     "data": {
+      "text": " processing"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 26,
+     "t": 1791482884.622,
+     "data": {
+      "text": " unit"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 27,
+     "t": 1791482884.622,
+     "data": {
+      "text": " ("
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 28,
+     "t": 1791482884.644,
+     "data": {
+      "text": "GPU"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 29,
+     "t": 1791482884.644,
+     "data": {
+      "text": ")"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 30,
+     "t": 1791482884.644,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 31,
+     "t": 1791482884.663,
+     "data": {
+      "text": " store"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 32,
+     "t": 1791482884.663,
+     "data": {
+      "text": " image"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 33,
+     "t": 1791482884.683,
+     "data": {
+      "text": " data"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 34,
+     "t": 1791482884.683,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 35,
+     "t": 1791482884.683,
+     "data": {
+      "text": " textures"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 36,
+     "t": 1791482884.702,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 37,
+     "t": 1791482884.702,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 38,
+     "t": 1791482884.702,
+     "data": {
+      "text": " frame"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 39,
+     "t": 1791482884.728,
+     "data": {
+      "text": " buffers"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 40,
+     "t": 1791482884.728,
+     "data": {
+      "text": " for"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 41,
+     "t": 1791482884.728,
+     "data": {
+      "text": " rapid"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 42,
+     "t": 1791482884.747,
+     "data": {
+      "text": " display"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 43,
+     "t": 1791482884.747,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 44,
+     "t": 1791482884.767,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 45,
+     "t": 1791482884.788,
+     "data": {
+      "text": " monitor"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 46,
+     "t": 1791482884.788,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.done",
+     "seq": 47,
+     "t": 1791482884.789,
+     "data": {
+      "complete": true,
+      "escalation_candidate": false,
+      "flags": [],
+      "metrics": {
+       "cache_n": 0,
+       "draft_n": 32,
+       "draft_n_accepted": 26,
+       "first_answer_s": 0.7895,
+       "predicted_n": 43,
+       "predicted_per_second": 123.53994899564962,
+       "prompt_n": 222,
+       "prompt_per_second": 491.75643436712943,
+       "reasoning_chars": 0,
+       "retried": false,
+       "total_s": 1.1156,
+       "ttft_s": 0.7895
+      },
+      "status": "COMPLETE"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 48,
+     "t": 1791482884.789,
+     "data": {
+      "route": "answer",
+      "status": "ok",
+      "total_s": 1.3659
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 49,
+     "t": 1791482884.789,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "brain": "READY",
+   "reply_s": 0.001
+  },
+  {
+   "journey": "reasoning",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482885.509,
+     "data": {
+      "depth": "normal",
+      "text_chars": 98
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482885.509,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482885.803,
+     "data": {
+      "route": "answer",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "user_selected_normal",
+       "selected_by": "user",
+       "tier": "NORMAL"
+      },
+      "triage": {
+       "action_clauses": 0,
+       "kind": "ANALYSIS",
+       "reasons": [
+        "analysis_cue"
+       ]
+      }
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 4,
+     "t": 1791482886.426,
+     "data": {
+      "chars": 200
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 5,
+     "t": 1791482886.779,
+     "data": {
+      "chars": 408
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 6,
+     "t": 1791482887.227,
+     "data": {
+      "chars": 610
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 7,
+     "t": 1791482887.657,
+     "data": {
+      "chars": 810
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 8,
+     "t": 1791482888.048,
+     "data": {
+      "chars": 1013
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 9,
+     "t": 1791482888.5,
+     "data": {
+      "chars": 1213
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 10,
+     "t": 1791482888.888,
+     "data": {
+      "chars": 1414
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 11,
+     "t": 1791482889.277,
+     "data": {
+      "chars": 1617
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 12,
+     "t": 1791482889.628,
+     "data": {
+      "chars": 1817
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 13,
+     "t": 1791482889.96,
+     "data": {
+      "chars": 2017
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 14,
+     "t": 1791482890.342,
+     "data": {
+      "chars": 2217
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 15,
+     "t": 1791482890.419,
+     "data": {
+      "state": "speaking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 16,
+     "t": 1791482890.419,
+     "data": {
+      "text": "**"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 17,
+     "t": 1791482890.44,
+     "data": {
+      "text": "Paper"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 18,
+     "t": 1791482890.44,
+     "data": {
+      "text": " Records"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 19,
+     "t": 1791482890.44,
+     "data": {
+      "text": "**"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 20,
+     "t": 1791482890.46,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 21,
+     "t": 1791482890.46,
+     "data": {
+      "text": "*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 22,
+     "t": 1791482890.48,
+     "data": {
+      "text": "Pros"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 23,
+     "t": 1791482890.48,
+     "data": {
+      "text": ":*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 24,
+     "t": 1791482890.48,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 25,
+     "t": 1791482890.499,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 26,
+     "t": 1791482890.499,
+     "data": {
+      "text": " No"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 27,
+     "t": 1791482890.499,
+     "data": {
+      "text": " technology"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 28,
+     "t": 1791482890.519,
+     "data": {
+      "text": " needed"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 29,
+     "t": 1791482890.519,
+     "data": {
+      "text": ";"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 30,
+     "t": 1791482890.519,
+     "data": {
+      "text": " accessible"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 31,
+     "t": 1791482890.539,
+     "data": {
+      "text": " anywhere"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 32,
+     "t": 1791482890.559,
+     "data": {
+      "text": " without"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 33,
+     "t": 1791482890.559,
+     "data": {
+      "text": " power"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 34,
+     "t": 1791482890.559,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 35,
+     "t": 1791482890.579,
+     "data": {
+      "text": " devices"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 36,
+     "t": 1791482890.579,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 37,
+     "t": 1791482890.579,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 38,
+     "t": 1791482890.598,
+     "data": {
+      "text": " software"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 39,
+     "t": 1791482890.598,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 40,
+     "t": 1791482890.598,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 41,
+     "t": 1791482890.617,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 42,
+     "t": 1791482890.617,
+     "data": {
+      "text": " Imm"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 43,
+     "t": 1791482890.636,
+     "data": {
+      "text": "une"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 44,
+     "t": 1791482890.636,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 45,
+     "t": 1791482890.636,
+     "data": {
+      "text": " digital"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 46,
+     "t": 1791482890.655,
+     "data": {
+      "text": " threats"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 47,
+     "t": 1791482890.673,
+     "data": {
+      "text": " like"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 48,
+     "t": 1791482890.673,
+     "data": {
+      "text": " hacking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 49,
+     "t": 1791482890.693,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 50,
+     "t": 1791482890.693,
+     "data": {
+      "text": " malware"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 51,
+     "t": 1791482890.693,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 52,
+     "t": 1791482890.712,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 53,
+     "t": 1791482890.712,
+     "data": {
+      "text": " software"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 54,
+     "t": 1791482890.713,
+     "data": {
+      "text": " crashes"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 55,
+     "t": 1791482890.732,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 56,
+     "t": 1791482890.732,
+     "data": {
+      "text": "\n\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 57,
+     "t": 1791482890.732,
+     "data": {
+      "text": "*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 58,
+     "t": 1791482890.752,
+     "data": {
+      "text": "Cons"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 59,
+     "t": 1791482890.752,
+     "data": {
+      "text": ":*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 60,
+     "t": 1791482890.753,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 61,
+     "t": 1791482890.772,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 62,
+     "t": 1791482890.773,
+     "data": {
+      "text": " Hard"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 63,
+     "t": 1791482890.791,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 64,
+     "t": 1791482890.792,
+     "data": {
+      "text": " search"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 65,
+     "t": 1791482890.792,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 66,
+     "t": 1791482890.81,
+     "data": {
+      "text": " edit"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 67,
+     "t": 1791482890.811,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 68,
+     "t": 1791482890.811,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 69,
+     "t": 1791482890.83,
+     "data": {
+      "text": " update"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 70,
+     "t": 1791482890.83,
+     "data": {
+      "text": ";"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 71,
+     "t": 1791482890.83,
+     "data": {
+      "text": " manual"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 72,
+     "t": 1791482890.849,
+     "data": {
+      "text": " entry"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 73,
+     "t": 1791482890.85,
+     "data": {
+      "text": " increases"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 74,
+     "t": 1791482890.85,
+     "data": {
+      "text": " errors"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 75,
+     "t": 1791482890.869,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 76,
+     "t": 1791482890.869,
+     "data": {
+      "text": " wasted"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 77,
+     "t": 1791482890.889,
+     "data": {
+      "text": " time"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 78,
+     "t": 1791482890.89,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 79,
+     "t": 1791482890.89,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 80,
+     "t": 1791482890.909,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 81,
+     "t": 1791482890.909,
+     "data": {
+      "text": " Bul"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 82,
+     "t": 1791482890.927,
+     "data": {
+      "text": "ky"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 83,
+     "t": 1791482890.927,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 84,
+     "t": 1791482890.946,
+     "data": {
+      "text": " store"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 85,
+     "t": 1791482890.946,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 86,
+     "t": 1791482890.965,
+     "data": {
+      "text": " easily"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 87,
+     "t": 1791482890.983,
+     "data": {
+      "text": " lost"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 88,
+     "t": 1791482890.983,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 89,
+     "t": 1791482891.003,
+     "data": {
+      "text": " damaged"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 90,
+     "t": 1791482891.003,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 91,
+     "t": 1791482891.004,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 92,
+     "t": 1791482891.023,
+     "data": {
+      "text": " difficult"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 93,
+     "t": 1791482891.023,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 94,
+     "t": 1791482891.023,
+     "data": {
+      "text": " back"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 95,
+     "t": 1791482891.043,
+     "data": {
+      "text": " up"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 96,
+     "t": 1791482891.043,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 97,
+     "t": 1791482891.043,
+     "data": {
+      "text": " share"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 98,
+     "t": 1791482891.063,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 99,
+     "t": 1791482891.063,
+     "data": {
+      "text": "\n\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 100,
+     "t": 1791482891.063,
+     "data": {
+      "text": "**"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 101,
+     "t": 1791482891.082,
+     "data": {
+      "text": "Spread"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 102,
+     "t": 1791482891.082,
+     "data": {
+      "text": "sheet"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 103,
+     "t": 1791482891.082,
+     "data": {
+      "text": " Records"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 104,
+     "t": 1791482891.102,
+     "data": {
+      "text": "**"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 105,
+     "t": 1791482891.102,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 106,
+     "t": 1791482891.102,
+     "data": {
+      "text": "*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 107,
+     "t": 1791482891.122,
+     "data": {
+      "text": "Pros"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 108,
+     "t": 1791482891.122,
+     "data": {
+      "text": ":*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 109,
+     "t": 1791482891.122,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 110,
+     "t": 1791482891.142,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 111,
+     "t": 1791482891.142,
+     "data": {
+      "text": " Instant"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 112,
+     "t": 1791482891.142,
+     "data": {
+      "text": " search"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 113,
+     "t": 1791482891.162,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 114,
+     "t": 1791482891.162,
+     "data": {
+      "text": " sorting"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 115,
+     "t": 1791482891.162,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 116,
+     "t": 1791482891.182,
+     "data": {
+      "text": " filtering"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 117,
+     "t": 1791482891.182,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 118,
+     "t": 1791482891.182,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 119,
+     "t": 1791482891.202,
+     "data": {
+      "text": " automated"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 120,
+     "t": 1791482891.202,
+     "data": {
+      "text": " calculations"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 121,
+     "t": 1791482891.202,
+     "data": {
+      "text": " streamline"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 122,
+     "t": 1791482891.221,
+     "data": {
+      "text": " management"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 123,
+     "t": 1791482891.242,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 124,
+     "t": 1791482891.242,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 125,
+     "t": 1791482891.242,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 126,
+     "t": 1791482891.262,
+     "data": {
+      "text": " Compact"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 127,
+     "t": 1791482891.262,
+     "data": {
+      "text": " digital"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 128,
+     "t": 1791482891.262,
+     "data": {
+      "text": " storage"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 129,
+     "t": 1791482891.281,
+     "data": {
+      "text": " enables"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 130,
+     "t": 1791482891.3,
+     "data": {
+      "text": " easy"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 131,
+     "t": 1791482891.3,
+     "data": {
+      "text": " backups"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 132,
+     "t": 1791482891.32,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 133,
+     "t": 1791482891.32,
+     "data": {
+      "text": " sharing"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 134,
+     "t": 1791482891.32,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 135,
+     "t": 1791482891.339,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 136,
+     "t": 1791482891.339,
+     "data": {
+      "text": " long"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 137,
+     "t": 1791482891.358,
+     "data": {
+      "text": "-term"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 138,
+     "t": 1791482891.358,
+     "data": {
+      "text": " arch"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 139,
+     "t": 1791482891.358,
+     "data": {
+      "text": "iving"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 140,
+     "t": 1791482891.378,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 141,
+     "t": 1791482891.378,
+     "data": {
+      "text": "\n\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 142,
+     "t": 1791482891.378,
+     "data": {
+      "text": "*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 143,
+     "t": 1791482891.398,
+     "data": {
+      "text": "Cons"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 144,
+     "t": 1791482891.398,
+     "data": {
+      "text": ":*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 145,
+     "t": 1791482891.398,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 146,
+     "t": 1791482891.417,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 147,
+     "t": 1791482891.417,
+     "data": {
+      "text": " Requires"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 148,
+     "t": 1791482891.417,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 149,
+     "t": 1791482891.436,
+     "data": {
+      "text": " device"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 150,
+     "t": 1791482891.437,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 151,
+     "t": 1791482891.437,
+     "data": {
+      "text": " compatible"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 152,
+     "t": 1791482891.457,
+     "data": {
+      "text": " software"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 153,
+     "t": 1791482891.457,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 154,
+     "t": 1791482891.457,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 155,
+     "t": 1791482891.478,
+     "data": {
+      "text": " basic"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 156,
+     "t": 1791482891.478,
+     "data": {
+      "text": " digital"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 157,
+     "t": 1791482891.478,
+     "data": {
+      "text": " skills"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 158,
+     "t": 1791482891.499,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 159,
+     "t": 1791482891.499,
+     "data": {
+      "text": " use"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 160,
+     "t": 1791482891.499,
+     "data": {
+      "text": " effectively"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 161,
+     "t": 1791482891.52,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 162,
+     "t": 1791482891.52,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 163,
+     "t": 1791482891.52,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 164,
+     "t": 1791482891.54,
+     "data": {
+      "text": " Dep"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 165,
+     "t": 1791482891.541,
+     "data": {
+      "text": "endent"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 166,
+     "t": 1791482891.541,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 167,
+     "t": 1791482891.561,
+     "data": {
+      "text": " technology"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 168,
+     "t": 1791482891.561,
+     "data": {
+      "text": ";"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 169,
+     "t": 1791482891.561,
+     "data": {
+      "text": " vulnerable"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 170,
+     "t": 1791482891.581,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 171,
+     "t": 1791482891.581,
+     "data": {
+      "text": " file"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 172,
+     "t": 1791482891.6,
+     "data": {
+      "text": " corruption"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 173,
+     "t": 1791482891.6,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 174,
+     "t": 1791482891.601,
+     "data": {
+      "text": " data"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 175,
+     "t": 1791482891.619,
+     "data": {
+      "text": " breaches"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 176,
+     "t": 1791482891.619,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 177,
+     "t": 1791482891.619,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 178,
+     "t": 1791482891.638,
+     "data": {
+      "text": " platform"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 179,
+     "t": 1791482891.639,
+     "data": {
+      "text": " dependency"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 180,
+     "t": 1791482891.657,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.done",
+     "seq": 181,
+     "t": 1791482891.658,
+     "data": {
+      "complete": true,
+      "escalation_candidate": false,
+      "flags": [],
+      "metrics": {
+       "cache_n": 201,
+       "draft_n": 570,
+       "draft_n_accepted": 448,
+       "first_answer_s": 4.6163,
+       "predicted_n": 733,
+       "predicted_per_second": 130.63870189390425,
+       "prompt_n": 29,
+       "prompt_per_second": 159.0609916630101,
+       "reasoning_chars": 2253,
+       "retried": false,
+       "total_s": 5.8552,
+       "ttft_s": 0.2516
+      },
+      "status": "COMPLETE"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 182,
+     "t": 1791482891.658,
+     "data": {
+      "route": "answer",
+      "status": "ok",
+      "total_s": 6.1488
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 183,
+     "t": 1791482891.658,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ]
+  },
+  {
+   "journey": "cancel",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482891.935,
+     "data": {
+      "depth": "fast",
+      "text_chars": 75
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482891.935,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482892.306,
+     "data": {
+      "route": "answer",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "user_selected_fast",
+       "selected_by": "user",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "QUESTION",
+       "reasons": [
+        "default_conversation"
+       ]
+      }
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791482892.578,
+     "data": {
+      "state": "speaking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 5,
+     "t": 1791482892.578,
+     "data": {
+      "text": "The"
+     }
+    },
+    {
+     "type": "answer.done",
+     "seq": 6,
+     "t": 1791482892.579,
+     "data": {
+      "complete": false,
+      "escalation_candidate": false,
+      "flags": [],
+      "metrics": {
+       "cache_n": null,
+       "draft_n": null,
+       "draft_n_accepted": null,
+       "first_answer_s": 0.2725,
+       "predicted_n": null,
+       "predicted_per_second": null,
+       "prompt_n": null,
+       "prompt_per_second": null,
+       "reasoning_chars": 0,
+       "retried": false,
+       "total_s": 0.273,
+       "ttft_s": 0.2725
+      },
+      "status": "CANCELLED"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 7,
+     "t": 1791482892.579,
+     "data": {
+      "route": "answer",
+      "status": "cancelled",
+      "total_s": 0.6437
+     }
+    }
+   ]
+  },
+  {
+   "journey": "action_approved",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482892.969,
+     "data": {
+      "depth": "auto",
+      "text_chars": 49
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482892.969,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482892.969,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791482896.667,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "22af8d72e5777d4c64a8ee36ff0972f673628b97a69354d363c6529864be4634",
+       "intent_id": "e719aa4a8e5f4d8ea58ba10d3b0cd0fb",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the science lab is closed on Friday",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the science lab is closed on Friday"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791482896.667,
+     "data": {
+      "approval_digest": "48450676fadd093fe0c9e2bd7537777ed0dd96bc29c7974f2d5da30e1faf8a64",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the science lab is closed on Friday"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "9ad1b393-3f4b-4c78-9537-eccae1e4bf01",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791482896.667,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 3.698
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 7,
+     "t": 1791482896.667,
+     "data": {
+      "state": "waiting_user"
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 1,
+     "t": 1791482896.7,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 2,
+     "t": 1791482897.292,
+     "data": {
+      "code": "SETTLED_VERIFIED",
+      "core_turn_id": "9ad1b393-3f4b-4c78-9537-eccae1e4bf01",
+      "message": "Done. The result was independently verified by URI.",
+      "needs": "none",
+      "state": "reply"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 3,
+     "t": 1791482897.292,
+     "data": {
+      "route": "core",
+      "status": "ok",
+      "total_s": 0
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791482897.292,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "selected": "runtime-v1",
+   "memory_before": 2,
+   "memory_after": 3
+  },
+  {
+   "journey": "action_denied",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482897.771,
+     "data": {
+      "depth": "auto",
+      "text_chars": 45
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482897.771,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482897.771,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791482899.635,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "57e50281e2f2ef72f1ab2d5b3aaebf08f362c48d175eba24e68e759940d31f5a",
+       "intent_id": "87360b49fd1b42d1bf3e5176ceb45689",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the staff meeting moved to 4 pm",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the staff meeting moved to 4 pm"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791482899.636,
+     "data": {
+      "approval_digest": "305fe2e9aafca0ec70639e73bf33d6c8a582518c3849cb2f07529c92953fbcb0",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the staff meeting moved to 4 pm"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "119c6b26-8a8e-40e1-b99e-e28a122a96be",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791482899.636,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 1.865
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 7,
+     "t": 1791482899.636,
+     "data": {
+      "state": "waiting_user"
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 1,
+     "t": 1791482899.676,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 2,
+     "t": 1791482899.907,
+     "data": {
+      "code": "APPROVAL_DENIED",
+      "core_turn_id": "119c6b26-8a8e-40e1-b99e-e28a122a96be",
+      "message": "You declined; nothing was changed.",
+      "needs": "none",
+      "state": "cancelled"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 3,
+     "t": 1791482899.907,
+     "data": {
+      "route": "core",
+      "status": "not_verified",
+      "total_s": 0
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791482899.907,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "selected": "runtime-v1"
+  },
+  {
+   "journey": "refusal",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482899.942,
+     "data": {
+      "depth": "auto",
+      "text_chars": 41
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482899.942,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482899.942,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "imperative_action_verb"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791482900.199,
+     "data": {
+      "code": "REFUSED_UNSUPPORTED",
+      "message": "That is not something URI can do.",
+      "needs": "none",
+      "state": "reply"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 5,
+     "t": 1791482900.199,
+     "data": {
+      "route": "core",
+      "status": "refused",
+      "total_s": 0.2574
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 6,
+     "t": 1791482900.199,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "finished": "refused"
+  },
+  {
+   "journey": "forged_digest",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791482900.201,
+     "data": {
+      "depth": "auto",
+      "text_chars": 33
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791482900.201,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791482900.201,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791482900.265,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "cea03a907a17c08df8c028ad5a55517aaf137bb3b3c576d744835af9ec9dab88",
+       "intent_id": "928948e9e8a24d388410a5642da2a6b5",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the bus leaves at 7",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the bus leaves at 7"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791482900.265,
+     "data": {
+      "approval_digest": "27834aa05ea41ed9221dd99d2cb40d6a13d0a737bcfcc057ee69ecd6d587da2d",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the bus leaves at 7"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "c5461a48-4bd6-4b08-8ff3-c4fc444d9f3a",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791482900.265,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 0.0639
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 7,
+     "t": 1791482900.265,
+     "data": {
+      "state": "waiting_user"
+     }
+    }
+   ],
+   "reply": {
+    "code": "APPROVAL_DIGEST_MISMATCH",
+    "result": "REFUSED"
+   }
+  }
+ ],
+ "installation": {
+  "name": "final",
+  "port": 18300,
+  "provisioned": "2026-10-08T23:27:29"
+ },
+ "preflight": {
+  "worker_profile": "ws-integrated",
+  "production_cutover": false,
+  "oi_commands": [
+   "brain_catalog",
+   "brain_select",
+   "brain_status",
+   "cloud_policy",
+   "memory_list",
+   "oi_abandon",
+   "oi_cancel",
+   "oi_confirm",
+   "oi_decide",
+   "oi_turn"
+  ]
+ },
+ "catalog": {
+  "fallback": "none",
+  "rows": [
+   {
+    "answers_questions": true,
+    "available": true,
+    "default": true,
+    "display": "Runtime v1 (local)",
+    "id": "runtime-v1",
+    "qualification": "Runtime v1 freeze 2026-10-07 (stock llama.cpp b11425 + MTP)",
+    "qualified": true,
+    "selectable": true,
+    "selected": true,
+    "selection": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "READY",
+    "why_not": null
+   },
+   {
+    "answers_questions": false,
+    "available": true,
+    "default": false,
+    "display": "No Brain (deterministic rules)",
+    "id": "deterministic",
+    "note": "Core acts on recognised commands only; open questions are not answered.",
+    "qualification": "Core deterministic source",
+    "qualified": true,
+    "selectable": true,
+    "selected": false,
+    "selection": {
+     "kind": "server_local_model",
+     "model": null,
+     "provider": "uri-deterministic"
+    },
+    "state": "READY",
+    "why_not": null
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Other local models",
+    "id": "other-local",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "NOT_QUALIFIED",
+    "why_not": "No qualification record. A model must pass the model_lab qualification before it can be offered."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Anthropic Claude (cloud)",
+    "id": "cloud-anthropic",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "OpenAI (cloud)",
+    "id": "cloud-openai",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Google Gemini (cloud)",
+    "id": "cloud-google",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   }
+  ],
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  }
+ },
+ "brain_status_start": {
+  "artifacts": "MATCH",
+  "checked_at": 1791482883.4214354,
+  "detail": null,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": false,
+  "pid": 7892,
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  },
+  "state": "READY",
+  "url": "http://127.0.0.1:18470"
+ },
+ "worker_exit": 0
+}

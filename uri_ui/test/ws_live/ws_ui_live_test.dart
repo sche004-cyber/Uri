@@ -104,7 +104,14 @@ void main() {
 
         // 3. Cancellation mid-stream with the Stop button.
         await say(t, 'Write a long, detailed story about a lighthouse keeper, at least 800 words.');
-        await until(t, () => conv.messages.last.text.length > 40, what: 'stream start');
+        await until(t, () => conv.messages.last.role == OiRole.uri && (conv.messages.last.text.length > 40 || conv.messages.last.finishedStatus != null), what: 'stream start');
+        receipt['cancel_probe'] = {
+          'busy': conv.busy,
+          'text_chars': conv.messages.last.text.length,
+          'finished': conv.messages.last.finishedStatus,
+          'route': conv.messages.last.route,
+          'stop_buttons': find.byKey(const ValueKey('oi-cancel')).evaluate().length,
+        };
         await t.tap(find.byKey(const ValueKey('oi-cancel')));
         await t.pump();
         await until(t, () => !conv.busy, what: 'cancel');
@@ -173,6 +180,9 @@ void main() {
       (receipt['journeys'] as List).add({'journey': 'presentation_command_local', 'mode_reached': 'dashboard'});
     } finally {
       receipt['memory_end'] = conv.memory;
+      final partial = File(env['URI_WS_EVIDENCE'] ?? 'build/ws_ui_live.json');
+      partial.parent.createSync(recursive: true);
+      partial.writeAsStringSync(const JsonEncoder.withIndent(' ').convert(receipt));
       await t.runAsync(rt.close);
     }
 

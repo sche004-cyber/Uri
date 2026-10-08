@@ -15,7 +15,8 @@ param(
   [string]$Steps,     # steps separated by ';;'
   [int]$Width = 1400,
   [int]$Height = 900,
-  [switch]$KeepOpen
+  [switch]$KeepOpen,
+  [switch]$Attach      # drive an already running uri_ui.exe instead of starting one
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -36,14 +37,15 @@ public static class W {
 }
 "@
 New-Item -ItemType Directory -Force $OutDir | Out-Null
+if ($Attach) { $p = Get-Process uri_ui | Select-Object -First 1 } else {
 $env:URI_CLIENT_MANIFEST = $Manifest
 $env:URI_LIVING_SKIP_ONBOARDING = '1'
-$p = Start-Process -FilePath $Exe -WorkingDirectory (Split-Path $Exe) -PassThru
+$p = Start-Process -FilePath $Exe -WorkingDirectory (Split-Path $Exe) -PassThru }
 $deadline = (Get-Date).AddSeconds(30)
 while ($p.MainWindowHandle -eq 0) { if ((Get-Date) -gt $deadline) { throw 'NO_WINDOW' }; Start-Sleep -Milliseconds 300; $p.Refresh() }
 $h = $p.MainWindowHandle
 [W]::MoveWindow($h, 40, 40, $Width, $Height, $true) | Out-Null
-Start-Sleep -Seconds 6
+if (-not $Attach) { Start-Sleep -Seconds 6 }
 
 function Shot([string]$name) {
   $r = New-Object W+RECT; [W]::GetClientRect($h, [ref]$r) | Out-Null

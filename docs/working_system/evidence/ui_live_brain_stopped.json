@@ -1,0 +1,95 @@
+{
+ "journeys": [
+  {
+   "journey": "unavailable_runtime",
+   "route": "answer",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": null,
+   "finished": "error",
+   "error": "BRAIN_UNAVAILABLE",
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "STOPPED",
+   "selected_row": "runtime-v1"
+  },
+  {
+   "journey": "supervised_action_approved",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "SETTLED_VERIFIED",
+   "finished": "ok",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "STOPPED",
+   "selected_row": "deterministic",
+   "memory_before": 1,
+   "memory_after": 2
+  },
+  {
+   "journey": "supervised_action_denied",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "APPROVAL_DENIED",
+   "finished": "not_verified",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "STOPPED",
+   "selected_row": "deterministic"
+  },
+  {
+   "journey": "refusal",
+   "route": "core",
+   "tier": "FAST",
+   "answer_status": null,
+   "core_code": "INTENT_CONFIRMED_NOT_EXECUTED",
+   "finished": "needs_user",
+   "error": null,
+   "text_chars": 0,
+   "text_head": "",
+   "metrics": {},
+   "thinking_chars": 0,
+   "brain": "STOPPED",
+   "selected_row": "deterministic"
+  },
+  {
+   "journey": "presentation_command_local",
+   "mode_reached": "dashboard"
+  },
+  {
+   "journey": "restart",
+   "memory_preserved": 2,
+   "brain": "STOPPED"
+  }
+ ],
+ "brain_status_start": {
+  "artifacts": null,
+  "checked_at": 1791482336.5593512,
+  "detail": null,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": false,
+  "pid": null,
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  },
+  "state": "STOPPED",
+  "url": "http://127.0.0.1:18470"
+ },
+ "catalog_selected": "runtime-v1",
+ "memory_end": [
+  "the science lab is closed on Friday",
+  "the science lab is closed on Friday"
+ ]
+}

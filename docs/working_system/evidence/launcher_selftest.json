@@ -1,0 +1,35 @@
+{
+    "schema":  "uri.ws.launcher_selftest.v1",
+    "real_installation":  {
+                              "port":  18300,
+                              "ok":  true,
+                              "problems":  [
+
+                                           ]
+                          },
+    "negative_legacy_root":  {
+                                 "refused":  true,
+                                 "problems":  [
+                                                  "LEGACY_ROOT_REFUSED:C:\\Users\\cheta\\Development\\uri-agent",
+                                                  "MATERIALIZATION_RECEIPT_MISSING",
+                                                  "INSTALLATION_MISSING (run scripts\\ws_provision.py)"
+                                              ]
+                             },
+    "negative_foreign_ui":  {
+                                "refused":  true,
+                                "problems":  [
+                                                 "UI_OUTSIDE_INTEGRATION_WORKTREE"
+                                             ]
+                            },
+    "negative_legacy_port":  {
+                                 "refused":  true,
+                                 "problems":  [
+                                                  "RUNTIME_HEAD_NOT_BASE:",
+                                                  "LEGACY_PORT_REFUSED:8000",
+                                                  "INTEGRATED_OPT_IN_MISSING"
+                                              ]
+                             },
+    "listener_identity_proven":  true,
+    "wrong_key_proof_refused":  true,
+    "legacy_port_8000_contacted":  false
+}

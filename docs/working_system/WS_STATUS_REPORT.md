@@ -4,14 +4,22 @@ Date: 2026-10-08. Branch `integration/working-system-20261008` (local only, not 
 The blueprint and acceptance criteria are in `WS_BLUEPRINT.md`, the inputs in `WS_PROVENANCE.md`, and the commit
 ids, hashes and receipts in `WS_INTEGRATION_RECEIPT.md`.
 
-**Verdict.** URI runs as one application on this PC, in the materialized development runtime. The real Flutter
-Living Companion drives the real integrated worker. That worker reaches real Core: Intent Discovery, approval, signed
-ticket, client execution and independent verification. Runtime v1 is the default Brain. Everything that does not
-need the GPU was demonstrated live. **Live journeys that need the Runtime v1 GPU (normal answer, reasoning,
-mid-stream cancel) were not demonstrated in this session**, because another session's GPU benchmarks held the GPU.
-Their code paths pass with a scripted llama-server and in the earlier OI live runs (8/8 real Core with Runtime v1,
-recorded on the OI branch). This is **not production**: there is no cutover, the live PC still runs the legacy
-`\URIServer`, and no shortcut was changed.
+**Verdict.** URI runs as one coordinated application on this PC, in the materialized development runtime. The real
+Flutter Living Companion drives the real integrated worker. That worker reaches real Core (Intent Discovery,
+approval, signed ticket, client execution, independent verification) and real Runtime v1, which is the default Brain.
+Every journey in the mandate was demonstrated live: from the real Flutter UI (automated widget-level driving of the
+real app tree and the built Windows app) and from the real worker:
+- normal response;
+- reasoning;
+- supervised action (approve and deny);
+- refusal;
+- cancellation;
+- restart (worker and Brain);
+- unavailable runtime.
+
+The candidate passed the accepted regression chain and was accepted with findings by the independent Codex review.
+It is **not production**: there is no cutover, the live PC still runs the legacy `\URIServer`, and no shortcut was
+changed. Remaining gaps are listed in §4.
 
 ## 1. What each item has reached
 
@@ -22,25 +30,25 @@ gate passed) · **M** still mocked or simulated
 | Capability | State | Evidence |
 |---|---|---|
 | UI ↔ Core/OI over the stdio integrated worker (WS-D1) | I T L A G | `run_uri_integrated_worker.py`, `worker_bridge.py`, `integrated_runtime.dart`; live UI test (real widgets, real worker) |
-| Streaming answers (`answer.delta`) | I T A G (L only for the transport) | unit tests with scripted llama-server; real Runtime v1 streaming **not shown live this session** |
-| Cancellation (Stop button → `oi_cancel`) | I T A G | unit tests (fake llama, 400-chunk stream → `CANCELLED`); live cancel needs Runtime v1 |
-| Reasoning tier (Fast/Thinking chip, progress count, no reasoning text) | I T A G | unit tests; live needs Runtime v1 |
-| Supervised action: approve → `SETTLED_VERIFIED`; deny → `APPROVAL_DENIED`, nothing changed | I T L A G | live UI and worker runs (deterministic row explicitly selected, because the Brain was stopped); screenshots 03, 04 |
+| Streaming answers (`answer.delta`) | I T L A G | live: 42 deltas, first token 0.45-0.79 s, 124-129 tok/s; screenshot 02 |
+| Cancellation (Stop button → `oi_cancel`) | I T L A G | live: Stop pressed mid-stream in the UI, `CANCELLED` (worker and UI runs) |
+| Reasoning tier (Fast/Thinking chip, progress count, no reasoning text) | I T L A G | live: NORMAL tier, 3,040 reasoning characters counted and not shown, 120-131 tok/s; screenshots 03, 04 |
+| Supervised action: approve → `SETTLED_VERIFIED`; deny → `APPROVAL_DENIED`, nothing changed | I T L A G | live through the **Runtime v1 row** (Brain READY) and through the explicit deterministic row (Brain stopped); screenshots 05, 06 |
 | Typed text never approves; approval bound to the card's digest; forged digest refused | I T L A G | unit tests; live `forged_digest` journey → `APPROVAL_DIGEST_MISMATCH`, memory unchanged |
 | Refusal (destructive request with no qualified capability) | I T L A G | live: `REFUSED_UNSUPPORTED` (fresh session) / `INTENT_CONFIRMED_NOT_EXECUTED` (session holding a just-denied intent); no approval card in either case |
-| Unavailable runtime | I T L A G | live: `BRAIN_UNAVAILABLE` and nothing sent to a model; orb shows "Unavailable · Brain STOPPED"; screenshots 01, 02 |
-| Restart (fresh worker process over the same client root) | I T L G | live: memory preserved, readiness re-read. Brain restart not exercised (GPU) |
-| Memory: remember (approval-gated) and list (deterministic client read) | I T L A G | live; Settings panel (screenshot 05) |
-| Readiness and performance indicators | I T L(readiness) A G | Brain state, model id and artifact match shown live; per-answer TTFT / tok/s rendering tested; live metrics need Runtime v1 |
-| Runtime v1 as the default Brain; explicit selection; no fallback | I T L A G | catalog live (screenshot 05); deterministic row only by explicit choice; other local models NOT_QUALIFIED |
+| Unavailable runtime | I T L A G | live: `BRAIN_UNAVAILABLE` and nothing sent to a model; Brain status shows STOPPED; screenshot 07 |
+| Restart: worker and Brain | I T L G | worker: a fresh process over the same client root kept memory. Brain: Runtime v1 stopped under the open app, which then refused honestly; restarted (READY in 92 s), and the same window answered again; screenshots 07, 08 |
+| Memory: remember (approval-gated) and list (deterministic client read) | I T L A G | live; Settings panel (screenshot 09) |
+| Readiness and performance indicators | I T L A G | Brain state, model id, artifact match, and per-answer first-token time and tok/s shown live. **Degradation (OI-PERF-1) is not surfaced**: see PERF-W1 |
+| Runtime v1 as the default Brain; explicit selection; no fallback | I T L A G | catalog live (screenshot 09); deterministic row only by explicit choice; other local models NOT_QUALIFIED |
 | Deterministic paths without a model | I T L A G | presentation commands, memory list, Brain status, refusal and unavailable-runtime all work with the Brain stopped |
 | Integrated server profile (Phase 2 rows + Runtime v1 row) | I T L A G | live under the C1 gates on 18300; identity proven |
 | Launcher (`Launch URI Working System.bat`) | I T L A G | self-test: legacy root, foreign UI and port 8000 refused; signed identity proof required; wrong-key proof refused |
 | Cloud providers: $5/month, single-use manual approvals, no calls | I T A G | 6 tests, network forbidden; activation **disabled**, no credentials |
 | Living Companion default shell; Hybrid via Settings (WS-D4) | I T L A G | the classic shell closes the worker first and never contacts port 8000 (a saved `localhost:8000` is blocked) |
 | Workspace context panel (Brain, model, approvals) | I T L A G | UI-1 repaired: shows the real Brain; approvals state Core's rule |
-| Dashboard "Brain & models" card | **M** | still the Hybrid mock card, carrying a **Simulated** badge (screenshot 06). Not wired |
-| Dashboard harness/permission captions read "(mock)" although readiness is real | **M** (label only) | not edited; see §4 |
+| Dashboard "Brain & models" card | **M** | still the Hybrid mock card, carrying a **Simulated** badge (screenshot 10). Not wired |
+| Dashboard harness/permission captions read "(mock)" although the harness list is real (0/3 usable: no client-profile logins) | **M** (label only) | not edited; see §4; screenshot 10 |
 | Tasks, Documents, work items, clients, permissions | **M** | the UI's existing simulator, every region badged **Simulated**; no backend serves them on the paired Core |
 | Listening/speaking voice states | **M** (no source) | no voice layer in this integration |
 | Multi-step plans, harness choice, escalation offers | I (OI) T, not wired to UI controls | events are received and shown as text/route chips; no plan-approval or provider-picker UI yet |
@@ -51,11 +59,11 @@ gate passed) · **M** still mocked or simulated
 |---|---|
 | Frozen boundary (`ws_frozen_check.py`) | 121/121 Phase 1 checkpoint files byte-identical; no protected path changed or added (tracked + untracked) |
 | Accepted chain on the combined materialized tree, `ws_chain1` (at `a80dc58`) | **ALL_PASS**: phase2 486/0, authority 134/0, phase1-full outcome identity (2,698 ids, the same 11 known failures), phase1-scope (outside = ∅, importers = ∅), residue |
-| Accepted chain, final tree `ws_chain_final` (at `abe2f9b`) | see `WS_INTEGRATION_RECEIPT.md` |
+| Accepted chain, final tree `ws_chain_final` (at `abe2f9b`) | **ALL_PASS**: phase2 486/0, authority 134/0, phase1-full outcome identity, phase1-scope, residue |
 | Flutter full suite | 294 passed, 3 skipped (2 baseline live tests and the opt-in WS live test) |
 | OI + WS Python | 182 passed, 16 skipped (opt-in live tests) |
-| Live worker (final tree, Brain stopped) | 6 passed, 2 skipped (Runtime v1 needed) |
-| Live UI journeys (final tree, Brain stopped) | passed: unavailable runtime, approve, deny, refusal, local presentation command, restart |
+| Live worker (final tree) | Brain stopped: 6 passed, 2 skipped; Brain READY: **8/8 passed** |
+| Live UI journeys (final tree) | Brain stopped: passed (unavailable runtime, approve, deny, refusal, local command, restart). Brain READY: **passed** (normal response, reasoning, Stop/cancel, approve and deny through Runtime v1, refusal, local command, restart) |
 | Independent review (Codex `gpt-6-sol`, medium, read-only clone) | r1 REJECT (5) → r2 REJECT (3 partial + 2 new) → r3 ACCEPT WITH FINDINGS (1 new MEDIUM) → r4 **ACCEPT WITH FINDINGS** at `fcfed5c`; every finding confirmed in source, repaired and tested (`WS_INTEGRATION_RECEIPT.md` §4) |
 | Not run | flutter/bridge/native steps of the accepted chain (unchanged packages; the native step needs a client-profile Codex login, PA-8/9) |
 
@@ -73,7 +81,9 @@ gate passed) · **M** still mocked or simulated
 
 | ID | Item | Affects |
 |---|---|---|
-| GPU-1 | Live Runtime v1 journeys not demonstrated: another session's GPU benchmarks (`bench_runtime.py`, `residency_watch.py`) held the GPU. Two concurrent 13.7 GB loads stalled both (`LOCAL_BRAIN_START_TIMEOUT`); my host was stopped and theirs left untouched. The OI start lock is per state directory, so it does not serialize starts across trees or other tools | AC-14 partially |
+| GPU-1 | Another session's benchmarks shared the GPU. Two concurrent 13.7 GB loads stalled both (`LOCAL_BRAIN_START_TIMEOUT`); I stopped my host and, on your instruction, waited for the GPU to be free. The OI start lock is per state directory, so it does not serialize starts across trees or other tools. A machine-wide GPU-use policy is still an owner decision (OI readiness §4) | GPU residency predictability |
+| PERF-W1 | After a Brain restart, Runtime v1 ran at **27 tok/s** (first start: 124). This matches the VRAM-block-demotion state documented by the Adaptive Runtime research (restart before the previous VRAM was released). The integrated worker has no OI `PerfMonitor`, so the UI shows the speed but no DEGRADED state or recovery option | responsiveness after restart |
+| L-MD | Answer markdown renders as plain text (`**`) | readability |
 | OI-SEC-1 | Runtime v1 has no API key and CORS `*` (frozen argv). Accepted as a recorded limitation (WS-D2) | local exposure |
 | R-BUSY | The UI stays busy if the worker stays alive but never replies and never finishes a turn. A worker exit clears it. There is no in-app recovery control yet (Codex r4 residual) | responsiveness |
 | R-SHUT | A Core call that outlives the 30 s shutdown join cannot release its card; the frozen server's 15-minute idle expiry is the backstop (Codex r3 residual) | server capacity |
