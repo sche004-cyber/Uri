@@ -25,9 +25,9 @@ P-2/P-3); Runtime v1 listener `AUTHORIZED` (this session's reproduction benchmar
 
 | Ref | Before round 2 | After round 2 | Classification |
 |---|---|---|---|
-| `integration/git-sync-20261008` (GitHub) | `f8de153` | fast-forwarded to the canonical tip (SHA in the final audit) | CANONICAL INTEGRATION LINE |
+| `integration/git-sync-20261008` (GitHub) | `f8de153` | fast-forward to the canonical tip **pending Codex acceptance**; result recorded in `URI_CONSOLIDATION_FINAL_AUDIT_20261008.md` | CANONICAL INTEGRATION LINE |
 | `canonical/candidate-20261008` (local) | `13bf68a` | same tip as the integration line | working branch of the canonical checkout |
-| `accepted/*` tags | 6 local | 7 local (+ `accepted/phase2-oq-g-0b49d86d` → `6dea266`); pushed (see final audit) | immutable acceptance anchors |
+| `accepted/*` tags | 6 local | 7 local (+ `accepted/phase2-oq-g-0b49d86d` → `6dea266`); push pending with the branch (see final audit) | immutable acceptance anchors |
 | `donor/*` tags | 2 local | unchanged, **not pushed** (donor classification is an owner decision) | — |
 | All other GitHub branches | as classified in `URI_CANONICAL_BRANCH_DECISION.md` §5 | unchanged | HISTORICAL / DONOR / EXPERIMENTAL / QUARANTINED |
 | Local-only commits `69ef0e4`, `98abdd0`, `869fae5`, `71edc17` | local | unchanged (owner ruling: not pushed) | HISTORICAL / DISPUTED |
@@ -59,8 +59,8 @@ Worktrees (common dir `C:\Users\cheta\Development\uri-agent\.git`), unchanged, n
 
 | Item | Prepared action | Reversal |
 |---|---|---|
-| CONS-1 `\URIServer` | `scripts\uri_containment.ps1 -Apply` exports XML then disables | `-Restore` |
-| CONS-2 `URI.lnk` ×2 | same script moves them to a backup folder | `-Restore` |
+| CONS-1 `\URIServer` | `scripts\uri_containment.ps1 -Apply` exports XML then disables | `-Restore -BackupRoot <folder printed by -Apply>` (keep that folder path) |
+| CONS-2 `URI.lnk` ×2 | same script moves them to a backup folder | `-Restore -BackupRoot <folder printed by -Apply>` (keep that folder path) |
 | CONS-3 running legacy server | stop at an owner-chosen time | restart task / log on |
 | Ollama autostart (new, optional) | remove the Startup shortcut, or leave Ollama as a shared tool. Not required: the Core is model-optional and the authority checker treats Ollama as shared | put the shortcut back |
 | CONS-10 historical worktrees/branches | archive-tag, then remove per item | archive tags |

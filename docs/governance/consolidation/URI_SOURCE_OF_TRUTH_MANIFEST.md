@@ -74,6 +74,6 @@ accepted content is now in Git).
 ## 6. Owner decisions still open (unchanged unless noted)
 
 P-1 push of `canonical/candidate-20261008` as a new branch is **no longer needed**: the owner authorized pushing
-accepted work to `integration/git-sync-20261008`, which round 2 fast-forwards (see the final audit for the pushed
+accepted work to `integration/git-sync-20261008`, which round 2 fast-forwards once the Codex review accepts it (see the final audit for the published
 SHA). Still open: the `main` rename/default branch (P-6), pushing the `donor/*` tags, containment of `\URIServer`
 and the `URI.lnk` shortcuts (P-2, P-3), the authoritative state root and port (P-4), C7 cutover (P-8), CONS-7.

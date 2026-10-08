@@ -119,6 +119,6 @@ Note: the Phase 2 worktree keeps its own copy of this ledger; reconcile the two 
 | 2026-10-08 | C6 decision 2 | recommendation B, BLOCKED on owner | owner chose B; Chat action IMPLEMENTED, TESTED | `PHASE2CLOSE_C6_CHAT_INTEGRATION.md` section 9 |
 | 2026-10-08 | C6 decision 1 | BLOCKED on owner | RESOLVED AS A DEFINITION (no authority effect) | report section D |
 | 2026-10-08 | P2-6 line reconciliation | PLANNED | RESEARCHED, recommendation made | `PHASE2OQ_SHIPPING_LINE_RECOMMENDATION.md` |
-| 2026-10-08 | Operational qualification (EXE-1, OQ-1, SUP-1, D8, C6 Option B, tooling, gate hardening) | IMPLEMENTED, TESTED | INDEPENDENTLY ACCEPTED (Codex OQ round 7 on `-g` 0b49d86d...c4cd after rounds 1-6 rejected); physical gates PENDING | `E:phase2oq_reviewound7\` |
+| 2026-10-08 | Operational qualification (EXE-1, OQ-1, SUP-1, D8, C6 Option B, tooling, gate hardening) | IMPLEMENTED, TESTED | INDEPENDENTLY ACCEPTED (Codex OQ round 7 on `-g` 0b49d86d...c4cd after rounds 1-6 rejected); physical gates PENDING | `E:phase2oq_review\round7\` |
 | 2026-10-08 | CONS-1..CONS-14 | (not tracked) | consolidation items added; CONS-6 IMPLEMENTED, TESTED; CONS-13 DONE | `docs/governance/consolidation/` |
 | 2026-10-08 | CONS-15..CONS-18 | (not tracked) | round 2: Phase 2 OQ `-g` imported and rematerialized; Runtime v1 recovered and reproduced; Ollama origin recorded | `docs/governance/consolidation/URI_CONSOLIDATION_FINAL_AUDIT_20261008.md` |

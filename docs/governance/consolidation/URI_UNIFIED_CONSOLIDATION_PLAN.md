@@ -94,7 +94,7 @@ superseded. The consolidation tooling runs from the canonical development checko
 | Step | Action | Reversible by |
 |---|---|---|
 | P-1 | Approve the canonical decision; push `canonical/candidate-20261008` + tags (new refs, no force) | delete the new refs |
-| P-2 | Run `scripts/uri_containment.ps1 -Apply` (disable `\URIServer`, move `URI.lnk` ×2) | `-Restore` |
+| P-2 | Run `scripts/uri_containment.ps1 -Apply` (disable `\URIServer`, move `URI.lnk` ×2); keep the backup folder it prints | `-Restore -BackupRoot <that folder>` |
 | P-3 | Stop the running legacy server (PID tree under the task) at a convenient time | re-enable task / log on |
 | P-4 | Choose the authoritative install directory, state root and port; provision with `scripts/provision_uri_server.py` / `provision_uri_client.py` | delete the fresh roots (no legacy data touched) |
 | P-5 | Start through `scripts/uri_authorized_start.ps1 -Action start -ServerManifest <manifest>`; verify `--strict` checker CLEAN | stop server |
