@@ -171,9 +171,9 @@ def test_authorized_c1_launcher_in_the_runtime_root_is_clean():
     assert set(classes(rep)) == {"AUTHORIZED"} and rep["verdict"] == "CLEAN"
 
 
-def test_test_runners_and_agent_shells_are_not_runtimes():
+def test_test_runners_outside_roots_and_genuine_agent_shells_are_not_runtimes():
     rep = verdict(snap(processes=[proc(rf"{PY} -m pytest {DEV}\uri-agent\test_x.py"),
-                                  proc(r'bash -c "source /c/Users/cheta/.claude/shell-snapshots/s.sh && grep run_uri_server.py x"')]))
+                                  proc(r'"C:\Program Files\Git\bin\bash.exe" -c "source /c/Users/cheta/.claude/shell-snapshots/s.sh && grep run_uri_server.py x"')]))
     assert rep["findings"] == []
 
 
@@ -333,10 +333,10 @@ def test_running_donor_or_quarantined_worker_without_a_listener_fails():
         assert rep["verdict"] == "CONTAMINATED", cmd
 
 
-def test_donor_test_runs_are_reported_but_not_counted():
+def test_donor_test_runs_count_because_no_name_based_exemption_exists():
     cmd = "C:/Users/cheta/.codex/worktrees/uri-phase2a/uri-agent/.venv/Scripts/python.exe -I -m pytest tests/phase2a"
     rep = verdict(snap(processes=[{"pid": 6, "ppid": 1, "image": "python.exe", "cmdline": cmd}]))
-    assert rep["findings"] and rep["findings"][0]["note"].startswith("DEV_TEST_ACTIVITY") and rep["verdict"] != "CONTAMINATED"
+    assert classes(rep) == ["DONOR_ONLY"] and rep["verdict"] == "CONTAMINATED"
 
 
 # --- regressions for the Codex adversarial review round 6 (2026-10-08, verdict REJECT) -----------------------------
@@ -354,6 +354,21 @@ def test_agent_shell_marker_in_an_argument_does_not_hide_a_donor_worker():
     assert verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "worker.exe", "cmdline": cmd}]))["verdict"] == "CONTAMINATED"
 
 
-def test_checker_name_in_an_argument_does_not_hide_a_process_from_the_probe_filter():
-    assert not rac._is_self_probe("D:/URI-preservation/worker.exe --tag uri_runtime_authority_check")
-    assert rac._is_self_probe(r"C:\py\python.exe C:\x\scripts\uri_runtime_authority_check.py --strict")
+# --- regressions for the Codex adversarial review round 7 (2026-10-08, verdict REJECT) -----------------------------
+def test_allow_listed_names_and_python_prefixed_executables_cannot_hide_donor_workers():
+    for cmd in ("python.exe D:/URI-preservation/phase2d_regression.py",
+                "D:/URI-preservation/python-worker.exe -m pytest"):
+        assert verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "x.exe", "cmdline": cmd}]))["verdict"] == "CONTAMINATED", cmd
+
+
+def test_shell_running_a_donor_script_or_a_fake_shell_is_not_skipped():
+    for cmd in (r'"C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe" -File D:/URI-preservation/worker.ps1 CLAUDE_CODE_SHELL',
+                r"D:/URI-preservation/cmd.exe /c CLAUDE_CODE_SHELL"):
+        assert verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "x.exe", "cmdline": cmd}]))["verdict"] == "CONTAMINATED", cmd
+
+
+def test_a_chain_ending_in_the_checker_is_still_evaluated():
+    # The probe now excludes only its own PIDs; a command that merely names the checker is classified like any other.
+    cmd = r"powershell.exe -Command D:/URI-preservation/worker.ps1; python C:/x/scripts/uri_runtime_authority_check.py"
+    assert verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "powershell.exe", "cmdline": cmd}]))["verdict"] == "CONTAMINATED"
+    assert not hasattr(rac, "_is_self_probe") and not hasattr(rac, "_is_test_runner")

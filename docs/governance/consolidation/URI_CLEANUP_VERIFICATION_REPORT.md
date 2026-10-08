@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **50 passed** (25 original + 25 added across Codex rounds 1-6). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **52 passed** (25 original + 27 added or updated across Codex rounds 1-7). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -158,6 +158,24 @@ launcher forms. It found:
 
 3 new tests (50 total, all passing); all 3 fail on the round-5 checker. Live run unchanged, and the saved snapshot
 contains no agent-shell command lines. Round 7 result: see §2g.
+
+## 2g. Codex review round 7: REJECT, then repaired by removing exemptions
+
+Round 7 bypassed both narrowed exemptions again. An allow-listed script name in a donor root got through, and so
+did a `python-*.exe` donor binary running `-m pytest`. A real PowerShell running a donor script with the agent marker
+got through, as did a donor binary named `cmd.exe`, and a chain that ended in the checker's own name. Each round of
+name-based exemption was bypassable, so the repair removes the exemptions instead of narrowing them again:
+
+| ID | Repair |
+|---|---|
+| U-1 | No test-runner exemption. Every process launched from a donor or quarantined root counts, including development test runs. The outer executable, the image path and every parsed target are checked |
+| U-2 | A shell is skipped only when its executable is a genuine system shell at a trusted absolute path (Git bash, System32 `cmd`/`powershell`, PowerShell 7), it carries the agent marker, and nothing it launches is in any manifest root |
+| U-3 | The live probe excludes only its own process IDs (the checker and its PowerShell child), never by name |
+
+4 new/updated tests (52 total, all passing); all 4 fail on the round-6 checker. **Operational consequence, by
+design:** the live run at 10:43 IST reported 8 DONOR_ONLY processes. These were the Phase 2 session's running
+regression chain (`phase2close_chain.py`, `phase2d_regression.py`, pytest, fake executors). Donor code executing
+counts as contamination until that work is promoted or idle. Legacy findings are unchanged. Round 8 result: see §2h.
 
 ## 3. Integrity and recoverability
 

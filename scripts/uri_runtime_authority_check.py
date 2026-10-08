@@ -336,37 +336,32 @@ def classify(text: str, manifest: dict) -> tuple[str, str]:
 
 
 SHELL_EXES = {"bash.exe", "bash", "sh.exe", "sh", "cmd.exe", "cmd", "powershell.exe", "powershell", "pwsh.exe", "pwsh"}
-DEV_TEST_SCRIPTS = {"phase2d_regression.py", "phase2close_chain.py"}
 
 
 def _basename(path: str) -> str:
     return path.replace(chr(92), "/").rsplit("/", 1)[-1].lower()
 
 
-def _is_agent_shell(cmd: str) -> bool:
-    """An interactive agent shell: the executable itself is a shell AND it carries the agent marker."""
-    toks = _tokens(cmd)
-    return bool(toks) and _basename(toks[0]) in SHELL_EXES and bool(AGENT_SHELL.search(cmd))
+TRUSTED_SHELL_PATHS = ("c:/program files/git/bin/bash.exe", "c:/program files/git/usr/bin/bash.exe",
+                       "c:/windows/system32/cmd.exe", "c:/windows/system32/windowspowershell/v1.0/powershell.exe",
+                       "c:/program files/powershell/7/pwsh.exe")
 
 
-def _is_self_probe(cmd: str) -> bool:
+def _is_agent_shell(cmd: str, roots: list | None = None) -> bool:
+    """An interactive agent shell: the executable is a genuine system shell at a trusted absolute path, it carries
+    the agent marker, and nothing it launches lives in any manifest root. Anything else is evaluated normally."""
     toks = _tokens(cmd)
-    if not toks:
+    if not toks or not AGENT_SHELL.search(cmd):
         return False
-    if _basename(toks[0]) in SHELL_EXES and "$o.scheduled_tasks" in cmd:
-        return True
-    return any(_basename(tg) == "uri_runtime_authority_check.py" for _, tg in launch_targets(cmd))
-
-
-def _is_test_runner(cmd: str) -> bool:
-    """Every launch in the command is an interpreter running pytest/unittest or an allow-listed dev regression script."""
-    targets = launch_targets(cmd)
-    for ex, tg in targets:
-        if not (_basename(ex) in INTERPRETERS or _basename(ex).startswith("python")):
-            return False
-        if tg not in ("module:pytest", "module:unittest") and _basename(tg) not in DEV_TEST_SCRIPTS:
-            return False
-    return bool(targets)
+    exe = norm(toks[0])
+    if exe not in TRUSTED_SHELL_PATHS:
+        return False
+    if roots:
+        for ex, tg in launch_targets(cmd):
+            for path in (ex, tg):
+                if path and not path.startswith(("module:", "inline-code", "encoded:")) and _root_containing(path, roots):
+                    return False
+    return True
 
 
 def _is_python_like(cmd: str) -> bool:
@@ -423,7 +418,8 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
     listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if listener_relevant(lst)}
 
     def launched_from_nonactive_root(cmd, image):
-        for ex, tg in launch_targets(cmd) + [(image, image)]:
+        outer = _tokens(WD.sub("", cmd or ""))[:1]  # the outer executable itself (e.g. a cmd.exe or shell copy)
+        for ex, tg in launch_targets(cmd) + [(image, image)] + [(o, o) for o in outer]:
             for path in (tg, ex):
                 r = _root_containing(path, roots) if path and not path.startswith(("module:", "inline-code", "encoded:")) else None
                 if r is not None and r["classification"] != "ACTIVE_AUTHORITATIVE":
@@ -431,17 +427,14 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
         return False
     for p in snapshot.get("processes", []):
         cmd = p["cmdline"]
-        if _is_agent_shell(cmd):
+        if _is_agent_shell(cmd, roots):
             continue
         if RUNTIME_HINT.search(cmd) or p.get("pid") in listener_pids:
             add("process", f"pid {p['pid']}", cmd, True)
         elif launched_from_nonactive_root(cmd, p.get("image", "")):
-            if _is_test_runner(cmd):
-                # Development test runs of donor code are reported, not counted: they are not a URI runtime. Any
-                # server or worker they spawn is evaluated on its own command line or listener.
-                add("process", f"pid {p['pid']}", cmd, False, {"note": "DEV_TEST_ACTIVITY (reported, not counted)"})
-            else:
-                add("process", f"pid {p['pid']}", cmd, True)
+            # No name-based exemption: anything executing from a donor or quarantined root counts, including
+            # development test runs (Codex rounds 6-7 showed every name/argument exemption can be abused).
+            add("process", f"pid {p['pid']}", cmd, True)
     for lst in snapshot.get("listeners", []):
         text = lst.get("cmdline") or lst.get("image") or ""
         # URI and model ports always; any other port when an interpreter/uvicorn owns it or it runs from a manifest root.
@@ -489,8 +482,11 @@ $o | ConvertTo-Json -Depth 5 -Compress
 def live_snapshot(roots: list | None = None) -> dict:
     if os.name != "nt":
         raise SystemExit("live probe is Windows-only; use --snapshot")
-    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", PS_PROBE], capture_output=True,
-                       timeout=240, stdin=subprocess.DEVNULL)
+    child = subprocess.Popen(["powershell", "-NoProfile", "-NonInteractive", "-Command", PS_PROBE], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, stdin=subprocess.DEVNULL)
+    out, err = child.communicate(timeout=240)
+    r = subprocess.CompletedProcess(child.args, child.returncode, out, err)
+    self_pids = {os.getpid(), child.pid}
     if r.returncode != 0 or not r.stdout.strip():
         raise SystemExit(f"probe failed: {r.stderr.decode(errors='replace')[:400]}")
     snap = json.loads(r.stdout.decode("utf-8", errors="replace"))
@@ -500,8 +496,8 @@ def live_snapshot(roots: list | None = None) -> dict:
     # The probe's own PowerShell process carries this source text, which mentions URI paths; drop it.
     # Privacy: keep only command lines that look like URI runtimes; never persist unrelated process command lines.
     listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict)}
-    snap["processes"] = [p for p in snap.get("processes") or [] if not _is_self_probe(p["cmdline"])
-                         and not _is_agent_shell(p["cmdline"])
+    snap["processes"] = [p for p in snap.get("processes") or [] if p.get("pid") not in self_pids
+                         and not _is_agent_shell(p["cmdline"], roots)
                          and (RUNTIME_HINT.search(p["cmdline"]) or (p.get("pid") in listen_pids and _is_python_like(p["cmdline"]))
                               or (roots and any(_root_containing(x, roots) for ex, tg in launch_targets(p["cmdline"])
                                                 for x in (ex, tg, p.get("image", "")) if x)))]
