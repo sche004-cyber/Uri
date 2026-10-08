@@ -25,7 +25,8 @@ Changes after `abe2f9b` (none is in a Phase 1/2 test scope; Codex round 5 review
   self-test (`evidence/launcher_selftest.json`) ran against `uri-ws-final` after this change.
 - Round-5 repairs: `tools/capture_ws.ps1` `-Attach` now requires `-AttachPid`, verifies the executable and writes
   `capture_run_<pid>_*.json`; `ws_ui_live_test.dart` asserts that Stop is pressed while the turn is unfinished, and
-  asserts the refusal code and unchanged memory. Rerun with Runtime v1 READY: passed (`evidence/ui_live_brain_ready.json`).
+  asserts that the destructive request was not executed (no approval card, Core code `REFUSED_UNSUPPORTED` or
+  `INTENT_CONFIRMED_NOT_EXECUTED`, memory unchanged). The refusal code itself is demonstrated through the worker only. Rerun with Runtime v1 READY: passed (`evidence/ui_live_brain_ready.json`).
 
 ## 2. Frozen and accepted boundaries
 
@@ -65,6 +66,7 @@ those packages; native needs a client-profile Codex login, PA-8/9).
 | 4 | `fcfed5c` | **ACCEPT WITH FINDINGS** | MEDIUM FIXED; residual R-BUSY recorded; coverage note → tests in `abe2f9b` |
 | 5 | `154b952` (diff after `fcfed5c` + reports) | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | report boundaries overclaimed (review and chain commits); unverified `-Attach` capture provenance; UI refusal journey overstated; cancel-probe assertion; launcher default omitted → all repaired in the commit after `154b952` (attach captures 07a/07/08 retaken with PID verification) |
 | 6 | `04864c6` | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | findings 2, 4 and 5 FIXED; stale code-tip and "A" wording, UI refusal label and reasoning-character count corrected in the next commit |
+| 7 | `d6537c5` | candidate ACCEPT WITH FINDINGS; reports REJECT pending correction | four round-6 corrections verified; remaining: the receipt and the regression table still called the UI journey a demonstrated refusal → reworded to "not executed" in the next commit |
 
 Every Codex finding was checked against source before repair. Codex could not run tests in its sandbox; its verdicts
 rest on source inspection. The test results above come from this session's own runs.

@@ -54,7 +54,7 @@ the independent Codex review of the code at `fcfed5c` (round 4; later tool/test/
 | Memory: remember (approval-gated) and list (deterministic client read) | I T L A G | live; Settings panel (screenshot 09) |
 | Readiness and performance indicators | I T L A G | Brain state, model id, artifact match, and per-answer first-token time and tok/s shown live. **Degradation (OI-PERF-1) is not surfaced**: see PERF-W1 |
 | Runtime v1 as the default Brain; explicit selection; no fallback | I T L A G | catalog live (screenshot 09); deterministic row only by explicit choice; other local models NOT_QUALIFIED |
-| Deterministic paths without a model | I T L A G | presentation commands, memory list, Brain status, refusal and unavailable-runtime all work with the Brain stopped |
+| Deterministic paths without a model | I T L A G | presentation commands, memory list, Brain status, Core refusal (worker) and unavailable-runtime handling all work with the Brain stopped |
 | Integrated server profile (Phase 2 rows + Runtime v1 row) | I T L A G | live under the C1 gates on 18300; identity proven |
 | Launcher (`Launch URI Working System.bat`) | I T L A G | self-test: legacy root, foreign UI and port 8000 refused; signed identity proof required; wrong-key proof refused |
 | Cloud providers: $5/month, single-use manual approvals, no calls | I T A G | 6 tests, network forbidden; activation **disabled**, no credentials |
@@ -76,7 +76,7 @@ the independent Codex review of the code at `fcfed5c` (round 4; later tool/test/
 | Flutter full suite | 294 passed, 3 skipped (2 baseline live tests and the opt-in WS live test) |
 | OI + WS Python | 182 passed, 16 skipped (opt-in live tests) |
 | Live worker (final tree) | Brain stopped: 6 passed, 2 skipped; Brain READY: **8/8 passed** |
-| Live UI journeys (final tree) | Brain stopped: passed (unavailable runtime, approve, deny, refusal, local command, restart). Brain READY: **passed** (normal response, reasoning, Stop/cancel, approve and deny through Runtime v1, refusal, local command, restart) |
+| Live UI journeys (final tree) | Brain stopped: passed (unavailable runtime, approve, deny, destructive request not executed, local command, restart). Brain READY: **passed** (normal response, reasoning, Stop/cancel, approve and deny through Runtime v1, destructive request not executed, local command, restart). The refusal code itself (`REFUSED_UNSUPPORTED`) is demonstrated through the worker only |
 | Independent review (Codex `gpt-6-sol`, medium, read-only clone) | r1 REJECT (5) → r2 REJECT (3 partial + 2 new) → r3 ACCEPT WITH FINDINGS (1 new MEDIUM) → r4 **ACCEPT WITH FINDINGS** at `fcfed5c`; every finding confirmed in source, repaired and tested (`WS_INTEGRATION_RECEIPT.md` §4) |
 | Not run | flutter/bridge/native steps of the accepted chain (unchanged packages; the native step needs a client-profile Codex login, PA-8/9) |
 
