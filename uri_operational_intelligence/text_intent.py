@@ -96,6 +96,8 @@ def _content_context(t, pos):
     """The coordinated action at `pos` belongs to a reported request or infinitive in the SAME clause (a comma ends
     the clause, so "asking parents to sign the form, then email it" is not exempt)."""
     clause = re.split(r"[.;:!?,\n]", t[:pos])[-1]
+    if re.match(r"\s*(?:and|&)?\s*please\b", t[pos:], re.I):
+        return False                      # "... and please email it" is addressed to URI
     return bool(_INFINITIVE.search(clause) or _REPORTED.search(clause))
 
 
@@ -106,12 +108,24 @@ _FOREIGN_OBJECT = re.compile(
     r"brain|model|harness)\b", re.I)
 
 
+_DOC_OBJECT = re.compile(r"\s*(?:it|this|that|the (?:letter|draft|e-?mail|mail|note|notice|document|circular|memo|"
+                         r"report|reply|application))\b", re.I)
+
+
 def _core_only(t: str) -> bool:
     """True when the request asks URI to act (send, save, file, remember ...): such turns go to Core."""
-    if _DESTINATION.search(t) or _SEQUENCED.search(t):
+    if _DESTINATION.search(t):
         return True
     instruction, payload = split_payload(t)
     head = instruction if payload is not None else t
+    if _SEQUENCED.search(head):
+        return True
+    if payload is not None:
+        # Inside dictated content "then send the form to the office" belongs to the document; "then email it"
+        # (the document itself) is an instruction to URI.
+        for m in _SEQUENCED.finditer(payload):
+            if _DOC_OBJECT.match(payload, m.end()):
+                return True
     for m in _SENTENCE.finditer(head):
         if _START_ACTION.match(m.group(1)):
             return True

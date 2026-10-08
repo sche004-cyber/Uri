@@ -265,8 +265,11 @@ def user_exclusions(user_words) -> list:
     out = []
     for m in _EXCLUDE.finditer(user_words or ""):
         phrase = m.group(1).strip()
-        phrase = re.split(r"\b(?:and|but|instead|say|write|use|in|from|anywhere|at all|please|either)\b", phrase,
+        phrase = re.split(r"\b(?:and|but|instead|say|write|use|anywhere|at all|please|either)\b", phrase,
                           flags=re.I)[0].strip()
+        phrase = re.sub(r"\s+(?:in|from|within|inside)\s+(?:the|this|my|our|that)\s+(?:letter|e-?mail|mail|draft|notice|"
+                        r"note|document|text|message|circular|report|memo|reply|application)\b.*$", "", phrase,
+                        flags=re.I).strip()
         if phrase and not _GENERIC.search(phrase) and len(phrase.split()) <= 6:
             out.append(phrase)
     return out
@@ -278,14 +281,33 @@ def strip_corrected(user_words) -> str:
     from .text_input import _CORRECTION_CUES
     text = user_words or ""
     for m in reversed(list(_CORRECTION_CUES.finditer(text))):
-        before = text[:m.start()]
-        # Only the detail closest to the cue is the replaced value ("17 students on Monday, sorry, Tuesday": Monday).
-        words = list(re.finditer(r"[\w'-]+", before))[-4:]
-        for w in reversed(words):
-            if _details(w.group(0)) or canonical_numbers(w.group(0)):
+        after = list(re.finditer(r"[\w'-]+", text[m.end():]))[:4]
+        kind = next((k for k in (_detail_kind(w.group(0)) for w in after) if k), None)
+        if kind is None:
+            continue                      # the replacement is not a typed detail: keep everything, flag for review
+        before = list(re.finditer(r"[\w'-]+", text[:m.start()]))[-6:]
+        # The replaced value is the nearest earlier detail of the SAME kind ("17 students on Monday, sorry, 18
+        # students": 17, not Monday). Other details stay required.
+        for w in reversed(before):
+            if _detail_kind(w.group(0)) == kind:
                 text = text[:w.start()] + " " + text[w.end():]
                 break
     return text
+
+
+_ORDINAL_WORD = set(_ORD) | {"1st", "2nd", "3rd"}
+
+
+def _detail_kind(word):
+    low = word.lower()
+    if low in WEEKDAYS or low in MONTHS or low in _RELATIVE_DAYS or low in _ORDINAL_WORD or \
+            re.fullmatch(r"\d{1,2}(?:st|nd|rd|th)", low):
+        return "date"
+    if canonical_numbers(word) or re.fullmatch(r"\d[\d,]*", word):
+        return "number"
+    if word[:1].isupper() and low not in _COMMON_CAPS and len(word) > 1:
+        return "name"
+    return None
 
 
 def check_user_details(user_words, text, dropped_ok=()) -> list:

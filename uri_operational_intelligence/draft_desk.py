@@ -396,6 +396,7 @@ class DraftDesk:
         data, metrics = self._call(turn_id, CREATE_SYSTEM, user, CREATE_SCHEMA, "draft", MAX_DRAFT_TOKENS, emit)
         if _clean_list(data.get("actions_requested")) and fallback is not None:
             # Model-side guard: the user also asked URI to act. Core decides; nothing was drafted or shown yet.
+            self.pending_new.pop(session_id, None)
             return fallback()
         q = (data.get("clarification") or "").strip()
         if q and not data.get("blocks"):
@@ -457,8 +458,11 @@ class DraftDesk:
         system = EDIT_SYSTEM + ("\n" + CORRECT_RULE if mode == "correct" else "\n" + REWRITE_RULE if mode == "rewrite" else "")
         data, metrics = self._call(turn_id, system, user, EDIT_SCHEMA, "edit", MAX_EDIT_TOKENS, emit)
         action = data.get("action")
-        if (action == "not_an_edit" or _clean_list(data.get("actions_requested"))) and fallback is not None and not q:
-            return fallback()           # not an edit, or the user also asked URI to act: the ordinary path / Core
+        if _clean_list(data.get("actions_requested")) and fallback is not None:
+            d.pending_question = None   # the user also asked URI to act: Core decides; the open question is dropped
+            return fallback()
+        if action == "not_an_edit" and fallback is not None and not q:
+            return fallback()           # not an edit: the ordinary path
         if action == "clarify" or (action == "not_an_edit"):
             question = (data.get("clarification") or "").strip() or "Which part of the draft should I change?"
             d.pending_question = question
