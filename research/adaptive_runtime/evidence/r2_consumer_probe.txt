@@ -1,0 +1,45 @@
+Cannot convert value "16559374336" to type "System.Int32". Error: "Value was either too large or too small for an 
+Int32."
+At line:1 char:1
++ [int]((Get-Counter '\GPU Adapter Memory(*)\Dedicated Usage').CounterS ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvalidCastIConvertible
+ 
+idle 
+Cannot convert value "16092696576" to type "System.Int32". Error: "Value was either too large or too small for an 
+Int32."
+At line:1 char:1
++ [int]((Get-Counter '\GPU Adapter Memory(*)\Dedicated Usage').CounterS ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvalidCastIConvertible
+ 
+ctx=4096 vram= ps={"models":[{"name":"qwen3.5:0.8b","model":"qwen3.5:0.8b","size":1086869994,"digest":"f3817196d142eaf72ce79dfebe53dcb20bd21da87ce13e138a8f8e10a866b3a4","details":{"parent_model":"","format":"gguf","family":"qwen35","families":["qwen35"],"parameter_size":"873.44M","quantization_level":"Q8_0"},"expires_at":"2026-10-08T23:52:42.3950256+05:30","size_vram":1086869994,"context_length":4096}]}
+Cannot convert value "15887392768" to type "System.Int32". Error: "Value was either too large or too small for an 
+Int32."
+At line:1 char:1
++ [int]((Get-Counter '\GPU Adapter Memory(*)\Dedicated Usage').CounterS ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvalidCastIConvertible
+ 
+ctx=16384 vram= ps={"models":[{"name":"qwen3.5:0.8b","model":"qwen3.5:0.8b","size":1309178591,"digest":"f3817196d142eaf72ce79dfebe53dcb20bd21da87ce13e138a8f8e10a866b3a4","details":{"parent_model":"","format":"gguf","family":"qwen35","families":["qwen35"],"parameter_size":"873.44M","quantization_level":"Q8_0"},"expires_at":"2026-10-08T23:52:55.598379+05:30","size_vram":1309178591,"context_length":16384}]}
+Cannot convert value "16119070720" to type "System.Int32". Error: "Value was either too large or too small for an 
+Int32."
+At line:1 char:1
++ [int]((Get-Counter '\GPU Adapter Memory(*)\Dedicated Usage').CounterS ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvalidCastIConvertible
+ 
+ctx=32768 vram= ps={"models":[{"name":"qwen3.5:0.8b","model":"qwen3.5:0.8b","size":1544059615,"digest":"f3817196d142eaf72ce79dfebe53dcb20bd21da87ce13e138a8f8e10a866b3a4","details":{"parent_model":"","format":"gguf","family":"qwen35","families":["qwen35"],"parameter_size":"873.44M","quantization_level":"Q8_0"},"expires_at":"2026-10-08T23:53:08.4747336+05:30","size_vram":1544059615,"context_length":32768}]}
+Cannot convert value "13897707520" to type "System.Int32". Error: "Value was either too large or too small for an 
+Int32."
+At line:1 char:1
++ [int]((Get-Counter '\GPU Adapter Memory(*)\Dedicated Usage').CounterS ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvalidCastIConvertible
+ 
+after 
