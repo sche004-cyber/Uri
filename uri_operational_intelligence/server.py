@@ -136,6 +136,7 @@ def main(argv=None):
     if r.state == R.READY:
         perf.set_baseline(r.pid)   # attached instance: baseline = first observation (weaker than a fresh-start baseline)
     ledger = TaskLedger(R.DEFAULT_STATE.parent / "tasks")
+    ledger.acquire_owner()        # refuses to start if another process owns (and may be running) these tasks
     print("ledger recovery:", ledger.recover(), flush=True)    # restart rules before serving anything
     orch = Orchestrator(client=client, core=None, brain_selection=selection(cfg), ledger=ledger,
                         capability_ids={"remember_fact", "external_harness_task"}, readiness=mgr.status, perf=perf)

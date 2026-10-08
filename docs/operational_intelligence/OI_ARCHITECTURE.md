@@ -31,7 +31,8 @@ OI never approves, claims, settles, or retries an uncertain execution.
 |---|---|---|
 | Configuration | `model_lab/integration/local_brain.json` (frozen, read-only) | `runtime_v1.load_config` |
 | Process | at most one `llama-server.exe` on 127.0.0.1:18470 with exactly the frozen argv (freeze record §2) | `runtime_v1.expected_argv` (test pins every frozen flag) |
-| Artifact identity | SHA-256 of server binary, `ggml-vulkan.dll`, model, mmproj, MTP draft; full hash on first use and whenever size, mtime, ctime or file id change, otherwise a cache hit reported as method `cached` (protects against accidental change and file replacement, not against a same-user writer restoring all metadata; `--full-verify` re-hashes). Verified on start AND on attach | `verify_artifacts` |
+| Artifact identity | SHA-256 of server binary, `ggml-vulkan.dll`, model, mmproj, MTP draft; full hash on first use and whenever size, mtime, ctime or file id change, otherwise a cache hit reported as method `cached` (protects against accidental change and file replacement, not against a same-user writer restoring all metadata; `--full-verify` re-hashes). Verified on start, on attach and on every READY readiness probe (metadata-cached); the READY report carries the
+  listener's process creation time | `verify_artifacts` |
 | Live identity | listener pid's executable path + exact argv; `/props` model path, `n_ctx` 32768, build `b11425`, 1 slot | `inspect_process`, `live_identity_problems` |
 | Start / attach | attach if an authorized instance is READY or LOADING; refuse FOREIGN_INSTANCE / IDENTITY_MISMATCH; start only after artifact MATCH, under a cross-process start lock, inside a kill-on-close Job Object (Phase 2 `spawn_contained`, reused unchanged) | `RuntimeManager.ensure_ready` |
 | Stop | only an instance this manager started; success only when the job is confirmed empty | `RuntimeManager.stop` |
@@ -98,7 +99,8 @@ OQ overlay + OI files), the same method as the consolidation runbook.
   channel (no action ran).
 - **Multi-step.** NORMAL-tier planner with a JSON schema (thinking + grammar verified to work together on b11425).
   Deterministic validation: ≤ 8 steps, unique ids, backward-only dependencies, known capabilities only, and every
-  action/harness step's `source_span` must match the user's request as whole words (case/whitespace-insensitive) and is then
+  action/harness step's `source_span` must match the user's request with word boundaries on both sides, hyphen and
+  apostrophe counting as word characters (case/whitespace-insensitive), and is then
   replaced by the user's exact characters; a span with a negation or exclusion anywhere earlier in its clause is
   rejected (downgraded to ask_user, fail closed).
   Nothing runs before the user approves the plan. Action steps go to Core with the user's verbatim words, so Intent
@@ -107,8 +109,12 @@ OQ overlay + OI files), the same method as the consolidation runbook.
 - **Task ledger.** One JSON file per task (atomic replace + fsync), step state machine, restart recovery. Before an
   approval is handed to Core (`decide_step`) the step is durably EXECUTING, so a crash anywhere after the approval
   recovers as UNCERTAIN and the step is never started again; the ledger has no other route from an approval to an
-  outcome. IN_CORE / EXECUTING are exclusive claims under a cross-process file lock (no double dispatch); the dev
-  server runs recovery before serving. Pending approvals that were never given return to
+  outcome; the single-turn `decide()` refuses a plan step's Core turn. IN_CORE / EXECUTING are exclusive claims
+  taken under a per-task file lock (`advance` and `confirm_step` claim before calling Core): tested with concurrent
+  threads and separate ledger objects; separate OS processes use the same lock but were not tested. After an approval
+  any reply that is not an outcome is recorded UNCERTAIN. Recovery requires exclusive ledger ownership (a held lock
+  file), so a second process cannot reset a live owner's steps; the dev server takes ownership and recovers before
+  serving. Pending approvals that were never given return to
   PENDING (Core keeps approvals in memory and fails closed after restart). Only VERIFIED / ANSWERED satisfy a
   dependency; dependents of a failed, refused, cancelled, uncertain or skipped step are SKIPPED transitively.
 - **Harness coordination.** Separate from Brain selection. Options carry usable / why_not (policy, qualification,

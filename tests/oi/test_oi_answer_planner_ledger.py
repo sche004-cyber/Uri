@@ -151,7 +151,12 @@ def test_ledger_restart_recovery_never_retries_possible_execution(tmp_path):
     b = L.create(session_id="s", request_text=TEXT, plan=p, state="RUNNING")["task_id"]
     L.set_step(b, "s1", "IN_CORE")
     L.set_step(b, "s1", "WAITING_APPROVAL", core={"state": "approval_required"})
-    summary = {r["task_id"]: r["changes"] for r in TaskLedger(tmp_path).recover()}
+    owner = TaskLedger(tmp_path)
+    owner.acquire_owner()
+    try:
+        summary = {r["task_id"]: r["changes"] for r in owner.recover()}
+    finally:
+        owner.release_owner()
     assert summary[a] == [("s1", "UNCERTAIN")] and L.get(a)["state"] == "NEEDS_ATTENTION"
     assert summary[b] == [("s1", "PENDING")] and L.get(b)["state"] == "WAITING_USER_CHOICE"
     # the dependent of an uncertain step is blocked, never run on top of it

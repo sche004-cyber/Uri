@@ -55,15 +55,18 @@ _NEGATION = re.compile(r"\b(?:don'?t|dont|do not|does not|never|not|no need to|w
 _CLAUSE_BREAK = re.compile(r"[.;!?\n]|\bbut\b|\bthen\b|\bafter that\b|\balso\b", re.I)
 
 
+_WORDISH = r"[\w'\-]"     # hyphen and apostrophe join words: "de-activate" is one word for span boundaries
+
+
 def _span_regex(span):
-    """Whole-word match only: "activate account" must not match inside "deactivate account"."""
+    """Whole-word match only: the characters just outside the matched span may not be word characters, where hyphen
+    and apostrophe count as word characters. So "activate account" matches neither "deactivate account" nor
+    "de-activate account", and "-activate account" does not match inside "de-activate account" either."""
     words = (span or "").split()
-    if not words:
+    if not words or not re.search(r"\w", span):
         return None
     body = r"\s+".join(re.escape(w) for w in words)
-    left = r"(?<!\w)" if re.match(r"\w", words[0]) else ""
-    right = r"(?!\w)" if re.search(r"\w$", words[-1]) else ""
-    return re.compile(left + body + right, re.I)
+    return re.compile(r"(?<!" + _WORDISH + r")" + body + r"(?!" + _WORDISH + r")", re.I)
 
 
 def exact_user_span(text, span):

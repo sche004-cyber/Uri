@@ -58,7 +58,10 @@ def test_step_is_durably_executing_before_core_receives_the_approval(fake, tmp_p
     # simulate a hard crash: the handler above did not run for BaseException-free paths; recovery decides
     t = o.ledger.get(tid)
     if t["steps"][0]["state"] == "EXECUTING":
-        TaskLedger(tmp_path).recover()
+        owner = TaskLedger(tmp_path)
+        owner.acquire_owner()
+        owner.recover()
+        owner.release_owner()
     assert o.ledger.get(tid)["steps"][0]["state"] == "UNCERTAIN"
     assert o.advance(tid)["status"] in ("not_running", "no_ready_step")
     assert [c[0] for c in o.core.calls] == []        # Core.begin never called again

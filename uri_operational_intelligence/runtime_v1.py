@@ -185,6 +185,14 @@ def _listener_pid(port):
     return None
 
 
+def _create_time(pid):
+    import psutil
+    try:
+        return psutil.Process(pid).create_time()
+    except (psutil.Error, OSError):
+        return None
+
+
 def inspect_process(pid, cfg) -> dict:
     """Is the process listening on the Runtime v1 port the pinned binary with the frozen argv?"""
     import psutil
@@ -275,14 +283,13 @@ class RuntimeManager:
             return Readiness(FAILED, self.url, owned=owned, pid=pid, model_id=model_id,
                              detail="HEALTH_%s" % probe.get("health_status"), live_identity={"process": proc, "server": probe})
         problems = live_identity_problems(self.cfg, probe)
-        if not problems and self._verified_pid != pid:
-            # READY always implies the pinned artifacts verified for THIS live instance (cache-backed, ~ms when
-            # unchanged; a full hash when anything about a file changed).
+        if not problems:
+            # Every READY answer re-checks the pinned artifacts (metadata cache: a few stat calls when nothing
+            # changed; a full re-hash of any file whose size/mtime/ctime/id changed; MISSING if a file is gone).
             self.last_artifacts = verify_artifacts(self.cfg, self.state_dir)
-            if self.last_artifacts["overall"] == "MATCH":
-                self._verified_pid = pid
-            else:
+            if self.last_artifacts["overall"] != "MATCH":
                 problems.append("ARTIFACT_" + self.last_artifacts["overall"])
+            proc["create_time"] = _create_time(pid)
         state = READY if not problems else IDENTITY_MISMATCH
         return Readiness(state, self.url, owned=owned, pid=pid, model_id=model_id,
                          detail=",".join(problems) or None, live_identity={"process": proc, "server": probe},

@@ -17,12 +17,14 @@ Codex output is a claim; every finding below was checked against the source befo
 | 1 | `467e4e5` | **REJECT** | High: crash between approval and recording could restart a step; SKIPPED satisfied dependencies; attach skipped artifact verification + size/mtime-only cache; negation check limited to two words (counter-example "Do not under any circumstances email Ravi."). Medium: unknown finish reasons / Core codes could read as success; SSE disconnect left inference running; quota pause emitted no provider choice. Low: claim guard is post-response. A10: docs overclaimed on those points; readiness doc missing |
 | repair | `5aad403`, `1953362` | — | all eight repaired with regression tests (`tests/oi/test_oi_audit_r1_regressions.py`); my own SSE fix was itself flaky (sync generator blocked in `queue.get`) and was replaced by an async disconnect-polling stream, 3 consecutive green suite runs |
 | 2 | `9265d00` | **REJECT** | H1/H3/A10 partially fixed; H2, H4, M1-M3, L1 verified fixed. New: concurrent `advance()` could dispatch twice (High); partial-word span match "activate account" in "deactivate account" (High); approval path bypass via `decide`+`record_step` and no startup recovery (High); `status()` READY without artifact verification (High); Core CONVERSATION on an action step counted as success (Medium) |
-| repair | see git log | — | all repaired with tests (`tests/oi/test_oi_audit_r2_regressions.py`); doc claims narrowed |
-| 3 | see §2.1 | see §2.1 | see §2.1 |
+| repair | `aea8f8f` | — | repairs with tests (`tests/oi/test_oi_audit_r2_regressions.py`); doc claims narrowed |
+| 3 | `aea8f8f` | **REJECT** | R2-1, R2-5 verified fixed; R2-2/3/4 partially: public `decide()` still usable on plan steps (High); READY verification cached per pid forever (High); punctuation/hyphen span boundary "-activate account" in "de-activate account" (High); recovery not coordinated with a live owner (Medium); `confirm_step` unclaimed and non-outcome replies after approval undefined (Medium); doc overclaims on these |
+| repair | see git log after `aea8f8f` | — | repairs with tests (`tests/oi/test_oi_audit_r3_regressions.py`); claims limited to what the tests exercise (threads, not processes; simulated, not real crashes) |
+| 4 | see §2.1 | see §2.1 | see §2.1 |
 
-### 2.1 Round 3
+### 2.1 Round 4
 
-Recorded after the run (if empty, round 3 did not complete).
+Recorded after the run (if empty, round 4 did not complete).
 
 ## 3. What was verified, by whom
 

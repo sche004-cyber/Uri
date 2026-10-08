@@ -61,6 +61,33 @@ class TaskLedger:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
+        self._owner_fd = None
+
+    def acquire_owner(self):
+        """Exclusive, process-lifetime ownership of this ledger (a held byte-range lock on `ledger.owner`). Restart
+        recovery requires it, so a second process can never reset steps that a live owner is still running."""
+        import msvcrt
+        if self._owner_fd is not None:
+            return True
+        fd = os.open(self.root / "ledger.owner", os.O_RDWR | os.O_CREAT)
+        try:
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+        except OSError:
+            os.close(fd)
+            raise LedgerError("LEDGER_OWNED_BY_ANOTHER_PROCESS") from None
+        self._owner_fd = fd
+        return True
+
+    def release_owner(self):
+        import msvcrt
+        fd, self._owner_fd = self._owner_fd, None
+        if fd is not None:
+            try:
+                os.lseek(fd, 0, 0)
+                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            except OSError:
+                pass
+            os.close(fd)
 
     def _path(self, task_id):
         uuid.UUID(task_id)          # task ids are UUIDs: no path traversal through ids
@@ -202,7 +229,10 @@ class TaskLedger:
         return self.update(task_id, fn)
 
     def recover(self) -> list:
-        """Apply the restart rules to every non-closed task. Returns a summary (for the UI and evidence)."""
+        """Apply the restart rules to every non-closed task. Returns a summary (for the UI and evidence).
+        Only the ledger owner may recover (see acquire_owner)."""
+        if self._owner_fd is None:
+            raise LedgerError("NOT_LEDGER_OWNER")
         out = []
         for tid in self.list():
             try:

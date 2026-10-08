@@ -22,7 +22,7 @@ Nothing in this phase is class 6 or 7.
 |---|---|---|---|
 | AC1 | URI communicates with Runtime v1 through the intended architecture | **MET (development)** | `oi_composition` via Core's `create_app(composition=...)`; live 8/8 + Suite P 12/12 on the real paired Core (`OI_BENCHMARKS.md` §2) |
 | AC2 | Real inference works without the legacy server | **MET** | all live runs used Runtime v1 on 18470; legacy server on 8000 never contacted |
-| AC3 | Model identity and readiness verified | **MET** | 5 artifact hashes (full + cached), listener exe/argv, `/props` build/ctx/slots; READY implies verified artifacts for the live pid (after audit rounds 1-2) |
+| AC3 | Model identity and readiness verified | **MET** | 5 artifact hashes (full + cached), listener exe/argv, `/props` build/ctx/slots; every READY probe re-verifies artifacts (after audit rounds 1-3) |
 | AC4 | Streaming and cancellation correct | **MET** | live: cancel 0.56 s, slot freed, next call 0.25 s; HTTP cancel endpoint and disconnect-cancel tested |
 | AC5 | Simple tasks remain responsive | **MET for time-to-first-text** | first visible text p50 0.20 s, max 0.61 s, 0 Brain decision calls; whole-turn time depends on answer length (8/12 < 2 s). Degrades ~3× under OI-PERF-1 (now detected) |
 | AC6 | Harder tasks get deeper reasoning when appropriate | **MET** | policy NORMAL for analysis/planning; task score 0.667 → 0.853 (FAST → NORMAL), p50 6.2 s |
@@ -47,7 +47,7 @@ Nothing in this phase is class 6 or 7.
 | Core ModelProvider + `oi_composition` | 4 | Suite P 12/12 (single run), live 8/8 |
 | Orchestrator (routing, Core relay, CONVERSATION fallback, readiness fast-fail) | 4 | fake-Core tests + live end-to-end |
 | Planner (NORMAL, schema) + deterministic validation | 3 | validation tested incl. negation; live plan quality NOT benchmarked (no plan-quality suite run live) |
-| Task ledger + restart recovery + `decide_step` | 3 | unit-tested; not exercised against the real Core across a real process crash |
+| Task ledger + restart recovery + `decide_step` / `confirm_step` claims + ledger ownership | 3 | unit-tested (threads, simulated crash); not exercised against the real Core across a real process crash, nor with two OS processes |
 | Harness choice + quota choice event + `begin_harness` | 3 | unit-tested; live harness execution NOT run (Phase 2 physical qualification pending; owner policy rows absent) |
 | Quota resume (`continue_waiting`) through OI | 1 | frozen client supports it; no OI method yet |
 | UI event contract + simulator + dev SSE server | 3 | tested; not consumed by the UI yet |

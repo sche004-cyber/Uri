@@ -293,6 +293,10 @@ class Orchestrator:
                                 lambda t, **d: sink.emit(turn.get("turn_id"), t, **d), turn.get("turn_id"), (), None)
 
     def decide(self, text, session_id, turn, approve: bool, sink: EventSink | None = None):
+        """Approval decision for a SINGLE (non-plan) Core turn. A turn that belongs to a task step must use
+        decide_step (durable EXECUTING before Core); this method refuses it instead of creating a bypass."""
+        if self._step_for_core_turn(turn.get("turn_id")) is not None:
+            raise LedgerError("PLAN_STEP_TURN_USE_DECIDE_STEP")
         sink = sink or EventSink()
         env = self.core.decide(text, session_id, self.brain_selection, turn, approve)
         emit = lambda t, **d: sink.emit(turn.get("turn_id"), t, **d)
@@ -375,7 +379,27 @@ class Orchestrator:
         env = self.core.begin(s["source_span"], task["session_id"], self.brain_selection)
         return self.record_step(task_id, s["step_id"], env, sink=sink)
 
+    def _step_for_core_turn(self, core_turn_id):
+        if not core_turn_id:
+            return None
+        for tid in self.ledger.list():
+            try:
+                task = self.ledger.get(tid)
+            except LedgerError:
+                continue
+            for s in task["steps"]:
+                if (s.get("core") or {}).get("turn_id") == core_turn_id:
+                    return tid, s["step_id"]
+        return None
+
     def confirm_step(self, task_id, step_id, turn, *, sink: EventSink | None = None):
+        """The user's explicit confirmation for a plan step. Claims IN_CORE first, so two concurrent confirmations
+        cannot both reach Core."""
+        try:
+            self.ledger.set_step(task_id, step_id, "IN_CORE", core={"turn_id": turn.get("turn_id"),
+                                                                   "state": "confirming", "code": None})
+        except LedgerError as exc:
+            return {"status": "not_claimed", "step_id": step_id, "reason": str(exc)}
         env = self.core.confirm(self.ledger.get(task_id)["session_id"], self.brain_selection, turn)
         return self.record_step(task_id, step_id, env, sink=sink)
 
@@ -401,6 +425,11 @@ class Orchestrator:
         if kind == "action" and state == "ANSWERED":
             # Core found nothing to act on. For an ACTION step that is not success: dependents must not run.
             state = "REFUSED"
+        current = self.ledger.step(self.ledger.get(task_id), step_id)["state"]
+        if current == "EXECUTING" and state not in ("VERIFIED", "FAILED", "UNCERTAIN", "WAITING_USER_CHOICE",
+                                                    "CANCELLED", "REFUSED"):
+            # After an approval only an outcome is acceptable. Anything else is not proof that nothing ran.
+            state = "UNCERTAIN"
         core = {"turn_id": env.get("turn_id"), "state": env.get("state"), "code": env.get("code")}
         self.ledger.set_step(task_id, step_id, state, core=core)
         sink.emit(task_id, "task.step", task_id=task_id, step_id=step_id, state=state, core_code=env.get("code"))
