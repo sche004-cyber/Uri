@@ -1,0 +1,16 @@
+{
+ "completed_at": "2026-10-06T21:16:00+05:30",
+ "session": "Claude session (second post-crash recovery), working tree C:/Users/cheta/.codex/worktrees/uri-phase1-integration/uri-agent",
+ "queue": {"manifest": "model_lab/evidence/uri_engine/queue_manifest.json", "summary": "model_lab/evidence/uri_engine/QUEUE_SUMMARY.md",
+           "done": 31, "blocked": ["uri_ngram_mod16", "ux_ngram_mod8"], "failed": 0, "interrupted_then_retried": ["ctx_prod_split"],
+           "deliberate_restarts": ["20:09 after ue_mtp3_16k (telemetry sampler replaced; ue_base16k_rep rerun)", "20:59 after freeze_end (third pass: ctx_prod_multi_ms512, ctx_ux_best2_split, stream_probe2)"]},
+ "end_state": {
+  "processes": "no llama-server.exe, no lab python; two idle PowerShell hosts belong to the Claude session",
+  "gpu": {"name": "AMD Radeon RX 7900 GRE", "status": "OK", "dedicated_mib": 1098, "note": "desktop idle level after the 18:18 reboot (was 458 MiB before it)"},
+  "ram_free_mb": 10462, "disk": {"C_free_gb": 145.4, "D_free_gb": 492.6},
+  "frozen_phase1": "freeze_check_recovery_final.json: checked 121, unexpected_differences 0, archive sha256 31a34dcb... matches (also start, start2, end checks all clean)",
+  "git": "git status --porcelain identical to end_git_status.txt (pre-research baseline); git diff byte-identical to baseline_git_diff.patch; uri_core/ entries unchanged (21 = baseline 21); model_lab/ remains untracked; nothing committed, pushed, merged or cut over"
+ },
+ "crash_classification": "both freezes CAUSE UNKNOWN (see crash_recovery_20261006.json and crash_recovery_20261006_second.json); no third event occurred during 2 h 40 min of resumed GPU runs with per-run telemetry",
+ "report": "model_lab/URI_ENGINE_STRATA_RESEARCH.md"
+}

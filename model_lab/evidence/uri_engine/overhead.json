@@ -1,0 +1,72 @@
+{
+ "extra": "-b 2048 -ub 1024 --cache-ram 1024",
+ "load_seconds": 6.22,
+ "trivial": {
+  "apply_template_ms": 1.7,
+  "prompt_chars": 179,
+  "tokenize_ms": 0.5,
+  "prompt_tokens": 38,
+  "plain": {
+   "wall_ms": 45.2,
+   "prompt_n": 4,
+   "cache_n": 34,
+   "prompt_ms": 42.647,
+   "predicted_ms": 0.001,
+   "unaccounted_ms": 2.6
+  },
+  "grammar": {
+   "wall_ms": 84.3,
+   "prompt_n": 4,
+   "cache_n": 34,
+   "prompt_ms": 78.304,
+   "predicted_ms": 0.001,
+   "unaccounted_ms": 6.0
+  },
+  "plain20": {
+   "wall_ms": 61.9,
+   "predicted_n": 2,
+   "predicted_ms": 13.567,
+   "ms_per_token": 6.78
+  },
+  "grammar20": {
+   "wall_ms": 1233.3,
+   "predicted_n": 40,
+   "predicted_ms": 1133.942,
+   "ms_per_token": 28.35
+  }
+ },
+ "decision": {
+  "apply_template_ms": 2.0,
+  "prompt_chars": 19295,
+  "tokenize_ms": 6.6,
+  "prompt_tokens": 4079,
+  "plain": {
+   "wall_ms": 53.8,
+   "prompt_n": 4,
+   "cache_n": 4075,
+   "prompt_ms": 45.338,
+   "predicted_ms": 0.001,
+   "unaccounted_ms": 8.5
+  },
+  "grammar": {
+   "wall_ms": 54.7,
+   "prompt_n": 4,
+   "cache_n": 4075,
+   "prompt_ms": 44.77,
+   "predicted_ms": 0.001,
+   "unaccounted_ms": 9.9
+  },
+  "plain20": {
+   "wall_ms": 454.7,
+   "predicted_n": 40,
+   "predicted_ms": 395.544,
+   "ms_per_token": 9.89
+  },
+  "grammar20": {
+   "wall_ms": 457.2,
+   "predicted_n": 40,
+   "predicted_ms": 398.567,
+   "ms_per_token": 9.96
+  }
+ }
+}

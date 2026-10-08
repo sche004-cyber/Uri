@@ -1,0 +1,29 @@
+{
+ "normal/R": {
+  "n": 12,
+  "score": 1.0,
+  "ttft_p50": 0.476,
+  "ttfa_p50": 7.796,
+  "total_p50": 8.249,
+  "total_p95": 10.315,
+  "gen_tps_p50": 105.4,
+  "prefill_tps_p50": 550.2,
+  "gen_tokens_p50": 818,
+  "errors": 0,
+  "truncated": 0
+ },
+ "normal/RH": {
+  "n": 8,
+  "score": 0.75,
+  "ttft_p50": 0.481,
+  "ttfa_p50": 7.771,
+  "total_p50": 14.533,
+  "total_p95": 39.035,
+  "gen_tps_p50": 105.4,
+  "prefill_tps_p50": 647.6,
+  "gen_tokens_p50": 1483,
+  "errors": 0,
+  "truncated": 0
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\ue_cand_normal\20261006-224319

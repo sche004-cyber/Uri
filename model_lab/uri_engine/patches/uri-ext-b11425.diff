@@ -1,0 +1,48 @@
+diff --git a/common/common.h b/common/common.h
+index e1ef70a..630f226 100644
+--- a/common/common.h
++++ b/common/common.h
+@@ -398,10 +398,23 @@ struct common_params_speculative {
+ 
+     uint32_t need_n_rs_seq() const {
+         bool needs_rs_seq = std::any_of(types.begin(), types.end(), [&](auto t) {
+-            return t == COMMON_SPECULATIVE_TYPE_DRAFT_MTP || t == COMMON_SPECULATIVE_TYPE_DRAFT_EAGLE3 || t == COMMON_SPECULATIVE_TYPE_DRAFT_DFLASH || t == COMMON_SPECULATIVE_TYPE_DRAFT_DSPARK;
++            return t == COMMON_SPECULATIVE_TYPE_DRAFT_MTP || t == COMMON_SPECULATIVE_TYPE_DRAFT_EAGLE3 || t == COMMON_SPECULATIVE_TYPE_DRAFT_DFLASH || t == COMMON_SPECULATIVE_TYPE_DRAFT_DSPARK
++                || t == COMMON_SPECULATIVE_TYPE_NGRAM_SIMPLE || t == COMMON_SPECULATIVE_TYPE_NGRAM_MAP_K || t == COMMON_SPECULATIVE_TYPE_NGRAM_MAP_K4V
++                || t == COMMON_SPECULATIVE_TYPE_NGRAM_MOD || t == COMMON_SPECULATIVE_TYPE_NGRAM_CACHE;
+         });
+ 
+-        return needs_rs_seq ? draft.n_max : 0u;
++        if (!needs_rs_seq) {
++            return 0u;
++        }
++        // URI research patch: n-gram drafters on recurrent/hybrid models roll back through the bounded
++        // recurrent snapshot ring instead of serializing the full state every round. The ring must cover
++        // the longest draft any enabled type can propose (the server clamps drafts to --spec-draft-n-max).
++        uint32_t n = draft.n_max;
++        n = std::max<uint32_t>(n, ngram_mod.n_max);
++        n = std::max<uint32_t>(n, ngram_simple.size_m);
++        n = std::max<uint32_t>(n, ngram_map_k.size_m);
++        n = std::max<uint32_t>(n, ngram_map_k4v.size_m);
++        return n;
+     }
+ };
+ 
+diff --git a/tools/server/server-context.cpp b/tools/server/server-context.cpp
+index 13be63a..2f2ede9 100644
+--- a/tools/server/server-context.cpp
++++ b/tools/server/server-context.cpp
+@@ -3874,7 +3874,12 @@ private:
+                     } else {
+                         // skip ordinary mid-prompt checkpoints, unless the batch starts a user
+                         // message or we are near the end of the prompt
+-                        if (!is_user_start && !near_prompt_end) {
++                        // URI research patch: a --checkpoint-min-step smaller than the ubatch asks for
++                        // mid-prompt checkpoints at batch granularity (min-step spacing still applies below),
++                        // so a prompt whose stable part extends past the last message boundary can be resumed
++                        // closer to the point where it diverges.
++                        const bool fine_ckpt = params_base.checkpoint_min_step > 0 && params_base.checkpoint_min_step < n_ubatch;
++                        if (!is_user_start && !near_prompt_end && !fine_ckpt) {
+                             do_checkpoint = false;
+                         }
+                     }

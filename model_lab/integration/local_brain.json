@@ -1,0 +1,111 @@
+{
+  "schema": "uri.local_brain.v1",
+  "decided": "2026-10-07",
+  "evidence": [
+    "model_lab/MODEL_QUALIFICATION_REPORT.md",
+    "model_lab/URI_ENGINE_STRATA_RESEARCH.md",
+    "model_lab/URI_RESIDENT_INTELLIGENCE_RUNTIME_V1_FREEZE.md"
+  ],
+  "model": {
+    "id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+    "revision": "a483e9e6cbd595906af30beda3187c2663a1118c",
+    "path": "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+    "sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+    "mmproj": "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+    "mmproj_sha256": "8971ee4f331ff0a4c609374f32984b3d4e6dc086c0aa35f1d637fad1829e887f",
+    "license": "Apache-2.0",
+    "mtp_draft": {
+      "path": "D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+      "sha256": "40ca608fee5134ae13921007bbf5549acd5da5577852975491453983ccc08768",
+      "origin": "convert_hf_to_gguf.py --mtp from the HF checkpoint shards 1/25/26"
+    }
+  },
+  "runtime": {
+    "engine": "llama.cpp b11425 (Vulkan, win x64)",
+    "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+    "binary_archive_sha256": "a3287ac487ab5d128aefddc507db31c087f2a41c6e03b01f37fbe0bc45e8717d",
+    "port": 18470,
+    "ctx": 32768,
+    "ngl": 999,
+    "cache_type": "q8_0",
+    "load_mode": "none",
+    "cache_ram_mib": 2048,
+    "vision_enabled": true,
+    "extra_args": [
+      "-b",
+      "2048",
+      "-ub",
+      "1024",
+      "--slot-prompt-similarity",
+      "0",
+      "--checkpoint-min-step",
+      "512",
+      "--ctx-checkpoints",
+      "16",
+      "-md",
+      "D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+      "--spec-type",
+      "draft-mtp",
+      "--spec-draft-n-max",
+      "2",
+      "-otd",
+      "token_embd.weight=CPU"
+    ],
+    "resident": true,
+    "binary_sha256": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+    "context_layout": "model_lab/uri_engine/CONTEXT_ARCHITECTURE_V1.md",
+    "http_client": "persistent keep-alive BrainClient (local_brain.py), reconnect once on transport error"
+  },
+  "tiers": {
+    "fast": {
+      "thinking": false,
+      "temperature": 0.0,
+      "use_for": [
+        "proposer",
+        "interpreter",
+        "route",
+        "conversation",
+        "formatting",
+        "short drafting",
+        "extraction",
+        "vision"
+      ]
+    },
+    "normal": {
+      "thinking": true,
+      "thinking_budget": 768,
+      "temperature": 0.0,
+      "use_for": [
+        "analysis",
+        "planning",
+        "hard reasoning",
+        "diagnosis"
+      ]
+    },
+    "deep": {
+      "thinking": "unbounded",
+      "use_for": [],
+      "status": "never (collapses contracts, loops)"
+    }
+  },
+  "never": [
+    "unbounded thinking",
+    "thinking on Core seams",
+    "silent fallback to another model"
+  ],
+  "escalate_to_harness": [
+    "multi-file code changes",
+    "running test suites",
+    "build/deploy",
+    "large document sets",
+    "deep multi-source research",
+    "normal tier ran out of budget (finish_reason=length)",
+    "task needs authenticated external tools"
+  ],
+  "frozen": {
+    "name": "URI Resident Intelligence Runtime v1",
+    "record": "model_lab/URI_RESIDENT_INTELLIGENCE_RUNTIME_V1_FREEZE.md",
+    "verdict": "A - STOCK"
+  }
+}

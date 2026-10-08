@@ -1,0 +1,16 @@
+0.00.079.602 I srv  llama_server: initializing ...
+0.00.079.611 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.079.735 I srv  init_listene: The UI is disabled
+0.00.079.737 I srv  init_listene: Use --ui/--no-ui (or deprecated --webui/--no-webui) to enable/disable
+0.00.079.826 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.092.453 I srv    load_model: loading model 'C:/uri-model-lab-nvme/models/Qwen3.6-35B-A3B-UD-IQ3_S.gguf'
+0.05.391.393 I cmn          init: llama threadpool init, n_threads = 12
+0.05.437.899 W load_hparams: Qwen-VL models require at minimum 1024 image tokens to function correctly on grounding tasks
+0.05.437.905 W load_hparams: if you encounter problems with accuracy, try adding --image-min-tokens 1024
+0.05.437.906 W load_hparams: more info: https://github.com/ggml-org/llama.cpp/issues/16842
+
+0.06.287.019 I srv    load_model: loaded multimodal model, 'C:/uri-model-lab-nvme/models/mmproj-F16.gguf'
+0.06.304.143 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'
+0.06.309.941 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+0.06.309.961 I srv  llama_server: model loaded
+0.06.309.964 I srv  llama_server: listening on http://127.0.0.1:18497

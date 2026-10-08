@@ -1,0 +1,1525 @@
+{
+ "parts": {
+  "layout": {
+   "ub1024": {
+    "extra": "-b 2048 -ub 1024 --cache-ram 0 --ctx-checkpoints 0",
+    "rows": [
+     {
+      "label": "ub1024_call0",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.0496,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.1021,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       },
+       {
+        "margin": 0.2907,
+        "index": 166,
+        "top1": " with",
+        "top2": ","
+       },
+       {
+        "margin": 0.365,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.6491,
+        "index": 176,
+        "top1": "),",
+        "top2": ")"
+       }
+      ]
+     },
+     {
+      "label": "ub1024_call1",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.0119,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.1754,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       },
+       {
+        "margin": 0.4164,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.535,
+        "index": 166,
+        "top1": " with",
+        "top2": " for"
+       },
+       {
+        "margin": 0.5519,
+        "index": 176,
+        "top1": "),",
+        "top2": ")"
+       }
+      ]
+     },
+     {
+      "label": "ub1024_call2",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.0122,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.1815,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       },
+       {
+        "margin": 0.411,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.5287,
+        "index": 166,
+        "top1": " with",
+        "top2": " for"
+       },
+       {
+        "margin": 0.546,
+        "index": 176,
+        "top1": "),",
+        "top2": ")"
+       }
+      ]
+     },
+     {
+      "label": "ub1024_after_dossier_call3",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.01,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.1445,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       },
+       {
+        "margin": 0.1685,
+        "index": 166,
+        "top1": " with",
+        "top2": " for"
+       },
+       {
+        "margin": 0.3155,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.5486,
+        "index": 176,
+        "top1": "),",
+        "top2": ")"
+       }
+      ]
+     },
+     {
+      "label": "ub1024_after_dossier_call4",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.0116,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.179,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       },
+       {
+        "margin": 0.4171,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.5433,
+        "index": 166,
+        "top1": " with",
+        "top2": " for"
+       },
+       {
+        "margin": 0.6419,
+        "index": 164,
+        "top1": " office",
+        "top2": " institutional"
+       }
+      ]
+     },
+     {
+      "label": "ub1024_after_dossier_call5",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.0122,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.1832,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       },
+       {
+        "margin": 0.4111,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.5282,
+        "index": 166,
+        "top1": " with",
+        "top2": " for"
+       },
+       {
+        "margin": 0.5466,
+        "index": 176,
+        "top1": "),",
+        "top2": ")"
+       }
+      ]
+     }
+    ],
+    "distinct": [
+     "6e3b63a840ae"
+    ],
+    "divergence_vs_first": {
+     "ub1024_call1": {
+      "token_index": null,
+      "len_a": 198,
+      "len_b": 198,
+      "note": "no token-level difference within the shorter output"
+     },
+     "ub1024_call2": {
+      "token_index": null,
+      "len_a": 198,
+      "len_b": 198,
+      "note": "no token-level difference within the shorter output"
+     },
+     "ub1024_after_dossier_call3": {
+      "token_index": null,
+      "len_a": 198,
+      "len_b": 198,
+      "note": "no token-level difference within the shorter output"
+     },
+     "ub1024_after_dossier_call4": {
+      "token_index": null,
+      "len_a": 198,
+      "len_b": 198,
+      "note": "no token-level difference within the shorter output"
+     },
+     "ub1024_after_dossier_call5": {
+      "token_index": null,
+      "len_a": 198,
+      "len_b": 198,
+      "note": "no token-level difference within the shorter output"
+     }
+    },
+    "resources": {
+     "load_seconds": 86.32,
+     "vram_dedicated_before_load_mib": 1154.0,
+     "vram_dedicated_now_mib": 15703.0,
+     "server_rss_now_mib": 766.5,
+     "system_available_ram_mib": 9456.6,
+     "peak_server_rss_mib": 920.3,
+     "peak_vram_dedicated_mib": 15716.8,
+     "min_system_available_ram_mib": 8707.1,
+     "mean_server_cpu_pct_of_machine": 0.8
+    },
+    "trace": [
+     "1.25.073.556 I srv    load_model: speculative decoding will use checkpoints",
+     "1.25.094.597 I srv    load_model: prompt cache is disabled - use `--cache-ram N` to enable it",
+     "1.25.094.606 I srv    load_model: context checkpoints disabled",
+     "1.26.311.973 I slot   operator(): id  0 | task 0 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.26.882.047 I slot   operator(): id  0 | task 5 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.26.882.048 I slot   operator(): id  0 | task 5 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.27.324.285 I slot   operator(): id  0 | task 5 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.31.176.773 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.954",
+     "1.31.177.304 I slot   operator(): id  0 | task 205 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.31.177.305 I slot   operator(): id  0 | task 205 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.31.567.809 I slot   operator(): id  0 | task 205 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.35.468.017 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.954",
+     "1.35.468.517 I slot   operator(): id  0 | task 405 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.35.468.519 I slot   operator(): id  0 | task 405 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.35.860.915 I slot   operator(): id  0 | task 405 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.39.675.266 I slot   operator(): id  0 | task 605 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.39.675.271 I slot   operator(): id  0 | task 605 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.40.069.027 I slot   operator(): id  0 | task 605 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.40.855.748 I slot   operator(): id  0 | task 605 | cached n_tokens = 4096, memory_seq_rm [4096, end)",
+     "1.43.043.860 I slot   operator(): id  0 | task 719 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.43.043.861 I slot   operator(): id  0 | task 719 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.43.441.963 I slot   operator(): id  0 | task 719 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.47.463.723 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.954",
+     "1.47.464.232 I slot   operator(): id  0 | task 919 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.47.464.233 I slot   operator(): id  0 | task 919 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.47.858.086 I slot   operator(): id  0 | task 919 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.51.813.595 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.954",
+     "1.51.814.174 I slot   operator(): id  0 | task 1119 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.51.814.175 I slot   operator(): id  0 | task 1119 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.52.209.077 I slot   operator(): id  0 | task 1119 | cached n_tokens = 2048, memory_seq_rm [2048, end)"
+    ]
+   },
+   "ub512": {
+    "extra": "-b 2048 -ub 512 --cache-ram 0 --ctx-checkpoints 0",
+    "rows": [
+     {
+      "label": "ub512_call0",
+      "text": "{\n  \"goal\": \"Draft an office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an institutional office order with specific details (appointee, role, date) that fit the 'draft_institutional_order' capability.\"\n}",
+      "sha": "56e91a5c63c0",
+      "finish": "stop",
+      "predicted_n": 192,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 192,
+      "smallest_margins": [
+       {
+        "margin": 0.0197,
+        "index": 176,
+        "top1": ")",
+        "top2": "),"
+       },
+       {
+        "margin": 0.0539,
+        "index": 9,
+        "top1": " office",
+        "top2": " institutional"
+       },
+       {
+        "margin": 0.0554,
+        "index": 178,
+        "top1": " fit",
+        "top2": " fully"
+       },
+       {
+        "margin": 0.0698,
+        "index": 78,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.1472,
+        "index": 166,
+        "top1": " with",
+        "top2": " for"
+       }
+      ]
+     },
+     {
+      "label": "ub512_call1",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.0433,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.3387,
+        "index": 166,
+        "top1": " with",
+        "top2": " for"
+       },
+       {
+        "margin": 0.3556,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       },
+       {
+        "margin": 0.3789,
+        "index": 176,
+        "top1": "),",
+        "top2": ")"
+       },
+       {
+        "margin": 0.3801,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       }
+      ]
+     },
+     {
+      "label": "ub512_call2",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.0434,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.128,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.2739,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       },
+       {
+        "margin": 0.3489,
+        "index": 166,
+        "top1": " with",
+        "top2": " for"
+       },
+       {
+        "margin": 0.3859,
+        "index": 176,
+        "top1": "),",
+        "top2": ")"
+       }
+      ]
+     }
+    ],
+    "distinct": [
+     "56e91a5c63c0",
+     "6e3b63a840ae"
+    ],
+    "divergence_vs_first": {
+     "ub512_call1": {
+      "token_index": 9,
+      "a": " office",
+      "b": " institutional",
+      "a_margin_top2": 0.0539,
+      "b_margin_top2": 0.0433,
+      "a_top": [
+       [
+        " office",
+        -0.6702054142951965
+       ],
+       [
+        " institutional",
+        -0.7241490483283997
+       ],
+       [
+        " official",
+        -6.46640682220459
+       ]
+      ],
+      "b_top": [
+       [
+        " institutional",
+        -0.675719678401947
+       ],
+       [
+        " office",
+        -0.7189992666244507
+       ],
+       [
+        " official",
+        -6.314769268035889
+       ]
+      ]
+     },
+     "ub512_call2": {
+      "token_index": 9,
+      "a": " office",
+      "b": " institutional",
+      "a_margin_top2": 0.0539,
+      "b_margin_top2": 0.0434,
+      "a_top": [
+       [
+        " office",
+        -0.6702054142951965
+       ],
+       [
+        " institutional",
+        -0.7241490483283997
+       ],
+       [
+        " official",
+        -6.46640682220459
+       ]
+      ],
+      "b_top": [
+       [
+        " institutional",
+        -0.6756379008293152
+       ],
+       [
+        " office",
+        -0.7190853357315063
+       ],
+       [
+        " official",
+        -6.314731121063232
+       ]
+      ]
+     }
+    },
+    "resources": {
+     "load_seconds": 83.7,
+     "vram_dedicated_before_load_mib": 1111.7,
+     "vram_dedicated_now_mib": 15593.6,
+     "server_rss_now_mib": 694.5,
+     "system_available_ram_mib": 9954.7,
+     "peak_server_rss_mib": 936.7,
+     "peak_vram_dedicated_mib": 15593.6,
+     "min_system_available_ram_mib": 9450.5,
+     "mean_server_cpu_pct_of_machine": 0.6
+    },
+    "trace": [
+     "1.23.210.298 I srv    load_model: speculative decoding will use checkpoints",
+     "1.23.235.672 I srv    load_model: prompt cache is disabled - use `--cache-ram N` to enable it",
+     "1.23.235.998 I srv    load_model: context checkpoints disabled",
+     "1.24.003.450 I slot   operator(): id  0 | task 0 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.24.606.951 I slot   operator(): id  0 | task 5 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.24.606.952 I slot   operator(): id  0 | task 5 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.25.341.923 I slot   operator(): id  0 | task 5 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.29.168.602 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.955",
+     "1.29.169.119 I slot   operator(): id  0 | task 199 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.29.169.120 I slot   operator(): id  0 | task 199 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.29.842.957 I slot   operator(): id  0 | task 199 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.33.783.633 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.954",
+     "1.33.784.149 I slot   operator(): id  0 | task 399 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.33.784.150 I slot   operator(): id  0 | task 399 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.34.460.065 I slot   operator(): id  0 | task 399 | cached n_tokens = 2048, memory_seq_rm [2048, end)"
+    ]
+   },
+   "ub256": {
+    "extra": "-b 2048 -ub 256 --cache-ram 0 --ctx-checkpoints 0",
+    "rows": [
+     {
+      "label": "ub256_call0",
+      "text": "{\n  \"goal\": \"Draft an institutional office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an office order with specific details (appointee, role, date), which matches the 'draft_institutional_order' capability summary and requires exactly one action.\"\n}",
+      "sha": "6e3b63a840ae",
+      "finish": "stop",
+      "predicted_n": 198,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 198,
+      "smallest_margins": [
+       {
+        "margin": 0.1038,
+        "index": 166,
+        "top1": " with",
+        "top2": ","
+       },
+       {
+        "margin": 0.1086,
+        "index": 9,
+        "top1": " institutional",
+        "top2": " office"
+       },
+       {
+        "margin": 0.2825,
+        "index": 79,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.3465,
+        "index": 176,
+        "top1": "),",
+        "top2": ")"
+       },
+       {
+        "margin": 0.4331,
+        "index": 178,
+        "top1": " matches",
+        "top2": " maps"
+       }
+      ]
+     },
+     {
+      "label": "ub256_call1",
+      "text": "{\n  \"goal\": \"Draft an office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an institutional office order with specific details (appointee, role, date) that fully satisfy the capability's requirements.\"\n}",
+      "sha": "24d00b247413",
+      "finish": "stop",
+      "predicted_n": 188,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 188,
+      "smallest_margins": [
+       {
+        "margin": 0.104,
+        "index": 176,
+        "top1": ")",
+        "top2": "),"
+       },
+       {
+        "margin": 0.1662,
+        "index": 78,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.2463,
+        "index": 178,
+        "top1": " fully",
+        "top2": " fit"
+       },
+       {
+        "margin": 0.2508,
+        "index": 9,
+        "top1": " office",
+        "top2": " institutional"
+       },
+       {
+        "margin": 0.321,
+        "index": 166,
+        "top1": " with",
+        "top2": ","
+       }
+      ]
+     },
+     {
+      "label": "ub256_call2",
+      "text": "{\n  \"goal\": \"Draft an office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an institutional office order with specific details (appointee, role, date) that fully satisfy the capability's requirements.\"\n}",
+      "sha": "24d00b247413",
+      "finish": "stop",
+      "predicted_n": 188,
+      "prompt_n": 4079,
+      "cache_n": 0,
+      "n_logprob_tokens": 188,
+      "smallest_margins": [
+       {
+        "margin": 0.1344,
+        "index": 176,
+        "top1": ")",
+        "top2": "),"
+       },
+       {
+        "margin": 0.1767,
+        "index": 78,
+        "top1": "appointment",
+        "top2": "appoint"
+       },
+       {
+        "margin": 0.2479,
+        "index": 9,
+        "top1": " office",
+        "top2": " institutional"
+       },
+       {
+        "margin": 0.2755,
+        "index": 166,
+        "top1": " with",
+        "top2": ","
+       },
+       {
+        "margin": 0.4299,
+        "index": 178,
+        "top1": " fully",
+        "top2": " fit"
+       }
+      ]
+     }
+    ],
+    "distinct": [
+     "24d00b247413",
+     "6e3b63a840ae"
+    ],
+    "divergence_vs_first": {
+     "ub256_call1": {
+      "token_index": 9,
+      "a": " institutional",
+      "b": " office",
+      "a_margin_top2": 0.1086,
+      "b_margin_top2": 0.2508,
+      "a_top": [
+       [
+        " institutional",
+        -0.6445901989936829
+       ],
+       [
+        " office",
+        -0.7532021999359131
+       ],
+       [
+        " appointment",
+        -6.3001627922058105
+       ]
+      ],
+      "b_top": [
+       [
+        " office",
+        -0.5797666311264038
+       ],
+       [
+        " institutional",
+        -0.830535352230072
+       ],
+       [
+        " appointment",
+        -6.166202068328857
+       ]
+      ]
+     },
+     "ub256_call2": {
+      "token_index": 9,
+      "a": " institutional",
+      "b": " office",
+      "a_margin_top2": 0.1086,
+      "b_margin_top2": 0.2479,
+      "a_top": [
+       [
+        " institutional",
+        -0.6445901989936829
+       ],
+       [
+        " office",
+        -0.7532021999359131
+       ],
+       [
+        " appointment",
+        -6.3001627922058105
+       ]
+      ],
+      "b_top": [
+       [
+        " office",
+        -0.5810142755508423
+       ],
+       [
+        " institutional",
+        -0.8289390802383423
+       ],
+       [
+        " appointment",
+        -6.164903163909912
+       ]
+      ]
+     }
+    },
+    "resources": {
+     "load_seconds": 84.26,
+     "vram_dedicated_before_load_mib": 1098.0,
+     "vram_dedicated_now_mib": 15519.9,
+     "server_rss_now_mib": 670.1,
+     "system_available_ram_mib": 10037.4,
+     "peak_server_rss_mib": 933.6,
+     "peak_vram_dedicated_mib": 15533.6,
+     "min_system_available_ram_mib": 9687.0,
+     "mean_server_cpu_pct_of_machine": 0.7
+    },
+    "trace": [
+     "1.23.326.558 I srv    load_model: speculative decoding will use checkpoints",
+     "1.23.346.085 I srv    load_model: prompt cache is disabled - use `--cache-ram N` to enable it",
+     "1.23.346.094 I srv    load_model: context checkpoints disabled",
+     "1.24.544.352 I slot   operator(): id  0 | task 0 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.25.128.394 I slot   operator(): id  0 | task 5 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.25.128.396 I slot   operator(): id  0 | task 5 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.26.200.470 I slot   operator(): id  0 | task 5 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.30.428.149 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.954",
+     "1.30.428.988 I slot   operator(): id  0 | task 205 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.30.428.990 I slot   operator(): id  0 | task 205 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.31.464.712 I slot   operator(): id  0 | task 205 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+     "1.35.569.504 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.956",
+     "1.35.570.352 I slot   operator(): id  0 | task 395 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+     "1.35.570.354 I slot   operator(): id  0 | task 395 | cached n_tokens = 0, memory_seq_rm [0, end)",
+     "1.36.602.899 I slot   operator(): id  0 | task 395 | cached n_tokens = 2048, memory_seq_rm [2048, end)"
+    ]
+   }
+  },
+  "layout_summary": {
+   "ub1024": {
+    "sha": "6e3b63a840ae",
+    "predicted_n": 198
+   },
+   "ub512": {
+    "sha": "56e91a5c63c0",
+    "predicted_n": 192
+   },
+   "ub256": {
+    "sha": "6e3b63a840ae",
+    "predicted_n": 198
+   }
+  },
+  "replay": {
+   "extra": "-b 2048 -ub 1024 --cache-ram 1024",
+   "order": [
+    "office_draft_rep0",
+    "rewrite_circular_rep0",
+    "code_patch_rep0",
+    "extract_record_rep0",
+    "decision_contract_rep0",
+    "conversational_rep0",
+    "dossier_answer_rep0",
+    "quote_back_rep0",
+    "office_draft_rep1",
+    "rewrite_circular_rep1",
+    "code_patch_rep1",
+    "extract_record_rep1",
+    "decision_contract_rep1",
+    "conversational_rep1",
+    "dossier_answer_rep1",
+    "quote_back_rep1"
+   ],
+   "rows": [
+    {
+     "label": "office_draft_rep0",
+     "text": "**OFFICE NOTE**\n\n**To:** All Heads of Departments\n**From:** The Registrar\n**Subject:** Diwali Holiday Closure\n\nThis is to inform all Heads of Departments that the Institute will remain closed on 8 November 2026 in observance of the Diwali holiday.\n\nConsequently, all official work and administrative activities will be suspended on this date. Regular academic classes and institutional operations are scheduled to resume on 9 November 2026.\n\nAll HODs are requested to ensure that necessary arrangements are made to secure the premises and address any urgent matters prior to the closure. Please disseminate this information to your respective faculty and staff members to ensure a smooth workflow upon resumption.\n\nThank you for your cooperation.\n\n**Registrar**",
+     "sha": "62ca016e9c8f",
+     "finish": "stop",
+     "predicted_n": 158,
+     "prompt_n": 121,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "rewrite_circular_rep0",
+     "text": "Office of the Dean (Academics)\nCircular No. ACAD/2026/117                                             4 October 2026\nSubject: Revision of the mid-semester examination timetable\nAll Heads of Departments are informed that the mid-semester examinations scheduled from 13 October 2026\nwill now commence on 19 October 2026 owing to the state holiday on 14 October. The revised timetable is\nattached. Departments shall display it on their notice boards and inform students through the portal\nby 9 October 2026. Invigilation duty rosters already circulated remain valid with dates shifted by\nthree days. Queries may be addressed to the Examination Section (ext. 2210).\nSd/- Dean (Academics)",
+     "sha": "093aef58f1fe",
+     "finish": "stop",
+     "predicted_n": 171,
+     "prompt_n": 227,
+     "cache_n": 54,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "code_patch_rep0",
+     "text": "```python\ndef allocate_rooms(students, rooms):\n    \"\"\"Assign students to rooms in order; returns dict room -> list of roll numbers.\"\"\"\n    out = {}\n    i = 0\n    for room in rooms:\n        out[room[\"id\"]] = []\n        for _ in range(room[\"capacity\"]):\n            if i >= len(students):\n                break\n            if students[i][\"roll\"] is None:\n                i += 1\n                continue\n            out[room[\"id\"]].append(students[i][\"roll\"])\n            i += 1\n    if i < len(students):\n        raise ValueError(\"not enough capacity\")\n    return out\n\n\ndef summarize(allocation):\n    lines = []\n    for room, rolls in allocation.items():\n        lines.append(f\"{room}: {len(rolls)} students\")\n    return \"\\n\".join(lines)\n```",
+     "sha": "8cdd616acbaf",
+     "finish": "stop",
+     "predicted_n": 193,
+     "prompt_n": 235,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "extract_record_rep0",
+     "text": "{\n  \"name\": \"Tenzin Lhamu Bhutia\",\n  \"roll_number\": \"B250412CS\",\n  \"programme\": \"B.Tech Computer Science\",\n  \"date_of_birth\": \"2007-03-14\",\n  \"hostel_block\": \"Kanchenjunga Block\",\n  \"room\": \"214\",\n  \"guardian_name\": \"Mr. Sonam Bhutia\",\n  \"fee_paid_inr\": 42000,\n  \"fee_date\": \"2026-07-11\",\n  \"receipt_no\": \"7781\",\n  \"scholarship_status\": \"State merit (pending verification)\"\n}",
+     "sha": "da79a53410f7",
+     "finish": "stop",
+     "predicted_n": 167,
+     "prompt_n": 252,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "decision_contract_rep0",
+     "text": "{\n  \"goal\": \"Draft an office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an institutional office order with specific details (appointee, role, date) that fully satisfy the capability's requirements.\"\n}",
+     "sha": "24d00b247413",
+     "finish": "stop",
+     "predicted_n": 188,
+     "prompt_n": 4079,
+     "cache_n": 0,
+     "n_logprob_tokens": 188,
+     "smallest_margins": [
+      {
+       "margin": 0.0862,
+       "index": 176,
+       "top1": ")",
+       "top2": "),"
+      },
+      {
+       "margin": 0.272,
+       "index": 9,
+       "top1": " office",
+       "top2": " institutional"
+      },
+      {
+       "margin": 0.4472,
+       "index": 78,
+       "top1": "appointment",
+       "top2": "appoint"
+      },
+      {
+       "margin": 0.4991,
+       "index": 164,
+       "top1": " office",
+       "top2": " order"
+      },
+      {
+       "margin": 0.5305,
+       "index": 163,
+       "top1": " institutional",
+       "top2": " office"
+      }
+     ]
+    },
+    {
+     "label": "conversational_rep0",
+     "text": "First, the convener must conduct a thorough self-assessment to ensure all departmental records, including course files and student assessments, are complete and compliant with university standards. Next, they should organize these documents systematically, creating a clear index that allows auditors to locate evidence of academic quality and administrative efficiency quickly. It is also crucial to prepare a concise presentation highlighting recent achievements, ongoing challenges, and strategic plans for the department’s future development. Finally, the convener should brief faculty members on their specific roles during the visit to ensure a coordinated and professional response to any auditor inquiries.",
+     "sha": "8f9ef3f1b98a",
+     "finish": "stop",
+     "predicted_n": 117,
+     "prompt_n": 50,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "dossier_answer_rep0",
+     "text": "{\n  \"convocation_date\": \"2026-12-21\",\n  \"second_registrar_circular_topic\": \"submission of hostel occupancy data by wardens\",\n  \"hostel_change_students\": [\n    \"Tenzin Bhutia\",\n    \"Kavya Menon\",\n    \"Farhan Khan\"\n  ],\n  \"notes\": \"The convocation date was corrected to 21 December 2026, and three students requested hostel changes.\"\n}",
+     "sha": "7d8a505f99a8",
+     "finish": "stop",
+     "predicted_n": 111,
+     "prompt_n": 4658,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "quote_back_rep0",
+     "text": "Office of the Dean (Academics)\nCircular No. ACAD/2026/117                                             4 October 2026\nSubject: Revision of the mid-semester examination timetable\nAll Heads of Departments are informed that the mid-semester examinations scheduled from 13 October 2026\nwill now commence on 16 October 2026 owing to the state holiday on 14 October. The revised timetable is\nattached. Departments shall display it on their notice boards and inform students through the portal\nby 7 October 2026. Invigilation duty rosters already circulated remain valid with dates shifted by\nthree days. Queries may be addressed to the Examination Section (ext. 2210).\nSd/- Dean (Academics)\n\nAcknowledged.",
+     "sha": "39ee099d3a59",
+     "finish": "stop",
+     "predicted_n": 175,
+     "prompt_n": 218,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "office_draft_rep1",
+     "text": "**OFFICE NOTE**\n\n**To:** All Heads of Departments\n**From:** The Registrar\n**Subject:** Diwali Holiday Closure\n\nThis is to inform all Heads of Departments that the Institute will remain closed on 8 November 2026 in observance of the Diwali holiday.\n\nConsequently, all official work and administrative activities will be suspended on this date. Regular academic classes and institutional operations are scheduled to resume on 9 November 2026.\n\nAll HODs are requested to ensure that necessary arrangements are made regarding security and maintenance during the closure period. Staff members are advised to plan their schedules accordingly.\n\nPlease disseminate this information to all concerned faculty and non-teaching staff under your jurisdiction.\n\n**Registrar**",
+     "sha": "c3864131c38e",
+     "finish": "stop",
+     "predicted_n": 154,
+     "prompt_n": 121,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "rewrite_circular_rep1",
+     "text": "Office of the Dean (Academics)\nCircular No. ACAD/2026/117                                             4 October 2026\nSubject: Revision of the mid-semester examination timetable\nAll Heads of Departments are informed that the mid-semester examinations scheduled from 13 October 2026\nwill now commence on 19 October 2026 owing to the state holiday on 14 October. The revised timetable is\nattached. Departments shall display it on their notice boards and inform students through the portal\nby 9 October 2026. Invigilation duty rosters already circulated remain valid with dates shifted by\nthree days. Queries may be addressed to the Examination Section (ext. 2210).\nSd/- Dean (Academics)",
+     "sha": "093aef58f1fe",
+     "finish": "stop",
+     "predicted_n": 171,
+     "prompt_n": 227,
+     "cache_n": 54,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "code_patch_rep1",
+     "text": "```python\ndef allocate_rooms(students, rooms):\n    \"\"\"Assign students to rooms in order; returns dict room -> list of roll numbers.\"\"\"\n    out = {}\n    i = 0\n    for room in rooms:\n        out[room[\"id\"]] = []\n        for _ in range(room[\"capacity\"]):\n            if i >= len(students):\n                break\n            if students[i][\"roll\"] is None:\n                i += 1\n                continue\n            out[room[\"id\"]].append(students[i][\"roll\"])\n            i += 1\n    if i < len(students):\n        raise ValueError(\"not enough capacity\")\n    return out\n\n\ndef summarize(allocation):\n    lines = []\n    for room, rolls in allocation.items():\n        lines.append(f\"{room}: {len(rolls)} students\")\n    return \"\\n\".join(lines)\n```",
+     "sha": "8cdd616acbaf",
+     "finish": "stop",
+     "predicted_n": 193,
+     "prompt_n": 235,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "extract_record_rep1",
+     "text": "{\n  \"name\": \"Tenzin Lhamu Bhutia\",\n  \"roll_number\": \"B250412CS\",\n  \"programme\": \"B.Tech Computer Science\",\n  \"date_of_birth\": \"2007-03-14\",\n  \"hostel_block\": \"Kanchenjunga Block\",\n  \"room\": \"214\",\n  \"guardian_name\": \"Mr. Sonam Bhutia\",\n  \"fee_paid_inr\": 42000,\n  \"fee_date\": \"2026-07-11\",\n  \"receipt_no\": \"7781\",\n  \"scholarship_status\": \"State merit (pending verification)\"\n}",
+     "sha": "da79a53410f7",
+     "finish": "stop",
+     "predicted_n": 167,
+     "prompt_n": 252,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "decision_contract_rep1",
+     "text": "{\n  \"goal\": \"Draft an office order appointing Dr. Rao as warden from 1 November.\",\n  \"mode\": \"single_action\",\n  \"capability\": \"draft_institutional_order\",\n  \"actions\": [\n    {\n      \"name\": \"draft_institutional_order\",\n      \"inputs\": {\n        \"purpose\": \"appointment\",\n        \"appointee\": \"Dr. Rao\",\n        \"role\": \"warden\",\n        \"start_date\": \"1 November\"\n      }\n    }\n  ],\n  \"clarification\": null,\n  \"unsupported_reason\": null,\n  \"requires_approval\": false,\n  \"confidence\": \"high\",\n  \"reason\": \"The user explicitly requests drafting an institutional office order with specific details (appointee, role, date) that fit the 'draft_institutional_order' capability.\"\n}",
+     "sha": "56e91a5c63c0",
+     "finish": "stop",
+     "predicted_n": 192,
+     "prompt_n": 4079,
+     "cache_n": 0,
+     "n_logprob_tokens": 192,
+     "smallest_margins": [
+      {
+       "margin": 0.0019,
+       "index": 178,
+       "top1": " fit",
+       "top2": " fully"
+      },
+      {
+       "margin": 0.0614,
+       "index": 9,
+       "top1": " office",
+       "top2": " institutional"
+      },
+      {
+       "margin": 0.08,
+       "index": 176,
+       "top1": ")",
+       "top2": "),"
+      },
+      {
+       "margin": 0.2636,
+       "index": 78,
+       "top1": "appointment",
+       "top2": "appoint"
+      },
+      {
+       "margin": 0.2692,
+       "index": 188,
+       "top1": ".\"",
+       "top2": " perfectly"
+      }
+     ]
+    },
+    {
+     "label": "conversational_rep1",
+     "text": "First, the convener must conduct a thorough self-assessment to ensure all departmental records, including course files and student assessments, are complete and compliant with university standards. Next, they should organize these documents systematically, creating a clear index that allows auditors to locate evidence of academic quality and administrative efficiency quickly. It is also crucial to prepare a concise presentation highlighting recent achievements, ongoing challenges, and strategic plans for the department’s future development. Finally, the convener should brief faculty members on their specific roles during the visit to ensure a coordinated and professional response to any auditor inquiries.",
+     "sha": "8f9ef3f1b98a",
+     "finish": "stop",
+     "predicted_n": 117,
+     "prompt_n": 50,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "dossier_answer_rep1",
+     "text": "{\n  \"convocation_date\": \"2026-12-21\",\n  \"second_registrar_circular_topic\": \"submission of hostel occupancy data by wardens\",\n  \"hostel_change_students\": [\n    \"Tenzin Bhutia\",\n    \"Kavya Menon\",\n    \"Farhan Khan\"\n  ],\n  \"notes\": \"The convocation date was corrected to 21 December 2026, and three students requested hostel changes.\"\n}",
+     "sha": "7d8a505f99a8",
+     "finish": "stop",
+     "predicted_n": 111,
+     "prompt_n": 4658,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    },
+    {
+     "label": "quote_back_rep1",
+     "text": "Office of the Dean (Academics)\nCircular No. ACAD/2026/117                                             4 October 2026\nSubject: Revision of the mid-semester examination timetable\nAll Heads of Departments are informed that the mid-semester examinations scheduled from 13 October 2026\nwill now commence on 16 October 2026 owing to the state holiday on 14 October. The revised timetable is\nattached. Departments shall display it on their notice boards and inform students through the portal\nby 7 October 2026. Invigilation duty rosters already circulated remain valid with dates shifted by\nthree days. Queries may be addressed to the Examination Section (ext. 2210).\nSd/- Dean (Academics)\n\nAcknowledged.",
+     "sha": "39ee099d3a59",
+     "finish": "stop",
+     "predicted_n": 175,
+     "prompt_n": 218,
+     "cache_n": 0,
+     "n_logprob_tokens": 0,
+     "smallest_margins": []
+    }
+   ],
+   "decision_contract": {
+    "decision_contract_rep0": {
+     "sha": "24d00b247413",
+     "predicted_n": 188,
+     "cache_n": 0,
+     "prompt_n": 4079
+    },
+    "decision_contract_rep1": {
+     "sha": "56e91a5c63c0",
+     "predicted_n": 192,
+     "cache_n": 0,
+     "prompt_n": 4079
+    }
+   },
+   "divergence_rep0_vs_rep1": {
+    "token_index": 178,
+    "a": " fully",
+    "b": " fit",
+    "a_margin_top2": 0.5636,
+    "b_margin_top2": 0.0019,
+    "a_top": [
+     [
+      " fully",
+      -0.9011475443840027
+     ],
+     [
+      " fit",
+      -1.4647098779678345
+     ],
+     [
+      " match",
+      -2.034045934677124
+     ]
+    ],
+    "b_top": [
+     [
+      " fit",
+      -1.1951055526733398
+     ],
+     [
+      " fully",
+      -1.197011113166809
+     ],
+     [
+      " match",
+      -1.7855674028396606
+     ]
+    ]
+   },
+   "resources": {
+    "load_seconds": 83.73,
+    "vram_dedicated_before_load_mib": 1111.7,
+    "vram_dedicated_now_mib": 15705.0,
+    "server_rss_now_mib": 1876.2,
+    "system_available_ram_mib": 9001.4,
+    "peak_server_rss_mib": 1919.1,
+    "peak_vram_dedicated_mib": 15718.8,
+    "min_system_available_ram_mib": 8960.3,
+    "mean_server_cpu_pct_of_machine": 1.0
+   },
+   "trace": [
+    "1.23.358.557 I srv    load_model: speculative decoding will use checkpoints",
+    "1.23.385.518 I srv    load_model: prompt cache is enabled, size limit: 1024 MiB",
+    "1.23.385.522 I srv    load_model: use `--cache-ram 0` to disable the prompt cache",
+    "1.23.385.523 I srv    load_model: context checkpoints enabled, max = 32, min spacing = 8192",
+    "1.23.398.461 I srv          init: idle slots will be saved to prompt cache upon starting a new task",
+    "1.24.041.740 I srv  get_availabl: updating prompt cache",
+    "1.24.041.995 I srv          load:  - looking for better prompt, base f_keep = -1.000, f_sim = 0.000",
+    "1.24.042.005 I srv  get_availabl: prompt cache update took 0.26 ms",
+    "1.24.042.111 I slot   operator(): id  0 | task 0 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.24.115.766 I slot   operator(): id  0 | task 0 | cached n_tokens = 9, memory_seq_rm [9, end)",
+    "1.24.189.096 I slot create_check: id  0 | task 0 | created context checkpoint 1 of 32 (pos_min = 8, pos_max = 8, n_tokens = 9, size = 62.813 MiB)",
+    "1.24.637.235 I srv  get_availabl: updating prompt cache",
+    "1.24.689.187 I srv          load:  - looking for better prompt, base f_keep = 0.062, f_sim = 0.008",
+    "1.24.689.195 I srv          load:    - prompt with length      16, lcp =       1, f_keep = 0.062, f_sim = 0.008",
+    "1.24.689.200 I srv        update:    - prompt 000001C7291639F0:      16 tokens, checkpoints:  1,   125.793 MiB",
+    "1.24.689.201 I srv  get_availabl: prompt cache update took 51.97 ms",
+    "1.24.689.579 I slot   operator(): id  0 | task 6 | checking checkpoint with [8, 8] against 1...",
+    "1.24.689.581 I slot   operator(): id  0 | task 6 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.24.689.583 I slot   operator(): id  0 | task 6 | erased invalidated context checkpoint (pos_min = 8, pos_max = 8, n_tokens = 9, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.24.694.869 I slot   operator(): id  0 | task 6 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.24.756.428 I slot   operator(): id  0 | task 6 | cached n_tokens = 54, memory_seq_rm [54, end)",
+    "1.24.814.524 I slot create_check: id  0 | task 6 | created context checkpoint 1 of 32 (pos_min = 53, pos_max = 53, n_tokens = 54, size = 62.813 MiB)",
+    "1.24.837.125 I slot   operator(): id  0 | task 6 | cached n_tokens = 117, memory_seq_rm [117, end)",
+    "1.24.915.248 I slot create_check: id  0 | task 6 | created context checkpoint 2 of 32 (pos_min = 116, pos_max = 116, n_tokens = 117, size = 62.813 MiB)",
+    "1.26.802.188 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.203 (> 0.100 thold), f_keep = 0.205",
+    "1.26.802.189 I srv  get_availabl: updating prompt cache",
+    "1.26.873.925 I srv          load:  - looking for better prompt, base f_keep = 0.205, f_sim = 0.203",
+    "1.26.873.936 I srv          load:    - prompt with length      16, lcp =       1, f_keep = 0.062, f_sim = 0.004",
+    "1.26.873.938 I srv          load:    - prompt with length     278, lcp =      57, f_keep = 0.205, f_sim = 0.203",
+    "1.26.873.943 I srv        update:    - prompt 000001C7291639F0:      16 tokens, checkpoints:  1,   125.793 MiB",
+    "1.26.873.945 I srv        update:    - prompt 000001C787FC7110:     278 tokens, checkpoints:  2,   191.331 MiB",
+    "1.26.873.946 I srv  get_availabl: prompt cache update took 71.76 ms",
+    "1.26.874.335 I slot   operator(): id  0 | task 167 | checking checkpoint with [116, 116] against 57...",
+    "1.26.874.336 I slot   operator(): id  0 | task 167 | checking checkpoint with [53, 53] against 57...",
+    "1.26.880.309 I slot   operator(): id  0 | task 167 | restored context checkpoint (pos_min = 53, pos_max = 53, n_tokens = 54, n_past = 54, size = 62.813 MiB)",
+    "1.26.880.318 I slot   operator(): id  0 | task 167 | erased invalidated context checkpoint (pos_min = 116, pos_max = 116, n_tokens = 117, n_swa = 0, pos_next = 54, size = 62.813 MiB)",
+    "1.26.885.384 I slot   operator(): id  0 | task 167 | cached n_tokens = 54, memory_seq_rm [54, end)",
+    "1.26.885.470 I slot create_check: id  0 | task 167 | superseding context checkpoint at n_tokens = 54",
+    "1.26.920.236 I slot create_check: id  0 | task 167 | created context checkpoint 1 of 32 (pos_min = 53, pos_max = 53, n_tokens = 54, size = 62.813 MiB)",
+    "1.26.971.599 I slot   operator(): id  0 | task 167 | cached n_tokens = 277, memory_seq_rm [277, end)",
+    "1.27.081.274 I slot create_check: id  0 | task 167 | created context checkpoint 2 of 32 (pos_min = 276, pos_max = 276, n_tokens = 277, size = 62.813 MiB)",
+    "1.29.106.762 I srv  get_availabl: updating prompt cache",
+    "1.29.178.480 I srv          load:  - looking for better prompt, base f_keep = 0.013, f_sim = 0.026",
+    "1.29.178.489 I srv          load:    - prompt with length      16, lcp =       1, f_keep = 0.062, f_sim = 0.004",
+    "1.29.178.491 I srv          load:    - prompt with length     278, lcp =       6, f_keep = 0.022, f_sim = 0.026",
+    "1.29.178.493 I srv          load:    - prompt with length     451, lcp =       6, f_keep = 0.013, f_sim = 0.026",
+    "1.29.178.498 I srv        update:    - prompt 000001C7291639F0:      16 tokens, checkpoints:  1,   125.793 MiB",
+    "1.29.178.499 I srv        update:    - prompt 000001C787FC7110:     278 tokens, checkpoints:  2,   191.331 MiB",
+    "1.29.178.501 I srv        update:    - prompt 000001C36E674110:     451 tokens, checkpoints:  2,   193.130 MiB",
+    "1.29.178.502 I srv  get_availabl: prompt cache update took 71.74 ms",
+    "1.29.178.897 I slot   operator(): id  0 | task 340 | checking checkpoint with [276, 276] against 6...",
+    "1.29.178.898 I slot   operator(): id  0 | task 340 | checking checkpoint with [53, 53] against 6...",
+    "1.29.178.900 I slot   operator(): id  0 | task 340 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.29.178.903 I slot   operator(): id  0 | task 340 | erased invalidated context checkpoint (pos_min = 53, pos_max = 53, n_tokens = 54, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.29.182.718 I slot   operator(): id  0 | task 340 | erased invalidated context checkpoint (pos_min = 276, pos_max = 276, n_tokens = 277, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.29.186.238 I slot   operator(): id  0 | task 340 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.29.195.332 I slot   operator(): id  0 | task 340 | cached n_tokens = 19, memory_seq_rm [19, end)",
+    "1.29.271.308 I slot create_check: id  0 | task 340 | created context checkpoint 1 of 32 (pos_min = 18, pos_max = 18, n_tokens = 19, size = 62.813 MiB)",
+    "1.29.286.171 I slot   operator(): id  0 | task 340 | cached n_tokens = 231, memory_seq_rm [231, end)",
+    "1.29.427.362 I slot create_check: id  0 | task 340 | created context checkpoint 2 of 32 (pos_min = 230, pos_max = 230, n_tokens = 231, size = 62.813 MiB)",
+    "1.31.630.675 I srv  get_availabl: updating prompt cache",
+    "1.31.696.816 I srv          load:  - looking for better prompt, base f_keep = 0.007, f_sim = 0.012",
+    "1.31.696.825 I srv          load:    - prompt with length      16, lcp =       1, f_keep = 0.062, f_sim = 0.004",
+    "1.31.696.827 I srv          load:    - prompt with length     278, lcp =       3, f_keep = 0.011, f_sim = 0.012",
+    "1.31.696.829 I srv          load:    - prompt with length     451, lcp =       3, f_keep = 0.007, f_sim = 0.012",
+    "1.31.696.831 I srv          load:    - prompt with length     427, lcp =       3, f_keep = 0.007, f_sim = 0.012",
+    "1.31.696.838 I srv        update:    - prompt 000001C7291639F0:      16 tokens, checkpoints:  1,   125.793 MiB",
+    "1.31.696.839 I srv        update:    - prompt 000001C787FC7110:     278 tokens, checkpoints:  2,   191.331 MiB",
+    "1.31.696.840 I srv        update:    - prompt 000001C36E674110:     451 tokens, checkpoints:  2,   193.130 MiB",
+    "1.31.696.841 I srv        update:    - prompt 000001C36E6755E0:     427 tokens, checkpoints:  2,   192.880 MiB",
+    "1.31.696.844 I srv  get_availabl: prompt cache update took 66.17 ms",
+    "1.31.697.218 I slot   operator(): id  0 | task 536 | checking checkpoint with [230, 230] against 3...",
+    "1.31.697.219 I slot   operator(): id  0 | task 536 | checking checkpoint with [18, 18] against 3...",
+    "1.31.697.221 I slot   operator(): id  0 | task 536 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.31.697.223 I slot   operator(): id  0 | task 536 | erased invalidated context checkpoint (pos_min = 18, pos_max = 18, n_tokens = 19, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.31.701.950 I slot   operator(): id  0 | task 536 | erased invalidated context checkpoint (pos_min = 230, pos_max = 230, n_tokens = 231, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.31.706.539 I slot   operator(): id  0 | task 536 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.31.723.285 I slot   operator(): id  0 | task 536 | cached n_tokens = 41, memory_seq_rm [41, end)",
+    "1.31.801.786 I slot create_check: id  0 | task 536 | created context checkpoint 1 of 32 (pos_min = 40, pos_max = 40, n_tokens = 41, size = 62.813 MiB)",
+    "1.31.816.741 I slot   operator(): id  0 | task 536 | cached n_tokens = 248, memory_seq_rm [248, end)",
+    "1.31.946.766 I slot create_check: id  0 | task 536 | created context checkpoint 2 of 32 (pos_min = 247, pos_max = 247, n_tokens = 248, size = 62.813 MiB)",
+    "1.33.962.271 I srv  get_availabl: updating prompt cache",
+    "1.34.037.655 I srv          load:  - looking for better prompt, base f_keep = 0.007, f_sim = 0.001",
+    "1.34.037.664 I srv          load:    - prompt with length      16, lcp =       1, f_keep = 0.062, f_sim = 0.000",
+    "1.34.037.667 I srv          load:    - prompt with length     278, lcp =       3, f_keep = 0.011, f_sim = 0.001",
+    "1.34.037.668 I srv          load:    - prompt with length     451, lcp =       3, f_keep = 0.007, f_sim = 0.001",
+    "1.34.037.670 I srv          load:    - prompt with length     427, lcp =       3, f_keep = 0.007, f_sim = 0.001",
+    "1.34.037.671 I srv          load:    - prompt with length     418, lcp =       3, f_keep = 0.007, f_sim = 0.001",
+    "1.34.037.676 I srv        update:    - prompt 000001C7291639F0:      16 tokens, checkpoints:  1,   125.793 MiB",
+    "1.34.037.677 I srv        update:    - prompt 000001C787FC7110:     278 tokens, checkpoints:  2,   191.331 MiB",
+    "1.34.037.679 I srv        update:    - prompt 000001C36E674110:     451 tokens, checkpoints:  2,   193.130 MiB",
+    "1.34.037.680 I srv        update:    - prompt 000001C36E6755E0:     427 tokens, checkpoints:  2,   192.880 MiB",
+    "1.34.037.681 I srv        update:    - prompt 000001C36E6743E0:     418 tokens, checkpoints:  2,   192.787 MiB",
+    "1.34.037.683 I srv  get_availabl: prompt cache update took 75.41 ms",
+    "1.34.038.889 I slot   operator(): id  0 | task 706 | checking checkpoint with [247, 247] against 3...",
+    "1.34.038.890 I slot   operator(): id  0 | task 706 | checking checkpoint with [40, 40] against 3...",
+    "1.34.038.892 I slot   operator(): id  0 | task 706 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.34.038.894 I slot   operator(): id  0 | task 706 | erased invalidated context checkpoint (pos_min = 40, pos_max = 40, n_tokens = 41, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.34.044.057 I slot   operator(): id  0 | task 706 | erased invalidated context checkpoint (pos_min = 247, pos_max = 247, n_tokens = 248, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.34.049.086 I slot   operator(): id  0 | task 706 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.34.482.533 I slot   operator(): id  0 | task 706 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+    "1.34.865.123 I slot   operator(): id  0 | task 706 | cached n_tokens = 2766, memory_seq_rm [2766, end)",
+    "1.35.145.287 I slot create_check: id  0 | task 706 | created context checkpoint 1 of 32 (pos_min = 2765, pos_max = 2765, n_tokens = 2766, size = 62.813 MiB)",
+    "1.35.177.490 I slot   operator(): id  0 | task 706 | cached n_tokens = 3051, memory_seq_rm [3051, end)",
+    "1.35.330.248 I slot create_check: id  0 | task 706 | created context checkpoint 2 of 32 (pos_min = 3050, pos_max = 3050, n_tokens = 3051, size = 62.813 MiB)",
+    "1.35.385.546 I slot   operator(): id  0 | task 706 | cached n_tokens = 4075, memory_seq_rm [4075, end)",
+    "1.35.767.947 I slot create_check: id  0 | task 706 | created context checkpoint 3 of 32 (pos_min = 4074, pos_max = 4074, n_tokens = 4075, size = 62.813 MiB)",
+    "1.38.373.613 I srv  get_availabl: updating prompt cache",
+    "1.38.373.896 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 125.793 MiB)",
+    "1.38.380.837 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 191.331 MiB)",
+    "1.38.490.560 I srv          load:  - looking for better prompt, base f_keep = 0.001, f_sim = 0.060",
+    "1.38.490.569 I srv          load:    - prompt with length     451, lcp =       6, f_keep = 0.013, f_sim = 0.120",
+    "1.38.490.571 I srv          load:    - prompt with length     427, lcp =      22, f_keep = 0.052, f_sim = 0.440",
+    "1.38.490.573 I srv          load:    - prompt with length     418, lcp =       3, f_keep = 0.007, f_sim = 0.060",
+    "1.38.490.575 I srv          load:    - prompt with length    4266, lcp =       3, f_keep = 0.001, f_sim = 0.060",
+    "1.38.490.580 I srv        update:    - prompt 000001C36E674110:     451 tokens, checkpoints:  2,   193.130 MiB",
+    "1.38.490.581 I srv        update:    - prompt 000001C36E6755E0:     427 tokens, checkpoints:  2,   192.880 MiB",
+    "1.38.490.582 I srv        update:    - prompt 000001C36E6743E0:     418 tokens, checkpoints:  2,   192.787 MiB",
+    "1.38.490.584 I srv        update:    - prompt 000001C36E470640:    4266 tokens, checkpoints:  3,   295.615 MiB",
+    "1.38.490.586 I srv  get_availabl: prompt cache update took 116.97 ms",
+    "1.38.490.915 I slot   operator(): id  0 | task 899 | checking checkpoint with [4074, 4074] against 3...",
+    "1.38.490.916 I slot   operator(): id  0 | task 899 | checking checkpoint with [3050, 3050] against 3...",
+    "1.38.490.917 I slot   operator(): id  0 | task 899 | checking checkpoint with [2765, 2765] against 3...",
+    "1.38.490.919 I slot   operator(): id  0 | task 899 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.38.490.921 I slot   operator(): id  0 | task 899 | erased invalidated context checkpoint (pos_min = 2765, pos_max = 2765, n_tokens = 2766, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.38.494.746 I slot   operator(): id  0 | task 899 | erased invalidated context checkpoint (pos_min = 3050, pos_max = 3050, n_tokens = 3051, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.38.498.672 I slot   operator(): id  0 | task 899 | erased invalidated context checkpoint (pos_min = 4074, pos_max = 4074, n_tokens = 4075, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.38.502.596 I slot   operator(): id  0 | task 899 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.38.512.420 I slot   operator(): id  0 | task 899 | cached n_tokens = 19, memory_seq_rm [19, end)",
+    "1.38.588.597 I slot create_check: id  0 | task 899 | created context checkpoint 1 of 32 (pos_min = 18, pos_max = 18, n_tokens = 19, size = 62.813 MiB)",
+    "1.38.597.121 I slot   operator(): id  0 | task 899 | cached n_tokens = 46, memory_seq_rm [46, end)",
+    "1.38.677.209 I slot create_check: id  0 | task 899 | created context checkpoint 2 of 32 (pos_min = 45, pos_max = 45, n_tokens = 46, size = 62.813 MiB)",
+    "1.40.190.931 I srv  get_availabl: updating prompt cache",
+    "1.40.190.973 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 193.130 MiB)",
+    "1.40.247.709 I srv          load:  - looking for better prompt, base f_keep = 0.036, f_sim = 0.001",
+    "1.40.247.718 I srv          load:    - prompt with length     427, lcp =       6, f_keep = 0.014, f_sim = 0.001",
+    "1.40.247.721 I srv          load:    - prompt with length     418, lcp =       3, f_keep = 0.007, f_sim = 0.001",
+    "1.40.247.722 I srv          load:    - prompt with length    4266, lcp =       3, f_keep = 0.001, f_sim = 0.001",
+    "1.40.247.724 I srv          load:    - prompt with length     166, lcp =       6, f_keep = 0.036, f_sim = 0.001",
+    "1.40.247.729 I srv        update:    - prompt 000001C36E6755E0:     427 tokens, checkpoints:  2,   192.880 MiB",
+    "1.40.247.730 I srv        update:    - prompt 000001C36E6743E0:     418 tokens, checkpoints:  2,   192.787 MiB",
+    "1.40.247.732 I srv        update:    - prompt 000001C36E470640:    4266 tokens, checkpoints:  3,   295.615 MiB",
+    "1.40.247.733 I srv        update:    - prompt 000001C36E470250:     166 tokens, checkpoints:  2,   190.166 MiB",
+    "1.40.247.735 I srv  get_availabl: prompt cache update took 56.80 ms",
+    "1.40.247.990 I slot   operator(): id  0 | task 1019 | checking checkpoint with [45, 45] against 6...",
+    "1.40.247.991 I slot   operator(): id  0 | task 1019 | checking checkpoint with [18, 18] against 6...",
+    "1.40.247.992 I slot   operator(): id  0 | task 1019 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.40.247.995 I slot   operator(): id  0 | task 1019 | erased invalidated context checkpoint (pos_min = 18, pos_max = 18, n_tokens = 19, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.40.250.973 I slot   operator(): id  0 | task 1019 | erased invalidated context checkpoint (pos_min = 45, pos_max = 45, n_tokens = 46, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.40.254.007 I slot   operator(): id  0 | task 1019 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.40.271.213 I slot   operator(): id  0 | task 1019 | cached n_tokens = 19, memory_seq_rm [19, end)",
+    "1.40.347.470 I slot create_check: id  0 | task 1019 | created context checkpoint 1 of 32 (pos_min = 18, pos_max = 18, n_tokens = 19, size = 62.813 MiB)",
+    "1.40.742.131 I slot   operator(): id  0 | task 1019 | cached n_tokens = 2067, memory_seq_rm [2067, end)",
+    "1.41.526.872 I slot   operator(): id  0 | task 1019 | cached n_tokens = 3630, memory_seq_rm [3630, end)",
+    "1.41.783.904 I slot create_check: id  0 | task 1019 | created context checkpoint 2 of 32 (pos_min = 3629, pos_max = 3629, n_tokens = 3630, size = 62.813 MiB)",
+    "1.41.838.844 I slot   operator(): id  0 | task 1019 | cached n_tokens = 4654, memory_seq_rm [4654, end)",
+    "1.42.225.088 I slot create_check: id  0 | task 1019 | created context checkpoint 3 of 32 (pos_min = 4653, pos_max = 4653, n_tokens = 4654, size = 62.813 MiB)",
+    "1.43.756.629 I srv  get_availabl: updating prompt cache",
+    "1.43.756.854 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 192.880 MiB)",
+    "1.43.862.120 I srv          load:  - looking for better prompt, base f_keep = 0.001, f_sim = 0.028",
+    "1.43.862.128 I srv          load:    - prompt with length     418, lcp =       3, f_keep = 0.007, f_sim = 0.014",
+    "1.43.862.130 I srv          load:    - prompt with length    4266, lcp =       3, f_keep = 0.001, f_sim = 0.014",
+    "1.43.862.132 I srv          load:    - prompt with length     166, lcp =      22, f_keep = 0.133, f_sim = 0.101",
+    "1.43.862.134 I srv          load:    - prompt with length    4768, lcp =       6, f_keep = 0.001, f_sim = 0.028",
+    "1.43.862.139 I srv        update:    - prompt 000001C36E6743E0:     418 tokens, checkpoints:  2,   192.787 MiB",
+    "1.43.862.140 I srv        update:    - prompt 000001C36E470640:    4266 tokens, checkpoints:  3,   295.615 MiB",
+    "1.43.862.142 I srv        update:    - prompt 000001C36E470250:     166 tokens, checkpoints:  2,   190.166 MiB",
+    "1.43.862.143 I srv        update:    - prompt 000001C36E470010:    4768 tokens, checkpoints:  3,   300.835 MiB",
+    "1.43.862.145 I srv  get_availabl: prompt cache update took 105.51 ms",
+    "1.43.862.387 I slot   operator(): id  0 | task 1135 | checking checkpoint with [4653, 4653] against 6...",
+    "1.43.862.388 I slot   operator(): id  0 | task 1135 | checking checkpoint with [3629, 3629] against 6...",
+    "1.43.862.390 I slot   operator(): id  0 | task 1135 | checking checkpoint with [18, 18] against 6...",
+    "1.43.862.392 I slot   operator(): id  0 | task 1135 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.43.862.394 I slot   operator(): id  0 | task 1135 | erased invalidated context checkpoint (pos_min = 18, pos_max = 18, n_tokens = 19, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.43.864.344 I slot   operator(): id  0 | task 1135 | erased invalidated context checkpoint (pos_min = 3629, pos_max = 3629, n_tokens = 3630, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.43.866.391 I slot   operator(): id  0 | task 1135 | erased invalidated context checkpoint (pos_min = 4653, pos_max = 4653, n_tokens = 4654, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.43.868.445 I slot   operator(): id  0 | task 1135 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.43.879.285 I slot   operator(): id  0 | task 1135 | cached n_tokens = 19, memory_seq_rm [19, end)",
+    "1.43.958.766 I slot create_check: id  0 | task 1135 | created context checkpoint 1 of 32 (pos_min = 18, pos_max = 18, n_tokens = 19, size = 62.813 MiB)",
+    "1.43.975.731 I slot   operator(): id  0 | task 1135 | cached n_tokens = 214, memory_seq_rm [214, end)",
+    "1.44.107.756 I slot create_check: id  0 | task 1135 | created context checkpoint 2 of 32 (pos_min = 213, pos_max = 213, n_tokens = 214, size = 62.813 MiB)",
+    "1.46.220.043 I srv  get_availabl: updating prompt cache",
+    "1.46.220.095 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 192.787 MiB)",
+    "1.46.289.472 I srv          load:  - looking for better prompt, base f_keep = 0.015, f_sim = 0.050",
+    "1.46.289.482 I srv          load:    - prompt with length    4266, lcp =       3, f_keep = 0.001, f_sim = 0.025",
+    "1.46.289.486 I srv          load:    - prompt with length     166, lcp =       6, f_keep = 0.036, f_sim = 0.050",
+    "1.46.289.488 I srv          load:    - prompt with length    4768, lcp =       7, f_keep = 0.001, f_sim = 0.058",
+    "1.46.289.491 I srv          load:    - prompt with length     392, lcp =       6, f_keep = 0.015, f_sim = 0.050",
+    "1.46.289.499 I srv        update:    - prompt 000001C36E470640:    4266 tokens, checkpoints:  3,   295.615 MiB",
+    "1.46.289.500 I srv        update:    - prompt 000001C36E470250:     166 tokens, checkpoints:  2,   190.166 MiB",
+    "1.46.289.502 I srv        update:    - prompt 000001C36E470010:    4768 tokens, checkpoints:  3,   300.835 MiB",
+    "1.46.289.504 I srv        update:    - prompt 000001C36E467EB0:     392 tokens, checkpoints:  2,   192.516 MiB",
+    "1.46.289.506 I srv  get_availabl: prompt cache update took 69.46 ms",
+    "1.46.289.781 I slot   operator(): id  0 | task 1313 | checking checkpoint with [213, 213] against 6...",
+    "1.46.289.783 I slot   operator(): id  0 | task 1313 | checking checkpoint with [18, 18] against 6...",
+    "1.46.289.785 I slot   operator(): id  0 | task 1313 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.46.289.788 I slot   operator(): id  0 | task 1313 | erased invalidated context checkpoint (pos_min = 18, pos_max = 18, n_tokens = 19, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.46.292.078 I slot   operator(): id  0 | task 1313 | erased invalidated context checkpoint (pos_min = 213, pos_max = 213, n_tokens = 214, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.46.294.106 I slot   operator(): id  0 | task 1313 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.46.306.873 I slot   operator(): id  0 | task 1313 | cached n_tokens = 54, memory_seq_rm [54, end)",
+    "1.46.396.769 I slot create_check: id  0 | task 1313 | created context checkpoint 1 of 32 (pos_min = 53, pos_max = 53, n_tokens = 54, size = 62.813 MiB)",
+    "1.46.413.273 I slot   operator(): id  0 | task 1313 | cached n_tokens = 117, memory_seq_rm [117, end)",
+    "1.46.499.892 I slot create_check: id  0 | task 1313 | created context checkpoint 2 of 32 (pos_min = 116, pos_max = 116, n_tokens = 117, size = 62.813 MiB)",
+    "1.48.418.675 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.203 (> 0.100 thold), f_keep = 0.208",
+    "1.48.418.676 I srv  get_availabl: updating prompt cache",
+    "1.48.418.767 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 295.615 MiB)",
+    "1.48.495.894 I srv          load:  - looking for better prompt, base f_keep = 0.208, f_sim = 0.203",
+    "1.48.495.908 I srv          load:    - prompt with length     166, lcp =       6, f_keep = 0.036, f_sim = 0.021",
+    "1.48.495.912 I srv          load:    - prompt with length    4768, lcp =       7, f_keep = 0.001, f_sim = 0.025",
+    "1.48.495.914 I srv          load:    - prompt with length     392, lcp =       6, f_keep = 0.015, f_sim = 0.021",
+    "1.48.495.917 I srv          load:    - prompt with length     274, lcp =      57, f_keep = 0.208, f_sim = 0.203",
+    "1.48.495.926 I srv        update:    - prompt 000001C36E470250:     166 tokens, checkpoints:  2,   190.166 MiB",
+    "1.48.495.927 I srv        update:    - prompt 000001C36E470010:    4768 tokens, checkpoints:  3,   300.835 MiB",
+    "1.48.495.928 I srv        update:    - prompt 000001C36E467EB0:     392 tokens, checkpoints:  2,   192.516 MiB",
+    "1.48.495.929 I srv        update:    - prompt 000001C36E46FE60:     274 tokens, checkpoints:  2,   191.289 MiB",
+    "1.48.495.931 I srv  get_availabl: prompt cache update took 77.25 ms",
+    "1.48.496.182 I slot   operator(): id  0 | task 1470 | checking checkpoint with [116, 116] against 57...",
+    "1.48.496.183 I slot   operator(): id  0 | task 1470 | checking checkpoint with [53, 53] against 57...",
+    "1.48.502.691 I slot   operator(): id  0 | task 1470 | restored context checkpoint (pos_min = 53, pos_max = 53, n_tokens = 54, n_past = 54, size = 62.813 MiB)",
+    "1.48.502.699 I slot   operator(): id  0 | task 1470 | erased invalidated context checkpoint (pos_min = 116, pos_max = 116, n_tokens = 117, n_swa = 0, pos_next = 54, size = 62.813 MiB)",
+    "1.48.505.917 I slot   operator(): id  0 | task 1470 | cached n_tokens = 54, memory_seq_rm [54, end)",
+    "1.48.506.048 I slot create_check: id  0 | task 1470 | superseding context checkpoint at n_tokens = 54",
+    "1.48.533.770 I slot create_check: id  0 | task 1470 | created context checkpoint 1 of 32 (pos_min = 53, pos_max = 53, n_tokens = 54, size = 62.813 MiB)",
+    "1.48.546.759 I slot   operator(): id  0 | task 1470 | cached n_tokens = 277, memory_seq_rm [277, end)",
+    "1.48.690.471 I slot create_check: id  0 | task 1470 | created context checkpoint 2 of 32 (pos_min = 276, pos_max = 276, n_tokens = 277, size = 62.813 MiB)",
+    "1.50.737.340 I srv  get_availabl: updating prompt cache",
+    "1.50.737.393 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 190.166 MiB)",
+    "1.50.783.631 I srv          load:  - looking for better prompt, base f_keep = 0.013, f_sim = 0.026",
+    "1.50.783.640 I srv          load:    - prompt with length    4768, lcp =       6, f_keep = 0.001, f_sim = 0.026",
+    "1.50.783.642 I srv          load:    - prompt with length     392, lcp =      22, f_keep = 0.056, f_sim = 0.094",
+    "1.50.783.644 I srv          load:    - prompt with length     274, lcp =       6, f_keep = 0.022, f_sim = 0.026",
+    "1.50.783.646 I srv          load:    - prompt with length     451, lcp =       6, f_keep = 0.013, f_sim = 0.026",
+    "1.50.783.651 I srv        update:    - prompt 000001C36E470010:    4768 tokens, checkpoints:  3,   300.835 MiB",
+    "1.50.783.652 I srv        update:    - prompt 000001C36E467EB0:     392 tokens, checkpoints:  2,   192.516 MiB",
+    "1.50.783.653 I srv        update:    - prompt 000001C36E46FE60:     274 tokens, checkpoints:  2,   191.289 MiB",
+    "1.50.783.654 I srv        update:    - prompt 000001C36E46F9E0:     451 tokens, checkpoints:  2,   193.130 MiB",
+    "1.50.783.657 I srv  get_availabl: prompt cache update took 46.31 ms",
+    "1.50.783.899 I slot   operator(): id  0 | task 1643 | checking checkpoint with [276, 276] against 6...",
+    "1.50.783.900 I slot   operator(): id  0 | task 1643 | checking checkpoint with [53, 53] against 6...",
+    "1.50.783.901 I slot   operator(): id  0 | task 1643 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.50.783.904 I slot   operator(): id  0 | task 1643 | erased invalidated context checkpoint (pos_min = 53, pos_max = 53, n_tokens = 54, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.50.786.741 I slot   operator(): id  0 | task 1643 | erased invalidated context checkpoint (pos_min = 276, pos_max = 276, n_tokens = 277, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.50.789.707 I slot   operator(): id  0 | task 1643 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.50.804.560 I slot   operator(): id  0 | task 1643 | cached n_tokens = 19, memory_seq_rm [19, end)",
+    "1.50.878.567 I slot create_check: id  0 | task 1643 | created context checkpoint 1 of 32 (pos_min = 18, pos_max = 18, n_tokens = 19, size = 62.813 MiB)",
+    "1.50.894.609 I slot   operator(): id  0 | task 1643 | cached n_tokens = 231, memory_seq_rm [231, end)",
+    "1.51.037.004 I slot create_check: id  0 | task 1643 | created context checkpoint 2 of 32 (pos_min = 230, pos_max = 230, n_tokens = 231, size = 62.813 MiB)",
+    "1.53.279.905 I srv  get_availabl: updating prompt cache",
+    "1.53.280.012 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 300.835 MiB)",
+    "1.53.368.915 I srv          load:  - looking for better prompt, base f_keep = 0.007, f_sim = 0.012",
+    "1.53.368.927 I srv          load:    - prompt with length     392, lcp =       3, f_keep = 0.008, f_sim = 0.012",
+    "1.53.368.930 I srv          load:    - prompt with length     274, lcp =       3, f_keep = 0.011, f_sim = 0.012",
+    "1.53.368.933 I srv          load:    - prompt with length     451, lcp =       3, f_keep = 0.007, f_sim = 0.012",
+    "1.53.368.935 I srv          load:    - prompt with length     427, lcp =       3, f_keep = 0.007, f_sim = 0.012",
+    "1.53.368.940 I srv        update:    - prompt 000001C36E467EB0:     392 tokens, checkpoints:  2,   192.516 MiB",
+    "1.53.368.942 I srv        update:    - prompt 000001C36E46FE60:     274 tokens, checkpoints:  2,   191.289 MiB",
+    "1.53.368.943 I srv        update:    - prompt 000001C36E46F9E0:     451 tokens, checkpoints:  2,   193.130 MiB",
+    "1.53.368.945 I srv        update:    - prompt 000001C36E46FC20:     427 tokens, checkpoints:  2,   192.880 MiB",
+    "1.53.368.949 I srv  get_availabl: prompt cache update took 89.04 ms",
+    "1.53.369.213 I slot   operator(): id  0 | task 1839 | checking checkpoint with [230, 230] against 3...",
+    "1.53.369.214 I slot   operator(): id  0 | task 1839 | checking checkpoint with [18, 18] against 3...",
+    "1.53.369.218 I slot   operator(): id  0 | task 1839 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.53.369.220 I slot   operator(): id  0 | task 1839 | erased invalidated context checkpoint (pos_min = 18, pos_max = 18, n_tokens = 19, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.53.371.740 I slot   operator(): id  0 | task 1839 | erased invalidated context checkpoint (pos_min = 230, pos_max = 230, n_tokens = 231, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.53.374.245 I slot   operator(): id  0 | task 1839 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.53.389.954 I slot   operator(): id  0 | task 1839 | cached n_tokens = 41, memory_seq_rm [41, end)",
+    "1.53.472.458 I slot create_check: id  0 | task 1839 | created context checkpoint 1 of 32 (pos_min = 40, pos_max = 40, n_tokens = 41, size = 62.813 MiB)",
+    "1.53.488.409 I slot   operator(): id  0 | task 1839 | cached n_tokens = 248, memory_seq_rm [248, end)",
+    "1.53.619.050 I slot create_check: id  0 | task 1839 | created context checkpoint 2 of 32 (pos_min = 247, pos_max = 247, n_tokens = 248, size = 62.813 MiB)",
+    "1.55.605.402 I srv  get_availabl: updating prompt cache",
+    "1.55.650.719 I srv          load:  - looking for better prompt, base f_keep = 0.007, f_sim = 0.001",
+    "1.55.650.729 I srv          load:    - prompt with length     392, lcp =       3, f_keep = 0.008, f_sim = 0.001",
+    "1.55.650.731 I srv          load:    - prompt with length     274, lcp =       3, f_keep = 0.011, f_sim = 0.001",
+    "1.55.650.732 I srv          load:    - prompt with length     451, lcp =       3, f_keep = 0.007, f_sim = 0.001",
+    "1.55.650.734 I srv          load:    - prompt with length     427, lcp =       3, f_keep = 0.007, f_sim = 0.001",
+    "1.55.650.735 I srv          load:    - prompt with length     418, lcp =       3, f_keep = 0.007, f_sim = 0.001",
+    "1.55.650.741 I srv        update:    - prompt 000001C36E467EB0:     392 tokens, checkpoints:  2,   192.516 MiB",
+    "1.55.650.742 I srv        update:    - prompt 000001C36E46FE60:     274 tokens, checkpoints:  2,   191.289 MiB",
+    "1.55.650.744 I srv        update:    - prompt 000001C36E46F9E0:     451 tokens, checkpoints:  2,   193.130 MiB",
+    "1.55.650.745 I srv        update:    - prompt 000001C36E46FC20:     427 tokens, checkpoints:  2,   192.880 MiB",
+    "1.55.650.746 I srv        update:    - prompt 000001C36E46DB80:     418 tokens, checkpoints:  2,   192.787 MiB",
+    "1.55.650.747 I srv  get_availabl: prompt cache update took 45.34 ms",
+    "1.55.651.351 I slot   operator(): id  0 | task 2009 | checking checkpoint with [247, 247] against 3...",
+    "1.55.651.352 I slot   operator(): id  0 | task 2009 | checking checkpoint with [40, 40] against 3...",
+    "1.55.651.353 I slot   operator(): id  0 | task 2009 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "1.55.651.355 I slot   operator(): id  0 | task 2009 | erased invalidated context checkpoint (pos_min = 40, pos_max = 40, n_tokens = 41, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.55.654.179 I slot   operator(): id  0 | task 2009 | erased invalidated context checkpoint (pos_min = 247, pos_max = 247, n_tokens = 248, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "1.55.657.082 I slot   operator(): id  0 | task 2009 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "1.56.053.879 I slot   operator(): id  0 | task 2009 | cached n_tokens = 2048, memory_seq_rm [2048, end)",
+    "1.56.444.378 I slot   operator(): id  0 | task 2009 | cached n_tokens = 2766, memory_seq_rm [2766, end)",
+    "1.56.749.027 I slot create_check: id  0 | task 2009 | created context checkpoint 1 of 32 (pos_min = 2765, pos_max = 2765, n_tokens = 2766, size = 62.813 MiB)",
+    "1.56.758.500 I slot   operator(): id  0 | task 2009 | cached n_tokens = 3051, memory_seq_rm [3051, end)",
+    "1.56.927.655 I slot create_check: id  0 | task 2009 | created context checkpoint 2 of 32 (pos_min = 3050, pos_max = 3050, n_tokens = 3051, size = 62.813 MiB)",
+    "1.56.950.274 I slot   operator(): id  0 | task 2009 | cached n_tokens = 4075, memory_seq_rm [4075, end)",
+    "1.57.365.806 I slot create_check: id  0 | task 2009 | created context checkpoint 3 of 32 (pos_min = 4074, pos_max = 4074, n_tokens = 4075, size = 62.813 MiB)",
+    "2.00.114.541 I srv  get_availabl: updating prompt cache",
+    "2.00.114.741 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 192.516 MiB)",
+    "2.00.127.267 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 191.289 MiB)",
+    "2.00.207.221 I srv          load:  - looking for better prompt, base f_keep = 0.001, f_sim = 0.060",
+    "2.00.207.231 I srv          load:    - prompt with length     451, lcp =       6, f_keep = 0.013, f_sim = 0.120",
+    "2.00.207.233 I srv          load:    - prompt with length     427, lcp =      22, f_keep = 0.052, f_sim = 0.440",
+    "2.00.207.235 I srv          load:    - prompt with length     418, lcp =       3, f_keep = 0.007, f_sim = 0.060",
+    "2.00.207.237 I srv          load:    - prompt with length    4270, lcp =       3, f_keep = 0.001, f_sim = 0.060",
+    "2.00.207.242 I srv        update:    - prompt 000001C36E46F9E0:     451 tokens, checkpoints:  2,   193.130 MiB",
+    "2.00.207.243 I srv        update:    - prompt 000001C36E46FC20:     427 tokens, checkpoints:  2,   192.880 MiB",
+    "2.00.207.244 I srv        update:    - prompt 000001C36E46DB80:     418 tokens, checkpoints:  2,   192.787 MiB",
+    "2.00.207.246 I srv        update:    - prompt 000001C36E470AC0:    4270 tokens, checkpoints:  3,   295.656 MiB",
+    "2.00.207.247 I srv  get_availabl: prompt cache update took 92.70 ms",
+    "2.00.207.753 I slot   operator(): id  0 | task 2206 | checking checkpoint with [4074, 4074] against 3...",
+    "2.00.207.754 I slot   operator(): id  0 | task 2206 | checking checkpoint with [3050, 3050] against 3...",
+    "2.00.207.754 I slot   operator(): id  0 | task 2206 | checking checkpoint with [2765, 2765] against 3...",
+    "2.00.207.756 I slot   operator(): id  0 | task 2206 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "2.00.207.759 I slot   operator(): id  0 | task 2206 | erased invalidated context checkpoint (pos_min = 2765, pos_max = 2765, n_tokens = 2766, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "2.00.210.606 I slot   operator(): id  0 | task 2206 | erased invalidated context checkpoint (pos_min = 3050, pos_max = 3050, n_tokens = 3051, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "2.00.213.456 I slot   operator(): id  0 | task 2206 | erased invalidated context checkpoint (pos_min = 4074, pos_max = 4074, n_tokens = 4075, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "2.00.216.335 I slot   operator(): id  0 | task 2206 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "2.00.231.923 I slot   operator(): id  0 | task 2206 | cached n_tokens = 19, memory_seq_rm [19, end)",
+    "2.00.305.067 I slot create_check: id  0 | task 2206 | created context checkpoint 1 of 32 (pos_min = 18, pos_max = 18, n_tokens = 19, size = 62.813 MiB)",
+    "2.00.317.884 I slot   operator(): id  0 | task 2206 | cached n_tokens = 46, memory_seq_rm [46, end)",
+    "2.00.395.540 I slot create_check: id  0 | task 2206 | created context checkpoint 2 of 32 (pos_min = 45, pos_max = 45, n_tokens = 46, size = 62.813 MiB)",
+    "2.01.922.034 I srv  get_availabl: updating prompt cache",
+    "2.01.922.077 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 193.130 MiB)",
+    "2.01.972.630 I srv          load:  - looking for better prompt, base f_keep = 0.036, f_sim = 0.001",
+    "2.01.972.640 I srv          load:    - prompt with length     427, lcp =       6, f_keep = 0.014, f_sim = 0.001",
+    "2.01.972.642 I srv          load:    - prompt with length     418, lcp =       3, f_keep = 0.007, f_sim = 0.001",
+    "2.01.972.644 I srv          load:    - prompt with length    4270, lcp =       3, f_keep = 0.001, f_sim = 0.001",
+    "2.01.972.648 I srv          load:    - prompt with length     166, lcp =       6, f_keep = 0.036, f_sim = 0.001",
+    "2.01.972.654 I srv        update:    - prompt 000001C36E46FC20:     427 tokens, checkpoints:  2,   192.880 MiB",
+    "2.01.972.655 I srv        update:    - prompt 000001C36E46DB80:     418 tokens, checkpoints:  2,   192.787 MiB",
+    "2.01.972.656 I srv        update:    - prompt 000001C36E470AC0:    4270 tokens, checkpoints:  3,   295.656 MiB",
+    "2.01.972.657 I srv        update:    - prompt 000001C36E470D00:     166 tokens, checkpoints:  2,   190.166 MiB",
+    "2.01.972.659 I srv  get_availabl: prompt cache update took 50.62 ms",
+    "2.01.972.916 I slot   operator(): id  0 | task 2326 | checking checkpoint with [45, 45] against 6...",
+    "2.01.972.917 I slot   operator(): id  0 | task 2326 | checking checkpoint with [18, 18] against 6...",
+    "2.01.972.918 I slot   operator(): id  0 | task 2326 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "2.01.972.920 I slot   operator(): id  0 | task 2326 | erased invalidated context checkpoint (pos_min = 18, pos_max = 18, n_tokens = 19, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "2.01.975.163 I slot   operator(): id  0 | task 2326 | erased invalidated context checkpoint (pos_min = 45, pos_max = 45, n_tokens = 46, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "2.01.977.426 I slot   operator(): id  0 | task 2326 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "2.01.992.334 I slot   operator(): id  0 | task 2326 | cached n_tokens = 19, memory_seq_rm [19, end)",
+    "2.02.067.589 I slot create_check: id  0 | task 2326 | created context checkpoint 1 of 32 (pos_min = 18, pos_max = 18, n_tokens = 19, size = 62.813 MiB)",
+    "2.02.460.537 I slot   operator(): id  0 | task 2326 | cached n_tokens = 2067, memory_seq_rm [2067, end)",
+    "2.03.247.239 I slot   operator(): id  0 | task 2326 | cached n_tokens = 3630, memory_seq_rm [3630, end)",
+    "2.03.504.748 I slot create_check: id  0 | task 2326 | created context checkpoint 2 of 32 (pos_min = 3629, pos_max = 3629, n_tokens = 3630, size = 62.813 MiB)",
+    "2.03.527.779 I slot   operator(): id  0 | task 2326 | cached n_tokens = 4654, memory_seq_rm [4654, end)",
+    "2.03.944.906 I slot create_check: id  0 | task 2326 | created context checkpoint 3 of 32 (pos_min = 4653, pos_max = 4653, n_tokens = 4654, size = 62.813 MiB)",
+    "2.05.508.461 I srv  get_availabl: updating prompt cache",
+    "2.05.508.876 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 192.880 MiB)",
+    "2.05.602.386 I srv          load:  - looking for better prompt, base f_keep = 0.001, f_sim = 0.028",
+    "2.05.602.399 I srv          load:    - prompt with length     418, lcp =       3, f_keep = 0.007, f_sim = 0.014",
+    "2.05.602.401 I srv          load:    - prompt with length    4270, lcp =       3, f_keep = 0.001, f_sim = 0.014",
+    "2.05.602.404 I srv          load:    - prompt with length     166, lcp =      22, f_keep = 0.133, f_sim = 0.101",
+    "2.05.602.406 I srv          load:    - prompt with length    4768, lcp =       6, f_keep = 0.001, f_sim = 0.028",
+    "2.05.602.414 I srv        update:    - prompt 000001C36E46DB80:     418 tokens, checkpoints:  2,   192.787 MiB",
+    "2.05.602.415 I srv        update:    - prompt 000001C36E470AC0:    4270 tokens, checkpoints:  3,   295.656 MiB",
+    "2.05.602.417 I srv        update:    - prompt 000001C36E470D00:     166 tokens, checkpoints:  2,   190.166 MiB",
+    "2.05.602.418 I srv        update:    - prompt 000001C36E470880:    4768 tokens, checkpoints:  3,   300.835 MiB",
+    "2.05.602.420 I srv  get_availabl: prompt cache update took 93.96 ms",
+    "2.05.602.677 I slot   operator(): id  0 | task 2442 | checking checkpoint with [4653, 4653] against 6...",
+    "2.05.602.678 I slot   operator(): id  0 | task 2442 | checking checkpoint with [3629, 3629] against 6...",
+    "2.05.602.679 I slot   operator(): id  0 | task 2442 | checking checkpoint with [18, 18] against 6...",
+    "2.05.602.681 I slot   operator(): id  0 | task 2442 | forcing full prompt re-processing due to lack of cache data (likely due to SWA or hybrid/recurrent memory, see https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+    "2.05.602.683 I slot   operator(): id  0 | task 2442 | erased invalidated context checkpoint (pos_min = 18, pos_max = 18, n_tokens = 19, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "2.05.606.036 I slot   operator(): id  0 | task 2442 | erased invalidated context checkpoint (pos_min = 3629, pos_max = 3629, n_tokens = 3630, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "2.05.609.238 I slot   operator(): id  0 | task 2442 | erased invalidated context checkpoint (pos_min = 4653, pos_max = 4653, n_tokens = 4654, n_swa = 0, pos_next = 0, size = 62.813 MiB)",
+    "2.05.612.576 I slot   operator(): id  0 | task 2442 | cached n_tokens = 0, memory_seq_rm [0, end)",
+    "2.05.630.507 I slot   operator(): id  0 | task 2442 | cached n_tokens = 19, memory_seq_rm [19, end)",
+    "2.05.704.886 I slot create_check: id  0 | task 2442 | created context checkpoint 1 of 32 (pos_min = 18, pos_max = 18, n_tokens = 19, size = 62.813 MiB)",
+    "2.05.719.817 I slot   operator(): id  0 | task 2442 | cached n_tokens = 214, memory_seq_rm [214, end)",
+    "2.05.853.178 I slot create_check: id  0 | task 2442 | created context checkpoint 2 of 32 (pos_min = 213, pos_max = 213, n_tokens = 214, size = 62.813 MiB)"
+   ],
+   "stored_spec_off_shas": {
+    "rep0": "24d00b247413",
+    "rep1": "56e91a5c63c0"
+   },
+   "reproduces_stored": {
+    "decision_contract_rep0": true,
+    "decision_contract_rep1": true
+   }
+  }
+ }
+}

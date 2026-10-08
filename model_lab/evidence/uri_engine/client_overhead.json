@@ -1,0 +1,304 @@
+{
+ "server_argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "32768",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--port",
+  "18494",
+  "--host",
+  "127.0.0.1",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--metrics",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--mmproj",
+  "D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--cache-ram",
+  "1024"
+ ],
+ "load_seconds": 86.85,
+ "classes": {
+  "trivial": {
+   "rows": {
+    "new_client": [
+     {
+      "wall_s": 0.3211,
+      "server_ms": 72.0
+     },
+     {
+      "wall_s": 0.3175,
+      "server_ms": 72.1
+     },
+     {
+      "wall_s": 0.3023,
+      "server_ms": 73.1
+     },
+     {
+      "wall_s": 0.3139,
+      "server_ms": 71.7
+     },
+     {
+      "wall_s": 0.2976,
+      "server_ms": 70.7
+     },
+     {
+      "wall_s": 0.3049,
+      "server_ms": 70.8
+     },
+     {
+      "wall_s": 0.3126,
+      "server_ms": 71.4
+     },
+     {
+      "wall_s": 0.3064,
+      "server_ms": 72.2
+     }
+    ],
+    "persistent": [
+     {
+      "wall_s": 0.073,
+      "server_ms": 70.6
+     },
+     {
+      "wall_s": 0.0735,
+      "server_ms": 71.1
+     },
+     {
+      "wall_s": 0.0764,
+      "server_ms": 74.0
+     },
+     {
+      "wall_s": 0.0744,
+      "server_ms": 71.9
+     },
+     {
+      "wall_s": 0.074,
+      "server_ms": 71.5
+     },
+     {
+      "wall_s": 0.0739,
+      "server_ms": 71.4
+     },
+     {
+      "wall_s": 0.0697,
+      "server_ms": 67.2
+     },
+     {
+      "wall_s": 0.0731,
+      "server_ms": 70.6
+     }
+    ],
+    "raw_socket": [
+     {
+      "wall_s": 0.0838,
+      "server_ms": 71.2
+     },
+     {
+      "wall_s": 0.0866,
+      "server_ms": 74.5
+     },
+     {
+      "wall_s": 0.0912,
+      "server_ms": 72.0
+     },
+     {
+      "wall_s": 0.0999,
+      "server_ms": 72.9
+     },
+     {
+      "wall_s": 0.0732,
+      "server_ms": 70.9
+     },
+     {
+      "wall_s": 0.0846,
+      "server_ms": 71.2
+     },
+     {
+      "wall_s": 0.0878,
+      "server_ms": 70.9
+     },
+     {
+      "wall_s": 0.0927,
+      "server_ms": 72.3
+     }
+    ]
+   },
+   "summary": {
+    "new_client": {
+     "wall_p50_s": 0.3095,
+     "server_p50_ms": 71.8,
+     "client_overhead_p50_ms": 237.7
+    },
+    "persistent": {
+     "wall_p50_s": 0.0737,
+     "server_p50_ms": 71.2,
+     "client_overhead_p50_ms": 2.5
+    },
+    "raw_socket": {
+     "wall_p50_s": 0.0872,
+     "server_p50_ms": 71.6,
+     "client_overhead_p50_ms": 15.1
+    }
+   }
+  },
+  "decision_cached": {
+   "rows": {
+    "new_client": [
+     {
+      "wall_s": 2.1947,
+      "server_ms": 1932.6
+     },
+     {
+      "wall_s": 2.1941,
+      "server_ms": 1937.2
+     },
+     {
+      "wall_s": 2.1569,
+      "server_ms": 1922.5
+     },
+     {
+      "wall_s": 2.1705,
+      "server_ms": 1936.7
+     },
+     {
+      "wall_s": 2.1577,
+      "server_ms": 1923.4
+     },
+     {
+      "wall_s": 2.1663,
+      "server_ms": 1932.5
+     },
+     {
+      "wall_s": 2.1759,
+      "server_ms": 1942.6
+     },
+     {
+      "wall_s": 2.1645,
+      "server_ms": 1931.5
+     }
+    ],
+    "persistent": [
+     {
+      "wall_s": 1.9508,
+      "server_ms": 1939.7
+     },
+     {
+      "wall_s": 1.9342,
+      "server_ms": 1923.2
+     },
+     {
+      "wall_s": 1.9429,
+      "server_ms": 1932.2
+     },
+     {
+      "wall_s": 1.9474,
+      "server_ms": 1936.9
+     },
+     {
+      "wall_s": 1.9423,
+      "server_ms": 1931.9
+     },
+     {
+      "wall_s": 1.9303,
+      "server_ms": 1920.0
+     },
+     {
+      "wall_s": 1.9583,
+      "server_ms": 1947.7
+     },
+     {
+      "wall_s": 1.9752,
+      "server_ms": 1964.6
+     }
+    ],
+    "raw_socket": [
+     {
+      "wall_s": 1.9666,
+      "server_ms": 1934.5
+     },
+     {
+      "wall_s": 1.9551,
+      "server_ms": 1929.7
+     },
+     {
+      "wall_s": 1.9415,
+      "server_ms": 1931.0
+     },
+     {
+      "wall_s": 1.9445,
+      "server_ms": 1934.3
+     },
+     {
+      "wall_s": 1.9546,
+      "server_ms": 1931.3
+     },
+     {
+      "wall_s": 1.9401,
+      "server_ms": 1929.7
+     },
+     {
+      "wall_s": 1.9597,
+      "server_ms": 1930.8
+     },
+     {
+      "wall_s": 1.9675,
+      "server_ms": 1957.1
+     }
+    ]
+   },
+   "summary": {
+    "new_client": {
+     "wall_p50_s": 2.1684,
+     "server_p50_ms": 1932.5,
+     "client_overhead_p50_ms": 234.1
+    },
+    "persistent": {
+     "wall_p50_s": 1.9451,
+     "server_p50_ms": 1934.6,
+     "client_overhead_p50_ms": 10.6
+    },
+    "raw_socket": {
+     "wall_p50_s": 1.9548,
+     "server_p50_ms": 1931.2,
+     "client_overhead_p50_ms": 16.9
+    }
+   }
+  }
+ },
+ "restart_reconnect": {
+  "error_while_down": "ConnectError",
+  "first_call_after_restart_s": 0.628,
+  "ok": true,
+  "reload_seconds": 101.46
+ },
+ "resources": {
+  "load_seconds": 101.46,
+  "vram_dedicated_before_load_mib": 1098.1,
+  "vram_dedicated_now_mib": 15635.6,
+  "server_rss_now_mib": 818.2,
+  "system_available_ram_mib": 8736.1,
+  "peak_server_rss_mib": 916.5,
+  "peak_vram_dedicated_mib": 15635.6,
+  "min_system_available_ram_mib": 8940.4,
+  "mean_server_cpu_pct_of_machine": 0.3
+ }
+}

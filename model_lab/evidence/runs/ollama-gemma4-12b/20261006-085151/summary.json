@@ -1,0 +1,130 @@
+{
+ "meta": {
+  "name": "ollama-gemma4-12b",
+  "args": {
+   "name": "ollama-gemma4-12b",
+   "model": null,
+   "url": "http://127.0.0.1:11434",
+   "api_model": "gemma4:12b",
+   "family": "plain",
+   "ctx": 32768,
+   "n_cpu_moe": 0,
+   "ngl": 999,
+   "cache": "q8_0",
+   "paths": "fast",
+   "suites": "F,D,DG,C,H,P",
+   "l_sizes": "4000,16000,32000",
+   "repeat_f": 1,
+   "port": 18480,
+   "load_mode": "none",
+   "extra": "",
+   "mmproj": null
+  },
+  "started": "20261006-085151",
+  "path_wall_s": {
+   "fast": 1720.0
+  }
+ },
+ "summary": {
+  "fast/C": {
+   "n": 14,
+   "score": 0.786,
+   "ttft_p50": 0.773,
+   "ttfa_p50": 10.069,
+   "total_p50": 11.949,
+   "total_p95": 14.605,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": 568,
+   "errors": 0,
+   "truncated": 3,
+   "hallucinations": 0
+  },
+  "fast/D": {
+   "n": 72,
+   "score": 0.0,
+   "ttft_p50": 2.112,
+   "ttfa_p50": 2.208,
+   "total_p50": 8.505,
+   "total_p95": 12.355,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": 318,
+   "errors": 0,
+   "truncated": 28,
+   "invalid": 72,
+   "golden_acc": 0.0,
+   "extra_acc": 0.0,
+   "categories": {
+    "invalid": 72
+   }
+  },
+  "fast/DG": {
+   "n": 72,
+   "score": 0.208,
+   "ttft_p50": 2.065,
+   "ttfa_p50": 2.164,
+   "total_p50": 9.537,
+   "total_p95": 12.432,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": 321,
+   "errors": 0,
+   "truncated": 25
+  },
+  "fast/F": {
+   "n": 10,
+   "score": 1.0,
+   "ttft_p50": 0.395,
+   "ttfa_p50": 2.181,
+   "total_p50": 2.334,
+   "total_p95": 4.89,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": 105,
+   "errors": 0,
+   "truncated": 0
+  },
+  "fast/H": {
+   "n": 22,
+   "score": 0.955,
+   "ttft_p50": 0.597,
+   "ttfa_p50": 2.247,
+   "total_p50": 3.058,
+   "total_p95": 7.22,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": 129,
+   "errors": 0,
+   "truncated": 1,
+   "over_escalation": 0,
+   "under_escalation": 0
+  },
+  "fast/P": {
+   "n": 12,
+   "score": 0.167,
+   "ttft_p50": null,
+   "ttfa_p50": null,
+   "total_p50": null,
+   "total_p95": null,
+   "gen_tps_p50": null,
+   "prefill_tps_p50": null,
+   "gen_tokens_p50": null,
+   "errors": 5,
+   "truncated": 0,
+   "proposer_invalid": 17,
+   "failed_ids": [
+    "p01_ambiguous_reference_full_loop",
+    "p02_followup_reuses_referent",
+    "p03_correction",
+    "p04_implicit_fact",
+    "p05_conversation",
+    "p08_injected_approval",
+    "p09_vague_reference",
+    "p10_plain_save",
+    "p11_preference_statement",
+    "p12_typed_confirm_never_confirms"
+   ]
+  }
+ }
+}

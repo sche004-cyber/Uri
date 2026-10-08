@@ -1,0 +1,40 @@
+=== 2026-10-06T20:59:34 START ctx_prod_multi_ms512: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_context_reuse.py --name ctx_prod_multi_ms512 --extra -b 2048 -ub 1024 --cache-ram 4096 --slot-prompt-similarity 0 --checkpoint-min-step 512 --ctx-checkpoints 32 --layout multi
+=== 2026-10-06T21:04:05 END ctx_prod_multi_ms512: done rc=0 elapsed=266.2 s
+=== 2026-10-06T21:04:05 START ctx_ux_best2_split: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_context_reuse.py --name ctx_ux_best2_split --extra -b 2048 -ub 2048 --cache-ram 4096 --slot-prompt-similarity 0 --checkpoint-min-step 1024 --ctx-checkpoints 32 --layout split --binary D:/uri-model-lab/build/rsseq/bin/llama-server.exe
+=== 2026-10-06T21:12:10 END ctx_ux_best2_split: done rc=0 elapsed=480.6 s
+=== 2026-10-06T21:12:10 START stream_probe2: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/stream_probe2.py
+=== 2026-10-06T21:13:54 END stream_probe2: done rc=0 elapsed=99.6 s
+freeze_start          done         attempts=1 start=2026-10-06T14:07:49 end=2026-10-06T14:07:53 rc=0 elapsed=2.2 
+determinism_probe     done         attempts=1 start=2026-10-06T14:07:55 end=2026-10-06T14:11:46 rc=0 elapsed=227.8 
+ctx_control           done         attempts=1 start=2026-10-06T14:11:48 end=2026-10-06T14:19:54 rc=0 elapsed=484.1 
+ctx_prod              done         attempts=1 start=2026-10-06T14:19:56 end=2026-10-06T14:24:44 rc=0 elapsed=285.5 
+ctx_prod_split        done         attempts=2 start=2026-10-06T18:35:14 end=2026-10-06T18:42:07 rc=0 elapsed=410.4 
+ctx_ckpt1024          done         attempts=1 start=2026-10-06T18:42:09 end=2026-10-06T18:48:26 rc=0 elapsed=374.0 
+ctx_cache4096         done         attempts=1 start=2026-10-06T18:48:28 end=2026-10-06T18:54:00 rc=0 elapsed=329.9 
+ctx_prod_multi        done         attempts=1 start=2026-10-06T20:09:30 end=2026-10-06T20:15:36 rc=0 elapsed=363.6 
+ctx_prod_multi_ms512  done         attempts=1 start=2026-10-06T20:59:34 end=2026-10-06T21:04:03 rc=0 elapsed=266.2 
+ctx_sim0_cache4096    done         attempts=1 start=2026-10-06T20:15:38 end=2026-10-06T20:20:21 rc=0 elapsed=280.8 
+ctx_ux_best_split     done         attempts=1 start=2026-10-06T20:20:23 end=2026-10-06T20:29:27 rc=0 elapsed=541.6 
+ctx_ux_best2_split    done         attempts=1 start=2026-10-06T21:04:05 end=2026-10-06T21:12:08 rc=0 elapsed=480.6 
+ctx_sb_prod           done         attempts=1 start=2026-10-06T18:54:02 end=2026-10-06T19:07:53 rc=0 elapsed=828.9 
+ctx_ux_fine1024       done         attempts=1 start=2026-10-06T19:07:55 end=2026-10-06T19:21:58 rc=0 elapsed=839.7 
+ctx_ux_fine512        done         attempts=1 start=2026-10-06T19:22:00 end=2026-10-06T19:33:59 rc=0 elapsed=717.5 
+determinism_probe2    done         attempts=1 start=2026-10-06T19:34:02 end=2026-10-06T19:41:58 rc=0 elapsed=474.3 
+uri_base_16k          done         attempts=1 start=2026-10-06T19:42:00 end=2026-10-06T19:45:07 rc=0 elapsed=184.8 
+uri_mtp3_16k          done         attempts=1 start=2026-10-06T19:45:09 end=2026-10-06T19:48:11 rc=0 elapsed=179.5 
+ue_base16k            done         attempts=1 start=2026-10-06T19:48:13 end=2026-10-06T19:59:24 rc=0 elapsed=669.0 
+ue_mtp3_16k           done         attempts=1 start=2026-10-06T19:59:27 end=2026-10-06T20:08:59 rc=0 elapsed=570.1 
+ue_base16k_rep        done         attempts=1 start=2026-10-06T20:29:29 end=2026-10-06T20:39:52 rc=0 elapsed=620.6 
+mtp2_32k_vision       done         attempts=1 start=2026-10-06T20:39:54 end=2026-10-06T20:41:55 rc=0 elapsed=119.3 
+mtp3_24k_vision       done         attempts=1 start=2026-10-06T20:41:57 end=2026-10-06T20:43:57 rc=0 elapsed=117.7 
+mtp2_16k_vision       done         attempts=1 start=2026-10-06T20:43:59 end=2026-10-06T20:46:00 rc=0 elapsed=119.3 
+mtp4_16k_vision       done         attempts=1 start=2026-10-06T20:46:03 end=2026-10-06T20:48:04 rc=0 elapsed=119.2 
+stream_overhead       done         attempts=1 start=2026-10-06T20:48:06 end=2026-10-06T20:49:44 rc=0 elapsed=96.2 
+stream_probe2         done         attempts=1 start=2026-10-06T21:12:10 end=2026-10-06T21:13:51 rc=0 elapsed=99.6 
+sb_prod_canon         done         attempts=1 start=2026-10-06T20:49:46 end=2026-10-06T20:52:48 rc=0 elapsed=179.0 
+ux_prod_canon         done         attempts=1 start=2026-10-06T20:52:50 end=2026-10-06T20:55:49 rc=0 elapsed=177.1 
+uri_ngram_simple      done         attempts=1 start=2026-10-06T20:55:51 end=2026-10-06T20:58:46 rc=0 elapsed=173.0 
+uri_ngram_mod16       blocked      attempts=0 start=- end=- rc=- elapsed=- identical settings to the run in progress at the crash (stock ngram-mod on a hybrid model); needs user decision
+ux_ngram_mod8         blocked      attempts=0 start=- end=- rc=- elapsed=- n-gram speculation on the hybrid model (patched rs-seq path); crash-adjacent class, needs user decision
+freeze_end            done         attempts=1 start=2026-10-06T20:58:48 end=2026-10-06T20:58:53 rc=0 elapsed=2.7 
+QUEUE_FINISHED

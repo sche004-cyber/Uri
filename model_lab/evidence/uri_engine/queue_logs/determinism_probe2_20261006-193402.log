@@ -1,0 +1,86 @@
+== ub1024: ub1024_call0=6e3b63a840ae/198t, ub1024_call1=6e3b63a840ae/198t, ub1024_call2=6e3b63a840ae/198t, ub1024_after_dossier_call3=6e3b63a840ae/198t, ub1024_after_dossier_call4=6e3b63a840ae/198t, ub1024_after_dossier_call5=6e3b63a840ae/198t
+== ub512: ub512_call0=56e91a5c63c0/192t, ub512_call1=6e3b63a840ae/198t, ub512_call2=6e3b63a840ae/198t
+== ub256: ub256_call0=6e3b63a840ae/198t, ub256_call1=24d00b247413/188t, ub256_call2=24d00b247413/188t
+== replay: decision_contract_rep0=24d00b247413/188t cache_n=0, decision_contract_rep1=56e91a5c63c0/192t cache_n=0
+{
+ "layout": {
+  "ub1024": {
+   "sha": "6e3b63a840ae",
+   "predicted_n": 198
+  },
+  "ub512": {
+   "sha": "56e91a5c63c0",
+   "predicted_n": 192
+  },
+  "ub256": {
+   "sha": "6e3b63a840ae",
+   "predicted_n": 198
+  }
+ },
+ "layout_distinct": {
+  "ub1024": [
+   "6e3b63a840ae"
+  ],
+  "ub512": [
+   "56e91a5c63c0",
+   "6e3b63a840ae"
+  ],
+  "ub256": [
+   "24d00b247413",
+   "6e3b63a840ae"
+  ]
+ },
+ "replay_dc": {
+  "decision_contract_rep0": {
+   "sha": "24d00b247413",
+   "predicted_n": 188,
+   "cache_n": 0,
+   "prompt_n": 4079
+  },
+  "decision_contract_rep1": {
+   "sha": "56e91a5c63c0",
+   "predicted_n": 192,
+   "cache_n": 0,
+   "prompt_n": 4079
+  }
+ },
+ "replay_divergence": {
+  "token_index": 178,
+  "a": " fully",
+  "b": " fit",
+  "a_margin_top2": 0.5636,
+  "b_margin_top2": 0.0019,
+  "a_top": [
+   [
+    " fully",
+    -0.9011475443840027
+   ],
+   [
+    " fit",
+    -1.4647098779678345
+   ],
+   [
+    " match",
+    -2.034045934677124
+   ]
+  ],
+  "b_top": [
+   [
+    " fit",
+    -1.1951055526733398
+   ],
+   [
+    " fully",
+    -1.197011113166809
+   ],
+   [
+    " match",
+    -1.7855674028396606
+   ]
+  ]
+ },
+ "reproduces_stored": {
+  "decision_contract_rep0": true,
+  "decision_contract_rep1": true
+ }
+}

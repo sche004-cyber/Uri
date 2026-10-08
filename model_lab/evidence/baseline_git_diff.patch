@@ -1,0 +1,1498 @@
+﻿diff --git a/.gitignore b/.gitignore
+index 7cca4c7..79f2a7b 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -94,3 +94,6 @@ uri_workspace/evidence/
+ uri_workspace/canonical_execution_log.jsonl
+ uri_workspace/decision_engine_shadow_log.jsonl
+ uri_workspace/graphify_index.json
++
++# C1: isolated synthetic state, protected keys, auth fixtures and private probes.
++/work/c1/
+diff --git a/PROJECT_MEMORY.md b/PROJECT_MEMORY.md
+index d66cadb..0bde7a6 100644
+--- a/PROJECT_MEMORY.md
++++ b/PROJECT_MEMORY.md
+@@ -152,3 +152,21 @@ mandatory sequencing behind M31.
+   - *Negative Exclusion Blindspot:* Can fail to recall negative constraints when not in immediate context. *Mitigation:* Antigravity must deliberately assemble and inject negative constraints (prohibited work, deferred features, protected files) as first-class context in every coordinator prompt.
+   - *Context Capacity Bounds:* Cannot ingest 60KB+ documents in one turn. *Mitigation:* Antigravity slices specific milestone sections before prompting Qwen.
+   - *Turn Latency:* Observed ~16–38s per turn due to internal reasoning tokens. *Mitigation:* Use Qwen for batched milestone/task coordination turns rather than conversational back-and-forth.
++
++## C1 isolated implementation handoff — 2026-10-05
++
++The User explicitly authorized C1 Runtime Identity and Launcher Authority in the isolated integration worktree based on `e8e3b65`. Implementation and focused validation are complete; independent review remains pending. This is not VERIFIED, closed or released. No commit/push or production installation change was performed. C2 and the production launcher are outside the authorization; stop after the C1 handoff.
++
++Evidence: [C1 implementation and validation](docs/plans/C1_IMPLEMENTATION_EVIDENCE.md). Existing historical milestone records and UI initiative roles remain intact.
++
++## Phase 1 C2–C7 authorized continuation — 2026-10-05
++
++The latest User authorization supersedes the historical C1-only stop for this isolated integration worktree. C2 implementation contracts and C3 worker/persistence baseline are frozen at implementation level; local gates passed. Both remain PROVISIONAL — AWAITING INDEPENDENT REVIEW, without release commit or push. C4 is WAITING_FOR_CLIENT_AUTHENTICATION / PREREQUISITE_NOT_AVAILABLE: fresh native harness profiles are unauthenticated and Windows live containment qualification is unavailable. C5–C7 have not started; no dependency bypass, production migration or cutover. Existing UI roles and governing architecture remain unchanged.
++
++Evidence: [consolidated C1–C7 review package](docs/plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).
++
++## Dependency-independent Phase 1 continuation — 2026-10-05
++
++The User authorized continuing independently implementable C4–C7 components while Claude is quota-unavailable. Independent audit/release is durably WAITING_FOR_MODEL; Codex does not substitute for Claude. C4 ticket/claim/journal and synthetic Windows job controls, C5 canonical preparation/selection/quota checkpoint, C6 worker preflight and C7 offline source recovery are implemented and locally validated. Native authentication/adapter tool containment, full C5 feedback/persistence loop, live UI parity and historical owner/key lineage remain gates. All slices remain PROVISIONAL — AWAITING INDEPENDENT REVIEW; partial components are not completed milestones. Production cutover/migration, merge, commit and push remain unperformed.
++
++Updated evidence: [consolidated review package](docs/plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).
+diff --git a/URI_MILESTONE_TRACKER.md b/URI_MILESTONE_TRACKER.md
+index c7be37a..ddcdea0 100644
+--- a/URI_MILESTONE_TRACKER.md
++++ b/URI_MILESTONE_TRACKER.md
+@@ -152,3 +152,21 @@ promoted; no B.3 code has been implemented.
+ 3. Run them directly with the repo's venv (tests use stdlib `unittest`, not pytest — pytest is not installed in `.venv`):
+    `.venv/Scripts/python.exe -m unittest <test_module_1> <test_module_2> ... -v`
+ 4. Record the pass count and date in the Verification column. Do not mark a milestone "verified" from commit-message claims alone.
++
++## C1 isolated implementation handoff — 2026-10-05
++
++The User explicitly authorized C1 Runtime Identity and Launcher Authority in the isolated integration worktree based on `e8e3b65`. Implementation and focused validation are complete; independent review remains pending. This is not VERIFIED, closed or released. No commit/push or production installation change was performed. C2 and the production launcher are outside the authorization; stop after the C1 handoff.
++
++Evidence: [C1 implementation and validation](docs/plans/C1_IMPLEMENTATION_EVIDENCE.md). Existing historical milestone records and UI initiative roles remain intact.
++
++## Phase 1 C2–C7 authorized continuation — 2026-10-05
++
++The latest User authorization supersedes the historical C1-only stop for this isolated integration worktree. C2 implementation contracts and C3 worker/persistence baseline are frozen at implementation level; local gates passed. Both remain PROVISIONAL — AWAITING INDEPENDENT REVIEW, without release commit or push. C4 is WAITING_FOR_CLIENT_AUTHENTICATION / PREREQUISITE_NOT_AVAILABLE: fresh native harness profiles are unauthenticated and Windows live containment qualification is unavailable. C5–C7 have not started; no dependency bypass, production migration or cutover. Existing UI roles and governing architecture remain unchanged.
++
++Evidence: [consolidated C1–C7 review package](docs/plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).
++
++## Dependency-independent Phase 1 continuation — 2026-10-05
++
++The User authorized continuing independently implementable C4–C7 components while Claude is quota-unavailable. Independent audit/release is durably WAITING_FOR_MODEL; Codex does not substitute for Claude. C4 ticket/claim/journal and synthetic Windows job controls, C5 canonical preparation/selection/quota checkpoint, C6 worker preflight and C7 offline source recovery are implemented and locally validated. Native authentication/adapter tool containment, full C5 feedback/persistence loop, live UI parity and historical owner/key lineage remain gates. All slices remain PROVISIONAL — AWAITING INDEPENDENT REVIEW; partial components are not completed milestones. Production cutover/migration, merge, commit and push remain unperformed.
++
++Updated evidence: [consolidated review package](docs/plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).
+diff --git a/docs/governance/URI_ACTIVE_MILESTONE.md b/docs/governance/URI_ACTIVE_MILESTONE.md
+index ea53bda..4232c0d 100644
+--- a/docs/governance/URI_ACTIVE_MILESTONE.md
++++ b/docs/governance/URI_ACTIVE_MILESTONE.md
+@@ -1557,3 +1557,21 @@ After EVERY agent handoff, Antigravity must automatically monitor the handoff to
+ - Antigravity must not sit idle, wait for manual prompts, or create duplicate runner processes while a bridge is active.
+ - Default loop behavior is always:
+   `handoff sent → monitor → collect → continue`
++
++## C1 isolated implementation handoff — 2026-10-05
++
++The User explicitly authorized C1 Runtime Identity and Launcher Authority in the isolated integration worktree based on `e8e3b65`. Implementation and focused validation are complete; independent review remains pending. This is not VERIFIED, closed or released. No commit/push or production installation change was performed. C2 and the production launcher are outside the authorization; stop after the C1 handoff.
++
++Evidence: [C1 implementation and validation](../plans/C1_IMPLEMENTATION_EVIDENCE.md). Existing historical milestone records and UI initiative roles remain intact.
++
++## Phase 1 C2–C7 authorized continuation — 2026-10-05
++
++The latest User authorization supersedes the historical C1-only stop for this isolated integration worktree. C2 implementation contracts and C3 worker/persistence baseline are frozen at implementation level; local gates passed. Both remain PROVISIONAL — AWAITING INDEPENDENT REVIEW, without release commit or push. C4 is WAITING_FOR_CLIENT_AUTHENTICATION / PREREQUISITE_NOT_AVAILABLE: fresh native harness profiles are unauthenticated and Windows live containment qualification is unavailable. C5–C7 have not started; no dependency bypass, production migration or cutover. Existing UI roles and governing architecture remain unchanged.
++
++Evidence: [consolidated C1–C7 review package](../plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).
++
++## Dependency-independent Phase 1 continuation — 2026-10-05
++
++The User authorized continuing independently implementable C4–C7 components while Claude is quota-unavailable. Independent audit/release is durably WAITING_FOR_MODEL; Codex does not substitute for Claude. C4 ticket/claim/journal and synthetic Windows job controls, C5 canonical preparation/selection/quota checkpoint, C6 worker preflight and C7 offline source recovery are implemented and locally validated. Native authentication/adapter tool containment, full C5 feedback/persistence loop, live UI parity and historical owner/key lineage remain gates. All slices remain PROVISIONAL — AWAITING INDEPENDENT REVIEW; partial components are not completed milestones. Production cutover/migration, merge, commit and push remain unperformed.
++
++Updated evidence: [consolidated review package](../plans/PHASE1_C1_C7_REVIEW_PACKAGE.md).
+diff --git a/uri_core/app/route_classification.py b/uri_core/app/route_classification.py
+index f32a6f4..d40e7d7 100644
+--- a/uri_core/app/route_classification.py
++++ b/uri_core/app/route_classification.py
+@@ -1,174 +1,194 @@
+-"""M22.3: the single source of truth for every registered route's
+-PUBLIC | USER | ADMIN classification (see
+-docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md section 4).
+-
+-PUBLIC             - no login concept applies (a true public route, or one
+-                      of the five diagnostic GETs the accepted plan
+-                      explicitly defers rather than reclassifies - see
+-                      DEFERRED_PUBLIC_ROUTES below).
+-USER               - the pre-existing Optional[str] =
+-                      Depends(_resolve_authenticated_user_id) pattern: an
+-                      authenticated caller gets their own isolated state,
+-                      an anonymous caller gets the single shared
+-                      legacy-ambient state. This fallback is a standing
+-                      architecture decision (URI_M22_ARCHITECTURE.md
+-                      section 20.7) retained through all of M22, not a gap
+-                      this table is asserting should be closed.
+-ADMIN              - must 401 anonymous, 403 non-admin, and succeed only
+-                      for a logged-in ADMIN.
+-
+-This table exists specifically so a new route can never silently default
+-to public: test_m22_3_route_authorization.py walks app.routes and asserts
+-every (method, path) pair appears here, with the exact count also
+-checked, so an added-but-unclassified route fails CI immediately rather
+-than being caught only if someone remembers to test it by hand.
+-
+-Do not add a route here as an act of granting it authority - this module
+-is a record of what server.py's own Depends(...) wiring already does; the
+-actual authorization decision is made in authorization.py/server.py, not
+-here.
+-"""
+-
+-from typing import Dict, Tuple
+-
+-PUBLIC = "PUBLIC"
+-USER = "USER"
+-ADMIN = "ADMIN"
+-
+-# FastAPI's own auto-generated interactive-docs/schema routes (enabled
+-# by default; this milestone does not disable them). No application
+-# data flows through them - they only ever describe the API shape - so
+-# they are PUBLIC alongside the five diagnostic GETs below, and listed
+-# here explicitly so app.routes and this table stay in exact bijection
+-# (see test_m22_3_route_authorization.py's enumeration test).
+-FASTAPI_DOC_ROUTES: Tuple[Tuple[str, str], ...] = (
+-    ("GET", "/openapi.json"),
+-    ("GET", "/docs"),
+-    ("GET", "/docs/oauth2-redirect"),
+-    ("GET", "/redoc"),
+-)
+-
+-# The five diagnostic GET endpoints explicitly kept PUBLIC by the User's
+-# accepted M22.3 decision (docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md,
+-# Decision 1 / section 5.1) - deferred to a later security/API-exposure
+-# milestone, not silently reclassified in either direction here.
+-DEFERRED_PUBLIC_ROUTES: Tuple[Tuple[str, str], ...] = (
+-    ("GET", "/audit/shadow-comparison"),
+-    ("GET", "/identity"),
+-    ("GET", "/skills"),
+-    ("GET", "/capabilities"),
+-    ("GET", "/connections"),
+-)
+-
+-# The previously-unauthenticated mutating endpoints closed by M22.3 (S1)
+-# - now ADMIN-only, with no legacy-ambient fallback, since none of these
+-# ever had one to preserve. The two Google connection-management routes
+-# were moved OUT of this list on 2026-09-12 (User directive): Google
+-# Workspace connect/disconnect is now open to any authenticated user,
+-# not ADMIN-only - see server.py's _resolve_authenticated_principal.
+-ADMIN_GATED_ROUTES: Tuple[Tuple[str, str], ...] = (
+-    ("POST", "/skills/{skill_id}/enable"),
+-    ("POST", "/skills/{skill_id}/disable"),
+-    ("DELETE", "/skills/{skill_id}"),
+-    ("GET", "/admin/users"),
+-    ("GET", "/admin/users/{user_id}/grants"),
+-    ("PUT", "/admin/users/{user_id}/grants"),
+-)
+-
+-ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
+-    ("GET", "/health"): PUBLIC,
+-    ("POST", "/auth/signup"): PUBLIC,
+-    ("POST", "/auth/login"): PUBLIC,
+-    ("POST", "/auth/logout"): USER,
+-    ("GET", "/auth/me"): USER,
+-    ("POST", "/auth/experience-tier"): USER,
+-    ("GET", "/modes"): USER,
+-    ("PUT", "/modes"): USER,
+-    ("GET", "/auth/devices"): USER,
+-    ("DELETE", "/auth/devices/{device_id}"): USER,
+-    ("POST", "/ask"): USER,
+-    ("POST", "/ask/stream"): USER,
+-    ("POST", "/approve"): USER,
+-    ("POST", "/cancel"): USER,
+-    ("GET", "/tasks"): USER,
+-    ("GET", "/system/performance"): USER,
+-    # Dashboard-only, read-only Gmail metadata.  The handler retains the
+-    # established optional authenticated-user dependency used by the other
+-    # dashboard reports; this record grants no capability or approval power.
+-    ("GET", "/gmail/unread-count"): USER,
+-    ("GET", "/profile"): USER,
+-    ("POST", "/profile"): USER,
+-    ("GET", "/memory"): USER,
+-    ("GET", "/memory/settings"): USER,
+-    ("PUT", "/memory/settings"): USER,
+-    # M33.2 Batch A: authenticated, self-scoped Edge routing preferences
+-    # and redacted observational projections; no authority is granted here.
+-    ("GET", "/intelligence/settings"): USER,
+-    ("PUT", "/intelligence/settings"): USER,
+-    ("GET", "/intelligence/status"): USER,
+-    ("GET", "/intelligence/routing/latest"): USER,
+-    ("GET", "/intelligence/trace"): USER,
+-    ("POST", "/memory"): USER,
+-    ("PUT", "/memory/{memory_id}"): USER,
+-    ("DELETE", "/memory/{memory_id}"): USER,
+-    ("POST", "/memory/{memory_id}/confirm"): USER,
+-    ("POST", "/memory/{memory_id}/reject"): USER,
+-    ("GET", "/learning"): USER,
+-    ("GET", "/growth"): USER,
+-    ("POST", "/files"): USER,
+-    ("GET", "/files"): USER,
+-    ("DELETE", "/files/{file_id}"): USER,
+-    ("GET", "/files/{file_id}/content"): USER,
+-    ("GET", "/activity"): USER,
+-    ("GET", "/history"): USER,
+-    ("GET", "/history/{session_id}"): USER,
+-    ("DELETE", "/history/{session_id}"): USER,
+-    # M22.5: per-user provider configuration and key submission.
+-    # All three are USER (self-service) - not ADMIN.  The key is the
+-    # user's own; user_id comes only from the auth token, never from the
+-    # request body, so one user can never set or read another's key.
+-    ("POST", "/providers/keys"): USER,
+-    ("GET", "/providers"): USER,
+-    ("PUT", "/providers/config"): USER,
+-    ("GET", "/providers/active-brain"): USER,
+-    ("PUT", "/providers/active-brain"): USER,
+-    ("POST", "/providers/{provider_id}/verify"): USER,
+-    ("GET", "/providers/fallback-routing"): USER,
+-    ("PUT", "/providers/fallback-routing"): USER,
+-    ("GET", "/usage"): USER,
+-    ("GET", "/usage/limits"): USER,
+-    ("PUT", "/usage/limits"): USER,
+-    # M23: Graph Intelligence - read-only, self-scoped, same
+-    # USER/self-service pattern as /memory above. The graph is
+-    # context/evidence only, never authority (see
+-    # graph_store.py/graph_engine.py module docstrings) - USER
+-    # classification here is about who may READ it, not a grant of
+-    # any execution/approval authority.
+-    ("GET", "/graph/entities/{entity_id}"): USER,
+-    ("GET", "/graph/query"): USER,
+-    ("GET", "/graph/neighbors/{entity_id}"): USER,
+-    ("GET", "/graph/path"): USER,
+-    ("GET", "/graph/explain"): USER,
+-    ("GET", "/graph/impact/{entity_id}"): USER,
+-    # Google Workspace connection management - open to any authenticated
+-    # user as of 2026-09-12 (User directive); previously ADMIN-only
+-    # (see ADMIN_GATED_ROUTES's comment above for the full history).
+-    ("POST", "/connections/{connection_id}/authorize"): USER,
+-    ("DELETE", "/connections/{connection_id}"): USER,
+-    ("POST", "/connections/credentials"): USER,
+-}
+-
+-for _route in DEFERRED_PUBLIC_ROUTES:
+-    ROUTE_CLASSIFICATION[_route] = PUBLIC
+-
+-for _route in FASTAPI_DOC_ROUTES:
+-    ROUTE_CLASSIFICATION[_route] = PUBLIC
+-
+-for _route in ADMIN_GATED_ROUTES:
+-    ROUTE_CLASSIFICATION[_route] = ADMIN
+-
+-del _route
+-
+-# 73 application routes + 4 FastAPI routes.
+-# auto-generated doc/schema routes.
+-EXPECTED_ROUTE_COUNT = 77
++"""M22.3: the single source of truth for every registered route's
++PUBLIC | USER | ADMIN classification (see
++docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md section 4).
++
++PUBLIC             - no login concept applies (a true public route, or one
++                      of the five diagnostic GETs the accepted plan
++                      explicitly defers rather than reclassifies - see
++                      DEFERRED_PUBLIC_ROUTES below).
++USER               - the pre-existing Optional[str] =
++                      Depends(_resolve_authenticated_user_id) pattern: an
++                      authenticated caller gets their own isolated state,
++                      an anonymous caller gets the single shared
++                      legacy-ambient state. This fallback is a standing
++                      architecture decision (URI_M22_ARCHITECTURE.md
++                      section 20.7) retained through all of M22, not a gap
++                      this table is asserting should be closed.
++ADMIN              - must 401 anonymous, 403 non-admin, and succeed only
++                      for a logged-in ADMIN.
++
++This table exists specifically so a new route can never silently default
++to public: test_m22_3_route_authorization.py walks app.routes and asserts
++every (method, path) pair appears here, with the exact count also
++checked, so an added-but-unclassified route fails CI immediately rather
++than being caught only if someone remembers to test it by hand.
++
++Do not add a route here as an act of granting it authority - this module
++is a record of what server.py's own Depends(...) wiring already does; the
++actual authorization decision is made in authorization.py/server.py, not
++here.
++"""
++
++from typing import Dict, Tuple
++
++PUBLIC = "PUBLIC"
++USER = "USER"
++ADMIN = "ADMIN"
++
++# FastAPI's own auto-generated interactive-docs/schema routes (enabled
++# by default; this milestone does not disable them). No application
++# data flows through them - they only ever describe the API shape - so
++# they are PUBLIC alongside the five diagnostic GETs below, and listed
++# here explicitly so app.routes and this table stay in exact bijection
++# (see test_m22_3_route_authorization.py's enumeration test).
++FASTAPI_DOC_ROUTES: Tuple[Tuple[str, str], ...] = (
++    ("GET", "/openapi.json"),
++    ("GET", "/docs"),
++    ("GET", "/docs/oauth2-redirect"),
++    ("GET", "/redoc"),
++)
++
++# The five diagnostic GET endpoints explicitly kept PUBLIC by the User's
++# accepted M22.3 decision (docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md,
++# Decision 1 / section 5.1) - deferred to a later security/API-exposure
++# milestone, not silently reclassified in either direction here.
++DEFERRED_PUBLIC_ROUTES: Tuple[Tuple[str, str], ...] = (
++    ("GET", "/audit/shadow-comparison"),
++    ("GET", "/identity"),
++    ("GET", "/skills"),
++    ("GET", "/capabilities"),
++    ("GET", "/connections"),
++)
++
++# The previously-unauthenticated mutating endpoints closed by M22.3 (S1)
++# - now ADMIN-only, with no legacy-ambient fallback, since none of these
++# ever had one to preserve. The two Google connection-management routes
++# were moved OUT of this list on 2026-09-12 (User directive): Google
++# Workspace connect/disconnect is now open to any authenticated user,
++# not ADMIN-only - see server.py's _resolve_authenticated_principal.
++ADMIN_GATED_ROUTES: Tuple[Tuple[str, str], ...] = (
++    ("POST", "/skills/{skill_id}/enable"),
++    ("POST", "/skills/{skill_id}/disable"),
++    ("DELETE", "/skills/{skill_id}"),
++    ("GET", "/admin/users"),
++    ("GET", "/admin/users/{user_id}/grants"),
++    ("PUT", "/admin/users/{user_id}/grants"),
++)
++
++ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
++    ("GET", "/health"): PUBLIC,
++    ("GET", "/runtime/identity"): PUBLIC,
++    ("GET", "/runtime/status"): USER,
++    ("POST", "/auth/signup"): PUBLIC,
++    ("POST", "/auth/login"): PUBLIC,
++    ("POST", "/auth/logout"): USER,
++    ("GET", "/auth/me"): USER,
++    ("POST", "/auth/experience-tier"): USER,
++    ("GET", "/modes"): USER,
++    ("PUT", "/modes"): USER,
++    ("GET", "/auth/devices"): USER,
++    ("DELETE", "/auth/devices/{device_id}"): USER,
++    ("POST", "/ask"): USER,
++    ("POST", "/ask/stream"): USER,
++    ("POST", "/approve"): USER,
++    ("POST", "/cancel"): USER,
++    ("GET", "/tasks"): USER,
++    ("GET", "/system/performance"): USER,
++    # Dashboard-only, read-only Gmail metadata.  The handler retains the
++    # established optional authenticated-user dependency used by the other
++    # dashboard reports; this record grants no capability or approval power.
++    ("GET", "/gmail/unread-count"): USER,
++    ("GET", "/profile"): USER,
++    ("POST", "/profile"): USER,
++    ("GET", "/memory"): USER,
++    ("GET", "/memory/settings"): USER,
++    ("PUT", "/memory/settings"): USER,
++    # M33.2 Batch A: authenticated, self-scoped Edge routing preferences
++    # and redacted observational projections; no authority is granted here.
++    ("GET", "/intelligence/settings"): USER,
++    ("PUT", "/intelligence/settings"): USER,
++    ("GET", "/intelligence/status"): USER,
++    ("GET", "/intelligence/routing/latest"): USER,
++    ("GET", "/intelligence/trace"): USER,
++    ("POST", "/memory"): USER,
++    ("PUT", "/memory/{memory_id}"): USER,
++    ("DELETE", "/memory/{memory_id}"): USER,
++    ("POST", "/memory/{memory_id}/confirm"): USER,
++    ("POST", "/memory/{memory_id}/reject"): USER,
++    ("GET", "/learning"): USER,
++    ("GET", "/growth"): USER,
++    ("POST", "/files"): USER,
++    ("GET", "/files"): USER,
++    ("DELETE", "/files/{file_id}"): USER,
++    ("GET", "/files/{file_id}/content"): USER,
++    ("GET", "/activity"): USER,
++    ("GET", "/history"): USER,
++    ("GET", "/history/{session_id}"): USER,
++    ("DELETE", "/history/{session_id}"): USER,
++    # M22.5: per-user provider configuration and key submission.
++    # All three are USER (self-service) - not ADMIN.  The key is the
++    # user's own; user_id comes only from the auth token, never from the
++    # request body, so one user can never set or read another's key.
++    ("POST", "/providers/keys"): USER,
++    ("GET", "/providers"): USER,
++    ("PUT", "/providers/config"): USER,
++    ("GET", "/providers/active-brain"): USER,
++    ("PUT", "/providers/active-brain"): USER,
++    ("POST", "/providers/{provider_id}/verify"): USER,
++    ("GET", "/providers/fallback-routing"): USER,
++    ("PUT", "/providers/fallback-routing"): USER,
++    ("GET", "/usage"): USER,
++    ("GET", "/usage/limits"): USER,
++    ("PUT", "/usage/limits"): USER,
++    # M23: Graph Intelligence - read-only, self-scoped, same
++    # USER/self-service pattern as /memory above. The graph is
++    # context/evidence only, never authority (see
++    # graph_store.py/graph_engine.py module docstrings) - USER
++    # classification here is about who may READ it, not a grant of
++    # any execution/approval authority.
++    ("GET", "/graph/entities/{entity_id}"): USER,
++    ("GET", "/graph/query"): USER,
++    ("GET", "/graph/neighbors/{entity_id}"): USER,
++    ("GET", "/graph/path"): USER,
++    ("GET", "/graph/explain"): USER,
++    ("GET", "/graph/impact/{entity_id}"): USER,
++    # Google Workspace connection management - open to any authenticated
++    # user as of 2026-09-12 (User directive); previously ADMIN-only
++    # (see ADMIN_GATED_ROUTES's comment above for the full history).
++    ("POST", "/connections/{connection_id}/authorize"): USER,
++    ("DELETE", "/connections/{connection_id}"): USER,
++    ("POST", "/connections/credentials"): USER,
++}
++
++for _route in DEFERRED_PUBLIC_ROUTES:
++    ROUTE_CLASSIFICATION[_route] = PUBLIC
++
++for _route in FASTAPI_DOC_ROUTES:
++    ROUTE_CLASSIFICATION[_route] = PUBLIC
++
++for _route in ADMIN_GATED_ROUTES:
++    ROUTE_CLASSIFICATION[_route] = ADMIN
++
++del _route
++
++# 79 application routes + 4 FastAPI routes.
++# auto-generated doc/schema routes.
++EXPECTED_ROUTE_COUNT = 89
++
++# C2 routes require strict server-issued pairing; USER never means ambient
++# fallback on this surface. Legacy compatibility semantics remain unchanged.
++CLIENT_V1_ROUTES = (
++    ("POST", "/client/v1/session"),
++    ("GET", "/client/v1/capabilities"),
++    ("POST", "/client/v1/turns"),
++    ("POST", "/client/v1/turns/{turn_id}/continue"),
++    ("POST", "/client/v1/turns/{turn_id}/cancel"),
++    ("POST", "/client/v1/turns/{turn_id}/approval"),
++    ("POST", "/client/v1/turns/{turn_id}/claim"),
++    ("POST", "/client/v1/turns/{turn_id}/settle"),
++    ("POST", "/client/v1/turns/{turn_id}/wait"),
++    ("GET", "/client/v1/turns/{turn_id}/status"),
++)
++for _client_route in CLIENT_V1_ROUTES:
++    ROUTE_CLASSIFICATION[_client_route] = USER
++del _client_route
+diff --git a/uri_core/app/server.py b/uri_core/app/server.py
+index 1789380..490b376 100644
+--- a/uri_core/app/server.py
++++ b/uri_core/app/server.py
+@@ -930,11 +930,24 @@ async def _lifespan(_app: FastAPI):
+         _UserScopedStoreInitializer(),
+         _GraphifyIndexLoader(),
+     ])
++    # C1 opt-in only. Ordinary accepted startup and all authority gates retain
++    # their behavior. Readiness observes real lifespan results, not model probes.
++    runtime = getattr(_app.state, "runtime_identity", None)
++    if runtime is not None:
++        runtime.catalogue_ready = bool(_graphify_index.records)
++        runtime.legacy_state_ready = os.path.isfile(_user_identity_store.storage_path)
++        runtime.started = True
++        runtime.guard.starting = False
+     yield
+ 
+ 
+ app = FastAPI(title="URI API", lifespan=_lifespan)
+ 
++from uri_core.app.runtime_routes import register_runtime_routes
++from uri_core.app.client_routes import register_client_routes
++register_runtime_routes(app, _resolve_authenticated_principal)
++register_client_routes(app)
++
+ # M22.3 (Decision 7, docs/plans/M22.3_SECURITY_ARCHITECTURE_PLAN.md
+ # section 6.6): CORS is never left at allow_origins=["*"]. Production
+ # deployments set URI_CORS_ALLOWED_ORIGINS to an explicit,
+@@ -4033,4 +4046,3 @@ def update_provider_config(
+     config_store.set_provider_config(payload.provider_id, updates)
+ 
+     return {"provider_id": payload.provider_id, "status": "updated", **updates}
+-
+diff --git a/uri_core/capabilities/registry.py b/uri_core/capabilities/registry.py
+index ca2cf2c..b5d18ce 100644
+--- a/uri_core/capabilities/registry.py
++++ b/uri_core/capabilities/registry.py
+@@ -24,6 +24,8 @@ KNOWN_CAPABILITY_EFFECTS: Dict[str, EffectType] = {
+     "generate_document": EffectType.LOCAL_WRITE,
+     "remember_fact": EffectType.LOCAL_WRITE,
+     "convert_document": EffectType.LOCAL_WRITE,
++    # Paired-client only: writes a bounded workspace copy on the client, verified by URI before copy-out.
++    "external_harness_task": EffectType.LOCAL_WRITE,
+     # External writes (side-effect in third-party services)
+     "gmail_create_draft": EffectType.EXTERNAL_WRITE,
+     "drive_upload": EffectType.EXTERNAL_WRITE,
+diff --git a/uri_core/core/dispatcher.py b/uri_core/core/dispatcher.py
+index 0213fd3..53152d6 100644
+--- a/uri_core/core/dispatcher.py
++++ b/uri_core/core/dispatcher.py
+@@ -97,6 +97,18 @@ class ToolDispatcher:
+ 
+             tool_info = tools[tool_name]
+ 
++            # Phase 1: a paired-client capability (external_harness_task) is catalogued so the paired
++            # composition can describe it, but the server runtime never executes it. Refuse before any
++            # import, so catalogue presence cannot load or run client code in the server process.
++            if tool_info.get("execution_surface") == "paired_client":
++                return {
++                    "status": "error",
++                    "message": f"{tool_name} runs only on a paired client, never on the server runtime.",
++                    "error_type": ERROR_CAPABILITY_UNREGISTERED,
++                    "capability": tool_name,
++                    "component": None,
++                }
++
+             # Convert file path to a Python module path (e.g., uri_core/tools/xyz.py -> uri_core.tools.xyz)
+             module_path = tool_info["file_path"].replace("/", ".").replace("\\", ".").replace(".py", "")
+             class_name = tool_info["class_name"]
+diff --git a/uri_core/core/turn_state.py b/uri_core/core/turn_state.py
+index 980bbff..f0702e8 100644
+--- a/uri_core/core/turn_state.py
++++ b/uri_core/core/turn_state.py
+@@ -208,6 +208,14 @@ def _project_active_pointer(session: Any) -> Dict[str, Any]:
+         capability_id = None
+         if isinstance(active_workflow, dict):
+             capability_id = active_workflow.get("capability") or active_workflow.get("task")
++        if isinstance(active_workflow, dict) and active_workflow.get("schema") == "uri.intent.v1":
++            # C5 intent record: its own resolved slot values are the known inputs (JSON only).
++            known = {name: slot.get("value") for name, slot in (active_workflow.get("slots") or {}).items()
++                     if isinstance(slot, dict)}
++        else:
++            # Fact objects are projected to their value: Turn State is a JSON projection.
++            known = {name: getattr(fact, "value", fact)
++                     for name, fact in dict(getattr(session, "current_facts", None) or {}).items()}
+         return {
+             "kind": kind,
+             "question": question,
+@@ -219,7 +227,7 @@ def _project_active_pointer(session: Any) -> Dict[str, Any]:
+             "originating_goal": (active_workflow or {}).get("goal") if isinstance(active_workflow, dict) else None,
+             "capability_id": capability_id,
+             "action": (active_workflow or {}).get("action") if isinstance(active_workflow, dict) else None,
+-            "known_inputs": dict(getattr(session, "current_facts", None) or {}),
++            "known_inputs": known,
+             "expected_type": _infer_expected_type(missing_field),
+             "prompt_asked": question,
+             "created_at": (active_workflow or {}).get("created_at") if isinstance(active_workflow, dict) else None,
+diff --git a/uri_ui/lib/screens/settings/settings_shell.dart b/uri_ui/lib/screens/settings/settings_shell.dart
+index bcef84d..2db0359 100644
+--- a/uri_ui/lib/screens/settings/settings_shell.dart
++++ b/uri_ui/lib/screens/settings/settings_shell.dart
+@@ -1,439 +1,447 @@
+-import 'package:flutter/material.dart';
+-
+-import '../../services/app_state_scope.dart';
+-import '../../theme/uri_theme.dart';
+-import '../../widgets/screen_header.dart';
+-import 'about_settings_screen.dart';
+-import 'admin_grants_screen.dart';
+-import 'appearance_settings_screen.dart';
+-import 'capabilities_settings_screen.dart';
+-import 'diagnostics_settings_screen.dart';
+-import 'memory_context_settings_screen.dart';
+-import 'memory_settings_screen.dart';
+-import 'preferences_settings_screen.dart';
+-import 'profile_settings_screen.dart';
+-import 'uri_server_settings_screen.dart';
+-
+-/// Hybrid UI Frozen Blueprint §4.7's two named groups. Connections and
+-/// Model Providers are deliberately absent here — both moved to the new
+-/// top-level Connections & Providers screen (§4.6); "Tools & Skills" is
+-/// the reference's own illustrative label with no real URI screen and
+-/// is never built (per the uri-ux-design skill's "map only real,
+-/// verified backend capability" rule).
+-enum _SettingsGroup { account, system }
+-
+-extension on _SettingsGroup {
+-  String get label => switch (this) {
+-    _SettingsGroup.account => 'Account',
+-    _SettingsGroup.system => 'System',
+-  };
+-}
+-
+-class _SettingsCategory {
+-  const _SettingsCategory({
+-    required this.group,
+-    required this.label,
+-    required this.subtitle,
+-    required this.icon,
+-    required this.builder,
+-  });
+-
+-  final _SettingsGroup group;
+-  final String label;
+-  final String subtitle;
+-  final IconData icon;
+-  final WidgetBuilder builder;
+-}
+-
+-final _categories = <_SettingsCategory>[
+-  _SettingsCategory(
+-    group: _SettingsGroup.account,
+-    label: 'Profile',
+-    subtitle: 'Who is signed in on this device, and this install\'s identity.',
+-    icon: Icons.person_outline_rounded,
+-    builder: (_) => const ProfileSettingsScreen(),
+-  ),
+-  _SettingsCategory(
+-    group: _SettingsGroup.account,
+-    label: 'Preferences',
+-    subtitle: 'How much URI does on its own, and its tone.',
+-    icon: Icons.tune_rounded,
+-    builder: (_) => const PreferencesSettingsScreen(),
+-  ),
+-  _SettingsCategory(
+-    group: _SettingsGroup.account,
+-    label: 'Memory',
+-    subtitle: 'Facts URI holds about you, and what it remembers between conversations.',
+-    icon: Icons.psychology_outlined,
+-    builder: (_) => const MemorySettingsScreen(),
+-  ),
+-  _SettingsCategory(
+-    group: _SettingsGroup.account,
+-    label: 'Memory & Context',
+-    subtitle:
+-        'Memory budgets, provider settings, and conversation compression.',
+-    icon: Icons.memory_outlined,
+-    builder: (_) => const MemoryContextSettingsScreen(),
+-  ),
+-  _SettingsCategory(
+-    group: _SettingsGroup.system,
+-    label: 'URI',
+-    subtitle: 'Which backend this device talks to.',
+-    icon: Icons.dns_outlined,
+-    builder: (_) => const UriServerSettingsScreen(),
+-  ),
+-  _SettingsCategory(
+-    group: _SettingsGroup.system,
+-    label: 'Capabilities',
+-    subtitle: 'What URI can actually do right now, reported by the server.',
+-    icon: Icons.checklist_rounded,
+-    builder: (_) => const CapabilitiesSettingsScreen(),
+-  ),
+-  _SettingsCategory(
+-    group: _SettingsGroup.system,
+-    label: 'Diagnostics',
+-    subtitle: 'Connection health and this device\'s identifiers.',
+-    icon: Icons.monitor_heart_outlined,
+-    builder: (_) => const DiagnosticsSettingsScreen(),
+-  ),
+-  _SettingsCategory(
+-    group: _SettingsGroup.system,
+-    label: 'About',
+-    subtitle: 'App and backend information.',
+-    icon: Icons.info_outline_rounded,
+-    builder: (_) => const AboutSettingsScreen(),
+-  ),
+-  _SettingsCategory(
+-    group: _SettingsGroup.system,
+-    label: 'Appearance',
+-    subtitle: 'The 4 URI themes, or follow your device.',
+-    icon: Icons.palette_outlined,
+-    builder: (_) => const AppearanceSettingsScreen(),
+-  ),
+-];
+-
+-List<_SettingsCategory> _getCategories(BuildContext context) {
+-  final isAdmin = AppStateScope.of(context).isAdmin;
+-  return [
+-    ..._categories,
+-    if (isAdmin)
+-      _SettingsCategory(
+-        group: _SettingsGroup.system,
+-        label: 'Capability Grants',
+-        subtitle:
+-            'Per-user capability authorization and grants administration.',
+-        icon: Icons.admin_panel_settings_outlined,
+-        builder: (_) => const AdminGrantsScreen(),
+-      ),
+-  ];
+-}
+-
+-/// Settings, organized into named categories rather than one long
+-/// scroll: a phone gets a list that swaps in-place to the selected
+-/// category (with a back affordance), a tablet/desktop gets a
+-/// persistent category list with the selected category's content
+-/// beside it (master-detail) — matching the same wide-layout
+-/// threshold [AppShell] itself uses.
+-///
+-/// Deliberately never uses [Navigator.push] for this: a category
+-/// screen may need to reach [AppShellState] via
+-/// [BuildContext.findAncestorStateOfType] to jump to another shell tab
+-/// (see `ask_uri_screen.dart`/`history_screen.dart`'s own uses of the
+-/// same lookup), and a pushed route would sit in the
+-/// Navigator's stack as a sibling of the shell rather than a
+-/// descendant of it — breaking that lookup. An in-place selection
+-/// (same mechanism the wide layout already uses) keeps every category
+-/// screen's context a true descendant of the shell on every layout.
+-class SettingsShell extends StatefulWidget {
+-  const SettingsShell({super.key});
+-
+-  @override
+-  State<SettingsShell> createState() => _SettingsShellState();
+-}
+-
+-class _SettingsShellState extends State<SettingsShell> {
+-  /// Null only on a compact layout showing the category list; a wide
+-  /// layout always has a selection (defaults to the first category).
+-  int? _selected;
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    WidgetsBinding.instance.addPostFrameCallback((_) {
+-      if (!mounted) return;
+-      final state = AppStateScope.of(context);
+-      if (!state.hasLoadedAccountInfo) state.loadAccountInfo();
+-      _selectRequestedCategory(state.targetSettingsCategory);
+-    });
+-  }
+-
+-  @override
+-  void didChangeDependencies() {
+-    super.didChangeDependencies();
+-    _selectRequestedCategory(AppStateScope.of(context).targetSettingsCategory);
+-  }
+-
+-  void _selectRequestedCategory(String? label) {
+-    if (label == null) return;
+-    final index = _getCategories(context)
+-        .indexWhere((category) => category.label == label);
+-    if (index >= 0) {
+-      _selected = index;
+-      AppStateScope.of(context).targetSettingsCategory = null;
+-    }
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return ListenableBuilder(
+-      listenable: AppStateScope.of(context),
+-      builder: (context, _) {
+-        final categories = _getCategories(context);
+-        final requested = AppStateScope.of(context).targetSettingsCategory;
+-        if (requested != null) {
+-          final index = categories.indexWhere(
+-            (category) => category.label == requested,
+-          );
+-          if (index >= 0) {
+-            _selected = index;
+-            AppStateScope.of(context).targetSettingsCategory = null;
+-          }
+-        }
+-
+-        if (UriBreakpoints.isWide(context)) {
+-          final selected = (_selected != null && _selected! < categories.length)
+-              ? _selected!
+-              : 0;
+-          return _WideSettings(
+-            categories: categories,
+-            selected: selected,
+-            onSelect: (i) => setState(() => _selected = i),
+-          );
+-        }
+-
+-        final selected = _selected;
+-        if (selected == null || selected >= categories.length) {
+-          return _CompactSettingsList(
+-            categories: categories,
+-            onSelect: (i) => setState(() => _selected = i),
+-          );
+-        }
+-        return _CompactSettingsDetail(
+-          category: categories[selected],
+-          onBack: () => setState(() => _selected = null),
+-        );
+-      },
+-    );
+-  }
+-}
+-
+-class _WideSettings extends StatelessWidget {
+-  const _WideSettings({
+-    required this.categories,
+-    required this.selected,
+-    required this.onSelect,
+-  });
+-
+-  final List<_SettingsCategory> categories;
+-  final int selected;
+-  final ValueChanged<int> onSelect;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final colors = UriColors.of(context);
+-    final category = categories[selected];
+-
+-    return Row(
+-      crossAxisAlignment: CrossAxisAlignment.stretch,
+-      children: [
+-        SizedBox(
+-          width: 260,
+-          child: Container(
+-            decoration: BoxDecoration(
+-              border: Border(right: BorderSide(color: colors.border)),
+-            ),
+-            child: ListView(
+-              padding: const EdgeInsets.symmetric(vertical: UriSpace.md),
+-              children: [
+-                for (final group in _SettingsGroup.values) ...[
+-                  _GroupHeader(label: group.label),
+-                  for (var i = 0; i < categories.length; i++)
+-                    if (categories[i].group == group)
+-                      _CategoryListTile(
+-                        category: categories[i],
+-                        selected: i == selected,
+-                        onTap: () => onSelect(i),
+-                      ),
+-                ],
+-              ],
+-            ),
+-          ),
+-        ),
+-        Expanded(
+-          child: SingleChildScrollView(
+-            padding: const EdgeInsets.all(UriSpace.xl),
+-            child: ConstrainedBox(
+-              constraints: const BoxConstraints(maxWidth: 720),
+-              child: Column(
+-                crossAxisAlignment: CrossAxisAlignment.start,
+-                children: [
+-                  ScreenHeader(
+-                    title: category.label,
+-                    subtitle: category.subtitle,
+-                  ),
+-                  category.builder(context),
+-                ],
+-              ),
+-            ),
+-          ),
+-        ),
+-      ],
+-    );
+-  }
+-}
+-
+-class _GroupHeader extends StatelessWidget {
+-  const _GroupHeader({required this.label});
+-
+-  final String label;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final colors = UriColors.of(context);
+-    return Padding(
+-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+-      child: Text(
+-        label.toUpperCase(),
+-        style: TextStyle(
+-          fontSize: 11,
+-          fontWeight: FontWeight.w700,
+-          letterSpacing: 0.6,
+-          color: colors.inkFaint,
+-        ),
+-      ),
+-    );
+-  }
+-}
+-
+-class _CategoryListTile extends StatelessWidget {
+-  const _CategoryListTile({
+-    required this.category,
+-    required this.selected,
+-    required this.onTap,
+-  });
+-
+-  final _SettingsCategory category;
+-  final bool selected;
+-  final VoidCallback onTap;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final colors = UriColors.of(context);
+-    return Material(
+-      color: selected ? colors.accentSoft : Colors.transparent,
+-      child: ListTile(
+-        leading: Icon(
+-          category.icon,
+-          color: selected ? colors.accentInk : colors.inkFaint,
+-        ),
+-        title: Text(
+-          category.label,
+-          style: TextStyle(
+-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+-            color: selected ? colors.accentInk : colors.ink,
+-          ),
+-        ),
+-        trailing: selected ? null : const Icon(Icons.chevron_right_rounded),
+-        onTap: onTap,
+-      ),
+-    );
+-  }
+-}
+-
+-class _CompactSettingsList extends StatelessWidget {
+-  const _CompactSettingsList({
+-    required this.categories,
+-    required this.onSelect,
+-  });
+-
+-  final List<_SettingsCategory> categories;
+-  final ValueChanged<int> onSelect;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return SingleChildScrollView(
+-      padding: const EdgeInsets.all(UriSpace.xl),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          const ScreenHeader(
+-            title: 'Settings',
+-            subtitle: 'Account, connections, preferences, and how URI behaves.',
+-          ),
+-          for (final group in _SettingsGroup.values) ...[
+-            Padding(
+-              padding: const EdgeInsets.only(bottom: UriSpace.xs),
+-              child: _GroupHeader(label: group.label),
+-            ),
+-            Card(
+-              margin: const EdgeInsets.only(bottom: UriSpace.md),
+-              child: Column(
+-                children: [
+-                  for (var i = 0; i < categories.length; i++)
+-                    if (categories[i].group == group) ...[
+-                      if (categories.sublist(0, i).any((c) => c.group == group))
+-                        const Divider(height: 1),
+-                      _CategoryListTile(
+-                        category: categories[i],
+-                        selected: false,
+-                        onTap: () => onSelect(i),
+-                      ),
+-                    ],
+-                ],
+-              ),
+-            ),
+-          ],
+-        ],
+-      ),
+-    );
+-  }
+-}
+-
+-class _CompactSettingsDetail extends StatelessWidget {
+-  const _CompactSettingsDetail({required this.category, required this.onBack});
+-
+-  final _SettingsCategory category;
+-  final VoidCallback onBack;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return SingleChildScrollView(
+-      padding: const EdgeInsets.all(UriSpace.xl),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Row(
+-            children: [
+-              IconButton(
+-                onPressed: onBack,
+-                icon: const Icon(Icons.arrow_back_rounded),
+-                tooltip: 'Back to Settings',
+-              ),
+-              const SizedBox(width: UriSpace.xs),
+-              Expanded(
+-                child: Text(
+-                  category.label,
+-                  style: Theme.of(context).textTheme.headlineMedium,
+-                ),
+-              ),
+-            ],
+-          ),
+-          const SizedBox(height: 6),
+-          Text(category.subtitle, style: Theme.of(context).textTheme.bodyLarge),
+-          const SizedBox(height: UriSpace.xl),
+-          category.builder(context),
+-        ],
+-      ),
+-    );
+-  }
+-}
++import 'package:flutter/material.dart';
++
++import '../../services/app_state_scope.dart';
++import '../../theme/uri_theme.dart';
++import '../../widgets/screen_header.dart';
++import 'about_settings_screen.dart';
++import 'admin_grants_screen.dart';
++import 'appearance_settings_screen.dart';
++import 'capabilities_settings_screen.dart';
++import 'diagnostics_settings_screen.dart';
++import 'memory_context_settings_screen.dart';
++import 'memory_settings_screen.dart';
++import 'paired_runtime_screen.dart';
++import 'preferences_settings_screen.dart';
++import 'profile_settings_screen.dart';
++import 'uri_server_settings_screen.dart';
++
++/// Hybrid UI Frozen Blueprint §4.7's two named groups. Connections and
++/// Model Providers are deliberately absent here — both moved to the new
++/// top-level Connections & Providers screen (§4.6); "Tools & Skills" is
++/// the reference's own illustrative label with no real URI screen and
++/// is never built (per the uri-ux-design skill's "map only real,
++/// verified backend capability" rule).
++enum _SettingsGroup { account, system }
++
++extension on _SettingsGroup {
++  String get label => switch (this) {
++    _SettingsGroup.account => 'Account',
++    _SettingsGroup.system => 'System',
++  };
++}
++
++class _SettingsCategory {
++  const _SettingsCategory({
++    required this.group,
++    required this.label,
++    required this.subtitle,
++    required this.icon,
++    required this.builder,
++  });
++
++  final _SettingsGroup group;
++  final String label;
++  final String subtitle;
++  final IconData icon;
++  final WidgetBuilder builder;
++}
++
++final _categories = <_SettingsCategory>[
++  _SettingsCategory(
++    group: _SettingsGroup.account,
++    label: 'Profile',
++    subtitle: 'Who is signed in on this device, and this install\'s identity.',
++    icon: Icons.person_outline_rounded,
++    builder: (_) => const ProfileSettingsScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.account,
++    label: 'Preferences',
++    subtitle: 'How much URI does on its own, and its tone.',
++    icon: Icons.tune_rounded,
++    builder: (_) => const PreferencesSettingsScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.account,
++    label: 'Memory',
++    subtitle: 'Facts URI holds about you, and what it remembers between conversations.',
++    icon: Icons.psychology_outlined,
++    builder: (_) => const MemorySettingsScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.account,
++    label: 'Memory & Context',
++    subtitle:
++        'Memory budgets, provider settings, and conversation compression.',
++    icon: Icons.memory_outlined,
++    builder: (_) => const MemoryContextSettingsScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.system,
++    label: 'URI',
++    subtitle: 'Which backend this device talks to.',
++    icon: Icons.dns_outlined,
++    builder: (_) => const UriServerSettingsScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.system,
++    label: 'Paired runtime',
++    subtitle: 'Choose who executes a task, see provider state, approve actions.',
++    icon: Icons.hub_outlined,
++    builder: (_) => const PairedRuntimeScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.system,
++    label: 'Capabilities',
++    subtitle: 'What URI can actually do right now, reported by the server.',
++    icon: Icons.checklist_rounded,
++    builder: (_) => const CapabilitiesSettingsScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.system,
++    label: 'Diagnostics',
++    subtitle: 'Connection health and this device\'s identifiers.',
++    icon: Icons.monitor_heart_outlined,
++    builder: (_) => const DiagnosticsSettingsScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.system,
++    label: 'About',
++    subtitle: 'App and backend information.',
++    icon: Icons.info_outline_rounded,
++    builder: (_) => const AboutSettingsScreen(),
++  ),
++  _SettingsCategory(
++    group: _SettingsGroup.system,
++    label: 'Appearance',
++    subtitle: 'The 4 URI themes, or follow your device.',
++    icon: Icons.palette_outlined,
++    builder: (_) => const AppearanceSettingsScreen(),
++  ),
++];
++
++List<_SettingsCategory> _getCategories(BuildContext context) {
++  final isAdmin = AppStateScope.of(context).isAdmin;
++  return [
++    ..._categories,
++    if (isAdmin)
++      _SettingsCategory(
++        group: _SettingsGroup.system,
++        label: 'Capability Grants',
++        subtitle:
++            'Per-user capability authorization and grants administration.',
++        icon: Icons.admin_panel_settings_outlined,
++        builder: (_) => const AdminGrantsScreen(),
++      ),
++  ];
++}
++
++/// Settings, organized into named categories rather than one long
++/// scroll: a phone gets a list that swaps in-place to the selected
++/// category (with a back affordance), a tablet/desktop gets a
++/// persistent category list with the selected category's content
++/// beside it (master-detail) — matching the same wide-layout
++/// threshold [AppShell] itself uses.
++///
++/// Deliberately never uses [Navigator.push] for this: a category
++/// screen may need to reach [AppShellState] via
++/// [BuildContext.findAncestorStateOfType] to jump to another shell tab
++/// (see `ask_uri_screen.dart`/`history_screen.dart`'s own uses of the
++/// same lookup), and a pushed route would sit in the
++/// Navigator's stack as a sibling of the shell rather than a
++/// descendant of it — breaking that lookup. An in-place selection
++/// (same mechanism the wide layout already uses) keeps every category
++/// screen's context a true descendant of the shell on every layout.
++class SettingsShell extends StatefulWidget {
++  const SettingsShell({super.key});
++
++  @override
++  State<SettingsShell> createState() => _SettingsShellState();
++}
++
++class _SettingsShellState extends State<SettingsShell> {
++  /// Null only on a compact layout showing the category list; a wide
++  /// layout always has a selection (defaults to the first category).
++  int? _selected;
++
++  @override
++  void initState() {
++    super.initState();
++    WidgetsBinding.instance.addPostFrameCallback((_) {
++      if (!mounted) return;
++      final state = AppStateScope.of(context);
++      if (!state.hasLoadedAccountInfo) state.loadAccountInfo();
++      _selectRequestedCategory(state.targetSettingsCategory);
++    });
++  }
++
++  @override
++  void didChangeDependencies() {
++    super.didChangeDependencies();
++    _selectRequestedCategory(AppStateScope.of(context).targetSettingsCategory);
++  }
++
++  void _selectRequestedCategory(String? label) {
++    if (label == null) return;
++    final index = _getCategories(context)
++        .indexWhere((category) => category.label == label);
++    if (index >= 0) {
++      _selected = index;
++      AppStateScope.of(context).targetSettingsCategory = null;
++    }
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return ListenableBuilder(
++      listenable: AppStateScope.of(context),
++      builder: (context, _) {
++        final categories = _getCategories(context);
++        final requested = AppStateScope.of(context).targetSettingsCategory;
++        if (requested != null) {
++          final index = categories.indexWhere(
++            (category) => category.label == requested,
++          );
++          if (index >= 0) {
++            _selected = index;
++            AppStateScope.of(context).targetSettingsCategory = null;
++          }
++        }
++
++        if (UriBreakpoints.isWide(context)) {
++          final selected = (_selected != null && _selected! < categories.length)
++              ? _selected!
++              : 0;
++          return _WideSettings(
++            categories: categories,
++            selected: selected,
++            onSelect: (i) => setState(() => _selected = i),
++          );
++        }
++
++        final selected = _selected;
++        if (selected == null || selected >= categories.length) {
++          return _CompactSettingsList(
++            categories: categories,
++            onSelect: (i) => setState(() => _selected = i),
++          );
++        }
++        return _CompactSettingsDetail(
++          category: categories[selected],
++          onBack: () => setState(() => _selected = null),
++        );
++      },
++    );
++  }
++}
++
++class _WideSettings extends StatelessWidget {
++  const _WideSettings({
++    required this.categories,
++    required this.selected,
++    required this.onSelect,
++  });
++
++  final List<_SettingsCategory> categories;
++  final int selected;
++  final ValueChanged<int> onSelect;
++
++  @override
++  Widget build(BuildContext context) {
++    final colors = UriColors.of(context);
++    final category = categories[selected];
++
++    return Row(
++      crossAxisAlignment: CrossAxisAlignment.stretch,
++      children: [
++        SizedBox(
++          width: 260,
++          child: Container(
++            decoration: BoxDecoration(
++              border: Border(right: BorderSide(color: colors.border)),
++            ),
++            child: ListView(
++              padding: const EdgeInsets.symmetric(vertical: UriSpace.md),
++              children: [
++                for (final group in _SettingsGroup.values) ...[
++                  _GroupHeader(label: group.label),
++                  for (var i = 0; i < categories.length; i++)
++                    if (categories[i].group == group)
++                      _CategoryListTile(
++                        category: categories[i],
++                        selected: i == selected,
++                        onTap: () => onSelect(i),
++                      ),
++                ],
++              ],
++            ),
++          ),
++        ),
++        Expanded(
++          child: SingleChildScrollView(
++            padding: const EdgeInsets.all(UriSpace.xl),
++            child: ConstrainedBox(
++              constraints: const BoxConstraints(maxWidth: 720),
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  ScreenHeader(
++                    title: category.label,
++                    subtitle: category.subtitle,
++                  ),
++                  category.builder(context),
++                ],
++              ),
++            ),
++          ),
++        ),
++      ],
++    );
++  }
++}
++
++class _GroupHeader extends StatelessWidget {
++  const _GroupHeader({required this.label});
++
++  final String label;
++
++  @override
++  Widget build(BuildContext context) {
++    final colors = UriColors.of(context);
++    return Padding(
++      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
++      child: Text(
++        label.toUpperCase(),
++        style: TextStyle(
++          fontSize: 11,
++          fontWeight: FontWeight.w700,
++          letterSpacing: 0.6,
++          color: colors.inkFaint,
++        ),
++      ),
++    );
++  }
++}
++
++class _CategoryListTile extends StatelessWidget {
++  const _CategoryListTile({
++    required this.category,
++    required this.selected,
++    required this.onTap,
++  });
++
++  final _SettingsCategory category;
++  final bool selected;
++  final VoidCallback onTap;
++
++  @override
++  Widget build(BuildContext context) {
++    final colors = UriColors.of(context);
++    return Material(
++      color: selected ? colors.accentSoft : Colors.transparent,
++      child: ListTile(
++        leading: Icon(
++          category.icon,
++          color: selected ? colors.accentInk : colors.inkFaint,
++        ),
++        title: Text(
++          category.label,
++          style: TextStyle(
++            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
++            color: selected ? colors.accentInk : colors.ink,
++          ),
++        ),
++        trailing: selected ? null : const Icon(Icons.chevron_right_rounded),
++        onTap: onTap,
++      ),
++    );
++  }
++}
++
++class _CompactSettingsList extends StatelessWidget {
++  const _CompactSettingsList({
++    required this.categories,
++    required this.onSelect,
++  });
++
++  final List<_SettingsCategory> categories;
++  final ValueChanged<int> onSelect;
++
++  @override
++  Widget build(BuildContext context) {
++    return SingleChildScrollView(
++      padding: const EdgeInsets.all(UriSpace.xl),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          const ScreenHeader(
++            title: 'Settings',
++            subtitle: 'Account, connections, preferences, and how URI behaves.',
++          ),
++          for (final group in _SettingsGroup.values) ...[
++            Padding(
++              padding: const EdgeInsets.only(bottom: UriSpace.xs),
++              child: _GroupHeader(label: group.label),
++            ),
++            Card(
++              margin: const EdgeInsets.only(bottom: UriSpace.md),
++              child: Column(
++                children: [
++                  for (var i = 0; i < categories.length; i++)
++                    if (categories[i].group == group) ...[
++                      if (categories.sublist(0, i).any((c) => c.group == group))
++                        const Divider(height: 1),
++                      _CategoryListTile(
++                        category: categories[i],
++                        selected: false,
++                        onTap: () => onSelect(i),
++                      ),
++                    ],
++                ],
++              ),
++            ),
++          ],
++        ],
++      ),
++    );
++  }
++}
++
++class _CompactSettingsDetail extends StatelessWidget {
++  const _CompactSettingsDetail({required this.category, required this.onBack});
++
++  final _SettingsCategory category;
++  final VoidCallback onBack;
++
++  @override
++  Widget build(BuildContext context) {
++    return SingleChildScrollView(
++      padding: const EdgeInsets.all(UriSpace.xl),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Row(
++            children: [
++              IconButton(
++                onPressed: onBack,
++                icon: const Icon(Icons.arrow_back_rounded),
++                tooltip: 'Back to Settings',
++              ),
++              const SizedBox(width: UriSpace.xs),
++              Expanded(
++                child: Text(
++                  category.label,
++                  style: Theme.of(context).textTheme.headlineMedium,
++                ),
++              ),
++            ],
++          ),
++          const SizedBox(height: 6),
++          Text(category.subtitle, style: Theme.of(context).textTheme.bodyLarge),
++          const SizedBox(height: UriSpace.xl),
++          category.builder(context),
++        ],
++      ),
++    );
++  }
++}
+diff --git a/uri_workspace/capabilities_registry.json b/uri_workspace/capabilities_registry.json
+index 36f6eda..3aebb57 100644
+--- a/uri_workspace/capabilities_registry.json
++++ b/uri_workspace/capabilities_registry.json
+@@ -281,7 +281,41 @@
+       "limitations": "The URL must appear literally in the request text (the Brain cannot supply an arbitrary URL of its own choosing - see the tool's own module docstring on the argument boundary); bounded to 10 MB and content types URI can extract text from; honestly reports an unreachable page, an unsupported content type, or an empty result rather than inventing content.",
+       "interface": null,
+       "effect_type": "read_only"
+-    }
++    },
++    "external_harness_task": {
++        "file_path": "uri_core/client_runtime/turn_runner.py",
++        "class_name": "TurnRunner",
++        "method": "_run_harness",
++        "description": "Hand one bounded task to an external execution harness the user explicitly selected on their paired client (client-side only). The result is verified independently by URI before it is reported.",
++        "status": "implemented",
++        "availability": "unavailable_on_runtime",
++        "execution_surface": "paired_client",
++        "permissions": [],
++        "approval_requirement": "user_approval_required",
++        "risk": "controlled",
++        "platform": "any",
++        "limitations": "Executed only by a paired client whose harness is authenticated and explicitly qualified; catalogue membership grants nothing. Never executable by the server runtime (availability unavailable_on_runtime). Output is a claim until URI's own workspace check verifies it.",
++        "interface": {
++          "parameters": {
++            "instruction": {
++              "type": "string",
++              "minLength": 3
++            },
++            "expected_file": {
++              "type": "string",
++              "pattern": "^[A-Za-z0-9][\\w-]{0,63}\\.[A-Za-z0-9]{1,8}$"
++            }
++          },
++          "required": [
++            "instruction",
++            "expected_file"
++          ],
++          "returns": {
++            "type": "object"
++          }
++        },
++        "effect_type": "local_write"
++      }
+   },
+   "planned_capabilities": {
+     "pc_system_optimization": {

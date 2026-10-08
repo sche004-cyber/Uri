@@ -1,0 +1,21 @@
+{
+ "recorded_at": "2026-10-06T21:40:00+05:30",
+ "scope": "correction to crash_recovery_20261006_second.json and recovery_final_20261006.json; the original records are preserved unchanged",
+ "second_interruption": {
+  "window": "2026-10-06T14:25:13+05:30 to 18:18:12+05:30",
+  "os_observed_evidence": {
+   "kernel_power_41": {"time": "2026-10-06T18:18:16+05:30", "BugcheckCode": 0, "WHEABootErrorCount": 0},
+   "whea_events": 0, "display_driver_tdr_4101": 0, "bugcheck_1001": 0, "minidump": "none",
+   "truncated_state": "server log cut mid-line at uptime 0.512 s; queue_runner.lock allocated with 4 NUL bytes",
+   "meaning": "unexpected power loss as seen by the OS"
+  },
+  "user_supplied_cause": "external electrical power outage (loss of mains power / light); supplied by the user after the session, treated as authoritative external context",
+  "classification": "EXTERNAL POWER OUTAGE - not a model/runtime/driver event",
+  "consequence": "excluded from the llama.cpp / Vulkan stability assessment; the earlier correlation note ('common factor is a llama-server/Vulkan session') in crash_recovery_20261006_second.json is withdrawn"
+ },
+ "first_interruption": {
+  "window": "2026-10-06T12:06:24+05:30 to 13:30:30+05:30",
+  "classification": "CAUSE UNKNOWN (unchanged)",
+  "note": "running experiment uri_ngram_mod16 is a correlation only; Vulkan/GPU causation is not inferred; remains the single stability-relevant event"
+ }
+}

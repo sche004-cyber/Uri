@@ -1,0 +1,113 @@
+{
+ "name": "uri_ngram_simple",
+ "load_seconds": 84.84,
+ "tokens": {
+  "decision_system": 2763,
+  "decision_request": 1292,
+  "request_sections": {
+   "user_text": 8,
+   "recent_conversation": 1,
+   "active_pointer": 22,
+   "capability_summaries": 1251,
+   "session_facts": 1,
+   "attempt_history": 1,
+   "capability_action_affordances": 174
+  },
+  "interpreter_system": 112,
+  "language_layer_system": 341
+ },
+ "agg": {
+  "session_proposer": {
+   "n": 12,
+   "prompt_n_p50": 1024.0,
+   "cache_n_p50": 3047.0,
+   "prompt_ms_p50": 478.802,
+   "ttft_p50": 0.784,
+   "total_p50": 2.271,
+   "gen_tps_p50": 99.825,
+   "errors": 0
+  },
+  "session_interpreter": {
+   "n": 8,
+   "prompt_n_p50": 38.0,
+   "cache_n_p50": 117.0,
+   "prompt_ms_p50": 135.16,
+   "ttft_p50": 0.455,
+   "total_p50": 0.587,
+   "gen_tps_p50": 100.022,
+   "errors": 0
+  },
+  "session_answer": {
+   "n": 4,
+   "prompt_n_p50": 174.5,
+   "cache_n_p50": 345.0,
+   "prompt_ms_p50": 191.691,
+   "ttft_p50": 0.473,
+   "total_p50": 1.161,
+   "gen_tps_p50": 102.17,
+   "errors": 0
+  },
+  "repeat_proposer": {
+   "n": 12,
+   "prompt_n_p50": 1020.5,
+   "cache_n_p50": 3052.0,
+   "prompt_ms_p50": 478.659,
+   "ttft_p50": 0.734,
+   "total_p50": 2.179,
+   "gen_tps_p50": 99.952,
+   "errors": 0
+  },
+  "identical": {
+   "n": 1,
+   "prompt_n_p50": 4,
+   "cache_n_p50": 4070,
+   "prompt_ms_p50": 49.867,
+   "ttft_p50": 0.302,
+   "total_p50": 1.573,
+   "gen_tps_p50": 99.907,
+   "errors": 0
+  },
+  "decode": {
+   "n": 2,
+   "prompt_n_p50": 83.5,
+   "cache_n_p50": 0.0,
+   "prompt_ms_p50": 204.99,
+   "ttft_p50": 0.518,
+   "total_p50": 3.678,
+   "gen_tps_p50": 102.965,
+   "errors": 0
+  },
+  "trivial": {
+   "n": 6,
+   "prompt_n_p50": 21.0,
+   "cache_n_p50": 19.0,
+   "prompt_ms_p50": 130.722,
+   "ttft_p50": 0.397,
+   "total_p50": 0.463,
+   "gen_tps_p50": 93.368,
+   "errors": 0
+  },
+  "vision": {
+   "n": 0,
+   "prompt_n_p50": null,
+   "cache_n_p50": null,
+   "prompt_ms_p50": null,
+   "ttft_p50": null,
+   "total_p50": null,
+   "gen_tps_p50": null,
+   "errors": 0
+  }
+ },
+ "long": [],
+ "resources": {
+  "load_seconds": 84.84,
+  "vram_dedicated_before_load_mib": 1100.3,
+  "vram_dedicated_now_mib": 15704.1,
+  "server_rss_now_mib": 1659.2,
+  "system_available_ram_mib": 9376.5,
+  "peak_server_rss_mib": 1891.4,
+  "peak_vram_dedicated_mib": 15704.1,
+  "min_system_available_ram_mib": 9130.3,
+  "mean_server_cpu_pct_of_machine": 1.0
+ }
+}

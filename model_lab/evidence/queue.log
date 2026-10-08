@@ -1,0 +1,48 @@
+23:41:18 START gptoss-20b ['--paths', 'fast', '--suites', 'F,D,DG,C,H,S,O,R,P,L']
+23:51:43 END gptoss-20b rc=0
+23:51:43 START gptoss-20b ['--paths', 'normal,deep', '--suites', 'D,C,H,R,P']
+00:57:47 START qwen35-9b ['--paths', 'fast', '--suites', 'F,D,DG,C,H,S,O,R,P,L']
+01:10:24 END qwen35-9b rc=0
+01:10:24 START qwen35-9b ['--paths', 'normal,deep', '--suites', 'D,C,H,R']
+02:48:41 START qwen35-2b ['--paths', 'fast', '--suites', 'F,D,DG,C,H,P']
+02:53:05 END qwen35-2b rc=0
+02:53:05 START qwen36-35b-a3b ['--ngl', '-1', '--paths', 'fast', '--suites', 'F,D,DG,C,H,S,O,R,P,L']
+03:21:36 END qwen36-35b-a3b rc=0
+03:21:36 START qwen36-35b-a3b ['--ngl', '-1', '--paths', 'normal', '--suites', 'D,C,H,R']
+04:04:10 END qwen36-35b-a3b rc=0
+04:04:10 START qwen36-35b-a3b ['--ngl', '-1', '--paths', 'deep', '--suites', 'C,H,R']
+04:20:49 END qwen36-35b-a3b rc=0
+04:20:49 START qwen38-27b ['--ngl', '-1', '--paths', 'fast', '--suites', 'F,D,DG,C,H,S,O,R,P,L']
+04:55:34 END qwen38-27b rc=0
+04:55:34 START qwen38-27b ['--ngl', '-1', '--paths', 'normal', '--suites', 'D,C,H,R']
+05:38:50 END qwen38-27b rc=0
+05:38:50 START qwen38-27b ['--ngl', '-1', '--paths', 'deep', '--suites', 'C,H,R']
+05:47:31 END qwen38-27b rc=0
+05:47:31 START nemotron35-30b-a3b ['--ngl', '-1', '--paths', 'fast', '--suites', 'F,D,DG,C,H,S,O,R,P,L']
+06:07:27 END nemotron35-30b-a3b rc=0
+06:07:27 START nemotron35-30b-a3b ['--ngl', '-1', '--paths', 'normal', '--suites', 'D,C,H,R']
+06:07:59 END nemotron35-30b-a3b rc=4294967295
+06:08:08 START qwen36-35b-a3b-iq3s ['--ngl', '-1', '--paths', 'fast', '--suites', 'F,D,DG,C,H,S,O,R,P,L,RH']
+06:22:33 END qwen36-35b-a3b-iq3s rc=0
+06:22:33 START qwen36-35b-a3b-iq3s ['--ngl', '-1', '--paths', 'normal', '--suites', 'D,C,H,R,RH']
+06:41:11 END qwen36-35b-a3b-iq3s rc=0
+06:41:11 START qwen36-35b-a3b-iq3s ['--ngl', '-1', '--paths', 'deep', '--suites', 'C,H,R,RH']
+07:01:31 END qwen36-35b-a3b-iq3s rc=0
+07:01:31 START gemma4-26b-a4b-qat ['--paths', 'fast', '--suites', 'P,RH']
+07:04:52 END gemma4-26b-a4b-qat rc=0
+07:04:52 START gemma4-26b-a4b-qat ['--paths', 'normal', '--suites', 'D,C,H,R,RH']
+07:25:34 END gemma4-26b-a4b-qat rc=0
+07:25:34 START gemma4-26b-a4b-qat ['--paths', 'deep', '--suites', 'C,H,R,RH']
+08:03:26 END gemma4-26b-a4b-qat rc=0
+08:03:26 START gemma4-26b-a4b-qat-vision ['--paths', 'fast', '--suites', 'V', '--mmproj', 'C:\\Users\\cheta\\.lmstudio\\models\\lmstudio-community\\gemma-4-26B-A4B-it-QAT-GGUF\\mmproj-gemma-4-26B-A4B-it-QAT-BF16.gguf', '--ctx', '16384']
+08:04:07 END gemma4-26b-a4b-qat-vision rc=0
+08:04:07 START gptoss-20b ['--paths', 'fast', '--suites', 'P,O,L,RH']
+08:08:21 END gptoss-20b rc=0
+08:08:21 QUEUE_DONE
+08:08:48 START qwen38-27b-gpu16k ['--ngl', '999', '--ctx', '16384', '--paths', 'fast', '--suites', 'F,D,C,H,P,L,RH', '--l-sizes', '4000,12000']
+08:31:29 END qwen38-27b-gpu16k rc=0
+08:31:29 START qwen38-27b-gpu16k ['--ngl', '999', '--ctx', '16384', '--paths', 'normal', '--suites', 'RH']
+08:35:25 END qwen38-27b-gpu16k rc=0
+08:35:25 START qwen36-35b-a3b-iq3s-vision ['--ngl', '999', '--ctx', '16384', '--paths', 'fast', '--suites', 'V', '--mmproj', 'D:\\uri-model-lab\\models\\unsloth__Qwen3.6-35B-A3B-GGUF\\mmproj-F16.gguf']
+08:37:08 END qwen36-35b-a3b-iq3s-vision rc=0
+08:37:08 QUEUE_DONE

@@ -1,0 +1,310 @@
+{
+ "fast/C": {
+  "n": 14,
+  "score": 1.0,
+  "ttft_p50": 0.681,
+  "ttfa_p50": 0.681,
+  "total_p50": 2.068,
+  "total_p95": 2.822,
+  "gen_tps_p50": 41.2,
+  "prefill_tps_p50": 208.0,
+  "gen_tokens_p50": 59,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "fast/D": {
+  "n": 72,
+  "score": 0.875,
+  "ttft_p50": 2.26,
+  "ttfa_p50": 2.26,
+  "total_p50": 6.123,
+  "total_p95": 7.203,
+  "gen_tps_p50": 40.8,
+  "prefill_tps_p50": 736.7,
+  "gen_tokens_p50": 154,
+  "errors": 0,
+  "truncated": 0,
+  "invalid": 0,
+  "golden_acc": 0.895,
+  "extra_acc": 0.8,
+  "categories": {
+   "correct": 63,
+   "false_capability": 1,
+   "missed_continuation": 1,
+   "missed_capability": 2,
+   "false_clarification": 2,
+   "mismatch": 3
+  }
+ },
+ "fast/DG": {
+  "n": 72,
+  "score": 0.875,
+  "ttft_p50": 2.265,
+  "ttfa_p50": 2.265,
+  "total_p50": 6.112,
+  "total_p95": 7.002,
+  "gen_tps_p50": 40.9,
+  "prefill_tps_p50": 733.1,
+  "gen_tokens_p50": 154,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/F": {
+  "n": 30,
+  "score": 1.0,
+  "ttft_p50": 0.492,
+  "ttfa_p50": 0.492,
+  "total_p50": 0.618,
+  "total_p95": 1.15,
+  "gen_tps_p50": 37.5,
+  "prefill_tps_p50": 87.9,
+  "gen_tokens_p50": 7,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/H": {
+  "n": 22,
+  "score": 0.909,
+  "ttft_p50": 0.467,
+  "ttfa_p50": 0.467,
+  "total_p50": 1.377,
+  "total_p95": 1.971,
+  "gen_tps_p50": 41.4,
+  "prefill_tps_p50": 106.5,
+  "gen_tokens_p50": 40,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 0,
+  "under_escalation": 0
+ },
+ "fast/L": {
+  "n": 3,
+  "score": 0.933,
+  "ttft_p50": 23.712,
+  "ttfa_p50": 23.712,
+  "total_p50": 26.595,
+  "total_p95": 52.849,
+  "gen_tps_p50": 39.5,
+  "prefill_tps_p50": 767.0,
+  "gen_tokens_p50": 112,
+  "errors": 0,
+  "truncated": 0,
+  "by_size": {
+   "l_4k": {
+    "score": 0.8,
+    "prompt_tokens": 4658,
+    "total_s": 8.96,
+    "prefill_tps": 784.1,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": false,
+     "entity_set": true
+    }
+   },
+   "l_16k": {
+    "score": 1.0,
+    "prompt_tokens": 17942,
+    "total_s": 26.595,
+    "prefill_tps": 767.0,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": true,
+     "entity_set": true
+    }
+   },
+   "l_32k": {
+    "score": 1.0,
+    "prompt_tokens": 35219,
+    "total_s": 52.849,
+    "prefill_tps": 708.2,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": true,
+     "entity_set": true
+    }
+   }
+  }
+ },
+ "fast/O": {
+  "n": 4,
+  "score": 1.0,
+  "ttft_p50": 0.74,
+  "ttfa_p50": 0.74,
+  "total_p50": 4.626,
+  "total_p95": 5.153,
+  "gen_tps_p50": 41.9,
+  "prefill_tps_p50": 184.4,
+  "gen_tokens_p50": 155,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/P": {
+  "n": 12,
+  "score": 1.0,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 0,
+  "truncated": 0,
+  "proposer_invalid": 0,
+  "failed_ids": []
+ },
+ "fast/R": {
+  "n": 12,
+  "score": 0.917,
+  "ttft_p50": 0.741,
+  "ttfa_p50": 0.741,
+  "total_p50": 12.846,
+  "total_p95": 25.132,
+  "gen_tps_p50": 41.4,
+  "prefill_tps_p50": 206.6,
+  "gen_tokens_p50": 505,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/S": {
+  "n": 12,
+  "score": 1.0,
+  "ttft_p50": 0.803,
+  "ttfa_p50": 0.803,
+  "total_p50": 2.953,
+  "total_p95": 3.322,
+  "gen_tps_p50": 41.1,
+  "prefill_tps_p50": 414.7,
+  "gen_tokens_p50": 91,
+  "errors": 0,
+  "truncated": 0,
+  "prompt_score": 1.0,
+  "prompt_valid": 6,
+  "prompt_hallucinated_fields": 0,
+  "grammar_score": 1.0,
+  "grammar_valid": 6,
+  "grammar_hallucinated_fields": 0
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\qwen36-35b-a3b\20261006-025306
+{
+ "normal/C": {
+  "n": 14,
+  "score": 1.0,
+  "ttft_p50": 0.72,
+  "ttfa_p50": 12.557,
+  "total_p50": 14.418,
+  "total_p95": 20.431,
+  "gen_tps_p50": 40.8,
+  "prefill_tps_p50": 203.8,
+  "gen_tokens_p50": 561,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "normal/D": {
+  "n": 72,
+  "score": 0.875,
+  "ttft_p50": 2.274,
+  "ttfa_p50": 21.596,
+  "total_p50": 25.069,
+  "total_p95": 26.228,
+  "gen_tps_p50": 39.9,
+  "prefill_tps_p50": 731.3,
+  "gen_tokens_p50": 907,
+  "errors": 0,
+  "truncated": 0,
+  "invalid": 1,
+  "golden_acc": 0.912,
+  "extra_acc": 0.733,
+  "categories": {
+   "correct": 63,
+   "invalid": 1,
+   "false_capability": 1,
+   "false_clarification": 1,
+   "false_unsupported": 2,
+   "mismatch": 4
+  }
+ },
+ "normal/H": {
+  "n": 22,
+  "score": 1.0,
+  "ttft_p50": 0.471,
+  "ttfa_p50": 4.605,
+  "total_p50": 5.37,
+  "total_p95": 20.271,
+  "gen_tps_p50": 41.1,
+  "prefill_tps_p50": 100.0,
+  "gen_tokens_p50": 201,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 0,
+  "under_escalation": 0
+ },
+ "normal/R": {
+  "n": 12,
+  "score": 0.917,
+  "ttft_p50": 0.754,
+  "ttfa_p50": 19.49,
+  "total_p50": 22.201,
+  "total_p95": 25.724,
+  "gen_tps_p50": 41.1,
+  "prefill_tps_p50": 202.1,
+  "gen_tokens_p50": 883,
+  "errors": 0,
+  "truncated": 0
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\qwen36-35b-a3b\20261006-032137
+{
+ "deep/C": {
+  "n": 14,
+  "score": 1.0,
+  "ttft_p50": 0.732,
+  "ttfa_p50": 9.152,
+  "total_p50": 10.27,
+  "total_p95": 15.918,
+  "gen_tps_p50": 40.6,
+  "prefill_tps_p50": 202.8,
+  "gen_tokens_p50": 391,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "deep/H": {
+  "n": 22,
+  "score": 0.955,
+  "ttft_p50": 0.487,
+  "ttfa_p50": 4.606,
+  "total_p50": 5.435,
+  "total_p95": 25.199,
+  "gen_tps_p50": 40.0,
+  "prefill_tps_p50": 100.0,
+  "gen_tokens_p50": 201,
+  "errors": 0,
+  "truncated": 1,
+  "over_escalation": 0,
+  "under_escalation": 0
+ },
+ "deep/R": {
+  "n": 12,
+  "score": 1.0,
+  "ttft_p50": 0.741,
+  "ttfa_p50": 36.859,
+  "total_p50": 42.627,
+  "total_p95": 49.906,
+  "gen_tps_p50": 40.7,
+  "prefill_tps_p50": 203.3,
+  "gen_tokens_p50": 1709,
+  "errors": 0,
+  "truncated": 0
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\qwen36-35b-a3b\20261006-040411

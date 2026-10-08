@@ -1,0 +1,393 @@
+{
+ "baseline": "spec_off_32k_novis",
+ "variants": {
+  "mtp3_32k_novis": {
+   "rows": {
+    "office_draft#0": {
+     "identical_text": false,
+     "gen_tps_base": 104.32032319366371,
+     "gen_tps": 123.16024355139403,
+     "speedup": 1.181,
+     "draft_n": 168,
+     "draft_n_accepted": 97,
+     "accept_rate": 0.577,
+     "total_base": 1.981,
+     "total": 1.79
+    },
+    "rewrite_circular#0": {
+     "identical_text": true,
+     "gen_tps_base": 103.60041927699095,
+     "gen_tps": 171.63187587582738,
+     "speedup": 1.657,
+     "draft_n": 132,
+     "draft_n_accepted": 126,
+     "accept_rate": 0.955,
+     "total_base": 2.106,
+     "total": 1.536
+    },
+    "code_patch#0": {
+     "identical_text": true,
+     "gen_tps_base": 103.8504164563966,
+     "gen_tps": 174.83552257153917,
+     "speedup": 1.684,
+     "draft_n": 147,
+     "draft_n_accepted": 143,
+     "accept_rate": 0.973,
+     "total_base": 2.37,
+     "total": 1.692
+    },
+    "extract_record#0": {
+     "identical_text": true,
+     "gen_tps_base": 102.88945829320024,
+     "gen_tps": 169.78345450007978,
+     "speedup": 1.65,
+     "draft_n": 126,
+     "draft_n_accepted": 124,
+     "accept_rate": 0.984,
+     "total_base": 2.124,
+     "total": 1.551
+    },
+    "decision_contract#0": {
+     "identical_text": true,
+     "gen_tps_base": 97.16355171750865,
+     "gen_tps": 154.7602003110101,
+     "speedup": 1.593,
+     "draft_n": 153,
+     "draft_n_accepted": 136,
+     "accept_rate": 0.889,
+     "total_base": 3.916,
+     "total": 3.414
+    },
+    "conversational#0": {
+     "identical_text": false,
+     "gen_tps_base": 102.08553711953337,
+     "gen_tps": 103.8318792845742,
+     "speedup": 1.017,
+     "draft_n": 168,
+     "draft_n_accepted": 73,
+     "accept_rate": 0.435,
+     "total_base": 1.637,
+     "total": 1.809
+    },
+    "dossier_answer#0": {
+     "identical_text": true,
+     "gen_tps_base": 98.29731183660485,
+     "gen_tps": 154.31579183641404,
+     "speedup": 1.57,
+     "draft_n": 90,
+     "draft_n_accepted": 80,
+     "accept_rate": 0.889,
+     "total_base": 3.361,
+     "total": 3.161
+    },
+    "quote_back#0": {
+     "identical_text": true,
+     "gen_tps_base": 101.62376080336502,
+     "gen_tps": 175.12112544509955,
+     "speedup": 1.723,
+     "draft_n": 132,
+     "draft_n_accepted": 131,
+     "accept_rate": 0.992,
+     "total_base": 2.283,
+     "total": 1.609
+    },
+    "office_draft#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.07955399908329,
+     "gen_tps": 124.77949505897666,
+     "speedup": 1.222,
+     "draft_n": 168,
+     "draft_n_accepted": 97,
+     "accept_rate": 0.577,
+     "total_base": 1.992,
+     "total": 1.747
+    },
+    "rewrite_circular#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.51363431336368,
+     "gen_tps": 173.39348387287606,
+     "speedup": 1.691,
+     "draft_n": 132,
+     "draft_n_accepted": 126,
+     "accept_rate": 0.955,
+     "total_base": 2.148,
+     "total": 1.493
+    },
+    "code_patch#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.80920806388306,
+     "gen_tps": 173.80709042404405,
+     "speedup": 1.691,
+     "draft_n": 147,
+     "draft_n_accepted": 143,
+     "accept_rate": 0.973,
+     "total_base": 2.409,
+     "total": 1.682
+    },
+    "extract_record#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.22310623998169,
+     "gen_tps": 173.93017227469232,
+     "speedup": 1.701,
+     "draft_n": 126,
+     "draft_n_accepted": 124,
+     "accept_rate": 0.984,
+     "total_base": 2.154,
+     "total": 1.524
+    },
+    "decision_contract#1": {
+     "identical_text": false,
+     "gen_tps_base": 98.55709319527773,
+     "gen_tps": 154.2099713576505,
+     "speedup": 1.565,
+     "draft_n": 162,
+     "draft_n_accepted": 143,
+     "accept_rate": 0.883,
+     "total_base": 3.926,
+     "total": 3.414
+    },
+    "conversational#1": {
+     "identical_text": false,
+     "gen_tps_base": 103.11651899966309,
+     "gen_tps": 105.9686644908863,
+     "speedup": 1.028,
+     "draft_n": 168,
+     "draft_n_accepted": 73,
+     "accept_rate": 0.435,
+     "total_base": 1.626,
+     "total": 1.757
+    },
+    "dossier_answer#1": {
+     "identical_text": true,
+     "gen_tps_base": 98.31681610822714,
+     "gen_tps": 153.11548248080487,
+     "speedup": 1.557,
+     "draft_n": 90,
+     "draft_n_accepted": 80,
+     "accept_rate": 0.889,
+     "total_base": 3.365,
+     "total": 3.134
+    },
+    "quote_back#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.52880823813081,
+     "gen_tps": 176.77106318651178,
+     "speedup": 1.724,
+     "draft_n": 132,
+     "draft_n_accepted": 131,
+     "accept_rate": 0.992,
+     "total_base": 2.24,
+     "total": 1.563
+    }
+   },
+   "median_speedup": 1.621,
+   "all_identical": false,
+   "resources": {
+    "load_seconds": 14.66,
+    "vram_dedicated_before_load_mib": 960.9,
+    "vram_dedicated_now_mib": 15782.5,
+    "server_rss_now_mib": 2291.2,
+    "system_available_ram_mib": 13793.1,
+    "peak_server_rss_mib": 2497.5,
+    "peak_vram_dedicated_mib": 15814.5,
+    "min_system_available_ram_mib": 13636.4,
+    "mean_server_cpu_pct_of_machine": 1.6
+   },
+   "load_seconds": 14.66
+  },
+  "mtp2_32k_novis": {
+   "rows": {
+    "office_draft#0": {
+     "identical_text": false,
+     "gen_tps_base": 104.32032319366371,
+     "gen_tps": 124.73910774849988,
+     "speedup": 1.196,
+     "draft_n": 134,
+     "draft_n_accepted": 86,
+     "accept_rate": 0.642,
+     "total_base": 1.981,
+     "total": 1.741
+    },
+    "rewrite_circular#0": {
+     "identical_text": true,
+     "gen_tps_base": 103.60041927699095,
+     "gen_tps": 154.40592773439275,
+     "speedup": 1.49,
+     "draft_n": 116,
+     "draft_n_accepted": 112,
+     "accept_rate": 0.966,
+     "total_base": 2.106,
+     "total": 1.589
+    },
+    "code_patch#0": {
+     "identical_text": true,
+     "gen_tps_base": 103.8504164563966,
+     "gen_tps": 155.47905769973593,
+     "speedup": 1.497,
+     "draft_n": 130,
+     "draft_n_accepted": 127,
+     "accept_rate": 0.977,
+     "total_base": 2.37,
+     "total": 1.815
+    },
+    "extract_record#0": {
+     "identical_text": true,
+     "gen_tps_base": 102.88945829320024,
+     "gen_tps": 157.26264472189618,
+     "speedup": 1.528,
+     "draft_n": 112,
+     "draft_n_accepted": 110,
+     "accept_rate": 0.982,
+     "total_base": 2.124,
+     "total": 1.636
+    },
+    "decision_contract#0": {
+     "identical_text": true,
+     "gen_tps_base": 97.16355171750865,
+     "gen_tps": 140.21838075513972,
+     "speedup": 1.443,
+     "draft_n": 134,
+     "draft_n_accepted": 120,
+     "accept_rate": 0.896,
+     "total_base": 3.916,
+     "total": 3.582
+    },
+    "conversational#0": {
+     "identical_text": false,
+     "gen_tps_base": 102.08553711953337,
+     "gen_tps": 109.70973695177024,
+     "speedup": 1.075,
+     "draft_n": 128,
+     "draft_n_accepted": 66,
+     "accept_rate": 0.516,
+     "total_base": 1.637,
+     "total": 1.703
+    },
+    "dossier_answer#0": {
+     "identical_text": true,
+     "gen_tps_base": 98.29731183660485,
+     "gen_tps": 145.00223435261114,
+     "speedup": 1.475,
+     "draft_n": 78,
+     "draft_n_accepted": 72,
+     "accept_rate": 0.923,
+     "total_base": 3.361,
+     "total": 3.176
+    },
+    "quote_back#0": {
+     "identical_text": true,
+     "gen_tps_base": 101.62376080336502,
+     "gen_tps": 159.7058475286438,
+     "speedup": 1.572,
+     "draft_n": 116,
+     "draft_n_accepted": 116,
+     "accept_rate": 1.0,
+     "total_base": 2.283,
+     "total": 1.723
+    },
+    "office_draft#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.07955399908329,
+     "gen_tps": 125.0490388387603,
+     "speedup": 1.225,
+     "draft_n": 132,
+     "draft_n_accepted": 87,
+     "accept_rate": 0.659,
+     "total_base": 1.992,
+     "total": 1.734
+    },
+    "rewrite_circular#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.51363431336368,
+     "gen_tps": 156.8484170765485,
+     "speedup": 1.53,
+     "draft_n": 116,
+     "draft_n_accepted": 112,
+     "accept_rate": 0.966,
+     "total_base": 2.148,
+     "total": 1.575
+    },
+    "code_patch#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.80920806388306,
+     "gen_tps": 155.93060113683154,
+     "speedup": 1.517,
+     "draft_n": 130,
+     "draft_n_accepted": 127,
+     "accept_rate": 0.977,
+     "total_base": 2.409,
+     "total": 1.784
+    },
+    "extract_record#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.22310623998169,
+     "gen_tps": 157.84298996460893,
+     "speedup": 1.544,
+     "draft_n": 112,
+     "draft_n_accepted": 110,
+     "accept_rate": 0.982,
+     "total_base": 2.154,
+     "total": 1.624
+    },
+    "decision_contract#1": {
+     "identical_text": false,
+     "gen_tps_base": 98.55709319527773,
+     "gen_tps": 144.42222313453408,
+     "speedup": 1.465,
+     "draft_n": 138,
+     "draft_n_accepted": 128,
+     "accept_rate": 0.928,
+     "total_base": 3.926,
+     "total": 3.477
+    },
+    "conversational#1": {
+     "identical_text": false,
+     "gen_tps_base": 103.11651899966309,
+     "gen_tps": 110.2986442672066,
+     "speedup": 1.07,
+     "draft_n": 128,
+     "draft_n_accepted": 66,
+     "accept_rate": 0.516,
+     "total_base": 1.626,
+     "total": 1.686
+    },
+    "dossier_answer#1": {
+     "identical_text": true,
+     "gen_tps_base": 98.31681610822714,
+     "gen_tps": 142.50993682923163,
+     "speedup": 1.449,
+     "draft_n": 78,
+     "draft_n_accepted": 72,
+     "accept_rate": 0.923,
+     "total_base": 3.365,
+     "total": 3.192
+    },
+    "quote_back#1": {
+     "identical_text": true,
+     "gen_tps_base": 102.52880823813081,
+     "gen_tps": 158.40920739862037,
+     "speedup": 1.545,
+     "draft_n": 116,
+     "draft_n_accepted": 116,
+     "accept_rate": 1.0,
+     "total_base": 2.24,
+     "total": 1.688
+    }
+   },
+   "median_speedup": 1.482,
+   "all_identical": false,
+   "resources": {
+    "load_seconds": 11.09,
+    "vram_dedicated_before_load_mib": 956.4,
+    "vram_dedicated_now_mib": 15716.3,
+    "server_rss_now_mib": 2288.7,
+    "system_available_ram_mib": 13874.4,
+    "peak_server_rss_mib": 2424.9,
+    "peak_vram_dedicated_mib": 15716.3,
+    "min_system_available_ram_mib": 13717.4,
+    "mean_server_cpu_pct_of_machine": 1.8
+   },
+   "load_seconds": 11.09
+  }
+ }
+}

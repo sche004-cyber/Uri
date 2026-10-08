@@ -1,0 +1,73 @@
+{
+ "recovered_at": "2026-10-06T13:50:00+05:30",
+ "recovered_by": "Claude session 234f5747 (post-crash recovery), working tree C:/Users/cheta/.codex/worktrees/uri-phase1-integration/uri-agent",
+ "crash": {
+  "classification": "CAUSE UNKNOWN",
+  "windows_evidence": {
+   "kernel_power_41": {"time": "2026-10-06T13:30:32+05:30", "BugcheckCode": 0, "PowerButtonTimestamp": 0, "WHEABootErrorCount": 0,
+                       "meaning": "unclean restart with no recorded bugcheck: a hard hang or power loss, not a blue screen"},
+   "eventlog_6008": "previous shutdown reported as unexpected (its timestamp field is stale: 2026-10-05 07:28:55, i.e. the last clean record)",
+   "last_system_event_before_restart": "EventLog 6013 (uptime heartbeat) at 12:00:00; nothing logged 12:00:00 - 13:30:30",
+   "whea_events": 0, "bugcheck_1001_events": 0, "display_driver_tdr_4101_events": 0,
+   "minidump": "none (C:/Windows/Minidump, MEMORY.DMP, LiveKernelReports empty)",
+   "reliability_records": "only the 6008 entry and a post-boot MSI reconfigure",
+   "tpm_wmi_1040_at_boot": "measured-boot attestation warning, unrelated"
+  },
+  "last_writes_before_freeze": {
+   "runs/logs/server_uri_ngram_mod16.log": "2026-10-06T12:06:24+05:30 (server uptime 0:53.7, task 1788 launched, no further line)",
+   "uri_engine/NOTES_architecture.md": "2026-10-06T12:05:26",
+   "D:/uri-model-lab/watchdog.sh": "2026-10-06T12:05:26",
+   "evidence/uri_engine/hang_ngram_mod_stock_b11425.log": "2026-10-06T12:04:57"
+  },
+  "freeze_window_estimate": "between 12:06:24 and 13:30:30 (no file on C: or D: has an mtime inside that window; the user restarted the PC at 13:30:30)",
+  "experiment_in_progress": {
+   "id": "uri_ngram_mod16", "script": "model_lab/uri_engine/run_variants4.sh",
+   "config": "release b11425 Vulkan llama-server, -b 2048 -ub 1024 --cache-ram 1024 --spec-type ngram-mod --spec-ngram-mod-n-match 16 --spec-ngram-mod-n-min 8 --spec-ngram-mod-n-max 16, 32k ctx, vision loaded",
+   "progress": "29 of ~45 requests done in 54 s; last completed request: draft acceptance 0.63, 109/173, gen 99.7 tok/s",
+   "telemetry": "no resource sample survives (bench_uri writes the sampler peaks only at the end); the previous run of the same binary with ngram-mod n_max 64 peaked at 15,601 MiB VRAM / 1,843 MiB RSS / 14,417 MiB free RAM"
+  },
+  "correlation_note": "Both ngram-mod runs on the hybrid model misbehaved: the n_max 64 run hung the server for 18 min (killed at 12:05), the n_max 16 run was in progress when the machine stopped ~55 s later. This is a correlation, not a cause; no driver, WHEA or thermal evidence exists. Identical stock ngram-mod settings are not rerun automatically (queue entries uri_ngram_mod16 and ux_ngram_mod8 are blocked)."
+ },
+ "safety_baseline_after_recovery": {
+  "git_status_vs_end_of_previous_session": "identical (90 entries; only the BOM/ordering of the stored file differs)",
+  "git_diff_vs_end_git_diff.patch": "byte-identical after stripping the PowerShell BOM/CRLF from the stored copy",
+  "frozen_phase1_inventory": {"checked": 121, "unexpected_differences": 0, "archive_sha256": "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7", "archive_matches": true},
+  "core_untouched": "no file under uri_core/ differs from the pre-research baseline (end_git_status.txt == current status; diff identical)",
+  "processes": "no llama-server.exe, no lab python, no watchdog after reboot; GPU dedicated memory 458 MiB (desktop idle)",
+  "disk": {"C_free_gb": 148, "D_free_gb": 492.6},
+  "ram": {"total_mb": 24501, "free_mb": 18188},
+  "gpu": {"name": "AMD Radeon RX 7900 GRE", "driver": "32.0.31041.1004", "status": "OK"}
+ },
+ "experiment_state": {
+  "complete_valid": [
+   "bench_uri runs: base_prod, no_cache_ram, no_ckpt, ckpt_fine, np3_kvu, b4096_ub2048, serial_stable, serial_lab, ub512_stable, ub256_stable, ncmoe4, kv_f16, nogrammar (JSON + calls.jsonl, 0 errors)",
+   "bench_spec runs: spec_off, ngram_mod, ngram_simple8, ngram_mapk8, mtp3_16k_vision, spec_off_16k_vision, mtp3_32k_novis, mtp2_32k_novis, spec_off_32k_novis + 3 compare files",
+   "imatrix expert stats: expert_stats_uri.json, expert_stats_generic.json (imatrix files on D:)",
+   "overhead.json, diag_ckpt.json (verbose checkpoint trace), coldload_hdd.json, coldload_nvme.json",
+   "correctness: ue_base and ue_ckpt1024 full suites (221 cases) + diff_ue_ckpt1024.json (all suites identical, 221/221 outputs identical)",
+   "builds: D:/uri-model-lab/build/stock and build/rsseq llama-server.exe (commit e117148, MSVC 19.51), rebuilt 11:28/11:29 after the first build attempt in run_diag.sh failed (rc=2); both report --version",
+   "chain markers ALL_DONE, ALL_DONE2..ALL_DONE6 found in the previous session's task outputs"
+  ],
+  "invalid_crash_or_hang": [
+   "uri_ngram_mod (runs/uri_ngram_mod_20261006-114524.json): server hung at task 2280 and was killed; 13 of 45 calls are errors (ReadError 10054 then ConnectError 10061); the agg medians are contaminated. INVALID - do not cite its speeds",
+   "uri_ngram_mod16: server log only (54 s), no JSON; INTERRUPTED by the crash"
+  ],
+  "not_started": [
+   "run_variants4 remainder: uri_ngram_simple, uri_mtp3_16k, uri_base_16k",
+   "correctness2.sh: ue_base16k, ue_mtp3_16k, ue_base16k_rep",
+   "run_variants5.sh MTP fit tests: mtp2_32k_vision, mtp3_24k_vision, mtp2_16k_vision, mtp4_16k_vision",
+   "run_stream.sh: stream_overhead.json",
+   "run_variants6.sh: sb_prod_canon, sb_fine_stable, ux_prod_canon, ux_fine_stable, ux_fine_canon, ux_fine_stable_ngram",
+   "run_variants7.sh: sb_spec_off, sb_ngram_mod8, ux_ngram_mod8, ux_ngram_mod64",
+   "run_diag.sh self-built spec runs (sb_*, rs_*): skipped because the binaries did not exist at that time",
+   "section-6 repeated-URI-context experiment (A-E at 4k/16k/32k): never written; added as bench_context_reuse.py",
+   "model_lab/URI_ENGINE_STRATA_RESEARCH.md: does not exist yet (NOTES_architecture.md is the working draft)"
+  ]
+ },
+ "determinism_anomaly_from_stored_evidence": {
+  "rep0_decision_contract": "sha 24d00b2474, 188 tokens, 671 chars - identical in all 9 fresh sessions (spec_off, ngram_mod, ngram_simple8, ngram_mapk8, spec_off_16k_vision, mtp3_16k_vision, spec_off_32k_novis, mtp3_32k_novis, mtp2_32k_novis; 16k/32k, vision on/off, with and without drafts)",
+  "rep1_decision_contract": "sha 56e91a5c63, 192 tokens in all 5 plain runs; sha 4777e8d520, 198 tokens in all 4 runs where drafts were accepted (MTP, ngram_mod rep1)",
+  "difference": "only the final 'reason' string: '...that fully satisfy the capability's requirements.' vs '...that fit the 'draft_institutional_order' capability.' (JSON identical otherwise; grammar-constrained free text); cache_n = 0 in both occurrences",
+  "interpretation_so_far": "not run-to-run GPU randomness (rep0 reproduces 9/9, rep1 reproduces 5/5); a systematic second-occurrence state effect inside one server session. The verdict (state/cache contamination vs numerics of a different batch layout after prompt-cache restore) is left to determinism_probe.py; 'byte-identical' remains unusable as a correctness criterion until explained"
+ }
+}

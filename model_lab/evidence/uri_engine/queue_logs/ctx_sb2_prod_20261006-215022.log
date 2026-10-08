@@ -1,0 +1,19 @@
+  4000 r0 A_fresh                n=  4587 new=     0 prompt_n=4587 cache_n=0 prompt_ms=3172.614 ttft=3.457 total=3.947 excess=4587 9f95393f18d3 err=None
+  4000 r0 B_repeat               n=  4587 new=     0 prompt_n=4 cache_n=4583 prompt_ms=59.139 ttft=0.304 total=0.785 excess=4 9f95393f18d3 err=None
+  4000 r0 C_new_turn             n=  4584 new=    26 prompt_n=455 cache_n=4129 prompt_ms=304.863 ttft=0.564 total=1.042 excess=429 f122f38e4688 err=None
+  4000 r0 A_reprime              n=  4587 new=     0 prompt_n=458 cache_n=4129 prompt_ms=303.905 ttft=0.538 total=1.017 excess=458 9f95393f18d3 err=None
+  4000 r0 D_evidence_changed     n=  4590 new=   126 prompt_n=461 cache_n=4129 prompt_ms=304.173 ttft=0.558 total=1.047 excess=335 9f95393f18d3 err=None
+  4000 r0 A_reprime2             n=  4587 new=     0 prompt_n=458 cache_n=4129 prompt_ms=301.965 ttft=0.548 total=1.025 excess=458 9f95393f18d3 err=None
+  4000 r0 E_permission_changed   n=  4587 new=   549 prompt_n=1028 cache_n=3559 prompt_ms=579.763 ttft=0.834 total=1.314 excess=479 c93c362dd634 err=None
+  4000 r0 A_after_E              n=  4587 new=     0 prompt_n=1028 cache_n=3559 prompt_ms=577.519 ttft=0.837 total=1.316 excess=1028 9f95393f18d3 err=None
+Traceback (most recent call last):
+  File "C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\uri_engine\bench_context_reuse.py", line 328, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\uri_engine\bench_context_reuse.py", line 324, in main
+    run(a)
+    ~~~^^^
+  File "C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\uri_engine\bench_context_reuse.py", line 228, in run
+    msgs = p["messages"][key]
+           ~~~~~~~~~~~~~^^^^^
+KeyError: 'S'

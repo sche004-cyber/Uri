@@ -1,0 +1,153 @@
+{
+ "fast/C": {
+  "n": 14,
+  "score": 1.0,
+  "ttft_p50": 0.601,
+  "ttfa_p50": 0.601,
+  "total_p50": 2.377,
+  "total_p95": 3.333,
+  "gen_tps_p50": 30.2,
+  "prefill_tps_p50": 251.8,
+  "gen_tokens_p50": 52,
+  "errors": 0,
+  "truncated": 0,
+  "hallucinations": 0
+ },
+ "fast/D": {
+  "n": 72,
+  "score": 0.889,
+  "ttft_p50": 3.042,
+  "ttfa_p50": 3.042,
+  "total_p50": 7.623,
+  "total_p95": 9.098,
+  "gen_tps_p50": 29.8,
+  "prefill_tps_p50": 538.3,
+  "gen_tokens_p50": 138,
+  "errors": 0,
+  "truncated": 0,
+  "invalid": 0,
+  "golden_acc": 0.93,
+  "extra_acc": 0.733,
+  "categories": {
+   "correct": 64,
+   "false_capability": 1,
+   "false_unsupported": 2,
+   "false_clarification": 1,
+   "mismatch": 4
+  }
+ },
+ "fast/F": {
+  "n": 30,
+  "score": 1.0,
+  "ttft_p50": 0.563,
+  "ttfa_p50": 0.563,
+  "total_p50": 0.834,
+  "total_p95": 1.413,
+  "gen_tps_p50": 30.2,
+  "prefill_tps_p50": 61.7,
+  "gen_tokens_p50": 7,
+  "errors": 0,
+  "truncated": 0
+ },
+ "fast/H": {
+  "n": 22,
+  "score": 1.0,
+  "ttft_p50": 0.579,
+  "ttfa_p50": 0.579,
+  "total_p50": 1.854,
+  "total_p95": 2.517,
+  "gen_tps_p50": 30.2,
+  "prefill_tps_p50": 74.2,
+  "gen_tokens_p50": 38,
+  "errors": 0,
+  "truncated": 0,
+  "over_escalation": 0,
+  "under_escalation": 0
+ },
+ "fast/L": {
+  "n": 2,
+  "score": 1.0,
+  "ttft_p50": 8.65,
+  "ttfa_p50": 8.65,
+  "total_p50": 11.811,
+  "total_p95": 28.237,
+  "gen_tps_p50": 28.9,
+  "prefill_tps_p50": 551.0,
+  "gen_tokens_p50": 95,
+  "errors": 0,
+  "truncated": 0,
+  "by_size": {
+   "l_4k": {
+    "score": 1.0,
+    "prompt_tokens": 4658,
+    "total_s": 11.811,
+    "prefill_tps": 561.3,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": true,
+     "entity_set": true
+    }
+   },
+   "l_12k": {
+    "score": 1.0,
+    "prompt_tokens": 13293,
+    "total_s": 28.237,
+    "prefill_tps": 551.0,
+    "checks": {
+     "valid_json": true,
+     "no_roll_numbers": true,
+     "current_date": true,
+     "ordinal_reference": true,
+     "entity_set": true
+    }
+   }
+  }
+ },
+ "fast/P": {
+  "n": 12,
+  "score": 1.0,
+  "ttft_p50": null,
+  "ttfa_p50": null,
+  "total_p50": null,
+  "total_p95": null,
+  "gen_tps_p50": null,
+  "prefill_tps_p50": null,
+  "gen_tokens_p50": null,
+  "errors": 0,
+  "truncated": 0,
+  "proposer_invalid": 0,
+  "failed_ids": []
+ },
+ "fast/RH": {
+  "n": 8,
+  "score": 0.875,
+  "ttft_p50": 0.857,
+  "ttfa_p50": 0.857,
+  "total_p50": 54.911,
+  "total_p95": 100.532,
+  "gen_tps_p50": 30.2,
+  "prefill_tps_p50": 291.4,
+  "gen_tokens_p50": 1629,
+  "errors": 0,
+  "truncated": 1
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\qwen38-27b-gpu16k\20261006-080849
+{
+ "normal/RH": {
+  "n": 8,
+  "score": 0.875,
+  "ttft_p50": 0.803,
+  "ttfa_p50": 26.205,
+  "total_p50": 26.402,
+  "total_p95": 26.764,
+  "gen_tps_p50": 30.3,
+  "prefill_tps_p50": 302.7,
+  "gen_tokens_p50": 777,
+  "errors": 0,
+  "truncated": 0
+ }
+}
+EVIDENCE C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\model_lab\evidence\runs\qwen38-27b-gpu16k\20261006-083129

@@ -1,0 +1,57 @@
+=== 2026-10-06T20:09:30 START ctx_prod_multi: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_context_reuse.py --name ctx_prod_multi --extra -b 2048 -ub 1024 --cache-ram 1024 --layout multi
+=== 2026-10-06T20:15:38 END ctx_prod_multi: done rc=0 elapsed=363.6 s
+=== 2026-10-06T20:15:38 START ctx_sim0_cache4096: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_context_reuse.py --name ctx_sim0_cache4096 --extra -b 2048 -ub 1024 --cache-ram 4096 --slot-prompt-similarity 0 --layout single
+=== 2026-10-06T20:20:23 END ctx_sim0_cache4096: done rc=0 elapsed=280.8 s
+=== 2026-10-06T20:20:23 START ctx_ux_best_split: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_context_reuse.py --name ctx_ux_best_split --extra -b 1024 -ub 1024 --cache-ram 4096 --slot-prompt-similarity 0 --checkpoint-min-step 1024 --ctx-checkpoints 32 --layout split --binary D:/uri-model-lab/build/rsseq/bin/llama-server.exe
+=== 2026-10-06T20:29:29 END ctx_ux_best_split: done rc=0 elapsed=541.6 s
+=== 2026-10-06T20:29:29 START ue_base16k_rep: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/run_bench.py --name ue_base16k_rep --model D:\uri-model-lab\models\unsloth__Qwen3.6-35B-A3B-GGUF\Qwen3.6-35B-A3B-UD-IQ3_S.gguf --mmproj D:\uri-model-lab\models\unsloth__Qwen3.6-35B-A3B-GGUF\mmproj-F16.gguf --family qwen --ctx 16384 --ngl 999 --paths fast --suites F,D,DG,C,H,S,O,L,P --l-sizes 4000,12000 --extra -b 2048 -ub 1024 --cache-ram 1024 --port 18481
+=== 2026-10-06T20:39:54 END ue_base16k_rep: done rc=0 elapsed=620.6 s
+=== 2026-10-06T20:39:54 START mtp2_32k_vision: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_spec.py --name mtp2_32k_vision --extra -b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 2 -otd token_embd.weight=CPU --ctx 32768 --repeats 1
+=== 2026-10-06T20:41:57 END mtp2_32k_vision: done rc=0 elapsed=119.3 s
+=== 2026-10-06T20:41:57 START mtp3_24k_vision: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_spec.py --name mtp3_24k_vision --extra -b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 3 -otd token_embd.weight=CPU --ctx 24576 --repeats 1
+=== 2026-10-06T20:43:59 END mtp3_24k_vision: done rc=0 elapsed=117.7 s
+=== 2026-10-06T20:43:59 START mtp2_16k_vision: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_spec.py --name mtp2_16k_vision --extra -b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 2 -otd token_embd.weight=CPU --ctx 16384 --repeats 1
+=== 2026-10-06T20:46:03 END mtp2_16k_vision: done rc=0 elapsed=119.3 s
+=== 2026-10-06T20:46:03 START mtp4_16k_vision: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_spec.py --name mtp4_16k_vision --extra -b 2048 -ub 1024 --cache-ram 1024 -md D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf --spec-type draft-mtp --spec-draft-n-max 4 -otd token_embd.weight=CPU --ctx 16384 --repeats 1
+=== 2026-10-06T20:48:06 END mtp4_16k_vision: done rc=0 elapsed=119.2 s
+=== 2026-10-06T20:48:06 START stream_overhead: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/stream_overhead.py
+=== 2026-10-06T20:49:46 END stream_overhead: done rc=0 elapsed=96.2 s
+=== 2026-10-06T20:49:46 START sb_prod_canon: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_uri.py --name sb_prod_canon --extra -b 2048 -ub 1024 --cache-ram 1024 --serial canonical --skip long,vision,decode --binary D:/uri-model-lab/build/stock/bin/llama-server.exe
+=== 2026-10-06T20:52:50 END sb_prod_canon: done rc=0 elapsed=179.0 s
+=== 2026-10-06T20:52:50 START ux_prod_canon: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_uri.py --name ux_prod_canon --extra -b 2048 -ub 1024 --cache-ram 1024 --serial canonical --skip long,vision,decode --binary D:/uri-model-lab/build/rsseq/bin/llama-server.exe
+=== 2026-10-06T20:55:51 END ux_prod_canon: done rc=0 elapsed=177.1 s
+=== 2026-10-06T20:55:51 START uri_ngram_simple: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/uri_engine/bench_uri.py --name uri_ngram_simple --extra -b 2048 -ub 1024 --cache-ram 1024 --spec-type ngram-simple --spec-ngram-simple-size-n 12 --spec-ngram-simple-size-m 8 --spec-draft-n-max 8 --skip long,vision
+=== 2026-10-06T20:58:48 END uri_ngram_simple: done rc=0 elapsed=173.0 s
+=== 2026-10-06T20:58:48 START freeze_end: C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\.venv\Scripts\python.exe model_lab/verify_freeze.py
+=== 2026-10-06T20:58:55 END freeze_end: done rc=0 elapsed=2.7 s
+freeze_start        done         attempts=1 start=2026-10-06T14:07:49 end=2026-10-06T14:07:53 rc=0 elapsed=2.2 
+determinism_probe   done         attempts=1 start=2026-10-06T14:07:55 end=2026-10-06T14:11:46 rc=0 elapsed=227.8 
+ctx_control         done         attempts=1 start=2026-10-06T14:11:48 end=2026-10-06T14:19:54 rc=0 elapsed=484.1 
+ctx_prod            done         attempts=1 start=2026-10-06T14:19:56 end=2026-10-06T14:24:44 rc=0 elapsed=285.5 
+ctx_prod_split      done         attempts=2 start=2026-10-06T18:35:14 end=2026-10-06T18:42:07 rc=0 elapsed=410.4 
+ctx_ckpt1024        done         attempts=1 start=2026-10-06T18:42:09 end=2026-10-06T18:48:26 rc=0 elapsed=374.0 
+ctx_cache4096       done         attempts=1 start=2026-10-06T18:48:28 end=2026-10-06T18:54:00 rc=0 elapsed=329.9 
+ctx_prod_multi      done         attempts=1 start=2026-10-06T20:09:30 end=2026-10-06T20:15:36 rc=0 elapsed=363.6 
+ctx_sim0_cache4096  done         attempts=1 start=2026-10-06T20:15:38 end=2026-10-06T20:20:21 rc=0 elapsed=280.8 
+ctx_ux_best_split   done         attempts=1 start=2026-10-06T20:20:23 end=2026-10-06T20:29:27 rc=0 elapsed=541.6 
+ctx_sb_prod         done         attempts=1 start=2026-10-06T18:54:02 end=2026-10-06T19:07:53 rc=0 elapsed=828.9 
+ctx_ux_fine1024     done         attempts=1 start=2026-10-06T19:07:55 end=2026-10-06T19:21:58 rc=0 elapsed=839.7 
+ctx_ux_fine512      done         attempts=1 start=2026-10-06T19:22:00 end=2026-10-06T19:33:59 rc=0 elapsed=717.5 
+determinism_probe2  done         attempts=1 start=2026-10-06T19:34:02 end=2026-10-06T19:41:58 rc=0 elapsed=474.3 
+uri_base_16k        done         attempts=1 start=2026-10-06T19:42:00 end=2026-10-06T19:45:07 rc=0 elapsed=184.8 
+uri_mtp3_16k        done         attempts=1 start=2026-10-06T19:45:09 end=2026-10-06T19:48:11 rc=0 elapsed=179.5 
+ue_base16k          done         attempts=1 start=2026-10-06T19:48:13 end=2026-10-06T19:59:24 rc=0 elapsed=669.0 
+ue_mtp3_16k         done         attempts=1 start=2026-10-06T19:59:27 end=2026-10-06T20:08:59 rc=0 elapsed=570.1 
+ue_base16k_rep      done         attempts=1 start=2026-10-06T20:29:29 end=2026-10-06T20:39:52 rc=0 elapsed=620.6 
+mtp2_32k_vision     done         attempts=1 start=2026-10-06T20:39:54 end=2026-10-06T20:41:55 rc=0 elapsed=119.3 
+mtp3_24k_vision     done         attempts=1 start=2026-10-06T20:41:57 end=2026-10-06T20:43:57 rc=0 elapsed=117.7 
+mtp2_16k_vision     done         attempts=1 start=2026-10-06T20:43:59 end=2026-10-06T20:46:00 rc=0 elapsed=119.3 
+mtp4_16k_vision     done         attempts=1 start=2026-10-06T20:46:03 end=2026-10-06T20:48:04 rc=0 elapsed=119.2 
+stream_overhead     done         attempts=1 start=2026-10-06T20:48:06 end=2026-10-06T20:49:44 rc=0 elapsed=96.2 
+sb_prod_canon       done         attempts=1 start=2026-10-06T20:49:46 end=2026-10-06T20:52:48 rc=0 elapsed=179.0 
+ux_prod_canon       done         attempts=1 start=2026-10-06T20:52:50 end=2026-10-06T20:55:49 rc=0 elapsed=177.1 
+uri_ngram_simple    done         attempts=1 start=2026-10-06T20:55:51 end=2026-10-06T20:58:46 rc=0 elapsed=173.0 
+uri_ngram_mod16     blocked      attempts=0 start=- end=- rc=- elapsed=- identical settings to the run in progress at the crash (stock ngram-mod on a hybrid model); needs user decision
+ux_ngram_mod8       blocked      attempts=0 start=- end=- rc=- elapsed=- n-gram speculation on the hybrid model (patched rs-seq path); crash-adjacent class, needs user decision
+freeze_end          done         attempts=1 start=2026-10-06T20:58:48 end=2026-10-06T20:58:53 rc=0 elapsed=2.7 
+QUEUE_FINISHED

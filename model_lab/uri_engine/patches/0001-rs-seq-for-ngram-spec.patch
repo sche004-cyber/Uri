@@ -1,0 +1,29 @@
+Research patch (not applied to production): let n-gram speculative types use bounded recurrent-state
+rollback (n_rs_seq) on hybrid/recurrent models instead of full-state checkpoints per draft round.
+Upstream b11425 only requests n_rs_seq for draft-model types (MTP/EAGLE3/DFlash/DSpark); with ngram-*
+on qwen35moe the server falls back to COMMON_CONTEXT_SEQ_RM_TYPE_FULL and serializes the recurrent
+state every round.
+
+--- a/common/common.h
++++ b/common/common.h
+@@ need_n_rs_seq
+     uint32_t need_n_rs_seq() const {
+         bool needs_rs_seq = std::any_of(types.begin(), types.end(), [&](auto t) {
+-            return t == COMMON_SPECULATIVE_TYPE_DRAFT_MTP || t == COMMON_SPECULATIVE_TYPE_DRAFT_EAGLE3 || t == COMMON_SPECULATIVE_TYPE_DRAFT_DFLASH || t == COMMON_SPECULATIVE_TYPE_DRAFT_DSPARK;
++            return t == COMMON_SPECULATIVE_TYPE_DRAFT_MTP || t == COMMON_SPECULATIVE_TYPE_DRAFT_EAGLE3 || t == COMMON_SPECULATIVE_TYPE_DRAFT_DFLASH || t == COMMON_SPECULATIVE_TYPE_DRAFT_DSPARK
++                || t == COMMON_SPECULATIVE_TYPE_NGRAM_SIMPLE || t == COMMON_SPECULATIVE_TYPE_NGRAM_MAP_K || t == COMMON_SPECULATIVE_TYPE_NGRAM_MAP_K4V
++                || t == COMMON_SPECULATIVE_TYPE_NGRAM_MOD || t == COMMON_SPECULATIVE_TYPE_NGRAM_CACHE;
+         });
+ 
+-        return needs_rs_seq ? draft.n_max : 0u;
++        if (!needs_rs_seq) {
++            return 0u;
++        }
++        // the recurrent snapshot ring must cover the longest draft any enabled type can propose
++        uint32_t n = draft.n_max;
++        n = std::max<uint32_t>(n, ngram_mod.n_max);
++        n = std::max<uint32_t>(n, ngram_simple.size_m);
++        n = std::max<uint32_t>(n, ngram_map_k.size_m);
++        n = std::max<uint32_t>(n, ngram_map_k4v.size_m);
++        return n;
+     }
