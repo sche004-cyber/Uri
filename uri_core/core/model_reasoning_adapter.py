@@ -314,10 +314,14 @@ class OllamaReasoningAdapter:
         self,
         provider: Optional[ModelProvider] = None,
         principal: Optional[object] = None,
+        system_prompt: Optional[str] = None,
     ) -> None:
         # Explicit provider bypasses the router entirely (existing test path).
         self._explicit_provider = provider
         self._principal = principal
+        # Only the composition root may select a bounded task protocol.
+        self._system_prompt = system_prompt
+        self.last_completion = None
 
     @property
     def provider(self) -> ModelProvider:
@@ -329,7 +333,8 @@ class OllamaReasoningAdapter:
 
     def __call__(self, request_json: str) -> str:
 
-        system = REASONING_SYSTEM_PROMPT
+        self.last_completion = None
+        system = self._system_prompt if self._system_prompt is not None else REASONING_SYSTEM_PROMPT
 
         try:
             request = json.loads(request_json)
@@ -422,4 +427,6 @@ class OllamaReasoningAdapter:
                 **complete_kwargs,
             )
 
+        self.last_completion = dict(provider=response.provider, model=response.model,
+                                    backend_inference_ms=None if response.duration_seconds is None else round(response.duration_seconds * 1000, 2))
         return response.content

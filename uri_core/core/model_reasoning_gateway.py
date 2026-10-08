@@ -44,11 +44,14 @@ class ModelReasoningGateway:
         ),
         registry_path="uri_workspace/capabilities_registry.json",
         model_callable: Optional[Callable[[str], Any]] = None,
+        instruction: Optional[str] = None,
     ):
         self.policy_path = os.path.normpath(policy_path)
         self.soul_path = os.path.normpath(soul_path)
         self.registry_path = os.path.normpath(registry_path)
         self.model_callable = model_callable
+        # Trusted caller configuration, never taken from model or user context.
+        self.instruction = instruction
         # M20: same registry file, composed with real connection state
         # to tell the Brain what is genuinely usable right now - see
         # capability_feasibility.py. Read-only, never authoritative.
@@ -274,6 +277,10 @@ class ModelReasoningGateway:
                 "user_request before proposing anything further."
             ),
         }
+
+        if self.instruction is not None:
+            req["instruction"] = self.instruction
+            req["available_capabilities"] = []
 
         if context_tokens is not None:
             from uri_core.core.context_trimmer import trim_reasoning_request

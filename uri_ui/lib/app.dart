@@ -10,7 +10,7 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'screens/ask/ask_uri_screen.dart';
+import 'screens/ask/workspace_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/bootstrap/bootstrap_screen.dart';
 import 'screens/connections/connections_providers_screen.dart';
@@ -42,9 +42,13 @@ class UriApp extends StatefulWidget {
     this.filePicker,
     this.attachmentOpener,
     this.onCompactModeChanged,
+    this.integrationTestBuilder,
+    this.integrationNavigatorKey,
   });
 
   final AppState appState;
+  final TransitionBuilder? integrationTestBuilder;
+  final GlobalKey<NavigatorState>? integrationNavigatorKey;
 
   /// M16: how the user picks a file to attach. Supplied by main.dart in
   /// the real app; null in tests, where the attach control is simply
@@ -117,6 +121,8 @@ class _UriAppState extends State<UriApp> with WidgetsBindingObserver {
             platformBrightness,
           );
           return MaterialApp(
+            navigatorKey: widget.integrationNavigatorKey,
+            builder: widget.integrationTestBuilder,
             title: 'URI',
             debugShowCheckedModeBanner: false,
             // Appearance → one of the 4 real Hybrid themes, or `system`
@@ -315,7 +321,7 @@ class _UriHomeState extends State<UriHome> {
         UriSection(
           label: 'Chat',
           icon: Icons.chat_bubble_outline,
-          builder: (context) => AskUriScreen(
+          builder: (context) => WorkspaceScreen(
             filePicker: widget.filePicker,
             attachmentOpener: widget.attachmentOpener,
           ),
@@ -343,6 +349,6 @@ class _UriHomeState extends State<UriHome> {
   static Widget _buildHome(BuildContext context) => const HomeScreen();
   static Widget _buildTasks(BuildContext context) => const TasksScreen();
   static Widget _buildConnections(BuildContext context) =>
-      const ConnectionsProvidersScreen();
+      ConnectionsProvidersScreen(initialTab: context.findAncestorStateOfType<AppShellState>()?.connectionsTab ?? 0);
   static Widget _buildSettings(BuildContext context) => const SettingsShell();
 }

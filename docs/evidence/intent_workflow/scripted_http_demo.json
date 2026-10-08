@@ -1,0 +1,604 @@
+{
+  "classification": "SCRIPTED_BRAIN_HTTP_CONTROL_FLOW_ONLY",
+  "live_provider": false,
+  "live_ui": false,
+  "external_executor_launched": false,
+  "no_run_route_status": 404,
+  "stages": [
+    {
+      "stage": "request",
+      "state": {
+        "cycle_id": "a9ee4089745441fc8f38eb6baba949cd",
+        "session_id": "demo-chat",
+        "request": "Complete the console we discussed earlier",
+        "answers": [],
+        "corrections": [],
+        "questions_asked": 1,
+        "asked_keys": [
+          "Which console?"
+        ],
+        "asked_questions": [
+          "which console?"
+        ],
+        "revision": 1,
+        "audit_accepted": false,
+        "execution_authorized": false,
+        "executor": null,
+        "package": null,
+        "created_at": 1791086780.3529048,
+        "pending_question": {
+          "question_key": "Which console?",
+          "question": "Which console?"
+        },
+        "context": {
+          "evidence": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "audit": {
+          "objective": "Complete the selected console",
+          "expected_outcome": "A reviewable result",
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "uncertainty": [
+            "Target version is uncertain"
+          ],
+          "level": "C",
+          "higher_reasoning": true,
+          "consequential": false,
+          "harness_requested": false,
+          "sufficiently_understood": false,
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "status": "CLARIFICATION",
+        "interpretation_duration_ms": 1.07
+      }
+    },
+    {
+      "stage": "answer",
+      "state": {
+        "cycle_id": "a9ee4089745441fc8f38eb6baba949cd",
+        "session_id": "demo-chat",
+        "request": "Complete the console we discussed earlier",
+        "answers": [
+          {
+            "question_key": "Which console?",
+            "question": "Which console?",
+            "answer": "DesktopHarnessTest"
+          }
+        ],
+        "corrections": [],
+        "questions_asked": 1,
+        "asked_keys": [
+          "Which console?"
+        ],
+        "asked_questions": [
+          "which console?"
+        ],
+        "revision": 2,
+        "audit_accepted": false,
+        "execution_authorized": false,
+        "executor": null,
+        "package": null,
+        "created_at": 1791086780.3529048,
+        "pending_question": null,
+        "context": {
+          "evidence": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "status": "AUDIT",
+        "interpretation_duration_ms": 0.98,
+        "audit": {
+          "objective": "Complete the selected console",
+          "expected_outcome": "A reviewable result",
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "uncertainty": [],
+          "level": "C",
+          "higher_reasoning": true,
+          "consequential": false,
+          "harness_requested": false,
+          "sufficiently_understood": true,
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": "correct",
+      "state": {
+        "cycle_id": "a9ee4089745441fc8f38eb6baba949cd",
+        "session_id": "demo-chat",
+        "request": "Complete the console we discussed earlier",
+        "answers": [
+          {
+            "question_key": "Which console?",
+            "question": "Which console?",
+            "answer": "DesktopHarnessTest"
+          }
+        ],
+        "corrections": [
+          "Only add the task preparation controls"
+        ],
+        "questions_asked": 1,
+        "asked_keys": [
+          "Which console?"
+        ],
+        "asked_questions": [
+          "which console?"
+        ],
+        "revision": 3,
+        "audit_accepted": false,
+        "execution_authorized": false,
+        "executor": null,
+        "package": null,
+        "created_at": 1791086780.3529048,
+        "pending_question": null,
+        "context": {
+          "evidence": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "status": "AUDIT",
+        "interpretation_duration_ms": 0.97,
+        "audit": {
+          "objective": "Complete the selected console",
+          "expected_outcome": "A reviewable result",
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "uncertainty": [],
+          "level": "C",
+          "higher_reasoning": true,
+          "consequential": false,
+          "harness_requested": false,
+          "sufficiently_understood": true,
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": "accept_intent",
+      "state": {
+        "cycle_id": "a9ee4089745441fc8f38eb6baba949cd",
+        "session_id": "demo-chat",
+        "request": "Complete the console we discussed earlier",
+        "answers": [
+          {
+            "question_key": "Which console?",
+            "question": "Which console?",
+            "answer": "DesktopHarnessTest"
+          }
+        ],
+        "corrections": [
+          "Only add the task preparation controls"
+        ],
+        "questions_asked": 1,
+        "asked_keys": [
+          "Which console?"
+        ],
+        "asked_questions": [
+          "which console?"
+        ],
+        "revision": 3,
+        "audit_accepted": true,
+        "execution_authorized": false,
+        "executor": null,
+        "package": {
+          "objective": "Complete the selected console",
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ],
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "uncertainties": [],
+          "expected_deliverables": "A reviewable result",
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "user_request": "Complete the console we discussed earlier",
+          "user_answers": [
+            {
+              "question_key": "Which console?",
+              "question": "Which console?",
+              "answer": "DesktopHarnessTest"
+            }
+          ],
+          "user_corrections": [
+            "Only add the task preparation controls"
+          ],
+          "intent_revision": 3,
+          "workspace": null,
+          "permissions": [],
+          "executor": null,
+          "execution_authorized": false,
+          "readiness": "WORKSPACE_AND_EXECUTION_APPROVAL_REQUIRED"
+        },
+        "created_at": 1791086780.3529048,
+        "pending_question": null,
+        "context": {
+          "evidence": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "status": "PREPARED",
+        "interpretation_duration_ms": 0.97,
+        "audit": {
+          "objective": "Complete the selected console",
+          "expected_outcome": "A reviewable result",
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "uncertainty": [],
+          "level": "C",
+          "higher_reasoning": true,
+          "consequential": false,
+          "harness_requested": false,
+          "sufficiently_understood": true,
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "time_to_accepted_ms": 38.63,
+        "package_sha256": "3e7e7b21a6759428aca0cef0af8d24f0d958e169411898cfaf036e3760c5bfe7"
+      }
+    },
+    {
+      "stage": "select_executor",
+      "state": {
+        "cycle_id": "a9ee4089745441fc8f38eb6baba949cd",
+        "session_id": "demo-chat",
+        "request": "Complete the console we discussed earlier",
+        "answers": [
+          {
+            "question_key": "Which console?",
+            "question": "Which console?",
+            "answer": "DesktopHarnessTest"
+          }
+        ],
+        "corrections": [
+          "Only add the task preparation controls"
+        ],
+        "questions_asked": 1,
+        "asked_keys": [
+          "Which console?"
+        ],
+        "asked_questions": [
+          "which console?"
+        ],
+        "revision": 3,
+        "audit_accepted": true,
+        "execution_authorized": false,
+        "executor": "codex",
+        "package": {
+          "objective": "Complete the selected console",
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ],
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "uncertainties": [],
+          "expected_deliverables": "A reviewable result",
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "user_request": "Complete the console we discussed earlier",
+          "user_answers": [
+            {
+              "question_key": "Which console?",
+              "question": "Which console?",
+              "answer": "DesktopHarnessTest"
+            }
+          ],
+          "user_corrections": [
+            "Only add the task preparation controls"
+          ],
+          "intent_revision": 3,
+          "workspace": null,
+          "permissions": [],
+          "executor": "codex",
+          "execution_authorized": false,
+          "readiness": "WORKSPACE_AND_EXECUTION_APPROVAL_REQUIRED"
+        },
+        "created_at": 1791086780.3529048,
+        "pending_question": null,
+        "context": {
+          "evidence": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "status": "PREPARED",
+        "interpretation_duration_ms": 0.97,
+        "audit": {
+          "objective": "Complete the selected console",
+          "expected_outcome": "A reviewable result",
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "uncertainty": [],
+          "level": "C",
+          "higher_reasoning": true,
+          "consequential": false,
+          "harness_requested": false,
+          "sufficiently_understood": true,
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "time_to_accepted_ms": 38.63,
+        "package_sha256": "7a50103242a414289671da2ade2001a3368db538bd301eb640b63f14544e2ec3"
+      }
+    },
+    {
+      "stage": "deny_execution",
+      "state": {
+        "cycle_id": "a9ee4089745441fc8f38eb6baba949cd",
+        "session_id": "demo-chat",
+        "request": "Complete the console we discussed earlier",
+        "answers": [
+          {
+            "question_key": "Which console?",
+            "question": "Which console?",
+            "answer": "DesktopHarnessTest"
+          }
+        ],
+        "corrections": [
+          "Only add the task preparation controls"
+        ],
+        "questions_asked": 1,
+        "asked_keys": [
+          "Which console?"
+        ],
+        "asked_questions": [
+          "which console?"
+        ],
+        "revision": 3,
+        "audit_accepted": true,
+        "execution_authorized": false,
+        "executor": "codex",
+        "package": {
+          "objective": "Complete the selected console",
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ],
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "uncertainties": [],
+          "expected_deliverables": "A reviewable result",
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "user_request": "Complete the console we discussed earlier",
+          "user_answers": [
+            {
+              "question_key": "Which console?",
+              "question": "Which console?",
+              "answer": "DesktopHarnessTest"
+            }
+          ],
+          "user_corrections": [
+            "Only add the task preparation controls"
+          ],
+          "intent_revision": 3,
+          "workspace": null,
+          "permissions": [],
+          "executor": "codex",
+          "execution_authorized": false,
+          "readiness": "WORKSPACE_AND_EXECUTION_APPROVAL_REQUIRED"
+        },
+        "created_at": 1791086780.3529048,
+        "pending_question": null,
+        "context": {
+          "evidence": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "status": "EXECUTION_DENIED",
+        "interpretation_duration_ms": 0.97,
+        "audit": {
+          "objective": "Complete the selected console",
+          "expected_outcome": "A reviewable result",
+          "scope_in": [
+            "Selected console"
+          ],
+          "scope_out": [
+            "Production promotion"
+          ],
+          "constraints": [
+            "Preserve frozen sources"
+          ],
+          "assumptions": [
+            "The recovered console identity still applies"
+          ],
+          "acceptance_checks": [
+            "User-visible result matches request"
+          ],
+          "uncertainty": [],
+          "level": "C",
+          "higher_reasoning": true,
+          "consequential": false,
+          "harness_requested": false,
+          "sufficiently_understood": true,
+          "relevant_context": [
+            {
+              "id": "decision:1",
+              "source": "decision.txt:1",
+              "status": "HISTORICAL",
+              "content": "The previous console was DesktopHarnessTest"
+            }
+          ]
+        },
+        "time_to_accepted_ms": 38.63,
+        "package_sha256": "7a50103242a414289671da2ade2001a3368db538bd301eb640b63f14544e2ec3"
+      }
+    }
+  ]
+}
