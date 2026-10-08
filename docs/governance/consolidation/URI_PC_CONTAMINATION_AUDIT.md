@@ -67,7 +67,7 @@ was found.
 
 ## 5. Containment prepared, awaiting owner approval (RED)
 
-`scripts/uri_containment.ps1` (plan by default; `-Apply`; `-Restore`):
+`scripts/uri_containment.ps1` (plan by default; `-Apply`; `-Restore -BackupRoot <folder printed by -Apply>`):
 - C-1 disable scheduled task `\URIServer` after exporting its XML.
 - C-2 move both `URI.lnk` shortcuts into the backup folder.
 - C-3 record (not edit) the UI `serverBaseUrl`.

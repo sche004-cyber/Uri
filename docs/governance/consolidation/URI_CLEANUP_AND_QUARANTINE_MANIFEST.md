@@ -26,7 +26,7 @@ P-2/P-3); Runtime v1 listener `AUTHORIZED` (this session's reproduction benchmar
 | Ref | Before round 2 | After round 2 | Classification |
 |---|---|---|---|
 | `integration/git-sync-20261008` (GitHub) | `f8de153` | fast-forward to the canonical tip **pending Codex acceptance**; result recorded in `URI_CONSOLIDATION_FINAL_AUDIT_20261008.md` | CANONICAL INTEGRATION LINE |
-| `canonical/candidate-20261008` (local) | `13bf68a` | same tip as the integration line | working branch of the canonical checkout |
+| `canonical/candidate-20261008` (local) | `13bf68a` | round-2 tip; the integration line will point to the same commit only after the pending push | working branch of the canonical checkout |
 | `accepted/*` tags | 6 local | 7 local (+ `accepted/phase2-oq-g-0b49d86d` → `6dea266`); push pending with the branch (see final audit) | immutable acceptance anchors |
 | `donor/*` tags | 2 local | unchanged, **not pushed** (donor classification is an owner decision) | — |
 | All other GitHub branches | as classified in `URI_CANONICAL_BRANCH_DECISION.md` §5 | unchanged | HISTORICAL / DONOR / EXPERIMENTAL / QUARANTINED |
