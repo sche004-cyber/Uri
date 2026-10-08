@@ -312,6 +312,29 @@ void main() {
 }
 
 void _timeoutTests() {
+  test('a timed-out confirmation also stays busy without a retry card', () async {
+    final rt = _RefusingRuntime('WORKER_TIMEOUT');
+    final conv = OiConversation(rt);
+    await conv.send('remember that x');
+    rt.emit('t1', 'core.result', {'code': 'INTENT_CONFIRMATION_REQUIRED', 'needs': 'confirmation'});
+    rt.emit('t1', 'turn.finished', {'status': 'needs_user'});
+    await pumpEventQueue();
+    await conv.confirm();
+    expect(conv.pendingConfirmation, isNull);
+    expect(conv.busy, isTrue);
+  });
+
+  test('worker exit clears busy and shows the error state', () async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    await conv.send('hello');
+    expect(conv.busy, isTrue);
+    rt._events.add({'type': 'worker.exited', 'turn_id': null, 'data': const {}});
+    await pumpEventQueue();
+    expect(conv.busy, isFalse);
+    expect(conv.workerExited, isTrue);
+  });
+
   test('a timed-out decision is an unknown outcome: busy, no retry card, reconciled by its turn.finished', () async {
     final rt = _RefusingRuntime('WORKER_TIMEOUT');
     final conv = OiConversation(rt);
