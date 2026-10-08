@@ -236,3 +236,22 @@ Phase 1 authority **134**; Phase 1 full **2675 / 12 / 11** (`SAME_FAILURE_SET: t
 live Dart bridge **10/10**, 0 refusal lines; native Codex (in-process, owner shell login) lifecycle
 `completed/SETTLED_VERIFIED`, mid-run cancel `uncertain/CANCELLED_AFTER_DISPATCH`, executor `DEAD`. Checklist A6-A14 cite
 this chain.
+
+## Acceptance record (after independent review round 6, 2026-10-08)
+
+Codex CLI 0.158.0 (gpt-6-sol, medium), fresh session, workspace-write sandbox, stdin closed, on
+`E:phase2close-candidate-20261008-f.zip` (SHA-256 `fcd0d72e0cd91412c361edec9114e2edaebbf70ede052046b808f3c4fc571298`,
+137 tree + 31 evidence files): **PHASE 2 CLOSURE ACCEPTED — PHYSICAL/OWNER GATES PENDING**
+(`E:phase2close_review\round6\CODEX_REVIEW_round6.md`). Six closure review rounds: 1-5 REJECTED (D1-D7, all repaired or
+closed), 6 ACCEPTED. Every earlier finding is closed except K1/SUP-1 (Low, recorded, open) and:
+
+| ID | Severity | Finding | Disposition |
+|---|---|---|---|
+| D8 | Low | the hard-off FORM check accepts a command that merely contains the text (e.g. `echo Stop-VM -Name URI-PL -TurnOff`) | RECORDED, not repaired: no string check can prove a power cut; `assess` returns `qualified: false` and `power_method_attestation_required: true`, and PA-11 passes only by the owner's attestation. |
+
+The reviewer's own execution was limited by its sandbox (pytest fixture temp directories denied); the regression
+evidence it accepted is the orchestrator-produced run9 chain, which it inspected and archive-matched. Self-audit
+distinction kept: the implementer's reports are claims; the acceptance is the reviewer's.
+
+**Final verdict: PHASE 2 TECHNICALLY READY — PHYSICAL/OWNER GATES PENDING** (independently accepted). Not frozen, not
+committed, not cut over.
