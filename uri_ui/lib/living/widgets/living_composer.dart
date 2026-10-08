@@ -124,6 +124,18 @@ class _LivingComposerState extends State<LivingComposer> {
                     );
                   },
                 ),
+              if (oi != null)
+                IconButton(
+                  key: const ValueKey('living-composer-transcript'),
+                  tooltip: oi.transcriptMode
+                      ? 'Sending as a SIMULATED transcript (no microphone). Tap to type normally.'
+                      : 'Send as a simulated speech transcript (testing; no microphone)',
+                  isSelected: oi.transcriptMode,
+                  icon: const Icon(Icons.record_voice_over_outlined, size: 18),
+                  selectedIcon: Icon(Icons.record_voice_over, size: 18, color: c.warning),
+                  color: c.inkSoft,
+                  onPressed: () => oi.setTranscriptMode(!oi.transcriptMode),
+                ),
               Expanded(
                 child: CallbackShortcuts(
                   bindings: {
@@ -139,7 +151,9 @@ class _LivingComposerState extends State<LivingComposer> {
                     onChanged: appState.setComposerDraft,
                     style: TextStyle(color: c.ink, fontSize: 14),
                     decoration: InputDecoration(
-                      hintText: widget.hint,
+                      hintText: oi != null && oi.transcriptMode
+                          ? 'Type what was said — sent as a SIMULATED transcript'
+                          : widget.hint,
                       hintStyle: TextStyle(color: c.inkFaint),
                       filled: false,
                       border: InputBorder.none,

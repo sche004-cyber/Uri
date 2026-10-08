@@ -150,6 +150,7 @@ class DraftDesk:
         self.drafts = {}             # session_id -> Draft (one active draft per session)
         self.pending_new = {}        # session_id -> {"request", "question", "input"} (create awaiting an answer)
         self._lock = threading.Lock()
+        self.tier = FAST             # qualified tier for desk calls (live matrix may compare NORMAL)
 
     # ---- state ------------------------------------------------------------------------------------
     def active(self, session_id):
@@ -282,7 +283,7 @@ class DraftDesk:
         body = {"model": "local", "messages": [{"role": "system", "content": system},
                                                {"role": "user", "content": json.dumps(user_obj, ensure_ascii=False)}],
                 "response_format": {"type": "json_schema", "json_schema": {"name": name, "schema": schema, "strict": True}},
-                **tier_params(FAST, use="answer", max_tokens=max_tokens)}
+                **tier_params(self.tier, use="answer", max_tokens=max_tokens)}
         try:
             res = self.o.client.stream_chat(body, cancel=cancel, deadlines=TIMEOUT, on_delta=on_delta)
         finally:

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../../services/integrated_runtime.dart';
+import 'oi_draft.dart';
 
 /// Working-system conversation model (WS blueprint W9): renders the real
 /// `uri.oi.event.v1` stream from the integrated worker.
@@ -35,6 +36,9 @@ class OiMessage {
   String? tier;
   String? route;
   int thinkingChars = 0;
+
+  /// Draft desk: characters of structured output generated so far.
+  int draftChars = 0;
   List<String> flags = const [];
   Map<String, dynamic> metrics = const {};
   String? errorCode;
@@ -42,6 +46,10 @@ class OiMessage {
   List<String> recoveryOptions = const [];
   bool streaming = false;
   String? finishedStatus;
+
+  /// User messages: how the words arrived (null = typed). Simulated
+  /// transcripts are always labelled as simulated.
+  String? inputLabel;
 
   bool get unverifiedClaim => flags.contains('UNVERIFIED_ACTION_CLAIM');
 }
@@ -104,6 +112,16 @@ class OiConversation extends ChangeNotifier {
   bool workerExited = false;
   OiDepth depth = OiDepth.auto;
 
+  /// Text intelligence: the session's current draft (null when none), the
+  /// desk's open clarification question, and generation progress.
+  OiDraft? draft;
+  String? draftQuestion;
+  int draftProgress = 0;
+
+  /// When on, typed text is sent as a SIMULATED transcript
+  /// (`uri.text_input.v1`, engine "simulated"). There is no microphone path.
+  bool transcriptMode = false;
+
   Map<String, dynamic> brainStatus = const {};
   Map<String, dynamic> catalog = const {};
   List<String> memory = const [];
@@ -152,11 +170,46 @@ class OiConversation extends ChangeNotifier {
   }
 
   /// Sends the user's words as a turn. Never a decision, whatever it says.
+  /// With [transcriptMode] on, the words are sent as a simulated transcript.
   Future<void> send(String text) async {
-    final t = text.trim();
+    if (transcriptMode) {
+      return sendTranscript(text, engine: 'simulated', simulated: true);
+    }
+    return _turn(text.trim(), null, null);
+  }
+
+  /// Integration point for a speech pipeline (`uri.text_input.v1`). [raw] is
+  /// exactly what the recogniser produced; URI keeps it and shows its own
+  /// interpretation separately. A real recogniser must name itself in
+  /// [engine] and pass `simulated: false`; until one exists only simulated
+  /// input is sent.
+  Future<void> sendTranscript(
+    String raw, {
+    required String engine,
+    required bool simulated,
+    String? language,
+    List<String> uncertain = const [],
+  }) {
+    final t = raw.trim();
+    final input = {
+      'schema': 'uri.text_input.v1',
+      'source': 'transcript',
+      'transcript': {
+        'raw': t,
+        'engine': engine,
+        'simulated': simulated,
+        'language': ?language,
+        if (uncertain.isNotEmpty) 'uncertain': uncertain,
+      },
+    };
+    return _turn(t, input, simulated ? 'Simulated transcript' : 'Transcript · $engine');
+  }
+
+  Future<void> _turn(String t, Map<String, dynamic>? input, String? label) async {
     if (t.isEmpty || busy) return;
-    messages.add(OiMessage(role: OiRole.user, text: t));
+    messages.add(OiMessage(role: OiRole.user, text: t)..inputLabel = label);
     lastError = null;
+    draftProgress = 0;
     notifyListeners();
     try {
       final r = await runtime.call({
@@ -164,6 +217,7 @@ class OiConversation extends ChangeNotifier {
         'session_id': sessionId,
         'text': t,
         'depth': depth.name,
+        'input': ?input,
       });
       _begin(r['turn_id'] as String);
     } on IntegratedRuntimeException catch (e) {
@@ -282,6 +336,42 @@ class OiConversation extends ChangeNotifier {
     await refreshStatus();
   }
 
+  void setTranscriptMode(bool on) {
+    transcriptMode = on;
+    notifyListeners();
+  }
+
+  /// Deterministic draft operation from a button: undo, redo, restore
+  /// (with [version]) or discard. No model call; nothing is sent or saved.
+  Future<void> draftOp(String op, {int? version}) async {
+    if (busy) return;
+    try {
+      final r = await runtime.call({
+        'command': 'draft_op',
+        'session_id': sessionId,
+        'op': op,
+        'version': ?version,
+      });
+      draft = OiDraft.parse(r['draft']);
+      draftQuestion = draft?.pendingQuestion;
+      lastError = null;
+    } on IntegratedRuntimeException catch (e) {
+      lastError = e.code;
+    }
+    notifyListeners();
+  }
+
+  Future<void> refreshDraft() async {
+    try {
+      final r = await runtime.call({'command': 'draft_get', 'session_id': sessionId});
+      draft = OiDraft.parse(r['draft']);
+      draftQuestion = draft?.pendingQuestion;
+    } on IntegratedRuntimeException catch (e) {
+      lastError = e.code;
+    }
+    notifyListeners();
+  }
+
   void setDepth(OiDepth d) {
     depth = d;
     notifyListeners();
@@ -316,6 +406,16 @@ class OiConversation extends ChangeNotifier {
       case 'turn.routed':
         m?.route = data['route'] as String?;
         m?.tier = ((data['tier'] as Map?)?['tier']) as String?;
+      case 'draft.updated':
+        final d = data['draft'];
+        draft = d == null ? null : (OiDraft.parse(d) ?? draft);
+        draftQuestion = draft?.pendingQuestion;
+      case 'draft.clarify':
+        draftQuestion = data['question'] as String?;
+        if (data['draft'] != null) draft = OiDraft.parse(data['draft']) ?? draft;
+      case 'draft.progress':
+        draftProgress = (data['chars'] as num?)?.toInt() ?? 0;
+        m?.draftChars = draftProgress;
       case 'thinking.progress':
         m?.thinkingChars = (data['chars'] as num?)?.toInt() ?? 0;
       case 'answer.delta':
