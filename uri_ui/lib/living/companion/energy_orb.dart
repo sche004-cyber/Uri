@@ -41,16 +41,21 @@ enum OrbVariant {
   /// whole lattice turning slowly. Thinking brightens edges and speeds
   /// the turn; error breaks edges.
   mesh,
+
+  /// Liquid energy: a deep blue sphere with a tesla-coil network of
+  /// veins crawling over it; bolts flicker faster the more URI works.
+  energy,
 }
 
 extension OrbVariantLabel on OrbVariant {
   String get label => switch (this) {
-    OrbVariant.nebula => 'Nebula',
-    OrbVariant.halo => 'Halo',
-    OrbVariant.swarm => 'Swarm',
-    OrbVariant.glass => 'Glass',
-    OrbVariant.flow => 'Flow',
-    OrbVariant.mesh => 'Mesh',
+    OrbVariant.nebula => 'Fluid Plasma',
+    OrbVariant.swarm => 'Particle Intelligence',
+    OrbVariant.mesh => 'Neural Filaments',
+    OrbVariant.energy => 'Electric Core',
+    OrbVariant.glass => 'Holographic Atmosphere',
+    OrbVariant.halo => 'Aurora Vortex',
+    OrbVariant.flow => 'Sun / Flow',
   };
 }
 
@@ -83,6 +88,7 @@ class EnergyOrb extends StatefulWidget {
     this.variant = OrbVariant.nebula,
     this.pokes,
     this.interactive = true,
+    this.palette,
   });
 
   final CompanionState state;
@@ -114,6 +120,9 @@ class EnergyOrb extends StatefulWidget {
   /// deterministic frames.
   final bool interactive;
 
+  /// Colour palette; null = the variant's default palette.
+  final OrbPalette? palette;
+
   @override
   State<EnergyOrb> createState() => _EnergyOrbState();
 }
@@ -140,12 +149,13 @@ class _EnergyOrbState extends State<EnergyOrb> with TickerProviderStateMixin {
       _program != null && !EffectsSettings.of(context).reducedEffects;
 
   static int _particleCountFor(OrbVariant v) => switch (v) {
-    OrbVariant.nebula => 88,
-    OrbVariant.halo => 96,
-    OrbVariant.swarm => 420,
-    OrbVariant.glass => 40,
+    OrbVariant.nebula => 0,
+    OrbVariant.halo => 0,
+    OrbVariant.swarm => 360,
+    OrbVariant.glass => 0,
     OrbVariant.flow => 150,
-    OrbVariant.mesh => 72,
+    OrbVariant.mesh => 0,
+    OrbVariant.energy => 0,
   };
 
   @override
@@ -271,11 +281,16 @@ class _EnergyOrbState extends State<EnergyOrb> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final colors = UriColors.of(context);
-    final glass = UriGlass.of(context);
+    final character = OrbCharacter.forVariant(widget.variant);
+    final palette = widget.palette ?? character.defaultPalette;
     final effects = EffectsSettings.of(context);
     final params = _current;
     final tint = _tintFor(widget.state, colors);
-    final glow = Color.lerp(glass.glow, tint, params.tintMix)!;
+    // Every palette hue leans toward the state tint by tintMix, so
+    // approval/done/attention read the same on any palette.
+    final hues = [
+      for (final h in palette.hues) Color.lerp(h, tint, params.tintMix)!,
+    ];
     final time = _now;
     _gusts.removeWhere((g) => time - g.bornAt > _Gust.life);
 
@@ -297,8 +312,11 @@ class _EnergyOrbState extends State<EnergyOrb> with TickerProviderStateMixin {
                 painter: _OrbPainter(
                   time: time,
                   params: params,
-                  glow: glow,
-                  specular: glass.specular,
+                  hues: hues,
+                  hot: palette.hot,
+                  tint: tint,
+                  tintMix: params.tintMix,
+                  style: character.style,
                   ink: colors.ink,
                   canvas: colors.canvas,
                   progress: widget.state == CompanionState.working
@@ -581,12 +599,152 @@ class _ParticleField {
   final List<double> phase = [];
 }
 
+/// Colour palette for the orb, independent of its style (the owner's
+/// board: "the same orb style expressed in different colour palettes").
+/// Three to five hues per palette; `hot` is the brightest light.
+/// The state tints (approval amber, done green, attention red,
+/// unavailable grey) still override through `OrbParams.tintMix`.
+enum OrbPalette {
+  signature,
+  deepOcean,
+  aurora,
+  nature,
+  sunset,
+  royal,
+  passion,
+  softPastel,
+  monochrome,
+  rainbow,
+}
+
+extension OrbPaletteData on OrbPalette {
+  String get label => switch (this) {
+    OrbPalette.signature => 'Signature (cyan / blue / violet)',
+    OrbPalette.deepOcean => 'Deep Ocean (teal / blue)',
+    OrbPalette.aurora => 'Aurora (cyan / violet / pink)',
+    OrbPalette.nature => 'Nature (green / teal)',
+    OrbPalette.sunset => 'Sunset (amber / orange / pink)',
+    OrbPalette.royal => 'Royal (blue / purple)',
+    OrbPalette.passion => 'Passion (red / orange)',
+    OrbPalette.softPastel => 'Soft Pastel (ice / pink / lavender)',
+    OrbPalette.monochrome => 'Monochrome (white / silver)',
+    OrbPalette.rainbow => 'Rainbow',
+  };
+
+  List<Color> get hues => switch (this) {
+    OrbPalette.signature => const [
+      Color(0xFF38D1E8),
+      Color(0xFF3B7BFF),
+      Color(0xFF8A5CFF),
+    ],
+    OrbPalette.deepOcean => const [
+      Color(0xFF1FD1C2),
+      Color(0xFF2E7CFF),
+      Color(0xFF123A8C),
+    ],
+    OrbPalette.aurora => const [
+      Color(0xFF4FE3FF),
+      Color(0xFF8A5CFF),
+      Color(0xFFFF5FC8),
+    ],
+    OrbPalette.nature => const [
+      Color(0xFF3DE07A),
+      Color(0xFF1FC9A8),
+      Color(0xFF0E6B5C),
+    ],
+    OrbPalette.sunset => const [
+      Color(0xFFFFC24A),
+      Color(0xFFFF6A2E),
+      Color(0xFFFF4F8B),
+    ],
+    OrbPalette.royal => const [
+      Color(0xFF3C5BFF),
+      Color(0xFF7A3CFF),
+      Color(0xFFB04CFF),
+    ],
+    OrbPalette.passion => const [
+      Color(0xFFFF3B3B),
+      Color(0xFFFF7A2E),
+      Color(0xFFC81E4E),
+    ],
+    OrbPalette.softPastel => const [
+      Color(0xFFBFEFFF),
+      Color(0xFFFFB8DC),
+      Color(0xFFC9B8FF),
+    ],
+    OrbPalette.monochrome => const [
+      Color(0xFFF2F6FA),
+      Color(0xFFB8C2CC),
+      Color(0xFF7D8894),
+    ],
+    OrbPalette.rainbow => const [
+      Color(0xFF38D1E8),
+      Color(0xFF3DE07A),
+      Color(0xFFFFC24A),
+      Color(0xFFFF4F8B),
+      Color(0xFF8A5CFF),
+    ],
+  };
+
+  Color get hot => switch (this) {
+    OrbPalette.sunset || OrbPalette.passion => const Color(0xFFFFF1D6),
+    OrbPalette.monochrome => const Color(0xFFFFFFFF),
+    _ => const Color(0xFFEAF8FF),
+  };
+}
+
+/// Style-level character: shader style and the palette a variant opens
+/// with. (Previously a fixed colour table; colours now come from
+/// [OrbPalette] so any style can wear any palette.)
+@immutable
+class OrbCharacter {
+  const OrbCharacter({required this.style, required this.defaultPalette});
+
+  /// Shader style: 0 plasma swirl, 1 sun, 2 liquid veins.
+  final double style;
+  final OrbPalette defaultPalette;
+
+  static OrbCharacter forVariant(OrbVariant v) => switch (v) {
+    OrbVariant.nebula => const OrbCharacter(
+      style: 2,
+      defaultPalette: OrbPalette.signature,
+    ),
+    OrbVariant.swarm => const OrbCharacter(
+      style: 0,
+      defaultPalette: OrbPalette.aurora,
+    ),
+    OrbVariant.mesh => const OrbCharacter(
+      style: 0,
+      defaultPalette: OrbPalette.softPastel,
+    ),
+    OrbVariant.energy => const OrbCharacter(
+      style: 0,
+      defaultPalette: OrbPalette.royal,
+    ),
+    OrbVariant.glass => const OrbCharacter(
+      style: 2,
+      defaultPalette: OrbPalette.deepOcean,
+    ),
+    OrbVariant.halo => const OrbCharacter(
+      style: 0,
+      defaultPalette: OrbPalette.aurora,
+    ),
+    OrbVariant.flow => const OrbCharacter(
+      style: 1,
+      defaultPalette: OrbPalette.sunset,
+    ),
+  };
+}
+
 class _OrbPainter extends CustomPainter {
   _OrbPainter({
     required this.time,
     required this.params,
-    required this.glow,
-    required this.specular,
+    required this.hues,
+    required this.hot,
+    required this.tint,
+    required this.tintMix,
+    required this.style,
     required this.ink,
     required this.canvas,
     required this.progress,
@@ -600,10 +758,15 @@ class _OrbPainter extends CustomPainter {
 
   final double time;
   final OrbParams params;
-  final Color glow;
 
-  /// Brightest light (theme token), used for highlights instead of a literal.
-  final Color specular;
+  /// Palette hues already blended toward the state tint.
+  final List<Color> hues;
+
+  /// Brightest light (palette token).
+  final Color hot;
+  final Color tint;
+  final double tintMix;
+  final double style;
   final Color ink;
   final Color canvas;
   final double? progress;
@@ -615,6 +778,10 @@ class _OrbPainter extends CustomPainter {
 
   /// 0..1 poke animation progress (0 = none).
   final double poke;
+
+  Color get glow => hues[0];
+  Color get secondary => hues[1 % hues.length];
+  Color hue(int i) => hues[i % hues.length];
 
   /// Where a particle actually lands: its base position plus the cursor
   /// gusts and the poke burst. Deterministic for the given inputs.
@@ -641,8 +808,26 @@ class _OrbPainter extends CustomPainter {
           coreR * 0.7 * (g.speed / 1200).clamp(0.25, 1.4) * falloff * decay;
       p += g.dir * strength;
       if (dist > 1) {
-        p += d / dist * strength * 0.35; // scatter away from the path
+        p += d / dist * strength * 0.35;
       }
+    }
+    return p;
+  }
+
+  /// Gust displacement as a vector for a point (used to bend ribbons).
+  Offset _gustAt(Offset p, double coreR) =>
+      _place(Offset.zero, p.dx, p.dy, coreR) - p;
+
+  static double _hash(int a, int b) {
+    var h = a * 374761393 + b * 668265263;
+    h = (h ^ (h >> 13)) * 1274126177;
+    h = h ^ (h >> 16);
+    return (h & 0xffffff) / 0xffffff;
+  }
+
+  Paint _blurred(Paint p, double sigma) {
+    if (!reducedEffects && sigma > 0) {
+      p.maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, sigma);
     }
     return p;
   }
@@ -660,61 +845,199 @@ class _OrbPainter extends CustomPainter {
     final coreR = outer * 0.30 * params.coreScale * breath * bump;
 
     switch (variant) {
-      case OrbVariant.nebula:
-        _paintHalo(c, center, coreR, 2.4);
-        _paintShellParticles(c, center, coreR, behind: true);
-        _paintPlasmaCore(c, center, coreR, alpha: 1);
-        _paintLimb(c, center, coreR);
-        _paintShellParticles(c, center, coreR, behind: false);
-      case OrbVariant.halo:
-        final r = coreR * 0.72;
-        _paintHalo(c, center, coreR, 2.2);
-        _paintRingBand(c, center, coreR, behind: true);
-        _paintPlasmaCore(c, center, r, alpha: 1);
-        _paintLimb(c, center, r);
-        _paintRingBand(c, center, coreR, behind: false);
-      case OrbVariant.swarm:
-        _paintHalo(c, center, coreR, 2.0);
-        _paintSwarm(c, center, coreR);
-      case OrbVariant.glass:
-        _paintHalo(c, center, coreR, 2.2);
-        _paintShellParticles(c, center, coreR, behind: true, alphaScale: 0.45);
-        _paintGlassSphere(c, center, coreR);
-        _paintShellParticles(c, center, coreR, behind: false, alphaScale: 0.45);
-      case OrbVariant.flow:
-        _paintHalo(c, center, coreR, 2.6);
+      case OrbVariant.nebula: // Fluid Plasma
+        _paintHalo(c, center, coreR, 2.3, 1.0);
+        _paintSphereBase(c, center, coreR, 0.9);
+        _paintShaderCore(c, center, coreR, alpha: 0.55);
+        _paintRibbons(
+          c,
+          center,
+          coreR,
+          count: 5,
+          speed: 0.35,
+          amp: 0.55,
+          width: 0.16,
+          reach: 0.92,
+        );
+        _paintSurface(c, center, coreR, 0.9);
+      case OrbVariant.swarm: // Particle Intelligence
+        _paintHalo(c, center, coreR, 2.3, 0.8);
+        _paintSphereBase(c, center, coreR, 0.5);
+        _paintRibbons(
+          c,
+          center,
+          coreR,
+          count: 4,
+          speed: 0.5,
+          amp: 0.7,
+          width: 0.08,
+          reach: 1.0,
+          alpha: 0.5,
+        );
+        _paintStreamParticles(c, center, coreR);
+        _paintSurface(c, center, coreR, 0.45);
+      case OrbVariant.mesh: // Neural Filaments
+        _paintHalo(c, center, coreR, 2.1, 0.6);
+        _paintSphereBase(c, center, coreR, 1.0);
+        _paintShaderCore(c, center, coreR * 0.95, alpha: 0.35);
+        _paintThreads(c, center, coreR);
+        _paintSurface(c, center, coreR, 1.0);
+      case OrbVariant.energy: // Electric Core
+        _paintHalo(c, center, coreR, 2.4, 1.0);
+        _paintSphereBase(c, center, coreR, 0.7);
+        _paintRibbons(
+          c,
+          center,
+          coreR,
+          count: 6,
+          speed: 0.9,
+          amp: 0.4,
+          width: 0.07,
+          reach: 0.95,
+          alpha: 0.7,
+        );
+        _paintElectricCore(c, center, coreR);
+        _paintSurface(c, center, coreR, 0.6);
+      case OrbVariant.glass: // Holographic Atmosphere
+        _paintHalo(c, center, coreR, 2.0, 0.6);
+        _paintHolographic(c, center, coreR);
+      case OrbVariant.halo: // Aurora Vortex
+        _paintHalo(c, center, coreR, 2.2, 0.8);
+        _paintSphereBase(c, center, coreR, 0.6);
+        _paintRibbons(
+          c,
+          center,
+          coreR,
+          count: 9,
+          speed: 0.45,
+          amp: 0.85,
+          width: 0.2,
+          reach: 0.98,
+          alpha: 0.8,
+          vortex: true,
+        );
+        _paintSurface(c, center, coreR, 0.7);
+      case OrbVariant.flow: // Sun
+        _paintCorona(c, center, coreR);
         _paintFlowParticles(c, center, coreR, behind: true);
-        _paintPlasmaCore(c, center, coreR, alpha: 1);
-        _paintLimb(c, center, coreR);
+        _paintShaderCore(c, center, coreR, alpha: 1);
+        _paintProminences(c, center, coreR);
+        _paintLimb(c, center, coreR, 0.5);
         _paintFlowParticles(c, center, coreR, behind: false);
-      case OrbVariant.mesh:
-        _paintHalo(c, center, coreR, 2.0);
-        _paintMesh(c, center, coreR);
     }
     _paintStateOverlays(c, center, coreR, outer);
   }
 
   // ---------------------------------------------------------------- common
 
-  void _paintHalo(Canvas c, Offset center, double coreR, double scale) {
+  void _paintHalo(
+    Canvas c,
+    Offset center,
+    double coreR,
+    double scale,
+    double strength,
+  ) {
     final haloR = coreR * scale;
-    final haloAlpha = 0.10 + params.energy * 0.22;
-    final halo = Paint()
-      ..shader = ui.Gradient.radial(
-        center,
-        haloR,
-        [
-          glow.withValues(alpha: haloAlpha),
-          glow.withValues(alpha: haloAlpha * 0.35),
-          glow.withValues(alpha: 0),
-        ],
-        const [0.0, 0.45, 1.0],
-      );
-    c.drawCircle(center, haloR, halo);
+    final a = (0.10 + params.energy * 0.22) * strength;
+    c.drawCircle(
+      center,
+      haloR,
+      Paint()
+        ..shader = ui.Gradient.radial(
+          center,
+          haloR,
+          [
+            glow.withValues(alpha: a),
+            secondary.withValues(alpha: a * 0.5),
+            glow.withValues(alpha: 0),
+          ],
+          const [0.0, 0.5, 1.0],
+        ),
+    );
   }
 
-  /// The plasma body: runtime shader when available, gradient otherwise.
-  void _paintPlasmaCore(
+  /// Dark translucent body the energy lives inside (every ribbon style).
+  void _paintSphereBase(
+    Canvas c,
+    Offset center,
+    double coreR,
+    double strength,
+  ) {
+    c.drawCircle(
+      center,
+      coreR,
+      Paint()
+        ..shader = ui.Gradient.radial(
+          center.translate(-coreR * 0.2, -coreR * 0.25),
+          coreR * 1.25,
+          [
+            Color.lerp(
+              canvas,
+              secondary,
+              0.30 * strength,
+            )!.withValues(alpha: 0.9),
+            Color.lerp(
+              canvas,
+              secondary,
+              0.18 * strength,
+            )!.withValues(alpha: 0.95),
+            Color.lerp(canvas, glow, 0.35 * strength)!.withValues(alpha: 0.98),
+          ],
+          const [0.0, 0.6, 1.0],
+        ),
+    );
+  }
+
+  /// Translucent surface over the energy: rim light + a soft specular,
+  /// so the ribbons read as "beneath a surface" (Fluid Plasma reference).
+  void _paintSurface(Canvas c, Offset center, double coreR, double strength) {
+    c.drawCircle(
+      center,
+      coreR * 0.985,
+      _blurred(
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = coreR * 0.06
+          ..shader = ui.Gradient.sweep(
+            center,
+            [
+              glow.withValues(alpha: 0.05),
+              hot.withValues(alpha: 0.55 * strength),
+              hue(2).withValues(alpha: 0.35 * strength),
+              glow.withValues(alpha: 0.05),
+            ],
+            const [0.05, 0.25, 0.4, 0.6],
+          ),
+        coreR * 0.04,
+      ),
+    );
+    c.drawCircle(
+      center,
+      coreR,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = hot.withValues(
+          alpha: (0.3 + params.energy * 0.25) * strength,
+        ),
+    );
+    c.drawOval(
+      Rect.fromCenter(
+        center: center.translate(-coreR * 0.36, -coreR * 0.46),
+        width: coreR * 0.62,
+        height: coreR * 0.34,
+      ),
+      Paint()
+        ..shader = ui.Gradient.radial(
+          center.translate(-coreR * 0.36, -coreR * 0.46),
+          coreR * 0.32,
+          [hot.withValues(alpha: 0.45 * strength), hot.withValues(alpha: 0)],
+        ),
+    );
+  }
+
+  /// The body: runtime shader (two-tone, styled) or a gradient fallback.
+  void _paintShaderCore(
     Canvas c,
     Offset center,
     double coreR, {
@@ -732,41 +1055,44 @@ class _OrbPainter extends CustomPainter {
         ..setFloat(5, glow.r)
         ..setFloat(6, glow.g)
         ..setFloat(7, glow.b)
-        ..setFloat(8, alpha);
-      // The shader samples FlutterFragCoord in canvas space; translate
-      // so the sphere's uv origin is the rect's top-left.
+        ..setFloat(8, alpha)
+        ..setFloat(9, secondary.r)
+        ..setFloat(10, secondary.g)
+        ..setFloat(11, secondary.b)
+        ..setFloat(12, style);
       c.save();
       c.translate(rect.left, rect.top);
       c.drawCircle(Offset(coreR, coreR), coreR, Paint()..shader = shader);
       c.restore();
     } else {
-      final bright = Color.lerp(glow, specular, 0.7)!;
       final wobble = 0.5 + 0.5 * math.sin(time * (0.6 + params.energy * 2.5));
-      final core = Paint()
-        ..shader = ui.Gradient.radial(
-          center.translate(-coreR * 0.18, -coreR * 0.22),
-          coreR * 1.15,
-          [
-            bright.withValues(alpha: 0.95 * alpha),
-            Color.lerp(
-              glow,
-              bright,
-              0.25 + 0.25 * wobble,
-            )!.withValues(alpha: 0.9 * alpha),
-            glow.withValues(alpha: 0.75 * alpha),
-            Color.lerp(glow, canvas, 0.55)!.withValues(alpha: 0.9 * alpha),
-          ],
-          const [0.0, 0.28, 0.62, 1.0],
-        );
-      c.drawCircle(center, coreR, core);
+      final mid = Color.lerp(glow, secondary, 0.35 + 0.25 * wobble)!;
+      c.drawCircle(
+        center,
+        coreR,
+        Paint()
+          ..shader = ui.Gradient.radial(
+            center.translate(-coreR * 0.18, -coreR * 0.22),
+            coreR * 1.15,
+            [
+              hot.withValues(alpha: 0.95 * alpha),
+              glow.withValues(alpha: 0.9 * alpha),
+              mid.withValues(alpha: 0.85 * alpha),
+              Color.lerp(
+                secondary,
+                canvas,
+                0.5,
+              )!.withValues(alpha: 0.9 * alpha),
+            ],
+            const [0.0, 0.3, 0.65, 1.0],
+          ),
+      );
     }
-
-    // Inner turbulence streaks (error) / calm sheen: a few arcs.
     if (params.turbulence > 0.05) {
       final streak = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2
-        ..color = specular.withValues(alpha: 0.25 * params.turbulence);
+        ..color = hot.withValues(alpha: 0.3 * params.turbulence);
       for (var i = 0; i < 3; i++) {
         final a = time * (1.5 + i) * (i.isEven ? 1 : -1) + i;
         c.drawArc(
@@ -780,72 +1106,519 @@ class _OrbPainter extends CustomPainter {
     }
   }
 
-  void _paintLimb(Canvas c, Offset center, double r) {
-    final rim = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..color = Color.lerp(
-        glow,
-        specular,
-        0.4,
-      )!.withValues(alpha: 0.35 + params.energy * 0.3);
-    if (!reducedEffects) {
-      rim.maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 1.2);
-    }
-    c.drawCircle(center, r, rim);
+  void _paintLimb(Canvas c, Offset center, double r, double strength) {
+    c.drawCircle(
+      center,
+      r,
+      _blurred(
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0
+          ..color = Color.lerp(
+            glow,
+            hot,
+            0.5,
+          )!.withValues(alpha: (0.35 + params.energy * 0.3) * strength),
+        1.2,
+      ),
+    );
   }
 
-  /// Tilted elliptical orbits around the body (nebula, glass).
-  void _paintShellParticles(
+  // --------------------------------------------------------------- ribbons
+
+  /// Path of ribbon k: a flowing curve inside the sphere, built from two
+  /// phase-shifted sines on a slowly turning axis; bent by cursor gusts.
+  Path _ribbonPath(
+    Offset center,
+    double coreR,
+    int k,
+    double speed,
+    double amp,
+    double reach,
+    bool vortex,
+  ) {
+    final phase = time * speed * (0.6 + 0.5 * _hash(k, 1)) + k * 1.9;
+    final tiltA = _hash(k, 2) * math.pi * 2 + time * 0.05 * (k.isEven ? 1 : -1);
+    final ca = math.cos(tiltA), sa = math.sin(tiltA);
+    final path = Path();
+    const steps = 48;
+    var prev = Offset.zero;
+    for (var s = 0; s <= steps; s++) {
+      final t = s / steps;
+      double x, y;
+      if (vortex) {
+        // Orbit band: a tilted ring segment with undulation.
+        final ang = phase + t * math.pi * 1.7;
+        final rr =
+            coreR *
+            reach *
+            (0.55 + 0.35 * _hash(k, 3)) *
+            (1 + 0.08 * math.sin(phase * 2 + t * 6));
+        x = math.cos(ang) * rr;
+        y = math.sin(ang) * rr * (0.35 + 0.4 * _hash(k, 4));
+      } else {
+        // S-curve across the sphere.
+        final u = (t - 0.5) * 2; // -1..1
+        x = u * coreR * reach;
+        y =
+            (math.sin(u * math.pi * (1.0 + 0.5 * _hash(k, 5)) + phase) *
+                    amp *
+                    0.5 +
+                math.sin(u * math.pi * 1.6 + phase * 1.3 + k) * amp * 0.10) *
+            coreR;
+        // Keep inside the disc.
+        final maxY =
+            math.sqrt(
+              math.max(0.0, (coreR * reach) * (coreR * reach) - x * x),
+            ) *
+            0.95;
+        y = y.clamp(-maxY, maxY);
+      }
+      final rx = x * ca - y * sa;
+      final ry = x * sa + y * ca;
+      final pt = center + Offset(rx, ry) + _gustAt(Offset(rx, ry), coreR);
+      if (s == 0) {
+        path.moveTo(pt.dx, pt.dy);
+        prev = pt;
+      } else {
+        // Smooth: curve through the midpoint of the previous and this point.
+        final mid = Offset((prev.dx + pt.dx) / 2, (prev.dy + pt.dy) / 2);
+        path.quadraticBezierTo(prev.dx, prev.dy, mid.dx, mid.dy);
+        prev = pt;
+      }
+    }
+    path.lineTo(prev.dx, prev.dy);
+    return path;
+  }
+
+  /// Glowing ribbons: wide soft pass (additive), medium pass, thin hot core.
+  void _paintRibbons(
     Canvas c,
     Offset center,
     double coreR, {
-    required bool behind,
-    double alphaScale = 1,
+    required int count,
+    required double speed,
+    required double amp,
+    required double width,
+    required double reach,
+    double alpha = 0.85,
+    bool vortex = false,
   }) {
+    c.save();
+    c.clipPath(
+      Path()..addOval(Rect.fromCircle(center: center, radius: coreR * 0.985)),
+    );
+    final sp = speed * (0.6 + params.energy * 1.2);
+    for (var k = 0; k < count; k++) {
+      final path = _ribbonPath(
+        center,
+        coreR,
+        k,
+        sp,
+        amp * (1 + params.turbulence * 0.6),
+        reach,
+        vortex,
+      );
+      final color = hue(k);
+      final w = coreR * width * (0.7 + 0.6 * _hash(k, 6));
+      if (!reducedEffects) {
+        c.drawPath(
+          path,
+          _blurred(
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = w * 2.6
+              ..strokeCap = StrokeCap.round
+              ..blendMode = BlendMode.plus
+              ..color = color.withValues(alpha: 0.22 * alpha),
+            w * 0.9,
+          ),
+        );
+      }
+      c.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = w
+          ..strokeCap = StrokeCap.round
+          ..blendMode = reducedEffects ? BlendMode.srcOver : BlendMode.plus
+          ..color = color.withValues(alpha: 0.55 * alpha),
+      );
+      c.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = math.max(1.0, w * 0.28)
+          ..strokeCap = StrokeCap.round
+          ..color = Color.lerp(
+            color,
+            hot,
+            0.6,
+          )!.withValues(alpha: 0.65 * alpha),
+      );
+    }
+    c.restore();
+  }
+
+  /// Particle Intelligence: particles ride the ribbon streams (sampled
+  /// along the same curves) plus a loose mist around them.
+  void _paintStreamParticles(Canvas c, Offset center, double coreR) {
     final paint = Paint();
+    final sp = 0.5 * (0.6 + params.energy * 1.2);
+    final gather = 0.5 + 0.5 * math.sin(time * params.breathRate * math.pi * 2);
     for (var i = 0; i < field.count; i++) {
-      final a =
-          field.baseAngle[i] +
-          time * field.speed[i] * params.particleSpeed * 0.8;
-      final spread = params.particleSpread * field.radiusJitter[i];
-      final wob =
-          math.sin(time * 1.3 + field.phase[i]) *
-          (0.03 + params.turbulence * 0.12);
-      final r = coreR * (spread + wob);
-      final tilt = field.tilt[i];
-      final x = math.cos(a) * r;
-      final y = math.sin(a) * r * math.cos(tilt);
-      final depth = math.sin(a) * math.sin(tilt); // -1 behind .. 1 front
-      final isBehind = depth < 0;
-      if (isBehind != behind) continue;
-      final inside = math.sqrt(x * x + y * y) < coreR;
-      if (behind && inside) continue; // occluded by the core
-      final dAlpha = 0.45 + 0.55 * (depth + 1) / 2;
-      final alpha = (params.particleAlpha * dAlpha * alphaScale).clamp(
+      final k = i % 4;
+      final life =
+          (time *
+                  (0.08 + params.particleSpeed * 0.1) *
+                  (0.6 + field.radiusJitter[i]) +
+              field.phase[i] / (math.pi * 2)) %
+          1.0;
+      // Position along ribbon k at parameter `life` (same maths as _ribbonPath).
+      final phase = time * sp * (0.6 + 0.5 * _hash(k, 1)) + k * 1.9;
+      final tiltA =
+          _hash(k, 2) * math.pi * 2 + time * 0.05 * (k.isEven ? 1 : -1);
+      final u = (life - 0.5) * 2;
+      var x = u * coreR;
+      var y =
+          (math.sin(u * math.pi * (1.0 + 0.5 * _hash(k, 5)) + phase) * 0.35 +
+              math.sin(u * math.pi * 2.3 + phase * 1.7 + k) * 0.12) *
+          coreR;
+      // Spread off the stream, more when dispersed.
+      final off =
+          (field.tilt[i] / (math.pi * 0.45)) *
+          coreR *
+          (0.08 + 0.22 * (1 - gather) + params.turbulence * 0.3);
+      y += off;
+      x += math.sin(field.phase[i] + time) * coreR * 0.03;
+      final ca = math.cos(tiltA), sa = math.sin(tiltA);
+      final rx = x * ca - y * sa;
+      final ry = x * sa + y * ca;
+      final inside = math.sqrt(rx * rx + ry * ry) < coreR * 1.05;
+      if (!inside) continue;
+      final fade = math.sin(life * math.pi);
+      final alpha = (params.particleAlpha * (0.35 + 0.65 * fade)).clamp(
         0.0,
         1.0,
       );
-      paint.color = Color.lerp(
-        glow,
-        specular,
-        0.35 * dAlpha,
-      )!.withValues(alpha: alpha);
-      final ps =
-          field.size[i] *
-          (0.7 + 0.5 * (depth + 1) / 2) *
-          (coreR / 60).clamp(0.6, 2.2);
-      c.drawCircle(_place(center, x, y, coreR), ps, paint);
+      final color = i % 7 == 0 ? hot : hue(k);
+      final pos = _place(center, rx, ry, coreR);
+      final ps = field.size[i] * 0.6 * (coreR / 60).clamp(0.6, 2.2);
+      paint.color = color.withValues(alpha: alpha * 0.18);
+      c.drawCircle(pos, ps * 3, paint);
+      paint.color = Color.lerp(color, hot, 0.35)!.withValues(alpha: alpha);
+      c.drawCircle(pos, ps, paint);
     }
   }
 
-  // ------------------------------------------------------------------ flow
+  // ------------------------------------------------------------- electric
 
-  /// Emission: a particle's life is a phase p in 0..1 that advances with
-  /// time; it is born just inside the limb, travels outward along a
-  /// tilted spiral, fades in then out, shrinks, and is reborn. Thinking
-  /// and working raise the emission rate; approval holds the stream
-  /// nearly still; error scatters it.
+  Path _bolt(Offset a, Offset b, int seed, double jitter, int segments) {
+    final path = Path()..moveTo(a.dx, a.dy);
+    final d = b - a;
+    final n = Offset(-d.dy, d.dx) / (d.distance == 0 ? 1 : d.distance);
+    for (var i = 1; i < segments; i++) {
+      final t = i / segments;
+      final off = (_hash(seed, i) - 0.5) * 2 * jitter * math.sin(t * math.pi);
+      final p = a + d * t + n * off;
+      path.lineTo(p.dx, p.dy);
+    }
+    path.lineTo(b.dx, b.dy);
+    return path;
+  }
+
+  void _strokeBolt(Canvas c, Path p, double width, double alpha, Color color) {
+    if (!reducedEffects) {
+      c.drawPath(
+        p,
+        _blurred(
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = width * 3.5
+            ..strokeCap = StrokeCap.round
+            ..blendMode = BlendMode.plus
+            ..color = color.withValues(alpha: alpha * 0.45),
+          width * 1.5,
+        ),
+      );
+    }
+    c.drawPath(
+      p,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = width
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..color = Color.lerp(color, hot, 0.75)!.withValues(alpha: alpha),
+    );
+  }
+
+  /// Electric Core: a hot concentrated centre with bolts passing outward
+  /// to the surface, flickering faster the more URI works.
+  void _paintElectricCore(Canvas c, Offset center, double coreR) {
+    c.save();
+    c.clipPath(Path()..addOval(Rect.fromCircle(center: center, radius: coreR)));
+    final coreGlow =
+        coreR * (0.42 + 0.12 * math.sin(time * 3 * (0.5 + params.energy)));
+    c.drawCircle(
+      center,
+      coreGlow,
+      Paint()
+        ..blendMode = reducedEffects ? BlendMode.srcOver : BlendMode.plus
+        ..shader = ui.Gradient.radial(
+          center,
+          coreGlow,
+          [
+            hot.withValues(alpha: 0.95),
+            glow.withValues(alpha: 0.6),
+            secondary.withValues(alpha: 0),
+          ],
+          const [0.0, 0.35, 1.0],
+        ),
+    );
+    final frame = (time * (6 + params.energy * 10)).floor();
+    final bolts = 6 + (params.energy * 8).round();
+    for (var k = 0; k < bolts; k++) {
+      final seed = frame * 23 + k * 97;
+      if (_hash(seed, 9) > 0.5 + params.energy * 0.4) continue;
+      final a = _hash(seed, 1) * math.pi * 2;
+      final p1 =
+          center +
+          Offset(math.cos(a), math.sin(a)) *
+              coreR *
+              (0.05 + 0.15 * _hash(seed, 3));
+      final p2 =
+          center +
+          Offset(
+                math.cos(a + (_hash(seed, 2) - 0.5)),
+                math.sin(a + (_hash(seed, 2) - 0.5)),
+              ) *
+              coreR *
+              0.97;
+      _strokeBolt(c, _bolt(p1, p2, seed, coreR * 0.3, 9), 1.2, 0.8, hue(k));
+      c.drawCircle(p2, 1.8, Paint()..color = hot.withValues(alpha: 0.9));
+    }
+    c.restore();
+  }
+
+  // -------------------------------------------------------------- threads
+
+  /// Neural Filaments: delicate threads of light leaving the sphere and
+  /// drifting outward, bright at the tips.
+  void _paintThreads(Canvas c, Offset center, double coreR) {
+    const n = 14;
+    for (var k = 0; k < n; k++) {
+      final a =
+          _hash(300 + k, 1) * math.pi * 2 + time * 0.04 * (k.isEven ? 1 : -1);
+      final len =
+          coreR * (0.9 + 0.9 * _hash(300 + k, 2)) * (0.8 + params.energy * 0.5);
+      final bend = (_hash(300 + k, 3) - 0.5) * 1.6;
+      final path = Path();
+      const steps = 26;
+      Offset? tip;
+      for (var s = 0; s <= steps; s++) {
+        final t = s / steps;
+        final ang =
+            a +
+            bend * t * t +
+            math.sin(time * 0.9 + k + t * 5) *
+                0.08 *
+                (1 + params.turbulence * 2);
+        final rr = coreR * 0.55 + len * t;
+        var pt = center + Offset(math.cos(ang), math.sin(ang)) * rr;
+        pt += _gustAt(pt - center, coreR);
+        if (s == 0) {
+          path.moveTo(pt.dx, pt.dy);
+        } else {
+          path.lineTo(pt.dx, pt.dy);
+        }
+        tip = pt;
+      }
+      final color = hue(k);
+      if (!reducedEffects) {
+        c.drawPath(
+          path,
+          _blurred(
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3.5
+              ..strokeCap = StrokeCap.round
+              ..blendMode = BlendMode.plus
+              ..color = color.withValues(alpha: 0.25),
+            2.0,
+          ),
+        );
+      }
+      c.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0
+          ..strokeCap = StrokeCap.round
+          ..color = Color.lerp(color, hot, 0.6)!.withValues(alpha: 0.75),
+      );
+      if (tip != null) {
+        c.drawCircle(tip, 2.2, Paint()..color = hot.withValues(alpha: 0.9));
+      }
+    }
+  }
+
+  // ----------------------------------------------------------- holographic
+
+  /// Holographic Atmosphere: translucent concentric layers with coloured
+  /// rims, inner ribbons dimmer, a big specular.
+  void _paintHolographic(Canvas c, Offset center, double coreR) {
+    _paintSphereBase(c, center, coreR, 0.7);
+    _paintRibbons(
+      c,
+      center,
+      coreR * 0.82,
+      count: 4,
+      speed: 0.3,
+      amp: 0.5,
+      width: 0.14,
+      reach: 0.9,
+      alpha: 0.55,
+    );
+    for (var k = 0; k < 3; k++) {
+      final rr = coreR * (0.62 + 0.19 * k);
+      final sweepStart = time * (0.2 + 0.1 * k) * (k.isEven ? 1 : -1);
+      c.drawCircle(
+        center,
+        rr,
+        _blurred(
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = coreR * 0.05
+            ..shader = ui.Gradient.sweep(
+              center,
+              [
+                hue(k).withValues(alpha: 0.05),
+                hue(k).withValues(alpha: 0.7),
+                hue(k + 1).withValues(alpha: 0.5),
+                hue(k).withValues(alpha: 0.05),
+              ],
+              const [0.0, 0.25, 0.45, 0.7],
+              TileMode.repeated,
+              sweepStart,
+              sweepStart + math.pi * 2,
+            ),
+          coreR * 0.03,
+        ),
+      );
+    }
+    // Chromatic rim: cyan one side, pink the other.
+    c.drawCircle(
+      center,
+      coreR * 0.985,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..shader = ui.Gradient.sweep(
+          center,
+          [
+            hue(0).withValues(alpha: 0.8),
+            hue(2).withValues(alpha: 0.8),
+            hue(0).withValues(alpha: 0.8),
+          ],
+          const [0.0, 0.5, 1.0],
+        ),
+    );
+    c.drawOval(
+      Rect.fromCenter(
+        center: center.translate(-coreR * 0.36, -coreR * 0.46),
+        width: coreR * 0.75,
+        height: coreR * 0.42,
+      ),
+      Paint()
+        ..shader = ui.Gradient.radial(
+          center.translate(-coreR * 0.36, -coreR * 0.46),
+          coreR * 0.38,
+          [
+            hot.withValues(alpha: 0.8),
+            hot.withValues(alpha: 0.12),
+            hot.withValues(alpha: 0),
+          ],
+          const [0.0, 0.5, 1.0],
+        ),
+    );
+    c.drawCircle(
+      center.translate(coreR * 0.45, coreR * 0.5),
+      coreR * 0.06,
+      Paint()..color = hot.withValues(alpha: 0.5),
+    );
+  }
+
+  // ------------------------------------------------------------------- sun
+
+  void _paintCorona(Canvas c, Offset center, double coreR) {
+    final outerR = coreR * 2.8;
+    c.drawCircle(
+      center,
+      outerR,
+      Paint()
+        ..shader = ui.Gradient.radial(
+          center,
+          outerR,
+          [
+            glow.withValues(alpha: 0.30 + params.energy * 0.2),
+            secondary.withValues(alpha: 0.16),
+            secondary.withValues(alpha: 0),
+          ],
+          const [0.0, 0.45, 1.0],
+        ),
+    );
+    final ray = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = glow.withValues(alpha: 0.10 + params.energy * 0.1);
+    for (var k = 0; k < 14; k++) {
+      final a = k * (math.pi * 2 / 14) + time * 0.05;
+      final len = coreR * (1.3 + 0.5 * _hash(k, 3) + 0.2 * math.sin(time + k));
+      c.drawLine(
+        center + Offset(math.cos(a), math.sin(a)) * coreR * 1.02,
+        center + Offset(math.cos(a), math.sin(a)) * len,
+        ray,
+      );
+    }
+  }
+
+  void _paintProminences(Canvas c, Offset center, double coreR) {
+    final frame = (time * 0.6).floor();
+    for (var k = 0; k < 3; k++) {
+      final seed = frame * 31 + k * 71;
+      final life = ((time * 0.6) + k / 3) % 1.0;
+      final a = _hash(seed, 1) * math.pi * 2;
+      final span = 0.35 + 0.4 * _hash(seed, 2);
+      final height =
+          coreR * (0.25 + 0.5 * _hash(seed, 3)) * math.sin(life * math.pi);
+      final p1 = center + Offset(math.cos(a), math.sin(a)) * coreR;
+      final p2 =
+          center + Offset(math.cos(a + span), math.sin(a + span)) * coreR;
+      final ctrl =
+          center +
+          Offset(math.cos(a + span / 2), math.sin(a + span / 2)) *
+              (coreR + height);
+      final path = Path()
+        ..moveTo(p1.dx, p1.dy)
+        ..quadraticBezierTo(ctrl.dx, ctrl.dy, p2.dx, p2.dy);
+      c.drawPath(
+        path,
+        _blurred(
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.2
+            ..color = Color.lerp(
+              glow,
+              secondary,
+              0.4,
+            )!.withValues(alpha: 0.7 * math.sin(life * math.pi)),
+          1.5,
+        ),
+      );
+    }
+  }
+
   void _paintFlowParticles(
     Canvas c,
     Offset center,
@@ -853,7 +1626,7 @@ class _OrbPainter extends CustomPainter {
     required bool behind,
   }) {
     final paint = Paint();
-    final rate = 0.08 + params.particleSpeed * 0.16; // lives per second
+    final rate = 0.08 + params.particleSpeed * 0.16;
     final reach = coreR * (1.0 + params.particleSpread * 0.9);
     for (var i = 0; i < field.count; i++) {
       final life =
@@ -871,17 +1644,13 @@ class _OrbPainter extends CustomPainter {
       final isBehind = depth < 0;
       if (isBehind != behind) continue;
       if (behind && math.sqrt(x * x + y * y) < coreR) continue;
-      final fade = math.sin(life * math.pi); // in then out
+      final fade = math.sin(life * math.pi);
       final near = (depth + 1) / 2;
       final alpha = (params.particleAlpha * fade * (0.45 + 0.55 * near)).clamp(
         0.0,
         1.0,
       );
-      paint.color = Color.lerp(
-        Color.lerp(glow, specular, 0.6)!,
-        glow,
-        life,
-      )!.withValues(alpha: alpha);
+      paint.color = Color.lerp(hot, secondary, life)!.withValues(alpha: alpha);
       final ps =
           field.size[i] *
           (1.3 - life * 0.9) *
@@ -889,310 +1658,6 @@ class _OrbPainter extends CustomPainter {
           (coreR / 60).clamp(0.6, 2.2);
       c.drawCircle(_place(center, x, y, coreR), ps, paint);
     }
-  }
-
-  // ------------------------------------------------------------------ mesh
-
-  /// Nodes on a sphere (Fibonacci lattice, so they are evenly spread),
-  /// rotated about a tilted axis; edges join nodes closer than a
-  /// threshold. Depth sorts brightness; edges behind the sphere are dim.
-  void _paintMesh(Canvas c, Offset center, double coreR) {
-    final n = field.count;
-    final r = coreR * 1.25 * (0.85 + params.particleSpread * 0.15);
-    final rot = time * (0.12 + params.particleSpeed * 0.18);
-    const tiltX = 0.42; // axis tilt
-    final pts = List<Offset>.filled(n, Offset.zero);
-    final depth = List<double>.filled(n, 0);
-    const golden = 2.399963229728653; // golden angle
-    for (var i = 0; i < n; i++) {
-      final yUnit = 1 - (i + 0.5) * 2 / n; // -1..1
-      final ring = math.sqrt(1 - yUnit * yUnit);
-      final theta = i * golden + rot;
-      var x = math.cos(theta) * ring;
-      var z = math.sin(theta) * ring;
-      var y = yUnit;
-      // tilt about x axis
-      final y2 = y * math.cos(tiltX) - z * math.sin(tiltX);
-      final z2 = y * math.sin(tiltX) + z * math.cos(tiltX);
-      y = y2;
-      z = z2;
-      final jitter =
-          math.sin(time * 1.1 + field.phase[i]) *
-          (0.01 + params.turbulence * 0.08);
-      pts[i] = _place(
-        center,
-        x * r * (1 + jitter),
-        y * r * (1 + jitter),
-        coreR,
-      );
-      depth[i] = z; // -1 back .. 1 front
-    }
-    // Faint inner glow so the lattice reads as a body.
-    c.drawCircle(
-      center,
-      r,
-      Paint()
-        ..shader = ui.Gradient.radial(center, r, [
-          glow.withValues(alpha: 0.12 + params.energy * 0.18),
-          glow.withValues(alpha: 0.02),
-        ]),
-    );
-    // Edges: nearest neighbours under a threshold (O(n^2), n=72).
-    final maxD = r * 0.62;
-    final broken = params.turbulence; // error breaks some edges
-    final edge = Paint()..strokeWidth = 1;
-    for (var i = 0; i < n; i++) {
-      for (var j = i + 1; j < n; j++) {
-        final d = (pts[i] - pts[j]).distance;
-        if (d > maxD) continue;
-        if (broken > 0.3 && ((i * 31 + j * 17) % 7) < broken * 7) continue;
-        final front = (depth[i] + depth[j]) / 2;
-        final near = (front + 1) / 2;
-        final w = 1 - d / maxD;
-        edge.color = glow.withValues(
-          alpha: (0.08 + 0.55 * near * w) * (0.5 + params.energy * 0.5),
-        );
-        c.drawLine(pts[i], pts[j], edge);
-      }
-    }
-    // Nodes.
-    final node = Paint();
-    for (var i = 0; i < n; i++) {
-      final near = (depth[i] + 1) / 2;
-      node.color = Color.lerp(glow, specular, 0.5 * near)!.withValues(
-        alpha: (0.25 + 0.75 * near) * params.particleAlpha.clamp(0.4, 1.0),
-      );
-      final pulse = 0.5 + 0.5 * math.sin(time * 2.0 + field.phase[i]);
-      c.drawCircle(
-        pts[i],
-        (1.2 + 1.8 * near + pulse * params.energy) *
-            (coreR / 60).clamp(0.6, 2.2),
-        node,
-      );
-    }
-  }
-
-  // ------------------------------------------------------------------ halo
-
-  /// One wide luminous ring, tilted like the wordmark's orbit, with the
-  /// particles riding in its band. Drawn in two halves so the core
-  /// occludes the far side.
-  void _paintRingBand(
-    Canvas c,
-    Offset center,
-    double coreR, {
-    required bool behind,
-  }) {
-    final ringR = coreR * 1.45 * (0.9 + params.particleSpread * 0.1);
-    const tiltY = 0.38;
-    final rect = Rect.fromCenter(
-      center: center,
-      width: ringR * 2,
-      height: ringR * 2 * tiltY,
-    );
-    // Far half: angles with sin(a) < 0 (upper arc), near half: lower arc.
-    final start = behind ? math.pi : 0.0;
-    final band = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = coreR * 0.16
-      ..shader = ui.Gradient.sweep(
-        center,
-        [
-          glow.withValues(alpha: 0.05),
-          glow.withValues(alpha: 0.55 + params.energy * 0.3),
-          Color.lerp(glow, specular, 0.5)!.withValues(alpha: 0.9),
-          glow.withValues(alpha: 0.55 + params.energy * 0.3),
-          glow.withValues(alpha: 0.05),
-        ],
-        const [0.0, 0.3, 0.5, 0.7, 1.0],
-        TileMode.repeated,
-        time * (0.3 + params.particleSpeed * 0.5),
-        time * (0.3 + params.particleSpeed * 0.5) + math.pi * 2,
-      );
-    if (!reducedEffects) {
-      band.maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, coreR * 0.05);
-    }
-    c.drawArc(rect, start, math.pi, false, band..color = specular);
-    final thin = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..color = Color.lerp(glow, specular, 0.6)!.withValues(alpha: 0.7);
-    c.drawArc(rect, start, math.pi, false, thin);
-
-    // Particles in the band.
-    final paint = Paint();
-    for (var i = 0; i < field.count; i++) {
-      final a =
-          field.baseAngle[i] +
-          time * field.speed[i] * params.particleSpeed * 0.6;
-      final isBehind = math.sin(a) < 0;
-      if (isBehind != behind) continue;
-      final r = ringR * (0.92 + 0.16 * (field.radiusJitter[i] - 0.82) / 0.36);
-      final jitter =
-          math.sin(time * 1.7 + field.phase[i]) *
-          coreR *
-          0.04 *
-          (1 + params.turbulence * 3);
-      final p = _place(
-        center,
-        math.cos(a) * r,
-        math.sin(a) * r * tiltY + jitter,
-        coreR,
-      );
-      final near = (math.sin(a) + 1) / 2;
-      paint.color = Color.lerp(glow, specular, 0.4 * near)!.withValues(
-        alpha: (params.particleAlpha * (0.4 + 0.6 * near)).clamp(0.0, 1.0),
-      );
-      c.drawCircle(
-        p,
-        field.size[i] * 0.9 * (coreR / 60).clamp(0.6, 2.2),
-        paint,
-      );
-    }
-  }
-
-  // ----------------------------------------------------------------- swarm
-
-  /// A sphere made only of particles; cohesion comes from energy and a
-  /// faint central glow. Thinking tightens it, error scatters it.
-  void _paintSwarm(Canvas c, Offset center, double coreR) {
-    final glowPaint = Paint()
-      ..shader = ui.Gradient.radial(
-        center,
-        coreR * 1.1,
-        [
-          Color.lerp(
-            glow,
-            specular,
-            0.5,
-          )!.withValues(alpha: 0.22 + params.energy * 0.25),
-          glow.withValues(alpha: 0.10),
-          glow.withValues(alpha: 0),
-        ],
-        const [0.0, 0.5, 1.0],
-      );
-    c.drawCircle(center, coreR * 1.1, glowPaint);
-
-    final paint = Paint();
-    // Gather / disperse: the swarm breathes with the state's breath rate,
-    // tightening on thinking (small spread) and loosening on error.
-    final gather = 0.5 + 0.5 * math.sin(time * params.breathRate * math.pi * 2);
-    final cohesion = (1.0 - params.turbulence * 0.5) * (0.9 + 0.2 * gather);
-    final bodyR = coreR * 1.25 * (0.75 + params.particleSpread * 0.25);
-    for (var i = 0; i < field.count; i++) {
-      final a =
-          field.baseAngle[i] +
-          time * field.speed[i] * params.particleSpeed * 0.5;
-      final tilt = field.tilt[i];
-      final vr =
-          field.volume[i] * bodyR * cohesion +
-          math.sin(time * 0.9 + field.phase[i]) * coreR * 0.05;
-      final x = math.cos(a) * vr;
-      final y = math.sin(a) * vr * math.cos(tilt);
-      final depth = math.sin(a) * math.sin(tilt);
-      final near = (depth + 1) / 2;
-      final alpha = (params.particleAlpha * (0.35 + 0.65 * near)).clamp(
-        0.0,
-        1.0,
-      );
-      paint.color = Color.lerp(
-        glow,
-        specular,
-        0.45 * near,
-      )!.withValues(alpha: alpha);
-      final pos = _place(center, x, y, coreR);
-      final ps =
-          field.size[i] * (0.55 + 0.6 * near) * (coreR / 60).clamp(0.6, 2.2);
-      // Soft body: a faint wide disc under a small bright one.
-      c.drawCircle(
-        pos,
-        ps * 3.4,
-        paint..color = paint.color.withValues(alpha: alpha * 0.14),
-      );
-      c.drawCircle(
-        pos,
-        ps,
-        paint..color = paint.color.withValues(alpha: alpha),
-      );
-    }
-  }
-
-  // ----------------------------------------------------------------- glass
-
-  /// Frosted sphere: dark glass body, dim inner swirl, specular highlight,
-  /// lit lower rim.
-  void _paintGlassSphere(Canvas c, Offset center, double coreR) {
-    final rect = Rect.fromCircle(center: center, radius: coreR);
-    // Body.
-    c.drawCircle(
-      center,
-      coreR,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          center.translate(-coreR * 0.25, -coreR * 0.3),
-          coreR * 1.4,
-          [
-            Color.lerp(glow, canvas, 0.55)!.withValues(alpha: 0.95),
-            Color.lerp(glow, canvas, 0.78)!.withValues(alpha: 0.95),
-            Color.lerp(glow, canvas, 0.9)!.withValues(alpha: 0.98),
-          ],
-          const [0.0, 0.6, 1.0],
-        ),
-    );
-    // Inner swirl, dim, clipped to the sphere.
-    c.save();
-    c.clipPath(Path()..addOval(rect.deflate(coreR * 0.08)));
-    _paintPlasmaCore(c, center, coreR * 0.92, alpha: 0.42);
-    c.restore();
-    // Lower rim light.
-    final rimLight = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = coreR * 0.08
-      ..shader = ui.Gradient.sweep(
-        center,
-        [
-          glow.withValues(alpha: 0),
-          glow.withValues(alpha: 0.75),
-          glow.withValues(alpha: 0),
-        ],
-        const [0.15, 0.3, 0.45],
-      );
-    if (!reducedEffects) {
-      rimLight.maskFilter = ui.MaskFilter.blur(
-        ui.BlurStyle.normal,
-        coreR * 0.06,
-      );
-    }
-    c.drawCircle(center, coreR * 0.96, rimLight);
-    // Specular highlight.
-    final spec = Paint()
-      ..shader = ui.Gradient.radial(
-        center.translate(-coreR * 0.38, -coreR * 0.42),
-        coreR * 0.38,
-        [
-          specular.withValues(alpha: 0.55),
-          specular.withValues(alpha: 0.12),
-          specular.withValues(alpha: 0),
-        ],
-        const [0.0, 0.45, 1.0],
-      );
-    c.drawOval(
-      Rect.fromCenter(
-        center: center.translate(-coreR * 0.38, -coreR * 0.42),
-        width: coreR * 0.75,
-        height: coreR * 0.5,
-      ),
-      spec,
-    );
-    // Thin edge.
-    c.drawCircle(
-      center,
-      coreR,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = specular.withValues(alpha: 0.22 + params.energy * 0.2),
-    );
   }
 
   // --------------------------------------------------------- state overlays
@@ -1203,18 +1668,22 @@ class _OrbPainter extends CustomPainter {
     double coreR,
     double outer,
   ) {
-    // Approval / error: pulsing attention ring just outside the halo core.
+    final overlay = Color.lerp(glow, tint, math.max(tintMix, 0.6))!;
     if (params.ringStrength > 0.01) {
       final pulse = 0.5 + 0.5 * math.sin(time * math.pi * 1.6);
       final ringR = coreR * (1.55 + pulse * 0.08);
-      final ring = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6
-        ..color = glow.withValues(
-          alpha: params.ringStrength * (0.35 + 0.45 * pulse),
-        );
-      c.drawCircle(center, ringR, ring);
-      final dots = Paint()..color = glow.withValues(alpha: params.ringStrength);
+      c.drawCircle(
+        center,
+        ringR,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.6
+          ..color = overlay.withValues(
+            alpha: params.ringStrength * (0.35 + 0.45 * pulse),
+          ),
+      );
+      final dots = Paint()
+        ..color = overlay.withValues(alpha: params.ringStrength);
       for (var i = 0; i < 3; i++) {
         final a = -math.pi / 2 + i * (math.pi * 2 / 3) + time * 0.4;
         c.drawCircle(
@@ -1225,14 +1694,13 @@ class _OrbPainter extends CustomPainter {
       }
     }
 
-    // Working: rotating orbit arc + optional progress arc.
     if (params.orbitArc > 0.01) {
       final arcRect = Rect.fromCircle(center: center, radius: coreR * 1.62);
       final arc = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.2
         ..strokeCap = StrokeCap.round
-        ..color = glow.withValues(alpha: 0.85 * params.orbitArc);
+        ..color = overlay.withValues(alpha: 0.85 * params.orbitArc);
       final p = progress;
       if (p == null) {
         final start = time * 2.4;
@@ -1242,14 +1710,19 @@ class _OrbPainter extends CustomPainter {
           start + math.pi,
           math.pi * 0.25,
           false,
-          arc..color = glow.withValues(alpha: 0.4 * params.orbitArc),
+          arc..color = overlay.withValues(alpha: 0.4 * params.orbitArc),
         );
       } else {
-        final track = Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.2
-          ..color = glow.withValues(alpha: 0.18 * params.orbitArc);
-        c.drawArc(arcRect, 0, math.pi * 2, false, track);
+        c.drawArc(
+          arcRect,
+          0,
+          math.pi * 2,
+          false,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.2
+            ..color = overlay.withValues(alpha: 0.18 * params.orbitArc),
+        );
         c.drawArc(
           arcRect,
           -math.pi / 2,
@@ -1260,7 +1733,6 @@ class _OrbPainter extends CustomPainter {
       }
     }
 
-    // Poke: a quick burst ring (click response).
     if (poke > 0 && poke < 1) {
       final burstR = coreR * (1.05 + poke * 1.3);
       c.drawCircle(
@@ -1271,24 +1743,25 @@ class _OrbPainter extends CustomPainter {
           ..strokeWidth = 2.0 * (1 - poke) + 0.5
           ..color = Color.lerp(
             glow,
-            specular,
+            hot,
             0.4,
           )!.withValues(alpha: (1 - poke) * 0.8),
       );
     }
 
-    // Success: a bloom ring expanding outward and fading.
     if (params.bloom > 0.01) {
       final cycle = (time * 0.9) % 1.0;
       final bloomR = coreR * (1.1 + cycle * 1.4);
-      final bloom = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5 * (1 - cycle) + 0.5
-        ..color = glow.withValues(alpha: params.bloom * (1 - cycle) * 0.7);
-      c.drawCircle(center, bloomR, bloom);
+      c.drawCircle(
+        center,
+        bloomR,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5 * (1 - cycle) + 0.5
+          ..color = overlay.withValues(alpha: params.bloom * (1 - cycle) * 0.7),
+      );
     }
 
-    // Speaking (outward ripples) / listening (inward ripples).
     if (params.rippleStrength.abs() > 0.01) {
       final strength = params.rippleStrength.abs();
       final inward = params.rippleStrength < 0;
@@ -1296,13 +1769,16 @@ class _OrbPainter extends CustomPainter {
         var cycle = ((time * 0.8) + k / 3) % 1.0;
         if (inward) cycle = 1 - cycle;
         final rr = coreR * (1.15 + cycle * 0.9);
-        final rp = Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2
-          ..color = glow.withValues(
-            alpha: strength * 0.5 * (inward ? cycle : (1 - cycle)),
-          );
-        c.drawCircle(center, rr, rp);
+        c.drawCircle(
+          center,
+          rr,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.2
+            ..color = overlay.withValues(
+              alpha: strength * 0.5 * (inward ? cycle : (1 - cycle)),
+            ),
+        );
       }
     }
   }
@@ -1311,13 +1787,14 @@ class _OrbPainter extends CustomPainter {
   bool shouldRepaint(covariant _OrbPainter old) =>
       old.time != time ||
       old.params != params ||
-      old.glow != glow ||
+      old.hues != hues ||
+      old.hot != hot ||
+      old.tint != tint ||
       old.progress != progress ||
       old.reducedEffects != reducedEffects ||
       old.program != program ||
       old.variant != variant ||
       old.field != field ||
-      old.specular != specular ||
       old.poke != poke ||
       old.gusts.length != gusts.length;
 }

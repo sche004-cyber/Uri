@@ -1,31 +1,49 @@
 # Energy Orb options (owner choice)
 
-Date: 2026-10-08. Author: Claude. Status: six variants IMPLEMENTED on one state engine; default `nebula`; owner choice PENDING. Switch at runtime in Workspace > Settings > Orb style, or start the preview with `URI_LIVING_ORB_VARIANT=<name>`.
+Date: 2026-10-08 (revised the same day after the owner's references). Author: Claude. Status: seven styles and ten palettes IMPLEMENTED on one state engine; default style `nebula` (Fluid Plasma) with its own palette; owner choice PENDING. Switch at runtime in Workspace > Settings > Orb style / Orb palette, or start the preview with `URI_LIVING_ORB_VARIANT=<style>` and `URI_LIVING_ORB_PALETTE=<palette>`.
 
-Owner reference (shared mid-session, saved as `docs/ui_phase/references/owner_orb_reference_2026-10-08.jpg`): six concept renders titled Particle Intelligence ("my first choice"), Liquid Energy, Neural Mesh, Liquid Glass, Plasma Core, Ethereal Orb. The variants below map onto them; none copies the renders, all are drawn procedurally in Flutter and react to state, cursor and click.
+## Owner references (saved under `docs/ui_phase/references/`)
 
-Screenshots from the real Windows release build (`docs/ui_phase/screenshots/orb_*.png`, captured by `docs/ui_phase/tools/capture_screenshots.ps1 -Only "orb_*"`).
+| File | Content | What it changed |
+|---|---|---|
+| `owner_orb_reference_2026-10-08.jpg` | six concept renders: Particle Intelligence ("my first choice"), Liquid Energy, Neural Mesh, Liquid Glass, Plasma Core, Ethereal Orb | the first variant set |
+| `owner_flowing_energy_reference_2026-10-08.jpg` | Fluid plasma, Particle intelligence (ribbon streams of particles), Neural filaments (threads leaving a translucent blob), Electric core, Holographic atmosphere, Aurora vortex | the second rework: energy as glowing ribbons under a translucent surface; each style its own structure |
+| `owner_style_palette_state_board_2026-10-08.jpg` | 1 orb styles, 2 colour variations ("the same style in different palettes"), 3 state examples, 4 palette collections | palettes decoupled from styles; ten palettes named after the board |
 
-| Variant (`OrbVariant`) | Maps to owner reference | What it is | Idle | One state | Strengths | Trade-offs |
-|---|---|---|---|---|---|---|
-| `swarm` | 1 Particle Intelligence (owner's first choice) | no solid body; ~260 soft particles cohere into a sphere, gather/disperse with the breath; thinking tightens, error scatters | `orb_swarm_idle.png` | `orb_swarm_thinking.png` | closest to the reference; reads as "intelligence", not a ball; the gust reaction is most visible here | least defined silhouette at 72 px (rail); most particles per frame (still cheap: 260 circles) |
-| `nebula` | 2 Liquid Energy / 5 Plasma Core | shader plasma core, thin limb, loose particle shell (the first build's default) | `orb_nebula_idle.png` | screenshots 01-03 | strongest "energy inside" read; shader does the work | the most literal "glowing ball"; shader off under reduced effects (gradient fallback) |
-| `mesh` | 3 Neural Mesh | 72 nodes on a Fibonacci sphere joined by short edges, turning slowly; thinking brightens, error breaks edges | `orb_mesh_idle.png` | `orb_mesh_approval.png` | explicit "network" metaphor; crisp at every size; no shader needed | O(n²) edge pass (72 nodes: trivial); less warmth; can look technical/cold |
-| `glass` | 4 Liquid Glass | frosted sphere, dim inner swirl, specular highlight, lit lower rim, few particles | `orb_glass_idle.png` | `orb_glass_error.png` | most "premium object"; calmest; best fit for the glass UI language | least alive at idle; state tints are subtler (owner may want stronger tints) |
-| `halo` | 6 Ethereal Orb | small bright core, one wide luminous tilted ring (echoes the eclipse wordmark), particles ride the ring | `orb_halo_idle.png` | `orb_halo_success.png` | ties to the existing brand mark; distinct silhouette | ring reads as a planet/loader if overused; the working arc overlaps the ring |
-| `flow` | owner request: "particles coming out of the core" | plasma core that emits its particles: born at the limb, spiral outward, fade, reborn; state sets the emission rate | `orb_flow_idle.png` | `orb_flow_working.png` | motion has a clear direction and cause; thinking visibly "pours out" | needs the ticker (static frame shows a snapshot of the stream); busiest at idle unless the rate is lowered |
+Owner notes applied: "particles flowing out of the core" (Sun / Flow), cursor gust reaction, click response with a question, "different character and structure to each orb" and "why all the same colour". Suggested inspiration beyond stills (Blender particle energy orbs, TouchDesigner audio-reactive energy, real-time shader spheres): explored as technique references only. Blender is not installed here and a baked animation cannot react to live state; the audio-reactive idea maps directly onto the Listening/Speaking states once a voice source exists (amplitude would drive `OrbParams.energy`); the real-time shader approach is what the core already uses (`shaders/orb_core.frag`, three styles).
 
-## Shared behaviour (every variant)
+## Styles (`OrbVariant`, labels as on the owner's board)
 
-* Nine states, same tints, rings, arcs, bloom and ripples (`OrbParams`), tweened over 650 ms.
-* Cursor gust: sweeping the pointer across the orb pushes nearby particles along the sweep and scatters them from its path, decaying over 1.4 s, like leaves in a gust (`_Gust`, `_OrbPainter._place`). Pure presentation; no state change; off when the ticker is off (reduced motion) or `interactive: false`.
-* Click: a poke (core bump, burst ring, outward kick of the particles) plus a question bubble under the orb ("Yes? What should I do?"; UI-local copy, never a Brain reply) while the composer takes focus. Double-click opens the Workspace.
-* Reduced effects: shader and blur masks off, everything else on. Reduced motion: still frame.
+Screenshots from the real Windows release build (`docs/ui_phase/screenshots/orb_*.png`, `palette_*.png`, `orb_variants_sheet.png`).
+
+| Style | Enum | Structure | Energy behaviour | Default palette |
+|---|---|---|---|---|
+| Fluid Plasma | `nebula` | translucent sphere; five wide glowing ribbons circulating beneath the surface over a liquid-vein shader base; rim light and specular | slow circulation; thinking speeds and brightens the ribbons | Signature (cyan / blue / violet) |
+| Particle Intelligence | `swarm` | 360 particles riding four ribbon streams inside the sphere, plus a loose mist | gather / disperse with the breath; thinking tightens the streams; error scatters | Aurora (cyan / violet / pink) |
+| Neural Filaments | `mesh` | pale translucent body with a dim shader swirl; fourteen delicate light threads leaving the sphere, bright at the tips | threads drift slowly; working/thinking lengthen and brighten them; error makes them tremble | Soft Pastel (ice / pink / lavender) |
+| Electric Core | `energy` | concentrated hot centre; bolts passing outward to the surface; six fast thin ribbons | bolts flicker 6-16x per second with energy; the core pulses | Royal (blue / purple) |
+| Holographic Atmosphere | `glass` | three concentric translucent shells with coloured rims turning in opposite directions; dim inner ribbons; chromatic rim; big specular | calm; layers turn faster when working | Deep Ocean (teal / blue) |
+| Aurora Vortex | `halo` | nine ribbons orbiting a tilted axis, wide and soft, under a surface | continuous orbital motion; thinking speeds it; approval slows it | Aurora |
+| Sun / Flow | `flow` | granular hot shader surface, red-orange corona with slow rays, prominences leaping off the limb, embers emitted from the limb outward | emission rate follows the state (thinking pours out, approval nearly still) | Sunset (amber / orange / pink) |
+
+## Palettes (`OrbPalette`, any style)
+
+Signature (cyan / blue / violet), Deep Ocean (teal / blue), Aurora (cyan / violet / pink), Nature (green / teal), Sunset (amber / orange / pink), Royal (blue / purple), Passion (red / orange), Soft Pastel (ice / pink / lavender), Monochrome (white / silver), Rainbow (five hues). Examples: `palette_nebula_sunset.png`, `palette_nebula_nature.png`, `palette_halo_rainbow.png`, `palette_energy_passion.png`, `palette_swarm_mono.png`.
+
+## States on any style/palette
+
+The nine states keep their meaning: tints lean every palette hue toward amber (needs you), green (done), red (attention) or grey (unavailable) by `OrbParams.tintMix`, and the overlays (approval ring with three markers, working arc or progress arc, done bloom, speaking/listening ripples) are drawn in the tinted colour. The owner's board uses amber for "completed" and orange for "needs approval"; this build keeps green for done so it never resembles the approval amber. Changeable in one place (`_tintFor` in `energy_orb.dart`) if the owner prefers the board's colours.
+
+## Shared behaviour (every style)
+
+* Cursor gust: sweeping the pointer over the orb pushes particles and bends ribbons and threads along the sweep, decaying over 1.4 s (`_Gust`, `_place`, `_gustAt`).
+* Click: poke (core bump, burst ring, outward kick) plus a UI-local question bubble ("Yes? What should I do?") and composer focus. Double-click opens the Workspace.
+* Reduced effects: no shader, no blur, no additive glow passes; structure and tints remain. Reduced motion: still frame.
 
 ## Recommendation
 
-`swarm` as the default if the owner's "first choice" stands, with `flow` as the alternative when motion with a visible source is wanted. `glass` is the most restrained match for the Dark Glass language and the safest at small sizes. `nebula` remains the current default until the owner decides (changing the default is one enum value in `LivingServices.orbVariant`).
+Fluid Plasma (Signature) as the default companion: the calmest at idle and the clearest at 72 px in the rail. Particle Intelligence (Aurora) when the owner wants the "thinking" state to be the most expressive. Sun / Flow is the most distinctive but the warmest, which fights the cool UI chrome unless the palette is changed with it.
 
 ## Not done
 
-No Blender/3D render. No variant blends (e.g. mesh over glass); straightforward to add as a composite case in `_OrbPainter.paint` if wanted. No per-variant performance table yet beyond the profile numbers in `UI_TEST_EVIDENCE.md`.
+No Blender/TouchDesigner assets; no audio reactivity (no voice source yet). Performance per style is in `UI_TEST_EVIDENCE.md`; the ribbon styles use blurred additive strokes and cost more than the particle-only first build (numbers there).

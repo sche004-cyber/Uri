@@ -11,7 +11,8 @@ import '../../services/uri_client.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
 import '../companion/companion_state.dart';
-import '../companion/energy_orb.dart' show OrbVariant, OrbVariantLabel;
+import '../companion/energy_orb.dart'
+    show OrbPalette, OrbPaletteData, OrbVariant, OrbVariantLabel;
 import '../contracts/readiness_report.dart';
 import '../contracts/work_items.dart';
 import '../living_app.dart';
@@ -983,6 +984,44 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
                       label: Text(v.label),
                       selected: services.orbVariant.value == v,
                       onSelected: (_) => services.orbVariant.value = v,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: UriSpace.md),
+            const Eyebrow('Orb palette'),
+            const SizedBox(height: 8),
+            ListenableBuilder(
+              listenable: Listenable.merge([
+                services.orbPalette,
+                services.orbVariant,
+              ]),
+              builder: (context, _) => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ChoiceChip(
+                    key: const ValueKey('orb-palette-default'),
+                    label: const Text('Style default'),
+                    selected: services.orbPalette.value == null,
+                    onSelected: (_) => services.orbPalette.value = null,
+                  ),
+                  for (final p in OrbPalette.values)
+                    ChoiceChip(
+                      key: ValueKey('orb-palette-${p.name}'),
+                      avatar: SizedBox(
+                        width: 18,
+                        height: 10,
+                        child: Row(
+                          children: [
+                            for (final h in p.hues.take(3))
+                              Expanded(child: ColoredBox(color: h)),
+                          ],
+                        ),
+                      ),
+                      label: Text(p.label),
+                      selected: services.orbPalette.value == p,
+                      onSelected: (_) => services.orbPalette.value = p,
                     ),
                 ],
               ),

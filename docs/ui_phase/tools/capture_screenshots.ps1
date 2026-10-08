@@ -54,16 +54,23 @@ $scenarios = @(
   @{ name = "12_companion_reduced_fx";  w = 460;  h = 720;  env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_REDUCED_EFFECTS = "1"; URI_LIVING_DEMO_STATE = "success" } },
   @{ name = "13_workspace_narrow";      w = 900;  h = 700;  env = @{ URI_LIVING_START_MODE = "workspace"; URI_LIVING_START_FOCUS = "tasks" } },
   @{ name = "orb_nebula_idle";  w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "nebula" } },
-  @{ name = "orb_halo_idle";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "halo" } },
   @{ name = "orb_swarm_idle";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "swarm" } },
-  @{ name = "orb_glass_idle";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "glass" } },
-  @{ name = "orb_flow_idle";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "flow" } },
   @{ name = "orb_mesh_idle";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "mesh" } },
+  @{ name = "orb_energy_idle";  w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "energy" } },
+  @{ name = "orb_glass_idle";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "glass" } },
+  @{ name = "orb_halo_idle";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "halo" } },
+  @{ name = "orb_flow_idle";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "flow" } },
   @{ name = "orb_swarm_thinking"; w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "swarm"; URI_LIVING_DEMO_STATE = "thinking" } },
-  @{ name = "orb_flow_working";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "flow"; URI_LIVING_DEMO_STATE = "working" } },
+  @{ name = "orb_energy_working"; w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "energy"; URI_LIVING_DEMO_STATE = "working" } },
   @{ name = "orb_mesh_approval";  w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "mesh"; URI_LIVING_DEMO_STATE = "awaitingApproval" } },
   @{ name = "orb_glass_error";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "glass"; URI_LIVING_DEMO_STATE = "error" } },
-  @{ name = "orb_halo_success";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "halo"; URI_LIVING_DEMO_STATE = "success" } }
+  @{ name = "orb_halo_success";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "halo"; URI_LIVING_DEMO_STATE = "success" } },
+  @{ name = "orb_flow_working";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "flow"; URI_LIVING_DEMO_STATE = "working" } },
+  @{ name = "palette_nebula_sunset";  w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "nebula"; URI_LIVING_ORB_PALETTE = "sunset" } },
+  @{ name = "palette_nebula_nature";  w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "nebula"; URI_LIVING_ORB_PALETTE = "nature" } },
+  @{ name = "palette_halo_rainbow";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "halo"; URI_LIVING_ORB_PALETTE = "rainbow" } },
+  @{ name = "palette_energy_passion"; w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "energy"; URI_LIVING_ORB_PALETTE = "passion" } },
+  @{ name = "palette_swarm_mono";     w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "swarm"; URI_LIVING_ORB_PALETTE = "monochrome" } }
 )
 
 if (-not (Test-Path $Exe)) { throw "exe not found: $Exe (run flutter build windows -t lib/main_living.dart)" }

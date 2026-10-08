@@ -108,6 +108,7 @@ class _LivingShellState extends State<LivingShell> {
         services.presentation,
         services.companion,
         services.orbVariant,
+        services.orbPalette,
       ]),
       builder: (context, _) {
         final mode = services.presentation.mode;
@@ -206,6 +207,7 @@ class _LivingShellState extends State<LivingShell> {
                               progress: signal.progress,
                               size: dock.rect.width,
                               variant: services.orbVariant.value,
+                              palette: services.orbPalette.value,
                               pokes: services.orbPokes,
                             ),
                           ),

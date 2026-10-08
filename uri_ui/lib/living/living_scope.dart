@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'companion/companion_sources.dart';
-import 'companion/energy_orb.dart' show OrbVariant;
+import 'companion/energy_orb.dart' show OrbPalette, OrbVariant;
 import 'companion/effects_settings.dart';
 import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
@@ -76,6 +76,11 @@ class LivingServices {
     OrbVariant.nebula,
   );
 
+  /// Colour palette; null = the style's own default palette.
+  final ValueNotifier<OrbPalette?> orbPalette = ValueNotifier<OrbPalette?>(
+    null,
+  );
+
   void dispose() {
     presentation.dispose();
     companion.dispose();
@@ -86,6 +91,7 @@ class LivingServices {
     selectedHarness.dispose();
     reasoningMode.dispose();
     orbVariant.dispose();
+    orbPalette.dispose();
     orbPokes.dispose();
     composerFocus.dispose();
   }

@@ -77,28 +77,50 @@ void main() {
         );
         await tester.pump(const Duration(milliseconds: 90));
         await tester.pump(const Duration(milliseconds: 90));
-        expect(tester.takeException(), isNull, reason: '${variant.name}/${state.name}');
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '${variant.name}/${state.name}',
+        );
       }
       await tester.pumpWidget(const SizedBox());
     });
   }
 
-  test(
-    'every state has distinct painter parameters (state is never visually ambiguous)',
-    () {
-      final seen = <String>{};
-      for (final s in CompanionState.values) {
-        final p = OrbParams.forState(s);
-        final signature =
-            '${p.breathRate}|${p.particleSpeed}|${p.particleSpread}|${p.energy}|${p.turbulence}|${p.tintMix}|${p.ringStrength}|${p.orbitArc}|${p.bloom}|${p.rippleStrength}';
-        expect(
-          seen.add(signature),
-          isTrue,
-          reason: '${s.name} duplicates another state',
-        );
+  testWidgets('every palette renders on every variant (idle + thinking)', (
+    tester,
+  ) async {
+    for (final v in OrbVariant.values) {
+      for (final p in OrbPalette.values) {
+        for (final st in [CompanionState.idle, CompanionState.thinking]) {
+          await tester.pumpWidget(
+            host(EnergyOrb(state: st, size: 140, variant: v, palette: p)),
+          );
+          await tester.pump(const Duration(milliseconds: 60));
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '${v.name}/${p.name}/${st.name}',
+          );
+        }
       }
-    },
-  );
+    }
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  test('every state has distinct painter parameters (state is never visually ambiguous)', () {
+    final seen = <String>{};
+    for (final s in CompanionState.values) {
+      final p = OrbParams.forState(s);
+      final signature =
+          '${p.breathRate}|${p.particleSpeed}|${p.particleSpread}|${p.energy}|${p.turbulence}|${p.tintMix}|${p.ringStrength}|${p.orbitArc}|${p.bloom}|${p.rippleStrength}';
+      expect(
+        seen.add(signature),
+        isTrue,
+        reason: '${s.name} duplicates another state',
+      );
+    }
+  });
 
   testWidgets(
     'A1: every state renders visibly different pixels, with and without effects',
@@ -115,14 +137,18 @@ void main() {
             reducedMotion: true,
           ),
         );
-        await tester.pump(const Duration(milliseconds: 700)); // state tween done
+        await tester.pump(
+          const Duration(milliseconds: 700),
+        ); // state tween done
         await tester.pumpAndSettle();
         late List<int> bytes;
         await tester.runAsync(() async {
           final boundary =
               key.currentContext!.findRenderObject() as RenderRepaintBoundary;
           final image = await boundary.toImage(pixelRatio: 1);
-          final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+          final data = await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          );
           bytes = data!.buffer.asUint8List();
         });
         return bytes;
@@ -140,7 +166,10 @@ void main() {
             final b = images[states[j]]!;
             var differing = 0;
             for (var k = 0; k < a.length; k += 4) {
-              if ((a[k] - b[k]).abs() + (a[k + 1] - b[k + 1]).abs() + (a[k + 2] - b[k + 2]).abs() > 24) {
+              if ((a[k] - b[k]).abs() +
+                      (a[k + 1] - b[k + 1]).abs() +
+                      (a[k + 2] - b[k + 2]).abs() >
+                  24) {
                 differing++;
               }
             }

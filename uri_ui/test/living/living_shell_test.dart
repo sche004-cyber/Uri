@@ -25,7 +25,8 @@ import 'package:uri_ui/theme/uri_theme.dart';
 LivingServices testServices(AppState appState, {MockWorkSimulator? work}) {
   final demo = MockCompanionSource();
   final sim =
-      work ?? MockWorkSimulator(stepInterval: const Duration(milliseconds: 100));
+      work ??
+      MockWorkSimulator(stepInterval: const Duration(milliseconds: 100));
   return LivingServices(
     presentation: UiPresentationController(commandCooldown: Duration.zero),
     companion: CompositeCompanionSource([
@@ -67,16 +68,23 @@ Future<(AppState, LivingServices)> pumpLiving(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('opens in Companion mode with the orb, a status line and a composer', (
-    tester,
-  ) async {
-    await pumpLiving(tester);
-    expect(find.byKey(LivingShell.orbKey), findsOneWidget);
-    expect(find.byKey(const ValueKey('companion-state-label')), findsOneWidget);
-    expect(find.text('Idle'), findsWidgets);
-    expect(find.byKey(const ValueKey('living-composer-field')), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'opens in Companion mode with the orb, a status line and a composer',
+    (tester) async {
+      await pumpLiving(tester);
+      expect(find.byKey(LivingShell.orbKey), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('companion-state-label')),
+        findsOneWidget,
+      );
+      expect(find.text('Idle'), findsWidgets);
+      expect(
+        find.byKey(const ValueKey('living-composer-field')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'A2: the same orb element travels through Companion -> Workspace -> Dashboard -> Companion',
@@ -228,10 +236,7 @@ void main() {
     expect(find.byKey(const ValueKey('living-composer-field')), findsOneWidget);
     expect(find.text('CONTEXT & FILES'), findsOneWidget);
     for (final (focus, texts) in [
-      (
-        WorkspaceFocus.tasks,
-        ['NEEDS YOUR DECISION', 'IN PROGRESS', 'HISTORY'],
-      ),
+      (WorkspaceFocus.tasks, ['NEEDS YOUR DECISION', 'IN PROGRESS', 'HISTORY']),
       (WorkspaceFocus.documents, ['START NEW WORK', 'RECENT DOCUMENTS']),
       (
         WorkspaceFocus.intelligence,
@@ -246,6 +251,7 @@ void main() {
           'APPROVAL BOUNDARY',
           'PERMISSIONS',
           'ORB STYLE',
+          'ORB PALETTE',
         ],
       ),
     ]) {
@@ -421,6 +427,18 @@ void main() {
       expect(
         tester.widget<EnergyOrb>(find.byKey(LivingShell.orbKey)).variant,
         OrbVariant.mesh,
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('orb-palette-sunset')),
+        200,
+        scrollable: scrollable,
+      );
+      await tester.tap(find.byKey(const ValueKey('orb-palette-sunset')));
+      await tester.pumpAndSettle();
+      expect(services.orbPalette.value, OrbPalette.sunset);
+      expect(
+        tester.widget<EnergyOrb>(find.byKey(LivingShell.orbKey)).palette,
+        OrbPalette.sunset,
       );
       await tester.scrollUntilVisible(
         find.text('Obsidian Cyan'),

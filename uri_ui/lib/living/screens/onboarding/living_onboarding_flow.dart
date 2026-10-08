@@ -140,6 +140,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                     state: _previewFor(_step),
                     size: 150,
                     variant: services.orbVariant.value,
+                    palette: services.orbPalette.value,
                   ),
                   const SizedBox(height: 6),
                   Row(

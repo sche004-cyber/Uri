@@ -86,11 +86,14 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(LivingPrefs.onboardingDone), isTrue);
       expect(
-      prefs.getBool('uri.completedOnboarding'),
-      isNull,
-      reason: 'the Hybrid key is never written by the preview',
-    );
-    expect(prefs.getBool(LivingPreferencesStore.keyCompletedOnboarding), isTrue);
+        prefs.getBool('uri.completedOnboarding'),
+        isNull,
+        reason: 'the Hybrid key is never written by the preview',
+      );
+      expect(
+        prefs.getBool(LivingPreferencesStore.keyCompletedOnboarding),
+        isTrue,
+      );
       expect(tester.takeException(), isNull);
     },
   );

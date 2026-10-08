@@ -13,6 +13,7 @@
 * "Obsidian Cyan" added as a fifth `UriThemeChoice`; the four approved Hybrid themes are unchanged.
 * A restricted UI-state controller (`ShowModeCommand` only) with a local "URI <mode>" parser; the user can always switch or go Back.
 * Every mock-backed region carries a Simulated badge; the memory graph is labelled PROTOTYPE.
+* Six orb variants (nebula, halo, swarm, glass, flow, mesh) on one state engine, mapped to the owner's reference image (`docs/ui_phase/references/owner_orb_reference_2026-10-08.jpg`); the owner picks one (`docs/ui_phase/UI_ORB_OPTIONS.md`). Cursor gust and click poke + question bubble on every variant (owner requests, mid-session).
 
 ## Reference and evidence
 
@@ -20,7 +21,7 @@
 * Backend capability inspected first: `docs/architecture/PHASE2CLOSE_UI_READINESS.md` (state contract, interfaces), `uri_ui/lib/services/app_state.dart`, `uri_client.dart`, `supervised_runtime.dart`.
 * Structural pattern origins: Hybrid approval (`approved/hybrid_ui_2026-09-16.md`) for the destination set and the Chat/Tasks shapes; dashboard tile density ceiling from `dashboard/README.md`.
 * Screenshots from the real Windows build: `docs/ui_phase/screenshots/`.
-* Tests: `uri_ui/test/living/` (47), full suite 252 passing.
+* Tests: `uri_ui/test/living/` (70), full suite 275 passing; Codex read-only review rounds 1-3 (`docs/ui_phase/UI_TEST_EVIDENCE.md` section 6).
 
 ## What was explicitly NOT done
 
