@@ -229,3 +229,49 @@ If you decline the push, everything stays local and reversible: each candidate b
 - **New evidence:** `evidence/phase2close_review/round6/CODEX_REVIEW_round6.md` (written 08:30) gives "PHASE 2 CLOSURE ACCEPTED — PHYSICAL/OWNER GATES PENDING" on `phase2close-candidate-20261008-f.zip`. I re-hashed the zip (`fcd0d72e…71298`, matches), confirmed its `GIT_HEAD` is `e8e3b65`, confirmed it leaves all frozen Phase 1 files byte-identical, and confirmed no evidence file changed after 08:31.
 - **Change:** added A7 (candidate bytes), A8 (closure evidence) and A9 (three docs updated at 08:31 after acceptance, labelled as unreviewed doc updates). The earlier audit commit was re-cut on top as A10. The superseded local drafts of the audit commit (`7ed80ba`, `d209d01`, `79c19e6`, `f8dfbfe`) were never pushed and are unreferenced.
 - **Unchanged:** physical/owner gates (human UI click, client-profile login, power-loss attestation, EXE-1 decision, freeze, cutover) remain PENDING per the closure verdict. This sync does not change any milestone status.
+
+## 13. Push record (2026-10-08 ~09:05 IST, owner-authorized)
+
+Authorization: the owner approved pushing exactly seven branches to `uri-repo`, with no force, no change to master, and no interference with active worktrees. The owner also ruled that the disputed commits `69ef0e4`, `98abdd0` and `869fae5` must not be pushed.
+
+Pre-push checks (all passed):
+- All seven local tips matched the commits in section 8.
+- None of `69ef0e4`, `98abdd0`, `869fae5` is an ancestor of any approved branch (`git merge-base --is-ancestor`).
+- The push URL is `https://github.com/sche004-cyber/Uri.git`. None of the seven branch names existed on the remote.
+- Every file each branch adds relative to its base was read from git and scanned again. No secret pattern matched, no sensitive filename appeared, and nothing was deleted. Every integration-branch file matches its SHA-256 in `SYNC_CANDIDATE_LEDGER.json`.
+- All six preservation branches still match their source worktrees on disk.
+
+Push: `git push --porcelain uri-repo <ref>:<ref>` ×7 with explicit refspecs and no `--force`. Exit 0, all seven reported `[new branch]`.
+
+Remote SHAs read back with `git ls-remote uri-repo`. All seven equal the local tips:
+
+| Remote branch | SHA |
+|---|---|
+| `integration/git-sync-20261008` | `f91236daad99ac719c268d5b80b7e5a208111ddb` |
+| `preserve/desktop-int-uncommitted-20261003` | `a3dab2186a92c033bcaf461ef0801db61d87959e` |
+| `preserve/v1-harness-voice-research-20261004` | `6aa9c30bd61bf2dd88129d29fe273dfc8b95df0e` |
+| `preserve/harness-connections-console-20261003` | `f07f7d40b2b7e80eb8a9b016e9b2bb130d179b20` |
+| `preserve/intent-discovery-20261004` | `2a7c2bcfc14432b05cf64faea9fd4f26af5c7e6a` |
+| `preserve/m33-3-r-audit-candidate-20260927` | `8cc688eccbb95011e11e63f6f59f437f2472cfd7` |
+| `preserve/batch-candidate-m37-qual-20260928` | `2031931074374e69fb48ee1b3d50fe3202991a6e` |
+
+Master was not modified. `uri-repo` still has no `master`, and `origin/master` is still `e8e3b65259c45fc823addc3ef8969425a265bd1b`.
+
+Recoverability from GitHub: a fresh `git clone --single-branch` of `integration/git-sync-20261008` from GitHub into a scratch directory was checked as follows:
+- All 121 Phase 1 frozen files match zip `31a34dcb…`.
+- All 117 r6 files match zip `9a0be52c…` at commit `02fa0e1`.
+- All 137 closure files match zip `fcd0d72e…` at commit `b4a5977`. At the branch head, three closure docs carry the post-acceptance A9 bytes, as intended.
+- All 1,495 integration files match the ledger.
+- The 537 `model_lab` files are present.
+- The archived checkpoint zips inside `docs/evidence/phase2/` hash to `9a0be52c…`, `cbec537a…` and `fcd0d72e…`.
+- `git fsck` on the clone is clean.
+
+Active Phase 2 session: not touched. Its worktree is still on `phase2a-durable-supervisor` = `e8e3b65`. No other worktree, index or existing branch was modified.
+
+Remaining exceptions, unchanged by this push:
+- `69ef0e4`, `98abdd0`, `869fae5` and `71edc17` remain local-only by owner ruling.
+- Excluded runtime-state files (62), pid files (2) and graphify artifacts (12) remain on disk only.
+- No line was merged and no canonical shipping branch was chosen.
+- The `refs/audit/gh-*-20261008/*` local refs remain and can be deleted at any time.
+- Phase 2 physical/owner gates remain PENDING.
+- This section is carried by one further fast-forward docs commit on top of `f91236d`, pushed without force. A commit cannot record its own SHA, so read the current tip with `git ls-remote uri-repo refs/heads/integration/git-sync-20261008`. Its parent must be `f91236d`.
