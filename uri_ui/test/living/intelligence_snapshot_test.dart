@@ -13,7 +13,10 @@ void main() {
   test('idle: every stage idle, routing none, flagged simulated under the mock client', () {
     final appState = testAppState();
     // No seeded history: nothing has happened yet.
-    final services = testServices(appState, work: MockWorkSimulator(seed: false));
+    final services = testServices(
+      appState,
+      work: MockWorkSimulator(seed: false),
+    );
     final snap = deriveIntelligenceSnapshot(
       signal: const CompanionSignal.idle(),
       appState: appState,
@@ -30,7 +33,10 @@ void main() {
 
   test('awaiting approval blocks the approval stage; working activates execution; nothing is invented', () {
     final appState = testAppState();
-    final services = testServices(appState, work: MockWorkSimulator(seed: false));
+    final services = testServices(
+      appState,
+      work: MockWorkSimulator(seed: false),
+    );
     services.work.create(title: 'Letter', kind: WorkItemKind.letter);
 
     var snap = deriveIntelligenceSnapshot(
@@ -67,7 +73,10 @@ void main() {
     expect(snap.harnessName, isNull);
     // Route is never inferred.
     expect(stateOf(snap, PipelineStage.route), StageState.idle);
-    expect(snap.stages.firstWhere((f) => f.stage == PipelineStage.route).detail, 'not reported by this client');
+    expect(
+      snap.stages.firstWhere((f) => f.stage == PipelineStage.route).detail,
+      'not reported by this client',
+    );
     services.dispose();
   });
 
@@ -84,13 +93,31 @@ void main() {
     );
     expect(stateOf(snap, PipelineStage.approval), StageState.idle);
     expect(stateOf(snap, PipelineStage.receipt), StageState.idle);
-    expect(snap.stages.firstWhere((f) => f.stage == PipelineStage.approval).detail, 'not observed');
+    expect(
+      snap.stages.firstWhere((f) => f.stage == PipelineStage.approval).detail,
+      'not observed',
+    );
 
     // An in-session structured decision does count.
-    final id = services.work.create(title: 'Sheet', kind: WorkItemKind.spreadsheet);
+    final id = services.work.create(
+      title: 'Sheet',
+      kind: WorkItemKind.spreadsheet,
+    );
     // Drive it to awaitingApproval without timers: cancel is also a decision.
     services.work.cancel(id);
     expect(services.work.items.firstWhere((i) => i.id == id).decided, isTrue);
+    final after = deriveIntelligenceSnapshot(
+      signal: const CompanionSignal.idle(),
+      appState: appState,
+      services: services,
+    );
+    // Codex round 3 MINOR: a cancel is a recorded decision too.
+    expect(stateOf(after, PipelineStage.approval), StageState.done);
+    expect(
+      stateOf(after, PipelineStage.receipt),
+      StageState.idle,
+      reason: 'cancelled work has no output',
+    );
     services.dispose();
   });
 }

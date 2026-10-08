@@ -50,7 +50,10 @@ IntelligenceSnapshot deriveIntelligenceSnapshot({
           (lastTurn.stage == TurnStage.executing ||
               lastTurn.stage == TurnStage.completed)) ||
       services.work.items.any(
-        (i) => i.decided && i.state == WorkItemState.completed,
+        (i) =>
+            i.decided &&
+            (i.state == WorkItemState.completed ||
+                i.state == WorkItemState.cancelled),
       );
   final receiptObserved =
       lastTurn?.result != null ||
