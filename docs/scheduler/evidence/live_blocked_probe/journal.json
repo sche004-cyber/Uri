@@ -1,0 +1,108 @@
+[
+ {
+  "t_utc": "2026-10-08T21:01:47.393+00:00",
+  "step": "1.service_started",
+  "pid": 16668,
+  "port": 56209,
+  "mode": "live",
+  "ready": {
+   "ready": true,
+   "port": 56209,
+   "mode": "live",
+   "startup": {
+    "interrupted": [],
+    "harness": []
+   }
+  },
+  "argv": [
+   "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+   "-m",
+   "uri_scheduler.service",
+   "run",
+   "--state",
+   "C:\\Users\\cheta\\Development\\uri-scheduler\\docs\\scheduler\\evidence\\live_blocked_probe\\state",
+   "--mode",
+   "live",
+   "--port",
+   "56209",
+   "--tick-s",
+   "5",
+   "--timeout-s",
+   "900",
+   "--inactivity-s",
+   "600",
+   "--qualification",
+   "probe",
+   "--client-home",
+   "work/scheduler_client_home"
+  ]
+ },
+ {
+  "t_utc": "2026-10-08T21:01:47.443+00:00",
+  "step": "2a.proposed",
+  "job_id": "job_1b91f527b033",
+  "interpretation": "Once at 2026-10-09 02:32:17 (Asia/Kolkata)",
+  "upcoming": [
+   {
+    "key": "once",
+    "due_local": "2026-10-09T02:32+05:30",
+    "due_utc": "2026-10-08T21:02:17+00:00"
+   }
+  ]
+ },
+ {
+  "t_utc": "2026-10-08T21:01:47.445+00:00",
+  "step": "2b.confirmed",
+  "state": "ACTIVE",
+  "due_local": "2026-10-09T02:32:17"
+ },
+ {
+  "t_utc": "2026-10-08T21:01:47.458+00:00",
+  "step": "3.persisted_before_due",
+  "occ_id": 1,
+  "state": "SCHEDULED",
+  "due_utc": "2026-10-08T21:02:17+00:00",
+  "seconds_until_due": 29.5
+ },
+ {
+  "t_utc": "2026-10-08T21:02:17.866+00:00",
+  "step": "4.triggered",
+  "state": "BLOCKED_HARNESS",
+  "trigger_delay_s": 0.85
+ },
+ {
+  "t_utc": "2026-10-08T21:02:17.870+00:00",
+  "step": "5.harness_unavailable_recorded",
+  "reason": "NOT_AUTHENTICATED",
+  "event": {
+   "auto_recheck_utc": "2026-10-08T21:32:17+00:00",
+   "code": "NOT_AUTHENTICATED",
+   "gate": {
+    "available": false,
+    "code": "NOT_AUTHENTICATED",
+    "detail": {},
+    "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe",
+    "executor_id": "claude_code",
+    "mode": "LIVE",
+    "qualification": "PROBE_ONLY",
+    "version": "2.1.287"
+   },
+   "recovery": [
+    "sign the URI client profile in to Claude, then Retry",
+    "Reschedule to a later time",
+    "Cancel this occurrence"
+   ],
+   "substitution": "none (no other or paid provider is ever used)"
+  },
+  "harness": {
+   "available": false,
+   "code": "NOT_AUTHENTICATED",
+   "mode": "LIVE",
+   "executor_id": "claude_code",
+   "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe",
+   "version": "2.1.287",
+   "qualification": "PROBE_ONLY",
+   "detail": {}
+  }
+ }
+]

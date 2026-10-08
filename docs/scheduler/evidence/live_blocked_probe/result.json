@@ -1,0 +1,32 @@
+{
+ "mode": "live",
+ "simulated": false,
+ "steps": {
+  "persisted": true,
+  "trigger_delay_s": 0.85,
+  "blocked": {
+   "reason": "NOT_AUTHENTICATED",
+   "event": {
+    "auto_recheck_utc": "2026-10-08T21:32:17+00:00",
+    "code": "NOT_AUTHENTICATED",
+    "gate": {
+     "available": false,
+     "code": "NOT_AUTHENTICATED",
+     "detail": {},
+     "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe",
+     "executor_id": "claude_code",
+     "mode": "LIVE",
+     "qualification": "PROBE_ONLY",
+     "version": "2.1.287"
+    },
+    "recovery": [
+     "sign the URI client profile in to Claude, then Retry",
+     "Reschedule to a later time",
+     "Cancel this occurrence"
+    ],
+    "substitution": "none (no other or paid provider is ever used)"
+   }
+  }
+ },
+ "verdict": "BLOCKED_AS_EXPECTED"
+}

@@ -1,0 +1,121 @@
+[
+ {
+  "seq": 1,
+  "at_us": 1791493307383258,
+  "kind": "scheduler.started",
+  "job_id": null,
+  "occ_id": null,
+  "payload_json": "{\"harness_revoked\":0,\"instance\":\"1c2b7c3e44e1402a8f12a1670a2f9661\",\"recovered\":[]}",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "hash": "99b50f57ae92e000e182a2e59a1e352abc4ed7a8eb775e6c72a089d83e497ffa",
+  "payload": {
+   "harness_revoked": 0,
+   "instance": "1c2b7c3e44e1402a8f12a1670a2f9661",
+   "recovered": []
+  }
+ },
+ {
+  "seq": 2,
+  "at_us": 1791493307383939,
+  "kind": "calendar.loaded",
+  "job_id": null,
+  "occ_id": null,
+  "payload_json": "{\"calendar_id\":\"in_festivals\",\"digest\":\"ead14de445ac067922b95b3998940fc52578e5991a57693a9f60720cae524d40\",\"version\":\"2026-10-09.1\"}",
+  "prev_hash": "99b50f57ae92e000e182a2e59a1e352abc4ed7a8eb775e6c72a089d83e497ffa",
+  "hash": "1d2dee4ccde70d4ba3373e5b03082efc85469a257c0de844f176177dac7239bb",
+  "payload": {
+   "calendar_id": "in_festivals",
+   "digest": "ead14de445ac067922b95b3998940fc52578e5991a57693a9f60720cae524d40",
+   "version": "2026-10-09.1"
+  }
+ },
+ {
+  "seq": 3,
+  "at_us": 1791493307442206,
+  "kind": "job.proposed",
+  "job_id": "job_1b91f527b033",
+  "occ_id": null,
+  "payload_json": "{\"interpretation\":\"Once at 2026-10-09 02:32:17 (Asia/Kolkata)\",\"owner\":\"owner\",\"proposal_sha256\":\"925abc7940a15877f79f2fa076eb9b11444a596a086d34c0ed46f7db2d541e46\"}",
+  "prev_hash": "1d2dee4ccde70d4ba3373e5b03082efc85469a257c0de844f176177dac7239bb",
+  "hash": "77062782130d8dfb2f90e934039aad11278c0596474ff3e3ad665eb7d7f163be",
+  "payload": {
+   "interpretation": "Once at 2026-10-09 02:32:17 (Asia/Kolkata)",
+   "owner": "owner",
+   "proposal_sha256": "925abc7940a15877f79f2fa076eb9b11444a596a086d34c0ed46f7db2d541e46"
+  }
+ },
+ {
+  "seq": 4,
+  "at_us": 1791493307444425,
+  "kind": "job.activated",
+  "job_id": "job_1b91f527b033",
+  "occ_id": null,
+  "payload_json": "{\"by\":\"owner\",\"proposal_sha256\":\"925abc7940a15877f79f2fa076eb9b11444a596a086d34c0ed46f7db2d541e46\"}",
+  "prev_hash": "77062782130d8dfb2f90e934039aad11278c0596474ff3e3ad665eb7d7f163be",
+  "hash": "897fd820401522aa3879abfc5e2c128e6052516ffa2eb3913fd29ddde3dc8b75",
+  "payload": {
+   "by": "owner",
+   "proposal_sha256": "925abc7940a15877f79f2fa076eb9b11444a596a086d34c0ed46f7db2d541e46"
+  }
+ },
+ {
+  "seq": 5,
+  "at_us": 1791493307444930,
+  "kind": "occurrence.scheduled",
+  "job_id": "job_1b91f527b033",
+  "occ_id": 1,
+  "payload_json": "{\"due_local\":\"2026-10-09T02:32+05:30\",\"due_utc\":\"2026-10-08T21:02:17+00:00\",\"key\":\"once\"}",
+  "prev_hash": "897fd820401522aa3879abfc5e2c128e6052516ffa2eb3913fd29ddde3dc8b75",
+  "hash": "7c7fbf29df5c0b97603736cdc2f69e51aba0fb22436a47612ec6ab3a895ed91c",
+  "payload": {
+   "due_local": "2026-10-09T02:32+05:30",
+   "due_utc": "2026-10-08T21:02:17+00:00",
+   "key": "once"
+  }
+ },
+ {
+  "seq": 6,
+  "at_us": 1791493337478025,
+  "kind": "occurrence.claimed",
+  "job_id": "job_1b91f527b033",
+  "occ_id": 1,
+  "payload_json": "{\"attempt_no\":1,\"instance\":\"1c2b7c3e44e1402a8f12a1670a2f9661\",\"revision\":false}",
+  "prev_hash": "7c7fbf29df5c0b97603736cdc2f69e51aba0fb22436a47612ec6ab3a895ed91c",
+  "hash": "c50a3a10dfafdbf93d12123c125c957bd17aacd74f2eef9edef622633ff14ac2",
+  "payload": {
+   "attempt_no": 1,
+   "instance": "1c2b7c3e44e1402a8f12a1670a2f9661",
+   "revision": false
+  }
+ },
+ {
+  "seq": 7,
+  "at_us": 1791493337730749,
+  "kind": "harness.unavailable",
+  "job_id": "job_1b91f527b033",
+  "occ_id": 1,
+  "payload_json": "{\"auto_recheck_utc\":\"2026-10-08T21:32:17+00:00\",\"code\":\"NOT_AUTHENTICATED\",\"gate\":{\"available\":false,\"code\":\"NOT_AUTHENTICATED\",\"detail\":{},\"executable\":\"C:\\\\Users\\\\cheta\\\\AppData\\\\Roaming\\\\npm\\\\node_modules\\\\@anthropic-ai\\\\claude-code\\\\bin\\\\claude.exe\",\"executor_id\":\"claude_code\",\"mode\":\"LIVE\",\"qualification\":\"PROBE_ONLY\",\"version\":\"2.1.287\"},\"recovery\":[\"sign the URI client profile in to Claude, then Retry\",\"Reschedule to a later time\",\"Cancel this occurrence\"],\"substitution\":\"none (no other or paid provider is ever used)\"}",
+  "prev_hash": "c50a3a10dfafdbf93d12123c125c957bd17aacd74f2eef9edef622633ff14ac2",
+  "hash": "c6da383c42688f4ffb518a7fb03efbd35336f334ee9b2b9b510af1a6f2d50b66",
+  "payload": {
+   "auto_recheck_utc": "2026-10-08T21:32:17+00:00",
+   "code": "NOT_AUTHENTICATED",
+   "gate": {
+    "available": false,
+    "code": "NOT_AUTHENTICATED",
+    "detail": {},
+    "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe",
+    "executor_id": "claude_code",
+    "mode": "LIVE",
+    "qualification": "PROBE_ONLY",
+    "version": "2.1.287"
+   },
+   "recovery": [
+    "sign the URI client profile in to Claude, then Retry",
+    "Reschedule to a later time",
+    "Cancel this occurrence"
+   ],
+   "substitution": "none (no other or paid provider is ever used)"
+  }
+ }
+]
