@@ -25,6 +25,7 @@ class UriGlass extends ThemeExtension<UriGlass> {
     required this.ambientBottom,
     required this.blurSigma,
     required this.isDark,
+    required this.specular,
   });
 
   /// Translucent panel fill (over the ambient background).
@@ -54,6 +55,10 @@ class UriGlass extends ThemeExtension<UriGlass> {
 
   final bool isDark;
 
+  /// Brightest light the orb may show (specular highlights, hot core).
+  /// A token so the painter never names a literal colour.
+  final Color specular;
+
   static UriGlass of(BuildContext context) =>
       Theme.of(context).extension<UriGlass>() ??
       UriGlass.fromPalette(UriColors.of(context));
@@ -76,6 +81,7 @@ class UriGlass extends ThemeExtension<UriGlass> {
       ambientBottom: p.canvas,
       blurSigma: 18,
       isDark: dark,
+      specular: dark ? const Color(0xFFFFFFFF) : const Color(0xFFF4FAFF),
     );
   }
 
@@ -91,6 +97,7 @@ class UriGlass extends ThemeExtension<UriGlass> {
     Color? ambientBottom,
     double? blurSigma,
     bool? isDark,
+    Color? specular,
   }) {
     return UriGlass(
       fill: fill ?? this.fill,
@@ -103,6 +110,7 @@ class UriGlass extends ThemeExtension<UriGlass> {
       ambientBottom: ambientBottom ?? this.ambientBottom,
       blurSigma: blurSigma ?? this.blurSigma,
       isDark: isDark ?? this.isDark,
+      specular: specular ?? this.specular,
     );
   }
 
@@ -120,6 +128,7 @@ class UriGlass extends ThemeExtension<UriGlass> {
       ambientBottom: Color.lerp(ambientBottom, other.ambientBottom, t)!,
       blurSigma: lerpDouble(blurSigma, other.blurSigma, t)!,
       isDark: t < 0.5 ? isDark : other.isDark,
+      specular: Color.lerp(specular, other.specular, t)!,
     );
   }
 }

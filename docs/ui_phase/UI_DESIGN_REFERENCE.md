@@ -34,7 +34,8 @@ Tokens live in code (`UriColors.obsidianCyan`, `UriGlass.fromPalette`). Rational
 | success / warning / danger | `#4FD6A6` / `#E8B44F` / `#FF7A7A` | state tints the orb borrows for Done / Needs you / Attention |
 | glass fill / fillStrong | white 4.5% / 8% | panels and composer |
 | glass highlight | white 20% | one-pixel top light catch |
-| blurSigma | 18 | one backdrop blur per panel; off under reduced effects |
+| blurSigma | 18 | backdrop blur, opt-in per panel (composer only); off under reduced effects |
+| specular | white on dark palettes, `#F4FAFF` on the light one | the brightest light the orb may paint (highlights, hot core); a token so `lib/living` names no literal colour (Codex round 2, finding 2) |
 
 Typography: Segoe UI (the app's existing family), weights 400/600/700, eyebrows at 10.5 px uppercase with 1.2 px tracking. No new font asset.
 

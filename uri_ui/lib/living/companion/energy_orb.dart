@@ -142,7 +142,7 @@ class _EnergyOrbState extends State<EnergyOrb> with TickerProviderStateMixin {
   static int _particleCountFor(OrbVariant v) => switch (v) {
     OrbVariant.nebula => 88,
     OrbVariant.halo => 96,
-    OrbVariant.swarm => 260,
+    OrbVariant.swarm => 420,
     OrbVariant.glass => 40,
     OrbVariant.flow => 150,
     OrbVariant.mesh => 72,
@@ -298,6 +298,7 @@ class _EnergyOrbState extends State<EnergyOrb> with TickerProviderStateMixin {
                   time: time,
                   params: params,
                   glow: glow,
+                  specular: glass.specular,
                   ink: colors.ink,
                   canvas: colors.canvas,
                   progress: widget.state == CompanionState.working
@@ -585,6 +586,7 @@ class _OrbPainter extends CustomPainter {
     required this.time,
     required this.params,
     required this.glow,
+    required this.specular,
     required this.ink,
     required this.canvas,
     required this.progress,
@@ -599,6 +601,9 @@ class _OrbPainter extends CustomPainter {
   final double time;
   final OrbParams params;
   final Color glow;
+
+  /// Brightest light (theme token), used for highlights instead of a literal.
+  final Color specular;
   final Color ink;
   final Color canvas;
   final double? progress;
@@ -735,7 +740,7 @@ class _OrbPainter extends CustomPainter {
       c.drawCircle(Offset(coreR, coreR), coreR, Paint()..shader = shader);
       c.restore();
     } else {
-      final bright = Color.lerp(glow, Colors.white, 0.7)!;
+      final bright = Color.lerp(glow, specular, 0.7)!;
       final wobble = 0.5 + 0.5 * math.sin(time * (0.6 + params.energy * 2.5));
       final core = Paint()
         ..shader = ui.Gradient.radial(
@@ -761,7 +766,7 @@ class _OrbPainter extends CustomPainter {
       final streak = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2
-        ..color = Colors.white.withValues(alpha: 0.25 * params.turbulence);
+        ..color = specular.withValues(alpha: 0.25 * params.turbulence);
       for (var i = 0; i < 3; i++) {
         final a = time * (1.5 + i) * (i.isEven ? 1 : -1) + i;
         c.drawArc(
@@ -781,7 +786,7 @@ class _OrbPainter extends CustomPainter {
       ..strokeWidth = 1.0
       ..color = Color.lerp(
         glow,
-        Colors.white,
+        specular,
         0.4,
       )!.withValues(alpha: 0.35 + params.energy * 0.3);
     if (!reducedEffects) {
@@ -823,7 +828,7 @@ class _OrbPainter extends CustomPainter {
       );
       paint.color = Color.lerp(
         glow,
-        Colors.white,
+        specular,
         0.35 * dAlpha,
       )!.withValues(alpha: alpha);
       final ps =
@@ -873,7 +878,7 @@ class _OrbPainter extends CustomPainter {
         1.0,
       );
       paint.color = Color.lerp(
-        Color.lerp(glow, Colors.white, 0.6)!,
+        Color.lerp(glow, specular, 0.6)!,
         glow,
         life,
       )!.withValues(alpha: alpha);
@@ -954,7 +959,7 @@ class _OrbPainter extends CustomPainter {
     final node = Paint();
     for (var i = 0; i < n; i++) {
       final near = (depth[i] + 1) / 2;
-      node.color = Color.lerp(glow, Colors.white, 0.5 * near)!.withValues(
+      node.color = Color.lerp(glow, specular, 0.5 * near)!.withValues(
         alpha: (0.25 + 0.75 * near) * params.particleAlpha.clamp(0.4, 1.0),
       );
       final pulse = 0.5 + 0.5 * math.sin(time * 2.0 + field.phase[i]);
@@ -995,7 +1000,7 @@ class _OrbPainter extends CustomPainter {
         [
           glow.withValues(alpha: 0.05),
           glow.withValues(alpha: 0.55 + params.energy * 0.3),
-          Color.lerp(glow, Colors.white, 0.5)!.withValues(alpha: 0.9),
+          Color.lerp(glow, specular, 0.5)!.withValues(alpha: 0.9),
           glow.withValues(alpha: 0.55 + params.energy * 0.3),
           glow.withValues(alpha: 0.05),
         ],
@@ -1007,11 +1012,11 @@ class _OrbPainter extends CustomPainter {
     if (!reducedEffects) {
       band.maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, coreR * 0.05);
     }
-    c.drawArc(rect, start, math.pi, false, band..color = Colors.white);
+    c.drawArc(rect, start, math.pi, false, band..color = specular);
     final thin = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0
-      ..color = Color.lerp(glow, Colors.white, 0.6)!.withValues(alpha: 0.7);
+      ..color = Color.lerp(glow, specular, 0.6)!.withValues(alpha: 0.7);
     c.drawArc(rect, start, math.pi, false, thin);
 
     // Particles in the band.
@@ -1035,7 +1040,7 @@ class _OrbPainter extends CustomPainter {
         coreR,
       );
       final near = (math.sin(a) + 1) / 2;
-      paint.color = Color.lerp(glow, Colors.white, 0.4 * near)!.withValues(
+      paint.color = Color.lerp(glow, specular, 0.4 * near)!.withValues(
         alpha: (params.particleAlpha * (0.4 + 0.6 * near)).clamp(0.0, 1.0),
       );
       c.drawCircle(
@@ -1058,7 +1063,7 @@ class _OrbPainter extends CustomPainter {
         [
           Color.lerp(
             glow,
-            Colors.white,
+            specular,
             0.5,
           )!.withValues(alpha: 0.22 + params.energy * 0.25),
           glow.withValues(alpha: 0.10),
@@ -1092,7 +1097,7 @@ class _OrbPainter extends CustomPainter {
       );
       paint.color = Color.lerp(
         glow,
-        Colors.white,
+        specular,
         0.45 * near,
       )!.withValues(alpha: alpha);
       final pos = _place(center, x, y, coreR);
@@ -1101,8 +1106,8 @@ class _OrbPainter extends CustomPainter {
       // Soft body: a faint wide disc under a small bright one.
       c.drawCircle(
         pos,
-        ps * 2.6,
-        paint..color = paint.color.withValues(alpha: alpha * 0.18),
+        ps * 3.4,
+        paint..color = paint.color.withValues(alpha: alpha * 0.14),
       );
       c.drawCircle(
         pos,
@@ -1165,9 +1170,9 @@ class _OrbPainter extends CustomPainter {
         center.translate(-coreR * 0.38, -coreR * 0.42),
         coreR * 0.38,
         [
-          Colors.white.withValues(alpha: 0.55),
-          Colors.white.withValues(alpha: 0.12),
-          Colors.white.withValues(alpha: 0),
+          specular.withValues(alpha: 0.55),
+          specular.withValues(alpha: 0.12),
+          specular.withValues(alpha: 0),
         ],
         const [0.0, 0.45, 1.0],
       );
@@ -1186,7 +1191,7 @@ class _OrbPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1
-        ..color = Colors.white.withValues(alpha: 0.22 + params.energy * 0.2),
+        ..color = specular.withValues(alpha: 0.22 + params.energy * 0.2),
     );
   }
 
@@ -1266,7 +1271,7 @@ class _OrbPainter extends CustomPainter {
           ..strokeWidth = 2.0 * (1 - poke) + 0.5
           ..color = Color.lerp(
             glow,
-            Colors.white,
+            specular,
             0.4,
           )!.withValues(alpha: (1 - poke) * 0.8),
       );
@@ -1312,6 +1317,7 @@ class _OrbPainter extends CustomPainter {
       old.program != program ||
       old.variant != variant ||
       old.field != field ||
+      old.specular != specular ||
       old.poke != poke ||
       old.gusts.length != gusts.length;
 }

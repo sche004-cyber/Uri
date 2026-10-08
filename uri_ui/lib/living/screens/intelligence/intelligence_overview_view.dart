@@ -49,10 +49,12 @@ IntelligenceSnapshot deriveIntelligenceSnapshot({
           lastTurn.proposedAction != null &&
           (lastTurn.stage == TurnStage.executing ||
               lastTurn.stage == TurnStage.completed)) ||
-      services.work.items.any((i) => i.state == WorkItemState.completed);
+      services.work.items.any(
+        (i) => i.decided && i.state == WorkItemState.completed,
+      );
   final receiptObserved =
       lastTurn?.result != null ||
-      services.work.items.any((i) => i.outputName != null);
+      services.work.items.any((i) => i.decided && i.outputName != null);
 
   StageState s(PipelineStage stage) {
     switch (stage) {

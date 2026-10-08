@@ -55,6 +55,7 @@ class WorkItem {
     this.outputName,
     this.approvalSummary,
     this.simulated = true,
+    this.decided = false,
   });
 
   final String id;
@@ -74,12 +75,18 @@ class WorkItem {
   final String? approvalSummary;
   final bool simulated;
 
+  /// True only after a structured Approve/Cancel in this session. Seeded
+  /// history items are never `decided`, so no screen can present a
+  /// recorded decision that nobody made.
+  final bool decided;
+
   WorkItem copyWith({
     WorkItemState? state,
     double? progress,
     String? detail,
     String? outputName,
     String? approvalSummary,
+    bool? decided,
   }) {
     return WorkItem(
       id: id,
@@ -92,6 +99,7 @@ class WorkItem {
       outputName: outputName ?? this.outputName,
       approvalSummary: approvalSummary ?? this.approvalSummary,
       simulated: simulated,
+      decided: decided ?? this.decided,
     );
   }
 }
@@ -303,6 +311,7 @@ class MockWorkSimulator extends WorkItemSource {
         state: WorkItemState.completed,
         detail: 'Saved',
         outputName: name,
+        decided: true,
       ),
     );
     _documents.insert(
@@ -327,7 +336,11 @@ class MockWorkSimulator extends WorkItemSource {
     _timers.remove(id)?.cancel();
     _update(
       id,
-      (w) => w.copyWith(state: WorkItemState.cancelled, detail: 'Cancelled'),
+      (w) => w.copyWith(
+        state: WorkItemState.cancelled,
+        detail: 'Cancelled',
+        decided: true,
+      ),
     );
     _pushCompanion();
   }

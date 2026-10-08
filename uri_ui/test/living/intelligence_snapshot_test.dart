@@ -70,4 +70,27 @@ void main() {
     expect(snap.stages.firstWhere((f) => f.stage == PipelineStage.route).detail, 'not reported by this client');
     services.dispose();
   });
+
+  test('seeded history never counts as a recorded decision or receipt (Codex round 2, finding 1)', () {
+    final appState = testAppState();
+    // Default simulator: seeds one completed item nobody approved in this session.
+    final services = testServices(appState);
+    expect(services.work.items.single.state, WorkItemState.completed);
+    expect(services.work.items.single.decided, isFalse);
+    final snap = deriveIntelligenceSnapshot(
+      signal: const CompanionSignal.idle(),
+      appState: appState,
+      services: services,
+    );
+    expect(stateOf(snap, PipelineStage.approval), StageState.idle);
+    expect(stateOf(snap, PipelineStage.receipt), StageState.idle);
+    expect(snap.stages.firstWhere((f) => f.stage == PipelineStage.approval).detail, 'not observed');
+
+    // An in-session structured decision does count.
+    final id = services.work.create(title: 'Sheet', kind: WorkItemKind.spreadsheet);
+    // Drive it to awaitingApproval without timers: cancel is also a decision.
+    services.work.cancel(id);
+    expect(services.work.items.firstWhere((i) => i.id == id).decided, isTrue);
+    services.dispose();
+  });
 }
