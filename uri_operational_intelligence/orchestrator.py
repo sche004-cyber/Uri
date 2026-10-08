@@ -131,6 +131,10 @@ class Orchestrator:
         self.deadlines = deadlines or BC.Deadlines()
         self.perf = perf       # optional PerfMonitor (OI-PERF-1): throughput health from finished answers
         self.cancels = {}      # turn_id -> CancelToken
+        # Core turn ids issued on SINGLE-turn routes (not plan steps). confirm()/decide() accept only these
+        # (allowlist, fail closed): a plan step's Core turn can only be continued through confirm_step/decide_step.
+        self._single_turns = set()
+        self._single_lock = __import__("threading").Lock()
 
     # ---- public API ---------------------------------------------------------------------------
     def cancel(self, turn_id, reason="user"):
@@ -260,7 +264,18 @@ class Orchestrator:
             return TurnOutcome(turn_id, "core", tri.to_dict(), tier.to_dict(), "error")
         return self._relay_core(env, text, session_id, tri, tier, emit, turn_id, history, cancel)
 
+    def _register_single(self, env):
+        if isinstance(env, dict) and env.get("turn_id"):
+            with self._single_lock:
+                self._single_turns.add(env["turn_id"])
+
+    def _require_single(self, turn):
+        with self._single_lock:
+            if not isinstance(turn, dict) or turn.get("turn_id") not in self._single_turns:
+                raise LedgerError("NOT_A_SINGLE_TURN_ISSUED_HERE")
+
     def _relay_core(self, env, text, session_id, tri, tier, emit, turn_id, history, cancel, selection=None) -> TurnOutcome:
+        self._register_single(env)
         needs = core_needs(env)
         emit("core.result", state=env.get("state"), code=env.get("code"), message=env.get("message"), needs=needs,
              **{k: env[k] for k in ("intent", "confirmation", "clarification") if env.get(k) is not None})
@@ -287,16 +302,17 @@ class Orchestrator:
 
     # ---- user decisions on Core turns ------------------------------------------------------------
     def confirm(self, session_id, turn, sink: EventSink | None = None):
+        """Confirmation for a SINGLE-turn Core request issued by this orchestrator (allowlist)."""
+        self._require_single(turn)
         sink = sink or EventSink()
         env = self.core.confirm(session_id, self.brain_selection, turn)
         return self._relay_core(env, "Confirm", session_id, T.Triage(T.ACTION, ["user_confirmed"]), RP.decide(T.ACTION),
                                 lambda t, **d: sink.emit(turn.get("turn_id"), t, **d), turn.get("turn_id"), (), None)
 
     def decide(self, text, session_id, turn, approve: bool, sink: EventSink | None = None):
-        """Approval decision for a SINGLE (non-plan) Core turn. A turn that belongs to a task step must use
-        decide_step (durable EXECUTING before Core); this method refuses it instead of creating a bypass."""
-        if self._step_for_core_turn(turn.get("turn_id")) is not None:
-            raise LedgerError("PLAN_STEP_TURN_USE_DECIDE_STEP")
+        """Approval decision for a SINGLE-turn Core request issued by this orchestrator (allowlist). Plan steps can
+        only be approved through decide_step (durable EXECUTING before Core)."""
+        self._require_single(turn)
         sink = sink or EventSink()
         env = self.core.decide(text, session_id, self.brain_selection, turn, approve)
         emit = lambda t, **d: sink.emit(turn.get("turn_id"), t, **d)
@@ -378,19 +394,6 @@ class Orchestrator:
             return {"status": "not_claimed", "step_id": s["step_id"], "reason": str(exc)}
         env = self.core.begin(s["source_span"], task["session_id"], self.brain_selection)
         return self.record_step(task_id, s["step_id"], env, sink=sink)
-
-    def _step_for_core_turn(self, core_turn_id):
-        if not core_turn_id:
-            return None
-        for tid in self.ledger.list():
-            try:
-                task = self.ledger.get(tid)
-            except LedgerError:
-                continue
-            for s in task["steps"]:
-                if (s.get("core") or {}).get("turn_id") == core_turn_id:
-                    return tid, s["step_id"]
-        return None
 
     def confirm_step(self, task_id, step_id, turn, *, sink: EventSink | None = None):
         """The user's explicit confirmation for a plan step. Claims IN_CORE first, so two concurrent confirmations

@@ -100,7 +100,8 @@ OQ overlay + OI files), the same method as the consolidation runbook.
 - **Multi-step.** NORMAL-tier planner with a JSON schema (thinking + grammar verified to work together on b11425).
   Deterministic validation: ≤ 8 steps, unique ids, backward-only dependencies, known capabilities only, and every
   action/harness step's `source_span` must match the user's request with word boundaries on both sides, hyphen and
-  apostrophe counting as word characters (case/whitespace-insensitive), and is then
+  apostrophe counting as word characters (case/whitespace-insensitive; curly apostrophes, Unicode hyphens/dashes and
+  non-breaking spaces folded 1:1 for matching and negation checks), and is then
   replaced by the user's exact characters; a span with a negation or exclusion anywhere earlier in its clause is
   rejected (downgraded to ask_user, fail closed).
   Nothing runs before the user approves the plan. Action steps go to Core with the user's verbatim words, so Intent
@@ -109,11 +110,15 @@ OQ overlay + OI files), the same method as the consolidation runbook.
 - **Task ledger.** One JSON file per task (atomic replace + fsync), step state machine, restart recovery. Before an
   approval is handed to Core (`decide_step`) the step is durably EXECUTING, so a crash anywhere after the approval
   recovers as UNCERTAIN and the step is never started again; the ledger has no other route from an approval to an
-  outcome; the single-turn `decide()` refuses a plan step's Core turn. IN_CORE / EXECUTING are exclusive claims
+  outcome; the single-turn `confirm()` / `decide()` accept only Core turn ids this orchestrator issued on
+  single-turn routes (allowlist), so a plan step's turn can only be continued via `confirm_step` / `decide_step`.
+  IN_CORE / EXECUTING are exclusive claims
   taken under a per-task file lock (`advance` and `confirm_step` claim before calling Core): tested with concurrent
-  threads and separate ledger objects; separate OS processes use the same lock but were not tested. After an approval
-  any reply that is not an outcome is recorded UNCERTAIN. Recovery requires exclusive ledger ownership (a held lock
-  file), so a second process cannot reset a live owner's steps; the dev server takes ownership and recovers before
+  threads and separate ledger objects. A ledger has ONE writer process: every write and recovery takes process
+  ownership (a held lock file); a second OS process is refused (tested with a real second process). After an
+  approval, replies other than VERIFIED / FAILED / UNCERTAIN / CANCELLED / REFUSED / provider-quota pause are recorded
+  UNCERTAIN; the quota pause (WAITING_USER_CHOICE) is accepted because Core closes that attempt only through its
+  provider-quota path (isolated workspace, nothing copied out). The dev server takes ownership and recovers before
   serving. Pending approvals that were never given return to
   PENDING (Core keeps approvals in memory and fails closed after restart). Only VERIFIED / ANSWERED satisfy a
   dependency; dependents of a failed, refused, cancelled, uncertain or skipped step are SKIPPED transitively.

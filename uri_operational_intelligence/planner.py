@@ -69,17 +69,30 @@ def _span_regex(span):
     return re.compile(r"(?<!" + _WORDISH + r")" + body + r"(?!" + _WORDISH + r")", re.I)
 
 
+# 1:1 character mapping (offsets are preserved), applied to both the user's text and the span before matching and
+# negation checks: curly/modifier apostrophes, Unicode hyphens and dashes, non-breaking spaces.
+_UNICODE_FOLD = str.maketrans({"\u2019": "'", "\u2018": "'", "\u02bc": "'", "\u2032": "'", "\uff07": "'",
+                               "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-",
+                               "\u2212": "-", "\ufe63": "-", "\uff0d": "-", "\u00a0": " ", "\u202f": " ",
+                               "\u2007": " "})
+
+
+def _fold(s):
+    return (s or "").translate(_UNICODE_FOLD)
+
+
 def exact_user_span(text, span):
     """The user's own characters for a span that matches case/whitespace-insensitively, or None. Core then receives
     the user's exact substring, never the model's re-typed copy."""
-    rx = _span_regex(span)
-    m = rx.search(text) if rx else None
-    return m.group(0) if m else None
+    rx = _span_regex(_fold(span))
+    m = rx.search(_fold(text)) if rx else None
+    return text[m.start():m.end()] if m else None      # the user's ORIGINAL characters
 
 
 def _negated(text, span):
     """True when any occurrence of the span has a negation earlier in its clause."""
-    rx = _span_regex(span)
+    text = _fold(text)
+    rx = _span_regex(_fold(span))
     for m in (rx.finditer(text) if rx else ()):
         left = _CLAUSE_BREAK.split(text[:m.start()])[-1]
         if _NEGATION.search(left):

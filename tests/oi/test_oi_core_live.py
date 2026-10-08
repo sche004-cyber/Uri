@@ -144,7 +144,7 @@ def test_orchestrator_end_to_end_with_real_core(live, tmp_path):
     assert a.route == "core" and a.status == "needs_user"
     env = a.core
     if env["code"] == "INTENT_CONFIRMATION_REQUIRED":
-        env = o.core.confirm(session, sel, env)
+        env = o.confirm(session, env).core
     assert env["state"] == "approval_required"
     final = o.decide("remember that the annual day is on 14 December", session, env, True)
     EVIDENCE["turns"].append({"case": "orch.action.final", "code": final.get("code")})

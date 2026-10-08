@@ -46,6 +46,12 @@ class LedgerError(ValueError):
     pass
 
 
+# Process-wide ownership per ledger root: every TaskLedger object of this process shares it; another OS process
+# cannot write (or recover) the same ledger while this process holds it.
+_OWNERS = {}
+_OWNERS_LOCK = threading.Lock()
+
+
 def _atomic_json(path: Path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
@@ -63,24 +69,35 @@ class TaskLedger:
         self._lock = threading.RLock()
         self._owner_fd = None
 
+    def _key(self):
+        return str(self.root.resolve()).lower()
+
     def acquire_owner(self):
-        """Exclusive, process-lifetime ownership of this ledger (a held byte-range lock on `ledger.owner`). Restart
-        recovery requires it, so a second process can never reset steps that a live owner is still running."""
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
         import msvcrt
-        if self._owner_fd is not None:
+        with _OWNERS_LOCK:
+            if self._key() in _OWNERS:
+                self._owner_fd = _OWNERS[self._key()]
+                return True
+            fd = os.open(self.root / "ledger.owner", os.O_RDWR | os.O_CREAT)
+            try:
+                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+            except OSError:
+                os.close(fd)
+                raise LedgerError("LEDGER_OWNED_BY_ANOTHER_PROCESS") from None
+            _OWNERS[self._key()] = fd
+            self._owner_fd = fd
             return True
-        fd = os.open(self.root / "ledger.owner", os.O_RDWR | os.O_CREAT)
-        try:
-            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-        except OSError:
-            os.close(fd)
-            raise LedgerError("LEDGER_OWNED_BY_ANOTHER_PROCESS") from None
-        self._owner_fd = fd
-        return True
 
     def release_owner(self):
+        """Release this process' ownership (tests, orderly shutdown)."""
         import msvcrt
-        fd, self._owner_fd = self._owner_fd, None
+        with _OWNERS_LOCK:
+            fd = _OWNERS.pop(self._key(), None)
+            self._owner_fd = None
         if fd is not None:
             try:
                 os.lseek(fd, 0, 0)
@@ -103,6 +120,7 @@ class TaskLedger:
                               "depends_on": list(s.get("depends_on") or []), "state": "PENDING",
                               "core": None, "attempts": 0} for s in plan["steps"]]
         self._event(task, "created", state=state)
+        self.acquire_owner()
         with self._lock:
             _atomic_json(self._path(task["task_id"]), task)
         return task
@@ -153,6 +171,7 @@ class TaskLedger:
 
     def update(self, task_id, fn):
         self._path(task_id)
+        self.acquire_owner()
         with self._lock, self._file_lock(task_id):
             task = self.get(task_id)
             fn(task)
@@ -231,8 +250,7 @@ class TaskLedger:
     def recover(self) -> list:
         """Apply the restart rules to every non-closed task. Returns a summary (for the UI and evidence).
         Only the ledger owner may recover (see acquire_owner)."""
-        if self._owner_fd is None:
-            raise LedgerError("NOT_LEDGER_OWNER")
+        self.acquire_owner()        # raises LEDGER_OWNED_BY_ANOTHER_PROCESS if another process writes this ledger
         out = []
         for tid in self.list():
             try:

@@ -38,17 +38,23 @@ def waiting_approval_task(o):
     return tid
 
 
-# R3-1 (High): the single-turn decide() cannot be used on a plan step's Core turn.
-def test_decide_refuses_plan_step_turns(fake, tmp_path):
-    core = FakeCore()
+# R3-1 / R4-1 (High): single-turn confirm()/decide() accept only Core turns issued on single-turn routes.
+def test_single_turn_apis_refuse_plan_step_turns(fake, tmp_path):
+    core = FakeCore([{"turn_id": "single-1", "state": "approval_required", "code": "APPROVAL_REQUIRED",
+                      "approval_request": {"capability_id": "remember_fact", "arguments": {}, "approval_digest": "0" * 64}}])
     o = orch(fake, tmp_path, core)
     tid = waiting_approval_task(o)
-    with pytest.raises(LedgerError) as e:
-        o.decide("x", "s", {"turn_id": "core-1"}, True)
-    assert str(e.value) == "PLAN_STEP_TURN_USE_DECIDE_STEP" and core.calls == []
-    assert o.ledger.get(tid)["steps"][0]["state"] == "WAITING_APPROVAL"
-    o.decide("x", "s", {"turn_id": "unrelated-single-turn"}, True)      # single turns still work
-    assert core.calls == [("decide", True)]
+    for call in (lambda: o.decide("x", "s", {"turn_id": "core-1"}, True),
+                 lambda: o.confirm("s", {"turn_id": "core-1", "confirmation": {}}),
+                 lambda: o.decide("x", "s", {"turn_id": "never-issued"}, True)):
+        with pytest.raises(LedgerError) as e:
+            call()
+        assert str(e.value) == "NOT_A_SINGLE_TURN_ISSUED_HERE"
+    assert core.calls == [] and o.ledger.get(tid)["steps"][0]["state"] == "WAITING_APPROVAL"
+    out = o.handle_turn("remember that the gate code is 1234", "s")       # a real single-turn route
+    assert out.core["turn_id"] == "single-1"
+    o.decide("x", "s", out.core, True)
+    assert core.calls[-1] == ("decide", True)
 
 
 # R3-2 (High): every READY probe re-checks artifacts; losing one after a READY makes the next probe fail.
@@ -83,22 +89,27 @@ def test_span_boundaries(text, span, ok):
     assert (P.exact_user_span(text, span) is not None) is ok
 
 
-# R3-4 (Medium): recovery requires exclusive ledger ownership; a second process cannot reset a live owner's steps.
-def test_recovery_requires_ledger_ownership(tmp_path):
-    a, b = TaskLedger(tmp_path), TaskLedger(tmp_path)
-    with pytest.raises(LedgerError) as e:
-        a.recover()
-    assert str(e.value) == "NOT_LEDGER_OWNER"
-    a.acquire_owner()
+# R3-4 / R4-3 (Medium): one writer process per ledger; a second OS process can neither write nor recover.
+def test_second_process_cannot_write_or_recover(tmp_path):
+    import subprocess
+    import sys
+    holder = subprocess.Popen([sys.executable, "-c", (
+        "import sys,time; sys.path.insert(0, r'%s');"
+        "from uri_operational_intelligence.task_ledger import TaskLedger;"
+        "TaskLedger(r'%s').acquire_owner(); print('OWNED', flush=True); time.sleep(30)")
+        % (os.getcwd(), str(tmp_path))], stdout=subprocess.PIPE, text=True)
     try:
-        with pytest.raises(LedgerError) as e2:
-            b.acquire_owner()
-        assert str(e2.value) == "LEDGER_OWNED_BY_ANOTHER_PROCESS"
-        assert a.recover() == []
+        assert holder.stdout.readline().strip() == "OWNED"
+        mine = TaskLedger(tmp_path)
+        for call in (lambda: mine.create(session_id="s", request_text="x", plan=PLAN),
+                     lambda: mine.recover()):
+            with pytest.raises(LedgerError) as e:
+                call()
+            assert str(e.value) == "LEDGER_OWNED_BY_ANOTHER_PROCESS"
     finally:
-        a.release_owner()
-    b.acquire_owner()
-    b.release_owner()
+        holder.kill()
+        holder.wait()
+    assert TaskLedger(tmp_path).recover() == []          # free again once the other process is gone
 
 
 # R3-5 (Medium): confirm_step claims first; EXECUTING never ends in a non-outcome state.
@@ -132,3 +143,30 @@ def test_unexpected_reply_after_approval_is_uncertain(fake, tmp_path):
     tid = waiting_approval_task(o)
     r = o.decide_step(tid, "s1", {"turn_id": "core-1"}, True)
     assert r["status"] == "step_uncertain" and o.ledger.get(tid)["steps"][0]["state"] == "UNCERTAIN"
+
+
+# R4-2 (High): Unicode apostrophes / hyphens cannot defeat negation or word boundaries; originals forwarded.
+@pytest.mark.parametrize("text,span,ok", [
+    ("Please don’t email Ravi.", "email Ravi", "negated"),
+    ("Please re‐send invoice 7.", "send invoice", "no_match"),
+    ("Please de–activate account 42.", "activate account", "no_match"),
+    ("Email Ravi the timetable.", "Email Ravi", "ok"),
+])
+def test_unicode_punctuation(text, span, ok):
+    p = {"goal": "g", "clarifications": [], "steps": [
+        {"id": "s1", "description": "x", "kind": "action", "capability": "remember_fact", "source_span": span, "depends_on": []}]}
+    s = P.validate_plan(p, text, {"remember_fact"})["plan"]["steps"][0]
+    if ok == "negated":
+        assert s["unusable_reason"] == "SOURCE_SPAN_NEGATED"
+    elif ok == "no_match":
+        assert s["unusable_reason"] == "SOURCE_SPAN_NOT_VERBATIM"
+    else:
+        assert s["kind"] == "action" and s["source_span"] == "Email Ravi"     # user's original characters
+
+
+# R4-5 (Low): provider-quota pause after an approval is the only accepted non-outcome reply, and it is recorded.
+def test_quota_pause_after_approval(fake, tmp_path):
+    core = FakeCore([{"turn_id": "core-1", "state": "reply", "code": "WAITING_FOR_MODEL"}])
+    o = orch(fake, tmp_path, core)
+    tid = waiting_approval_task(o)
+    assert o.decide_step(tid, "s1", {"turn_id": "core-1"}, True)["status"] == "step_waiting_user_choice"
