@@ -42,8 +42,12 @@ def festival_job_request(owner, festivals=None, time_hhmm="09:00", style=None) -
 
 
 class Service:
-    def __init__(self, sched: Scheduler, *, tick_s=15.0):
+    """One service instance serves exactly ONE principal (`--owner`). The API token authenticates that principal; a request
+    can never name another one (review round 1, F1)."""
+
+    def __init__(self, sched: Scheduler, *, tick_s=15.0, owner="owner"):
         self.s = sched
+        self.owner = owner
         self.tick_s = float(tick_s)
         self._stop = threading.Event()
         self._wake = threading.Event()
@@ -117,11 +121,12 @@ def make_handler(svc: Service, token: str):
                     self._send(200, {"last_tick": svc.last_tick, "last_error": svc.last_error, "harness": svc.gate_cached(),
                                      "chain": s.store.verify_chain()})
                 elif u.path == "/overview":
-                    ov = s.overview(owner=qs.get("owner", [None])[0], include_harness=False)
+                    ov = s.overview(owner=svc.owner, include_harness=False)
                     ov["harness"] = svc.gate_cached()     # a live auth probe per UI poll would be wasteful
                     self._send(200, ov)
                 elif u.path.startswith("/artifacts/") and u.path.endswith("/file"):
                     art = s.artifact(int(u.path.split("/")[2]))
+                    s._owner_check(s.job(s.occurrence(art["occ_id"])["job_id"]), svc.owner)
                     data = Path(art["path"]).read_bytes()
                     self.send_response(200)
                     self.send_header("Content-Type", "image/gif")
@@ -130,9 +135,12 @@ def make_handler(svc: Service, token: str):
                     self.wfile.write(data)
                 elif u.path.startswith("/artifacts/"):
                     art = s.artifact(int(u.path.split("/")[2]))
+                    s._owner_check(s.job(s.occurrence(art["occ_id"])["job_id"]), svc.owner)
                     self._send(200, art)
                 elif u.path.startswith("/events"):
-                    self._send(200, s.store.events(job_id=qs.get("job", [None])[0], limit=int(qs.get("limit", ["200"])[0])))
+                    own = {r[0] for r in s.store.q("SELECT job_id FROM job WHERE owner=?", (svc.owner,))}
+                    evs = s.store.events(job_id=qs.get("job", [None])[0], limit=int(qs.get("limit", ["200"])[0]))
+                    self._send(200, [e for e in evs if e["job_id"] is None or e["job_id"] in own])
                 elif u.path == "/festivals":
                     self._send(200, s.calendar.festivals("in_festivals"))
                 else:
@@ -148,7 +156,10 @@ def make_handler(svc: Service, token: str):
             u = urlparse(self.path)
             try:
                 b = self._body()
-                p = b.get("principal")
+                p = svc.owner
+                if b.get("principal") not in (None, p):
+                    self._send(403, {"error": "PRINCIPAL_MISMATCH", "detail": "this service acts only for its owner"})
+                    return
                 if u.path == "/jobs/propose":
                     r = s.propose(owner=p, title=b["title"], template_id=b["template_id"], params=b.get("params", {}),
                                   schedule=b["schedule"], policy=b.get("policy"))
@@ -166,6 +177,8 @@ def make_handler(svc: Service, token: str):
                         r = s.cancel_occurrence(oid, p)
                     elif act == "retry":
                         r = s.retry_occurrence(oid, p)
+                    elif act == "confirm":
+                        r = s.confirm_occurrence(oid, p)
                     elif act == "reschedule":
                         r = s.reschedule_occurrence(oid, p, b["local"])
                     else:
@@ -209,6 +222,7 @@ def main(argv=None):
     run.add_argument("--qualification", choices=("phase2d", "probe"), default="phase2d")
     run.add_argument("--fixture-script")
     run.add_argument("--port", type=int, default=18520)
+    run.add_argument("--owner", default="owner", help="the one principal this service acts for")
     run.add_argument("--tick-s", type=float, default=15.0)
     run.add_argument("--timeout-s", type=float, default=900.0)
     run.add_argument("--inactivity-s", type=float, default=300.0)
@@ -236,7 +250,7 @@ def main(argv=None):
     token_path = Path(a.state) / "api-token"
     token = secrets.token_urlsafe(32)
     token_path.write_text(token, encoding="utf-8")
-    svc = Service(sched, tick_s=a.tick_s)
+    svc = Service(sched, tick_s=a.tick_s, owner=a.owner)
     srv = ThreadingHTTPServer(("127.0.0.1", a.port), make_handler(svc, token))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     (Path(a.state) / "service.json").write_text(json.dumps({"port": a.port, "mode": a.mode, "pid": __import__("os").getpid(),

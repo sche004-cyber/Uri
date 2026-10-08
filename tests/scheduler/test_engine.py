@@ -255,7 +255,7 @@ def test_interrupted_run_is_requeued_with_context(env):
                    (occ_id, "generate", "FIXTURE", "claude_fixture", clock(), "dead-task"))
     s.close()
     s2 = Scheduler(tmp / "state", harness=h, now_fn=clock).start()
-    assert s2.startup["interrupted"] == [{"occ_id": occ_id, "next": "SCHEDULED"}]
+    assert s2.startup["interrupted"] == [{"occ_id": occ_id, "next": "SCHEDULED", "why": "INTERRUPTED_NEVER_STARTED"}]
     assert s2.store.q1("SELECT outcome FROM attempt WHERE supervisor_task_id='dead-task'")[0] == "INTERRUPTED"
     assert s2.tick()[0]["result"] == "AWAITING_REVIEW"
     s2.close()
@@ -297,10 +297,142 @@ def test_calendar_refresh_moves_not_duplicates(env):
     r = s.refresh_calendar(new)
     assert r["reconcile"]["moved"] == 1 and r["reconcile"]["withdrawn"] == 1 and r["reconcile"]["inserted"] == 0
     assert s.store.q1("SELECT COUNT(*) FROM occurrence")[0] == n0
-    row = s.store.q1("SELECT due_at_us FROM occurrence WHERE occurrence_key='diwali:2026'")
+    row = s.store.q1("SELECT due_at_us, state, reason, occ_id FROM occurrence WHERE occurrence_key='diwali:2026'")
     assert datetime.fromtimestamp(row[0] / 1e6, tz=timezone.utc).isoformat() == "2026-11-07T03:30:00+00:00"
     s.refresh_calendar(new)                                         # idempotent
     assert s.store.q1("SELECT COUNT(*) FROM occurrence")[0] == n0
+    # a moved date was never shown to the owner: it waits for confirmation (review round 1, F4)
+    assert (row[1], row[2]) == ("AWAITING_CONFIRMATION", "DATE_CHANGED_SINCE_CONFIRMATION")
+    clock.set("2026-11-07T09:30:00+05:30")
+    assert all(x["occ_id"] != row[3] for x in s.tick())
+    with pytest.raises(SchedulerError):
+        s.confirm_occurrence(row[3], "intruder")
+    s.confirm_occurrence(row[3], "owner")
+    assert s.tick()[0]["result"] == "AWAITING_REVIEW"
+
+
+def test_r1_dates_beyond_the_shown_preview_wait_for_confirmation(env):
+    s, h, clock, _ = env
+    p = s.propose(owner="owner", title="f", template_id="festival_gif.v1", params={}, preview_days=20,
+                  schedule={"kind": "calendar_relative", "calendar": "in_festivals", "selection": ["diwali", "dussehra"],
+                            "offset_days": -2})
+    assert [r["key"] for r in p["upcoming"]] == ["dussehra:2026"]
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    st = {r["occurrence_key"]: r["state"] for r in s.store.q("SELECT occurrence_key, state FROM occurrence")}
+    assert st["dussehra:2026"] == "SCHEDULED" and st["diwali:2026"] == "AWAITING_CONFIRMATION"
+    assert st["diwali:2027"] == "AWAITING_CONFIRMATION"
+
+
+def test_r1_bad_params_refused(env):
+    s, *_ = env
+    for params in ("x", {"festival": {"key": "../../evil", "name": "x"}}, {"festival": {"key": "ok", "name": "n" * 200}},
+                   {"unknown": 1}, {"style": 5}):
+        with pytest.raises(SchedulerError) as e:
+            s.propose(owner="o", title="t", template_id="festival_gif.v1", params=params,
+                      schedule={"kind": "once", "at": "2026-10-10T09:00"})
+        assert e.value.code == "BAD_PARAMS"
+
+
+def _boom(*a, **k):
+    raise RuntimeError("boom")
+
+
+def test_r1_execution_error_never_leaves_running(env, monkeypatch):
+    s, h, clock, _ = env
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    import uri_scheduler.gif_task as G
+    monkeypatch.setattr(G, "build_package", _boom)
+    r = s.tick()[0]
+    assert r["result"] == "SCHEDULED" and r["reason"] == "RETRY:EXECUTION_ERROR:RuntimeError"
+    assert s.store.q1("SELECT COUNT(*) FROM occurrence WHERE state='RUNNING'")[0] == 0
+
+
+def test_r1_cancelled_job_closes_reviews_and_refuses_decisions(env):
+    s, h, clock, _ = env
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    s.tick()
+    a = s.overview()["pending_approvals"][0]["candidates"][0]
+    s.cancel_job(p["job_id"], "owner")
+    assert s.occurrence(a["occ_id"])["state"] == "CANCELLED"
+    with pytest.raises(SchedulerError) as e:
+        s.review(a["artifact_id"], "owner", "approve", expected_sha256=a["sha256"])
+    assert e.value.code == "JOB_CANCELLED"
+
+
+def test_r1_claim_refused_when_job_cancelled_after_selection(env):
+    s, h, clock, _ = env
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    occ_id = s.store.q1("SELECT occ_id FROM occurrence")[0]
+    with s.store.tx() as db:      # the job is cancelled between selection and claim
+        db.execute("UPDATE job SET state='CANCELLED'")
+    assert s._dispatch(occ_id)["result"] == "NOT_CLAIMED" and h.calls == []
+
+
+def test_r1_oversize_gif_is_not_a_candidate(tmp_path, monkeypatch):
+    import uri_scheduler.gif_task as G
+    import uri_scheduler.renderer as R
+    real = R.render_gif
+    monkeypatch.setattr(R, "render_gif", lambda scene, out, **k: real(scene, out, max_bytes=1000))
+    res = G.render_and_validate({"scene": tiny_scene()}, tmp_path, "x")
+    assert res["quality"]["within_size_budget"] is False and res["ok"] is False
+
+
+def _interrupt(s, clock, sup_task):
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    occ_id = s.store.q1("SELECT occ_id FROM occurrence")[0]
+    ws = s.state_dir / "work" / f"occ_{occ_id}" / "attempt_1"
+    with s.store.tx() as db:
+        db.execute("UPDATE occurrence SET state='RUNNING', attempts=1 WHERE occ_id=?", (occ_id,))
+        db.execute("INSERT INTO attempt(occ_id,kind,mode,harness,started_at_us,supervisor_task_id,workspace) VALUES (?,?,?,?,?,?,?)",
+                   (occ_id, "generate", "FIXTURE", "claude_fixture", clock(), sup_task, str(ws)))
+    return occ_id, ws
+
+
+@pytest.mark.parametrize("settle,expect", [
+    ({"state": "COMPLETE", "spawned": True, "absence_proven": False}, "COLLECT_PENDING"),
+    ({"state": "FAILED", "spawned": True, "absence_proven": False}, "NEEDS_ATTENTION"),
+    ({"state": "FAILED", "spawned": True, "absence_proven": True}, "SCHEDULED"),
+    ({"state": "FAILED", "spawned": False, "absence_proven": False}, "SCHEDULED"),
+])
+def test_r1_restart_reconciles_before_rerunning(tmp_path, settle, expect):
+    clock = Clock("2026-10-09T10:00:00+05:30")
+    h = FakeHarness()
+    s = Scheduler(tmp_path / "state", harness=h, now_fn=clock).start()
+    occ_id, ws = _interrupt(s, clock, "t1")
+    if settle["state"] == "COMPLETE":     # the harness finished its files before the scheduler died
+        ws.mkdir(parents=True)
+        (ws / "scene.json").write_text(json.dumps(tiny_scene()), encoding="utf-8")
+        (ws / "concept.md").write_text("# c", encoding="utf-8")
+        (ws / "research.md").write_text("r", encoding="utf-8")
+    s.close()
+    h.settlement = lambda tid: dict(settle, task_id=tid)
+    s2 = Scheduler(tmp_path / "state", harness=h, now_fn=clock).start()
+    assert s2.occurrence(occ_id)["state"] == expect
+    if expect == "COLLECT_PENDING":
+        r = s2.tick()
+        assert r[0]["result"] == "AWAITING_REVIEW" and h.calls == []          # collected; harness NOT re-run
+    if expect == "NEEDS_ATTENTION":
+        assert s2.tick() == [] and h.calls == []
+    s2.close()
+
+
+def test_r1_artifact_recorded_before_crash_is_not_regenerated(env):
+    s, h, clock, tmp = env
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    s.tick()
+    occ_id = s.store.q1("SELECT occ_id FROM occurrence")[0]
+    with s.store.tx() as db:      # crash window: artifact inserted, _finish never ran
+        db.execute("UPDATE occurrence SET state='RUNNING'")
+        db.execute("UPDATE attempt SET ended_at_us=NULL")
+    s.close()
+    s2 = Scheduler(tmp / "state", harness=h, now_fn=clock).start()
+    assert s2.occurrence(occ_id)["state"] == "AWAITING_REVIEW" and len(h.calls) == 1
+    s2.close()
 
 
 def test_review_binding_refine_regenerate_reject(env):

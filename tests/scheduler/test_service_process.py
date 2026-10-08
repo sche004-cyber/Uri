@@ -75,6 +75,9 @@ def test_duplicate_startup_and_api(tmp_path):
         assert api(port, state, "GET", "/overview", token=False)[0] == 401
         code, prop = api(port, state, "POST", "/jobs/propose-festivals", {"principal": "owner", "festivals": ["diwali", "dussehra"]})
         assert code == 200 and prop["schedule"]["offset_days"] == -2
+        code, err = api(port, state, "POST", f"/jobs/{prop['job_id']}/confirm",
+                        {"principal": "intruder", "proposal_sha256": prop["proposal_sha256"]})
+        assert code == 403 and err["error"] == "PRINCIPAL_MISMATCH"          # the token never lets a caller name another owner
         code, err = api(port, state, "POST", f"/jobs/{prop['job_id']}/confirm", {"principal": "owner", "proposal_sha256": "x"})
         assert code == 400 and err["error"] == "PROPOSAL_MISMATCH"
         code, job = api(port, state, "POST", f"/jobs/{prop['job_id']}/confirm",
@@ -110,7 +113,9 @@ def test_kill_during_run_then_restart_recovers(tmp_path):
     assert alive
     p2, ready = start(state, port, scenario="honest")
     try:
-        assert ready["startup"]["interrupted"] and ready["startup"]["interrupted"][0]["next"] == "SCHEDULED"
+        rec = ready["startup"]["interrupted"][0]
+        # the killed executor wrote nothing: the supervisor proved every effect absent, so a rerun is safe
+        assert rec["next"] == "SCHEDULED" and rec["why"] in ("INTERRUPTED_NO_EFFECT_PROVEN", "INTERRUPTED_NEVER_STARTED")
         ov = wait(lambda: (lambda o: o if o["pending_approvals"] else None)(api(port, state, "GET", "/overview")[1]), 120)
         cand = ov["pending_approvals"][0]["candidates"][0]
         code, ev = api(port, state, "GET", "/events?limit=200")

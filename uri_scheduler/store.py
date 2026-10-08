@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS job(
   authority_json TEXT NOT NULL, policy_json TEXT NOT NULL,
   state TEXT NOT NULL CHECK(state IN ('PROPOSED','ACTIVE','PAUSED','CANCELLED')),
   proposal_sha256 TEXT NOT NULL, confirmed_by TEXT, confirmed_at_us INTEGER,
+  proposed_dates_json TEXT NOT NULL DEFAULT '{}', confirmed_dates_json TEXT NOT NULL DEFAULT '{}',
   created_at_us INTEGER NOT NULL, updated_at_us INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS occurrence(
   occ_id INTEGER PRIMARY KEY AUTOINCREMENT, job_id TEXT NOT NULL REFERENCES job(job_id),
@@ -40,7 +41,7 @@ CREATE INDEX IF NOT EXISTS occ_due ON occurrence(state, due_at_us);
 CREATE TABLE IF NOT EXISTS attempt(
   attempt_id INTEGER PRIMARY KEY AUTOINCREMENT, occ_id INTEGER NOT NULL REFERENCES occurrence(occ_id),
   kind TEXT NOT NULL, mode TEXT NOT NULL CHECK(mode IN ('LIVE','FIXTURE')), harness TEXT NOT NULL,
-  started_at_us INTEGER NOT NULL, ended_at_us INTEGER, outcome TEXT, reason TEXT,
+  started_at_us INTEGER NOT NULL, ended_at_us INTEGER, outcome TEXT, reason TEXT, workspace TEXT,
   supervisor_task_id TEXT UNIQUE, receipt_json TEXT);
 CREATE TABLE IF NOT EXISTS artifact(
   artifact_id INTEGER PRIMARY KEY AUTOINCREMENT, occ_id INTEGER NOT NULL REFERENCES occurrence(occ_id),

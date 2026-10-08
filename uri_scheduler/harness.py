@@ -204,6 +204,26 @@ class ClaudeHarness:
             return L.now_us() + left_ns // 1000
         return L.now_us()
 
+    def settlement(self, task_id) -> dict | None:
+        """What the supervisor ledger durably knows about one task (used by scheduler restart recovery)."""
+        L = self.sup.ledger
+        t = L.task(task_id)
+        if t is None:
+            return None
+        atts = L.q("SELECT status, spawned_at_us FROM attempt WHERE task_id=?", (task_id,))
+        spawned = any(a["spawned_at_us"] is not None or a["status"] in ("SPAWNING", "RUNNING", "ENDED", "FENCED") for a in atts)
+        last = L.q1("SELECT outcome, reason_code, evidence_json FROM recovery_decision WHERE task_id=? ORDER BY decision_id DESC LIMIT 1",
+                    (task_id,))
+        absence = False
+        if last is not None:
+            effects = (json.loads(last["evidence_json"]) or {}).get("effects") or []
+            activity = L.q1("SELECT COUNT(*) FROM evidence WHERE task_id=? AND source='executor_report' AND kind IN "
+                            "('tool_result','tool_result_batch','file_change')", (task_id,))[0]
+            absence = bool(effects) and activity == 0 and all(
+                e.get("safe") and e.get("reason") == "LOCAL_WRITE_ABSENCE_PROVEN" for e in effects)
+        return {"task_id": task_id, "state": t["state"], "spawned": spawned, "absence_proven": absence,
+                "last_decision": dict(last) | {"evidence_json": None} if last else None}
+
     def cancel(self, task_id) -> dict:
         aid = self._running.get(task_id)
         return self.sup.request_cancel(aid) if aid is not None else {"granted": False, "reason": "NOT_RUNNING"}
@@ -243,7 +263,11 @@ class ClaudeHarness:
                 return RunOutcome(status, "QUOTA_BREAKER_OPEN" if breaker else "NOT_ADMITTED", tid, receipt | {"reset_us": breaker})
             self._running[tid] = admitted.attempt_id
             env = client_environ(self.client_home)
-            extra, exe = [], gate.executable
+            # Claude Code `dontAsk` denies every Edit/Write that is not pre-approved, and denies reads and writes outside
+            # its working directory. Pre-approving Edit/Write for `./**` (relative to the per-attempt workspace, which is
+            # the process cwd) is what lets the accepted executor profile write its output at all, and it is the only
+            # place it may write (review round 1, F2). Reads outside the workspace stay denied by `dontAsk`.
+            extra, exe = ["--allowedTools", "Edit(./**)", "Write(./**)"], gate.executable
             if self.mode == "fixture":
                 exe, extra = self.fixture_python, [str(self.fixture_script)]
             try:

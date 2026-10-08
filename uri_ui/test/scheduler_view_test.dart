@@ -25,7 +25,16 @@ Map<String, dynamic> _overview({bool pending = true}) => {
       'meta': {'festival': 'Diwali (Deepavali)', 'festival_date': '2026-11-08'},
     },
   ],
-  'errors': [],
+  'errors': [
+    {
+      'occ_id': 9,
+      'title': 'Festival GIF',
+      'state': 'AWAITING_CONFIRMATION',
+      'reason': 'DATE_CHANGED_SINCE_CONFIRMATION',
+      'due_local': '2026-11-07T09:00+05:30',
+      'meta': {'festival': 'Diwali (Deepavali)', 'festival_date': '2026-11-09'},
+    },
+  ],
   'pending_approvals': pending
       ? [
           {
@@ -163,5 +172,17 @@ void main() {
     await t.pumpAndSettle();
     expect(posts.last.url.path, '/jobs/job_1/confirm');
     expect((jsonDecode(posts.last.body) as Map)['proposal_sha256'], 'cd' * 32);
+  });
+
+  testWidgets('a changed festival date needs an explicit confirmation', (t) async {
+    t.view.physicalSize = const Size(1400, 1600);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(host(client()));
+    await t.pumpAndSettle();
+    expect(find.textContaining('DATE_CHANGED_SINCE_CONFIRMATION'), findsOneWidget);
+    await t.tap(find.byKey(const Key('scheduler.confirmDate.9')));
+    await t.pumpAndSettle();
+    expect(posts.single.url.path, '/occurrences/9/confirm');
   });
 }

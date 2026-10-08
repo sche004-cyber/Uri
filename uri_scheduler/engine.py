@@ -28,6 +28,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import re
 import shutil
 import threading
 import uuid
@@ -43,7 +44,11 @@ try:
 except ImportError:  # pragma: no cover
     msvcrt = None
 
-ACTIVE_STATES = ("SCHEDULED", "RUNNING", "REVISION_QUEUED", "BLOCKED_HARNESS", "QUOTA_DEFERRED")
+ACTIVE_STATES = ("SCHEDULED", "RUNNING", "REVISION_QUEUED", "BLOCKED_HARNESS", "QUOTA_DEFERRED", "COLLECT_PENDING")
+# Open states an owner can cancel (everything that is not terminal).
+OPEN_STATES = ("SCHEDULED", "REVISION_QUEUED", "BLOCKED_HARNESS", "QUOTA_DEFERRED", "RUNNING", "AWAITING_REVIEW",
+               "AWAITING_CONFIRMATION", "NEEDS_ATTENTION", "COLLECT_PENDING")
+SLUG = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 TERMINAL_STATES = ("APPROVED", "REJECTED", "FAILED", "MISSED", "CANCELLED", "SKIPPED")
 DEFAULT_AUTHORITY = {"harness": "claude_code", "tools": ["Read", "Edit", "Write", "Glob", "Grep"], "network": False,
                      "publish": False, "paid_services": False, "writes": "attempt_workspace_only"}
@@ -140,7 +145,7 @@ class Scheduler:
         if r is None:
             raise SchedulerError("UNKNOWN_JOB", job_id)
         d = dict(r)
-        for k in ("params", "schedule", "authority", "policy"):
+        for k in ("params", "schedule", "authority", "policy", "proposed_dates", "confirmed_dates"):
             d[k] = json.loads(d.pop(k + "_json"))
         return d
 
@@ -188,14 +193,17 @@ class Scheduler:
             raise SchedulerError("BAD_POLICY", "missed")
         if sched["kind"] == "calendar_relative":
             self._validate_selection(sched)
+        self._validate_params(params)
         job_id = "job_" + uuid.uuid4().hex[:12]
         proposal = self._proposal(job_id, owner, title, template_id, params, sched, auth, pol, preview_days)
         now = self.now()
         with self.store.tx() as db:
+            shown = {r["key"]: r.get("festival_date") for r in proposal["upcoming"]}
             db.execute("INSERT INTO job(job_id,owner,title,template_id,params_json,schedule_json,timezone,authority_json,"
-                       "policy_json,state,proposal_sha256,created_at_us,updated_at_us) VALUES (?,?,?,?,?,?,?,?,?,'PROPOSED',?,?,?)",
+                       "policy_json,state,proposal_sha256,proposed_dates_json,created_at_us,updated_at_us) "
+                       "VALUES (?,?,?,?,?,?,?,?,?,'PROPOSED',?,?,?,?)",
                        (job_id, owner, title, template_id, jdump(params), jdump(sched), sched["tz"], jdump(auth), jdump(pol),
-                        proposal["proposal_sha256"], now, now))
+                        proposal["proposal_sha256"], jdump(shown), now, now))
             self.store.emit(db, "job.proposed", job_id=job_id, payload={"owner": owner, "proposal_sha256": proposal["proposal_sha256"],
                                                                         "interpretation": proposal["interpretation"]})
         return proposal
@@ -208,6 +216,28 @@ class Scheduler:
         for flag in ("publish", "paid_services", "network"):
             if auth.get(flag):
                 raise SchedulerError("AUTHORITY_REQUIRES_OWNER_DECISION", flag)
+
+    @staticmethod
+    def _validate_params(params):
+        """Template parameters are data that reach file names and prompts: shape-checked, never trusted."""
+        if not isinstance(params, dict):
+            raise SchedulerError("BAD_PARAMS", "params must be an object")
+        if set(params) - {"festival", "style", "audience"}:
+            raise SchedulerError("BAD_PARAMS", sorted(set(params) - {"festival", "style", "audience"}))
+        for k in ("style", "audience"):
+            if k in params and (not isinstance(params[k], str) or len(params[k]) > 300):
+                raise SchedulerError("BAD_PARAMS", k)
+        f = params.get("festival")
+        if f is not None:
+            if not isinstance(f, dict) or not SLUG.match(str(f.get("key", ""))):
+                raise SchedulerError("BAD_PARAMS", "festival.key must match [a-z][a-z0-9_]*")
+            if not isinstance(f.get("name", ""), str) or len(f.get("name", "")) > 80:
+                raise SchedulerError("BAD_PARAMS", "festival.name")
+            if f.get("date") is not None:
+                try:
+                    datetime.fromisoformat(str(f["date"]))
+                except ValueError:
+                    raise SchedulerError("BAD_PARAMS", "festival.date") from None
 
     def _validate_selection(self, sched):
         known = {f["festival_key"]: f for f in self.calendar.festivals(sched["calendar"])}
@@ -256,8 +286,8 @@ class Scheduler:
                 raise SchedulerError("PROPOSAL_MISMATCH", "confirmation does not match the proposal that was shown")
             now = self.now()
             with self.store.tx() as db:
-                db.execute("UPDATE job SET state='ACTIVE', confirmed_by=?, confirmed_at_us=?, updated_at_us=? WHERE job_id=? "
-                           "AND state='PROPOSED'", (principal, now, now, job_id))
+                db.execute("UPDATE job SET state='ACTIVE', confirmed_by=?, confirmed_at_us=?, updated_at_us=?, "
+                           "confirmed_dates_json=proposed_dates_json WHERE job_id=? AND state='PROPOSED'", (principal, now, now, job_id))
                 self.store.emit(db, "job.activated", job_id=job_id, payload={"by": principal, "proposal_sha256": proposal_sha256})
             self.materialize(job_id)
             return self.job(job_id)
@@ -273,8 +303,8 @@ class Scheduler:
     def cancel_job(self, job_id, principal):
         with self._mutex:
             r = self._job_state(job_id, principal, ("PROPOSED", "ACTIVE", "PAUSED"), "CANCELLED", "job.cancelled")
-            for occ in self.store.q("SELECT occ_id FROM occurrence WHERE job_id=? AND state IN ('SCHEDULED','REVISION_QUEUED',"
-                                    "'BLOCKED_HARNESS','QUOTA_DEFERRED','RUNNING')", (job_id,)):
+            marks = ",".join("?" * len(OPEN_STATES))
+            for occ in self.store.q(f"SELECT occ_id FROM occurrence WHERE job_id=? AND state IN ({marks})", (job_id, *OPEN_STATES)):
                 self.cancel_occurrence(occ[0], principal, _job_cancel=True)
             return r
 
@@ -309,18 +339,29 @@ class Scheduler:
                     row = db.execute("SELECT occ_id,state,due_at_us,meta_json FROM occurrence WHERE job_id=? AND occurrence_key=?",
                                      (job["job_id"], o.key)).fetchone()
                     due, dl = _us(o.due_utc), (_us(o.deadline_utc) if o.deadline_utc else None)
+                    confirmed = (sched["kind"] != "calendar_relative"
+                                 or job["confirmed_dates"].get(o.key) == o.meta.get("festival_date"))
                     if row is None:
-                        cur = db.execute("INSERT INTO occurrence(job_id,occurrence_key,due_at_us,deadline_us,state,meta_json,"
-                                         "created_at_us,updated_at_us) VALUES (?,?,?,?,'SCHEDULED',?,?,?)",
-                                         (job["job_id"], o.key, due, dl, jdump(o.meta), self.now(), self.now()))
-                        self.store.emit(db, "occurrence.scheduled", job_id=job["job_id"], occ_id=cur.lastrowid,
-                                        payload={"key": o.key, "due_utc": _iso(due), "due_local": _local(due, sched["tz"])})
+                        st0 = "SCHEDULED" if confirmed else "AWAITING_CONFIRMATION"
+                        why = None if confirmed else ("DATE_CHANGED_SINCE_CONFIRMATION" if o.key in job["confirmed_dates"]
+                                                      else "NOT_IN_CONFIRMED_PROPOSAL")
+                        cur = db.execute("INSERT INTO occurrence(job_id,occurrence_key,due_at_us,deadline_us,state,reason,meta_json,"
+                                         "created_at_us,updated_at_us) VALUES (?,?,?,?,?,?,?,?,?)",
+                                         (job["job_id"], o.key, due, dl, st0, why, jdump(o.meta), self.now(), self.now()))
+                        self.store.emit(db, "occurrence.scheduled" if confirmed else "occurrence.awaiting_confirmation",
+                                        job_id=job["job_id"], occ_id=cur.lastrowid,
+                                        payload={"key": o.key, "due_utc": _iso(due), "due_local": _local(due, sched["tz"]),
+                                                 "festival_date": o.meta.get("festival_date"), "reason": why})
                         report["inserted"] += 1
                     elif row["due_at_us"] != due and json.loads(row["meta_json"] or "{}").get("owner_due_local"):
                         pass       # the owner rescheduled this occurrence explicitly: the calendar never overrides that
-                    elif row["due_at_us"] != due and row["state"] in ("SCHEDULED", "BLOCKED_HARNESS", "QUOTA_DEFERRED"):
-                        db.execute("UPDATE occurrence SET due_at_us=?, deadline_us=?, meta_json=?, updated_at_us=? WHERE occ_id=?",
-                                   (due, dl, jdump(o.meta), self.now(), row["occ_id"]))
+                    elif row["due_at_us"] != due and row["state"] in ("SCHEDULED", "BLOCKED_HARNESS", "QUOTA_DEFERRED",
+                                                                       "AWAITING_CONFIRMATION"):
+                        # A moved date is a new date: it runs only after the owner confirms it (or it moved back).
+                        st1 = "SCHEDULED" if confirmed else "AWAITING_CONFIRMATION"
+                        db.execute("UPDATE occurrence SET due_at_us=?, deadline_us=?, meta_json=?, state=?, reason=?, retry_at_us=NULL, "
+                                   "updated_at_us=? WHERE occ_id=?", (due, dl, jdump(o.meta), st1,
+                                   None if confirmed else "DATE_CHANGED_SINCE_CONFIRMATION", self.now(), row["occ_id"]))
                         self.store.emit(db, "occurrence.moved_by_calendar", job_id=job["job_id"], occ_id=row["occ_id"],
                                         payload={"key": o.key, "from_utc": _iso(row["due_at_us"]), "to_utc": _iso(due),
                                                  "calendar_version": o.meta.get("calendar_version")})
@@ -328,7 +369,8 @@ class Scheduler:
                 if sched["kind"] == "calendar_relative":
                     valid = {f"{e.festival_key}:{e.start.year}" for e in self.calendar.events(sched["calendar"], sched["selection"])}
                     for row in db.execute("SELECT occ_id, occurrence_key FROM occurrence WHERE job_id=? AND state IN "
-                                          "('SCHEDULED','BLOCKED_HARNESS','QUOTA_DEFERRED')", (job["job_id"],)).fetchall():
+                                          "('SCHEDULED','BLOCKED_HARNESS','QUOTA_DEFERRED','AWAITING_CONFIRMATION')",
+                                          (job["job_id"],)).fetchall():
                         if row["occurrence_key"] not in valid:
                             self._set_occ(db, row["occ_id"], "CANCELLED", "CALENDAR_WITHDRAWN")
                             self.store.emit(db, "occurrence.withdrawn_by_calendar", job_id=job["job_id"], occ_id=row["occ_id"],
@@ -372,6 +414,22 @@ class Scheduler:
                     self.harness.cancel(att[0])
             return self.occurrence(occ_id)
 
+    def confirm_occurrence(self, occ_id, principal):
+        """Owner confirms a calendar date that was not part of the approved proposal (new year, moved date)."""
+        with self._mutex:
+            occ = self.occurrence(occ_id)
+            job = self.job(occ["job_id"])
+            self._owner_check(job, principal)
+            if occ["state"] != "AWAITING_CONFIRMATION" or job["state"] == "CANCELLED":
+                raise SchedulerError("NOT_AWAITING_CONFIRMATION", occ["state"])
+            dates = dict(job["confirmed_dates"], **{occ["occurrence_key"]: occ["meta"].get("festival_date")})
+            with self.store.tx() as db:
+                db.execute("UPDATE job SET confirmed_dates_json=?, updated_at_us=? WHERE job_id=?", (jdump(dates), self.now(), job["job_id"]))
+                self._set_occ(db, occ_id, "SCHEDULED", "DATE_CONFIRMED_BY_OWNER")
+                self.store.emit(db, "occurrence.date_confirmed", job_id=job["job_id"], occ_id=occ_id,
+                                payload={"by": principal, "key": occ["occurrence_key"], "festival_date": occ["meta"].get("festival_date")})
+            return self.occurrence(occ_id)
+
     def reschedule_occurrence(self, occ_id, principal, local_iso):
         with self._mutex:
             occ = self.occurrence(occ_id)
@@ -410,27 +468,76 @@ class Scheduler:
 
     # ---- recovery ---------------------------------------------------------------------------------------------------
     def recover(self) -> dict:
-        """At startup (we hold the single-instance lock, so no other scheduler owns RUNNING rows)."""
+        """At startup (we hold the single-instance lock, so no other scheduler owns RUNNING rows).
+
+        An interrupted occurrence is reconciled against what is durably known before anything is re-run (review round 1,
+        F3): an artifact already recorded -> AWAITING_REVIEW; supervisor task COMPLETE -> COLLECT_PENDING (URI collects and
+        renders the finished work, the harness is not re-run); the executor never started, or every declared effect was
+        proven absent with no tool activity -> requeued with its context; anything else -> NEEDS_ATTENTION (the harness
+        may have acted; the owner decides)."""
         out = {"interrupted": [], "harness": getattr(self.harness, "startup_report", [])}
-        with self.store.tx() as db:
-            for row in db.execute("SELECT occ_id, job_id, attempts, reason, request_json FROM occurrence WHERE state='RUNNING'").fetchall():
-                job = json.loads(db.execute("SELECT policy_json FROM job WHERE job_id=?", (row["job_id"],)).fetchone()[0])
-                db.execute("UPDATE attempt SET ended_at_us=?, outcome='INTERRUPTED', reason='SCHEDULER_PROCESS_ENDED' "
-                           "WHERE occ_id=? AND ended_at_us IS NULL", (self.now(), row["occ_id"]))
-                if row["reason"] == "CANCEL_REQUESTED":
-                    nxt, why = "CANCELLED", "CANCELLED_BY_OWNER"
-                elif row["attempts"] < job["max_attempts"]:
-                    nxt = "REVISION_QUEUED" if row["request_json"] and json.loads(row["request_json"]).get("kind") in ("refine", "regenerate") else "SCHEDULED"
-                    why = "INTERRUPTED_REQUEUED"
+        rows = self.store.q("SELECT occ_id, job_id, attempts, reason, request_json FROM occurrence WHERE state='RUNNING'")
+        for row in rows:
+            pol = json.loads(self.store.q1("SELECT policy_json FROM job WHERE job_id=?", (row["job_id"],))[0])
+            att = self.store.q1("SELECT attempt_id, supervisor_task_id FROM attempt WHERE occ_id=? AND ended_at_us IS NULL "
+                                "ORDER BY attempt_id DESC LIMIT 1", (row["occ_id"],))
+            art = self.store.q1("SELECT artifact_id FROM artifact WHERE attempt_id=?", (att[0],)) if att else None
+            settle = None
+            if att and art is None and self.harness is not None and hasattr(self.harness, "settlement"):
+                settle = self.harness.settlement(att["supervisor_task_id"])
+            revision = bool(row["request_json"]) and json.loads(row["request_json"]).get("kind") in ("refine", "regenerate")
+            requeue = "REVISION_QUEUED" if revision else "SCHEDULED"
+            outcome = "INTERRUPTED"
+            if row["reason"] == "CANCEL_REQUESTED":
+                nxt, why = "CANCELLED", "CANCELLED_BY_OWNER"
+            elif art is not None:
+                nxt, why, outcome = "AWAITING_REVIEW", "RECOVERED_ARTIFACT_ALREADY_RECORDED", "COMPLETED"
+            elif settle and settle["state"] == "COMPLETE":
+                nxt, why = "COLLECT_PENDING", "RECOVERED_HARNESS_WORK_COMPLETE"
+            elif settle is None or not settle["spawned"] or settle["absence_proven"]:
+                if row["attempts"] < pol["max_attempts"]:
+                    nxt, why = requeue, ("INTERRUPTED_NEVER_STARTED" if not (settle and settle["spawned"])
+                                         else "INTERRUPTED_NO_EFFECT_PROVEN")
                 else:
                     nxt, why = "FAILED", "INTERRUPTED_NO_ATTEMPTS_LEFT"
+            else:
+                nxt, why = "NEEDS_ATTENTION", "INTERRUPTED_OUTCOME_UNCERTAIN"
+            with self.store.tx() as db:
+                if att:
+                    db.execute("UPDATE attempt SET ended_at_us=?, outcome=?, reason=? WHERE attempt_id=? AND ended_at_us IS NULL",
+                               (self.now(), outcome if nxt != "COLLECT_PENDING" else "HARNESS_COMPLETE_RECOVERED",
+                                "SCHEDULER_PROCESS_ENDED:" + why, att[0]))
                 self._set_occ(db, row["occ_id"], nxt, why, lease_owner=None, lease_until_us=None)
                 self.store.emit(db, "occurrence.interrupted", job_id=row["job_id"], occ_id=row["occ_id"],
-                                payload={"attempts": row["attempts"], "next": nxt, "context_preserved": True})
-                out["interrupted"].append({"occ_id": row["occ_id"], "next": nxt})
+                                payload={"attempts": row["attempts"], "next": nxt, "why": why, "context_preserved": True,
+                                         "supervisor": settle})
+            out["interrupted"].append({"occ_id": row["occ_id"], "next": nxt, "why": why})
+        with self.store.tx() as db:
             self.store.emit(db, "scheduler.started", payload={"instance": self.instance_id, "recovered": out["interrupted"],
                                                                "harness_revoked": len(out["harness"])})
         return out
+
+    def _resume_collection(self, occ_id) -> dict:
+        """COLLECT_PENDING: the harness finished before the scheduler died; collect, render and file the review now."""
+        occ = self.occurrence(occ_id)
+        job = self.job(occ["job_id"])
+        with self.store.tx() as db:
+            cur = db.execute("UPDATE occurrence SET state='RUNNING', lease_owner=?, updated_at_us=? WHERE occ_id=? AND "
+                             "state='COLLECT_PENDING' AND EXISTS (SELECT 1 FROM job j WHERE j.job_id=occurrence.job_id AND "
+                             "j.state<>'CANCELLED')", (self.instance_id, self.now(), occ_id))
+            if cur.rowcount != 1:
+                return {"occ_id": occ_id, "result": "NOT_CLAIMED"}
+        prev = self.store.q1("SELECT * FROM attempt WHERE occ_id=? ORDER BY attempt_id DESC LIMIT 1", (occ_id,))
+        with self.store.tx() as db:
+            db.execute("UPDATE attempt SET ended_at_us=NULL WHERE attempt_id=?", (prev["attempt_id"],))
+        occ = self.occurrence(occ_id)
+        try:
+            return self._complete(occ, job, prev["attempt_id"], prev["workspace"], prev["mode"], prev["kind"],
+                                  self._previous_for(occ), {"recovered": True, "stages": {"research_concept_assets_animation":
+                                                                                          "completed (before restart)"}})
+        except Exception as exc:                                  # noqa: BLE001
+            return self._retry_or_fail(occ, job, prev["attempt_id"], f"EXECUTION_ERROR:{type(exc).__name__}",
+                                       {"error": str(exc)[:500]})
 
     # ---- the tick ---------------------------------------------------------------------------------------------------
     def tick(self, *, materialize=True) -> list:
@@ -450,6 +557,8 @@ class Scheduler:
                            "(o.state='REVISION_QUEUED' AND j.state IN ('ACTIVE','PAUSED'))) AND (o.retry_at_us IS NULL OR o.retry_at_us<=?) "
                            "ORDER BY o.due_at_us, o.occ_id", (now, now))
         results = []
+        for (occ_id,) in self.store.q("SELECT occ_id FROM occurrence WHERE state='COLLECT_PENDING' ORDER BY occ_id"):
+            results.append(self._resume_collection(occ_id))
         for (occ_id,) in due:
             results.append(self._dispatch(occ_id))
         return results
@@ -489,13 +598,33 @@ class Scheduler:
             return {"occ_id": occ_id, "result": "FAILED", "reason": exc.code}
         # claim (compare-and-set)
         with self.store.tx() as db:
+            # The job's state is part of the compare-and-set: a job cancelled (or paused, for scheduled work) after this
+            # occurrence was selected can never be claimed (review round 1, F7).
             cur = db.execute("UPDATE occurrence SET state='RUNNING', reason=NULL, attempts=attempts+1, lease_owner=?, updated_at_us=? "
-                             "WHERE occ_id=? AND state=?", (self.instance_id, now, occ_id, occ["state"]))
+                             "WHERE occ_id=? AND state=? AND EXISTS (SELECT 1 FROM job j WHERE j.job_id=occurrence.job_id AND "
+                             "(j.state='ACTIVE' OR (j.state='PAUSED' AND ?=1)))",
+                             (self.instance_id, now, occ_id, occ["state"], 1 if revision else 0))
             if cur.rowcount != 1:
                 return {"occ_id": occ_id, "result": "NOT_CLAIMED"}
             self.store.emit(db, "occurrence.claimed", job_id=job["job_id"], occ_id=occ_id,
                             payload={"instance": self.instance_id, "attempt_no": occ["attempts"] + 1, "revision": revision})
-        return self._execute(self.occurrence(occ_id), job)
+        return self._execute_settled(self.occurrence(occ_id), job)
+
+    def _execute_settled(self, occ, job) -> dict:
+        """Every claimed occurrence leaves RUNNING, whatever raises (review round 1, F5)."""
+        try:
+            return self._execute(occ, job)
+        except Exception as exc:                          # noqa: BLE001 - settle, then surface in the receipt
+            reason = f"EXECUTION_ERROR:{type(exc).__name__}"
+            att = self.store.q1("SELECT attempt_id FROM attempt WHERE occ_id=? AND ended_at_us IS NULL ORDER BY attempt_id DESC "
+                                "LIMIT 1", (occ["occ_id"],))
+            receipt = {"error": f"{type(exc).__name__}: {str(exc)[:500]}"}
+            if att is not None:
+                return self._retry_or_fail(occ, job, att[0], reason, receipt)
+            with self.store.tx() as db:
+                self._set_occ(db, occ["occ_id"], "NEEDS_ATTENTION", reason, lease_owner=None)
+                self.store.emit(db, "occurrence.execution_error", job_id=job["job_id"], occ_id=occ["occ_id"], payload=receipt)
+            return {"occ_id": occ["occ_id"], "result": "NEEDS_ATTENTION", "reason": reason}
 
     # ---- execution ------------------------------------------------------------------------------------------------
     def _previous_for(self, occ):
@@ -531,8 +660,9 @@ class Scheduler:
             workspace = workspace.with_name(workspace.name + "_" + uuid.uuid4().hex[:6])
         kind = (occ["request"] or {}).get("kind", "generate")
         with self.store.tx() as db:
-            cur = db.execute("INSERT INTO attempt(occ_id,kind,mode,harness,started_at_us,supervisor_task_id) VALUES (?,?,?,?,?,?)",
-                             (occ_id, kind, gate.mode, gate.executor_id, self.now(), self.harness.task_id_for(attempt_key)))
+            cur = db.execute("INSERT INTO attempt(occ_id,kind,mode,harness,started_at_us,supervisor_task_id,workspace) "
+                             "VALUES (?,?,?,?,?,?,?)", (occ_id, kind, gate.mode, gate.executor_id, self.now(),
+                                                     self.harness.task_id_for(attempt_key), str(workspace)))
             attempt_id = cur.lastrowid
             self.store.emit(db, "attempt.started", job_id=job["job_id"], occ_id=occ_id,
                             payload={"attempt_id": attempt_id, "mode": gate.mode, "executor": gate.executor_id,
@@ -557,6 +687,14 @@ class Scheduler:
             return self._finish(occ, job, attempt_id, "NEEDS_ATTENTION", outcome.reason, receipt, "UNCERTAIN")
         if outcome.status != "completed":
             return self._retry_or_fail(occ, job, attempt_id, outcome.reason, receipt)
+        return self._complete(occ, job, attempt_id, workspace, gate.mode, kind, previous, receipt)
+
+    def _complete(self, occ, job, attempt_id, workspace, mode, kind, previous, receipt) -> dict:
+        """Collect -> render -> validate -> artifact -> review. Also the resume point after a restart that found the
+        harness work COMPLETE in the supervisor ledger (the harness is never re-run for finished work)."""
+        occ_id = occ["occ_id"]
+        workspace = Path(workspace)
+        template = TEMPLATES[job["template_id"]]
         # Render -> GIF conversion -> Validation (URI-owned)
         try:
             collected = template.collect(workspace)
@@ -564,8 +702,13 @@ class Scheduler:
             receipt["stages"]["collect"] = str(exc)
             return self._retry_or_fail(occ, job, attempt_id, "OUTPUT_INVALID:" + str(exc), receipt)
         version = (self.store.q1("SELECT COALESCE(MAX(version),0) FROM artifact WHERE occ_id=?", (occ_id,))[0]) + 1
-        name = f"{(occ['meta'].get('festival_key') or job['params'].get('festival', {}).get('key') or 'task')}_{occ['occurrence_key'].split(':')[-1]}_v{version}"
-        out_dir = self.state_dir / "outputs" / f"occ_{occ_id}"
+        raw = occ["meta"].get("festival_key") or (job["params"].get("festival") or {}).get("key") or "task"
+        slug = re.sub(r"[^a-z0-9_]+", "_", str(raw).lower())[:40] or "task"
+        tail = re.sub(r"[^0-9A-Za-z_-]+", "_", occ["occurrence_key"].split(":")[-1])[:24]
+        name = f"{slug}_{tail}_v{version}"
+        out_dir = (self.state_dir / "outputs" / f"occ_{occ_id}").resolve()
+        if (out_dir / f"{name}.gif").resolve().parent != out_dir:          # defence in depth (review round 1, F8)
+            raise SchedulerError("OUTPUT_PATH_ESCAPE", name)
         try:
             result = template.render_and_validate(collected, out_dir, name)
         except Exception as exc:                               # noqa: BLE001 - renderer failure is a task failure
@@ -580,7 +723,7 @@ class Scheduler:
         (out_dir / f"{name}.research.md").write_text(collected["research"], encoding="utf-8")
         info = {"scene": collected["scene"], "scene_sha256": collected["scene_sha256"], "render": result["render"],
                 "gif_checks": result["gif_checks"], "quality": result["quality"], "research": collected["research"],
-                "mode": gate.mode, "poster": result["render"]["poster"]}
+                "mode": mode, "poster": result["render"]["poster"]}
         parent = previous["artifact_id"] if previous else None
         with self.store.tx() as db:
             cur = db.execute("INSERT INTO artifact(occ_id,attempt_id,version,parent_artifact_id,kind,path,sha256,bytes,info_json,"
@@ -592,7 +735,7 @@ class Scheduler:
                 db.execute("UPDATE artifact SET status='SUPERSEDED' WHERE artifact_id=? AND status IN ('CANDIDATE','APPROVED')", (parent,))
             self.store.emit(db, "artifact.created", job_id=job["job_id"], occ_id=occ_id,
                             payload={"artifact_id": art_id, "version": version, "sha256": result["sha256"], "bytes": result["bytes"],
-                                     "parent": parent, "kind": kind, "mode": gate.mode, "quality": result["quality"]})
+                                     "parent": parent, "kind": kind, "mode": mode, "quality": result["quality"]})
         receipt["artifact"] = {"artifact_id": art_id, "version": version, "sha256": result["sha256"], "path": result["path"]}
         r = self._finish(occ, job, attempt_id, "AWAITING_REVIEW", "REVIEW_PENDING", receipt, "COMPLETED", request_json=None)
         self.notify("review_pending", {"occ_id": occ_id, "artifact_id": art_id})
@@ -626,6 +769,8 @@ class Scheduler:
             occ = self.occurrence(art["occ_id"])
             job = self.job(occ["job_id"])
             self._owner_check(job, principal)
+            if job["state"] == "CANCELLED":
+                raise SchedulerError("JOB_CANCELLED", job["job_id"])
             if action not in ("approve", "refine", "regenerate", "reject"):
                 raise SchedulerError("BAD_ACTION", action)
             if expected_sha256 != art["sha256"]:
@@ -709,8 +854,9 @@ class Scheduler:
         jobs = self.store.q(f"SELECT job_id, owner, title, template_id, state, timezone, schedule_json FROM job j WHERE 1=1{own} "
                             "ORDER BY created_at_us DESC", a)
         return {"now_utc": _iso(now),
-                "upcoming": occ_rows("o.state IN ('SCHEDULED','REVISION_QUEUED','RUNNING')", ()),
-                "errors": occ_rows("o.state IN ('BLOCKED_HARNESS','QUOTA_DEFERRED','FAILED','NEEDS_ATTENTION','MISSED')", (),
+                "upcoming": occ_rows("o.state IN ('SCHEDULED','REVISION_QUEUED','RUNNING','COLLECT_PENDING')", ()),
+                "errors": occ_rows("o.state IN ('BLOCKED_HARNESS','QUOTA_DEFERRED','FAILED','NEEDS_ATTENTION','MISSED',"
+                                   "'AWAITING_CONFIRMATION')", (),
                                    "o.updated_at_us DESC"),
                 "pending_approvals": pending,
                 "approved": occ_rows("o.state='APPROVED'", (), "o.updated_at_us DESC", 10),

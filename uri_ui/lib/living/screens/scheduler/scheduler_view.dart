@@ -218,16 +218,29 @@ class _SchedulerViewState extends State<SchedulerView> {
                       _OccRow(
                         occ: o as Map<String, dynamic>,
                         actions: [
-                          TextButton(
-                            onPressed: () => _act(
-                              () => widget.client.occurrenceAction(
-                                o['occ_id'] as int,
-                                'retry',
+                          if (o['state'] == 'AWAITING_CONFIRMATION')
+                            TextButton(
+                              key: Key('scheduler.confirmDate.${o['occ_id']}'),
+                              onPressed: () => _act(
+                                () => widget.client.occurrenceAction(
+                                  o['occ_id'] as int,
+                                  'confirm',
+                                ),
+                                'Date confirmed',
                               ),
-                              'Retry queued',
+                              child: const Text('Confirm date'),
+                            )
+                          else
+                            TextButton(
+                              onPressed: () => _act(
+                                () => widget.client.occurrenceAction(
+                                  o['occ_id'] as int,
+                                  'retry',
+                                ),
+                                'Retry queued',
+                              ),
+                              child: const Text('Retry'),
                             ),
-                            child: const Text('Retry'),
-                          ),
                           TextButton(
                             onPressed: () => _act(
                               () => widget.client.occurrenceAction(

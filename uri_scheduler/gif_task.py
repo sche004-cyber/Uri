@@ -167,4 +167,4 @@ def render_and_validate(collected: dict, out_dir: Path, name: str) -> dict:
     quality = {"animated_gif": checks["ok"], "text_legible": legible, "within_size_budget": render["within_size_budget"],
                "loop_seam_mean_abs_diff": render["loop_seam_mean_abs_diff"], "loop_seamless": render["loop_seam_mean_abs_diff"] <= 12}
     return {"path": str(gif), "sha256": sha256_file(gif), "bytes": gif.stat().st_size, "render": render, "gif_checks": checks,
-            "quality": quality, "ok": checks["ok"] and legible}
+            "quality": quality, "ok": checks["ok"] and legible and render["within_size_budget"]}
