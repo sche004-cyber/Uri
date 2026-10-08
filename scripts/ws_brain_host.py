@@ -297,7 +297,9 @@ class Host:
     def calibrate(self, pid):
         import httpx
         self.set("CALIBRATING", detail=None, explain="Measuring Brain speed.")
-        cal = {"t": round(self.now(), 3), "tokens": CALIBRATION_TOKENS, "threshold_tps": DEGRADED_TPS}
+        cal = {"t": round(self.now(), 3), "tokens": CALIBRATION_TOKENS, "threshold_tps": DEGRADED_TPS,
+               # The instance this measurement belongs to (Codex H-r5): health uses it only for this process.
+               "server_pid": pid, "server_create_time": R._create_time(pid)}
         try:
             with httpx.Client(base_url=R.base_url(self.cfg), timeout=httpx.Timeout(120.0, connect=3.0)) as c:
                 res = c.post("/completion", json={"prompt": CALIBRATION_PROMPT, "n_predict": CALIBRATION_TOKENS,
@@ -337,6 +339,7 @@ class Host:
         self.mgr = None
         self.stopped_at = self.now()
         self.report["server"] = {"pid": None, "owned": False, "stopped_clean": ok}
+        self.report.pop("calibration", None)          # it described the instance that just stopped
 
     # ---- main loop ------------------------------------------------------------------------------------------
     def run(self):

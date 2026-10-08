@@ -51,7 +51,7 @@ def backend(cfg) -> dict:
 
 
 def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, busy: bool, selected: dict,
-           cfg: dict, now=None) -> dict:
+           cfg: dict, now=None, server=None) -> dict:
     """readiness: Readiness.to_dict(); host: the host report (or None); perf: PerfMonitor.assess(sample=False) for the
     current server process; selected: the bridge's Brain selection."""
     now = now or time.time()
@@ -60,6 +60,9 @@ def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, 
     h = host if (host and host_alive) else None
     h_state = h.get("state") if h else None
     cal = (h or {}).get("calibration") or {}
+    # The host's calibration counts only for the server process readiness just verified (Codex H-r5).
+    if cal and not _same_instance(cal, server):
+        cal = {}
     out = {"readiness": r_state, "busy": bool(busy), "backend": backend(cfg), "selected": selected,
            "host": {"running": bool(h), "state": h_state, "explain": h and h.get("explain"),
                     "updated_age_s": round(now - h["updated_at"], 1) if h and h.get("updated_at") else None,
@@ -123,6 +126,13 @@ def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, 
                                             if not h else None)
     out.update(state=UNAVAILABLE, reasons=reasons, recovery_options=options, explain=explain)
     return out
+
+
+def _same_instance(cal, server) -> bool:
+    if not server or server.get("pid") is None or cal.get("server_pid") != server.get("pid"):
+        return False
+    a, b = cal.get("server_create_time"), server.get("create_time")
+    return a is not None and b is not None and abs(float(a) - float(b)) < 1.0
 
 
 def _speed(perf, cal):

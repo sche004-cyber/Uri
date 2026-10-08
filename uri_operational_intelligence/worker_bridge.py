@@ -414,7 +414,8 @@ class IntegratedTurns:
             mon.record(timings)
         perf = mon.assess(sample=False)
         out = brain_health.assess(readiness=readiness, host=host, host_alive=alive, perf=perf, busy=self.busy,
-                                  selected=self.selected, cfg=self.cfg)
+                                  selected=self.selected, cfg=self.cfg,
+                                  server={"pid": proc.get("pid"), "create_time": proc.get("create_time")})
         if self._restart_pending() and out["state"] != brain_health.RECOVERING:
             out.update(state=brain_health.RECOVERING, reasons=["RESTART_REQUESTED"] + list(out.get("reasons") or []),
                        recovery_options=[], explain="The Brain restart was requested; URI is waiting for it.")

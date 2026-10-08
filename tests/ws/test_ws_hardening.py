@@ -198,12 +198,17 @@ FULLCFG = {"model": {"id": "qwen-test", "mtp_draft": {}}, "runtime": {"engine": 
            "ctx": 32768, "vision_enabled": True}, "tiers": {"fast": {}, "normal": {}, "deep": {}}}
 
 
-def health(r="READY", host=None, alive=True, perf=None, busy=False, sel=SEL):
+SERVER = {"pid": 4242, "create_time": 500.0}
+
+
+def health(r="READY", host=None, alive=True, perf=None, busy=False, sel=SEL, server=SERVER):
     return BH.assess(readiness={"state": r}, host=host, host_alive=alive, perf=perf or {}, busy=busy, selected=sel,
-                     cfg=FULLCFG, now=1000.0)
+                     cfg=FULLCFG, now=1000.0, server=server)
 
 
 def host(state, **kw):
+    if "calibration" in kw:
+        kw["calibration"] = dict({"server_pid": 4242, "server_create_time": 500.0}, **kw["calibration"])
     return {"schema": BH.REPORT_SCHEMA, "state": state, "updated_at": 990.0, **kw}
 
 
@@ -234,6 +239,15 @@ def test_turn_evidence_supersedes_calibration_and_dead_host_is_ignored():
     assert stale["state"] == BH.READY and "SPEED_NOT_MEASURED" in stale["reasons"] and not stale["host"]["running"]
 
 
+def test_calibration_of_another_instance_is_ignored():
+    h = host("DEGRADED", calibration={"decode_tps": 27.0, "t": 900})
+    assert health(host=h)["state"] == BH.DEGRADED
+    other = health(host=h, server={"pid": 5151, "create_time": 800.0})       # a different server now answers
+    assert other["state"] == BH.READY and other["performance"]["calibration_tps"] is None
+    assert "SPEED_NOT_MEASURED" in other["reasons"]
+    assert health(host=h, server=None)["performance"]["calibration_tps"] is None
+
+
 def test_desktop_compositor_alone_does_not_suggest_closing_apps():
     h = host("DEGRADED", calibration={"decode_tps": 27.0, "t": 900},
              residency={"consumers": [{"pid": 1, "name": "dwm.exe", "role": "desktop compositor", "dedicated_mib": 311}]})
@@ -259,14 +273,15 @@ def test_host_request_and_report_link(tmp_path):
 # ---- T3 bridge commands ------------------------------------------------------------------------------------------
 def test_bridge_health_restart_and_turn_status(fake, tmp_path):  # noqa: F811
     requests = []
-    rep = {"schema": BH.REPORT_SCHEMA, "state": "READY", "calibration": {"decode_tps": 119.0, "t": time.time() - 5},
-           "updated_at": time.time()}
+    srv_ct = time.time() - 3600
+    rep = {"schema": BH.REPORT_SCHEMA, "state": "READY", "calibration": {"decode_tps": 119.0, "t": time.time() - 5,
+           "server_pid": 77, "server_create_time": srv_ct}, "updated_at": time.time()}
     b, frames, _ = make(fake, tmp_path, FakeCore())
     b._host_report = lambda: (rep, True)
     b._host_request = lambda a: requests.append(a) or {"id": "r1"}
     from uri_operational_intelligence.runtime_v1 import Readiness
     b._status = lambda: Readiness("READY", fake.url, model_id="qwen-test",
-                                  live_identity={"process": {"pid": 77, "create_time": time.time() - 3600}})
+                                  live_identity={"process": {"pid": 77, "create_time": srv_ct}})
     h = b.handle("brain_health", {"command": "brain_health"})
     assert h["state"] == "READY" and h["performance"]["calibration_tps"] == 119.0
     # samples of a previous instance (before this calibration) never count
