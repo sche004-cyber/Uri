@@ -121,61 +121,184 @@ def _root_for(text: str, roots: list[dict]) -> dict | None:
     return best
 
 
+CLS = {"ACTIVE_AUTHORITATIVE": "AUTHORIZED", "PRESERVED_DONOR_ONLY": "DONOR_ONLY", "QUARANTINED_UNTRUSTED": "QUARANTINED"}
+TOKEN = re.compile(r'"([^"]*)"|(\S+)')
+INTERPRETERS = {"python.exe", "pythonw.exe", "python", "pythonw", "py.exe", "py", "python3.exe", "python3"}
+SHELLS = {"powershell.exe", "powershell", "pwsh.exe", "pwsh"}
+SECRET_ARG = re.compile(r"(?i)((?:--?|/)?(?:api[-_]?key|access[-_]?token|refresh[-_]?token|token|secret|password|passwd|pwd|"
+                        r"client[-_]?secret|bearer|authorization)\s*[=: ]\s*)(\"[^\"]*\"|'[^']*'|\S+)")
+
+
+def redact(text: str) -> str:
+    """Remove secret-looking argument values before anything is stored or printed."""
+    return SECRET_ARG.sub(lambda m: m.group(1) + "<redacted>", text or "")
+
+
+PATH_WITH_SPACES = re.compile(r"^\s*([A-Za-z]:[\\/][^\"]*?\.(?:exe|bat|cmd|ps1|py|pyw|lnk))(?=\s|$)", re.I)
+
+
+def _tokens(text: str) -> list[str]:
+    text = re.sub(r"\s*\[wd=[^\]]*\]\s*$", "", text or "")
+    text = text.replace('""', '"')  # cmd.exe /c ""a" "b"" quoting
+    head = []
+    m = PATH_WITH_SPACES.match(text)
+    if m and not text.lstrip().startswith('"'):
+        head, text = [m.group(1)], text[m.end():]  # unquoted executable path that contains spaces
+    return head + [a if a else b for a, b in TOKEN.findall(text) if (a or b)]
+
+
+def _decode_encoded_command(tokens: list[str]) -> str | None:
+    for i, tk in enumerate(tokens):
+        if tk.lower() in ("-encodedcommand", "-enc", "-e", "-ec") and i + 1 < len(tokens):
+            import base64
+            try:
+                return base64.b64decode(tokens[i + 1]).decode("utf-16-le", errors="replace")
+            except (ValueError, TypeError):
+                return "<undecodable -EncodedCommand>"
+    return None
+
+
+def launch_target(text: str, depth: int = 0) -> tuple[str, str]:
+    """(executable, target) of a command line. The target is what actually runs: the script for an interpreter,
+    the -File script for PowerShell, the inner command for cmd /c, the module for python -m, else the executable.
+    Classification uses the TARGET, so a path mentioned as a mere argument can never authorize a command."""
+    toks = _tokens(text)
+    if not toks:
+        return "", ""
+    exe = toks[0]
+    base = exe.replace("\\", "/").rsplit("/", 1)[-1].lower()
+    rest = toks[1:]
+    if depth < 3 and base in ("cmd.exe", "cmd") :
+        for i, tk in enumerate(rest):
+            if tk.lower() in ("/c", "/k"):
+                inner = " ".join(f'"{x}"' if " " in x else x for x in rest[i + 1:])
+                return launch_target(inner, depth + 1)
+    if base in SHELLS:
+        decoded = _decode_encoded_command(rest)
+        if decoded is not None:
+            return exe, "encoded:" + decoded if depth >= 3 else launch_target(decoded, depth + 1)[1] or "encoded:" + decoded
+        for i, tk in enumerate(rest):
+            if tk.lower() in ("-file", "-f") and i + 1 < len(rest):
+                return exe, rest[i + 1]
+        return exe, " ".join(rest) or exe
+    if base in INTERPRETERS or base.startswith("python"):
+        skip_next = False
+        for i, tk in enumerate(rest):
+            if skip_next:
+                skip_next = False
+                continue
+            if tk == "-m" and i + 1 < len(rest):
+                return exe, "module:" + rest[i + 1]
+            if tk in ("-c",):
+                return exe, "inline-code"
+            if tk.startswith("-"):
+                skip_next = tk in ("-W", "-X")
+                continue
+            return exe, tk
+        return exe, exe
+    return exe, exe
+
+
+def _root_containing(path: str, roots: list[dict]) -> dict | None:
+    p = norm(path)
+    best = None
+    for r in roots:
+        rp = norm(r["path"])
+        if p == rp or p.startswith(rp + "/"):
+            if best is None or len(rp) > len(norm(best["path"])):
+                best = r
+    return best
+
+
 def classify(text: str, manifest: dict) -> tuple[str, str]:
-    t = norm(text)
+    roots = manifest["roots"]
+    exe, target = launch_target(text)
+    t_target = norm(target)
+    target_root = _root_containing(target, roots) or (_root_containing(exe, roots) if target.startswith(("module:", "inline-code")) else None)
+    # Any donor/quarantined root referenced ANYWHERE (state dir, model, argument) that does not contain the target
+    # is a contamination signal of its own: an authorized or legacy prefix can never launder it.
+    other = _root_for(text, [r for r in roots if r is not target_root and r["classification"] != "ACTIVE_AUTHORITATIVE"])
     for legacy in manifest["transitional_legacy"]:
-        if norm(legacy["match"]) in t:
+        if t_target == norm(legacy["match"]):
+            if other is not None and not (target_root and norm(other["path"]).startswith(norm(target_root["path"]))):
+                return CLS[other["classification"]], other["id"] + " (referenced by a transitional command)"
             return "TRANSITIONAL_LEGACY", legacy["id"]
-    root = _root_for(text, manifest["roots"])
-    if root is not None:
-        cls = {"ACTIVE_AUTHORITATIVE": "AUTHORIZED", "PRESERVED_DONOR_ONLY": "DONOR_ONLY",
-               "QUARANTINED_UNTRUSTED": "QUARANTINED"}[root["classification"]]
+    if target_root is not None:
+        cls = CLS[target_root["classification"]]
         if cls == "AUTHORIZED":
-            # Each active root lists its own entrypoints; an empty list means nothing may run from that root.
-            allowed = [norm(e) for e in root.get("entrypoints", [])]
-            if not any(a in t for a in allowed):
-                return "UNACCOUNTED", f"{root['id']}: inside authoritative root but not an authorized entrypoint"
-        return cls, root["id"]
+            if other is not None:
+                return CLS[other["classification"]], other["id"] + " (referenced by an authorized entrypoint)"
+            allowed = {norm(target_root["path"] + "/" + e) for e in target_root.get("entrypoints", [])}
+            if t_target not in allowed:
+                return "UNACCOUNTED", f"{target_root['id']}: inside authoritative root but not an authorized entrypoint"
+        return cls, target_root["id"]
+    if other is not None:
+        return CLS[other["classification"]], other["id"] + " (referenced as an argument)"
     for dep in manifest["shared_dependencies"]:
-        if norm(dep["match"]) in t:
+        if norm(dep["match"]) in t_target and URI_HINT.search(text) is None:
             return "SHARED_DEPENDENCY", dep["id"]
     return "UNACCOUNTED", "no manifest entry"
+
+
+def _is_python_like(cmd: str) -> bool:
+    exe, target = launch_target(cmd)
+    base = exe.replace("\\", "/").rsplit("/", 1)[-1].lower()
+    return base in INTERPRETERS or base.startswith("python") or "uvicorn" in cmd.lower()
+
+
+def _autostart_relevant(cmd: str) -> bool:
+    """A URI-looking command, an interpreter-launched program, or an opaque encoded PowerShell command."""
+    if URI_HINT.search(cmd) or RUNTIME_HINT.search(cmd):
+        return True
+    exe, target = launch_target(cmd)
+    return _is_python_like(cmd) or target.startswith("encoded:") or "-encodedcommand" in cmd.lower()
 
 
 def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
     findings = []
 
-    def add(kind, ident, text, active):
+    def add(kind, ident, text, active, extra=None):
         cls, ref = classify(text, manifest)
-        findings.append({"kind": kind, "id": ident, "detail": text[:400], "active_or_autostart": active,
-                         "classification": cls, "manifest_ref": ref})
+        f = {"kind": kind, "id": ident, "detail": redact(text)[:400], "active_or_autostart": active,
+             "classification": cls, "manifest_ref": ref}
+        f.update(extra or {})
+        findings.append(f)
 
     for t in snapshot.get("scheduled_tasks", []):
-        if URI_HINT.search(t["action"]) or URI_HINT.search(t["name"]):
+        if _autostart_relevant(t["action"]) or URI_HINT.search(t["name"]):
             add("scheduled_task", t["name"], t["action"], t.get("enabled", True))
     for r in snapshot.get("run_keys", []):
-        if URI_HINT.search(r["value"]):
+        if _autostart_relevant(r["value"]):
             add("run_key", r["name"], r["value"], True)
     for s in snapshot.get("shortcuts", []):
-        if URI_HINT.search(s["target"]) or URI_HINT.search(s["path"]):
+        if URI_HINT.search(s["target"]) or URI_HINT.search(s["path"]) or (s.get("startup") and _autostart_relevant(s["target"])):
             add("startup_shortcut" if s.get("startup") else "shortcut", s["path"], s["target"], bool(s.get("startup")))
+    uri_ports = set(range(manifest["ports"]["uri_range"][0], manifest["ports"]["uri_range"][1] + 1))
+    model_ports = set(manifest["ports"].get("model_ports", []))
+    listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if _is_python_like(lst.get("cmdline") or lst.get("image") or "")}
     for p in snapshot.get("processes", []):
         cmd = p["cmdline"]
-        if RUNTIME_HINT.search(cmd) and not AGENT_SHELL.search(cmd):
+        if AGENT_SHELL.search(cmd):
+            continue
+        if RUNTIME_HINT.search(cmd) or (p.get("pid") in listener_pids and _is_python_like(cmd)):
             add("process", f"pid {p['pid']}", cmd, True)
-    uri_ports = set(range(manifest["ports"]["uri_range"][0], manifest["ports"]["uri_range"][1] + 1))
     for lst in snapshot.get("listeners", []):
-        if lst["port"] in uri_ports or lst["port"] in manifest["ports"].get("model_ports", []):
-            text = lst.get("cmdline") or lst.get("image") or ""
-            add("listener", f"{lst['address']}:{lst['port']}", text or "<unknown owner>", True)
+        text = lst.get("cmdline") or lst.get("image") or ""
+        # URI and model ports always; any other port only when an interpreter/uvicorn owns it (URI-capable service).
+        if lst["port"] in uri_ports or lst["port"] in model_ports or _is_python_like(text):
+            add("listener", f"{lst['address']}:{lst['port']}", text or "<unknown owner>", True,
+                {"address": lst["address"], "port": lst["port"]})
     prefs = snapshot.get("ui_preferences")
     if prefs and prefs.get("serverBaseUrl"):
         url = prefs["serverBaseUrl"]
-        owner = next((f for f in findings if f["kind"] == "listener" and f["id"].endswith(":" + url.rsplit(":", 1)[-1].strip("/"))), None)
+        m = re.match(r"^\w+://\[?([^\]/]+?)\]?:(\d+)", url)
+        host, port = (m.group(1), int(m.group(2))) if m else ("", -1)
+        ok_addr = {host, "0.0.0.0", "::"} | ({"127.0.0.1"} if host == "localhost" else set())
+        owner = next((f for f in findings if f["kind"] == "listener" and f.get("port") == port and f.get("address") in ok_addr), None)
         cls = owner["classification"] if owner else "UNACCOUNTED"
         findings.append({"kind": "ui_server_binding", "id": "uri_ui shared_preferences serverBaseUrl", "detail": url,
                          "active_or_autostart": True, "classification": cls,
-                         "manifest_ref": (owner or {}).get("manifest_ref", "no listener on that port")})
+                         "manifest_ref": (owner or {}).get("manifest_ref", "no listener serving that address and port")})
     fail = FAIL_CLASSES | ({"TRANSITIONAL_LEGACY"} if strict else set())
     bad = [f for f in findings if f["active_or_autostart"] and f["classification"] in fail]
     authoritative_running = any(f["kind"] == "listener" and f["classification"] == "AUTHORIZED" for f in findings)
@@ -211,14 +334,30 @@ def live_snapshot() -> dict:
     if r.returncode != 0 or not r.stdout.strip():
         raise SystemExit(f"probe failed: {r.stderr.decode(errors='replace')[:400]}")
     snap = json.loads(r.stdout.decode("utf-8", errors="replace"))
+    for k in ("scheduled_tasks", "run_keys", "shortcuts", "processes", "listeners"):
+        v = snap.get(k)
+        snap[k] = [] if v is None else (v if isinstance(v, list) else [v])
     # The probe's own PowerShell process carries this source text, which mentions URI paths; drop it.
     # Privacy: keep only command lines that look like URI runtimes; never persist unrelated process command lines.
+    listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict)}
     snap["processes"] = [p for p in snap.get("processes") or [] if "uri_runtime_authority_check" not in p["cmdline"]
-                         and "$o.scheduled_tasks" not in p["cmdline"] and RUNTIME_HINT.search(p["cmdline"])
-                         and not AGENT_SHELL.search(p["cmdline"])]
+                         and "$o.scheduled_tasks" not in p["cmdline"] and not AGENT_SHELL.search(p["cmdline"])
+                         and (RUNTIME_HINT.search(p["cmdline"]) or (p.get("pid") in listen_pids and _is_python_like(p["cmdline"])))]
     for lst in snap.get("listeners") or []:
-        if not (RUNTIME_HINT.search(lst.get("cmdline", "")) or URI_HINT.search(lst.get("cmdline", ""))):
+        c = lst.get("cmdline", "")
+        if not (RUNTIME_HINT.search(c) or URI_HINT.search(c) or _is_python_like(c)):
             lst["cmdline"] = ""  # keep only the image path for non-URI listeners
+    # Redact secret-looking argument values everywhere before the snapshot can be saved or printed.
+    for p in snap["processes"]:
+        p["cmdline"] = redact(p["cmdline"])
+    for lst in snap.get("listeners") or []:
+        lst["cmdline"] = redact(lst.get("cmdline", ""))
+    for t in snap.get("scheduled_tasks") or []:
+        t["action"] = redact(t["action"])
+    for r in snap.get("run_keys") or []:
+        r["value"] = redact(r["value"])
+    for s in snap.get("shortcuts") or []:
+        s["target"] = redact(s["target"])
     for k in ("scheduled_tasks", "run_keys", "shortcuts", "processes", "listeners"):
         v = snap.get(k)
         snap[k] = [] if v is None else (v if isinstance(v, list) else [v])

@@ -175,3 +175,66 @@ def test_test_runners_and_agent_shells_are_not_runtimes():
     rep = verdict(snap(processes=[proc(rf"{PY} -m pytest {DEV}\uri-agent\test_x.py"),
                                   proc(r'bash -c "source /c/Users/cheta/.claude/shell-snapshots/s.sh && grep run_uri_server.py x"')]))
     assert rep["findings"] == []
+
+
+# --- regressions for the Codex adversarial review (2026-10-08, verdict REJECT) -------------------------------------
+FAILS = {"DONOR_ONLY", "QUARANTINED", "UNACCOUNTED"}
+
+
+def test_shared_dependency_name_in_an_argument_does_not_hide_a_uri_server():
+    rep = verdict(snap(processes=[proc('python D:/copies/uri-agent/scripts/run_uri_server.py --label "LM Studio"')]), strict=True)
+    assert classes(rep) == ["UNACCOUNTED"] and rep["verdict"] == "CONTAMINATED"
+
+
+def test_authorized_path_in_an_argument_does_not_launder_the_executable():
+    cmd = f"python D:/copies/uri-agent/scripts/run_uri_isolated_server.py --log {RUNTIME}/scripts/run_uri_isolated_server.py"
+    rep = verdict(snap(processes=[proc(cmd)]), strict=True)
+    assert classes(rep)[0] in FAILS and rep["verdict"] == "CONTAMINATED"
+
+
+def test_legacy_path_in_an_argument_does_not_make_a_donor_transitional():
+    cmd = (rf"{PY} C:/Users/cheta/Development/uri-m37-m39-integration/run_desktop_server.py "
+           r"--note C:/Users/cheta/Development/uri-agent/scripts/run_uri_server.py")
+    rep = verdict(snap(processes=[proc(cmd)]))
+    assert classes(rep)[0] in FAILS and rep["verdict"] == "CONTAMINATED"
+
+
+def test_generic_uvicorn_module_service_on_any_port_and_any_address_is_caught():
+    cmd = r"C:\Python313\pythonw.exe -m uvicorn other_uri.app:app --port 9100"
+    rep = verdict(snap(processes=[{"pid": 77, "ppid": 1, "image": "pythonw.exe", "cmdline": cmd}],
+                       listeners=[{"address": "0.0.0.0", "port": 9100, "pid": 77, "image": "pythonw.exe", "cmdline": cmd}]), strict=True)
+    assert rep["verdict"] == "CONTAMINATED" and "UNACCOUNTED" in classes(rep)
+
+
+def test_encoded_powershell_autostart_is_decoded_and_caught():
+    import base64
+    enc = base64.b64encode("python D:/x/uri-agent/scripts/run_uri_server.py".encode("utf-16-le")).decode()
+    t = {"name": r"\Updater", "enabled": True, "action": f"powershell.exe -NoProfile -EncodedCommand {enc}"}
+    rep = verdict(snap(scheduled_tasks=[t]), strict=True)
+    assert rep["verdict"] == "CONTAMINATED"
+
+
+def test_generic_python_autostart_task_is_reported():
+    t = {"name": r"\Helper", "enabled": True, "action": r"C:\Python313\python.exe D:\tools\server.py --port 9200"}
+    assert verdict(snap(scheduled_tasks=[t]))["verdict"] == "CONTAMINATED"
+
+
+def test_ui_binding_requires_the_listener_to_serve_that_address():
+    cmd = rf"{RUNTIME}/.venv/Scripts/python.exe {RUNTIME}/scripts/run_uri_isolated_server.py"
+    rep = verdict(snap(listeners=[listener(8031, cmd, address="192.168.1.7")],
+                       ui_preferences={"serverBaseUrl": "http://127.0.0.1:8031"}), strict=True)
+    ui = [f for f in rep["findings"] if f["kind"] == "ui_server_binding"][0]
+    assert ui["classification"] == "UNACCOUNTED" and rep["verdict"] == "CONTAMINATED"
+
+
+def test_secret_arguments_are_redacted_from_findings():
+    t = {"name": r"\URIServer", "enabled": True,
+         "action": r"python C:\Users\cheta\Development\uri-agent\scripts\run_uri_server.py --api-key example-secret token=abc123"}
+    rep = verdict(snap(scheduled_tasks=[t]))
+    blob = json.dumps(rep)
+    assert "example-secret" not in blob and "abc123" not in blob
+
+
+def test_cmd_wrapped_legacy_task_is_still_recognised_as_transitional():
+    t = {"name": r"\URIServer", "enabled": True, "action": r'cmd.exe /c ""C:\Users\cheta\Development\uri-agent\.venv\Scripts\python.exe" "C:\Users\cheta\Development\uri-agent\scripts\run_uri_server.py" --port 8000 >> "C:\Users\cheta\Development\uri-agent\uri_workspace\logs\uri_server.log" 2>&1"'}
+    assert classes(verdict(snap(scheduled_tasks=[t]))) == ["TRANSITIONAL_LEGACY"]

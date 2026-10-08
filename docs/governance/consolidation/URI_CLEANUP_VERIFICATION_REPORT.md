@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **25 passed**. Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **34 passed** (25 original + 9 after the Codex review). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -67,11 +67,30 @@ Live checks on this PC (10:18 IST):
 
 | Check | Result |
 |---|---|
-| Live checker, normal mode | NO_UNAUTHORIZED_RUNTIME: 6 TRANSITIONAL_LEGACY items (task, 2 shortcuts, legacy server process tree and listener, UI binding), Ollama shared, 0 unaccounted |
-| Live checker, `--strict` | CONTAMINATED (6) — expected until CONS-1..3 |
+| Live checker, normal mode | NO_UNAUTHORIZED_RUNTIME: 8 TRANSITIONAL_LEGACY findings (task, 2 shortcuts, 3 legacy server processes, listener, UI binding), of which 6 are active or auto-starting (the two shortcuts are not startup items); Ollama shared; 0 unaccounted |
+| Live checker, `--strict` | CONTAMINATED (6 active transitional findings) — expected until CONS-1..3 |
 | Live end-to-end attack: dummy listener on 127.0.0.1:8077 with a `_V1\scripts\run_uri_server.py` command line | Detected as DONOR_ONLY process + listener, exit 1; clean again after it stopped |
 | Start gate `scripts\uri_authorized_start.ps1 -Action validate` | **REFUSED** (strict checker found the legacy runtime); the frozen launcher was never invoked |
 | Frozen C1 refusals (legacy ports 8000/8018/8021/11434/1234, foreign listener, generic health) | covered by the Phase 1 authority/full suites above (passing) |
+
+## 2a. Independent adversarial review (Codex CLI, gpt-6-sol, read-only)
+
+Round 1 (2026-10-08): **REJECT.** Findings, each confirmed by me against the code before repair:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| X-1 | High | A shared-dependency name anywhere in the command (`--label "LM Studio"`) hid a URI server | Shared dependencies match only the launch target, and never a URI-looking command |
+| X-2 | High | An authorized path given as an argument laundered an unknown executable; a legacy path given as an argument made a donor transitional | Classification now uses the parsed launch target (script for interpreters, `-File` for PowerShell, inner command for `cmd /c`, module for `-m`). Any donor or quarantined root referenced anywhere outranks an authorized or transitional target |
+| X-3 | High | `pythonw -m uvicorn` on an off-range port or `0.0.0.0`, and `-EncodedCommand` autostarts, were not reported | Every interpreter/uvicorn-owned listener on any port is evaluated. Interpreter-launched and encoded autostarts are evaluated, and encoded commands are decoded |
+| X-4 | Med | The UI binding matched by port only | The listener address must serve the URL host (or be a wildcard) |
+| X-5 | Med | The start gate can be bypassed by invoking the frozen launcher directly | **Accepted limitation:** the frozen launcher cannot be changed. The frozen launcher still enforces its own identity, port and source checks. Containment makes the gate the only shortcut/task path at cutover |
+| X-6 | Med | Restore re-enabled a task that was already disabled; task lookup ignored the task path | Restore honours the recorded previous state; all task calls use task path `\` |
+| X-7 | Med | Task, Run-key and shortcut text was stored verbatim (possible secrets) | Secret-looking argument values are redacted in snapshots and findings |
+| X-8 | Low | The report said 6 transitional findings where the live report had 8 | Corrected above (8 findings, 6 active) |
+
+Repairs are covered by 9 new tests (34 total, all passing). A negative control ran the new tests against the
+pre-repair checker: 8 failed there, which proves they test the repaired behaviour. The ninth test, for the
+`cmd /c`-wrapped legacy task, guards against regression. Round 2 result: see §2b.
 
 ## 3. Integrity and recoverability
 

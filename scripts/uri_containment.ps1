@@ -25,6 +25,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $TaskName = 'URIServer'
+$TaskPath = '\'
 $Shortcuts = @(
     (Join-Path $env:USERPROFILE 'OneDrive\Desktop\URI.lnk'),
     (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\URI.lnk')
@@ -32,7 +33,7 @@ $Shortcuts = @(
 $Prefs = Join-Path $env:APPDATA 'com.example\uri_ui\shared_preferences.json'
 
 function Plan {
-    $t = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+    $t = Get-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction SilentlyContinue
     "C-1 scheduled task \$TaskName : " + $(if ($t) { "present, state=$($t.State) -> would DISABLE (XML backup first)" } else { 'absent (nothing to do)' })
     foreach ($s in $Shortcuts) { "C-2 shortcut $s : " + $(if (Test-Path $s) { 'present -> would MOVE into backup folder' } else { 'absent' }) }
     if (Test-Path $Prefs) { $u = (Get-Content $Prefs -Raw | ConvertFrom-Json).'flutter.uri.serverBaseUrl'; "C-3 uri_ui serverBaseUrl = $u (recorded only; tokens never read)" }
@@ -44,7 +45,7 @@ if ($Restore) {
     $entries = Get-Content $log -Raw | ConvertFrom-Json
     foreach ($e in $entries) {
         switch ($e.action) {
-            'disable_task' { Enable-ScheduledTask -TaskName $e.task | Out-Null; "restored: enabled task $($e.task)" }
+            'disable_task' { if ($e.previous_state -eq 'Disabled') { "left disabled: $($e.task) was already disabled before -Apply" } else { Enable-ScheduledTask -TaskPath $e.task_path -TaskName $e.task | Out-Null; "restored: enabled task $($e.task_path)$($e.task)" } }
             'move_shortcut' { Move-Item -LiteralPath $e.backup -Destination $e.original; "restored: $($e.original)" }
         }
     }
@@ -55,12 +56,12 @@ if (-not $Apply) { "PLAN ONLY (no changes). Re-run with -Apply after owner appro
 
 New-Item -ItemType Directory -Force -Path $BackupRoot | Out-Null
 $log = @()
-$t = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+$t = Get-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName -ErrorAction SilentlyContinue
 if ($t) {
-    Export-ScheduledTask -TaskName $TaskName | Set-Content -Encoding Unicode (Join-Path $BackupRoot "$TaskName.xml")
-    $log += [pscustomobject]@{ action = 'disable_task'; task = $TaskName; previous_state = "$($t.State)" }
+    Export-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName | Set-Content -Encoding Unicode (Join-Path $BackupRoot "$TaskName.xml")
+    $log += [pscustomobject]@{ action = 'disable_task'; task = $TaskName; task_path = $TaskPath; previous_state = "$($t.State)" }
     $log | ConvertTo-Json -Depth 3 | Set-Content -Encoding utf8 (Join-Path $BackupRoot 'containment_log.json')
-    Disable-ScheduledTask -TaskName $TaskName | Out-Null
+    if ("$($t.State)" -ne 'Disabled') { Disable-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName | Out-Null }
     "C-1 disabled \$TaskName (XML at $BackupRoot)"
 }
 $i = 0
