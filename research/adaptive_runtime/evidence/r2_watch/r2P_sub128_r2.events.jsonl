@@ -1,0 +1,8 @@
+{"ts": "2026-10-09T00:23:25", "t": 2.4, "event": "residency", "frm": "unknown", "to": "resident", "demoted_mib": 0}
+{"ts": "2026-10-09T00:23:40", "t": 17.3, "event": "residency", "frm": "resident", "to": "partially_demoted", "demoted_mib": 1369}
+{"ts": "2026-10-09T00:23:40", "t": 17.3, "event": "state", "frm": "OK", "to": "AT_RISK", "demoted_mib": 1369, "window_tps": null}
+{"ts": "2026-10-09T00:23:55", "t": 32.0, "event": "throughput", "frm": "unknown", "to": "healthy", "window_tps": 102.9}
+{"ts": "2026-10-09T00:24:02", "t": 39.4, "event": "throughput", "frm": "healthy", "to": "slow_but_above_threshold", "window_tps": 80.7}
+{"ts": "2026-10-09T00:24:54", "t": 91.2, "event": "throughput", "frm": "slow_but_above_threshold", "to": "healthy", "window_tps": 103.9}
+{"ts": "2026-10-09T00:25:11", "t": 107.8, "event": "residency", "frm": "partially_demoted", "to": "unknown", "demoted_mib": null}
+{"ts": "2026-10-09T00:25:11", "t": 107.8, "event": "state", "frm": "AT_RISK", "to": "OK", "demoted_mib": null, "window_tps": null}

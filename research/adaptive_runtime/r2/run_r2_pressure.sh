@@ -45,7 +45,7 @@ EOF
 }
 
 echo "=== R2 pressure campaign start $(date -u +%H:%M:%SZ); sequence: $SEQ"
-guard 180
+guard 300
 echo "=== GPU clear $(date -u +%H:%M:%SZ); idle VRAM $(vram) MiB"
 $PY residency_watch.py --seconds 5400 --interval 5 --out evidence/r2_residency_pressure.csv > evidence/r2_residency_pressure_console.txt 2>&1 &
 RWPID=$!
@@ -53,7 +53,14 @@ consumer_on
 echo "=== consumer resident; VRAM $(vram) MiB $(date -u +%H:%M:%SZ)"
 i128=0; idef=0
 for k in $SEQ; do
-  guard 0 > /dev/null
+  # never keep the consumer resident next to a foreign GPU process: drop it, wait for a quiet GPU, reload it
+  if ! $PY r2/gpu_guard.py --min-mib 1500 --allow ollama --timeout 0 --block-cmd uri_operational_intelligence.host --json > /dev/null 2>&1; then
+    echo "=== foreign GPU owner appeared $(date -u +%H:%M:%SZ): consumer unloaded, waiting for a quiet GPU"
+    consumer_off
+    guard 300 > /dev/null
+    consumer_on
+    echo "=== consumer resident again; VRAM $(vram) MiB $(date -u +%H:%M:%SZ)"
+  fi
   consumer_check
   if [ "$k" = s128 ]; then i128=$((i128+1)); n="r2P_sub128_r$i128"; a="--env GGML_VK_SUBALLOCATION_BLOCK_SIZE=134217728"; else idef=$((idef+1)); n="r2P_default_r$idef"; a=""; fi
   echo "=== $n $(date -u +%H:%M:%SZ) VRAM before $(vram) MiB"

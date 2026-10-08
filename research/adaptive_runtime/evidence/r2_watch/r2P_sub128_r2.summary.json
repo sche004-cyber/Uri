@@ -1,0 +1,105 @@
+{
+ "pid": 372,
+ "url": "http://127.0.0.1:18497",
+ "config": {
+  "pid": 372,
+  "url": "http://127.0.0.1:18497",
+  "interval_s": 5.0,
+  "host_visible_mib": 872,
+  "demoted_warn_mib": 256,
+  "expected_decode_tps": 110.0,
+  "degraded_ratio": 0.6,
+  "recover_ratio": 0.8,
+  "consecutive": 2,
+  "min_window_tokens": 32,
+  "active_probe": false,
+  "probe_idle_s": 300,
+  "probe_tokens": 24
+ },
+ "n_samples": 15,
+ "final_state": "OK",
+ "ever_degraded": false,
+ "ever_at_risk": true,
+ "first_demoted_at_s": 14.7,
+ "first_degraded_at_s": null,
+ "window_tps": {
+  "n": 5,
+  "min": 80.7,
+  "p50": 102.9,
+  "max": 110.6
+ },
+ "demoted_mib": {
+  "min": 0,
+  "max": 1926
+ },
+ "local_mib_last": null,
+ "nonlocal_mib_last": null,
+ "events": [
+  {
+   "ts": "2026-10-09T00:23:25",
+   "t": 2.4,
+   "event": "residency",
+   "frm": "unknown",
+   "to": "resident",
+   "demoted_mib": 0
+  },
+  {
+   "ts": "2026-10-09T00:23:40",
+   "t": 17.3,
+   "event": "residency",
+   "frm": "resident",
+   "to": "partially_demoted",
+   "demoted_mib": 1369
+  },
+  {
+   "ts": "2026-10-09T00:23:40",
+   "t": 17.3,
+   "event": "state",
+   "frm": "OK",
+   "to": "AT_RISK",
+   "demoted_mib": 1369,
+   "window_tps": null
+  },
+  {
+   "ts": "2026-10-09T00:23:55",
+   "t": 32.0,
+   "event": "throughput",
+   "frm": "unknown",
+   "to": "healthy",
+   "window_tps": 102.9
+  },
+  {
+   "ts": "2026-10-09T00:24:02",
+   "t": 39.4,
+   "event": "throughput",
+   "frm": "healthy",
+   "to": "slow_but_above_threshold",
+   "window_tps": 80.7
+  },
+  {
+   "ts": "2026-10-09T00:24:54",
+   "t": 91.2,
+   "event": "throughput",
+   "frm": "slow_but_above_threshold",
+   "to": "healthy",
+   "window_tps": 103.9
+  },
+  {
+   "ts": "2026-10-09T00:25:11",
+   "t": 107.8,
+   "event": "residency",
+   "frm": "partially_demoted",
+   "to": "unknown",
+   "demoted_mib": null
+  },
+  {
+   "ts": "2026-10-09T00:25:11",
+   "t": 107.8,
+   "event": "state",
+   "frm": "AT_RISK",
+   "to": "OK",
+   "demoted_mib": null,
+   "window_tps": null
+  }
+ ]
+}

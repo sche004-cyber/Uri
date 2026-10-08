@@ -43,10 +43,13 @@ def gpu_processes() -> dict[int, dict]:
         d = procs.setdefault(pid, {"local_mib": 0, "nonlocal_mib": 0, "name": None, "cmd": None})
         d[key] += int(v)
     for pid, d in procs.items():
+        d["parent_name"] = None
         try:
             p = psutil.Process(pid)
             d["name"] = p.name()
             d["cmd"] = " ".join(p.cmdline())[:200]
+            par = p.parent()
+            d["parent_name"] = par.name() if par else None
         except Exception:
             d["name"] = d["name"] or "?"
     return procs
@@ -63,8 +66,10 @@ def foreign_owners(min_mib: int, allow_names=("ollama",), allow_pids=()) -> list
     for pid, d in gpu_processes().items():
         if pid in allow_pids or pid in own:
             continue
-        name = (d.get("name") or "").lower()
-        if any(a in name for a in allow_names):
+        # Ollama 0.34 runs its model in a child `lib\ollama\llama-server.exe`: match the process name, the
+        # parent's name and the executable path against the allow list.
+        ident = " ".join(x for x in ((d.get("name") or ""), (d.get("parent_name") or ""), (d.get("cmd") or "")[:120]) if x).lower()
+        if any(a in ident for a in allow_names):
             continue
         if d["local_mib"] + d["nonlocal_mib"] >= min_mib:
             out.append({"pid": pid, **d})
