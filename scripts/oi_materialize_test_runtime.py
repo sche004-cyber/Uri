@@ -31,6 +31,9 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             "scripts/run_uri_integrated_worker.py", "scripts/run_uri_integrated_server.py", "scripts/ws_provision.py",
             "scripts/ws_frozen_check.py", "tests/ws", "work/oi/.gitignore"]
 TEST_PATHS = ("tests/oi", "tests/ws")
+# Accepted files the owner authorized to extend (WS-D3: exact-path scope guards). They replace the overlay copy; the
+# receipt records both digests so the replacement is auditable.
+REPLACED_PATHS = ("tests/phase2a/test_frozen_core.py", "scripts/phase2close_chain.py")
 
 
 def git(*args, cwd=SRC, **kw):
@@ -83,6 +86,12 @@ def main(argv=None):
             copied[rel] = sha(d)
     if collisions:
         sys.exit("OI_PATH_COLLISION:" + ",".join(collisions))
+    replaced = {}
+    for rel in REPLACED_PATHS:
+        s_, d_ = SRC / rel, dest / rel
+        replaced[rel] = {"overlay_sha256": sha(d_) if d_.exists() else None}
+        shutil.copy2(s_, d_)
+        replaced[rel]["integration_sha256"] = sha(d_)
     shutil.copytree(a.venv, dest / ".venv")
     head = git("rev-parse", "HEAD", cwd=dest).strip()
     status = git("status", "--porcelain", cwd=dest).splitlines()
@@ -90,7 +99,7 @@ def main(argv=None):
                "overlay_paths": len(paths), "candidate_source": str(SRC),
                "candidate_head": git("rev-parse", "HEAD").strip(), "oi_files_copied": copied,
                "porcelain_entries": len(status), "venv_source": a.venv,
-               "oi_tests_included": not a.exclude_oi_tests}
+               "oi_tests_included": not a.exclude_oi_tests, "replaced_accepted_files": replaced}
     (dest / "OI_MATERIALIZATION_RECEIPT.json").write_text(json.dumps(receipt, indent=1), encoding="utf-8")
     print(json.dumps({k: v for k, v in receipt.items() if k != "oi_files_copied"}, indent=1))
     return 0
