@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>URI Living Companions - R&amp;D harness</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #07070b; color: #e8e2dc;
+    font: 13px/1.5 ui-monospace, "IBM Plex Mono", Menlo, Consolas, monospace;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10; background: #0b0b11;
+    border-bottom: 1px solid #22222c; padding: 10px 14px;
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  }
+  h1 { font-size: 13px; margin: 0 10px 0 0; font-weight: 600; letter-spacing: .04em; }
+  #states { display: flex; gap: 4px; flex-wrap: wrap; }
+  button {
+    background: #15151d; color: #cfc8c2; border: 1px solid #2a2a36;
+    border-radius: 5px; padding: 4px 9px; cursor: pointer; font: inherit;
+  }
+  button:hover { border-color: #46465a; }
+  button.on { background: #2d2418; border-color: #a97a33; color: #ffd79a; }
+  label { color: #8b8696; display: flex; gap: 6px; align-items: center; }
+  input[type=range] { width: 110px; }
+  #fps { color: #8b8696; margin-left: auto; }
+  #grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 12px;
+  }
+  @media (max-width: 1500px) { #grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 1100px) { #grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 680px)  { #grid { grid-template-columns: 1fr; } }
+  .cell { border: 1px solid #1e1e28; border-radius: 9px; overflow: hidden; background: #000; }
+  .head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 9px; background: #0d0d14; border-bottom: 1px solid #1e1e28;
+  }
+  .t { font-size: 12px; letter-spacing: .02em; }
+  .badge { font-size: 10px; color: #6f6a7a; }
+  .badge.bad { color: #ff8a7a; }
+  canvas { display: block; width: 100%; aspect-ratio: 1 / 1; background: #000; }
+  body[data-solo] .cell { display: none; }
+  body[data-solo="solarE"]  .cell[data-key="solarE"],
+  body[data-solo="sakuraA"] .cell[data-key="sakuraA"],
+  body[data-solo="sakuraB"] .cell[data-key="sakuraB"],
+  body[data-solo="sakuraC"] .cell[data-key="sakuraC"],
+  body[data-solo="lunarA"]  .cell[data-key="lunarA"],
+  body[data-solo="lunarB"]  .cell[data-key="lunarB"],
+  body[data-solo="lunarC"]  .cell[data-key="lunarC"],
+  body[data-solo="lunarT"]  .cell[data-key="lunarT"],
+  body[data-solo="hybridH"] .cell[data-key="hybridH"] { display: block; }
+  body[data-solo] #grid { grid-template-columns: 1fr; }
+  #diag {
+    white-space: pre-wrap; padding: 10px 14px; color: #7d7889;
+    border-top: 1px solid #1e1e28; font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>URI LIVING COMPANIONS</h1>
+  <div id="states"></div>
+  <button id="pause">pause</button>
+  <label>speed <input id="speed" type="range" min="0" max="3" step="0.05" value="1">
+    <span id="speedVal">1.00x</span></label>
+  <span id="fps">-</span>
+</header>
+<div id="grid"></div>
+<pre id="diag"></pre>
+<script type="module">
+  // Cache-busted: the Browser pane caches ES modules hard enough that edits
+  // appear to have no effect at all.
+  await import(`./app.js?v=${Date.now()}`);
+</script>
+</body>
+</html>

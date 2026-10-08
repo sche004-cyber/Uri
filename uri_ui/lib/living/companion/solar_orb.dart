@@ -121,6 +121,70 @@ class SolarOrbShaderCache {
   }
 }
 
+/// One deterministic frame of the solar orb.
+///
+/// Takes the parameters and the clock explicitly and owns no animation, so
+/// the same pixels come out for the same inputs. [SolarOrb] drives it from a
+/// ticker; the capture harness and widget tests drive it from a constant.
+class SolarOrbFrame extends StatefulWidget {
+  const SolarOrbFrame({
+    super.key,
+    required this.params,
+    required this.seconds,
+    this.radius = 0.38,
+    this.fallback,
+  });
+
+  final SolarOrbParams params;
+  final double seconds;
+  final double radius;
+  final Widget? fallback;
+
+  @override
+  State<SolarOrbFrame> createState() => _SolarOrbFrameState();
+}
+
+class _SolarOrbFrameState extends State<SolarOrbFrame> {
+  ui.FragmentShader? _shader;
+
+  @override
+  void initState() {
+    super.initState();
+    final loaded = SolarOrbShaderCache.programIfLoaded;
+    if (loaded != null) {
+      _shader = loaded.fragmentShader();
+      return;
+    }
+    SolarOrbShaderCache.load().then((program) {
+      if (!mounted || program == null) return;
+      setState(() => _shader = program.fragmentShader());
+    });
+  }
+
+  @override
+  void dispose() {
+    _shader?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shader = _shader;
+    if (shader == null) {
+      return widget.fallback ?? const SizedBox.expand();
+    }
+    return CustomPaint(
+      size: Size.infinite,
+      painter: SolarOrbPainter(
+        shader: shader,
+        seconds: widget.seconds,
+        params: widget.params,
+        radius: widget.radius,
+      ),
+    );
+  }
+}
+
 /// A living solar orb: a star core with magnetic prominences, a structured
 /// corona and a drifting ember field.
 ///
@@ -213,7 +277,7 @@ class _SolarOrbState extends State<SolarOrb>
     }
     return CustomPaint(
       size: Size.infinite,
-      painter: _SolarOrbPainter(
+      painter: SolarOrbPainter(
         shader: shader,
         seconds: _seconds,
         params: _current,
@@ -223,8 +287,8 @@ class _SolarOrbState extends State<SolarOrb>
   }
 }
 
-class _SolarOrbPainter extends CustomPainter {
-  _SolarOrbPainter({
+class SolarOrbPainter extends CustomPainter {
+  SolarOrbPainter({
     required this.shader,
     required this.seconds,
     required this.params,
@@ -255,7 +319,7 @@ class _SolarOrbPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SolarOrbPainter old) =>
+  bool shouldRepaint(SolarOrbPainter old) =>
       old.seconds != seconds ||
       old.radius != radius ||
       old.params != params ||
