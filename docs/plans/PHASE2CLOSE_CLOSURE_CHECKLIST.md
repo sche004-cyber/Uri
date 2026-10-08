@@ -45,3 +45,30 @@ Evidence root `E:` = `C:\Users\cheta\.codex\worktrees\uri-phase2a\evidence\`.
 
 A12 rule: a technically-ready verdict may be given while A12 is PENDING only if the report says so explicitly; it is
 not an independent acceptance.
+
+## D. Operational qualification (2026-10-08, `PHASE2OQ_REPORT.md`; sections A-C above unchanged)
+
+Final chain `E:phase2oq\chain2\` + environmental control `E:phase2oq\chain2b_phase1_ollama_unreachable\`.
+
+| # | Criterion | Pass when | Result | Evidence |
+|---|---|---|---|---|
+| D1 | Baseline preserved | `-f` hash matches; frozen-core passes; closure review rounds present | PASS | report section B |
+| D2 | EXE-1 native Codex in the real worker | native record composes in the REAL worker; no interpreter / PATH widening / name resolution; `.cmd` record and missing sandbox mode fail closed; worker-env lifecycle + cancel pass | PASS (scripted model; PA-10 separate) | chain2 `native-worker`; `tests/phase2oq/test_exe1_native.py` |
+| D3 | No silent CODEX_HOME fallback in the worker | absent / foreign / changed CODEX_HOME refused at composition and before each execution | PASS | `test_worker_codex_home_invariant`, `test_codex_home_is_rechecked_before_every_execution` |
+| D4 | Failed qualification -> explicit refusal | not-logged-in profile: Approve refused `HARNESS_NOT_USABLE` before the server | PASS | chain2 `native-worker` W |
+| D5 | C6 Option B | draft only; no frame, executor, approval; abandonment/restart/stale/too-long/back covered | PASS (widget) | Flutter gate 205/2 |
+| D6 | SUP-1 | negative control orphans; contained host kills the suspended child | PASS | `test_sup1_self_containment.py` |
+| D7 | D8 | VM iteration without guest unclean-shutdown witness -> INSUFFICIENT | PASS | `test_d8_*` |
+| D8 | Phase 2 regression | 0 failed | PASS (470 / 2) | chain2 `phase2_all.log` |
+| D9 | Phase 1 authority | 134 | PASS | chain2 |
+| D10 | Phase 1 full | 2675 / 12 / 11 same IDs | **FAIL as recorded (17 failed: Ollama service started 09:42 outside this work); control with Ollama unreachable: 2676 / 11 / 11, SAME_FAILURE_SET; residual +1 pass = hard-coded-URL live test** | chain2, chain2b |
+| D11 | Flutter, bridge x10, native in-process | all pass | PASS (205/2; 10/10, 0 refusals; SETTLED_VERIFIED + cancel DEAD) | chain2 |
+| D12 | Independent review of this slice | accepted, or findings repaired and re-reviewed | PENDING | `E:phase2oq_review\` |
+
+Physical/owner lines replacing B3 and adding new ones: B3 PA-10 -> PENDING (EXE-1 resolved; needs PA-8 + EXE-1b);
+B7 PA-13 Chat handoff -> PENDING; B8 EXE-1b sandbox backend -> PENDING (owner); B9 shipping line -> PENDING (owner);
+B5 C6 decisions -> 1 resolved as definition, 2 decided (B), 3 PENDING.
+
+D-update (after independent review round 1, `PHASE2OQ_REPORT.md` sections K-L): OQ-R1-1..3 repaired with regression
+tests; final chain is now `E:phase2oq\chain4\` (ALL_PASS): D8 472/2/0, D9 134, D10 PASS (2676 / 11 / 11, same IDs,
+total 2698, Ollama isolated, disclosed equivalence rule), D11 PASS (205/2; 10/10; native). D12 PENDING (review round 2).

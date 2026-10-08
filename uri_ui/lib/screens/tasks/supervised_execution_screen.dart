@@ -34,8 +34,8 @@ class SupervisedExecutionScreen extends StatefulWidget {
   final String? sessionId;
   final Duration pollInterval;
 
-  /// Conversation-to-task handoff (Phase 2 closure): pre-fills the composer
-  /// only. Nothing is sent, chosen, confirmed or approved because of it.
+  /// Conversation-to-task handoff (C6 Option B): pre-fills the composer only.
+  /// Nothing is sent, chosen, confirmed or approved because of it.
   final TaskHandoff? draft;
 
   @override
@@ -83,7 +83,7 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
   void initState() {
     super.initState();
     final draft = widget.draft;
-    if (draft != null && !draft.isEmpty) _text.text = draft.text;
+    if (draft != null && draft.usable) _text.text = draft.text; // whole words or nothing, never truncated
     _connect();
   }
 
@@ -355,6 +355,14 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
               key: const Key('sx-proposal-executor')),
           Text('Effect: ${p?.effect ?? req['effect'] ?? '—'} · reversible: ${p?.reversible ?? req['reversible'] ?? '—'} '
               '· runs in a fresh workspace on this client', key: const Key('sx-proposal-effect')),
+          if (p?.harness != null)
+            Text(
+                p!.harnessBlocked
+                    ? 'This executor cannot run now (${p.harness!['auth_state'] ?? p.harness!['reason'] ?? 'unavailable'})'
+                        '${p.harness!['required_user_action'] is String ? ': ${p.harness!['required_user_action']}' : ''}. '
+                        'Approving is disabled; nothing will be sent.'
+                    : 'Executor ready now: ${p.harness!['auth_state'] ?? 'usable'}',
+                key: Key(p.harnessBlocked ? 'sx-proposal-harness-blocked' : 'sx-proposal-harness')),
           Text(q == null
               ? 'Qualification: not applicable (deterministic, local)'
               : 'Qualification: ${q['level'] ?? '—'} · ${q['status'] ?? '—'}'
@@ -374,7 +382,7 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
           Row(children: [
             FilledButton(
                 key: const Key('sx-approve'),
-                onPressed: (_busy || p == null) ? null : _approveAndRun,
+                onPressed: (_busy || p == null || p.harnessBlocked) ? null : _approveAndRun,
                 child: const Text('Approve and run')),
             const SizedBox(width: UriSpace.sm),
             OutlinedButton(key: const Key('sx-decline'), onPressed: _busy ? null : _decline, child: const Text('Decline')),
@@ -511,13 +519,15 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
           ]),
         ),
         const SizedBox(height: UriSpace.md),
-        if (widget.draft != null && !widget.draft!.isEmpty)
-          Text(widget.draft!.banner, key: const Key('sx-draft-banner')),
+        ..._draftNotes(),
         TextField(
           key: const Key('sx-input'),
           controller: _text,
+          // The edited-draft note follows the text; nothing is sent on change.
+          onChanged: widget.draft == null ? null : (_) => setState(() {}),
           decoration: const InputDecoration(labelText: 'Ask URI to do something'),
         ),
+        Text(_nextAction(), key: const Key('sx-next-action'), style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: UriSpace.sm),
         FilledButton(
           key: const Key('sx-send'),
@@ -535,6 +545,37 @@ class _SupervisedExecutionScreenState extends State<SupervisedExecutionScreen> {
     );
   }
 
+  /// C6 Option B: what the draft is and what the user's next step is. The
+  /// worker's state wins over the draft (a run still in flight is shown).
+  List<Widget> _draftNotes() {
+    final d = widget.draft;
+    if (d == null || d.isEmpty) return const [];
+    if (d.tooLong) return [Text(d.refusal, key: const Key('sx-draft-refused'))];
+    final running = _execution != null && !_execution!.isTerminal;
+    return [
+      Text(d.banner, key: const Key('sx-draft-banner')),
+      if (_text.text.trim() != d.text)
+        const Text('Edited since it left the conversation.', key: Key('sx-draft-edited')),
+      if (running)
+        const Text('An execution is still in progress on this client. Your draft is kept; you can send it when '
+            'that execution ends.', key: Key('sx-draft-busy')),
+    ];
+  }
+
+  /// The intended next action, derived only from what the screen shows.
+  String _nextAction() {
+    if (_execution != null && !_execution!.isTerminal) return 'Next: follow the running execution, or cancel it.';
+    if (_pending != null) {
+      return _pending!.proposal?.harnessBlocked == true
+          ? 'Next: this executor cannot run now. Decline, then choose another executor or complete the required action.'
+          : 'Next: review the proposal, then approve or decline it. Nothing has run.';
+    }
+    if (_question != null || _confirm != null) return 'Next: answer URI\'s question or confirm exactly what it will do.';
+    if (_choice == null) return 'Next: choose an executor.';
+    if (_text.text.trim().isEmpty) return 'Next: write what URI should do.';
+    return 'Next: press Send. URI will propose; nothing runs until you approve.';
+  }
+
   String _harnessLine(HarnessStatus h) {
     final state = !h.installed ? 'not installed' : h.authState.toLowerCase().replaceAll('_', ' ');
     final action = h.requiredAction == null ? '' : ' — ${h.requiredAction}';
@@ -549,8 +590,10 @@ class SupervisedExecutionEntry extends StatelessWidget {
   const SupervisedExecutionEntry({super.key, this.configured, this.runtimeOverride});
 
   /// Opens the supervised screen, optionally with an unsent conversation
-  /// draft. The single navigation seam a future Chat action would call
-  /// (C6 owner decision 2); the Tasks entry uses it without a draft.
+  /// draft. The single navigation seam the Chat handoff action calls (C6
+  /// Option B); the Tasks entry uses it without a draft. Back returns to the
+  /// caller with its state untouched; leaving with an unsent draft sends
+  /// nothing.
   static Future<void> open(BuildContext context, {SupervisedRuntime? runtimeOverride, TaskHandoff? draft}) =>
       Navigator.of(context).push(MaterialPageRoute<void>(
         builder: (_) => Scaffold(

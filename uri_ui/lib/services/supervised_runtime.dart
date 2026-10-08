@@ -53,6 +53,7 @@ class ExecutionProposal {
     required this.expectedFile,
     required this.arguments,
     required this.qualification,
+    this.harness,
   });
 
   factory ExecutionProposal.fromJson(Map<String, dynamic> j) => ExecutionProposal(
@@ -71,6 +72,7 @@ class ExecutionProposal {
         expectedFile: _str(j['expected_file']),
         arguments: _map(j['arguments']) ?? const {},
         qualification: _map(j['qualification']),
+        harness: _map(j['harness']),
       );
 
   final String proposalDigest;
@@ -88,6 +90,14 @@ class ExecutionProposal {
   final String? expectedFile;
   final Map<String, dynamic> arguments;
   final Map<String, dynamic>? qualification;
+
+  /// OQ-1 (operational qualification): the executor's LIVE usability when the
+  /// proposal was made (usable, auth_state, required_user_action). Display
+  /// only; the worker refuses `execution_begin` for an unusable executor.
+  final Map<String, dynamic>? harness;
+
+  /// True when the worker reported the executor cannot run now.
+  bool get harnessBlocked => harness != null && harness!['usable'] != true;
 }
 
 /// A turn result from the supervised worker: the frozen envelope plus the

@@ -96,3 +96,26 @@ decided.
 | Handoff value + screen draft + navigation seam | IMPLEMENTED, TESTED (widget) | Flutter suite in `evidence\phase2close\run*\flutter_all.log` |
 | Chat action | DESIGN ONLY, BLOCKED on owner decision 2 | section 7 |
 | Option C / D | DEFERRED (C7 / later phase) | section 4 |
+
+## 9. Update 2026-10-08 (Phase 2 operational qualification): owner decision taken, Option B implemented
+
+The owner accepted **Option B** on 2026-10-08 (operational-qualification mandate, item 3). Sections 1-8 above are kept
+as the record of the recommendation. What changed:
+
+| Item | Status now | Evidence |
+|---|---|---|
+| Chat action "Make this a supervised task" | IMPLEMENTED, TESTED (widget); PHYSICAL acceptance PENDING (runbook PA-13) | `uri_ui/lib/widgets/supervised_handoff_action.dart`; mount in `uri_ui/lib/screens/ask/ask_uri_screen.dart` (`UriConversationPane`); `uri_ui/test/chat_supervised_handoff_test.dart`; "C6 B" cases in `uri_ui/test/supervised_execution_screen_test.dart` |
+| Handoff value | changed: the words are kept whole (trim only); a message over 65,536 characters is refused, never truncated (`tooLong`, `refusal`) | `uri_ui/lib/services/task_handoff.dart`; the closure test "bounded" was updated and says so |
+| Supervised screen | banner + "Edited since it left the conversation" + a next-action line for every state + a run in flight keeps the draft (`sx-draft-busy`) | `supervised_execution_screen.dart` (`_draftNotes`, `_nextAction`) |
+
+Differences from section 7's prepared plan, and why:
+1. The action is hidden while the conversation turn is understanding, awaiting its own approval or executing: one
+   request must not sit in two approval paths at once (the legacy `/ask` approval and the supervised card).
+2. No conversation session id is passed: `AppState` does not expose it and adding an accessor would widen the change to
+   `app_state.dart`; the message id is carried for provenance. The supervised session is never the conversation's
+   either way.
+3. The opt-in probe is evaluated once per process (the same rule as the Tasks entry).
+
+Decision 1 ("Companion", "Intelligence"): resolved as a definition with no authority effect, see `PHASE2OQ_REPORT.md`
+section D (owner may override). Decision 3 (Brain rows): still the owner's; it changes who reasons over requests and
+which rows the server composes.

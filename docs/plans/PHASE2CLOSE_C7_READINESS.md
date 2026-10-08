@@ -70,3 +70,30 @@ PA-1..PA-7 (no login needed for the deterministic row); (3) owner decision on EX
 (4) client-profile logins and PA-8..PA-10; (5) VM power-loss campaign (PA-11); (6) owner decisions on C6 (2, 3, voice)
 and on the target development line (P2-6), then the integration slice; (7) Phase 2 rollback overlay (P2-5) on the
 final tree; (8) owner acceptance of the 11 baseline failures or their repair; (9) written authorization (gate 10).
+
+## 7. Update 2026-10-08 (Phase 2 operational qualification, `PHASE2OQ_REPORT.md`)
+
+Sections 1-6 are kept as written at closure acceptance. **Verdict unchanged: NOT READY FOR CUTOVER.** Nothing was cut
+over, activated, frozen or authorized.
+
+**Correction record (section 4).** Option C said "Codex's npm distribution would not qualify". That was wrong: the npm
+package ships the native binary (`vendor\x86_64-pc-windows-msvc\bin\codex.exe`), and `codex.js` only spawns it. EXE-1
+was resolved with that observation (a fifth option, narrower than A: qualify the native binary; no interpreter, no PATH
+change). Option A (pin `node.exe`) was not needed.
+
+| Gate / item | Closure state | Now | Evidence | Next step |
+|---|---|---|---|---|
+| Gate 4 native harness qualification | NOT MET | PARTIAL: the worker-process path is proven up to authentication (native record composes in the REAL worker; a not-logged-in profile is refused before approval); the worker-environment lifecycle and cancel pass against a scripted model; client-profile login (PA-8/9) and EXE-1b open | `E:phase2oq\` native-worker gate; `tests/phase2oq/test_exe1_native.py` | owner: EXE-1b, PA-8..PA-10 |
+| Gate 5 Chat / UI pin / voice | NOT MET | still NOT MET as a gate (Chat traffic stays on `/ask`; no UI pin; voice parity open). Progress: Option B handoff implemented and widget-tested; voice parity rules proposed | `PHASE2CLOSE_C6_CHAT_INTEGRATION.md` section 9; `PHASE2OQ_UI_VOICE_ACCEPTANCE_PLAN.md` | owner: PA-13, voice rules, line choice |
+| P2-1 independent acceptance | PENDING (closure accepted round 6) | closure ACCEPTED; operational-qualification candidate review PENDING | `E:phase2oq_review\` | Codex review |
+| P2-3 power loss | PENDING (owner VM) | PENDING; rig method chosen (VirtualBox 7, flush-honouring disk, NAT), guest bundle built, D8 witness required | runbook PA-11; `scripts/phase2oq_powerloss_bundle.py` | owner installs a hypervisor + VM |
+| P2-4 native execution in the worker | BLOCKED (EXE-1) | PENDING (EXE-1 resolved; EXE-1b and the client-profile login remain) | report section C | owner |
+| P2-6 line reconciliation | NOT STARTED | RECOMMENDATION: ship from the Core lineage; `_V1` and `eb73693` are donors | `PHASE2OQ_SHIPPING_LINE_RECOMMENDATION.md` | owner decision |
+| P2-9 SUP-1 | RECORDED | IMPLEMENTED, TESTED (self-containment job; real-process negative control) | `tests/phase2oq/test_sup1_self_containment.py` | review |
+| P2-10 (new) EXE-1b Codex sandbox backend of the client profile | — | OWNER DECISION: `unelevated` confines writes but NOT network (measured); `elevated` needs administrator setup | `E:phase2oq\sandbox_probes\README.md` | owner |
+| P2-11 (new) OQ-1 approval for an unusable executor | — | IMPLEMENTED, TESTED (refused before the approval leaves the worker) | `tests/phase2ops/test_lifecycle.py` (disclosed assertion change), widget tests | review |
+
+Shortest order now: (1) independent review of the operational-qualification candidate; (2) owner session PA-1..PA-7 and
+PA-13; (3) EXE-1b and PA-8..PA-10; (4) PA-11 on a VM; (5) shipping-line decision and the A11 sync of the accepted
+candidate; (6) C6 decision 3, voice rules; (7) rollback overlay on the final tree; (8) the 11 baseline failures; (9)
+written authorization (gate 10).

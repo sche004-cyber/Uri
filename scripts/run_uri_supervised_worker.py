@@ -109,7 +109,10 @@ def main():
         # Persisted qualification is re-validated under the client-profile environment BEFORE the fixture guard, so
         # the executable hashes and version/auth probes run once here; the guard then admits exactly those files.
         from uri_supervisor_bridge.qualification import RecordTrust
-        composition, bridge = compose_and_build(root, trust=RecordTrust.from_manifest(m), allow_fixture=args.allow_fixture_qualification)
+        # EXE-1 (operational qualification): a Codex record composes only while the executor environment names THIS
+        # profile's Codex home and that home selects a Windows sandbox backend; re-checked before every execution.
+        composition, bridge = compose_and_build(root, trust=RecordTrust.from_manifest(m), allow_fixture=args.allow_fixture_qualification,
+                                                codex_home=client_cli_homes(root, create=False)["CODEX_HOME"])
         from types import SimpleNamespace
 
         class Phase2FixtureGuard(FixtureGuard):

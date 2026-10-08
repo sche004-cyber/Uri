@@ -50,11 +50,17 @@ def jdump(obj):
 
 
 # ---- step B/C/D: direct CLI probe under the URI-filtered environment ----------------------------------------
-def direct_probe(provider, model, evidence: Path):
-    """Harmless read-only CLI call with a deterministic expected answer. Records the raw stream. Never logs in."""
+def direct_probe(provider, model, evidence: Path, executable=None):
+    """Harmless read-only CLI call with a deterministic expected answer. Records the raw stream. Never logs in.
+    `executable` (operational qualification, EXE-1): probe exactly this file instead of the PATH lookup."""
     spec = SPECS[provider]
-    exe = shutil.which(spec.executable)
-    out = {"provider": provider, "executable": exe, "version": spec.probe_version(), "model": model, "ok": False}
+    exe = str(executable) if executable else shutil.which(spec.executable)
+    if executable:
+        from uri_core.client_runtime.harness import probe_version as _probe_version
+        version = _probe_version([exe]).get("version") if Path(exe).is_file() else None
+    else:
+        version = spec.probe_version()
+    out = {"provider": provider, "executable": exe, "version": version, "model": model, "ok": False}
     if exe is None:
         out["status"] = "NOT_INSTALLED"
         return out

@@ -78,6 +78,21 @@ class SupervisedWorkerService(SupervisedTurnService):
         self.released = (self.released + [out])[-20:]
         return out
 
+    def _refuse_unusable_harness(self, turn_id):
+        """OQ-1 on the blocking `turn_decide approve=true` path too (operational-qualification review round 1, OQ-R1-2):
+        an approval for an executor that cannot run NOW never leaves the worker. The pending turn is dropped and released
+        on the server (CAP-1 route); nothing is approved. Declining is never gated."""
+        entry = self.pending.get(turn_id)
+        if entry is None or self.executions is None:
+            return
+        _, _, reasoning, _ = entry
+        reasoning = reasoning if isinstance(reasoning, dict) else {}
+        state = self.executions.harness_state(reasoning.get("provider"), reasoning.get("kind"))
+        if state is not None and not state["usable"]:
+            self.pending.pop(turn_id, None)
+            self.release_turn(entry, "HARNESS_NOT_USABLE")
+            raise TurnError("HARNESS_NOT_USABLE")
+
     def release_pending(self, why="WORKER_CLOSED"):
         """Release every turn still pending in this worker (close / stdin EOF)."""
         entries = [self.pending.pop(t, None) for t in list(self.pending)]
@@ -124,6 +139,8 @@ class SupervisedWorkerService(SupervisedTurnService):
                         self.release_turn(entry, "APPROVAL_DIGEST_MISMATCH")
                     raise TurnError("APPROVAL_DIGEST_MISMATCH" if entry is not None else "TURN_NOT_PENDING")
                 command = {k: v for k, v in command.items() if k != "approval_digest"}
+            if command["approve"] is True:
+                self._refuse_unusable_harness(command["turn_id"])
         result = super().handle(kind, command)
         if kind in ("turn_start", "turn_intent") and result.get("state") == "approval_required" and self.executions is not None:
             result["execution_proposal"] = self.executions.proposal(result["turn_id"])

@@ -147,9 +147,83 @@ def npm_codex_launch_chain(shim, environ=None):
     return pinned, resolve
 
 
+# EXE-1 (Phase 2 operational qualification, 2026-10-08). The npm `codex.cmd` shim only runs `node codex.js`, and
+# codex.js (0.158.0) only locates and spawns the platform package's NATIVE binary (`vendor/<triple>/bin/codex.exe`),
+# adding two package-manager marker variables. The worker's sanitized PATH has no `node`, so the shim cannot start
+# there. Qualifying the native binary itself needs NO interpreter and NO PATH change: the launch chain is that binary
+# plus every executable/library file of its own vendor directory (pinned by hash), and nothing is resolved by name.
+CODEX_NATIVE_TRIPLE = "x86_64-pc-windows-msvc"
+CODEX_NATIVE_LAYOUT = {"layoutVersion": 1, "entrypoint": "bin/codex.exe"}
+
+
+def npm_codex_native_executable(shim) -> Path:
+    """The native binary the npm launcher `shim` (codex.cmd) would start. Raises QualificationError when the npm
+    layout is not the known one (unknown layout = no native qualification)."""
+    shim = Path(shim).resolve()
+    vendor = (shim.parent / "node_modules" / "@openai" / "codex" / "node_modules" / "@openai" / "codex-win32-x64"
+              / "vendor" / CODEX_NATIVE_TRIPLE)
+    exe = vendor / "bin" / "codex.exe"
+    if not exe.is_file():
+        raise QualificationError("LAUNCH_CHAIN_VENDOR_MISSING")
+    return exe.resolve()
+
+
+def npm_claude_native_executable(shim) -> Path:
+    """The native binary the npm launcher `shim` (claude.cmd) starts directly (`bin/claude.exe`, no interpreter)."""
+    exe = Path(shim).resolve().parent / "node_modules" / "@anthropic-ai" / "claude-code" / "bin" / "claude.exe"
+    if not exe.is_file():
+        raise QualificationError("LAUNCH_CHAIN_VENDOR_MISSING")
+    return exe.resolve()
+
+
+def native_executable(provider, found=None) -> Path | None:
+    """EXE-1: the native binary to qualify for `provider`. `found` defaults to the PATH lookup of the CLI name. An npm
+    launcher (`.cmd`) is replaced by the native binary it starts; anything else is returned unchanged. None when the CLI
+    is not installed."""
+    found = found or shutil.which({"codex_cli": "codex", "claude_code": "claude"}.get(provider, provider))
+    if not found:
+        return None
+    if Path(found).suffix.lower() == ".cmd":
+        if provider == "codex_cli":
+            return npm_codex_native_executable(found)
+        if provider == "claude_code":
+            return npm_claude_native_executable(found)
+    return Path(found).resolve()
+
+
+def codex_native_launch_chain(executable):
+    """For the npm-vendored native `codex.exe`: (pinned_files, {}) covering the binary, its layout descriptor and every
+    .exe/.dll of its vendor directory (command runner, sandbox setup, code-mode host, rg). None when `executable` is
+    not inside a vendored layout (a standalone binary is pinned by its own hash only). Raises QualificationError when
+    the layout descriptor exists but is not the known one."""
+    exe = Path(executable).resolve()
+    vendor = exe.parent.parent
+    meta = vendor / "codex-package.json"
+    vendored_looking = exe.name.lower() == "codex.exe" or any(part.lower() == "vendor" for part in exe.parts)
+    if not meta.is_file() or exe.name.lower() != "codex.exe" or exe.parent.name.lower() != "bin":
+        if vendored_looking:
+            # Review round 1, OQ-R1-1: a `codex.exe` (or anything under a `vendor` directory) whose layout descriptor is
+            # missing or misplaced is a damaged or unknown vendored layout, not a standalone binary: refused.
+            raise QualificationError("LAUNCH_CHAIN_LAYOUT_UNKNOWN", "codex-package.json missing")
+        return None
+    try:
+        layout = json.loads(meta.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        raise QualificationError("LAUNCH_CHAIN_LAYOUT_UNKNOWN", "codex-package.json") from None
+    if (not isinstance(layout, dict) or any(layout.get(k) != v for k, v in CODEX_NATIVE_LAYOUT.items())
+            or layout.get("target") != vendor.name):
+        raise QualificationError("LAUNCH_CHAIN_LAYOUT_UNKNOWN", "codex-package.json")
+    files = [meta, *sorted(p for p in vendor.rglob("*") if p.is_file() and p.suffix.lower() in (".exe", ".dll"))]
+    return {str(Path(f).resolve()): _file_sha256(f) for f in files}, {}
+
+
 def launch_chain_for(spec_id, executable, environ=None):
     if spec_id == "codex_cli" and Path(executable).suffix.lower() == ".cmd":
         return npm_codex_launch_chain(executable, environ)
+    if spec_id == "codex_cli" and Path(executable).suffix.lower() == ".exe":
+        chain = codex_native_launch_chain(executable)
+        if chain is not None:
+            return chain
     if Path(executable).suffix.lower() in (".cmd", ".bat", ".ps1"):
         raise QualificationError("LAUNCH_CHAIN_UNKNOWN_LAUNCHER", Path(executable).name)
     return {}, {}
@@ -317,6 +391,66 @@ def client_cli_homes(client_root, create=True) -> dict:
     return pins
 
 
+def _same_dir(a, b) -> bool:
+    try:
+        ra, rb = os.path.realpath(a), os.path.realpath(b)
+        return os.path.isdir(ra) and os.path.isdir(rb) and (os.path.normcase(ra) == os.path.normcase(rb) or os.path.samefile(ra, rb))
+    except OSError:
+        return False
+
+
+CODEX_SANDBOX_MODES = ("unelevated", "elevated")
+
+
+def codex_windows_sandbox_mode(codex_home):
+    """The Windows sandbox backend the client profile's own Codex configuration selects (`[windows] sandbox`), or None.
+
+    Found 2026-10-08 (EXE-1 work): with a FRESH Codex home and no sandbox mode, Codex 0.158.0 refuses every command
+    of a `--sandbox workspace-write` run ("rejected: blocked by policy"), so a run can never write its result. With
+    `unelevated` (restricted token, no system change) a workspace write succeeds and a write outside the workspace is
+    denied; `elevated` needs a one-time administrator setup (sandbox accounts) that is the owner's decision. URI only
+    reads the setting here; it is written once, explicitly, by `scripts/phase2close_acceptance.py provision`."""
+    import tomllib
+    cfg = Path(codex_home) / "config.toml"
+    if not cfg.is_file():
+        return None
+    try:
+        data = tomllib.loads(cfg.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    windows = data.get("windows")
+    mode = windows.get("sandbox") if isinstance(windows, dict) else None
+    return mode if mode in CODEX_SANDBOX_MODES else None
+
+
+def check_codex_client_home(record, codex_home, environ=None):
+    """Worker-only invariant for a Codex record (EXE-1 / ISO-1): the environment the executor will receive MUST name the
+    client profile's own Codex home (never absent: absent = Codex silently falls back to the Windows user's global
+    login), and that home must select a Windows sandbox backend (otherwise every command would be refused mid-run).
+    Raises QualificationError; checked at composition and again before every execution (`still_valid`)."""
+    if codex_home is None or "codex_cli" not in (record["provider"], record["spec_id"]):
+        return
+    env = os.environ if environ is None else environ
+    value = env.get("CODEX_HOME")
+    if not value or not _same_dir(value, codex_home):
+        raise QualificationError("CODEX_HOME_NOT_CLIENT_PROFILE")
+    if record["level"] == "NATIVE_QUALIFIED" and codex_windows_sandbox_mode(codex_home) is None:
+        raise QualificationError("CODEX_WINDOWS_SANDBOX_NOT_CONFIGURED")
+    if record["level"] == "NATIVE_QUALIFIED" and not _pins_recognised_codex_layout(record):
+        raise QualificationError("LAUNCH_CHAIN_LAYOUT_NOT_PINNED")
+
+
+def _pins_recognised_codex_layout(record) -> bool:
+    """Worker rule (review round 1, OQ-R1-1): a NATIVE Codex record composes in the worker only when its executable is
+    the `bin/codex.exe` of a vendored layout whose descriptor (`codex-package.json`) is among the record's pinned files.
+    The pins themselves are re-hashed by `check_launch_chain`, so a later swap still invalidates the record."""
+    exe = Path(record["executable"])
+    meta = exe.parent.parent / "codex-package.json"
+    if exe.name.lower() != "codex.exe" or exe.parent.name.lower() != "bin":
+        return False
+    return any(_same_file(p, meta) is True for p in record["pinned_files"])
+
+
 def native_auth_probe(provider, executable, environ=None, timeout_s=30):
     """Live read-only authentication status. True / False / None (unknown). Never logs in, never reads a credential
     file: the CLI's own status command decides, under the same environment allow-list the executor gets."""
@@ -413,8 +547,10 @@ def _check_evidence(record, client_root):
         raise QualificationError("EVIDENCE_CONTENT_MISMATCH", "model")
 
 
-def revalidate(record, *, client_root, trust: RecordTrust, allow_fixture=False, now=None, environ=None) -> tuple:
-    """-> (spec, resolved executable, args) or raises QualificationError with the invalidation reason."""
+def revalidate(record, *, client_root, trust: RecordTrust, allow_fixture=False, now=None, environ=None,
+               codex_home=None) -> tuple:
+    """-> (spec, resolved executable, args) or raises QualificationError with the invalidation reason.
+    `codex_home` (worker composition only): see `check_codex_client_home`."""
     verify_trust(record, trust)
     if int(time.time() if now is None else now) >= record["expires_at"]:
         raise QualificationError("RECORD_EXPIRED")
@@ -431,6 +567,7 @@ def revalidate(record, *, client_root, trust: RecordTrust, allow_fixture=False, 
     if record["level"] == "NATIVE_QUALIFIED" and Path(exe).suffix.lower() in (".cmd", ".bat", ".ps1") and not record["pinned_files"]:
         raise QualificationError("LAUNCH_CHAIN_NOT_PINNED")
     check_launch_chain(record["pinned_files"], record["resolve_pins"], environ)
+    check_codex_client_home(record, codex_home, environ)
     for a in record["executable_args"]:
         if Path(a).is_absolute() and Path(a).suffix == ".py" and not Path(a).is_file():
             raise QualificationError("EXECUTABLE_ARGS_MISSING")
@@ -441,7 +578,7 @@ def revalidate(record, *, client_root, trust: RecordTrust, allow_fixture=False, 
 
 
 def compose_client(client_root, *, trust: RecordTrust, allow_fixture=False, auth_probe=None, environ=None,
-                   adapters_factory=None, now=None, clock=None) -> ClientComposition:
+                   adapters_factory=None, now=None, clock=None, codex_home=None) -> ClientComposition:
     """Phase 1 `HarnessRegistry` (all adapters, nothing qualified) plus every persisted record that re-validates now
     for THIS client (`trust`).
 
@@ -459,7 +596,8 @@ def compose_client(client_root, *, trust: RecordTrust, allow_fixture=False, auth
             rows.append({"provider": Path(item["path"]).stem, "status": "INVALIDATED", "reason": item["error"], "path": item["path"]})
             continue
         try:
-            spec, exe, args = revalidate(rec, client_root=client_root, trust=trust, allow_fixture=allow_fixture, now=now_fn(), environ=environ)
+            spec, exe, args = revalidate(rec, client_root=client_root, trust=trust, allow_fixture=allow_fixture, now=now_fn(), environ=environ,
+                       codex_home=codex_home)
         except QualificationError as exc:
             rows.append({"provider": rec["provider"], "status": "INVALIDATED", "reason": exc.code, "detail": exc.detail,
                          "level": rec["level"], "path": item["path"]})
@@ -489,7 +627,8 @@ def compose_client(client_root, *, trust: RecordTrust, allow_fixture=False, auth
         if rec_now["record_sha256"] != digest:
             return "RECORD_CHANGED_SINCE_COMPOSITION"
         try:
-            revalidate(rec_now, client_root=client_root, trust=trust, allow_fixture=allow_fixture, now=now_fn(), environ=environ)
+            revalidate(rec_now, client_root=client_root, trust=trust, allow_fixture=allow_fixture, now=now_fn(), environ=environ,
+                       codex_home=codex_home)
         except QualificationError as exc:
             return exc.code
         return None

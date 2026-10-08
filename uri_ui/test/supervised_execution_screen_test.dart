@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:uri_ui/models/uri_turn.dart';
 import 'package:uri_ui/screens/tasks/supervised_execution_screen.dart';
 import 'package:uri_ui/services/paired_runtime.dart';
 import 'package:uri_ui/services/supervised_runtime.dart';
 import 'package:uri_ui/services/task_handoff.dart';
+import 'package:uri_ui/widgets/supervised_handoff_action.dart';
 
 /// Test double for the worker boundary ONLY. It records every frame the UI
 /// sends so the tests can assert the UI never approves, chooses or cancels on
@@ -23,6 +25,7 @@ class _FakeSupervised implements SupervisedRuntime {
   // execution id -> queue of statuses to play back (last one repeats)
   final script = <String, List<Map<String, dynamic>>>{};
   String turnState = 'approval_required';
+  Map<String, dynamic>? harness; // OQ-1: live usability the worker attaches to a proposal
 
   static const approvalDigest = 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1';
   static const proposalDigest = 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2';
@@ -43,6 +46,7 @@ class _FakeSupervised implements SupervisedRuntime {
         'expected_file': 'out.txt',
         'arguments': {'action': 'run', 'inputs': {'instruction': 'write a greeting into out.txt', 'expected_file': 'out.txt'}},
         'qualification': {'level': 'FIXTURE_ONLY', 'status': 'QUALIFIED', 'expires_at': 1800000000},
+        if (harness != null) 'harness': harness,
       };
 
   Map<String, dynamic> status(String id, String state, {String? reason, String? code, String? ledgerState,
@@ -450,10 +454,15 @@ void main() {
     expect(rt.begun, isEmpty); // the approval is still the user's to give
   });
 
-  test('a handoff is bounded, trimmed and carries no authority fields', () {
+  test('a handoff is trimmed, never truncated (too long = refused whole), and carries no authority fields', () {
+    // Closure version cut the text at maxChars; operational qualification (C6 Option B) refuses it whole instead,
+    // because the user's words must never be silently altered.
     final h = TaskHandoff(text: 'x' * (TaskHandoff.maxChars + 10));
-    expect(h.text.length, TaskHandoff.maxChars);
+    expect(h.text.length, TaskHandoff.maxChars + 10);
+    expect(h.tooLong, isTrue);
+    expect(h.usable, isFalse);
     expect(TaskHandoff(text: '   ').isEmpty, isTrue);
+    expect(TaskHandoff(text: '  keep my words  ').original, '  keep my words  ');
     expect(TaskHandoff(text: 'a', source: 'voice').banner, contains('voice'));
   });
 
@@ -478,5 +487,154 @@ void main() {
     expect(find.textContaining('FAILED'), findsWidgets);
     expect(find.byKey(const Key('sx-approval-not-applied')), findsOneWidget);
     expect(find.byKey(const Key('sx-uncertain')), findsNothing);
+  });
+
+  // ---- Operational qualification: OQ-1 and C6 Option B ----------------------------------------------------------
+
+  testWidgets('OQ-1: a proposal for an executor that cannot run now disables Approve and says why', (tester) async {
+    final rt = _FakeSupervised()
+      ..harness = {'usable': false, 'auth_state': 'NOT_AUTHENTICATED', 'reason': 'HARNESS_NOT_USABLE',
+        'required_user_action': 'Run `codex login` in the URI client profile terminal (native login).'};
+    await _sendWithCodex(tester, rt);
+    expect(find.byKey(const Key('sx-proposal-harness-blocked')), findsOneWidget);
+    expect(find.textContaining('codex login'), findsWidgets);
+    expect(tester.widget<FilledButton>(find.byKey(const Key('sx-approve'))).onPressed, isNull);
+    expect(find.textContaining('cannot run now'), findsWidgets);
+    await tester.tap(find.byKey(const Key('sx-approve')), warnIfMissed: false);
+    await tester.pump();
+    expect(rt.begun, isEmpty);
+  });
+
+  testWidgets('OQ-1: a usable executor is shown as ready and Approve stays the user\'s choice', (tester) async {
+    final rt = _FakeSupervised()..harness = {'usable': true, 'auth_state': 'AUTHENTICATED', 'reason': null};
+    await _sendWithCodex(tester, rt);
+    expect(find.byKey(const Key('sx-proposal-harness')), findsOneWidget);
+    expect(tester.widget<FilledButton>(find.byKey(const Key('sx-approve'))).onPressed, isNotNull);
+    expect(rt.begun, isEmpty);
+  });
+
+  testWidgets('C6 B: the screen states the intended next action at every step', (tester) async {
+    _tall(tester);
+    final rt = _FakeSupervised();
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SupervisedExecutionScreen(runtimeOverride: rt, sessionId: 's1',
+        pollInterval: const Duration(seconds: 1), draft: TaskHandoff(text: 'write a greeting into out.txt')))));
+    await tester.pumpAndSettle();
+    String next() => tester.widget<Text>(find.byKey(const Key('sx-next-action'))).data!;
+    expect(next(), 'Next: choose an executor.');
+    await tester.tap(find.byKey(const Key('sx-choice-codex_cli')));
+    await tester.pump();
+    expect(next(), contains('press Send'));
+    expect(next(), contains('nothing runs until you approve'));
+    await tester.tap(find.byKey(const Key('sx-send')));
+    await tester.pumpAndSettle();
+    expect(next(), contains('approve or decline'));
+    expect(rt.begun, isEmpty);
+  });
+
+  testWidgets('C6 B: an edited draft is marked as edited; editing sends nothing', (tester) async {
+    _tall(tester);
+    final rt = _FakeSupervised();
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SupervisedExecutionScreen(runtimeOverride: rt, sessionId: 's1',
+        draft: TaskHandoff(text: 'write a greeting into out.txt')))));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sx-draft-edited')), findsNothing);
+    await tester.enterText(find.byKey(const Key('sx-input')), 'write a farewell into out.txt');
+    await tester.pump();
+    expect(find.byKey(const Key('sx-draft-edited')), findsOneWidget);
+    expect(find.byKey(const Key('sx-draft-banner')), findsOneWidget);
+    expect(rt.started, isEmpty);
+  });
+
+  testWidgets('C6 B: a draft that arrives while a run is in flight is kept; the worker state wins', (tester) async {
+    _tall(tester);
+    final rt = _FakeSupervised()..activeOnList = 'e1';
+    rt.script['e1'] = [rt.status('e1', 'running', ledgerState: 'RUNNING')];
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SupervisedExecutionScreen(runtimeOverride: rt, sessionId: 's1',
+        pollInterval: const Duration(seconds: 1), draft: TaskHandoff(text: 'write a greeting into out.txt')))));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('sx-execution')), findsOneWidget);
+    expect(find.byKey(const Key('sx-draft-busy')), findsOneWidget);
+    expect(tester.widget<TextField>(find.byKey(const Key('sx-input'))).controller!.text, 'write a greeting into out.txt');
+    expect(tester.widget<Text>(find.byKey(const Key('sx-next-action'))).data, contains('running execution'));
+    expect(rt.started, isEmpty);
+    expect(rt.begun, isEmpty);
+    await tester.pumpWidget(const SizedBox());       // dispose the screen: stops the poll timer
+  });
+
+  testWidgets('C6 B: a message over the ceiling is refused whole: nothing copied, nothing cut', (tester) async {
+    final rt = _FakeSupervised();
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: SupervisedExecutionScreen(runtimeOverride: rt, sessionId: 's1',
+        draft: TaskHandoff(text: 'y' * (TaskHandoff.maxChars + 1))))));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sx-draft-refused')), findsOneWidget);
+    expect(find.byKey(const Key('sx-draft-banner')), findsNothing);
+    expect(tester.widget<TextField>(find.byKey(const Key('sx-input'))).controller!.text, '');
+  });
+
+  UriTurn turnOf(String text, TurnStage stage, {String id = 'm1'}) =>
+      UriTurn(id: id, userText: text, timestamp: DateTime(2026, 10, 8), stage: stage);
+
+  Widget chatHost(UriTurn turn, {bool configured = true, SupervisedRuntime? rt}) => MaterialApp(
+        home: Scaffold(
+          body: Column(children: [
+            Text('conversation: ${turn.userText.length > 200 ? '<${turn.userText.length} chars>' : turn.userText}', key: const Key('chat-message')),
+            SupervisedHandoffAction(turn: turn, configured: configured, runtimeOverride: rt),
+          ]),
+        ),
+      );
+
+  testWidgets('C6 B Chat: no action without the supervised opt-in, for an empty message, or while the turn is in flight',
+      (tester) async {
+    await tester.pumpWidget(chatHost(turnOf('write a greeting', TurnStage.completed), configured: false));
+    expect(find.byKey(const Key('chat-handoff-m1')), findsNothing);
+    expect(find.byKey(const Key('chat-handoff-absent-m1')), findsOneWidget);
+    await tester.pumpWidget(chatHost(turnOf('   ', TurnStage.completed)));
+    expect(find.byKey(const Key('chat-handoff-m1')), findsNothing);
+    for (final stage in [TurnStage.understanding, TurnStage.proposalReady, TurnStage.awaitingApproval, TurnStage.executing]) {
+      await tester.pumpWidget(chatHost(turnOf('write a greeting', stage)));
+      expect(find.byKey(const Key('chat-handoff-m1')), findsNothing, reason: '$stage');
+    }
+    for (final stage in [TurnStage.completed, TurnStage.failed, TurnStage.cancelled, TurnStage.needsConnection]) {
+      await tester.pumpWidget(chatHost(turnOf('write a greeting', stage)));
+      expect(find.byKey(const Key('chat-handoff-m1')), findsOneWidget, reason: '$stage');
+    }
+  });
+
+  testWidgets('C6 B Chat: the action opens an unsent draft of the user\'s own words; Back returns to the conversation',
+      (tester) async {
+    _tall(tester);
+    final rt = _FakeSupervised();
+    await tester.pumpWidget(chatHost(turnOf('  please write a greeting into out.txt ', TurnStage.completed), rt: rt));
+    await tester.tap(find.byKey(const Key('chat-handoff-m1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sx-draft-banner')), findsOneWidget);
+    expect(tester.widget<TextField>(find.byKey(const Key('sx-input'))).controller!.text, 'please write a greeting into out.txt');
+    expect(rt.started, isEmpty);
+    expect(rt.begun, isEmpty);
+    expect(rt.decided, isEmpty);
+    expect(rt.cancelled, isEmpty);
+    expect(tester.widget<FilledButton>(find.byKey(const Key('sx-send'))).onPressed, isNull); // no executor chosen for the user
+    // Abandon: Back with the draft unsent.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('chat-message')), findsOneWidget);
+    expect(find.text('conversation:   please write a greeting into out.txt '), findsOneWidget); // the original is untouched
+    expect(rt.started, isEmpty);
+    expect(rt.begun, isEmpty);
+    expect(rt.closed, isTrue); // leaving the screen closes the worker session; nothing was in flight
+    // Restart = a fresh screen without a handoff: no draft is resurrected.
+    await tester.pumpWidget(_host(_FakeSupervised()));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sx-draft-banner')), findsNothing);
+    expect(tester.widget<TextField>(find.byKey(const Key('sx-input'))).controller!.text, '');
+  });
+
+  testWidgets('C6 B Chat: a message too long to hand off whole offers no handoff', (tester) async {
+    await tester.pumpWidget(chatHost(turnOf('z' * (TaskHandoff.maxChars + 1), TurnStage.completed)));
+    final button = tester.widget<TextButton>(find.byKey(const Key('chat-handoff-m1')));
+    expect(button.onPressed, isNull);
+    expect(find.text('Too long to make a supervised task'), findsOneWidget);
   });
 }

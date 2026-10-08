@@ -50,7 +50,7 @@ _ID = re.compile(r"^[0-9a-f]{32}$")
 _LIST_LIMIT = 50
 
 
-def execution_proposal(client_id, session_id, turn_id, reasoning, approval_request, qualification=None) -> dict:
+def execution_proposal(client_id, session_id, turn_id, reasoning, approval_request, qualification=None, harness=None) -> dict:
     """The proposal a UI approval is bound to. `proposal_digest` covers exactly AUTHORITY_FIELDS; the remaining keys
     are display material taken verbatim from the server's approval request (bound through `argument_digest`)."""
     reasoning = reasoning if isinstance(reasoning, dict) else {}
@@ -63,7 +63,7 @@ def execution_proposal(client_id, session_id, turn_id, reasoning, approval_reque
             "approval_digest": request.get("approval_digest")}
     return {**core, "proposal_digest": digest(core), "effect": request.get("effect"), "reversible": request.get("reversible"),
             "action": arguments.get("action"), "arguments": arguments, "instruction": inputs.get("instruction"),
-            "expected_file": inputs.get("expected_file"), "qualification": qualification}
+            "expected_file": inputs.get("expected_file"), "qualification": qualification, "harness": harness}
 
 
 def _now():
@@ -414,13 +414,33 @@ class ExecutionController:
                 return {k: row.get(k) for k in keys}
         return {"status": "NOT_QUALIFIED", "reason": "NO_RECORD"}
 
+    def harness_state(self, provider, kind="client_external_harness"):
+        """Operational qualification OQ-1 (2026-10-08): the LIVE usability of a harness provider (installed, qualified,
+        authenticated now), from the composed registry; None for non-harness rows. Display material for the proposal
+        and the gate `begin` checks before any approval leaves the worker. Never raises."""
+        if not provider or kind != "client_external_harness":
+            return None
+        registry = getattr(self.service, "harness", None) or getattr(self.bridge, "registry", None)
+        if registry is None:
+            return None        # no registry composed at all: the bridge's dispatch-time gate decides (it refuses)
+        try:
+            row = next((h for h in registry.discover() if h.get("harness_id") == provider), None)
+        except Exception as exc:  # noqa: BLE001  (a failing probe is "not usable", never a crash)
+            return {"usable": False, "auth_state": None, "required_user_action": None, "reason": "DISCOVER_FAILED:" + type(exc).__name__}
+        if row is None:
+            return {"usable": False, "auth_state": None, "required_user_action": None, "reason": "UNKNOWN_PROVIDER"}
+        return {"usable": row.get("usable") is True, "auth_state": row.get("auth_state"),
+                "qualification": row.get("qualification"), "required_user_action": row.get("required_user_action"),
+                "reason": None if row.get("usable") is True else "HARNESS_NOT_USABLE"}
+
     def proposal(self, turn_id):
         entry = self.service.pending.get(turn_id)
         if entry is None:
             raise TurnError("TURN_NOT_PENDING")
         _, session, reasoning, turn = entry
         return execution_proposal(self.service.manifest.data["client_id"], session, turn_id, reasoning,
-                                  turn.get("approval_request"), self.qualification_of(reasoning.get("provider"), reasoning.get("kind")))
+                                  turn.get("approval_request"), self.qualification_of(reasoning.get("provider"), reasoning.get("kind")),
+                                  self.harness_state(reasoning.get("provider"), reasoning.get("kind")))
 
     def status(self, execution_id):
         rec = self.register.get(execution_id)
@@ -487,6 +507,15 @@ class ExecutionController:
                 self.service.pending.pop(turn_id, None)
                 self._release(entry, "PROPOSAL_DIGEST_MISMATCH")
                 raise TurnError("PROPOSAL_DIGEST_MISMATCH")
+            # OQ-1: a harness that is not usable NOW (not authenticated, qualification lost, not installed) is refused
+            # here, before the approval reaches the server: nothing is approved, the turn is released (CAP-1) and the
+            # user sees the required action. The bridge's own dispatch-time check stays (defence in depth).
+            harness = self.harness_state(reasoning.get("provider"), reasoning.get("kind"))
+            if harness is not None and not harness["usable"]:
+                self.service.pending.pop(turn_id, None)
+                self._release(entry, "HARNESS_NOT_USABLE")
+                raise TurnError("HARNESS_NOT_USABLE")
+            prop["harness"] = harness
             self.service.pending.pop(turn_id, None)
             eid = uuid.uuid4().hex
             rec = {"schema": SCHEMA, "execution_id": eid, "turn_id": turn_id, "session_id": session, "request_text": text,

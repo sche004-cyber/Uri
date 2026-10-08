@@ -166,10 +166,16 @@ def test_unqualified_provider_fails_closed_before_any_task(stack, monkeypatch):
     stack.bridge.executors = comp.executors
     stack.bridge._ensure_registrations()
     turn = stack.start(TEXT, reasoning=CODEX)                 # offered by policy, model None not qualified any more
-    final = wait_terminal(stack, begin(stack, turn)["execution_id"])
-    assert final["state"] == "failed" and final["failure_category"].startswith("NOT_STARTED:")
-    assert final["task_id"] is not None and final["ledger"]["task"] is None   # dispatched to the bridge, no task created
-    assert stack.tasks() == 0 and stack.turn_record(turn["turn_id"])["execution_closed"] is True
+    # Accepted (round 7) behaviour: approved, dispatched, refused by the bridge (`failed`, NOT_STARTED, no task).
+    # Operational qualification OQ-1 (2026-10-08, disclosed change of an accepted assertion): the proposal now shows
+    # the harness is not usable and `execution_begin` refuses BEFORE the approval leaves the worker; the turn is
+    # released on the server (CAP-1 route) and nothing is approved, dispatched or created.
+    assert turn["execution_proposal"]["harness"]["usable"] is False
+    with pytest.raises(TurnError, match="HARNESS_NOT_USABLE"):
+        begin(stack, turn)
+    assert stack.tasks() == 0 and listing(stack)["executions"] == []
+    rec = stack.turn_record(turn["turn_id"])
+    assert rec["state"] == "cancelled" and not rec.get("dispatched")
 
 
 def test_frames_cannot_smuggle_or_probe(stack, monkeypatch):

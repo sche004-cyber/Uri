@@ -98,6 +98,8 @@ def build_bridge(client_root, composition: ClientComposition, **bridge_kwargs) -
     return SupervisorBridge(client_root, registry=composition.registry, executors=composition.executors, **bridge_kwargs)
 
 
-def compose_and_build(client_root, *, trust, allow_fixture=False, auth_probe=None, environ=None, **bridge_kwargs):
-    comp = compose_client(client_root, trust=trust, allow_fixture=allow_fixture, auth_probe=auth_probe, environ=environ)
+def compose_and_build(client_root, *, trust, allow_fixture=False, auth_probe=None, environ=None, codex_home=None,
+                      **bridge_kwargs):
+    comp = compose_client(client_root, trust=trust, allow_fixture=allow_fixture, auth_probe=auth_probe, environ=environ,
+                          codex_home=codex_home)
     return comp, build_bridge(client_root, comp, **bridge_kwargs)

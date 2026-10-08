@@ -29,7 +29,12 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                # Phase 2 closure (2026-10-08): reports, ledger, runbook, chain/acceptance scripts, power-loss harness and its
                # tests, and the inert conversation-to-task handoff value (a NEW Dart file; no frozen file is touched).
                "tests/phase2close/*", "docs/plans/PHASE2CLOSE_*", "docs/architecture/PHASE2CLOSE_*", "scripts/phase2close_*",
-               "docs/plans/URI_DEVELOPMENT_TODO.md", "uri_ui/lib/services/task_handoff.dart"]
+               "docs/plans/URI_DEVELOPMENT_TODO.md", "uri_ui/lib/services/task_handoff.dart",
+               # Phase 2 operational qualification (2026-10-08): EXE-1 native launch, SUP-1, D8, OQ-1, C6 Option B (owner
+               # accepted): the Chat handoff action (a NEW widget) mounted by ONE non-checkpoint Chat file.
+               "tests/phase2oq/*", "docs/plans/PHASE2OQ_*", "docs/architecture/PHASE2OQ_*", "scripts/phase2oq_*",
+               "uri_ui/lib/widgets/supervised_handoff_action.dart", "uri_ui/lib/screens/ask/ask_uri_screen.dart",
+               "uri_ui/test/chat_supervised_handoff_test.dart"]
 
 needs_zip = pytest.mark.skipif(not CHECKPOINT.exists(), reason="BLOCKED: frozen checkpoint zip not present on this machine")
 

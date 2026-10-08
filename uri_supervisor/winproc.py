@@ -235,6 +235,50 @@ class ContainedProcess:
             _k32.CloseHandle(h)  # kill-on-close: survivors die here
 
 
+_SELF_JOB = None
+_SELF_CONTAINMENT = None
+
+
+def contain_current_process() -> str:
+    """SUP-1 (Phase 2 operational qualification, 2026-10-08): put THIS process (the one that hosts the supervisor) into
+    an unnamed job with KILL_ON_JOB_CLOSE whose only handle this process holds for its whole life.
+
+    Why: `spawn_contained` creates the executor suspended and only then assigns it to the attempt's job. A supervisor
+    killed inside that window (during CreateProcess, or before AssignProcessToJobObject) used to leave a suspended,
+    never-running orphan. A child created by a job member is a member of that job FROM CREATION (no breakaway flags are
+    used anywhere), so once this process is contained, its death closes the job and the OS kills every descendant,
+    including one that never reached its own attempt job. The attempt job then nests under it (Windows 8+); nothing about
+    the attempt job, the ledger or recovery changes, and no authority is added (the job only kills, at this process's
+    death, what this process itself started).
+
+    Idempotent; never raises. Returns "CONTAINED", "ALREADY_CONTAINED" or "UNAVAILABLE:<reason>" (for example when the
+    host placed this process in a job that forbids nesting); UNAVAILABLE leaves the earlier, recorded window."""
+    global _SELF_JOB, _SELF_CONTAINMENT
+    if _SELF_CONTAINMENT is not None:
+        return "ALREADY_CONTAINED" if _SELF_CONTAINMENT == "CONTAINED" else _SELF_CONTAINMENT
+    if not IS_WINDOWS:
+        _SELF_CONTAINMENT = "UNAVAILABLE:NOT_WINDOWS"
+        return _SELF_CONTAINMENT
+    job = _k32.CreateJobObjectW(None, None)
+    if not job:
+        _SELF_CONTAINMENT = "UNAVAILABLE:CreateJobObjectW:%d" % ctypes.get_last_error()
+        return _SELF_CONTAINMENT
+    info = _EXT()
+    info.Basic.LimitFlags = _KILL_ON_CLOSE
+    if not _k32.SetInformationJobObject(job, _EXT_LIMIT, ctypes.byref(info), ctypes.sizeof(info)):
+        _SELF_CONTAINMENT = "UNAVAILABLE:SetInformationJobObject:%d" % ctypes.get_last_error()
+        _k32.CloseHandle(job)
+        return _SELF_CONTAINMENT
+    _k32.GetCurrentProcess.restype = wintypes.HANDLE
+    if not _k32.AssignProcessToJobObject(job, _k32.GetCurrentProcess()):
+        _SELF_CONTAINMENT = "UNAVAILABLE:AssignProcessToJobObject:%d" % ctypes.get_last_error()
+        _k32.CloseHandle(job)
+        return _SELF_CONTAINMENT
+    _SELF_JOB = job                      # deliberately never closed: it closes when this process ends
+    _SELF_CONTAINMENT = "CONTAINED"
+    return _SELF_CONTAINMENT
+
+
 def spawn_contained(argv, name: str, before_resume=None, **popen_kwargs) -> ContainedProcess:
     """Start `argv` suspended, bind it to a fresh named job, hand its identity to `before_resume`
     (which must make it durable), and only then resume. The executor cannot run a single instruction

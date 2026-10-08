@@ -58,6 +58,14 @@ class Supervisor:
     def __init__(self, ledger_path, *, clock: Clock | None = None, lease_s: float = 60.0, reconcilers=None,
                  take_lock: bool = True, run_recovery: bool = True):
         self.clock = clock or Clock()
+        # SUP-1: before any executor can be spawned, the hosting process joins a kill-on-close job of its own, so a
+        # supervisor death during the suspended-spawn window cannot leave an orphan (winproc.contain_current_process).
+        # Review round 1, OQ-R1-3: fail closed. A Windows host that cannot contain itself would keep the window open, so
+        # no supervisor is built there (non-Windows hosts cannot spawn at all: winproc refuses). Side effect, by design:
+        # when the host process exits, every process it started (not only executors) is killed with it.
+        self.self_containment = winproc.contain_current_process() if winproc.IS_WINDOWS else "UNAVAILABLE:NOT_WINDOWS"
+        if winproc.IS_WINDOWS and self.self_containment not in ("CONTAINED", "ALREADY_CONTAINED"):
+            raise SupervisorError("SELF_CONTAINMENT_UNAVAILABLE", self.self_containment)
         self.ledger = Ledger(ledger_path, self.clock)
         self.registry = Registry(self.ledger)
         self.reconcilers = dict(reconcilers or {})

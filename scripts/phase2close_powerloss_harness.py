@@ -96,13 +96,34 @@ def compare(acked: dict, present: dict) -> list:
     return lost
 
 
-def build_row(i, boot, delay_s, acked: dict, report: dict) -> dict:
+def unclean_shutdown_witnessed(ready_msg, report_msg):
+    """D8 (operational qualification, 2026-10-08): the GUEST's own operating system must have recorded that the boot
+    which acknowledged the work ended WITHOUT a clean shutdown: a System-log Kernel-Power 41 or EventLog 6008 event
+    created after that boot's `ready` (both times on the guest clock), and a later OS boot time. A guest shutdown,
+    a reboot, or a host that never cut anything leaves no such event. None when the record carries no witness (a
+    SIMULATED series); False when it does and the witness is missing. This is evidence from a second, independent
+    source; it is still not proof that the HYPERVISOR cut the power, so the owner's attestation stays required."""
+    if not isinstance(report_msg, dict) or "os_witness" not in report_msg:
+        return None
+    w = report_msg.get("os_witness")
+    t0 = (ready_msg or {}).get("guest_wall")
+    if not isinstance(w, dict) or isinstance(t0, bool) or not isinstance(t0, (int, float)):
+        return False
+    events = w.get("unclean_event_times")
+    boot_time = w.get("boot_time")
+    if not isinstance(events, list) or isinstance(boot_time, bool) or not isinstance(boot_time, (int, float)):
+        return False
+    return boot_time > t0 and any(isinstance(e, (int, float)) and not isinstance(e, bool) and e > t0 for e in events)
+
+
+def build_row(i, boot, delay_s, acked: dict, report: dict, ready_msg=None, report_msg=None) -> dict:
     """The iteration row exactly as the campaign writes it (shared with `replay_series`, so the two cannot drift)."""
     lost = compare(acked, report.get("steps") or {})
     return {"iteration": i, "boot": boot, "delay_s": delay_s, "acked_tasks": len(acked),
             "acked_ended": sum(1 for s_ in acked.values() if s_ == "ended"), "lost": lost,
             "integrity": report.get("integrity"), "orphans": len(report.get("orphan_attempts") or []),
             "still_in_flight": report.get("still_in_flight"), "relaunched": report.get("relaunched_by_recovery"),
+            "os_unclean_shutdown": unclean_shutdown_witnessed(ready_msg, report_msg),
             "verdict": iteration_verdict(acked, report, lost)}
 
 
@@ -176,6 +197,27 @@ class Acker:
             self.sock.sendall((json.dumps(obj, separators=(",", ":")) + "\n").encode())
 
 
+OS_WITNESS_PS = ("$e = @(Get-WinEvent -FilterHashtable @{LogName='System'; Id=41,6008; StartTime=(Get-Date).AddDays(-3)} "
+                 "-MaxEvents 20 -ErrorAction SilentlyContinue | ForEach-Object { [int64]($_.TimeCreated.ToUniversalTime() - "
+                 "[datetime]'1970-01-01').TotalSeconds }); $b = [int64]((Get-CimInstance Win32_OperatingSystem).LastBootUpTime"
+                 ".ToUniversalTime() - [datetime]'1970-01-01').TotalSeconds; @{events=$e; boot=$b} | ConvertTo-Json -Compress")
+
+
+def os_witness():
+    """D8: the guest OS's own record of unclean shutdowns (Kernel-Power 41, EventLog 6008) and its last boot time, read
+    from the System event log at boot. Read-only; a failure is reported, never hidden."""
+    try:
+        p = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", OS_WITNESS_PS], capture_output=True,
+                           text=True, timeout=60, stdin=subprocess.DEVNULL)
+        data = json.loads(p.stdout.strip() or "{}")
+        events = data.get("events") or []
+        events = [events] if isinstance(events, (int, float)) else events
+        return {"unclean_event_times": sorted(int(e) for e in events if isinstance(e, (int, float)))[-20:],
+                "boot_time": data.get("boot"), "source": "System log Kernel-Power 41 / EventLog 6008"}
+    except Exception as exc:  # noqa: BLE001
+        return {"error": type(exc).__name__}
+
+
 def guest(a):
     ledger = Path(a.ledger)
     ledger.parent.mkdir(parents=True, exist_ok=True)
@@ -188,7 +230,10 @@ def guest(a):
         os.fsync(fh.fileno())
     ack = Acker(a.host, a.port)
     report = verify(str(ledger), boot_prefix=f"pl-b{previous}-") if previous else {"ledger": "FIRST_BOOT"}
-    ack.send({"type": "report", "boot": boot, "previous_boot": previous, "synchronous": a.synchronous, "report": report})
+    msg = {"type": "report", "boot": boot, "previous_boot": previous, "synchronous": a.synchronous, "report": report}
+    if not a.no_os_witness:
+        msg["os_witness"] = os_witness()
+    ack.send(msg)
     from uri_supervisor.executors import GENERIC_NDJSON
     from uri_supervisor.supervisor import Supervisor
     from dataclasses import replace
@@ -200,7 +245,7 @@ def guest(a):
     if not sup.ledger.q("SELECT 1 FROM executor_registration WHERE executor_id='plfake'"):
         sup.registry.register_executor(replace(GENERIC_NDJSON, executor_id="plfake"), capabilities=("run",), claims={"slot": 1},
                                        quota_pools=(), preemptible=False, version="pl-1")
-    ack.send({"type": "ready", "boot": boot, "durability": sup.ledger.durability_report()})
+    ack.send({"type": "ready", "boot": boot, "durability": sup.ledger.durability_report(), "guest_wall": time.time()})
     work = ledger.parent / "work"
     work.mkdir(exist_ok=True)
     seq = 0
@@ -324,7 +369,8 @@ def campaign(out, iterations, power_off, power_on, min_s, max_s, boot_timeout, p
             if not wait_for(lambda: (boot + 1) in log.reports, boot_timeout):
                 rows.append({"iteration": i, "boot": boot, "delay_s": round(delay, 3), "verdict": "NO_REPORT"})
                 break
-            rows.append(build_row(i, boot, round(delay, 3), acked, log.reports[boot + 1]["report"]))
+            rows.append(build_row(i, boot, round(delay, 3), acked, log.reports[boot + 1]["report"], log.ready.get(boot),
+                                  log.reports[boot + 1]))
             (out / "iterations.json").write_text(json.dumps(rows, indent=1), encoding="utf-8")
             if not wait_for(lambda: (boot + 1) in log.ready, boot_timeout):
                 rows.append({"iteration": i + 1, "verdict": "GUEST_NEVER_READY"})
@@ -408,7 +454,8 @@ def replay_series(series_dir) -> dict:
     rows = []
     for b in sorted(ready):
         if b + 1 in reports:
-            rows.append(build_row(len(rows) + 1, b, None, acked.get(b, {}), reports[b + 1].get("report") or {}))
+            rows.append(build_row(len(rows) + 1, b, None, acked.get(b, {}), reports[b + 1].get("report") or {}, ready.get(b),
+                                  reports[b + 1]))
     if rows and (rows[-1]["boot"] + 1) not in ready:
         problems.append(f"the last report (boot {rows[-1]['boot'] + 1}) has no following ready record: truncated")
     guest_sync = sorted({m.get("synchronous") for m in reports.values() if m.get("synchronous")})
@@ -461,6 +508,11 @@ def assess_series(series_dir, want_sync) -> tuple:
         reasons.append(f"{d.name}: guest/ledger synchronous {facts['guest_synchronous']}/{facts['ledger_synchronous']} != [{want_sync!r}]")
     if not facts["rows"]:
         reasons.append(f"{d.name}: no replayable iteration")
+    # D8: every VM iteration must carry the guest OS's own unclean-shutdown witness (see unclean_shutdown_witnessed).
+    unwitnessed = [f["iteration"] for f in facts["rows"] if f.get("os_unclean_shutdown") is not True]
+    if summary.get("label") == "VM_SERIES" and unwitnessed:
+        reasons.append(f"{d.name}: {len(unwitnessed)} iteration(s) without a guest unclean-shutdown witness "
+                       f"(Kernel-Power 41 / EventLog 6008 after the boot's ready), first {unwitnessed[:5]}")
     rebuilt = []
     for r, f in zip(rows, facts["rows"]):
         delay = r.get("delay_s")
@@ -501,7 +553,7 @@ def assess(full_dir, control_dir) -> dict:
             "full": {k: full.get(k) for k in ("passed", "lost_acknowledged_steps", "guest_synchronous")} | {"iterations": len(full.get("iterations") or [])} if full else None,
             "control": {k: control.get(k) for k in ("passed", "lost_acknowledged_steps", "guest_synchronous")} | {"iterations": len(control.get("iterations") or [])} if control else None,
             "power_method_attestation_required": True,
-            "note": "computed from acks.jsonl; the power-off command only matches a recognised hard-off FORM, it is not proof it cut this VM; qualified is always false here: PA-11 becomes PASS only by the owner's recorded attestation"}
+            "note": "computed from acks.jsonl; the power-off command only matches a recognised hard-off FORM and every iteration carries the guest OS's own unclean-shutdown event (D8); neither proves the hypervisor cut THIS VM's power; qualified is always false here: PA-11 becomes PASS only by the owner's recorded attestation"}
 
 
 def local_power(out, ledger, synchronous):
@@ -512,7 +564,7 @@ def local_power(out, ledger, synchronous):
     def power_on(port):
         env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
         state["proc"] = subprocess.Popen([sys.executable, "-I", "-B", str(Path(__file__).resolve()), "guest", "--ledger", str(ledger),
-                                          "--host", "127.0.0.1", "--port", str(port), "--synchronous", synchronous],
+                                          "--host", "127.0.0.1", "--port", str(port), "--synchronous", synchronous, "--no-os-witness"],
                                          cwd=str(ROOT), stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                                          stderr=open(Path(out) / "guest_stderr.txt", "ab"), env=env)
         return True
@@ -547,6 +599,7 @@ def main():
     g.add_argument("--host", required=True)
     g.add_argument("--port", type=int, required=True)
     g.add_argument("--synchronous", choices=("FULL", "NORMAL"), default="FULL")
+    g.add_argument("--no-os-witness", action="store_true", help="local simulation only: do not read the System event log")
     h = sub.add_parser("host")
     h.add_argument("--port", type=int, default=47710)
     h.add_argument("--iterations", type=int, default=200)

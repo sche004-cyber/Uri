@@ -39,7 +39,8 @@ def test_qualify_probes_under_the_sanitized_environment_and_restores_the_caller(
     (base / "campaign.json").write_text(json.dumps({"base": str(base), "client_root": str(client_root), "gates": []}))
     seen = {}
 
-    def direct_probe(provider, model, evidence):
+    def direct_probe(provider, model, evidence, executable=None):     # EXE-1: the native binary is passed in
+        seen["executable"] = executable
         seen["probe"] = {k: k in os.environ for k in ("CODEX_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN")}
         seen["codex_home"] = os.environ.get("CODEX_HOME")
         return {"ok": True, "status": "OK", "executable": "codex", "version": "0.0.0"}   # a token-backed success
@@ -52,6 +53,7 @@ def test_qualify_probes_under_the_sanitized_environment_and_restores_the_caller(
     monkeypatch.setenv("CODEX_API_KEY", "shell-token-must-not-reach-the-probe")
     rc = acc.qualify(SimpleNamespace(campaign=str(base), provider="codex_cli", model="m"))
     assert seen["probe"] == {"CODEX_API_KEY": False, "CLAUDE_CODE_OAUTH_TOKEN": False}
+    assert seen["executable"] is None or Path(seen["executable"]).name.lower() == "codex.exe"   # never the .cmd launcher
     assert seen["auth_token_visible"] is False and seen["codex_home"] == str(client_root / "home" / ".codex")
     assert rc == 2 and os.environ["CODEX_API_KEY"] == "shell-token-must-not-reach-the-probe"   # caller restored
     camp = json.loads((base / "campaign.json").read_text())

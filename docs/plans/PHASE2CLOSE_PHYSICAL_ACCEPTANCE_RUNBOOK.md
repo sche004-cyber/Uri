@@ -1,7 +1,13 @@
 # Phase 2 physical acceptance runbook
 
 Date 2026-10-08. Author: Claude. Status: **PREPARED. No gate below has been performed by the owner.** Every gate starts
-as PENDING. A gate becomes PASS only when the owner performs it and records the observation with
+as PENDING.
+
+**Updated 2026-10-08 (Phase 2 operational qualification, `PHASE2OQ_REPORT.md`):** EXE-1 resolved by qualifying the
+NATIVE binaries (no `node`, no PATH change); PA-8 to PA-10 rewritten around `login-guide`, `status` and the Codex
+sandbox-backend choice; PA-11 has a concrete VirtualBox/VMware method and the guest OS unclean-shutdown witness (D8);
+new gate PA-13 (Chat -> supervised handoff, C6 Option B). The superseded closure wording of PA-8 to PA-11 is kept in
+the accepted candidate `phase2close-candidate-20261008-f.zip`. A gate becomes PASS only when the owner performs it and records the observation with
 `scripts/phase2close_acceptance.py record`. Automation results are listed beside each gate as supporting evidence;
 they never replace the physical observation.
 
@@ -27,6 +33,10 @@ Then provision an isolated acceptance installation:
 ```powershell
 .\.venv\Scripts\python.exe -I scripts\phase2close_acceptance.py provision --grant-harness
 ```
+
+The Codex sandbox backend of the client profile is NOT chosen for you (see PA-10 and decision EXE-1b). To choose it at
+provisioning time add `--codex-sandbox unelevated` or `--codex-sandbox elevated`; without a choice the worker refuses
+Codex records with `CODEX_WINDOWS_SANDBOX_NOT_CONFIGURED` (fail closed).
 
 It prints the campaign folder (`work\c1\acceptance-<stamp>`), the server start command and the app launch command.
 Keep the campaign folder path; every `record` call uses it (written `$C` below).
@@ -115,77 +125,102 @@ Automated support: `test_close_during_execution_*`, `test_completed_execution_su
 
 ### PA-8 native Codex login in the CLIENT profile (owner credential action)
 
-Codex must be logged in INSIDE the acceptance client profile, never through your own profile. ISO-1 (found in this
-closure): Codex ignores `USERPROFILE`; only `CODEX_HOME` isolates it. The worker now pins `CODEX_HOME` to the client
-profile, so the login must be made with the same pin:
+Codex must be logged in INSIDE the acceptance client profile, never through your own profile (ISO-1: Codex ignores
+`USERPROFILE`; only `CODEX_HOME` isolates it, and the worker refuses a Codex record unless the executor environment
+names the client profile's Codex home). The script prints the exact commands; it never runs them, never reads or copies
+a credential:
 
 ```powershell
-$cr = (Get-Content "$C\campaign.json" | ConvertFrom-Json).client_root
-$env:USERPROFILE = "$cr\home"; $env:HOME = "$cr\home"; $env:APPDATA = "$cr\home\roaming"
-$env:LOCALAPPDATA = "$cr\home\local"; $env:CODEX_HOME = "$cr\home\.codex"
-codex login
-codex login status          # expect: Logged in ...
+.\.venv\Scripts\python.exe -I scripts\phase2close_acceptance.py login-guide $C --provider codex_cli
 ```
 
-Use a NEW PowerShell window for this and close it afterwards, so these variables do not leak into other work. Then
-persist the client's qualification. The script probes under the same pins, with every provider credential variable
-(`CODEX_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`, `*_API_KEY`, `*_TOKEN`, ...) REMOVED from its environment, so only a
-login stored under the client profile can succeed, and writes a signed record ONLY when the probe and
-`codex login status` both succeed (review round 1, D1):
+Run what it prints in a NEW, non-elevated PowerShell window (it clears provider token variables, sets the client-profile
+homes, then runs the NATIVE `codex.exe login` and `login status`), and close that window afterwards. Then check the four
+separate states and persist the qualification:
 
 ```powershell
+.\.venv\Scripts\python.exe -I scripts\phase2close_acceptance.py status $C
 .\.venv\Scripts\python.exe -I scripts\phase2close_acceptance.py qualify $C --provider codex_cli --model gpt-6-sol
+.\.venv\Scripts\python.exe -I scripts\phase2close_acceptance.py status $C
 ```
 
-PASS when `"persisted": true`. Before the owner's login the same command returns `"persisted": false` (verified
-2026-10-08, campaign `acceptance-20261008-045345`; an earlier record written before the ISO-1 pin was VOIDED and
-moved to `VOIDED_qualification\`).
+`status` reports `installed`, `authenticated_client_profile`, `qualified` and `operational` separately: logged in is not
+qualified, qualified is not operational. `qualify` probes the NATIVE binary with every provider credential variable
+removed (D1) and writes a signed record ONLY when the probe and the client-profile login status both succeed.
+PASS when `qualify` prints `"persisted": true` and `status` shows `authenticated_client_profile: true, qualified: true`.
 
 ### PA-9 native Claude login in the CLIENT profile (owner credential action)
 
-Same window discipline, `USERPROFILE`/`HOME` set to `$cr\home` (Claude Code resolves its config through the process
-home). Run `claude`, complete the sign-in, then `claude auth status` (expect `"loggedIn": true`), then
-`qualify $C --provider claude_code`.
+Same discipline: `login-guide $C --provider claude_code` (Claude Code resolves its config through the process home, so
+`USERPROFILE`/`HOME` set to the client home isolate it), then `status`, `qualify $C --provider claude_code`, `status`.
+The native `claude.exe` from the npm package is qualified, not `claude.cmd`.
 
 ### PA-10 native execution inside the worker process
 
-**Currently BLOCKED by EXE-1** (found in this closure, 2026-10-08): the worker's sanitized environment
-(`runtime_identity.child_environment`) has a three-entry PATH (venv, System32, git). The npm shim `codex.CMD` then
-fails with `"node" is not recognized`, so the worker re-validation cannot run `codex --version` and the client's
-Codex record is not composed (observed: real worker `harness_discover` -> codex_cli `NOT_INSTALLED`, empty
-`qualification_live`). Claude's shim starts under the same PATH. Resolving EXE-1 widens what the worker may execute,
-so it needs the owner's decision (options in `PHASE2CLOSE_C7_READINESS.md`, item EXE-1). After that decision and
-PA-8, PA-10 is: PA-5 performed from the real app, the worker process running Codex under the client profile login.
+EXE-1 is resolved (2026-10-08): the worker runs the NATIVE `codex.exe` from the npm vendor directory, pinned with every
+executable and library of that directory (33 files on this PC) and nothing resolved by name; its PATH stays
+venv + System32 + git. Automated evidence (`evidence\phase2oq\`): in the REAL worker process the native record
+composes; with no client login the harness is shown unusable and Approve is refused before the server sees it
+(`HARNESS_NOT_USABLE`); in the worker ENVIRONMENT (auth gate substituted, scripted local model) a run reaches
+`SETTLED_VERIFIED` and a mid-run cancel kills the sandboxed child. None of that is PA-10.
+
+**Decision EXE-1b (owner, before PA-10): the Codex Windows sandbox backend of the client profile.** A fresh Codex home
+has none and Codex then refuses every command ("blocked by policy"). Measured 2026-10-08 (`evidence\phase2oq\sandbox_probes\`):
+
+| Backend | Setup | Writes outside the workspace | Network from sandboxed commands |
+|---|---|---|---|
+| `unelevated` | none | denied (verified) | **NOT blocked** (verified: localhost and example.com reached) |
+| `elevated` | one-time administrator setup by Codex (sandbox accounts) | denied (Codex documentation) | blocked per Codex's own messages (NOT verified here) |
+
+Choose one with `provision --codex-sandbox ...` (or write `[windows]` / `sandbox = "..."` in
+`<client_root>\home\.codex\config.toml` yourself). For `elevated`, run the native `codex.exe` once interactively in the
+login window of PA-8 and accept its Windows sandbox setup (administrator prompt; the exact prompt was not exercised here).
+
+Then PA-10 is: in the real app (PA-1), choose the Codex row (it must now read `authenticated`, `native qualified`,
+usable), run PA-5. PASS when the run completes with `SETTLED_VERIFIED` and a verified `pong.txt`-style result, and the
+PA-5 cancel ends `UNCERTAIN`/`CANCELLED_AFTER_DISPATCH` with no `codex` process left in Task Manager.
 
 ### PA-11 controlled power-loss durability (throwaway VM)
 
-Needs a Windows VM the owner may power off hard. Not this PC: preflight found no Hyper-V cmdlets here; enabling
-Hyper-V is a system change for the owner. Any hypervisor with a hard power-off works (Hyper-V `Stop-VM -TurnOff`,
-VirtualBox `VBoxManage controlvm <vm> poweroff`, VMware `vmrun stop <vmx> hard`).
+Needs a throwaway Windows VM the owner may power off hard. Never this PC. This PC (2026-10-08 preflight): no Hyper-V
+cmdlets, no VirtualBox, no VMware; the Windows hypervisor IS present (VBS/WSL2), so VirtualBox 7 and VMware Workstation
+run on the Windows Hypervisor Platform (slower, supported). The guest must be Windows (the supervisor's containment is
+Windows-only); it needs only stock Python 3.13 and four items of this tree (`uri_supervisor\`,
+`scripts\phase2close_powerloss_harness.py`, `tests\phase2a\helpers\fake_executor.py`, and the folder layout).
 
-1. VM: Windows 11, the worktree copied in, Python 3.13 venv, virtual disk with host write cache disabled or a
-   flush-honouring setting. Network reachable from the host.
-2. VM autostart (Task Scheduler, at log-on of a dedicated auto-logon user):
-   `python scripts\phase2close_powerloss_harness.py guest --ledger D:\pl\ledger.db --host <host-ip> --port 47710`
+Recommended rig: **VirtualBox 7** (free). Owner actions: install VirtualBox, download a Windows 11 evaluation ISO.
+1. VM: 2 vCPU, 4 GB, 64 GB VDI on a SATA controller with host I/O cache OFF, and flushes honoured:
+   ```powershell
+   VBoxManage storagectl URI-PL --name SATA --hostiocache off
+   VBoxManage setextradata URI-PL "VBoxInternal/Devices/ahci/0/LUN#0/Config/IgnoreFlush" 0
+   ```
+   NAT networking: the guest reaches the host's harness at `10.0.2.2` (VirtualBox maps it to the host loopback, so no
+   firewall rule is needed).
+2. Guest: build the bundle on this PC (`.\.venv\Scripts\python.exe -I scripts\phase2oq_powerloss_bundle.py`, writes
+   `..\evidence\phase2oq\powerloss_guest_bundle.zip` with a SHA-256 `MANIFEST.json`), copy it into the VM, extract to
+   `C:\pl\uri`, install Python 3.13, create a local auto-logon user, add a second virtual disk `D:` for the ledger (same
+   cache settings), then in an elevated PowerShell inside the VM:
+   `C:\pl\uri\guest\install_guest_task.ps1 -IAmInsideTheThrowawayVM` (FULL); later rerun it with
+   `-Synchronous NORMAL -Ledger D:\pl_normal\ledger.db` for the control. The guest reads its own System event log at
+   every boot (D8 witness); keep the default event log settings. (The installer was not exercised on a VM here.)
 3. Host, FULL series (200 iterations):
    ```powershell
-   .\.venv\Scripts\python.exe -I scripts\phase2close_powerloss_harness.py host --port 47710 --iterations 200 --out ..\evidence\phase2close\powerloss_full `
-     --power-off "powershell -NoProfile -Command Stop-VM -Name URI-PL -TurnOff -Force" `
-     --power-on  "powershell -NoProfile -Command Start-VM -Name URI-PL"
+   .\.venv\Scripts\python.exe -I scripts\phase2close_powerloss_harness.py host --port 47710 --iterations 200 --out ..\evidence\phase2oq\powerloss_full `
+     --power-off "VBoxManage controlvm URI-PL poweroff" --power-on "VBoxManage startvm URI-PL --type headless"
    ```
-4. Control series: change the guest task to add `--synchronous NORMAL`, fresh ledger folder, same host command with
-   `--out ..\evidence\phase2close\powerloss_normal` (any iteration count; it must lose at least one acknowledged step).
-5. Assess both series together (the host's own `SERIES_ALL_PASS` is never a verdict on durability):
+   VMware Workstation alternative: `--power-off "vmrun stop <vmx> hard" --power-on "vmrun start <vmx> nogui"`.
+4. Control series: guest task with `--synchronous NORMAL`, fresh ledger folder, `--out ..\evidence\phase2oq\powerloss_normal`
+   (any count; it must lose at least one acknowledged step, otherwise the rig is too weak: record BLOCKED).
+5. Assess (the only verdict; recomputed from the raw `acks.jsonl`):
    ```powershell
-   .\.venv\Scripts\python.exe -I scripts\phase2close_powerloss_harness.py assess --full ..\evidence\phase2close\powerloss_full `
-     --control ..\evidence\phase2close\powerloss_normal --out ..\evidence\phase2close\powerloss_assessment.json
+   .\.venv\Scripts\python.exe -I scripts\phase2close_powerloss_harness.py assess --full ..\evidence\phase2oq\powerloss_full `
+     --control ..\evidence\phase2oq\powerloss_normal --out ..\evidence\phase2oq\powerloss_assessment.json
    ```
-   `assess` recomputes both series from their raw `acks.jsonl` (the summary and iterations files must agree with it) and
-   requires a FULL series of >= 200 iterations that all pass (guest reports `synchronous` FULL, every iteration
-   acknowledged work, no power command failed) AND a NORMAL control that lost at least one acknowledged step. Its best
-   result is `EVIDENCE_SUFFICIENT_PENDING_OWNER_ATTESTATION` with `"qualified": false`. Record PA-11 PASS only if you
-   also attest that the recorded `power_method` was a real hypervisor power cut (not a guest shutdown, not a process
-   kill). If the control loses nothing, the rig is too weak: record BLOCKED, not PASS (`PHASE2A_POWER_LOSS_TEST_PLAN.md`).
+   Requirements: FULL >= 200 iterations all PASS at `synchronous` FULL; NORMAL control lost >= 1 acknowledged step; the
+   power-off command is a recognised hard-off form; and (D8, new) EVERY iteration carries the guest OS's own
+   unclean-shutdown event (Kernel-Power 41 / EventLog 6008) created after that boot's ready time, so a guest shutdown or
+   reboot cannot pass. Best result: `EVIDENCE_SUFFICIENT_PENDING_OWNER_ATTESTATION`, `"qualified": false`. Record PA-11
+   PASS only if you also attest the power method was a real hypervisor power cut of THAT VM.
 
 Automated support (SIMULATED, never a qualification): `tests/phase2close/test_powerloss_harness.py` and a local
 `simulate` run (process kill instead of power cut) prove the acks, the boot report, the comparison and the
@@ -195,6 +230,19 @@ recovery checks work end to end.
 
 Not a test. The owner reads `PHASE2CLOSE_C7_READINESS.md` and either records BLOCKED with the open items or gives a
 written authorization naming manifests, ports and launch entries (C7 gate 10). This runbook never performs cutover.
+
+### PA-13 Chat -> supervised handoff (C6 Option B, owner accepted 2026-10-08)
+
+1. In Chat (same app session as PA-1), send a short message and wait for URI's reply to settle.
+2. Under YOUR message expect "Make this a supervised task" (absent while a reply is still pending or awaiting its own
+   approval; absent on installations without the supervised opt-in). Press it.
+3. Expect the supervised screen with your words in the composer, the banner "Draft from the conversation. Nothing has
+   been sent ...", "Next: choose an executor.", no executor selected, Send disabled. Nothing new appears in Chat.
+4. Edit a word: expect "Edited since it left the conversation." Choose the deterministic row, Send, then Decline.
+5. Press Back: the conversation is unchanged, your original message is still there.
+
+PASS when 2-5 hold. Automated support: widget tests "C6 B ..." in `uri_ui/test/supervised_execution_screen_test.dart`
+and `uri_ui/test/chat_supervised_handoff_test.dart`.
 
 ## 2. After the session
 
@@ -214,11 +262,12 @@ the server window (Ctrl+C). The campaign folder can be deleted afterwards; nothi
 | PA-2 approve | owner | PENDING |
 | PA-3 deny | owner | PENDING |
 | PA-4 cancel before dispatch | owner (part 2 needs PA-10) | PENDING |
-| PA-5 cancel after dispatch | owner + PA-10 | PENDING (blocked by EXE-1) |
+| PA-5 cancel after dispatch | owner + PA-10 | PENDING |
 | PA-6 close/restart/reconnect | owner | PENDING |
 | PA-7 worker/server interruption | owner | PENDING |
 | PA-8 Codex client-profile login | owner credential action | PENDING |
 | PA-9 Claude client-profile login | owner credential action | PENDING |
-| PA-10 native execution in worker | owner decision on EXE-1 + PA-8 | BLOCKED (EXE-1) |
-| PA-11 power loss | owner VM + hypervisor | PENDING |
+| PA-10 native execution in worker | PA-8 + decision EXE-1b (sandbox backend) | PENDING (EXE-1 resolved; EXE-1b open) |
+| PA-11 power loss | owner VM + hypervisor install | PENDING |
 | PA-12 cutover authorization | owner decision | PENDING |
+| PA-13 Chat -> supervised handoff | owner | PENDING |

@@ -6,7 +6,8 @@ this ledger supersedes as the single place to look). Maintainer: whoever changes
 evidence reference. History is kept: when a status changes, the old value moves to the change log at the end.
 
 Status vocabulary (one or more, in this order of strength): RESEARCHED, PLANNED, DESIGN ONLY, IMPLEMENTED, TESTED,
-INDEPENDENTLY ACCEPTED, PHYSICALLY QUALIFIED, FROZEN; or BLOCKED / DEFERRED. A design document or prototype never
+INDEPENDENTLY ACCEPTED, PHYSICALLY QUALIFIED, FROZEN, DEPLOYED; or BLOCKED / DEFERRED. (DEPLOYED added 2026-10-08 by
+the operational-qualification mandate; nothing is DEPLOYED.) A design document or prototype never
 makes an item IMPLEMENTED. TESTED means an automated run with `COMPLETED_WITH_RESULT` in the cited log.
 
 Evidence roots: `E:` = `C:\Users\cheta\.codex\worktrees\uri-phase2a\evidence\`; paths without a prefix are relative to
@@ -18,36 +19,39 @@ the Phase 2 worktree `C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent`.
 |---|---|---|---|---|---|---|---|
 | 2A durable task supervisor (`uri_supervisor/`) | durable admission, fencing, containment, recovery on a WAL+FULL ledger | IMPLEMENTED, TESTED, INDEPENDENTLY ACCEPTED (as part of 2D/ops candidates) | `PHASE2A_REPORT.md`; `tests/phase2a` | physical power loss | PA-11 | none | VM campaign |
 | 2B Core <-> supervisor bridge (`uri_supervisor_bridge/`) | signed ticket -> supervised task; no new authority | IMPLEMENTED, TESTED, INDEPENDENTLY ACCEPTED | `PHASE2B_REPORT.md`; `tests/phase2b` | — | — | none | — |
-| 2C native qualification (run-scoped) | real CLI through the full governed chain | TESTED (Codex NATIVE RUN in-process, owner shell login); Claude BLOCKED (not logged in) | `PHASE2C_NATIVE_QUALIFICATION_REPORT.md`; `E:phase2c\` | client-profile login; EXE-1 | PA-8/9, EXE-1 | EXE-1 | owner decision |
+| 2C native qualification (run-scoped) | real CLI through the full governed chain | TESTED (Codex NATIVE RUN in-process, owner shell login); Claude BLOCKED (not logged in); EXE-1 RESOLVED in the operational-qualification slice (native binaries) | `PHASE2C_NATIVE_QUALIFICATION_REPORT.md`; `E:phase2c\`; `PHASE2OQ_REPORT.md` section C | client-profile login; EXE-1b | PA-8/9, EXE-1b | EXE-1b | owner |
 | 2D composition (persisted qualification, policy file, opt-in profiles) | the worker/server profiles compose qualified rows only | IMPLEMENTED, TESTED, INDEPENDENTLY ACCEPTED (Codex round 3) | `PHASE2D_REPORT.md`; `E:phase2d_review\` | — | — | none | — |
 | UI/operations slice (execution lifecycle, mid-run cancel, reconnect, supervised screen) | the real UI drives supervised execution with digest-bound approval | IMPLEMENTED, TESTED, INDEPENDENTLY ACCEPTED (Codex round 7, candidate `9a0be52c...`) | `PHASE2OPS_REPORT.md`; `E:phase2ops_review\round7\` | human click (PA-1..7) | owner session | none | owner session |
 | LOG-3 refusal log retains at most 4096 bytes | bounded memory for error bodies | IMPLEMENTED, TESTED, INDEPENDENTLY ACCEPTED (closure round 6) (negative control: r6 code peaks 4.2 MB) | `uri_supervisor_bridge/refusal_log.py`; `tests/phase2ops/test_refusal_log.py::test_log3_*` | independent review | P2-1 | none | review |
 | VAL-1 historical HTTP 403 | establish cause; prevent recurrence harm | TESTED: mechanism reproduced deterministically (frozen `issued_at == int(clock())` check across a second boundary -> `TICKET_CLOCK_OR_GENERATION` 403, turn unchanged); measured in-process window 0.55 ms; bounded single resend IMPLEMENTED/TESTED; historical instance NOT attributable (no code was logged then) | `tests/phase2ops/test_val1_clock_boundary.py`; `PHASE2CLOSE_REPORT.md` section C | independent review; physical sessions keep the refusal log | P2-1 | none | review |
 | CAP-1 abandoned approval cards held server capacity | a dropped card must not block the session (or, after four, the server) for 15 minutes | IMPLEMENTED, TESTED (incl. real processes; 3 accepted assertions updated, recorded) | `tests/phase2ops/test_capacity_release.py`; `tests/phase2ops/test_worker_process.py::test_cap1_*` | independent review | P2-1 | none (tightening; review may disagree) | review |
 | ISO-1 Codex ignored the client profile | a client executor must never use the owner's global login | IMPLEMENTED, TESTED (live leak observed, pin closes it) | `uri_supervisor_bridge/qualification.py::client_cli_homes`; `tests/phase2close/test_iso1_cli_home.py` | independent review | P2-1 | none | review |
-| SUP-1 suspended orphan when the supervisor dies during spawn | a supervisor death can never leave a process behind | RECORDED (Low; no effect possible: the child is never resumed) | `uri_supervisor/winproc.py` `spawn_contained` (CREATE_SUSPENDED before AssignProcessToJobObject); seen twice in SIMULATED power-loss tests, killed by the orchestrator; Codex closure round 1 K1 | atomic job assignment (`PROC_THREAD_ATTRIBUTE_JOB_LIST`) in Phase 2A containment | review of a Phase 2A change | none | hardening slice |
+| SUP-1 suspended orphan when the supervisor dies during spawn | a supervisor death can never leave a process behind | IMPLEMENTED, TESTED (operational qualification: the hosting process joins its own kill-on-close job before any spawn; real-process negative control) | `uri_supervisor/winproc.py::contain_current_process`; `Supervisor.__init__`; `tests/phase2oq/test_sup1_self_containment.py`; live orphan observed 2026-10-08 (`E:phase2oq\sup1_orphan_observed_20261008.json`) | independent review | P2-1 | none | review |
 | Acceptance `qualify` credential isolation (D1) | only a client-profile login can qualify a client | IMPLEMENTED, TESTED | `scripts/phase2close_acceptance.py::probe_environment`; `tests/phase2close/test_acceptance_tooling.py` | independent review | P2-1 | none | review |
 | Power-loss verdict discipline (D2, D4) | no harness output can pass for a physical qualification; the assessment is recomputed from raw records | IMPLEMENTED, TESTED | `phase2close_powerloss_harness.py` (`SERIES_*`, `assess`, `qualified` always false); tests | independent review | P2-1 | none | review |
-| EXE-1 worker cannot launch node-based CLIs | native execution inside the worker process | BLOCKED | `PHASE2CLOSE_C7_READINESS.md` section 4 (observed `"node" is not recognized`) | option A implementation | owner decision | **yes (A/B/C/D)** | owner decision |
-| Physical power-loss durability | WAL+FULL survives real power cuts | harness IMPLEMENTED, TESTED (SIMULATED plumbing only); durability NOT QUALIFIED | `scripts/phase2close_powerloss_harness.py`; `tests/phase2close/test_powerloss_harness.py`; `PHASE2A_POWER_LOSS_TEST_PLAN.md` | 200+ VM iterations + NORMAL control | VM + hypervisor (none on this PC) | owner provides VM | PA-11 |
-| Human acceptance on the real app | owner approves/denies/cancels/reopens | PLANNED (runbook) | `PHASE2CLOSE_PHYSICAL_ACCEPTANCE_RUNBOOK.md`; `scripts/phase2close_acceptance.py` | PA-1..PA-7 | owner present | none | owner session |
+| EXE-1 worker cannot launch node-based CLIs | native execution inside the worker process | IMPLEMENTED, TESTED: native `codex.exe`/`claude.exe` qualified with pinned vendor launch chain, no interpreter, no PATH change; REAL worker composes the record and fails closed without a client login; worker-environment lifecycle + cancel pass against a scripted model (NOT PA-10) | `uri_supervisor_bridge/qualification.py` (`codex_native_launch_chain`, `native_executable`, `check_codex_client_home`); `scripts/phase2oq_native_worker.py`; `tests/phase2oq/test_exe1_native.py`; chain gate `native-worker` | EXE-1b, client-profile login, PA-10 | owner | EXE-1b (sandbox backend) | owner |
+| Physical power-loss durability | WAL+FULL survives real power cuts | harness IMPLEMENTED, TESTED (SIMULATED plumbing only); D8 guest unclean-shutdown witness IMPLEMENTED, TESTED; guest bundle IMPLEMENTED, TESTED (simulated from the extracted bundle); durability NOT QUALIFIED | `scripts/phase2close_powerloss_harness.py`; `scripts/phase2oq_powerloss_bundle.py`; `tests/phase2close/test_powerloss_harness.py`; `tests/phase2oq/test_powerloss_bundle.py` | 200+ VM iterations + NORMAL control + owner attestation | hypervisor + VM (none on this PC) | owner provides VM | PA-11 |
+| Human acceptance on the real app | owner approves/denies/cancels/reopens and uses the Chat handoff | PLANNED (runbook, PA-1..PA-13) | `PHASE2CLOSE_PHYSICAL_ACCEPTANCE_RUNBOOK.md`; `scripts/phase2close_acceptance.py` (preflight, provision, login-guide, qualify, status, record, collect) | PA-1..PA-7, PA-13 | owner present | none | owner session |
 | Phase 2 rollback overlay | offline rollback of the Phase 2 file set | DESIGN ONLY | `PHASE2CLOSE_C7_READINESS.md` P2-5 | implementation on the final tree | final tree | none | automation slice |
+| OQ-1 approval offered for an unusable executor | an approval must never be sent for an executor that cannot run now | IMPLEMENTED, TESTED (`execution_begin` refuses `HARNESS_NOT_USABLE` before the server; UI disables Approve; 1 accepted assertion changed, disclosed) | `uri_supervisor_bridge/execution.py::harness_state`; `tests/phase2ops/test_lifecycle.py`; widget tests "OQ-1" | independent review | P2-1 | none | review |
+| EXE-1b Codex Windows sandbox backend of the client profile | Codex commands run sandboxed with the owner's chosen confinement | IMPLEMENTED (fail-closed `CODEX_WINDOWS_SANDBOX_NOT_CONFIGURED`; `provision --codex-sandbox` owner choice), TESTED; measured: `unelevated` confines writes, NOT network | `E:phase2oq\sandbox_probes\README.md`; `tests/phase2oq/test_exe1_native.py`, `test_acceptance_oq.py` | owner choice; elevated setup if chosen | — | **yes** | owner |
+| Client-profile authentication tooling | installed / authenticated / qualified / operational kept apart; logins never copied | IMPLEMENTED, TESTED (`login-guide` prints only; `status` four states) | `scripts/phase2close_acceptance.py`; `tests/phase2oq/test_acceptance_oq.py` | PA-8/PA-9 | owner | none | owner session |
 | Phase 2 freeze | frozen Phase 2 checkpoint | DEFERRED | — | all of the above | owner | **yes** | after acceptance |
 
 ## 2. Chat, conversation and UI
 
 | Item | Goal | Status | Evidence | Outstanding | Depends on | Owner decision | Next step |
 |---|---|---|---|---|---|---|---|
-| C6 decision 2: Chat <-> supervised execution | conversation-to-task without losing context or approval boundaries | RESEARCHED, PLANNED (recommendation B); handoff seam IMPLEMENTED, TESTED (widget) | `PHASE2CLOSE_C6_CHAT_INTEGRATION.md`; `uri_ui/lib/services/task_handoff.dart`; widget tests | Chat action (one widget + 4 tests) | decision | **yes** | owner chooses A/B/C/D |
-| C6 decision 1: "Companion" / "Intelligence" roles | defined roles | BLOCKED on owner | `C6_UI_INTEGRATION_CONTRACT.md`; `_V1` harness record mentions Companion/Workspace/Intelligence | definition | — | **yes** | owner |
-| C6 decision 3: Brain rows offered | which Brain rows the UI may offer | BLOCKED on owner + C5 policy review | `C7_CUTOVER_REQUIREMENTS.md` gate 3 | review | — | **yes** | owner |
+| C6 decision 2: Chat <-> supervised execution | conversation-to-task without losing context or approval boundaries | OWNER DECIDED Option B (2026-10-08); Chat action IMPLEMENTED, TESTED (widget + Chat pane); PHYSICALLY QUALIFIED: no (PA-13) | `PHASE2CLOSE_C6_CHAT_INTEGRATION.md` section 9; `uri_ui/lib/widgets/supervised_handoff_action.dart`; `uri_ui/test/chat_supervised_handoff_test.dart` | review; PA-13 | — | none | review, owner session |
+| C6 decision 1: "Companion" / "Intelligence" roles | defined roles | RESOLVED AS A DEFINITION (no authority effect, reversible): Intelligence = policy mode (owner D2), Companion = Compact/desktop presentation | `PHASE2OQ_REPORT.md` section D | owner may override | — | confirm (optional) | — |
+| C6 decision 3: Brain rows offered | which Brain rows the UI may offer | PENDING (authority/consent: who reasons over requests; which rows the server composes) | `C7_CUTOVER_REQUIREMENTS.md` gate 3; `PHASE2OQ_REPORT.md` section D | review of C5 policy | — | **yes** | owner |
 | Companion UI (Living Energy Orb) | ambient companion presence driven by real state | DESIGN ONLY (state contract) | `docs/architecture/PHASE2CLOSE_UI_READINESS.md` section 3 | visual design; line reconciliation | P2-6 | yes (design approval) | design phase |
-| Voice Companion <-> Workspace transitions | voice-driven presentation switches | PLANNED; voice status strip IMPLEMENTED on `_V1` only | `_V1` `docs/design_library/approved/voice_status_2026-10-04.md` | voice parity decision; hardware speech acceptance | P2-6 | **yes** | owner |
+| Voice Companion <-> Workspace transitions and voice parity | voice-driven presentation switches; voice as a draft source | PLANNED (rules + acceptance in `PHASE2OQ_UI_VOICE_ACCEPTANCE_PLAN.md`); voice infrastructure exists on `_V1` only (uncommitted, awaiting user test) -> BLOCKED here | `_V1` `CAMERA_VOICE_GEMMA_IMPLEMENTATION_REPORT.md`; plan section 3 | line choice; voice rules 3-4 | P2-6 | **yes** | owner |
 | Interactive Brain / capability visualization | show executors, qualification, policy, grants | DESIGN ONLY (data sources named) | `PHASE2CLOSE_UI_READINESS.md` section 2 | read-only API contract + design | P2-6 | design approval | design phase |
 | Guided onboarding (roles, providers, models, permissions, connection, auth, readiness) | first-run path to a ready installation | PARTIAL: legacy onboarding screens IMPLEMENTED (Phase 1 line); Phase 2 readiness checks exist as scripts | `screens/onboarding/*`; `scripts/phase2close_acceptance.py preflight` | onboarding over preflight/discover/qualify; roles definition | C6 decision 1, EXE-1 | yes | design phase |
 | Approval/progress/cancel/recovery/receipt presentation | clear, honest execution UX | IMPLEMENTED, TESTED, INDEPENDENTLY ACCEPTED (supervised screen) | `supervised_execution_screen.dart`; widget tests | extraction to shared widgets | next UI phase | none | next UI phase |
 | Pinned UI release build | `ui_binary` + `ui_sha256` in the client manifest | PLANNED | `C6_UI_INTEGRATION_CONTRACT.md` | build + pin | C7 | at cutover | C7 slice |
-| Development-line reconciliation (P2-6) | one tree to ship | PLANNED | `PHASE2CLOSE_C7_READINESS.md` P2-6 | integration plan | owner | **yes** | owner chooses line |
+| Development-line reconciliation (P2-6) | one tree to ship | RESEARCHED: recommendation = Core lineage (`integration/git-sync-20261008` + accepted OQ candidate); `_V1`/`eb73693` as donors | `PHASE2OQ_SHIPPING_LINE_RECOMMENDATION.md` | owner decision; A11 sync | git-sync work | **yes** | owner |
 
 ## 3. Research and later-phase capabilities
 
@@ -64,31 +68,8 @@ the Phase 2 worktree `C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent`.
 
 ## 4. C7 cutover
 
-See `PHASE2CLOSE_C7_READINESS.md` (gates 1-10 + P2-1..P2-8). Summary: gates 1-2 MET (Phase 1), 3/9 PARTIAL, 4/5/8
-NOT MET, 6/10 NOT AUTHORIZED/REQUESTED, 7 PROCEDURE ONLY. Verdict NOT READY.
-
-## 5. Repository, runtime and PC consolidation (added 2026-10-08)
-
-Source: `docs/governance/consolidation/` (plan, PC audit, branch decision, salvage ledger, verification report) and
-`docs/governance/URI_RUNTIME_AUTHORITY_MANIFEST.json`. Evidence root `C:\Users\cheta\Development\uri-canonical-evidence\`.
-Note: the Phase 2 worktree keeps its own copy of this ledger; reconcile the two copies when the canonical line is promoted.
-
-| Item | Goal | Status | Evidence | Outstanding | Depends on | Owner decision | Next step |
-|---|---|---|---|---|---|---|---|
-| CONS-1 legacy scheduled task `\URIServer` | no legacy server at logon | QUARANTINE PREPARED (`scripts/uri_containment.ps1`, plan only) | PC audit F-1 | apply | — | **yes** | `-Apply` |
-| CONS-2 `URI.lnk` shortcuts to the donor desktop | no donor launch by click | QUARANTINE PREPARED | PC audit F-3 | apply | CONS-1 | **yes** | `-Apply` |
-| CONS-3 stop the running legacy server | free 8000; end legacy writes | PLANNED | PC audit F-1 | timing | CONS-1 | **yes** | owner chooses time |
-| CONS-4 authoritative install dir, state root, port | provisioned C1 server + client | PLANNED | plan section 7 P-4 | provisioning | CONS-1..3 | **yes** | provision |
-| CONS-5 shared UI preferences (`com.example/uri_ui`) | per-installation client storage | DESIGN ONLY (C3/C6 item) | PC audit F-2 | implementation | C6 | design approval | C6 slice |
-| CONS-6 runtime authority check + start gate | detect/refuse unauthorized runtimes | IMPLEMENTED, TESTED (adversarial tests; live run) | verification report | wire into installed launch path at cutover | CONS-4 | at cutover | — |
-| CONS-7 frozen `HEAD == e8e3b65` coupling | run the Core from a committed canonical branch | BLOCKED (frozen Core file) | branch decision section 3 | change `runtime_identity.py` + Phase 2 base tests | owner | **yes** | keep materialization or unfreeze |
-| CONS-8 canonical branch promotion | `main` = Core lineage, default branch | CANDIDATE BUILT, VERIFIED | branch decision; verification report | push + default change | — | **yes** | plan P-1, P-6 |
-| CONS-9 donor reconciliation (desktop features, M36/M37/M39, dynamic planning, dictation, harness console, voice) | parity before retiring the installed desktop | PLANNED (= P2-6) | salvage ledger sections 2-3 | per-capability port with provenance | C5-C7 | **yes** (priority order) | owner picks first donor |
-| CONS-10 historical branch / worktree retirement | fewer competing lines | PLANNED | branch decision section 5 | archive tags, deletion | CONS-8 | **yes** per item | — |
-| CONS-11 NVMe model copy, `.tmp_m33` worktree | remove duplicates | PROPOSED DELETION | salvage ledger section 4 | hashes identical to pinned copy | — | **yes** | — |
-| CONS-12 vault restore drill | proven recovery from `D:\URI-preservation` | PLANNED | salvage ledger section 5 | test restore to a scratch path | — | none | schedule |
-| CONS-13 secret ACL hardening | Codex sandbox cannot read URI secrets | DONE (33 files, reversible) | PC audit section 4 | secrets created later inherit again | — | none | re-run after cutover |
-| CONS-14 Phase 1 provisional checkpoints `work/c1/checkpoints` (11 MB) | fresh-clone reproducibility of `test_phase1_offline_components` | LOCAL ONLY (Phase 1 integration worktree) | verification report section 1.1 | preserve on GitHub | — | **yes** (push) | preserve branch |
+See `PHASE2CLOSE_C7_READINESS.md` (gates 1-10 + P2-1..P2-11; section 7 = operational-qualification update). Summary:
+gates 1-2 MET (Phase 1), 3/4/9 PARTIAL, 5/8 NOT MET, 6/10 NOT AUTHORIZED/REQUESTED, 7 PROCEDURE ONLY. Verdict NOT READY.
 
 ## Change log
 
@@ -104,4 +85,10 @@ Note: the Phase 2 worktree keeps its own copy of this ledger; reconcile the two 
 | 2026-10-08 | D4 residual (invariants), D6 | open after round 4 | REPAIRED + TESTED | `E:phase2close_review\round4\` |
 | 2026-10-08 | D7, power-method check | open after round 5 | REPAIRED / NARROWED + TESTED | `E:phase2close_review\round5\` |
 | 2026-10-08 | Phase 2 closure (LOG-3, VAL-1, CAP-1, ISO-1, D1-D7, handoff seam, acceptance tooling, power-loss harness) | IMPLEMENTED, TESTED | INDEPENDENTLY ACCEPTED (Codex closure round 6, `-f` fcd0d72e...71298); D8 + K1 recorded Low | `E:phase2close_review\round6\` |
-| 2026-10-08 | CONS-1..CONS-14 | (not tracked) | consolidation items added; CONS-6 IMPLEMENTED, TESTED; CONS-13 DONE | `docs/governance/consolidation/` |
+| 2026-10-08 | SUP-1 | RECORDED (Low) | IMPLEMENTED, TESTED (operational qualification) | `tests/phase2oq/test_sup1_self_containment.py` |
+| 2026-10-08 | EXE-1 | BLOCKED (owner decision) | owner approved; IMPLEMENTED, TESTED (native binaries; REAL worker fails closed without login; worker-env lifecycle) | `PHASE2OQ_REPORT.md` section C; `E:phase2oq\` |
+| 2026-10-08 | EXE-1b, OQ-1, CODEX_HOME invariant | (not known) | found in EXE-1 work; IMPLEMENTED, TESTED; EXE-1b needs the owner | report sections C |
+| 2026-10-08 | D8 power-method check | RECORDED (Low) | IMPROVED: guest OS unclean-shutdown witness required per iteration; attestation still required | `tests/phase2close/test_powerloss_harness.py::test_d8_*` |
+| 2026-10-08 | C6 decision 2 | recommendation B, BLOCKED on owner | owner chose B; Chat action IMPLEMENTED, TESTED | `PHASE2CLOSE_C6_CHAT_INTEGRATION.md` section 9 |
+| 2026-10-08 | C6 decision 1 | BLOCKED on owner | RESOLVED AS A DEFINITION (no authority effect) | report section D |
+| 2026-10-08 | P2-6 line reconciliation | PLANNED | RESEARCHED, recommendation made | `PHASE2OQ_SHIPPING_LINE_RECOMMENDATION.md` |

@@ -141,8 +141,11 @@ def test_worker_profile_refuses_fixture_records_without_the_flag(procs):
         assert found["value"]["qualification"][0]["status"] == "INVALIDATED" and found["value"]["qualification"][0]["reason"] == "LEVEL_NOT_ALLOWED"
         turn = c2({"command": "turn_start", "session_id": uid(), "text": TEXT, "reasoning": CLAUDE})
         assert turn["value"]["state"] == "approval_required"
+        # Operational qualification review round 1, OQ-R1-2 (2026-10-08, disclosed change of an accepted assertion):
+        # was approved and refused at dispatch (SETTLED_FAILED); now `turn_decide approve` for an executor that is not
+        # usable NOW is refused before the approval reaches the server, and the turn is released (cancelled).
         done = c2({"command": "turn_decide", "turn_id": turn["value"]["turn_id"], "approve": True})
-        assert done["result"] == "OK" and done["value"]["code"] == "SETTLED_FAILED"
+        assert done == {"result": "REFUSED", "code": "HARNESS_NOT_USABLE"}
         assert not list((Path(m["client_root"]) / "workspace/results").rglob("out.txt"))
         assert c2({"command": "close"})["result"] == "CLOSED"
         strict.stdin.close()

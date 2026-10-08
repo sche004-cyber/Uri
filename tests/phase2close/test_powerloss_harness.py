@@ -110,14 +110,17 @@ PM = {"power_off": "powershell -NoProfile -Command Stop-VM -Name URI-PL -TurnOff
       "power_on": "powershell -NoProfile -Command Start-VM -Name URI-PL"}
 
 
-def _series(d, *, n=200, sync="FULL", label="VM_SERIES", lose_at=(), method=PM, tasks=3, requested=None):
+def _series(d, *, n=200, sync="FULL", label="VM_SERIES", lose_at=(), method=PM, tasks=3, requested=None, unwitnessed=()):
     """Write a COHERENT synthetic series directory (raw acks.jsonl + iterations.json + summary.json) in the exact
     shape `campaign` writes, using the harness's own row/summary builders."""
     d.mkdir(parents=True, exist_ok=True)
     msgs, rows = [], []
     msgs.append({"type": "report", "boot": 1, "previous_boot": 0, "synchronous": sync, "report": {"ledger": "FIRST_BOOT"}})
+    # D8 (operational qualification): each boot's ready carries the guest clock; each next report carries the guest OS
+    # witness (an unclean-shutdown event after that ready), except for the boots listed in `unwitnessed`.
     for b in range(1, n + 1):
-        msgs.append({"type": "ready", "boot": b, "durability": {"synchronous": sync}})
+        ready = {"type": "ready", "boot": b, "durability": {"synchronous": sync}, "guest_wall": 1_000_000 + 100 * b}
+        msgs.append(ready)
         acked = {f"pl-b{b}-{k:06d}": "ended" for k in range(1, tasks + 1)}
         msgs += [{"type": "ack", "boot": b, "task_id": t_, "step": "ended"} for t_ in acked]
         present = dict(acked)
@@ -125,9 +128,12 @@ def _series(d, *, n=200, sync="FULL", label="VM_SERIES", lose_at=(), method=PM, 
             present.pop(next(iter(present)))
         report = {"steps": present, "invariants_ok": True, "integrity": "ok", "orphan_attempts": [], "still_in_flight": [],
                   "relaunched_by_recovery": []}
-        msgs.append({"type": "report", "boot": b + 1, "previous_boot": b, "synchronous": sync, "report": report})
-        rows.append(pl.build_row(b, b, 1.0, acked, report))
-    msgs.append({"type": "ready", "boot": n + 1, "durability": {"synchronous": sync}})
+        events = [] if b in unwitnessed else [1_000_000 + 100 * b + 50]
+        rmsg = {"type": "report", "boot": b + 1, "previous_boot": b, "synchronous": sync, "report": report,
+                "os_witness": {"unclean_event_times": events, "boot_time": 1_000_000 + 100 * b + 40}}
+        msgs.append(rmsg)
+        rows.append(pl.build_row(b, b, 1.0, acked, report, ready, rmsg))
+    msgs.append({"type": "ready", "boot": n + 1, "durability": {"synchronous": sync}, "guest_wall": 1_000_000 + 100 * (n + 1)})
     (d / "acks.jsonl").write_text("".join(_json.dumps(m) + chr(10) for m in msgs), encoding="utf-8")
     (d / "iterations.json").write_text(_json.dumps(rows), encoding="utf-8")
     summary = pl.build_summary(label, method, n if requested is None else requested, rows, {sync})
@@ -335,3 +341,27 @@ def test_each_recognised_hard_off_form_is_accepted(tmp_path):
 def test_series_verdicts_never_say_qualified(tmp_path):
     src = (ROOT / "scripts" / "phase2close_powerloss_harness.py").read_text(encoding="utf-8")
     assert "ALL_ITERATIONS_PASS" not in src and "PHYSICAL_VM" not in src and '"qualified": False' in src
+
+
+def test_d8_every_vm_iteration_needs_the_guest_unclean_shutdown_witness(tmp_path):
+    """D8 (operational qualification): a series whose guest OS recorded no unclean shutdown after a boot's ready (a guest
+    shutdown or reboot instead of a power cut) is INSUFFICIENT, even with a recognised hard-off command."""
+    good_ctl = _series(tmp_path / "ctl", n=5, sync="NORMAL", lose_at=(2,))
+    assert pl.assess(_series(tmp_path / "ok", n=200), good_ctl)["verdict"] == "EVIDENCE_SUFFICIENT_PENDING_OWNER_ATTESTATION"
+    res = pl.assess(_series(tmp_path / "graceful", n=200, unwitnessed=(7,)), good_ctl)
+    assert res["verdict"] == "INSUFFICIENT" and any("unclean-shutdown witness" in r for r in res["reasons"]), res["reasons"]
+    ready, rmsg = {"guest_wall": 100.0}, {"os_witness": {"unclean_event_times": [90], "boot_time": 150}}
+    assert pl.unclean_shutdown_witnessed(ready, rmsg) is False                   # event older than the ready: not this cut
+    assert pl.unclean_shutdown_witnessed(ready, {"os_witness": {"unclean_event_times": [120], "boot_time": 150}}) is True
+    assert pl.unclean_shutdown_witnessed(ready, {"os_witness": {"error": "OSError"}}) is False
+    assert pl.unclean_shutdown_witnessed(ready, {"os_witness": {"unclean_event_times": [True], "boot_time": 150}}) is False
+    assert pl.unclean_shutdown_witnessed({}, {"os_witness": {"unclean_event_times": [120], "boot_time": 150}}) is False
+    assert pl.unclean_shutdown_witnessed(ready, {"report": {}}) is None           # simulated series carry no witness
+
+
+def test_d8_os_witness_reads_this_machine_event_log_read_only():
+    """The witness query itself runs (read-only) on this host; it returns times or an error code, never raises."""
+    w = pl.os_witness()
+    assert set(w) >= {"unclean_event_times", "boot_time"} or set(w) == {"error"}
+    if "boot_time" in w:
+        assert isinstance(w["boot_time"], int) and all(isinstance(e, int) for e in w["unclean_event_times"])

@@ -137,8 +137,13 @@ def test_model_outside_the_qualified_set_is_refused_before_any_task(stack, monke
     stack.bridge.executors = comp.executors
     stack.bridge._ensure_registrations()
     turn = stack.start(TEXT, reasoning=CODEX)                 # model None: offered by policy, not qualified any more
-    final = stack.decide(turn, True)
-    assert final["code"] == "SETTLED_FAILED" and stack.turn_record(final["turn_id"])["execution_closed"] is True
+    # Operational qualification review round 1, OQ-R1-2 (2026-10-08, disclosed change of an accepted assertion):
+    # was approved and refused at dispatch (SETTLED_FAILED); now `turn_decide approve` for an executor that is not
+    # usable NOW is refused before the approval reaches the server, and the turn is released (cancelled).
+    from uri_core.client_runtime.turn_runner import TurnError as _TurnError
+    with pytest.raises(_TurnError, match="HARNESS_NOT_USABLE"):
+        stack.decide(turn, True)
+    assert stack.turn_record(turn["turn_id"])["state"] == "cancelled"
     assert stack.tasks() == 1                                  # only the earlier verified task exists
 
 
@@ -151,10 +156,14 @@ def test_unqualified_provider_offered_by_policy_fails_closed_with_zero_execution
         monkeypatch.setenv("URI_FAKE_SCENARIO", "honest")
         turn = s.start(TEXT, reasoning=CLAUDE)
         assert turn["state"] == "approval_required"
-        final = s.decide(turn, True, digest=turn["approval_request"]["approval_digest"])
-        assert final["code"] == "SETTLED_FAILED"
-        rec = s.turn_record(final["turn_id"])
-        assert rec["execution_outcome"] == "failed" and rec["execution_closed"] is True
+        # Operational qualification review round 1, OQ-R1-2 (2026-10-08, disclosed change of an accepted assertion):
+        # was approved and refused at dispatch (SETTLED_FAILED); now `turn_decide approve` for an executor that is not
+        # usable NOW is refused before the approval reaches the server, and the turn is released (cancelled).
+        from uri_core.client_runtime.turn_runner import TurnError as _TurnError
+        with pytest.raises(_TurnError, match="HARNESS_NOT_USABLE"):
+            s.decide(turn, True, digest=turn["approval_request"]["approval_digest"])
+        rec = s.turn_record(turn["turn_id"])
+        assert rec["state"] == "cancelled" and not rec.get("dispatched")
         assert s.tasks() == 0 and s.result_files() == []
         d = next(r for r in s.client_composition.registry.discover() if r["harness_id"] == "claude_code")
         assert d["usable"] is False and d["qualification"] == "NATIVE_UNQUALIFIED"
