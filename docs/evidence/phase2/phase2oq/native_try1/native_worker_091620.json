@@ -1,0 +1,606 @@
+{
+ "base": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2oq_native_worker_091620_a949be39",
+ "client_codex_config": "# SYNTHETIC client profile (scripts/phase2oq_scripted_endpoint.py): scripted local endpoint, not a model\nmodel = \"uri-scripted\"\nmodel_provider = \"uri_scripted\"\n\n[model_providers.uri_scripted]\nname = \"URI scripted local endpoint (test fixture)\"\nbase_url = \"http://127.0.0.1:59916/v1\"\nwire_api = \"responses\"\nrequires_openai_auth = false\n\n[windows]\nsandbox = \"unelevated\"\n",
+ "client_home_codex_auth_files": [],
+ "client_profile_logged_in": false,
+ "direct_probe": {
+  "agent_text": "OK",
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+  "executable_sha256": "af02050cc0c95f5aeb714af2c1077e635c58e9896c13c89d75099cf5b96477be",
+  "exit": 0,
+  "forwarded_env_keys": [
+   "CODEX_HOME",
+   "COMSPEC",
+   "HOME",
+   "PATH",
+   "PATHEXT",
+   "SYSTEMROOT",
+   "TEMP",
+   "TMP",
+   "USERPROFILE",
+   "WINDIR"
+  ],
+  "ok": true,
+  "status": "OK",
+  "version": "0.158.0"
+ },
+ "endpoint_requests": [
+  {
+   "at": 1791431182.1909633,
+   "kind": "probe",
+   "model": "uri-scripted",
+   "path": "/v1/responses",
+   "tool_outputs": 0
+  },
+  {
+   "at": 1791431195.629915,
+   "kind": "pong",
+   "model": "uri-scripted",
+   "path": "/v1/responses",
+   "tool_outputs": 0
+  },
+  {
+   "at": 1791431197.35371,
+   "kind": "pong",
+   "model": "uri-scripted",
+   "path": "/v1/responses",
+   "tool_outputs": 1
+  },
+  {
+   "at": 1791431200.9405453,
+   "kind": "essay",
+   "model": "uri-scripted",
+   "path": "/v1/responses",
+   "tool_outputs": 0
+  }
+ ],
+ "finished": "2026-10-08T09:16:50",
+ "model": "SCRIPTED LOCAL ENDPOINT (scripts/phase2oq_scripted_endpoint.py) - not a provider, not a login",
+ "native_executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+ "phases": {
+  "L": {
+   "child_exit": 0,
+   "child_stderr_tail": "",
+   "codex_home": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2oq_native_worker_091620_a949be39\\client\\home\\.codex",
+   "composition_report": [
+    {
+     "evidence_sha256": "7bc1793cafc9517dea480d4661a47ca0adc8ff66b41b1157d2b01c4deb5db4e3",
+     "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+     "executable_sha256": "af02050cc0c95f5aeb714af2c1077e635c58e9896c13c89d75099cf5b96477be",
+     "expires_at": 1794023183,
+     "level": "NATIVE_QUALIFIED",
+     "models": [
+      null
+     ],
+     "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2oq_native_worker_091620_a949be39\\client\\control\\supervisor\\qualification\\codex_cli.json",
+     "pinned_files": 33,
+     "provider": "codex_cli",
+     "qualified_at": 1791431183,
+     "reason": null,
+     "status": "QUALIFIED",
+     "version": "0.158.0"
+    }
+   ],
+   "cwd_is_client_root": true,
+   "discover_codex": {
+    "auth_state": "AUTHENTICATED",
+    "harness_id": "codex_cli",
+    "installed": true,
+    "qualification": "NATIVE_QUALIFIED",
+    "required_user_action": null,
+    "usable": true,
+    "version": "0.158.0"
+   },
+   "environment_keys": [
+    "APPDATA",
+    "CODEX_HOME",
+    "COMSPEC",
+    "HOME",
+    "LOCALAPPDATA",
+    "PATH",
+    "PATHEXT",
+    "PYTHONDONTWRITEBYTECODE",
+    "SYSTEMROOT",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR"
+   ],
+   "executions_close": {
+    "active": null
+   },
+   "mode": "worker-environment lifecycle; auth gate substituted for codex_cli (client profile is NOT logged in)",
+   "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts;C:\\WINDOWS\\System32;C:\\Program Files\\Git\\mingw64\\bin",
+   "runs": [
+    {
+     "final": {
+      "bridge_outcome": "verified",
+      "cancel_requested": false,
+      "code": "SETTLED_VERIFIED",
+      "ended_at": 1791431198.271958,
+      "execution_id": "262d6ac714094957950ec54b43402164",
+      "failure_category": null,
+      "reason": null,
+      "running_at": 1791431193.3429642,
+      "state": "completed",
+      "task_id": "f389c9e7-9d72-489f-a94b-07813f5013ef"
+     },
+     "ledger_view": {
+      "attempts": [
+       {
+        "attempt_id": 1,
+        "end_reason": "exited_after_terminal_success_claim",
+        "ended_at_us": 1791431198147718,
+        "exit_code": 0,
+        "pid": 15944,
+        "pid_create_time": 134359047952199521,
+        "spawned_at_us": 1791431195225482,
+        "status": "FENCED"
+       }
+      ],
+      "decision": {
+       "action": "NONE",
+       "reason_code": "POSTCONDITIONS_VERIFIED"
+      },
+      "open_authorizations": 0,
+      "request": {
+       "approval_digest": "34af79eefc7015b52321c4a75353600a7eed539cae7c325bf4c39fffd7e1a4d9",
+       "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+       "capability_id": "external_harness_task",
+       "execution_id": "262d6ac714094957950ec54b43402164",
+       "expected_file": "pong.txt",
+       "model": null,
+       "operation_id": "f389c9e7-9d72-489f-a94b-07813f5013ef",
+       "provider": "codex_cli",
+       "session_id": "8ffd8fb2-4305-4ef9-9725-8cc08886aa5f",
+       "turn_id": "46fc24f7-0557-4cea-b1e3-fc2c77b62005"
+      },
+      "task": {
+       "reason_code": "POSTCONDITIONS_VERIFIED",
+       "state": "COMPLETE"
+      },
+      "task_id": "f389c9e7-9d72-489f-a94b-07813f5013ef"
+     },
+     "name": "lifecycle",
+     "proposal": {
+      "action": "external_harness_task",
+      "approval_digest": "34af79eefc7015b52321c4a75353600a7eed539cae7c325bf4c39fffd7e1a4d9",
+      "argument_digest": "ef71aa30f6d6b4bdc730a42cffe79a03aaaddac92397237f2b9254e08726a9d2",
+      "arguments": {
+       "action": "external_harness_task",
+       "inputs": {
+        "expected_file": "pong.txt",
+        "instruction": "write the single word PONG into pong.txt"
+       }
+      },
+      "capability_id": "external_harness_task",
+      "client_id": "180f2d68-432b-4331-a204-967928c02360",
+      "effect": "local_write",
+      "expected_file": "pong.txt",
+      "instruction": "write the single word PONG into pong.txt",
+      "kind": "client_external_harness",
+      "model": null,
+      "proposal_digest": "07d3b3ebd1e94edfb530d2602e31598b369047186badd1bb2a11476a234bae4e",
+      "provider": "codex_cli",
+      "qualification": {
+       "executable_sha256": "af02050cc0c95f5aeb714af2c1077e635c58e9896c13c89d75099cf5b96477be",
+       "expires_at": 1794023183,
+       "level": "NATIVE_QUALIFIED",
+       "models": [
+        null
+       ],
+       "qualified_at": 1791431183,
+       "reason": null,
+       "status": "QUALIFIED",
+       "version": "0.158.0"
+      },
+      "reversible": true,
+      "session_id": "8ffd8fb2-4305-4ef9-9725-8cc08886aa5f",
+      "turn_id": "46fc24f7-0557-4cea-b1e3-fc2c77b62005"
+     },
+     "result_files": [
+      {
+       "content": "PONG",
+       "path": "workspace\\results\\a8edeadcd2d04cbc920f1a82b92349cf\\pong.txt"
+      }
+     ],
+     "transitions": [
+      {
+       "at": 1791431193.3096297,
+       "ledger_task": null,
+       "reason": null,
+       "state": "queued"
+      },
+      {
+       "at": 1791431193.5878947,
+       "ledger_task": null,
+       "reason": null,
+       "state": "running"
+      },
+      {
+       "at": 1791431195.4236171,
+       "ledger_task": "RUNNING",
+       "reason": null,
+       "state": "running"
+      },
+      {
+       "at": 1791431198.3243365,
+       "ledger_task": "COMPLETE",
+       "reason": null,
+       "state": "completed"
+      }
+     ],
+     "turn_code": null,
+     "turn_state": "approval_required"
+    },
+    {
+     "attempt_pid": 12244,
+     "cancel_reply": {
+      "cancel": "requested",
+      "execution_id": "deee448ebdb14c689d96088f2edc61f6",
+      "kill": {
+       "granted": true,
+       "reason": "CANCEL_REQUESTED"
+      },
+      "state": "running"
+     },
+     "final": {
+      "bridge_outcome": "execution_uncertain",
+      "cancel_requested": true,
+      "code": "SETTLED_EXECUTION_UNCERTAIN",
+      "ended_at": 1791431207.8206267,
+      "execution_id": "deee448ebdb14c689d96088f2edc61f6",
+      "failure_category": "CANCELLED_AFTER_DISPATCH:EXECUTOR_INTERRUPTED_NO_TERMINAL_EVENT_RETRY_SAFE",
+      "reason": "CANCELLED_AFTER_DISPATCH",
+      "running_at": 1791431198.442459,
+      "state": "uncertain",
+      "task_id": "145497f0-8205-4530-83d9-b453e5b5b930"
+     },
+     "ledger_view": {
+      "attempts": [
+       {
+        "attempt_id": 2,
+        "end_reason": "cancelled_killed",
+        "ended_at_us": 1791431207690621,
+        "exit_code": 1,
+        "pid": 12244,
+        "pid_create_time": 134359048004383723,
+        "spawned_at_us": 1791431200445043,
+        "status": "FENCED"
+       }
+      ],
+      "decision": {
+       "action": "RESUME_SESSION",
+       "reason_code": "EXECUTOR_INTERRUPTED_NO_TERMINAL_EVENT_RETRY_SAFE"
+      },
+      "open_authorizations": 0,
+      "request": {
+       "approval_digest": "8e43a9df3ac805031a9d77495a0a3058577eaf21758e3ab44e15502007a2844b",
+       "argument_digest": "c1a50f3b6588fbd7ac54688654be58c420aaf8d13318381592199e2d43f47bcb",
+       "capability_id": "external_harness_task",
+       "execution_id": "deee448ebdb14c689d96088f2edc61f6",
+       "expected_file": "essay.txt",
+       "model": null,
+       "operation_id": "145497f0-8205-4530-83d9-b453e5b5b930",
+       "provider": "codex_cli",
+       "session_id": "f61dd1ac-56e6-4e53-9b98-929fefc3fa80",
+       "turn_id": "918298d3-5870-4cd6-bc46-b4399d8e8bbe"
+      },
+      "task": {
+       "reason_code": "BRIDGE_SETTLED_CANCELLED",
+       "state": "FAILED"
+      },
+      "task_id": "145497f0-8205-4530-83d9-b453e5b5b930"
+     },
+     "name": "mid_run_cancel",
+     "pid_state_after_cancel": "DEAD",
+     "reached_running": true,
+     "sandboxed_child_before_cancel": [
+      {
+       "cmdline": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\nStart-Sleep -Seconds 600",
+       "name": "powershell.exe",
+       "pid": 15972
+      }
+     ],
+     "survivors_sleep_child": [],
+     "survivors_vendor_codex": [
+      {
+       "cmdline": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\.venv\\Scripts\\python.exe -B -I C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\scripts\\phase2oq_native_worker.py --child-lifecycle --manifest C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2oq_native_worker_091620_a949be39\\c",
+       "name": "python.exe",
+       "pid": 8512
+      }
+     ],
+     "transitions": [
+      {
+       "at": 1791431198.3898623,
+       "ledger_task": null,
+       "reason": null,
+       "state": "queued"
+      },
+      {
+       "at": 1791431198.6805878,
+       "ledger_task": null,
+       "reason": null,
+       "state": "running"
+      },
+      {
+       "at": 1791431200.5702693,
+       "ledger_task": "RUNNING",
+       "reason": null,
+       "state": "running"
+      },
+      {
+       "at": 1791431207.6472182,
+       "ledger_task": "RUNNING",
+       "reason": null,
+       "state": "running"
+      },
+      {
+       "at": 1791431207.920885,
+       "ledger_task": "FAILED",
+       "reason": "CANCELLED_AFTER_DISPATCH",
+       "state": "uncertain"
+      }
+     ],
+     "turn_state": "approval_required"
+    }
+   ]
+  },
+  "W": {
+   "harness_discover": {
+    "code": null,
+    "codex_cli": {
+     "auth_state": "NOT_AUTHENTICATED",
+     "harness_id": "codex_cli",
+     "installed": true,
+     "qualification": "NATIVE_QUALIFIED",
+     "required_user_action": "Run `codex login` in the URI client profile terminal (native login).",
+     "usable": false,
+     "version": "0.158.0"
+    },
+    "qualification": [
+     {
+      "evidence_sha256": "7bc1793cafc9517dea480d4661a47ca0adc8ff66b41b1157d2b01c4deb5db4e3",
+      "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+      "executable_sha256": "af02050cc0c95f5aeb714af2c1077e635c58e9896c13c89d75099cf5b96477be",
+      "expires_at": 1794023183,
+      "level": "NATIVE_QUALIFIED",
+      "models": [
+       null
+      ],
+      "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2oq_native_worker_091620_a949be39\\client\\control\\supervisor\\qualification\\codex_cli.json",
+      "pinned_files": 33,
+      "provider": "codex_cli",
+      "qualified_at": 1791431183,
+      "reason": null,
+      "status": "QUALIFIED",
+      "version": "0.158.0"
+     }
+    ],
+    "qualification_live": {
+     "codex_cli": null
+    },
+    "result": "OK"
+   },
+   "phase": "W real worker, native record, client profile not logged in",
+   "preflight": {
+    "result": "OK",
+    "value": {
+     "client_id": "180f2d68-432b-4331-a204-967928c02360",
+     "execution_active": null,
+     "execution_lifecycle": [
+      "execution_begin",
+      "execution_cancel",
+      "execution_list",
+      "execution_status"
+     ],
+     "mid_run_cancel": true,
+     "migration": "NOT_AUTHORIZED",
+     "native_adapter": "NOT_LIVE_QUALIFIED",
+     "production_cutover": false,
+     "schema_version": "uri.client.v1",
+     "server_id": "dd2d2c73-163f-4da5-a64e-dcf2fcaecccd",
+     "ui_build": "CLIENT_UI_PENDING_C6",
+     "ui_parity": "NOT_LIVE_QUALIFIED",
+     "worker_manifest": "VALIDATED",
+     "worker_profile": "phase2d-supervised"
+    }
+   },
+   "shutdown": {
+    "close": {
+     "execution": {
+      "active": null
+     },
+     "released": [
+      {
+       "code": null,
+       "released": true,
+       "server_state": "cancelled",
+       "status": 200,
+       "turn_id": "23ce560f-e255-42ce-8875-772b459cdf03",
+       "why": "WORKER_CLOSED"
+      }
+     ],
+     "result": "CLOSED"
+    },
+    "exit": 0,
+    "stderr_tail": ""
+   },
+   "turn_start": {
+    "approval_request": true,
+    "code": null,
+    "execution_proposal": true,
+    "result": "OK",
+    "state": "approval_required"
+   },
+   "worker_instance": {
+    "cli_homes_pinned": [
+     "CODEX_HOME"
+    ],
+    "fixture_allowed": false,
+    "pid": 496,
+    "profile": "phase2d-supervised",
+    "qualified": [
+     "codex_cli"
+    ]
+   }
+  },
+  "W2": {
+   "harness_discover": {
+    "code": null,
+    "codex_cli": {
+     "auth_state": "NOT_INSTALLED",
+     "harness_id": "codex_cli",
+     "installed": false,
+     "qualification": "NATIVE_UNQUALIFIED",
+     "required_user_action": "Run `codex login` in the URI client profile terminal (native login).",
+     "usable": false,
+     "version": null
+    },
+    "qualification": [
+     {
+      "detail": null,
+      "level": "NATIVE_QUALIFIED",
+      "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2oq_native_worker_091620_a949be39\\client\\control\\supervisor\\qualification\\codex_cli.json",
+      "provider": "codex_cli",
+      "reason": "CODEX_WINDOWS_SANDBOX_NOT_CONFIGURED",
+      "status": "INVALIDATED"
+     }
+    ],
+    "qualification_live": {},
+    "result": "OK"
+   },
+   "phase": "W2 real worker, no Windows sandbox mode",
+   "preflight": {
+    "result": "OK",
+    "value": {
+     "client_id": "180f2d68-432b-4331-a204-967928c02360",
+     "execution_active": null,
+     "execution_lifecycle": [
+      "execution_begin",
+      "execution_cancel",
+      "execution_list",
+      "execution_status"
+     ],
+     "mid_run_cancel": true,
+     "migration": "NOT_AUTHORIZED",
+     "native_adapter": "NOT_LIVE_QUALIFIED",
+     "production_cutover": false,
+     "schema_version": "uri.client.v1",
+     "server_id": "dd2d2c73-163f-4da5-a64e-dcf2fcaecccd",
+     "ui_build": "CLIENT_UI_PENDING_C6",
+     "ui_parity": "NOT_LIVE_QUALIFIED",
+     "worker_manifest": "VALIDATED",
+     "worker_profile": "phase2d-supervised"
+    }
+   },
+   "shutdown": {
+    "close": {
+     "execution": {
+      "active": null
+     },
+     "released": [],
+     "result": "CLOSED"
+    },
+    "exit": 0,
+    "stderr_tail": ""
+   },
+   "worker_instance": {
+    "cli_homes_pinned": [
+     "CODEX_HOME"
+    ],
+    "fixture_allowed": false,
+    "pid": 13440,
+    "profile": "phase2d-supervised",
+    "qualified": []
+   }
+  },
+  "W3": {
+   "harness_discover": {
+    "code": null,
+    "codex_cli": {
+     "auth_state": "NOT_INSTALLED",
+     "harness_id": "codex_cli",
+     "installed": false,
+     "qualification": "NATIVE_UNQUALIFIED",
+     "required_user_action": "Run `codex login` in the URI client profile terminal (native login).",
+     "usable": false,
+     "version": null
+    },
+    "qualification": [
+     {
+      "detail": "probe",
+      "level": "NATIVE_QUALIFIED",
+      "path": "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\uri-agent\\work\\c1\\p2oq_native_worker_091620_a949be39\\client\\control\\supervisor\\qualification\\codex_cli.json",
+      "provider": "codex_cli",
+      "reason": "EVIDENCE_CONTENT_MISMATCH",
+      "status": "INVALIDATED"
+     }
+    ],
+    "qualification_live": {},
+    "result": "OK"
+   },
+   "phase": "W3 real worker, npm codex.CMD record",
+   "preflight": {
+    "result": "OK",
+    "value": {
+     "client_id": "180f2d68-432b-4331-a204-967928c02360",
+     "execution_active": null,
+     "execution_lifecycle": [
+      "execution_begin",
+      "execution_cancel",
+      "execution_list",
+      "execution_status"
+     ],
+     "mid_run_cancel": true,
+     "migration": "NOT_AUTHORIZED",
+     "native_adapter": "NOT_LIVE_QUALIFIED",
+     "production_cutover": false,
+     "schema_version": "uri.client.v1",
+     "server_id": "dd2d2c73-163f-4da5-a64e-dcf2fcaecccd",
+     "ui_build": "CLIENT_UI_PENDING_C6",
+     "ui_parity": "NOT_LIVE_QUALIFIED",
+     "worker_manifest": "VALIDATED",
+     "worker_profile": "phase2d-supervised"
+    }
+   },
+   "record_resolve_pins": {
+    "node": "C:\\Program Files\\nodejs\\node.exe"
+   },
+   "shutdown": {
+    "close": {
+     "execution": {
+      "active": null
+     },
+     "released": [],
+     "result": "CLOSED"
+    },
+    "exit": 0,
+    "stderr_tail": ""
+   },
+   "worker_instance": {
+    "cli_homes_pinned": [
+     "CODEX_HOME"
+    ],
+    "fixture_allowed": false,
+    "pid": 8592,
+    "profile": "phase2d-supervised",
+    "qualified": []
+   }
+  }
+ },
+ "record": {
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+  "executable_sha256": "af02050cc0c95f5aeb714af2c1077e635c58e9896c13c89d75099cf5b96477be",
+  "level": "NATIVE_QUALIFIED",
+  "models": [
+   null
+  ],
+  "pinned_files": 33,
+  "record_sha256": "ff6a3672cd47c28a356087d1d4e36fa58bdf9334f115b3e93b6a81358bc32d7d",
+  "resolve_pins": {},
+  "version": "0.158.0"
+ },
+ "started": "2026-10-08T09:16:20",
+ "tag": "native_worker_091620"
+}

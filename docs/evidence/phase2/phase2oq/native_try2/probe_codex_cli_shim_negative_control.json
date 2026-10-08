@@ -1,0 +1,41 @@
+{
+ "agent_text": "OK",
+ "argv": [
+  "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe",
+  "exec",
+  "--json",
+  "--ephemeral",
+  "--sandbox",
+  "read-only",
+  "--skip-git-repo-check",
+  "-C",
+  "C:\\Users\\cheta\\.codex\\worktrees\\uri-phase2a\\evidence\\phase2oq\\native_try2\\probe\\probe_codex_cli",
+  "Reply with exactly the word OK and nothing else."
+ ],
+ "duration_s": 1.11,
+ "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\codex.CMD",
+ "executable_sha256": "c54db6755e710c39703f7c37512f9e35ed41042d8080558d2b84b8d2694323c3",
+ "exit": 0,
+ "failures": [],
+ "forwarded_env_keys": [
+  "CODEX_HOME",
+  "COMSPEC",
+  "HOME",
+  "PATH",
+  "PATHEXT",
+  "SYSTEMROOT",
+  "TEMP",
+  "TMP",
+  "USERPROFILE",
+  "WINDIR"
+ ],
+ "model": null,
+ "note": "negative control: the probe result re-labelled for the npm launcher",
+ "ok": true,
+ "provider": "codex_cli",
+ "status": "OK",
+ "stdout_lines": 5,
+ "stdout_sha256": "c0fcb169318823545cf46fed7fdc88247a58d072c6028b53d404bbb108069f80",
+ "terminal_completed": true,
+ "version": "0.158.0"
+}

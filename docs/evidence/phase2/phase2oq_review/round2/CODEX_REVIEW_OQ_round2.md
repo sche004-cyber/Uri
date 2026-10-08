@@ -1,0 +1,60 @@
+# Independent Phase 2 operational qualification review — round 2
+
+Date: 2026-10-08. Subject: `evidence/phase2oq-candidate-20261008-b.zip`, SHA-256 `5d5e111bf2377a6a09eb2a7d81c4d02fb11da710a4fe0a3e6aa2577aa55c5706`. I reviewed the archive, matching live tree, source paths, chain4 logs, and my own synthetic probes. The implementer's report is treated as a claim. I changed no repository source or tests. My review scripts and this report are confined to `evidence/phase2oq_review/round2/`; synthetic runtime files are confined to `uri-agent/work/c1/oq-r2-probe/`.
+
+## A. Integrity and change set
+
+`reviewer_checks.py` independently recomputed the subject hash, enumerated the zip, checked all 263 manifest payload hashes, and checked every payload against the corresponding live file: zero mismatches. The subject has 153 tree files and 110 evidence files. The live `uri-agent` HEAD is `e8e3b65259c45fc823addc3ef8969425a265bd1b`, uncommitted. The round-1 archive hash is `47f8fc817f9bfbc355db2340b7a72845ef08a49108cc61ecaaee9cc521261deb`; the accepted closure `-f` hash remains `fcd0d72e0cd91412c361edec9114e2edaebbf70ede052046b808f3c4fc571298`; the round-7 (`phase2ops-...-r6.zip`) hash remains `9a0be52c1ae5e59bf9ae16617e283c5a9f58ba098a1c2ae1d9649e184affb50a`. The Phase 1 frozen checkpoint remains `31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7`; all 121 non-metadata files in it are byte-identical to the live tree.
+
+Exact manifest delta from round 1: **44 added, 11 changed, 0 removed**. All 44 additions are `chain3`/`chain4` evidence and their stdout. Changed: `docs/plans/PHASE2CLOSE_CLOSURE_CHECKLIST.md`, `docs/plans/PHASE2OQ_REPORT.md`, `evidence/phase2oq/powerloss_guest_bundle.zip`, `scripts/phase2close_chain.py`, `tests/phase2d/test_worker_process.py`, `tests/phase2d/test_worker_service.py`, `tests/phase2oq/test_exe1_native.py`, `tests/phase2oq/test_sup1_self_containment.py`, `uri_supervisor/supervisor.py`, `uri_supervisor_bridge/qualification.py`, `uri_supervisor_bridge/worker_service.py`. Against accepted `-f`, the subject has 126 added, 28 changed, 31 removed manifest entries. The complete round-1 delta lists are printed by `reviewer_checks.py` and were checked against both manifests. No changed Phase 1 checkpoint payload was found. The broadened `tests/phase2a/test_frozen_core.py` allowed-new-file rule remains a Phase 2 test-boundary change already disclosed in round 1; the frozen archive itself is unchanged.
+
+## B. OQ-R1-1: native Codex layout
+
+`codex_native_launch_chain` now refuses a `codex.exe` without `vendor/<target>/codex-package.json` and refuses an executable under a `vendor` path if its name or placement does not match the recognized layout. It pins the descriptor plus executable/DLL payload. My independent `reviewer_probes.py` produced `LAUNCH_CHAIN_LAYOUT_UNKNOWN` for a missing descriptor, a descriptor elsewhere, and a renamed binary inside `vendor`. A recognized synthetic layout returned three pins, including the descriptor; editing that descriptor after pinning returned `LAUNCH_CHAIN_HASH_MISMATCH`. A renamed binary outside `vendor` still returns empty pins at `launch_chain_for`, but the worker's `_pins_recognised_codex_layout` rejects that binary because it is not `bin/codex.exe` with its own descriptor pinned. Stripping the descriptor pin likewise made that worker predicate false. `check_codex_client_home` applies it to every `NATIVE_QUALIFIED` Codex record in worker composition, and `still_valid` revalidates before execution. The production worker supplies its client-profile `codex_home`. I found no path by which a native Codex record lacking a recognized pinned layout composes in that worker or runs through its binding. An in-process composition without `codex_home` is outside the worker profile and is not PA-10 evidence.
+
+## C. OQ-R1-2: approval paths
+
+The worker command schema admits `turn_decide` with or without `approval_digest`, `execution_begin`, `turn_start`, `turn_intent`, `turn_cancel`, and execution status/cancel/list. Only `turn_decide approve=true` and `execution_begin` can submit an approval. `turn_start` and `turn_intent` create or display an approval request; `turn_cancel` and `turn_decide approve=false` decline. The digest variant of `turn_decide` validates the echo, then reaches the same `_refuse_unusable_harness` gate as the digest-free variant. `execution_begin` checks digest and current usability before its approval thread starts. Both approval paths remove the pending turn and request server cancellation on unusability, then return `HARNESS_NOT_USABLE`. The production worker composes a registry and passes it to `SupervisedWorkerService`; the `harness_state` query is live. The server still independently validates authority, and bridge dispatch still checks the harness. I found no worker command path that submits approval for a currently unusable composed executor.
+
+The three changed accepted Phase 2D assertions in `test_worker_service.py` (two) and `test_worker_process.py` (one) are honest about the new behavior: approval is refused before dispatch, the server turn is cancelled, and no new task is created. The first test retains an earlier verified task and correctly expects one total task. The new OQ test exercises both digest forms and decline. The chain4 phase2 gate reports 472 passed, 2 skipped. My attempted focused replay of four OQ tests instead ended with `PermissionError [WinError 5]` in the pytest `--basetemp` directory under `work/c1`; it is **not** an independent passing test result.
+
+## D. OQ-R1-3: self-containment
+
+`Supervisor.__init__` calls `winproc.contain_current_process()` before opening its ledger or any spawn path and raises `SELF_CONTAINMENT_UNAVAILABLE` on Windows unless it returns `CONTAINED` or `ALREADY_CONTAINED`. I found no other `Supervisor` constructor or spawn route that bypasses this initialization. The process job is kill-on-close, held for the host process lifetime; `spawn_contained` reserves creation flags and does not set a breakaway flag. The failure test substitutes `UNAVAILABLE:AssignProcessToJobObject:5` and expects construction to raise. The code comment discloses the broad side effect accurately: **every descendant the hosting process starts**, including unrelated children, dies with that host. This is a material host-design constraint, and the owner should use a dedicated worker process as the production script does. The round-1 fail-open defect is repaired on the inspected Windows path.
+
+## E. OQ-R1-4: final chain and equivalence rule
+
+`chain4` is one sequential run, not a splice of `chain2b` and another run. Its archived `chain_summary.json`, stdout and gate logs agree: phase2 472 passed/2 skipped; authority 134 passed; phase1-full 2676 passed/11 skipped/11 failed, with the same 11 failure IDs as the round-6 baseline; Flutter 205 passed/2 skipped; ten bridge runs succeeded with zero refusal lines; native and native-worker gates completed with the reported refusal, invalidation, verified result and cancel states. `ALL_PASS:true` is the actual output of `phase2close_chain.py` on these logs. The archive includes the logs and source now matching the live tree. It does not cryptographically bind the run's source snapshot at each gate; I found no contradictory source-change evidence. The 11 Phase 1 failures are accepted pre-existing failures, not newly green tests.
+
+**New gate defect OQ-R2-1:** the revised phase1-full predicate is weaker than its explicit promise to fail on *any missing test or lost pass*. It checks only the set of failed IDs, total number of outcomes (`passed + skipped + failed + errors`), and `passed >= 2675`. It never compares collected or passing test IDs with baseline IDs. `reviewer_checks.py` evaluates the exact logical predicate on two counterexamples: remove an old passing test and add a new passing test, or swap one old pass with one old skip. Both return `True` with unchanged failure IDs, total, and pass count. The `-q -rfEs` log format does not record passing IDs, so the gate cannot detect either case from its actual evidence. A missed baseline test can therefore be hidden by a newly collected test, and a lost pass by a skip becoming a pass. The present run's numbers are plausible and one Ollama-specific hard-coded live test passed instead of skipping, but the rule does not meet the mandated non-weakening guarantee. `OLLAMA_BASE_URL=http://127.0.0.1:9` isolates tests that honor that variable; the hard-coded `127.0.0.1:11434` test remains live, as the report itself discloses. This does not convert the historical chain2 failure into a pass, and the current chain4 is green under its own inadequate predicate.
+
+## F. Round-1 B–K dispositions and other defects
+
+Round-1 native identity, ISO-1 client-profile `CODEX_HOME`, sandbox-backend disclosure, D8 guest witness limits, C6 Chat handoff, acceptance tooling and guest-bundle framing remain supported by the inspected source and chain4 evidence. The actual worker's W case remains `NOT_AUTHENTICATED` with an approval refusal; W2/W3 invalidate absent sandbox mode and `.cmd` launch resolution. The in-process native run does not replace a client-profile login. No real-model worker PA-10, elevated sandbox, owner device UI or VM power cut was added. The frozen boundary and historical LOG-3/VAL-1/CAP-1 suites remain in phase2/authority coverage. Shipping-line advice and voice parity remain plans, not acceptance or deployment. I did not discover a new production approval or containment bypass. The new gate defect in section E is a release-evidence defect and is blocking because the mandate explicitly requires the equivalence gate to fail on any missing test or lost pass.
+
+## G. Decision
+
+The three production repairs address OQ-R1-1 through OQ-R1-3, and chain4 is a single recorded green chain. OQ-R1-4 is **not fully closed**: the revised Phase 1 equivalence predicate admits missing tests and lost passes, contrary to the mandate. The candidate therefore is not ready for owner physical acceptance under this round's conditions. A gate that records and compares per-test outcome identities against the accepted baseline, while explicitly accounting for the known Ollama-dependent test, is needed before another attributable full chain. This review makes no claim of physical qualification.
+
+## DEFECTS
+
+| ID | Severity | Finding | Evidence |
+|---|---|---|---|
+| OQ-R2-1 | Gate | Phase1-full equivalence can pass with a missing baseline test or lost baseline pass offset by a new pass; the claimed non-weakening rule is false. | `scripts/phase2close_chain.py:100-110`; `scripts/phase2d_regression.py:49-54`; counterexamples in `reviewer_checks.py` both returned `True`. |
+
+## OQ-R1 DISPOSITION
+
+| ID | Disposition | Basis |
+|---|---|---|
+| OQ-R1-1 | REPAIRED | Missing/misplaced descriptor and vendor renaming refuse; worker demands descriptor pin and revalidation checks edited pins. |
+| OQ-R1-2 | REPAIRED | Both `turn_decide` forms and `execution_begin` gate usability before approval; three changed assertions match the behavior. |
+| OQ-R1-3 | REPAIRED | Windows supervisor construction fails closed on unavailable self-containment; broad descendant-kill side effect is disclosed. |
+| OQ-R1-4 | OPEN | Chain4 is green under its code's predicate, but OQ-R2-1 shows that predicate cannot enforce the required missing-test/lost-pass rule. |
+
+## NOT VERIFIED
+
+I did not log in or out, read credentials, change account/global configuration, run a real model in the client-profile worker, run an elevated sandbox, perform owner UI/device acceptance, power-cut a VM, inspect a shipping remote, or replay the 25-minute full chain. The focused pytest replay produced a Windows temporary-directory access error, so its four test results are not counted. The subject archive and chain logs match the live files now, but the chain runner did not emit an independent source digest at each gate. I verified archive hashes and contents, the frozen checkpoint, targeted qualification behavior, and the gate predicate independently.
+
+## FINAL VERDICT
+
+PHASE 2 OPERATIONAL CANDIDATE REJECTED

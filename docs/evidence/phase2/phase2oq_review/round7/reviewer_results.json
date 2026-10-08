@@ -1,0 +1,272 @@
+{
+  "subject": {
+    "sha256": "0b49d86d89b26d3332fcbfbc9b4b7b981cdc1075d5dc295588a5cef92a82c4cd",
+    "entries": 481,
+    "members": 481,
+    "member_delta": [],
+    "bad": [],
+    "tree_files": 154,
+    "evidence_files": 327,
+    "live_tree_bad": [],
+    "live_evidence_bad": []
+  },
+  "previous": {
+    "sha256": "69f999bea6e17110ea824fdc95d5538a67ab804ae2be33a7b5c998c336934b9e",
+    "entries": 441,
+    "members": 441,
+    "member_delta": [],
+    "bad": [],
+    "tree_files": 154,
+    "evidence_files": 287,
+    "live_tree_bad": [
+      "docs/plans/PHASE2OQ_REPORT.md",
+      "scripts/phase2close_chain.py",
+      "tests/phase2oq/test_chain_equivalence.py"
+    ],
+    "live_evidence_bad": []
+  },
+  "added": [
+    "evidence/phase2oq/chain10/chain_summary.json",
+    "evidence/phase2oq/chain10/flutter_all.log",
+    "evidence/phase2oq/chain10/native/codex_cli_lifecycle_143618.json",
+    "evidence/phase2oq/chain10/native/probe_codex_cli.json",
+    "evidence/phase2oq/chain10/native/probe_codex_cli/stderr.txt",
+    "evidence/phase2oq/chain10/native/probe_codex_cli/stdout.ndjson",
+    "evidence/phase2oq/chain10/native_codex_stdout.txt",
+    "evidence/phase2oq/chain10/native_worker/lifecycle_child.json",
+    "evidence/phase2oq/chain10/native_worker/native_worker_143717.json",
+    "evidence/phase2oq/chain10/native_worker/probe/probe_codex_cli/stderr.txt",
+    "evidence/phase2oq/chain10/native_worker/probe/probe_codex_cli/stdout.ndjson",
+    "evidence/phase2oq/chain10/native_worker/probe_codex_cli.json",
+    "evidence/phase2oq/chain10/native_worker/probe_codex_cli_shim_negative_control.json",
+    "evidence/phase2oq/chain10/native_worker_stdout.txt",
+    "evidence/phase2oq/chain10/phase1_authority.log",
+    "evidence/phase2oq/chain10/phase1_full.log",
+    "evidence/phase2oq/chain10/phase1_full.xml",
+    "evidence/phase2oq/chain10/phase2_all.log",
+    "evidence/phase2oq/chain10/refusals.txt",
+    "evidence/phase2oq/chain10/ui_bridge_live_1.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_10.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_2.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_3.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_4.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_5.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_6.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_7.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_8.json",
+    "evidence/phase2oq/chain10/ui_bridge_live_9.json",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_1.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_10.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_2.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_3.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_4.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_5.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_6.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_7.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_8.txt",
+    "evidence/phase2oq/chain10/ui_bridge_stdout_9.txt",
+    "evidence/phase2oq/chain10_stdout.txt"
+  ],
+  "removed": [],
+  "changed": [
+    "docs/plans/PHASE2OQ_REPORT.md",
+    "scripts/phase2close_chain.py",
+    "tests/phase2oq/test_chain_equivalence.py"
+  ],
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "closure_sha": "fcd0d72e0cd91412c361edec9114e2edaebbf70ede052046b808f3c4fc571298",
+  "round7_sha": "9a0be52c1ae5e59bf9ae16617e283c5a9f58ba098a1c2ae1d9649e184affb50a",
+  "frozen": {
+    "sha256": "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7",
+    "entries": 121,
+    "live_bad": []
+  },
+  "scope": {
+    "changed_vs_closure": [
+      "docs/plans/PHASE2CLOSE_C6_CHAT_INTEGRATION.md",
+      "docs/plans/PHASE2CLOSE_C7_READINESS.md",
+      "docs/plans/PHASE2CLOSE_CLOSURE_CHECKLIST.md",
+      "docs/plans/PHASE2CLOSE_PHYSICAL_ACCEPTANCE_RUNBOOK.md",
+      "docs/plans/PHASE2CLOSE_REPORT.md",
+      "docs/plans/URI_DEVELOPMENT_TODO.md",
+      "scripts/phase2c_native_qualification.py",
+      "scripts/phase2close_acceptance.py",
+      "scripts/phase2close_chain.py",
+      "scripts/phase2close_powerloss_harness.py",
+      "scripts/phase2d_regression.py",
+      "scripts/run_uri_supervised_worker.py",
+      "tests/phase2a/test_frozen_core.py",
+      "tests/phase2close/test_acceptance_tooling.py",
+      "tests/phase2close/test_powerloss_harness.py",
+      "tests/phase2d/test_worker_process.py",
+      "tests/phase2d/test_worker_service.py",
+      "tests/phase2ops/test_lifecycle.py",
+      "uri_supervisor/supervisor.py",
+      "uri_supervisor/winproc.py",
+      "uri_supervisor_bridge/composition.py",
+      "uri_supervisor_bridge/execution.py",
+      "uri_supervisor_bridge/qualification.py",
+      "uri_supervisor_bridge/worker_service.py",
+      "uri_ui/lib/screens/tasks/supervised_execution_screen.dart",
+      "uri_ui/lib/services/supervised_runtime.dart",
+      "uri_ui/lib/services/task_handoff.dart",
+      "uri_ui/test/supervised_execution_screen_test.dart"
+    ],
+    "new_untracked": 124,
+    "modified_vs_head_outside_closure": [
+      ".gitignore",
+      "PROJECT_MEMORY.md",
+      "URI_MILESTONE_TRACKER.md",
+      "docs/governance/URI_ACTIVE_MILESTONE.md",
+      "uri_core/app/route_classification.py",
+      "uri_core/app/server.py",
+      "uri_core/capabilities/registry.py",
+      "uri_core/core/dispatcher.py",
+      "uri_core/core/turn_state.py",
+      "uri_ui/lib/screens/ask/ask_uri_screen.dart",
+      "uri_ui/lib/screens/settings/settings_shell.dart",
+      "uri_workspace/capabilities_registry.json"
+    ],
+    "frozen_phase1_byte_identical": 98,
+    "outside_phase2_scope": [],
+    "runner_argv_equals_accepted_plus_phase2oq_ignore": true,
+    "phase1_scope_importers_of_phase2": []
+  },
+  "probes": {
+    "actual_baseline_pins": [
+      true,
+      {
+        "phase1_outcome_baseline.json": "a9c180877cbf19a8901f8d74c3e1da84480778544894a888a1773554977a6a4a",
+        "outcome_baseline/phase1_baseline.xml": "6c5c04dc057f382d5db0588446558232462f9e4150036343306d50dd94177043",
+        "outcome_baseline/phase1_baseline.log": "6e3f13e5e29f385c2e930a12e1a2428d10fed35874a28b16d288c9642e94f022"
+      }
+    ],
+    "exit_gate": {
+      "0": false,
+      "1": true,
+      "2": false,
+      "3": false,
+      "4": false,
+      "5": false,
+      "TIMED_OUT": false
+    },
+    "baseline_map_equals_xml": true,
+    "baseline_integrity": {
+      "testcases": 2698,
+      "unique_ids": 2698,
+      "duplicate_ids": [],
+      "summary_total": 2698,
+      "xml_outcome_counts": {
+        "passed": 2676,
+        "failed": 11,
+        "skipped": 11,
+        "error": 0
+      },
+      "summary_outcome_counts": {
+        "passed": 2676,
+        "failed": 11,
+        "skipped": 11,
+        "error": 0
+      },
+      "ok": true
+    },
+    "chain_integrity": {
+      "testcases": 2698,
+      "unique_ids": 2698,
+      "duplicate_ids": [],
+      "summary_total": 2698,
+      "xml_outcome_counts": {
+        "passed": 2676,
+        "failed": 11,
+        "skipped": 11,
+        "error": 0
+      },
+      "summary_outcome_counts": {
+        "passed": 2676,
+        "failed": 11,
+        "skipped": 11,
+        "error": 0
+      },
+      "ok": true
+    },
+    "chain_identity": [
+      true,
+      {
+        "ids": 2698,
+        "baseline_ids": 2698,
+        "missing": [],
+        "added": [],
+        "outcome_changed": [],
+        "outcome_counts": {
+          "passed": 2676,
+          "failed": 11,
+          "skipped": 11,
+          "error": 0,
+          "conflict": 0
+        }
+      }
+    ],
+    "same_failures": true,
+    "runner_sha": true,
+    "runner_argv": true,
+    "ini": true,
+    "outcome_mutations_accepted": {
+      "missing": false,
+      "added": false,
+      "lost_pass": false,
+      "swap": false,
+      "new_failure": false,
+      "new_skip": false
+    },
+    "copied_baseline_pins": true,
+    "joint_tamper": {
+      "pins_hold": false,
+      "integrity": true,
+      "changed_ids": [
+        "step2_test::test_sync",
+        "test_c5_brain_live::test_explicit_request_executes_only_the_users_words"
+      ]
+    },
+    "outcome_count_mismatch": false,
+    "duplicate_id": false
+  },
+  "chain": {
+    "phase2": {
+      "PASS": true,
+      "exit": 0
+    },
+    "authority": {
+      "PASS": true,
+      "exit": 0
+    },
+    "phase1-full": {
+      "PASS": true,
+      "exit": 1
+    },
+    "phase1-scope": {
+      "PASS": true,
+      "exit": null
+    },
+    "residue": {
+      "PASS": true,
+      "exit": null
+    },
+    "flutter": {
+      "PASS": true,
+      "exit": 0
+    },
+    "bridge": {
+      "PASS": true,
+      "exit": null
+    },
+    "native": {
+      "PASS": true,
+      "exit": 0
+    },
+    "native-worker": {
+      "PASS": true,
+      "exit": 0
+    }
+  },
+  "chain_all_pass": true
+}

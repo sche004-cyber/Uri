@@ -1,0 +1,5 @@
+C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent\.venv\Scripts\python.exe -I scripts/phase2ops_native_execution.py --provider codex_cli --model gpt-6-sol --evidence ..\evidence\phase2oq\chain9\native
+{"tag": "codex_cli_lifecycle_140447", "direct_cli_status": "OK", "live_auth": true, "qualification": "PERSISTED NATIVE_QUALIFIED", "runs": [{"name": "lifecycle", "state": "completed", "reason": null, "code": "SETTLED_VERIFIED", "pid_after_cancel": null}, {"name": "mid_run_cancel", "state": "uncertain", "reason": "CANCELLED_AFTER_DISPATCH", "code": "SETTLED_EXECUTION_UNCERTAIN", "pid_after_cancel": "DEAD"}]}
+REPORT C:\Users\cheta\.codex\worktrees\uri-phase2a\evidence\phase2oq\chain9\native\codex_cli_lifecycle_140447.json
+
+EXIT=0 DURATION_S=64.1

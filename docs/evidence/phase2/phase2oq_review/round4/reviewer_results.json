@@ -1,0 +1,237 @@
+{
+  "subject": {
+    "hash": "822c49be4e9841cacfe824d91d4a64fbb4c8da7f92f350dc27933cb9dedd0b8b",
+    "entries": 361,
+    "manifest": 361,
+    "missing_or_extra": [],
+    "payload_bad": [],
+    "tree_files": 154,
+    "evidence_files": 207,
+    "live_bad": []
+  },
+  "previous": {
+    "hash": "a2c11441bb51975fcb3fbbec84f89760d13f24e9f815d2f13d9e88452f049602",
+    "entries": 318,
+    "manifest": 318,
+    "missing_or_extra": [],
+    "payload_bad": [],
+    "tree_files": 154,
+    "evidence_files": 164,
+    "live_bad": [
+      "docs/plans/PHASE2OQ_REPORT.md",
+      "scripts/phase2close_chain.py",
+      "tests/phase2oq/test_chain_equivalence.py"
+    ]
+  },
+  "change_added": [
+    "evidence/phase2oq/chain7/chain_summary.json",
+    "evidence/phase2oq/chain7/flutter_all.log",
+    "evidence/phase2oq/chain7/native/codex_cli_lifecycle_130130.json",
+    "evidence/phase2oq/chain7/native/probe_codex_cli.json",
+    "evidence/phase2oq/chain7/native/probe_codex_cli/stderr.txt",
+    "evidence/phase2oq/chain7/native/probe_codex_cli/stdout.ndjson",
+    "evidence/phase2oq/chain7/native_codex_stdout.txt",
+    "evidence/phase2oq/chain7/native_worker/lifecycle_child.json",
+    "evidence/phase2oq/chain7/native_worker/native_worker_130221.json",
+    "evidence/phase2oq/chain7/native_worker/probe/probe_codex_cli/stderr.txt",
+    "evidence/phase2oq/chain7/native_worker/probe/probe_codex_cli/stdout.ndjson",
+    "evidence/phase2oq/chain7/native_worker/probe_codex_cli.json",
+    "evidence/phase2oq/chain7/native_worker/probe_codex_cli_shim_negative_control.json",
+    "evidence/phase2oq/chain7/native_worker_stdout.txt",
+    "evidence/phase2oq/chain7/phase1_authority.log",
+    "evidence/phase2oq/chain7/phase1_full.log",
+    "evidence/phase2oq/chain7/phase1_full.xml",
+    "evidence/phase2oq/chain7/phase2_all.log",
+    "evidence/phase2oq/chain7/refusals.txt",
+    "evidence/phase2oq/chain7/ui_bridge_live_1.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_10.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_2.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_3.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_4.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_5.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_6.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_7.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_8.json",
+    "evidence/phase2oq/chain7/ui_bridge_live_9.json",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_1.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_10.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_2.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_3.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_4.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_5.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_6.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_7.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_8.txt",
+    "evidence/phase2oq/chain7/ui_bridge_stdout_9.txt",
+    "evidence/phase2oq/chain7_stdout.txt",
+    "evidence/phase2oq/outcome_baseline/phase1_baseline.log",
+    "evidence/phase2oq/outcome_baseline/phase1_baseline.xml",
+    "evidence/phase2oq/phase1_outcome_baseline.json"
+  ],
+  "change_removed": [],
+  "change_modified": [
+    "docs/plans/PHASE2OQ_REPORT.md",
+    "scripts/phase2close_chain.py",
+    "tests/phase2oq/test_chain_equivalence.py"
+  ],
+  "baseline_runner_hash_match": true,
+  "baseline_argv_match": true,
+  "current_argv_match": true,
+  "ini_match": true,
+  "scope": {
+    "changed_vs_closure": [
+      "docs/plans/PHASE2CLOSE_C6_CHAT_INTEGRATION.md",
+      "docs/plans/PHASE2CLOSE_C7_READINESS.md",
+      "docs/plans/PHASE2CLOSE_CLOSURE_CHECKLIST.md",
+      "docs/plans/PHASE2CLOSE_PHYSICAL_ACCEPTANCE_RUNBOOK.md",
+      "docs/plans/PHASE2CLOSE_REPORT.md",
+      "docs/plans/URI_DEVELOPMENT_TODO.md",
+      "scripts/phase2c_native_qualification.py",
+      "scripts/phase2close_acceptance.py",
+      "scripts/phase2close_chain.py",
+      "scripts/phase2close_powerloss_harness.py",
+      "scripts/phase2d_regression.py",
+      "scripts/run_uri_supervised_worker.py",
+      "tests/phase2a/test_frozen_core.py",
+      "tests/phase2close/test_acceptance_tooling.py",
+      "tests/phase2close/test_powerloss_harness.py",
+      "tests/phase2d/test_worker_process.py",
+      "tests/phase2d/test_worker_service.py",
+      "tests/phase2ops/test_lifecycle.py",
+      "uri_supervisor/supervisor.py",
+      "uri_supervisor/winproc.py",
+      "uri_supervisor_bridge/composition.py",
+      "uri_supervisor_bridge/execution.py",
+      "uri_supervisor_bridge/qualification.py",
+      "uri_supervisor_bridge/worker_service.py",
+      "uri_ui/lib/screens/tasks/supervised_execution_screen.dart",
+      "uri_ui/lib/services/supervised_runtime.dart",
+      "uri_ui/lib/services/task_handoff.dart",
+      "uri_ui/test/supervised_execution_screen_test.dart"
+    ],
+    "new_untracked": 124,
+    "modified_vs_head_outside_closure": [
+      ".gitignore",
+      "PROJECT_MEMORY.md",
+      "URI_MILESTONE_TRACKER.md",
+      "docs/governance/URI_ACTIVE_MILESTONE.md",
+      "uri_core/app/route_classification.py",
+      "uri_core/app/server.py",
+      "uri_core/capabilities/registry.py",
+      "uri_core/core/dispatcher.py",
+      "uri_core/core/turn_state.py",
+      "uri_ui/lib/screens/ask/ask_uri_screen.dart",
+      "uri_ui/lib/screens/settings/settings_shell.dart",
+      "uri_workspace/capabilities_registry.json"
+    ],
+    "frozen_phase1_byte_identical": 98,
+    "outside_phase2_scope": [],
+    "runner_argv_equals_accepted_plus_phase2oq_ignore": true,
+    "phase1_scope_importers_of_phase2": []
+  },
+  "baseline_xml": {
+    "cases": 2698,
+    "unique": 2698,
+    "collisions": [],
+    "outcomes": {
+      "passed": 2676,
+      "failed": 11,
+      "skipped": 11
+    }
+  },
+  "chain_xml": {
+    "cases": 2698,
+    "unique": 2698,
+    "collisions": [],
+    "outcomes": {
+      "passed": 2676,
+      "failed": 11,
+      "skipped": 11
+    }
+  },
+  "baseline_json_matches_xml": true,
+  "chain_identity": {
+    "ok": true,
+    "ids": 2698,
+    "baseline_ids": 2698,
+    "missing": [],
+    "added": [],
+    "outcome_changed": [],
+    "outcome_counts": {
+      "passed": 2676,
+      "failed": 11,
+      "skipped": 11,
+      "error": 0,
+      "conflict": 0
+    }
+  },
+  "failed_ids_match_accepted": true,
+  "baseline_anchor_recomputed": {
+    "same_failures": true,
+    "skip_now": {
+      "test_c5_brain_live.py|54|opt-in: set URI_C5_LIVE_OLLAMA_URL and _MODEL": 1,
+      "test_c5_brain_live.py|74|opt-in: set URI_C5_LIVE_OLLAMA_URL and _MODEL": 3,
+      "test_c5_brain_live.py|93|opt-in: set URI_C5_LIVE_OLLAMA_URL and _MODEL": 1,
+      "unittest.py|523|Ollama is not reachable at <URL> - skipping the real context-window regression test.": 1,
+      "unittest.py|523|Ollama is not reachable at <URL> - skipping the real integration test. Start Ollama and pull the configured model to run this.": 2,
+      "unittest.py|523|Ollama is not reachable at <URL> - skipping the real reasoning-shadow integration test.": 3
+    },
+    "skip_accepted": {
+      "test_c5_brain_live.py|54|opt-in: set URI_C5_LIVE_OLLAMA_URL and _MODEL": 1,
+      "test_c5_brain_live.py|74|opt-in: set URI_C5_LIVE_OLLAMA_URL and _MODEL": 3,
+      "test_c5_brain_live.py|93|opt-in: set URI_C5_LIVE_OLLAMA_URL and _MODEL": 1,
+      "test_gemma_worker_mcp.py|329|Live Ollama not available: Ollama service unavailable at <URL>": 1,
+      "unittest.py|523|Ollama is not reachable at <URL> - skipping the real context-window regression test.": 1,
+      "unittest.py|523|Ollama is not reachable at <URL> - skipping the real integration test. Start Ollama and pull the configured model to run this.": 2,
+      "unittest.py|523|Ollama is not reachable at <URL> - skipping the real reasoning-shadow integration test.": 3
+    }
+  },
+  "probes": {
+    "missing": false,
+    "added": false,
+    "lost_pass": false,
+    "new_failure": false,
+    "new_skip": false,
+    "pass_skip_swap": false
+  },
+  "frozen": {
+    "hash": "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7",
+    "entries": 121,
+    "live_bad": []
+  },
+  "phase2close-candidate-20261008-f.zip_sha256": "fcd0d72e0cd91412c361edec9114e2edaebbf70ede052046b808f3c4fc571298",
+  "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "collision_probe": {
+    "xml": {
+      "cases": 3,
+      "unique": 2,
+      "collisions": [
+        [
+          "a::p",
+          2
+        ]
+      ],
+      "outcomes": {
+        "passed": 1,
+        "skipped": 1
+      }
+    },
+    "gate_accepts_extra_same_id": true
+  },
+  "conflict_reset_probe": {
+    "xml": {
+      "cases": 3,
+      "unique": 1,
+      "collisions": [
+        [
+          "a::p",
+          3
+        ]
+      ],
+      "outcomes": {
+        "conflict": 1
+      }
+    },
+    "gate_accepts": false
+  }
+}
