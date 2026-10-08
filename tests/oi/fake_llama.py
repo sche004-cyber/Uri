@@ -55,6 +55,9 @@ class _Handler(BaseHTTPRequestHandler):
         body = json.loads(self.rfile.read(n) or b"{}")
         srv.requests.append(body)
         script = srv.scripts.pop(0) if srv.scripts else dict(srv.default)
+        time.sleep(script.get("header_delay", 0))      # server busy: no response headers yet
+        if body.get("stream") and "json" in script:
+            script = dict(script, chunks=[("answer", script["json"])], finish=script.get("finish", "stop"))
         if script.get("status", 200) != 200:
             self._json(script["status"], {"error": {"message": "fake failure"}})
             return

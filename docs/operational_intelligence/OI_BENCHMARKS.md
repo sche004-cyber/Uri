@@ -14,6 +14,22 @@ are kept as a repeatability check (temperature 0): 59/60 answers identical to ru
 run records the server's dedicated/shared GPU memory before and after (run 2: 15,571 → 15,599 MiB dedicated, shared
 unchanged). The eviction's trigger was not identified (CAUSE UNKNOWN). Detection is now part of OI (`perf_monitor`).
 
+## 1b. Live finding OI-RT-2 (queueing defect, fixed) and GPU contention
+
+Live run at `ebd978f` on a degraded runtime (decode 24 tok/s): 3 live tests failed with SELECTED_MODEL_UNAVAILABLE
+(seam calls hit the 60 s deadline) and one answer turn took 495 s despite a 60 s first-token deadline. Cause (code,
+confirmed by tests): (a) a non-streamed seam request that timed out on the client kept generating on the server's
+single slot, so every later request queued behind it; (b) while queued, llama-server sent no response headers and the
+blocking `send()` could not be interrupted by the deadline or a cancel. Fix: seams run over SSE (a timeout closes the
+stream and the server drops the generation) and the send runs in a helper thread so deadlines/cancel act during the
+header wait (tests with a fake server that withholds headers). Re-run on the same degraded runtime: live 8/8
+(`core_live` evidence: action to approval 5.2–7.5 s, verified loop 7.8 s, question 2.0 s).
+
+GPU contention: from 17:44 another session runs an embeddings `llama-server` (nomic-embed, port 18481, started via
+`nohup`, 222 MiB VRAM). Since then a freshly started Runtime v1 gets only 14,863 MiB dedicated (vs 15,534 MiB on
+a quiet GPU) and decodes at 23–25 tok/s (vs 107–117). OI did not touch that process. Runtime v1's 16 GB budget has
+no room for a second GPU process: this needs cross-session coordination (owner).
+
 ## 2. Real Core integration (intended architecture)
 
 | Test | Result | Evidence |

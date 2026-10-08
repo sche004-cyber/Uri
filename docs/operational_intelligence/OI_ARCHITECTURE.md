@@ -38,7 +38,8 @@ OI never approves, claims, settles, or retries an uncertain execution.
 | Stop | only an instance this manager started; success only when the job is confirmed empty | `RuntimeManager.stop` |
 | Readiness states | NOT_CONFIGURED, ARTIFACT_MISSING, IDENTITY_MISMATCH, STOPPED, STARTING, LOADING, READY, FOREIGN_INSTANCE, FAILED (+ DEGRADED from performance health) | `Readiness` |
 | Streaming | SSE `/v1/chat/completions`; reasoning and answer deltas separated; llama-server `timings` captured verbatim | `brain_client.stream_chat` |
-| Cancellation | watcher thread closes the HTTP stream; llama-server sees the disconnect and frees the slot (verified live: slot idle immediately, next request 0.25 s) | `CancelToken` |
+| Cancellation | watcher thread closes the HTTP stream; llama-server sees the disconnect and frees the slot (verified live: slot idle immediately, next request 0.25 s). The request is sent from a helper thread, so cancel and deadlines also act while the server has not yet sent headers (slot busy) | `CancelToken` |
+| Structured seams | run over SSE and aggregated (`complete_json`), so a seam timeout disconnects and the server drops the generation instead of occupying the single slot (live finding OI-RT-2) | `complete_json` |
 | Deadlines | first token 60 s (covers a 30k prefill), idle gap 30 s, total 300 s (configurable) | `Deadlines` |
 | Errors | COMPLETE, INCOMPLETE_LENGTH, CANCELLED, TIMEOUT_FIRST_TOKEN, STALLED, DEADLINE_EXCEEDED, INTERRUPTED, UNREACHABLE, HTTP_ERROR, PROTOCOL_ERROR; only COMPLETE is success, and only for an explicit `stop`/`eos` finish reason | `brain_client` |
 | Recovery | one automatic retry only for a transport failure before any output (inference has no side effects); never after output began; never to another model | `stream_chat`, `complete_json` |

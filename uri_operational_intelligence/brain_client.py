@@ -173,12 +173,42 @@ class BrainClient:
         text, reasoning = [], []
         try:
             req = self._get().build_request("POST", "/v1/chat/completions", json=body)
-            resp = self._get().send(req, stream=True)
-            with guard:
-                state["response"] = resp
-                why = state["why"]
-            if why:
-                resp.close()
+            # Measured 2026-10-08: with the single slot busy, llama-server may not send response headers for minutes,
+            # and a blocking send() cannot be interrupted. The send runs in a helper thread so cancellation and
+            # deadlines act immediately; an abandoned send closes its response as soon as headers arrive (the server
+            # then sees the disconnect and drops the request).
+            holder, sent = {}, threading.Event()
+
+            def do_send():
+                try:
+                    r = self._get().send(req, stream=True)
+                except BaseException as exc:      # handed to the caller
+                    holder["exc"] = exc
+                    sent.set()
+                    return
+                with guard:
+                    abandoned = state["why"] is not None
+                    if not abandoned:
+                        state["response"] = r
+                if abandoned:
+                    try:
+                        r.close()
+                    except Exception:
+                        pass
+                else:
+                    holder["resp"] = r
+                sent.set()
+
+            threading.Thread(target=do_send, daemon=True).start()
+            while not sent.wait(0.05):
+                if state["why"]:
+                    break
+            if "exc" in holder:
+                raise holder["exc"]
+            if "resp" not in holder:
+                raise httpx.ReadError("abandoned before response headers")
+            resp = holder["resp"]
+            if state["why"]:
                 raise httpx.ReadError("closed by watcher")
             res.http_status = resp.status_code
             if resp.status_code != 200:
@@ -230,6 +260,8 @@ class BrainClient:
                 res.status = INCOMPLETE_LENGTH
             elif res.finish_reason in ("stop", "eos"):
                 res.status = COMPLETE
+            elif res.finish_reason is not None:
+                res.status, res.error = INTERRUPTED, "UNKNOWN_FINISH_REASON:%s" % res.finish_reason
             else:
                 res.status, res.error = INTERRUPTED, "STREAM_ENDED_WITHOUT_FINISH"
         except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
@@ -255,47 +287,17 @@ class BrainClient:
             res.total_s = round(time.monotonic() - t0, 4)
         return res
 
-    # ---- structured (non-streaming) ---------------------------------------------------------------
+    # ---- structured -----------------------------------------------------------------------------------
     def complete_json(self, body: dict, *, timeout_s=120.0) -> CallResult:
-        """Non-streaming call for structured seams (freeze record section 8: streaming not used for JSON seams)."""
-        t0 = time.monotonic()
-        res = CallResult(status=PROTOCOL_ERROR)
-        body = dict(body, stream=False)
-        for attempt in (0, 1):
-            try:
-                r = self._get().post("/v1/chat/completions", json=body, timeout=httpx.Timeout(timeout_s, connect=self.connect_timeout))
-            except (httpx.ConnectError, httpx.ConnectTimeout) as exc:   # nothing was sent or received
-                self.reset()
-                res.status, res.error = UNREACHABLE, type(exc).__name__
-                if attempt == 0:
-                    res.retried = True
-                    continue
-                break
-            except httpx.TimeoutException as exc:
-                res.status, res.error = DEADLINE_EXCEEDED, type(exc).__name__
-                break
-            except httpx.TransportError as exc:
-                res.status, res.error = INTERRUPTED, type(exc).__name__
-                break
-            res.http_status = r.status_code
-            if r.status_code != 200:
-                res.status, res.error = HTTP_ERROR, r.text[:300]
-                break
-            try:
-                data = r.json()
-                choice = data["choices"][0]
-                res.text = choice["message"].get("content") or ""
-                res.reasoning = choice["message"].get("reasoning_content") or ""
-                res.finish_reason = choice.get("finish_reason")
-                res.timings = data.get("timings") or {}
-                res.usage = data.get("usage") or {}
-            except (ValueError, KeyError, IndexError, TypeError):
-                res.status, res.error = PROTOCOL_ERROR, "BAD_RESPONSE_SHAPE"
-                break
-            # Allowlist: only an explicit stop is COMPLETE; a missing or unknown finish reason is not success.
-            res.status = {"length": INCOMPLETE_LENGTH, "stop": COMPLETE, "eos": COMPLETE}.get(res.finish_reason, INTERRUPTED)
-            if res.status == INTERRUPTED:
-                res.error = "UNKNOWN_FINISH_REASON:%s" % res.finish_reason
-            break
-        res.total_s = round(time.monotonic() - t0, 4)
+        """Structured seam call, run over the streaming path and aggregated.
+
+        Changed after a live finding (2026-10-08): a non-streamed request that timed out on the client kept generating
+        on the server's single slot and queued every later request behind it. Over SSE a timeout or cancel closes the
+        stream and llama-server drops the generation. Statuses are the streaming ones; the three deadline kinds are
+        reported as DEADLINE_EXCEEDED to keep the seam vocabulary small."""
+        res = self.stream_chat(body, deadlines=Deadlines(first_token_s=timeout_s, idle_s=min(30.0, timeout_s),
+                                                         total_s=timeout_s))
+        if res.status in (TIMEOUT_FIRST_TOKEN, STALLED):
+            res.error = res.status
+            res.status = DEADLINE_EXCEEDED
         return res

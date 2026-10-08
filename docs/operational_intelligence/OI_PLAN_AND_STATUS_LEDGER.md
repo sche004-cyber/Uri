@@ -73,7 +73,8 @@ those gates (Phase 2 tests are accepted files; OI did not edit them).
 
 | ID | Item | Affects |
 |---|---|---|
-| OI-PERF-1 | Silent VRAM residency loss (~3× slower). Detected, not prevented; trigger unknown | responsiveness |
+| OI-PERF-1 | Silent VRAM residency loss (3–5× slower). Detected, not prevented. First occurrence: trigger unknown; from 17:44 a second session's embeddings llama-server (222 MiB VRAM) keeps a fresh Runtime v1 at 14.9 GB dedicated / 24 tok/s | responsiveness; needs owner coordination of GPU use |
+| OI-RT-2 | Fixed: timed-out non-streamed seam calls kept the single slot busy and later requests could not be interrupted while waiting for headers | was: false SELECTED_MODEL_UNAVAILABLE, 495 s turn |
 | OI-SEC-1 | Runtime v1 has no API key and CORS `*` (frozen flags). Owner decision | local exposure of the model endpoint |
 | CONS-7 | Core runs only at `HEAD == e8e3b65`; live tests need a materialized tree | integration |
 | LIM-1 | Only `remember_fact` and `external_harness_task` are qualified paired capabilities; recall/search/drafting-to-file are not executable via paired Core | usefulness |

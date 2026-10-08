@@ -113,9 +113,35 @@ def test_complete_json_paths(fake):
     c = BC.BrainClient(fake.url)
     fake.scripts.append({"json": '{"a": 1}', "finish": "stop"})
     r = c.complete_json(body())
-    assert r.status == BC.COMPLETE and r.text == '{"a": 1}' and fake.requests[-1]["stream"] is False
+    assert r.status == BC.COMPLETE and r.text == '{"a": 1}' and fake.requests[-1]["stream"] is True
     fake.scripts.append({"json": '{"a":', "finish": "length"})
     assert c.complete_json(body()).status == BC.INCOMPLETE_LENGTH
     fake.scripts.append({"status": 503})
     assert c.complete_json(body()).status == BC.HTTP_ERROR
     assert BC.BrainClient("http://127.0.0.1:%d" % free_port()).complete_json(body()).status == BC.UNREACHABLE
+
+
+def test_deadline_and_cancel_work_while_waiting_for_response_headers(fake):
+    """Live finding 2026-10-08: with the slot busy, headers did not arrive for minutes and a blocking send() ignored
+    the first-token deadline (495 s turn). Both must act during the header wait."""
+    fake.scripts.append({"chunks": [("answer", "late")], "finish": "stop", "header_delay": 3.0})
+    t0 = time.monotonic()
+    r = BC.BrainClient(fake.url).stream_chat(body(), deadlines=BC.Deadlines(first_token_s=0.4, idle_s=5, total_s=10))
+    assert r.status == BC.TIMEOUT_FIRST_TOKEN and time.monotonic() - t0 < 1.5
+    fake.scripts.append({"chunks": [("answer", "late")], "finish": "stop", "header_delay": 3.0})
+    tok = BC.CancelToken()
+    import threading
+    threading.Timer(0.3, tok.cancel).start()
+    t0 = time.monotonic()
+    r = BC.BrainClient(fake.url).stream_chat(body(), cancel=tok)
+    assert r.status == BC.CANCELLED and time.monotonic() - t0 < 1.5
+
+
+def test_seam_timeout_disconnects_so_the_server_can_drop_the_generation(fake):
+    fake.scripts.append({"chunks": [("answer", "x")] * 200, "finish": "stop", "delay": 0.02})
+    r = BC.BrainClient(fake.url).complete_json(body(), timeout_s=0.5)
+    assert r.status == BC.DEADLINE_EXCEEDED and fake.requests[-1]["stream"] is True
+    deadline = time.monotonic() + 3
+    while fake.disconnects == 0 and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert fake.disconnects == 1
