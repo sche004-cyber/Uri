@@ -284,6 +284,30 @@ def test_relative_entrypoint_is_resolved_against_the_working_directory():
     assert rac.classify(cmd2, M)[0] == "UNACCOUNTED"
 
 
+# --- regressions for the Codex adversarial review round 3 (2026-10-08, verdict REJECT) -----------------------------
+def test_digit_adjacent_ampersand_still_separates_commands():
+    for sep in ("1&", "1& ", " &1 ", "2&&"):
+        action = f"cmd.exe /c python {RUNTIME}/scripts/run_uri_isolated_server.py {sep}python D:/copies/uri-agent/scripts/run_uri_server.py"
+        rep = verdict(snap(scheduled_tasks=[{"name": r"\Chained", "enabled": True, "action": action}]))
+        assert rep["verdict"] == "CONTAMINATED", sep
+
+
+def test_path_traversal_cannot_launder_through_a_shared_or_authorized_prefix():
+    cases = [r"D:/New folder (2)/LM Studio/../../URI-preservation/server.exe --port 1234",
+             r"C:/Users/cheta/AppData/Local/Programs/Ollama/../../../../../../uri-model-lab-nvme/llama-server.exe --port 1234",
+             rf"{RUNTIME}/scripts/../../uri-agent/scripts/run_uri_isolated_server.py"]
+    for c in cases:
+        rep = verdict(snap(listeners=[listener(1234, c)], processes=[proc(c)]))
+        assert rep["verdict"] == "CONTAMINATED", c
+        assert "SHARED_DEPENDENCY" not in classes(rep) and "AUTHORIZED" not in classes(rep), c
+
+
+def test_redact_never_raises_on_odd_input():
+    for v in (42, b"token=abc12345", None, 3.5, ["x"]):
+        assert isinstance(rac.redact(v), str)
+    assert "abc12345" not in rac.redact(b"token=abc12345")
+
+
 def test_extended_length_prefix_does_not_change_classification():
     cmd = r"python \\?\C:\Users\cheta\Development\uri-agent\scripts\run_uri_server.py --port 8000"
     assert rac.classify(cmd, M)[0] == "TRANSITIONAL_LEGACY"

@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **41 passed** (25 original + 9 after Codex round 1 + 7 after round 2). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **44 passed** (25 original + 9 after Codex round 1 + 7 after round 2 + 3 after round 3). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -108,6 +108,20 @@ each confirmed before repair:
 7 new tests (41 total, all passing). Negative control: 6 of them fail on the round-1 checker. The seventh, a
 redirection guard, passes on both. Live run after the repair matched the earlier live run: normal mode found 0
 contamination, and strict mode found 6 active transitional findings. Round 3 result: see §2c.
+
+## 2c. Codex review round 3: REJECT, then repaired
+
+Round 3 confirmed Y-2..Y-5 repaired, and confirmed the live legacy server and the authorized launcher are still
+classified correctly. It found:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| Z-1 (Y-1 residual) | High | `1& cmd` was not split, because a digit before `&` was treated as a redirection | Only `>&` and `<&` are redirections; every other `&` separates commands |
+| Z-2 | High | `..` traversal (`…/LM Studio/../../URI-preservation/server.exe`, `…/Ollama/../../…/uri-model-lab-nvme/…`) laundered donor or quarantined binaries through a shared or authorized prefix | Path normalization collapses `.` and `..` before any prefix or root test |
+| Z-3 | Low | `redact` raised on non-string input | Bytes are decoded; other types become strings |
+
+3 new tests (44 total, all passing). Negative control: all 3 fail on the round-2 checker. Live run: unchanged (0
+contamination in normal mode; 6 active transitional findings in strict mode). Round 4 result: see §2d.
 
 ## 3. Integrity and recoverability
 

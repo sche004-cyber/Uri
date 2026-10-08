@@ -65,7 +65,16 @@ def norm(p: str) -> str:
     s = s.replace("\\", "/")
     while "//" in s:
         s = s.replace("//", "/")
-    return s.rstrip("/").casefold()
+    # Collapse '.' and '..' segments so 'C:/allowed/../../donor' can never match the 'C:/allowed' prefix.
+    out = []
+    for seg in s.split("/"):
+        if seg == ".":
+            continue
+        if seg == ".." and out and out[-1] not in ("..", "") and not re.fullmatch(r"[A-Za-z]:", out[-1]):
+            out.pop()
+            continue
+        out.append(seg)
+    return "/".join(out).rstrip("/").casefold()
 
 
 def load_manifest(path: Path) -> dict:
@@ -137,6 +146,10 @@ def redact(text: str) -> str:
     """Remove secret-looking values before anything is stored or printed. Encoded PowerShell payloads are replaced
     by their decoded, redacted text so nothing recoverable remains."""
     import base64
+    if isinstance(text, bytes):
+        text = text.decode("utf-8", errors="replace")
+    elif not isinstance(text, str):
+        text = "" if text is None else str(text)
 
     def enc(m):
         try:
@@ -155,7 +168,8 @@ def _redact_plain(text: str) -> str:
 PATH_WITH_SPACES = re.compile(r"^\s*([A-Za-z]:[\\/][^\"]*?\.(?:exe|bat|cmd|ps1|py|pyw|lnk))(?=\s|$)", re.I)
 WD = re.compile(r"\s*\[wd=([^\]]*)\]\s*$")
 # Unquoted command separators for cmd.exe and PowerShell: & && | || ; and newlines. '>&' / '<&' are redirections.
-SEPARATORS = re.compile(r"(?<![<>0-9])&&|(?<![<>0-9])&(?![0-9])|\|\||\||;|\r?\n")
+# Only '>&' and '<&' (e.g. 2>&1) are redirections; any other '&' (including '1&' and '&1') separates commands.
+SEPARATORS = re.compile(r"&&|(?<![<>])&|\|\||\||;|\r?\n")
 
 
 def _split_commands(text: str) -> list[str]:
