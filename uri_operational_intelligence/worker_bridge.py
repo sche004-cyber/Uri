@@ -24,10 +24,12 @@ import uuid
 
 from . import brain_catalog
 from . import cloud_policy
+from . import text_input as TI
+from .draft_desk import DeskError, DraftDesk
 from .events import EventSink
 
 COMMANDS = {
-    "oi_turn": ({"command", "session_id", "text", "depth"},),
+    "oi_turn": ({"command", "session_id", "text", "depth"}, {"command", "session_id", "text", "depth", "input"}),
     "oi_cancel": ({"command", "turn_id"},),
     "oi_confirm": ({"command", "turn_id"},),
     "oi_decide": ({"command", "turn_id", "approve", "approval_digest"},),
@@ -37,8 +39,12 @@ COMMANDS = {
     "brain_select": ({"command", "row_id"},),
     "memory_list": ({"command"},),
     "cloud_policy": ({"command"},),
+    # Text intelligence: read the session's draft; deterministic draft operations (no model, no authority).
+    "draft_get": ({"command", "session_id"},),
+    "draft_op": ({"command", "session_id", "op"}, {"command", "session_id", "op", "version"}),
 }
-OPEN_WHILE_BUSY = {"oi_cancel", "brain_status", "brain_catalog", "cloud_policy"}
+OPEN_WHILE_BUSY = {"oi_cancel", "brain_status", "brain_catalog", "cloud_policy", "draft_get"}
+DRAFT_OPS = ("undo", "redo", "restore", "discard")
 # A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
 # the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
 CONTINUATIONS = {"oi_decide", "oi_confirm", "oi_abandon"}
@@ -94,6 +100,7 @@ class IntegratedTurns:
         self.closing = False          # set by the worker's shutdown: late continuations are released, not kept
         self.pending = {}             # oi turn_id -> {"env", "text", "session_id"} (Core turn awaiting the user)
         self.history = {}             # session_id -> [{"role", "content"}] (answer-channel context, bounded)
+        self.desk = DraftDesk(orchestrator)   # text intelligence: drafts per session (language work only)
 
     # ---- state ---------------------------------------------------------------------------------
     @property
@@ -171,19 +178,39 @@ class IntegratedTurns:
             raise BridgeRefused("SESSION_INVALID")      # Core binds turns to UUID session ids
         if depth not in DEPTHS:
             raise BridgeRefused("DEPTH_INVALID")
+        try:
+            inp = TI.parse(c.get("input"), text)
+        except TI.InputRejected as exc:
+            raise BridgeRefused(exc.code) from None
         turn_id = str(uuid.uuid4())
         history = list(self.history.get(session_id, ()))
+        # A transcript reaches the ordinary path with fillers removed; the raw transcript stays in the envelope.
+        plain = TI.clean_transcript(text) if inp.is_transcript else text
+
+        def ordinary(sink):
+            out = self.o.handle_turn(plain, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id)
+            self._remember(turn_id, session_id, plain, out.core, out.status)
+            answer = (out.answer or {}).get("text")
+            self._record_history(session_id, plain, answer if out.status in ("ok", "incomplete") else None)
+            return out
 
         def run():
             sink = self._sink(turn_id)
             try:
-                out = self.o.handle_turn(text, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id)
+                intent = self.desk.classify(plain, session_id) if depth != "deep" else None
+                if intent is not None and intent.is_text_task:
+                    out = self.desk.handle(turn_id, text, session_id, intent, inp, sink,
+                                           fallback=lambda: dict(ordinary(sink).__dict__, delegated=True))
+                    if not out.get("delegated"):
+                        cur = (out.get("draft") or {}).get("current") or {}
+                        note = ("[Draft version %s]\n%s" % (cur.get("n"), cur.get("text", "")))[:2000] if cur \
+                            else out.get("question")
+                        self._record_history(session_id, plain, note)
+                    return
+                ordinary(sink)
             except Exception as exc:          # never leave the UI waiting: close the stream as an error
                 self._fail(sink, turn_id, exc)
                 return
-            self._remember(turn_id, session_id, text, out.core, out.status)
-            answer = (out.answer or {}).get("text")
-            self._record_history(session_id, text, answer if out.status in ("ok", "incomplete") else None)
 
         self._start(turn_id, run)
         return {"turn_id": turn_id, "accepted": True, "selection": self.selected}
@@ -326,3 +353,23 @@ class IntegratedTurns:
 
     def _cloud_policy(self, _c):
         return self.cloud.summary()
+
+    # ---- text intelligence: drafts --------------------------------------------------------------------
+    def _draft_get(self, c):
+        if not _is_uuid(c["session_id"]):
+            raise BridgeRefused("SESSION_INVALID")
+        return {"draft": self.desk.snapshot(c["session_id"])}
+
+    def _draft_op(self, c):
+        """Button path for undo/redo/restore/discard. Deterministic, no model, works with the Brain stopped. A draft
+        operation never sends, saves or executes anything."""
+        if not _is_uuid(c["session_id"]):
+            raise BridgeRefused("SESSION_INVALID")
+        op = c["op"]
+        if op not in DRAFT_OPS or (op == "restore") != ("version" in c):
+            raise BridgeRefused("DRAFT_OP_INVALID")
+        try:
+            draft = self.desk.op(c["session_id"], op, c.get("version"))
+        except DeskError as exc:
+            raise BridgeRefused(exc.code) from None
+        return {"draft": draft, "op": op}

@@ -1,0 +1,284 @@
+"""Draft desk through the integrated worker bridge, against a scripted fake Runtime v1 (TI-AC1..AC8).
+
+The fake returns the JSON a model would return; these tests check what URI does with it: versioning, locality,
+verification flags, clarification, cancellation, degraded Brain, input contract and routing to Core.
+"""
+import json
+import time
+
+import pytest
+
+from tests.oi.fake_llama import FakeLlama
+from tests.oi.test_oi_orchestrator import FakeCore
+from tests.ws.test_ws_worker_bridge import CFG, SID, make
+from uri_operational_intelligence import text_input as TI
+from uri_operational_intelligence.worker_bridge import BridgeRefused
+
+WARDEN = ("URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on "
+          "Monday without permission. Make it formal.")
+CREATE = {
+    "clarification": None,
+    "facts": [{"key": "number of students", "value": "seven", "superseded": ["five"]},
+              {"key": "day", "value": "Monday", "superseded": []}],
+    "exclusions": [], "doc_type": "letter", "tone": "formal",
+    "blocks": [
+        {"role": "recipient", "text": "To\nThe Warden\n[Hostel Name]"},
+        {"role": "subject", "text": "Subject: Seven students leaving the hostel without permission"},
+        {"role": "salutation", "text": "Respected Sir/Madam,"},
+        {"role": "body", "text": "I am writing to inform you that seven students left the hostel on Monday without "
+                                 "permission."},
+        {"role": "body", "text": "This is a matter of concern for the safety of the students and the discipline of "
+                                 "the hostel, and I request that it be looked into at the earliest so that suitable "
+                                 "steps can be taken."},
+        {"role": "body", "text": "Thanking you."},
+        {"role": "closing", "text": "Yours faithfully,"},
+        {"role": "signature", "text": "[Your Name]\n[Designation]"}],
+    "missing": ["sender name", "hostel name"], "summary": "A formal letter to the warden about seven students."}
+REVISE_1 = {"action": "edit", "clarification": None, "fact_updates": [], "exclusions_add": ["without permission"],
+            "edits": [{"op": "replace", "block_id": "b2", "role": "subject",
+                       "text": "Subject: Seven students leaving the hostel without recording their departure"},
+                      {"op": "replace", "block_id": "b4", "role": "body",
+                       "text": "I am writing to inform you that seven students left the hostel on Monday without "
+                               "recording their departure in the hostel register."},
+                      # An edit to a paragraph the instruction did not touch: must be dropped.
+                      {"op": "replace", "block_id": "b6", "role": "body", "text": "Thank you very much."}],
+            "summary": "Replaced 'without permission' with the register wording."}
+REVISE_2 = {"action": "edit", "clarification": None, "fact_updates": [], "exclusions_add": [],
+            "edits": [{"op": "replace", "block_id": "b4", "role": "body",
+                       "text": "I would like to bring to your kind notice that seven students left the hostel on "
+                               "Monday without recording their departure in the hostel register."},
+                      {"op": "replace", "block_id": "b5", "role": "body",
+                       "text": "I would be grateful if this could be looked into."}],
+            "summary": "Softened the tone and shortened the second paragraph."}
+
+
+@pytest.fixture
+def fake():
+    with FakeLlama() as f:
+        yield f
+
+
+def turn(b, text, input=None, depth="auto"):
+    cmd = {"command": "oi_turn", "session_id": SID, "text": text, "depth": depth}
+    if input is not None:
+        cmd["input"] = input
+    r = b.handle("oi_turn", cmd)
+    b.wait(15)
+    return r["turn_id"]
+
+
+def last_draft(frames):
+    return [d for d in frames.data("draft.updated")][-1]["draft"]
+
+
+def body_texts(draft):
+    return [x["text"] for x in draft["current"]["blocks"] if x["role"] == "body"]
+
+
+def test_owner_demo_sequence_with_versions_locality_and_undo(fake, tmp_path):
+    core = FakeCore()
+    b, frames, _ = make(fake, tmp_path, core)
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(REVISE_1)}, {"json": json.dumps(REVISE_2)}]
+
+    t1 = turn(b, WARDEN)
+    routed = frames.data("turn.routed")[-1]
+    assert routed["route"] == "draft" and routed["triage"]["text_kind"] == "DRAFT_NEW"
+    d1 = last_draft(frames)
+    assert d1["version"] == 1 and "seven students" in d1["current"]["text"]
+    assert "five" not in d1["current"]["text"].lower()
+    assert not [f for f in d1["current"]["flags"] if f["severity"] == "error"]
+    assert "[Your Name]" in d1["current"]["missing"]
+    assert core.calls == []                                # nothing reached Core: no action was requested
+    req = fake.requests[-1]
+    assert req["response_format"]["type"] == "json_schema" and req["chat_template_kwargs"]["enable_thinking"] is False
+    assert frames.data("turn.finished")[-1] == {"status": "ok", "route": "draft", "total_s": frames.data("turn.finished")[-1]["total_s"]}
+    assert "Nothing has been sent or saved." in "".join(d["text"] for d in frames.data("answer.delta"))
+
+    turn(b, "Actually, don't say without permission. Say they left without recording their departure in the hostel "
+            "register.")
+    d2 = last_draft(frames)
+    assert d2["version"] == 2 and d2["current"]["op"] == "revised"
+    assert sorted(d2["current"]["changed"]) == ["b2", "b4"]          # b6 edit dropped: outside the named phrase
+    assert body_texts(d2)[2] == "Thanking you." and body_texts(d2)[1] == body_texts(d1)[1]
+    assert "without permission" not in d2["current"]["text"]
+    assert any(f["code"] == "EDIT_OUTSIDE_TARGET" for f in d2["current"]["flags"])
+    edit_req = json.loads(fake.requests[-1]["messages"][1]["content"])
+    assert [x["id"] for x in edit_req["document"]["blocks"]][:2] == ["b1", "b2"]
+
+    turn(b, "Make it more diplomatic and shorten the second paragraph.")
+    d3 = last_draft(frames)
+    assert d3["version"] == 3 and sorted(d3["current"]["changed"]) == ["b4", "b5"]
+    assert "hostel register" in d3["current"]["text"] and "seven students" in d3["current"]["text"]
+    assert not [f for f in d3["current"]["flags"] if f["severity"] == "error"], d3["current"]["flags"]
+
+    n_requests = len(fake.requests)
+    turn(b, "Undo the last change.")
+    d4 = last_draft(frames)
+    assert len(fake.requests) == n_requests                           # undo used no model call
+    assert d4["version"] == 2 and d4["current"]["text"] == d2["current"]["text"] and d4["can_redo"]
+    assert frames.data("draft.updated")[-1]["op"] == "undo"
+    assert d4["first"]["text"] == d1["current"]["text"] and d4["original_text"] == WARDEN
+
+
+def test_buttons_draft_op_and_draft_get(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(REVISE_2)}]
+    turn(b, WARDEN)
+    turn(b, "Make it more diplomatic and shorten the second paragraph.")
+    assert b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"]["version"] == 2
+    r = b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "undo"})
+    assert r["draft"]["version"] == 1 and r["draft"]["can_redo"]
+    assert b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "redo"})["draft"]["version"] == 2
+    assert b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "restore", "version": 1})["draft"][
+        "current"]["op"] == "restored"
+    for bad in ({"op": "send"}, {"op": "restore"}, {"op": "undo", "version": 1}):
+        with pytest.raises(BridgeRefused):
+            b.handle("draft_op", {"command": "draft_op", "session_id": SID, **bad})
+    assert b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "discard"})["draft"] is None
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "undo"})
+    assert e.value.code == "NO_ACTIVE_DRAFT"
+
+
+def test_brain_unavailable_changes_nothing_but_undo_still_works(fake, tmp_path):
+    b, frames, o = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(REVISE_2)}]
+    turn(b, WARDEN)
+    turn(b, "Make it more diplomatic and shorten the second paragraph.")
+    from uri_operational_intelligence.runtime_v1 import Readiness
+    o.readiness = lambda: Readiness("STOPPED", fake.url, model_id="qwen-test")
+    n = len(fake.requests)
+    turn(b, "Make the first paragraph shorter.")
+    assert frames.data("error")[-1]["code"] == "BRAIN_UNAVAILABLE" and len(fake.requests) == n
+    assert b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"]["version"] == 2
+    turn(b, "Undo the last change.")
+    assert last_draft(frames)["version"] == 1
+
+
+def test_clarification_question_creates_no_version_and_answer_continues(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    clar = {"action": "clarify", "clarification": "Which date should change: the 6th or the 9th?", "fact_updates": [],
+            "exclusions_add": [], "edits": [], "summary": ""}
+    fake.scripts += [{"json": json.dumps(CREATE)}, {"json": json.dumps(clar)}, {"json": json.dumps(REVISE_2)}]
+    turn(b, WARDEN)
+    turn(b, "Change the date.")
+    assert frames.data("draft.clarify")[-1]["question"].startswith("Which date")
+    assert frames.data("turn.finished")[-1]["status"] == "needs_user"
+    assert b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"]["version"] == 1
+    turn(b, "the 9th")                                   # no edit words: still routed to the draft as the answer
+    assert frames.data("turn.routed")[-1]["route"] == "draft"
+    req = json.loads(fake.requests[-1]["messages"][1]["content"])
+    assert req["your_question"].startswith("Which date") and req["instruction"] == "the 9th"
+    assert last_draft(frames)["version"] == 2
+
+
+def test_cancel_during_generation_leaves_draft_unchanged(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)}]
+    turn(b, WARDEN)
+    chunks = [("answer", c) for c in json.dumps(REVISE_2)]
+    fake.scripts.append({"chunks": chunks, "finish": "stop", "delay": 0.01})
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "Make the first paragraph shorter.",
+                             "depth": "auto"})
+    time.sleep(0.4)
+    assert b.handle("oi_cancel", {"command": "oi_cancel", "turn_id": r["turn_id"]})["cancelled"] is True
+    b.wait(15)
+    assert frames.data("error")[-1]["code"] == "CANCELLED"
+    assert b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"]["version"] == 1
+
+
+def test_simulated_transcript_is_labelled_and_raw_kept(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    raw = ("um URI write a letter to the warden about the students leaving hostel yesterday, no wait, on the 6th, and "
+           "make it formal")
+    created = dict(CREATE, facts=[{"key": "date", "value": "the 6th", "superseded": ["yesterday"]}],
+                   blocks=[{"role": "body", "text": "Students left the hostel on the 6th."}])
+    fake.scripts.append({"json": json.dumps(created)})
+    env = {"schema": TI.SCHEMA, "source": "transcript", "transcript": {"raw": raw, "engine": "simulated",
+                                                                         "simulated": True, "language": "en-IN"}}
+    turn(b, raw, input=env)
+    d = last_draft(frames)
+    assert d["source"]["source"] == "transcript" and d["source"]["simulated"] is True and d["original_text"] == raw
+    assert frames.data("turn.routed")[-1]["triage"]["source"] == "transcript"
+    sent = json.loads(fake.requests[-1]["messages"][1]["content"])
+    assert not sent["request"].startswith("um") and sent["input_source"] == "dictated speech" and "note" in sent
+    assert not [f for f in d["current"]["flags"] if f["severity"] == "error"]
+    # A recogniser that does not say it is simulated is refused when the engine says "simulated".
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": raw, "depth": "auto",
+                             "input": {**env, "transcript": {**env["transcript"], "simulated": False}}})
+    assert e.value.code == "TRANSCRIPT_ENGINE"
+
+
+def test_supersession_violation_is_flagged_not_hidden(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    bad = dict(CREATE, blocks=[{"role": "body", "text": "Five students left the hostel on Monday, 6 October."}])
+    fake.scripts.append({"json": json.dumps(bad)})
+    turn(b, WARDEN)
+    codes = {f["code"] for f in last_draft(frames)["current"]["flags"]}
+    assert {"SUPERSEDED_VALUE_PRESENT", "FACT_MISSING", "NEW_DETAIL"} <= codes
+    assert "check(s) need your attention" in "".join(d["text"] for d in frames.data("answer.delta"))
+
+
+def test_grammar_only_correction_keeps_original_as_version_one(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    edit = {"action": "edit", "clarification": None, "fact_updates": [], "exclusions_add": [],
+            "edits": [{"op": "replace", "block_id": "b1", "role": "body",
+                       "text": "Ramesh and I went to the market in Pune on 6 March."}], "summary": "Fixed grammar."}
+    fake.scripts.append({"json": json.dumps(edit)})
+    turn(b, "Correct this: me and Ramesh goes to market in Pune on 6 March")
+    d = last_draft(frames)
+    assert d["count"] == 2 and d["first"]["text"] == "me and Ramesh goes to market in Pune on 6 March"
+    assert d["current"]["op"] == "corrected" and d["current"]["flags"] == []
+    assert "grammar-only" in fake.requests[-1]["messages"][0]["content"]
+
+
+def test_grammar_only_meaning_change_is_flagged(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    edit = {"action": "edit", "clarification": None, "fact_updates": [], "exclusions_add": [],
+            "edits": [{"op": "replace", "block_id": "b1", "role": "body",
+                       "text": "Ramesh and I went to the market in Mumbai on 7 March."}], "summary": "Fixed grammar."}
+    fake.scripts.append({"json": json.dumps(edit)})
+    turn(b, "Correct this: me and Ramesh goes to market in Pune on 6 March")
+    assert "MEANING_CHANGED" in {f["code"] for f in last_draft(frames)["current"]["flags"]}
+
+
+def test_not_an_edit_falls_back_to_the_ordinary_answer(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts += [{"json": json.dumps(CREATE)},
+                     {"json": json.dumps({"action": "not_an_edit", "clarification": None, "fact_updates": [],
+                                          "exclusions_add": [], "edits": [], "summary": ""})},
+                     {"chunks": [("answer", "Hostel registers record entry and exit.")], "finish": "stop"}]
+    turn(b, WARDEN)
+    turn(b, "Make sense of why hostels keep registers")
+    assert frames.data("turn.routed")[-1]["route"] == "answer"            # the ordinary path took over
+    assert frames.data("turn.finished")[-1]["route"] in ("answer", "core+answer")
+    assert b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"]["version"] == 1
+
+
+def test_action_in_same_request_goes_to_core_not_desk(fake, tmp_path):
+    core = FakeCore([{"turn_id": "c1", "state": "failed", "code": "REFUSED_NO_CAPABILITY", "message": "No."}])
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, "Draft a letter to the principal and send it to him")
+    assert core.calls and core.calls[0][0] == "begin"
+    assert frames.data("turn.routed")[-1]["route"] == "core" and not frames.data("draft.updated")
+
+
+def test_greeting_keeps_fast_path(fake, tmp_path):
+    fake.scripts.append({"chunks": [("answer", "Hello!")], "finish": "stop"})
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    turn(b, "hello")
+    assert frames.data("turn.routed")[-1]["route"] == "answer" and not frames.data("draft.updated")
+    assert "response_format" not in fake.requests[-1]
+
+
+def test_draft_get_open_while_busy_and_draft_op_refused(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    fake.scripts.append({"json": json.dumps(CREATE), "first_delay": 0.8})
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": WARDEN, "depth": "auto"})
+    time.sleep(0.1)
+    assert b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"] is None
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "undo"})
+    assert e.value.code == "TURN_IN_PROGRESS"
+    b.wait(15)
