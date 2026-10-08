@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'glass_theme.dart';
+
 /// URI's own visual identity: a warm-neutral, spacious SaaS surface
 /// with a single confident accent (a deep violet-blue) rather than the
 /// brighter indigo/purple gradients common to template SaaS sites.
@@ -140,6 +142,31 @@ class UriColors extends ThemeExtension<UriColors> {
     warningSoft: Color(0xFFFBF0DC),
     danger: Color(0xFFC23B3B),
     dangerSoft: Color(0xFFFBE9E9),
+  );
+
+  /// UI Living Companion phase (2026-10-08, `docs/ui_phase/`): the
+  /// "Dark Glass + Cyan" direction. Deep charcoal/blue-black canvas,
+  /// restrained glass surfaces (see `glass_theme.dart`) and one cool
+  /// cyan illumination. Added as a fifth choice so the four Hybrid
+  /// themes above (user-approved 2026-09-16) stay byte-identical.
+  /// Token rationale in `docs/ui_phase/UI_DESIGN_REFERENCE.md`.
+  static const obsidianCyan = UriColors(
+    ink: Color(0xFFE6EEF5),
+    inkSoft: Color(0xFF9FB0C0),
+    inkFaint: Color(0xFF70849A),
+    canvas: Color(0xFF070A0F),
+    surface: Color(0xFF0E131A),
+    surfaceSunken: Color(0xFF141B24),
+    border: Color(0xFF1E2A36),
+    accent: Color(0xFF38D1E8),
+    accentSoft: Color(0xFF0F2A33),
+    accentInk: Color(0xFF8AE6F3),
+    success: Color(0xFF4FD6A6),
+    successSoft: Color(0xFF0E2F26),
+    warning: Color(0xFFE8B44F),
+    warningSoft: Color(0xFF332810),
+    danger: Color(0xFFFF7A7A),
+    dangerSoft: Color(0xFF3A1C1C),
   );
 
   /// The active palette for [context], resolved through the current
@@ -290,7 +317,16 @@ class UriBreakpoints {
 /// [UriColors.graphite] or [UriColors.lightProfessional] — the same pair
 /// this app's old binary dark/light default mapped to — until the user
 /// makes an explicit 4-theme choice; see [ThemeStore]).
-enum UriThemeChoice { system, graphite, deepNavy, slateTeal, lightProfessional }
+enum UriThemeChoice {
+  system,
+  graphite,
+  deepNavy,
+  slateTeal,
+  lightProfessional,
+
+  /// Living Companion phase: Dark Glass + Cyan (see [UriColors.obsidianCyan]).
+  obsidianCyan,
+}
 
 extension UriThemeChoiceLabel on UriThemeChoice {
   String get label => switch (this) {
@@ -299,6 +335,7 @@ extension UriThemeChoiceLabel on UriThemeChoice {
     UriThemeChoice.deepNavy => 'Deep Navy',
     UriThemeChoice.slateTeal => 'Slate + Teal',
     UriThemeChoice.lightProfessional => 'Light Professional',
+    UriThemeChoice.obsidianCyan => 'Obsidian Cyan',
   };
 
   /// The circular swatch color shown for this choice in the topbar and
@@ -310,6 +347,7 @@ extension UriThemeChoiceLabel on UriThemeChoice {
     UriThemeChoice.deepNavy => UriColors.deepNavy.accent,
     UriThemeChoice.slateTeal => UriColors.slateTeal.accent,
     UriThemeChoice.lightProfessional => UriColors.lightProfessional.accent,
+    UriThemeChoice.obsidianCyan => UriColors.obsidianCyan.accent,
   };
 }
 
@@ -329,6 +367,8 @@ UriColors resolveUriColors(UriThemeChoice choice, Brightness platformBrightness)
       return UriColors.slateTeal;
     case UriThemeChoice.lightProfessional:
       return UriColors.lightProfessional;
+    case UriThemeChoice.obsidianCyan:
+      return UriColors.obsidianCyan;
   }
 }
 
@@ -402,7 +442,7 @@ ThemeData buildUriTheme(UriColors palette) {
   );
 
   return base.copyWith(
-    extensions: [palette],
+    extensions: [palette, UriGlass.fromPalette(palette)],
     textTheme: textTheme,
     dividerColor: palette.border,
     cardTheme: CardThemeData(
