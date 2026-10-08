@@ -93,7 +93,12 @@ def documented_status(manifest_path=None):
     """Statuses as DOCUMENTED in docs/governance/URI_RUNTIME_AUTHORITY_MANIFEST.json (not a live check)."""
     root = Path(__file__).resolve().parents[1]
     p = Path(manifest_path or root / "docs/governance/URI_RUNTIME_AUTHORITY_MANIFEST.json")
-    data = json.loads(p.read_text(encoding="utf-8")).get("harness_integrations") or {}
+    try:
+        data = json.loads(p.read_text(encoding="utf-8")).get("harness_integrations") or {}
+        source = "documented"
+    except (OSError, ValueError):
+        # No readable manifest (e.g. an e8e3b65-based runtime tree): every provider is UNKNOWN, never assumed usable.
+        data, source = {}, "documented_missing"
 
     def parse(key, provider, display):
         text = str(data.get(key) or "")
@@ -102,10 +107,12 @@ def documented_status(manifest_path=None):
             q, auth = "QUALIFIED_RUN_SCOPED", "UNKNOWN"
         elif up.startswith("BLOCKED"):
             q, auth = "BLOCKED", "NOT_LOGGED_IN" if "LOGGED IN" in up else "UNKNOWN"
+        elif not text:
+            q, auth = "UNKNOWN", "UNKNOWN"
         else:
             q, auth = "UNQUALIFIED", "UNKNOWN"
         # Policy rows are owner decisions held in the server state root; the document cannot prove one exists.
-        return HarnessStatus(provider, display, q, auth=auth, offered_by_policy=False, source="documented",
+        return HarnessStatus(provider, display, q, auth=auth, offered_by_policy=False, source=source,
                              detail=text[:200])
     return [parse("codex_cli", "codex", "Codex CLI"), parse("claude_cli", "claude_code", "Claude Code"),
             parse("antigravity", "antigravity", "Antigravity")]

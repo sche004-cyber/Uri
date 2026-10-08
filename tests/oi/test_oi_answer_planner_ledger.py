@@ -193,5 +193,26 @@ def test_harness_choice_quota_exclusion_and_reasons():
 def test_documented_status_is_labelled_and_never_offered():
     rows = H.documented_status()
     assert {r.provider for r in rows} == {"codex", "claude_code", "antigravity"}
-    assert all(r.source == "documented" and not r.offered_by_policy for r in rows)
+    assert all(r.source in ("documented", "documented_missing") and not r.offered_by_policy for r in rows)
     assert H.choose(rows).recommendation is None
+
+
+def test_documented_status_without_manifest_is_unknown(tmp_path):
+    rows = H.documented_status(tmp_path / "missing.json")
+    assert all(r.source == "documented_missing" and r.qualification == "UNKNOWN" and not r.usable() for r in rows)
+
+
+@pytest.mark.parametrize("text,span,negated", [
+    ("Don't email Ravi, just draft the reply.", "email Ravi", True),
+    ("Do not delete the old files; archive them.", "delete the old files", True),
+    ("Never send it to the principal.", "send it to the principal", True),
+    ("Draft the reply instead of emailing Ravi.", "emailing Ravi", True),
+    ("Draft the reply, then email Ravi.", "email Ravi", False),
+    ("I don't know the date, but remember that the audit is on Monday.", "remember that the audit is on Monday", False),
+])
+def test_negated_spans_are_never_executable(text, span, negated):
+    p = {"goal": "g", "clarifications": [], "steps": [
+        {"id": "s1", "description": "x", "kind": "action", "capability": "remember_fact", "source_span": span, "depends_on": []}]}
+    v = P.validate_plan(p, text, {"remember_fact"})
+    step = v["plan"]["steps"][0]
+    assert (step["kind"] == "ask_user" and step.get("unusable_reason") == "SOURCE_SPAN_NEGATED") is negated

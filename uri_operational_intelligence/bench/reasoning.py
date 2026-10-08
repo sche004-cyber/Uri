@@ -35,6 +35,16 @@ def server_rss():
     return None
 
 
+def residency():
+    """Per-process GPU dedicated/shared MiB of the server (OI-PERF-1 check: a timing run is valid only when residency
+    did not drop during it)."""
+    import psutil
+    from ..perf_monitor import gpu_process_memory
+    pid = next((p.pid for p in psutil.process_iter(["name"]) if (p.info["name"] or "").lower() == "llama-server.exe"), None)
+    d, s = gpu_process_memory(pid)
+    return {"pid": pid, "dedicated_mib": d, "shared_mib": s}
+
+
 def vram():
     try:
         sys.path.insert(0, str(ROOT / "model_lab"))
@@ -145,7 +155,7 @@ def main(argv=None):
     client = BC.BrainClient(a.url)
     parts = a.parts.split(",")
     report = {"label": a.label, "url": a.url, "started": time.strftime("%Y-%m-%d %H:%M:%S"),
-              "memory_before": {"vram_mib": vram(), "server_rss_mib": server_rss()}}
+              "memory_before": {"vram_mib": vram(), "server_rss_mib": server_rss(), "server_gpu": residency()}}
     with BC.httpx.Client() as h:
         report["props"] = {k: v for k, v in h.get(a.url + "/props").json().items() if k in ("model_path", "build_info", "total_slots")}
     if "latency" in parts:
@@ -155,7 +165,7 @@ def main(argv=None):
         report["tasks"] = {"rows": rows, "summary": summarize_tasks(rows)}
     if "routing" in parts:
         report["routing"] = run_routing(client)
-    report["memory_after"] = {"vram_mib": vram(), "server_rss_mib": server_rss()}
+    report["memory_after"] = {"vram_mib": vram(), "server_rss_mib": server_rss(), "server_gpu": residency()}
     out = ROOT / "work/oi/evidence" / ("bench_%s_%s.json" % (a.label, time.strftime("%Y%m%d-%H%M%S")))
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=1, default=str), encoding="utf-8")

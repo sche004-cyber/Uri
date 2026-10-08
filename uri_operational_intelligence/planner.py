@@ -48,6 +48,24 @@ def _norm(s):
     return re.sub(r"\s+", " ", s or "").strip().lower()
 
 
+# A verbatim span can still drop the words that negate it ("don't email Ravi, just draft it" contains "email Ravi").
+_NEGATION_BEFORE = re.compile(r"(?:\b(?:don'?t|do not|never|not|no need to|without|stop|avoid|instead of|rather than|"
+                              r"dont|shouldn'?t|mustn'?t|won'?t)\b)[\s,]*(?:\w+\s+){0,2}$", re.I)
+
+
+def _negated(norm_text, norm_span):
+    """True when any occurrence of the span is preceded (within the clause) by a negation or an exclusion."""
+    start = 0
+    while True:
+        i = norm_text.find(norm_span, start)
+        if i < 0:
+            return False
+        left = re.split(r"[.;!?]|\bbut\b|\bthen\b", norm_text[:i])[-1]
+        if _NEGATION_BEFORE.search(left):
+            return True
+        start = i + 1
+
+
 def validate_plan(plan, user_text, capability_ids) -> dict:
     """Deterministic checks. Returns {"ok", "plan" (normalised), "problems", "downgraded"}."""
     problems, downgraded = [], []
@@ -75,6 +93,10 @@ def validate_plan(plan, user_text, capability_ids) -> dict:
             if not span or _norm(span) not in norm_text:
                 downgraded.append(sid)
                 s["kind"], s["unusable_reason"] = "ask_user", "SOURCE_SPAN_NOT_VERBATIM"
+                s["source_span"] = None
+            elif _negated(norm_text, _norm(span)):
+                downgraded.append(sid)
+                s["kind"], s["unusable_reason"] = "ask_user", "SOURCE_SPAN_NEGATED"
                 s["source_span"] = None
             elif s["kind"] == "action" and s.get("capability") is None:
                 s["unusable_reason"] = "NO_MATCHING_CAPABILITY"
