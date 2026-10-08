@@ -417,7 +417,9 @@ class DraftDesk:
         user_excl = V.user_exclusions(source_words)
         flags = (V.check_facts(facts, body_text, source_words)
                  + V.check_exclusions(list(dict.fromkeys(exclusions + user_excl)), body_text)
-                 + V.check_user_details(V.strip_corrected(source_words), body_text, superseded + exclusions + user_excl)
+                 + V.check_supersession(source_words, superseded)
+                 + V.check_user_details(source_words, body_text,
+                                        V.verified_superseded(source_words, superseded)[0] + exclusions + user_excl)
                  + V.check_correction_accounted(cues, facts, None) + V.check_new_details(body_text, source_words)
                  + V.check_uncertain(inp.uncertain, body_text))
         exclusions = list(dict.fromkeys(exclusions + user_excl))     # kept on the version: later edits are checked too
@@ -488,7 +490,9 @@ class DraftDesk:
         if mode == "correct":
             flags += V.check_meaning_preserved(old_text, new_text)
         else:
-            gone = [s for f in facts for s in f["superseded"]] + exclusions
+            new_sup = [s for f in _clean_facts(data.get("fact_updates")) for s in f["superseded"]]
+            flags += V.check_supersession(interpreted + "\n" + user_words, new_sup)
+            gone = V.verified_superseded(user_words, [s for f in facts for s in f["superseded"]])[0] + exclusions
             flags += V.check_details_kept(old_text, new_text, gone + [interpreted])
             flags += V.check_new_details(new_text, known) + V.check_correction_accounted(
                 cues, _clean_facts(data.get("fact_updates")), None)

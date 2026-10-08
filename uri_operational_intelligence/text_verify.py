@@ -275,33 +275,50 @@ def user_exclusions(user_words) -> list:
     return out
 
 
-def strip_corrected(user_words) -> str:
-    """Remove the few words just before each spoken correction cue ("five, sorry, seven" -> "seven"), so a value
-    the user replaced is not demanded in the draft even when the model did not report the correction."""
+def verified_superseded(user_words, claimed) -> tuple:
+    """Split the model's claimed superseded values into (verified, unverified).
+
+    A claim is VERIFIED only when the user's own words contain the value followed closely by a spoken correction
+    cue in the same sentence ("five, sorry, seven"; "Tuesday, no, Wednesday"): at most four words between them, no
+    sentence break and no other detail in between. No value is ever excused by inference alone (Codex TI rounds 3-7): an unverified claim stays
+    required and is shown to the user as a review flag."""
     from .text_input import _CORRECTION_CUES
     text = user_words or ""
-    for m in reversed(list(_CORRECTION_CUES.finditer(text))):
-        after = list(re.finditer(r"[\w'-]+", text[m.end():]))[:4]
-        kind = next((k for k in (_detail_kind(w.group(0)) for w in after) if k in ("number", "date")), None)
-        if kind not in ("number", "date"):
-            # Names (and anything else) are never paired by inferred kind: capitalisation cannot tell a name from a
-            # sentence start (Codex TI rounds 5-6). The value stays required; if the model reported the correction
-            # it is covered by `superseded`, otherwise the user sees a review flag. Never a silent omission.
-            continue
-        before = list(re.finditer(r"[\w'-]+", text[:m.start()]))[-6:]
-        # The replaced value is the nearest earlier detail of the SAME kind ("17 students on Monday, sorry, 18
-        # students": 17, not Monday). Other details stay required.
-        for w in reversed(before):
-            if _detail_kind(w.group(0)) == kind:
-                text = text[:w.start()] + " " + text[w.end():]
-                break
-    return text
+    cues = [m.start() for m in _CORRECTION_CUES.finditer(text)]
+    verified, unverified = [], []
+    for value in claimed or ():
+        v = " ".join(_tokens(value))
+        ok = False
+        if v:
+            for m in re.finditer(r"(?<![\w])" + re.escape(value.strip()) + r"(?![\w])", text, re.I):
+                for c in cues:
+                    gap = text[m.end():c]
+                    words = re.findall(r"[\w'-]+", gap)
+                    # The claimed value must be the LAST detail before the cue: "Anil with 17 students, sorry"
+                    # corrects 17, not Anil.
+                    if c >= m.end() and not re.search(r"[.!?;\n]", gap) and len(words) <= 4 and \
+                            not any(_detail_kind(w) for w in words):
+                        ok = True
+        (verified if ok else unverified).append(value)
+    return verified, unverified
 
 
 _ORDINAL_WORD = set(_ORD) | {"1st", "2nd", "3rd"}
+# Words that start sentences ("There were 18 students") are never taken as names.
+_FUNCTION_WORDS = set("""
+there here then now when where what which who whom whose why how that this these those it its they them their we our
+you your he him his she her i me my mine yes no not okay ok please sorry actually also so and but or because if
+was were is are be been being have has had do does did will would shall should can could may might must
+one some any all each every few many more most other another such only just even still yet again
+on in at by for from to of with without about after before during until since over under
+let lets make made say said tell told give gave take took get got go went come came see saw know knew think
+everybody everyone everything nobody nothing somebody someone something anybody anyone anything
+""".split())
 
 
 def _detail_kind(word):
+    """'date', 'number', 'name' or None for one word (used only to refuse a supersession claim that skips over
+    another detail; never to remove a value)."""
     low = word.lower()
     if low in WEEKDAYS or low in MONTHS or low in _RELATIVE_DAYS or low in _ORDINAL_WORD or \
             re.fullmatch(r"\d{1,2}(?:st|nd|rd|th)", low):
@@ -313,16 +330,11 @@ def _detail_kind(word):
     return None
 
 
-# Words that start sentences ("There were 18 students") are never taken as names when pairing a correction: an
-# unpaired correction leaves every value required (a review flag at worst), never removes an unrelated name.
-_FUNCTION_WORDS = set("""
-there here then now when where what which who whom whose why how that this these those it its they them their we our
-you your he him his she her i me my mine yes no not okay ok please sorry actually also so and but or because if
-was were is are be been being have has had do does did will would shall should can could may might must
-one some any all each every few many more most other another such only just even still yet again
-on in at by for from to of with without about after before during until since over under
-let lets make made say said tell told give gave take took get got go went come came see saw know knew think
-""".split())
+def check_supersession(user_words, claimed) -> list:
+    _, unverified = verified_superseded(user_words, claimed)
+    return [_flag("SUPERSESSION_UNVERIFIED", "review",
+                  "URI treated '%s' as replaced, but you did not seem to correct it; please check" % u)
+            for u in unverified]
 
 
 def check_user_details(user_words, text, dropped_ok=()) -> list:

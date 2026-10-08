@@ -54,15 +54,25 @@ def test_a6_user_exclusion_checked_without_model_list(fake, tmp_path):
     assert V.user_exclusions("Don't mention the student's name.") == []
 
 
-# B3: a corrected value is not demanded, even when the model did not report the correction.
-def test_b3_self_correction_no_false_missing_detail(fake, tmp_path):
+# B3 (revised after Codex TI round 7): a corrected value is excused only when the model reports the correction AND
+# the user's words show it. Without the model's report the old value stays required: a REVIEW flag (accepted noise),
+# never a silent omission.
+def test_b3_self_correction_reported_by_model_has_no_missing_flag(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    ok = dict(CREATE, blocks=[{"role": "body", "text": "Seven students left the hostel on Monday."}])
+    fake.scripts.append({"json": json.dumps(ok)})
+    turn(b, WARDEN)
+    assert last_draft(frames)["current"]["flags"] == []
+
+
+def test_b3_unreported_self_correction_is_review_noise_not_silence(fake, tmp_path):
     b, frames, _ = make(fake, tmp_path, FakeCore())
     ok = dict(CREATE, facts=[], blocks=[{"role": "body", "text": "Seven students left the hostel on Monday."}])
     fake.scripts.append({"json": json.dumps(ok)})
     turn(b, WARDEN)
-    flags = last_draft(frames)["current"]["flags"]
-    assert "USER_DETAIL_MISSING" not in {f["code"] for f in flags}, flags
-    assert "CORRECTION_UNCONFIRMED" in {f["code"] for f in flags}       # still asks the user to check
+    flags = {f["code"]: f for f in last_draft(frames)["current"]["flags"]}
+    assert set(flags) == {"USER_DETAIL_MISSING", "CORRECTION_UNCONFIRMED"}
+    assert all(f["severity"] == "review" for f in flags.values())
 
 
 # B2: an open question lives one turn and can be dropped explicitly.

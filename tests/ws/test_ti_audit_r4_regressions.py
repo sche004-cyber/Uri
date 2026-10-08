@@ -36,23 +36,31 @@ def test_1_action_guard_wins_over_a_pending_question(fake, tmp_path):
     assert b.desk.active(SID).pending_question is None
 
 
-@pytest.mark.parametrize("words,kept,dropped", [
-    ("17 students on Monday, sorry, 18 students", ["Monday", "18"], ["17"]),
-    ("17 students on Monday, sorry, Tuesday", ["17", "Tuesday"], ["Monday"]),
-    ("paid by Anil, I mean Sunil Verma, on Friday", ["Anil", "Sunil", "Friday"], []),   # names never stripped
-    ("leaving hostel yesterday, no wait, on the 6th", ["6th"], ["yesterday"]),
-    ("the fee of 4500, sorry, 5400 rupees", ["5400"], ["4500"]),
+@pytest.mark.parametrize("words,claimed,verified", [
+    ("17 students on Monday, sorry, 18 students", ["17"], []),          # ambiguous: stays required (review)
+    ("17 students on Monday, sorry, Tuesday", ["Monday"], ["Monday"]),
+    ("paid by Anil, I mean Sunil Verma, on Friday", ["Anil"], ["Anil"]),
+    ("leaving hostel yesterday, no wait, on the 6th", ["yesterday"], ["yesterday"]),
+    ("the fee of 4500, sorry, 5400 rupees", ["4500"], ["4500"]),
+    # A claim the user's words do not support is NOT excused (Codex TI round 7).
+    ("Draft a report: The meeting is on Monday. Attendance was 17, sorry, by Tuesday it was 18.", ["Monday", "17"],
+     ["17"]),
+    ("Report for Anil with 17 students, sorry, Everybody counted 18 students", ["Anil"], []),
 ])
-def test_2_only_the_same_kind_value_is_superseded(words, kept, dropped):
-    s = V.strip_corrected(words)
-    assert all(k in s for k in kept), s
-    assert all(d not in s for d in dropped), s
+def test_2_only_verifiable_supersessions_are_excused(words, claimed, verified):
+    assert V.verified_superseded(words, claimed)[0] == verified
 
 
-def test_2_an_unrelated_fact_stays_required():
-    s = V.strip_corrected("Report 17 students on Monday, sorry, 18 students")
-    flags = V.check_user_details(s, "Eighteen students were reported.")
-    assert flags and "monday" in flags[0]["detail"]
+def test_2_unverified_supersession_is_flagged_and_value_stays_required(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    wrong = dict(CREATE, facts=[{"key": "attendance", "value": "18", "superseded": ["17"]},
+                                {"key": "day", "value": "Tuesday", "superseded": ["Monday"]}],
+                 blocks=[{"role": "body", "text": "The meeting is on Tuesday; attendance is 18."}])
+    fake.scripts.append({"json": json.dumps(wrong)})
+    turn(b, "Draft a report: The meeting is on Monday. Attendance was 17, sorry, by Tuesday it was 18.")
+    flags = {f["code"]: f["detail"] for f in last_draft(frames)["current"]["flags"]}
+    assert "SUPERSESSION_UNVERIFIED" in flags and "Monday" in flags["SUPERSESSION_UNVERIFIED"]
+    assert "monday" in flags["USER_DETAIL_MISSING"]
 
 
 def test_3_dictated_sequence_inside_content_stays_a_draft():
@@ -84,16 +92,10 @@ def test_6_please_marks_an_instruction_to_uri():
                       has_draft=False).kind == X.NONE
 
 
-# Codex TI round 5, finding 7: a sentence-initial function word is never paired as a name.
-def test_r5_7_function_word_is_not_a_name():
-    s = V.strip_corrected("Report for Anil with 17 students, sorry, There were 18 students")
-    assert "Anil" in s and "17" not in s and "18" in s
-
-
-# Codex TI round 6: no sentence-initial word can make URI drop an unrelated name.
+# Codex TI rounds 5-7: no sentence-initial word or nearby date can excuse an unrelated value.
 @pytest.mark.parametrize("words", ["Draft a report for Anil with 17 students, sorry, Everybody counted 18 students",
-                                   "Report for Anil with 17 students, sorry, Nobody saw 18 students"])
-def test_r6_names_are_never_stripped(words):
-    s = V.strip_corrected(words)
-    assert "Anil" in s and "17" not in s
-    assert "anil" in V.check_user_details(s, "Everybody counted 18 students.")[0]["detail"]
+                                   "Report for Anil with 17 students, sorry, There were 18 students"])
+def test_r5_r7_unrelated_values_stay_required(words):
+    v, _ = V.verified_superseded(words, ["17"])
+    assert v == ["17"]
+    assert "anil" in V.check_user_details(words, "Everybody counted 18 students.", v)[0]["detail"]

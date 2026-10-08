@@ -65,8 +65,9 @@ def test_b2_new_edit_clears_an_unrelated_open_question(fake, tmp_path):
     assert "your_question" not in req
 
 
-def test_b3_only_the_replaced_value_is_dropped():
-    s = V.strip_corrected("Draft a report about 17 students on Monday, sorry, Tuesday")
-    assert "17" in s and "Monday" not in s and "Tuesday" in s
-    flags = V.check_user_details(s, "A report about the students on Tuesday.")
-    assert flags and "17" in flags[0]["detail"]
+def test_b3_unrelated_detail_stays_required():
+    v, u = V.verified_superseded("Draft a report about 17 students on Monday, sorry, Tuesday", ["Monday"])
+    assert v == ["Monday"] and u == []
+    flags = V.check_user_details("Draft a report about 17 students on Monday, sorry, Tuesday",
+                                 "A report about the students on Tuesday.", v)
+    assert flags and "17" in flags[0]["detail"] and "monday" not in flags[0]["detail"]
