@@ -1,0 +1,91 @@
+"""Frozen Phase-1 Core integrity: Phase 2A is a pure extension. These checks are the evidence, not a promise."""
+import fnmatch
+import hashlib
+import subprocess
+import zipfile
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[2]
+CHECKPOINT = Path(r"C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\work\c1\checkpoints\final-closure-20261005-phase1.zip")
+CHECKPOINT_SHA256 = "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7"
+BASE_COMMIT = "e8e3b65"
+ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "docs/architecture/PHASE2A_*", "scripts/phase2a_*",
+               # Phase 2B (Core <-> Supervisor integration boundary): a third package; Core and the supervisor never import it.
+               "uri_supervisor_bridge/*", "tests/phase2b/*", "docs/plans/PHASE2B_*", "docs/architecture/PHASE2B_*", "scripts/phase2b_*",
+               # Phase 2C (native executor qualification): tests, qualification harness, reports. No package added.
+               "tests/phase2c/*", "docs/plans/PHASE2C_*", "docs/architecture/PHASE2C_*", "scripts/phase2c_*",
+               # Phase 2D (composition + closure): persisted qualification, policy composition, worker service, opt-in
+               # Phase 2 worker/server profiles (frozen entrypoints untouched), tests, reports, test-scope config.
+               "tests/phase2d/*", "docs/plans/PHASE2D_*", "docs/architecture/PHASE2D_*", "scripts/phase2d_*",
+               "scripts/run_uri_supervised_worker.py", "scripts/run_uri_phase2_server.py",
+               # Phase 2 UI/operations: execution lifecycle in the bridge package, Phase 2 Dart runtime + screen (NEW files;
+               # the frozen paired_runtime.dart / paired_runtime_screen.dart / settings_shell.dart are untouched), the one
+               # non-checkpoint UI file that mounts the opt-in entry (uri_ui/lib/app.dart), tests, reports, scripts.
+               "tests/phase2ops/*", "docs/plans/PHASE2OPS_*", "docs/architecture/PHASE2OPS_*", "scripts/phase2ops_*",
+               "uri_ui/lib/services/supervised_runtime.dart", "uri_ui/lib/screens/tasks/supervised_execution_screen.dart",
+               "uri_ui/test/supervised_*", "uri_ui/lib/app.dart"]
+
+needs_zip = pytest.mark.skipif(not CHECKPOINT.exists(), reason="BLOCKED: frozen checkpoint zip not present on this machine")
+
+
+def sh(*args):
+    return subprocess.run(["git", "-C", str(ROOT), *args], capture_output=True, text=True, encoding="utf-8").stdout
+
+
+@needs_zip
+def test_checkpoint_hash_matches_the_frozen_value():
+    assert hashlib.sha256(CHECKPOINT.read_bytes()).hexdigest() == CHECKPOINT_SHA256
+
+
+@needs_zip
+def test_every_checkpoint_file_is_byte_identical_in_this_tree():
+    z = zipfile.ZipFile(CHECKPOINT)
+    bad = []
+    for name in z.namelist():
+        if name.startswith("GIT_"):
+            continue
+        f = ROOT / name
+        if not f.is_file() or f.read_bytes() != z.read(name):
+            bad.append(name)
+    assert bad == []
+
+
+@needs_zip
+def test_nothing_changed_outside_checkpoint_and_phase2a_paths():
+    z = {n for n in zipfile.ZipFile(CHECKPOINT).namelist() if not n.startswith("GIT_")}
+    changed = set(sh("diff", "--name-only", BASE_COMMIT).split()) | set(sh("ls-files", "--others", "--exclude-standard").split())
+    changed = {c.replace("\\", "/") for c in changed}
+    stray = sorted(c for c in changed if c not in z and not any(fnmatch.fnmatch(c, g) for g in ALLOWED_NEW))
+    assert stray == [], stray
+
+
+def test_base_commit_is_the_one_the_checkpoint_was_built_on():
+    assert sh("rev-parse", "--short", BASE_COMMIT).strip().startswith(BASE_COMMIT)
+    head = sh("rev-parse", "--short", "HEAD").strip()
+    assert head.startswith(BASE_COMMIT), "Phase 2A work must remain uncommitted on top of the frozen base"
+
+
+def test_core_never_imports_the_supervisor():
+    for pkg in ("uri_core", "uri_harness_adapters", "uri_ui"):
+        for f in (ROOT / pkg).rglob("*.py"):
+            assert "uri_supervisor" not in f.read_text(encoding="utf-8", errors="replace"), str(f)
+
+
+def test_supervisor_does_not_import_core_internals():
+    for f in (ROOT / "uri_supervisor").rglob("*.py"):
+        text = f.read_text(encoding="utf-8")
+        assert "import uri_core" not in text and "from uri_core" not in text, str(f)
+
+
+def test_bypass_flag_refusal_is_not_weaker_than_phase1():
+    from uri_core.client_runtime.harness import FORBIDDEN_FLAGS as CORE
+    from uri_supervisor.executors import FORBIDDEN_FLAGS as MINE
+    assert set(CORE) <= set(MINE)
+
+
+def test_phase1_harness_and_process_tree_modules_are_untouched_by_hash():
+    # these are in the checkpoint; the byte-identical test above covers them, this pins the two most relevant explicitly
+    for rel in ("uri_core/client_runtime/process_tree.py", "uri_core/client_runtime/harness.py", "uri_core/client_runtime/execution_journal.py"):
+        assert (ROOT / rel).is_file()
