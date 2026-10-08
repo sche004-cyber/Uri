@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **52 passed** (25 original + 27 added or updated across Codex rounds 1-7). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **54 passed** (25 original + 29 added or updated across Codex rounds 1-8). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -176,6 +176,20 @@ name-based exemption was bypassable, so the repair removes the exemptions instea
 design:** the live run at 10:43 IST reported 8 DONOR_ONLY processes. These were the Phase 2 session's running
 regression chain (`phase2close_chain.py`, `phase2d_regression.py`, pytest, fake executors). Donor code executing
 counts as contamination until that work is promoted or idle. Legacy findings are unchanged. Round 8 result: see §2h.
+
+## 2h. Codex review round 8: REJECT, then repaired
+
+Round 8 confirmed the round-7 repairs. It confirmed no regression on the live snapshot, where the Phase 2 dev
+processes count by design. It found:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| T-1 | High | A URI-named program outside every manifest root (`D:\rogue\uri_server.exe` on `0.0.0.0:9100`, `uri_worker.exe --serve`) was never selected for evaluation | Processes and listeners whose executable or launched target has a URI-looking name or path are always evaluated (arguments alone do not trigger) |
+| T-2 | Note | `bash -c "..."` content and PowerShell dot-sourcing were not parsed (shell-skip root check could miss them) | Both are parsed as launches |
+
+2 new tests (54 total, all passing); both fail on the round-7 checker. The live run at 10:52 IST showed no new false
+positives from the wider selection. Its findings: 8 transitional (unchanged), 6 DONOR_ONLY Phase 2 dev processes
+(the other session's running chain), and Ollama shared. Round 9 result: see §2i.
 
 ## 3. Integrity and recoverability
 

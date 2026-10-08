@@ -372,3 +372,20 @@ def test_a_chain_ending_in_the_checker_is_still_evaluated():
     cmd = r"powershell.exe -Command D:/URI-preservation/worker.ps1; python C:/x/scripts/uri_runtime_authority_check.py"
     assert verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "powershell.exe", "cmdline": cmd}]))["verdict"] == "CONTAMINATED"
     assert not hasattr(rac, "_is_self_probe") and not hasattr(rac, "_is_test_runner")
+
+
+# --- regressions for the Codex adversarial review round 8 (2026-10-08, verdict REJECT) -----------------------------
+def test_uri_named_program_outside_every_root_is_counted_with_or_without_a_listener():
+    cmd = "D:/rogue/uri_server.exe --port 9100"
+    rep = verdict(snap(processes=[{"pid": 3, "ppid": 1, "image": "D:/rogue/uri_server.exe", "cmdline": cmd}],
+                       listeners=[{"address": "0.0.0.0", "port": 9100, "pid": 3, "image": "D:/rogue/uri_server.exe", "cmdline": cmd}]))
+    assert rep["verdict"] == "CONTAMINATED" and set(classes(rep)) == {"UNACCOUNTED"}
+    rep2 = verdict(snap(processes=[{"pid": 4, "ppid": 1, "image": "D:/rogue/uri_worker.exe", "cmdline": "D:/rogue/uri_worker.exe --serve"}]))
+    assert rep2["verdict"] == "CONTAMINATED"
+
+
+def test_bash_c_and_powershell_dot_sourcing_are_parsed():
+    assert rac.launch_targets("bash -c 'D:/URI-preservation/worker.exe --x'")[0][1] == "D:/URI-preservation/worker.exe"
+    assert rac.launch_targets("powershell -Command . D:/URI-preservation/w.ps1")[0][1] == "D:/URI-preservation/w.ps1"
+    shell = r'"C:\Program Files\Git\bin\bash.exe" -c "D:/URI-preservation/worker.exe CLAUDE_CODE_SHELL"'
+    assert verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": "bash.exe", "cmdline": shell}]))["verdict"] == "CONTAMINATED"

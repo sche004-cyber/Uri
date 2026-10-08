@@ -236,10 +236,14 @@ def _launch_one(text: str, depth: int) -> list[tuple[str, str]]:
     toks = _tokens(text)
     if not toks:
         return []
-    if toks[0] == "&" and len(toks) > 1:  # PowerShell call operator
+    if toks[0] in ("&", ".") and len(toks) > 1:  # PowerShell call operator / dot-sourcing
         toks = toks[1:]
     exe = toks[0]
     base = exe.replace("\\", "/").rsplit("/", 1)[-1].lower()
+    if depth < 4 and base in ("bash.exe", "bash", "sh.exe", "sh"):
+        for i, tk in enumerate(toks[1:]):
+            if tk == "-c" and i + 2 < len(toks):
+                return launch_targets(toks[i + 2], depth + 1)
     rest = toks[1:]
     if depth < 4 and base in ("cmd.exe", "cmd"):
         for i, tk in enumerate(rest):
@@ -364,6 +368,15 @@ def _is_agent_shell(cmd: str, roots: list | None = None) -> bool:
     return True
 
 
+def uri_named(cmd: str) -> bool:
+    """True when the executable or any launched target (not mere arguments) has a URI-looking path or name."""
+    if not cmd:
+        return False
+    outer = _tokens(WD.sub("", cmd))[:1]
+    parts = outer + [x for ex, tg in launch_targets(cmd) for x in (ex, tg)]
+    return any(URI_HINT.search(x.replace(chr(92), "/")) for x in parts if x)
+
+
 def _is_python_like(cmd: str) -> bool:
     exe, target = launch_target(cmd)
     base = exe.replace("\\", "/").rsplit("/", 1)[-1].lower()
@@ -413,7 +426,8 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
 
     def listener_relevant(lst):
         text = listener_text(lst)
-        return (lst["port"] in uri_ports or lst["port"] in model_ports or _is_python_like(text) or refs_root(text))
+        return (lst["port"] in uri_ports or lst["port"] in model_ports or _is_python_like(text) or refs_root(text)
+                or uri_named(text))
 
     listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if listener_relevant(lst)}
 
@@ -429,7 +443,7 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
         cmd = p["cmdline"]
         if _is_agent_shell(cmd, roots):
             continue
-        if RUNTIME_HINT.search(cmd) or p.get("pid") in listener_pids:
+        if RUNTIME_HINT.search(cmd) or uri_named(cmd) or p.get("pid") in listener_pids:
             add("process", f"pid {p['pid']}", cmd, True)
         elif launched_from_nonactive_root(cmd, p.get("image", "")):
             # No name-based exemption: anything executing from a donor or quarantined root counts, including
@@ -498,7 +512,8 @@ def live_snapshot(roots: list | None = None) -> dict:
     listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict)}
     snap["processes"] = [p for p in snap.get("processes") or [] if p.get("pid") not in self_pids
                          and not _is_agent_shell(p["cmdline"], roots)
-                         and (RUNTIME_HINT.search(p["cmdline"]) or (p.get("pid") in listen_pids and _is_python_like(p["cmdline"]))
+                         and (RUNTIME_HINT.search(p["cmdline"]) or uri_named(p["cmdline"]) or uri_named(p.get("image", ""))
+                              or (p.get("pid") in listen_pids and _is_python_like(p["cmdline"]))
                               or (roots and any(_root_containing(x, roots) for ex, tg in launch_targets(p["cmdline"])
                                                 for x in (ex, tg, p.get("image", "")) if x)))]
     for lst in snap.get("listeners") or []:
