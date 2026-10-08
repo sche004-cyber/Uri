@@ -20,11 +20,15 @@ Codex output is a claim; every finding below was checked against the source befo
 | repair | `aea8f8f` | — | repairs with tests (`tests/oi/test_oi_audit_r2_regressions.py`); doc claims narrowed |
 | 3 | `aea8f8f` | **REJECT** | R2-1, R2-5 verified fixed; R2-2/3/4 partially: public `decide()` still usable on plan steps (High); READY verification cached per pid forever (High); punctuation/hyphen span boundary "-activate account" in "de-activate account" (High); recovery not coordinated with a live owner (Medium); `confirm_step` unclaimed and non-outcome replies after approval undefined (Medium); doc overclaims on these |
 | repair | see git log after `aea8f8f` | — | repairs with tests (`tests/oi/test_oi_audit_r3_regressions.py`); claims limited to what the tests exercise (threads, not processes; simulated, not real crashes) |
-| 4 | see §2.1 | see §2.1 | see §2.1 |
+| 4 | `b6c345f` | **REJECT** | confirm()->decide() on a plan step's new turn bypassed decide_step (High); curly apostrophe / Unicode hyphen defeated negation and boundaries (High); writers without ledger ownership (Medium); fail-open task scan (Medium); quota pause after approval undocumented (Low) |
+| repair | `738a9af` | — | single-turn allowlist, Unicode folding, one writer process per ledger (real second-process test) |
+| 5 | `738a9af` | **REJECT** | ownership, scan removal, quota documentation verified fixed. Remaining: a plan step's confirmation payload spliced under a registered single-turn id (High); U+201B / U+2015 not folded (High); in-memory registry lost on restart (Medium); unbounded registry (Low) |
+| repair | see git log after `738a9af` | — | registry binds a digest of the whole issued envelope, single use, bounded 256, restart fails closed (documented); folding by Unicode category Pd / Pi / Pf / Zs (`test_oi_audit_r5_regressions.py`) |
+| 6 | see §2.1 | see §2.1 | see §2.1 |
 
-### 2.1 Round 4
+### 2.1 Round 6
 
-Recorded after the run (if empty, round 4 did not complete).
+Recorded after the run (if empty, round 6 did not complete).
 
 ## 3. What was verified, by whom
 

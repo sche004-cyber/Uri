@@ -100,8 +100,9 @@ OQ overlay + OI files), the same method as the consolidation runbook.
 - **Multi-step.** NORMAL-tier planner with a JSON schema (thinking + grammar verified to work together on b11425).
   Deterministic validation: ≤ 8 steps, unique ids, backward-only dependencies, known capabilities only, and every
   action/harness step's `source_span` must match the user's request with word boundaries on both sides, hyphen and
-  apostrophe counting as word characters (case/whitespace-insensitive; curly apostrophes, Unicode hyphens/dashes and
-  non-breaking spaces folded 1:1 for matching and negation checks), and is then
+  apostrophe counting as word characters (case/whitespace-insensitive; every Unicode dash punctuation (Pd), every
+  initial/final quote (Pi/Pf), every space separator (Zs) and a few listed apostrophe-like characters are folded 1:1
+  to ASCII for matching and negation checks; other non-ASCII punctuation is not folded), and is then
   replaced by the user's exact characters; a span with a negation or exclusion anywhere earlier in its clause is
   rejected (downgraded to ask_user, fail closed).
   Nothing runs before the user approves the plan. Action steps go to Core with the user's verbatim words, so Intent
@@ -110,8 +111,10 @@ OQ overlay + OI files), the same method as the consolidation runbook.
 - **Task ledger.** One JSON file per task (atomic replace + fsync), step state machine, restart recovery. Before an
   approval is handed to Core (`decide_step`) the step is durably EXECUTING, so a crash anywhere after the approval
   recovers as UNCERTAIN and the step is never started again; the ledger has no other route from an approval to an
-  outcome; the single-turn `confirm()` / `decide()` accept only Core turn ids this orchestrator issued on
-  single-turn routes (allowlist), so a plan step's turn can only be continued via `confirm_step` / `decide_step`.
+  outcome; the single-turn `confirm()` / `decide()` accept only an envelope this orchestrator issued on a
+  single-turn route, checked by a digest of the whole envelope (not just its id) and usable once, so a plan step's
+  confirmation or approval payload cannot be passed through them (tested, including the spliced-payload case). The
+  registry is in memory: after an OI restart an outstanding single-turn continuation fails closed.
   IN_CORE / EXECUTING are exclusive claims
   taken under a per-task file lock (`advance` and `confirm_step` claim before calling Core): tested with concurrent
   threads and separate ledger objects. A ledger has ONE writer process: every write and recovery takes process

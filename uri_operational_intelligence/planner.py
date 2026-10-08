@@ -77,8 +77,24 @@ _UNICODE_FOLD = str.maketrans({"\u2019": "'", "\u2018": "'", "\u02bc": "'", "\u2
                                "\u2007": " "})
 
 
+def _fold_char(c):
+    import unicodedata
+    if c.isascii():
+        return c
+    cat = unicodedata.category(c)
+    if cat == "Pd":                       # every dash punctuation (incl. U+2015 HORIZONTAL BAR)
+        return "-"
+    if cat in ("Pi", "Pf"):               # every initial/final quote (incl. U+201B, U+2018, U+2019)
+        return "'"
+    if cat == "Zs":                       # every space separator
+        return " "
+    return c.translate(_UNICODE_FOLD)     # explicit extras: modifier letter apostrophe, primes, fullwidth forms
+
+
 def _fold(s):
-    return (s or "").translate(_UNICODE_FOLD)
+    """1:1 fold (offsets preserved) of all Unicode dashes, quote marks and spaces to ASCII before span and negation
+    checks; the user's ORIGINAL characters are still what is forwarded."""
+    return "".join(_fold_char(c) for c in (s or ""))
 
 
 def exact_user_span(text, span):

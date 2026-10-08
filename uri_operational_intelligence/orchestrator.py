@@ -133,7 +133,10 @@ class Orchestrator:
         self.cancels = {}      # turn_id -> CancelToken
         # Core turn ids issued on SINGLE-turn routes (not plan steps). confirm()/decide() accept only these
         # (allowlist, fail closed): a plan step's Core turn can only be continued through confirm_step/decide_step.
-        self._single_turns = set()
+        # turn_id -> digest of the COMPLETE envelope as issued; single use; bounded (oldest dropped). In memory only:
+        # after an OI restart an outstanding single-turn continuation fails closed and the user restarts the request
+        # (Core's own intent ledger still refuses re-execution of an executed or possibly executed intent).
+        self._single_turns = {}
         self._single_lock = __import__("threading").Lock()
 
     # ---- public API ---------------------------------------------------------------------------
@@ -264,15 +267,30 @@ class Orchestrator:
             return TurnOutcome(turn_id, "core", tri.to_dict(), tier.to_dict(), "error")
         return self._relay_core(env, text, session_id, tri, tier, emit, turn_id, history, cancel)
 
+    MAX_SINGLE_TURNS = 256
+
+    @staticmethod
+    def _env_digest(env):
+        import hashlib
+        import json as _json
+        return hashlib.sha256(_json.dumps(env, sort_keys=True, default=str).encode()).hexdigest()
+
     def _register_single(self, env):
-        if isinstance(env, dict) and env.get("turn_id"):
+        if isinstance(env, dict) and env.get("turn_id") and core_needs(env) != "none":
             with self._single_lock:
-                self._single_turns.add(env["turn_id"])
+                self._single_turns[env["turn_id"]] = self._env_digest(env)
+                while len(self._single_turns) > self.MAX_SINGLE_TURNS:
+                    self._single_turns.pop(next(iter(self._single_turns)))
 
     def _require_single(self, turn):
+        """The caller must hand back EXACTLY an envelope this orchestrator issued on a single-turn route (whole-envelope
+        digest, not just its id), and each envelope can be used once. A plan step's confirmation/approval payload
+        cannot be spliced under a registered id."""
         with self._single_lock:
-            if not isinstance(turn, dict) or turn.get("turn_id") not in self._single_turns:
+            tid = turn.get("turn_id") if isinstance(turn, dict) else None
+            if tid not in self._single_turns or self._single_turns[tid] != self._env_digest(turn):
                 raise LedgerError("NOT_A_SINGLE_TURN_ISSUED_HERE")
+            del self._single_turns[tid]
 
     def _relay_core(self, env, text, session_id, tri, tier, emit, turn_id, history, cancel, selection=None) -> TurnOutcome:
         self._register_single(env)
