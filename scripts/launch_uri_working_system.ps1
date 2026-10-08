@@ -18,7 +18,7 @@
   Run only the verification and refusal checks (including negative cases) and print JSON. Starts nothing.
 #>
 param(
-  [string]$RuntimeRoot = 'C:\Users\cheta\Development\uri-ws-rt',
+  [string]$RuntimeRoot = 'C:\Users\cheta\Development\uri-ws-final',
   [string]$UiExe = 'C:\Users\cheta\Development\uri-working-system\uri_ui\build\windows\x64\runner\Release\uri_ui.exe',
   [int]$BrainMinutes = 480,
   [switch]$NoBrain,
