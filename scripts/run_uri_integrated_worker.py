@@ -294,7 +294,7 @@ def shutdown(oi, turns):
     as denials, so abandoned cards never hold server capacity (CAP-1). `closing` is set first, so a job that is still
     finishing releases its own card when it registers it (Codex WS round 1, F2). A job that outlives the join (a Core
     call that does not return) cannot be released from here; the server's idle expiry stays the backstop."""
-    oi.closing = True
+    oi.begin_close()
     job = oi._job
     unfinished = False
     if job is not None and job[1].is_alive():

@@ -79,19 +79,14 @@ if ($SelfTest) {
   (@{ server_manifest = $sm; client_manifest = $cm; port = 8000 } | ConvertTo-Json) | Set-Content -Encoding ascii (Join-Path $tmp 'work\c1\ws-current.json')
   $negPort = Test-Installation $tmp $null
   Remove-Item -Recurse -Force $tmp
-  # Listener identity: the real manifest must prove; a manifest with another public key must not.
+  # Listener identity: the real manifest must prove; the same live proof checked against another valid key must fail.
   $idOk = $null; $idForeign = $null
   if ($real.ok) {
     $py0 = Join-Path $RuntimeRoot '.venv\Scripts\python.exe'; $tool = Join-Path $RuntimeRoot 'scripts\ws_server_identity.py'
     $sm0 = $real.installation.server_manifest
     if ((Test-Http ("http://127.0.0.1:{0}/health" -f $real.installation.port)) -ne 0) {
       & $py0 $tool $sm0 | Out-Null; $idOk = ($LASTEXITCODE -eq 0)
-      $fake = Join-Path (Split-Path $sm0) ('manifest.selftest-' + [guid]::NewGuid().ToString('N') + '.json')
-      $j = Get-Content -Raw -Encoding UTF8 $sm0 | ConvertFrom-Json
-      $j.public_key = ('00' * 32)
-      ($j | ConvertTo-Json -Depth 10) | Set-Content -Encoding ascii $fake
-      & $py0 $tool $fake | Out-Null; $idForeign = ($LASTEXITCODE -ne 0)
-      Remove-Item -Force $fake
+      & $py0 $tool $sm0 --selftest-wrong-key | Out-Null; $idForeign = ($LASTEXITCODE -eq 0)
     }
   }
   $out = [ordered]@{
@@ -101,7 +96,7 @@ if ($SelfTest) {
     negative_foreign_ui = @{ refused = (-not $negUi.ok); problems = $negUi.problems }
     negative_legacy_port = @{ refused = (@($negPort.problems | Where-Object { $_ -like 'LEGACY_PORT_REFUSED*' }).Count -gt 0); problems = $negPort.problems }
     listener_identity_proven = $idOk
-    tampered_manifest_identity_refused = $idForeign
+    wrong_key_proof_refused = $idForeign
     legacy_port_8000_contacted = $false
   }
   $out | ConvertTo-Json -Depth 5

@@ -90,6 +90,12 @@ class OiConversation extends ChangeNotifier {
   /// interleave). Replayed by [_begin]; bounded.
   final Map<String, List<Map<String, dynamic>>> _early = {};
 
+  /// Jobs started vs `turn.finished` received, per turn. A turn is active until every job it started (the turn
+  /// itself, then each confirm/decide continuation) has finished, so the original job's late `turn.finished`
+  /// cannot end a continuation that is still running (Codex WS round 2).
+  final Map<String, int> _jobs = {};
+  final Map<String, int> _finishes = {};
+
   String? activeTurnId;
   String companionState = 'idle';
   OiApproval? pendingApproval;
@@ -169,6 +175,7 @@ class OiConversation extends ChangeNotifier {
 
   void _begin(String turnId) {
     activeTurnId = turnId;
+    _jobs[turnId] = (_jobs[turnId] ?? 0) + 1;
     final m = OiMessage(role: OiRole.uri, text: '', turnId: turnId)..streaming = true;
     messages.add(m);
     _byTurn[turnId] = m;
@@ -197,6 +204,7 @@ class OiConversation extends ChangeNotifier {
     pendingApproval = null;
     // Active BEFORE the command: the decision's events may arrive right after the reply.
     activeTurnId = a.turnId;
+    _jobs[a.turnId] = (_jobs[a.turnId] ?? 0) + 1;
     _byTurn[a.turnId]?.streaming = true;
     notifyListeners();
     try {
@@ -207,7 +215,8 @@ class OiConversation extends ChangeNotifier {
         'approval_digest': a.approvalDigest,
       });
     } on IntegratedRuntimeException catch (e) {
-      activeTurnId = null;
+      _jobs[a.turnId] = (_jobs[a.turnId] ?? 1) - 1;
+      if ((_finishes[a.turnId] ?? 0) >= (_jobs[a.turnId] ?? 0)) activeTurnId = null;
       _byTurn[a.turnId]?.streaming = false;
       lastError = e.code;
       // A transient refusal keeps the card; a digest mismatch or a released turn does not.
@@ -222,14 +231,17 @@ class OiConversation extends ChangeNotifier {
     if (c == null || (busy && activeTurnId != c.turnId)) return;
     pendingConfirmation = null;
     activeTurnId = c.turnId;
+    _jobs[c.turnId] = (_jobs[c.turnId] ?? 0) + 1;
     _byTurn[c.turnId]?.streaming = true;
     notifyListeners();
     try {
       await runtime.call({'command': 'oi_confirm', 'turn_id': c.turnId});
     } on IntegratedRuntimeException catch (e) {
-      activeTurnId = null;
+      _jobs[c.turnId] = (_jobs[c.turnId] ?? 1) - 1;
+      if ((_finishes[c.turnId] ?? 0) >= (_jobs[c.turnId] ?? 0)) activeTurnId = null;
       _byTurn[c.turnId]?.streaming = false;
       lastError = e.code;
+      if (e.code == 'TURN_IN_PROGRESS' || e.code == 'WORKER_TIMEOUT') pendingConfirmation = c;
     }
     notifyListeners();
   }
@@ -330,8 +342,12 @@ class OiConversation extends ChangeNotifier {
         brainStatus = {...brainStatus, ...data};
       case 'turn.finished':
         m?.finishedStatus = data['status'] as String?;
-        m?.streaming = false;
-        if (activeTurnId == turnId) activeTurnId = null;
+        final done = (_finishes[turnId!] ?? 0) + 1;
+        _finishes[turnId] = done;
+        if (done >= (_jobs[turnId] ?? 0)) {
+          m?.streaming = false;
+          if (activeTurnId == turnId) activeTurnId = null;
+        }
         // Memory may have changed after an approved action: re-read it (deterministic).
         if (m?.coreCode == 'SETTLED_VERIFIED') unawaited(refreshMemory());
       default:

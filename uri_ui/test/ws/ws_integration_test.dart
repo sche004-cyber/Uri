@@ -278,4 +278,46 @@ void main() {
     await conv.decide(approve: true);
     expect(rt.commands.last['command'], 'oi_decide');
   });
+
+  test("the original job's late turn.finished does not end the decision's continuation", () async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    await conv.send('remember that x');
+    rt.emit('t1', 'approval.required', {'capability_id': 'remember_fact', 'arguments': {}, 'approval_digest': digest});
+    await pumpEventQueue();
+    await conv.decide(approve: true); // clicked before the original job's turn.finished arrived
+    rt.emit('t1', 'turn.finished', {'status': 'needs_user'}); // original job
+    await pumpEventQueue();
+    expect(conv.busy, isTrue, reason: 'the decision job is still running');
+    rt.emit('t1', 'core.result', {'code': 'SETTLED_VERIFIED', 'needs': 'none'});
+    rt.emit('t1', 'turn.finished', {'status': 'ok'}); // decision job
+    await pumpEventQueue();
+    expect(conv.busy, isFalse);
+    expect(conv.messages.last.coreCode, 'SETTLED_VERIFIED');
+  });
+
+  test('a refused confirmation keeps its card when the refusal is transient', () async {
+    final rt = _RefusingRuntime('TURN_IN_PROGRESS');
+    final conv = OiConversation(rt);
+    await conv.send('remember that x');
+    rt.emit('t1', 'core.result', {'code': 'INTENT_CONFIRMATION_REQUIRED', 'needs': 'confirmation', 'message': 'ok?'});
+    rt.emit('t1', 'turn.finished', {'status': 'needs_user'});
+    await pumpEventQueue();
+    await conv.confirm();
+    expect(conv.pendingConfirmation, isNotNull);
+    expect(conv.busy, isFalse);
+  });
+}
+
+class _RefusingRuntime extends FakeRuntime {
+  _RefusingRuntime(this.code);
+  final String code;
+  @override
+  Future<Map<String, dynamic>> call(Map<String, dynamic> command) async {
+    if (command['command'] == 'oi_confirm' || command['command'] == 'oi_decide') {
+      commands.add(command);
+      throw IntegratedRuntimeException(code);
+    }
+    return super.call(command);
+  }
 }

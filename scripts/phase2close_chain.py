@@ -132,72 +132,74 @@ def phase1_equivalence(log, baseline_log, counts, collected=None, baseline_colle
 
 
 PHASE2_SCOPE = ("tests/phase2", "uri_supervisor/", "uri_supervisor_bridge/", "uri_ui/", "docs/", "scripts/phase2",
-                "scripts/run_uri_supervised_worker.py", "scripts/run_uri_phase2_server.py", "evidence/", "work/",
-                # Working-system integration (owner decision WS-D3): EXACT new paths, enumerated (Codex WS round 1
-                # F5). Phase 1 never imports them; the importer check below still enforces that.
-                "OI_MATERIALIZATION_RECEIPT.json",
-                "model_lab/integration/local_brain.json",
-                "model_lab/integration/local_brain.py",
-                "model_lab/integration/prove_integration.py",
-                "model_lab/lab/cases.py",
-                "model_lab/lab/client.py",
-                "model_lab/lab/decision.py",
-                "model_lab/lab/hard.py",
-                "model_lab/lab/longctx.py",
-                "model_lab/lab/paired.py",
-                "model_lab/lab/prompts.py",
-                "model_lab/lab/runtime.py",
-                "model_lab/lab/vision.py",
-                "scripts/oi_materialize_test_runtime.py",
-                "scripts/run_uri_integrated_server.py",
-                "scripts/run_uri_integrated_worker.py",
-                "scripts/ws_frozen_check.py",
-                "scripts/ws_provision.py",
-                "scripts/ws_server_identity.py",
-                "tests/oi/__init__.py",
-                "tests/oi/conftest.py",
-                "tests/oi/fake_llama.py",
-                "tests/oi/test_oi_answer_planner_ledger.py",
-                "tests/oi/test_oi_audit_r1_regressions.py",
-                "tests/oi/test_oi_audit_r2_regressions.py",
-                "tests/oi/test_oi_audit_r3_regressions.py",
-                "tests/oi/test_oi_audit_r5_regressions.py",
-                "tests/oi/test_oi_brain_client.py",
-                "tests/oi/test_oi_core_live.py",
-                "tests/oi/test_oi_core_provider.py",
-                "tests/oi/test_oi_orchestrator.py",
-                "tests/oi/test_oi_policy_triage.py",
-                "tests/oi/test_oi_runtime_v1.py",
-                "tests/oi/test_oi_server.py",
-                "tests/ws/__init__.py",
-                "tests/ws/test_ws_cloud_and_composition.py",
-                "tests/ws/test_ws_worker_bridge.py",
-                "tests/ws/test_ws_worker_live.py",
-                "uri_operational_intelligence/__init__.py",
-                "uri_operational_intelligence/answer.py",
-                "uri_operational_intelligence/bench/__init__.py",
-                "uri_operational_intelligence/bench/no_mtp_compare.py",
-                "uri_operational_intelligence/bench/reasoning.py",
-                "uri_operational_intelligence/bench/suite_p.py",
-                "uri_operational_intelligence/bench/tasks.py",
-                "uri_operational_intelligence/brain_catalog.py",
-                "uri_operational_intelligence/brain_client.py",
-                "uri_operational_intelligence/cloud_policy.py",
-                "uri_operational_intelligence/core_provider.py",
-                "uri_operational_intelligence/events.py",
-                "uri_operational_intelligence/harness_choice.py",
-                "uri_operational_intelligence/host.py",
-                "uri_operational_intelligence/integrated_composition.py",
-                "uri_operational_intelligence/orchestrator.py",
-                "uri_operational_intelligence/perf_monitor.py",
-                "uri_operational_intelligence/planner.py",
-                "uri_operational_intelligence/reasoning_policy.py",
-                "uri_operational_intelligence/runtime_v1.py",
-                "uri_operational_intelligence/server.py",
-                "uri_operational_intelligence/task_ledger.py",
-                "uri_operational_intelligence/triage.py",
-                "uri_operational_intelligence/worker_bridge.py",
-                "work/oi/.gitignore")
+                "scripts/run_uri_supervised_worker.py", "scripts/run_uri_phase2_server.py", "evidence/", "work/")
+# Working-system integration (owner decision WS-D3): EXACT new paths, enumerated and matched by equality, never as a
+# prefix (Codex WS rounds 1-2, F5). Phase 1 never imports them; the importer check below still enforces that.
+WS_EXACT = frozenset((
+    "OI_MATERIALIZATION_RECEIPT.json",
+    "model_lab/integration/local_brain.json",
+    "model_lab/integration/local_brain.py",
+    "model_lab/integration/prove_integration.py",
+    "model_lab/lab/cases.py",
+    "model_lab/lab/client.py",
+    "model_lab/lab/decision.py",
+    "model_lab/lab/hard.py",
+    "model_lab/lab/longctx.py",
+    "model_lab/lab/paired.py",
+    "model_lab/lab/prompts.py",
+    "model_lab/lab/runtime.py",
+    "model_lab/lab/vision.py",
+    "scripts/oi_materialize_test_runtime.py",
+    "scripts/run_uri_integrated_server.py",
+    "scripts/run_uri_integrated_worker.py",
+    "scripts/ws_frozen_check.py",
+    "scripts/ws_provision.py",
+    "scripts/ws_server_identity.py",
+    "tests/oi/__init__.py",
+    "tests/oi/conftest.py",
+    "tests/oi/fake_llama.py",
+    "tests/oi/test_oi_answer_planner_ledger.py",
+    "tests/oi/test_oi_audit_r1_regressions.py",
+    "tests/oi/test_oi_audit_r2_regressions.py",
+    "tests/oi/test_oi_audit_r3_regressions.py",
+    "tests/oi/test_oi_audit_r5_regressions.py",
+    "tests/oi/test_oi_brain_client.py",
+    "tests/oi/test_oi_core_live.py",
+    "tests/oi/test_oi_core_provider.py",
+    "tests/oi/test_oi_orchestrator.py",
+    "tests/oi/test_oi_policy_triage.py",
+    "tests/oi/test_oi_runtime_v1.py",
+    "tests/oi/test_oi_server.py",
+    "tests/ws/__init__.py",
+    "tests/ws/test_ws_cloud_and_composition.py",
+    "tests/ws/test_ws_worker_bridge.py",
+    "tests/ws/test_ws_worker_live.py",
+    "uri_operational_intelligence/__init__.py",
+    "uri_operational_intelligence/answer.py",
+    "uri_operational_intelligence/bench/__init__.py",
+    "uri_operational_intelligence/bench/no_mtp_compare.py",
+    "uri_operational_intelligence/bench/reasoning.py",
+    "uri_operational_intelligence/bench/suite_p.py",
+    "uri_operational_intelligence/bench/tasks.py",
+    "uri_operational_intelligence/brain_catalog.py",
+    "uri_operational_intelligence/brain_client.py",
+    "uri_operational_intelligence/cloud_policy.py",
+    "uri_operational_intelligence/core_provider.py",
+    "uri_operational_intelligence/events.py",
+    "uri_operational_intelligence/harness_choice.py",
+    "uri_operational_intelligence/host.py",
+    "uri_operational_intelligence/integrated_composition.py",
+    "uri_operational_intelligence/orchestrator.py",
+    "uri_operational_intelligence/perf_monitor.py",
+    "uri_operational_intelligence/planner.py",
+    "uri_operational_intelligence/reasoning_policy.py",
+    "uri_operational_intelligence/runtime_v1.py",
+    "uri_operational_intelligence/server.py",
+    "uri_operational_intelligence/task_ledger.py",
+    "uri_operational_intelligence/triage.py",
+    "uri_operational_intelligence/worker_bridge.py",
+    "work/oi/.gitignore"))
+
 
 
 FROZEN_PHASE1 = Path(r"C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\work\c1\checkpoints\final-closure-20261005-phase1.zip")
@@ -238,7 +240,7 @@ def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
             if not runner_ok:
                 outside.append(r)
             continue
-        if r.startswith(PHASE2_SCOPE):
+        if r.startswith(PHASE2_SCOPE) or r in WS_EXACT:
             continue
         if r in frozen_names and (root / r).is_file() and (root / r).read_bytes() == frozen.read(r):
             frozen_ok += 1
@@ -246,7 +248,7 @@ def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
         outside.append(r)
     importers = []
     for r in git("ls-files", "-co", "--exclude-standard"):
-        if r.endswith(".py") and not r.startswith(PHASE2_SCOPE):
+        if r.endswith(".py") and not r.startswith(PHASE2_SCOPE) and r not in WS_EXACT:
             try:
                 text = (root / r).read_text(encoding="utf-8", errors="replace")
             except OSError:

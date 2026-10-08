@@ -135,6 +135,11 @@ class IntegratedTurns:
         t.start()
         return t
 
+    def begin_close(self):
+        """Shutdown step 1: from now on a continuation is released instead of kept (atomic with _remember)."""
+        with self._lock:
+            self.closing = True
+
     def release(self):
         """Let a deferred job run (the worker calls this after writing the reply)."""
         go = self._go
@@ -185,15 +190,16 @@ class IntegratedTurns:
 
     def _remember(self, turn_id, session_id, text, env, status):
         if env is not None and status == "needs_user":
-            if self.closing:
+            entry = {"env": env, "text": text, "session_id": session_id}
+            with self._lock:      # the same lock begin_close() takes: no card can slip in after the shutdown sweep
+                closing = self.closing
+                if not closing:
+                    self.pending[turn_id] = entry
+                    while len(self.pending) > MAX_PENDING:
+                        self.pending.pop(next(iter(self.pending)))
+            if closing and env.get("state") == "approval_required":
                 # The worker is shutting down: nobody can decide this card. Release it as a denial now (CAP-1).
-                if env.get("state") == "approval_required":
-                    self._release({"env": env, "text": text, "session_id": session_id})
-                return
-            with self._lock:
-                self.pending[turn_id] = {"env": env, "text": text, "session_id": session_id}
-                while len(self.pending) > MAX_PENDING:
-                    self.pending.pop(next(iter(self.pending)))
+                self._release(entry)
 
     def _record_history(self, session_id, user_text, answer_text):
         h = self.history.setdefault(session_id, [])
