@@ -208,6 +208,14 @@ def _project_active_pointer(session: Any) -> Dict[str, Any]:
         capability_id = None
         if isinstance(active_workflow, dict):
             capability_id = active_workflow.get("capability") or active_workflow.get("task")
+        if isinstance(active_workflow, dict) and active_workflow.get("schema") == "uri.intent.v1":
+            # C5 intent record: its own resolved slot values are the known inputs (JSON only).
+            known = {name: slot.get("value") for name, slot in (active_workflow.get("slots") or {}).items()
+                     if isinstance(slot, dict)}
+        else:
+            # Fact objects are projected to their value: Turn State is a JSON projection.
+            known = {name: getattr(fact, "value", fact)
+                     for name, fact in dict(getattr(session, "current_facts", None) or {}).items()}
         return {
             "kind": kind,
             "question": question,
@@ -219,7 +227,7 @@ def _project_active_pointer(session: Any) -> Dict[str, Any]:
             "originating_goal": (active_workflow or {}).get("goal") if isinstance(active_workflow, dict) else None,
             "capability_id": capability_id,
             "action": (active_workflow or {}).get("action") if isinstance(active_workflow, dict) else None,
-            "known_inputs": dict(getattr(session, "current_facts", None) or {}),
+            "known_inputs": known,
             "expected_type": _infer_expected_type(missing_field),
             "prompt_asked": question,
             "created_at": (active_workflow or {}).get("created_at") if isinstance(active_workflow, dict) else None,

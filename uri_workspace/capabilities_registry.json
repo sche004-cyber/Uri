@@ -281,7 +281,41 @@
       "limitations": "The URL must appear literally in the request text (the Brain cannot supply an arbitrary URL of its own choosing - see the tool's own module docstring on the argument boundary); bounded to 10 MB and content types URI can extract text from; honestly reports an unreachable page, an unsupported content type, or an empty result rather than inventing content.",
       "interface": null,
       "effect_type": "read_only"
-    }
+    },
+    "external_harness_task": {
+        "file_path": "uri_core/client_runtime/turn_runner.py",
+        "class_name": "TurnRunner",
+        "method": "_run_harness",
+        "description": "Hand one bounded task to an external execution harness the user explicitly selected on their paired client (client-side only). The result is verified independently by URI before it is reported.",
+        "status": "implemented",
+        "availability": "unavailable_on_runtime",
+        "execution_surface": "paired_client",
+        "permissions": [],
+        "approval_requirement": "user_approval_required",
+        "risk": "controlled",
+        "platform": "any",
+        "limitations": "Executed only by a paired client whose harness is authenticated and explicitly qualified; catalogue membership grants nothing. Never executable by the server runtime (availability unavailable_on_runtime). Output is a claim until URI's own workspace check verifies it.",
+        "interface": {
+          "parameters": {
+            "instruction": {
+              "type": "string",
+              "minLength": 3
+            },
+            "expected_file": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][\\w-]{0,63}\\.[A-Za-z0-9]{1,8}$"
+            }
+          },
+          "required": [
+            "instruction",
+            "expected_file"
+          ],
+          "returns": {
+            "type": "object"
+          }
+        },
+        "effect_type": "local_write"
+      }
   },
   "planned_capabilities": {
     "pc_system_optimization": {

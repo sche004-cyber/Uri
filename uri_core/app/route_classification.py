@@ -77,6 +77,8 @@ ADMIN_GATED_ROUTES: Tuple[Tuple[str, str], ...] = (
 
 ROUTE_CLASSIFICATION: Dict[Tuple[str, str], str] = {
     ("GET", "/health"): PUBLIC,
+    ("GET", "/runtime/identity"): PUBLIC,
+    ("GET", "/runtime/status"): USER,
     ("POST", "/auth/signup"): PUBLIC,
     ("POST", "/auth/login"): PUBLIC,
     ("POST", "/auth/logout"): USER,
@@ -169,6 +171,24 @@ for _route in ADMIN_GATED_ROUTES:
 
 del _route
 
-# 73 application routes + 4 FastAPI routes.
+# 79 application routes + 4 FastAPI routes.
 # auto-generated doc/schema routes.
-EXPECTED_ROUTE_COUNT = 77
+EXPECTED_ROUTE_COUNT = 89
+
+# C2 routes require strict server-issued pairing; USER never means ambient
+# fallback on this surface. Legacy compatibility semantics remain unchanged.
+CLIENT_V1_ROUTES = (
+    ("POST", "/client/v1/session"),
+    ("GET", "/client/v1/capabilities"),
+    ("POST", "/client/v1/turns"),
+    ("POST", "/client/v1/turns/{turn_id}/continue"),
+    ("POST", "/client/v1/turns/{turn_id}/cancel"),
+    ("POST", "/client/v1/turns/{turn_id}/approval"),
+    ("POST", "/client/v1/turns/{turn_id}/claim"),
+    ("POST", "/client/v1/turns/{turn_id}/settle"),
+    ("POST", "/client/v1/turns/{turn_id}/wait"),
+    ("GET", "/client/v1/turns/{turn_id}/status"),
+)
+for _client_route in CLIENT_V1_ROUTES:
+    ROUTE_CLASSIFICATION[_client_route] = USER
+del _client_route

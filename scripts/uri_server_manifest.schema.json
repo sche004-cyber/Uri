@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "URI C1 isolated server manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "server_id",
+    "composition_id",
+    "contract_version",
+    "source_root",
+    "source_checkpoint",
+    "source_files",
+    "source_manifest_digest",
+    "entrypoint",
+    "interpreter",
+    "interpreter_sha256",
+    "process_image",
+    "process_image_sha256",
+    "dependency_manifest_digest",
+    "state_root",
+    "control_root",
+    "catalogue_root",
+    "host",
+    "port",
+    "model_policy",
+    "log_policy",
+    "public_key",
+    "public_key_fingerprint"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "server_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "composition_id": {
+      "enum": [
+        "c1-isolated-compatibility",
+        "c2-paired-core"
+      ]
+    },
+    "contract_version": {
+      "type": "string",
+      "const": "uri-runtime/1"
+    },
+    "source_root": {
+      "type": "string"
+    },
+    "source_checkpoint": {
+      "type": "string",
+      "const": "e8e3b65259c45fc823addc3ef8969425a265bd1b"
+    },
+    "source_files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "source_manifest_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "entrypoint": {
+      "type": "string"
+    },
+    "interpreter": {
+      "type": "string"
+    },
+    "interpreter_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "process_image": {
+      "type": "string"
+    },
+    "process_image_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "dependency_manifest_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "state_root": {
+      "type": "string"
+    },
+    "control_root": {
+      "type": "string"
+    },
+    "catalogue_root": {
+      "type": "string"
+    },
+    "host": {
+      "type": "string",
+      "const": "127.0.0.1"
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1024,
+      "maximum": 65535
+    },
+    "model_policy": {
+      "type": "string",
+      "const": "lazy-not-selected"
+    },
+    "log_policy": {
+      "type": "string",
+      "const": "fixture-local"
+    },
+    "public_key": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "public_key_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

@@ -24,6 +24,8 @@ KNOWN_CAPABILITY_EFFECTS: Dict[str, EffectType] = {
     "generate_document": EffectType.LOCAL_WRITE,
     "remember_fact": EffectType.LOCAL_WRITE,
     "convert_document": EffectType.LOCAL_WRITE,
+    # Paired-client only: writes a bounded workspace copy on the client, verified by URI before copy-out.
+    "external_harness_task": EffectType.LOCAL_WRITE,
     # External writes (side-effect in third-party services)
     "gmail_create_draft": EffectType.EXTERNAL_WRITE,
     "drive_upload": EffectType.EXTERNAL_WRITE,

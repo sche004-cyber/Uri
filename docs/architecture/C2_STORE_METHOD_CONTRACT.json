@@ -1,0 +1,396 @@
+{
+  "profile": {
+    "source": "uri_core/core/user_profile.py",
+    "class": "UserProfileStore",
+    "methods": {
+      "load_or_create": "self",
+      "save": "self, profile: UserProfile"
+    },
+    "source_sha256": "e770ec9563412f7daeea22e54b4b576ee1589c9e0e6fe20884dda453e107b16c",
+    "reads": [
+      "load_or_create"
+    ],
+    "writes": [
+      "save"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed.",
+    "projection_rule": "Client initializes before requests; read projection invokes _load only and never load_or_create remotely."
+  },
+  "memory": {
+    "source": "uri_core/core/user_memory.py",
+    "class": "MemoryStore",
+    "methods": {
+      "list_all": "self",
+      "get": "self, memory_id: str",
+      "add": "self, *, category: str, content: str, confidence: Optional[float]=None, notes: Optional[str]=None",
+      "propose": "self, *, category: str, content: str, confidence: Optional[float]=None, notes: Optional[str]=None",
+      "confirm": "self, memory_id: str, *, category: Optional[str]=None, content: Optional[str]=None",
+      "update": "self, memory_id: str, *, category: str, content: str, confidence: Optional[float]=None, notes: Optional[str]=None",
+      "delete": "self, memory_id: str"
+    },
+    "source_sha256": "a3b18536a1c7c8ca75aa34878bf7b4e4731472bf1526ed2488dac792aa785f99",
+    "reads": [
+      "list_all",
+      "get"
+    ],
+    "writes": [
+      "add",
+      "propose",
+      "confirm",
+      "update",
+      "delete"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "memory_settings": {
+    "source": "uri_core/core/memory_settings.py",
+    "class": "MemorySettingsStore",
+    "methods": {
+      "load": "self",
+      "update": "self, values: Dict[str, Any]"
+    },
+    "source_sha256": "284deaa86836bc82ee7ba3c5f698c77df9a0d00c68d0527a92d2e3cc1013d5d3",
+    "reads": [
+      "load"
+    ],
+    "writes": [
+      "update"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "growth": {
+    "source": "uri_core/core/growth_ledger.py",
+    "class": "GrowthLedgerStore",
+    "methods": {
+      "record_event": "self, event_type: str, metadata: Optional[Dict[str, Any]]=None",
+      "list_all": "self",
+      "summary": "self, recent_limit: int=10"
+    },
+    "source_sha256": "f6fec647f338b620c94e49c9fd40db9fd7a0db7e0e666baf25304e5c986be516",
+    "reads": [
+      "list_all",
+      "summary"
+    ],
+    "writes": [
+      "record_event"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "approvals": {
+    "source": "uri_core/core/approval_store.py",
+    "class": "ApprovalStore",
+    "methods": {
+      "propose": "self, capability_id: str, arguments: Dict[str, Any], session_id: Optional[str]=None, action_name: Optional[str]=None",
+      "get": "self, action_id: str",
+      "list_pending": "self",
+      "decide": "self, action_id: str, approved: bool, session_id: Optional[str]=None",
+      "consume": "self, action_id: str, capability_id: str, arguments: Dict[str, Any], session_id: Optional[str]=None"
+    },
+    "source_sha256": "a4cdf876a92a3ea45a40a60003d7b860511e741da8b0a49f236858d49e5eae85",
+    "reads": [
+      "get",
+      "list_pending"
+    ],
+    "writes": [
+      "propose",
+      "decide",
+      "consume"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "sessions": {
+    "source": "uri_core/core/state.py",
+    "class": "SessionManager",
+    "methods": {
+      "get_session": "self, session_id: str",
+      "save_session": "self, session_id: str",
+      "reset_session": "self, session_id: str"
+    },
+    "source_sha256": "a1c6e50777c8643da1f0f65e72d9b732e997dcb7aba580ea7d541595d65f56e0",
+    "reads": [
+      "get_session"
+    ],
+    "writes": [
+      "save_session",
+      "reset_session"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "experience": {
+    "source": "uri_core/core/experience_store.py",
+    "class": "ExperienceStore",
+    "methods": {
+      "list_all": "self",
+      "recent": "self, limit: int=5",
+      "add": "self, *, category: str, intent: str='', summary: str, actions: Optional[List[str]]=None, decisions: Optional[List[str]]=None, results: str='', failures: Optional[List[str]]=None, corrections: Optional[List[str]]=None, learned: str='', unresolved: Optional[List[str]]=None"
+    },
+    "source_sha256": "544a744ecbb3db132e516cc623aa4c07428f758047a603fb164580416b04d30b",
+    "reads": [
+      "list_all",
+      "recent"
+    ],
+    "writes": [
+      "add"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "skills": {
+    "source": "uri_core/core/skill_memory.py",
+    "class": "SkillMemory",
+    "methods": {
+      "confidence": "skill: dict",
+      "find_matching_skill": "self, semantic_result: dict",
+      "record_outcome": "self, semantic_result: dict, success: bool, workflow: list=None, tool_name=None",
+      "learn_skill": "self, semantic_result: dict, workflow: list, tool_name=None",
+      "record_failure": "self, semantic_result: dict, tool_name=None",
+      "list_skills": "self"
+    },
+    "source_sha256": "1d4a77fe35b8543f2643955c7646ca553653b33e719f607f3004bdd0a537c5f2",
+    "reads": [
+      "confidence",
+      "find_matching_skill",
+      "list_skills"
+    ],
+    "writes": [
+      "record_outcome",
+      "learn_skill",
+      "record_failure"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "history": {
+    "source": "uri_core/core/conversation_history.py",
+    "class": "ConversationHistoryStore",
+    "methods": {
+      "get_session": "self, session_id: str",
+      "list_sessions": "self, limit: int=50",
+      "append_turn": "self, *, session_id: str, turn_id: str, user_text: str, response_text: str, status: Optional[str]=None, capability: Optional[str]=None, attachments: Optional[List[Dict[str, Any]]]=None, provider_id: Optional[str]=None, model: Optional[str]=None, serving_provider: Optional[str]=None, serving_model: Optional[str]=None",
+      "annotate_latest_turn": "self, session_id: str, *, serving_provider: Optional[str], serving_model: Optional[str]",
+      "delete_session": "self, session_id: str"
+    },
+    "source_sha256": "6ecfa5de0a9089b41d910194e2349d56e4201458d0cf47b23ad5f2ef4ee032cc",
+    "reads": [
+      "get_session",
+      "list_sessions"
+    ],
+    "writes": [
+      "append_turn",
+      "annotate_latest_turn",
+      "delete_session"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "files": {
+    "source": "uri_core/core/file_store.py",
+    "class": "FileStore",
+    "methods": {
+      "save": "self, *, filename: str, content: bytes, media_type: Optional[str]=None, session_id: Optional[str]=None",
+      "get": "self, file_id: str",
+      "path_for": "self, file_id: str",
+      "list_for_session": "self, session_id: str",
+      "references_for": "self, file_ids: Any",
+      "delete": "self, file_id: str"
+    },
+    "source_sha256": "41812f84543dacfba7335e55af36627dea79ece0270c8f8c8ec405d17a969cb2",
+    "reads": [
+      "get",
+      "list_for_session",
+      "references_for"
+    ],
+    "writes": [
+      "save",
+      "delete"
+    ],
+    "local_only": [
+      "path_for"
+    ],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "graph": {
+    "source": "uri_core/core/graph_store.py",
+    "class": "GraphStore",
+    "methods": {
+      "upsert_node": "self, entity_type: str, canonical_name: str, attributes: Optional[Dict[str, Any]]=None, external_ref: Optional[str]=None, provenance: Optional[Dict[str, Any]]=None, user_id: str=''",
+      "get_node": "self, entity_id: str",
+      "get_node_by_external_ref": "self, entity_type: str, external_ref: str",
+      "delete_node": "self, entity_id: str",
+      "list_nodes": "self, entity_type: Optional[str]=None, name_contains: Optional[str]=None, limit: int=50",
+      "upsert_edge": "self, source_id: str, target_id: str, relationship_type: str, attributes: Optional[Dict[str, Any]]=None, provenance: Optional[Dict[str, Any]]=None, confidence: Optional[float]=None, status: str='ACTIVE'",
+      "get_edge": "self, edge_id: str",
+      "set_edge_status": "self, edge_id: str, status: str",
+      "list_edges": "self, entity_id: Optional[str]=None, relationship_type: Optional[str]=None, direction: str='both', status: Optional[str]='ACTIVE', limit: int=50"
+    },
+    "source_sha256": "ed283c7a52a1412b5245c24d81be9af3f2e2ab0825b41c6b1b44372c59cf52e1",
+    "reads": [
+      "get_node",
+      "get_node_by_external_ref",
+      "list_nodes",
+      "get_edge",
+      "list_edges"
+    ],
+    "writes": [
+      "upsert_node",
+      "delete_node",
+      "upsert_edge",
+      "set_edge_status"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "evidence": {
+    "source": "uri_core/core/evidence_fact_integrity.py",
+    "class": "FileEvidenceStore",
+    "methods": {
+      "add": "self, record: EvidenceRecord",
+      "get": "self, evidence_id: str",
+      "query": "self, source_type: Optional[str]=None",
+      "resolve": "self, evidence_ids: List[str]"
+    },
+    "source_sha256": "5108a72b83d9b2bd7945929270493aa9bc2f9540dd9bcf9e75ddc011a141e817",
+    "reads": [
+      "get",
+      "query",
+      "resolve"
+    ],
+    "writes": [
+      "add"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "operations": {
+    "source": "uri_core/external/operation_store.py",
+    "class": "FileOperationStore",
+    "methods": {
+      "create": "self, record: OperationRecord",
+      "get": "self, operation_id: str",
+      "list_all": "self",
+      "mark_outcome_unknown": "self, operation_id: str",
+      "recovered_pending": "self",
+      "complete": "self, operation_id: str, completion: Mapping[str, Any]",
+      "claim_completion": "self, operation_id: str"
+    },
+    "source_sha256": "56a90964f7a3115ab6f23a7a874fc05d6647b0fad9cd3fc6998935d809ed37aa",
+    "reads": [
+      "get",
+      "list_all",
+      "recovered_pending"
+    ],
+    "writes": [
+      "create",
+      "mark_outcome_unknown",
+      "complete",
+      "claim_completion"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "external_capabilities": {
+    "source": "uri_core/external/store.py",
+    "class": "ExternalCapabilityStore",
+    "methods": {
+      "state_is_readable": "self, user_id: str",
+      "register_descriptor": "self, descriptor_data: Mapping[str, Any], *, user_id: str, source_revision: Optional[str]=None, dependency_lock: Optional[Mapping[str, str]]=None",
+      "replace_qualified_descriptor": "self, descriptor_data: Mapping[str, Any], *, user_id: str, source_revision: Optional[str]=None, dependency_lock: Optional[Mapping[str, str]]=None",
+      "get": "self, user_id: str, descriptor_id: str",
+      "list_all": "self, user_id: str",
+      "configure": "self, user_id: str, descriptor_id: str",
+      "authenticate": "self, user_id: str, descriptor_id: str",
+      "report_health": "self, user_id: str, descriptor_id: str, *, healthy: bool",
+      "enable": "self, user_id: str, descriptor_id: str",
+      "disable": "self, user_id: str, descriptor_id: str",
+      "remove": "self, user_id: str, descriptor_id: str"
+    },
+    "source_sha256": "440f15733eae38454392954d893da787fa08c27f01a64cdf89a025db40a397ae",
+    "reads": [
+      "state_is_readable",
+      "get",
+      "list_all"
+    ],
+    "writes": [
+      "register_descriptor",
+      "replace_qualified_descriptor",
+      "configure",
+      "authenticate",
+      "report_health",
+      "enable",
+      "disable",
+      "remove"
+    ],
+    "local_only": [],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "connections": {
+    "source": "uri_core/external/service_store.py",
+    "class": "ConnectedServiceStore",
+    "methods": {
+      "register_service": "self, descriptor: ConnectedServiceDescriptor",
+      "get_service_descriptor": "self, service_id: str",
+      "state_is_readable": "self, user_id: str",
+      "connect": "self, user_id: str, service_id: str, credentials: Mapping[str, Any], *, scopes: Optional[List[str]]=None",
+      "disconnect": "self, user_id: str, service_id: str",
+      "get_status": "self, user_id: str, service_id: str",
+      "list_services": "self, user_id: str"
+    },
+    "source_sha256": "519a1e02b11996f0b0fb8d6fdd9396936e3c37716fb4a0bc6e439776d558c51b",
+    "reads": [
+      "get_service_descriptor",
+      "state_is_readable",
+      "get_status",
+      "list_services"
+    ],
+    "writes": [
+      "register_service",
+      "disconnect"
+    ],
+    "local_only": [
+      "connect"
+    ],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  },
+  "credentials": {
+    "source": "uri_core/external/credentials.py",
+    "class": "ExternalCredentialStore",
+    "methods": {
+      "set_credential": "self, user_id: str, service_or_capability_id: str, secret_data: Mapping[str, Any]",
+      "get_credential": "self, user_id: str, service_or_capability_id: str",
+      "has_credential": "self, user_id: str, service_or_capability_id: str",
+      "delete_credential": "self, user_id: str, service_or_capability_id: str"
+    },
+    "source_sha256": "18b354204fa754986c43af2a0ce235f1bd1b9187ea859bc5410b76ed42dbb4ce",
+    "reads": [],
+    "writes": [],
+    "local_only": [
+      "set_credential",
+      "get_credential",
+      "has_credential",
+      "delete_credential"
+    ],
+    "lifecycle": "Client constructor, migration, corruption handling, persistence and teardown; server never constructs a private store.",
+    "transaction": "Client journal + CAS at port boundary; existing store format/validators remain authoritative. Native SQLite transactions only for graph; no cross-store atomicity claimed."
+  }
+}
