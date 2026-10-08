@@ -68,13 +68,15 @@ class _NotSelected:
 
 
 class IntegratedTurns:
-    def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None):
+    def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None, defer_start=False):
         """
         orchestrator: an OI Orchestrator whose `core` is the paired Core gateway for this client.
         cfg:          the frozen Runtime v1 configuration (already loaded).
         status:       callable -> runtime_v1.Readiness (read-only; never starts the runtime).
         write_event:  callable(dict) that writes ONE event frame under the worker's write lock.
         memory:       callable() -> list of remembered facts (deterministic client read), or None.
+        defer_start:  a started job waits for `release()`, which the worker calls right AFTER it wrote the reply.
+                      The reply that carries the turn id therefore always precedes the turn's first event frame.
         """
         self.o, self.cfg, self._status, self._write = orchestrator, cfg, status, write_event
         self._memory, self.cloud = memory, cloud or cloud_policy.CloudSpendPolicy()
@@ -83,6 +85,8 @@ class IntegratedTurns:
         self._readiness_for_orchestrator()
         self._lock = threading.Lock()
         self._job = None              # (turn_id, thread) of the running job
+        self._defer = defer_start
+        self._go = None               # threading.Event the deferred job waits on
         self.pending = {}             # oi turn_id -> {"env", "text", "session_id"} (Core turn awaiting the user)
         self.history = {}             # session_id -> [{"role", "content"}] (answer-channel context, bounded)
 
@@ -110,10 +114,23 @@ class IntegratedTurns:
         with self._lock:
             if self._job is not None and self._job[1].is_alive():
                 raise BridgeRefused("TURN_IN_PROGRESS")
-            t = threading.Thread(target=fn, name="oi-turn-" + turn_id[:8], daemon=True)
-            self._job = (turn_id, t)
+            go = threading.Event()
+            if not self._defer:
+                go.set()
+
+            def gated():
+                go.wait()
+                fn()
+            t = threading.Thread(target=gated, name="oi-turn-" + turn_id[:8], daemon=True)
+            self._job, self._go = (turn_id, t), go
         t.start()
         return t
+
+    def release(self):
+        """Let a deferred job run (the worker calls this after writing the reply)."""
+        go = self._go
+        if go is not None:
+            go.set()
 
     def wait(self, timeout=None):
         """Test helper: join the running job."""

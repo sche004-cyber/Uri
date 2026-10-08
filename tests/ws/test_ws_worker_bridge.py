@@ -205,3 +205,18 @@ def test_decision_events_carry_the_oi_turn_id(fake, tmp_path):
     assert {e["turn_id"] for e in frames.events} == {r["turn_id"]}
     final = [e for e in frames.events if e["type"] == "core.result"][-1]
     assert final["data"]["code"] == "SETTLED_VERIFIED" and final["data"]["core_turn_id"] == "c1"
+
+
+def test_deferred_job_waits_for_release_so_the_reply_precedes_events(fake, tmp_path):
+    fake.scripts.append({"chunks": [("answer", "Hi")], "finish": "stop"})
+    status = lambda: Readiness("READY", fake.url, model_id="qwen-test")
+    o = Orchestrator(client=BC.BrainClient(fake.url), core=FakeCore(), brain_selection={}, ledger=TaskLedger(tmp_path),
+                     capability_ids={"remember_fact"}, readiness=status, harness_statuses=lambda: [])
+    frames = Frames()
+    b = IntegratedTurns(orchestrator=o, cfg=CFG, status=status, write_event=frames, defer_start=True)
+    b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "What is VRAM?", "depth": "auto"})
+    time.sleep(0.3)
+    assert frames.events == [] and b.busy          # nothing emitted before the worker released the job
+    b.release()
+    b.wait(10)
+    assert frames.types()[-2:] == ["turn.finished", "companion.state"]

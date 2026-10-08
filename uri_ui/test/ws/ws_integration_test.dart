@@ -238,4 +238,33 @@ void main() {
     expect(rt.closed, isTrue);
     expect(find.text('CLASSIC'), findsOneWidget);
   });
+
+  test('events that arrive before the turn is registered are replayed, not lost', () async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    rt.emit('t1', 'answer.delta', {'text': 'early '});
+    await pumpEventQueue();
+    await conv.send('hello');
+    rt.emit('t1', 'answer.delta', {'text': 'late'});
+    rt.emit('t1', 'turn.finished', {'status': 'ok'});
+    await pumpEventQueue();
+    expect(conv.messages.last.text, 'early late');
+    expect(conv.busy, isFalse);
+  });
+
+  test('a decision whose events beat its reply still ends the turn', () async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    await conv.send('remember that x');
+    rt.emit('t1', 'approval.required', {'capability_id': 'remember_fact', 'arguments': {}, 'approval_digest': digest});
+    rt.emit('t1', 'turn.finished', {'status': 'needs_user'});
+    await pumpEventQueue();
+    final f = conv.decide(approve: false);
+    rt.emit('t1', 'core.result', {'code': 'APPROVAL_DENIED', 'needs': 'none'});
+    rt.emit('t1', 'turn.finished', {'status': 'refused'});
+    await f;
+    await pumpEventQueue();
+    expect(conv.messages.last.coreCode, 'APPROVAL_DENIED');
+    expect(conv.busy, isFalse);
+  });
 }

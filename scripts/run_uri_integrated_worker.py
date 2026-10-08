@@ -195,7 +195,7 @@ def main():
                 return [r.get("fact", {}).get("value") for r in rows if isinstance(r, dict)]
 
             oi = WB.IntegratedTurns(orchestrator=orch, cfg=cfg, status=manager.status,
-                                    write_event=lambda ev: write({"event": ev}), memory=memory)
+                                    write_event=lambda ev: write({"event": ev}), memory=memory, defer_start=True)
             EXECUTION = {"execution_begin": {"command", "turn_id", "approval_digest", "proposal_digest"},
                          "execution_status": {"command", "execution_id"}, "execution_cancel": {"command", "execution_id"},
                          "execution_list": {"command"}}
@@ -213,6 +213,7 @@ def main():
                         except WB.BridgeRefused as exc:
                             raise TurnError(exc.code) from None
                         write({"result": "OK", "value": result})
+                        oi.release()          # the reply (with the turn id) is out before any event of that turn
                         continue
                     required = {"identity": {"command", "nonce"}, "snapshot": {"command", "session_id", "queries"},
                                 "consent": {"command", "mutations"}, "commit": {"command", "mutations"},

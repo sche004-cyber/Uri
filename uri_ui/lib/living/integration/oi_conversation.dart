@@ -85,6 +85,11 @@ class OiConversation extends ChangeNotifier {
   final List<OiMessage> messages = [];
   final Map<String, OiMessage> _byTurn = {};
 
+  /// Events for a turn id this model has not registered yet (defensive: the
+  /// worker writes the reply first, but stream and future callbacks may still
+  /// interleave). Replayed by [_begin]; bounded.
+  final Map<String, List<Map<String, dynamic>>> _early = {};
+
   String? activeTurnId;
   String companionState = 'idle';
   OiApproval? pendingApproval;
@@ -167,6 +172,9 @@ class OiConversation extends ChangeNotifier {
     final m = OiMessage(role: OiRole.uri, text: '', turnId: turnId)..streaming = true;
     messages.add(m);
     _byTurn[turnId] = m;
+    for (final ev in _early.remove(turnId) ?? const <Map<String, dynamic>>[]) {
+      _onEvent(ev);
+    }
     notifyListeners();
   }
 
@@ -186,6 +194,9 @@ class OiConversation extends ChangeNotifier {
     final a = pendingApproval;
     if (a == null || busy) return;
     pendingApproval = null;
+    // Active BEFORE the command: the decision's events may arrive right after the reply.
+    activeTurnId = a.turnId;
+    _byTurn[a.turnId]?.streaming = true;
     notifyListeners();
     try {
       await runtime.call({
@@ -194,9 +205,9 @@ class OiConversation extends ChangeNotifier {
         'approve': approve,
         'approval_digest': a.approvalDigest,
       });
-      activeTurnId = a.turnId;
-      _byTurn[a.turnId]?.streaming = true;
     } on IntegratedRuntimeException catch (e) {
+      activeTurnId = null;
+      _byTurn[a.turnId]?.streaming = false;
       lastError = e.code;
       messages.add(OiMessage(role: OiRole.system, text: 'Decision refused: ${e.code}'));
     }
@@ -207,12 +218,14 @@ class OiConversation extends ChangeNotifier {
     final c = pendingConfirmation;
     if (c == null || busy) return;
     pendingConfirmation = null;
+    activeTurnId = c.turnId;
+    _byTurn[c.turnId]?.streaming = true;
     notifyListeners();
     try {
       await runtime.call({'command': 'oi_confirm', 'turn_id': c.turnId});
-      activeTurnId = c.turnId;
-      _byTurn[c.turnId]?.streaming = true;
     } on IntegratedRuntimeException catch (e) {
+      activeTurnId = null;
+      _byTurn[c.turnId]?.streaming = false;
       lastError = e.code;
     }
     notifyListeners();
@@ -263,6 +276,14 @@ class OiConversation extends ChangeNotifier {
     final turnId = ev['turn_id'] as String?;
     final data = (ev['data'] as Map?)?.cast<String, dynamic>() ?? const {};
     final m = turnId == null ? null : _byTurn[turnId];
+    if (m == null && turnId != null && type != 'brain.status') {
+      final q = _early.putIfAbsent(turnId, () => []);
+      if (q.length < 2000) q.add(ev);
+      while (_early.length > 8) {
+        _early.remove(_early.keys.first);
+      }
+      return;
+    }
     switch (type) {
       case 'companion.state':
         companionState = data['state'] as String? ?? 'idle';
