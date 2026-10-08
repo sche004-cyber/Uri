@@ -283,8 +283,11 @@ def strip_corrected(user_words) -> str:
     for m in reversed(list(_CORRECTION_CUES.finditer(text))):
         after = list(re.finditer(r"[\w'-]+", text[m.end():]))[:4]
         kind = next((k for k in (_detail_kind(w.group(0)) for w in after) if k), None)
-        if kind is None:
-            continue                      # the replacement is not a typed detail: keep everything, flag for review
+        if kind not in ("number", "date"):
+            # Names (and anything else) are never paired by inferred kind: capitalisation cannot tell a name from a
+            # sentence start (Codex TI rounds 5-6). The value stays required; if the model reported the correction
+            # it is covered by `superseded`, otherwise the user sees a review flag. Never a silent omission.
+            continue
         before = list(re.finditer(r"[\w'-]+", text[:m.start()]))[-6:]
         # The replaced value is the nearest earlier detail of the SAME kind ("17 students on Monday, sorry, 18
         # students": 17, not Monday). Other details stay required.

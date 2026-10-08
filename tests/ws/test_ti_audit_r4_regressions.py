@@ -39,7 +39,7 @@ def test_1_action_guard_wins_over_a_pending_question(fake, tmp_path):
 @pytest.mark.parametrize("words,kept,dropped", [
     ("17 students on Monday, sorry, 18 students", ["Monday", "18"], ["17"]),
     ("17 students on Monday, sorry, Tuesday", ["17", "Tuesday"], ["Monday"]),
-    ("paid by Anil, I mean Sunil Verma, on Friday", ["Sunil", "Friday"], ["Anil"]),
+    ("paid by Anil, I mean Sunil Verma, on Friday", ["Anil", "Sunil", "Friday"], []),   # names never stripped
     ("leaving hostel yesterday, no wait, on the 6th", ["6th"], ["yesterday"]),
     ("the fee of 4500, sorry, 5400 rupees", ["5400"], ["4500"]),
 ])
@@ -88,3 +88,12 @@ def test_6_please_marks_an_instruction_to_uri():
 def test_r5_7_function_word_is_not_a_name():
     s = V.strip_corrected("Report for Anil with 17 students, sorry, There were 18 students")
     assert "Anil" in s and "17" not in s and "18" in s
+
+
+# Codex TI round 6: no sentence-initial word can make URI drop an unrelated name.
+@pytest.mark.parametrize("words", ["Draft a report for Anil with 17 students, sorry, Everybody counted 18 students",
+                                   "Report for Anil with 17 students, sorry, Nobody saw 18 students"])
+def test_r6_names_are_never_stripped(words):
+    s = V.strip_corrected(words)
+    assert "Anil" in s and "17" not in s
+    assert "anil" in V.check_user_details(s, "Everybody counted 18 students.")[0]["detail"]
