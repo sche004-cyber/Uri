@@ -267,4 +267,15 @@ void main() {
     expect(conv.messages.last.coreCode, 'APPROVAL_DENIED');
     expect(conv.busy, isFalse);
   });
+
+  test('the card can be decided while its own turn is still finishing', () async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt);
+    await conv.send('remember that x');
+    rt.emit('t1', 'approval.required', {'capability_id': 'remember_fact', 'arguments': {}, 'approval_digest': digest});
+    await pumpEventQueue();
+    expect(conv.busy, isTrue); // turn.finished not yet received
+    await conv.decide(approve: true);
+    expect(rt.commands.last['command'], 'oi_decide');
+  });
 }

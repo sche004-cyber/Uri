@@ -291,11 +291,17 @@ def main():
 
 def shutdown(oi, turns):
     """Same withdrawal rules as the accepted worker, plus: cancel a running OI turn and release pending OI approvals
-    as denials, so abandoned cards never hold server capacity (CAP-1)."""
+    as denials, so abandoned cards never hold server capacity (CAP-1). `closing` is set first, so a job that is still
+    finishing releases its own card when it registers it (Codex WS round 1, F2). A job that outlives the join (a Core
+    call that does not return) cannot be released from here; the server's idle expiry stays the backstop."""
+    oi.closing = True
     job = oi._job
+    unfinished = False
     if job is not None and job[1].is_alive():
+        oi.release()          # a deferred job that never got its go signal must still be able to end
         oi.o.cancel(job[0], "worker_closed")
         job[1].join(30.0)
+        unfinished = job[1].is_alive()
     released_oi = 0
     for tid in list(oi.pending):
         try:
@@ -305,7 +311,7 @@ def shutdown(oi, turns):
             pass
     closed = turns.executions.close(30.0)
     released = turns.release_pending("WORKER_CLOSED")
-    return {"execution": closed, "released": released, "released_oi": released_oi}
+    return {"execution": closed, "released": released, "released_oi": released_oi, "oi_job_unfinished": unfinished}
 
 
 if __name__ == "__main__":

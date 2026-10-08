@@ -29,7 +29,7 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             "model_lab/__init__.py",
             # Working-system integration (docs/working_system/WS_BLUEPRINT.md): new paths only.
             "scripts/run_uri_integrated_worker.py", "scripts/run_uri_integrated_server.py", "scripts/ws_provision.py",
-            "scripts/ws_frozen_check.py", "tests/ws", "work/oi/.gitignore"]
+            "scripts/ws_frozen_check.py", "scripts/ws_server_identity.py", "tests/ws", "work/oi/.gitignore"]
 TEST_PATHS = ("tests/oi", "tests/ws")
 # Accepted files the owner authorized to extend (WS-D3: exact-path scope guards). They replace the overlay copy; the
 # receipt records both digests so the replacement is auditable.

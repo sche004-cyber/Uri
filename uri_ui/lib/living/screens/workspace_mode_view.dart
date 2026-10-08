@@ -1357,6 +1357,8 @@ class _ContextPanel extends StatelessWidget {
                 _KeyValue('Brain', oi.selectedRowId == 'runtime-v1' ? 'Runtime v1 (local)' : (oi.selectedRowId == 'deterministic' ? 'No Brain (deterministic rules)' : oi.selectedRowId)),
                 _KeyValue('Model', '${oi.brainStatus['model_id'] ?? '—'} · ${oi.brainStatus['state'] ?? '…'}'),
                 _KeyValue('Reasoning', 'Depth ${oi.depth.name}'),
+                // Core requires an explicit approval for every action; nothing here is a preference.
+                _KeyValue('Approvals', 'Every action needs your approval (Core)'),
               ] else ...[
                 _KeyValue(
                   'Brain',
@@ -1367,12 +1369,13 @@ class _ContextPanel extends StatelessWidget {
                 _KeyValue('Model', appState.activeBrain?.model ?? '—'),
                 _KeyValue('Reasoning', services.reasoningMode.value.label),
               ],
-              _KeyValue(
-                'Approvals',
-                appState.preferences.autonomyLevel == AutonomyLevel.askEveryTime
-                    ? 'Ask every time'
-                    : 'Routine auto-approve',
-              ),
+              if (oi == null)
+                _KeyValue(
+                  'Approvals',
+                  appState.preferences.autonomyLevel == AutonomyLevel.askEveryTime
+                      ? 'Ask every time'
+                      : 'Routine auto-approve',
+                ),
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Context & files'),
               const SizedBox(height: 6),

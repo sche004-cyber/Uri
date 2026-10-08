@@ -4,7 +4,8 @@
 
 1. The 121 frozen Phase 1 files in <tree> are byte-identical to the Phase 1 checkpoint zip
    (final-closure-20261005-phase1.zip, SHA-256 31a34dcb...), when the zip is present on this machine.
-2. Against the published baseline 037229c, no tracked path under the protected prefixes differs (working tree).
+2. Against the published baseline 037229c, no tracked path under the protected prefixes differs (working tree) and
+   no untracked file exists under them.
 Exit 0 only when both hold. Prints JSON.
 """
 import hashlib
@@ -36,8 +37,9 @@ def main(argv):
         out["phase1_frozen"] = {"checked": len(names), "drift": drift}
     else:
         out["phase1_frozen"] = {"checked": 0, "drift": None, "blocked": "checkpoint zip not present"}
-    changed = subprocess.run(["git", "-C", str(tree), "diff", "--name-only", BASELINE], capture_output=True,
-                             text=True).stdout.split()
+    git = lambda *a: subprocess.run(["git", "-C", str(tree), *a], capture_output=True, text=True).stdout.split()
+    # Tracked changes against the baseline AND untracked files (Codex WS round 1, F5).
+    changed = git("diff", "--name-only", BASELINE) + git("ls-files", "--others", "--exclude-standard")
     out["protected_changed_vs_baseline"] = [p for p in changed if p.startswith(PROTECTED) or p in PROTECTED]
     ok = out["phase1_frozen"]["drift"] == [] and not out["protected_changed_vs_baseline"]
     out["ok"] = ok

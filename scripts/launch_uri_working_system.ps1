@@ -79,16 +79,33 @@ if ($SelfTest) {
   (@{ server_manifest = $sm; client_manifest = $cm; port = 8000 } | ConvertTo-Json) | Set-Content -Encoding ascii (Join-Path $tmp 'work\c1\ws-current.json')
   $negPort = Test-Installation $tmp $null
   Remove-Item -Recurse -Force $tmp
+  # Listener identity: the real manifest must prove; a manifest with another public key must not.
+  $idOk = $null; $idForeign = $null
+  if ($real.ok) {
+    $py0 = Join-Path $RuntimeRoot '.venv\Scripts\python.exe'; $tool = Join-Path $RuntimeRoot 'scripts\ws_server_identity.py'
+    $sm0 = $real.installation.server_manifest
+    if ((Test-Http ("http://127.0.0.1:{0}/health" -f $real.installation.port)) -ne 0) {
+      & $py0 $tool $sm0 | Out-Null; $idOk = ($LASTEXITCODE -eq 0)
+      $fake = Join-Path (Split-Path $sm0) ('manifest.selftest-' + [guid]::NewGuid().ToString('N') + '.json')
+      $j = Get-Content -Raw -Encoding UTF8 $sm0 | ConvertFrom-Json
+      $j.public_key = ('00' * 32)
+      ($j | ConvertTo-Json -Depth 10) | Set-Content -Encoding ascii $fake
+      & $py0 $tool $fake | Out-Null; $idForeign = ($LASTEXITCODE -ne 0)
+      Remove-Item -Force $fake
+    }
+  }
   $out = [ordered]@{
     schema = 'uri.ws.launcher_selftest.v1'
     real_installation = @{ ok = $real.ok; problems = $real.problems; port = $real.installation.port }
     negative_legacy_root = @{ refused = (-not $negLegacy.ok); problems = $negLegacy.problems }
     negative_foreign_ui = @{ refused = (-not $negUi.ok); problems = $negUi.problems }
     negative_legacy_port = @{ refused = (@($negPort.problems | Where-Object { $_ -like 'LEGACY_PORT_REFUSED*' }).Count -gt 0); problems = $negPort.problems }
+    listener_identity_proven = $idOk
+    tampered_manifest_identity_refused = $idForeign
     legacy_port_8000_contacted = $false
   }
   $out | ConvertTo-Json -Depth 5
-  if ($real.ok -and -not $negLegacy.ok -and -not $negUi.ok -and $out.negative_legacy_port.refused) { exit 0 } else { exit 1 }
+  if ($real.ok -and -not $negLegacy.ok -and -not $negUi.ok -and $out.negative_legacy_port.refused -and ($idOk -ne $false) -and ($idForeign -ne $false)) { exit 0 } else { exit 1 }
 }
 
 $check = Test-Installation $RuntimeRoot ($(if ($NoUi) { $null } else { $UiExe }))
@@ -105,16 +122,21 @@ if ($brain -eq 0 -and -not $NoBrain) {
   Write-Host "Runtime v1: starting (loads in the background; URI reports its state)"
 } else { Write-Host "Runtime v1: health $brain (attach; identity verified by the worker)" }
 
-# 2. Integrated server.
+# 2. Integrated server. An existing listener is accepted only with this installation's signed identity proof
+#    (scripts\ws_server_identity.py, frozen verify_proof); a foreign listener on the port is refused, never used.
 $srv = Get-Content -Raw -Encoding UTF8 $cur.server_manifest | ConvertFrom-Json
 $health = "http://127.0.0.1:$($srv.port)/health"
-if ((Test-Http $health) -ne 200) {
+$idTool = Join-Path $RuntimeRoot 'scripts\ws_server_identity.py'
+function Test-Identity { & $py $idTool $cur.server_manifest | Out-Null; return ($LASTEXITCODE -eq 0) }
+if ((Test-Http $health) -ne 0) {
+  if (-not (Test-Identity)) { Write-Error "REFUSED: FOREIGN_LISTENER_ON_SERVER_PORT $($srv.port)"; exit 3 }
+} else {
   Start-Process -FilePath $py -ArgumentList @('-B', '-I', (Join-Path $RuntimeRoot 'scripts\run_uri_integrated_server.py'), '--manifest', $cur.server_manifest) `
     -WorkingDirectory $srv.state_root -WindowStyle Hidden | Out-Null
   $deadline = (Get-Date).AddSeconds(60)
-  while ((Test-Http $health) -ne 200) { if ((Get-Date) -gt $deadline) { Write-Error 'SERVER_DID_NOT_START'; exit 3 }; Start-Sleep -Milliseconds 500 }
+  while (-not (Test-Identity)) { if ((Get-Date) -gt $deadline) { Write-Error 'SERVER_DID_NOT_PROVE_IDENTITY'; exit 3 }; Start-Sleep -Milliseconds 500 }
 }
-Write-Host "Integrated server: $health OK"
+Write-Host "Integrated server: port $($srv.port), identity proven"
 
 # 3. UI.
 if (-not $NoUi) {

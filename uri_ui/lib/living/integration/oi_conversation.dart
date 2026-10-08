@@ -192,7 +192,8 @@ class OiConversation extends ChangeNotifier {
   /// Button-only: approve or deny the card that is shown.
   Future<void> decide({required bool approve}) async {
     final a = pendingApproval;
-    if (a == null || busy) return;
+    // The card's own turn may still be finishing (the worker waits for it); another turn blocks.
+    if (a == null || (busy && activeTurnId != a.turnId)) return;
     pendingApproval = null;
     // Active BEFORE the command: the decision's events may arrive right after the reply.
     activeTurnId = a.turnId;
@@ -209,6 +210,8 @@ class OiConversation extends ChangeNotifier {
       activeTurnId = null;
       _byTurn[a.turnId]?.streaming = false;
       lastError = e.code;
+      // A transient refusal keeps the card; a digest mismatch or a released turn does not.
+      if (e.code == 'TURN_IN_PROGRESS' || e.code == 'WORKER_TIMEOUT') pendingApproval = a;
       messages.add(OiMessage(role: OiRole.system, text: 'Decision refused: ${e.code}'));
     }
     notifyListeners();
@@ -216,7 +219,7 @@ class OiConversation extends ChangeNotifier {
 
   Future<void> confirm() async {
     final c = pendingConfirmation;
-    if (c == null || busy) return;
+    if (c == null || (busy && activeTurnId != c.turnId)) return;
     pendingConfirmation = null;
     activeTurnId = c.turnId;
     _byTurn[c.turnId]?.streaming = true;

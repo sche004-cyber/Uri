@@ -220,3 +220,51 @@ def test_deferred_job_waits_for_release_so_the_reply_precedes_events(fake, tmp_p
     b.release()
     b.wait(10)
     assert frames.types()[-2:] == ["turn.finished", "companion.state"]
+
+
+def test_immediate_decision_on_the_card_waits_for_the_finishing_job(fake, tmp_path):
+    """Codex WS round 1, F1: approval.required is emitted before the job records the continuation."""
+    core = approval_core()
+    status = lambda: Readiness("READY", fake.url, model_id="qwen-test")
+    o = Orchestrator(client=BC.BrainClient(fake.url), core=core, brain_selection={}, ledger=TaskLedger(tmp_path),
+                     capability_ids={"remember_fact"}, readiness=status, harness_statuses=lambda: [])
+    out = {}
+    holder = {}
+
+    def on_event(ev):
+        if ev["type"] == "approval.required":
+            def click():          # the UI's button press, racing the job's own completion
+                time.sleep(0.01)
+                try:
+                    out["reply"] = holder["b"].handle("oi_decide", {"command": "oi_decide", "turn_id": ev["turn_id"],
+                                                                     "approve": True, "approval_digest": DIGEST})
+                except BridgeRefused as exc:
+                    out["reply"] = exc.code
+            threading.Thread(target=click).start()
+            time.sleep(0.2)       # keep the job alive past the click, before it records the continuation
+
+    b = IntegratedTurns(orchestrator=o, cfg=CFG, status=status, write_event=on_event)
+    holder["b"] = b
+    b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "remember that the lab is closed", "depth": "auto"})
+    deadline = time.monotonic() + 10
+    while "reply" not in out and time.monotonic() < deadline:
+        time.sleep(0.05)
+    b.wait(10)
+    assert isinstance(out["reply"], dict) and out["reply"]["accepted"] is True, out
+    assert core.calls.count(("decide", True)) == 1
+
+
+def test_card_registered_during_shutdown_is_released_as_a_denial(fake, tmp_path):
+    """Codex WS round 1, F2: a Core turn that returns an approval after shutdown began must not stay pending."""
+    class SlowCore(FakeCore):
+        def begin(self, text, session_id, selection):
+            time.sleep(0.5)
+            return super().begin(text, session_id, selection)
+    core = SlowCore([{"turn_id": "c1", "state": "approval_required", "code": "APPROVAL_REQUIRED", "message": "?",
+                      "approval_request": {"capability_id": "remember_fact", "arguments": {}, "approval_digest": DIGEST}}])
+    b, _, _ = make(fake, tmp_path, core)
+    b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "remember that x is y", "depth": "auto"})
+    time.sleep(0.1)
+    b.closing = True
+    b.wait(10)
+    assert b.pending == {} and ("decide", False) in core.calls and ("decide", True) not in core.calls

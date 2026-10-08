@@ -39,6 +39,10 @@ COMMANDS = {
     "cloud_policy": ({"command"},),
 }
 OPEN_WHILE_BUSY = {"oi_cancel", "brain_status", "brain_catalog", "cloud_policy"}
+# A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
+# the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
+CONTINUATIONS = {"oi_decide", "oi_confirm", "oi_abandon"}
+JOIN_S = 30.0
 DEPTHS = ("auto", "fast", "normal", "deep")
 MAX_TEXT = 20000
 MAX_HISTORY = 24
@@ -87,6 +91,7 @@ class IntegratedTurns:
         self._job = None              # (turn_id, thread) of the running job
         self._defer = defer_start
         self._go = None               # threading.Event the deferred job waits on
+        self.closing = False          # set by the worker's shutdown: late continuations are released, not kept
         self.pending = {}             # oi turn_id -> {"env", "text", "session_id"} (Core turn awaiting the user)
         self.history = {}             # session_id -> [{"role", "content"}] (answer-channel context, bounded)
 
@@ -106,6 +111,10 @@ class IntegratedTurns:
     def handle(self, kind, command):
         if not valid(kind, command):
             raise BridgeRefused("COMMAND_SCHEMA")
+        if kind in CONTINUATIONS:
+            job = self._job
+            if job is not None and job[0] == command["turn_id"] and job[1].is_alive():
+                job[1].join(JOIN_S)
         if kind not in OPEN_WHILE_BUSY and self.busy:
             raise BridgeRefused("TURN_IN_PROGRESS")
         return getattr(self, "_" + kind)(command)
@@ -176,6 +185,11 @@ class IntegratedTurns:
 
     def _remember(self, turn_id, session_id, text, env, status):
         if env is not None and status == "needs_user":
+            if self.closing:
+                # The worker is shutting down: nobody can decide this card. Release it as a denial now (CAP-1).
+                if env.get("state") == "approval_required":
+                    self._release({"env": env, "text": text, "session_id": session_id})
+                return
             with self._lock:
                 self.pending[turn_id] = {"env": env, "text": text, "session_id": session_id}
                 while len(self.pending) > MAX_PENDING:
