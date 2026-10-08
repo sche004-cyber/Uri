@@ -219,6 +219,15 @@ class Orchestrator:
             emit("error", code="CORE_UNAVAILABLE", message="URI Core is not connected; nothing was done.",
                  recoverable=True, recovery_options=["retry"])
             return TurnOutcome(turn_id, "core", tri.to_dict(), tier.to_dict(), "error")
+        if self.brain_selection.get("provider") != "uri-deterministic":
+            # Fast, honest failure: with the selected Brain down Core would report SELECTED_MODEL_UNAVAILABLE after
+            # its connect attempts (measured ~4.7 s). Nothing is sent and nothing is substituted.
+            ready, r = self._brain_ready()
+            if not ready:
+                emit("error", code="BRAIN_UNAVAILABLE", message="The selected Brain is not ready (%s); nothing was done."
+                     % (r.state if r else "?"), recoverable=True,
+                     recovery_options=["start_brain", "retry", "choose_other_source"])
+                return TurnOutcome(turn_id, "core", tri.to_dict(), tier.to_dict(), "error")
         try:
             env = self.core.begin(text, session_id, self.brain_selection)
         except Exception as exc:     # transport / Core control error: report, never guess an outcome

@@ -198,3 +198,10 @@ def test_simulator_emits_only_contract_events(scenario):
     assert evs[0]["type"] == "brain.status" and evs[-1]["type"] == "turn.finished"
     assert all(e["type"] in EVENT_TYPES and e["schema"] == "uri.oi.event.v1" for e in evs)
     assert [e["seq"] for e in evs] == list(range(1, len(evs) + 1))
+
+
+def test_core_path_with_brain_down_fails_fast_without_calling_core(fake, tmp_path):
+    core = FakeCore()
+    out = orch(fake, tmp_path, core, ready=False).handle_turn("remember that the lab is closed", "s")
+    assert out.status == "error" and core.calls == []
+    assert [e for e in out.events if e["type"] == "error"][0]["data"]["code"] == "BRAIN_UNAVAILABLE"
