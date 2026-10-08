@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **58 passed** (25 original + 33 added or updated across Codex rounds 1-9). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **60 passed** (25 original + 35 added or updated across Codex rounds 1-10). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -211,6 +211,23 @@ observations during this round:
   The probe now excludes its direct parent only when that parent runs the same checker script.
 Live run afterwards: 8 TRANSITIONAL_LEGACY, 8 DONOR_ONLY (the Phase 2 session's running chain), Ollama shared, 0
 unaccounted. Round 10 result: see §2j.
+
+## 2j. Codex review round 10: REJECT, then repaired
+
+S-1..S-3 were confirmed repaired, with no regression. Findings:
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| R-a | High | The parent self-exclusion compared only the script basename, so a donor `…/uri_runtime_authority_check.py` parent could hide | Self-exclusion now walks the true ancestor chain (at most 4 levels). It excludes an ancestor only when it is the venv redirector running THIS checker file (full path and interpreter match), or a system shell running `uri_authorized_start.ps1` (the gate that invoked it). Children of excluded processes are still evaluated |
+| R-b | High | Consolidation-tool names outside the development checkout were not selected | The three tool names are runtime hints, so they are always classified; only the exact development-checkout paths are entrypoints |
+| R-c | High | An authorized command line could mask a rogue process image | A non-interpreter, non-shell image is classified as its own program, and the more severe result wins |
+
+2 new tests (60 total, all passing); both fail on the round-9 checker. Live checks:
+- `uri_authorized_start.ps1 -Action validate` refuses (exit 3) and no longer reports itself.
+- Normal mode reports only the legacy items (transitional), the Phase 2 session's running `chain4` (7 DONOR_ONLY
+  processes, counted by design) and Ollama (shared).
+
+Round 11 result: see §2k.
 
 ## 3. Integrity and recoverability
 

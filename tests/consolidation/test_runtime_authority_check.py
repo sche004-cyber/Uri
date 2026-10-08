@@ -415,3 +415,18 @@ def test_consolidation_tools_may_run_from_the_development_checkout_but_nothing_e
     for c in ok:
         assert rac.classify(c, M)[0] == "AUTHORIZED", c
     assert rac.classify(f"{dev}/.venv/Scripts/python.exe {dev}/scripts/run_uri_phase2_server.py", M)[0] == "UNACCOUNTED"
+
+
+# --- regressions for the Codex adversarial review round 10 (2026-10-08, verdict REJECT) ----------------------------
+def test_consolidation_tool_names_outside_the_dev_checkout_are_selected_and_fail():
+    rep = verdict(snap(processes=[proc("python D:/rogue/uri_runtime_authority_check.py")],
+                       scheduled_tasks=[{"name": r"\Rogue", "enabled": True, "action": "powershell -File D:/rogue/uri_authorized_start.ps1"}]))
+    assert rep["verdict"] == "CONTAMINATED" and set(classes(rep)) == {"UNACCOUNTED"}
+
+
+def test_authorized_command_line_cannot_mask_a_rogue_process_image():
+    cmd = f"{RUNTIME}/.venv/Scripts/python.exe {RUNTIME}/scripts/run_uri_phase2_server.py"
+    rep = verdict(snap(processes=[{"pid": 7, "ppid": 1, "image": "D:/rogue/uri_worker.exe", "cmdline": cmd}]))
+    assert rep["verdict"] == "CONTAMINATED"
+    ok = verdict(snap(processes=[{"pid": 8, "ppid": 1, "image": r"C:\Users\cheta\AppData\Local\Programs\Python\Python313\python.exe", "cmdline": cmd}]))
+    assert classes(ok) == ["AUTHORIZED"]

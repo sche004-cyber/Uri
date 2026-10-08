@@ -44,7 +44,8 @@ URI_HINT = re.compile(r"(?i)(uri[_-]?(agent|core|ui|server|desktop|client|worker
 RUNTIME_HINT = re.compile(r"(?i)(run_uri_server|uri_server_launcher|run_uri_isolated_server|run_uri_phase2_server|"
                           r"run_desktop_server|run_uri_client_worker|run_uri_supervised_worker|uri_client_launcher|"
                           r"launch_uri\.ps1|launch_desktop\.ps1|uri_server_ctl\.ps1|uri_server\.ps1|uri_client\.ps1|"
-                          r"launch uri\.bat|uri_ui\.exe|uvicorn\s+uri_core|uri_core\.app\.server|llama-server)")
+                          r"launch uri\.bat|uri_ui\.exe|uvicorn\s+uri_core|uri_core\.app\.server|llama-server|"
+                          r"uri_runtime_authority_check|uri_authorized_start|uri_containment)")
 AGENT_SHELL = re.compile(r"(?i)(\.claude[\\/]shell-snapshots|CLAUDE_CODE_SHELL|__claudeCodeScript)")
 REQUIRED_KEYS =("schema", "authoritative_runtime", "roots", "transitional_legacy", "shared_dependencies", "ports")
 
@@ -368,6 +369,16 @@ def _is_agent_shell(cmd: str, roots: list | None = None) -> bool:
     return not uri_named(cmd)  # a shell that launches a URI-named program is evaluated like any other process
 
 
+def _trusted_host_image(image: str) -> bool:
+    """Interpreter or system-shell images host the program named on the command line (a Windows venv python.exe
+    redirects to the base interpreter), so the command-line target decides. Any other image IS the program."""
+    n = norm(image)
+    base = _basename(image)
+    if n in TRUSTED_SHELL_PATHS:
+        return True
+    return base in INTERPRETERS or base in ("python3.13.exe",) or bool(re.fullmatch(r"pythonw?(\d+(\.\d+)?)?\.exe", base))
+
+
 def uri_named(cmd: str) -> bool:
     """True when the executable or any launched target (not mere arguments) has a URI-looking path or name."""
     if not cmd:
@@ -394,8 +405,13 @@ def _autostart_relevant(cmd: str) -> bool:
 def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
     findings = []
 
-    def add(kind, ident, text, active, extra=None):
+    def add(kind, ident, text, active, extra=None, image=None):
         cls, ref = classify(text, manifest)
+        if image and not _trusted_host_image(image):
+            # The real executable image is itself a program: an authorized command line cannot mask a rogue image.
+            ci, ri = classify('"' + image + '"', manifest)
+            if RANK[ci] > RANK[cls]:
+                cls, ref = ci, ri + " (process image)"
         f = {"kind": kind, "id": ident, "detail": redact(text)[:400], "active_or_autostart": active,
              "classification": cls, "manifest_ref": ref}
         f.update(extra or {})
@@ -451,7 +467,7 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
                 or launched_from_root(cmd, img)):
             # No name-based exemption: anything executing from ANY manifest root is classified (an active root
             # admits only its listed entrypoints), including development test runs (Codex rounds 6-9).
-            add("process", f"pid {p['pid']}", text, True)
+            add("process", f"pid {p['pid']}", text, True, image=img)
     for lst in snapshot.get("listeners", []):
         text = lst.get("cmdline") or lst.get("image") or ""
         # URI and model ports always; any other port when an interpreter/uvicorn owns it or it runs from a manifest root.
@@ -504,7 +520,7 @@ def live_snapshot(roots: list | None = None) -> dict:
     out, err = child.communicate(timeout=240)
     r = subprocess.CompletedProcess(child.args, child.returncode, out, err)
     self_pids = {os.getpid(), child.pid}
-    me = _basename(sys.argv[0] or "")
+    me_path = norm(os.path.abspath(__file__))
     if r.returncode != 0 or not r.stdout.strip():
         raise SystemExit(f"probe failed: {r.stderr.decode(errors='replace')[:400]}")
     snap = json.loads(r.stdout.decode("utf-8", errors="replace"))
@@ -514,11 +530,23 @@ def live_snapshot(roots: list | None = None) -> dict:
     # The probe's own PowerShell process carries this source text, which mentions URI paths; drop it.
     # Privacy: keep only command lines that look like URI runtimes; never persist unrelated process command lines.
     listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict)}
-    # A Windows venv python.exe is a redirector whose child is the real interpreter: exclude our direct parent only
-    # when it is that redirector running this same script.
-    for p in snap.get("processes") or []:
-        if p.get("pid") == os.getppid() and any(_basename(tg) == me for _, tg in launch_targets(p.get("cmdline", ""))):
-            self_pids.add(p.get("pid"))
+    # Exclude only true ANCESTORS of this checker process (walking the parent chain, at most 4 levels), and only when
+    # an ancestor is (a) the Windows venv python.exe redirector running this exact checker file, or (b) a trusted
+    # system shell running the start gate uri_authorized_start.ps1. Nothing else can hide by name or by PID.
+    by_pid = {p.get("pid"): p for p in snap.get("processes") or [] if isinstance(p, dict)}
+    cur, depth = os.getppid(), 0
+    while cur in by_pid and depth < 4:
+        anc = by_pid[cur]
+        cmdl = anc.get("cmdline", "")
+        targets = launch_targets(cmdl)
+        is_redirector = (norm(launch_target(cmdl)[0]) == norm(sys.executable)
+                         and any(norm(os.path.abspath(tg)) == me_path for _, tg in targets if tg))
+        toks = _tokens(cmdl)
+        is_gate = bool(toks) and norm(toks[0]) in set(TRUSTED_SHELL_PATHS) | {"powershell", "powershell.exe"} and \
+            any(_basename(tg) == "uri_authorized_start.ps1" for _, tg in targets)
+        if is_redirector or is_gate:
+            self_pids.add(cur)
+        cur, depth = anc.get("ppid"), depth + 1
     snap["processes"] = [p for p in snap.get("processes") or [] if p.get("pid") not in self_pids
                          and not _is_agent_shell(p["cmdline"], roots)
                          and (RUNTIME_HINT.search(p["cmdline"]) or uri_named(p["cmdline"]) or uri_named(p.get("image", ""))
