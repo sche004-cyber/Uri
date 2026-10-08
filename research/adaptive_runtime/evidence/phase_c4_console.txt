@@ -1,0 +1,27 @@
+=== pressure consumer start 17:41:16Z idle VRAM 447.94921875 MiB
+{"models":[{"name":"qwen3.5:0.8b","model":"qwen3.5:0.8b","size":1086869994,"digest":"f3817196d142eaf72ce79dfebe53dcb20bd21da87ce13e138a8f8e10a866b3a4","details":{"parent_model":"","format":"gguf","family":"qwen35","families":["qwen35"],"parameter_size":"873.44M","quantization_level":"Q8_0"},"expires_at":"2026-10-08T23:51:22.5496458+05:30","size_vram":1086869994,"context_length":4096}]}
+=== consumer resident; VRAM now 2047.640625 MiB 17:41:27Z
+=== expP2_mmprojcpu_nomtp 17:41:27Z VRAM before 2047.640625 MiB
+[23:11:52] server healthy after 15.55 s (waited 4.2 s for VRAM release; VRAM at start 2049.9 MiB; warm/cold not controlled)
+[23:12:16] vision 0: prompt_n=605 prompt_ms=4677.745 ttft=4.7893 total=4.9272 err=None text='Northwind Supplies, EUR 1,284.50'
+[23:12:21] vision 1: prompt_n=605 prompt_ms=4672.402 ttft=4.7304 total=4.9069 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+PRESSURE expP2_mmprojcpu_nomtp load 15.55 vram_at_start 2049.9 decode_tps_p50 103.5275 decision_total_p50 1.4873 vision_p50 4.917 local 13491 nonlocal 498 vram_peak 15538.6 fatal None
+Cannot convert value "2149466112" to type "System.Int32". Error: "Value was either too large or too small for an 
+Int32."
+At line:1 char:1
++ [int]((Get-Counter '\GPU Adapter Memory(*)\Dedicated Usage').CounterS ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvalidCastIConvertible
+ 
+=== expP2_mmprojcpu_memprio 17:42:31Z VRAM before  MiB
+[23:12:54] server healthy after 13.45 s (waited 4.1 s for VRAM release; VRAM at start 2061.9 MiB; warm/cold not controlled)
+[23:13:54] vision 0: prompt_n=605 prompt_ms=4759.561 ttft=4.8975 total=5.6121 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[23:13:59] vision 1: prompt_n=605 prompt_ms=4692.044 ttft=4.7457 total=5.4634 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+PRESSURE expP2_mmprojcpu_memprio load 13.45 vram_at_start 2061.9 decode_tps_p50 25.066 decision_total_p50 4.2645 vision_p50 5.5377 local 13833 nonlocal 1792 vram_peak 15882.4 fatal None
+=== expP2_c16k_mmprojcpu 17:44:09Z VRAM before 2047.640625 MiB
+[23:14:37] server healthy after 18.12 s (waited 4.1 s for VRAM release; VRAM at start 2049.9 MiB; warm/cold not controlled)
+[23:15:36] vision 0: prompt_n=605 prompt_ms=5101.577 ttft=5.2586 total=5.9742 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[23:15:42] vision 1: prompt_n=605 prompt_ms=4859.654 ttft=4.9041 total=5.6186 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+PRESSURE expP2_c16k_mmprojcpu load 18.12 vram_at_start 2049.9 decode_tps_p50 25.2138 decision_total_p50 4.1853 vision_p50 5.7964 local 13582 nonlocal 1728 vram_peak 15631.9 fatal None
+=== consumer stopped; VRAM 447.94921875 MiB; DONE5 17:45:59Z

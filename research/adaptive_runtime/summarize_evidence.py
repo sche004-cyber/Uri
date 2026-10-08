@@ -59,6 +59,20 @@ RUNS = [
     ("expP_pressure_plain", "frozen v1 next to a ~1 GB research VRAM consumer"),
     ("expP_pressure_mmprojcpu", "vision-on-CPU next to the same consumer"),
     ("expP_pressure_memprio", "memory priority next to the same consumer"),
+    ("expP2_mmprojcpu_nomtp", "vision-on-CPU + no MTP next to the same consumer"),
+    ("expP2_mmprojcpu_memprio", "vision-on-CPU + memory priority next to the same consumer"),
+    ("expP2_c16k_mmprojcpu", "vision-on-CPU + -c 16384 next to the same consumer"),
+    ("expP3_plain_suballoc256", "frozen v1 + GGML_VK_SUBALLOCATION_BLOCK_SIZE=256MiB next to the same consumer"),
+    ("expP3_mmprojcpu_suballoc256", "vision-on-CPU + 256 MiB suballocation blocks next to the same consumer"),
+    ("expP4_plain_suballoc128", "frozen v1 + 128 MiB suballocation blocks next to the same consumer"),
+    ("expP4_mmprojcpu_suballoc128", "vision-on-CPU + 128 MiB suballocation blocks next to the same consumer"),
+    ("expI_suballoc256_idle", "frozen v1 + 256 MiB suballocation blocks, idle desktop"),
+    ("expP5_plain_suballoc128_r1", "frozen v1 + 128 MiB blocks next to the consumer, repeat 1"),
+    ("expP5_plain_suballoc128_r2", "frozen v1 + 128 MiB blocks next to the consumer, repeat 2"),
+    ("expP5_plain_suballoc128_r3", "frozen v1 + 128 MiB blocks next to the consumer, repeat 3"),
+    ("expP5_plain_default_r1", "frozen v1, default 1 GiB blocks next to the consumer, repeat (control)"),
+    ("expI_suballoc128_idle_r1", "frozen v1 + 128 MiB blocks, idle desktop, 1"),
+    ("expI_suballoc128_idle_r2", "frozen v1 + 128 MiB blocks, idle desktop, 2"),
 ]
 
 

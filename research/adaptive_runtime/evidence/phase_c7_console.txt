@@ -1,0 +1,16 @@
+=== pressure consumer start 17:54:35Z idle VRAM 428.69921875 MiB
+{"models":[{"name":"qwen3.5:0.8b","model":"qwen3.5:0.8b","size":1086869994,"digest":"f3817196d142eaf72ce79dfebe53dcb20bd21da87ce13e138a8f8e10a866b3a4","details":{"parent_model":"","format":"gguf","family":"qwen35","families":["qwen35"],"parameter_size":"873.44M","quantization_level":"Q8_0"},"expires_at":"2026-10-09T00:04:41.4385801+05:30","size_vram":1086869994,"context_length":4096}]}
+=== consumer resident; VRAM now 2030.640625 MiB 17:54:46Z
+=== expP5_plain_suballoc128_r1 17:54:46Z VRAM before 2030.640625 MiB
+[23:25:15] server healthy after 19.91 s (waited 4.1 s for VRAM release; VRAM at start 2030.6 MiB; warm/cold not controlled)
+PRESSURE expP5_plain_suballoc128_r1 load 19.91 vram_at_start 2030.6 decode_tps_p50 101.7593 decision_total_p50 1.6117 vision_p50 None local 14241 nonlocal 2704 vram_peak 16271.2 fatal None
+=== expP5_plain_suballoc128_r2 17:55:46Z VRAM before 2030.640625 MiB
+[23:26:25] server healthy after 28.16 s (waited 5.2 s for VRAM release; VRAM at start 2030.6 MiB; warm/cold not controlled)
+PRESSURE expP5_plain_suballoc128_r2 load 28.16 vram_at_start 2030.6 decode_tps_p50 101.1193 decision_total_p50 1.5958 vision_p50 None local 14241 nonlocal 2704 vram_peak 16271.2 fatal None
+=== expP5_plain_suballoc128_r3 17:56:57Z VRAM before 2030.640625 MiB
+[23:27:28] server healthy after 21.99 s (waited 4.1 s for VRAM release; VRAM at start 2030.6 MiB; warm/cold not controlled)
+PRESSURE expP5_plain_suballoc128_r3 load 21.99 vram_at_start 2030.6 decode_tps_p50 93.5335 decision_total_p50 1.6625 vision_p50 None local 14161 nonlocal 2784 vram_peak 16196.2 fatal None
+=== expP5_plain_default_r1 17:58:00Z VRAM before 2035.640625 MiB
+[23:28:30] server healthy after 20.97 s (waited 4.2 s for VRAM release; VRAM at start 2035.6 MiB; warm/cold not controlled)
+PRESSURE expP5_plain_default_r1 load 20.97 vram_at_start 2035.6 decode_tps_p50 25.1747 decision_total_p50 4.2216 vision_p50 None local 14083 nonlocal 2649 vram_peak 16121.5 fatal None
+=== consumer stopped; VRAM 433.69921875 MiB; DONE8 17:59:42Z

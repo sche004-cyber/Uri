@@ -55,3 +55,12 @@ wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\
 wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\llama_bench_b11510_20261008_225518.json
 === DONE2 17:26:54Z
 === expS_memprio_soak 17:26:54Z
+[22:57:16] server healthy after 14.57 s (waited 4.2 s for VRAM release; VRAM at start 619.8 MiB; warm/cold not controlled)
+[22:57:23] vision 0: prompt_n=605 prompt_ms=1661.745 ttft=1.7352 total=1.8614 err=None text='Northwind Supplies, EUR 1,284.50'
+[22:57:25] vision 1: prompt_n=605 prompt_ms=1595.247 ttft=1.6663 total=1.8338 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[22:57:27] cancel: disconnected after 1.5146 s (chunks 146); follow-up total 0.2394 s ttft 0.2108 healthy=True
+[22:57:31] timeout: ReadTimeout: timed out ; follow-up total 1.8403 s healthy=True
+[23:01:02] stability: n=200 errors=0 total p50=1.021 p95=1.4176 first/last third p50 1.0402/0.982
+[23:01:13] wrote C:\Users\cheta\Development\uri-adaptive-runtime\research\adaptive_runtime\evidence\expS_memprio_soak_20261008_225654.json
+REPEAT expS_memprio_soak load 14.57 decode_tps_p50 None local 15529 nonlocal 1221 vram_peak 16277.1 fatal None
+=== DONE3 17:31:13Z

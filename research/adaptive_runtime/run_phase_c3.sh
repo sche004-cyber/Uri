@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
-# Phase C part 3: controlled VRAM pressure. A research-owned second llama-server (small embedding model, GPU
-# offloaded, oversized batch/context so it holds ~1-1.5 GB of VRAM) stands in for "another GPU consumer"; the
-# frozen configuration, the vision-on-CPU variant and the memory-priority variant are then loaded next to it.
+# Phase C part 3: controlled VRAM pressure. The installed Ollama service holds an already-pulled 0.8B model
+# (~1-1.5 GB of VRAM) as a stand-in for "another GPU consumer"; the frozen configuration, the vision-on-CPU
+# variant and the memory-priority variant are then loaded next to it.
 # Usage: bash run_phase_c3.sh <deadline_epoch>
 set -u
 cd "$(dirname "$0")"
 PY=/c/Users/cheta/Development/uri-agent/.venv/Scripts/python.exe
 B11425="D:/uri-model-lab/runtime/llama-b11425-bin-win-vulkan-x64"
 MD="C:/Users/cheta/Development/uri-adaptive-lab/models"
-SMALL="C:/Users/cheta/Development/uri-innovation-lab/.lab/models/nomic-embed-text-v1.5.Q8_0.gguf"   # read-only use
 DL=${1:-0}
 export URI_BENCH_IDLE_CEILING_MIB=3500
 
@@ -29,14 +28,12 @@ EOF
 }
 
 echo "=== pressure consumer start $(date -u +%H:%M:%SZ) idle VRAM $(vram) MiB"
-"$B11425/llama-server.exe" -m "$SMALL" --embeddings --pooling mean -ngl 99 -c 8192 -b 8192 -ub 8192 -np 6 \
-  --host 127.0.0.1 --port 18498 --no-webui > evidence/pressure_consumer.log 2>&1 &
-CPID=$!
-for i in $(seq 1 60); do curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:18498/health 2>/dev/null | grep -q 200 && break; sleep 1; done
-# touch it once so its compute buffers are allocated
-curl -s -o /dev/null -X POST http://127.0.0.1:18498/v1/embeddings -H "Content-Type: application/json" -d '{"input":"warm up the consumer"}'
-sleep 2
-echo "=== consumer pid $CPID healthy; VRAM now $(vram) MiB $(date -u +%H:%M:%SZ)"
+# Consumer: the already-installed Ollama service loads its already-pulled qwen3.5:0.8b (ROCm/Vulkan, ~1-1.5 GB of VRAM)
+# and keeps it resident for 40 minutes. Nothing is pulled or written; the model is unloaded at the end (keep_alive 0).
+curl -s -o evidence/pressure_consumer_ollama.json -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: application/json"   -d '{"model":"qwen3.5:0.8b","prompt":"Say OK.","stream":false,"keep_alive":"40m","options":{"num_predict":4}}'
+sleep 3
+curl -s http://127.0.0.1:11434/api/ps > evidence/pressure_consumer_ps.json; cat evidence/pressure_consumer_ps.json; echo
+echo "=== consumer resident; VRAM now $(vram) MiB $(date -u +%H:%M:%SZ)"
 
 for v in "expP_pressure_plain:" "expP_pressure_mmprojcpu:--extra=--no-mmproj-offload" "expP_pressure_memprio:--env GGML_VK_ENABLE_MEMORY_PRIORITY=1"; do
   n=${v%%:*}; a=${v#*:}
@@ -46,5 +43,5 @@ for v in "expP_pressure_plain:" "expP_pressure_mmprojcpu:--extra=--no-mmproj-off
   summ "$n"
 done
 
-kill $CPID 2>/dev/null; sleep 3
+curl -s -o /dev/null -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: application/json" -d '{"model":"qwen3.5:0.8b","keep_alive":0}'; sleep 5
 echo "=== consumer stopped; VRAM $(vram) MiB; DONE4 $(date -u +%H:%M:%SZ)"

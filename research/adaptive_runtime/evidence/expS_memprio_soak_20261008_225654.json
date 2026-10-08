@@ -1,0 +1,5622 @@
+{
+ "name": "expS_memprio_soak",
+ "stamp": "20261008_225654",
+ "binary": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+ "binary_sha256": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+ "ggml_vulkan_sha256": "3742b48f47a09eec0c04c27b8ff109e4ef125692822c0092bcec0235b9223210",
+ "model_path": "C:\\Users\\cheta\\Development\\uri-adaptive-lab\\models\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+ "model_sha256_pinned": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+ "model_dir_override": "C:/Users/cheta/Development/uri-adaptive-lab/models",
+ "mtp": true,
+ "vision": {
+  "rows": [
+   {
+    "total_s": 1.8614,
+    "ttft_s": 1.7352,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 14,
+    "text_head": "Northwind Supplies, EUR 1,284.50",
+    "prompt_n": 605,
+    "cache_n": 0,
+    "prompt_ms": 1661.745,
+    "prompt_per_second": 364.0751138110841,
+    "predicted_n": 15,
+    "predicted_ms": 125.917,
+    "predicted_per_second": 111.18435159668671,
+    "draft_n": 12,
+    "draft_n_accepted": 8,
+    "usage": {
+     "completion_tokens": 15,
+     "prompt_tokens": 605,
+     "total_tokens": 620,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   {
+    "total_s": 1.8338,
+    "ttft_s": 1.6663,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 22,
+    "text_head": "The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.",
+    "prompt_n": 605,
+    "cache_n": 0,
+    "prompt_ms": 1595.247,
+    "prompt_per_second": 379.25161432680954,
+    "predicted_n": 23,
+    "predicted_ms": 166.971,
+    "predicted_per_second": 131.7594073222296,
+    "draft_n": 16,
+    "draft_n_accepted": 15,
+    "usage": {
+     "completion_tokens": 23,
+     "prompt_tokens": 605,
+     "total_tokens": 628,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   }
+  ],
+  "total": {
+   "n": 2,
+   "p50": 1.8476,
+   "p95": 1.86,
+   "min": 1.8338,
+   "max": 1.8614,
+   "mean": 1.8476
+  },
+  "ttft": {
+   "n": 2,
+   "p50": 1.7007,
+   "p95": 1.7318,
+   "min": 1.6663,
+   "max": 1.7352,
+   "mean": 1.7007
+  },
+  "errors": 0
+ },
+ "ctx": 32768,
+ "server_env": {
+  "GGML_VK_ENABLE_MEMORY_PRIORITY": "1"
+ },
+ "extra_args": [],
+ "gpu_other_owners_before": [
+  {
+   "pid": 5496,
+   "name": "ollama app.exe",
+   "cmd": "C:\\Users\\cheta\\AppData\\Local\\Programs\\Ollama\\ollama app.exe --hide --fast-startup",
+   "started": "2026-10-08T09:42:03"
+  },
+  {
+   "pid": 7956,
+   "name": "llama-server.exe",
+   "cmd": "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe -m .lab/models/nomic-embed-text-v1.5.Q8_0.gguf --embeddings --pooling mean -ngl 0 -c 2048 -b 2048 -ub 2048 --host 127.0.0.1 --port 18481 -np 2",
+   "started": "2026-10-08T17:44:49"
+  },
+  {
+   "pid": 15272,
+   "name": "ollama.exe",
+   "cmd": "C:\\Users\\cheta\\AppData\\Local\\Programs\\Ollama\\ollama.exe serve",
+   "started": "2026-10-08T09:42:05"
+  }
+ ],
+ "vram_dedicated_before_mib": 631.8,
+ "system_available_ram_before_mib": 15247.0,
+ "argv": [
+  "D:\\uri-model-lab\\runtime\\llama-b11425-bin-win-vulkan-x64\\llama-server.exe",
+  "-m",
+  "C:\\Users\\cheta\\Development\\uri-adaptive-lab\\models\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "-c",
+  "32768",
+  "-ngl",
+  "999",
+  "-fa",
+  "on",
+  "-ctk",
+  "q8_0",
+  "-ctv",
+  "q8_0",
+  "-np",
+  "1",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "18497",
+  "--jinja",
+  "--reasoning-format",
+  "deepseek",
+  "--no-webui",
+  "--load-mode",
+  "none",
+  "--metrics",
+  "-b",
+  "2048",
+  "-ub",
+  "1024",
+  "--cache-ram",
+  "2048",
+  "--slot-prompt-similarity",
+  "0",
+  "--checkpoint-min-step",
+  "512",
+  "--ctx-checkpoints",
+  "16",
+  "--mmproj",
+  "C:\\Users\\cheta\\Development\\uri-adaptive-lab\\models\\mmproj-F16.gguf",
+  "-md",
+  "C:\\Users\\cheta\\Development\\uri-adaptive-lab\\models\\mtp-qwen36-35b-a3b-Q4_K_M.gguf",
+  "--spec-type",
+  "draft-mtp",
+  "--spec-draft-n-max",
+  "2",
+  "-otd",
+  "token_embd.weight=CPU"
+ ],
+ "gpu_release_wait_before_start_s": 4.2,
+ "vram_dedicated_at_start_mib": 619.8,
+ "load_seconds": 14.57,
+ "props": {
+  "default_generation_settings": {
+   "params": {
+    "seed": 4294967295,
+    "temperature": 1.0,
+    "dynatemp_range": 0.0,
+    "dynatemp_exponent": 1.0,
+    "top_k": 20,
+    "top_p": 0.949999988079071,
+    "min_p": 0.05000000074505806,
+    "top_n_sigma": -1.0,
+    "xtc_probability": 0.0,
+    "xtc_threshold": 0.10000000149011612,
+    "typical_p": 1.0,
+    "repeat_last_n": 64,
+    "repeat_penalty": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "dry_multiplier": 0.0,
+    "dry_base": 1.75,
+    "dry_allowed_length": 2,
+    "dry_penalty_last_n": 64,
+    "mirostat": 0,
+    "mirostat_tau": 5.0,
+    "mirostat_eta": 0.10000000149011612,
+    "adaptive_target": -1.0,
+    "adaptive_decay": 0.8999999761581421,
+    "max_tokens": -1,
+    "n_predict": -1,
+    "n_keep": 0,
+    "n_discard": 0,
+    "ignore_eos": false,
+    "stream": false,
+    "n_probs": 0,
+    "min_keep": 0,
+    "chat_format": "Content-only",
+    "reasoning_format": "none",
+    "reasoning_in_content": false,
+    "generation_prompt": "",
+    "samplers": [
+     "penalties",
+     "dry",
+     "top_n_sigma",
+     "top_k",
+     "typ_p",
+     "top_p",
+     "min_p",
+     "xtc",
+     "temperature"
+    ],
+    "speculative.types": "none",
+    "timings_per_token": false,
+    "post_sampling_probs": false,
+    "backend_sampling": false,
+    "lora": []
+   },
+   "n_ctx": 32768
+  },
+  "total_slots": 1,
+  "model_alias": "C:\\Users\\cheta\\Development\\uri-adaptive-lab\\models\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "model_ftype": "IQ3_S - 3.4375 bpw",
+  "model_path": "C:\\Users\\cheta\\Development\\uri-adaptive-lab\\models\\Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+  "modalities": {
+   "vision": true,
+   "video": true,
+   "audio": false
+  },
+  "media_marker": "<__media_SYPibViiJmWWxASUHYCfShg2I3ixHcQU__>",
+  "endpoint_slots": true,
+  "endpoint_props": false,
+  "endpoint_metrics": true,
+  "ui": false,
+  "ui_settings": {},
+  "chat_template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- set num_sys = 0 %}\n{%- set merged_system = '' %}\n{%- if messages[0].role == 'system' or messages[0].role == 'developer' %}\n    {%- set first = render_content(messages[0].content, false, true)|trim %}\n    {%- if messages|length > 1 and (messages[1].role == 'system' or messages[1].role == 'developer') %}\n        {%- set second = render_content(messages[1].content, false, true)|trim %}\n        {%- set merged_system = first + '\\n' + second %}\n        {%- set num_sys = 2 %}\n    {%- else %}\n        {%- set merged_system = first %}\n        {%- set num_sys = 1 %}\n    {%- endif %}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if merged_system %}\n        {{- '\\n\\n' + merged_system }}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if merged_system %}\n        {{- '<|im_start|>system\\n' + merged_system + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if loop.index0 >= num_sys and message.role != \"system\" and message.role != \"developer\" %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if (preserve_thinking is defined and preserve_thinking is true) or (loop.index0 > ns.last_query_index) %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is mapping %}\n                    {%- for args_name in tool_call.arguments %}\n                        {%- set args_value = tool_call.arguments[args_name] %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | tojson | safe if args_value is mapping or (args_value is sequence and args_value is not string) else args_value | string %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}\n{#- Unsloth fixes - developer role, tool calling #}",
+  "chat_template_caps": {
+   "supports_object_arguments": true,
+   "supports_parallel_tool_calls": true,
+   "supports_preserve_reasoning": true,
+   "supports_reasoning_effort": false,
+   "supports_string_content": true,
+   "supports_system_role": true,
+   "supports_tool_calls": true,
+   "supports_tools": true,
+   "supports_typed_content": true
+  },
+  "bos_token": "<|endoftext|>",
+  "eos_token": "<|im_end|>",
+  "build_info": "b11425-e117148a4",
+  "is_sleeping": false,
+  "cors_proxy_enabled": false
+ },
+ "warmup": {
+  "total_s": 0.3058,
+  "ttft_s": 0.2709,
+  "finish": "length",
+  "cancelled": false,
+  "error": null,
+  "n_content_chunks": 4,
+  "text_head": "Hello! How can",
+  "prompt_n": 13,
+  "cache_n": 0,
+  "prompt_ms": 232.428,
+  "prompt_per_second": 55.93129915500714,
+  "predicted_n": 4,
+  "predicted_ms": 35.095,
+  "predicted_per_second": 85.48226243054566,
+  "draft_n": 2,
+  "draft_n_accepted": 2,
+  "usage": {
+   "completion_tokens": 4,
+   "prompt_tokens": 13,
+   "total_tokens": 17,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   }
+  }
+ },
+ "after_load": {
+  "load_seconds": 14.57,
+  "vram_dedicated_now_mib": 16170.2,
+  "system_available_ram_mib": 14030.3,
+  "server_rss_now_mib": 1585.5,
+  "peak_server_rss_mib": 1585.5,
+  "peak_vram_dedicated_mib": 16151.9,
+  "min_system_available_ram_mib": 14025.6,
+  "server_gpu_memory_mib": {
+   "local usage": 15553,
+   "non local usage": 1121,
+   "dedicated usage": 15553,
+   "shared usage": 1121
+  }
+ },
+ "cancel": {
+  "disconnect_mid_generation": {
+   "total_s": 1.5146,
+   "ttft_s": 0.2169,
+   "finish": null,
+   "cancelled": true,
+   "error": null,
+   "n_content_chunks": 146,
+   "text_head": "# The Silent Guardian: The Critical Role of Ledger Reconciliation in Financial Integrity\n\nIn the complex architecture of modern business, financial data serves "
+  },
+  "follow_up_after_disconnect": {
+   "total_s": 0.2394,
+   "ttft_s": 0.2108,
+   "finish": "stop",
+   "cancelled": false,
+   "error": null,
+   "n_content_chunks": 1,
+   "text_head": "OK",
+   "prompt_n": 15,
+   "cache_n": 0,
+   "prompt_ms": 125.504,
+   "prompt_per_second": 119.51810300866904,
+   "predicted_n": 2,
+   "predicted_ms": 28.366,
+   "predicted_per_second": 35.253472467038,
+   "draft_n": 2,
+   "draft_n_accepted": 0,
+   "usage": {
+    "completion_tokens": 2,
+    "prompt_tokens": 15,
+    "total_tokens": 17,
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    }
+   }
+  },
+  "follow_up_wait_s": 0.239,
+  "healthy_after_disconnect": true,
+  "client_timeout_during_prefill": {
+   "total_s": 1.097,
+   "ttft_s": null,
+   "finish": null,
+   "cancelled": false,
+   "error": "ReadTimeout: timed out",
+   "n_content_chunks": 0,
+   "text_head": ""
+  },
+  "follow_up_after_timeout": {
+   "total_s": 1.8403,
+   "ttft_s": 1.8134,
+   "finish": "stop",
+   "cancelled": false,
+   "error": null,
+   "n_content_chunks": 1,
+   "text_head": "OK",
+   "prompt_n": 16,
+   "cache_n": 0,
+   "prompt_ms": 127.463,
+   "prompt_per_second": 125.52662341228435,
+   "predicted_n": 2,
+   "predicted_ms": 26.652,
+   "predicted_per_second": 37.52063634999249,
+   "draft_n": 2,
+   "draft_n_accepted": 0,
+   "usage": {
+    "completion_tokens": 2,
+    "prompt_tokens": 16,
+    "total_tokens": 18,
+    "prompt_tokens_details": {
+     "cached_tokens": 0
+    }
+   }
+  },
+  "follow_up_after_timeout_wait_s": 1.84,
+  "healthy_after_timeout": true
+ },
+ "stability": {
+  "n": 200,
+  "errors": 0,
+  "total": {
+   "n": 200,
+   "p50": 1.021,
+   "p95": 1.4176,
+   "min": 0.886,
+   "max": 1.6521,
+   "mean": 1.0575
+  },
+  "first_third_total_p50": 1.0402,
+  "last_third_total_p50": 0.982,
+  "tps": {
+   "n": 200,
+   "p50": 116.8959,
+   "p95": 125.7474,
+   "min": 71.1418,
+   "max": 131.4233,
+   "mean": 114.3048
+  },
+  "rows": [
+   {
+    "total_s": 1.4753,
+    "ttft_s": 0.626,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 100,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 1018,
+    "cache_n": 0,
+    "prompt_ms": 566.7,
+    "prompt_per_second": 1796.3649197106051,
+    "predicted_n": 101,
+    "predicted_ms": 849.073,
+    "predicted_per_second": 117.77550340194543,
+    "draft_n": 82,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 101,
+     "prompt_tokens": 1018,
+     "total_tokens": 1119,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   {
+    "total_s": 1.6007,
+    "ttft_s": 0.5253,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 107,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without structured data or spec",
+    "prompt_n": 951,
+    "cache_n": 61,
+    "prompt_ms": 472.693,
+    "prompt_per_second": 2011.8766302864651,
+    "predicted_n": 108,
+    "predicted_ms": 1075.167,
+    "predicted_per_second": 99.51942349421067,
+    "draft_n": 90,
+    "draft_n_accepted": 63,
+    "usage": {
+     "completion_tokens": 108,
+     "prompt_tokens": 1012,
+     "total_tokens": 1120,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 1.5891,
+    "ttft_s": 0.6256,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 107,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 961,
+    "cache_n": 61,
+    "prompt_ms": 517.194,
+    "prompt_per_second": 1858.103535617196,
+    "predicted_n": 108,
+    "predicted_ms": 963.054,
+    "predicted_per_second": 111.104880930872,
+    "draft_n": 86,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 108,
+     "prompt_tokens": 1022,
+     "total_tokens": 1130,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 1.4609,
+    "ttft_s": 0.6215,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 953,
+    "cache_n": 61,
+    "prompt_ms": 525.579,
+    "prompt_per_second": 1813.2383523694823,
+    "predicted_n": 102,
+    "predicted_ms": 839.161,
+    "predicted_per_second": 120.35831026465722,
+    "draft_n": 82,
+    "draft_n_accepted": 60,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 1.4182,
+    "ttft_s": 0.5822,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 960,
+    "cache_n": 61,
+    "prompt_ms": 485.73,
+    "prompt_per_second": 1976.406645667346,
+    "predicted_n": 100,
+    "predicted_ms": 835.735,
+    "predicted_per_second": 118.4586023081479,
+    "draft_n": 80,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 61
+     }
+    }
+   },
+   {
+    "total_s": 0.9808,
+    "ttft_s": 0.1911,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 61.181,
+    "prompt_per_second": 65.37977476667594,
+    "predicted_n": 96,
+    "predicted_ms": 789.204,
+    "predicted_per_second": 120.37445324656237,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.1483,
+    "ttft_s": 0.1327,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 60.813,
+    "prompt_per_second": 65.7754098630227,
+    "predicted_n": 106,
+    "predicted_ms": 1015.381,
+    "predicted_per_second": 103.40945910943775,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.3913,
+    "ttft_s": 0.3873,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 168.854,
+    "prompt_per_second": 23.689104196524806,
+    "predicted_n": 107,
+    "predicted_ms": 1003.857,
+    "predicted_per_second": 105.59272884484544,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.1383,
+    "ttft_s": 0.1741,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 65.174,
+    "prompt_per_second": 61.37416761285174,
+    "predicted_n": 102,
+    "predicted_ms": 963.955,
+    "predicted_per_second": 104.77667525973723,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.1726,
+    "ttft_s": 0.1842,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 80.518,
+    "prompt_per_second": 49.67833279515139,
+    "predicted_n": 100,
+    "predicted_ms": 988.109,
+    "predicted_per_second": 100.19137564782831,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9775,
+    "ttft_s": 0.1644,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 64.023,
+    "prompt_per_second": 62.47754713149962,
+    "predicted_n": 96,
+    "predicted_ms": 812.678,
+    "predicted_per_second": 116.89746738560659,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0497,
+    "ttft_s": 0.1439,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 68.552,
+    "prompt_per_second": 58.349865795308666,
+    "predicted_n": 106,
+    "predicted_ms": 905.587,
+    "predicted_per_second": 115.94689411398353,
+    "draft_n": 86,
+    "draft_n_accepted": 62,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0259,
+    "ttft_s": 0.1437,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 65.052,
+    "prompt_per_second": 61.48927012236364,
+    "predicted_n": 107,
+    "predicted_ms": 881.724,
+    "predicted_per_second": 120.2190254546774,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0665,
+    "ttft_s": 0.1685,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 63.282,
+    "prompt_per_second": 63.209127397996276,
+    "predicted_n": 102,
+    "predicted_ms": 897.546,
+    "predicted_per_second": 112.52905143580384,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0749,
+    "ttft_s": 0.1662,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 90.079,
+    "prompt_per_second": 44.40546631290312,
+    "predicted_n": 100,
+    "predicted_ms": 908.114,
+    "predicted_per_second": 109.01714982920646,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9713,
+    "ttft_s": 0.16,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 66.039,
+    "prompt_per_second": 60.5702690834204,
+    "predicted_n": 96,
+    "predicted_ms": 810.941,
+    "predicted_per_second": 117.1478566258211,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0611,
+    "ttft_s": 0.1626,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 72.826,
+    "prompt_per_second": 54.925438716941756,
+    "predicted_n": 106,
+    "predicted_ms": 898.247,
+    "predicted_per_second": 116.89435088566954,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.6521,
+    "ttft_s": 0.1616,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 68.692,
+    "prompt_per_second": 58.23094392360101,
+    "predicted_n": 107,
+    "predicted_ms": 1489.983,
+    "predicted_per_second": 71.14175128172604,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.3872,
+    "ttft_s": 0.3121,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 88.946,
+    "prompt_per_second": 44.971106064353656,
+    "predicted_n": 102,
+    "predicted_ms": 1075.059,
+    "predicted_per_second": 93.9483321380501,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.3149,
+    "ttft_s": 0.1572,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 80.511,
+    "prompt_per_second": 49.68265205996696,
+    "predicted_n": 100,
+    "predicted_ms": 1156.859,
+    "predicted_per_second": 85.57654822238493,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.3083,
+    "ttft_s": 0.1969,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 83.937,
+    "prompt_per_second": 47.654788710580554,
+    "predicted_n": 96,
+    "predicted_ms": 1111.022,
+    "predicted_per_second": 85.50685764998353,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.4266,
+    "ttft_s": 0.1822,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 86.864,
+    "prompt_per_second": 46.04899613188432,
+    "predicted_n": 106,
+    "predicted_ms": 1243.922,
+    "predicted_per_second": 84.41043731037799,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.3575,
+    "ttft_s": 0.2084,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 83.98,
+    "prompt_per_second": 47.630388187663726,
+    "predicted_n": 107,
+    "predicted_ms": 1148.836,
+    "predicted_per_second": 92.26730360121027,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0432,
+    "ttft_s": 0.1425,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 67.47,
+    "prompt_per_second": 59.28560841855639,
+    "predicted_n": 102,
+    "predicted_ms": 900.32,
+    "predicted_per_second": 112.18233516971742,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0268,
+    "ttft_s": 0.1415,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 66.693,
+    "prompt_per_second": 59.97630935780367,
+    "predicted_n": 100,
+    "predicted_ms": 884.94,
+    "predicted_per_second": 111.87199132144552,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9282,
+    "ttft_s": 0.1323,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 61.748,
+    "prompt_per_second": 64.77942605428517,
+    "predicted_n": 96,
+    "predicted_ms": 795.599,
+    "predicted_per_second": 119.40688713786719,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.084,
+    "ttft_s": 0.1346,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 64.094,
+    "prompt_per_second": 62.40833775392393,
+    "predicted_n": 106,
+    "predicted_ms": 949.195,
+    "predicted_per_second": 110.62005172804324,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9805,
+    "ttft_s": 0.1518,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 56.129,
+    "prompt_per_second": 71.26440877264872,
+    "predicted_n": 107,
+    "predicted_ms": 828.436,
+    "predicted_per_second": 127.95194800805372,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9742,
+    "ttft_s": 0.1355,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 61.891,
+    "prompt_per_second": 64.62975230647429,
+    "predicted_n": 102,
+    "predicted_ms": 838.29,
+    "predicted_per_second": 120.48336494530533,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9399,
+    "ttft_s": 0.128,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 57.648,
+    "prompt_per_second": 69.38662225922842,
+    "predicted_n": 100,
+    "predicted_ms": 811.551,
+    "predicted_per_second": 121.98863657367188,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9188,
+    "ttft_s": 0.1338,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 60.452,
+    "prompt_per_second": 66.16819956328989,
+    "predicted_n": 96,
+    "predicted_ms": 784.68,
+    "predicted_per_second": 121.0684610286996,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0208,
+    "ttft_s": 0.1566,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 62.176,
+    "prompt_per_second": 64.33350488934637,
+    "predicted_n": 106,
+    "predicted_ms": 863.856,
+    "predicted_per_second": 121.54803578374174,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9714,
+    "ttft_s": 0.143,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 58.476,
+    "prompt_per_second": 68.40413160954922,
+    "predicted_n": 107,
+    "predicted_ms": 828.022,
+    "predicted_per_second": 128.0159222822582,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.981,
+    "ttft_s": 0.1537,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 64.452,
+    "prompt_per_second": 62.06168931918327,
+    "predicted_n": 102,
+    "predicted_ms": 826.878,
+    "predicted_per_second": 122.1461932715588,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9618,
+    "ttft_s": 0.1397,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 63.889,
+    "prompt_per_second": 62.608586767675185,
+    "predicted_n": 100,
+    "predicted_ms": 821.824,
+    "predicted_per_second": 120.46374892921112,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.8965,
+    "ttft_s": 0.1296,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 58.113,
+    "prompt_per_second": 68.83141465764974,
+    "predicted_n": 96,
+    "predicted_ms": 766.475,
+    "predicted_per_second": 123.94402948563229,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0267,
+    "ttft_s": 0.1295,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 62.517,
+    "prompt_per_second": 63.98259673368843,
+    "predicted_n": 106,
+    "predicted_ms": 896.763,
+    "predicted_per_second": 117.08779242676158,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9861,
+    "ttft_s": 0.14,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 63.512,
+    "prompt_per_second": 62.980224209598184,
+    "predicted_n": 107,
+    "predicted_ms": 845.806,
+    "predicted_per_second": 125.3242469313294,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9587,
+    "ttft_s": 0.1288,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 59.856,
+    "prompt_per_second": 66.82705159048382,
+    "predicted_n": 102,
+    "predicted_ms": 829.459,
+    "predicted_per_second": 121.7661150219601,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9595,
+    "ttft_s": 0.1511,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 61.596,
+    "prompt_per_second": 64.9392817715436,
+    "predicted_n": 100,
+    "predicted_ms": 808.135,
+    "predicted_per_second": 122.50428455641695,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.939,
+    "ttft_s": 0.1551,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 62.704,
+    "prompt_per_second": 63.79178361826997,
+    "predicted_n": 96,
+    "predicted_ms": 783.546,
+    "predicted_per_second": 121.24367937555677,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.025,
+    "ttft_s": 0.1385,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 61.629,
+    "prompt_per_second": 64.9045092407795,
+    "predicted_n": 106,
+    "predicted_ms": 885.981,
+    "predicted_per_second": 118.5126994822688,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0303,
+    "ttft_s": 0.1452,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 66.9,
+    "prompt_per_second": 59.79073243647234,
+    "predicted_n": 107,
+    "predicted_ms": 884.778,
+    "predicted_per_second": 119.80406384426377,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9962,
+    "ttft_s": 0.1311,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 60.671,
+    "prompt_per_second": 65.92935669430206,
+    "predicted_n": 102,
+    "predicted_ms": 864.729,
+    "predicted_per_second": 116.79959848692481,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9703,
+    "ttft_s": 0.1346,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 64.175,
+    "prompt_per_second": 62.329567588624855,
+    "predicted_n": 100,
+    "predicted_ms": 835.202,
+    "predicted_per_second": 118.53419891235892,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9245,
+    "ttft_s": 0.1235,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 56.462,
+    "prompt_per_second": 70.84410754135524,
+    "predicted_n": 96,
+    "predicted_ms": 800.506,
+    "predicted_per_second": 118.67493810165071,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0093,
+    "ttft_s": 0.1303,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 60.196,
+    "prompt_per_second": 66.44959797993222,
+    "predicted_n": 106,
+    "predicted_ms": 878.894,
+    "predicted_per_second": 119.46833178972663,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9992,
+    "ttft_s": 0.1526,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 59.933,
+    "prompt_per_second": 66.7411943336726,
+    "predicted_n": 107,
+    "predicted_ms": 846.244,
+    "predicted_per_second": 125.25938145499406,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.084,
+    "ttft_s": 0.1236,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 54.706,
+    "prompt_per_second": 73.11812232661865,
+    "predicted_n": 102,
+    "predicted_ms": 960.003,
+    "predicted_per_second": 105.20800455831908,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.5257,
+    "ttft_s": 0.1793,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 84.597,
+    "prompt_per_second": 47.28300057921676,
+    "predicted_n": 100,
+    "predicted_ms": 1345.835,
+    "predicted_per_second": 73.56028042070535,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.349,
+    "ttft_s": 0.1851,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 78.409,
+    "prompt_per_second": 51.01455190092974,
+    "predicted_n": 96,
+    "predicted_ms": 1163.594,
+    "predicted_per_second": 81.64359733721555,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.2197,
+    "ttft_s": 0.1965,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 81.424,
+    "prompt_per_second": 49.12556494399685,
+    "predicted_n": 106,
+    "predicted_ms": 1023.115,
+    "predicted_per_second": 102.62775934279138,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0372,
+    "ttft_s": 0.1426,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 66.824,
+    "prompt_per_second": 59.85873338920149,
+    "predicted_n": 107,
+    "predicted_ms": 894.229,
+    "predicted_per_second": 118.53786893513853,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0221,
+    "ttft_s": 0.1386,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 64.5,
+    "prompt_per_second": 62.01550387596899,
+    "predicted_n": 102,
+    "predicted_ms": 883.024,
+    "predicted_per_second": 114.37967710956893,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0018,
+    "ttft_s": 0.132,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 60.93,
+    "prompt_per_second": 65.64910553093713,
+    "predicted_n": 100,
+    "predicted_ms": 869.294,
+    "predicted_per_second": 113.88552089396683,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9406,
+    "ttft_s": 0.134,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.124,
+    "prompt_per_second": 67.65442121642648,
+    "predicted_n": 96,
+    "predicted_ms": 806.356,
+    "predicted_per_second": 117.81396802404893,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0511,
+    "ttft_s": 0.142,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 59.776,
+    "prompt_per_second": 66.91648822269806,
+    "predicted_n": 106,
+    "predicted_ms": 908.78,
+    "predicted_per_second": 115.5395145139638,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0111,
+    "ttft_s": 0.1294,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 60.346,
+    "prompt_per_second": 66.28442647399994,
+    "predicted_n": 107,
+    "predicted_ms": 881.286,
+    "predicted_per_second": 120.27877442737092,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9927,
+    "ttft_s": 0.1395,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 57.032,
+    "prompt_per_second": 70.13606396409034,
+    "predicted_n": 102,
+    "predicted_ms": 852.872,
+    "predicted_per_second": 118.42339764935419,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.2024,
+    "ttft_s": 0.1706,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 69.559,
+    "prompt_per_second": 57.50513952184477,
+    "predicted_n": 100,
+    "predicted_ms": 1031.31,
+    "predicted_per_second": 95.99441487040754,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.0798,
+    "ttft_s": 0.175,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 66.995,
+    "prompt_per_second": 59.705948205089925,
+    "predicted_n": 96,
+    "predicted_ms": 904.44,
+    "predicted_per_second": 105.03737119101321,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.1701,
+    "ttft_s": 0.1652,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 69.906,
+    "prompt_per_second": 57.219695019025544,
+    "predicted_n": 106,
+    "predicted_ms": 1004.489,
+    "predicted_per_second": 104.53076141202143,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.1025,
+    "ttft_s": 0.1431,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 65.308,
+    "prompt_per_second": 61.24823911312549,
+    "predicted_n": 107,
+    "predicted_ms": 959.167,
+    "predicted_per_second": 110.51255933533993,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0927,
+    "ttft_s": 0.1397,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 67.757,
+    "prompt_per_second": 59.034490901309084,
+    "predicted_n": 102,
+    "predicted_ms": 952.743,
+    "predicted_per_second": 106.00970041238823,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.1329,
+    "ttft_s": 0.1796,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 80.764,
+    "prompt_per_second": 49.52701698776683,
+    "predicted_n": 100,
+    "predicted_ms": 953.0,
+    "predicted_per_second": 103.88247639034628,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.0663,
+    "ttft_s": 0.163,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 77.743,
+    "prompt_per_second": 51.45157763399921,
+    "predicted_n": 96,
+    "predicted_ms": 902.671,
+    "predicted_per_second": 105.24321707465954,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.1489,
+    "ttft_s": 0.1527,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 67.212,
+    "prompt_per_second": 59.513182169850616,
+    "predicted_n": 106,
+    "predicted_ms": 995.795,
+    "predicted_per_second": 105.4433894526484,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.1053,
+    "ttft_s": 0.1548,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 67.401,
+    "prompt_per_second": 59.34630049999259,
+    "predicted_n": 107,
+    "predicted_ms": 950.2,
+    "predicted_per_second": 111.5554620079983,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.1446,
+    "ttft_s": 0.1623,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 64.851,
+    "prompt_per_second": 61.679850734761224,
+    "predicted_n": 102,
+    "predicted_ms": 982.11,
+    "predicted_per_second": 102.83980409526427,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0777,
+    "ttft_s": 0.1416,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 67.859,
+    "prompt_per_second": 58.94575516880591,
+    "predicted_n": 100,
+    "predicted_ms": 935.803,
+    "predicted_per_second": 105.7914967145863,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.0662,
+    "ttft_s": 0.1685,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 76.947,
+    "prompt_per_second": 51.98383302792831,
+    "predicted_n": 96,
+    "predicted_ms": 897.006,
+    "predicted_per_second": 105.90787575556908,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.1858,
+    "ttft_s": 0.1546,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 70.049,
+    "prompt_per_second": 57.102885123270845,
+    "predicted_n": 106,
+    "predicted_ms": 1030.813,
+    "predicted_per_second": 101.86134633536828,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.1409,
+    "ttft_s": 0.1931,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 71.845,
+    "prompt_per_second": 55.67541234602269,
+    "predicted_n": 107,
+    "predicted_ms": 947.361,
+    "predicted_per_second": 111.88976535871754,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.1084,
+    "ttft_s": 0.1567,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 64.435,
+    "prompt_per_second": 62.07806316442927,
+    "predicted_n": 102,
+    "predicted_ms": 951.395,
+    "predicted_per_second": 106.15990203858544,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0854,
+    "ttft_s": 0.1542,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 72.944,
+    "prompt_per_second": 54.836586970826936,
+    "predicted_n": 100,
+    "predicted_ms": 930.558,
+    "predicted_per_second": 106.38778023508476,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.0384,
+    "ttft_s": 0.1603,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 64.991,
+    "prompt_per_second": 61.54698342847471,
+    "predicted_n": 96,
+    "predicted_ms": 877.625,
+    "predicted_per_second": 108.24668850591084,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.1011,
+    "ttft_s": 0.1238,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 56.401,
+    "prompt_per_second": 70.92072835588021,
+    "predicted_n": 106,
+    "predicted_ms": 976.86,
+    "predicted_per_second": 107.48725508261163,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0787,
+    "ttft_s": 0.1537,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 65.191,
+    "prompt_per_second": 61.35816293660167,
+    "predicted_n": 107,
+    "predicted_ms": 924.592,
+    "predicted_per_second": 114.64516240676969,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.101,
+    "ttft_s": 0.1621,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 68.533,
+    "prompt_per_second": 58.36604263639415,
+    "predicted_n": 102,
+    "predicted_ms": 938.441,
+    "predicted_per_second": 107.62530622596412,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0343,
+    "ttft_s": 0.1444,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 64.858,
+    "prompt_per_second": 61.67319374633815,
+    "predicted_n": 100,
+    "predicted_ms": 889.515,
+    "predicted_per_second": 111.29660545353367,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9152,
+    "ttft_s": 0.1337,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.603,
+    "prompt_per_second": 67.1107159035619,
+    "predicted_n": 96,
+    "predicted_ms": 781.22,
+    "predicted_per_second": 121.60466961931337,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0403,
+    "ttft_s": 0.1538,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 61.471,
+    "prompt_per_second": 65.07133445039125,
+    "predicted_n": 106,
+    "predicted_ms": 886.214,
+    "predicted_per_second": 118.48154057597824,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9743,
+    "ttft_s": 0.1311,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 62.791,
+    "prompt_per_second": 63.703396983644154,
+    "predicted_n": 107,
+    "predicted_ms": 842.844,
+    "predicted_per_second": 125.7646729406628,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9831,
+    "ttft_s": 0.1307,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 60.094,
+    "prompt_per_second": 66.56238559589976,
+    "predicted_n": 102,
+    "predicted_ms": 852.087,
+    "predicted_per_second": 118.53249726847143,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9682,
+    "ttft_s": 0.1285,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 59.385,
+    "prompt_per_second": 67.3570767028711,
+    "predicted_n": 100,
+    "predicted_ms": 839.391,
+    "predicted_per_second": 117.94265127932036,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9232,
+    "ttft_s": 0.1391,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 61.661,
+    "prompt_per_second": 64.87082596779163,
+    "predicted_n": 96,
+    "predicted_ms": 783.766,
+    "predicted_per_second": 121.20964675681263,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0601,
+    "ttft_s": 0.1389,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 56.935,
+    "prompt_per_second": 70.25555457978396,
+    "predicted_n": 106,
+    "predicted_ms": 920.807,
+    "predicted_per_second": 114.03041028141618,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9673,
+    "ttft_s": 0.1478,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 58.626,
+    "prompt_per_second": 68.22911336267185,
+    "predicted_n": 107,
+    "predicted_ms": 818.983,
+    "predicted_per_second": 129.42881598274934,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9615,
+    "ttft_s": 0.1247,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 57.691,
+    "prompt_per_second": 69.33490492451162,
+    "predicted_n": 102,
+    "predicted_ms": 836.496,
+    "predicted_per_second": 120.7417608691494,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9464,
+    "ttft_s": 0.129,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 57.175,
+    "prompt_per_second": 69.96064713598601,
+    "predicted_n": 100,
+    "predicted_ms": 817.054,
+    "predicted_per_second": 121.16702200833728,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9295,
+    "ttft_s": 0.1437,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.608,
+    "prompt_per_second": 67.10508656556168,
+    "predicted_n": 96,
+    "predicted_ms": 785.574,
+    "predicted_per_second": 120.93068253277224,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 0.9967,
+    "ttft_s": 0.1275,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 59.123,
+    "prompt_per_second": 67.65556551595826,
+    "predicted_n": 106,
+    "predicted_ms": 868.796,
+    "predicted_per_second": 120.85691002260599,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9886,
+    "ttft_s": 0.147,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 61.208,
+    "prompt_per_second": 65.35093451836362,
+    "predicted_n": 107,
+    "predicted_ms": 841.103,
+    "predicted_per_second": 126.0249933717987,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9735,
+    "ttft_s": 0.1222,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 55.242,
+    "prompt_per_second": 72.4086745592122,
+    "predicted_n": 102,
+    "predicted_ms": 850.862,
+    "predicted_per_second": 118.70315045212973,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9537,
+    "ttft_s": 0.131,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 61.138,
+    "prompt_per_second": 65.42575812097223,
+    "predicted_n": 100,
+    "predicted_ms": 822.289,
+    "predicted_per_second": 120.39562732810484,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.8973,
+    "ttft_s": 0.1256,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 56.648,
+    "prompt_per_second": 70.61149555147577,
+    "predicted_n": 96,
+    "predicted_ms": 771.458,
+    "predicted_per_second": 123.14345045355677,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0515,
+    "ttft_s": 0.1575,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 60.023,
+    "prompt_per_second": 66.6411209036536,
+    "predicted_n": 106,
+    "predicted_ms": 893.447,
+    "predicted_per_second": 117.52236002807105,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0316,
+    "ttft_s": 0.1602,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 66.167,
+    "prompt_per_second": 60.453095954176554,
+    "predicted_n": 107,
+    "predicted_ms": 871.016,
+    "predicted_per_second": 121.69696079061694,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9964,
+    "ttft_s": 0.1344,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 64.153,
+    "prompt_per_second": 62.35094227861518,
+    "predicted_n": 102,
+    "predicted_ms": 861.779,
+    "predicted_per_second": 117.19942119731394,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0133,
+    "ttft_s": 0.1627,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 58.967,
+    "prompt_per_second": 67.83455152882121,
+    "predicted_n": 100,
+    "predicted_ms": 850.099,
+    "predicted_per_second": 116.45702441715612,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9968,
+    "ttft_s": 0.1873,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 65.216,
+    "prompt_per_second": 61.33464180569186,
+    "predicted_n": 96,
+    "predicted_ms": 809.196,
+    "predicted_per_second": 117.40048146555345,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0999,
+    "ttft_s": 0.1867,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 59.739,
+    "prompt_per_second": 66.9579336781667,
+    "predicted_n": 106,
+    "predicted_ms": 912.819,
+    "predicted_per_second": 115.0282805243975,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.317,
+    "ttft_s": 0.2114,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 63.632,
+    "prompt_per_second": 62.86145335680161,
+    "predicted_n": 107,
+    "predicted_ms": 1104.774,
+    "predicted_per_second": 95.94722540537703,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.4444,
+    "ttft_s": 0.2251,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 85.215,
+    "prompt_per_second": 46.940092706683096,
+    "predicted_n": 102,
+    "predicted_ms": 1218.703,
+    "predicted_per_second": 82.87499087144285,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.4176,
+    "ttft_s": 0.2138,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 98.839,
+    "prompt_per_second": 40.469855016744404,
+    "predicted_n": 100,
+    "predicted_ms": 1203.324,
+    "predicted_per_second": 82.27210626564415,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.361,
+    "ttft_s": 0.2234,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 87.343,
+    "prompt_per_second": 45.79645764400124,
+    "predicted_n": 96,
+    "predicted_ms": 1136.867,
+    "predicted_per_second": 83.5629849401909,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.2143,
+    "ttft_s": 0.2119,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 104.124,
+    "prompt_per_second": 38.41573508509085,
+    "predicted_n": 106,
+    "predicted_ms": 1002.204,
+    "predicted_per_second": 104.76908892800269,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.1042,
+    "ttft_s": 0.2044,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 78.85,
+    "prompt_per_second": 50.72923272035511,
+    "predicted_n": 107,
+    "predicted_ms": 899.505,
+    "predicted_per_second": 117.84259120293939,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0783,
+    "ttft_s": 0.1759,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 74.807,
+    "prompt_per_second": 53.47093186466507,
+    "predicted_n": 102,
+    "predicted_ms": 902.231,
+    "predicted_per_second": 111.94472369049612,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.022,
+    "ttft_s": 0.1534,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 63.992,
+    "prompt_per_second": 62.50781347668459,
+    "predicted_n": 100,
+    "predicted_ms": 868.23,
+    "predicted_per_second": 114.02508551881415,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.0253,
+    "ttft_s": 0.1783,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 65.129,
+    "prompt_per_second": 61.416573262294825,
+    "predicted_n": 96,
+    "predicted_ms": 846.477,
+    "predicted_per_second": 112.22986566675763,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.1479,
+    "ttft_s": 0.173,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 73.704,
+    "prompt_per_second": 54.27113860848801,
+    "predicted_n": 106,
+    "predicted_ms": 974.063,
+    "predicted_per_second": 107.7959023184332,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.2264,
+    "ttft_s": 0.1825,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 79.269,
+    "prompt_per_second": 50.461088193366884,
+    "predicted_n": 107,
+    "predicted_ms": 1044.051,
+    "predicted_per_second": 101.52760736783932,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0955,
+    "ttft_s": 0.142,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 64.006,
+    "prompt_per_second": 62.49414117426491,
+    "predicted_n": 102,
+    "predicted_ms": 953.096,
+    "predicted_per_second": 105.97043739560337,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0128,
+    "ttft_s": 0.1501,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 73.758,
+    "prompt_per_second": 54.231405406871126,
+    "predicted_n": 100,
+    "predicted_ms": 862.46,
+    "predicted_per_second": 114.78793219395682,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.0015,
+    "ttft_s": 0.163,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 60.813,
+    "prompt_per_second": 65.7754098630227,
+    "predicted_n": 96,
+    "predicted_ms": 838.025,
+    "predicted_per_second": 113.36177321678947,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0804,
+    "ttft_s": 0.1432,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 62.343,
+    "prompt_per_second": 64.16117286624,
+    "predicted_n": 106,
+    "predicted_ms": 936.678,
+    "predicted_per_second": 112.0982877787244,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9997,
+    "ttft_s": 0.1258,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 56.279,
+    "prompt_per_second": 71.07446827413422,
+    "predicted_n": 107,
+    "predicted_ms": 873.39,
+    "predicted_per_second": 121.36617089730818,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.047,
+    "ttft_s": 0.1593,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 68.86,
+    "prompt_per_second": 58.08887598024978,
+    "predicted_n": 102,
+    "predicted_ms": 886.759,
+    "predicted_per_second": 113.89791363831661,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0283,
+    "ttft_s": 0.1575,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 70.822,
+    "prompt_per_second": 56.479624975290164,
+    "predicted_n": 100,
+    "predicted_ms": 870.367,
+    "predicted_per_second": 113.7451213108953,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9851,
+    "ttft_s": 0.1424,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 65.746,
+    "prompt_per_second": 60.840203206278716,
+    "predicted_n": 96,
+    "predicted_ms": 842.148,
+    "predicted_per_second": 112.80677505616589,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0924,
+    "ttft_s": 0.1546,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 60.091,
+    "prompt_per_second": 66.56570867517598,
+    "predicted_n": 106,
+    "predicted_ms": 937.307,
+    "predicted_per_second": 112.0230618143255,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0127,
+    "ttft_s": 0.1374,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 62.263,
+    "prompt_per_second": 64.24361177585403,
+    "predicted_n": 107,
+    "predicted_ms": 874.949,
+    "predicted_per_second": 121.1499184523898,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9991,
+    "ttft_s": 0.1424,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 59.485,
+    "prompt_per_second": 67.24384298562663,
+    "predicted_n": 102,
+    "predicted_ms": 856.295,
+    "predicted_per_second": 117.95000554715374,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0001,
+    "ttft_s": 0.1325,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 62.225,
+    "prompt_per_second": 64.28284451586983,
+    "predicted_n": 100,
+    "predicted_ms": 867.323,
+    "predicted_per_second": 114.14432685400942,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9665,
+    "ttft_s": 0.1484,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 62.333,
+    "prompt_per_second": 64.17146615757304,
+    "predicted_n": 96,
+    "predicted_ms": 817.647,
+    "predicted_per_second": 116.18705871849342,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0603,
+    "ttft_s": 0.1443,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 65.856,
+    "prompt_per_second": 60.738581146744416,
+    "predicted_n": 106,
+    "predicted_ms": 915.754,
+    "predicted_per_second": 114.65961382642062,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0177,
+    "ttft_s": 0.1366,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 63.346,
+    "prompt_per_second": 63.14526568370537,
+    "predicted_n": 107,
+    "predicted_ms": 880.698,
+    "predicted_per_second": 120.35907882157106,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0411,
+    "ttft_s": 0.1565,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 61.112,
+    "prompt_per_second": 65.45359340227779,
+    "predicted_n": 102,
+    "predicted_ms": 884.209,
+    "predicted_per_second": 114.22638765269299,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9925,
+    "ttft_s": 0.1314,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 60.42,
+    "prompt_per_second": 66.20324395895399,
+    "predicted_n": 100,
+    "predicted_ms": 860.736,
+    "predicted_per_second": 115.01784519295116,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9396,
+    "ttft_s": 0.1255,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.04,
+    "prompt_per_second": 67.75067750677506,
+    "predicted_n": 96,
+    "predicted_ms": 813.66,
+    "predicted_per_second": 116.75638473072291,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0581,
+    "ttft_s": 0.1511,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 62.278,
+    "prompt_per_second": 64.22813834741,
+    "predicted_n": 106,
+    "predicted_ms": 906.565,
+    "predicted_per_second": 115.82181090159006,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.002,
+    "ttft_s": 0.1304,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 60.815,
+    "prompt_per_second": 65.7732467318918,
+    "predicted_n": 107,
+    "predicted_ms": 870.916,
+    "predicted_per_second": 121.71093423475972,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0349,
+    "ttft_s": 0.1481,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 64.502,
+    "prompt_per_second": 62.01358097423336,
+    "predicted_n": 102,
+    "predicted_ms": 886.559,
+    "predicted_per_second": 113.92360801706373,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9781,
+    "ttft_s": 0.1279,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 59.507,
+    "prompt_per_second": 67.21898264069773,
+    "predicted_n": 100,
+    "predicted_ms": 849.9,
+    "predicted_per_second": 116.4842922696788,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9294,
+    "ttft_s": 0.1345,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 60.513,
+    "prompt_per_second": 66.10149885148645,
+    "predicted_n": 96,
+    "predicted_ms": 794.542,
+    "predicted_per_second": 119.56573724233583,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0455,
+    "ttft_s": 0.1289,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 60.186,
+    "prompt_per_second": 66.46063868673778,
+    "predicted_n": 106,
+    "predicted_ms": 916.076,
+    "predicted_per_second": 114.61931106152764,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0239,
+    "ttft_s": 0.148,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 62.339,
+    "prompt_per_second": 64.16528978648999,
+    "predicted_n": 107,
+    "predicted_ms": 875.606,
+    "predicted_per_second": 121.05901512780864,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0141,
+    "ttft_s": 0.1307,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 58.408,
+    "prompt_per_second": 68.48376934666484,
+    "predicted_n": 102,
+    "predicted_ms": 882.961,
+    "predicted_per_second": 114.38783819443893,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9955,
+    "ttft_s": 0.1326,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 61.452,
+    "prompt_per_second": 65.09145349215648,
+    "predicted_n": 100,
+    "predicted_ms": 862.425,
+    "predicted_per_second": 114.7925906600574,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9693,
+    "ttft_s": 0.1404,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.523,
+    "prompt_per_second": 67.20091393242947,
+    "predicted_n": 96,
+    "predicted_ms": 828.427,
+    "predicted_per_second": 114.67516148073396,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0877,
+    "ttft_s": 0.1702,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 66.142,
+    "prompt_per_second": 60.475945692600774,
+    "predicted_n": 106,
+    "predicted_ms": 917.172,
+    "predicted_per_second": 114.48234355170024,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.983,
+    "ttft_s": 0.1354,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 61.801,
+    "prompt_per_second": 64.72387178201,
+    "predicted_n": 107,
+    "predicted_ms": 847.155,
+    "predicted_per_second": 125.12468202395077,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9469,
+    "ttft_s": 0.1328,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 60.151,
+    "prompt_per_second": 66.49931006965802,
+    "predicted_n": 102,
+    "predicted_ms": 813.657,
+    "predicted_per_second": 124.13092986356658,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9418,
+    "ttft_s": 0.1291,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 58.728,
+    "prompt_per_second": 68.11061163329246,
+    "predicted_n": 100,
+    "predicted_ms": 812.234,
+    "predicted_per_second": 121.88605746619815,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9068,
+    "ttft_s": 0.1237,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 56.983,
+    "prompt_per_second": 70.19637435726445,
+    "predicted_n": 96,
+    "predicted_ms": 782.625,
+    "predicted_per_second": 121.38636000638876,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.023,
+    "ttft_s": 0.1532,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 62.594,
+    "prompt_per_second": 63.903888551618365,
+    "predicted_n": 106,
+    "predicted_ms": 869.637,
+    "predicted_per_second": 120.74003291028328,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9861,
+    "ttft_s": 0.1555,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 59.533,
+    "prompt_per_second": 67.18962592175768,
+    "predicted_n": 107,
+    "predicted_ms": 830.216,
+    "predicted_per_second": 127.6776164275321,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9563,
+    "ttft_s": 0.1249,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 58.241,
+    "prompt_per_second": 68.68013942068302,
+    "predicted_n": 102,
+    "predicted_ms": 831.068,
+    "predicted_per_second": 121.53036815278652,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9421,
+    "ttft_s": 0.1295,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 59.706,
+    "prompt_per_second": 66.99494188188791,
+    "predicted_n": 100,
+    "predicted_ms": 812.23,
+    "predicted_per_second": 121.88665772010391,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.916,
+    "ttft_s": 0.1473,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 63.243,
+    "prompt_per_second": 63.24810650981136,
+    "predicted_n": 96,
+    "predicted_ms": 768.407,
+    "predicted_per_second": 123.63239793494853,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 0.9869,
+    "ttft_s": 0.126,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 58.997,
+    "prompt_per_second": 67.80005763004898,
+    "predicted_n": 106,
+    "predicted_ms": 860.736,
+    "predicted_per_second": 121.98862368949365,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9429,
+    "ttft_s": 0.1322,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 59.399,
+    "prompt_per_second": 67.34120103032038,
+    "predicted_n": 107,
+    "predicted_ms": 810.432,
+    "predicted_per_second": 130.79444049593303,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9811,
+    "ttft_s": 0.1447,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 59.741,
+    "prompt_per_second": 66.95569207077217,
+    "predicted_n": 102,
+    "predicted_ms": 835.928,
+    "predicted_per_second": 120.82380300695753,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9518,
+    "ttft_s": 0.1369,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 64.178,
+    "prompt_per_second": 62.32665399358036,
+    "predicted_n": 100,
+    "predicted_ms": 814.621,
+    "predicted_per_second": 121.52890730781553,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9535,
+    "ttft_s": 0.1463,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 60.823,
+    "prompt_per_second": 65.76459562994262,
+    "predicted_n": 96,
+    "predicted_ms": 806.884,
+    "predicted_per_second": 117.73687419753026,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0264,
+    "ttft_s": 0.1517,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 61.232,
+    "prompt_per_second": 65.32532009406846,
+    "predicted_n": 106,
+    "predicted_ms": 874.534,
+    "predicted_per_second": 120.06394262544394,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9513,
+    "ttft_s": 0.1422,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 59.093,
+    "prompt_per_second": 67.68991251078808,
+    "predicted_n": 107,
+    "predicted_ms": 808.755,
+    "predicted_per_second": 131.06565028964272,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9767,
+    "ttft_s": 0.1277,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 58.763,
+    "prompt_per_second": 68.07004407535354,
+    "predicted_n": 102,
+    "predicted_ms": 848.743,
+    "predicted_per_second": 118.99950868519682,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9642,
+    "ttft_s": 0.1537,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 61.886,
+    "prompt_per_second": 64.63497398442297,
+    "predicted_n": 100,
+    "predicted_ms": 810.245,
+    "predicted_per_second": 122.18526495072479,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9254,
+    "ttft_s": 0.1551,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.687,
+    "prompt_per_second": 67.01626819910534,
+    "predicted_n": 96,
+    "predicted_ms": 769.956,
+    "predicted_per_second": 123.38367387227322,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0472,
+    "ttft_s": 0.1396,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 57.95,
+    "prompt_per_second": 69.02502157031924,
+    "predicted_n": 106,
+    "predicted_ms": 907.165,
+    "predicted_per_second": 115.74520621937575,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0211,
+    "ttft_s": 0.1547,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 63.105,
+    "prompt_per_second": 63.38641945963078,
+    "predicted_n": 107,
+    "predicted_ms": 865.927,
+    "predicted_per_second": 122.41216638354042,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9807,
+    "ttft_s": 0.139,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 59.577,
+    "prompt_per_second": 67.1400036927002,
+    "predicted_n": 102,
+    "predicted_ms": 841.24,
+    "predicted_per_second": 120.06086253625601,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9522,
+    "ttft_s": 0.1273,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 57.139,
+    "prompt_per_second": 70.00472531895903,
+    "predicted_n": 100,
+    "predicted_ms": 824.454,
+    "predicted_per_second": 120.07947077702335,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9478,
+    "ttft_s": 0.1339,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.842,
+    "prompt_per_second": 66.842685739113,
+    "predicted_n": 96,
+    "predicted_ms": 813.428,
+    "predicted_per_second": 116.78968513500887,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0335,
+    "ttft_s": 0.1307,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 62.046,
+    "prompt_per_second": 64.46829771459885,
+    "predicted_n": 106,
+    "predicted_ms": 902.186,
+    "predicted_per_second": 116.38398290374711,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.5046,
+    "ttft_s": 0.1419,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 67.23,
+    "prompt_per_second": 59.49724825226833,
+    "predicted_n": 107,
+    "predicted_ms": 1362.211,
+    "predicted_per_second": 77.81467041449527,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.0474,
+    "ttft_s": 0.1562,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 62.573,
+    "prompt_per_second": 63.9253352084765,
+    "predicted_n": 102,
+    "predicted_ms": 890.657,
+    "predicted_per_second": 113.39943435014825,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.066,
+    "ttft_s": 0.1728,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 66.437,
+    "prompt_per_second": 60.20741454310099,
+    "predicted_n": 100,
+    "predicted_ms": 892.706,
+    "predicted_per_second": 110.898772944284,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.0324,
+    "ttft_s": 0.1605,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 64.123,
+    "prompt_per_second": 62.38011321990549,
+    "predicted_n": 96,
+    "predicted_ms": 871.351,
+    "predicted_per_second": 109.02609855270724,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0939,
+    "ttft_s": 0.1471,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 65.493,
+    "prompt_per_second": 61.07522941383049,
+    "predicted_n": 106,
+    "predicted_ms": 946.45,
+    "predicted_per_second": 110.9408843573353,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.0012,
+    "ttft_s": 0.139,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 60.891,
+    "prompt_per_second": 65.69115304396381,
+    "predicted_n": 107,
+    "predicted_ms": 861.758,
+    "predicted_per_second": 123.0043701363956,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9984,
+    "ttft_s": 0.1321,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 60.696,
+    "prompt_per_second": 65.90220113351786,
+    "predicted_n": 102,
+    "predicted_ms": 865.995,
+    "predicted_per_second": 116.6288488963562,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0212,
+    "ttft_s": 0.1691,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 64.324,
+    "prompt_per_second": 62.185187488340276,
+    "predicted_n": 100,
+    "predicted_ms": 851.736,
+    "predicted_per_second": 116.23319901941447,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9577,
+    "ttft_s": 0.1411,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 61.495,
+    "prompt_per_second": 65.04593869420279,
+    "predicted_n": 96,
+    "predicted_ms": 816.041,
+    "predicted_per_second": 116.41571930822101,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0704,
+    "ttft_s": 0.1493,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 66.707,
+    "prompt_per_second": 59.963721948221334,
+    "predicted_n": 106,
+    "predicted_ms": 920.812,
+    "predicted_per_second": 114.02979109742272,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 1.1947,
+    "ttft_s": 0.1307,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 61.02,
+    "prompt_per_second": 65.55227794165847,
+    "predicted_n": 107,
+    "predicted_ms": 1063.275,
+    "predicted_per_second": 99.69198937245773,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 1.1271,
+    "ttft_s": 0.1707,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 75.512,
+    "prompt_per_second": 52.97171310520182,
+    "predicted_n": 102,
+    "predicted_ms": 956.005,
+    "predicted_per_second": 105.64798301264113,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 1.0856,
+    "ttft_s": 0.1384,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 63.751,
+    "prompt_per_second": 62.744113817822466,
+    "predicted_n": 100,
+    "predicted_ms": 946.877,
+    "predicted_per_second": 104.55423460491703,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 1.0776,
+    "ttft_s": 0.1587,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 68.171,
+    "prompt_per_second": 58.67597658828534,
+    "predicted_n": 96,
+    "predicted_ms": 918.459,
+    "predicted_per_second": 103.43412171909688,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0539,
+    "ttft_s": 0.1527,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 67.368,
+    "prompt_per_second": 59.37537109606936,
+    "predicted_n": 106,
+    "predicted_ms": 901.089,
+    "predicted_per_second": 116.52567060523432,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.991,
+    "ttft_s": 0.1432,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 52.878,
+    "prompt_per_second": 75.64582624153712,
+    "predicted_n": 107,
+    "predicted_ms": 847.387,
+    "predicted_per_second": 125.09042503602251,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9629,
+    "ttft_s": 0.143,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 59.37,
+    "prompt_per_second": 67.374094660603,
+    "predicted_n": 102,
+    "predicted_ms": 819.468,
+    "predicted_per_second": 123.25069435292166,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9366,
+    "ttft_s": 0.1262,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 57.998,
+    "prompt_per_second": 68.9678954446705,
+    "predicted_n": 100,
+    "predicted_ms": 810.081,
+    "predicted_per_second": 122.21000122210002,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.886,
+    "ttft_s": 0.1301,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 59.379,
+    "prompt_per_second": 67.36388285420772,
+    "predicted_n": 96,
+    "predicted_ms": 755.488,
+    "predicted_per_second": 125.74653733745605,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0267,
+    "ttft_s": 0.1325,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 64.689,
+    "prompt_per_second": 61.83431495308322,
+    "predicted_n": 106,
+    "predicted_ms": 893.831,
+    "predicted_per_second": 117.47187108077478,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9558,
+    "ttft_s": 0.1349,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 62.528,
+    "prompt_per_second": 63.97134083930399,
+    "predicted_n": 107,
+    "predicted_ms": 820.521,
+    "predicted_per_second": 129.18621217494737,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.953,
+    "ttft_s": 0.1343,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 61.427,
+    "prompt_per_second": 65.11794487765967,
+    "predicted_n": 102,
+    "predicted_ms": 818.324,
+    "predicted_per_second": 123.4229962704259,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9375,
+    "ttft_s": 0.1341,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 54.011,
+    "prompt_per_second": 74.0589879839292,
+    "predicted_n": 100,
+    "predicted_ms": 803.133,
+    "predicted_per_second": 123.26725461411745,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9349,
+    "ttft_s": 0.1483,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 61.119,
+    "prompt_per_second": 65.44609695839264,
+    "predicted_n": 96,
+    "predicted_ms": 786.304,
+    "predicted_per_second": 120.81841119973954,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0074,
+    "ttft_s": 0.1376,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 61.549,
+    "prompt_per_second": 64.98887065590017,
+    "predicted_n": 106,
+    "predicted_ms": 869.437,
+    "predicted_per_second": 120.76780721317358,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9534,
+    "ttft_s": 0.1465,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 63.639,
+    "prompt_per_second": 62.85453888338911,
+    "predicted_n": 107,
+    "predicted_ms": 806.554,
+    "predicted_per_second": 131.4233144959916,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9481,
+    "ttft_s": 0.128,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 59.281,
+    "prompt_per_second": 67.47524501948348,
+    "predicted_n": 102,
+    "predicted_ms": 819.932,
+    "predicted_per_second": 123.18094671265422,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9374,
+    "ttft_s": 0.1324,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 54.832,
+    "prompt_per_second": 72.95010213014298,
+    "predicted_n": 100,
+    "predicted_ms": 804.688,
+    "predicted_per_second": 123.02904976835742,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   },
+   {
+    "total_s": 0.9018,
+    "ttft_s": 0.1237,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 95,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack specific data points such as vendor names o",
+    "prompt_n": 4,
+    "cache_n": 1014,
+    "prompt_ms": 55.19,
+    "prompt_per_second": 72.47689798876608,
+    "predicted_n": 96,
+    "predicted_ms": 777.68,
+    "predicted_per_second": 122.15821417549637,
+    "draft_n": 78,
+    "draft_n_accepted": 56,
+    "usage": {
+     "completion_tokens": 96,
+     "prompt_tokens": 1018,
+     "total_tokens": 1114,
+     "prompt_tokens_details": {
+      "cached_tokens": 1014
+     }
+    }
+   },
+   {
+    "total_s": 1.0086,
+    "ttft_s": 0.1283,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 105,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1008,
+    "prompt_ms": 60.931,
+    "prompt_per_second": 65.64802809735603,
+    "predicted_n": 106,
+    "predicted_ms": 879.848,
+    "predicted_per_second": 119.3387948827525,
+    "draft_n": 88,
+    "draft_n_accepted": 61,
+    "usage": {
+     "completion_tokens": 106,
+     "prompt_tokens": 1012,
+     "total_tokens": 1118,
+     "prompt_tokens_details": {
+      "cached_tokens": 1008
+     }
+    }
+   },
+   {
+    "total_s": 0.9964,
+    "ttft_s": 0.143,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 106,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text records are incoherent and lack structured data fields (such as vendor name",
+    "prompt_n": 4,
+    "cache_n": 1018,
+    "prompt_ms": 60.855,
+    "prompt_per_second": 65.73001396762797,
+    "predicted_n": 107,
+    "predicted_ms": 852.966,
+    "predicted_per_second": 124.27224531810177,
+    "draft_n": 84,
+    "draft_n_accepted": 64,
+    "usage": {
+     "completion_tokens": 107,
+     "prompt_tokens": 1022,
+     "total_tokens": 1129,
+     "prompt_tokens_details": {
+      "cached_tokens": 1018
+     }
+    }
+   },
+   {
+    "total_s": 0.9874,
+    "ttft_s": 0.1417,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 101,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text consists of fragmented, repetitive keywords without specific numerical valu",
+    "prompt_n": 4,
+    "cache_n": 1010,
+    "prompt_ms": 60.074,
+    "prompt_per_second": 66.58454572693678,
+    "predicted_n": 102,
+    "predicted_ms": 845.452,
+    "predicted_per_second": 119.46272526411907,
+    "draft_n": 84,
+    "draft_n_accepted": 59,
+    "usage": {
+     "completion_tokens": 102,
+     "prompt_tokens": 1014,
+     "total_tokens": 1116,
+     "prompt_tokens_details": {
+      "cached_tokens": 1010
+     }
+    }
+   },
+   {
+    "total_s": 0.9643,
+    "ttft_s": 0.1355,
+    "finish": "stop",
+    "cancelled": false,
+    "error": null,
+    "n_content_chunks": 99,
+    "text_head": "{\n  \"route\": \"clarification\",\n  \"confidence\": 0.9,\n  \"rationale\": \"The provided text is incoherent and lacks specific data points such as vendor names or moneta",
+    "prompt_n": 4,
+    "cache_n": 1017,
+    "prompt_ms": 62.074,
+    "prompt_per_second": 64.43921770789703,
+    "predicted_n": 100,
+    "predicted_ms": 828.396,
+    "predicted_per_second": 119.50806136195733,
+    "draft_n": 82,
+    "draft_n_accepted": 58,
+    "usage": {
+     "completion_tokens": 100,
+     "prompt_tokens": 1021,
+     "total_tokens": 1121,
+     "prompt_tokens_details": {
+      "cached_tokens": 1017
+     }
+    }
+   }
+  ]
+ },
+ "end": {
+  "load_seconds": 14.57,
+  "vram_dedicated_now_mib": 15931.5,
+  "system_available_ram_mib": 12214.1,
+  "server_rss_now_mib": 3414.5,
+  "peak_server_rss_mib": 3611.9,
+  "peak_vram_dedicated_mib": 16277.1,
+  "min_system_available_ram_mib": 11061.3,
+  "server_gpu_memory_mib": {
+   "local usage": 15529,
+   "non local usage": 1221,
+   "dedicated usage": 15529,
+   "shared usage": 1221
+  }
+ },
+ "healthy_end": true,
+ "vram_dedicated_after_stop_mib": 402.2,
+ "log": [
+  "[22:56:57] start expS_memprio_soak; VRAM before 631.8 MiB; other GPU-ish owners: [(5496, 'ollama app.exe', 'C:\\\\Users\\\\cheta\\\\AppData\\\\Local\\\\Programs\\\\Ollama\\\\ollama app.exe '), (7956, 'llama-server.exe', 'D:\\\\uri-model-lab\\\\runtime\\\\llama-b11425-bin-win-vulkan-x64\\\\lla'), (15272, 'ollama.exe', 'C:\\\\Users\\\\cheta\\\\AppData\\\\Local\\\\Programs\\\\Ollama\\\\ollama.exe serv')]",
+  "[22:57:16] server healthy after 14.57 s (waited 4.2 s for VRAM release; VRAM at start 619.8 MiB; warm/cold not controlled)",
+  "[22:57:23] vision 0: prompt_n=605 prompt_ms=1661.745 ttft=1.7352 total=1.8614 err=None text='Northwind Supplies, EUR 1,284.50'",
+  "[22:57:25] vision 1: prompt_n=605 prompt_ms=1595.247 ttft=1.6663 total=1.8338 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'",
+  "[22:57:27] cancel: disconnected after 1.5146 s (chunks 146); follow-up total 0.2394 s ttft 0.2108 healthy=True",
+  "[22:57:31] timeout: ReadTimeout: timed out ; follow-up total 1.8403 s healthy=True",
+  "[23:01:02] stability: n=200 errors=0 total p50=1.021 p95=1.4176 first/last third p50 1.0402/0.982"
+ ]
+}

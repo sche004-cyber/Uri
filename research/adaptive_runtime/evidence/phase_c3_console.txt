@@ -1,0 +1,19 @@
+=== pressure consumer start 17:35:50Z idle VRAM 446.44921875 MiB
+{"models":[{"name":"qwen3.5:0.8b","model":"qwen3.5:0.8b","size":1086869994,"digest":"f3817196d142eaf72ce79dfebe53dcb20bd21da87ce13e138a8f8e10a866b3a4","details":{"parent_model":"","format":"gguf","family":"qwen35","families":["qwen35"],"parameter_size":"873.44M","quantization_level":"Q8_0"},"expires_at":"2026-10-08T23:45:58.735718+05:30","size_vram":1086869994,"context_length":4096}]}
+=== consumer resident; VRAM now 2046.140625 MiB 17:36:04Z
+=== expP_pressure_plain 17:36:04Z VRAM before 2046.140625 MiB
+[23:06:33] server healthy after 20.52 s (waited 4.1 s for VRAM release; VRAM at start 2046.1 MiB; warm/cold not controlled)
+[23:07:30] vision 0: prompt_n=605 prompt_ms=1653.599 ttft=1.7896 total=2.4268 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+[23:07:32] vision 1: prompt_n=605 prompt_ms=1626.867 ttft=1.7134 total=2.4357 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+PRESSURE expP_pressure_plain load 20.52 vram_at_start 2046.1 decode_tps_p50 25.1355 decision_total_p50 4.2292 vision_p50 2.4313 local 14086 nonlocal 2652 vram_peak 16143.7 fatal None
+=== expP_pressure_mmprojcpu 17:37:43Z VRAM before 2047.140625 MiB
+[23:08:13] server healthy after 20.17 s (waited 4.2 s for VRAM release; VRAM at start 2049.4 MiB; warm/cold not controlled)
+[23:09:12] vision 0: prompt_n=605 prompt_ms=4750.994 ttft=4.8567 total=5.5742 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[23:09:17] vision 1: prompt_n=605 prompt_ms=4771.527 ttft=4.8288 total=5.5459 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+PRESSURE expP_pressure_mmprojcpu load 20.17 vram_at_start 2049.4 decode_tps_p50 25.2358 decision_total_p50 4.1936 vision_p50 5.5601 local 13833 nonlocal 1792 vram_peak 15880.2 fatal None
+=== expP_pressure_memprio 17:39:28Z VRAM before 2047.640625 MiB
+[23:09:56] server healthy after 19.01 s (waited 4.1 s for VRAM release; VRAM at start 2049.9 MiB; warm/cold not controlled)
+[23:10:52] vision 0: prompt_n=605 prompt_ms=1688.111 ttft=1.8188 total=2.446 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+[23:10:54] vision 1: prompt_n=605 prompt_ms=1603.735 ttft=1.6635 total=2.3779 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+PRESSURE expP_pressure_memprio load 19.01 vram_at_start 2049.9 decode_tps_p50 25.0342 decision_total_p50 4.2523 vision_p50 2.412 local 14086 nonlocal 2652 vram_peak 16133.5 fatal None
+=== consumer stopped; VRAM 447.94921875 MiB; DONE4 17:41:12Z
