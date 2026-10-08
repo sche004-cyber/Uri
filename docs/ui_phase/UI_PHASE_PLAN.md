@@ -46,7 +46,9 @@ New dependencies: none. (The `flutter_shaders_ui` and `glow_orb` packages were c
 
 * `AppStateCompanionSource`: derives from real `AppState` fields (`isSendingAsk`, last turn `stage`, `lastConnectionErrorDetail`, backend reachability).
 * `MockCompanionSource` / `MockWorkSimulator`: scripted, always flagged `simulated: true`, used by `main_living.dart` and tests.
+* `SupervisedCompanionSource`: the section-3 worker mapping over `SupervisedRuntime` (built after Codex round 1, tested with a fake runtime, not wired in the preview because it has no worker).
 * No source for "speaking" or "listening" exists in the baseline tree (no voice). They are rendered from mock events only and labelled Simulated in every surface that names them.
+* Signals derived from `AppState` under the mock client are flagged `simulated` too (`dataIsMock`).
 
 ### 2.4 Integration posture (decision)
 

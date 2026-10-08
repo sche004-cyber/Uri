@@ -39,7 +39,6 @@ class LivingComposer extends StatefulWidget {
 
 class _LivingComposerState extends State<LivingComposer> {
   late final TextEditingController _controller;
-  final _focus = FocusNode();
 
   @override
   void initState() {
@@ -54,7 +53,6 @@ class _LivingComposerState extends State<LivingComposer> {
   @override
   void dispose() {
     _controller.dispose();
-    _focus.dispose();
     super.dispose();
   }
 
@@ -94,6 +92,7 @@ class _LivingComposerState extends State<LivingComposer> {
         final sending = appState.isSendingAsk;
         return GlassPanel(
           strong: true,
+          blur: true,
           padding: EdgeInsets.symmetric(
             horizontal: widget.compact ? 10 : 14,
             vertical: widget.compact ? 4 : 6,
@@ -123,7 +122,7 @@ class _LivingComposerState extends State<LivingComposer> {
                   child: TextField(
                     key: const ValueKey('living-composer-field'),
                     controller: _controller,
-                    focusNode: _focus,
+                    focusNode: LivingScope.of(context).composerFocus,
                     autofocus: widget.autofocus,
                     minLines: 1,
                     maxLines: widget.compact ? 3 : 5,

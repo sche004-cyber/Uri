@@ -17,6 +17,7 @@
 /// | `URI_LIVING_START_MODE=companion|workspace|dashboard` | initial form |
 /// | `URI_LIVING_START_FOCUS=conversation|tasks|documents|intelligence|settings` | initial Workspace region |
 /// | `URI_LIVING_DEMO_STATE=<CompanionState name>` | feed one mock orb state (flagged Simulated) |
+/// | `URI_LIVING_ORB_VARIANT=nebula|halo|swarm|glass|flow` | orb visual family |
 /// | `URI_LIVING_REDUCED_EFFECTS=1` | start with effects reduced |
 /// | `URI_LIVING_PERF=1` | print frame-timing summaries to stdout |
 library;
@@ -26,6 +27,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 
 import 'living/companion/companion_state.dart';
+import 'living/companion/energy_orb.dart' show OrbVariant;
 import 'living/living_app.dart';
 import 'living/perf_logger.dart';
 import 'living/presentation/presentation_controller.dart';
@@ -39,7 +41,11 @@ Future<void> main() async {
   final env = Platform.environment;
   bool flag(String k) => env[k] == '1' || env[k]?.toLowerCase() == 'true';
 
-  final appState = AppState(MockUriClient());
+  // Namespaced preference store: never the Hybrid app's keys.
+  final appState = AppState(
+    MockUriClient(),
+    preferencesStore: LivingPreferencesStore(),
+  );
   final services = LivingApp.buildDefaultServices(appState);
 
   final mode = UiPresentationMode.values
@@ -63,6 +69,10 @@ Future<void> main() async {
       detail: 'Demo state from URI_LIVING_DEMO_STATE',
     );
   }
+  final variant = OrbVariant.values
+      .where((v) => v.name == env['URI_LIVING_ORB_VARIANT'])
+      .firstOrNull;
+  if (variant != null) services.orbVariant.value = variant;
   if (flag('URI_LIVING_REDUCED_EFFECTS')) {
     services.effects.setReducedEffects(true);
   }

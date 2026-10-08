@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -71,11 +73,42 @@ class LivingShell extends StatefulWidget {
 }
 
 class _LivingShellState extends State<LivingShell> {
+  Timer? _bubbleTimer;
+  String? _bubbleText;
+
+  static const List<String> _questions = [
+    'Yes? What should I do?',
+    "I'm here. What's next?",
+    'Tell me what you need.',
+    'Listening. Type it below.',
+  ];
+
+  void _onOrbTap(LivingServices services) {
+    final n = services.orbPokes.value + 1;
+    services.orbPokes.value = n;
+    setState(() => _bubbleText = _questions[n % _questions.length]);
+    _bubbleTimer?.cancel();
+    _bubbleTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _bubbleText = null);
+    });
+    services.composerFocus.requestFocus();
+  }
+
+  @override
+  void dispose() {
+    _bubbleTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final services = LivingScope.of(context);
     return ListenableBuilder(
-      listenable: Listenable.merge([services.presentation, services.companion]),
+      listenable: Listenable.merge([
+        services.presentation,
+        services.companion,
+        services.orbVariant,
+      ]),
       builder: (context, _) {
         final mode = services.presentation.mode;
         final signal = services.companion.signal;
@@ -161,21 +194,26 @@ class _LivingShellState extends State<LivingShell> {
                           duration: UriMotion.mode,
                           curve: UriMotion.move,
                           rect: dock.rect,
-                          child: IgnorePointer(
-                            ignoring: mode != UiPresentationMode.companion,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () => services.presentation.setMode(
-                                UiPresentationMode.workspace,
-                              ),
-                              child: EnergyOrb(
-                                key: LivingShell.orbKey,
-                                state: signal.state,
-                                progress: signal.progress,
-                                size: dock.rect.width,
-                              ),
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => _onOrbTap(services),
+                            onDoubleTap: () => services.presentation.setMode(
+                              UiPresentationMode.workspace,
+                            ),
+                            child: EnergyOrb(
+                              key: LivingShell.orbKey,
+                              state: signal.state,
+                              progress: signal.progress,
+                              size: dock.rect.width,
+                              variant: services.orbVariant.value,
+                              pokes: services.orbPokes,
                             ),
                           ),
+                        ),
+                        _QuestionBubble(
+                          text: _bubbleText,
+                          orbRect: dock.rect,
+                          shellSize: shellSize,
                         ),
                         _CommandNotice(services: services),
                       ],
@@ -233,6 +271,67 @@ class _CommandNotice extends StatelessWidget {
                       child: const Text('Back'),
                     ),
                   ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The orb's click response: a short question, UI-local copy (never a
+/// Brain reply), shown under the orb for a few seconds while the
+/// composer takes focus.
+class _QuestionBubble extends StatelessWidget {
+  const _QuestionBubble({
+    required this.text,
+    required this.orbRect,
+    required this.shellSize,
+  });
+  final String? text;
+  final Rect orbRect;
+  final Size shellSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = UriColors.of(context);
+    final glass = UriGlass.of(context);
+    final show = text != null;
+    // Below the orb when there is room, otherwise to its right.
+    final below = orbRect.bottom + 48 < shellSize.height;
+    final left = below
+        ? (orbRect.center.dx - 110).clamp(8.0, shellSize.width - 228)
+        : (orbRect.right + 8).clamp(8.0, shellSize.width - 228);
+    final top = below ? orbRect.bottom - 6 : orbRect.center.dy - 16;
+    return Positioned(
+      left: left,
+      top: top,
+      width: 220,
+      child: IgnorePointer(
+        child: AnimatedOpacity(
+          duration: UriMotion.fast,
+          opacity: show ? 1 : 0,
+          child: AnimatedSlide(
+            duration: UriMotion.fast,
+            offset: show ? Offset.zero : const Offset(0, -0.2),
+            child: Center(
+              child: Container(
+                key: const ValueKey('orb-question-bubble'),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: glass.fillStrong,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: glass.glow.withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  text ?? '',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.5, color: c.ink),
                 ),
               ),
             ),

@@ -139,11 +139,19 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
                     key: const ValueKey('onboarding-orb'),
                     state: _previewFor(_step),
                     size: 150,
+                    variant: services.orbVariant.value,
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    _previewFor(_step).label,
-                    style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _previewFor(_step).label,
+                        style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+                      ),
+                      const SizedBox(width: 6),
+                      const StatusBadge.simulated(compact: true),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   _StepDots(

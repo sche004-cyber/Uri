@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../models/memory_entry.dart';
+import '../../../models/uri_turn.dart' show TurnStage;
 import '../../../services/app_state.dart';
 import '../../../services/app_state_scope.dart';
 import '../../../theme/glass_theme.dart';
@@ -26,17 +27,32 @@ IntelligenceSnapshot deriveIntelligenceSnapshot({
   required AppState appState,
   required LivingServices services,
 }) {
-  final hasRequest =
-      appState.conversation.isNotEmpty ||
-      services.work.items.any((i) => !i.state.isTerminal);
   final lastTurn = appState.conversation.isEmpty
       ? null
       : appState.conversation.last;
+  final activeWork = services.work.items.where((i) => !i.state.isTerminal);
+  final hasRequest = lastTurn != null || activeWork.isNotEmpty;
   final harnessId = services.selectedHarness.value;
   final harness = services.readiness.harnesses
       .where((h) => h.id == harnessId)
       .toList();
   final st = signal.state;
+
+  // Facts only. A stage is `done` when something observable says that
+  // step produced output; `active`/`blocked` only from the live signal;
+  // everything else `idle` with a "not observed" detail. Route, harness
+  // and model are shown as facts about the selection, never as a claim
+  // that the stage ran.
+  final intentObserved = lastTurn?.understanding != null;
+  final decisionObserved =
+      (lastTurn != null &&
+          lastTurn.proposedAction != null &&
+          (lastTurn.stage == TurnStage.executing ||
+              lastTurn.stage == TurnStage.completed)) ||
+      services.work.items.any((i) => i.state == WorkItemState.completed);
+  final receiptObserved =
+      lastTurn?.result != null ||
+      services.work.items.any((i) => i.outputName != null);
 
   StageState s(PipelineStage stage) {
     switch (stage) {
@@ -44,34 +60,21 @@ IntelligenceSnapshot deriveIntelligenceSnapshot({
         return hasRequest ? StageState.done : StageState.idle;
       case PipelineStage.intent:
         if (st == CompanionState.thinking) return StageState.active;
-        return hasRequest ? StageState.done : StageState.idle;
+        return intentObserved ? StageState.done : StageState.idle;
       case PipelineStage.route:
-        return hasRequest && st != CompanionState.thinking
-            ? StageState.done
-            : StageState.idle;
       case PipelineStage.harness:
-        return harness.isNotEmpty && hasRequest
-            ? StageState.done
-            : StageState.idle;
       case PipelineStage.model:
-        return appState.activeBrain != null && hasRequest
-            ? StageState.done
-            : StageState.idle;
+        return StageState.idle; // facts shown in detail; not observed as steps
       case PipelineStage.approval:
         if (st == CompanionState.awaitingApproval) return StageState.blocked;
-        if (st == CompanionState.working || st == CompanionState.success) {
-          return StageState.done;
-        }
-        return StageState.idle;
+        return decisionObserved ? StageState.done : StageState.idle;
       case PipelineStage.execution:
         if (st == CompanionState.working) return StageState.active;
-        if (st == CompanionState.success) return StageState.done;
         if (st == CompanionState.error) return StageState.failed;
         return StageState.idle;
       case PipelineStage.receipt:
-        return st == CompanionState.success || lastTurn?.result != null
-            ? StageState.done
-            : StageState.idle;
+        if (st == CompanionState.success) return StageState.done;
+        return receiptObserved ? StageState.done : StageState.idle;
     }
   }
 
@@ -88,19 +91,40 @@ IntelligenceSnapshot deriveIntelligenceSnapshot({
           stage: stage,
           state: s(stage),
           detail: switch (stage) {
-            PipelineStage.route => hasRequest ? 'Core (mock client)' : null,
+            PipelineStage.route => 'not reported by this client',
             PipelineStage.harness =>
-              harness.isEmpty ? null : harness.first.displayName,
-            PipelineStage.model => appState.activeBrain?.model,
+              harness.isEmpty
+                  ? 'none selected'
+                  : 'selected: ${harness.first.displayName}',
+            PipelineStage.model =>
+              appState.activeBrain?.model == null
+                  ? 'no Brain set'
+                  : 'active: ${appState.activeBrain!.model}',
+            PipelineStage.intent =>
+              intentObserved
+                  ? lastTurn!.understanding
+                  : (st == CompanionState.thinking
+                        ? signal.detail
+                        : 'not observed'),
             PipelineStage.approval =>
-              st == CompanionState.awaitingApproval ? signal.detail : null,
+              st == CompanionState.awaitingApproval
+                  ? signal.detail
+                  : (decisionObserved ? 'decision recorded' : 'not observed'),
             PipelineStage.execution =>
-              st == CompanionState.working ? signal.detail : null,
-            _ => null,
+              st == CompanionState.working
+                  ? signal.detail
+                  : (st == CompanionState.error
+                        ? signal.detail
+                        : 'not observed'),
+            PipelineStage.receipt =>
+              receiptObserved || st == CompanionState.success
+                  ? 'result present'
+                  : 'not observed',
+            PipelineStage.request => hasRequest ? 'present' : 'none',
           },
         ),
     ],
-    routing: hasRequest ? 'core' : 'none',
+    routing: 'unknown',
     harnessName: harness.isEmpty ? null : harness.first.displayName,
     providerName:
         appState.activeBrain?.displayName ?? appState.activeBrain?.providerId,
@@ -200,12 +224,9 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                 children: [
                   _Fact(
                     'Routing',
-                    snap.routing == 'none' ? 'No request in flight' : 'Core',
+                    'Not reported by this client (Edge/Core is decided server-side)',
                   ),
-                  _Fact(
-                    'Edge',
-                    'Not present in this tree (Edge routing is a Core-side decision)',
-                  ),
+
                   _Fact('Harness', snap.harnessName ?? 'None selected'),
                   _Fact('Provider', snap.providerName ?? 'Not set'),
                   _Fact('Model', snap.modelName ?? '—'),
@@ -348,6 +369,8 @@ class _IntelligenceOverviewViewState extends State<IntelligenceOverviewView> {
                               style: TextStyle(fontSize: 12.5, color: c.ink),
                             ),
                           ),
+                          if (services.appDataIsMock)
+                            const StatusBadge.simulated(compact: true),
                         ],
                       ),
                     ),

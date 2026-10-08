@@ -137,7 +137,7 @@ class CompanionModeView extends StatelessWidget {
                 ),
                 SizedBox(height: narrow ? 14 : 22),
                 Text(
-                  'Tap the orb to open the workspace',
+                  'Click the orb to ask; double-click opens the workspace',
                   style: TextStyle(
                     fontSize: 11,
                     color: glass.isDark ? c.inkFaint : c.inkSoft,

@@ -13,7 +13,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/app_state.dart';
 import '../services/app_state_scope.dart';
 import '../services/attachment_opener_service.dart';
+import '../models/user_preferences.dart';
 import '../services/file_picker_service.dart';
+import '../services/preferences_store.dart';
 import '../theme/uri_theme.dart';
 import 'companion/companion_sources.dart';
 import 'companion/effects_settings.dart';
@@ -31,6 +33,53 @@ class LivingPrefs {
   static const onboardingDone = 'uri.living.onboardingDone';
   static const reducedEffects = 'uri.living.reducedEffects';
   static const themeChoice = 'uri.living.themeChoice';
+}
+
+/// Namespaced replacement for the Hybrid [PreferencesStore].
+///
+/// All `uri_ui` builds share one `shared_preferences.json` on this PC
+/// (the live Hybrid app included), so the preview must never write the
+/// Hybrid keys (`uri.completedOnboarding`, `uri.focusAreas`, ...). This
+/// store keeps the same [UserPreferences] shape under `uri.living.*`.
+class LivingPreferencesStore extends PreferencesStore {
+  static const keyCompletedOnboarding = 'uri.living.prefs.completedOnboarding';
+  static const keyFocusAreas = 'uri.living.prefs.focusAreas';
+  static const keyCommunicationStyle = 'uri.living.prefs.communicationStyle';
+  static const keyAutonomyLevel = 'uri.living.prefs.autonomyLevel';
+
+  @override
+  Future<UserPreferences> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    return UserPreferences(
+      focusAreas: prefs.getStringList(keyFocusAreas) ?? const [],
+      communicationStyle:
+          CommunicationStyle.values
+              .where((v) => v.name == prefs.getString(keyCommunicationStyle))
+              .firstOrNull ??
+          CommunicationStyle.concise,
+      autonomyLevel:
+          AutonomyLevel.values
+              .where((v) => v.name == prefs.getString(keyAutonomyLevel))
+              .firstOrNull ??
+          AutonomyLevel.askEveryTime,
+      completedOnboarding: prefs.getBool(keyCompletedOnboarding) ?? false,
+    );
+  }
+
+  @override
+  Future<void> save(UserPreferences preferences) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(
+      keyCompletedOnboarding,
+      preferences.completedOnboarding,
+    );
+    await prefs.setStringList(keyFocusAreas, preferences.focusAreas);
+    await prefs.setString(
+      keyCommunicationStyle,
+      preferences.communicationStyle.name,
+    );
+    await prefs.setString(keyAutonomyLevel, preferences.autonomyLevel.name);
+  }
 }
 
 class LivingApp extends StatefulWidget {
@@ -66,7 +115,7 @@ class LivingApp extends StatefulWidget {
     return LivingServices(
       presentation: UiPresentationController(),
       companion: CompositeCompanionSource([
-        AppStateCompanionSource(appState),
+        AppStateCompanionSource(appState, dataIsMock: true),
         work.companion,
         demo,
       ]),

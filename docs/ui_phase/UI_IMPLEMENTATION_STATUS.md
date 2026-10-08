@@ -9,10 +9,14 @@ Nothing on this page is Independently accepted, Integrated or Production-active.
 | Feature | Status | Where | Notes |
 |---|---|---|---|
 | Obsidian Cyan palette, `UriGlass`, `GlassPanel`, `AmbientBackground` | Tested | `theme/uri_theme.dart`, `theme/glass_theme.dart`, `living/widgets/glass_panel.dart` | fifth `UriThemeChoice`; four Hybrid themes untouched; contrast checked (design reference section 2) |
-| Energy Orb: nine states, particles, halo, rim, state overlays | Tested | `living/companion/energy_orb.dart` | 18 render tests (effects on/off per state), tween test, theme test |
+| Energy Orb: nine states, particles, halo, rim, state overlays | Tested | `living/companion/energy_orb.dart` | render tests per state (effects on/off), pixel-difference test for every state pair (A1), tween test, theme test |
+| Energy Orb: six visual variants (nebula, halo, swarm, glass, flow, mesh) | Tested | same file; `UI_ORB_OPTIONS.md` | every variant renders every state; owner choice pending |
+| Energy Orb: cursor gust reaction and click poke + question bubble | Tested | same file; `presentation/living_shell.dart` | gust test over all variants; click/double-click tests |
+| `SupervisedCompanionSource` (Phase 2 worker contract) | Tested (fake runtime), not wired | `living/companion/companion_sources.dart` | `companion_sources_test.dart` |
 | Energy Orb: runtime fragment shader core | Implemented, Tested in the release build | `shaders/orb_core.frag`, `living/companion/orb_shader.dart` | loads under Impeller on Windows (release build screenshots); falls back to the gradient core if the asset fails; widget tests run both paths without exceptions. Not measured on a GPU-less machine. |
-| Reduced effects / reduced motion | Tested | `living/companion/effects_settings.dart` | OS `disableAnimations` honoured at startup in `main_living.dart` |
-| Companion state sources and priority merge | Tested | `living/companion/companion_sources.dart` | `AppStateCompanionSource` is real (UI-side facts); listening/speaking exist only as mock events |
+| Reduced effects / reduced motion | Tested | `living/companion/effects_settings.dart` | OS `disableAnimations` honoured at startup in `main_living.dart`; test asserts no `BackdropFilter` and no shader under reduced effects (A9) |
+| Glass blur policy | Tested | `living/widgets/glass_panel.dart` | blur is opt-in (composer only); dashboard tiles never blur (profile evidence in `UI_TEST_EVIDENCE.md`) |
+| Companion state sources and priority merge | Tested | `living/companion/companion_sources.dart` | `AppStateCompanionSource` derives from UI-side facts (unavailable/thinking/awaitingApproval-with-proposal/working/success-with-result/error) and is flagged simulated under the mock client; listening/speaking exist only as mock events |
 | UI-state controller + local command parser | Tested | `living/presentation/presentation_controller.dart` | sealed vocabulary; cooldown; Back; origin tracking |
 | Living shell: spatially continuous transitions, one orb element | Tested | `living/presentation/living_shell.dart` | element identity asserted across all three forms; Esc / Ctrl+1-3 shortcuts |
 | Companion mode | Tested | `living/screens/companion_mode_view.dart` | status line, "Review and decide", composer, mode chips |
@@ -23,7 +27,7 @@ Nothing on this page is Independently accepted, Integrated or Production-active.
 | Workspace: context panel (Now, Executor, Context & files, Results) | Tested | `workspace_mode_view.dart` | opens at >= 1180 px or on demand |
 | Dashboard: eight sourced tiles | Tested | `living/screens/dashboard_mode_view.dart` | every mock-backed tile badged Simulated; no unbacked metric |
 | Onboarding: eight steps | Tested | `living/screens/onboarding/living_onboarding_flow.dart` | writes real `UserPreferences` (autonomy, focus areas, completion); connection test uses `AppState.checkConnection` (mock answers; badged) |
-| Intelligence overview: pipeline, executor facts, signal sources | Tested | `living/screens/intelligence/intelligence_overview_view.dart` | derived from observed state only; no reasoning text |
+| Intelligence overview: pipeline, executor facts, signal sources | Tested | `living/screens/intelligence/intelligence_overview_view.dart` | facts only after Codex round 1 MAJOR 3: route is never inferred ("not reported by this client"), intent/approval/receipt are `done` only when an understanding / recorded decision / result exists; no reasoning text |
 | Memory graph | Prototyped | same file | static ring layout over `MemoryEntry` rows; labelled PROTOTYPE on screen |
 | Mock-mode entry with demo hooks | Tested (manual run + screenshots) | `lib/main_living.dart` | env vars documented in the file header |
 | Performance sampler | Implemented | `living/perf_logger.dart` | numbers in `UI_TEST_EVIDENCE.md` |
@@ -34,7 +38,7 @@ Nothing on this page is Independently accepted, Integrated or Production-active.
 
 ## Which interactions work in the running preview
 
-Typing and sending (mock replies, approvals via the Hybrid turn cards), `URI dashboard|workspace|companion|tasks|documents|intelligence|settings`, tapping the orb, the mode chips/rail items, Back after a command, starting a letter/spreadsheet/document/research item and approving or cancelling it, selecting a harness (mock) and a Brain (mock client), changing the approval boundary, reasoning mode, theme and effects, walking or skipping onboarding, re-checking readiness, Esc and Ctrl+1/2/3.
+Typing and sending (mock replies, approvals via the Hybrid turn cards), `URI dashboard|workspace|companion|tasks|documents|intelligence|settings`, clicking the orb (poke + question + composer focus), double-clicking it (Workspace), sweeping the cursor over it (gust), choosing an orb style, the mode chips/rail items, Back after a command, starting a letter/spreadsheet/document/research item and approving or cancelling it, selecting a harness (mock) and a Brain (mock client), changing the approval boundary, reasoning mode, theme and effects, walking or skipping onboarding, re-checking readiness, Esc and Ctrl+1/2/3.
 
 ## What remains mocked
 

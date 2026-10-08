@@ -11,6 +11,7 @@ import '../../services/uri_client.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
 import '../companion/companion_state.dart';
+import '../companion/energy_orb.dart' show OrbVariant, OrbVariantLabel;
 import '../contracts/readiness_report.dart';
 import '../contracts/work_items.dart';
 import '../living_app.dart';
@@ -640,6 +641,10 @@ class _WorkHistoryRow extends StatelessWidget {
               item.outputName!,
               style: TextStyle(fontSize: 12, color: c.inkFaint),
             ),
+          if (item.simulated) ...[
+            const SizedBox(width: 8),
+            const StatusBadge.simulated(compact: true),
+          ],
         ],
       ),
     );
@@ -963,6 +968,25 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
             const SizedBox(height: 8),
             for (final p in services.readiness.permissions)
               PermissionRow(fact: p),
+            const SizedBox(height: UriSpace.lg),
+            const Eyebrow('Orb style'),
+            const SizedBox(height: 8),
+            ListenableBuilder(
+              listenable: services.orbVariant,
+              builder: (context, _) => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final v in OrbVariant.values)
+                    ChoiceChip(
+                      key: ValueKey('orb-variant-${v.name}'),
+                      label: Text(v.label),
+                      selected: services.orbVariant.value == v,
+                      onSelected: (_) => services.orbVariant.value = v,
+                    ),
+                ],
+              ),
+            ),
             const SizedBox(height: UriSpace.lg),
             const Eyebrow('Appearance'),
             const SizedBox(height: 8),
@@ -1302,9 +1326,13 @@ class _ContextPanel extends StatelessWidget {
                   style: TextStyle(fontSize: 12.5, color: c.inkFaint),
                 ),
               for (final a in appState.attachments)
-                _KeyValue('Attached', a.filename),
+                _KeyValue(
+                  'Attached',
+                  a.filename,
+                  simulated: services.appDataIsMock,
+                ),
               for (final d in services.work.documents.take(3))
-                _KeyValue('Document', d.name),
+                _KeyValue('Document', d.name, simulated: d.simulated),
               const SizedBox(height: UriSpace.lg),
               const Eyebrow('Results'),
               const SizedBox(height: 6),
@@ -1314,8 +1342,13 @@ class _ContextPanel extends StatelessWidget {
                   style: TextStyle(fontSize: 12.5, color: c.inkFaint),
                 ),
               if (lastTurn?.result != null)
-                _KeyValue('Last reply', lastTurn!.result!.summary),
-              for (final r in results) _KeyValue('Saved', r.outputName!),
+                _KeyValue(
+                  'Last reply',
+                  lastTurn!.result!.summary,
+                  simulated: services.appDataIsMock,
+                ),
+              for (final r in results)
+                _KeyValue('Saved', r.outputName!, simulated: r.simulated),
             ],
           );
         },
@@ -1325,9 +1358,10 @@ class _ContextPanel extends StatelessWidget {
 }
 
 class _KeyValue extends StatelessWidget {
-  const _KeyValue(this.k, this.v);
+  const _KeyValue(this.k, this.v, {this.simulated = false});
   final String k;
   final String v;
+  final bool simulated;
 
   @override
   Widget build(BuildContext context) {
@@ -1349,6 +1383,10 @@ class _KeyValue extends StatelessWidget {
               style: TextStyle(fontSize: 12.5, color: c.ink),
             ),
           ),
+          if (simulated) ...[
+            const SizedBox(width: 6),
+            const StatusBadge.simulated(compact: true),
+          ],
         ],
       ),
     );

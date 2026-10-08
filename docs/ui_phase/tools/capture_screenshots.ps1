@@ -18,7 +18,8 @@
 param(
   [string]$Exe = (Join-Path $PSScriptRoot "..\..\..\uri_ui\build\windows\x64\runner\Release\uri_ui.exe"),
   [string]$OutDir = (Join-Path $PSScriptRoot "..\screenshots"),
-  [int]$SettleMs = 6500
+  [int]$SettleMs = 6500,
+  [string]$Only = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -51,13 +52,25 @@ $scenarios = @(
   @{ name = "10_dashboard_error";       w = 1400; h = 900;  env = @{ URI_LIVING_START_MODE = "dashboard"; URI_LIVING_DEMO_STATE = "error" } },
   @{ name = "11_onboarding";            w = 1100; h = 820;  env = @{ URI_LIVING_SKIP_ONBOARDING = "0" } },
   @{ name = "12_companion_reduced_fx";  w = 460;  h = 720;  env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_REDUCED_EFFECTS = "1"; URI_LIVING_DEMO_STATE = "success" } },
-  @{ name = "13_workspace_narrow";      w = 900;  h = 700;  env = @{ URI_LIVING_START_MODE = "workspace"; URI_LIVING_START_FOCUS = "tasks" } }
+  @{ name = "13_workspace_narrow";      w = 900;  h = 700;  env = @{ URI_LIVING_START_MODE = "workspace"; URI_LIVING_START_FOCUS = "tasks" } },
+  @{ name = "orb_nebula_idle";  w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "nebula" } },
+  @{ name = "orb_halo_idle";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "halo" } },
+  @{ name = "orb_swarm_idle";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "swarm" } },
+  @{ name = "orb_glass_idle";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "glass" } },
+  @{ name = "orb_flow_idle";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "flow" } },
+  @{ name = "orb_mesh_idle";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "mesh" } },
+  @{ name = "orb_swarm_thinking"; w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "swarm"; URI_LIVING_DEMO_STATE = "thinking" } },
+  @{ name = "orb_flow_working";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "flow"; URI_LIVING_DEMO_STATE = "working" } },
+  @{ name = "orb_mesh_approval";  w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "mesh"; URI_LIVING_DEMO_STATE = "awaitingApproval" } },
+  @{ name = "orb_glass_error";    w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "glass"; URI_LIVING_DEMO_STATE = "error" } },
+  @{ name = "orb_halo_success";   w = 460; h = 720; env = @{ URI_LIVING_START_MODE = "companion"; URI_LIVING_ORB_VARIANT = "halo"; URI_LIVING_DEMO_STATE = "success" } }
 )
 
 if (-not (Test-Path $Exe)) { throw "exe not found: $Exe (run flutter build windows -t lib/main_living.dart)" }
 New-Item -ItemType Directory -Force $OutDir | Out-Null
 
 foreach ($s in $scenarios) {
+  if ($Only -ne "" -and $s.name -notlike $Only) { continue }
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = (Resolve-Path $Exe).Path
   $psi.WorkingDirectory = Split-Path $psi.FileName

@@ -22,6 +22,7 @@ class GlassPanel extends StatelessWidget {
     this.strong = false,
     this.glowBorder = false,
     this.clip = true,
+    this.blur = false,
   });
 
   final Widget child;
@@ -35,6 +36,12 @@ class GlassPanel extends StatelessWidget {
   final bool glowBorder;
 
   final bool clip;
+
+  /// Backdrop blur. Off by default: over the flat ambient background a
+  /// blur adds cost and no depth (profile run: eight blurred tiles cost
+  /// 22 ms raster p95 on the dashboard). Enable only for a panel that
+  /// floats over moving content, e.g. the composer over the conversation.
+  final bool blur;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +76,7 @@ class GlassPanel extends StatelessWidget {
       ),
     );
 
-    if (!effects.reducedEffects) {
+    if (blur && !effects.reducedEffects) {
       surface = BackdropFilter(
         filter: ui.ImageFilter.blur(
           sigmaX: glass.blurSigma,

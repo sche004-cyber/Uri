@@ -23,11 +23,12 @@ Implemented now:
 
 | Source | Derives from | Emits |
 |---|---|---|
-| `AppStateCompanionSource` | `AppState.connectionStatus`, `isSendingAsk`, last `UriTurn.stage` | error, thinking, awaitingApproval, working, success (held 4 s), idle. Never listening/speaking. `simulated: false`. |
+| `AppStateCompanionSource` | `AppState.connectionStatus`, `isSendingAsk`, last `UriTurn.stage` / `proposedAction` / `result` | unavailable (server unreachable), thinking, awaitingApproval (only with a `proposedAction`), working, success (only when a `result` arrived; detail says "Reply received", source says it is a server reply, not an execution receipt; held 4 s), error, idle. Never listening/speaking. `simulated` = `dataIsMock` (true under `MockUriClient`). |
+| `SupervisedCompanionSource` | `SupervisedRuntime.preflight`, `listExecutions`, `executionStatus`, plus the pending `TurnResult` reported through `noteTurn` | the section-3 table below, implemented and tested with a fake runtime (`test/living/companion_sources_test.dart`); not wired in the preview (no worker). |
 | `MockCompanionSource` | explicit `emit()` | any state, `simulated: true` |
 | `CompositeCompanionSource` | priority merge: error > awaitingApproval > working > thinking > speaking > listening > success > unavailable > idle | the winner |
 
-Proposed real adapter (`SupervisedCompanionSource`, not built): reads the existing `SupervisedRuntime` (`uri_ui/lib/services/supervised_runtime.dart`) and maps, per the readiness document's table:
+`SupervisedCompanionSource` (built, `uri_ui/lib/living/companion/companion_sources.dart`) reads the existing `SupervisedRuntime` (`uri_ui/lib/services/supervised_runtime.dart`) and maps, per the readiness document's table (it only observes: `beginExecution`/`decide`/`cancel` are never called, proven by the fake runtime throwing on them):
 
 | Worker fact | CompanionState |
 |---|---|
@@ -36,7 +37,7 @@ Proposed real adapter (`SupervisedCompanionSource`, not built): reads the existi
 | `INTENT_CLARIFICATION` / `INTENT_CONFIRMATION_REQUIRED` | awaitingApproval (detail: clarification) |
 | `approval_required` + `execution_proposal` | awaitingApproval (detail: proposal title) |
 | `execution_status.state in {queued, approving, starting, running}` | working (progress: null; the worker reports no percentage) |
-| `completed` only when corroborated (`SETTLED_VERIFIED`) | success |
+| `completed` only when corroborated: the worker's `state` (which it already corroborates against ledger/journal/server), never `recorded_state` alone | success |
 | `uncertain`, `failed`, `quota_paused`, `APPROVAL_REFUSED_NOT_APPLIED` | error (detail: reason verbatim) |
 
 Listening/speaking need a voice source that does not exist in this tree (the `_V1` line has a status strip; parity is a C6 owner decision).
@@ -94,4 +95,4 @@ That is the whole vocabulary. `UiPresentationController.apply(command, origin)` 
 
 ## 6. Effects and persistence
 
-`EffectsSettings` (reducedEffects, reducedMotion) and the living preferences are device-local (`uri.living.*` keys in shared preferences). The one shared key written is the Hybrid `UserPreferences` store (onboarding completion, focus areas, autonomy level), deliberately, so a later integrated app sees the same preferences.
+`EffectsSettings` (reducedEffects, reducedMotion) and the living preferences are device-local (`uri.living.*` keys in shared preferences). The preview never writes a Hybrid key: `main_living.dart` gives `AppState` a `LivingPreferencesStore` (same `UserPreferences` shape under `uri.living.prefs.*`), because every `uri_ui` build on this PC shares one `shared_preferences.json` with the live Hybrid app. (Codex round 1 BLOCKER 1; the earlier text here said the opposite and was wrong.) An integrated app would use the Hybrid store again.

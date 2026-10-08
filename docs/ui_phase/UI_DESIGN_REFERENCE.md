@@ -60,6 +60,14 @@ One drawing, nine parameter sets (`OrbParams.forState`), tweened on change. What
 
 Under reduced effects the shader and blur masks are off; the gradient core, particles, tint, ring, arc, bloom and ripples remain, so every state is still distinct (tested). Under reduced motion the orb is a still frame; state is carried by tint, ring, badge and the status line.
 
+### 3.1 Variants and interactions (added after the owner's mid-session input)
+
+Six visual families share the state engine: nebula, halo, swarm, glass, flow, mesh; compared with screenshots in `UI_ORB_OPTIONS.md`, mapped to the owner's reference image (`references/owner_orb_reference_2026-10-08.jpg`). Two interactions, every variant: a cursor gust (particles pushed along a pointer sweep, decaying over 1.4 s) and a click poke (core bump, burst ring, outward kick) with a UI-local question bubble and composer focus. Double-click opens the Workspace.
+
+### 3.2 Blur policy (changed after the first profile run)
+
+Backdrop blur is opt-in per `GlassPanel` and used only by the composer. Over the flat ambient gradient a blur adds cost without depth: eight blurred dashboard tiles measured 22 ms raster p95 (profile build) before the change. The glass look is carried by the translucent fill, hairline border and top highlight.
+
 ## 4. Three forms, one companion
 
 | Form | Orb dock | Content |

@@ -4,10 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uri_ui/living/living_app.dart';
 import 'package:uri_ui/living/presentation/living_shell.dart';
 import 'package:uri_ui/living/screens/onboarding/living_onboarding_flow.dart';
-import 'package:uri_ui/services/app_state.dart';
-import 'package:uri_ui/services/mock_uri_client.dart';
 
-import 'living_shell_test.dart' show testServices;
+import 'living_shell_test.dart' show testServices, testAppState;
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -19,7 +17,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final appState = AppState(MockUriClient());
+      final appState = testAppState();
       final services = testServices(appState);
       addTearDown(services.dispose);
       await tester.pumpWidget(
@@ -88,10 +86,11 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(LivingPrefs.onboardingDone), isTrue);
       expect(
-        prefs.getBool('uri.completedOnboarding'),
-        isTrue,
-        reason: 'the real UserPreferences store is written (shared with the Hybrid app by design)',
-      );
+      prefs.getBool('uri.completedOnboarding'),
+      isNull,
+      reason: 'the Hybrid key is never written by the preview',
+    );
+    expect(prefs.getBool(LivingPreferencesStore.keyCompletedOnboarding), isTrue);
       expect(tester.takeException(), isNull);
     },
   );
@@ -103,7 +102,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final appState = AppState(MockUriClient());
+      final appState = testAppState();
       final services = testServices(appState);
       addTearDown(services.dispose);
       await tester.pumpWidget(

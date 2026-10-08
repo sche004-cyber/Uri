@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,7 @@ import 'package:uri_ui/living/living_app.dart';
 import 'package:uri_ui/living/living_scope.dart';
 import 'package:uri_ui/living/presentation/living_shell.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
+import 'package:uri_ui/living/widgets/glass_panel.dart';
 import 'package:uri_ui/living/widgets/status_badge.dart';
 import 'package:uri_ui/services/app_state.dart';
 import 'package:uri_ui/services/mock_uri_client.dart';
@@ -23,12 +25,11 @@ import 'package:uri_ui/theme/uri_theme.dart';
 LivingServices testServices(AppState appState, {MockWorkSimulator? work}) {
   final demo = MockCompanionSource();
   final sim =
-      work ??
-      MockWorkSimulator(stepInterval: const Duration(milliseconds: 100));
+      work ?? MockWorkSimulator(stepInterval: const Duration(milliseconds: 100));
   return LivingServices(
     presentation: UiPresentationController(commandCooldown: Duration.zero),
     companion: CompositeCompanionSource([
-      AppStateCompanionSource(appState),
+      AppStateCompanionSource(appState, dataIsMock: true),
       sim.companion,
       demo,
     ]),
@@ -39,6 +40,11 @@ LivingServices testServices(AppState appState, {MockWorkSimulator? work}) {
   );
 }
 
+/// The preview's AppState: mock client + namespaced preference store,
+/// exactly as `main_living.dart` builds it.
+AppState testAppState() =>
+    AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
+
 Future<(AppState, LivingServices)> pumpLiving(
   WidgetTester tester, {
   Size size = const Size(1280, 900),
@@ -48,7 +54,7 @@ Future<(AppState, LivingServices)> pumpLiving(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  final appState = AppState(MockUriClient());
+  final appState = testAppState();
   final services = testServices(appState, work: work);
   addTearDown(services.dispose);
   await tester.pumpWidget(
@@ -61,26 +67,19 @@ Future<(AppState, LivingServices)> pumpLiving(
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets(
-    'opens in Companion mode with the orb, a status line and a composer',
-    (tester) async {
-      await pumpLiving(tester);
-      expect(find.byKey(LivingShell.orbKey), findsOneWidget);
-      expect(
-        find.byKey(const ValueKey('companion-state-label')),
-        findsOneWidget,
-      );
-      expect(find.text('Idle'), findsWidgets);
-      expect(
-        find.byKey(const ValueKey('living-composer-field')),
-        findsOneWidget,
-      );
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('opens in Companion mode with the orb, a status line and a composer', (
+    tester,
+  ) async {
+    await pumpLiving(tester);
+    expect(find.byKey(LivingShell.orbKey), findsOneWidget);
+    expect(find.byKey(const ValueKey('companion-state-label')), findsOneWidget);
+    expect(find.text('Idle'), findsWidgets);
+    expect(find.byKey(const ValueKey('living-composer-field')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
-    'the same orb element travels through Companion -> Workspace -> Dashboard -> Companion',
+    'A2: the same orb element travels through Companion -> Workspace -> Dashboard -> Companion',
     (tester) async {
       final (_, services) = await pumpLiving(tester);
       final before = tester.element(find.byKey(LivingShell.orbKey));
@@ -88,7 +87,6 @@ void main() {
 
       await tester.tap(find.text('Workspace'));
       await tester.pump(const Duration(milliseconds: 100));
-      // Mid-transition: still one orb, moving.
       expect(find.byKey(LivingShell.orbKey), findsOneWidget);
       await tester.pumpAndSettle();
       expect(services.presentation.mode, UiPresentationMode.workspace);
@@ -121,7 +119,7 @@ void main() {
   );
 
   testWidgets(
-    '"URI dashboard" typed in the composer is a command, not a chat message; Back undoes it',
+    'A3: "URI dashboard" typed in the composer is a command, not a chat message; Back undoes it',
     (tester) async {
       final (appState, services) = await pumpLiving(tester);
       await tester.enterText(
@@ -149,7 +147,7 @@ void main() {
   );
 
   testWidgets(
-    'a real question from Companion opens the Workspace conversation and the orb thinks',
+    'a real question from Companion opens the Workspace conversation and the orb thinks (flagged simulated under the mock client)',
     (tester) async {
       final (appState, services) = await pumpLiving(tester);
       await tester.enterText(
@@ -162,10 +160,11 @@ void main() {
       expect(services.presentation.focus, WorkspaceFocus.conversation);
       expect(appState.isSendingAsk, isTrue);
       expect(services.companion.signal.state, CompanionState.thinking);
+      expect(services.companion.signal.sourceName, 'AppState.isSendingAsk');
       expect(
         services.companion.signal.simulated,
-        isFalse,
-        reason: 'derived from AppState, not a mock event',
+        isTrue,
+        reason: 'the mock client answers, so the badge must show',
       );
       await tester.pumpAndSettle();
       expect(appState.conversation, hasLength(1));
@@ -174,7 +173,7 @@ void main() {
   );
 
   testWidgets(
-    'office workflow: template -> in progress -> approval card -> approve -> Done',
+    'A4: office workflow: template -> in progress -> approval card -> approve -> Done',
     (tester) async {
       final (_, services) = await pumpLiving(tester);
       services.presentation.setMode(
@@ -182,13 +181,8 @@ void main() {
         focus: WorkspaceFocus.documents,
       );
       await tester.pumpAndSettle();
-      expect(
-        find.byType(StatusBadge),
-        findsWidgets,
-        reason: 'mock documents carry Simulated badges',
-      );
+      expect(find.byType(StatusBadge), findsWidgets);
       await tester.tap(find.byKey(const ValueKey('template-Letter')));
-      // Explicit pumps: pumpAndSettle would run the fast simulator to the end.
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       expect(services.presentation.focus, WorkspaceFocus.tasks);
@@ -217,9 +211,58 @@ void main() {
       await tester.pump(const Duration(seconds: 4));
       await tester.pumpAndSettle();
       expect(services.companion.signal.state, CompanionState.idle);
+      expect(find.text('SIMULATED'), findsWidgets);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('A4: every Workspace region renders its own content', (
+    tester,
+  ) async {
+    final (_, services) = await pumpLiving(
+      tester,
+      size: const Size(1400, 1000),
+    );
+    services.presentation.setMode(UiPresentationMode.workspace);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('living-composer-field')), findsOneWidget);
+    expect(find.text('CONTEXT & FILES'), findsOneWidget);
+    for (final (focus, texts) in [
+      (
+        WorkspaceFocus.tasks,
+        ['NEEDS YOUR DECISION', 'IN PROGRESS', 'HISTORY'],
+      ),
+      (WorkspaceFocus.documents, ['START NEW WORK', 'RECENT DOCUMENTS']),
+      (
+        WorkspaceFocus.intelligence,
+        ['REQUEST PIPELINE', 'MEMORY GRAPH', 'SIGNAL SOURCES'],
+      ),
+      (
+        WorkspaceFocus.settings,
+        [
+          'HARNESS',
+          'BRAIN / PROVIDER',
+          'REASONING MODE',
+          'APPROVAL BOUNDARY',
+          'PERMISSIONS',
+          'ORB STYLE',
+        ],
+      ),
+    ]) {
+      services.presentation.setFocus(focus);
+      await tester.pumpAndSettle();
+      for (final t in texts) {
+        // Regions are lazy lists; bring each eyebrow into view first.
+        await tester.scrollUntilVisible(
+          find.text(t),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(find.text(t), findsOneWidget, reason: '${focus.name}: $t');
+      }
+    }
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'Companion mode offers "Review and decide" only while something waits',
@@ -242,7 +285,7 @@ void main() {
   );
 
   testWidgets(
-    'priority: a real error outranks a mock speaking signal; a mock speaking never hides approval',
+    'priority: a mock speaking never hides approval; error outranks both',
     (tester) async {
       final (_, services) = await pumpLiving(tester);
       services.demo.emit(CompanionState.speaking);
@@ -251,11 +294,13 @@ void main() {
         CompanionState.awaitingApproval,
       );
       expect(services.companion.signal.state, CompanionState.awaitingApproval);
+      services.demo.emit(CompanionState.error);
+      expect(services.companion.signal.state, CompanionState.error);
     },
   );
 
   testWidgets(
-    'Dashboard: every mock-backed tile carries the Simulated badge and names its source',
+    'A5: Dashboard: each mock-backed tile carries its own Simulated badge and names its source',
     (tester) async {
       final (_, services) = await pumpLiving(
         tester,
@@ -271,23 +316,34 @@ void main() {
         'Connected clients',
         'Permissions',
         'Capabilities',
+        'Selected harness',
       ]) {
-        expect(find.text(title), findsOneWidget, reason: title);
+        final tile = find.ancestor(
+          of: find.text(title),
+          matching: find.byType(GlassPanel),
+        );
+        expect(tile, findsOneWidget, reason: title);
+        expect(
+          find.descendant(of: tile, matching: find.text('SIMULATED')),
+          findsWidgets,
+          reason: '$title has no Simulated badge',
+        );
       }
       expect(find.text('GET /tasks + WorkItemSource'), findsOneWidget);
       expect(find.text('GET /providers/active-brain'), findsOneWidget);
-      expect(find.text('SIMULATED'), findsAtLeastNWidgets(7));
       expect(find.text('Upcoming Deadline'), findsNothing);
+      expect(find.text('Halted Workflows'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'Intelligence: pipeline, no fabricated reasoning, memory graph labelled PROTOTYPE',
+    'A7: Intelligence: idle pipeline claims nothing; memory graph labelled PROTOTYPE; routing not inferred',
     (tester) async {
       final (_, services) = await pumpLiving(
         tester,
         size: const Size(1400, 1000),
+        work: MockWorkSimulator(seed: false), // nothing has happened yet
       );
       services.presentation.setMode(
         UiPresentationMode.workspace,
@@ -304,14 +360,32 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('reasoning trace'), findsNothing);
-      expect(find.bySemanticsLabel(RegExp('Request: ')), findsOneWidget);
-      expect(find.bySemanticsLabel(RegExp('Receipt: ')), findsOneWidget);
+      expect(
+        find.textContaining('Not reported by this client'),
+        findsOneWidget,
+      );
+      for (final stage in [
+        'Request',
+        'Intent',
+        'Route (Edge / Core)',
+        'Harness',
+        'Model',
+        'Approval',
+        'Execution',
+        'Receipt',
+      ]) {
+        expect(
+          find.bySemanticsLabel(RegExp('^${RegExp.escape(stage)}: idle')),
+          findsOneWidget,
+          reason: stage,
+        );
+      }
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'Settings: harness, Brain, reasoning, approval boundary, appearance, reduced effects',
+    'Settings: harness, Brain, reasoning, approval boundary, orb style, appearance, reduced effects',
     (tester) async {
       final (appState, services) = await pumpLiving(
         tester,
@@ -335,6 +409,19 @@ void main() {
         find.text('Auto-approve routine actions, ask for the rest'),
       );
       await tester.pumpAndSettle();
+      expect(appState.preferences.autonomyLevel.name, 'routineAutoApprove');
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('orb-variant-mesh')),
+        200,
+        scrollable: scrollable,
+      );
+      await tester.tap(find.byKey(const ValueKey('orb-variant-mesh')));
+      await tester.pumpAndSettle();
+      expect(services.orbVariant.value, OrbVariant.mesh);
+      expect(
+        tester.widget<EnergyOrb>(find.byKey(LivingShell.orbKey)).variant,
+        OrbVariant.mesh,
+      );
       await tester.scrollUntilVisible(
         find.text('Obsidian Cyan'),
         200,
@@ -343,12 +430,187 @@ void main() {
       expect(find.text('Obsidian Cyan'), findsOneWidget);
       final sw = find.byKey(const ValueKey('reduced-effects-switch'));
       await tester.scrollUntilVisible(sw, 200, scrollable: scrollable);
-      expect(sw, findsOneWidget);
       await tester.tap(sw);
       await tester.pumpAndSettle();
       expect(services.effects.reducedEffects, isTrue);
       expect(find.byType(EnergyOrb), findsOneWidget);
-      expect(appState.preferences.autonomyLevel.name, 'routineAutoApprove');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'A9: reduced effects removes every BackdropFilter and the shader path',
+    (tester) async {
+      final (_, services) = await pumpLiving(tester);
+      expect(find.byType(BackdropFilter), findsOneWidget);
+      services.effects.setReducedEffects(true);
+      await tester.pumpAndSettle();
+      expect(find.byType(BackdropFilter), findsNothing);
+      final orbState = tester.state(find.byKey(LivingShell.orbKey)) as dynamic;
+      expect(orbState.usesShader, isFalse);
+      services.effects.setReducedEffects(false);
+      services.presentation.setMode(UiPresentationMode.dashboard);
+      await tester.pumpAndSettle();
+      expect(find.byType(BackdropFilter), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'click: the orb pokes, asks a question and hands focus to the composer',
+    (tester) async {
+      final (_, services) = await pumpLiving(tester);
+      await tester.tap(find.byKey(LivingShell.orbKey));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(services.orbPokes.value, 1);
+      expect(
+        services.presentation.mode,
+        UiPresentationMode.companion,
+        reason: 'single click does not change mode',
+      );
+      expect(find.text("I'm here. What's next?"), findsOneWidget);
+      expect(services.composerFocus.hasFocus, isTrue);
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      final bubble = tester.widget<AnimatedOpacity>(
+        find
+            .ancestor(
+              of: find.byKey(const ValueKey('orb-question-bubble')),
+              matching: find.byType(AnimatedOpacity),
+            )
+            .first,
+      );
+      expect(bubble.opacity, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('double-click opens the Workspace', (tester) async {
+    final (_, services) = await pumpLiving(tester);
+    final orb = find.byKey(LivingShell.orbKey);
+    await tester.tap(orb);
+    await tester.pump(const Duration(milliseconds: 80));
+    await tester.tap(orb);
+    await tester.pumpAndSettle();
+    expect(services.presentation.mode, UiPresentationMode.workspace);
+  });
+
+  testWidgets(
+    'cursor gusts over the orb never throw (all variants, animating)',
+    (tester) async {
+      tester.view.physicalSize = const Size(600, 600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      for (final v in OrbVariant.values) {
+        await tester.pumpWidget(
+          EffectsSettingsScope(
+            settings: EffectsSettings(),
+            child: MaterialApp(
+              theme: buildUriTheme(UriColors.obsidianCyan),
+              home: Scaffold(
+                body: Center(
+                  child: EnergyOrb(
+                    state: CompanionState.idle,
+                    size: 300,
+                    variant: v,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 50));
+        final gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+        );
+        await gesture.addPointer(location: const Offset(150, 300));
+        for (var i = 0; i < 12; i++) {
+          await gesture.moveTo(Offset(150.0 + i * 30, 300.0 + i * 4));
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        for (var i = 0; i < 10; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        await gesture.removePointer();
+        expect(tester.takeException(), isNull, reason: v.name);
+      }
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'keyboard: Ctrl+2 opens Workspace, Ctrl+3 Dashboard, Esc returns to Companion',
+    (tester) async {
+      final (_, services) = await pumpLiving(tester);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+      expect(services.presentation.mode, UiPresentationMode.workspace);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+      expect(services.presentation.mode, UiPresentationMode.dashboard);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(services.presentation.mode, UiPresentationMode.companion);
+    },
+  );
+
+  testWidgets(
+    'A11/isolation: the preview never writes a Hybrid preference key',
+    (tester) async {
+      final (appState, _) = await pumpLiving(tester);
+      await appState.updatePreferences(
+        appState.preferences.copyWith(
+          focusAreas: ['Research'],
+          completedOnboarding: true,
+        ),
+      );
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('uri.completedOnboarding'), isNull);
+      expect(prefs.getStringList('uri.focusAreas'), isNull);
+      expect(prefs.getString('uri.autonomyLevel'), isNull);
+      expect(prefs.getString('uri.themeChoice'), isNull);
+      expect(
+        prefs.getBool(LivingPreferencesStore.keyCompletedOnboarding),
+        isTrue,
+      );
+      expect(prefs.getStringList(LivingPreferencesStore.keyFocusAreas), [
+        'Research',
+      ]);
+      for (final k in prefs.getKeys()) {
+        expect(k, startsWith('uri.living.'), reason: k);
+      }
+    },
+  );
+
+  testWidgets(
+    'A8: the default wiring (as main_living.dart builds it) runs offline on the mock client',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final appState = testAppState();
+      final services = LivingApp.buildDefaultServices(appState)
+        ..effects.setReducedMotion(true);
+      addTearDown(services.dispose);
+      await tester.pumpWidget(
+        LivingApp(appState: appState, services: services, skipOnboarding: true),
+      );
+      await tester.pumpAndSettle();
+      expect(services.appDataIsMock, isTrue);
+      expect(find.byKey(LivingShell.orbKey), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const ValueKey('living-composer-field')),
+        'hello',
+      );
+      await tester.tap(find.byKey(const ValueKey('living-composer-send')));
+      await tester.pumpAndSettle();
+      expect(appState.conversation, hasLength(1));
+      expect(appState.lastConnectionErrorDetail, isNull);
       expect(tester.takeException(), isNull);
     },
   );
@@ -382,35 +644,14 @@ void main() {
     },
   );
 
-  testWidgets('keyboard: Ctrl+2 opens Workspace, Ctrl+3 Dashboard, Esc returns to Companion', (
-    tester,
-  ) async {
-    final (_, services) = await pumpLiving(tester);
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
-    await tester.sendKeyEvent(LogicalKeyboardKey.digit2);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-    await tester.pumpAndSettle();
-    expect(services.presentation.mode, UiPresentationMode.workspace);
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
-    await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
-    await tester.pumpAndSettle();
-    expect(services.presentation.mode, UiPresentationMode.dashboard);
-    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await tester.pumpAndSettle();
-    expect(services.presentation.mode, UiPresentationMode.companion);
-  });
-
-  testWidgets('works under the four approved Hybrid themes too', (
-    tester,
-  ) async {
+  testWidgets('works under the approved Hybrid themes too', (tester) async {
     for (final theme in [
       UriThemeChoice.graphite,
       UriThemeChoice.lightProfessional,
     ]) {
       tester.view.physicalSize = const Size(1280, 900);
       tester.view.devicePixelRatio = 1;
-      final appState = AppState(MockUriClient());
+      final appState = testAppState();
       final services = testServices(appState);
       await tester.pumpWidget(
         LivingApp(

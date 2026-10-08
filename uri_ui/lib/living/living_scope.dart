@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'companion/companion_sources.dart';
+import 'companion/energy_orb.dart' show OrbVariant;
 import 'companion/effects_settings.dart';
 import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
@@ -62,6 +63,19 @@ class LivingServices {
   final ValueNotifier<ReasoningMode> reasoningMode =
       ValueNotifier<ReasoningMode>(ReasoningMode.balanced);
 
+  /// Click responses on the orb (each increment plays the poke animation
+  /// and shows a question bubble). UI-local; never a Brain event.
+  final ValueNotifier<int> orbPokes = ValueNotifier<int>(0);
+
+  /// One focus node for whichever composer is mounted, so a click on the
+  /// orb can hand the keyboard to it.
+  final FocusNode composerFocus = FocusNode(debugLabel: 'living-composer');
+
+  /// Visual family of the orb (owner choice; see UI_ORB_OPTIONS.md).
+  final ValueNotifier<OrbVariant> orbVariant = ValueNotifier<OrbVariant>(
+    OrbVariant.nebula,
+  );
+
   void dispose() {
     presentation.dispose();
     companion.dispose();
@@ -71,6 +85,9 @@ class LivingServices {
     demo.dispose();
     selectedHarness.dispose();
     reasoningMode.dispose();
+    orbVariant.dispose();
+    orbPokes.dispose();
+    composerFocus.dispose();
   }
 }
 
