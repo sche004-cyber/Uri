@@ -36,7 +36,7 @@ _STEP_TRANSITIONS = {
                              "FAILED", "VERIFIED", "UNCERTAIN", "ANSWERED"},
     "WAITING_APPROVAL": {"EXECUTING", "VERIFIED", "CANCELLED", "FAILED", "UNCERTAIN", "PENDING", "REFUSED",
                          "WAITING_USER_CHOICE"},
-    "EXECUTING": {"VERIFIED", "FAILED", "UNCERTAIN", "WAITING_USER_CHOICE"},
+    "EXECUTING": {"VERIFIED", "FAILED", "UNCERTAIN", "WAITING_USER_CHOICE", "CANCELLED", "REFUSED"},
 }
 
 
@@ -144,13 +144,23 @@ class TaskLedger:
         return self.update(task_id, fn)
 
     def ready_steps(self, task):
-        done = {s["step_id"] for s in task["steps"] if s["state"] in ("VERIFIED", "ANSWERED", "SKIPPED")}
+        # Only real success satisfies a dependency. SKIPPED does not: a skipped step produced nothing.
+        done = {s["step_id"] for s in task["steps"] if s["state"] in ("VERIFIED", "ANSWERED")}
         return [s for s in task["steps"] if s["state"] == "PENDING" and set(s["depends_on"]) <= done]
 
     def blocked_steps(self, task):
-        """Pending steps whose dependency ended without success: never run on top of a failure or uncertainty."""
-        bad = {s["step_id"] for s in task["steps"] if s["state"] in ("FAILED", "UNCERTAIN", "REFUSED", "CANCELLED")}
-        return [s for s in task["steps"] if s["state"] == "PENDING" and set(s["depends_on"]) & bad]
+        """Pending steps that depend, directly or transitively, on a step that ended without success."""
+        bad = {s["step_id"] for s in task["steps"]
+               if s["state"] in ("FAILED", "UNCERTAIN", "REFUSED", "CANCELLED", "SKIPPED")}
+        deps = {s["step_id"]: set(s["depends_on"]) for s in task["steps"]}
+        changed = True
+        while changed:
+            changed = False
+            for sid, d in deps.items():
+                if sid not in bad and d & bad:
+                    bad.add(sid)
+                    changed = True
+        return [s for s in task["steps"] if s["state"] == "PENDING" and s["step_id"] in bad]
 
     def record_provider_choice(self, task_id, provider, by="user"):
         def fn(task):

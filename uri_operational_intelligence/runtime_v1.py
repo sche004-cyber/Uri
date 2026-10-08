@@ -135,12 +135,17 @@ def verify_artifacts(cfg, state_dir=DEFAULT_STATE, full=False) -> dict:
         st = p.stat()
         key = str(p.resolve()).lower()
         hit = cache.get(key)
-        if not full and hit and hit["size"] == st.st_size and hit["mtime_ns"] == st.st_mtime_ns:
+        # Cache hit needs size, mtime, ctime AND file id (st_ino) unchanged. This guards against accidental change and
+        # file replacement; it is not tamper-proof against a same-user writer who restores all metadata (full=True
+        # re-hashes; the host runs a full verify on request and on every first sight of a file).
+        if (not full and hit and hit["size"] == st.st_size and hit["mtime_ns"] == st.st_mtime_ns
+                and hit.get("ctime_ns") == st.st_ctime_ns and hit.get("ino") == st.st_ino):
             observed, method = hit["sha256"], "cached"
         else:
             t0 = time.monotonic()
             observed, method = _sha256(p), "full"
-            cache[key] = {"size": st.st_size, "mtime_ns": st.st_mtime_ns, "sha256": observed,
+            cache[key] = {"size": st.st_size, "mtime_ns": st.st_mtime_ns, "ctime_ns": st.st_ctime_ns, "ino": st.st_ino,
+                          "sha256": observed,
                           "hashed_at": time.time(), "hash_seconds": round(time.monotonic() - t0, 2)}
             changed = True
         row.update(status="MATCH" if observed == art["sha256"] else "MISMATCH", method=method, observed=observed)
@@ -305,8 +310,15 @@ class RuntimeManager:
         with self._guard:
             current = self.status()
             if current.state in (READY, LOADING):
+                # Attaching to a running instance still requires the pinned artifacts on disk to verify.
+                self.last_artifacts = verify_artifacts(self.cfg, self.state_dir, full=full_verify)
+                if self.last_artifacts["overall"] != "MATCH":
+                    return Readiness(IDENTITY_MISMATCH, self.url, pid=current.pid, model_id=self.cfg["model"]["id"],
+                                     detail="ARTIFACT_" + self.last_artifacts["overall"],
+                                     artifact_identity=self.last_artifacts, live_identity=current.live_identity)
                 if current.state == LOADING:
                     return self._wait_ready(timeout, on_state)
+                current.artifact_identity = self.last_artifacts
                 return current
             if current.state in (FOREIGN_INSTANCE, IDENTITY_MISMATCH, FAILED):
                 return current

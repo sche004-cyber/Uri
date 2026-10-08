@@ -76,6 +76,8 @@ action happened from answer text: only `core.result` and `task.step` carry actio
 - No provider switch happens silently: a quota stop arrives as `core.result` `WAITING_FOR_MODEL` plus
   `harness.choice_required` with the exhausted provider in `excluded`.
 - `answer.delta` text is language only. It never confirms an action. A reply that claims an action without Core
-  executing one is flagged `UNVERIFIED_ACTION_CLAIM` and corrected in-stream.
+  executing one is flagged `UNVERIFIED_ACTION_CLAIM` in `answer.done` and a correction is appended at the end; the
+  claim itself may already be on screen, so the UI should render the flag prominently.
+- If the SSE reader disconnects, the turn is cancelled server-side.
 - Not yet provided: voice (`listening` comes from the voice layer), images, multi-turn history persistence in the dev
   server (history is passed by the caller), and production transport.

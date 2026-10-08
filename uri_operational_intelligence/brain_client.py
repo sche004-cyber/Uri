@@ -264,7 +264,7 @@ class BrainClient:
         for attempt in (0, 1):
             try:
                 r = self._get().post("/v1/chat/completions", json=body, timeout=httpx.Timeout(timeout_s, connect=self.connect_timeout))
-            except (httpx.ConnectError, httpx.ConnectTimeout, httpx.RemoteProtocolError) as exc:
+            except (httpx.ConnectError, httpx.ConnectTimeout) as exc:   # nothing was sent or received
                 self.reset()
                 res.status, res.error = UNREACHABLE, type(exc).__name__
                 if attempt == 0:
@@ -292,7 +292,10 @@ class BrainClient:
             except (ValueError, KeyError, IndexError, TypeError):
                 res.status, res.error = PROTOCOL_ERROR, "BAD_RESPONSE_SHAPE"
                 break
-            res.status = INCOMPLETE_LENGTH if res.finish_reason == "length" else COMPLETE
+            # Allowlist: only an explicit stop is COMPLETE; a missing or unknown finish reason is not success.
+            res.status = {"length": INCOMPLETE_LENGTH, "stop": COMPLETE, "eos": COMPLETE}.get(res.finish_reason, INTERRUPTED)
+            if res.status == INTERRUPTED:
+                res.error = "UNKNOWN_FINISH_REASON:%s" % res.finish_reason
             break
         res.total_s = round(time.monotonic() - t0, 4)
         return res

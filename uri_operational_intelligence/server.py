@@ -81,11 +81,18 @@ def create_app(*, token: str, orchestrator: Orchestrator, manager: R.RuntimeMana
         threading.Thread(target=run, daemon=True).start()
 
         def stream():
-            while True:
-                ev = q.get()
-                if ev is None:
-                    return
-                yield "data: " + json.dumps(ev, ensure_ascii=False) + "\n\n"
+            finished = False
+            try:
+                while True:
+                    ev = q.get()
+                    if ev is None:
+                        finished = True
+                        return
+                    yield "data: " + json.dumps(ev, ensure_ascii=False) + "\n\n"
+            finally:
+                if not finished:
+                    # Reader went away: stop inference instead of generating into a queue nobody reads.
+                    orchestrator.cancel(turn_id, "client_disconnected")
 
         return StreamingResponse(stream(), media_type="text/event-stream", headers={"X-OI-Turn": turn_id})
 

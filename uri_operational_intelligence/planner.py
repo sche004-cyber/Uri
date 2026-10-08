@@ -48,22 +48,34 @@ def _norm(s):
     return re.sub(r"\s+", " ", s or "").strip().lower()
 
 
-# A verbatim span can still drop the words that negate it ("don't email Ravi, just draft it" contains "email Ravi").
-_NEGATION_BEFORE = re.compile(r"(?:\b(?:don'?t|do not|never|not|no need to|without|stop|avoid|instead of|rather than|"
-                              r"dont|shouldn'?t|mustn'?t|won'?t)\b)[\s,]*(?:\w+\s+){0,2}$", re.I)
+# A verbatim span can still drop the words that negate it ("Do not under any circumstances email Ravi" contains
+# "email Ravi"). Rule (fail closed): a negation or exclusion ANYWHERE earlier in the same clause rejects the span.
+_NEGATION = re.compile(r"\b(?:don'?t|dont|do not|does not|never|not|no need to|without|stop|avoid|instead of|"
+                       r"rather than|shouldn'?t|mustn'?t|won'?t|can'?t|cannot|no longer|forget about)\b", re.I)
+_CLAUSE_BREAK = re.compile(r"[.;!?\n]|\bbut\b|\bthen\b|\bafter that\b|\balso\b", re.I)
 
 
-def _negated(norm_text, norm_span):
-    """True when any occurrence of the span is preceded (within the clause) by a negation or an exclusion."""
-    start = 0
-    while True:
-        i = norm_text.find(norm_span, start)
-        if i < 0:
-            return False
-        left = re.split(r"[.;!?]|\bbut\b|\bthen\b", norm_text[:i])[-1]
-        if _NEGATION_BEFORE.search(left):
+def _span_regex(span):
+    words = [re.escape(w) for w in (span or "").split()]
+    return re.compile(r"\s+".join(words), re.I) if words else None
+
+
+def exact_user_span(text, span):
+    """The user's own characters for a span that matches case/whitespace-insensitively, or None. Core then receives
+    the user's exact substring, never the model's re-typed copy."""
+    rx = _span_regex(span)
+    m = rx.search(text) if rx else None
+    return m.group(0) if m else None
+
+
+def _negated(text, span):
+    """True when any occurrence of the span has a negation earlier in its clause."""
+    rx = _span_regex(span)
+    for m in (rx.finditer(text) if rx else ()):
+        left = _CLAUSE_BREAK.split(text[:m.start()])[-1]
+        if _NEGATION.search(left):
             return True
-        start = i + 1
+    return False
 
 
 def validate_plan(plan, user_text, capability_ids) -> dict:
@@ -90,16 +102,19 @@ def validate_plan(plan, user_text, capability_ids) -> dict:
             s["capability"] = None
         if s["kind"] in ("action", "harness"):
             span = s.get("source_span")
-            if not span or _norm(span) not in norm_text:
+            exact = exact_user_span(user_text, span) if span else None
+            if not exact:
                 downgraded.append(sid)
                 s["kind"], s["unusable_reason"] = "ask_user", "SOURCE_SPAN_NOT_VERBATIM"
                 s["source_span"] = None
-            elif _negated(norm_text, _norm(span)):
+            elif _negated(user_text, span):
                 downgraded.append(sid)
                 s["kind"], s["unusable_reason"] = "ask_user", "SOURCE_SPAN_NEGATED"
                 s["source_span"] = None
-            elif s["kind"] == "action" and s.get("capability") is None:
-                s["unusable_reason"] = "NO_MATCHING_CAPABILITY"
+            else:
+                s["source_span"] = exact
+                if s["kind"] == "action" and s.get("capability") is None:
+                    s["unusable_reason"] = "NO_MATCHING_CAPABILITY"
         else:
             s["source_span"] = None
     fatal = [p for p in problems if p.startswith("DUPLICATE")]

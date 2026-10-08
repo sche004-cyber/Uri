@@ -51,6 +51,23 @@ class PairedCoreGateway:
         return self.runner.continue_waiting(session_id, turn_id, selection, approve)
 
 
+def core_turn_status(env: dict, needs: str) -> str:
+    """Allowlist: "ok" only for Core's verified settlement. Everything else is needs_user / error / not_verified /
+    refused / reported (Core's message shown as is), never success."""
+    code, state = env.get("code") or "", env.get("state")
+    if needs != "none":
+        return "needs_user"
+    if code == "SETTLED_VERIFIED" and state == "reply":
+        return "ok"
+    if state == "failed":
+        return "error"
+    if code.startswith("SETTLED_") or state in ("execution_uncertain", "cancelled"):
+        return "not_verified"
+    if code.startswith("REFUSED_") or code.startswith("CLARIFICATION_") or code.startswith("INTENT_"):
+        return "refused"
+    return "reported"
+
+
 def core_needs(env: dict) -> str:
     if env.get("state") == "approval_required":
         return "approval"
@@ -67,8 +84,8 @@ def step_state_for(env: dict) -> str:
         return "WAITING_APPROVAL"
     if env.get("confirmation") or env.get("clarification"):
         return "WAITING_CONFIRMATION"
-    if code == "SETTLED_VERIFIED":
-        return "VERIFIED"
+    if code == "SETTLED_VERIFIED" and state == "reply":
+        return "VERIFIED"   # success needs BOTH Core's verified code and its reply state
     if state == "execution_uncertain" or code in ("SETTLED_EXECUTION_UNCERTAIN", "INTENT_EXECUTION_UNCERTAIN"):
         return "UNCERTAIN"
     if code == "WAITING_FOR_MODEL":
@@ -243,7 +260,7 @@ class Orchestrator:
             return TurnOutcome(turn_id, "core", tri.to_dict(), tier.to_dict(), "error")
         return self._relay_core(env, text, session_id, tri, tier, emit, turn_id, history, cancel)
 
-    def _relay_core(self, env, text, session_id, tri, tier, emit, turn_id, history, cancel) -> TurnOutcome:
+    def _relay_core(self, env, text, session_id, tri, tier, emit, turn_id, history, cancel, selection=None) -> TurnOutcome:
         needs = core_needs(env)
         emit("core.result", state=env.get("state"), code=env.get("code"), message=env.get("message"), needs=needs,
              **{k: env[k] for k in ("intent", "confirmation", "clarification") if env.get(k) is not None})
@@ -259,8 +276,14 @@ class Orchestrator:
             out.core = env
             out.route = "core+answer"
             return out
-        status = "needs_user" if needs != "none" else ("error" if env.get("state") == "failed" else "ok")
-        return TurnOutcome(turn_id, "core", tri.to_dict(), tier.to_dict(), status, core=env)
+        if env.get("code") == "WAITING_FOR_MODEL":
+            # Provider quota: Core kept the checkpoint. Offer the other providers; never switch silently.
+            used = (selection or self.brain_selection).get("provider")
+            choice = H.choose(self.harness_statuses(), exclude=(used,)).to_dict()
+            emit("harness.choice_required", **choice)
+            return TurnOutcome(turn_id, "core", tri.to_dict(), tier.to_dict(), "needs_harness_choice", core=env,
+                               harness=choice)
+        return TurnOutcome(turn_id, "core", tri.to_dict(), tier.to_dict(), core_turn_status(env, needs), core=env)
 
     # ---- user decisions on Core turns ------------------------------------------------------------
     def confirm(self, session_id, turn, sink: EventSink | None = None):
@@ -275,6 +298,18 @@ class Orchestrator:
         emit = lambda t, **d: sink.emit(turn.get("turn_id"), t, **d)
         emit("core.result", state=env.get("state"), code=env.get("code"), message=env.get("message"), needs=core_needs(env))
         return env
+
+    def begin_harness(self, text, session_id, provider_selection: dict, sink: EventSink | None = None) -> TurnOutcome:
+        """Run a harness request through Core with the provider the USER chose (explicit selection row)."""
+        sink = sink or EventSink()
+        turn_id = str(uuid.uuid4())
+        emit = lambda t, **d: sink.emit(turn_id, t, **d)
+        tri, tier = T.Triage(T.HARNESS, ["user_selected_provider"]), RP.decide(T.HARNESS)
+        emit("turn.routed", route="core", triage=tri.to_dict(), tier=tier.to_dict())
+        env = self.core.begin(text, session_id, provider_selection)
+        out = self._relay_core(env, text, session_id, tri, tier, emit, turn_id, (), None, selection=provider_selection)
+        out.events = sink.events
+        return out
 
     # ---- multi-step -------------------------------------------------------------------------------
     def _plan_turn(self, text, session_id, tri, tier, emit, turn_id) -> TurnOutcome:
@@ -335,6 +370,25 @@ class Orchestrator:
         self.ledger.set_step(task_id, s["step_id"], "IN_CORE")
         env = self.core.begin(s["source_span"], task["session_id"], self.brain_selection)
         return self.record_step(task_id, s["step_id"], env, sink=sink)
+
+    def confirm_step(self, task_id, step_id, turn, *, sink: EventSink | None = None):
+        env = self.core.confirm(self.ledger.get(task_id)["session_id"], self.brain_selection, turn)
+        return self.record_step(task_id, step_id, env, sink=sink)
+
+    def decide_step(self, task_id, step_id, turn, approve: bool, *, sink: EventSink | None = None):
+        """The user's approval decision for a plan step. Before an APPROVAL is handed to Core the step is durably
+        EXECUTING: a crash from here on recovers as UNCERTAIN, never as a step to start again."""
+        task = self.ledger.get(task_id)
+        if approve:
+            self.ledger.set_step(task_id, step_id, "EXECUTING",
+                                 core={"turn_id": turn.get("turn_id"), "state": "approved_by_user", "code": None})
+        try:
+            env = self.core.decide(task["request_text"], task["session_id"], self.brain_selection, turn, approve)
+        except Exception as exc:
+            if approve:
+                self.ledger.set_step(task_id, step_id, "UNCERTAIN", note="decide_error:" + type(exc).__name__)
+            raise
+        return self.record_step(task_id, step_id, env, sink=sink)
 
     def record_step(self, task_id, step_id, env, *, sink: EventSink | None = None):
         sink = sink or EventSink()

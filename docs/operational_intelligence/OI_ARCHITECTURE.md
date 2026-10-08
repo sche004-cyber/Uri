@@ -31,7 +31,7 @@ OI never approves, claims, settles, or retries an uncertain execution.
 |---|---|---|
 | Configuration | `model_lab/integration/local_brain.json` (frozen, read-only) | `runtime_v1.load_config` |
 | Process | at most one `llama-server.exe` on 127.0.0.1:18470 with exactly the frozen argv (freeze record §2) | `runtime_v1.expected_argv` (test pins every frozen flag) |
-| Artifact identity | SHA-256 of server binary, `ggml-vulkan.dll`, model, mmproj, MTP draft; full hash on first use and on any size/mtime change, otherwise a stat-matched cache reported as method `cached` | `verify_artifacts` |
+| Artifact identity | SHA-256 of server binary, `ggml-vulkan.dll`, model, mmproj, MTP draft; full hash on first use and whenever size, mtime, ctime or file id change, otherwise a cache hit reported as method `cached` (protects against accidental change and file replacement, not against a same-user writer restoring all metadata; `--full-verify` re-hashes). Verified on start AND on attach | `verify_artifacts` |
 | Live identity | listener pid's executable path + exact argv; `/props` model path, `n_ctx` 32768, build `b11425`, 1 slot | `inspect_process`, `live_identity_problems` |
 | Start / attach | attach if an authorized instance is READY or LOADING; refuse FOREIGN_INSTANCE / IDENTITY_MISMATCH; start only after artifact MATCH, under a cross-process start lock, inside a kill-on-close Job Object (Phase 2 `spawn_contained`, reused unchanged) | `RuntimeManager.ensure_ready` |
 | Stop | only an instance this manager started; success only when the job is confirmed empty | `RuntimeManager.stop` |
@@ -39,7 +39,7 @@ OI never approves, claims, settles, or retries an uncertain execution.
 | Streaming | SSE `/v1/chat/completions`; reasoning and answer deltas separated; llama-server `timings` captured verbatim | `brain_client.stream_chat` |
 | Cancellation | watcher thread closes the HTTP stream; llama-server sees the disconnect and frees the slot (verified live: slot idle immediately, next request 0.25 s) | `CancelToken` |
 | Deadlines | first token 60 s (covers a 30k prefill), idle gap 30 s, total 300 s (configurable) | `Deadlines` |
-| Errors | COMPLETE, INCOMPLETE_LENGTH, CANCELLED, TIMEOUT_FIRST_TOKEN, STALLED, DEADLINE_EXCEEDED, INTERRUPTED, UNREACHABLE, HTTP_ERROR, PROTOCOL_ERROR; only COMPLETE is success | `brain_client` |
+| Errors | COMPLETE, INCOMPLETE_LENGTH, CANCELLED, TIMEOUT_FIRST_TOKEN, STALLED, DEADLINE_EXCEEDED, INTERRUPTED, UNREACHABLE, HTTP_ERROR, PROTOCOL_ERROR; only COMPLETE is success, and only for an explicit `stop`/`eos` finish reason | `brain_client` |
 | Recovery | one automatic retry only for a transport failure before any output (inference has no side effects); never after output began; never to another model | `stream_chat`, `complete_json` |
 | Performance health | per-process GPU dedicated/shared memory vs the READY baseline and rolling decode rate → DEGRADED with recovery options (OI-PERF-1) | `perf_monitor` |
 | Observability | per call: status, ttft, first answer, total, prompt_n, prompt tok/s, predicted_n, decode tok/s, cache_n, MTP draft_n / accepted | `AnswerOutcome.metrics`, `RuntimeV1Provider.calls` |
@@ -91,22 +91,29 @@ OQ overlay + OI files), the same method as the consolidation runbook.
   channel's system prompt makes the model emit `<<ACTION>>`; the first characters are held back until they cannot be
   the marker, then the generation is cancelled and the turn re-routed to Core with no text shown. Held-out set:
   triage recall 0.75 alone, 1.00 with the marker, false positives 0.05.
-- **Action-claim guard.** An answer claiming a completed action while no Core execution happened is flagged
-  `UNVERIFIED_ACTION_CLAIM` and corrected in-stream.
+- **Action-claim guard (post-response correction).** An answer claiming a completed action while no Core execution
+  happened is flagged `UNVERIFIED_ACTION_CLAIM` and a correction is appended at the end of the stream. The claim text
+  itself may already have been shown; the guard does not hold it back.
 - **Core CONVERSATION fallback.** If Core finds nothing to act on, the language request is answered on the answer
   channel (no action ran).
 - **Multi-step.** NORMAL-tier planner with a JSON schema (thinking + grammar verified to work together on b11425).
   Deterministic validation: ≤ 8 steps, unique ids, backward-only dependencies, known capabilities only, and every
-  action/harness step's `source_span` must be verbatim from the user's request (else downgraded to ask_user).
+  action/harness step's `source_span` must match the user's request (case/whitespace-insensitive) and is then
+  replaced by the user's exact characters; a span with a negation or exclusion anywhere earlier in its clause is
+  rejected (downgraded to ask_user, fail closed).
   Nothing runs before the user approves the plan. Action steps go to Core with the user's verbatim words, so Intent
   Discovery, confirmation, gates and approval apply unchanged.
-- **Task ledger.** One JSON file per task (atomic replace + fsync), step state machine, restart recovery: a step
-  that may have dispatched becomes UNCERTAIN and is never retried; dependents of an unsuccessful step are SKIPPED;
-  pending approvals return to PENDING (Core keeps approvals in memory and fails closed after restart).
+- **Task ledger.** One JSON file per task (atomic replace + fsync), step state machine, restart recovery. Before an
+  approval is handed to Core (`decide_step`) the step is durably EXECUTING, so a crash anywhere after the approval
+  recovers as UNCERTAIN and the step is never started again. Pending approvals that were never given return to
+  PENDING (Core keeps approvals in memory and fails closed after restart). Only VERIFIED / ANSWERED satisfy a
+  dependency; dependents of a failed, refused, cancelled, uncertain or skipped step are SKIPPED transitively.
 - **Harness coordination.** Separate from Brain selection. Options carry usable / why_not (policy, qualification,
-  auth, quota, source). `requires_user_choice` is false only for the user's explicit, still-usable choice. Quota:
-  Core's own `WAITING_FOR_MODEL` checkpoint + `continue_waiting` (frozen client) is reused; OI excludes the exhausted
-  provider from the new options.
+  auth, quota, source). `requires_user_choice` is false only for the user's explicit, still-usable choice.
+  `begin_harness` sends a harness request to Core with the user's chosen provider row. Quota: Core's own
+  `WAITING_FOR_MODEL` checkpoint is relayed and a `harness.choice_required` event offers the other providers with the
+  exhausted one excluded; resuming uses the frozen client's `continue_waiting` with a fresh approval (not yet wired
+  into an OI method: see the ledger).
 
 ## 6. What OI deliberately does not do
 
