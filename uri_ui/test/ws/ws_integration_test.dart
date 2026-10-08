@@ -307,6 +307,26 @@ void main() {
     expect(conv.pendingConfirmation, isNotNull);
     expect(conv.busy, isFalse);
   });
+
+  _timeoutTests();
+}
+
+void _timeoutTests() {
+  test('a timed-out decision is an unknown outcome: busy, no retry card, reconciled by its turn.finished', () async {
+    final rt = _RefusingRuntime('WORKER_TIMEOUT');
+    final conv = OiConversation(rt);
+    await conv.send('remember that x');
+    rt.emit('t1', 'approval.required', {'capability_id': 'remember_fact', 'arguments': {}, 'approval_digest': digest});
+    rt.emit('t1', 'turn.finished', {'status': 'needs_user'});
+    await pumpEventQueue();
+    await conv.decide(approve: true);
+    expect(conv.pendingApproval, isNull);
+    expect(conv.busy, isTrue);
+    rt.emit('t1', 'core.result', {'code': 'SETTLED_VERIFIED', 'needs': 'none'});
+    rt.emit('t1', 'turn.finished', {'status': 'ok'});
+    await pumpEventQueue();
+    expect(conv.busy, isFalse);
+  });
 }
 
 class _RefusingRuntime extends FakeRuntime {

@@ -215,12 +215,19 @@ class OiConversation extends ChangeNotifier {
         'approval_digest': a.approvalDigest,
       });
     } on IntegratedRuntimeException catch (e) {
+      lastError = e.code;
+      if (e.code == 'WORKER_TIMEOUT') {
+        // Unknown outcome: the worker may have accepted the decision. Stay busy with the job counted and offer no
+        // retry; its turn.finished or a worker exit reconciles the state (Codex WS round 3).
+        messages.add(OiMessage(role: OiRole.system, text: 'No reply yet from URI for this decision; waiting.'));
+        notifyListeners();
+        return;
+      }
       _jobs[a.turnId] = (_jobs[a.turnId] ?? 1) - 1;
       if ((_finishes[a.turnId] ?? 0) >= (_jobs[a.turnId] ?? 0)) activeTurnId = null;
       _byTurn[a.turnId]?.streaming = false;
-      lastError = e.code;
-      // A transient refusal keeps the card; a digest mismatch or a released turn does not.
-      if (e.code == 'TURN_IN_PROGRESS' || e.code == 'WORKER_TIMEOUT') pendingApproval = a;
+      // A definite transient refusal keeps the card; a digest mismatch or a released turn does not.
+      if (e.code == 'TURN_IN_PROGRESS') pendingApproval = a;
       messages.add(OiMessage(role: OiRole.system, text: 'Decision refused: ${e.code}'));
     }
     notifyListeners();
@@ -237,11 +244,15 @@ class OiConversation extends ChangeNotifier {
     try {
       await runtime.call({'command': 'oi_confirm', 'turn_id': c.turnId});
     } on IntegratedRuntimeException catch (e) {
+      lastError = e.code;
+      if (e.code == 'WORKER_TIMEOUT') {
+        notifyListeners(); // unknown outcome: stay busy, no retry (see decide)
+        return;
+      }
       _jobs[c.turnId] = (_jobs[c.turnId] ?? 1) - 1;
       if ((_finishes[c.turnId] ?? 0) >= (_jobs[c.turnId] ?? 0)) activeTurnId = null;
       _byTurn[c.turnId]?.streaming = false;
-      lastError = e.code;
-      if (e.code == 'TURN_IN_PROGRESS' || e.code == 'WORKER_TIMEOUT') pendingConfirmation = c;
+      if (e.code == 'TURN_IN_PROGRESS') pendingConfirmation = c;
     }
     notifyListeners();
   }
