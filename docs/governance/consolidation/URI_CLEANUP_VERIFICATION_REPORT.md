@@ -47,7 +47,7 @@ stopped by me; its results are used only for this diagnosis.
 
 ## 2. Runtime authority and adversarial tests
 
-`tests/consolidation/test_runtime_authority_check.py`: **45 passed** (25 original + 9, 7, 3 and 1 added after Codex rounds 1-4). Attempts covered, each confirmed CONTAMINATED
+`tests/consolidation/test_runtime_authority_check.py`: **47 passed** (25 original + 9, 7, 3, 1 and 2 added after Codex rounds 1-5). Attempts covered, each confirmed CONTAMINATED
 or refused:
 - the donor desktop server, the `_V1` launcher, the Phase 2 dev worktree server and the Phase 1 integration launcher
   each run as URI;
@@ -135,6 +135,16 @@ traversal out of the authorized root classifies QUARANTINED. One new finding:
 
 1 new test (45 total, all passing); it fails on the round-3 checker (negative control). Live run unchanged. Round 5
 result: see §2e.
+
+## 2e. Codex review round 5: REJECT, then repaired
+
+| ID | Sev | Finding | Repair |
+|---|---|---|---|
+| W-1 residual | High | A running donor or quarantined program with no listener (`D:/URI-preservation/worker.exe --work`) was not reported, and the live probe dropped such processes | Every process launched from a donor or quarantined root is evaluated and kept by the probe. Test runners of donor code (`pytest`, regression/chain scripts) are reported as `DEV_TEST_ACTIVITY` but not counted; servers or workers they spawn are evaluated on their own |
+
+2 new tests (47 total, all passing); both fail on the round-4 checker. Live run unchanged. Consequence for
+operators: while the Phase 2 session runs bridge/server tests, the checker correctly reports those donor servers.
+Run it when development is idle, or read the findings. Round 6 result: see §2f.
 
 ## 3. Integrity and recoverability
 

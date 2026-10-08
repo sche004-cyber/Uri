@@ -324,3 +324,16 @@ def test_any_executable_inside_a_manifest_root_is_evaluated_without_a_uri_hint()
 def test_extended_length_prefix_does_not_change_classification():
     cmd = r"python \\?\C:\Users\cheta\Development\uri-agent\scripts\run_uri_server.py --port 8000"
     assert rac.classify(cmd, M)[0] == "TRANSITIONAL_LEGACY"
+
+
+# --- regression for the Codex adversarial review round 5 (2026-10-08, verdict REJECT) ------------------------------
+def test_running_donor_or_quarantined_worker_without_a_listener_fails():
+    for cmd in ("D:/URI-preservation/worker.exe --work", "C:/uri-model-lab-nvme/worker.exe --work"):
+        rep = verdict(snap(processes=[{"pid": 5, "ppid": 1, "image": cmd.split()[0], "cmdline": cmd}]))
+        assert rep["verdict"] == "CONTAMINATED", cmd
+
+
+def test_donor_test_runs_are_reported_but_not_counted():
+    cmd = "C:/Users/cheta/.codex/worktrees/uri-phase2a/uri-agent/.venv/Scripts/python.exe -I -m pytest tests/phase2a"
+    rep = verdict(snap(processes=[{"pid": 6, "ppid": 1, "image": "python.exe", "cmdline": cmd}]))
+    assert rep["findings"] and rep["findings"][0]["note"].startswith("DEV_TEST_ACTIVITY") and rep["verdict"] != "CONTAMINATED"

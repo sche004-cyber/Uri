@@ -45,6 +45,8 @@ RUNTIME_HINT = re.compile(r"(?i)(run_uri_server|uri_server_launcher|run_uri_isol
                           r"run_desktop_server|run_uri_client_worker|run_uri_supervised_worker|uri_client_launcher|"
                           r"launch_uri\.ps1|launch_desktop\.ps1|uri_server_ctl\.ps1|uri_server\.ps1|uri_client\.ps1|"
                           r"launch uri\.bat|uri_ui\.exe|uvicorn\s+uri_core|uri_core\.app\.server|llama-server)")
+TEST_RUNNER = re.compile(r"(?i)(-m\s+pytest|\bpytest(\.exe)?\b|[\\/]tests?[\\/]|\btest_\w+\.py|_regression\.py|_chain\.py|"
+                         r"fake_harness\.py|-m\s+unittest)")
 AGENT_SHELL = re.compile(r"(?i)(\.claude[\\/]shell-snapshots|CLAUDE_CODE_SHELL|__claudeCodeScript)")
 REQUIRED_KEYS =("schema", "authoritative_runtime", "roots", "transitional_legacy", "shared_dependencies", "ports")
 
@@ -387,12 +389,27 @@ def evaluate(snapshot: dict, manifest: dict, strict: bool = False) -> dict:
         return (lst["port"] in uri_ports or lst["port"] in model_ports or _is_python_like(text) or refs_root(text))
 
     listener_pids = {lst.get("pid") for lst in snapshot.get("listeners", []) if listener_relevant(lst)}
+
+    def launched_from_nonactive_root(cmd, image):
+        for ex, tg in launch_targets(cmd) + [(image, image)]:
+            for path in (tg, ex):
+                r = _root_containing(path, roots) if path and not path.startswith(("module:", "inline-code", "encoded:")) else None
+                if r is not None and r["classification"] != "ACTIVE_AUTHORITATIVE":
+                    return True
+        return False
     for p in snapshot.get("processes", []):
         cmd = p["cmdline"]
         if AGENT_SHELL.search(cmd):
             continue
         if RUNTIME_HINT.search(cmd) or p.get("pid") in listener_pids:
             add("process", f"pid {p['pid']}", cmd, True)
+        elif launched_from_nonactive_root(cmd, p.get("image", "")):
+            if TEST_RUNNER.search(cmd):
+                # Development test runs of donor code are reported, not counted: they are not a URI runtime. Any
+                # server or worker they spawn is evaluated on its own command line or listener.
+                add("process", f"pid {p['pid']}", cmd, False, {"note": "DEV_TEST_ACTIVITY (reported, not counted)"})
+            else:
+                add("process", f"pid {p['pid']}", cmd, True)
     for lst in snapshot.get("listeners", []):
         text = lst.get("cmdline") or lst.get("image") or ""
         # URI and model ports always; any other port when an interpreter/uvicorn owns it or it runs from a manifest root.
@@ -437,7 +454,7 @@ $o | ConvertTo-Json -Depth 5 -Compress
 """
 
 
-def live_snapshot() -> dict:
+def live_snapshot(roots: list | None = None) -> dict:
     if os.name != "nt":
         raise SystemExit("live probe is Windows-only; use --snapshot")
     r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", PS_PROBE], capture_output=True,
@@ -453,7 +470,9 @@ def live_snapshot() -> dict:
     listen_pids = {l.get("pid") for l in (snap.get("listeners") or []) if isinstance(l, dict)}
     snap["processes"] = [p for p in snap.get("processes") or [] if "uri_runtime_authority_check" not in p["cmdline"]
                          and "$o.scheduled_tasks" not in p["cmdline"] and not AGENT_SHELL.search(p["cmdline"])
-                         and (RUNTIME_HINT.search(p["cmdline"]) or (p.get("pid") in listen_pids and _is_python_like(p["cmdline"])))]
+                         and (RUNTIME_HINT.search(p["cmdline"]) or (p.get("pid") in listen_pids and _is_python_like(p["cmdline"]))
+                              or (roots and any(_root_containing(x, roots) for ex, tg in launch_targets(p["cmdline"])
+                                                for x in (ex, tg, p.get("image", "")) if x)))]
     for lst in snap.get("listeners") or []:
         c = lst.get("cmdline", "")
         if not (RUNTIME_HINT.search(c) or URI_HINT.search(c) or _is_python_like(c)):
@@ -488,7 +507,7 @@ def main(argv=None) -> int:
     except ManifestError as exc:
         print(f"MANIFEST_INVALID: {exc}")
         return 2
-    snap = json.loads(Path(a.snapshot).read_text(encoding="utf-8")) if a.snapshot else live_snapshot()
+    snap = json.loads(Path(a.snapshot).read_text(encoding="utf-8")) if a.snapshot else live_snapshot(manifest["roots"])
     if a.save_snapshot:
         Path(a.save_snapshot).write_text(json.dumps(snap, indent=1), encoding="utf-8")
     rep = evaluate(snap, manifest, strict=a.strict)
