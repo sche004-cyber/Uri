@@ -305,9 +305,21 @@ def _detail_kind(word):
         return "date"
     if canonical_numbers(word) or re.fullmatch(r"\d[\d,]*", word):
         return "number"
-    if word[:1].isupper() and low not in _COMMON_CAPS and len(word) > 1:
+    if word[:1].isupper() and low not in _COMMON_CAPS and low not in _FUNCTION_WORDS and len(word) > 1:
         return "name"
     return None
+
+
+# Words that start sentences ("There were 18 students") are never taken as names when pairing a correction: an
+# unpaired correction leaves every value required (a review flag at worst), never removes an unrelated name.
+_FUNCTION_WORDS = set("""
+there here then now when where what which who whom whose why how that this these those it its they them their we our
+you your he him his she her i me my mine yes no not okay ok please sorry actually also so and but or because if
+was were is are be been being have has had do does did will would shall should can could may might must
+one some any all each every few many more most other another such only just even still yet again
+on in at by for from to of with without about after before during until since over under
+let lets make made say said tell told give gave take took get got go went come came see saw know knew think
+""".split())
 
 
 def check_user_details(user_words, text, dropped_ok=()) -> list:

@@ -82,3 +82,9 @@ def test_5_exclusion_keeps_its_own_words():
 def test_6_please_marks_an_instruction_to_uri():
     assert X.classify("Draft a notice asking parents to sign the form and please email it to the principal",
                       has_draft=False).kind == X.NONE
+
+
+# Codex TI round 5, finding 7: a sentence-initial function word is never paired as a name.
+def test_r5_7_function_word_is_not_a_name():
+    s = V.strip_corrected("Report for Anil with 17 students, sorry, There were 18 students")
+    assert "Anil" in s and "17" not in s and "18" in s
