@@ -247,8 +247,26 @@ def check_new_details(text, known_text) -> list:
 
 
 def _details(text):
+    """Details whose ABSENCE is reported. Wider than protected_tokens: a capitalised word at a sentence start or after
+    a colon ("Draft a note: Anil arrived") counts too, unless it is ordinary letter vocabulary or a function word.
+    (protected_tokens stays narrow because it also drives NEW_DETAIL, where sentence starters would be noise.)"""
     p = protected_tokens(text)
-    return ({str(x) for x in p["numbers"]} | p["months"] | p["weekdays"] | p["relative"] | p["emails"] | p["names"])
+    initial = set()
+    for m in re.finditer(r"(?:^|[.!?:\n\"“]\s*)([A-Z][a-zA-Z]{1,})\b", text or ""):
+        low = m.group(1).lower()
+        if low not in _COMMON_CAPS and low not in _FUNCTION_WORDS and low not in MONTHS and low not in WEEKDAYS \
+                and low not in _SENTENCE_STARTERS:
+            initial.add(low)
+    return ({str(x) for x in p["numbers"]} | p["months"] | p["weekdays"] | p["relative"] | p["emails"] | p["names"]
+            | initial)
+
+
+# Imperatives and openers that begin requests and letters; never names.
+_SENTENCE_STARTERS = set("""
+draft write compose prepare create generate frame type pen correct proofread fix check improve edit rewrite rephrase
+reword paraphrase polish simplify shorten condense summarise summarize expand turn convert develop kindly please
+inform informing request requesting regarding sub respected thanking yours dear hello hi uri attendance repairs
+""".split())
 
 
 def _covered(detail, texts):

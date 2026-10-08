@@ -38,6 +38,7 @@ final v2 = version(2, [
   ['b3', 'body', 'Thanking you.'],
 ], changed: ['b2'], flags: [
   {'code': 'NEW_DETAIL', 'severity': 'review', 'detail': 'not in your words: 204'},
+  {'code': 'DETAIL_DROPPED', 'severity': 'info', 'detail': 'not in the draft because of your correction or instruction: 5'},
 ]);
 
 Map<String, dynamic> snapshot({required Map<String, dynamic> current, Map<String, dynamic>? previous,
@@ -143,6 +144,8 @@ void main() {
     expect(find.text('Simulated transcript'), findsOneWidget);
     expect(find.text('Not sent · not saved'), findsOneWidget);
     expect(find.textContaining('Please check: not in your words: 204'), findsOneWidget);
+    // Info lines are always shown: nothing is excused silently.
+    expect(find.textContaining('Left out: not in the draft because of your correction or instruction: 5'), findsOneWidget);
     expect(find.textContaining('register'), findsOneWidget);
 
     // Changes: word diff against the previous version.

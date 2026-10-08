@@ -118,3 +118,12 @@ def test_r9_excused_details_are_visible_info():
 def test_r9_keep_monday_removed_is_visible():
     flags = V.check_details_kept("The meeting is on Monday.", "The meeting will be held.", ["Keep Monday and make it formal"])
     assert flags and flags[0]["code"] == "DETAIL_DROPPED" and "monday" in flags[0]["detail"]
+
+
+# Codex TI round 10, finding 1: a sentence-initial name is still a required detail.
+def test_r10_sentence_initial_name_absence_is_flagged():
+    flags = V.check_user_details("Draft a note: Anil arrived late.", "Someone arrived late.")
+    assert flags and flags[0]["code"] == "USER_DETAIL_MISSING" and "anil" in flags[0]["detail"]
+    assert V.check_user_details("Draft a note: Anil arrived late.", "Anil arrived late.") == []
+    flags = V.check_details_kept("Anil arrived late.", "A student arrived late.")
+    assert flags and flags[0]["code"] == "DETAIL_REMOVED"
