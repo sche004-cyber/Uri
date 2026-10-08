@@ -82,7 +82,21 @@ Codex (documentation wording only); it is self-checked against `git ls-tree` (no
 
 ## 6. Publication
 
-Pending at the time of writing; the pushed SHA and fresh-clone verification are recorded here after the push.
+**NOT PUBLISHED.** After the round-5 acceptance the session attempted a non-force fast-forward of
+`integration/git-sync-20261008` (GitHub tip `f8de153`, an ancestor of the candidate; branch not protected) plus the
+seven `accepted/*` tags. The session's permission layer denied the push, so nothing on GitHub changed. The
+accepted work therefore exists in Git only locally, in `C:\Users\cheta\Development\uri-canonical-candidate`
+(branch `canonical/candidate-20261008`), and GitHub recoverability (CONS-15) stays PENDING.
+
+Owner action to publish (no force, new tags only), from that checkout:
+
+```powershell
+git push origin canonical/candidate-20261008:integration/git-sync-20261008
+git push origin accepted/phase1-core-freeze-31a34dcb accepted/runtime-v1-freeze-20261007 accepted/phase2-ops-r6-9a0be52c accepted/phase2-closure-f-fcd0d72e accepted/phase2-oq-g-0b49d86d accepted/m36-m38-closed-frozen-bd7c450 accepted/dynamic-planning-slice1-565eae8
+```
+
+Then verify with a fresh clone: `git clone` the repository, check the integration tip equals the candidate tip,
+and run the runbook section 1 materialization (its ancestor guard must pass).
 
 ## 7. Not verified / limitations
 
