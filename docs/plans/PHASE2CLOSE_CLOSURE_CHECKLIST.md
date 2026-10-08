@@ -72,3 +72,6 @@ B5 C6 decisions -> 1 resolved as definition, 2 decided (B), 3 PENDING.
 D-update (after independent review round 1, `PHASE2OQ_REPORT.md` sections K-L): OQ-R1-1..3 repaired with regression
 tests; final chain is now `E:phase2oq\chain4\` (ALL_PASS): D8 472/2/0, D9 134, D10 PASS (2676 / 11 / 11, same IDs,
 total 2698, Ollama isolated, disclosed equivalence rule), D11 PASS (205/2; 10/10; native). D12 PENDING (review round 2).
+
+D-final: D12 PASS - Codex OQ round 7 accepted `phase2oq-candidate-20261008-g.zip` (`0b49d86d...c4cd`), final chain
+`E:phase2oq\chain10\` ALL_PASS. Section B (physical/owner) unchanged: all PENDING.

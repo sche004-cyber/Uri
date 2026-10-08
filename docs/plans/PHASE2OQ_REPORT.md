@@ -384,3 +384,11 @@ per category, baseline JSON == XML, baseline pins hold; phase1-scope PASS; Flutt
 lines; native completed/`SETTLED_VERIFIED`, cancel uncertain/`CANCELLED_AFTER_DISPATCH`, PID DEAD; native-worker as
 section L (0 survivors). No leftover process.
 
+## R. Acceptance record
+
+Codex review round 7 (`E:phase2oq_review/round7/CODEX_REVIEW_OQ_round7.md`) on `phase2oq-candidate-20261008-g.zip`
+(SHA-256 `0b49d86d89b26d3332fcbfbc9b4b7b981cdc1075d5dc295588a5cef92a82c4cd`, final chain `E:phase2oq/chain10/`):
+**PHASE 2 OPERATIONAL CANDIDATE ACCEPTED — READY FOR OWNER PHYSICAL ACCEPTANCE**, no remaining defect; every OQ finding
+(R1-1..4, R2-1, R3-1/2, R4-1, R5-1/2, R6-1/2) REPAIRED. Rounds 1-6 rejected candidates `-`, `-b`..`-f`; all kept.
+Status: INDEPENDENTLY ACCEPTED. NOT physically qualified, NOT frozen, NOT deployed: PA-1..PA-13 and the owner decisions
+of section J remain open.
