@@ -56,7 +56,8 @@ def main(argv):
             return 1
         identity = verify_proof(manifest, result, nonce)
     except Exception as exc:
-        print(json.dumps({"ok": False, "code": getattr(exc, "args", ["IDENTITY_NOT_PROVEN"])[0] or "IDENTITY_NOT_PROVEN"}))
+        code = str(exc) if str(exc).isupper() else "IDENTITY_NOT_PROVEN:" + type(exc).__name__
+        print(json.dumps({"ok": False, "code": code}))
         return 1
     print(json.dumps({"ok": True, "server_id": identity["server_id"], "generation": identity["generation"], "port": port}))
     return 0
