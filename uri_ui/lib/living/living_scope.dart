@@ -5,6 +5,7 @@ import 'companion/energy_orb.dart' show OrbPalette, OrbVariant;
 import 'companion/effects_settings.dart';
 import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
+import 'integration/oi_conversation.dart';
 import 'presentation/presentation_controller.dart';
 
 /// Reasoning depth the user asks for. UI-only preference in this phase;
@@ -35,7 +36,13 @@ class LivingServices {
     required this.effects,
     required this.demo,
     this.appDataIsMock = true,
+    this.oi,
   });
+
+  /// Working-system integration: the real conversation over the integrated
+  /// worker (Core + Operational Intelligence + Runtime v1). Null in the mock
+  /// preview. Owned by the root that created it (not disposed here).
+  final OiConversation? oi;
 
   final UiPresentationController presentation;
 

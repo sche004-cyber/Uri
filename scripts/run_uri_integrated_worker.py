@@ -186,9 +186,12 @@ def main():
             orch = Orchestrator(client=client, core=PairedCoreGateway(LazyRunner()), brain_selection={}, ledger=ledger,
                                 capability_ids={"remember_fact", "external_harness_task"}, readiness=manager.status)
 
+            # Client-scoped memory is read under a fixed per-client session id (Core requires a UUID session).
+            memory_session = str(uuid.uuid5(uuid.NAMESPACE_URL, "uri-ws-memory:" + m["client_id"]))
+
             def memory():
                 q = ReadQuery(store="memory", method="list_all")
-                rows = persistence.snapshot("ws-memory-read", [q]).reads[0].result or []
+                rows = persistence.snapshot(memory_session, [q]).reads[0].result or []
                 return [r.get("fact", {}).get("value") for r in rows if isinstance(r, dict)]
 
             oi = WB.IntegratedTurns(orchestrator=orch, cfg=cfg, status=manager.status,

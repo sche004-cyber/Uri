@@ -3,12 +3,12 @@
     <runtime>\\.venv\\Scripts\\python.exe scripts\\ws_provision.py [--name NAME] [--port PORT] [--grant-harness]
 
 Run from the materialized runtime (HEAD == e8e3b65 + overlay + integration paths; frozen `runtime_identity`
-refuses anything else). Creates new roots under `<runtime>/work/ws/<name>/`; nothing existing is modified, and
+refuses anything else). Creates new roots under `<runtime>/work/c1/ws-<name>/` (frozen provisioning requires `work/c1`); nothing existing is modified, and
 no legacy data, task, shortcut or service is touched. Writes:
   * server state root with the accepted Phase 2 policy rows (the same rows the accepted acceptance campaign uses);
   * client root, paired to that server, granted `remember_fact` (and `external_harness_task` with --grant-harness);
   * `control/ui-integrated-profile.json`: the explicit opt-in the UI needs before it spawns the integrated worker;
-  * `<runtime>/work/ws/current.json`: the paths the launcher uses.
+  * `<runtime>/work/c1/ws-current.json`: the paths the launcher uses.
 The port is chosen in 18300-18339 and is never 8000 (the legacy instance).
 """
 import argparse
@@ -40,7 +40,7 @@ def main(argv=None):
     from uri_supervisor_bridge.composition import policy_path, write_policy
     if Path(sys.executable).resolve() != (ROOT / ".venv/Scripts/python.exe").resolve():
         raise SystemExit("RUN_WITH_THE_RUNTIME_VENV: " + str(ROOT / ".venv/Scripts/python.exe"))
-    base = ROOT / "work/ws" / a.name
+    base = ROOT / "work/c1" / ("ws-" + a.name)
     if base.exists():
         raise SystemExit("WS_NAME_EXISTS")
     port = a.port or next(p for p in range(18300, 18340) if listener(p) is None)
@@ -67,7 +67,7 @@ def main(argv=None):
                "server_manifest": str(server.path), "client_manifest": str(client.path),
                "client_root": str(client_root), "harness_grant": bool(a.grant_harness),
                "provisioned": time.strftime("%Y-%m-%dT%H:%M:%S")}
-    atomic_json(ROOT / "work/ws/current.json", current)
+    atomic_json(ROOT / "work/c1/ws-current.json", current)
     print(json.dumps(current, indent=1))
     return 0
 

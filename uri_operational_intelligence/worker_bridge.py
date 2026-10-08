@@ -51,6 +51,13 @@ class BridgeRefused(RuntimeError):
         self.code = code
 
 
+def _is_uuid(value) -> bool:
+    try:
+        return isinstance(value, str) and str(uuid.UUID(value)) == value.lower()
+    except ValueError:
+        return False
+
+
 def valid(kind, command) -> bool:
     return kind in COMMANDS and any(set(command) == shape for shape in COMMANDS[kind])
 
@@ -114,23 +121,30 @@ class IntegratedTurns:
         if job is not None:
             job[1].join(timeout)
 
-    def _sink(self):
-        return EventSink(callback=self._write)
+    def _sink(self, turn_id):
+        """Every event of a job is keyed by the OI turn id the UI holds. The orchestrator's single-turn
+        confirm()/decide() emit under Core's turn id; the UI never sees that id, so it is moved into the data."""
+        def forward(ev):
+            if ev["turn_id"] != turn_id:
+                ev["data"] = dict(ev["data"], core_turn_id=ev["turn_id"])
+                ev["turn_id"] = turn_id
+            self._write(ev)
+        return EventSink(callback=forward)
 
     # ---- turns ---------------------------------------------------------------------------------
     def _oi_turn(self, c):
         text, session_id, depth = c["text"], c["session_id"], c["depth"]
         if not isinstance(text, str) or not text.strip() or len(text) > MAX_TEXT:
             raise BridgeRefused("TEXT_INVALID")
-        if not isinstance(session_id, str) or not (1 <= len(session_id) <= 128):
-            raise BridgeRefused("SESSION_INVALID")
+        if not _is_uuid(session_id):
+            raise BridgeRefused("SESSION_INVALID")      # Core binds turns to UUID session ids
         if depth not in DEPTHS:
             raise BridgeRefused("DEPTH_INVALID")
         turn_id = str(uuid.uuid4())
         history = list(self.history.get(session_id, ()))
 
         def run():
-            sink = self._sink()
+            sink = self._sink(turn_id)
             try:
                 out = self.o.handle_turn(text, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id)
             except Exception as exc:          # never leave the UI waiting: close the stream as an error
@@ -184,7 +198,7 @@ class IntegratedTurns:
         p = self._take(turn_id, "confirmation")
 
         def run():
-            sink = self._sink()
+            sink = self._sink(turn_id)
             try:
                 sink.emit(turn_id, "companion.state", state="thinking")
                 out = self.o.confirm(p["session_id"], p["env"], sink=sink)
@@ -211,7 +225,7 @@ class IntegratedTurns:
             raise BridgeRefused("APPROVAL_DIGEST_MISMATCH")
 
         def run():
-            sink = self._sink()
+            sink = self._sink(turn_id)
             try:
                 sink.emit(turn_id, "companion.state", state="thinking")
                 env = self.o.decide(p["text"], p["session_id"], p["env"], approve, sink=sink)

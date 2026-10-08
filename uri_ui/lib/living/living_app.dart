@@ -21,6 +21,8 @@ import 'companion/companion_sources.dart';
 import 'companion/effects_settings.dart';
 import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
+import 'integration/oi_conversation.dart';
+import 'integration/oi_sources.dart';
 import 'living_scope.dart';
 import 'presentation/living_shell.dart';
 import 'presentation/presentation_controller.dart';
@@ -123,6 +125,24 @@ class LivingApp extends StatefulWidget {
       readiness: MockReadinessSource(),
       effects: EffectsSettings(),
       demo: demo,
+    );
+  }
+
+  /// Working-system wiring (WS blueprint W9): the orb follows the real OI
+  /// event stream and readiness comes from the integrated worker. Office
+  /// work items have no backend yet and stay on the flagged simulator.
+  static LivingServices buildIntegratedServices(OiConversation oi) {
+    final demo = MockCompanionSource();
+    final work = MockWorkSimulator();
+    return LivingServices(
+      presentation: UiPresentationController(),
+      companion: CompositeCompanionSource([OiCompanionSource(oi), work.companion, demo]),
+      work: work,
+      readiness: OiReadinessSource(oi),
+      effects: EffectsSettings(),
+      demo: demo,
+      appDataIsMock: true,
+      oi: oi,
     );
   }
 }

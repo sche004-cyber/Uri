@@ -14,6 +14,7 @@ from tests.oi.test_oi_orchestrator import FakeCore
 
 CFG = {"model": {"id": "qwen-test"}, "runtime": {"port": 18470, "ctx": 32768}}
 DIGEST = "a" * 64
+SID = "3f1c7a52-8e6b-4c1e-9a55-0d5f8a0b6c11"
 
 
 @pytest.fixture
@@ -66,7 +67,7 @@ def test_answer_streams_as_events_and_replies_at_once(fake, tmp_path):
     fake.scripts.append({"chunks": [("answer", "Hel"), ("answer", "lo")], "finish": "stop", "delay": 0.05})
     b, frames, _ = make(fake, tmp_path, FakeCore())
     t0 = time.monotonic()
-    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "What is VRAM?", "depth": "auto"})
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "What is VRAM?", "depth": "auto"})
     assert time.monotonic() - t0 < 0.5 and r["accepted"]
     b.wait(10)
     t = frames.types(r["turn_id"])
@@ -79,7 +80,7 @@ def test_answer_streams_as_events_and_replies_at_once(fake, tmp_path):
 def test_reasoning_tier_and_progress_without_reasoning_text(fake, tmp_path):
     fake.scripts.append({"chunks": [("reasoning", "r" * 450), ("answer", "Because.")], "finish": "stop"})
     b, frames, _ = make(fake, tmp_path, FakeCore())
-    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "depth": "normal",
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "depth": "normal",
                              "text": "Compare the pros and cons of two backup strategies"})
     b.wait(10)
     routed = frames.data("turn.routed")[0]
@@ -92,10 +93,10 @@ def test_reasoning_tier_and_progress_without_reasoning_text(fake, tmp_path):
 def test_second_turn_refused_while_one_runs_and_cancel_stays_open(fake, tmp_path):
     fake.scripts.append({"chunks": [("answer", "x")] * 400, "finish": "stop", "delay": 0.01})
     b, frames, _ = make(fake, tmp_path, FakeCore())
-    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "Tell me a long story", "depth": "auto"})
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "Tell me a long story", "depth": "auto"})
     time.sleep(0.3)
     with pytest.raises(BridgeRefused) as e:
-        b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "again", "depth": "auto"})
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "again", "depth": "auto"})
     assert e.value.code == "TURN_IN_PROGRESS"
     with pytest.raises(BridgeRefused):
         b.handle("memory_list", {"command": "memory_list"})
@@ -109,13 +110,13 @@ def test_second_turn_refused_while_one_runs_and_cancel_stays_open(fake, tmp_path
 def test_approval_needs_the_digest_shown_and_typed_text_is_never_a_decision(fake, tmp_path):
     core = approval_core()
     b, frames, _ = make(fake, tmp_path, core)
-    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "remember that the lab is closed",
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "remember that the lab is closed",
                              "depth": "auto"})
     b.wait(10)
     assert frames.data("approval.required")[0]["approval_digest"] == DIGEST
     assert frames.data("turn.finished")[-1]["status"] == "needs_user"
     # A typed "approve" is just another turn: it never reaches a decision path.
-    b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "approve", "depth": "auto"})
+    b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "approve", "depth": "auto"})
     b.wait(10)
     assert ("decide", True) not in core.calls
     # The structured decision with the shown digest approves exactly once.
@@ -131,7 +132,7 @@ def test_approval_needs_the_digest_shown_and_typed_text_is_never_a_decision(fake
 def test_digest_mismatch_drops_and_releases_as_denial(fake, tmp_path):
     core = approval_core()
     b, _, _ = make(fake, tmp_path, core)
-    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "remember that the lab is closed",
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "remember that the lab is closed",
                              "depth": "auto"})
     b.wait(10)
     with pytest.raises(BridgeRefused) as e:
@@ -145,7 +146,7 @@ def test_deny_changes_nothing_and_is_reported(fake, tmp_path):
     core = approval_core()
     core.replies.append({"turn_id": "c1", "state": "reply", "code": "APPROVAL_DENIED", "message": "Denied."})
     b, frames, _ = make(fake, tmp_path, core)
-    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "remember that the lab is closed",
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "remember that the lab is closed",
                              "depth": "auto"})
     b.wait(10)
     b.handle("oi_decide", {"command": "oi_decide", "turn_id": r["turn_id"], "approve": False, "approval_digest": DIGEST})
@@ -156,7 +157,7 @@ def test_deny_changes_nothing_and_is_reported(fake, tmp_path):
 
 def test_unavailable_runtime_is_an_honest_error_and_deterministic_commands_still_work(fake, tmp_path):
     b, frames, _ = make(fake, tmp_path, FakeCore(), ready="STOPPED", memory=lambda: ["the lab is closed"])
-    b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "What is VRAM?", "depth": "auto"})
+    b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "What is VRAM?", "depth": "auto"})
     b.wait(10)
     assert frames.data("error")[0]["code"] == "BRAIN_UNAVAILABLE"
     assert fake.requests == []                                    # nothing was sent to a model
@@ -171,20 +172,36 @@ def test_explicit_selection_only_and_deterministic_never_falls_back(fake, tmp_pa
     with pytest.raises(BridgeRefused):
         b.handle("brain_select", {"command": "brain_select", "row_id": "cloud-anthropic"})
     assert b.handle("brain_select", {"command": "brain_select", "row_id": "deterministic"})["selected"]["provider"] == "uri-deterministic"
-    b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "What is VRAM?", "depth": "auto"})
+    b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "What is VRAM?", "depth": "auto"})
     b.wait(10)
     assert fake.requests == [] and frames.data("error")[0]["code"] == "BRAIN_UNAVAILABLE"
-    b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "remember that x is y", "depth": "auto"})
+    b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "remember that x is y", "depth": "auto"})
     b.wait(10)
     assert core.calls[0][2]["provider"] == "uri-deterministic"
 
 
 def test_schema_is_exact(fake, tmp_path):
     b, _, _ = make(fake, tmp_path, FakeCore())
-    for bad in ({"command": "oi_turn", "session_id": "s", "text": "x"},
+    for bad in ({"command": "oi_turn", "session_id": SID, "text": "x"},
                 {"command": "oi_decide", "turn_id": "t", "approve": True},
-                {"command": "oi_turn", "session_id": "s", "text": "x", "depth": "auto", "approve": True}):
+                {"command": "oi_turn", "session_id": SID, "text": "x", "depth": "auto", "approve": True}):
         with pytest.raises(BridgeRefused):
             b.handle(bad["command"], bad)
     with pytest.raises(BridgeRefused):
-        b.handle("oi_turn", {"command": "oi_turn", "session_id": "s", "text": "x", "depth": "turbo"})
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "x", "depth": "turbo"})
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": "not-a-uuid", "text": "x", "depth": "auto"})
+    assert e.value.code == "SESSION_INVALID"
+
+
+def test_decision_events_carry_the_oi_turn_id(fake, tmp_path):
+    core = approval_core()
+    b, frames, _ = make(fake, tmp_path, core)
+    r = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "remember that the lab is closed",
+                             "depth": "auto"})
+    b.wait(10)
+    b.handle("oi_decide", {"command": "oi_decide", "turn_id": r["turn_id"], "approve": True, "approval_digest": DIGEST})
+    b.wait(10)
+    assert {e["turn_id"] for e in frames.events} == {r["turn_id"]}
+    final = [e for e in frames.events if e["type"] == "core.result"][-1]
+    assert final["data"]["code"] == "SETTLED_VERIFIED" and final["data"]["core_turn_id"] == "c1"

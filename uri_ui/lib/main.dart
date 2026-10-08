@@ -6,6 +6,8 @@
 /// import it without pulling the plugin in — which hangs `flutter test`.
 library;
 
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 
 import 'app.dart';
@@ -15,6 +17,8 @@ import 'services/http_uri_client.dart';
 import 'services/platform_attachment_opener.dart';
 import 'services/platform_file_picker.dart';
 import 'services/platform_window_controller.dart';
+import 'services/integrated_runtime.dart';
+import 'working_system_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +30,23 @@ void main() async {
   // logging in on it. Resolved before the client is built so it can be
   // sent at login/signup time.
   final deviceId = await DeviceIdentityStore().loadOrCreate();
+
+  // Working-system integration (WS-D1/WS-D4): a paired installation with the
+  // integrated opt-in starts in Living Companion over the integrated worker.
+  // Nothing else changes for installations without the opt-in.
+  final manifest = Platform.environment['URI_CLIENT_MANIFEST'];
+  if (WorkerIntegratedRuntime.optInConfigured(manifest)) {
+    runApp(
+      WorkingSystemRoot(
+        connect: () => WorkerIntegratedRuntime.fromManifest(manifest),
+        classicBuilder: (back) => _ClassicLoader(deviceId: deviceId, back: back),
+        filePicker: pickPlatformFile,
+        attachmentOpener: openPlatformAttachment,
+        skipOnboarding: Platform.environment['URI_LIVING_SKIP_ONBOARDING'] == '1',
+      ),
+    );
+    return;
+  }
 
   // Talks to the real uri_core backend (uvicorn uri_core.app.server:app).
   // As of M16 nothing in HttpUriClient falls back to mock data. Widget/
@@ -56,4 +77,71 @@ void main() async {
       onCompactModeChanged: setCompactWindowMode,
     ),
   );
+}
+
+/// The classic (Hybrid) interface inside the working system. Its server
+/// address is read first (preferences only, no network); the legacy instance
+/// on port 8000 is never contacted. A small control returns to Living.
+class _ClassicLoader extends StatefulWidget {
+  const _ClassicLoader({required this.deviceId, required this.back});
+  final String deviceId;
+  final VoidCallback back;
+
+  @override
+  State<_ClassicLoader> createState() => _ClassicLoaderState();
+}
+
+class _ClassicLoaderState extends State<_ClassicLoader> {
+  late final Future<AppState?> _future = _load();
+
+  Future<AppState?> _load() async {
+    final appState = AppState(HttpUriClient(deviceId: widget.deviceId));
+    await appState.loadPersistedServerAddress();
+    if (isLegacyServerAddress(appState.baseUrl)) return null;
+    await appState.loadPersistedPreferences();
+    await appState.loadPersistedThemeMode();
+    await appState.loadPersistedSession();
+    return appState;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<AppState?>(
+      future: _future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const MaterialApp(home: Scaffold(body: Center(child: CircularProgressIndicator())));
+        }
+        final appState = snap.data;
+        if (appState == null) {
+          return LegacyServerBlocked(baseUrl: 'http://localhost:8000', back: widget.back);
+        }
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            children: [
+              UriApp(
+                appState: appState,
+                filePicker: pickPlatformFile,
+                attachmentOpener: openPlatformAttachment,
+                onCompactModeChanged: setCompactWindowMode,
+              ),
+              Positioned(
+                right: 12,
+                bottom: 12,
+                child: GestureDetector(
+                  onTap: widget.back,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: const Color(0xCC101820), borderRadius: BorderRadius.circular(8)),
+                    child: const Text('Living Companion', style: TextStyle(color: Color(0xFFE6F7FF), fontSize: 12)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

@@ -5,6 +5,7 @@ import '../../services/app_state_scope.dart';
 import '../../services/file_picker_service.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
+import '../integration/oi_conversation.dart';
 import '../living_scope.dart';
 import '../presentation/presentation_controller.dart';
 import 'glass_panel.dart';
@@ -68,7 +69,8 @@ class _LivingComposerState extends State<LivingComposer> {
       appState.clearComposerDraft();
       return;
     }
-    if (appState.isSendingAsk) return;
+    final oi = services.oi;
+    if (oi != null ? oi.busy : appState.isSendingAsk) return;
     _controller.clear();
     if (services.presentation.mode == UiPresentationMode.companion) {
       // A real question from Companion mode opens the conversation so
@@ -78,6 +80,13 @@ class _LivingComposerState extends State<LivingComposer> {
         focus: WorkspaceFocus.conversation,
       );
     }
+    if (oi != null) {
+      // Working system: the real Core/OI turn. Text is only ever a turn,
+      // never a decision (approvals are buttons on the card).
+      appState.clearComposerDraft();
+      await oi.send(text);
+      return;
+    }
     await appState.ask(text);
   }
 
@@ -86,10 +95,11 @@ class _LivingComposerState extends State<LivingComposer> {
     final appState = AppStateScope.of(context);
     final c = UriColors.of(context);
     final glass = UriGlass.of(context);
+    final OiConversation? oi = LivingScope.of(context).oi;
     return ListenableBuilder(
-      listenable: appState,
+      listenable: oi == null ? appState : Listenable.merge([appState, oi]),
       builder: (context, _) {
-        final sending = appState.isSendingAsk;
+        final sending = oi != null ? oi.busy : appState.isSendingAsk;
         return GlassPanel(
           strong: true,
           blur: true,

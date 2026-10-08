@@ -15,6 +15,8 @@ import '../companion/energy_orb.dart'
     show OrbPalette, OrbPaletteData, OrbVariant, OrbVariantLabel;
 import '../contracts/readiness_report.dart';
 import '../contracts/work_items.dart';
+import '../integration/oi_widgets.dart';
+import '../integration/ws_settings.dart';
 import '../living_app.dart';
 import '../living_scope.dart';
 import '../presentation/presentation_controller.dart';
@@ -331,13 +333,16 @@ class _ConversationRegion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final oi = LivingScope.of(context).oi;
     return Column(
       children: [
         Expanded(
-          child: UriConversationPane(
-            attachmentOpener: attachmentOpener,
-            supervisedHandoff: false,
-          ),
+          child: oi != null
+              ? OiConversationPane(conversation: oi)
+              : UriConversationPane(
+                  attachmentOpener: attachmentOpener,
+                  supervisedHandoff: false,
+                ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(
@@ -880,6 +885,9 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
             UriSpace.lg,
           ),
           children: [
+            if (services.oi != null) ...[
+              WorkingSystemSettingsSection(conversation: services.oi!),
+            ],
             Eyebrow(
               'Harness',
               trailing: services.readiness.isSimulated
