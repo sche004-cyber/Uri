@@ -16,15 +16,24 @@ turns. The protocol keeps its existing guarantees:
     runner or stores (`busy`). Status, catalog and cancel stay open.
   * The Brain selection changes only through `brain_select` with a catalog row id. A model or a turn cannot change
     it.
+  * Health (WS hardening): `brain_health` reports READY / BUSY / DEGRADED / UNAVAILABLE / RECOVERING from the accepted
+    readiness, the Brain host report and the timings of real turns. `brain_restart` asks the Brain host for an
+    explicit restart / stop / start and is refused while a turn runs. `oi_turn_status` tells the UI whether the
+    running job is alive and how long it has been silent, so an alive-but-silent worker can be told apart from an
+    unresponsive one (R-BUSY).
 """
 from __future__ import annotations
 
 import threading
+import time
 import uuid
+from collections import deque
 
 from . import brain_catalog
+from . import brain_health
 from . import cloud_policy
 from .events import EventSink
+from .perf_monitor import PerfMonitor
 
 COMMANDS = {
     "oi_turn": ({"command", "session_id", "text", "depth"},),
@@ -37,8 +46,12 @@ COMMANDS = {
     "brain_select": ({"command", "row_id"},),
     "memory_list": ({"command"},),
     "cloud_policy": ({"command"},),
+    "brain_health": ({"command"},),
+    "brain_restart": ({"command", "action"},),
+    "oi_turn_status": ({"command"},),
 }
-OPEN_WHILE_BUSY = {"oi_cancel", "brain_status", "brain_catalog", "cloud_policy"}
+OPEN_WHILE_BUSY = {"oi_cancel", "brain_status", "brain_catalog", "cloud_policy", "brain_health", "oi_turn_status"}
+PERF_SAMPLES = 48
 # A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
 # the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
 CONTINUATIONS = {"oi_decide", "oi_confirm", "oi_abandon"}
@@ -72,7 +85,8 @@ class _NotSelected:
 
 
 class IntegratedTurns:
-    def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None, defer_start=False):
+    def __init__(self, *, orchestrator, cfg, status, write_event, memory=None, cloud=None, defer_start=False,
+                 host_report=None, host_request=None):
         """
         orchestrator: an OI Orchestrator whose `core` is the paired Core gateway for this client.
         cfg:          the frozen Runtime v1 configuration (already loaded).
@@ -81,6 +95,8 @@ class IntegratedTurns:
         memory:       callable() -> list of remembered facts (deterministic client read), or None.
         defer_start:  a started job waits for `release()`, which the worker calls right AFTER it wrote the reply.
                       The reply that carries the turn id therefore always precedes the turn's first event frame.
+        host_report:  callable() -> (Brain host report | None, host_alive) (read-only), or None without a host.
+        host_request: callable(action) that writes one explicit request for the Brain host, or None.
         """
         self.o, self.cfg, self._status, self._write = orchestrator, cfg, status, write_event
         self._memory, self.cloud = memory, cloud or cloud_policy.CloudSpendPolicy()
@@ -94,6 +110,11 @@ class IntegratedTurns:
         self.closing = False          # set by the worker's shutdown: late continuations are released, not kept
         self.pending = {}             # oi turn_id -> {"env", "text", "session_id"} (Core turn awaiting the user)
         self.history = {}             # session_id -> [{"role", "content"}] (answer-channel context, bounded)
+        self._host_report, self._host_request = host_report, host_request
+        self._perf = deque(maxlen=PERF_SAMPLES)     # (wall time, llama-server timings) of finished answers
+        self._job_started = None      # monotonic start of the running job
+        self._last_event = None       # monotonic time of the job's last event frame
+        self._job_events = 0
 
     # ---- state ---------------------------------------------------------------------------------
     @property
@@ -132,6 +153,8 @@ class IntegratedTurns:
                 fn()
             t = threading.Thread(target=gated, name="oi-turn-" + turn_id[:8], daemon=True)
             self._job, self._go = (turn_id, t), go
+            self._job_started = self._last_event = time.monotonic()
+            self._job_events = 0
         t.start()
         return t
 
@@ -159,6 +182,13 @@ class IntegratedTurns:
             if ev["turn_id"] != turn_id:
                 ev["data"] = dict(ev["data"], core_turn_id=ev["turn_id"])
                 ev["turn_id"] = turn_id
+            self._last_event = time.monotonic()
+            self._job_events += 1
+            if ev["type"] == "answer.done":
+                m = ev["data"].get("metrics") or {}
+                if m.get("predicted_n") and m.get("predicted_per_second"):
+                    self._perf.append((time.time(), {"predicted_n": m["predicted_n"],
+                                                     "predicted_per_second": m["predicted_per_second"]}))
             self._write(ev)
         return EventSink(callback=forward)
 
@@ -326,3 +356,53 @@ class IntegratedTurns:
 
     def _cloud_policy(self, _c):
         return self.cloud.summary()
+
+    # ---- health / recovery (WS hardening) -------------------------------------------------------
+    def _host(self):
+        if self._host_report is None:
+            return None, False
+        try:
+            return self._host_report()
+        except Exception:
+            return None, False
+
+    def _brain_health(self, _c):
+        try:
+            readiness = self._status().to_dict()
+        except Exception as exc:
+            readiness = {"state": "UNKNOWN", "detail": type(exc).__name__}
+        readiness.pop("live_identity", None)
+        host, alive = self._host()
+        # Real-turn timings of the CURRENT instance only: samples older than this instance's calibration belong to a
+        # previous process (a restart resets the evidence).
+        since = ((host or {}).get("calibration") or {}).get("t") if alive else None
+        mon = PerfMonitor(sampler=lambda _pid: (None, None))
+        for t, timings in list(self._perf):
+            if since is None or t >= since:
+                mon.record(timings)
+        perf = mon.assess(sample=False)
+        out = brain_health.assess(readiness=readiness, host=host, host_alive=alive, perf=perf, busy=self.busy,
+                                  selected=self.selected, cfg=self.cfg)
+        out["checked_at"] = round(time.time(), 3)
+        return out
+
+    def _brain_restart(self, c):
+        action = c["action"]
+        if action not in brain_health.ACTIONS:
+            raise BridgeRefused("ACTION_INVALID")
+        if self._host_request is None:
+            raise BridgeRefused("BRAIN_CONTROL_UNAVAILABLE")
+        host, alive = self._host()
+        if not alive:
+            raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
+        req = self._host_request(action)
+        return {"requested": action, "request_id": req.get("id"), "host_state": host.get("state")}
+
+    def _oi_turn_status(self, _c):
+        job, now = self._job, time.monotonic()
+        alive = job is not None and job[1].is_alive()
+        return {"busy": alive, "turn_id": job[0] if alive else None,
+                "age_s": round(now - self._job_started, 1) if alive and self._job_started else None,
+                "idle_s": round(now - self._last_event, 1) if alive and self._last_event else None,
+                "events": self._job_events if alive else None,
+                "pending_cards": len(self.pending)}

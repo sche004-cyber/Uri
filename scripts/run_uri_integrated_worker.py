@@ -194,8 +194,13 @@ def main():
                 rows = persistence.snapshot(memory_session, [q]).reads[0].result or []
                 return [r.get("fact", {}).get("value") for r in rows if isinstance(r, dict)]
 
+            # Brain host link (WS hardening): the host's report and this worker's explicit requests live in the
+            # client's control/oi directory, inside the guard's state root.
+            from uri_operational_intelligence import brain_health as BH
             oi = WB.IntegratedTurns(orchestrator=orch, cfg=cfg, status=manager.status,
-                                    write_event=lambda ev: write({"event": ev}), memory=memory, defer_start=True)
+                                    write_event=lambda ev: write({"event": ev}), memory=memory, defer_start=True,
+                                    host_report=lambda: BH.read_host_report(oi_state),
+                                    host_request=lambda action: BH.write_host_request(oi_state, action))
             EXECUTION = {"execution_begin": {"command", "turn_id", "approval_digest", "proposal_digest"},
                          "execution_status": {"command", "execution_id"}, "execution_cancel": {"command", "execution_id"},
                          "execution_list": {"command"}}
