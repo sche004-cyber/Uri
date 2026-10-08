@@ -132,7 +132,13 @@ def phase1_equivalence(log, baseline_log, counts, collected=None, baseline_colle
 
 
 PHASE2_SCOPE = ("tests/phase2", "uri_supervisor/", "uri_supervisor_bridge/", "uri_ui/", "docs/", "scripts/phase2",
-                "scripts/run_uri_supervised_worker.py", "scripts/run_uri_phase2_server.py", "evidence/", "work/")
+                "scripts/run_uri_supervised_worker.py", "scripts/run_uri_phase2_server.py", "evidence/", "work/",
+                # Working-system integration (owner decision WS-D3, exact new paths only; Phase 1 never imports them,
+                # which the importer check below still enforces).
+                "uri_operational_intelligence/", "tests/oi/", "tests/ws/", "model_lab/integration/", "model_lab/lab/",
+                "model_lab/__init__.py", "scripts/run_uri_integrated_worker.py", "scripts/run_uri_integrated_server.py",
+                "scripts/ws_provision.py", "scripts/ws_frozen_check.py", "scripts/oi_materialize_test_runtime.py",
+                "OI_MATERIALIZATION_RECEIPT.json")
 
 
 FROZEN_PHASE1 = Path(r"C:\Users\cheta\.codex\worktrees\uri-phase1-integration\uri-agent\work\c1\checkpoints\final-closure-20261005-phase1.zip")
@@ -186,7 +192,7 @@ def phase1_scope_check(root, closure_zip, frozen_zip=FROZEN_PHASE1):
                 text = (root / r).read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
-            if re.search(r"^\s*(from|import)\s+(uri_supervisor|uri_supervisor_bridge)\b", text, re.M):
+            if re.search(r"^\s*(from|import)\s+(uri_supervisor|uri_supervisor_bridge|uri_operational_intelligence)\b", text, re.M):
                 importers.append(r)
     return {"changed_vs_closure": sorted(changed), "new_untracked": len(new), "modified_vs_head_outside_closure": sorted(modified),
             "frozen_phase1_byte_identical": frozen_ok, "outside_phase2_scope": outside,

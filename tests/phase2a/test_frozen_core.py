@@ -34,7 +34,15 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                # accepted): the Chat handoff action (a NEW widget) mounted by ONE non-checkpoint Chat file.
                "tests/phase2oq/*", "docs/plans/PHASE2OQ_*", "docs/architecture/PHASE2OQ_*", "scripts/phase2oq_*",
                "uri_ui/lib/widgets/supervised_handoff_action.dart", "uri_ui/lib/screens/ask/ask_uri_screen.dart",
-               "uri_ui/test/chat_supervised_handoff_test.dart"]
+               "uri_ui/test/chat_supervised_handoff_test.dart",
+               # Working-system integration (2026-10-08, owner decision WS-D3: exact new paths only). The OI package and
+               # its integration copies of model_lab, the integrated worker/server profiles, provisioning and frozen-check
+               # tools, their tests, the materialization receipt and the OI state ignore file. No accepted file is added.
+               "uri_operational_intelligence/*", "tests/oi/*", "tests/ws/*",
+               "model_lab/integration/*", "model_lab/lab/*", "model_lab/__init__.py",
+               "scripts/run_uri_integrated_worker.py", "scripts/run_uri_integrated_server.py", "scripts/ws_provision.py",
+               "scripts/ws_frozen_check.py", "scripts/oi_materialize_test_runtime.py",
+               "OI_MATERIALIZATION_RECEIPT.json", "work/oi/.gitignore"]
 
 needs_zip = pytest.mark.skipif(not CHECKPOINT.exists(), reason="BLOCKED: frozen checkpoint zip not present on this machine")
 
