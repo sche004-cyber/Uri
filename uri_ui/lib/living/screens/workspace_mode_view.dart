@@ -1297,9 +1297,11 @@ class _ContextPanel extends StatelessWidget {
           services.selectedHarness,
           services.reasoningMode,
           appState,
+          ?services.oi,
         ]),
         builder: (context, _) {
           final signal = services.companion.signal;
+          final oi = services.oi;
           final harness = services.readiness.harnesses
               .cast<HarnessFact?>()
               .firstWhere(
@@ -1350,14 +1352,21 @@ class _ContextPanel extends StatelessWidget {
               const Eyebrow('Executor'),
               const SizedBox(height: 6),
               _KeyValue('Harness', harness?.displayName ?? 'None selected'),
-              _KeyValue(
-                'Brain',
-                appState.activeBrain?.displayName ??
-                    appState.activeBrain?.providerId ??
-                    'Not set',
-              ),
-              _KeyValue('Model', appState.activeBrain?.model ?? '—'),
-              _KeyValue('Reasoning', services.reasoningMode.value.label),
+              // Working system: the real Brain selection and state from the integrated worker.
+              if (oi != null) ...[
+                _KeyValue('Brain', oi.selectedRowId == 'runtime-v1' ? 'Runtime v1 (local)' : (oi.selectedRowId == 'deterministic' ? 'No Brain (deterministic rules)' : oi.selectedRowId)),
+                _KeyValue('Model', '${oi.brainStatus['model_id'] ?? '—'} · ${oi.brainStatus['state'] ?? '…'}'),
+                _KeyValue('Reasoning', 'Depth ${oi.depth.name}'),
+              ] else ...[
+                _KeyValue(
+                  'Brain',
+                  appState.activeBrain?.displayName ??
+                      appState.activeBrain?.providerId ??
+                      'Not set',
+                ),
+                _KeyValue('Model', appState.activeBrain?.model ?? '—'),
+                _KeyValue('Reasoning', services.reasoningMode.value.label),
+              ],
               _KeyValue(
                 'Approvals',
                 appState.preferences.autonomyLevel == AutonomyLevel.askEveryTime

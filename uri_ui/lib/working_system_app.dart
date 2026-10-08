@@ -102,6 +102,7 @@ class _WorkingSystemRootState extends State<WorkingSystemRoot> {
       _appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
       _services = LivingApp.buildIntegratedServices(conv);
       await conv.refreshStatus();
+      unawaited(_services!.readiness.refresh()); // harness discovery for the readiness views (read-only)
       _status = Timer.periodic(widget.statusInterval, (_) => conv.refreshStatus());
     } on IntegratedRuntimeException catch (e) {
       _error = e.code;
