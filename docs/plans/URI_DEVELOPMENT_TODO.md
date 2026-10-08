@@ -67,6 +67,29 @@ the Phase 2 worktree `C:\Users\cheta\.codex\worktrees\uri-phase2a\uri-agent`.
 See `PHASE2CLOSE_C7_READINESS.md` (gates 1-10 + P2-1..P2-8). Summary: gates 1-2 MET (Phase 1), 3/9 PARTIAL, 4/5/8
 NOT MET, 6/10 NOT AUTHORIZED/REQUESTED, 7 PROCEDURE ONLY. Verdict NOT READY.
 
+## 5. Repository, runtime and PC consolidation (added 2026-10-08)
+
+Source: `docs/governance/consolidation/` (plan, PC audit, branch decision, salvage ledger, verification report) and
+`docs/governance/URI_RUNTIME_AUTHORITY_MANIFEST.json`. Evidence root `C:\Users\cheta\Development\uri-canonical-evidence\`.
+Note: the Phase 2 worktree keeps its own copy of this ledger; reconcile the two copies when the canonical line is promoted.
+
+| Item | Goal | Status | Evidence | Outstanding | Depends on | Owner decision | Next step |
+|---|---|---|---|---|---|---|---|
+| CONS-1 legacy scheduled task `\URIServer` | no legacy server at logon | QUARANTINE PREPARED (`scripts/uri_containment.ps1`, plan only) | PC audit F-1 | apply | — | **yes** | `-Apply` |
+| CONS-2 `URI.lnk` shortcuts to the donor desktop | no donor launch by click | QUARANTINE PREPARED | PC audit F-3 | apply | CONS-1 | **yes** | `-Apply` |
+| CONS-3 stop the running legacy server | free 8000; end legacy writes | PLANNED | PC audit F-1 | timing | CONS-1 | **yes** | owner chooses time |
+| CONS-4 authoritative install dir, state root, port | provisioned C1 server + client | PLANNED | plan section 7 P-4 | provisioning | CONS-1..3 | **yes** | provision |
+| CONS-5 shared UI preferences (`com.example/uri_ui`) | per-installation client storage | DESIGN ONLY (C3/C6 item) | PC audit F-2 | implementation | C6 | design approval | C6 slice |
+| CONS-6 runtime authority check + start gate | detect/refuse unauthorized runtimes | IMPLEMENTED, TESTED (adversarial tests; live run) | verification report | wire into installed launch path at cutover | CONS-4 | at cutover | — |
+| CONS-7 frozen `HEAD == e8e3b65` coupling | run the Core from a committed canonical branch | BLOCKED (frozen Core file) | branch decision section 3 | change `runtime_identity.py` + Phase 2 base tests | owner | **yes** | keep materialization or unfreeze |
+| CONS-8 canonical branch promotion | `main` = Core lineage, default branch | CANDIDATE BUILT, VERIFIED | branch decision; verification report | push + default change | — | **yes** | plan P-1, P-6 |
+| CONS-9 donor reconciliation (desktop features, M36/M37/M39, dynamic planning, dictation, harness console, voice) | parity before retiring the installed desktop | PLANNED (= P2-6) | salvage ledger sections 2-3 | per-capability port with provenance | C5-C7 | **yes** (priority order) | owner picks first donor |
+| CONS-10 historical branch / worktree retirement | fewer competing lines | PLANNED | branch decision section 5 | archive tags, deletion | CONS-8 | **yes** per item | — |
+| CONS-11 NVMe model copy, `.tmp_m33` worktree | remove duplicates | PROPOSED DELETION | salvage ledger section 4 | hashes identical to pinned copy | — | **yes** | — |
+| CONS-12 vault restore drill | proven recovery from `D:\URI-preservation` | PLANNED | salvage ledger section 5 | test restore to a scratch path | — | none | schedule |
+| CONS-13 secret ACL hardening | Codex sandbox cannot read URI secrets | DONE (33 files, reversible) | PC audit section 4 | secrets created later inherit again | — | none | re-run after cutover |
+| CONS-14 Phase 1 provisional checkpoints `work/c1/checkpoints` (11 MB) | fresh-clone reproducibility of `test_phase1_offline_components` | LOCAL ONLY (Phase 1 integration worktree) | verification report section 1.1 | preserve on GitHub | — | **yes** (push) | preserve branch |
+
 ## Change log
 
 | Date | Item | From | To | Evidence |
@@ -81,3 +104,4 @@ NOT MET, 6/10 NOT AUTHORIZED/REQUESTED, 7 PROCEDURE ONLY. Verdict NOT READY.
 | 2026-10-08 | D4 residual (invariants), D6 | open after round 4 | REPAIRED + TESTED | `E:phase2close_review\round4\` |
 | 2026-10-08 | D7, power-method check | open after round 5 | REPAIRED / NARROWED + TESTED | `E:phase2close_review\round5\` |
 | 2026-10-08 | Phase 2 closure (LOG-3, VAL-1, CAP-1, ISO-1, D1-D7, handoff seam, acceptance tooling, power-loss harness) | IMPLEMENTED, TESTED | INDEPENDENTLY ACCEPTED (Codex closure round 6, `-f` fcd0d72e...71298); D8 + K1 recorded Low | `E:phase2close_review\round6\` |
+| 2026-10-08 | CONS-1..CONS-14 | (not tracked) | consolidation items added; CONS-6 IMPLEMENTED, TESTED; CONS-13 DONE | `docs/governance/consolidation/` |

@@ -1,0 +1,278 @@
+{
+ "schema": "uri-runtime-authority/1",
+ "generated": "2026-10-08",
+ "status": "CANDIDATE - describes the proposed authority; the live PC is NOT yet switched to it (C7 cutover and containment actions await owner approval)",
+ "canonical_development": {
+  "repository": "https://github.com/sche004-cyber/Uri.git",
+  "branch_proposed": "canonical/uri-dev",
+  "branch_today": "integration/git-sync-20261008",
+  "base_commit": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+  "decision_record": "docs/governance/consolidation/URI_CANONICAL_BRANCH_DECISION.md"
+ },
+ "authoritative_runtime": {
+  "description": "Frozen Phase 1 Core + accepted Phase 2 (closure candidate -f) run through the C1 launcher authority. The frozen runtime_identity.py requires git HEAD == e8e3b65 with the accepted files as an uncommitted overlay, so the runtime checkout is MATERIALIZED from the canonical branch (procedure in URI_UNIFIED_CONSOLIDATION_PLAN.md section 5), never run from a committed branch tip.",
+  "source_checkout_candidate": "C:/Users/cheta/Development/uri-canonical-runtime-candidate",
+  "materialized_from_commit": "2325ad791e43db5958658a76000df9921c777361",
+  "materialization_overlay_list": "uri-canonical-evidence/runtime_overlay_files.txt (256 files)",
+  "authorized_entrypoints": [
+   "scripts/uri_server.ps1",
+   "scripts/uri_server_launcher.py",
+   "scripts/run_uri_isolated_server.py",
+   "scripts/run_uri_phase2_server.py",
+   "scripts/uri_client.ps1",
+   "scripts/uri_client_launcher.py",
+   "scripts/run_uri_client_worker.py",
+   "scripts/run_uri_supervised_worker.py"
+  ],
+  "forbidden_entrypoints_even_inside_authoritative_root": [
+   "Launch URI.bat",
+   "scripts/launch_uri.ps1",
+   "scripts/uri_server_ctl.ps1",
+   "scripts/run_uri_server.py"
+  ],
+  "server_identity": "Per-installation C1 manifest (scripts/uri_server_manifest.schema.json): pinned source files, interpreter and process-image SHA-256, dependency digest, Ed25519 public key; GET /runtime/identity signs a fresh nonce. Generic /health is never sufficient.",
+  "port_policy": "Loopback only. Frozen C1 refuses 8000, 8018, 8021, 11434 and 1234; the authoritative server therefore can never be confused with a legacy server on those ports.",
+  "state_ownership": {
+   "server_state_root": "Provisioned by scripts/provision_uri_server.py into a FRESH directory with inheritance removed (current user + SYSTEM only). Location is an owner decision at cutover; no legacy uri_workspace is imported.",
+   "client_state_root": "Provisioned per client installation by scripts/provision_uri_client.py; client databases are owned by that client only.",
+   "never_shared": [
+    "legacy uri_workspace/ trees",
+    "%APPDATA%/com.example/uri_ui/shared_preferences.json session tokens",
+    "%LOCALAPPDATA%/URI/desktop_secrets_*.json",
+    "native ~/.codex and ~/.claude account homes"
+   ]
+  },
+  "integrity": {
+   "phase1_frozen_checkpoint": {
+    "path": "C:/Users/cheta/.codex/worktrees/uri-phase1-integration/uri-agent/work/c1/checkpoints/final-closure-20261005-phase1.zip",
+    "sha256": "31a34dcbb37ee48e1b06a1bcd60418a2e52ff9a0c65fd8cc7f3c59defeb98cf7"
+   },
+   "phase2_ops_accepted": {
+    "sha256": "9a0be52c1ae5e59bf9ae16617e283c5a9f58ba098a1c2ae1d9649e184affb50a"
+   },
+   "phase2_closure_accepted": {
+    "sha256": "fcd0d72e0cd91412c361edec9114e2edaebbf70ede052046b808f3c4fc571298"
+   },
+   "file_ledger": "docs/governance/git_sync_20261008/SYNC_CANDIDATE_LEDGER.json"
+  }
+ },
+ "model_runtime": {
+  "runtime_v1": {
+   "status": "FROZEN 2026-10-07 (verdict A STOCK)",
+   "binary": "D:/uri-model-lab/runtime/llama-b11425-bin-win-vulkan-x64/llama-server.exe",
+   "binary_archive_sha256": "a3287ac487ab5d128aefddc507db31c087f2a41c6e03b01f37fbe0bc45e8717d",
+   "llama_server_exe_sha256": "4fdc1a67a8c1333429ea82186087a77db202fb588c2442dcdfa442b2182d0306",
+   "model": "D:/uri-model-lab/models/unsloth__Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+   "model_sha256": "66a3ca888ce13482b40c333db2432c0ebde3a7b13754fc29f0c6f5e89703ec66",
+   "config": "model_lab/integration/local_brain.json",
+   "port": 18470
+  },
+  "allowed_other_providers": "Ollama and LM Studio remain shared developer tools; the authoritative Core does not require either (model-optional startup). Their presence is not contamination; a URI component selecting them implicitly is."
+ },
+ "harness_integrations": {
+  "codex_cli": "NATIVE QUALIFIED run-scoped (Phase 2C/2D); production worker composes nothing qualified until a persisted record exists; client-profile CODEX_HOME pin (ISO-1); worker execution BLOCKED by EXE-1 (owner decision)",
+  "claude_cli": "BLOCKED - CLI not logged in; desktop-app authentication must never be reused",
+  "antigravity": "execute refused until containment evidence exists"
+ },
+ "ports": {
+  "uri_range": [
+   8000,
+   8099
+  ],
+  "model_ports": [
+   11434,
+   1234,
+   18470
+  ]
+ },
+ "roots": [
+  {
+   "id": "canonical-dev",
+   "path": "C:/Users/cheta/Development/uri-canonical-candidate",
+   "classification": "ACTIVE_AUTHORITATIVE",
+   "purpose": "Canonical development checkout (branch candidate). Records + source of truth; not a runtime. Nothing may be launched from it (empty entrypoint list); run only from canonical-runtime.",
+   "entrypoints": []
+  },
+  {
+   "id": "canonical-runtime",
+   "path": "C:/Users/cheta/Development/uri-canonical-runtime-candidate",
+   "classification": "ACTIVE_AUTHORITATIVE",
+   "purpose": "Materialized runtime checkout (HEAD e8e3b65 + accepted overlay). Proposed authoritative runtime source.",
+   "entrypoints": [
+    "scripts/uri_server.ps1",
+    "scripts/uri_server_launcher.py",
+    "scripts/run_uri_isolated_server.py",
+    "scripts/run_uri_phase2_server.py",
+    "scripts/uri_client.ps1",
+    "scripts/uri_client_launcher.py",
+    "scripts/run_uri_client_worker.py",
+    "scripts/run_uri_supervised_worker.py"
+   ]
+  },
+  {
+   "id": "runtime-v1",
+   "path": "D:/uri-model-lab/runtime/llama-b11425-bin-win-vulkan-x64",
+   "classification": "ACTIVE_AUTHORITATIVE",
+   "purpose": "Frozen Runtime v1 llama-server",
+   "entrypoints": [
+    "llama-server.exe"
+   ]
+  },
+  {
+   "id": "phase1-integration",
+   "path": "C:/Users/cheta/.codex/worktrees/uri-phase1-integration/uri-agent",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Frozen Phase 1 source + checkpoints + Runtime v1 research; read-only evidence"
+  },
+  {
+   "id": "phase2-dev",
+   "path": "C:/Users/cheta/.codex/worktrees/uri-phase2a/uri-agent",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Active Phase 2 operational-qualification development worktree (other session); never a production runtime"
+  },
+  {
+   "id": "desktop-integration",
+   "path": "C:/Users/cheta/Development/uri-m37-m39-integration",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "M36-M39 + INT-ARN-1 desktop line (eb73693 + uncommitted); donor for C5-C7"
+  },
+  {
+   "id": "v1",
+   "path": "C:/Users/cheta/Development/Uri/_V1",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Superseded-base 62d564c work: harness, voice, plans, M35 research"
+  },
+  {
+   "id": "harness-console",
+   "path": "C:/Users/cheta/.codex/worktrees/harness-connections-console/_V1",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Harness/Connections/Console candidate (partial)"
+  },
+  {
+   "id": "intent-discovery-exp",
+   "path": "C:/Users/cheta/.codex/worktrees/intent-discovery/_V1",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Experimental intent workflow, superseded by Phase 1 C5"
+  },
+  {
+   "id": "dictation",
+   "path": "C:/Users/cheta/Development/uri-dictation",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Dictation feature line f1e13e9"
+  },
+  {
+   "id": "edge-experiments",
+   "path": "C:/Users/cheta/Development/Uri_edge_experiments",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Edge-pair experiment (NOT QUALIFIED)"
+  },
+  {
+   "id": "batch-candidate",
+   "path": "C:/Users/cheta/Development/uri-batch-candidate",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Superseded M36-M38 candidate a87e158"
+  },
+  {
+   "id": "m33-baseline",
+   "path": "C:/Users/cheta/.codex/worktrees/m33-audit-baseline/_V1",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "M33.3 audit baseline"
+  },
+  {
+   "id": "m33-candidate",
+   "path": "C:/Users/cheta/.codex/worktrees/m33-audit-candidate/_V1",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "M33.3-R audit candidate"
+  },
+  {
+   "id": "batch-audit",
+   "path": "C:/Users/cheta/.codex/worktrees/batch-audit-canonical/_V1",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "M36-M38 audit worktree (clean)"
+  },
+  {
+   "id": "preservation-vault",
+   "path": "D:/URI-preservation",
+   "classification": "PRESERVED_DONOR_ONLY",
+   "purpose": "Encrypted 2026-10-05 vault"
+  },
+  {
+   "id": "legacy-master",
+   "path": "C:/Users/cheta/Development/uri-agent",
+   "classification": "QUARANTINED_UNTRUSTED",
+   "purpose": "Legacy dirty master worktree; hosts the shared .git; runs the live legacy server via scheduled task"
+  },
+  {
+   "id": "m33-tmp-baseline",
+   "path": "C:/Users/cheta/Development/uri-agent/.tmp_m33_1_batch4_baseline_5973f6d",
+   "classification": "QUARANTINED_UNTRUSTED",
+   "purpose": "Pytest temp residue worktree"
+  },
+  {
+   "id": "nvme-model-copy",
+   "path": "C:/uri-model-lab-nvme",
+   "classification": "QUARANTINED_UNTRUSTED",
+   "purpose": "Unpinned copy of Runtime v1 model files; Runtime v1 pins D:/uri-model-lab"
+  },
+  {
+   "id": "voice-appdata",
+   "path": "C:/Users/cheta/AppData/Local/URI",
+   "classification": "QUARANTINED_UNTRUSTED",
+   "purpose": "Voice/whisper side-project state and desktop secrets file; not part of the authoritative runtime"
+  }
+ ],
+ "transitional_legacy": [
+  {
+   "id": "LEGACY-LIVE-SERVER",
+   "match": "C:/Users/cheta/Development/uri-agent/scripts/run_uri_server.py",
+   "observed": "Scheduled task \\URIServer (logon trigger) runs the legacy dirty master checkout on 127.0.0.1:8000 with uri-agent/uri_workspace state",
+   "until": "owner-approved containment / C7 cutover"
+  },
+  {
+   "id": "LEGACY-DESKTOP-LAUNCHER",
+   "match": "C:/Users/cheta/Development/uri-m37-m39-integration/Launch URI.bat",
+   "observed": "Desktop and Start Menu URI.lnk point to the M37-M39 integration desktop launcher (port 8000)",
+   "until": "owner-approved containment / C7 cutover"
+  }
+ ],
+ "shared_dependencies": [
+  {
+   "id": "ollama",
+   "match": "AppData/Local/Programs/Ollama"
+  },
+  {
+   "id": "lm-studio",
+   "match": "LM Studio"
+  },
+  {
+   "id": "lmstudio-cli",
+   "match": ".lmstudio"
+  },
+  {
+   "id": "codex-sandbox-service",
+   "match": "OpenAI.Codex"
+  },
+  {
+   "id": "codex-mcp-bridge",
+   "match": "Development/dev-tools/codex_mcp_bridge"
+  },
+  {
+   "id": "dart-mcp",
+   "match": "dart_mcp_server"
+  },
+  {
+   "id": "voice-access",
+   "match": "system32/voiceaccess.exe"
+  }
+ ],
+ "recovery": {
+  "github": [
+   "uri-repo integration/git-sync-20261008 f8de153",
+   "uri-repo preserve/* (6 branches)",
+   "uri-repo + origin pre-existing branches (untouched)"
+  ],
+  "checkpoints": "Phase 1 / Phase 2 zips listed under integrity; also committed under docs/evidence/phase2/",
+  "vault": "D:/URI-preservation/phase1-20261005-0037 (encrypted, predates Phase 1 freeze; restore not re-tested)",
+  "pc_containment_rollback": "scripts/uri_containment.ps1 -Restore (backups under the evidence folder)"
+ }
+}
