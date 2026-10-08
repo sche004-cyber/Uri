@@ -128,6 +128,7 @@ class _UriConversationPaneState extends State<UriConversationPane> {
   void _openConnections() {
     context.findAncestorStateOfType<AppShellState>()?.goTo(
       ShellIndex.connections,
+      connectionsTab: 1,
     );
   }
 

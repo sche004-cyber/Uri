@@ -1,0 +1,18 @@
+{
+  "command_flags": [
+    "-c",
+    "sandbox_mode=\"workspace-write\"",
+    "-c",
+    "sandbox_workspace_write.network_access=false",
+    "-c",
+    "windows.sandbox=\"elevated\"",
+    "-C",
+    "C:\\Users\\cheta\\.codex\\worktrees\\harness-connections-console\\_V1\\scratch\\codex_containment_probe\\workspace",
+    "C:\\Users\\cheta\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "C:\\Users\\cheta\\.codex\\worktrees\\harness-connections-console\\_V1\\scratch\\codex_containment_probe\\workspace\\probe.py"
+  ],
+  "exit_code": 2,
+  "stdout": "",
+  "stderr": "error: the following required arguments were not provided:\n  --permission-profile <NAME>\n\nUsage: codex sandbox --permission-profile <NAME> --config <key=value> --cd <DIR> <COMMAND>...\n\nFor more information, try '--help'.\n",
+  "outside_write_exists": false
+}

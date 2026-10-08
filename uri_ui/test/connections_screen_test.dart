@@ -39,6 +39,8 @@ void main() {
 
     await tester.tap(find.text('Connections & Providers'));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('connections-plugins')));
+    await tester.pumpAndSettle();
 
     expect(find.text('Gmail'), findsOneWidget);
     expect(find.text('Connected'), findsWidgets);
@@ -51,6 +53,8 @@ void main() {
     // Frozen Blueprint §4.6: Connections & Providers is one destination
     // with both real sections present together on a wide layout, not
     // two separate screens.
+    await tester.tap(find.byKey(const ValueKey('connections-models')));
+    await tester.pumpAndSettle();
     expect(find.text('Ollama (Local)'), findsOneWidget);
   });
 
@@ -60,6 +64,8 @@ void main() {
     await pumpPostOnboardingApp(tester);
 
     await tester.tap(find.text('Connections & Providers'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('connections-plugins')));
     await tester.pumpAndSettle();
 
     expect(find.text('Not connected'), findsOneWidget);
@@ -81,6 +87,8 @@ void main() {
     await pumpPostOnboardingApp(tester);
 
     await tester.tap(find.text('Connections & Providers'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('connections-plugins')));
     await tester.pumpAndSettle();
 
     expect(find.text('Needs authorization'), findsOneWidget);

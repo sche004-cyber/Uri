@@ -1,0 +1,12 @@
+# Harness, Connections and Console integration boundaries
+Stage 2, 2026-10-03. Derived from HARNESS_CONNECTIONS_CONSOLE_ROOT_CAUSE_AUDIT.md. User's direct assignment supplies the required tab structure and implementation authority; release acceptance is separate.
+
+Keep one existing UriApp. The existing builder owns the harness controller/client state above navigation; replace its persistent visual footer with an inherited access seam. Workspace (under the existing Chat destination) exposes Chat and Harness tasks. Navigation never destroys running-task polling, approvals or checkpoints. Connections has Models (existing ProvidersScreen), Plugins (existing ConnectionsScreen and actual capability catalogue), Harnesses (real registry details). No discovery state grants permission. All execution/approval remains server-owned and user-bound.
+
+General tasks require a reviewed task-general capsule/verification extension or a new qualified adapter boundary with matching immutable task, working-directory and acceptance identities. Existing capsule's closed workbook goals and unsandboxed arbitrary Python verifier are not silently generalized. No frozen source edits are included in the UI integration slice. Claude is the initial executor; Codex needs explicit User selection and qualification.
+
+User amendment identifies DesktopHarnessTest as the existing provisional harness console. Reuse its controller and presentation rather than create a competing Console. Workspace exposes read-only inspection of account-owned checkpoints, structured receipts and pending approvals, searchable by field and section. Existing capability-model status and host resource APIs may be refreshed explicitly; neither is evidence of loaded Edge models or per-model measurements. Historical desktop timings are unavailable unless measured for that exact task in this app session. No event history is manufactured from snapshots. Broader Developer Console remains unlocated. Existing Diagnostics stays unchanged. Experience-level and work-mode systems are explicitly excluded by the amendment and are not consulted for console visibility or authority.
+
+Codex is now explicitly selected for qualification by the User. Authentication does not grant execution; native containment remains a prerequisite.
+
+Canonical Brain discovery and result feedback remain missing for general tasks. This UI placement slice does not establish canonical-loop completion or live-provider acceptance.

@@ -1,0 +1,13 @@
+{
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "windows sandbox failed: helper_unknown_error: apply deny-read ACLs\n",
+  "profile": {
+    ":root": "read",
+    ":minimal": "read",
+    "C:/Users": "deny",
+    "C:/Users/cheta/.codex/worktrees/harness-connections-console/_V1/scratch/codex_containment_probe/workspace": "write",
+    "C:/Users/cheta/AppData/Local/Programs/Python/Python313": "read"
+  },
+  "outside_write_exists": false
+}

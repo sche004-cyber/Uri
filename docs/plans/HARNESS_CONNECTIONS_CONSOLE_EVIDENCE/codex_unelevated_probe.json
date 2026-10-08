@@ -1,0 +1,15 @@
+{
+  "mode": "unelevated",
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "windows sandbox failed: Restricted read-only access requires the elevated Windows sandbox backend\n",
+  "profile": {
+    ":root": "deny",
+    ":minimal": "read",
+    "C:/Users/cheta/.codex/worktrees/harness-connections-console/_V1/scratch/codex_containment_probe/workspace": "write",
+    "C:/Users/cheta/AppData/Local/Programs/Python/Python313": "read"
+  },
+  "outside_write_exists": false,
+  "provider_task": false,
+  "qualification_granted": false
+}

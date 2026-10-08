@@ -1,0 +1,29 @@
+# Harness, Connections and Console reconnaissance
+## Amendment and final qualification findings
+The User identified DesktopHarnessTest as the reported provisional harness console. Source inspection confirms the widget, flag URI_DESKTOP_HARNESS_TEST, MaterialApp integrationTestBuilder/integrationNavigatorKey wiring and existing discovery/authentication/capabilities/preparation/approval/cancellation/refresh/receipt controls. Registry fields may report unknown; they are not guarantees of live model/tool discovery. This existing implementation was already copied and reused. The separate broader Developer Console remains unlocated after the documented expanded searches.
+
+The User explicitly authorized the scoped frozen-extension proposal during this session. Its native-containment prerequisite remains unmet. A further root-deny probe using the unelevated native sandbox failed before running the marker program: "Restricted read-only access requires the elevated Windows sandbox backend". Elevated root-deny had already failed with "elevated Windows sandbox requires effective `:root` read access"; the scoped deny-read profile failed applying ACLs. Evidence: HARNESS_CONNECTIONS_CONSOLE_EVIDENCE/codex_unelevated_probe.json and the prior native probes. No downgrade, provider substitution or general-task execution took place. Approval is preserved; no frozen sources changed while containment is unavailable.
+
+2026-10-03. Stage 1, Codex source investigation; not independent release audit.
+
+Base: 62d564cf9d2fa25e5a9860d20dcc7070b112badb, branch codex/antigravity-harness-recon. The assigned checkout contains extensive uncommitted user work. Changes use a separate managed worktree. Only the desktop seam, its launcher, entry-point wiring and focused tests were copied as dependencies; originals are preserved.
+
+Reused: DesktopHarnessService, subscription adapter, HarnessController, registry, authenticated routes; M37 workspace/diff/lineage/verifier; M38 capsule/runner/process supervision; existing model and service screens. Previous evidence: docs/plans/HARNESS_DESKTOP_COMPLETION_REPORT.md in the assigned checkout. Its successful historical fixed repair is not general-task acceptance. Fresh native status: Claude subscription authenticated; Codex ChatGPT authenticated. No credentials copied.
+
+Gaps: fixed Amount-column task; capsule goals accept only three workbook classes; Workspace requires hash-bound inputs; verifier's Python execution has no OS sandbox. Merely accepting a prompt/path cannot qualify general execution. Native Codex remains unqualified and cannot be selected automatically. Antigravity is blocked before spawn. The MaterialApp builder injects a footer on every page. Connections is a two-column service/model screen.
+
+Console recovery search: every registered worktree's uri_ui/lib and docs searched for developer/dev console; every local/remote ref's uri_ui tree searched for console/developer paths; git log --all and full reflog searched for console/devtools; stash list is empty. No recovered Console located. DiagnosticsSettingsScreen exists (health/identity), but is not a Developer Console. No private agent histories inspected. Recovery is FAILED within these searched locations; a replacement requires a separate proposal, not a recovery claim.
+
+Canonical app: uri_ui/main.dart -> UriApp -> AppShell. Normal launcher opens installed composition from a different checkout; explicit provisional launcher opens flagged real UriApp on a separate loopback Core. Production promotion requires independent acceptance and remains prohibited.
+
+Protected: uri_core, frozen M37/M38 sources, Brain/Edge routing, native credential stores, unrelated dirty files, existing installed application and its state. New general-task security policy cannot be inferred from UI visibility.
+
+
+## Expanded recovery investigation, User-directed
+Recovery status: BLOCKED; no implementation located, not proof it never existed.
+Read-only searches included all Flutter/Markdown/HTML source beneath C:/Users/cheta/Development (including hidden/untracked files), C:/Users/cheta/Development/Uri and _V1; build output, .git, packages, node_modules and generated graph copies excluded. Exact uri-harness-first locations under Development and Development/Uri do not exist. Names searched: developer/dev/development console, DebugPanel, DevPanel, DeveloperScreen and DiagnosticConsole; source path search included console/developer/diagnostic names.
+
+C:/Users/cheta/.gemini/antigravity/scratch exists but has no matching project/source. Antigravity brain saved .md/.dart/.html implementation artifacts have no matching console reference. .antigravity is absent. .antigravity-ide contains extensions, no matching application source. Antigravity IDE workspaceStorage workspace.json metadata references only uri-agent and Uri/_V1; Antigravity's other workspace store is absent. Native conversation stores, credentials and private agent logs were not searched. No source or unrelated work was modified during discovery. Replacement Console is NOT AUTHORIZED without User approval after these findings.
+
+## Native Codex qualification probes
+User explicitly selected Codex CLI on 2026-10-03. Native version 0.158.0, native login status says ChatGPT authenticated. No credential files inspected or copied. A named elevated sandbox profile with root deny/minimal read/workspace write/network off was rejected: effective root read is required. A profile with user directories denied and task/Python directories reopened was rejected by the native helper while applying deny-read ACLs. Neither probe ran its harmless marker program; outside-write marker absent. These are failed qualification probes, not denied-operation passes or general-task success. No provider task admitted, no fallback to root-readable execution, no bypass flag.

@@ -75,11 +75,16 @@ class AppShellState extends State<AppShell> {
     await prefs.setBool(_sidebarCollapsedPrefKey, _sidebarCollapsed);
   }
 
-  void goTo(int index, {String? settingsCategory}) {
+  int connectionsTab = 0;
+
+  void goTo(int index, {String? settingsCategory, int? connectionsTab}) {
     if (settingsCategory != null) {
       AppStateScope.of(context).openSettingsCategory(settingsCategory);
     }
-    setState(() => _index = index);
+    setState(() {
+      _index = index;
+      this.connectionsTab = connectionsTab ?? 0;
+    });
   }
 
   @override
@@ -89,7 +94,7 @@ class AppShellState extends State<AppShell> {
 
     final content = KeyedSubtree(
       key: ValueKey(_index),
-      child: widget.sections[_index].builder(context),
+      child: Builder(builder: widget.sections[_index].builder),
     );
 
     if (isWide) {

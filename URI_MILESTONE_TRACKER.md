@@ -1,5 +1,8 @@
 # URI Milestone Tracker
 
+**Candidate handoff — 2026-10-03: Harness / Connections / Console, PARTIAL / ACCEPTANCE BLOCKED.**
+In isolated codex/harness-connections-console only: three Connections tabs, Workspace placement of the provisional harness console and read-only inspection implemented and desktop-tested; 213 Flutter and 91 focused Python checks pass. User explicitly selected Codex and authorized the scoped frozen extension. Native filesystem containment cannot qualify in the installed Windows sandbox, so no general task ran and no frozen sources changed. Broader Developer Console remains unlocated; DesktopHarnessTest is confirmed and reused under the amendment. [Report](docs/plans/HARNESS_CONNECTIONS_CONSOLE_IMPLEMENTATION_REPORT.md), [authorized extension and prerequisites](docs/plans/HARNESS_CONNECTIONS_CONSOLE_FROZEN_EXTENSION_PROPOSAL.md). No independent VERIFIED verdict, release, freeze, commit or push; prior records below remain historical.
+
 **Batch handoff — 2026-09-28: M38 Harness Execution Minimum implemented, PROVISIONAL / NOT FROZEN; batch stopped before the Office demonstrator.**
 State: `M38_IMPLEMENTED_PROVISIONAL_NOT_FROZEN`. Built on unaudited M36 (`405db1f`) and M37 (`5460d64`), dependencies recorded. [Plan](docs/plans/M38_HARNESS_EXECUTION_MINIMUM_PLAN.md), [report](docs/plans/M38_IMPLEMENTATION_REPORT.md), [Codex audit package](docs/plans/URI_BATCH_M36_M37_M38_AUDIT_PACKAGE.md). Next: one independent Codex audit of the M36 -> M37 -> M38 chain. No freeze, no production integration.
 

@@ -1,0 +1,137 @@
+{
+  "baseline_commit": "62d564cf9d2fa25e5a9860d20dcc7070b112badb",
+  "branch": "codex/harness-connections-console",
+  "copied_dependency_paths": [
+    {
+      "path": "Launch URI Harness.bat",
+      "source_current_sha256": "60972b1b6287fa4d45cd90369866f829462d40db013778b642502f464249a29d",
+      "candidate_current_sha256": "5ee24934fbe6108d0777488176b1254731554696489d54cd8f2f8ee5aa2c4415"
+    },
+    {
+      "path": "scripts/launch_uri.ps1",
+      "source_current_sha256": "90a81699940b082c2fac0b63e8ec9af0b999ceae703e9581063d13adc6b36bc4",
+      "candidate_current_sha256": "90a81699940b082c2fac0b63e8ec9af0b999ceae703e9581063d13adc6b36bc4"
+    },
+    {
+      "path": "scripts/launch_uri_harness.ps1",
+      "source_current_sha256": "395e2bedd402a4e6215715e555ef5745f509338c84493f149e44bd6b53f04c31",
+      "candidate_current_sha256": "cc77ea6c88efbea7e834778c6450699b18cad790a19bef3b1a7a5bc630057d12"
+    },
+    {
+      "path": "scripts/run_desktop_harness_test.py",
+      "source_current_sha256": "9c389f92b1d917c54b0fe6460dc38b5c93643e2adb755cf17580d6c93c3e7d65",
+      "candidate_current_sha256": "9c389f92b1d917c54b0fe6460dc38b5c93643e2adb755cf17580d6c93c3e7d65"
+    },
+    {
+      "path": "tests/test_desktop_harness_auth.py",
+      "source_current_sha256": "5e4bc7d53d4ae5d444352a50e32347a79c9797868e295a385235cbb7baea0346",
+      "candidate_current_sha256": "5e4bc7d53d4ae5d444352a50e32347a79c9797868e295a385235cbb7baea0346"
+    },
+    {
+      "path": "tests/test_desktop_harness_integration.py",
+      "source_current_sha256": "4c7599296013876d3b906a99c841e6b2fad008754b8cccd24fbdc289d38f14be",
+      "candidate_current_sha256": "4c7599296013876d3b906a99c841e6b2fad008754b8cccd24fbdc289d38f14be"
+    },
+    {
+      "path": "tests/test_harness_desktop_completion.py",
+      "source_current_sha256": "be2e2d7e0334d7c5468c5c2244cc56273f2db11872b81dcb9c74532b49b8edd8",
+      "candidate_current_sha256": "35786bebe9bde95c0c2b9110b94d01abf2377fc3ce0c3da01586d6bbbfe30683"
+    },
+    {
+      "path": "uri_ui/lib/app.dart",
+      "source_current_sha256": "e963e469ebe1878b387aab0f2032e602f36f7d44170d0ff1c03f69e35ea4ffe3",
+      "candidate_current_sha256": "4bdde43c54a652a8811bf4602f7754a3d53a37e1b8e8333b405d306bd0ec5bde"
+    },
+    {
+      "path": "uri_ui/lib/main.dart",
+      "source_current_sha256": "72b004f5201c855e67c6369deaf7936788a3f4f0decedf6592bfcb5b3ccc828d",
+      "candidate_current_sha256": "31677087a7a6234de93e5a89b68d0a8df131bd19aa3393801c957484fec5bc48"
+    },
+    {
+      "path": "uri_ui/lib/screens/auth/login_screen.dart",
+      "source_current_sha256": "1985f1ae103a9ce669a3bd2fb070922994018606640831630bf5cb21f4ba4e46",
+      "candidate_current_sha256": "1985f1ae103a9ce669a3bd2fb070922994018606640831630bf5cb21f4ba4e46"
+    },
+    {
+      "path": "uri_ui/lib/services/desktop_harness_test_client.dart",
+      "source_current_sha256": "934a9289eed29b4a8229fea5dadca240fc5af0f8808d9f00e9788176d29bb1c8",
+      "candidate_current_sha256": "ffd1a414838edc3533ac5c62c246684903b0fffc5f30eb505b589a8688d79e18"
+    },
+    {
+      "path": "uri_ui/lib/services/desktop_harness_test_session.dart",
+      "source_current_sha256": "7e92f90b5188f368a518fc5699f04e432d9a31e20869d3c1d4ae5efdc1b7a3ef",
+      "candidate_current_sha256": "02350905b3181af7ae5b23a6b4d635b38fb5c6426b2a1f3228ea85221c8d2a01"
+    },
+    {
+      "path": "uri_ui/lib/widgets/desktop_harness_test.dart",
+      "source_current_sha256": "af0330e5d74f73be20312cb93913bcce548de8d0a1dfe5df47a1938fb87d8ab0",
+      "candidate_current_sha256": "299f52972be9b849bd476fdb21a6dab7df7cedf0469de008c0bd657acd325529"
+    },
+    {
+      "path": "uri_ui/pubspec.lock",
+      "source_current_sha256": "966824d644428f54382966506d7136c363dd1c0419eb1e9cc1d7f0738bc81929",
+      "candidate_current_sha256": "966824d644428f54382966506d7136c363dd1c0419eb1e9cc1d7f0738bc81929"
+    },
+    {
+      "path": "uri_ui/pubspec.yaml",
+      "source_current_sha256": "c20b9dea70ba7c06ae1e095336779ab7d8880a7ef77169f4ead22c7a79a2ab53",
+      "candidate_current_sha256": "c20b9dea70ba7c06ae1e095336779ab7d8880a7ef77169f4ead22c7a79a2ab53"
+    },
+    {
+      "path": "uri_ui/test/desktop_harness_auth_test.dart",
+      "source_current_sha256": "47388e560e551d918271c25eae87013476b4a2f54730c2dd4fe7e6c010488ef8",
+      "candidate_current_sha256": "47388e560e551d918271c25eae87013476b4a2f54730c2dd4fe7e6c010488ef8"
+    },
+    {
+      "path": "uri_ui/test/desktop_harness_test.dart",
+      "source_current_sha256": "40d08c28ef2091fb579a69009d5f0a7752f12413eb0b47002db8bd61f36514a4",
+      "candidate_current_sha256": "f53415fd69c5cb774d69af22e85fb9d80e37b1a5f615554b2508bcb8fb535204"
+    },
+    {
+      "path": "uri_ui/test_driver/desktop_harness_main.dart",
+      "source_current_sha256": "579ad85a8ece9503c5e1cef556d210c286e5beef7ab8e160ed96518bdb16d635",
+      "candidate_current_sha256": "579ad85a8ece9503c5e1cef556d210c286e5beef7ab8e160ed96518bdb16d635"
+    },
+    {
+      "path": "uri_ui/test_driver/desktop_harness_qualification.dart",
+      "source_current_sha256": "02d43c5957ab83ab9c440718551192745b6652254463eefa83ba718a3cb2ff99",
+      "candidate_current_sha256": "02d43c5957ab83ab9c440718551192745b6652254463eefa83ba718a3cb2ff99"
+    },
+    {
+      "path": "uri_ui/test_driver/harness_completion_qualification.dart",
+      "source_current_sha256": "45e06786f057c55fe3dd21cd84fd33af6e0fc9e74998b90f8d95bdca8b73803e",
+      "candidate_current_sha256": "45e06786f057c55fe3dd21cd84fd33af6e0fc9e74998b90f8d95bdca8b73803e"
+    },
+    {
+      "path": "uri_v1/app/__init__.py",
+      "source_current_sha256": "44b57bec879b701effe2ba48bc4693d12cd49ff9fe4e222862fc82bf19bc87f3",
+      "candidate_current_sha256": "44b57bec879b701effe2ba48bc4693d12cd49ff9fe4e222862fc82bf19bc87f3"
+    },
+    {
+      "path": "uri_v1/desktop_harness/__init__.py",
+      "source_current_sha256": "bcc1f9279eb456b8a9eebe0e65c115256e8a22165d2f2dfbe87754abbf47cd95",
+      "candidate_current_sha256": "bcc1f9279eb456b8a9eebe0e65c115256e8a22165d2f2dfbe87754abbf47cd95"
+    },
+    {
+      "path": "uri_v1/desktop_harness/controller.py",
+      "source_current_sha256": "08495ff6c4c7c2f492353de4ea9800a1d6e27cadc3f4459806d521cace0eb1d9",
+      "candidate_current_sha256": "52221a00845a736c990c68ded6a3f345ac4e60677679a47a99893fc0a02a6fc9"
+    },
+    {
+      "path": "uri_v1/desktop_harness/registry.py",
+      "source_current_sha256": "56901e06a6330b48be5c9d937d22e4a8d56f98b13fd8c1724322bfef161219b1",
+      "candidate_current_sha256": "9284bd1d39fac1e82d97bc981ce0ba9f66bf7c298f162eaa59bf60fa2a5b8738"
+    },
+    {
+      "path": "uri_v1/desktop_harness/routes.py",
+      "source_current_sha256": "0a49b27f2af1a3c645d9795065d6ab41568b32c224121ecc901a128a8c1aa3e1",
+      "candidate_current_sha256": "940e80a8438ef18d3115c31cbdcf9374cc42bf0974b1820c3348bac6fabb14f4"
+    },
+    {
+      "path": "uri_v1/desktop_harness/service.py",
+      "source_current_sha256": "0241727991bdd973ecada401f2129c62933db99045e334cf91d965304055698b",
+      "candidate_current_sha256": "0241727991bdd973ecada401f2129c62933db99045e334cf91d965304055698b"
+    }
+  ],
+  "new_changes_uncommitted": true
+}

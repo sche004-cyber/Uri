@@ -1,0 +1,13 @@
+# General-task frozen-boundary extension — proposal only
+2026-10-03. SCOPED EXTENSION AUTHORIZED BY USER; NOT IMPLEMENTED / NATIVE CONTAINMENT BLOCKED. The User replied "Authorize the scoped extension" to the concrete approval request in this session. This grants scoped implementation authority, not self-approval, qualification, independent review or a security relaxation. The containment prerequisite below remains mandatory.
+
+1. uri_v1/execution/harness/capsule.py: support an explicit runtime-validated general task goal and exact allowed-output set alongside the existing closed workbook goals. Preserve hash-bound instructions and acceptance; no direct prompt grants.
+2. uri_v1/edge/contracts.py or a reviewed additive contract outside frozen Edge: describe general tasks without mislabelling them SCRIPT_WORKBOOK_REPAIR. Bind goal, input fingerprints, approved working-directory root, executor and acceptance checks into a single immutable task identity.
+3. uri_v1/execution/harness/adapters.py: a reviewed Codex subscription adapter must ignore ambient config/rules/hooks/plugins, require a named enforceable per-task permission profile, preserve credential isolation and disallow API-key billing and every bypass flag. An additive desktop adapter may avoid editing this file, but still needs the same qualification.
+4. uri_v1/execution/verify.py: behavioral execution of generated Python must use an independently qualified sandboxed process path, rather than interpreting an ordinary cwd+timeout as filesystem/network containment. Preserve original fingerprints before and after verification, immutable acceptance identity and exact-byte output export checks.
+
+Prerequisite before admission: repair/qualify installed Codex 0.158.0 native deny-read support (both recorded profiles fail before executing), or separately approve and qualify an alternative OS containment implementation. Do not use root-readable execution as an unannounced substitute. No install, credential transfer or provider switch is authorized by this proposal.
+
+Then implement a natural-language task/working-directory/permissions/approval flow, live progress and cancellation; independent URI-owned behavior checks; artifact inspection; protected-file and shell/network denial tests; real desktop-originated Python task; controlled native interruption/recovery; canonical Brain discovery and execution-result feedback. None of those are replaced by a fixture repair or unit PASS.
+
+Independent reviewer must accept the bounded extension before frozen-source implementation. Production release remains separate and restricted to the governing release authority.

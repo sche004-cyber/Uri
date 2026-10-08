@@ -173,6 +173,8 @@ void main() {
 
         await tester.tap(find.text('Connections & Providers'));
         await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('connections-plugins')));
+        await tester.pumpAndSettle();
 
         expect(find.text('Not connected'), findsOneWidget);
 

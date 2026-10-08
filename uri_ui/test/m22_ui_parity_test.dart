@@ -224,6 +224,8 @@ void main() {
         await _pumpPostOnboardingApp(tester, client: _NonAdminMockClient());
 
         await tester.tap(find.text('Connections & Providers'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('connections-plugins')));
         await tester.pumpAndSettle();
 
         expect(find.textContaining('ADMIN-only action'), findsNothing);
@@ -246,6 +248,8 @@ void main() {
         await _pumpPostOnboardingApp(tester);
 
         await tester.tap(find.text('Connections & Providers'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('connections-plugins')));
         await tester.pumpAndSettle();
 
         expect(find.textContaining('ADMIN-only action'), findsNothing);

@@ -1,0 +1,7 @@
+{
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "windows sandbox failed: elevated Windows sandbox requires effective `:root` read access\n",
+  "outside_write_exists": false,
+  "profile": "root deny; minimal read; workspace write; network off; elevated"
+}

@@ -57,7 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() {
       _isSubmitting = false;
-      _errorText = outcome.success ? null : (outcome.message ?? 'Something went wrong.');
+      _errorText = outcome.success
+          ? null
+          : (outcome.message ?? 'Something went wrong.');
     });
   }
 
@@ -72,76 +74,88 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(
-              padding: const EdgeInsets.all(UriSpace.xl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const UriWordmark(markSize: 40, showTagline: true),
-                  const SizedBox(height: UriSpace.lg),
-                  Text(
-                    _isSignupMode ? 'Create your URI account' : 'Sign in to URI',
-                    style: theme.textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: UriSpace.xs),
-                  Text(
-                    _isSignupMode
-                        ? 'This creates your own private URI space on this server — separate from everyone else who signs in here.'
-                        : 'Each account has its own private URI space — profile, memory, tasks, and approvals never cross between accounts.',
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: UriSpace.lg),
-                  TextField(
-                    controller: _usernameController,
-                    autofillHints: const [AutofillHints.username],
-                    decoration: const InputDecoration(labelText: 'Username'),
-                    onSubmitted: (_) => _submit(),
-                  ),
-                  const SizedBox(height: UriSpace.sm),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    autofillHints: const [AutofillHints.password],
-                    decoration: const InputDecoration(labelText: 'Password'),
-                    onSubmitted: (_) => _submit(),
-                  ),
-                  if (_errorText != null) ...[
-                    const SizedBox(height: UriSpace.sm),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(UriSpace.xl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const UriWordmark(markSize: 40, showTagline: true),
+                    const SizedBox(height: UriSpace.lg),
                     Text(
-                      _errorText!,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: colors.danger),
+                      _isSignupMode
+                          ? 'Create your URI account'
+                          : 'Sign in to URI',
+                      style: theme.textTheme.headlineMedium,
+                    ),
+                    const SizedBox(height: UriSpace.xs),
+                    Text(
+                      _isSignupMode
+                          ? 'This creates your own private URI space on this server — separate from everyone else who signs in here.'
+                          : 'Each account has its own private URI space — profile, memory, tasks, and approvals never cross between accounts.',
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: UriSpace.lg),
+                    TextField(
+                      key: const ValueKey('uri-login-username'),
+                      controller: _usernameController,
+                      autofillHints: const [AutofillHints.username],
+                      decoration: const InputDecoration(labelText: 'Username'),
+                      onSubmitted: (_) => _submit(),
+                    ),
+                    const SizedBox(height: UriSpace.sm),
+                    TextField(
+                      key: const ValueKey('uri-login-password'),
+                      controller: _passwordController,
+                      obscureText: true,
+                      autofillHints: const [AutofillHints.password],
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      onSubmitted: (_) => _submit(),
+                    ),
+                    if (_errorText != null) ...[
+                      const SizedBox(height: UriSpace.sm),
+                      Text(
+                        _errorText!,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.danger,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: UriSpace.lg),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isSubmitting ? null : _submit,
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                _isSignupMode ? 'Create account' : 'Sign in',
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: UriSpace.sm),
+                    TextButton(
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => setState(() {
+                              _isSignupMode = !_isSignupMode;
+                              _errorText = null;
+                            }),
+                      child: Text(
+                        _isSignupMode
+                            ? 'Already have an account? Sign in'
+                            : "New here? Create an account",
+                      ),
                     ),
                   ],
-                  const SizedBox(height: UriSpace.lg),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _submit,
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(_isSignupMode ? 'Create account' : 'Sign in'),
-                    ),
-                  ),
-                  const SizedBox(height: UriSpace.sm),
-                  TextButton(
-                    onPressed: _isSubmitting
-                        ? null
-                        : () => setState(() {
-                            _isSignupMode = !_isSignupMode;
-                            _errorText = null;
-                          }),
-                    child: Text(
-                      _isSignupMode
-                          ? 'Already have an account? Sign in'
-                          : "New here? Create an account",
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
