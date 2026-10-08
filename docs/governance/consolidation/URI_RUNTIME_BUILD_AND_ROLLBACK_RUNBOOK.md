@@ -11,7 +11,9 @@ git -c core.longpaths=true clone --no-checkout https://github.com/sche004-cyber/
 cd C:\URI\runtime-src
 git config core.autocrlf false; git config core.longpaths true
 git checkout --detach e8e3b65
-git show origin/integration/git-sync-20261008:docs/governance/consolidation/RUNTIME_OVERLAY_PHASE2OQ_G.txt |
+git fetch -q origin integration/git-sync-20261008
+git merge-base --is-ancestor 759d0d4 FETCH_HEAD; if ($LASTEXITCODE -ne 0) { throw 'ref lacks the accepted commit' }
+git show FETCH_HEAD:docs/governance/consolidation/RUNTIME_OVERLAY_PHASE2OQ_G.txt |
   Set-Content -Encoding ascii ..\overlay.txt          # not '>' (UTF-16 in Windows PowerShell 5.1)
 git checkout 759d0d4 --pathspec-from-file=..\overlay.txt
 git reset -q                                          # HEAD stays e8e3b65; accepted files are the overlay
@@ -55,7 +57,8 @@ Codex lifecycle `SETTLED_VERIFIED`; native worker refuses `HARNESS_NOT_USABLE` w
 ## 3. Start the authoritative runtime (RED — cutover, not authorized)
 
 Order (from `URI_UNIFIED_CONSOLIDATION_PLAN.md` section 7, unchanged):
-1. P-2 `scripts\uri_containment.ps1 -Apply` (exports and disables `\URIServer`, moves the two `URI.lnk` files).
+1. P-2 `scripts\uri_containment.ps1 -Apply` (exports the task XML, disables `\URIServer`, moves the two `URI.lnk`
+   files). **Record the backup folder it prints**; `-Restore` needs it.
 2. P-3 stop the legacy server process tree on port 8000 at a time the owner chooses.
 3. P-4 choose install dir, state root and port; provision with `scripts/provision_uri_server.py` and
    `scripts/provision_uri_client.py` into fresh, ACL-restricted roots. No legacy data is imported.
@@ -71,8 +74,8 @@ Order (from `URI_UNIFIED_CONSOLIDATION_PLAN.md` section 7, unchanged):
 | Runtime checkout | delete the materialized checkout; rebuild from section 1 (Git is the source) |
 | P-5 start | the frozen C1 launcher has no stop action (`validate`/`start`/`status` only): stop the server process tree it reports in `status` (by PID); there is no automatic stop tool yet (outstanding item R-4) |
 | P-4 provisioning | delete the fresh state roots (no legacy data was touched) |
-| P-3 legacy stop | `Start-ScheduledTask \URIServer` or log on again (task still exists until P-2 is undone or kept) |
-| P-2 containment | `scripts\uri_containment.ps1 -Restore` (re-imports the exported task XML, moves the shortcuts back) |
+| P-2 containment (undo first) | `scripts\uri_containment.ps1 -Restore -BackupRoot <folder printed by -Apply>`: re-enables the existing task (unless it was already disabled before `-Apply`) and moves the shortcuts back. It does not re-import the XML; the exported XML is a manual fallback (`Register-ScheduledTask -Xml`) |
+| P-3 legacy stop (after P-2 is undone) | `Start-ScheduledTask -TaskName URIServer`, or log on again |
 | Phase 1 file set | `scripts/phase1_offline_rollback.py` (frozen C7 offline rollback) |
 | Git | nothing was rewritten; every accepted state has a commit and a tag; old tips remain reachable |
 | Runtime v1 | flags and hashes in `model_lab/integration/local_brain.json`; binaries and models on `D:\uri-model-lab` (pinned SHA-256 re-verified 2026-10-08) |

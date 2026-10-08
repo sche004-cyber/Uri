@@ -13,7 +13,7 @@
   "description": "Frozen Phase 1 Core + accepted Phase 2 (operational-qualification candidate -g, 0b49d86d) run through the C1 launcher authority. The frozen runtime_identity.py requires git HEAD == e8e3b65 with the accepted files as an uncommitted overlay, so the runtime checkout is MATERIALIZED from the canonical branch (procedure in URI_UNIFIED_CONSOLIDATION_PLAN.md section 5), never run from a committed branch tip.",
   "source_checkout_candidate": "C:/Users/cheta/Development/uri-canonical-runtime-candidate",
   "materialized_from_commit": "759d0d4e4069ddb490e6ce52ac58bf86ef0248f0",
-  "materialization_overlay_list": "uri-canonical-evidence/overlay_oq_759d0d4.txt (273 files; previous: runtime_overlay_files.txt, 256 files from 2325ad7)",
+  "materialization_overlay_list": "docs/governance/consolidation/RUNTIME_OVERLAY_PHASE2OQ_G.txt (273 paths, committed; superseded: uri-canonical-evidence/runtime_overlay_files.txt, 256 paths from 2325ad7)",
   "authorized_entrypoints": [
    "scripts/uri_server.ps1",
    "scripts/uri_server_launcher.py",
@@ -76,7 +76,7 @@
   "allowed_other_providers": "Ollama and LM Studio remain shared developer tools; the authoritative Core does not require either (model-optional startup). Their presence is not contamination; a URI component selecting them implicitly is."
  },
  "harness_integrations": {
-  "codex_cli": "NATIVE QUALIFIED run-scoped (Phase 2C/2D); production worker composes nothing qualified until a persisted record exists; client-profile CODEX_HOME pin (ISO-1); worker execution BLOCKED by EXE-1 (owner decision)",
+  "codex_cli": "NATIVE QUALIFIED run-scoped (Phase 2C/2D); production worker composes nothing qualified until a persisted record exists; client-profile CODEX_HOME pin (ISO-1); EXE-1 IMPLEMENTED, TESTED and accepted with OQ -g (native codex.exe/claude.exe with pinned vendor launch chain inside the worker; the worker refuses HARNESS_NOT_USABLE without a client-profile login); still open: EXE-1b sandbox backend decision, client-profile login (PA-8/PA-9), native execution in the worker on the real app (PA-10)",
   "claude_cli": "BLOCKED - CLI not logged in; desktop-app authentication must never be reused",
   "antigravity": "execute refused until containment evidence exists"
  },
@@ -277,12 +277,12 @@
  ],
  "recovery": {
   "github": [
-   "uri-repo integration/git-sync-20261008 f8de153",
+   "uri-repo integration/git-sync-20261008 (pre-round-2 tip f8de153; round-2 published tip recorded in docs/governance/consolidation/URI_CONSOLIDATION_FINAL_AUDIT_20261008.md and verified by fresh clone)",
    "uri-repo preserve/* (6 branches)",
    "uri-repo + origin pre-existing branches (untouched)"
   ],
   "checkpoints": "Phase 1 / Phase 2 zips listed under integrity; also committed under docs/evidence/phase2/",
   "vault": "D:/URI-preservation/phase1-20261005-0037 (encrypted, predates Phase 1 freeze; restore not re-tested)",
-  "pc_containment_rollback": "scripts/uri_containment.ps1 -Restore (backups under the evidence folder)"
+  "pc_containment_rollback": "scripts/uri_containment.ps1 -Restore -BackupRoot <folder printed by -Apply> (re-enables the task unless it was already disabled, moves the shortcuts back)"
  }
 }
