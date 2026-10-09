@@ -5,10 +5,12 @@ import '../../theme/uri_theme.dart';
 import '../companion/companion_state.dart';
 import '../contracts/work_items.dart';
 import '../integration/oi_health_widgets.dart';
+import '../integration/scheduler_client.dart';
 import '../living_scope.dart';
 import '../presentation/presentation_controller.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/status_badge.dart';
+import 'scheduler/scheduler_view.dart';
 import 'workspace_mode_view.dart'
     show HarnessRow, PermissionRow, pendingDecisionCount;
 
@@ -24,6 +26,8 @@ class DashboardModeView extends StatefulWidget {
 }
 
 class _DashboardModeViewState extends State<DashboardModeView> {
+  final SchedulerClient? _scheduler = SchedulerClient.fromEnvironment();
+
   @override
   void initState() {
     super.initState();
@@ -173,6 +177,12 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                               ),
                           ],
                         ),
+                      ),
+                      _Tile(
+                        title: 'Scheduled tasks',
+                        source: 'uri_scheduler GET /overview',
+                        simulated: false,
+                        child: _SchedulerTileBody(client: _scheduler),
                       ),
                       _Tile(
                         title: 'Current tasks',
@@ -533,6 +543,69 @@ class _BigNumber extends StatelessWidget {
         const SizedBox(width: 8),
         Text(label, style: TextStyle(fontSize: 12.5, color: c.inkSoft)),
       ],
+    );
+  }
+}
+
+
+/// Scheduled-tasks tile: counts from the scheduler service and the way in.
+/// Without a configured service it says so instead of showing numbers.
+class _SchedulerTileBody extends StatelessWidget {
+  const _SchedulerTileBody({required this.client});
+  final SchedulerClient? client;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = UriColors.of(context);
+    final cl = client;
+    if (cl == null) {
+      return Text(
+        'Scheduler service not configured (URI_SCHEDULER_STATE).',
+        style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+      );
+    }
+    return FutureBuilder<Map<String, dynamic>>(
+      future: cl.overview(),
+      builder: (context, s) {
+        final ov = s.data;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (ov != null) ...[
+              _BigNumber(
+                value: '${(ov['pending_approvals'] as List).length}',
+                label: 'waiting for approval',
+                color: c.ink,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${(ov['upcoming'] as List).length} upcoming · '
+                '${(ov['errors'] as List).length} need attention · '
+                '${(ov['paused_jobs'] as List).length} paused',
+                style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+              ),
+            ] else
+              Text(
+                s.hasError ? 'Not reachable: ${s.error}' : 'Loading…',
+                style: TextStyle(fontSize: 12.5, color: c.inkSoft),
+              ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              key: const Key('dashboard.openScheduler'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => SchedulerView(
+                    client: cl,
+                    poll: const Duration(seconds: 5),
+                  ),
+                ),
+              ),
+              icon: const Icon(Icons.schedule, size: 16),
+              label: const Text('Open scheduler'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1,0 +1,99 @@
+{
+ "now_utc": "2026-10-09T01:57:44+00:00",
+ "upcoming": [],
+ "errors": [],
+ "pending_approvals": [],
+ "approved": [
+  {
+   "occ_id": 1,
+   "job_id": "job_a82d8be14980",
+   "occurrence_key": "once",
+   "due_at_us": 1791511055000000,
+   "deadline_us": null,
+   "state": "APPROVED",
+   "reason": "APPROVED_V2",
+   "attempts": 1,
+   "retry_at_us": null,
+   "late": 0,
+   "lease_owner": null,
+   "lease_until_us": null,
+   "created_at_us": 1791510980457412,
+   "updated_at_us": 1791511064022228,
+   "title": "LIVE TEST fixture: Diwali (Deepavali) GIF",
+   "timezone": "Asia/Kolkata",
+   "job_state": "ACTIVE",
+   "meta": {
+    "local": "2026-10-09T07:27:35",
+    "tz": "Asia/Kolkata"
+   },
+   "due_local": "2026-10-09T07:27+05:30",
+   "retry_local": null
+  }
+ ],
+ "recent_executions": [
+  {
+   "attempt_id": 2,
+   "occ_id": 1,
+   "kind": "refine",
+   "mode": "FIXTURE",
+   "harness": "claude_fixture",
+   "started_at_us": 1791511059929776,
+   "ended_at_us": 1791511063753515,
+   "outcome": "COMPLETED",
+   "reason": "REVIEW_PENDING",
+   "workspace": "C:\\Users\\cheta\\Development\\uri-scheduler\\docs\\scheduler\\evidence\\fixture_e2e\\state\\work\\occ_1\\attempt_2",
+   "supervisor_task_id": "d7eecbd5-9fae-587b-9c4e-dbb54ee3dc5d",
+   "job_id": "job_a82d8be14980",
+   "occurrence_key": "once",
+   "title": "LIVE TEST fixture: Diwali (Deepavali) GIF",
+   "started_utc": "2026-10-09T01:57:39+00:00",
+   "ended_utc": "2026-10-09T01:57:43+00:00"
+  },
+  {
+   "attempt_id": 1,
+   "occ_id": 1,
+   "kind": "generate",
+   "mode": "FIXTURE",
+   "harness": "claude_fixture",
+   "started_at_us": 1791511055560866,
+   "ended_at_us": 1791511059375687,
+   "outcome": "COMPLETED",
+   "reason": "REVIEW_PENDING",
+   "workspace": "C:\\Users\\cheta\\Development\\uri-scheduler\\docs\\scheduler\\evidence\\fixture_e2e\\state\\work\\occ_1\\attempt_1",
+   "supervisor_task_id": "115e3456-3f64-5436-b5f9-318fae674e87",
+   "job_id": "job_a82d8be14980",
+   "occurrence_key": "once",
+   "title": "LIVE TEST fixture: Diwali (Deepavali) GIF",
+   "started_utc": "2026-10-09T01:57:35+00:00",
+   "ended_utc": "2026-10-09T01:57:39+00:00"
+  }
+ ],
+ "jobs": [
+  {
+   "job_id": "job_a82d8be14980",
+   "owner": "owner",
+   "title": "LIVE TEST fixture: Diwali (Deepavali) GIF",
+   "template_id": "festival_gif.v1",
+   "state": "ACTIVE",
+   "timezone": "Asia/Kolkata",
+   "schedule_json": "{\"at\":\"2026-10-09T07:27:35\",\"kind\":\"once\",\"tz\":\"Asia/Kolkata\"}",
+   "schedule": {
+    "at": "2026-10-09T07:27:35",
+    "kind": "once",
+    "tz": "Asia/Kolkata"
+   },
+   "interpretation": "Once at 2026-10-09 07:27:35 (Asia/Kolkata)"
+  }
+ ],
+ "paused_jobs": [],
+ "harness": {
+  "available": true,
+  "code": "AVAILABLE",
+  "mode": "FIXTURE",
+  "executor_id": "claude_fixture",
+  "executable": "C:\\Users\\cheta\\Development\\uri-scheduler\\tests\\scheduler\\helpers\\fake_claude.py",
+  "version": "fixture",
+  "qualification": "FIXTURE_ONLY",
+  "detail": {}
+ }
+}

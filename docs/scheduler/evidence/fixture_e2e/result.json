@@ -1,0 +1,50 @@
+{
+ "mode": "fixture",
+ "simulated": true,
+ "steps": {
+  "persisted": true,
+  "trigger_delay_s": 0.83
+ },
+ "verdict": "PASS",
+ "v1": {
+  "signature": "GIF89a",
+  "format": "GIF",
+  "is_animated": true,
+  "n_frames": 30,
+  "size": [
+   320,
+   320
+  ],
+  "distinct_sampled_frames": 6,
+  "sha256": "b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36",
+  "bytes": 1592267
+ },
+ "v2": {
+  "signature": "GIF89a",
+  "format": "GIF",
+  "is_animated": true,
+  "n_frames": 30,
+  "size": [
+   320,
+   320
+  ],
+  "distinct_sampled_frames": 6,
+  "sha256": "22c4ee0e6dd42e4901bd61cd4ed07cb49e6869633694ce6e939a0c1e900c07c6",
+  "bytes": 1703230
+ },
+ "chain": {
+  "ok": true,
+  "checked": 15,
+  "head": "f49c5f428c0490fd8e126b1ed8ab68589bfb63a55fdca9315f2c2588c44bd08f"
+ },
+ "harness": {
+  "available": true,
+  "code": "AVAILABLE",
+  "mode": "FIXTURE",
+  "executor_id": "claude_fixture",
+  "executable": "C:\\Users\\cheta\\Development\\uri-scheduler\\tests\\scheduler\\helpers\\fake_claude.py",
+  "version": "fixture",
+  "qualification": "FIXTURE_ONLY",
+  "detail": {}
+ }
+}

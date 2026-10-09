@@ -1,0 +1,143 @@
+{
+ "started": "2026-10-09T07:50:41",
+ "gates": {
+  "phase1-full": {
+   "exit": 1,
+   "passed": 2676,
+   "failed": 11,
+   "skipped": 11,
+   "errors": 0,
+   "line": "11 failed, 2676 passed, 11 skipped, 3 warnings, 88 subtests passed in 750.34s (0:12:30)",
+   "failed_ids": [
+    "step3_test.py::test_drive",
+    "step4_test.py::test_download",
+    "test_capability_directory.py::PrivacyTests::test_no_credentials_tokens_or_secrets_appear_in_serialized_output",
+    "test_m20_feasibility_validation.py::UnavailableCapabilityIsNotPromotedTests::test_strict_single_action_proposal_for_unavailable_capability_falls_back",
+    "test_m20_recovery_loop.py::CapabilityPlannerFailureReachesRecoveryTests::test_capability_planner_failure_reaches_recovery_loop",
+    "test_m20_recovery_loop.py::LearnedSkillFailureReachesRecoveryTests::test_learned_skill_failure_reaches_recovery_loop",
+    "test_m20_semantic_interpreter_resilience.py::SemanticInterpreterFailureDegradesHonestlyTests::test_capability_planner_gets_the_degraded_result_without_raising",
+    "test_m20_semantic_interpreter_resilience.py::SemanticInterpreterFailureDegradesHonestlyTests::test_raising_interpreter_does_not_fail_the_whole_turn",
+    "test_orchestrator_session_workflow.py::TestOrchestratorSessionWorkflow::test_session_facts_are_used_for_clarification",
+    "test_usage_import_boundary.py::test_orchestrator_newline_count_does_not_increase",
+    "test_workflow_restart_recovery.py::TestWorkflowRestartRecovery::test_workflow_survives_restart_and_resumes"
+   ],
+   "SAME_FAILURE_SET_AS_ACCEPTED_LOG": true,
+   "baseline_json_equals_baseline_xml": true,
+   "baseline_pins_hold": true,
+   "ids": 2698,
+   "baseline_ids": 2698,
+   "missing": [],
+   "added": [],
+   "outcome_changed": [],
+   "outcome_counts": {
+    "passed": 2676,
+    "failed": 11,
+    "skipped": 11,
+    "error": 0,
+    "conflict": 0
+   },
+   "outcome_baseline": "C:\\Users\\cheta\\Development\\uri-sched-gate\\evidence\\phase2oq\\phase1_outcome_baseline.json",
+   "outcome_baseline_runner_sha256": "33463411b5b704241ae76a71d67b4636dd78755ca18213592c0b9181629189d9",
+   "junit_integrity": {
+    "testcases": 2698,
+    "unique_ids": 2698,
+    "duplicate_ids": [],
+    "summary_total": 2698,
+    "xml_outcome_counts": {
+     "passed": 2676,
+     "failed": 11,
+     "skipped": 11,
+     "error": 0
+    },
+    "summary_outcome_counts": {
+     "passed": 2676,
+     "failed": 11,
+     "skipped": 11,
+     "error": 0
+    },
+    "ok": true
+   },
+   "baseline_junit_integrity": {
+    "testcases": 2698,
+    "unique_ids": 2698,
+    "duplicate_ids": [],
+    "summary_total": 2698,
+    "xml_outcome_counts": {
+     "passed": 2676,
+     "failed": 11,
+     "skipped": 11,
+     "error": 0
+    },
+    "summary_outcome_counts": {
+     "passed": 2676,
+     "failed": 11,
+     "skipped": 11,
+     "error": 0
+    },
+    "ok": true
+   },
+   "baseline_log": "C:\\Users\\cheta\\Development\\uri-sched-gate\\evidence\\phase2ops_r6\\phase1_full.log",
+   "ollama_base_url": "http://127.0.0.1:9",
+   "expected_exit": 1,
+   "PASS": true
+  },
+  "phase1-scope": {
+   "changed_vs_closure": [
+    "docs/plans/PHASE2CLOSE_C6_CHAT_INTEGRATION.md",
+    "docs/plans/PHASE2CLOSE_C7_READINESS.md",
+    "docs/plans/PHASE2CLOSE_CLOSURE_CHECKLIST.md",
+    "docs/plans/PHASE2CLOSE_PHYSICAL_ACCEPTANCE_RUNBOOK.md",
+    "docs/plans/PHASE2CLOSE_REPORT.md",
+    "docs/plans/URI_DEVELOPMENT_TODO.md",
+    "scripts/phase2c_native_qualification.py",
+    "scripts/phase2close_acceptance.py",
+    "scripts/phase2close_chain.py",
+    "scripts/phase2close_powerloss_harness.py",
+    "scripts/phase2d_regression.py",
+    "scripts/run_uri_supervised_worker.py",
+    "tests/phase2a/test_frozen_core.py",
+    "tests/phase2close/test_acceptance_tooling.py",
+    "tests/phase2close/test_powerloss_harness.py",
+    "tests/phase2d/test_worker_process.py",
+    "tests/phase2d/test_worker_service.py",
+    "tests/phase2ops/test_lifecycle.py",
+    "uri_supervisor/supervisor.py",
+    "uri_supervisor/winproc.py",
+    "uri_supervisor_bridge/composition.py",
+    "uri_supervisor_bridge/execution.py",
+    "uri_supervisor_bridge/qualification.py",
+    "uri_supervisor_bridge/worker_service.py",
+    "uri_ui/lib/screens/tasks/supervised_execution_screen.dart",
+    "uri_ui/lib/services/supervised_runtime.dart",
+    "uri_ui/lib/services/task_handoff.dart",
+    "uri_ui/test/supervised_execution_screen_test.dart"
+   ],
+   "new_untracked": 181,
+   "modified_vs_head_outside_closure": [
+    ".gitignore",
+    "PROJECT_MEMORY.md",
+    "URI_MILESTONE_TRACKER.md",
+    "docs/governance/URI_ACTIVE_MILESTONE.md",
+    "uri_core/app/route_classification.py",
+    "uri_core/app/server.py",
+    "uri_core/capabilities/registry.py",
+    "uri_core/core/dispatcher.py",
+    "uri_core/core/turn_state.py",
+    "uri_ui/lib/screens/ask/ask_uri_screen.dart",
+    "uri_ui/lib/screens/settings/settings_shell.dart",
+    "uri_workspace/capabilities_registry.json"
+   ],
+   "frozen_phase1_byte_identical": 98,
+   "outside_phase2_scope": [],
+   "runner_argv_equals_accepted_plus_phase2oq_ignore": true,
+   "phase1_scope_importers_of_phase2": [],
+   "PASS": true
+  },
+  "residue": {
+   "removed": [],
+   "PASS": true
+  }
+ },
+ "finished": "2026-10-09T08:03:16",
+ "ALL_PASS": true
+}
