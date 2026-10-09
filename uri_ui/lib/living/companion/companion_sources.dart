@@ -417,6 +417,15 @@ class CompositeCompanionSource extends CompanionStateSource {
 
   final List<CompanionStateSource> sources;
 
+  /// Adds a source after construction (the voice session joins the merged
+  /// signal this way, whichever services builder made the composite).
+  void addSource(CompanionStateSource source) {
+    if (sources.contains(source)) return;
+    sources.add(source);
+    source.addListener(notifyListeners);
+    notifyListeners();
+  }
+
   @override
   String get name => 'Composite';
 

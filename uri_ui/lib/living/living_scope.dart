@@ -1,12 +1,16 @@
 import 'package:flutter/widgets.dart';
 
+import 'companion/companion_preferences.dart';
 import 'companion/companion_sources.dart';
 import 'companion/energy_orb.dart' show OrbPalette, OrbVariant;
 import 'companion/effects_settings.dart';
+import 'companion/frame_clock.dart';
 import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
 import 'integration/oi_conversation.dart';
 import 'presentation/presentation_controller.dart';
+import 'voice/voice_catalog.dart';
+import 'voice/voice_session.dart';
 
 /// Reasoning depth the user asks for. UI-only preference in this phase;
 /// the mock does not change behaviour with it, and the Settings region
@@ -88,6 +92,46 @@ class LivingServices {
     null,
   );
 
+  /// The user's companion, appearance, performance and voice preferences
+  /// (Companion Settings). The app root restores them in place from
+  /// `uri.living.companion.*` at start-up; the selected companion decides
+  /// the theme.
+  final CompanionPreferences companionPrefs = CompanionPreferences();
+
+  /// The one clock the companion and the voice waveform animate on.
+  final CompanionFrameClock frameClock = CompanionFrameClock();
+
+  /// Applies the frame-rate preference (fixed or adaptive) to [frameClock].
+  late final CompanionFrameGovernor frameGovernor = CompanionFrameGovernor(
+    clock: frameClock,
+    preferences: companionPrefs,
+  );
+
+  /// The voice session the presentation draws. Fed only by a
+  /// [VoiceServiceAdapter] through [bindVoice]; with none bound it stays off.
+  final VoiceSessionController voice = VoiceSessionController();
+  VoiceServiceBinding? _voiceBinding;
+  VoiceCompanionSource? _voiceSource;
+
+  /// Installed voices and previews (Companion Settings). The default says
+  /// that no engine is available; the Windows entry point installs the real
+  /// one.
+  VoiceCatalog voiceCatalog = const UnavailableVoiceCatalog();
+
+  /// The adapter currently feeding [voice], if any.
+  VoiceServiceAdapter? get voiceAdapter => _voiceBinding?.adapter;
+
+  /// Connects URI's voice service (or a labelled simulation) to the
+  /// presentation, and adds the voice session to the companion's merged
+  /// signal so the orb listens and speaks with it.
+  void bindVoice(VoiceServiceAdapter adapter) {
+    _voiceBinding?.dispose();
+    voice.add(const VoiceReset());
+    voice.simulated = adapter.simulated;
+    _voiceBinding = VoiceServiceBinding(adapter, voice);
+    companion.addSource(_voiceSource ??= VoiceCompanionSource(voice));
+  }
+
   void dispose() {
     presentation.dispose();
     companion.dispose();
@@ -101,6 +145,12 @@ class LivingServices {
     orbPalette.dispose();
     orbPokes.dispose();
     composerFocus.dispose();
+    _voiceBinding?.dispose();
+    _voiceSource?.dispose();
+    voice.dispose();
+    frameGovernor.dispose();
+    frameClock.dispose();
+    companionPrefs.dispose();
   }
 }
 

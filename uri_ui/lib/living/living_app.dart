@@ -17,8 +17,10 @@ import '../models/user_preferences.dart';
 import '../services/file_picker_service.dart';
 import '../services/preferences_store.dart';
 import '../theme/uri_theme.dart';
+import 'companion/companion_preferences.dart';
 import 'companion/companion_sources.dart';
 import 'companion/effects_settings.dart';
+import 'companion/frame_clock.dart';
 import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
 import 'integration/oi_conversation.dart';
@@ -167,6 +169,7 @@ class _LivingAppState extends State<LivingApp> {
         (prefs.getBool(LivingPrefs.onboardingDone) ?? false);
     final reduced = prefs.getBool(LivingPrefs.reducedEffects);
     final themeName = prefs.getString(LivingPrefs.themeChoice);
+    _services.companionPrefs.restoreFrom(prefs);
     setState(() {
       _onboardingDone = done;
       if (reduced != null) _services.effects.setReducedEffects(reduced);
@@ -200,29 +203,69 @@ class _LivingAppState extends State<LivingApp> {
   Widget build(BuildContext context) {
     final platformBrightness =
         WidgetsBinding.instance.platformDispatcher.platformBrightness;
-    final palette = resolveUriColors(_theme, platformBrightness);
+    // The engine reports the display the window is on; the frame-rate
+    // settings and the adaptive governor are bounded by it.
+    final hz = View.maybeOf(context)?.display.refreshRate;
+    final governor = _services.frameGovernor;
+    if (hz != null && (hz - governor.displayHz).abs() >= 0.5) {
+      // After the frame: the governor notifies listeners, which must not
+      // happen while this tree is building.
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => governor.updateDisplay(hz),
+      );
+    }
+    governor.install();
+    final prefs = _services.companionPrefs;
     return AppStateScope(
       state: widget.appState,
       child: LivingScope(
         services: _services,
         child: EffectsSettingsScope(
           settings: _services.effects,
-          child: LivingThemeController(
-            current: _theme,
-            setTheme: setTheme,
-            child: MaterialApp(
-              title: 'URI',
-              debugShowCheckedModeBanner: false,
-              theme: buildUriTheme(palette),
-              themeMode: ThemeMode.light,
-              home: switch (_onboardingDone) {
-                null => const Scaffold(body: SizedBox.shrink()),
-                false => LivingOnboardingFlow(onFinished: _finishOnboarding),
-                true => LivingShell(
-                  filePicker: widget.filePicker,
-                  attachmentOpener: widget.attachmentOpener,
+          child: CompanionPreferencesScope(
+            preferences: prefs,
+            child: CompanionClockScope(
+              clock: _services.frameClock,
+              // While the window is minimised every ticker below is muted,
+              // including ones that do not run on the companion clock (the
+              // classic orb, transitions): nothing on screen, no frames.
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _services.frameClock.visibility,
+                builder: (context, visible, child) =>
+                    TickerMode(enabled: visible, child: child!),
+                child: ListenableBuilder(
+                  listenable: prefs,
+                  builder: (context, _) {
+                    // The selected companion decides the theme; the free theme
+                    // choice applies only to the classic orb.
+                    final theme = CompanionPreferences.themeFor(
+                      prefs.choice,
+                      _theme,
+                    );
+                    final palette = resolveUriColors(theme, platformBrightness);
+                    return LivingThemeController(
+                      current: _theme,
+                      setTheme: setTheme,
+                      child: MaterialApp(
+                        title: 'URI',
+                        debugShowCheckedModeBanner: false,
+                        theme: buildUriTheme(palette),
+                        themeMode: ThemeMode.light,
+                        home: switch (_onboardingDone) {
+                          null => const Scaffold(body: SizedBox.shrink()),
+                          false => LivingOnboardingFlow(
+                            onFinished: _finishOnboarding,
+                          ),
+                          true => LivingShell(
+                            filePicker: widget.filePicker,
+                            attachmentOpener: widget.attachmentOpener,
+                          ),
+                        },
+                      ),
+                    );
+                  },
                 ),
-              },
+              ),
             ),
           ),
         ),
