@@ -421,7 +421,7 @@ class DraftDesk:
         user_excl = V.user_exclusions(source_words)
         flags = (V.check_facts(facts, body_text, source_words)
                  + V.check_exclusions(list(dict.fromkeys(exclusions + user_excl)), body_text)
-                 + V.check_supersession(source_words, superseded)
+                 + V.check_supersession(source_words, superseded) + V.check_escalation(body_text, source_words)
                  + V.check_user_details(source_words, body_text,
                                         V.verified_superseded(source_words, superseded)[0] + exclusions + user_excl)
                  + V.check_correction_accounted(cues, facts, None) + V.check_new_details(body_text, source_words)
@@ -443,7 +443,9 @@ class DraftDesk:
         cur = d.current
         q = d.pending_question
         user = {"instruction": interpreted, "input_source": "dictated speech" if inp.is_transcript else "typed",
-                "document": {"doc_type": d.doc_type, "blocks": [b.to_dict() for b in cur.blocks]},
+                "document": {"doc_type": d.doc_type, "blocks": [b.to_dict() for b in cur.blocks],
+                             # live finding LQ-12: the model miscounted paragraphs; give it the numbering
+                             "paragraphs": {str(i + 1): bid for i, bid in enumerate(cur.body_ids())}},
                 "facts": [dict(f) for f in cur.facts], "exclusions": list(cur.exclusions),
                 "last_changed": list(cur.changed)[-3:],
                 "recent_instructions": [v.instruction for v in d.versions[max(0, d.cursor - 2):d.cursor + 1]][-3:]}
@@ -453,6 +455,16 @@ class DraftDesk:
         if cues and mode != "correct":
             user["self_correction_cues"] = cues[:4]
         allowed = None
+        dates = V.date_mentions(DS.render(cur.blocks))
+        if mode == "revise" and not q and re.search(r"\b(?:change|update|correct|fix|move|shift)\s+the\s+(?:date|day)\b",
+                                                   interpreted, re.I) \
+                and len(dates) >= 2 and not any(dt in interpreted.lower() for dt in dates):
+            question = "Which date should change: %s?" % " or ".join("the " + x if x[0].isdigit() else x.capitalize()
+                                                                     for x in dates[:3])
+            d.pending_question = question
+            emit("draft.clarify", question=question, draft=d.to_dict())
+            self._say(emit, question)
+            return {"status": "needs_user", "question": question}
         if mode == "revise":
             allowed, unresolved = _allowed_ids(cur, intent.targets)
             if unresolved:
@@ -480,7 +492,11 @@ class DraftDesk:
         changed, removed = DS.diff_ids(cur.blocks, blocks)
         if not changed and not removed:
             d.pending_question = None
-            msg = "I did not change anything: %s" % (str(data.get("summary") or "no edit was needed")[:200])
+            if edits:
+                msg = ("I could not apply that change to this draft (%d proposed edit(s) did not match it). The draft "
+                       "is unchanged; please say which part to change." % len(edits))
+            else:
+                msg = "I did not change anything: %s" % (str(data.get("summary") or "no edit was needed")[:200])
             emit("draft.updated", op="unchanged", draft=d.to_dict())
             self._say(emit, msg, metrics=metrics)
             return {"status": "ok", "draft": d.to_dict(), "unchanged": True}
@@ -502,6 +518,7 @@ class DraftDesk:
         if mode == "correct":
             flags += V.check_meaning_preserved(old_text, new_text)
         else:
+            flags += V.check_escalation(new_text, user_words + "\n" + old_text)
             new_sup = [s for f in _clean_facts(data.get("fact_updates")) for s in f["superseded"]]
             flags += V.check_supersession(interpreted + "\n" + user_words, new_sup)
             gone = V.verified_superseded(user_words, [s for f in facts for s in f["superseded"]])[0] + exclusions

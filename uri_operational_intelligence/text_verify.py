@@ -59,7 +59,8 @@ def _fold(s):
 
 
 def _tokens(s):
-    return re.findall(r"[a-z0-9]+(?:'[a-z]+)?", _fold(s))
+    # "warden's" -> "warden" (live finding LQ-10: possessive placeholders such as [Warden's Name])
+    return [re.sub(r"'s$", "", t) for t in re.findall(r"[a-z0-9]+(?:'[a-z]+)?", _fold(s))]
 
 
 _SCALES = {"hundred": 100, "thousand": 1000, "lakh": 100000, "crore": 10000000}
@@ -421,6 +422,27 @@ def check_details_kept(old_text, new_text, dropped_ok=()) -> list:
     """Revision: numbers, dates, days and names of the previous version that disappeared. Ones the instruction
     mentioned or the user corrected/excluded are listed as info ("Keep Monday" + Monday removed is visible)."""
     return _absent(_details(old_text), new_text, dropped_ok, "DETAIL_REMOVED", "no longer in the draft: ")
+
+
+_ESCALATION = re.compile(r"\b(?:disciplinary|punish\w*|penalt\w*|misconduct|serious breach|breach|violation|"
+                         r"violat\w+|strict action|stern action|suspend\w*|expel\w*|rusticat\w*|inquiry|enquiry|"
+                         r"investigat\w*)\b", re.I)
+
+
+def check_escalation(text, user_words) -> list:
+    """Words that make the matter more serious than the user did (live finding LQ-11: the model sometimes asks
+    for disciplinary action although the prompt forbids it). Shown for review, never removed silently."""
+    said = {m.group(0).lower()[:6] for m in _ESCALATION.finditer(user_words or "")}
+    added = sorted({m.group(0).lower() for m in _ESCALATION.finditer(text or "") if m.group(0).lower()[:6] not in said})
+    return [_flag("ESCALATION_ADDED", "review", "stronger than your words: " + ", ".join(added))] if added else []
+
+
+def date_mentions(text) -> list:
+    """Distinct day/date expressions ("the 5th", "15th", "Monday", "6 October")."""
+    found = re.findall(r"\b(?:the\s+)?(\d{1,2}(?:st|nd|rd|th)|monday|tuesday|wednesday|thursday|friday|saturday|sunday|"
+                       r"\d{1,2}\s+(?:january|february|march|april|june|july|august|september|october|november|"
+                       r"december))\b", (text or "").lower())
+    return list(dict.fromkeys(found))
 
 
 def check_correction_accounted(cues, facts, clarification) -> list:

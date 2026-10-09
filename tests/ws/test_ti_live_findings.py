@@ -39,3 +39,30 @@ def test_lq7_multi_paragraph_body_becomes_blocks():
     out, _, _ = DS.apply_edits(d, d.current.blocks, [{"op": "replace", "block_id": "b3", "text": "Two.\n\nThree."}])
     assert [b.text for b in out if b.role == "body"] == ["First para.", "Two.", "Three."]
     assert [b.id for b in out][:3] == ["b1", "b2", "b3"]
+
+
+def test_lq10_possessive_matches():
+    assert V._value_present("warden", "To [Warden's Name], Respected Sir")
+
+
+def test_lq11_escalation_is_flagged_unless_user_said_it():
+    f = V.check_escalation("I request you to take disciplinary action.", "seven students left without permission")
+    assert f and f[0]["code"] == "ESCALATION_ADDED" and "disciplinary" in f[0]["detail"]
+    assert V.check_escalation("Please take disciplinary action.", "ask for disciplinary action") == []
+
+
+def test_lq13_ambiguous_date_change_asks_without_model(tmp_path):
+    import json
+    from tests.oi.fake_llama import FakeLlama
+    from tests.oi.test_oi_orchestrator import FakeCore
+    from tests.ws.test_ti_desk_bridge import CREATE, turn
+    from tests.ws.test_ws_worker_bridge import make
+    with FakeLlama() as fake:
+        b, frames, _ = make(fake, tmp_path, FakeCore())
+        two = dict(CREATE, blocks=[{"role": "body", "text": "Pay by the 5th; late fee from the 15th."}], facts=[])
+        fake.scripts.append({"json": json.dumps(two)})
+        turn(b, "Write a notice that the hostel fee must be paid by the 5th, and the late fee applies from the 15th.")
+        n = len(fake.requests)
+        turn(b, "Change the date to the 10th.")
+        assert len(fake.requests) == n
+        assert frames.data("draft.clarify")[-1]["question"] == "Which date should change: the 5th or the 15th?"
