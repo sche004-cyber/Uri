@@ -59,9 +59,10 @@ def test_live_validation_must_be_one_complete_live_run(tmp_path, inv):
     h1, h2 = hashlib.sha256(g1).hexdigest(), hashlib.sha256(g2).hexdigest()
     result = {"mode": "live", "simulated": False, "verdict": "PASS", "chain": {"ok": True},
               "harness": {"mode": "LIVE", "available": True}, "v1": {"sha256": h1}, "v2": {"sha256": h2}}
-    journal = [{"step": "1.service_started", "mode": "live"}, {"step": "6.gif_v1_verified", "sha256": h1},
+    journal = [{"step": "1.service_started", "mode": "live"}, {"step": "3.persisted_before_due", "occ_id": 1},
+               {"step": "6.gif_v1_verified", "sha256": h1},
                {"step": "9.gif_v2_verified", "sha256": h2}, {"step": "10.approved_v2"}]
-    attempts = [{"mode": "LIVE", "harness": "claude_code"}, {"mode": "LIVE", "harness": "claude_code"}]
+    attempts = [{"mode": "LIVE", "harness": "claude_code", "occ_id": 1}, {"mode": "LIVE", "harness": "claude_code", "occ_id": 1}]
 
     def plan(result=result, journal=journal, attempts=attempts, gifs=(g1, g2), name="result.json"):
         if ev.exists():
@@ -89,7 +90,8 @@ def test_live_validation_must_be_one_complete_live_run(tmp_path, inv):
     assert not plan(journal=[j for j in journal if j["step"] != "10.approved_v2"])
     assert not plan(journal=[dict(j, sha256="0" * 64) if "sha256" in j else j for j in journal])   # another run
     assert not plan(attempts=attempts[:1])
-    assert not plan(attempts=attempts + [{"mode": "FIXTURE", "harness": "claude_fixture"}])
+    assert not plan(attempts=[dict(a, occ_id=7) for a in attempts])                # attempts of another run (round 11)
+    assert not plan(attempts=attempts + [{"mode": "FIXTURE", "harness": "claude_fixture", "occ_id": 1}])
     assert not plan(gifs=(g1, b"GIF89a-other"))
     assert not plan(gifs=None)
     assert not plan(name="other.json")

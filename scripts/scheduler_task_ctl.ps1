@@ -118,8 +118,11 @@ function Test-LiveValidation {
     $ap = @($jr | Where-Object { $_.step -eq "10.approved_v2" })
     $journalOk = ($started.Count -eq 1) -and ($j1.Count -eq 1) -and ($j2.Count -eq 1) -and ($ap.Count -eq 1)
     $filesOk = ($h1 -eq $r.v1.sha256) -and ($h2 -eq $r.v2.sha256)
-    $nonLive = @($att | Where-Object { $_.mode -ne "LIVE" -or $_.harness -ne "claude_code" })
-    $attemptsOk = ($att.Count -ge 2) -and ($nonLive.Count -eq 0)
+    # Attempts belong to the run's own occurrence (journal step 3), not to another live run (round 11, R10-02).
+    $persisted = @($jr | Where-Object { $_.step -eq "3.persisted_before_due" })
+    $occ = if ($persisted.Count -eq 1) { $persisted[0].occ_id } else { $null }
+    $nonLive = @($att | Where-Object { $_.mode -ne "LIVE" -or $_.harness -ne "claude_code" -or $_.occ_id -ne $occ })
+    $attemptsOk = ($null -ne $occ) -and ($att.Count -ge 2) -and ($nonLive.Count -eq 0)
     return $journalOk -and $filesOk -and $attemptsOk
 }
 
@@ -234,7 +237,21 @@ switch ($Action) {
             Stop-SchedulerService
             break
         }
-        if ($exists) { Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue }
+        if ($exists) {
+            # The registered task must be the one for this -State (round 11, R11-01): otherwise nothing is touched.
+            $t = Get-ScheduledTask -TaskName $TaskName
+            $targs = [UriSchedulerArgv]::Split("x " + [string]$t.Actions[0].Arguments)
+            $want = [System.IO.Path]::GetFullPath($State).TrimEnd([char]92)
+            $match = $false
+            for ($i = 0; $i -lt $targs.Count - 1; $i++) {
+                if ($targs[$i] -eq "--state") {
+                    try { $got = [System.IO.Path]::GetFullPath($targs[$i + 1].Trim('"')).TrimEnd([char]92) } catch { $got = "" }
+                    $match = [string]::Equals($got, $want, [StringComparison]::OrdinalIgnoreCase)
+                }
+            }
+            if (-not $match) { throw "REFUSED: $TaskName is registered for another state directory; nothing was changed" }
+            Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+        }
         Stop-SchedulerService
         Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
         if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) { throw "ROLLBACK FAILED: $TaskName still registered" }

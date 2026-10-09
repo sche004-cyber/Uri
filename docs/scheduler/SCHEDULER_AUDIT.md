@@ -119,3 +119,18 @@ Round-9 status: C1-02 FIXED; C1-01, C3-01, C3-02 PARTIAL.
 | R10-01 | High | `materialize()` / `refresh_calendar()` did not take the engine mutex; a reconciliation could change a row after `_pre_claim` read it, and the late-run branch could set a moved, unconfirmed occurrence back to `SCHEDULED` | confirmed by reading (the round-9 test covered only `correct_calendar`, which holds the mutex) | **repaired**: `materialize` and `refresh_calendar` run under the engine mutex (RLock, re-entrant from `confirm`/`correct_calendar`); every pre-claim transition (missed, late-run) first re-checks that state and due time are unchanged (`_still`). Test `test_r10_reconciliation_and_pre_claim_are_serialized` (stale read is never acted on; materialize blocks while another holder has the mutex) |
 | R10-02 | Medium | the live gate accepted an empty journal and did not bind result and attempts to one run | confirmed | **repaired**: the journal must contain the live service start, v1 and v2 verified with the result's hashes, and the v2 approval; `v1.gif`/`v2.gif` must hash to those values; at least two attempts, all LIVE by `claude_code` |
 | R10-03 | Medium | a quoted argument containing the expected text matched; a reused PID could be stopped | confirmed | **repaired**: Windows' own argument splitting (`CommandLineToArgvW`), fixed positions (`<python> -m uri_scheduler.service run ... --state <State>`, full-path comparison), and the process start time must match `service.json` within 120 s. The test runs a real scheduler service process and look-alikes (extra argv, one quoted argument, wrong start time, other state dir) |
+
+## Round 11 (closure) — candidate `a3d4d0f` — **ACCEPT WITH FINDINGS**
+
+Codex: R10-01 / C1-01 **FIXED** (reconciliation and pre-claim serialized; the claim compare-and-set requires an eligible,
+due state and an active job; the harness run is outside the mutex, so no deadlock with HTTP threads or the service loop).
+C1-02 FIXED. Remaining findings concern only the owner-gated, not-activated logon-task script:
+
+| # | Codex severity | finding | disposition |
+|---|---|---|---|
+| R10-02 (PARTIAL) | Medium | attempts were not linked to the run's own occurrence | **repaired** (`<this commit>`): every attempt must carry the `occ_id` that journal step `3.persisted_before_due` recorded; test adds attempts of another run |
+| R10-03 (PARTIAL) | Medium | a process with the same command and state started within 120 s of the record is accepted | **recorded residual**: such a process is itself a scheduler service for that state directory (the service holds a single-instance lock per state dir), so stopping it is the intended rollback |
+| R11-01 | Medium | `uninstall -Apply -State <wrong dir>` stopped and unregistered `URIScheduler` anyway | **repaired**: the registered task's `--state` argument (parsed with Windows' argument splitting) must equal `-State`, otherwise the rollback refuses and changes nothing. Verified by reading only: exercising it needs a registered task, which this phase must not create |
+
+Accepted candidate for integration: this commit (code verified by round 11; the two repairs above are confined to the
+dry-run-tested, owner-gated script). Owner gates unchanged: F10 live Claude (login), F2, R7-1, festival activation, logon task.
