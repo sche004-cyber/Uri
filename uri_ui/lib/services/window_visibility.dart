@@ -19,26 +19,38 @@ import '../living/companion/frame_clock.dart';
 /// window listener is removed when the clock is disposed (and by the returned
 /// callback, for an owner that ends the binding earlier). Any failure leaves
 /// the clock running as before and returns a no-op.
+const Duration _pluginTimeout = Duration(seconds: 5);
+
 Future<void Function()> bindWindowVisibility(CompanionFrameClock clock) async {
   if (!(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     return () {};
   }
-  try {
-    await windowManager.ensureInitialized();
-    final listener = _ClockWindowListener(clock);
-    windowManager.addListener(listener);
-    clock.setHidden(await windowManager.isMinimized());
-    var removed = false;
-    void remove() {
-      if (removed) return;
-      removed = true;
-      windowManager.removeListener(listener);
-    }
+  // Registered before any await: if the clock is disposed while the plugin
+  // is still initialising, the listener is never added (or removed at once).
+  var cancelled = false;
+  _ClockWindowListener? listener;
+  void remove() {
+    cancelled = true;
+    final l = listener;
+    listener = null;
+    if (l != null) windowManager.removeListener(l);
+  }
 
-    clock.addDisposer(remove);
+  clock.addDisposer(remove);
+  try {
+    // A plugin that never answers (no native side) must not leave the
+    // binding pending for ever.
+    await windowManager.ensureInitialized().timeout(_pluginTimeout);
+    if (cancelled) return remove;
+    final l = listener = _ClockWindowListener(clock);
+    windowManager.addListener(l);
+    final minimized = await windowManager.isMinimized().timeout(_pluginTimeout);
+    if (!cancelled) clock.setHidden(minimized);
     return remove;
   } catch (_) {
-    // No window plugin (a test, an unsupported embedder): keep animating.
+    // No window plugin (a test, an unsupported embedder): keep animating,
+    // and leave no listener behind.
+    remove();
     return () {};
   }
 }

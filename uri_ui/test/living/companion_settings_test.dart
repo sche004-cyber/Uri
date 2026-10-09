@@ -26,6 +26,7 @@ import 'package:uri_ui/living/voice/voice_stage.dart';
 import 'package:uri_ui/living/voice/voice_transcript.dart';
 import 'package:uri_ui/living/voice/voice_waveform.dart';
 import 'package:uri_ui/living/widgets/frame_stats_overlay.dart';
+import 'package:uri_ui/services/window_visibility.dart';
 import 'package:uri_ui/services/windows_voice_catalog.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
 
@@ -592,6 +593,22 @@ void main() {
       expect(delivered, greaterThan(before + 5));
       clock.removeListener(l);
     });
+
+    testWidgets(
+      'window binding without a window plugin: no-op, clean disposal',
+      (tester) async {
+        final clock = CompanionFrameClock(displayHz: 60);
+        // Real time: the plugin call has no native side here and must be
+        // cut off by the binding's own timeout, not hang.
+        final remove = (await tester.runAsync(
+          () => bindWindowVisibility(clock),
+        ))!;
+        remove();
+        remove(); // idempotent
+        expect(clock.hidden, isFalse);
+        clock.dispose(); // runs the disposer again: must not throw
+      },
+    );
 
     testWidgets('with no listener the clock schedules nothing', (tester) async {
       final clock = CompanionFrameClock(displayHz: 60);
