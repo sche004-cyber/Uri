@@ -579,3 +579,22 @@ def test_r4_cancel_during_run_wins_over_completion(env):
     assert r["result"] == "CANCELLED"
     assert s.store.q1("SELECT COUNT(*) FROM artifact WHERE status='CANDIDATE'")[0] == 0
     assert s.overview()["pending_approvals"] == []
+
+
+def test_r5_cancel_during_gate_is_not_overwritten_by_blocked(env):
+    s, h, clock, _ = env
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    real_gate = h.gate
+
+    def gate_while_owner_cancels():
+        occ_id = s.store.q1("SELECT occ_id FROM occurrence")[0]
+        s.cancel_occurrence(occ_id, "owner")
+        h.available, h.code = False, "NOT_AUTHENTICATED"
+        return real_gate()
+    h.gate = gate_while_owner_cancels
+    r = s.tick()[0]
+    occ = s.occurrence(r["occ_id"])
+    assert occ["state"] == "CANCELLED" and occ["retry_at_us"] is None
+    clock.add(7200)
+    assert s.tick() == [] and h.calls == []

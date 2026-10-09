@@ -163,6 +163,15 @@ class Scheduler:
             raise SchedulerError("NOT_OWNER", f"{principal} is not the owner of job {job['job_id']}")
 
     def _set_occ(self, db, occ_id, state, reason=None, **cols):
+        # Single choke point for every occurrence transition (review round 5, F1): once the owner has recorded a
+        # cancellation on a running occurrence, any settlement (blocked gate, error, retry, completion) ends CANCELLED
+        # in the same transaction, so cancelled work can never be re-queued or offered for review.
+        cur = db.execute("SELECT state, reason FROM occurrence WHERE occ_id=?", (occ_id,)).fetchone()
+        if (cur is not None and cur["state"] == "RUNNING" and cur["reason"] == "CANCEL_REQUESTED"
+                and state not in ("RUNNING", "CANCELLED")):
+            state, reason = "CANCELLED", "CANCELLED_BY_OWNER"
+            cols = {k: v for k, v in cols.items() if k in ("lease_owner", "lease_until_us")}
+            cols["retry_at_us"] = None
         sets = ["state=?", "reason=?", "updated_at_us=?"]
         args = [state, reason, self.now()]
         for k, v in cols.items():

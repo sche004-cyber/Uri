@@ -55,6 +55,14 @@ Codex: R3-3 RESOLVED; R3-1/R3-2 PARTIAL only because of R4-1. Docs on F10/F2/no 
 | R4-4 | High | hourly schedules ignored the configured hour and restarted each day | confirmed | **repaired**: anchored at start date + time, interval carried across days; test `test_r4_hourly_is_anchored_and_crosses_days` |
 | R4-5 | High | `scripts/scheduler_task_ctl.ps1` missing from the exact-path guard lists | confirmed | **repaired**: added to `ALLOWED_NEW` and `WS_EXACT` (byte-preserving edit) |
 
-## Round 5
+## Round 5 — candidate `f21160d` — **REJECT**
+
+Codex: R4-1..R4-5 RESOLVED. F10/F2 owner-gated, not the reason for rejection.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R5-1 | High | a cancel recorded while `harness.gate()` ran was overwritten by `BLOCKED_HARNESS` (and the same pattern on other non-`_finish` settlements), so the recheck could re-queue cancelled work | confirmed; reproduced by a failing test before the fix | **repaired**: the cancellation check moved into `_set_occ`, the single choke point for every occurrence transition: a running occurrence with `CANCEL_REQUESTED` always settles `CANCELLED` (retry time cleared); test `test_r5_cancel_during_gate_is_not_overwritten_by_blocked` |
+
+## Round 6
 
 (appended after the review runs)
