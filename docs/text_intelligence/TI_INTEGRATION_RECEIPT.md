@@ -41,4 +41,10 @@ bridge or native executors; same choice as the WS integration).
 
 ## 3. Push record
 
-(filled after the push below)
+| Item | Value |
+|---|---|
+| Remote | `uri-repo` = `https://github.com/sche004-cyber/Uri.git` |
+| Branch | `phase/text-intelligence` (new branch, pushed without force, 2026-10-09 ~09:00 IST) |
+| Pushed commit | `d8f295b069b0bd3bcdca37fbf9148de07ebd46fe`, tree `c02097f33351dc2f345aaafea12f5c4ef4d77531` |
+| Verification | `git ls-remote` shows the same commit; a fresh single-branch clone resolves the same commit and tree, and `68cac3d` is an ancestor (the clone's Windows checkout warned about path length; object identity was checked, not the checkout) |
+| This receipt | committed after the verified push and pushed as a fast-forward on the same branch |
