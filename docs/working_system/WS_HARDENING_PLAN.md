@@ -111,4 +111,14 @@ stays off the turn path.
   momentarily free GPU between another session's benchmark loads (observed live; the host was stopped at once).
 - 2026-10-09: Codex hardening round 1 REJECT (5 findings: stopped load could spawn after lease release; restart vs new
   turn race; unmeasurable GPU proceeded; release-wait timeout proceeded; hang before the turn reply undetected). All
-  confirmed in source and repaired with tests.
+  confirmed in source and repaired with tests. Rounds 2-5 REJECT, round 6 ACCEPT (see WS_INDEPENDENT_AUDIT.md).
+- 2026-10-09 (correction after live validation): the CONTENDED shortfall was first one demotion block (1 GiB). A live
+  start at a 913 MB shortfall (another session opened three app windows, ~1 GB of GPU memory) came up at 29.9 tok/s
+  and was correctly reported DEGRADED by the calibration. The threshold is now half a block (512 MiB): a 913 MB
+  shortfall waits. The 78 MB shortfall that loaded healthy stays AT_RISK.
+- 2026-10-09 (live finding): GPU apps of another session opened after the Brain loaded evicted 1.6 GB of it (decode
+  141 -> 27-38 tok/s) while health still showed the start calibration. The host now re-measures speed when its 60 s
+  residency sample shows the Brain's system-memory share grew by >= 512 MiB.
+- 2026-10-09 (finding, H-AC4): the restart experiment disproved "an immediate restart is slow because VRAM is not yet
+  released": release takes 1.5-1.9 s and a load takes ~94 s; immediate restarts were healthy (2/2) and a cold start
+  with the desktop only was slow (1 of 5 loads). PERF-W1's 27 tok/s was the nondeterministic demotion, not the restart.

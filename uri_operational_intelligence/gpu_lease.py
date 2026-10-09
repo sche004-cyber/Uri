@@ -42,13 +42,13 @@ RUNTIME_V1_DEVICE_MIB = 15626
 LIST_MIN_MIB = 128
 # Margin below which a start is reported as AT_RISK (half a demotion block; R1 blocks are 1 GiB).
 AT_RISK_MARGIN_MIB = 512
-# Shortfall at which a start is refused as CONTENDED: one whole 1 GiB demotion block. Measured on this card: the frozen
-# server stays healthy while the driver demotes 250-950 MiB of it (Adaptive Runtime R1) and in WS runs with the desktop
-# plus the URI window open (others ~0.7 GB, shortfall ~0.1 GB: 111-131 tok/s); it collapses to ~25 tok/s next to a
-# 1.6 GB consumer (others ~2.1 GB, shortfall ~1.2-1.4 GB; R1, R2, WS). Between the two the outcome is not decided by
-# the budget (R2: which buffers are demoted is nondeterministic), so those starts are AT_RISK and the post-start
-# calibration classifies the instance.
-CONTENDED_SHORTFALL_MIB = 1024
+# Shortfall at which a start is refused as CONTENDED: half a 1 GiB demotion block. Measured starts on this card
+# (WS hardening evidence, 2026-10-09): shortfall 78 MB -> 90.8 tok/s (healthy); shortfall 913 MB next to another
+# session's three app windows -> 29.9 tok/s (slow); ~1.2-1.4 GB next to a 1.6 GB consumer -> ~25 tok/s (R1, R2, WS).
+# Even with a positive margin (desktop only, +340 MB) 1 of 5 loads came up slow, so the budget cannot promise a fast
+# load: below the threshold the start is AT_RISK and the post-start calibration classifies the instance. (First set to
+# 1024 MiB; tightened after the 913 MB slow start, see WS_HARDENING_PLAN.md change log.)
+CONTENDED_SHORTFALL_MIB = 512
 DESKTOP = {"dwm.exe": "desktop compositor"}
 
 FITS, AT_RISK, CONTENDED, UNKNOWN = "FITS", "AT_RISK", "CONTENDED", "UNKNOWN"
@@ -322,7 +322,7 @@ def owner_pids(lease_pid=None, extra=()):
 def assess_fit(c: dict, *, owners=(), required_mib=RUNTIME_V1_DEVICE_MIB) -> dict:
     """Budget rule: free = card - (dedicated memory of every non-owner process) - unattributed adapter memory
     (memory still committed after a process exit); margin = free - required (the measured request). CONTENDED when the
-    shortfall reaches one demotion block, AT_RISK when the margin is below half a block, FITS otherwise. Owner
+    shortfall reaches half a demotion block, AT_RISK when the margin is below half a block, FITS otherwise. Owner
     processes (the lease holder and its children, e.g. our own server) are excluded, so an already loaded Brain does
     not count against itself."""
     if not c.get("ok") or not c.get("card_mib"):

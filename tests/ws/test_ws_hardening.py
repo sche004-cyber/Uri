@@ -178,6 +178,14 @@ def test_fit_desktop_only_fits_and_a_1gb_consumer_contends():
     assert "will not stop" in text
 
 
+def test_the_measured_913_mb_shortfall_is_contended():
+    # live 2026-10-09: three uri_ui windows of another session + desktop; the start that went ahead came up at 29.9 tok/s
+    c = G.census(raw([(1580, 333, 9), (1340, 345, 5), (2436, 344, 4), (4340, 351, 5), (14620, 48, 1), (1600, 40, 1),
+                      (10188, 36, 1)], 1560), card=CARD)
+    f = G.assess_fit(c)
+    assert f["margin_mib"] < -G.CONTENDED_SHORTFALL_MIB and f["verdict"] == G.CONTENDED
+
+
 def test_own_server_is_not_counted_against_itself_and_unattributed_memory_blocks():
     c = G.census(raw([(1580, 311, 9), (4242, 13907, 1819)], 14300), card=CARD)
     assert G.assess_fit(c, owners={4242})["verdict"] in (G.FITS, G.AT_RISK)
