@@ -1,0 +1,62 @@
+{
+ "now_utc": "2026-10-09T01:56:19+00:00",
+ "upcoming": [],
+ "errors": [
+  {
+   "occ_id": 1,
+   "job_id": "job_cf8cf6fe4a5c",
+   "occurrence_key": "once",
+   "due_at_us": 1791510979000000,
+   "deadline_us": null,
+   "state": "BLOCKED_HARNESS",
+   "reason": "NOT_AUTHENTICATED",
+   "attempts": 0,
+   "retry_at_us": 1791512779578317,
+   "late": 0,
+   "lease_owner": null,
+   "lease_until_us": null,
+   "created_at_us": 1791510949285736,
+   "updated_at_us": 1791510979578367,
+   "title": "LIVE TEST live: Diwali (Deepavali) GIF",
+   "timezone": "Asia/Kolkata",
+   "job_state": "ACTIVE",
+   "meta": {
+    "local": "2026-10-09T07:26:19",
+    "tz": "Asia/Kolkata"
+   },
+   "due_local": "2026-10-09T07:26+05:30",
+   "retry_local": "2026-10-09T07:56+05:30"
+  }
+ ],
+ "pending_approvals": [],
+ "approved": [],
+ "recent_executions": [],
+ "jobs": [
+  {
+   "job_id": "job_cf8cf6fe4a5c",
+   "owner": "owner",
+   "title": "LIVE TEST live: Diwali (Deepavali) GIF",
+   "template_id": "festival_gif.v1",
+   "state": "ACTIVE",
+   "timezone": "Asia/Kolkata",
+   "schedule_json": "{\"at\":\"2026-10-09T07:26:19\",\"kind\":\"once\",\"tz\":\"Asia/Kolkata\"}",
+   "schedule": {
+    "at": "2026-10-09T07:26:19",
+    "kind": "once",
+    "tz": "Asia/Kolkata"
+   },
+   "interpretation": "Once at 2026-10-09 07:26:19 (Asia/Kolkata)"
+  }
+ ],
+ "paused_jobs": [],
+ "harness": {
+  "available": false,
+  "code": "NOT_AUTHENTICATED",
+  "mode": "LIVE",
+  "executor_id": "claude_code",
+  "executable": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe",
+  "version": "2.1.287",
+  "qualification": "PROBE_ONLY",
+  "detail": {}
+ }
+}
