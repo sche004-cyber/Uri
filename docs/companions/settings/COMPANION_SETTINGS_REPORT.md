@@ -177,8 +177,9 @@ private port 18499 (`rnd/companions/settings/brain_contention.py`). No other
 session's Brain was touched; every process was stopped at the end. Decode =
 256 tokens of the Runtime v1 calibration prompt, temperature 0, MTP on.
 
-*Order 1, Brain first, then the companion (14:47:56–14:55:12).* The lease's fit
-check had reported a 60 MB VRAM margin before the server started.
+*Order 1, Brain first, then the companion (14:47:56–14:55:12).* (A lease fit
+check run shortly before, while another session held the lease, read a margin
+of about 60 MB for Runtime v1; that reading was not saved as evidence.)
 
 | Condition | Brain decode tok/s | Companion frames/s during generation | Raster p99 | Frames > 16.7 ms |
 |---|---|---|---|---|
@@ -189,13 +190,15 @@ check had reported a 60 MB VRAM margin before the server started.
 | Brain alone, after the companion exited | 50.9 / 51.2 | — | — | — |
 
 The decode rate fell from 160 to about 50 tok/s **as soon as the companion
-window opened, and stayed there after it closed**. That is not a frame-rate
-effect. It is the VRAM demotion already recorded for the frozen Runtime v1
-(Adaptive Runtime R1): the server asks for 15.26 GiB of a 16 GiB card, and a
-window that later takes a few hundred MB (this app holds about 300 MB
-dedicated) pushes part of the model into system memory for the life of the
-process. Frame rate then only moves it a little: 30 FPS left 50 tok/s, 144
-left 46.
+window opened, and stayed there after it closed**. That persistence rules out
+live contention as the whole cause. The most likely mechanism, **inferred and
+not measured here**, is the VRAM demotion recorded for the frozen Runtime v1
+by the Adaptive Runtime R1 research (branch `research/adaptive-runtime`): the
+server asks for 15.26 GiB of a 16 GiB card, and a process that takes a few
+hundred MB afterwards (this app holds about 300 MB dedicated) leaves part of
+the model in system memory for the life of the server. These runs did not
+record per-allocation residency, so the mechanism is not directly shown. Frame
+rate then only moves the result a little: 30 FPS left 50 tok/s, 144 left 46.
 
 *Order 2, companion first, then the Brain (14:59:08–15:05:17)*, i.e. URI's window
 already open when the Brain starts, which the lease's fit check accounts for:
@@ -213,8 +216,9 @@ model loaded, and returned.
 
 **Findings.**
 1. (AMBER, owner) *Start order decides the Brain's speed, not the companion's
-   settings.* Opening any URI window after the Brain has loaded can demote the
-   Brain to about a third of its speed until it restarts. This belongs to the
+   settings.* Opening this URI window after the Brain had loaded left the
+   Brain at about a third of its speed until it restarted (one run; mechanism
+   inferred above). This belongs to the
    frozen Runtime v1 memory budget and the working-system host's start policy
    (the lease's fit check and calibration already exist for it), not to the
    companion; it is recorded here because the companion is such a window.

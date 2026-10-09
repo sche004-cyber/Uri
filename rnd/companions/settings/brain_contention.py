@@ -36,8 +36,11 @@ import time
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(os.path.dirname(HERE))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 RUN = os.path.join(HERE, 'run_companion_perf.ps1')
+# The app the runner launches, in this checkout. Cleanup stops exactly this
+# executable, whichever checkout the script runs from.
+APP_EXE = os.path.join(ROOT, 'uri_ui', 'build', 'windows', 'x64', 'runner', 'Profile', 'uri_ui.exe')
 PORT = 18499
 EXE = r'D:\uri-model-lab\runtime\llama-b11425-bin-win-vulkan-x64\llama-server.exe'
 MODELS = r'D:\uri-model-lab\models\unsloth__Qwen3.6-35B-A3B-GGUF'
@@ -110,7 +113,7 @@ def ui_first(out):
         if perf.poll() is None:
             subprocess.run(['powershell', '-NoProfile', '-Command',
                             "Get-Process uri_ui -ErrorAction SilentlyContinue | "
-                            "Where-Object { $_.Path -like '*uri-companion-voice*' } | Stop-Process -Force"],
+                            f"Where-Object {{ $_.Path -eq '{APP_EXE}' }} | Stop-Process -Force"],
                            check=False)
             perf.kill()
         if server is not None:
@@ -170,7 +173,7 @@ def main():
         if perf is not None and perf.poll() is None:
             subprocess.run(['powershell', '-NoProfile', '-Command',
                             "Get-Process uri_ui -ErrorAction SilentlyContinue | "
-                            "Where-Object { $_.Path -like '*uri-companion-voice*' } | Stop-Process -Force"],
+                            f"Where-Object {{ $_.Path -eq '{APP_EXE}' }} | Stop-Process -Force"],
                            check=False)
             perf.kill()
         server.terminate()
