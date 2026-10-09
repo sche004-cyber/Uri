@@ -412,3 +412,15 @@ def test_l4_an_asked_for_reassignment_is_shown_as_asked(fake, tmp_path):
     turn(b, "Actually Ravi paid 700 and Sita paid 500.")
     codes = {x["code"]: x["severity"] for x in last_draft(frames)["current"]["flags"]}
     assert codes.get("VALUE_REASSIGNED_AS_ASKED") == "info" and "VALUE_REASSIGNED" not in codes
+
+
+@pytest.mark.parametrize("answer", ["No, not in the text; do it", "No, don't do it", "Write it in, or do it"])
+def test_l2_negated_or_conflicting_answers_are_asked_again_never_guessed(fake, tmp_path, answer):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, "Write a notice. Send the form by Friday.")
+    turn(b, answer)
+    assert core.calls == [] and fake.requests == [] and not frames.data("draft.updated")   # nothing guessed
+    assert frames.data("draft.clarify")[-1]["question"].startswith("I could not tell which you meant")
+    turn(b, "Do it")                                   # the question is still open: a clear answer now decides
+    assert core.calls and core.calls[0][1] == "Write a notice. Send the form by Friday."

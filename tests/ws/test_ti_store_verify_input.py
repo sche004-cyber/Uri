@@ -209,3 +209,10 @@ def test_l4_intended_reassignment_stays_possible_and_is_shown_as_asked():
     f = V.check_reassignment("Ravi paid Rs 500 and Sita paid Rs 700.", "Ravi paid Rs 700 and Sita paid Rs 500.",
                              instruction="Actually Ravi paid 700 and Sita paid 500.")
     assert [(x["code"], x["severity"]) for x in f] == [("VALUE_REASSIGNED_AS_ASKED", "info")]
+
+
+def test_l4_thousands_separators_stay_one_value():
+    f = V.check_reassignment("Ravi paid Rs 1,500 and Sita paid Rs 2,700.", "Ravi paid Rs 2,700 and Sita paid Rs 1,500.")
+    assert len(f) == 1 and f[0]["detail"].startswith("1500 was with")
+    assert V.check_reassignment("Ravi paid Rs 1,500, Sita paid Rs 2,700.",
+                                "Kindly note: Ravi paid Rs 1,500, while Sita paid Rs 2,700.") == []

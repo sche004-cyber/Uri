@@ -619,7 +619,8 @@ def placeholders(text) -> list:
 # 700" -> "Ravi paid 700 and Sita 500"). No value is missing and none is new, so the checks above stay silent. This
 # compares which words each value sits with, clause by clause, in the earlier text and in the new one. It flags only
 # on mutual evidence and never changes the text; an intended change stays possible (it is shown as asked).
-_CLAUSE = re.compile(r"[.;\n,!?]+|\b(?:and|while|but|whereas)\b", re.I)
+# A comma between digits is a thousands separator ("Rs 1,500"), not a clause boundary (Codex TIWS r2 L4-R2-1).
+_CLAUSE = re.compile(r"(?:[.;\n!?]|(?<!\d),|,(?!\d))+|\b(?:and|while|but|whereas)\b", re.I)
 _UNIT_WORDS = set("""
 rs rupees rupee inr re paise usd dollars amount amounts fee fees paid pay pays paying cost costs total
 day days hour hours minute minutes week weeks month months year years marks mark number no roll
@@ -670,8 +671,10 @@ def check_reassignment(reference, revised, instruction="") -> list:
     """VALUE_REASSIGNED (review) when a value lost every word it uniquely sat with in `reference` and now uniquely sits
     with a word that belonged to another value, while that word's old value moved too (mutual evidence). When the
     user's `instruction` itself pairs the value with its new word, the line is VALUE_REASSIGNED_AS_ASKED (info).
-    Conservative by design: a clause that holds two values, or a restructured sentence, gives no distinctive word
-    and therefore no flag (see TI limitation L-4 in the integration report)."""
+    Conservative by design, with known recall limits (see L-4 in the integration report): a word that sits with
+    two values anywhere in the text is never distinctive, so a clause holding two values, or a restructured sentence,
+    usually gives no evidence; and a value that keeps any of its old distinctive words is not flagged, even if
+    another of its words changed."""
     ref, rev = _distinctive(_value_partners(reference)), _distinctive(_value_partners(revised))
     asked = _value_partners(instruction)
     flags, reported = [], set()

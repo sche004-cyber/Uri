@@ -203,10 +203,17 @@ class DraftDesk:
     def _classify(self, text, session_id, d):
         pend = self.pending_new.get(session_id)
         if pend and pend.get("ambiguous"):
-            # L-2: the user answers "is this sentence part of the text, or should URI do it?"
-            if _AMBIG_CONTENT.search(text or ""):
-                return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_content"], instruction=text)
-            if _AMBIG_ACTION.search(text or ""):
+            # L-2: the user answers "is this sentence part of the text, or should URI do it?". A choice is taken only
+            # when the answer names exactly one side and negates nothing; "No, not in the text; do it" or "don't do
+            # it" is asked again, never guessed (Codex TIWS r2 L2-R2-1).
+            content, action = bool(_AMBIG_CONTENT.search(text or "")), bool(_AMBIG_ACTION.search(text or ""))
+            if content or action:
+                if content == action or _NEGATION.search(text or ""):
+                    return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_unclear"],
+                                         instruction=text)
+                if content:
+                    return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_content"],
+                                         instruction=text)
                 # The original request goes to the ordinary path unchanged; Core decides and asks for approval.
                 return TX.TextIntent(TX.NONE, ["ambiguity_action"], payload=pend["original"], instruction=text)
         intent = TX.classify(text, has_draft=d is not None and d.current is not None)
@@ -413,6 +420,14 @@ class DraftDesk:
                  "for approval." % (quoted, "them" if len(intent.ambiguous) > 1 else "it"))
             self.pending_new[session_id] = {"request": interpreted, "question": q, "input": inp.to_dict(),
                                             "original": text, "ambiguous": list(intent.ambiguous)}
+            emit("draft.clarify", question=q, draft=None)
+            self._say(emit, q)
+            return {"status": "needs_user", "question": q}
+        if "ambiguity_unclear" in intent.reasons and pend and pend.get("ambiguous"):
+            q = ("I could not tell which you meant. Reply with only \u201cwrite it in\u201d to keep %s as text, or only "
+                 "\u201cdo it\u201d to hand your request to URI's action path." %
+                 " and ".join("\u201c%s\u201d" % a for a in pend["ambiguous"][:3]))
+            pend["question"] = q                 # still open for one more turn; nothing drafted, nothing sent
             emit("draft.clarify", question=q, draft=None)
             self._say(emit, q)
             return {"status": "needs_user", "question": q}
@@ -644,6 +659,7 @@ def _allowed_ids(version, targets):
 _AMBIG_CONTENT = re.compile(r"\b(?:write (?:it|them|that|this) in|put (?:it|them) in|part of (?:the|it)|in the (?:text|"
                             r"notice|letter|draft|document)|keep (?:it|them) (?:as|in)|as text|it'?s (?:content|text)|"
                             r"include (?:it|them)|for the readers)\b", re.I)
+_NEGATION = re.compile(r"\b(?:not|no|never|don'?t|do not|doesn'?t|isn'?t|shouldn'?t|nahi|mat)\b", re.I)
 _AMBIG_ACTION = re.compile(r"\b(?:do (?:it|that|them|this)|carry (?:it|them|that) out|go ahead|please do|"
                            r"take (?:the )?action|perform it|execute it)\b", re.I)
 
