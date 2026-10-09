@@ -167,6 +167,21 @@ void main() {
     expect(rt.commands.last['op'], 'undo');
   });
 
+  testWidgets('a short panel with many checks scrolls instead of overflowing (live UI finding)', (tester) async {
+    final conv = OiConversation(FakeRuntime());
+    final many = version(2, [
+      ['b1', 'body', List.filled(40, 'A long paragraph of text.').join(' ')],
+    ], flags: [
+      for (var i = 0; i < 8; i++) {'code': 'NEW_DETAIL', 'severity': 'review', 'detail': 'detail $i'},
+    ], missing: [for (var i = 0; i < 12; i++) '[Missing item $i]']);
+    conv.draft = OiDraft.parse(snapshot(current: many, previous: v1));
+    await tester.pumpWidget(host(SizedBox(width: 400, height: 420, child: DraftPanel(conversation: conv))));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('draft-scroll')), findsOneWidget);
+    expect(find.byKey(const ValueKey('draft-undo')), findsOneWidget);
+  });
+
   testWidgets('typed draft is labelled Typed and missing items are shown', (tester) async {
     final conv = OiConversation(FakeRuntime());
     conv.draft = OiDraft.parse(snapshot(current: v1, position: 1, count: 1, simulated: false));

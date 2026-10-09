@@ -112,7 +112,11 @@ CREATE_SYSTEM = (
     "short as the content allows; do not pad.\n"
     "`exclusions`: literal words the user asked you not to use or mention. `summary`: one short sentence saying what "
     "you wrote. If the request is contradictory or so ambiguous that any draft would be a guess about a material "
-    "fact, put ONE short question in `clarification` and return no blocks; otherwise clarification is null.")
+    "fact, put ONE short question in `clarification` and return no blocks; otherwise clarification is null.\n"
+    "FINAL CHECK before you answer (live finding LQ-26): the letter must not ask for disciplinary action, "
+    "punishment or an inquiry, must not call the matter a breach, violation or misconduct, and must not add lists of "
+    "people, roll numbers or attachments, unless the user's own words asked for that. Report what the user said, in "
+    "a neutral tone, and ask the reader only to look into it.")
 
 EDIT_SYSTEM = (
     "You are URI's writing desk, revising an existing document. You only write text: you never send, save or file "
@@ -427,7 +431,10 @@ class DraftDesk:
                  + V.check_correction_accounted(cues, facts, None) + V.check_new_details(body_text, source_words)
                  + V.check_uncertain(inp.uncertain, body_text))
         exclusions = list(dict.fromkeys(exclusions + user_excl))     # kept on the version: later edits are checked too
-        missing = sorted(set(_clean_list(data.get("missing"))) | set("[%s]" % p for p in V.placeholders(body_text)))
+        # One list: the [placeholders] in the text, plus any missing item the model named that no placeholder covers.
+        holes = ["[%s]" % p for p in V.placeholders(body_text)]
+        low = " ".join(holes).lower()
+        missing = holes + [m for m in _clean_list(data.get("missing")) if m.lower() not in low]
         self.pending_new.pop(session_id, None)
         v = draft.push(blocks=blocks, facts=facts, exclusions=exclusions, missing=missing, op="created",
                        instruction=text, summary=str(data.get("summary") or "Draft created.")[:300],

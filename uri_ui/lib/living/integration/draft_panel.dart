@@ -101,32 +101,44 @@ class _DraftPanelState extends State<DraftPanel> {
                 onSelectionChanged: (s) => setState(() => _view = s.first),
               ),
               const SizedBox(height: 8),
-              if (conv.draftQuestion != null) _Banner(conv.draftQuestion!, tone: c.accent, icon: Icons.help_outline_rounded),
-              for (final f in errors) _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.danger, icon: Icons.error_outline_rounded),
-              for (final f in reviews) _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.warning, icon: Icons.visibility_outlined),
-              for (final f in infos) _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.inkSoft, icon: Icons.info_outline_rounded),
-              if (cur.missing.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
+              // Everything between the header and the toolbar scrolls together, so many checks or missing
+              // items can never overflow the panel (live UI finding, TI live run 2026-10-09).
+              Expanded(
+                child: SingleChildScrollView(
+                  key: const ValueKey('draft-scroll'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('Missing:', style: TextStyle(color: c.inkSoft, fontSize: 12)),
-                      for (final m in cur.missing) _Tag(m, tone: c.warning),
+                      if (conv.draftQuestion != null)
+                        _Banner(conv.draftQuestion!, tone: c.accent, icon: Icons.help_outline_rounded),
+                      for (final f in errors)
+                        _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.danger, icon: Icons.error_outline_rounded),
+                      for (final f in reviews)
+                        _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.warning, icon: Icons.visibility_outlined),
+                      for (final f in infos)
+                        _Banner('${_flagLabel(f.code)}: ${f.detail}', tone: c.inkSoft, icon: Icons.info_outline_rounded),
+                      if (cur.missing.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text('Missing:', style: TextStyle(color: c.inkSoft, fontSize: 12)),
+                              for (final m in cur.missing) _Tag(m, tone: c.warning),
+                            ],
+                          ),
+                        ),
+                      switch (_view) {
+                        DraftView.current => _CurrentText(version: cur),
+                        DraftView.changes => d.previous == null
+                            ? _CurrentText(version: cur)
+                            : _DiffText(before: d.previous!.text, after: cur.text),
+                        DraftView.original => _OriginalView(draft: d),
+                      },
                     ],
                   ),
-                ),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: switch (_view) {
-                    DraftView.current => _CurrentText(version: cur),
-                    DraftView.changes => d.previous == null
-                        ? _CurrentText(version: cur)
-                        : _DiffText(before: d.previous!.text, after: cur.text),
-                    DraftView.original => _OriginalView(draft: d),
-                  },
                 ),
               ),
               const SizedBox(height: 8),
