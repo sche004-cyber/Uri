@@ -1,0 +1,47 @@
+{
+ "cold_starts": [
+  {
+   "seconds_to_model_event": 1.095,
+   "model": {
+    "ev": "model",
+    "state": "ready",
+    "load_ms": 471
+   }
+  },
+  {
+   "seconds_to_model_event": 1.008,
+   "model": {
+    "ev": "model",
+    "state": "ready",
+    "load_ms": 471
+   }
+  },
+  {
+   "seconds_to_model_event": 1.032,
+   "model": {
+    "ev": "model",
+    "state": "ready",
+    "load_ms": 486
+   }
+  },
+  {
+   "seconds_to_model_event": 1.024,
+   "model": {
+    "ev": "model",
+    "state": "ready",
+    "load_ms": 488
+   }
+  },
+  {
+   "seconds_to_model_event": 1.029,
+   "model": {
+    "ev": "model",
+    "state": "ready",
+    "load_ms": 487
+   }
+  }
+ ],
+ "cpu_seconds_idle_10s": 0.0,
+ "cpu_seconds_open_microphone_no_speech_10s": 0.062,
+ "note": "open-microphone figure depends on room noise; the speakers were silent during this run"
+}

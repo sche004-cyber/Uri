@@ -48,6 +48,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # Live voice end-to-end run on the real Windows app (integration_test/,
+  # opt-in through URI_VOICE_E2E; never part of `flutter test`).
+  integration_test:
+    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -80,6 +84,7 @@ flutter:
     - assets/uri_app_logo_refined_v2.png
     - assets/uri_app_logo.jpg
     - assets/voice/voice_engine.ps1
+    - assets/voice/uri_voice_service.py
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

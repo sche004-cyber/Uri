@@ -1,0 +1,1241 @@
+{
+ "none": {
+  "hotwords": null,
+  "wer_pct": 7.47,
+  "wer_format_normalised_pct": 4.15,
+  "ms_p50": 611,
+  "rows": [
+   {
+    "file": "v0_s00.wav",
+    "ref": "What is the weather usually like in Gangtok in October?",
+    "hyp": "What is the weather usually like and then talk in October?",
+    "errors": 3,
+    "errors_fmt": 3,
+    "words": 10,
+    "ms": 584
+   },
+   {
+    "file": "v0_s01.wav",
+    "ref": "Can you remind me what meetings I have tomorrow morning?",
+    "hyp": "Can you remind me what meetings I have tomorrow morning?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 423
+   },
+   {
+    "file": "v0_s02.wav",
+    "ref": "How long does it take to drive from Siliguri to Gangtok?",
+    "hyp": "How long does it take to drive from siligury to contalk?",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 11,
+    "ms": 454
+   },
+   {
+    "file": "v0_s03.wav",
+    "ref": "Explain the difference between a casual leave and an earned leave.",
+    "hyp": "Explain the difference between a casual leave and an earned leave.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 449
+   },
+   {
+    "file": "v0_s04.wav",
+    "ref": "Which festival holidays are left this year?",
+    "hyp": "Which festival holidays are left this year?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 455
+   },
+   {
+    "file": "v0_s05.wav",
+    "ref": "Please summarise the last message from the finance department.",
+    "hyp": "Please summarize the last message from the Finance Department.",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 9,
+    "ms": 585
+   },
+   {
+    "file": "v0_s06.wav",
+    "ref": "Is the local Brain running right now?",
+    "hyp": "Is the local brain running right now?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 606
+   },
+   {
+    "file": "v0_s07.wav",
+    "ref": "Tell me three ways to reduce paper use in the office.",
+    "hyp": "Tell me three ways to reduce paper use in the office.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 636
+   },
+   {
+    "file": "v0_s08.wav",
+    "ref": "What time is it in London when it is noon in India?",
+    "hyp": "What time is it in London when it is noon in India?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 610
+   },
+   {
+    "file": "v0_s09.wav",
+    "ref": "Remember that the laboratory is closed on Friday afternoon.",
+    "hyp": "Remember that the laboratory is closed on Friday afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 9,
+    "ms": 602
+   },
+   {
+    "file": "v0_s10.wav",
+    "ref": "Stop.",
+    "hyp": "Stop",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 1,
+    "ms": 546
+   },
+   {
+    "file": "v0_s11.wav",
+    "ref": "Open the dashboard.",
+    "hyp": "Open the dashboard.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 3,
+    "ms": 565
+   },
+   {
+    "file": "v0_s12.wav",
+    "ref": "Dear Sir, I request leave from 15 October to 17 October because of a family function.",
+    "hyp": "Dear sir, I request leave from October 15th to October 17th because of a family function.",
+    "errors": 4,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 674
+   },
+   {
+    "file": "v0_s13.wav",
+    "ref": "The meeting with the Director is rescheduled to Monday at 3:30 in the afternoon.",
+    "hyp": "The meeting with the director is rescheduled to Monday at 3.30 in the afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 661
+   },
+   {
+    "file": "v0_s14.wav",
+    "ref": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "hyp": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 663
+   },
+   {
+    "file": "v0_s15.wav",
+    "ref": "Kindly forward the attendance register for September to the establishment section.",
+    "hyp": "Kindly forward the attendance register for September to the establishment section.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 642
+   },
+   {
+    "file": "v0_s16.wav",
+    "ref": "I will not be able to attend the training programme on Thursday due to illness.",
+    "hyp": "I will not be able to attend the training program on Thursday due to illness.",
+    "errors": 1,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 636
+   },
+   {
+    "file": "v0_s17.wav",
+    "ref": "The budget proposal for the next financial year must reach this office by 30 November.",
+    "hyp": "The budget proposal for the next financial year must reach this office by November 30.",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 653
+   },
+   {
+    "file": "v0_s18.wav",
+    "ref": "Mr. Tshering Bhutia has joined the department as an assistant engineer.",
+    "hyp": "Mr. Charing-Buddhiya has joined the Department as an Assistant Engineer.",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 11,
+    "ms": 643
+   },
+   {
+    "file": "v0_s19.wav",
+    "ref": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "hyp": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 624
+   },
+   {
+    "file": "v0_s20.wav",
+    "ref": "The committee has approved the purchase of two printers and one scanner.",
+    "hyp": "The committee has approved the purchase of two printers and one scanner.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 625
+   },
+   {
+    "file": "v0_s21.wav",
+    "ref": "Copy to the Joint Secretary for information and necessary action.",
+    "hyp": "Copy to the Joint Secretary for Information and Necessary Action.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 626
+   },
+   {
+    "file": "v0_s22.wav",
+    "ref": "The office will remain closed on account of Dussehra.",
+    "hyp": "The office will remain closed on account of Dusra.",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 9,
+    "ms": 608
+   },
+   {
+    "file": "v0_s23.wav",
+    "ref": "Thank you for your cooperation, and please let me know if you need anything else.",
+    "hyp": "Thank you for your cooperation, and please let me know if you need anything else.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 660
+   },
+   {
+    "file": "v1_s00.wav",
+    "ref": "What is the weather usually like in Gangtok in October?",
+    "hyp": "What is the weather usually like in gang toke in October?",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 10,
+    "ms": 640
+   },
+   {
+    "file": "v1_s01.wav",
+    "ref": "Can you remind me what meetings I have tomorrow morning?",
+    "hyp": "Can you remind me what meetings I have tomorrow morning?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 605
+   },
+   {
+    "file": "v1_s02.wav",
+    "ref": "How long does it take to drive from Siliguri to Gangtok?",
+    "hyp": "How long does it take to drive from silly goody to gang took?",
+    "errors": 4,
+    "errors_fmt": 4,
+    "words": 11,
+    "ms": 638
+   },
+   {
+    "file": "v1_s03.wav",
+    "ref": "Explain the difference between a casual leave and an earned leave.",
+    "hyp": "Explain the difference between a casual leave and an earned leave.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 621
+   },
+   {
+    "file": "v1_s04.wav",
+    "ref": "Which festival holidays are left this year?",
+    "hyp": "Which festival holidays are left this year?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 576
+   },
+   {
+    "file": "v1_s05.wav",
+    "ref": "Please summarise the last message from the finance department.",
+    "hyp": "Please summarize the last message from the Finance Department.",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 9,
+    "ms": 609
+   },
+   {
+    "file": "v1_s06.wav",
+    "ref": "Is the local Brain running right now?",
+    "hyp": "Is the local brain running right now?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 580
+   },
+   {
+    "file": "v1_s07.wav",
+    "ref": "Tell me three ways to reduce paper use in the office.",
+    "hyp": "Tell me three ways to reduce paper use in the office.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 603
+   },
+   {
+    "file": "v1_s08.wav",
+    "ref": "What time is it in London when it is noon in India?",
+    "hyp": "What time is it in London when it is noon in India?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 602
+   },
+   {
+    "file": "v1_s09.wav",
+    "ref": "Remember that the laboratory is closed on Friday afternoon.",
+    "hyp": "Remember that the laboratory is closed on Friday afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 9,
+    "ms": 595
+   },
+   {
+    "file": "v1_s10.wav",
+    "ref": "Stop.",
+    "hyp": "Stop",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 1,
+    "ms": 533
+   },
+   {
+    "file": "v1_s11.wav",
+    "ref": "Open the dashboard.",
+    "hyp": "Open the dashboard.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 3,
+    "ms": 558
+   },
+   {
+    "file": "v1_s12.wav",
+    "ref": "Dear Sir, I request leave from 15 October to 17 October because of a family function.",
+    "hyp": "Dear sir, I request leave from October 15 to October 17 because of a family function.",
+    "errors": 4,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 674
+   },
+   {
+    "file": "v1_s13.wav",
+    "ref": "The meeting with the Director is rescheduled to Monday at 3:30 in the afternoon.",
+    "hyp": "The meeting with the director is rescheduled to Monday at 3.30 in the afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 657
+   },
+   {
+    "file": "v1_s14.wav",
+    "ref": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "hyp": "Please release the payment of 5,000 rupees to the vendor before the end of the month.",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 662
+   },
+   {
+    "file": "v1_s15.wav",
+    "ref": "Kindly forward the attendance register for September to the establishment section.",
+    "hyp": "Kindly forward the attendance register for September to the establishment section.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 614
+   },
+   {
+    "file": "v1_s16.wav",
+    "ref": "I will not be able to attend the training programme on Thursday due to illness.",
+    "hyp": "I will not be able to attend the training program on Thursday due to illness.",
+    "errors": 1,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 645
+   },
+   {
+    "file": "v1_s17.wav",
+    "ref": "The budget proposal for the next financial year must reach this office by 30 November.",
+    "hyp": "The budget proposal for the next financial year must reach this office by November 30th.",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 643
+   },
+   {
+    "file": "v1_s18.wav",
+    "ref": "Mr. Tshering Bhutia has joined the department as an assistant engineer.",
+    "hyp": "Mr. Charing Bootyya has joined the department as an assistant engineer.",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 11,
+    "ms": 630
+   },
+   {
+    "file": "v1_s19.wav",
+    "ref": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "hyp": "Please treat this as urgent and send a reply by tomorrow evening",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 610
+   },
+   {
+    "file": "v1_s20.wav",
+    "ref": "The committee has approved the purchase of two printers and one scanner.",
+    "hyp": "The committee has approved the purchase of two printers in one skin.",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 12,
+    "ms": 611
+   }
+  ]
+ },
+ "name": {
+  "hotwords": "URI",
+  "wer_pct": 7.26,
+  "wer_format_normalised_pct": 3.94,
+  "ms_p50": 611,
+  "rows": [
+   {
+    "file": "v0_s00.wav",
+    "ref": "What is the weather usually like in Gangtok in October?",
+    "hyp": "What is the weather usually like in going talk in October?",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 10,
+    "ms": 611
+   },
+   {
+    "file": "v0_s01.wav",
+    "ref": "Can you remind me what meetings I have tomorrow morning?",
+    "hyp": "Can you remind me what meetings I have tomorrow morning?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 607
+   },
+   {
+    "file": "v0_s02.wav",
+    "ref": "How long does it take to drive from Siliguri to Gangtok?",
+    "hyp": "How long does it take to drive from siligary to contalk?",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 11,
+    "ms": 632
+   },
+   {
+    "file": "v0_s03.wav",
+    "ref": "Explain the difference between a casual leave and an earned leave.",
+    "hyp": "Explain the difference between a casual leave and an earned leave.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 616
+   },
+   {
+    "file": "v0_s04.wav",
+    "ref": "Which festival holidays are left this year?",
+    "hyp": "Which festival holidays are left this year?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 584
+   },
+   {
+    "file": "v0_s05.wav",
+    "ref": "Please summarise the last message from the finance department.",
+    "hyp": "Please summarize the last message from the finance department.",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 9,
+    "ms": 592
+   },
+   {
+    "file": "v0_s06.wav",
+    "ref": "Is the local Brain running right now?",
+    "hyp": "Is the local brain running right now?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 584
+   },
+   {
+    "file": "v0_s07.wav",
+    "ref": "Tell me three ways to reduce paper use in the office.",
+    "hyp": "Tell me three ways to reduce paper use in the office.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 636
+   },
+   {
+    "file": "v0_s08.wav",
+    "ref": "What time is it in London when it is noon in India?",
+    "hyp": "What time is it in London when it is noon in India?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 606
+   },
+   {
+    "file": "v0_s09.wav",
+    "ref": "Remember that the laboratory is closed on Friday afternoon.",
+    "hyp": "Remember that the laboratory is closed on Friday afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 9,
+    "ms": 587
+   },
+   {
+    "file": "v0_s10.wav",
+    "ref": "Stop.",
+    "hyp": "Stop.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 1,
+    "ms": 529
+   },
+   {
+    "file": "v0_s11.wav",
+    "ref": "Open the dashboard.",
+    "hyp": "Open the dashboard.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 3,
+    "ms": 559
+   },
+   {
+    "file": "v0_s12.wav",
+    "ref": "Dear Sir, I request leave from 15 October to 17 October because of a family function.",
+    "hyp": "Dear sir, I request leave from October 15th to October 17th because of a family function.",
+    "errors": 4,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 687
+   },
+   {
+    "file": "v0_s13.wav",
+    "ref": "The meeting with the Director is rescheduled to Monday at 3:30 in the afternoon.",
+    "hyp": "The meeting with the director is rescheduled to Monday at 3.30 in the afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 666
+   },
+   {
+    "file": "v0_s14.wav",
+    "ref": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "hyp": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 659
+   },
+   {
+    "file": "v0_s15.wav",
+    "ref": "Kindly forward the attendance register for September to the establishment section.",
+    "hyp": "Kindly forward the attendance register for September to the establishment section.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 631
+   },
+   {
+    "file": "v0_s16.wav",
+    "ref": "I will not be able to attend the training programme on Thursday due to illness.",
+    "hyp": "I will not be able to attend the training program on Thursday due to illness.",
+    "errors": 1,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 648
+   },
+   {
+    "file": "v0_s17.wav",
+    "ref": "The budget proposal for the next financial year must reach this office by 30 November.",
+    "hyp": "The budget proposal for the next financial year must reach this office by November 30th",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 658
+   },
+   {
+    "file": "v0_s18.wav",
+    "ref": "Mr. Tshering Bhutia has joined the department as an assistant engineer.",
+    "hyp": "Mr. Charing-Buddhiya has joined the department as an assistant engineer.",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 11,
+    "ms": 659
+   },
+   {
+    "file": "v0_s19.wav",
+    "ref": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "hyp": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 610
+   },
+   {
+    "file": "v0_s20.wav",
+    "ref": "The committee has approved the purchase of two printers and one scanner.",
+    "hyp": "The committee has approved the purchase of two printers and one scanner.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 630
+   },
+   {
+    "file": "v0_s21.wav",
+    "ref": "Copy to the Joint Secretary for information and necessary action.",
+    "hyp": "Copy to the Joint Secretary for Information and Necessary Action",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 603
+   },
+   {
+    "file": "v0_s22.wav",
+    "ref": "The office will remain closed on account of Dussehra.",
+    "hyp": "The office will remain closed on account of Dusra",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 9,
+    "ms": 605
+   },
+   {
+    "file": "v0_s23.wav",
+    "ref": "Thank you for your cooperation, and please let me know if you need anything else.",
+    "hyp": "Thank you for your cooperation, and please let me know if you need anything else.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 617
+   },
+   {
+    "file": "v1_s00.wav",
+    "ref": "What is the weather usually like in Gangtok in October?",
+    "hyp": "What is the weather usually like in gang toke in October?",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 10,
+    "ms": 608
+   },
+   {
+    "file": "v1_s01.wav",
+    "ref": "Can you remind me what meetings I have tomorrow morning?",
+    "hyp": "Can you remind me what meetings I have tomorrow morning?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 571
+   },
+   {
+    "file": "v1_s02.wav",
+    "ref": "How long does it take to drive from Siliguri to Gangtok?",
+    "hyp": "How long does it take to drive from silly goody to gang took?",
+    "errors": 4,
+    "errors_fmt": 4,
+    "words": 11,
+    "ms": 643
+   },
+   {
+    "file": "v1_s03.wav",
+    "ref": "Explain the difference between a casual leave and an earned leave.",
+    "hyp": "Explain the difference between a casual leave and an earned leave.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 617
+   },
+   {
+    "file": "v1_s04.wav",
+    "ref": "Which festival holidays are left this year?",
+    "hyp": "Which festival holidays are left this year?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 583
+   },
+   {
+    "file": "v1_s05.wav",
+    "ref": "Please summarise the last message from the finance department.",
+    "hyp": "Please summarize the last message from the finance department.",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 9,
+    "ms": 603
+   },
+   {
+    "file": "v1_s06.wav",
+    "ref": "Is the local Brain running right now?",
+    "hyp": "Is the local brain running right now?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 591
+   },
+   {
+    "file": "v1_s07.wav",
+    "ref": "Tell me three ways to reduce paper use in the office.",
+    "hyp": "Tell me three ways to reduce paper use in the office",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 632
+   },
+   {
+    "file": "v1_s08.wav",
+    "ref": "What time is it in London when it is noon in India?",
+    "hyp": "What time is it in London when it is noon in India?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 611
+   },
+   {
+    "file": "v1_s09.wav",
+    "ref": "Remember that the laboratory is closed on Friday afternoon.",
+    "hyp": "Remember that the laboratory is closed on Friday afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 9,
+    "ms": 584
+   },
+   {
+    "file": "v1_s10.wav",
+    "ref": "Stop.",
+    "hyp": "Stop",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 1,
+    "ms": 552
+   },
+   {
+    "file": "v1_s11.wav",
+    "ref": "Open the dashboard.",
+    "hyp": "Open the dashboard.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 3,
+    "ms": 560
+   },
+   {
+    "file": "v1_s12.wav",
+    "ref": "Dear Sir, I request leave from 15 October to 17 October because of a family function.",
+    "hyp": "Dear sir, I request leave from October 15th to October 17th because of a family function.",
+    "errors": 4,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 651
+   },
+   {
+    "file": "v1_s13.wav",
+    "ref": "The meeting with the Director is rescheduled to Monday at 3:30 in the afternoon.",
+    "hyp": "The meeting with the director is rescheduled to Monday at 3 30 in the afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 648
+   },
+   {
+    "file": "v1_s14.wav",
+    "ref": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "hyp": "Please release the payment of 5,000 rupees to the vendor before the end of the month.",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 676
+   },
+   {
+    "file": "v1_s15.wav",
+    "ref": "Kindly forward the attendance register for September to the establishment section.",
+    "hyp": "Kindly forward the attendance register for September to the establishment section.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 625
+   },
+   {
+    "file": "v1_s16.wav",
+    "ref": "I will not be able to attend the training programme on Thursday due to illness.",
+    "hyp": "I will not be able to attend the training program on Thursday due to illness.",
+    "errors": 1,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 650
+   },
+   {
+    "file": "v1_s17.wav",
+    "ref": "The budget proposal for the next financial year must reach this office by 30 November.",
+    "hyp": "The budget proposal for the next financial year must reach this office by November 30th",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 674
+   },
+   {
+    "file": "v1_s18.wav",
+    "ref": "Mr. Tshering Bhutia has joined the department as an assistant engineer.",
+    "hyp": "Mr. Charing Bootyya has joined the department as an assistant engineer.",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 11,
+    "ms": 650
+   },
+   {
+    "file": "v1_s19.wav",
+    "ref": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "hyp": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 609
+   },
+   {
+    "file": "v1_s20.wav",
+    "ref": "The committee has approved the purchase of two printers and one scanner.",
+    "hyp": "The committee has approved the purchase of two printers in one skin.",
+    "errors": 2,
+    "errors_fmt": 2,
+    "words": 12,
+    "ms": 589
+   }
+  ]
+ },
+ "name+vocabulary": {
+  "hotwords": "URI Gangtok Siliguri Sikkim Tshering Bhutia Dussehra",
+  "wer_pct": 4.36,
+  "wer_format_normalised_pct": 1.04,
+  "ms_p50": 636,
+  "rows": [
+   {
+    "file": "v0_s00.wav",
+    "ref": "What is the weather usually like in Gangtok in October?",
+    "hyp": "What is the weather usually like in Gangtok in October?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 627
+   },
+   {
+    "file": "v0_s01.wav",
+    "ref": "Can you remind me what meetings I have tomorrow morning?",
+    "hyp": "Can you remind me what meetings I have tomorrow morning?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 585
+   },
+   {
+    "file": "v0_s02.wav",
+    "ref": "How long does it take to drive from Siliguri to Gangtok?",
+    "hyp": "How long does it take to drive from siliguri to Gangtok?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 647
+   },
+   {
+    "file": "v0_s03.wav",
+    "ref": "Explain the difference between a casual leave and an earned leave.",
+    "hyp": "Explain the difference between a casual leave and an earned leave.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 604
+   },
+   {
+    "file": "v0_s04.wav",
+    "ref": "Which festival holidays are left this year?",
+    "hyp": "Which festival holidays are left this year?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 614
+   },
+   {
+    "file": "v0_s05.wav",
+    "ref": "Please summarise the last message from the finance department.",
+    "hyp": "Please summarize the last message from the finance department",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 9,
+    "ms": 610
+   },
+   {
+    "file": "v0_s06.wav",
+    "ref": "Is the local Brain running right now?",
+    "hyp": "Is the local brain running right now?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 610
+   },
+   {
+    "file": "v0_s07.wav",
+    "ref": "Tell me three ways to reduce paper use in the office.",
+    "hyp": "Tell me three ways to reduce paper use in the office.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 629
+   },
+   {
+    "file": "v0_s08.wav",
+    "ref": "What time is it in London when it is noon in India?",
+    "hyp": "What time is it in London when it is noon in India?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 636
+   },
+   {
+    "file": "v0_s09.wav",
+    "ref": "Remember that the laboratory is closed on Friday afternoon.",
+    "hyp": "Remember that the laboratory is closed on Friday afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 9,
+    "ms": 608
+   },
+   {
+    "file": "v0_s10.wav",
+    "ref": "Stop.",
+    "hyp": "Stop",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 1,
+    "ms": 571
+   },
+   {
+    "file": "v0_s11.wav",
+    "ref": "Open the dashboard.",
+    "hyp": "Open the dashboard",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 3,
+    "ms": 578
+   },
+   {
+    "file": "v0_s12.wav",
+    "ref": "Dear Sir, I request leave from 15 October to 17 October because of a family function.",
+    "hyp": "Dear sir, I request leave from October 15 to October 17 because of a family function.",
+    "errors": 4,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 667
+   },
+   {
+    "file": "v0_s13.wav",
+    "ref": "The meeting with the Director is rescheduled to Monday at 3:30 in the afternoon.",
+    "hyp": "The meeting with the director is rescheduled to Monday at 3.30 in the afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 648
+   },
+   {
+    "file": "v0_s14.wav",
+    "ref": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "hyp": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 683
+   },
+   {
+    "file": "v0_s15.wav",
+    "ref": "Kindly forward the attendance register for September to the establishment section.",
+    "hyp": "Kindly forward the attendance register for September to the establishment section.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 641
+   },
+   {
+    "file": "v0_s16.wav",
+    "ref": "I will not be able to attend the training programme on Thursday due to illness.",
+    "hyp": "I will not be able to attend the training program on Thursday due to illness.",
+    "errors": 1,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 654
+   },
+   {
+    "file": "v0_s17.wav",
+    "ref": "The budget proposal for the next financial year must reach this office by 30 November.",
+    "hyp": "The budget proposal for the next financial year must reach this office by November 30th.",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 638
+   },
+   {
+    "file": "v0_s18.wav",
+    "ref": "Mr. Tshering Bhutia has joined the department as an assistant engineer.",
+    "hyp": "Mr. Charing Bhutia has joined the department as an assistant engineer.",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 11,
+    "ms": 650
+   },
+   {
+    "file": "v0_s19.wav",
+    "ref": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "hyp": "Please treat this as urgent and send a reply by tomorrow evening",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 668
+   },
+   {
+    "file": "v0_s20.wav",
+    "ref": "The committee has approved the purchase of two printers and one scanner.",
+    "hyp": "The committee has approved the purchase of two printers and one scanner.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 637
+   },
+   {
+    "file": "v0_s21.wav",
+    "ref": "Copy to the Joint Secretary for information and necessary action.",
+    "hyp": "Copy to the Joint Secretary for Information and Necessary Action.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 645
+   },
+   {
+    "file": "v0_s22.wav",
+    "ref": "The office will remain closed on account of Dussehra.",
+    "hyp": "The office will remain closed on account of Dussehra",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 9,
+    "ms": 626
+   },
+   {
+    "file": "v0_s23.wav",
+    "ref": "Thank you for your cooperation, and please let me know if you need anything else.",
+    "hyp": "Thank you for your cooperation, and please let me know if you need anything else.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 666
+   },
+   {
+    "file": "v1_s00.wav",
+    "ref": "What is the weather usually like in Gangtok in October?",
+    "hyp": "What is the weather usually like in Gangtok in October?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 645
+   },
+   {
+    "file": "v1_s01.wav",
+    "ref": "Can you remind me what meetings I have tomorrow morning?",
+    "hyp": "Can you remind me what meetings I have tomorrow morning?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 10,
+    "ms": 630
+   },
+   {
+    "file": "v1_s02.wav",
+    "ref": "How long does it take to drive from Siliguri to Gangtok?",
+    "hyp": "How long does it take to drive from Siliguri to Gangtok",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 670
+   },
+   {
+    "file": "v1_s03.wav",
+    "ref": "Explain the difference between a casual leave and an earned leave.",
+    "hyp": "Explain the difference between a casual leave and an earned leave",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 629
+   },
+   {
+    "file": "v1_s04.wav",
+    "ref": "Which festival holidays are left this year?",
+    "hyp": "which festival holidays are left this year?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 591
+   },
+   {
+    "file": "v1_s05.wav",
+    "ref": "Please summarise the last message from the finance department.",
+    "hyp": "Please summarize the last message from the Finance Department",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 9,
+    "ms": 604
+   },
+   {
+    "file": "v1_s06.wav",
+    "ref": "Is the local Brain running right now?",
+    "hyp": "Is the local brain running right now?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 7,
+    "ms": 601
+   },
+   {
+    "file": "v1_s07.wav",
+    "ref": "Tell me three ways to reduce paper use in the office.",
+    "hyp": "Tell me three ways to reduce paper use in the office",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 639
+   },
+   {
+    "file": "v1_s08.wav",
+    "ref": "What time is it in London when it is noon in India?",
+    "hyp": "What time is it in London when it is noon in India?",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 636
+   },
+   {
+    "file": "v1_s09.wav",
+    "ref": "Remember that the laboratory is closed on Friday afternoon.",
+    "hyp": "Remember that the laboratory is closed on Friday afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 9,
+    "ms": 607
+   },
+   {
+    "file": "v1_s10.wav",
+    "ref": "Stop.",
+    "hyp": "Stop",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 1,
+    "ms": 551
+   },
+   {
+    "file": "v1_s11.wav",
+    "ref": "Open the dashboard.",
+    "hyp": "Open the dashboard.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 3,
+    "ms": 567
+   },
+   {
+    "file": "v1_s12.wav",
+    "ref": "Dear Sir, I request leave from 15 October to 17 October because of a family function.",
+    "hyp": "Dear Sir, I request leave from October 15 to October 17 because of a family function.",
+    "errors": 4,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 664
+   },
+   {
+    "file": "v1_s13.wav",
+    "ref": "The meeting with the Director is rescheduled to Monday at 3:30 in the afternoon.",
+    "hyp": "The meeting with the director is rescheduled to Monday at 3.30 in the afternoon.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 677
+   },
+   {
+    "file": "v1_s14.wav",
+    "ref": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+    "hyp": "Please release the payment of 5,000 rupees to the vendor before the end of the month",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 16,
+    "ms": 685
+   },
+   {
+    "file": "v1_s15.wav",
+    "ref": "Kindly forward the attendance register for September to the establishment section.",
+    "hyp": "Kindly forward the attendance register for September to the establishment section.",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 11,
+    "ms": 628
+   },
+   {
+    "file": "v1_s16.wav",
+    "ref": "I will not be able to attend the training programme on Thursday due to illness.",
+    "hyp": "I will not be able to attend the training program on Thursday due to illness",
+    "errors": 1,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 663
+   },
+   {
+    "file": "v1_s17.wav",
+    "ref": "The budget proposal for the next financial year must reach this office by 30 November.",
+    "hyp": "The budget proposal for the next financial year must reach this office by November 30th.",
+    "errors": 2,
+    "errors_fmt": 0,
+    "words": 15,
+    "ms": 669
+   },
+   {
+    "file": "v1_s18.wav",
+    "ref": "Mr. Tshering Bhutia has joined the department as an assistant engineer.",
+    "hyp": "Mr. Charing Bhutia has joined the department as an assistant engineer.",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 11,
+    "ms": 655
+   },
+   {
+    "file": "v1_s19.wav",
+    "ref": "Please treat this as urgent and send a reply by tomorrow evening.",
+    "hyp": "Please treat this as urgent and send a reply by tomorrow evening",
+    "errors": 0,
+    "errors_fmt": 0,
+    "words": 12,
+    "ms": 646
+   },
+   {
+    "file": "v1_s20.wav",
+    "ref": "The committee has approved the purchase of two printers and one scanner.",
+    "hyp": "The committee has approved the purchase of two printers and one skin.",
+    "errors": 1,
+    "errors_fmt": 1,
+    "words": 12,
+    "ms": 629
+   }
+  ]
+ }
+}

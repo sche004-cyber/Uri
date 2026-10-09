@@ -1,0 +1,41 @@
+{
+ "service_pid": 8472,
+ "model": {
+  "ev": "model",
+  "state": "ready",
+  "load_ms": 487
+ },
+ "idle_after_load": {
+  "ws_mb": 158.5,
+  "cpu_s": 1.98,
+  "child_ws_mb": 78.3,
+  "child_cpu_s": 1.83
+ },
+ "final": {
+  "text": "",
+  "audio_ms": 8100,
+  "transcribe_ms": 84
+ },
+ "while_capturing": {
+  "ws_mb": 172.4,
+  "cpu_s": 14.91,
+  "child_ws_mb": 78.4,
+  "child_cpu_s": 1.83
+ },
+ "after_final": {
+  "ws_mb": 195.1,
+  "cpu_s": 16.66,
+  "child_ws_mb": 78.4,
+  "child_cpu_s": 1.83
+ },
+ "after_reply": {
+  "ws_mb": 195.2,
+  "cpu_s": 16.75,
+  "child_ws_mb": 92.8,
+  "child_cpu_s": 2.09
+ },
+ "cpu_s_for_utterance_incl_partials": 14.68,
+ "cpu_s_for_reply_python": 0.09,
+ "cpu_s_for_reply_engine_bridge": 0.26,
+ "gpu": "none requested: device=cpu, compute_type=int8; the process is absent from per-process GPU memory samples (threshold 32 MiB)"
+}

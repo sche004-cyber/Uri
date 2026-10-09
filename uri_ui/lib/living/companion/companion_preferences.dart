@@ -251,9 +251,18 @@ class CompanionLookVocabulary {
   };
 }
 
-/// User voice preferences. They are consumed by whichever voice service
-/// speaks for URI; in this build that is only the preview (see the voice
-/// section of Companion Settings, which says so).
+/// How a finished spoken utterance is used.
+enum VoiceInputMode {
+  /// The words are a turn in the conversation; URI answers aloud.
+  conversation,
+
+  /// The words are content for a draft (Text Intelligence draft desk); they
+  /// never reach Core as a request.
+  drafting,
+}
+
+/// User voice preferences: URI's reply voice (also used by the previews) and
+/// the live voice input (microphone, reply speech, input mode).
 @immutable
 class VoicePreferences {
   const VoicePreferences({
@@ -263,6 +272,10 @@ class VoicePreferences {
     this.pitch = 0,
     this.language,
     this.waveform = true,
+    this.microphone,
+    this.speakReplies = true,
+    this.inputMode = VoiceInputMode.conversation,
+    this.vocabulary = '',
   });
 
   /// `<engine>:<voice name>`, or null for the engine default.
@@ -284,6 +297,19 @@ class VoicePreferences {
   /// keeps the transcript and the state; it never changes the level mapping.
   final bool waveform;
 
+  /// Input device name as the voice service lists it, or null for the
+  /// Windows default microphone.
+  final String? microphone;
+
+  /// Whether URI speaks its replies to spoken questions.
+  final bool speakReplies;
+
+  final VoiceInputMode inputMode;
+
+  /// Names and words the recogniser should expect (people, places, terms),
+  /// space separated. Empty: only URI's own name is expected.
+  final String vocabulary;
+
   VoicePreferences copyWith({
     Object? voiceId = _keep,
     int? volume,
@@ -291,6 +317,10 @@ class VoicePreferences {
     int? pitch,
     Object? language = _keep,
     bool? waveform,
+    Object? microphone = _keep,
+    bool? speakReplies,
+    VoiceInputMode? inputMode,
+    String? vocabulary,
   }) => VoicePreferences(
     voiceId: identical(voiceId, _keep) ? this.voiceId : voiceId as String?,
     volume: (volume ?? this.volume).clamp(0, 100),
@@ -298,6 +328,12 @@ class VoicePreferences {
     pitch: (pitch ?? this.pitch).clamp(-10, 10),
     language: identical(language, _keep) ? this.language : language as String?,
     waveform: waveform ?? this.waveform,
+    microphone: identical(microphone, _keep)
+        ? this.microphone
+        : microphone as String?,
+    speakReplies: speakReplies ?? this.speakReplies,
+    inputMode: inputMode ?? this.inputMode,
+    vocabulary: vocabulary ?? this.vocabulary,
   );
 
   static const Object _keep = Object();
@@ -309,6 +345,10 @@ class VoicePreferences {
     'pitch': pitch,
     'language': language,
     'waveform': waveform,
+    'microphone': microphone,
+    'speakReplies': speakReplies,
+    'inputMode': inputMode.name,
+    'vocabulary': vocabulary,
   };
 
   static VoicePreferences fromJson(Object? json) {
@@ -321,6 +361,10 @@ class VoicePreferences {
     final id = json['voiceId'];
     final lang = json['language'];
     final wf = json['waveform'];
+    final mic = json['microphone'];
+    final sr = json['speakReplies'];
+    final mode = json['inputMode'];
+    final vocab = json['vocabulary'];
     return VoicePreferences(
       voiceId: id is String && id.contains(':') ? id : null,
       volume: i('volume', 100, 0, 100),
@@ -328,6 +372,13 @@ class VoicePreferences {
       pitch: i('pitch', 0, -10, 10),
       language: lang is String && lang.isNotEmpty ? lang : null,
       waveform: wf is bool ? wf : true,
+      microphone: mic is String && mic.isNotEmpty ? mic : null,
+      speakReplies: sr is bool ? sr : true,
+      inputMode: VoiceInputMode.values.firstWhere(
+        (m) => m.name == mode,
+        orElse: () => VoiceInputMode.conversation,
+      ),
+      vocabulary: vocab is String ? vocab : '',
     );
   }
 
@@ -339,11 +390,25 @@ class VoicePreferences {
       other.rate == rate &&
       other.pitch == pitch &&
       other.language == language &&
-      other.waveform == waveform;
+      other.waveform == waveform &&
+      other.microphone == microphone &&
+      other.speakReplies == speakReplies &&
+      other.inputMode == inputMode &&
+      other.vocabulary == vocabulary;
 
   @override
-  int get hashCode =>
-      Object.hash(voiceId, volume, rate, pitch, language, waveform);
+  int get hashCode => Object.hash(
+    voiceId,
+    volume,
+    rate,
+    pitch,
+    language,
+    waveform,
+    microphone,
+    speakReplies,
+    inputMode,
+    vocabulary,
+  );
 }
 
 /// Companion preferences: one store, one source of truth.

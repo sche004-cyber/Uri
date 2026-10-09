@@ -1,0 +1,652 @@
+{
+ "min_speech_s": 0.25,
+ "noise_clips": 36,
+ "noise_nonempty_text": 7,
+ "noise_sent_with_guard": 7,
+ "speech_clips": 45,
+ "speech_dropped_by_guard": 0,
+ "min_speech_vad_kept_s": 1.758,
+ "noise": [
+  {
+   "kind": "noise",
+   "src": "v0_s00.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.896,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s00.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.896,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s00.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.864,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s01.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s01.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s01.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s02.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.464,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s02.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.464,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s02.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.464,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s03.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s03.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s03.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s04.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.56,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s04.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.56,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s04.wav",
+   "rms": 0.02,
+   "text": ". . . . . . . .",
+   "vad_kept_s": 0.464,
+   "guard_drops": false,
+   "would_send": true
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s05.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s05.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s05.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s06.wav",
+   "rms": 0.005,
+   "text": ".",
+   "vad_kept_s": 2.984,
+   "guard_drops": false,
+   "would_send": true
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s06.wav",
+   "rms": 0.01,
+   "text": "Yes you know you're right.",
+   "vad_kept_s": 2.984,
+   "guard_drops": false,
+   "would_send": true
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s06.wav",
+   "rms": 0.02,
+   "text": "I know who I know who I know who I know who I know who I love you.",
+   "vad_kept_s": 2.984,
+   "guard_drops": false,
+   "would_send": true
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s07.wav",
+   "rms": 0.005,
+   "text": "Yeah.",
+   "vad_kept_s": 3.0,
+   "guard_drops": false,
+   "would_send": true
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s07.wav",
+   "rms": 0.01,
+   "text": "Sc",
+   "vad_kept_s": 3.0,
+   "guard_drops": false,
+   "would_send": true
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s07.wav",
+   "rms": 0.02,
+   "text": ".",
+   "vad_kept_s": 3.0,
+   "guard_drops": false,
+   "would_send": true
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s08.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s08.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s08.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s09.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s09.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.464,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s09.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.464,
+   "guard_drops": false,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s10.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s10.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s10.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s11.wav",
+   "rms": 0.005,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s11.wav",
+   "rms": 0.01,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s11.wav",
+   "rms": 0.02,
+   "text": "",
+   "vad_kept_s": 0.0,
+   "guard_drops": true,
+   "would_send": false
+  }
+ ],
+ "speech": [
+  {
+   "kind": "speech",
+   "src": "v0_s00.wav",
+   "text": "What is the weather usually like in going talk in October?",
+   "vad_kept_s": 4.17,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s01.wav",
+   "text": "Can you remind me what meetings I have tomorrow morning?",
+   "vad_kept_s": 4.083,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s02.wav",
+   "text": "How long does it take to drive from siligary to contalk?",
+   "vad_kept_s": 4.373,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s03.wav",
+   "text": "Explain the difference between a casual leave and an earned leave.",
+   "vad_kept_s": 4.487,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s04.wav",
+   "text": "Which festival holidays are left this year?",
+   "vad_kept_s": 3.655,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s05.wav",
+   "text": "Please summarize the last message from the finance department.",
+   "vad_kept_s": 4.578,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s06.wav",
+   "text": "Is the local brain running right now?",
+   "vad_kept_s": 3.217,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s07.wav",
+   "text": "Tell me three ways to reduce paper use in the office.",
+   "vad_kept_s": 4.438,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s08.wav",
+   "text": "What time is it in London when it is noon in India?",
+   "vad_kept_s": 3.925,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s09.wav",
+   "text": "Remember that the laboratory is closed on Friday afternoon.",
+   "vad_kept_s": 4.777,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s10.wav",
+   "text": "Stop.",
+   "vad_kept_s": 1.784,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s11.wav",
+   "text": "Open the dashboard.",
+   "vad_kept_s": 2.442,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s12.wav",
+   "text": "Dear sir, I request leave from October 15th to October 17th because of a family function.",
+   "vad_kept_s": 7.549,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s13.wav",
+   "text": "The meeting with the director is rescheduled to Monday at 3.30 in the afternoon.",
+   "vad_kept_s": 5.455,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s14.wav",
+   "text": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+   "vad_kept_s": 5.567,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s15.wav",
+   "text": "Kindly forward the attendance register for September to the establishment section.",
+   "vad_kept_s": 5.662,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s16.wav",
+   "text": "I will not be able to attend the training program on Thursday due to illness.",
+   "vad_kept_s": 5.314,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s17.wav",
+   "text": "The budget proposal for the next financial year must reach this office by November 30th",
+   "vad_kept_s": 6.174,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s18.wav",
+   "text": "Mr. Charing-Buddhiya has joined the department as an assistant engineer.",
+   "vad_kept_s": 5.12,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s19.wav",
+   "text": "Please treat this as urgent and send a reply by tomorrow evening.",
+   "vad_kept_s": 4.663,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s20.wav",
+   "text": "The committee has approved the purchase of two printers and one scanner.",
+   "vad_kept_s": 4.785,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s21.wav",
+   "text": "Copy to the Joint Secretary for Information and Necessary Action",
+   "vad_kept_s": 5.128,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s22.wav",
+   "text": "The office will remain closed on account of Dusra",
+   "vad_kept_s": 4.07,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s23.wav",
+   "text": "Thank you for your cooperation, and please let me know if you need anything else.",
+   "vad_kept_s": 5.803,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s00.wav",
+   "text": "What is the weather usually like in gang toke in October?",
+   "vad_kept_s": 4.041,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s01.wav",
+   "text": "Can you remind me what meetings I have tomorrow morning?",
+   "vad_kept_s": 3.959,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s02.wav",
+   "text": "How long does it take to drive from silly goody to gang took?",
+   "vad_kept_s": 4.284,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s03.wav",
+   "text": "Explain the difference between a casual leave and an earned leave.",
+   "vad_kept_s": 4.358,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s04.wav",
+   "text": "Which festival holidays are left this year?",
+   "vad_kept_s": 3.561,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s05.wav",
+   "text": "Please summarize the last message from the finance department.",
+   "vad_kept_s": 4.387,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s06.wav",
+   "text": "Is the local brain running right now?",
+   "vad_kept_s": 3.108,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s07.wav",
+   "text": "Tell me three ways to reduce paper use in the office",
+   "vad_kept_s": 4.174,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s08.wav",
+   "text": "What time is it in London when it is noon in India?",
+   "vad_kept_s": 3.626,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s09.wav",
+   "text": "Remember that the laboratory is closed on Friday afternoon.",
+   "vad_kept_s": 4.496,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s10.wav",
+   "text": "Stop",
+   "vad_kept_s": 1.758,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s11.wav",
+   "text": "Open the dashboard.",
+   "vad_kept_s": 2.356,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s12.wav",
+   "text": "Dear sir, I request leave from October 15th to October 17th because of a family function.",
+   "vad_kept_s": 6.839,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s13.wav",
+   "text": "The meeting with the director is rescheduled to Monday at 3 30 in the afternoon.",
+   "vad_kept_s": 5.379,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s14.wav",
+   "text": "Please release the payment of 5,000 rupees to the vendor before the end of the month.",
+   "vad_kept_s": 5.537,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s15.wav",
+   "text": "Kindly forward the attendance register for September to the establishment section.",
+   "vad_kept_s": 5.514,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s16.wav",
+   "text": "I will not be able to attend the training program on Thursday due to illness.",
+   "vad_kept_s": 5.146,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s17.wav",
+   "text": "The budget proposal for the next financial year must reach this office by November 30th",
+   "vad_kept_s": 6.094,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s18.wav",
+   "text": "Mr. Charing Bootyya has joined the department as an assistant engineer.",
+   "vad_kept_s": 4.921,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s19.wav",
+   "text": "Please treat this as urgent and send a reply by tomorrow evening.",
+   "vad_kept_s": 4.427,
+   "guard_drops": false
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s20.wav",
+   "text": "The committee has approved the purchase of two printers in one skin.",
+   "vad_kept_s": 4.489,
+   "guard_drops": false
+  }
+ ]
+}

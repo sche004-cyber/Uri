@@ -8,6 +8,7 @@ import '../../theme/uri_theme.dart';
 import '../integration/oi_conversation.dart';
 import '../living_scope.dart';
 import '../presentation/presentation_controller.dart';
+import '../voice/voice_controls.dart';
 import 'glass_panel.dart';
 
 /// The living UI's composer.
@@ -40,6 +41,30 @@ class LivingComposer extends StatefulWidget {
 
 class _LivingComposerState extends State<LivingComposer> {
   late final TextEditingController _controller;
+  ValueNotifier<String?>? _insert;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final insert = LivingScope.of(context).composerInsert;
+    if (!identical(insert, _insert)) {
+      _insert?.removeListener(_takeInsert);
+      _insert = insert..addListener(_takeInsert);
+    }
+  }
+
+  /// Spoken words that were not sent land here, so they are never lost.
+  void _takeInsert() {
+    final text = _insert?.value;
+    if (text == null || text.isEmpty) return;
+    _insert!.value = null;
+    final current = _controller.text.trim();
+    _controller.text = current.isEmpty ? text : '$current $text';
+    _controller.selection = TextSelection.collapsed(
+      offset: _controller.text.length,
+    );
+    AppStateScope.of(context).setComposerDraft(_controller.text);
+  }
 
   @override
   void initState() {
@@ -53,6 +78,7 @@ class _LivingComposerState extends State<LivingComposer> {
 
   @override
   void dispose() {
+    _insert?.removeListener(_takeInsert);
     _controller.dispose();
     super.dispose();
   }
@@ -96,6 +122,7 @@ class _LivingComposerState extends State<LivingComposer> {
     final c = UriColors.of(context);
     final glass = UriGlass.of(context);
     final OiConversation? oi = LivingScope.of(context).oi;
+    final voice = LivingScope.of(context).voiceInteraction;
     return ListenableBuilder(
       listenable: oi == null ? appState : Listenable.merge([appState, oi]),
       builder: (context, _) {
@@ -108,98 +135,113 @@ class _LivingComposerState extends State<LivingComposer> {
             vertical: widget.compact ? 4 : 6,
           ),
           radius: UriRadius.lg,
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (widget.filePicker != null)
-                IconButton(
-                  tooltip: 'Attach a file',
-                  icon: const Icon(Icons.attach_file_rounded, size: 18),
-                  color: c.inkSoft,
-                  onPressed: () async {
-                    final picked = await widget.filePicker!();
-                    if (picked == null || !context.mounted) return;
-                    await appState.attachFile(
-                      filename: picked.name,
-                      bytes: picked.bytes,
-                    );
-                  },
-                ),
-              if (oi != null)
-                IconButton(
-                  key: const ValueKey('living-composer-transcript'),
-                  tooltip: oi.transcriptMode
-                      ? 'Sending as a SIMULATED transcript (no microphone). Tap to type normally.'
-                      : 'Send as a simulated speech transcript (testing; no microphone)',
-                  isSelected: oi.transcriptMode,
-                  icon: const Icon(Icons.record_voice_over_outlined, size: 18),
-                  selectedIcon: Icon(Icons.record_voice_over, size: 18, color: c.warning),
-                  color: c.inkSoft,
-                  onPressed: () => oi.setTranscriptMode(!oi.transcriptMode),
-                ),
-              if (oi != null)
-                IconButton(
-                  key: const ValueKey('living-composer-dictation'),
-                  tooltip: oi.dictationMode
-                      ? 'Dictation: your words become draft text and nothing in them is carried out. Tap to give instructions again.'
-                      : 'Dictate draft text (nothing you dictate is carried out)',
-                  isSelected: oi.dictationMode,
-                  icon: const Icon(Icons.edit_note_outlined, size: 18),
-                  selectedIcon: Icon(Icons.edit_note, size: 18, color: c.warning),
-                  color: c.inkSoft,
-                  onPressed: () => oi.setDictationMode(!oi.dictationMode),
-                ),
-              Expanded(
-                child: CallbackShortcuts(
-                  bindings: {
-                    const SingleActivator(LogicalKeyboardKey.enter): _submit,
-                  },
-                  child: TextField(
-                    key: const ValueKey('living-composer-field'),
-                    controller: _controller,
-                    focusNode: LivingScope.of(context).composerFocus,
-                    autofocus: widget.autofocus,
-                    minLines: 1,
-                    maxLines: widget.compact ? 3 : 5,
-                    onChanged: appState.setComposerDraft,
-                    style: TextStyle(color: c.ink, fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: oi != null && oi.dictationMode
-                          ? 'Dictation — written as draft text, never carried out'
-                          : oi != null && oi.transcriptMode
-                              ? 'Type what was said — sent as a SIMULATED transcript'
-                              : widget.hint,
-                      hintStyle: TextStyle(color: c.inkFaint),
-                      filled: false,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              Row(
+                children: [
+                  if (widget.filePicker != null)
+                    IconButton(
+                      tooltip: 'Attach a file',
+                      icon: const Icon(Icons.attach_file_rounded, size: 18),
+                      color: c.inkSoft,
+                      onPressed: () async {
+                        final picked = await widget.filePicker!();
+                        if (picked == null || !context.mounted) return;
+                        await appState.attachFile(
+                          filename: picked.name,
+                          bytes: picked.bytes,
+                        );
+                      },
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Tooltip(
-                message: sending ? 'URI is thinking' : 'Send',
-                child: Material(
-                  color: sending ? glass.fill : glass.glow,
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    key: const ValueKey('living-composer-send'),
-                    customBorder: const CircleBorder(),
-                    onTap: sending ? null : _submit,
-                    child: SizedBox(
-                      width: 34,
-                      height: 34,
-                      child: Icon(
-                        sending ? Icons.more_horiz : Icons.arrow_upward_rounded,
-                        size: 18,
-                        color: sending ? c.inkFaint : c.canvas,
+                  if (oi != null)
+                    IconButton(
+                      key: const ValueKey('living-composer-transcript'),
+                      tooltip: oi.transcriptMode
+                          ? 'Sending as a SIMULATED transcript (no microphone). Tap to type normally.'
+                          : 'Send as a simulated speech transcript (testing; no microphone)',
+                      isSelected: oi.transcriptMode,
+                      icon: const Icon(Icons.record_voice_over_outlined, size: 18),
+                      selectedIcon: Icon(Icons.record_voice_over, size: 18, color: c.warning),
+                      color: c.inkSoft,
+                      onPressed: () => oi.setTranscriptMode(!oi.transcriptMode),
+                    ),
+                  if (oi != null)
+                    IconButton(
+                      key: const ValueKey('living-composer-dictation'),
+                      tooltip: oi.dictationMode
+                          ? 'Dictation: your words become draft text and nothing in them is carried out. Tap to give instructions again.'
+                          : 'Dictate draft text (nothing you dictate is carried out)',
+                      isSelected: oi.dictationMode,
+                      icon: const Icon(Icons.edit_note_outlined, size: 18),
+                      selectedIcon: Icon(Icons.edit_note, size: 18, color: c.warning),
+                      color: c.inkSoft,
+                      onPressed: () => oi.setDictationMode(!oi.dictationMode),
+                    ),
+                  Expanded(
+                    child: CallbackShortcuts(
+                      bindings: {
+                        const SingleActivator(LogicalKeyboardKey.enter):
+                            _submit,
+                      },
+                      child: TextField(
+                        key: const ValueKey('living-composer-field'),
+                        controller: _controller,
+                        focusNode: LivingScope.of(context).composerFocus,
+                        autofocus: widget.autofocus,
+                        minLines: 1,
+                        maxLines: widget.compact ? 3 : 5,
+                        onChanged: appState.setComposerDraft,
+                        style: TextStyle(color: c.ink, fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: oi != null && oi.dictationMode
+                              ? 'Dictation — written as draft text, never carried out'
+                              : oi != null && oi.transcriptMode
+                                  ? 'Type what was said — sent as a SIMULATED transcript'
+                                  : widget.hint,
+                          hintStyle: TextStyle(color: c.inkFaint),
+                          filled: false,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  if (voice != null) ...[
+                    const SizedBox(width: 6),
+                    VoiceTalkButton(controller: voice),
+                  ],
+                  const SizedBox(width: 6),
+                  Tooltip(
+                    message: sending ? 'URI is thinking' : 'Send',
+                    child: Material(
+                      color: sending ? glass.fill : glass.glow,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        key: const ValueKey('living-composer-send'),
+                        customBorder: const CircleBorder(),
+                        onTap: sending ? null : _submit,
+                        child: SizedBox(
+                          width: 34,
+                          height: 34,
+                          child: Icon(
+                            sending
+                                ? Icons.more_horiz
+                                : Icons.arrow_upward_rounded,
+                            size: 18,
+                            color: sending ? c.inkFaint : c.canvas,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              if (voice != null) VoiceNoticeLine(controller: voice),
             ],
           ),
         );
