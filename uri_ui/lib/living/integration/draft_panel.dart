@@ -148,13 +148,13 @@ class _DraftPanelState extends State<DraftPanel> {
                 children: [
                   OutlinedButton.icon(
                     key: const ValueKey('draft-undo'),
-                    onPressed: d.canUndo && !conv.busy ? () => conv.draftOp('undo') : null,
+                    onPressed: d.canUndo && !conv.draftActionsBlocked ? () => conv.draftOp('undo') : null,
                     icon: const Icon(Icons.undo_rounded, size: 16),
                     label: const Text('Undo'),
                   ),
                   OutlinedButton.icon(
                     key: const ValueKey('draft-redo'),
-                    onPressed: d.canRedo && !conv.busy ? () => conv.draftOp('redo') : null,
+                    onPressed: d.canRedo && !conv.draftActionsBlocked ? () => conv.draftOp('redo') : null,
                     icon: const Icon(Icons.redo_rounded, size: 16),
                     label: const Text('Redo'),
                   ),
@@ -166,7 +166,7 @@ class _DraftPanelState extends State<DraftPanel> {
                   ),
                   TextButton(
                     key: const ValueKey('draft-close'),
-                    onPressed: conv.busy ? null : () => conv.draftOp('discard'),
+                    onPressed: conv.draftActionsBlocked ? null : () => conv.draftOp('discard'),
                     child: const Text('Close draft'),
                   ),
                 ],

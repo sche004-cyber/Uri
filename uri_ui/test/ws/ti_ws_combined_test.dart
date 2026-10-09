@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'package:uri_ui/living/integration/draft_panel.dart';
 
 import 'package:uri_ui/living/integration/oi_conversation.dart';
 import 'package:uri_ui/living/integration/oi_draft.dart';
 
 import 'ti_draft_test.dart' show snapshot, v1, v2;
-import 'ws_hardening_test.dart' show HardeningRuntime, fast;
+import 'ws_hardening_test.dart' show HardeningRuntime, fast, host;
 
 /// Text intelligence combined with WS hardening (integration candidate
 /// glue). Drafts live in the worker's memory (TI L-7), so Restart URI must
@@ -82,5 +85,33 @@ void main() {
     expect(w2.commands.last['command'], 'oi_turn');
     expect((w2.commands.last['input'] as Map)['schema'], 'uri.text_input.v1');
     expect(conv.busy, isTrue); // the send stamps liveness like any other turn
+  });
+
+  test('after the worker exited, draft calls are not sent to the dead worker (Codex TIWS r1 INT-2)', () async {
+    final w1 = HardeningRuntime();
+    final conv = OiConversation(w1, respawn: () async => HardeningRuntime(name: 'w2'));
+    conv.draft = OiDraft.parse(snapshot(current: v2, previous: v1));
+    w1.emit('', 'worker.exited');
+    await Future<void>.delayed(fast);
+    expect(conv.workerExited, isTrue);
+    expect(conv.draftActionsBlocked, isTrue);
+    await conv.draftOp('undo');
+    await conv.refreshDraft();
+    expect(w1.commands.where((c) => c['command'] == 'draft_op' || c['command'] == 'draft_get'), isEmpty);
+    expect(conv.draft, isNotNull); // still on screen so the text can be copied before Restart URI
+  });
+
+  testWidgets('after the worker exited the panel offers Copy only', (tester) async {
+    final w1 = HardeningRuntime();
+    final conv = OiConversation(w1);
+    conv.draft = OiDraft.parse(snapshot(current: v2, previous: v1));
+    await tester.pumpWidget(host(SizedBox(width: 520, height: 900, child: DraftPanel(conversation: conv))));
+    await tester.pumpAndSettle();
+    expect(tester.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Undo')).onPressed, isNotNull);
+    w1.emit('', 'worker.exited');
+    await tester.pumpAndSettle();
+    expect(tester.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Undo')).onPressed, isNull);
+    expect(tester.widget<TextButton>(find.widgetWithText(TextButton, 'Close draft')).onPressed, isNull);
+    expect(tester.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Copy')).onPressed, isNotNull);
   });
 }

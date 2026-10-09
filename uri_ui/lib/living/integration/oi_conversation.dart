@@ -181,6 +181,11 @@ class OiConversation extends ChangeNotifier {
 
   /// The worker needs the user's attention (offer Restart worker).
   bool get workerTrouble => workerUnresponsive || turnStalled || workerExited;
+
+  /// Draft buttons that need the worker (Undo/Redo/Close) are off while a turn runs, while the worker is being
+  /// replaced, and after the worker exited: the draft lived in that worker (TI L-7). Copy stays available, so
+  /// the text on screen can still be kept before Restart URI clears it.
+  bool get draftActionsBlocked => busy || restarting || workerExited;
   String get selectedRowId {
     final rows = (catalog['rows'] as List?) ?? const [];
     for (final r in rows) {
@@ -571,7 +576,7 @@ class OiConversation extends ChangeNotifier {
   /// Deterministic draft operation from a button: undo, redo, restore
   /// (with [version]) or discard. No model call; nothing is sent or saved.
   Future<void> draftOp(String op, {int? version}) async {
-    if (busy || restarting) return;
+    if (draftActionsBlocked) return;
     final rt = runtime;
     try {
       final r = await rt.call({
@@ -592,7 +597,7 @@ class OiConversation extends ChangeNotifier {
   }
 
   Future<void> refreshDraft() async {
-    if (restarting) return;
+    if (restarting || workerExited) return;
     final rt = runtime;
     try {
       final r = await rt.call({'command': 'draft_get', 'session_id': sessionId});
