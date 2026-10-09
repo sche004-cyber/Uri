@@ -1,8 +1,9 @@
 {
- "started_utc": "2026-10-09T12:31:07.569394+00:00",
+ "started_utc": "2026-10-09T13:00:20.089924+00:00",
  "evidence_level": "P (process: real service + real renderer; executor is the SYNTHETIC fixture, not Claude)",
  "checks": {
-  "fixture_artifact_ready_s": 8.1,
+  "state_dir": "temporary, outside the evidence",
+  "fixture_artifact_ready_s": 7.1,
   "service_killed_and_restarted": true,
   "activated_schedule": {
    "selection": [
@@ -23,7 +24,7 @@
   "hash_chain": {
    "ok": true,
    "checked": 27,
-   "head": "a42797df51cac6c8c48632737a0d4989ca6ebc1d7b20302fbad3c07051e27fc8"
+   "head": "36b0852c5940c90b9c72024cda12f0fdaa6495ee09b5dbce7d58b4e911178f2f"
   },
   "a2ui_actions_audited": [
    [
@@ -54,70 +55,71 @@
  },
  "phase_a": {
   "exit": 0,
-  "seconds": 14.6
+  "seconds": 14.4
  },
  "phase_b": {
   "exit": 0,
-  "seconds": 5.7
+  "seconds": 5.8
  },
  "renderer_timings_ms": {
   "phase_a": [
    {
     "what": "handoff->surface",
-    "ms": 35.692
+    "ms": 34.483
    },
    {
     "what": "apply",
-    "ms": 11.59
+    "ms": 11.782
    },
    {
     "what": "action:scheduler.revise_proposal",
-    "ms": 12.624
+    "ms": 11.702
    },
    {
     "what": "apply",
-    "ms": 1.239
+    "ms": 1.329
    },
    {
     "what": "apply",
-    "ms": 5.384
+    "ms": 5.35
    },
    {
     "what": "action:scheduler.review_artifact",
-    "ms": 10.029
+    "ms": 7.11
    },
    {
     "what": "apply",
-    "ms": 0.13
+    "ms": 0.187
    },
    {
     "what": "apply",
-    "ms": 0.961
+    "ms": 1.22
    },
    {
     "what": "action:calendar.correct_record",
-    "ms": 17.081
+    "ms": 15.99
    },
    {
     "what": "apply",
-    "ms": 2.163
+    "ms": 0.788
    }
   ],
   "phase_b": [
    {
     "what": "apply",
-    "ms": 13.153
+    "ms": 12.083
    },
    {
     "what": "action:scheduler.confirm_proposal",
-    "ms": 8.621
+    "ms": 7.514
    },
    {
     "what": "apply",
-    "ms": 0.598
+    "ms": 0.65
    }
   ]
  },
  "verdict": "PASS",
- "finished_utc": "2026-10-09T12:31:36.857761+00:00"
+ "state_snapshot": "state_snapshot.json (inert export; runtime state deleted)",
+ "finished_utc": "2026-10-09T13:00:48.289089+00:00"
 }

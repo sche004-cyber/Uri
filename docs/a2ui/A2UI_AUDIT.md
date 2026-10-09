@@ -88,3 +88,13 @@ wording was too narrow — corrected above in the R6-2 row.
 **Status: independently accepted with findings (7 rounds: 1 REJECT, 2 AwF, 3 REJECT, 4 REJECT, 5 AwF, 6 AwF, 7 AwF).**
 Residual for owner acceptance: R6-2's inert PROPOSED proposal after a storage failure (above). Everything else is
 repaired with regression tests.
+
+## Integration review — candidate `fad0bec` (merge into canonical `b02ed4f`) — **ACCEPT WITH FINDINGS**
+
+Merge identical to the branch tree; CRLF/LF preserved; materializer roots collision-free (`OI_PATH_COLLISION` found by
+the integration gate itself and repaired in `608b930` before the review); exact-path guards list all 15 new A2UI paths, no
+glob; no protected path; no token in evidence; nothing activates.
+
+| # | Codex severity | finding | disposition |
+|---|---|---|---|
+| INT-1 | Medium | the committed live evidence was a real scheduler state (ACTIVE jobs, SCHEDULED occurrences); a service started on it could resume them | **repaired**: the live check now keeps runtime state in a temporary directory outside the evidence, exports an inert JSON snapshot (`state_snapshot.json`, attempt receipts omitted) and deletes the runtime state; evidence re-generated (live check PASS) |

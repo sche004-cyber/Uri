@@ -2,17 +2,17 @@
  "phase": "b",
  "steps": [
   {
-   "t": "2026-10-09T12:31:35.914889Z",
+   "t": "2026-10-09T13:00:47.362969Z",
    "step": "rerendered_after_restart",
-   "digest": "98fc3bac4566b1cbcf6ca5a66c18ee153e246bbdba016090b30e1fa6991bf252"
+   "digest": "3de26539d2f8b4cc5c11cf2408da367ca0b9a91bf191db758c63b010b1cb08a7"
   },
   {
-   "t": "2026-10-09T12:31:35.928004Z",
+   "t": "2026-10-09T13:00:47.375040Z",
    "step": "stale_digest_refused",
    "code": "STALE_SURFACE"
   },
   {
-   "t": "2026-10-09T12:31:36.361913Z",
+   "t": "2026-10-09T13:00:47.805454Z",
    "step": "confirmed",
    "harness_badge": "Claude status not checked yet: see the Scheduler view; runs never use another provider"
   }
@@ -20,15 +20,15 @@
  "timings": [
   {
    "what": "apply",
-   "ms": 13.153
+   "ms": 12.083
   },
   {
    "what": "action:scheduler.confirm_proposal",
-   "ms": 8.621
+   "ms": 7.514
   },
   {
    "what": "apply",
-   "ms": 0.598
+   "ms": 0.65
   }
  ],
  "notices": []

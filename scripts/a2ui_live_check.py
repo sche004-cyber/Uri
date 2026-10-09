@@ -82,7 +82,10 @@ def main():
     a = ap.parse_args()
     out = Path(a.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    state = out / "state"
+    # Runtime state lives outside the evidence (integration review INT-1): evidence must never be a scheduler state
+    # that a service could resume. An inert JSON snapshot is exported at the end.
+    import tempfile
+    state = Path(tempfile.mkdtemp(prefix="a2ui_live_state_"))
     port = free_port()
     res = {"started_utc": datetime.now(timezone.utc).isoformat(), "evidence_level": "P (process: real service + real "
            "renderer; executor is the SYNTHETIC fixture, not Claude)", "checks": {}}
@@ -95,6 +98,7 @@ def main():
             "params": {"festival": {"key": "diwali", "name": "Diwali (Deepavali)", "date": "2026-11-08"}},
             "schedule": {"kind": "once", "at": due, "tz": "Asia/Kolkata"}})
         assert code == 200, prop
+        res["checks"]["state_dir"] = "temporary, outside the evidence"
         assert api(port, state, "POST", f"/jobs/{prop['job_id']}/confirm", {"proposal_sha256": prop["proposal_sha256"]})[0] == 200
         t0 = time.time()
         while time.time() - t0 < 300:
@@ -155,6 +159,21 @@ def main():
         res["error"] = str(exc)[:4000]
     finally:
         kill(svc)
+        try:
+            import shutil
+            import sqlite3
+            db = sqlite3.connect(f"file:{state / 'scheduler.db'}?mode=ro", uri=True)
+            db.row_factory = sqlite3.Row
+            snap = {t: [dict(r) for r in db.execute(f"SELECT * FROM {t}")]
+                    for t in ("job", "occurrence", "attempt", "artifact", "review", "a2ui_surface", "calendar_correction", "event")}
+            db.close()
+            for r in snap["attempt"]:
+                r.pop("receipt_json", None)
+            (out / "state_snapshot.json").write_text(json.dumps(snap, indent=1, default=str), encoding="utf-8")
+            shutil.rmtree(state, ignore_errors=True)
+            res["state_snapshot"] = "state_snapshot.json (inert export; runtime state deleted)"
+        except Exception as exc:          # noqa: BLE001 - evidence export must not hide the verdict
+            res["state_snapshot_error"] = str(exc)[:300]
         res["finished_utc"] = datetime.now(timezone.utc).isoformat()
         (out / "a2ui_live_result.json").write_text(json.dumps(res, indent=1, default=str), encoding="utf-8")
         print(json.dumps({k: res[k] for k in ("verdict", "checks") if k in res}, indent=1, default=str)[:3000])
