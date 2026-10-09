@@ -82,3 +82,15 @@ protected path (Core, supervisor, Operational Intelligence, scripts, model_lab, 
 | R3-5 | HIGH | AC-7 and AC-13 marked met/VERIFIED without the specified live evidence | confirmed | both "partly met", with what is NOT VERIFIED | report section 1 |
 | R3-6 | MEDIUM | gate counts and some measurements had no committed files | confirmed | gate logs at `88e2dd7` in `evidence/gates/`; `service_startup.json`; two unsaved figures labelled as such | report sections 4, 6, 7 |
 | R3-7 | MEDIUM | "speaking only while reply audio plays" stronger than the timeline | confirmed: the early `speaking` is OI's text-streaming state (source `URI`), 167 ms before audio in run 7 | claim qualified; limitation 11 | report AC-8 |
+
+## Round 4 (candidate `3ea5350`): ACCEPT WITH FINDINGS
+
+Thread `01a12132-8d59-7210-b77c-4c7e591077b5`. Verdict: acceptable as a phase result with the stated limitations; it
+does not authorise deployment or canonical integration (a separate integration review follows).
+
+| ID | Severity | Finding | Repair |
+|---|---|---|---|
+| R4-1 | LOW | a quick shutdown before the warm-up thread ran raised an uncaught RuntimeError in that thread | the warm-up target treats shutdown as normal; test `test_r4_1_warm_up_after_shutdown_is_quiet` |
+| R4-2 | MEDIUM | AC-14 said "met" while the Python chain and frozen checks are still to run | AC-14 "partly met"; those checks belong to integration |
+| R4-3 | LOW | "voice cannot cause the demotion" was stronger than the samples | limited to the measured voice-process allocation |
+| R4-4 | LOW | AC-5 test counts did not match the gate logs | 28 / 38 at `88e2dd7` |

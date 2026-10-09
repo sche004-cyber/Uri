@@ -30,7 +30,7 @@ v1 memory budget, section 6).
 | AC-2 | Push-to-talk on the real microphone; live level; partials; final after release | met | VERIFIED | e2e runs 3, 6, 7: `listen.level` 1 267 user blocks (run 3), partials ("...of Sikkim and what is it known?") on screen (`e2e_run7_uifirst/B1_listening.png`) |
 | AC-3 | WER measured on real-microphone audio; base.en accepted at WER <= 10 % | met (strict 7.26 % after the fixes, 3.94 % format-normalised) | VERIFIED for a synthetic talker; NOT VERIFIED for a human talker | section 2 |
 | AC-4 | Latency, CPU, RSS, VRAM | measured | VERIFIED | section 4 |
-| AC-5 | Cancel, failure, empty speech, length bound end cleanly; no orphan process | met | VERIFIED (cancel, empty) / tested (failure, length bound, process death) | runs 3, 6, 7 (D2, D3); 26 service tests, 37 controller tests; no orphan worker or voice process after the app was killed (checked 20:22) |
+| AC-5 | Cancel, failure, empty speech, length bound end cleanly; no orphan process | met | VERIFIED (cancel, empty) / tested (failure, length bound, process death) | runs 3, 6, 7 (D2, D3); 28 voice-service tests and 38 controller/widget tests at `88e2dd7` (`evidence/gates/`); no orphan worker or voice process after the app was killed (checked 20:22) |
 | AC-6 | Conversation end to end through Core/OI/Brain, spoken | met | VERIFIED | run 7 B1: "What is the capital of Sikkim and what is it known for?" -> Brain answer -> spoken; first reply audio 738 ms after the final transcript |
 | AC-7 | Speech never authorises | partly met | IMPLEMENTED, tested; live evidence partial; NOT VERIFIED with an open approval card | no code path from speech to `decide`/`confirm`/`abandon`/`selectBrain` (Codex r2 and r3 confirmed); live (runs 6, 7): spoken "Yes, approve it." became an ordinary turn and nothing was approved. The criterion asks for the attempt while a card is open; no card opened live, because Core declined the spoken "Remember that..." request ("I could not build this request from your own words"). The spoken pointer to an open card is tested only (`speech never decides` test) |
 | AC-8 | Companion states follow real activity | met, with one qualification | VERIFIED | event timelines (runs 3, 6, 7): listening at capture, "You are speaking" at speech onset, thinking "Transcribing" after release, thinking during the turn, idle after. Qualification: the orb shows `speaking` as soon as the answer streams as text (OI's state, source `URI`), which in run 7 came 167 ms before the first reply audio (169 127 ms vs 169 294 ms); the voice source's speaking and the waveform follow playback. The talk button switches to Stop when the first sentence is queued |
@@ -39,8 +39,8 @@ v1 memory budget, section 6).
 | AC-11 | Minimised window | met | VERIFIED | run 7 B3: reply kept playing to the end while minimised; frame clock suspended (`frame_clock_hidden: true`) |
 | AC-12 | Drafting mode working or shown unavailable with the reason | shown unavailable | NOT IMPLEMENTED (by design until TI lands) | run 3 R1: notice `DRAFTING_UNAVAILABLE`, words kept in the composer |
 | AC-13 | Brain coexistence measured; voice adds no GPU memory; Adaptive back-off observed once under a live Brain | partly met | VERIFIED (coexistence, voice GPU); NOT VERIFIED (back-off) | section 6. The Adaptive check ran under a live Brain, but the renderer was never stressed, so no back-off occurred to observe |
-| AC-14 | Regression gates | met on the phase branch; chain at integration | VERIFIED for Flutter, analyze and the voice service (logs in `evidence/gates/`, commit `88e2dd7`); Python chain and frozen checks: run at integration (section 9) | section 7 |
-| AC-15 | Independent Codex review | rounds 1-3 REJECT, repaired; next round recorded in the audit file | in progress | `LIVE_VOICE_AUDIT.md` |
+| AC-14 | Regression gates | partly met (phase branch); the Python chain and frozen checks are run at integration | VERIFIED for Flutter, analyze and the voice service (logs in `evidence/gates/`, commit `88e2dd7`); NOT YET RUN: Python chain and frozen checks (section 9) | section 7 |
+| AC-15 | Independent Codex review | rounds 1-3 REJECT, repaired; round 4 ACCEPT WITH FINDINGS (R4-1..R4-4 repaired) | ACCEPTED (phase result with its stated limitations) | `LIVE_VOICE_AUDIT.md` |
 | AC-16 | Integration with receipt, fast-forward, fresh clone | not yet | pending | section 9 |
 
 ## 2. Recognition engine: research and selection
@@ -163,7 +163,7 @@ What this distinguishes:
 - Flutter rendering cost: about 9 % of decode speed while the companion animates at 144 FPS (160 -> 145 tok/s).
 - Other threads: Chrome (0.6 GB) alone was enough to fail the fit check; other sessions' GPU work was serialised by
   the lease.
-- Voice: no GPU memory, so voice cannot cause the demotion.
+- Voice: the voice process allocated no measurable GPU memory (never above the 32 MiB sampling threshold). This rules out the voice process's own allocations; it does not isolate every GPU effect of the URI window itself, which is what triggered the demotion in run 6.
 
 Interim policy recommendation (owner decision): start the URI window before the Brain, as the working-system launcher
 already does, and keep the host's fit check. A durable fix belongs to Runtime v1's memory budget (the Adaptive Runtime

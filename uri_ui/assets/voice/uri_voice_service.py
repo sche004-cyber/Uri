@@ -434,9 +434,19 @@ class Speaker:
         self.failed: set[str] = set()
         threading.Thread(target=self._render_loop, name="render", daemon=True).start()
         threading.Thread(target=self._play_loop, name="play", daemon=True).start()
-        threading.Thread(target=self._ensure_ps, name="ps-warm", daemon=True).start()
+        threading.Thread(target=self._warm, name="ps-warm", daemon=True).start()
 
     # -- engine bridge
+    def _warm(self):
+        """Starts the engine bridge early so the first reply sentence does not pay
+        PowerShell start-up. A shutdown that comes first is not an error."""
+        try:
+            self._ensure_ps()
+        except RuntimeError:
+            pass
+        except OSError as e:
+            log(f"engine bridge could not start: {e}")
+
     def _ensure_ps(self):
         with self.bridge_lock:
             if self.closing:

@@ -645,3 +645,12 @@ def test_r3_2_no_engine_bridge_after_close_and_close_ends_a_busy_one(env, tmp_pa
     assert busy.killed
     with pytest.raises(RuntimeError, match="shutting down"):
         sp._ensure_ps()
+
+
+def test_r4_1_warm_up_after_shutdown_is_quiet(env, tmp_path):
+    mod = env.mod
+    sp = mod.Speaker.__new__(mod.Speaker)
+    sp.bridge_lock = threading.Lock()
+    sp.closing = True
+    sp.ps = None
+    sp._warm()  # must not raise
