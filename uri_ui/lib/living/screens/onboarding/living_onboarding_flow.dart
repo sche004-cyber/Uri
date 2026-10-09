@@ -7,7 +7,7 @@ import '../../../services/uri_client.dart';
 import '../../../theme/glass_theme.dart';
 import '../../../theme/uri_theme.dart';
 import '../../companion/companion_state.dart';
-import '../../companion/energy_orb.dart';
+import '../../companion/living_companion.dart';
 import '../../living_app.dart';
 import '../../living_scope.dart';
 import '../../widgets/glass_panel.dart';
@@ -135,7 +135,7 @@ class _LivingOnboardingFlowState extends State<LivingOnboardingFlow> {
               child: Column(
                 children: [
                   const SizedBox(height: 8),
-                  EnergyOrb(
+                  LivingCompanion(
                     key: const ValueKey('onboarding-orb'),
                     state: _previewFor(_step),
                     size: 150,

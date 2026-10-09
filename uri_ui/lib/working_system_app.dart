@@ -48,7 +48,14 @@ class WorkingSystemRoot extends StatefulWidget {
     this.statusInterval = const Duration(seconds: 15),
     this.healthInterval = const Duration(seconds: 5),
     this.skipOnboarding = false,
+    this.configureServices,
   });
+
+  /// Called once for each set of living services the root builds (after a
+  /// connect). The entry point uses it for platform wiring that widget tests
+  /// must not run: the installed-voice catalog and the window minimise
+  /// binding that stops the companion's frames while the window is hidden.
+  final void Function(LivingServices services)? configureServices;
 
   /// Spawns the integrated worker (null = not configured).
   final Future<IntegratedRuntime?> Function() connect;
@@ -106,6 +113,7 @@ class _WorkingSystemRootState extends State<WorkingSystemRoot> {
       _conv = conv;
       _appState = AppState(MockUriClient(), preferencesStore: LivingPreferencesStore());
       _services = LivingApp.buildIntegratedServices(conv);
+      widget.configureServices?.call(_services!);
       await conv.refreshStatus();
       unawaited(_services!.readiness.refresh()); // harness discovery for the readiness views (read-only)
       _status = Timer.periodic(widget.statusInterval, (_) => conv.refreshStatus());

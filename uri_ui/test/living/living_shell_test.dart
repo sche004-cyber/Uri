@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uri_ui/living/companion/companion_orb.dart' show CompanionOrb;
+import 'package:uri_ui/living/companion/companion_preferences.dart';
 import 'package:uri_ui/living/companion/companion_sources.dart';
 import 'package:uri_ui/living/companion/companion_state.dart';
 import 'package:uri_ui/living/companion/effects_settings.dart';
@@ -40,6 +42,12 @@ LivingServices testServices(AppState appState, {MockWorkSimulator? work}) {
     demo: demo,
   );
 }
+
+/// The classic orb inside the shell's companion slot.
+Finder shellEnergyOrb() => find.descendant(
+  of: find.byKey(LivingShell.orbKey),
+  matching: find.byType(EnergyOrb),
+);
 
 /// The preview's AppState: mock client + namespaced preference store,
 /// exactly as `main_living.dart` builds it.
@@ -250,8 +258,11 @@ void main() {
           'REASONING MODE',
           'APPROVAL BOUNDARY',
           'PERMISSIONS',
-          'ORB STYLE',
-          'ORB PALETTE',
+          // The orb controls moved into Companion Settings (the default
+          // companion is a living identity, Solar).
+          'COMPANION',
+          'PERFORMANCE',
+          'VOICE AND AUDIO',
         ],
       ),
     ]) {
@@ -397,6 +408,9 @@ void main() {
         tester,
         size: const Size(1400, 1000),
       );
+      // The orb style, palette and free theme controls belong to the classic
+      // orb, which stays available as a companion choice.
+      services.companionPrefs.select(const CompanionChoice.classic());
       services.presentation.setMode(
         UiPresentationMode.workspace,
         focus: WorkspaceFocus.settings,
@@ -425,7 +439,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(services.orbVariant.value, OrbVariant.mesh);
       expect(
-        tester.widget<EnergyOrb>(find.byKey(LivingShell.orbKey)).variant,
+        tester.widget<EnergyOrb>(shellEnergyOrb()).variant,
         OrbVariant.mesh,
       );
       await tester.scrollUntilVisible(
@@ -437,7 +451,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(services.orbPalette.value, OrbPalette.sunset);
       expect(
-        tester.widget<EnergyOrb>(find.byKey(LivingShell.orbKey)).palette,
+        tester.widget<EnergyOrb>(shellEnergyOrb()).palette,
         OrbPalette.sunset,
       );
       await tester.scrollUntilVisible(
@@ -451,7 +465,7 @@ void main() {
       await tester.tap(sw);
       await tester.pumpAndSettle();
       expect(services.effects.reducedEffects, isTrue);
-      expect(find.byType(EnergyOrb), findsOneWidget);
+      expect(shellEnergyOrb(), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -464,7 +478,10 @@ void main() {
       services.effects.setReducedEffects(true);
       await tester.pumpAndSettle();
       expect(find.byType(BackdropFilter), findsNothing);
-      final orbState = tester.state(find.byKey(LivingShell.orbKey)) as dynamic;
+      // Reduced effects draws the companion with the effect-free classic
+      // orb: no living shader is mounted and the classic one is off too.
+      expect(find.byType(CompanionOrb), findsNothing);
+      final orbState = tester.state(shellEnergyOrb()) as dynamic;
       expect(orbState.usesShader, isFalse);
       services.effects.setReducedEffects(false);
       services.presentation.setMode(UiPresentationMode.dashboard);

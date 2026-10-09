@@ -1,0 +1,213 @@
+{
+ "config": {
+  "identity": "lunar",
+  "fps": "fps30",
+  "quality": "full",
+  "layout": "shell",
+  "cycle": false,
+  "seconds": 20,
+  "build": "profile"
+ },
+ "display_hz": 144.0,
+ "window": {
+  "width": 1264.0,
+  "height": 681.0,
+  "dpr": 1.0
+ },
+ "overall": {
+  "frames": 622,
+  "span_s": 17.940561294555664,
+  "fps": 34.67004124273165,
+  "companion_frames": 542,
+  "build_p50": 0.164000004529953,
+  "build_p90": 0.210999995470047,
+  "raster_p50": 2.1679999828338623,
+  "raster_p90": 2.815000057220459,
+  "raster_p99": 3.50600004196167,
+  "raster_max": 60.63100051879883,
+  "over_16ms": 1
+ },
+ "per_second": [
+  {
+   "t_s": 1,
+   "frames": 0,
+   "companion_frames": 0,
+   "cap": 30.0
+  },
+  {
+   "t_s": 2,
+   "frames": 1,
+   "companion_frames": 1,
+   "cap": 30.0
+  },
+  {
+   "t_s": 3,
+   "frames": 110,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 4,
+   "frames": 33,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 5,
+   "frames": 28,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 6,
+   "frames": 32,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 7,
+   "frames": 27,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 8,
+   "frames": 31,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 9,
+   "frames": 31,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 10,
+   "frames": 31,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 11,
+   "frames": 30,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 12,
+   "frames": 27,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 13,
+   "frames": 30,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 14,
+   "frames": 33,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 15,
+   "frames": 30,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 16,
+   "frames": 28,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 17,
+   "frames": 30,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 18,
+   "frames": 31,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 19,
+   "frames": 31,
+   "companion_frames": 30,
+   "cap": 30.0
+  },
+  {
+   "t_s": 20,
+   "frames": 28,
+   "companion_frames": 30,
+   "cap": 30.0
+  }
+ ],
+ "cap_changes": [
+  {
+   "t_s": 0.001,
+   "cap": 30.0
+  }
+ ],
+ "rss": [
+  {
+   "t_s": 1,
+   "rss": 150769664
+  },
+  {
+   "t_s": 5,
+   "rss": 130441216
+  },
+  {
+   "t_s": 10,
+   "rss": 126652416
+  },
+  {
+   "t_s": 15,
+   "rss": 127102976
+  },
+  {
+   "t_s": 20,
+   "rss": 127582208
+  }
+ ],
+ "heap": [
+  {
+   "t_s": 1,
+   "heap_used": 12191008,
+   "heap_capacity": 12447744,
+   "external": 2960
+  },
+  {
+   "t_s": 5,
+   "heap_used": 10816720,
+   "heap_capacity": 11874304,
+   "external": 3056
+  },
+  {
+   "t_s": 10,
+   "heap_used": 11204880,
+   "heap_capacity": 12398592,
+   "external": 4848
+  },
+  {
+   "t_s": 15,
+   "heap_used": 11591536,
+   "heap_capacity": 12398592,
+   "external": 6640
+  },
+  {
+   "t_s": 20,
+   "heap_used": 11986512,
+   "heap_capacity": 12922880,
+   "external": 8496
+  }
+ ],
+ "vm_service": true
+}

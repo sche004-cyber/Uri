@@ -1,0 +1,94 @@
+{
+  "sapi": {
+    "voice": "Microsoft Zira Desktop",
+    "measurements": {
+      "default": {
+        "duration_s": 7.14,
+        "f0_hz": 175.0,
+        "level_dbfs": -18.4,
+        "rate": 22050
+      },
+      "rate-10": {
+        "duration_s": 21.33,
+        "f0_hz": 176.4,
+        "level_dbfs": -17.9,
+        "rate": 22050
+      },
+      "rate+10": {
+        "duration_s": 2.55,
+        "f0_hz": 170.9,
+        "level_dbfs": -19.9,
+        "rate": 22050
+      },
+      "pitch-10": {
+        "duration_s": 7.14,
+        "f0_hz": 131.2,
+        "level_dbfs": -20.2,
+        "rate": 22050
+      },
+      "pitch+10": {
+        "duration_s": 7.14,
+        "f0_hz": 232.1,
+        "level_dbfs": -17.1,
+        "rate": 22050
+      },
+      "volume30": {
+        "duration_s": 7.14,
+        "f0_hz": 172.3,
+        "level_dbfs": -35.9,
+        "rate": 22050
+      }
+    },
+    "supported": {
+      "rate": true,
+      "pitch": true,
+      "volume": true
+    }
+  },
+  "onecore": {
+    "voice": "Microsoft Mark",
+    "measurements": {
+      "default": {
+        "duration_s": 6.03,
+        "f0_hz": 148.1,
+        "level_dbfs": -19.4,
+        "rate": 16000
+      },
+      "rate-10": {
+        "duration_s": 12.06,
+        "f0_hz": 146.8,
+        "level_dbfs": -19.3,
+        "rate": 16000
+      },
+      "rate+10": {
+        "duration_s": 3.06,
+        "f0_hz": 155.3,
+        "level_dbfs": -19.7,
+        "rate": 16000
+      },
+      "pitch-10": {
+        "duration_s": 6.03,
+        "f0_hz": 87.4,
+        "level_dbfs": -22.2,
+        "rate": 16000
+      },
+      "pitch+10": {
+        "duration_s": 6.03,
+        "f0_hz": 216.2,
+        "level_dbfs": -17.3,
+        "rate": 16000
+      },
+      "volume30": {
+        "duration_s": 6.03,
+        "f0_hz": 148.1,
+        "level_dbfs": -36.9,
+        "rate": 16000
+      }
+    },
+    "supported": {
+      "rate": true,
+      "pitch": true,
+      "volume": true
+    }
+  }
+}
