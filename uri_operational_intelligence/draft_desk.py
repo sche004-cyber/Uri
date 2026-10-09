@@ -204,18 +204,20 @@ class DraftDesk:
         pend = self.pending_new.get(session_id)
         if pend and pend.get("ambiguous"):
             # L-2: the user answers "is this sentence part of the text, or should URI do it?". A choice is taken only
-            # when the answer names exactly one side and negates nothing; "No, not in the text; do it" or "don't do
-            # it" is asked again, never guessed (Codex TIWS r2 L2-R2-1).
-            content, action = bool(_AMBIG_CONTENT.search(text or "")), bool(_AMBIG_ACTION.search(text or ""))
-            if content or action:
-                if content == action or _NEGATION.search(text or ""):
-                    return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_unclear"],
-                                         instruction=text)
-                if content:
-                    return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_content"],
-                                         instruction=text)
+            # when the WHOLE reply is one of the offered choices ("write it in" / "do it", with an optional please/ok);
+            # nothing is read out of a longer or negated reply (Codex TIWS r2 L2-R2-1, r3 L2-R3-1/2).
+            reply = _CHOICE_TRIM.sub("", (text or "").strip().lower())
+            if reply in _CHOICE_CONTENT:
+                return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_content"], instruction=text)
+            if reply in _CHOICE_ACTION:
                 # The original request goes to the ordinary path unchanged; Core decides and asks for approval.
                 return TX.TextIntent(TX.NONE, ["ambiguity_action"], payload=pend["original"], instruction=text)
+            plain = TX.classify(text, has_draft=d is not None and d.current is not None)
+            own_question = (text or "").rstrip().endswith("?") or bool(_OWN_QUESTION.match(text or ""))
+            if plain.kind == TX.NONE and plain.reasons[:1] in (["not_a_text_task"], ["trivial"]) and not own_question:
+                # "yes", "no", "dont do it", "hmm": not a choice and not a new request -> asked again, never guessed
+                return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_unclear"], instruction=text)
+            # anything else is a new request: the question is dropped (one-turn lifetime) and it routes as usual
         intent = TX.classify(text, has_draft=d is not None and d.current is not None)
         answers = ("not_a_text_task", "foreign_object")
         if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
@@ -656,12 +658,11 @@ def _allowed_ids(version, targets):
     return ids, unresolved
 
 
-_AMBIG_CONTENT = re.compile(r"\b(?:write (?:it|them|that|this) in|put (?:it|them) in|part of (?:the|it)|in the (?:text|"
-                            r"notice|letter|draft|document)|keep (?:it|them) (?:as|in)|as text|it'?s (?:content|text)|"
-                            r"include (?:it|them)|for the readers)\b", re.I)
-_NEGATION = re.compile(r"\b(?:not|no|never|don'?t|do not|doesn'?t|isn'?t|shouldn'?t|nahi|mat)\b", re.I)
-_AMBIG_ACTION = re.compile(r"\b(?:do (?:it|that|them|this)|carry (?:it|them|that) out|go ahead|please do|"
-                           r"take (?:the )?action|perform it|execute it)\b", re.I)
+_CHOICE_TRIM = re.compile(r"^(?:(?:ok(?:ay)?|please|pls|yes|haan)[,!]?\s+)*|[\s.!,]*(?:please)?[\s.!]*$")
+_CHOICE_CONTENT = {"write it in", "write them in", "put it in", "put them in", "keep it as text", "keep them as text",
+                   "as text", "it is text", "it's text", "text", "part of the text", "in the text", "include it",
+                   "include them"}
+_CHOICE_ACTION = {"do it", "do them", "do that", "go ahead and do it", "carry it out", "carry them out"}
 
 
 def _dictated_flag(sentences):

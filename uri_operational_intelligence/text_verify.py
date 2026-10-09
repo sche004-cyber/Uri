@@ -620,7 +620,7 @@ def placeholders(text) -> list:
 # compares which words each value sits with, clause by clause, in the earlier text and in the new one. It flags only
 # on mutual evidence and never changes the text; an intended change stays possible (it is shown as asked).
 # A comma between digits is a thousands separator ("Rs 1,500"), not a clause boundary (Codex TIWS r2 L4-R2-1).
-_CLAUSE = re.compile(r"(?:[.;\n!?]|(?<!\d),|,(?!\d))+|\b(?:and|while|but|whereas)\b", re.I)
+_CLAUSE = re.compile(r"(?:[.;\n!?]|(?<!\d),|,(?!\d{3}(?!\d)))+|\b(?:and|while|but|whereas)\b", re.I)
 _UNIT_WORDS = set("""
 rs rupees rupee inr re paise usd dollars amount amounts fee fees paid pay pays paying cost costs total
 day days hour hours minute minutes week weeks month months year years marks mark number no roll

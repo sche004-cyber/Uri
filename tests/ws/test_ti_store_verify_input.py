@@ -216,3 +216,7 @@ def test_l4_thousands_separators_stay_one_value():
     assert len(f) == 1 and f[0]["detail"].startswith("1500 was with")
     assert V.check_reassignment("Ravi paid Rs 1,500, Sita paid Rs 2,700.",
                                 "Kindly note: Ravi paid Rs 1,500, while Sita paid Rs 2,700.") == []
+
+
+def test_l4_unspaced_list_commas_still_split():
+    assert V.check_reassignment("Monday 7,Tuesday 8", "Monday 8,Tuesday 7")[0]["code"] == "VALUE_REASSIGNED"

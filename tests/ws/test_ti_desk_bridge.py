@@ -424,3 +424,38 @@ def test_l2_negated_or_conflicting_answers_are_asked_again_never_guessed(fake, t
     assert frames.data("draft.clarify")[-1]["question"].startswith("I could not tell which you meant")
     turn(b, "Do it")                                   # the question is still open: a clear answer now decides
     assert core.calls and core.calls[0][1] == "Write a notice. Send the form by Friday."
+
+
+@pytest.mark.parametrize("answer", ["dont do it", "yes", "no", "No, not in the text, do it", "do it in the text"])
+def test_l2_only_an_exact_choice_decides_the_dictation_question(fake, tmp_path, answer):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, "Write a notice. Send the form by Friday.")
+    turn(b, answer)
+    assert core.calls == [] and fake.requests == [] and not frames.data("draft.updated")
+    assert frames.data("draft.clarify")[-1]["question"].startswith("I could not tell which you meant")
+
+
+def test_l2_a_new_request_drops_the_dictation_question(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    fake.scripts.append({"chunks": [("answer", "Paris.")], "finish": "stop"})
+    turn(b, "Write a notice. Send the form by Friday.")
+    turn(b, "What is the capital of France?")
+    assert frames.data("turn.routed")[-1]["route"] == "answer" and core.calls == []
+    turn(b, "Do it")                 # the question was dropped: "do it" alone is no longer an answer to it
+    assert not any(c[1] == "Write a notice. Send the form by Friday." for c in core.calls)
+
+
+@pytest.mark.parametrize("answer", ["Write it in", "ok, write it in please", "Do it", "yes, do it"])
+def test_l2_exact_choices_with_politeness_decide(fake, tmp_path, answer):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    notice = dict(CREATE, doc_type="notice", blocks=[{"role": "body", "text": "Send the form by Friday."}])
+    fake.scripts.append({"json": json.dumps(notice)})
+    turn(b, "Write a notice. Send the form by Friday.")
+    turn(b, answer)
+    if "do it" in answer.lower():
+        assert core.calls and core.calls[0][1] == "Write a notice. Send the form by Friday."
+    else:
+        assert core.calls == [] and frames.data("draft.updated")
