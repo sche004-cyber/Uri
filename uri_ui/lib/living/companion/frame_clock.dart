@@ -20,8 +20,10 @@ import 'fine_timer.dart';
 /// the app produces about 60 frames a second, not 144.
 ///
 /// It starts when the first animation listens and stops when the last one
-/// leaves, and Flutter itself stops frames while the window is hidden, so a
-/// hidden or unmounted companion costs nothing.
+/// leaves. It also suspends while the app is hidden (minimised): measured on
+/// Windows on 2026-10-09, Flutter kept producing about 64 frames a second for
+/// a minimised window whose animation was still requesting them, so the clock
+/// must stop asking. A hidden or unmounted companion therefore costs nothing.
 class CompanionFrameClock extends ChangeNotifier {
   CompanionFrameClock({this.displayHz = 60, double? cap}) : _cap = cap ?? 0 {
     _ticker = Ticker(_onTick, debugLabel: 'companion-frame-clock');
@@ -51,6 +53,44 @@ class CompanionFrameClock extends ChangeNotifier {
   double _due = 0;
   Timer? _wake;
   bool _fineTimer = false;
+  bool _hidden = false;
+  AppLifecycleListener? _lifecycle;
+
+  /// Whether the clock is suspended because the app is not visible.
+  bool get hidden => _hidden;
+
+  /// Suspends (true) or resumes (false) every animation on this clock. Driven
+  /// by the app lifecycle (`hidden`, `paused` suspend; `resumed` resumes) and,
+  /// on desktop, by the window's minimise and restore events.
+  void setHidden(bool hidden) {
+    if (hidden == _hidden) return;
+    _hidden = hidden;
+    _wake?.cancel();
+    _wake = null;
+    if (hidden) {
+      _ticker.muted = true;
+      _setFineTimer(false);
+    } else {
+      _due = _seconds;
+      if (_ticker.isActive) _ticker.muted = false;
+    }
+  }
+
+  // `inactive` changes nothing: it is reported both for an unfocused visible
+  // window and (on Windows) for a minimised one, which the window's own
+  // events distinguish (see bindWindowVisibility).
+  void _onLifecycle(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        setHidden(true);
+      case AppLifecycleState.resumed:
+        setHidden(false);
+      case AppLifecycleState.inactive:
+        break;
+    }
+  }
 
   /// Seconds since the clock was created, continuous across stops.
   double get seconds => _seconds;
@@ -67,10 +107,12 @@ class CompanionFrameClock extends ChangeNotifier {
   @override
   void addListener(VoidCallback listener) {
     super.addListener(listener);
+    _lifecycle ??= AppLifecycleListener(onStateChange: _onLifecycle);
     if (!_ticker.isActive) {
       _offset = _seconds;
       _due = _seconds;
       _ticker.start();
+      if (_hidden) _ticker.muted = true;
     }
   }
 
@@ -84,14 +126,14 @@ class CompanionFrameClock extends ChangeNotifier {
     _wake?.cancel();
     _wake = null;
     if (_ticker.isActive) _ticker.stop();
-    _ticker.muted = false;
+    _ticker.muted = _hidden;
     _setFineTimer(false);
   }
 
   void _wakeNow() {
     _wake?.cancel();
     _wake = null;
-    if (_ticker.isActive) _ticker.muted = false;
+    if (_ticker.isActive && !_hidden) _ticker.muted = false;
   }
 
   /// Vsync callbacks received (delivered or not); with pacing working, every
@@ -127,7 +169,7 @@ class CompanionFrameClock extends ChangeNotifier {
       _wake?.cancel();
       _wake = Timer(Duration(microseconds: (wait * 1e6).round()), () {
         _wake = null;
-        if (_ticker.isActive) _ticker.muted = false;
+        if (_ticker.isActive && !_hidden) _ticker.muted = false;
       });
     }
   }
@@ -158,6 +200,7 @@ class CompanionFrameClock extends ChangeNotifier {
   @override
   void dispose() {
     _stop();
+    _lifecycle?.dispose();
     _ticker.dispose();
     super.dispose();
   }

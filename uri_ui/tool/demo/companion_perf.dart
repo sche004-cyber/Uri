@@ -45,6 +45,7 @@ import 'package:uri_ui/living/living_app.dart';
 import 'package:uri_ui/living/living_scope.dart';
 import 'package:uri_ui/services/app_state.dart';
 import 'package:uri_ui/services/mock_uri_client.dart';
+import 'package:uri_ui/services/window_visibility.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
 
 final Map<String, String> env = Platform.environment;
@@ -109,6 +110,12 @@ Future<void> main() async {
   }
 
   services.frameGovernor.addListener(noteCap);
+  await bindWindowVisibility(services.frameClock);
+  final lifecycle = <Map<String, Object>>[];
+  final lifecycleListener = AppLifecycleListener(
+    onStateChange: (st) =>
+        lifecycle.add({'t_s': sw.elapsedMilliseconds / 1000, 'state': st.name}),
+  );
 
   SchedulerBinding.instance.addTimingsCallback((List<FrameTiming> ts) {
     for (final t in ts) {
@@ -125,6 +132,11 @@ Future<void> main() async {
     services.companionPrefs.restoreFrom(await SharedPreferences.getInstance());
     services.frameGovernor.install();
     runApp(_Large(services: services, prefs: prefs));
+    // The shell does this in LivingApp; here the governor learns the display
+    // rate directly, so a fixed cap means the same thing in both layouts.
+    await WidgetsBinding.instance.endOfFrame;
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    services.frameGovernor.updateDisplay(view.display.refreshRate);
   } else {
     runApp(
       LivingApp(appState: appState, services: services, skipOnboarding: true),
@@ -157,6 +169,15 @@ Future<void> main() async {
       'frames': build.length - lastFrames,
       'companion_frames': t - lastTicks,
       'cap': services.frameGovernor.effectiveCap,
+      'hidden': services.frameClock.hidden ? 1 : 0,
+      'clock_running': services.frameClock.isRunning ? 1 : 0,
+      'view_w': WidgetsBinding
+          .instance
+          .platformDispatcher
+          .views
+          .first
+          .physicalSize
+          .width,
     });
     lastTicks = t;
     lastFrames = build.length;
@@ -230,10 +251,12 @@ Future<void> main() async {
     },
     'per_second': perSecond,
     'cap_changes': capChanges,
+    'lifecycle': lifecycle,
     'rss': rss,
     'heap': heap,
     'vm_service': vm != null,
   };
+  lifecycleListener.dispose();
   try {
     File(out)
         .writeAsStringSync(const JsonEncoder.withIndent(' ').convert(report));

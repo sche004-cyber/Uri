@@ -526,6 +526,34 @@ void main() {
       expect(delivered, inInclusiveRange(59, 61));
     });
 
+    testWidgets('a hidden (minimised) app schedules no companion frames', (
+      tester,
+    ) async {
+      final clock = CompanionFrameClock(displayHz: 60);
+      addTearDown(clock.dispose);
+      var delivered = 0;
+      void l() => delivered++;
+      clock.addListener(l);
+      await tester.pump(const Duration(milliseconds: 17));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      expect(clock.hidden, isTrue);
+      final before = delivered;
+      for (var i = 0; i < 30; i++) {
+        await tester.pump(const Duration(milliseconds: 17));
+      }
+      expect(delivered, before);
+      expect(SchedulerBinding.instance.transientCallbackCount, 0);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      expect(clock.hidden, isFalse);
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 17));
+      }
+      expect(delivered, greaterThan(before + 5));
+      clock.removeListener(l);
+    });
+
     testWidgets('with no listener the clock schedules nothing', (tester) async {
       final clock = CompanionFrameClock(displayHz: 60);
       addTearDown(clock.dispose);
