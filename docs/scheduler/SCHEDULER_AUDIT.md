@@ -71,6 +71,14 @@ Codex: R5-1 RESOLVED (all `_set_occ` callers traced; no legitimate transition wr
 |---|---|---|---|---|
 | R6-1 | High | a cancel recorded while an AVAILABLE gate ran had no attempt to stop; `_execute` then created an attempt and launched the harness, discarding the result afterwards | confirmed; reproduced by a failing test | **repaired**: the attempt-creating transaction re-reads the occurrence and settles `CANCELLED` before any attempt exists; `ClaudeHarness.cancel` records the withdrawal (bridge discipline) so a task cancelled before submission is never submitted and one cancelled between admission and spawn is ended `spawn_failed`; tests `test_r6_cancel_during_available_gate_never_runs_harness`, `test_r6_harness_cancel_before_spawn_never_spawns` |
 
-## Round 7
+## Round 7 — candidate `4b1caa0` — **REJECT**
+
+Codex: no other Blocking/High finding in the final pass; F10/F2 truthfully documented owner gates.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R7-1 (R6-1 PARTIAL) | High | a cancel after the harness's post-admission check but before the supervisor marks the attempt active gets `NOT_RUNNING_HERE`; the process starts. The accepted bridge has the same gap | confirmed by reading `Supervisor.request_cancel` / `_supervise` (the kill set is honoured from the first poll, `request_cancel` only accepts active attempts) | **mitigated + recorded limitation**: `ClaudeHarness.cancel` pre-arms the supervisor's kill set when the attempt is admitted but not yet active, so the executor is killed at the first supervision poll, milliseconds after start (test `test_r7_cancel_between_admission_and_active_is_pre_armed`). A never-start guarantee requires changing the accepted supervisor: owner decision. Classified as a limitation of the accepted Phase 2D cancellation contract (bridge `cancel` docstring: a cancellation after dispatch is never a clean close), not a new scheduler defect |
+
+## Round 8
 
 (appended after the review runs)

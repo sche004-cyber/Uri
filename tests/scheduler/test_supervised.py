@@ -138,3 +138,14 @@ def test_r6_harness_cancel_before_spawn_never_spawns(tmp_path):
         assert out.status == "cancelled" and h.sup.ledger.task(tid) is None
     finally:
         s.close()
+
+
+def test_r7_cancel_between_admission_and_active_is_pre_armed(tmp_path):
+    s, h = make(tmp_path, "honest")
+    try:
+        h._running["t-window"] = 424242                  # admitted, not yet active in the supervisor
+        r = h.cancel("t-window")
+        assert r == {"granted": True, "reason": "PRE_ARMED_BEFORE_ACTIVE"} and 424242 in h.sup._cancel
+    finally:
+        h._running.pop("t-window", None)
+        s.close()

@@ -234,7 +234,18 @@ class ClaudeHarness:
         with self._cancel_lock:
             self._cancelled.add(task_id)
             aid = self._running.get(task_id)
-        return self.sup.request_cancel(aid) if aid is not None else {"granted": False, "reason": "NOT_RUNNING", "recorded": True}
+        if aid is None:
+            return {"granted": False, "reason": "NOT_RUNNING", "recorded": True}
+        r = self.sup.request_cancel(aid)
+        if not r.get("granted"):
+            # Admitted but not yet active in the supervisor (between our post-admission check and `_supervise`): pre-arm
+            # the supervisor's kill set so its FIRST supervision poll kills the executor, milliseconds after the process
+            # starts and before Claude Code can initialise (review round 7, R6-1). `request_cancel` itself refuses
+            # until the attempt is active; the accepted supervisor is not modified, only its documented kill set is fed.
+            # A guarantee that the process is never started at all would need a change to the accepted supervisor.
+            self.sup._cancel.add(aid)
+            r = {"granted": True, "reason": "PRE_ARMED_BEFORE_ACTIVE"}
+        return r
 
     def _is_cancelled(self, task_id) -> bool:
         with self._cancel_lock:
