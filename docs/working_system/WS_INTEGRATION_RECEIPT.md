@@ -137,7 +137,8 @@ Pushed as a NEW branch to `uri-repo`, no force: `integration/ws-hardening-202610
 `caea82c840dfe4ffaf53db677568b718733b5691` (tree `939f7c727e3c0c6fcbcc0b354d2a4cd1bced1ac3`). A fresh single-branch clone
 showed the same commit and tree, with `68cac3d` as an ancestor. `integration/git-sync-20261008` on the remote is still
 `037229c1fc04eadc6a2e42e92e6ef0d12520d3fe` (not changed). Later documentation commits on this branch are pushed as
-fast-forwards of it; the final remote ref is the one `git ls-remote uri-repo refs/heads/integration/ws-hardening-20261009` shows.
+fast-forwards of it: `c32933e` was confirmed on the remote by the push output (`caea82c..c32933e`). The commit that
+adds this sentence is the last one; its hash is reported in the final status message, not in the repository.
 
 ### 7.5 Processes and state
 

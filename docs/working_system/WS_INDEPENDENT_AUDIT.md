@@ -42,4 +42,4 @@ After round 10: `1401aba` restored LF line endings on five files that text-mode 
 | Round | Candidate | Verdict | Findings | Disposition |
 |---|---|---|---|---|
 | docs-1 | `1b424a2` | REJECT (documentation evidence only; the round-10 code verdict unchanged; `9ae28f4..1401aba` content-empty diff and docs-only changes after `1401aba` verified) | MEDIUM receipt §7.4 placeholder; MEDIUM this §2 placeholder; MEDIUM final suite counts without committed output; MEDIUM SAFE-1 OS events without receipt | Repaired: remote confirmation recorded (§7.4 of the receipt); this table; `pytest_ws_final.txt` (65 passed) and `flutter_test_ws_final.txt` (36 passed) committed, full-suite counts labelled session-reported; `safe1_os_events_20261009.txt` committed |
-| docs-2 | see the commit after the repair | see below | | |
+| docs-2 | `c32933e` | **ACCEPT WITH FINDINGS** (docs-only diff verified; all four docs-1 items FIXED, the full-suite counts by qualification) | L-MD listed as closed without the APP-level screenshot H-AC9 asks for; final remote hash not pinned | Repaired in the final commit: L-MD marked partial (SIM + WIDGET only); remote confirmation of `c32933e` recorded |

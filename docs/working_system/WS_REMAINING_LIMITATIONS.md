@@ -33,4 +33,4 @@ hardening closed are listed at the end with the evidence that closed them.
 | PERF-W1 | Restart waits for measured VRAM release; post-start calibration; DEGRADED state with Restart Brain |
 | R-BUSY | Liveness monitor (alive-but-silent and hang-before-reply detection), Restart URI without retry |
 | L-DASH | Dashboard Brain card shows the real worker report |
-| L-MD | Brain answers render markdown |
+| L-MD | Brain answers render markdown — verified at SIM and WIDGET level against the real worker; the APP-level screenshot required by H-AC9 was not taken (INC-1), so H-AC9 is met only partially |
