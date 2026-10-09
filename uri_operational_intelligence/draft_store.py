@@ -10,6 +10,7 @@ Nothing in this module calls a model or touches the file system.
 """
 from __future__ import annotations
 
+import re
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -175,6 +176,15 @@ def diff_ids(old_blocks, new_blocks):
     return changed, removed
 
 
+def split_paragraphs(role, text):
+    """Body text holding several paragraphs (blank-line separated) becomes several body blocks, so "the second
+    paragraph" always names a block (live finding LQ-7: the model put two paragraphs in one body block)."""
+    if role != "body":
+        return [text]
+    parts = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    return parts or [text]
+
+
 def blocks_from_model(draft: Draft, items) -> list:
     """Model blocks [{"role", "text"}] -> Block list with fresh ids. Empty blocks are dropped."""
     out = []
@@ -184,8 +194,9 @@ def blocks_from_model(draft: Draft, items) -> list:
             role = "line"
         if not text:
             continue
-        _check_block(role, text)
-        out.append(Block(draft.new_id(), role, text))
+        for part in split_paragraphs(role, text):
+            _check_block(role, part)
+            out.append(Block(draft.new_id(), role, part))
     if not out:
         raise DraftError("EMPTY_DRAFT")
     return out
@@ -241,7 +252,9 @@ def apply_edits(draft: Draft, blocks, edits, *, allowed_ids=None):
             pass
         elif b.id in replace:
             role, text = replace[b.id]
-            out.append(b if (role, text) == (b.role, b.text) else Block(b.id, role, text))
+            parts = split_paragraphs(role, text)
+            out.append(b if (role, parts[0]) == (b.role, b.text) else Block(b.id, role, parts[0]))
+            out.extend(Block(draft.new_id(), role, p) for p in parts[1:])
         else:
             out.append(b)
         for role, text in after.get(b.id, ()):

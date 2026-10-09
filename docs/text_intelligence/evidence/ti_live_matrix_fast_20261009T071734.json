@@ -1,0 +1,5279 @@
+{
+ "schema": "uri.ti.live_matrix.v1",
+ "started": "2026-10-09T07:15:00+0530",
+ "url": "http://127.0.0.1:18470",
+ "health": {
+  "status": "ok"
+ },
+ "model": "Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
+ "tier": "fast",
+ "input_note": "Transcript inputs are SIMULATED (typed text in the uri.text_input.v1 envelope, engine 'simulated'); no microphone or recogniser was used.",
+ "cases": {
+  "M1_owner_demo#1": [
+   {
+    "text_in": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.622,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.7769,
+     "total_s": 4.6188,
+     "prompt_n": 653,
+     "predicted_n": 511,
+     "predicted_per_second": 132.75241570351753,
+     "cache_n": 0,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission. Missing: City, State, Zip Code, Hostel Name, Institution Name, Warden's Name, Your Designation, Your Name. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Unauthorized Departure of Students from Hostel"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: 5"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_DROPPED"
+    ],
+    "missing": [
+     "City, State, Zip Code",
+     "Hostel Name",
+     "Institution Name",
+     "Warden's Name",
+     "Your Designation",
+     "Your Name",
+     "[City, State, Zip Code]",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "seven_not_five": true,
+     "five_absent": true,
+     "monday": true,
+     "version_1": true
+    }
+   },
+   {
+    "text_in": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 2.54,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.5792,
+     "total_s": 2.5364,
+     "prompt_n": 1021,
+     "predicted_n": 260,
+     "predicted_per_second": 132.3630795931394,
+     "cache_n": 0,
+     "retried": false
+    },
+    "answer": "Letter (version 2 of 2): Updated the description of the incident in the body to specify that students left without recording their departure in the hostel register. Missing: [City, State, Zip Code], [Hostel Name], [Institution Name], [Warden's Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Unauthorized Departure of Students from Hostel"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[City, State, Zip Code]",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "phrase_gone": true,
+     "register_wording": true,
+     "seven_kept": true,
+     "unrelated_blocks_identical": true,
+     "version_2": true
+    }
+   },
+   {
+    "text_in": "Make it more diplomatic and shorten the second paragraph.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.824,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3372,
+     "total_s": 1.8214,
+     "prompt_n": 450,
+     "predicted_n": 175,
+     "predicted_per_second": 117.25983971792942,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Letter (version 3 of 3): Made the tone more diplomatic and shortened the second paragraph while retaining all facts. Missing: [City, State, Zip Code], [Hostel Name], [Institution Name], [Warden's Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 3,
+    "position": 3,
+    "count": 3,
+    "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to respectfully bring to your attention an instance of non-compliance with hostel regulations. It has been noted that seven students departed the hostel on Monday without recording their departure in the official register.\n\nWe kindly request your assistance in reviewing this matter and addressing the issue to ensure future adherence to hostel protocols.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Unauthorized Departure of Students from Hostel"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to respectfully bring to your attention an instance of non-compliance with hostel regulations. It has been noted that seven students departed the hostel on Monday without recording their departure in the official register.\n\nWe kindly request your assistance in reviewing this matter and addressing the issue to ensure future adherence to hostel protocols."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[City, State, Zip Code]",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "register_kept": true,
+     "seven_kept": true,
+     "permission_not_back": true,
+     "second_para_shorter": false,
+     "version_3": true
+    }
+   },
+   {
+    "text_in": "Undo the last change.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "UNDO",
+    "status": "ok",
+    "wall_s": 0.0,
+    "metrics": {
+     "model_used": false
+    },
+    "answer": "Undone. Showing version 2 of 3 (Updated the description of the incident in the body to specify that students left without recording their departure in the hostel register.).",
+    "question": null,
+    "errors": [],
+    "op": "undo",
+    "version": 2,
+    "position": 2,
+    "count": 3,
+    "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Unauthorized Departure of Students from Hostel"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[City, State, Zip Code]",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a potential safety concern. I request you to look into this matter and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "restored_v2_text": true,
+     "no_model_call": true,
+     "position_2_of_3": true
+    }
+   }
+  ],
+  "M2_spoken_date_correction#1": [
+   {
+    "text_in": "URI write a letter to the warden about the students leaving hostel yesterday, no wait, on the 6th, and make it formal.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "URI write a letter to the warden about the students leaving hostel yesterday, no wait, on the 6th, and make it formal.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.405,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2945,
+     "total_s": 4.4034,
+     "prompt_n": 80,
+     "predicted_n": 527,
+     "predicted_per_second": 128.07476839406903,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal letter to the warden reporting that students left the hostel on the 6th without prior intimation. Missing: Hostel Name/Address, Institution Name, Specific month/year for the 6th, Warden's Name, Your Designation/Room Number, Your Name. 2 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "[Warden's Name]\n[Hostel Name/Address]\n[Institution Name]\n\nSubject: Report on Students Leaving Hostel on the 6th\n\nRespected Sir/Madam,\n\nI am writing to formally bring to your attention that a group of students left the hostel on the 6th. This departure was noted without prior intimation or necessary clearance from the administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name/Address]\n[Institution Name]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Report on Students Leaving Hostel on the 6th"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to formally bring to your attention that a group of students left the hostel on the 6th. This departure was noted without prior intimation or necessary clearance from the administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Room Number]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "recipient_role: warden"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "tone: formal"
+     },
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: yesterday"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING",
+     "FACT_MISSING",
+     "DETAIL_DROPPED"
+    ],
+    "missing": [
+     "Hostel Name/Address",
+     "Institution Name",
+     "Specific month/year for the 6th",
+     "Warden's Name",
+     "Your Designation/Room Number",
+     "Your Name",
+     "[Hostel Name/Address]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation/Room Number]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "URI write a letter to the warden about the students leaving hostel yesterday, no wait, on the 6th, and make it formal.",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "en-IN",
+     "uncertain": []
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name/Address]\n[Institution Name]\n\nSubject: Report on Students Leaving Hostel on the 6th\n\nRespected Sir/Madam,\n\nI am writing to formally bring to your attention that a group of students left the hostel on the 6th. This departure was noted without prior intimation or necessary clearance from the administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "sixth": true,
+     "yesterday_gone": true,
+     "labelled_simulated": true
+    }
+   }
+  ],
+  "M3_multiple_corrections_one_statement#1": [
+   {
+    "text_in": "Draft an email to the accounts office saying the fee of 4500, sorry, 5400 rupees was paid on Tuesday, no, Wednesday, by Anil, I mean Sunil Verma.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "Draft an email to the accounts office saying the fee of 4500, sorry, 5400 rupees was paid on Tuesday, no, Wednesday, by Anil, I mean Sunil Verma.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 3.395,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2625,
+     "total_s": 3.3935,
+     "prompt_n": 99,
+     "predicted_n": 405,
+     "predicted_per_second": 129.0489095367144,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email to the accounts office confirming that Sunil Verma paid 5400 rupees on Wednesday. Missing: Sender Contact Details, Sender Designation, Sender Name, [Your Designation], [Your Name]. 2 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Confirmation of Fee Payment\n\nDear Accounts Office,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma.\n\nPlease acknowledge receipt and update the records accordingly.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Confirmation of Fee Payment"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Accounts Office,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma.\n\nPlease acknowledge receipt and update the records accordingly."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Regards,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [
+     {
+      "code": "SUPERSESSION_UNVERIFIED",
+      "severity": "review",
+      "detail": "URI treated 'Tuesday' as replaced, but you did not seem to correct it; please check"
+     },
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: tuesday"
+     },
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: 4500, anil"
+     }
+    ],
+    "flag_codes": [
+     "SUPERSESSION_UNVERIFIED",
+     "USER_DETAIL_MISSING",
+     "DETAIL_DROPPED"
+    ],
+    "missing": [
+     "Sender Contact Details",
+     "Sender Designation",
+     "Sender Name",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "Draft an email to the accounts office saying the fee of 4500, sorry, 5400 rupees was paid on Tuesday, no, Wednesday, by Anil, I mean Sunil Verma.",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "en-IN",
+     "uncertain": []
+    },
+    "first_text": "Confirmation of Fee Payment\n\nDear Accounts Office,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma.\n\nPlease acknowledge receipt and update the records accordingly.\n\nRegards,\n\n[Your Name]\n[Your Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "5400": true,
+     "4500_gone": true,
+     "wednesday": true,
+     "tuesday_gone": true,
+     "sunil": true,
+     "anil_gone": true
+    }
+   }
+  ],
+  "M4_number_correction_after_draft#1": [
+   {
+    "text_in": "Write a notice that the hostel mess will be closed for two days from Sunday for repairs.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.943,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2442,
+     "total_s": 2.942,
+     "prompt_n": 48,
+     "predicted_n": 316,
+     "predicted_per_second": 116.77626335234625,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Notice (version 1 of 1): A notice informing hostel residents that the mess will be closed for two days starting Sunday for repairs. Missing: Date of the notice, Date the mess reopens, Designation of the sender, Name of the sender, Specific date of the Sunday the closure begins, [Date of Sunday]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform you that the Hostel Mess will remain closed for two days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Hostel Residents"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that the Hostel Mess will remain closed for two days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation."
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Date of the notice",
+     "Date the mess reopens",
+     "Designation of the sender",
+     "Name of the sender",
+     "Specific date of the Sunday the closure begins",
+     "[Date of Sunday]",
+     "[Date of reopening]",
+     "[Date]",
+     "[Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform you that the Hostel Mess will remain closed for two days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "two": true
+    }
+   },
+   {
+    "text_in": "Sorry, not two days, three.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "Sorry, not two days, three.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.789,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3339,
+     "total_s": 1.7879,
+     "prompt_n": 269,
+     "predicted_n": 166,
+     "predicted_per_second": 113.51143851326158,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Notice (version 2 of 2): Changed the duration of the hostel mess closure from two days to three days. Missing: [Date], [Date of Sunday], [Date of reopening], [Designation], [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform you that the Hostel Mess will remain closed for three days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Hostel Residents"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that the Hostel Mess will remain closed for three days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation."
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Designation]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: 2"
+     },
+     {
+      "code": "CORRECTION_UNCONFIRMED",
+      "severity": "review",
+      "detail": "you corrected yourself (Sorry); check that the draft uses the value you meant"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_DROPPED",
+     "CORRECTION_UNCONFIRMED"
+    ],
+    "missing": [
+     "[Date]",
+     "[Date of Sunday]",
+     "[Date of reopening]",
+     "[Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform you that the Hostel Mess will remain closed for two days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "three": true,
+     "two_gone": true,
+     "sunday_kept": true
+    }
+   }
+  ],
+  "M5_i_meant_tuesday#1": [
+   {
+    "text_in": "Draft a short email to Professor Mehta asking to reschedule our meeting to Monday at 3 pm.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.343,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.265,
+     "total_s": 2.3417,
+     "prompt_n": 51,
+     "predicted_n": 251,
+     "predicted_per_second": 120.39269206727737,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email to Professor Mehta requesting to reschedule a meeting to Monday at 3 pm. Missing: [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Request to Reschedule Meeting\n\nDear Professor Mehta,\n\nI am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Monday at 3:00 PM instead?\n\nBest regards,\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request to Reschedule Meeting"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Professor Mehta,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Monday at 3:00 PM instead?"
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Best regards,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: 0"
+     }
+    ],
+    "flag_codes": [
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request to Reschedule Meeting\n\nDear Professor Mehta,\n\nI am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Monday at 3:00 PM instead?\n\nBest regards,\n\n[Your Name]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "monday": true
+    }
+   },
+   {
+    "text_in": "No, I meant Tuesday.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "No, I meant Tuesday.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.712,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2959,
+     "total_s": 1.711,
+     "prompt_n": 249,
+     "predicted_n": 145,
+     "predicted_per_second": 101.77383309939486,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Email (version 2 of 2): Changed the rescheduled meeting day from Monday to Tuesday in the body text. Missing: [Your Name]. 2 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "Request to Reschedule Meeting\n\nDear Professor Mehta,\n\nI am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Tuesday at 3:00 PM instead?\n\nBest regards,\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request to Reschedule Meeting"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Professor Mehta,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Tuesday at 3:00 PM instead?"
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Best regards,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b3"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_REMOVED",
+      "severity": "review",
+      "detail": "no longer in the draft: monday"
+     },
+     {
+      "code": "CORRECTION_UNCONFIRMED",
+      "severity": "review",
+      "detail": "you corrected yourself (No, I meant); check that the draft uses the value you meant"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_REMOVED",
+     "CORRECTION_UNCONFIRMED"
+    ],
+    "missing": [
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request to Reschedule Meeting\n\nDear Professor Mehta,\n\nI am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Monday at 3:00 PM instead?\n\nBest regards,\n\n[Your Name]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "tuesday": true,
+     "monday_gone": true,
+     "time_kept": true
+    }
+   }
+  ],
+  "M6_misheard_name#1": [
+   {
+    "text_in": "write an email to Priya near about the budget meeting on Friday",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "write an email to Priya near about the budget meeting on Friday",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN",
+      "uncertain": [
+       "Priya near"
+      ]
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.937,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2952,
+     "total_s": 2.9365,
+     "prompt_n": 95,
+     "predicted_n": 317,
+     "predicted_per_second": 119.64784156808342,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email reminder to Priya near regarding the upcoming budget meeting on Friday. Missing: Confirmation of the recipient's name (Priya near), Sender's designation, Sender's name, Specific time and venue of the meeting, [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Budget Meeting on Friday\n\nDear Priya near,\n\nI am writing to remind you about the budget meeting scheduled for this Friday.\n\nPlease let me know if you have any questions or need to discuss anything beforehand.\n\nBest regards,\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Budget Meeting on Friday"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Priya near,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I am writing to remind you about the budget meeting scheduled for this Friday.\n\nPlease let me know if you have any questions or need to discuss anything beforehand."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Best regards,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [
+     {
+      "code": "POSSIBLE_MISHEARING",
+      "severity": "review",
+      "detail": "'Priya near' may have been misheard; please confirm"
+     }
+    ],
+    "flag_codes": [
+     "POSSIBLE_MISHEARING"
+    ],
+    "missing": [
+     "Confirmation of the recipient's name (Priya near)",
+     "Sender's designation",
+     "Sender's name",
+     "Specific time and venue of the meeting",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "write an email to Priya near about the budget meeting on Friday",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "en-IN",
+     "uncertain": [
+      "Priya near"
+     ]
+    },
+    "first_text": "Budget Meeting on Friday\n\nDear Priya near,\n\nI am writing to remind you about the budget meeting scheduled for this Friday.\n\nPlease let me know if you have any questions or need to discuss anything beforehand.\n\nBest regards,\n\n[Your Name]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "flagged": true,
+     "not_silently_changed": true,
+     "friday": true
+    }
+   }
+  ],
+  "M7_hinglish#1": [
+   {
+    "text_in": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.468,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.247,
+     "total_s": 4.4666,
+     "prompt_n": 58,
+     "predicted_n": 534,
+     "predicted_per_second": 126.32642748863063,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Leave_application (version 1 of 1): A formal leave application addressed to the Principal requesting three days of leave starting from tomorrow due to the sender's daughter's wedding. Missing: City, School/College Name, Sender's Designation/Class, Sender's Name, Specific Date of Leave Start, [City]. 5 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days, starting from tomorrow, [Date]. My daughter's wedding is scheduled during this time, and I need to be present to assist with the arrangements and ceremonies. I kindly request you to grant me leave for these three days.\n\nI shall ensure that my pending work is completed before my leave begins or will be managed appropriately upon my return. I would be grateful for your understanding and approval.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Class]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School/College Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave of absence"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to request leave for three days, starting from tomorrow, [Date]. My daughter's wedding is scheduled during this time, and I need to be present to assist with the arrangements and ceremonies. I kindly request you to grant me leave for these three days.\n\nI shall ensure that my pending work is completed before my leave begins or will be managed appropriately upon my return. I would be grateful for your understanding and approval."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Class]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: kal"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "USER_DETAIL_MISSING"
+    ],
+    "missing": [
+     "City",
+     "School/College Name",
+     "Sender's Designation/Class",
+     "Sender's Name",
+     "Specific Date of Leave Start",
+     "[City]",
+     "[Date]",
+     "[School/College Name]",
+     "[Your Designation/Class]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days, starting from tomorrow, [Date]. My daughter's wedding is scheduled during this time, and I need to be present to assist with the arrangements and ceremonies. I kindly request you to grant me leave for these three days.\n\nI shall ensure that my pending work is completed before my leave begins or will be managed appropriately upon my return. I would be grateful for your understanding and approval.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Class]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "english": true,
+     "three_days": true,
+     "daughter_wedding": true,
+     "no_invented_date": true
+    }
+   },
+   {
+    "text_in": "isko thoda chhota karo",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "isko thoda chhota karo",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.877,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3829,
+     "total_s": 1.875,
+     "prompt_n": 438,
+     "predicted_n": 152,
+     "predicted_per_second": 101.21857783205894,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Leave_application (version 2 of 2): Condensed the body paragraph to be more concise while retaining all key facts (3 days, tomorrow, daughter's wedding, work management). Missing: [City], [Date], [School/College Name], [Your Designation/Class], [Your Name]. 4 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI request leave for three days starting tomorrow, [Date], for my daughter's wedding. I will ensure my work is managed appropriately.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Class]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School/College Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave of absence"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I request leave for three days starting tomorrow, [Date], for my daughter's wedding. I will ensure my work is managed appropriately."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Class]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[City]",
+     "[Date]",
+     "[School/College Name]",
+     "[Your Designation/Class]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days, starting from tomorrow, [Date]. My daughter's wedding is scheduled during this time, and I need to be present to assist with the arrangements and ceremonies. I kindly request you to grant me leave for these three days.\n\nI shall ensure that my pending work is completed before my leave begins or will be managed appropriately upon my return. I would be grateful for your understanding and approval.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Class]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "shorter": true
+    }
+   }
+  ],
+  "M8_indian_english_numbers#1": [
+   {
+    "text_in": "pls write one letter to bank manager for changing my mobile number in account, old number is 9876543210 new is 9123456780, do the needful",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.089,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2667,
+     "total_s": 4.0876,
+     "prompt_n": 78,
+     "predicted_n": 501,
+     "predicted_per_second": 130.87175771763842,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal letter to the bank manager requesting the update of a mobile number from 9876543210 to 9123456780. Missing: Bank Name, Branch Address, Date, Your Account Number, Your Name, [Bank Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "The Branch Manager\n[Bank Name]\n[Branch Address]\n\nSubject: Request for Change of Mobile Number\n\nRespected Sir/Madam,\n\nI hold a savings account in your branch. I am writing to request you to update my registered mobile number associated with my account.\n\nMy old mobile number is 9876543210, and the new mobile number is 9123456780. Please make the necessary changes in your records at the earliest.\n\nThanking you,\nYours faithfully,\n\nYours faithfully,\n\n[Your Name]\n[Your Account Number]\n\n[Date]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "The Branch Manager\n[Bank Name]\n[Branch Address]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Request for Change of Mobile Number"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I hold a savings account in your branch. I am writing to request you to update my registered mobile number associated with my account.\n\nMy old mobile number is 9876543210, and the new mobile number is 9123456780. Please make the necessary changes in your records at the earliest.\n\nThanking you,\nYours faithfully,"
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Account Number]"
+     },
+     {
+      "id": "b7",
+      "role": "line",
+      "text": "[Date]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6",
+     "b7"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Bank Name",
+     "Branch Address",
+     "Date",
+     "Your Account Number",
+     "Your Name",
+     "[Bank Name]",
+     "[Branch Address]",
+     "[Date]",
+     "[Your Account Number]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "The Branch Manager\n[Bank Name]\n[Branch Address]\n\nSubject: Request for Change of Mobile Number\n\nRespected Sir/Madam,\n\nI hold a savings account in your branch. I am writing to request you to update my registered mobile number associated with my account.\n\nMy old mobile number is 9876543210, and the new mobile number is 9123456780. Please make the necessary changes in your records at the earliest.\n\nThanking you,\nYours faithfully,\n\nYours faithfully,\n\n[Your Name]\n[Your Account Number]\n\n[Date]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "old_kept": true,
+     "new_kept": true,
+     "order_kept": true
+    }
+   }
+  ],
+  "M9_long_dictation#1": [
+   {
+    "text_in": "Write a short report summary from this: um so the hostel inspection was done on the 3rd of October by the committee, uh, we checked all forty two rooms, and we found that eleven rooms had broken fans, six rooms had leaking taps, and two rooms, sorry, three rooms had damaged windows. The mess kitchen was clean but the storage area needs pest control. Total estimated repair cost is around eighty five thousand rupees and the committee recommends finishing the work before the exams start in November.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "Write a short report summary from this: um so the hostel inspection was done on the 3rd of October by the committee, uh, we checked all forty two rooms, and we found that eleven rooms had broken fans, six rooms had leaking taps, and two rooms, sorry, three rooms had damaged windows. The mess kitchen was clean but the storage area needs pest control. Total estimated repair cost is around eighty five thousand rupees and the committee recommends finishing the work before the exams start in November.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.598,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2599,
+     "total_s": 4.5948,
+     "prompt_n": 148,
+     "predicted_n": 558,
+     "predicted_per_second": 128.5067401439137,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Report_summary (version 1 of 1): A summary of the hostel inspection conducted on October 3rd, detailing room defects, kitchen status, repair costs, and recommendations. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Hostel Inspection Report Summary\n\nA hostel inspection was conducted on the 3rd of October by the committee. All forty-two rooms were inspected. The findings are as follows: eleven rooms had broken fans, six rooms had leaking taps, and three rooms had damaged windows. The mess kitchen was found to be clean, but the storage area requires pest control. The total estimated repair cost is around eighty-five thousand rupees. The committee recommends completing the repairs before the exams start in November.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Hostel Inspection Report Summary"
+     },
+     {
+      "id": "b2",
+      "role": "body",
+      "text": "A hostel inspection was conducted on the 3rd of October by the committee. All forty-two rooms were inspected. The findings are as follows: eleven rooms had broken fans, six rooms had leaking taps, and three rooms had damaged windows. The mess kitchen was found to be clean, but the storage area requires pest control. The total estimated repair cost is around eighty-five thousand rupees. The committee recommends completing the repairs before the exams start in November."
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: 2"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_DROPPED"
+    ],
+    "missing": [],
+    "source": {
+     "source": "transcript",
+     "raw": "Write a short report summary from this: um so the hostel inspection was done on the 3rd of October by the committee, uh, we checked all forty two rooms, and we found that eleven rooms had broken fans, six rooms had leaking taps, and two rooms, sorry, three rooms had damaged windows. The mess kitchen was clean but the storage area needs pest control. Total estimated repair cost is around eighty five thousand rupees and the committee recommends finishing the work before the exams start in November.",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "en-IN",
+     "uncertain": []
+    },
+    "first_text": "Hostel Inspection Report Summary\n\nA hostel inspection was conducted on the 3rd of October by the committee. All forty-two rooms were inspected. The findings are as follows: eleven rooms had broken fans, six rooms had leaking taps, and three rooms had damaged windows. The mess kitchen was found to be clean, but the storage area requires pest control. The total estimated repair cost is around eighty-five thousand rupees. The committee recommends completing the repairs before the exams start in November.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "42": true,
+     "11": true,
+     "6": true,
+     "three_windows": true,
+     "two_windows_gone": true,
+     "85000": true,
+     "november": true,
+     "3rd_oct": true
+    }
+   }
+  ],
+  "M10_contradiction#1": [
+   {
+    "text_in": "Draft a notice that the library will be closed on Saturday and also that it will be open on Saturday as usual.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "needs_user",
+    "wall_s": 1.914,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3045,
+     "total_s": 1.9131,
+     "prompt_n": 53,
+     "predicted_n": 166,
+     "predicted_per_second": 102.57781148684982,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "The request contains a contradiction: the library cannot be both closed and open on the same Saturday. Please specify whether the library is closed or open on Saturday.",
+    "question": "The request contains a contradiction: the library cannot be both closed and open on the same Saturday. Please specify whether the library is closed or open on Saturday.",
+    "errors": [],
+    "op": null,
+    "version": null,
+    "position": null,
+    "count": null,
+    "text": "",
+    "blocks": [],
+    "changed": [],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {},
+    "first_text": "",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "clarified": true
+    }
+   }
+  ],
+  "M11_revise_first_paragraph_only#1": [
+   {
+    "text_in": "Draft a letter to the hostel warden requesting permission for a cultural event in the common room on Friday evening from 6 pm to 9 pm. Mention that about forty students will attend, that we will clean the room afterwards, and that the event coordinator is Kavya.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 5.363,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2612,
+     "total_s": 5.3608,
+     "prompt_n": 86,
+     "predicted_n": 698,
+     "predicted_per_second": 136.69081537738333,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal letter to the hostel warden requesting permission for a cultural event in the common room on Friday from 6 pm to 9 pm, attended by about forty students and coordinated by Kavya, with a commitment to clean the room afterwards. Missing: Hostel Name, Institution Name, Sender's Designation/Room Number, Sender's Name, [Hostel Name], [Institution Name]. 3 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "The Warden,\n[Hostel Name],\n[Institution Name]\n\nSubject: Request for permission to host a cultural event in the common room\n\nRespected Sir/Madam,\n\nI am writing to formally request permission to organize a cultural event in the hostel common room on Friday evening. The event is scheduled to take place from 6:00 PM to 9:00 PM.\n\nWe anticipate that approximately forty students will attend this gathering. Kavya has been appointed as the event coordinator and will oversee the arrangements. We assure you that the common room will be thoroughly cleaned and restored to its original condition immediately after the event concludes.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "The Warden,\n[Hostel Name],\n[Institution Name]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Request for permission to host a cultural event in the common room"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to formally request permission to organize a cultural event in the hostel common room on Friday evening. The event is scheduled to take place from 6:00 PM to 9:00 PM.\n\nWe anticipate that approximately forty students will attend this gathering. Kavya has been appointed as the event coordinator and will oversee the arrangements. We assure you that the common room will be thoroughly cleaned and restored to its original condition immediately after the event concludes."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Room Number]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "attendee_count: about forty students"
+     },
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: mention"
+     },
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: 0"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING",
+     "USER_DETAIL_MISSING",
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "Hostel Name",
+     "Institution Name",
+     "Sender's Designation/Room Number",
+     "Sender's Name",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Your Designation/Room Number]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "The Warden,\n[Hostel Name],\n[Institution Name]\n\nSubject: Request for permission to host a cultural event in the common room\n\nRespected Sir/Madam,\n\nI am writing to formally request permission to organize a cultural event in the hostel common room on Friday evening. The event is scheduled to take place from 6:00 PM to 9:00 PM.\n\nWe anticipate that approximately forty students will attend this gathering. Kavya has been appointed as the event coordinator and will oversee the arrangements. We assure you that the common room will be thoroughly cleaned and restored to its original condition immediately after the event concludes.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "forty": true,
+     "kavya": true
+    }
+   },
+   {
+    "text_in": "Make the first paragraph more formal. Keep everything else the same.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 2.351,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3992,
+     "total_s": 2.3478,
+     "prompt_n": 573,
+     "predicted_n": 220,
+     "predicted_per_second": 112.4133608669072,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Letter (version 2 of 2): Rewrote the first paragraph of the body to use more formal language and structure while preserving all facts. Missing: [Hostel Name], [Institution Name], [Your Designation/Room Number], [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "The Warden,\n[Hostel Name],\n[Institution Name]\n\nSubject: Request for permission to host a cultural event in the common room\n\nRespected Sir/Madam,\n\nI am writing to respectfully submit a request for authorization to conduct a cultural event within the hostel common room on the evening of Friday. The proceedings are scheduled to commence at 6:00 PM and conclude at 9:00 PM.\n\nWe anticipate an attendance of approximately forty students. Kavya has been designated as the event coordinator and shall oversee all logistical arrangements. We hereby assure you that the common room will be meticulously cleaned and restored to its original state immediately following the conclusion of the event.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "The Warden,\n[Hostel Name],\n[Institution Name]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Request for permission to host a cultural event in the common room"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to respectfully submit a request for authorization to conduct a cultural event within the hostel common room on the evening of Friday. The proceedings are scheduled to commence at 6:00 PM and conclude at 9:00 PM.\n\nWe anticipate an attendance of approximately forty students. Kavya has been designated as the event coordinator and shall oversee all logistical arrangements. We hereby assure you that the common room will be meticulously cleaned and restored to its original state immediately following the conclusion of the event."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Room Number]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "attendee_count: about forty students"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Your Designation/Room Number]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "The Warden,\n[Hostel Name],\n[Institution Name]\n\nSubject: Request for permission to host a cultural event in the common room\n\nRespected Sir/Madam,\n\nI am writing to formally request permission to organize a cultural event in the hostel common room on Friday evening. The event is scheduled to take place from 6:00 PM to 9:00 PM.\n\nWe anticipate that approximately forty students will attend this gathering. Kavya has been appointed as the event coordinator and will oversee the arrangements. We assure you that the common room will be thoroughly cleaned and restored to its original condition immediately after the event concludes.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "only_first_body_changed": true,
+     "kavya_kept": true
+    }
+   }
+  ],
+  "M12_grammar_only#1": [
+   {
+    "text_in": "Correct this: me and my friend goes to college daily but yesterday we was late because bus not came, our principal Mr. Iyer give us warning.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "CORRECT",
+    "status": "ok",
+    "wall_s": 1.909,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.5228,
+     "total_s": 1.908,
+     "prompt_n": 810,
+     "predicted_n": 146,
+     "predicted_per_second": 104.70334653558288,
+     "cache_n": 0,
+     "retried": false
+    },
+    "answer": "Text (version 2 of 2): Corrected grammar, spelling, and punctuation in the single body block. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "corrected",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "My friend and I go to college daily, but yesterday we were late because the bus did not come. Our principal, Mr. Iyer, gave us a warning.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "My friend and I go to college daily, but yesterday we were late because the bus did not come. Our principal, Mr. Iyer, gave us a warning."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "me and my friend goes to college daily but yesterday we was late because bus not came, our principal Mr. Iyer give us warning.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "no_meaning_flag": true,
+     "iyer": true,
+     "yesterday": true,
+     "not_formalised": true,
+     "original_kept_v1": true
+    }
+   }
+  ],
+  "M13_exclusion#1": [
+   {
+    "text_in": "Write a short note to the class teacher that the student Rahul Sharma was absent on Monday due to fever.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 3.324,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2749,
+     "total_s": 3.3225,
+     "prompt_n": 51,
+     "predicted_n": 398,
+     "predicted_per_second": 130.27695502393226,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Note (version 1 of 1): A short note to the class teacher explaining Rahul Sharma's absence on Monday due to fever. Missing: Parent's Name, [Parent's Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To,\nThe Class Teacher\n\nSubject: Absence of Rahul Sharma\n\nRespected Sir/Madam,\n\nThis is to inform you that Rahul Sharma was absent from school on Monday due to fever.\n\nYours faithfully,\n\n[Parent's Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Class Teacher"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Absence of Rahul Sharma"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that Rahul Sharma was absent from school on Monday due to fever."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Parent's Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Parent's Name",
+     "[Parent's Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "To,\nThe Class Teacher\n\nSubject: Absence of Rahul Sharma\n\nRespected Sir/Madam,\n\nThis is to inform you that Rahul Sharma was absent from school on Monday due to fever.\n\nYours faithfully,\n\n[Parent's Name]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "rahul": true
+    }
+   },
+   {
+    "text_in": "Don't mention the student's name.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.8,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3206,
+     "total_s": 1.7986,
+     "prompt_n": 331,
+     "predicted_n": 184,
+     "predicted_per_second": 123.84655209168704,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Note (version 2 of 2): Removed the student's name from the subject line and the body text. Missing: [Parent's Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "To,\nThe Class Teacher\n\nSubject: Absence of student\n\nRespected Sir/Madam,\n\nThis is to inform you that the student was absent from school on Monday due to fever.\n\nYours faithfully,\n\n[Parent's Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Class Teacher"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Absence of student"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that the student was absent from school on Monday due to fever."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Parent's Name]"
+     }
+    ],
+    "changed": [
+     "b2",
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "student_name: Rahul Sharma"
+     },
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: rahul, sharma"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING",
+     "DETAIL_DROPPED"
+    ],
+    "missing": [
+     "[Parent's Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "To,\nThe Class Teacher\n\nSubject: Absence of Rahul Sharma\n\nRespected Sir/Madam,\n\nThis is to inform you that Rahul Sharma was absent from school on Monday due to fever.\n\nYours faithfully,\n\n[Parent's Name]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "rahul_gone": true,
+     "monday_kept": true,
+     "fever_kept": true
+    }
+   }
+  ],
+  "M14_ambiguous_correction#1": [
+   {
+    "text_in": "Write a notice that the hostel fee must be paid by the 5th, and the late fee applies from the 15th.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.746,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2537,
+     "total_s": 2.7451,
+     "prompt_n": 58,
+     "predicted_n": 304,
+     "predicted_per_second": 121.63096282749036,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Notice (version 1 of 1): A notice informing hostel residents that fees are due by the 5th and late fees apply from the 15th. Missing: Date of the notice, Designation of the sender, Name of the sender, [Date], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th.\n\n[Your Name]\n[Your Designation]\nHostel Administration",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Hostel Residents"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th."
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]\nHostel Administration"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Date of the notice",
+     "Designation of the sender",
+     "Name of the sender",
+     "[Date]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th.\n\n[Your Name]\n[Your Designation]\nHostel Administration",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "both_dates": true
+    }
+   },
+   {
+    "text_in": "Change the date to the 10th.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "needs_user",
+    "wall_s": 0.0,
+    "metrics": {
+     "model_used": false
+    },
+    "answer": "I could not find 'the date' in the draft. Which part should I change?",
+    "question": "I could not find 'the date' in the draft. Which part should I change?",
+    "errors": [],
+    "op": null,
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th.\n\n[Your Name]\n[Your Designation]\nHostel Administration",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Hostel Residents"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th."
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]\nHostel Administration"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Date of the notice",
+     "Designation of the sender",
+     "Name of the sender",
+     "[Date]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th.\n\n[Your Name]\n[Your Designation]\nHostel Administration",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "clarified_or_flagged": true
+    }
+   }
+  ],
+  "M15_remove_previous_sentence#1": [
+   {
+    "text_in": "Draft an email to the librarian asking to extend the due date of the book Clean Code by one week.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.72,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2504,
+     "total_s": 2.7186,
+     "prompt_n": 51,
+     "predicted_n": 300,
+     "predicted_per_second": 121.14213943500765,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email to the librarian requesting a one-week extension for the book 'Clean Code'. Missing: Sender's ID, Sender's Name, [Your Name], [Your Student/Staff ID]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nSincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request for Extension of Due Date: Book 'Clean Code'"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Librarian,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Sincerely,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Student/Staff ID]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Sender's ID",
+     "Sender's Name",
+     "[Your Name]",
+     "[Your Student/Staff ID]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nSincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "unchanged_blocks_identical": null,
+    "checks": {}
+   },
+   {
+    "text_in": "Add a sentence saying I will return it in good condition.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.756,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3349,
+     "total_s": 1.7541,
+     "prompt_n": 284,
+     "predicted_n": 185,
+     "predicted_per_second": 129.67389833566372,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Email (version 2 of 2): Added a sentence promising to return the book in good condition to the body of the email. Missing: [Your Name], [Your Student/Staff ID]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly. I will return it in good condition.\n\nThank you for your understanding and assistance.\n\nSincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request for Extension of Due Date: Book 'Clean Code'"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Librarian,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly. I will return it in good condition.\n\nThank you for your understanding and assistance."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Sincerely,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Student/Staff ID]"
+     }
+    ],
+    "changed": [
+     "b3"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[Your Name]",
+     "[Your Student/Staff ID]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nSincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "added": true
+    }
+   },
+   {
+    "text_in": "Remove the previous sentence.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.808,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2974,
+     "total_s": 1.806,
+     "prompt_n": 290,
+     "predicted_n": 175,
+     "predicted_per_second": 115.35883559178089,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Email (version 3 of 3): Removed the sentence 'I will return it in good condition.' from the body. Missing: [Your Name], [Your Student/Staff ID]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 3,
+    "position": 3,
+    "count": 3,
+    "text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nSincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request for Extension of Due Date: Book 'Clean Code'"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Librarian,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Sincerely,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Student/Staff ID]"
+     }
+    ],
+    "changed": [
+     "b3"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[Your Name]",
+     "[Your Student/Staff ID]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nSincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "removed": true,
+     "book_kept": true
+    }
+   }
+  ],
+  "M16_rewrite_politely#1": [
+   {
+    "text_in": "Rewrite politely: send me the attendance report by today evening otherwise I will escalate.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REWRITE",
+    "status": "ok",
+    "wall_s": 1.799,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.5064,
+     "total_s": 1.7983,
+     "prompt_n": 742,
+     "predicted_n": 138,
+     "predicted_per_second": 106.08682858459264,
+     "cache_n": 0,
+     "retried": false
+    },
+    "answer": "Text (version 2 of 2): Rewrote the directive to be polite and professional while maintaining the deadline and consequence. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "rewritten",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "Kindly share the attendance report by this evening. I would appreciate your prompt attention to this matter to avoid any further escalation.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "Kindly share the attendance report by this evening. I would appreciate your prompt attention to this matter to avoid any further escalation."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: today"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_DROPPED"
+    ],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "send me the attendance report by today evening otherwise I will escalate.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "today_evening": true,
+     "no_new_detail": true
+    }
+   }
+  ],
+  "M17_expand_notes#1": [
+   {
+    "text_in": "Expand these notes into a circular: water supply off tue 10am-2pm, block A and B, maintenance, store water in advance",
+    "input": null,
+    "route": "draft",
+    "text_kind": "EXPAND",
+    "status": "ok",
+    "wall_s": 4.4,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2781,
+     "total_s": 4.3986,
+     "prompt_n": 61,
+     "predicted_n": 542,
+     "predicted_per_second": 131.30427374780987,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Circular (version 1 of 1): A circular notifying residents of Block A and B about a water supply suspension on Tuesday from 10 AM to 2 PM for maintenance, advising them to store water in advance. Missing: Date, Sender Designation, Sender Name, [Date], [Designation], [Your Name]. 3 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "CIRCULAR\n\nDate: [Date]\n\nTo: All Residents of Block A and Block B\n\nThis is to inform you that the water supply will be temporarily suspended on Tuesday from 10:00 AM to 2:00 PM due to scheduled maintenance work.\n\nResidents are requested to store sufficient water in advance to meet their requirements during this period. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "CIRCULAR"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Residents of Block A and Block B"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that the water supply will be temporarily suspended on Tuesday from 10:00 AM to 2:00 PM due to scheduled maintenance work."
+     },
+     {
+      "id": "b5",
+      "role": "body",
+      "text": "Residents are requested to store sufficient water in advance to meet their requirements during this period. We apologize for any inconvenience caused and appreciate your cooperation."
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "date: tue"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "time: 10am-2pm"
+     },
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: 0, 10, 2, tuesday, am, pm"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING",
+     "FACT_MISSING",
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "Date",
+     "Sender Designation",
+     "Sender Name",
+     "[Date]",
+     "[Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "CIRCULAR\n\nDate: [Date]\n\nTo: All Residents of Block A and Block B\n\nThis is to inform you that the water supply will be temporarily suspended on Tuesday from 10:00 AM to 2:00 PM due to scheduled maintenance work.\n\nResidents are requested to store sufficient water in advance to meet their requirements during this period. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "times": true,
+     "blocks": true,
+     "tuesday": true
+    }
+   }
+  ],
+  "M18_greeting_fast_path#1": [
+   {
+    "text_in": "hello",
+    "input": null,
+    "route": "answer",
+    "text_kind": null,
+    "status": "ok",
+    "wall_s": 0.374,
+    "metrics": {
+     "ttft_s": 0.3141,
+     "first_answer_s": 0.3141,
+     "total_s": 0.3741,
+     "prompt_n": 214,
+     "prompt_per_second": 802.6193896342081,
+     "predicted_n": 10,
+     "predicted_per_second": 150.42369340308534,
+     "cache_n": 0,
+     "draft_n": 6,
+     "draft_n_accepted": 6,
+     "reasoning_chars": 0,
+     "retried": false
+    },
+    "answer": "Hello! How can I help you today?",
+    "question": null,
+    "errors": [],
+    "op": null,
+    "version": null,
+    "position": null,
+    "count": null,
+    "text": "",
+    "blocks": [],
+    "changed": [],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {},
+    "first_text": "",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "not_desk": true
+    }
+   }
+  ],
+  "M1_owner_demo#2": [
+   {
+    "text_in": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.393,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2856,
+     "total_s": 4.3918,
+     "prompt_n": 77,
+     "predicted_n": 525,
+     "predicted_per_second": 127.6205130977858,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission. Missing: City, State, Zip Code, Contact Information, Hostel Name, Institution Name, Warden's Name, Your Designation. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Unauthorized Departure of Students from Hostel"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: 5"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_DROPPED"
+    ],
+    "missing": [
+     "City, State, Zip Code",
+     "Contact Information",
+     "Hostel Name",
+     "Institution Name",
+     "Warden's Name",
+     "Your Designation",
+     "Your Name",
+     "[City, State, Zip Code]",
+     "[Contact Information]",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "seven_not_five": true,
+     "five_absent": true,
+     "monday": true,
+     "version_1": true
+    }
+   },
+   {
+    "text_in": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 2.049,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.379,
+     "total_s": 2.0458,
+     "prompt_n": 447,
+     "predicted_n": 203,
+     "predicted_per_second": 121.21473971234903,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Letter (version 2 of 2): Updated the description of the incident in the body to specify that students left without recording their departure in the hostel register. Missing: [City, State, Zip Code], [Contact Information], [Hostel Name], [Institution Name], [Warden's Name], [Your Designation]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Unauthorized Departure of Students from Hostel"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "CORRECTION_UNCONFIRMED",
+      "severity": "review",
+      "detail": "you corrected yourself (Actually); check that the draft uses the value you meant"
+     }
+    ],
+    "flag_codes": [
+     "CORRECTION_UNCONFIRMED"
+    ],
+    "missing": [
+     "[City, State, Zip Code]",
+     "[Contact Information]",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "phrase_gone": true,
+     "register_wording": true,
+     "seven_kept": true,
+     "unrelated_blocks_identical": true,
+     "version_2": true
+    }
+   },
+   {
+    "text_in": "Make it more diplomatic and shorten the second paragraph.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.929,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3385,
+     "total_s": 1.9262,
+     "prompt_n": 444,
+     "predicted_n": 175,
+     "predicted_per_second": 109.62819032209896,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Letter (version 3 of 3): Made the tone more diplomatic and shortened the second paragraph while retaining all facts. Missing: [City, State, Zip Code], [Contact Information], [Hostel Name], [Institution Name], [Warden's Name], [Your Designation]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 3,
+    "position": 3,
+    "count": 3,
+    "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to respectfully bring to your attention an instance of non-compliance with hostel regulations. It has been noted that seven students departed the hostel on Monday without recording their departure in the official register.\n\nWe kindly request your assistance in reviewing this matter and addressing the oversight to maintain strict adherence to hostel protocols.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Unauthorized Departure of Students from Hostel"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to respectfully bring to your attention an instance of non-compliance with hostel regulations. It has been noted that seven students departed the hostel on Monday without recording their departure in the official register.\n\nWe kindly request your assistance in reviewing this matter and addressing the oversight to maintain strict adherence to hostel protocols."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "nature_of_incident: left the hostel without permission"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[City, State, Zip Code]",
+     "[Contact Information]",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "register_kept": true,
+     "seven_kept": true,
+     "permission_not_back": true,
+     "second_para_shorter": false,
+     "version_3": true
+    }
+   },
+   {
+    "text_in": "Undo the last change.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "UNDO",
+    "status": "ok",
+    "wall_s": 0.0,
+    "metrics": {
+     "model_used": false
+    },
+    "answer": "Undone. Showing version 2 of 3 (Updated the description of the incident in the body to specify that students left without recording their departure in the hostel register.).",
+    "question": null,
+    "errors": [],
+    "op": "undo",
+    "version": 2,
+    "position": 2,
+    "count": 3,
+    "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Unauthorized Departure of Students from Hostel"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "CORRECTION_UNCONFIRMED",
+      "severity": "review",
+      "detail": "you corrected yourself (Actually); check that the draft uses the value you meant"
+     }
+    ],
+    "flag_codes": [
+     "CORRECTION_UNCONFIRMED"
+    ],
+    "missing": [
+     "[City, State, Zip Code]",
+     "[Contact Information]",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention a serious breach of hostel regulations. It has been observed that seven students left the hostel on Monday without obtaining the necessary permission from the authorities.\n\nThis unauthorized departure is a violation of the established hostel rules and poses a significant safety concern. I request you to look into this matter urgently and take appropriate disciplinary action against the concerned students to ensure such incidents do not recur.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "restored_v2_text": true,
+     "no_model_call": true,
+     "position_2_of_3": true
+    }
+   }
+  ],
+  "M2_spoken_date_correction#2": [
+   {
+    "text_in": "URI write a letter to the warden about the students leaving hostel yesterday, no wait, on the 6th, and make it formal.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "URI write a letter to the warden about the students leaving hostel yesterday, no wait, on the 6th, and make it formal.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.441,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2929,
+     "total_s": 4.4392,
+     "prompt_n": 80,
+     "predicted_n": 525,
+     "predicted_per_second": 126.3791364446076,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal letter to the warden reporting that students left the hostel on the 6th without prior intimation. Missing: Hostel Name/Address, Institution Name, Specific month/year for the 6th, Warden's Name, Your Designation/Room Number, Your Name. 2 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "[Warden's Name]\n[Hostel Name/Address]\n[Institution Name]\n\nSubject: Report on Students Leaving Hostel on the 6th\n\nRespected Sir/Madam,\n\nI am writing to formally bring to your attention that a group of students left the hostel on the 6th. This departure was noted without prior intimation or necessary clearance from the administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "[Warden's Name]\n[Hostel Name/Address]\n[Institution Name]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Report on Students Leaving Hostel on the 6th"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to formally bring to your attention that a group of students left the hostel on the 6th. This departure was noted without prior intimation or necessary clearance from the administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Room Number]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "recipient_role: warden"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "tone: formal"
+     },
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: yesterday"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING",
+     "FACT_MISSING",
+     "DETAIL_DROPPED"
+    ],
+    "missing": [
+     "Hostel Name/Address",
+     "Institution Name",
+     "Specific month/year for the 6th",
+     "Warden's Name",
+     "Your Designation/Room Number",
+     "Your Name",
+     "[Hostel Name/Address]",
+     "[Institution Name]",
+     "[Warden's Name]",
+     "[Your Designation/Room Number]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "URI write a letter to the warden about the students leaving hostel yesterday, no wait, on the 6th, and make it formal.",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "en-IN",
+     "uncertain": []
+    },
+    "first_text": "[Warden's Name]\n[Hostel Name/Address]\n[Institution Name]\n\nSubject: Report on Students Leaving Hostel on the 6th\n\nRespected Sir/Madam,\n\nI am writing to formally bring to your attention that a group of students left the hostel on the 6th. This departure was noted without prior intimation or necessary clearance from the administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "sixth": true,
+     "yesterday_gone": true,
+     "labelled_simulated": true
+    }
+   }
+  ],
+  "M3_multiple_corrections_one_statement#2": [
+   {
+    "text_in": "Draft an email to the accounts office saying the fee of 4500, sorry, 5400 rupees was paid on Tuesday, no, Wednesday, by Anil, I mean Sunil Verma.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "Draft an email to the accounts office saying the fee of 4500, sorry, 5400 rupees was paid on Tuesday, no, Wednesday, by Anil, I mean Sunil Verma.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 3.211,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2839,
+     "total_s": 3.2095,
+     "prompt_n": 99,
+     "predicted_n": 388,
+     "predicted_per_second": 132.29814874892787,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email to the accounts office confirming that Sunil Verma paid 5400 rupees on Wednesday. Missing: Sender Contact Details, Sender Designation, Sender Name, [Your Name]. 2 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Confirmation of Fee Payment\n\nDear Accounts Office,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma.\n\nRegards,\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Confirmation of Fee Payment"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Accounts Office,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "This is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Regards,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [
+     {
+      "code": "SUPERSESSION_UNVERIFIED",
+      "severity": "review",
+      "detail": "URI treated 'Tuesday' as replaced, but you did not seem to correct it; please check"
+     },
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: tuesday"
+     },
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: 4500, anil"
+     }
+    ],
+    "flag_codes": [
+     "SUPERSESSION_UNVERIFIED",
+     "USER_DETAIL_MISSING",
+     "DETAIL_DROPPED"
+    ],
+    "missing": [
+     "Sender Contact Details",
+     "Sender Designation",
+     "Sender Name",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "Draft an email to the accounts office saying the fee of 4500, sorry, 5400 rupees was paid on Tuesday, no, Wednesday, by Anil, I mean Sunil Verma.",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "en-IN",
+     "uncertain": []
+    },
+    "first_text": "Confirmation of Fee Payment\n\nDear Accounts Office,\n\nThis is to confirm that a fee of 5400 rupees was paid on Wednesday by Sunil Verma.\n\nRegards,\n\n[Your Name]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "5400": true,
+     "4500_gone": true,
+     "wednesday": true,
+     "tuesday_gone": true,
+     "sunil": true,
+     "anil_gone": true
+    }
+   }
+  ],
+  "M4_number_correction_after_draft#2": [
+   {
+    "text_in": "Write a notice that the hostel mess will be closed for two days from Sunday for repairs.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.906,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2378,
+     "total_s": 2.9055,
+     "prompt_n": 48,
+     "predicted_n": 316,
+     "predicted_per_second": 118.09106358060352,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Notice (version 1 of 1): A notice informing hostel residents that the mess will be closed for two days starting Sunday for repairs. Missing: Date of the notice, Date the mess reopens, Designation of the sender, Name of the sender, Specific date of the Sunday the closure begins, [Date of Sunday]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform you that the Hostel Mess will remain closed for two days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Hostel Residents"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that the Hostel Mess will remain closed for two days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation."
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Date of the notice",
+     "Date the mess reopens",
+     "Designation of the sender",
+     "Name of the sender",
+     "Specific date of the Sunday the closure begins",
+     "[Date of Sunday]",
+     "[Date of reopening]",
+     "[Date]",
+     "[Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform you that the Hostel Mess will remain closed for two days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "two": true
+    }
+   },
+   {
+    "text_in": "Sorry, not two days, three.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "Sorry, not two days, three.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.76,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3194,
+     "total_s": 1.7588,
+     "prompt_n": 269,
+     "predicted_n": 166,
+     "predicted_per_second": 114.65331963052446,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Notice (version 2 of 2): Changed the duration of the hostel mess closure from two days to three days. Missing: [Date], [Date of Sunday], [Date of reopening], [Designation], [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform you that the Hostel Mess will remain closed for three days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Hostel Residents"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that the Hostel Mess will remain closed for three days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation."
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Designation]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: 2"
+     },
+     {
+      "code": "CORRECTION_UNCONFIRMED",
+      "severity": "review",
+      "detail": "you corrected yourself (Sorry); check that the draft uses the value you meant"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_DROPPED",
+     "CORRECTION_UNCONFIRMED"
+    ],
+    "missing": [
+     "[Date]",
+     "[Date of Sunday]",
+     "[Date of reopening]",
+     "[Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform you that the Hostel Mess will remain closed for two days starting from Sunday, [Date of Sunday], for necessary repairs and maintenance work. The mess will resume normal operations on [Date of reopening]. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "three": true,
+     "two_gone": true,
+     "sunday_kept": true
+    }
+   }
+  ],
+  "M5_i_meant_tuesday#2": [
+   {
+    "text_in": "Draft a short email to Professor Mehta asking to reschedule our meeting to Monday at 3 pm.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.38,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2561,
+     "total_s": 2.3792,
+     "prompt_n": 51,
+     "predicted_n": 262,
+     "predicted_per_second": 122.94166912392991,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email to Professor Mehta requesting to reschedule a meeting to Monday at 3 pm. Missing: Sender's designation/affiliation, Sender's name, [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Request to Reschedule Meeting\n\nDear Professor Mehta,\n\nI am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Monday at 3:00 PM instead?\n\nBest regards,\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request to Reschedule Meeting"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Professor Mehta,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Monday at 3:00 PM instead?"
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Best regards,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: 0"
+     }
+    ],
+    "flag_codes": [
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "Sender's designation/affiliation",
+     "Sender's name",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request to Reschedule Meeting\n\nDear Professor Mehta,\n\nI am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Monday at 3:00 PM instead?\n\nBest regards,\n\n[Your Name]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "monday": true
+    }
+   },
+   {
+    "text_in": "No, I meant Tuesday.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "No, I meant Tuesday.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.951,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.5378,
+     "total_s": 1.9502,
+     "prompt_n": 829,
+     "predicted_n": 145,
+     "predicted_per_second": 101.97022044687034,
+     "cache_n": 0,
+     "retried": false
+    },
+    "answer": "Email (version 2 of 2): Changed the rescheduled meeting day from Monday to Tuesday in the body text. Missing: [Your Name]. 2 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "Request to Reschedule Meeting\n\nDear Professor Mehta,\n\nI am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Tuesday at 3:00 PM instead?\n\nBest regards,\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request to Reschedule Meeting"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Professor Mehta,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Tuesday at 3:00 PM instead?"
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Best regards,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b3"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_REMOVED",
+      "severity": "review",
+      "detail": "no longer in the draft: monday"
+     },
+     {
+      "code": "CORRECTION_UNCONFIRMED",
+      "severity": "review",
+      "detail": "you corrected yourself (No, I meant); check that the draft uses the value you meant"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_REMOVED",
+     "CORRECTION_UNCONFIRMED"
+    ],
+    "missing": [
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request to Reschedule Meeting\n\nDear Professor Mehta,\n\nI am writing to kindly request that we reschedule our upcoming meeting. Would it be possible to move our appointment to Monday at 3:00 PM instead?\n\nBest regards,\n\n[Your Name]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "tuesday": true,
+     "monday_gone": true,
+     "time_kept": true
+    }
+   }
+  ],
+  "M6_misheard_name#2": [
+   {
+    "text_in": "write an email to Priya near about the budget meeting on Friday",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "write an email to Priya near about the budget meeting on Friday",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN",
+      "uncertain": [
+       "Priya near"
+      ]
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.943,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2716,
+     "total_s": 2.9422,
+     "prompt_n": 95,
+     "predicted_n": 319,
+     "predicted_per_second": 119.0837739370556,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email reminder to Priya near regarding the upcoming budget meeting on Friday. Missing: Confirmation that 'Priya near' is the correct recipient name, Sender's designation, Sender's name, Specific time and venue of the meeting, [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Budget Meeting on Friday\n\nDear Priya near,\n\nI am writing to remind you about the budget meeting scheduled for this Friday.\n\nPlease let me know if you have any questions or need to discuss anything beforehand.\n\nBest regards,\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Budget Meeting on Friday"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Priya near,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I am writing to remind you about the budget meeting scheduled for this Friday.\n\nPlease let me know if you have any questions or need to discuss anything beforehand."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Best regards,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [
+     {
+      "code": "POSSIBLE_MISHEARING",
+      "severity": "review",
+      "detail": "'Priya near' may have been misheard; please confirm"
+     }
+    ],
+    "flag_codes": [
+     "POSSIBLE_MISHEARING"
+    ],
+    "missing": [
+     "Confirmation that 'Priya near' is the correct recipient name",
+     "Sender's designation",
+     "Sender's name",
+     "Specific time and venue of the meeting",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "write an email to Priya near about the budget meeting on Friday",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "en-IN",
+     "uncertain": [
+      "Priya near"
+     ]
+    },
+    "first_text": "Budget Meeting on Friday\n\nDear Priya near,\n\nI am writing to remind you about the budget meeting scheduled for this Friday.\n\nPlease let me know if you have any questions or need to discuss anything beforehand.\n\nBest regards,\n\n[Your Name]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "flagged": true,
+     "not_silently_changed": true,
+     "friday": true
+    }
+   }
+  ],
+  "M7_hinglish#2": [
+   {
+    "text_in": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.392,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.249,
+     "total_s": 4.3909,
+     "prompt_n": 58,
+     "predicted_n": 536,
+     "predicted_per_second": 129.17653700159286,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Leave_application (version 1 of 1): A formal leave application addressed to the principal requesting three days off starting from tomorrow due to the sender's daughter's wedding. Missing: City, School/College Name, Sender's Designation/Class, Sender's Name, Specific Dates (since 'tomorrow' is relative), [City]. 5 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. The reason for my absence is my daughter's wedding, which requires my presence and participation in the ceremonies.\n\nI kindly request you to grant me leave for these three days. I will ensure that my duties are managed appropriately during my absence.\n\nThanking you,\nYours faithfully,\n[Your Name]\n[Your Designation/Class]\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Class]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School/College Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave of absence"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to request leave for three days starting from tomorrow. The reason for my absence is my daughter's wedding, which requires my presence and participation in the ceremonies.\n\nI kindly request you to grant me leave for these three days. I will ensure that my duties are managed appropriately during my absence.\n\nThanking you,\nYours faithfully,\n[Your Name]\n[Your Designation/Class]"
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Class]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: kal"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "USER_DETAIL_MISSING"
+    ],
+    "missing": [
+     "City",
+     "School/College Name",
+     "Sender's Designation/Class",
+     "Sender's Name",
+     "Specific Dates (since 'tomorrow' is relative)",
+     "[City]",
+     "[School/College Name]",
+     "[Your Designation/Class]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. The reason for my absence is my daughter's wedding, which requires my presence and participation in the ceremonies.\n\nI kindly request you to grant me leave for these three days. I will ensure that my duties are managed appropriately during my absence.\n\nThanking you,\nYours faithfully,\n[Your Name]\n[Your Designation/Class]\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Class]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "english": true,
+     "three_days": true,
+     "daughter_wedding": true,
+     "no_invented_date": true
+    }
+   },
+   {
+    "text_in": "isko thoda chhota karo",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "isko thoda chhota karo",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "hi-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.803,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.359,
+     "total_s": 1.8007,
+     "prompt_n": 436,
+     "predicted_n": 157,
+     "predicted_per_second": 108.25041652123407,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Leave_application (version 2 of 2): Condensed the body text by removing redundant polite phrases and combining the request and reason into a single concise paragraph. Missing: [City], [School/College Name], [Your Designation/Class], [Your Name]. 4 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI request leave for three days starting tomorrow for my daughter's wedding.\n\nThanking you,\nYours faithfully,\n[Your Name]\n[Your Designation/Class]\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Class]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Principal,\n[School/College Name],\n[City]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Application for leave of absence"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I request leave for three days starting tomorrow for my daughter's wedding.\n\nThanking you,\nYours faithfully,\n[Your Name]\n[Your Designation/Class]"
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Class]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "leave_duration: three days"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "start_date: kal se (from tomorrow)"
+     },
+     {
+      "code": "FACT_UNSOURCED",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "reason: beti ki shaadi hai (daughter's wedding)"
+     }
+    ],
+    "flag_codes": [
+     "FACT_UNSOURCED",
+     "FACT_MISSING",
+     "FACT_UNSOURCED",
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[City]",
+     "[School/College Name]",
+     "[Your Designation/Class]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "transcript",
+     "raw": "principal ko ek leave application likho, kal se teen din ki chutti chahiye, beti ki shaadi hai",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "hi-IN",
+     "uncertain": []
+    },
+    "first_text": "To,\nThe Principal,\n[School/College Name],\n[City]\n\nSubject: Application for leave of absence\n\nRespected Sir/Madam,\n\nI am writing to request leave for three days starting from tomorrow. The reason for my absence is my daughter's wedding, which requires my presence and participation in the ceremonies.\n\nI kindly request you to grant me leave for these three days. I will ensure that my duties are managed appropriately during my absence.\n\nThanking you,\nYours faithfully,\n[Your Name]\n[Your Designation/Class]\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Class]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "shorter": true
+    }
+   }
+  ],
+  "M8_indian_english_numbers#2": [
+   {
+    "text_in": "pls write one letter to bank manager for changing my mobile number in account, old number is 9876543210 new is 9123456780, do the needful",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.159,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3078,
+     "total_s": 4.1579,
+     "prompt_n": 78,
+     "predicted_n": 501,
+     "predicted_per_second": 129.87903586116033,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal letter to the bank manager requesting the update of a mobile number from 9876543210 to 9123456780. Missing: Bank Name, Branch Address, Date, Your Account Number, Your Name, [Bank Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "The Branch Manager\n[Bank Name]\n[Branch Address]\n\nSubject: Request for Change of Mobile Number\n\nRespected Sir/Madam,\n\nI hold a savings account in your branch. I am writing to request you to update my registered mobile number associated with my account.\n\nMy old mobile number is 9876543210, and the new mobile number is 9123456780. Please make the necessary changes in your records at the earliest.\n\nThanking you,\nYours faithfully,\n\nYours faithfully,\n\n[Your Name]\n[Your Account Number]\n\n[Date]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "The Branch Manager\n[Bank Name]\n[Branch Address]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Request for Change of Mobile Number"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I hold a savings account in your branch. I am writing to request you to update my registered mobile number associated with my account.\n\nMy old mobile number is 9876543210, and the new mobile number is 9123456780. Please make the necessary changes in your records at the earliest.\n\nThanking you,\nYours faithfully,"
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Account Number]"
+     },
+     {
+      "id": "b7",
+      "role": "line",
+      "text": "[Date]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6",
+     "b7"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Bank Name",
+     "Branch Address",
+     "Date",
+     "Your Account Number",
+     "Your Name",
+     "[Bank Name]",
+     "[Branch Address]",
+     "[Date]",
+     "[Your Account Number]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "The Branch Manager\n[Bank Name]\n[Branch Address]\n\nSubject: Request for Change of Mobile Number\n\nRespected Sir/Madam,\n\nI hold a savings account in your branch. I am writing to request you to update my registered mobile number associated with my account.\n\nMy old mobile number is 9876543210, and the new mobile number is 9123456780. Please make the necessary changes in your records at the earliest.\n\nThanking you,\nYours faithfully,\n\nYours faithfully,\n\n[Your Name]\n[Your Account Number]\n\n[Date]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "old_kept": true,
+     "new_kept": true,
+     "order_kept": true
+    }
+   }
+  ],
+  "M9_long_dictation#2": [
+   {
+    "text_in": "Write a short report summary from this: um so the hostel inspection was done on the 3rd of October by the committee, uh, we checked all forty two rooms, and we found that eleven rooms had broken fans, six rooms had leaking taps, and two rooms, sorry, three rooms had damaged windows. The mess kitchen was clean but the storage area needs pest control. Total estimated repair cost is around eighty five thousand rupees and the committee recommends finishing the work before the exams start in November.",
+    "input": {
+     "schema": "uri.text_input.v1",
+     "source": "transcript",
+     "transcript": {
+      "raw": "Write a short report summary from this: um so the hostel inspection was done on the 3rd of October by the committee, uh, we checked all forty two rooms, and we found that eleven rooms had broken fans, six rooms had leaking taps, and two rooms, sorry, three rooms had damaged windows. The mess kitchen was clean but the storage area needs pest control. Total estimated repair cost is around eighty five thousand rupees and the committee recommends finishing the work before the exams start in November.",
+      "engine": "simulated",
+      "simulated": true,
+      "language": "en-IN"
+     }
+    },
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 4.483,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2726,
+     "total_s": 4.4801,
+     "prompt_n": 148,
+     "predicted_n": 565,
+     "predicted_per_second": 134.05603161820844,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Report_summary (version 1 of 1): A report summary detailing the findings of a hostel inspection conducted on October 3rd, including room defects, maintenance needs, and a cost estimate for repairs to be completed before November exams. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Hostel Inspection Report Summary\n\nA hostel inspection was conducted on the 3rd of October by the committee. All forty-two rooms were inspected, revealing that eleven rooms had broken fans, six rooms had leaking taps, and three rooms had damaged windows. While the mess kitchen was found to be clean, the storage area requires pest control. The total estimated repair cost is approximately eighty-five thousand rupees. The committee recommends completing these repairs before the exams begin in November.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Hostel Inspection Report Summary"
+     },
+     {
+      "id": "b2",
+      "role": "body",
+      "text": "A hostel inspection was conducted on the 3rd of October by the committee. All forty-two rooms were inspected, revealing that eleven rooms had broken fans, six rooms had leaking taps, and three rooms had damaged windows. While the mess kitchen was found to be clean, the storage area requires pest control. The total estimated repair cost is approximately eighty-five thousand rupees. The committee recommends completing these repairs before the exams begin in November."
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: 2"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_DROPPED"
+    ],
+    "missing": [],
+    "source": {
+     "source": "transcript",
+     "raw": "Write a short report summary from this: um so the hostel inspection was done on the 3rd of October by the committee, uh, we checked all forty two rooms, and we found that eleven rooms had broken fans, six rooms had leaking taps, and two rooms, sorry, three rooms had damaged windows. The mess kitchen was clean but the storage area needs pest control. Total estimated repair cost is around eighty five thousand rupees and the committee recommends finishing the work before the exams start in November.",
+     "engine": "simulated",
+     "simulated": true,
+     "language": "en-IN",
+     "uncertain": []
+    },
+    "first_text": "Hostel Inspection Report Summary\n\nA hostel inspection was conducted on the 3rd of October by the committee. All forty-two rooms were inspected, revealing that eleven rooms had broken fans, six rooms had leaking taps, and three rooms had damaged windows. While the mess kitchen was found to be clean, the storage area requires pest control. The total estimated repair cost is approximately eighty-five thousand rupees. The committee recommends completing these repairs before the exams begin in November.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "42": true,
+     "11": true,
+     "6": true,
+     "three_windows": true,
+     "two_windows_gone": true,
+     "85000": true,
+     "november": true,
+     "3rd_oct": true
+    }
+   }
+  ],
+  "M10_contradiction#2": [
+   {
+    "text_in": "Draft a notice that the library will be closed on Saturday and also that it will be open on Saturday as usual.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "needs_user",
+    "wall_s": 1.794,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2504,
+     "total_s": 1.7933,
+     "prompt_n": 53,
+     "predicted_n": 167,
+     "predicted_per_second": 107.61206240462396,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "The request contains a contradiction: the library cannot be both closed and open on the same Saturday. Please specify whether the library is closed or open on Saturday.",
+    "question": "The request contains a contradiction: the library cannot be both closed and open on the same Saturday. Please specify whether the library is closed or open on Saturday.",
+    "errors": [],
+    "op": null,
+    "version": null,
+    "position": null,
+    "count": null,
+    "text": "",
+    "blocks": [],
+    "changed": [],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {},
+    "first_text": "",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "clarified": true
+    }
+   }
+  ],
+  "M11_revise_first_paragraph_only#2": [
+   {
+    "text_in": "Draft a letter to the hostel warden requesting permission for a cultural event in the common room on Friday evening from 6 pm to 9 pm. Mention that about forty students will attend, that we will clean the room afterwards, and that the event coordinator is Kavya.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 5.211,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.247,
+     "total_s": 5.209,
+     "prompt_n": 86,
+     "predicted_n": 698,
+     "predicted_per_second": 140.48001031933504,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Letter (version 1 of 1): A formal letter to the hostel warden requesting permission for a cultural event in the common room on Friday from 6 PM to 9 PM, attended by about forty students and coordinated by Kavya, with a commitment to clean the room afterwards. Missing: Hostel Name, Institution Name, Sender's Designation/Room Number, Sender's Name, [Hostel Name], [Institution Name]. 3 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "The Warden,\n[Hostel Name],\n[Institution Name]\n\nSubject: Request for permission to host a cultural event in the common room\n\nRespected Sir/Madam,\n\nI am writing to formally request permission to organize a cultural event in the hostel common room on Friday evening. The event is scheduled to take place from 6:00 PM to 9:00 PM.\n\nWe anticipate that approximately forty students will attend this gathering. Kavya has been appointed as the event coordinator and will oversee the arrangements. We assure you that the common room will be thoroughly cleaned and restored to its original condition immediately after the event concludes.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "The Warden,\n[Hostel Name],\n[Institution Name]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Request for permission to host a cultural event in the common room"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to formally request permission to organize a cultural event in the hostel common room on Friday evening. The event is scheduled to take place from 6:00 PM to 9:00 PM.\n\nWe anticipate that approximately forty students will attend this gathering. Kavya has been appointed as the event coordinator and will oversee the arrangements. We assure you that the common room will be thoroughly cleaned and restored to its original condition immediately after the event concludes."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Room Number]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "attendee_count: about forty students"
+     },
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: mention"
+     },
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: 0"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING",
+     "USER_DETAIL_MISSING",
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "Hostel Name",
+     "Institution Name",
+     "Sender's Designation/Room Number",
+     "Sender's Name",
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Your Designation/Room Number]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "The Warden,\n[Hostel Name],\n[Institution Name]\n\nSubject: Request for permission to host a cultural event in the common room\n\nRespected Sir/Madam,\n\nI am writing to formally request permission to organize a cultural event in the hostel common room on Friday evening. The event is scheduled to take place from 6:00 PM to 9:00 PM.\n\nWe anticipate that approximately forty students will attend this gathering. Kavya has been appointed as the event coordinator and will oversee the arrangements. We assure you that the common room will be thoroughly cleaned and restored to its original condition immediately after the event concludes.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "forty": true,
+     "kavya": true
+    }
+   },
+   {
+    "text_in": "Make the first paragraph more formal. Keep everything else the same.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 2.331,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.4029,
+     "total_s": 2.3266,
+     "prompt_n": 573,
+     "predicted_n": 220,
+     "predicted_per_second": 113.85879949153468,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Letter (version 2 of 2): Rewrote the first paragraph of the body to use more formal language and structure while preserving all facts. Missing: [Hostel Name], [Institution Name], [Your Designation/Room Number], [Your Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "The Warden,\n[Hostel Name],\n[Institution Name]\n\nSubject: Request for permission to host a cultural event in the common room\n\nRespected Sir/Madam,\n\nI am writing to respectfully submit a request for authorization to conduct a cultural event within the hostel common room on the evening of Friday. The proceedings are scheduled to commence at 6:00 PM and conclude at 9:00 PM.\n\nWe anticipate an attendance of approximately forty students. Kavya has been designated as the event coordinator and shall oversee all logistical arrangements. We hereby assure you that the common room will be meticulously cleaned and restored to its original state immediately following the conclusion of the event.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "The Warden,\n[Hostel Name],\n[Institution Name]"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Request for permission to host a cultural event in the common room"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "I am writing to respectfully submit a request for authorization to conduct a cultural event within the hostel common room on the evening of Friday. The proceedings are scheduled to commence at 6:00 PM and conclude at 9:00 PM.\n\nWe anticipate an attendance of approximately forty students. Kavya has been designated as the event coordinator and shall oversee all logistical arrangements. We hereby assure you that the common room will be meticulously cleaned and restored to its original state immediately following the conclusion of the event."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation/Room Number]"
+     }
+    ],
+    "changed": [
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "attendee_count: about forty students"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING"
+    ],
+    "missing": [
+     "[Hostel Name]",
+     "[Institution Name]",
+     "[Your Designation/Room Number]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "The Warden,\n[Hostel Name],\n[Institution Name]\n\nSubject: Request for permission to host a cultural event in the common room\n\nRespected Sir/Madam,\n\nI am writing to formally request permission to organize a cultural event in the hostel common room on Friday evening. The event is scheduled to take place from 6:00 PM to 9:00 PM.\n\nWe anticipate that approximately forty students will attend this gathering. Kavya has been appointed as the event coordinator and will oversee the arrangements. We assure you that the common room will be thoroughly cleaned and restored to its original condition immediately after the event concludes.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation/Room Number]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "only_first_body_changed": true,
+     "kavya_kept": true
+    }
+   }
+  ],
+  "M12_grammar_only#2": [
+   {
+    "text_in": "Correct this: me and my friend goes to college daily but yesterday we was late because bus not came, our principal Mr. Iyer give us warning.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "CORRECT",
+    "status": "ok",
+    "wall_s": 1.872,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.5314,
+     "total_s": 1.8711,
+     "prompt_n": 810,
+     "predicted_n": 146,
+     "predicted_per_second": 108.25209449138687,
+     "cache_n": 0,
+     "retried": false
+    },
+    "answer": "Text (version 2 of 2): Corrected grammar, spelling, and punctuation in the single body block. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "corrected",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "My friend and I go to college daily, but yesterday we were late because the bus did not come. Our principal, Mr. Iyer, gave us a warning.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "My friend and I go to college daily, but yesterday we were late because the bus did not come. Our principal, Mr. Iyer, gave us a warning."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "me and my friend goes to college daily but yesterday we was late because bus not came, our principal Mr. Iyer give us warning.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "no_meaning_flag": true,
+     "iyer": true,
+     "yesterday": true,
+     "not_formalised": true,
+     "original_kept_v1": true
+    }
+   }
+  ],
+  "M13_exclusion#2": [
+   {
+    "text_in": "Write a short note to the class teacher that the student Rahul Sharma was absent on Monday due to fever.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 3.277,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2595,
+     "total_s": 3.2763,
+     "prompt_n": 51,
+     "predicted_n": 398,
+     "predicted_per_second": 131.60756150084336,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Note (version 1 of 1): A short note to the class teacher explaining Rahul Sharma's absence on Monday due to fever. Missing: Parent's Name, [Parent's Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To,\nThe Class Teacher\n\nSubject: Absence of Rahul Sharma\n\nRespected Sir/Madam,\n\nThis is to inform you that Rahul Sharma was absent from school on Monday due to fever.\n\nYours faithfully,\n\n[Parent's Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Class Teacher"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Absence of Rahul Sharma"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that Rahul Sharma was absent from school on Monday due to fever."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Parent's Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Parent's Name",
+     "[Parent's Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "To,\nThe Class Teacher\n\nSubject: Absence of Rahul Sharma\n\nRespected Sir/Madam,\n\nThis is to inform you that Rahul Sharma was absent from school on Monday due to fever.\n\nYours faithfully,\n\n[Parent's Name]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "rahul": true
+    }
+   },
+   {
+    "text_in": "Don't mention the student's name.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.798,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3206,
+     "total_s": 1.7966,
+     "prompt_n": 331,
+     "predicted_n": 184,
+     "predicted_per_second": 124.02440908807493,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Note (version 2 of 2): Removed the student's name from the subject line and the body text. Missing: [Parent's Name]. 1 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "To,\nThe Class Teacher\n\nSubject: Absence of student\n\nRespected Sir/Madam,\n\nThis is to inform you that the student was absent from school on Monday due to fever.\n\nYours faithfully,\n\n[Parent's Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To,\nThe Class Teacher"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Subject: Absence of student"
+     },
+     {
+      "id": "b3",
+      "role": "salutation",
+      "text": "Respected Sir/Madam,"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that the student was absent from school on Monday due to fever."
+     },
+     {
+      "id": "b5",
+      "role": "closing",
+      "text": "Yours faithfully,"
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Parent's Name]"
+     }
+    ],
+    "changed": [
+     "b2",
+     "b4"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "student_name: Rahul Sharma"
+     },
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: rahul, sharma"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING",
+     "DETAIL_DROPPED"
+    ],
+    "missing": [
+     "[Parent's Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "To,\nThe Class Teacher\n\nSubject: Absence of Rahul Sharma\n\nRespected Sir/Madam,\n\nThis is to inform you that Rahul Sharma was absent from school on Monday due to fever.\n\nYours faithfully,\n\n[Parent's Name]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "rahul_gone": true,
+     "monday_kept": true,
+     "fever_kept": true
+    }
+   }
+  ],
+  "M14_ambiguous_correction#2": [
+   {
+    "text_in": "Write a notice that the hostel fee must be paid by the 5th, and the late fee applies from the 15th.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.784,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2533,
+     "total_s": 2.7828,
+     "prompt_n": 58,
+     "predicted_n": 304,
+     "predicted_per_second": 119.80120117507977,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Notice (version 1 of 1): A notice informing hostel residents that fees are due by the 5th and late fees apply from the 15th. Missing: Date of the notice, Designation of the sender, Name of the sender, [Date], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th.\n\n[Your Name]\n[Your Designation]\nHostel Administration",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Hostel Residents"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th."
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]\nHostel Administration"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Date of the notice",
+     "Designation of the sender",
+     "Name of the sender",
+     "[Date]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th.\n\n[Your Name]\n[Your Designation]\nHostel Administration",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "both_dates": true
+    }
+   },
+   {
+    "text_in": "Change the date to the 10th.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "needs_user",
+    "wall_s": 0.0,
+    "metrics": {
+     "model_used": false
+    },
+    "answer": "I could not find 'the date' in the draft. Which part should I change?",
+    "question": "I could not find 'the date' in the draft. Which part should I change?",
+    "errors": [],
+    "op": null,
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th.\n\n[Your Name]\n[Your Designation]\nHostel Administration",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "NOTICE"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Hostel Residents"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th."
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Designation]\nHostel Administration"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Date of the notice",
+     "Designation of the sender",
+     "Name of the sender",
+     "[Date]",
+     "[Your Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "NOTICE\n\nDate: [Date]\n\nTo: All Hostel Residents\n\nThis is to inform all residents that the hostel fee for the current semester must be paid on or before the 5th of this month. Please note that a late fee will be applicable for any payments made on or after the 15th.\n\n[Your Name]\n[Your Designation]\nHostel Administration",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "clarified_or_flagged": true
+    }
+   }
+  ],
+  "M15_remove_previous_sentence#2": [
+   {
+    "text_in": "Draft an email to the librarian asking to extend the due date of the book Clean Code by one week.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "DRAFT_NEW",
+    "status": "ok",
+    "wall_s": 2.741,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2533,
+     "total_s": 2.7405,
+     "prompt_n": 51,
+     "predicted_n": 301,
+     "predicted_per_second": 120.63220928240723,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Email (version 1 of 1): An email to the librarian requesting a one-week extension for the book 'Clean Code'.  Missing: Sender's ID, Sender's Name, [Your Name], [Your Student/Staff ID]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nYours sincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request for Extension of Due Date: Book 'Clean Code'"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Librarian,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Yours sincerely,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Student/Staff ID]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "Sender's ID",
+     "Sender's Name",
+     "[Your Name]",
+     "[Your Student/Staff ID]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nYours sincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "unchanged_blocks_identical": null,
+    "checks": {}
+   },
+   {
+    "text_in": "Add a sentence saying I will return it in good condition.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.824,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3132,
+     "total_s": 1.8228,
+     "prompt_n": 285,
+     "predicted_n": 186,
+     "predicted_per_second": 122.57597722869629,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Email (version 2 of 2): Added a sentence confirming the book will be returned in good condition to the body of the email. Missing: [Your Name], [Your Student/Staff ID]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly. I will return it in good condition.\n\nThank you for your understanding and assistance.\n\nYours sincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request for Extension of Due Date: Book 'Clean Code'"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Librarian,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly. I will return it in good condition.\n\nThank you for your understanding and assistance."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Yours sincerely,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Student/Staff ID]"
+     }
+    ],
+    "changed": [
+     "b3"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[Your Name]",
+     "[Your Student/Staff ID]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nYours sincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "added": true
+    }
+   },
+   {
+    "text_in": "Remove the previous sentence.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "ok",
+    "wall_s": 1.858,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.3155,
+     "total_s": 1.8563,
+     "prompt_n": 291,
+     "predicted_n": 175,
+     "predicted_per_second": 112.95070740249076,
+     "cache_n": 580,
+     "retried": false
+    },
+    "answer": "Email (version 3 of 3): Removed the sentence 'I will return it in good condition.' from the body. Missing: [Your Name], [Your Student/Staff ID]. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "revised",
+    "version": 3,
+    "position": 3,
+    "count": 3,
+    "text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nYours sincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "subject",
+      "text": "Request for Extension of Due Date: Book 'Clean Code'"
+     },
+     {
+      "id": "b2",
+      "role": "salutation",
+      "text": "Dear Librarian,"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Yours sincerely,"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]\n[Your Student/Staff ID]"
+     }
+    ],
+    "changed": [
+     "b3"
+    ],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [
+     "[Your Name]",
+     "[Your Student/Staff ID]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "Request for Extension of Due Date: Book 'Clean Code'\n\nDear Librarian,\n\nI hope this email finds you well. I am writing to kindly request an extension of the due date for the book 'Clean Code' by one week. I am currently in the process of reading it and would appreciate a little more time to complete it thoroughly.\n\nThank you for your understanding and assistance.\n\nYours sincerely,\n\n[Your Name]\n[Your Student/Staff ID]",
+    "unchanged_blocks_identical": true,
+    "checks": {
+     "removed": true,
+     "book_kept": true
+    }
+   }
+  ],
+  "M16_rewrite_politely#2": [
+   {
+    "text_in": "Rewrite politely: send me the attendance report by today evening otherwise I will escalate.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REWRITE",
+    "status": "ok",
+    "wall_s": 1.803,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.5164,
+     "total_s": 1.8025,
+     "prompt_n": 742,
+     "predicted_n": 138,
+     "predicted_per_second": 106.54754081276332,
+     "cache_n": 0,
+     "retried": false
+    },
+    "answer": "Text (version 2 of 2): Rewrote the directive to be polite and professional while maintaining the deadline and consequence. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "rewritten",
+    "version": 2,
+    "position": 2,
+    "count": 2,
+    "text": "Kindly share the attendance report by this evening. I would appreciate your prompt attention to this matter to avoid any further escalation.",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "body",
+      "text": "Kindly share the attendance report by this evening. I would appreciate your prompt attention to this matter to avoid any further escalation."
+     }
+    ],
+    "changed": [
+     "b1"
+    ],
+    "flags": [
+     {
+      "code": "DETAIL_DROPPED",
+      "severity": "info",
+      "detail": "not in the draft because of your correction or instruction: today"
+     }
+    ],
+    "flag_codes": [
+     "DETAIL_DROPPED"
+    ],
+    "missing": [],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "send me the attendance report by today evening otherwise I will escalate.",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "today_evening": true,
+     "no_new_detail": true
+    }
+   }
+  ],
+  "M17_expand_notes#2": [
+   {
+    "text_in": "Expand these notes into a circular: water supply off tue 10am-2pm, block A and B, maintenance, store water in advance",
+    "input": null,
+    "route": "draft",
+    "text_kind": "EXPAND",
+    "status": "ok",
+    "wall_s": 4.395,
+    "metrics": {
+     "model_used": true,
+     "ttft_s": 0.2629,
+     "total_s": 4.394,
+     "prompt_n": 61,
+     "predicted_n": 542,
+     "predicted_per_second": 130.96758903193648,
+     "cache_n": 576,
+     "retried": false
+    },
+    "answer": "Circular (version 1 of 1): A circular notifying residents of Block A and B about a water supply suspension on Tuesday from 10 AM to 2 PM for maintenance, advising them to store water in advance. Missing: Date, Sender Designation, Sender Name, [Date], [Designation], [Your Name]. 3 check(s) need your attention. Nothing has been sent or saved.",
+    "question": null,
+    "errors": [],
+    "op": "created",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "CIRCULAR\n\nDate: [Date]\n\nTo: All Residents of Block A and Block B\n\nThis is to inform you that the water supply will be temporarily suspended on Tuesday from 10:00 AM to 2:00 PM due to scheduled maintenance work.\n\nResidents are requested to store sufficient water in advance to meet their requirements during this period. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "line",
+      "text": "CIRCULAR"
+     },
+     {
+      "id": "b2",
+      "role": "line",
+      "text": "Date: [Date]"
+     },
+     {
+      "id": "b3",
+      "role": "line",
+      "text": "To: All Residents of Block A and Block B"
+     },
+     {
+      "id": "b4",
+      "role": "body",
+      "text": "This is to inform you that the water supply will be temporarily suspended on Tuesday from 10:00 AM to 2:00 PM due to scheduled maintenance work."
+     },
+     {
+      "id": "b5",
+      "role": "body",
+      "text": "Residents are requested to store sufficient water in advance to meet their requirements during this period. We apologize for any inconvenience caused and appreciate your cooperation."
+     },
+     {
+      "id": "b6",
+      "role": "signature",
+      "text": "[Your Name]\n[Designation]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5",
+     "b6"
+    ],
+    "flags": [
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "date: tue"
+     },
+     {
+      "code": "FACT_MISSING",
+      "severity": "error",
+      "detail": "time: 10am-2pm"
+     },
+     {
+      "code": "NEW_DETAIL",
+      "severity": "review",
+      "detail": "not in your words: 0, 10, 2, tuesday, am, pm"
+     }
+    ],
+    "flag_codes": [
+     "FACT_MISSING",
+     "FACT_MISSING",
+     "NEW_DETAIL"
+    ],
+    "missing": [
+     "Date",
+     "Sender Designation",
+     "Sender Name",
+     "[Date]",
+     "[Designation]",
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "CIRCULAR\n\nDate: [Date]\n\nTo: All Residents of Block A and Block B\n\nThis is to inform you that the water supply will be temporarily suspended on Tuesday from 10:00 AM to 2:00 PM due to scheduled maintenance work.\n\nResidents are requested to store sufficient water in advance to meet their requirements during this period. We apologize for any inconvenience caused and appreciate your cooperation.\n\n[Your Name]\n[Designation]",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "times": true,
+     "blocks": true,
+     "tuesday": true
+    }
+   }
+  ],
+  "M18_greeting_fast_path#2": [
+   {
+    "text_in": "hello",
+    "input": null,
+    "route": "answer",
+    "text_kind": null,
+    "status": "ok",
+    "wall_s": 0.373,
+    "metrics": {
+     "ttft_s": 0.3116,
+     "first_answer_s": 0.3116,
+     "total_s": 0.3722,
+     "prompt_n": 214,
+     "prompt_per_second": 805.056052968174,
+     "predicted_n": 10,
+     "predicted_per_second": 149.08560826928175,
+     "cache_n": 0,
+     "draft_n": 6,
+     "draft_n_accepted": 6,
+     "reasoning_chars": 0,
+     "retried": false
+    },
+    "answer": "Hello! How can I help you today?",
+    "question": null,
+    "errors": [],
+    "op": null,
+    "version": null,
+    "position": null,
+    "count": null,
+    "text": "",
+    "blocks": [],
+    "changed": [],
+    "flags": [],
+    "flag_codes": [],
+    "missing": [],
+    "source": {},
+    "first_text": "",
+    "unchanged_blocks_identical": null,
+    "checks": {
+     "not_desk": true
+    }
+   }
+  ],
+  "M19_cancel_during_generation": [
+   {
+    "cancel_accepted": true,
+    "error_codes": [
+     "CANCELLED"
+    ],
+    "draft_after": null,
+    "checks": {
+     "cancelled": true,
+     "no_draft": true
+    }
+   }
+  ],
+  "M20_brain_unavailable_simulated": [
+   {
+    "text_in": "Make it more formal.",
+    "input": null,
+    "route": "draft",
+    "text_kind": "REVISE",
+    "status": "error",
+    "wall_s": 0.0,
+    "metrics": {},
+    "answer": "",
+    "question": null,
+    "errors": [
+     {
+      "code": "BRAIN_UNAVAILABLE",
+      "message": "The local Brain is not ready (STOPPED); the draft was not changed. Undo, redo and the original still work.",
+      "recoverable": true,
+      "recovery_options": [
+       "start_brain",
+       "retry",
+       "undo"
+      ]
+     }
+    ],
+    "op": null,
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To the Mess Manager\n\nThank You for the Diwali Dinner\n\nI would like to express my sincere gratitude for the delightful Diwali dinner organized by the mess. The festive atmosphere and the delicious food made the occasion truly memorable for everyone.\n\nYours sincerely\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To the Mess Manager"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Thank You for the Diwali Dinner"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I would like to express my sincere gratitude for the delightful Diwali dinner organized by the mess. The festive atmosphere and the delicious food made the occasion truly memorable for everyone."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Yours sincerely"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: 2"
+     }
+    ],
+    "flag_codes": [
+     "USER_DETAIL_MISSING"
+    ],
+    "missing": [
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "To the Mess Manager\n\nThank You for the Diwali Dinner\n\nI would like to express my sincere gratitude for the delightful Diwali dinner organized by the mess. The festive atmosphere and the delicious food made the occasion truly memorable for everyone.\n\nYours sincerely\n\n[Your Name]",
+    "checks": {
+     "brain_unavailable": true,
+     "draft_unchanged": true
+    }
+   },
+   {
+    "text_in": "Show me the original",
+    "input": null,
+    "route": "draft",
+    "text_kind": "ORIGINAL",
+    "status": "ok",
+    "wall_s": 0.0,
+    "metrics": {
+     "model_used": false
+    },
+    "answer": "Here is your original words:\n\nWrite a two line note to the mess manager thanking him for the Diwali dinner.",
+    "question": null,
+    "errors": [],
+    "op": "original",
+    "version": 1,
+    "position": 1,
+    "count": 1,
+    "text": "To the Mess Manager\n\nThank You for the Diwali Dinner\n\nI would like to express my sincere gratitude for the delightful Diwali dinner organized by the mess. The festive atmosphere and the delicious food made the occasion truly memorable for everyone.\n\nYours sincerely\n\n[Your Name]",
+    "blocks": [
+     {
+      "id": "b1",
+      "role": "recipient",
+      "text": "To the Mess Manager"
+     },
+     {
+      "id": "b2",
+      "role": "subject",
+      "text": "Thank You for the Diwali Dinner"
+     },
+     {
+      "id": "b3",
+      "role": "body",
+      "text": "I would like to express my sincere gratitude for the delightful Diwali dinner organized by the mess. The festive atmosphere and the delicious food made the occasion truly memorable for everyone."
+     },
+     {
+      "id": "b4",
+      "role": "closing",
+      "text": "Yours sincerely"
+     },
+     {
+      "id": "b5",
+      "role": "signature",
+      "text": "[Your Name]"
+     }
+    ],
+    "changed": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ],
+    "flags": [
+     {
+      "code": "USER_DETAIL_MISSING",
+      "severity": "review",
+      "detail": "from your words, not in the draft: 2"
+     }
+    ],
+    "flag_codes": [
+     "USER_DETAIL_MISSING"
+    ],
+    "missing": [
+     "[Your Name]"
+    ],
+    "source": {
+     "source": "typed"
+    },
+    "first_text": "To the Mess Manager\n\nThank You for the Diwali Dinner\n\nI would like to express my sincere gratitude for the delightful Diwali dinner organized by the mess. The festive atmosphere and the delicious food made the occasion truly memorable for everyone.\n\nYours sincerely\n\n[Your Name]",
+    "checks": {
+     "original_works_without_brain": true
+    }
+   }
+  ]
+ },
+ "baseline": {},
+ "summary": {
+  "checks": 161,
+  "passed": 159
+ }
+}

@@ -89,7 +89,9 @@ _COMMON_RULES = (
     "events. Use only details the user gave. Where a document normally needs information the user did not give "
     "(sender name, designation, recipient name, date, institution name, contact details), write a placeholder in "
     "square brackets such as [Your Name] or [Date] and list it in missing. Do not add accusations, reasons, "
-    "consequences, promises or requests the user did not state; ordinary courteous phrasing is fine. Keep the "
+    "consequences, promises or requests the user did not state; ordinary courteous phrasing is fine. Never make "
+    "the matter sound more serious than the user did: no 'serious breach', 'violation', 'misconduct', no request "
+    "for disciplinary action, punishment or an inquiry unless the user asked for it. Keep the "
     "user's language register: Indian English office conventions are welcome where they fit (\"Respected Sir/Madam\", "
     "\"Thanking you\", \"Yours faithfully\"). Hindi or Hinglish instructions are understood, but write the document in "
     "English unless the user asks for another language.")
@@ -483,6 +485,14 @@ class DraftDesk:
             self._say(emit, msg, metrics=metrics)
             return {"status": "ok", "draft": d.to_dict(), "unchanged": True}
         facts = _merge_facts(cur.facts, _clean_facts(data.get("fact_updates")))
+        # "Don't say X, say Y": a fact whose value contains X is retired deterministically (live finding LQ-9: the
+        # model did not always update it, so the stale value was demanded in the next version).
+        swapped = [p.lower() for p in V.user_exclusions(interpreted) + V._swap_phrases(interpreted) if p]
+        for f in facts:
+            if any(p in f["value"].lower() for p in swapped):
+                f["superseded"] = list(dict.fromkeys(f["superseded"] + [f["value"]]))
+                f["value"] = ""
+        facts = [f for f in facts if f["value"]]
         exclusions = list(dict.fromkeys(list(cur.exclusions) + _clean_list(data.get("exclusions_add"))))
         new_text, old_text = DS.render(blocks), DS.render(cur.blocks)
         user_words = "\n".join([d.original_text] + [v.instruction for v in d.versions] + [text, interpreted])

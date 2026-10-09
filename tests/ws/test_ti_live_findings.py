@@ -24,3 +24,18 @@ def test_lq4_dont_say_x_verifies_the_replaced_phrase():
     v, u = V.verified_superseded("Actually, don't say without permission. Say they left without recording.",
                                  ["left the hostel without permission"])
     assert v == ["left the hostel without permission"] and u == []
+
+
+def test_lq7_multi_paragraph_body_becomes_blocks():
+    from uri_operational_intelligence import draft_store as DS
+    d = DS.Draft(session_id="s", doc_type="letter", tone="", source={}, original_text="x")
+    blocks = DS.blocks_from_model(d, [{"role": "salutation", "text": "Sir,"},
+                                      {"role": "body", "text": "First para.\n\nSecond para."},
+                                      {"role": "signature", "text": "A\nB"}])
+    assert [(b.role, b.text) for b in blocks] == [("salutation", "Sir,"), ("body", "First para."),
+                                                  ("body", "Second para."), ("signature", "A\nB")]
+    d.push(blocks=blocks, facts=(), exclusions=(), missing=(), op="created", instruction="", summary="",
+           changed=(), removed=(), flags=())
+    out, _, _ = DS.apply_edits(d, d.current.blocks, [{"op": "replace", "block_id": "b3", "text": "Two.\n\nThree."}])
+    assert [b.text for b in out if b.role == "body"] == ["First para.", "Two.", "Three."]
+    assert [b.id for b in out][:3] == ["b1", "b2", "b3"]
