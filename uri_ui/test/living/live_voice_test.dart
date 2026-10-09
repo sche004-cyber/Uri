@@ -481,6 +481,29 @@ void main() {
       expect(kept, isEmpty); // not left in the composer: it went to the desk
     });
 
+    test('INT-3: a dictation while URI is busy stays in the composer, never dropped (Codex TIWS r13)', () async {
+      ctl.dispose();
+      prefs.setVoice(prefs.voice.copyWith(inputMode: VoiceInputMode.drafting));
+      ctl = VoiceInteractionController(
+        service: svc,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+        keepInComposer: kept.add,
+        noticeHold: const Duration(milliseconds: 50),
+        dictation: (raw, {required engine, uncertain = const <String>[]}) => oi.sendTranscript(raw,
+            engine: engine, simulated: false, uncertain: uncertain, dictation: true),
+      );
+      await oi.send('a typed question'); // URI is now busy with this turn
+      expect(oi.busy, isTrue);
+      final turns = rt.commands.where((c) => c['command'] == 'oi_turn').length;
+      await ctl.pressTalk();
+      ctl.releaseTalk();
+      await finalText('Send the form to the office by Friday.');
+      expect(rt.commands.where((c) => c['command'] == 'oi_turn').length, turns); // nothing sent
+      expect(kept, ['Send the form to the office by Friday.']); // and nothing lost
+    });
+
     test('a local presentation command is applied, not sent', () async {
       await ctl.pressTalk();
       ctl.releaseTalk();

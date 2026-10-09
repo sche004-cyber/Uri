@@ -301,6 +301,20 @@ class VoiceInteractionController extends CompanionStateSource {
       );
       return;
     }
+    // Spoken words are never dropped (Codex TIWS r13): when the conversation cannot take a turn now, they stay in
+    // the composer with a notice, exactly as in conversation mode.
+    final conv = oi;
+    if (conv == null || conv.busy || conv.restarting || conv.workerExited) {
+      keepInComposer?.call(f.text);
+      _setStage(VoiceStage.idle);
+      _setNotice(
+        conv == null ? 'NO_CONVERSATION' : 'BUSY',
+        conv == null
+            ? 'URI is not connected. Your words are in the composer.'
+            : 'URI cannot take a draft right now. Your words are in the composer; nothing was sent.',
+      );
+      return;
+    }
     _setStage(VoiceStage.waiting);
     try {
       await sink(f.text, engine: f.engine, uncertain: f.uncertain);
