@@ -198,3 +198,18 @@ def test_r13_english_the_is_not_hindi_past():
 def test_r13_short_and_bounded_swap_values():
     assert V.swap_pairs("don't say A; say B") == [("A", "B")]
     assert V.swap_pairs("Don't say wing, say east and keep the rest unchanged") == [("wing", "east")]
+
+
+
+# Codex TI round 14.
+def test_r14_comma_does_not_cut_the_replacement():
+    assert V.swap_pairs("Don't say west wing; say east wing, sector C") == [("west wing", "east wing, sector C")]
+    assert not V.correction_visible("Don't say west wing; say east wing, sector C", "The gate is in the west wing.",
+                                    "The gate is in the east wing.")
+    assert V.swap_pairs("replace A with B") == [("A", "B")] and V.swap_pairs("change A to B") == [("A", "B")]
+
+
+def test_r14_score_is_not_a_time_and_flags_show_clock_text():
+    assert V.canonical_numbers("The match ended 3:20.") >= {3, 20}
+    f = V.check_meaning_preserved("Meet at 6 pm", "Meet at 7 pm.")
+    assert "18:00" in f[0]["detail"] and "1000" not in f[0]["detail"]

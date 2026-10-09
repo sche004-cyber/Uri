@@ -64,8 +64,11 @@ def _fold(s):
     # A clock time becomes one token with hour, minutes and half of day ("6 pm" = "6:00 PM" = clock1800, but
     # "6 am" = clock0600): Codex TI r12, a time must never lose its minutes or am/pm when compared.
     s = re.sub(r"\b(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)(?![a-z])", _clock, s)
-    s = re.sub(r"\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*(?:a\.?m|p\.?m))", lambda m: " clock%02d%s " % (int(m.group(1)),
-               m.group(2)), s)
+    # 24-hour times only where a time is meant ("at 18:00", "from 09:30", "18:00 hrs"); a score or verse "3:20" stays.
+    s = re.sub(r"\b(at|from|to|till|until|by|before|after|between|and)\s+([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*(?:a\.?m|p\.?m))|"
+               r"\b([01]?\d|2[0-3]):([0-5]\d)\s*(?:hrs|hours|h)\b",
+               lambda m: (" %s clock%02d%s " % (m.group(1), int(m.group(2)), m.group(3)) if m.group(1)
+                          else " clock%02d%s " % (int(m.group(4)), m.group(5))), s)
     return s
 
 
@@ -210,6 +213,8 @@ def _phrase_present(phrase, text) -> bool:
 
 
 def _flag(code, severity, detail):
+    # Clock values travel as CLOCK_BASE + HHMM; the user sees "18:00".
+    detail = re.sub(r"\b1(0{7,8})(\d{4})\b", lambda m: "%s:%s" % (m.group(2)[:2], m.group(2)[2:]), str(detail))
     return {"code": code, "severity": severity, "detail": detail}
 
 
@@ -550,9 +555,9 @@ def date_mentions(text) -> list:
 _SWAP_PAIR = re.compile(
     r"(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\s+[\"'“‘]?(?P<x1>.{1,120}?)[\"'”’]?\s*[.,;]\s*(?:instead\s+)?"
     r"(?:say|write|use|put)\s+[\"'“‘]?(?P<y1>[^.;\n\"”’]{1,160})|"
-    r"replace\s+[\"'“‘]?(?P<x2>.{2,120}?)[\"'”’]?\s+with\s+[\"'“‘]?(?P<y2>[^.;\n\"”’]{2,160})|"
-    r"change\s+[\"'“‘]?(?P<x3>.{2,120}?)[\"'”’]?\s+to\s+[\"'“‘]?(?P<y3>[^.;\n\"”’]{2,160})|"
-    r"instead of\s+[\"'“‘]?(?P<x4>.{2,120}?)[\"'”’]?\s*,?\s*(?:say|write|use|put)\s+[\"'“‘]?(?P<y4>[^.;\n\"”’]{2,160})",
+    r"replace\s+[\"'“‘]?(?P<x2>.{1,120}?)[\"'”’]?\s+with\s+[\"'“‘]?(?P<y2>[^.;\n\"”’]{1,160})|"
+    r"change\s+[\"'“‘]?(?P<x3>.{1,120}?)[\"'”’]?\s+to\s+[\"'“‘]?(?P<y3>[^.;\n\"”’]{1,160})|"
+    r"instead of\s+[\"'“‘]?(?P<x4>.{1,120}?)[\"'”’]?\s*,?\s*(?:say|write|use|put)\s+[\"'“‘]?(?P<y4>[^.;\n\"”’]{1,160})",
     re.I | re.S)
 
 
@@ -562,7 +567,10 @@ def swap_pairs(instruction) -> list:
     for m in _SWAP_PAIR.finditer(instruction or ""):
         for i in "1234":
             if m.group("x" + i):
-                y = re.split(r"\s*,\s*|\s+(?:and|but)\s+(?:keep|leave|make|don'?t|do not|also|then)\b", m.group("y" + i),
+                # Only a following instruction ends the new wording ("say east and keep the rest"); a comma does not
+                # ("say east wing, sector C" keeps "sector C" required: Codex TI r14).
+                y = re.split(r"\s*,?\s+(?:and|but)\s+(?:keep|leave|make|don'?t|do not|also|then)\b|"
+                             r"\s*,\s*(?:keep|leave|make|don'?t|do not|also|then)\b", m.group("y" + i),
                              maxsplit=1, flags=re.I)[0]
                 out.append((m.group("x" + i).strip(" \"'“”‘’"), y.strip(" \"'“”‘’")))
     return out
