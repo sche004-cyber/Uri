@@ -253,6 +253,7 @@ class LiveVoiceService implements VoiceServiceAdapter {
   final _finals = StreamController<VoiceFinal>.broadcast();
   final _problems = StreamController<VoiceProblem>.broadcast();
   final _spoken = StreamController<(String, VoiceEndReason)>.broadcast();
+  final _spokenStarts = StreamController<String>.broadcast();
 
   /// Service readiness, devices and the current problem, if any.
   final ValueNotifier<VoiceServiceStatus> status =
@@ -274,6 +275,9 @@ class LiveVoiceService implements VoiceServiceAdapter {
 
   /// Every reply utterance that ended, with how it ended.
   Stream<(String, VoiceEndReason)> get spokenEnds => _spoken.stream;
+
+  /// The id of each reply utterance when its first audio starts playing.
+  Stream<String> get spokenStarts => _spokenStarts.stream;
 
   /// Starts the process if it is not running. True when it is running.
   Future<bool> ensureStarted() {
@@ -479,6 +483,16 @@ class LiveVoiceService implements VoiceServiceAdapter {
         _signals.add(UserTranscript(id, '${e['text'] ?? ''}'));
       case 'listen.closed':
         _signals.add(ListeningEnded(id, _listenEnd(e['reason'] as String?)));
+        if (e['reason'] == 'max_length') {
+          _problems.add(
+            VoiceProblem(
+              'MAX_LENGTH',
+              'Stopped listening at the length limit; what was heard is being transcribed.',
+              id: id,
+              warning: true,
+            ),
+          );
+        }
       case 'listen.final':
         _finals.add(
           VoiceFinal(
@@ -508,6 +522,7 @@ class LiveVoiceService implements VoiceServiceAdapter {
         _signals.add(VoiceFailure(p.message));
       case 'speak.started' || 'speak.chunk':
         _signals.add(UriSpeechStarted(id, '${e['text'] ?? ''}'));
+        if (e['ev'] == 'speak.started') _spokenStarts.add(id);
       case 'speak.level':
         _signals.add(
           AudioLevel(
@@ -545,6 +560,7 @@ class LiveVoiceService implements VoiceServiceAdapter {
     await _finals.close();
     await _problems.close();
     await _spoken.close();
+    await _spokenStarts.close();
     status.dispose();
   }
 }

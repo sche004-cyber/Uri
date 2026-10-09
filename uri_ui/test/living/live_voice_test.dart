@@ -555,6 +555,113 @@ void main() {
       },
     );
 
+    test('R1-1: a press released while the service starts never opens the microphone', () async {
+      final slow = Completer<VoiceTransport>();
+      final t2 = FakeVoiceTransport();
+      final svc2 = LiveVoiceService(launch: () => slow.future);
+      final c2 = VoiceInteractionController(
+        service: svc2,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+      );
+      final press = c2.pressTalk();
+      expect(c2.stage, VoiceStage.opening);
+      c2.releaseTalk(); // key up during start-up
+      expect(c2.stage, VoiceStage.idle);
+      slow.complete(t2);
+      await press;
+      await pump();
+      expect(t2.cmds.where((c) => c == 'listen_start'), isEmpty);
+      expect(c2.stage, VoiceStage.idle);
+      c2.dispose();
+    });
+
+    test('R1-2: the service dying mid-capture resets the interaction; the next press restarts it', () async {
+      var launches = 0;
+      var current = FakeVoiceTransport();
+      final svc2 = LiveVoiceService(
+        launch: () async {
+          launches++;
+          return current;
+        },
+      );
+      final c2 = VoiceInteractionController(
+        service: svc2,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+      );
+      await c2.pressTalk();
+      expect(c2.stage, VoiceStage.listening);
+      current.die();
+      await pump();
+      expect(c2.stage, VoiceStage.idle);
+      expect(c2.noticeCode, 'VOICE_SERVICE_STOPPED');
+      current = FakeVoiceTransport();
+      await c2.pressTalk();
+      expect(launches, 2);
+      expect(current.cmds, ['hello', 'listen_start']);
+      expect(c2.stage, VoiceStage.listening);
+      c2.dispose();
+    });
+
+    test(
+      'R1-6: the length bound ends the capture with a notice and transcribes',
+      () async {
+        await ctl.pressTalk();
+        t.push({
+          'ev': 'listen.closed',
+          'id': captureId(),
+          'reason': 'max_length',
+        });
+        await pump();
+        expect(ctl.noticeCode, 'MAX_LENGTH');
+        expect(ctl.stage, VoiceStage.transcribing);
+        await finalText('A very long dictation.');
+        expect(rt.commands.where((c) => c['command'] == 'oi_turn').length, 1);
+      },
+    );
+
+    test(
+      'R1-7: latency is measured to the first reply audio, not to queueing',
+      () async {
+        await ctl.pressTalk();
+        ctl.releaseTalk();
+        await finalText('Hello there?');
+        rt.emit('t1', 'answer.delta', {'text': 'Hi. '});
+        rt.emit('t1', 'turn.finished', {'status': 'COMPLETE'});
+        await pump();
+        expect(
+          ctl.timings.where(
+            (m) => m.containsKey('final_to_first_reply_audio_ms'),
+          ),
+          isEmpty,
+        );
+        final utt = '${t.sent.firstWhere((c) => c['cmd'] == 'speak')['id']}';
+        t.push({'ev': 'speak.started', 'id': utt, 'text': 'Hi.'});
+        await pump();
+        expect(
+          ctl.timings
+              .where((m) => m.containsKey('final_to_first_reply_audio_ms'))
+              .length,
+          1,
+        );
+      },
+    );
+
+    test('R1-5: a fallback microphone is a soft notice', () async {
+      t.push({
+        'ev': 'listen.warning',
+        'id': 'x',
+        'code': 'MIC_FALLBACK',
+        'message': 'using Microphone (Test)',
+      });
+      await pump();
+      expect(ctl.noticeCode, 'MIC_FALLBACK');
+      expect(ctl.signal.state, isNot(CompanionState.error));
+    });
+
     test(
       'microphone denied: a press shows the reason and opens nothing',
       () async {

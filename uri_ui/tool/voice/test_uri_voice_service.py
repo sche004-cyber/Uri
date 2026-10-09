@@ -189,15 +189,10 @@ def test_capture_reports_level_onset_and_final_with_uncertain_words(env):
     assert env.svc.recogniser.calls[-1][1] is True
 
 
-def test_selected_microphone_is_used_and_a_missing_one_is_refused(env):
+def test_selected_microphone_is_used(env):
     env.svc.listen_start("c1", "Mic B", 60)
     assert wait_for(env.events, "listen.started")["device"] == "Mic B"
     env.svc.listen_cancel("c1")
-    env.events.clear()
-    env.svc.listen_start("c2", "Unplugged Mic", 60)
-    err = wait_for(env.events, "listen.error")
-    assert err["code"] == "MIC_NOT_FOUND"
-    assert env.svc.capture is None
 
 
 def test_denied_privacy_switch_never_opens_the_device(env, monkeypatch):
@@ -283,6 +278,7 @@ def test_speaker_plays_in_order_measures_levels_and_stops(env, monkeypatch, tmp_
     sp.stop_flag = threading.Event()
     sp.current = None
     sp.started_ids = set()
+    sp.failed = set()
     import wave
 
     def render(text, voice, out):
@@ -370,3 +366,72 @@ def test_user_vocabulary_reaches_the_recogniser_and_is_sanitised(env):
     assert env.mod.bias_words("Gangtok; Tshering <script> Bhutia") == "URI Gangtok Tshering script Bhutia"
     assert env.mod.bias_words("") == "URI"
     assert len(env.mod.bias_words("x" * 5000)) <= 4 + env.mod.VOCAB_MAX_CHARS
+
+
+def make_speaker(env, tmp_path, render):
+    mod = env.mod
+    env.svc.capture = None
+    sp = mod.Speaker.__new__(mod.Speaker)
+    sp.svc = env.svc
+    sp.tmp = tmp_path
+    sp.gen = 0
+    sp.lock = threading.Lock()
+    sp.ps_lock = threading.Lock()
+    sp.render_q, sp.play_q = mod.queue.Queue(), mod.queue.Queue()
+    sp.stop_flag = threading.Event()
+    sp.current = None
+    sp.started_ids = set()
+    sp.failed = set()
+    sp._render = render
+    threading.Thread(target=sp._render_loop, daemon=True).start()
+    threading.Thread(target=sp._play_loop, daemon=True).start()
+    return sp
+
+
+def wav_render(seconds):
+    import wave
+
+    def render(text, voice, out):
+        if text == "boom":
+            raise RuntimeError("engine failed")
+        with wave.open(str(out), "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(8000)
+            w.writeframes(np.full(int(8000 * seconds), 3000, dtype="<i2").tobytes())
+    return render
+
+
+def test_r1_4_a_failed_sentence_drops_the_rest_of_its_utterance(env, tmp_path):
+    sp = make_speaker(env, tmp_path, wav_render(0.2))
+    sp.speak("u1", "boom", {}, False)
+    sp.speak("u1", "after", {}, True)
+    end = wait_for(env.events, "speak.ended")
+    assert end["reason"] == "failed"
+    time.sleep(0.8)
+    assert not any(e["ev"] in ("speak.started", "speak.chunk") and e.get("id") == "u1" for e in env.events)
+    assert "u1" not in sp.failed  # forgotten after its last sentence
+    env.events.clear()
+    sp.speak("u2", "fine", {}, True)  # later utterances are unaffected
+    assert wait_for(env.events, "speak.ended")["reason"] == "completed"
+
+
+def test_r1_3_a_gap_between_sentences_reports_silence(env, tmp_path):
+    sp = make_speaker(env, tmp_path, wav_render(0.2))
+    sp.speak("u1", "one", {}, False)
+    wait_for(env.events, "speak.started")
+    time.sleep(1.2)  # URI has not written the next sentence yet
+    # The clip's own last (empty) block reports one zero level at most; the gap
+    # reports silence every 250 ms (old code: one zero level, then nothing).
+    zeros = [e for e in env.events if e["ev"] == "speak.level" and e["rms"] == 0.0]
+    assert len(zeros) >= 3
+    sp.speak("u1", "two", {}, True)
+    assert wait_for(env.events, "speak.ended")["reason"] == "completed"
+
+
+def test_r1_5_unplugged_choice_falls_back_to_the_default_with_a_warning(env):
+    env.svc.listen_start("c1", "Unplugged Mic", 60)
+    st = wait_for(env.events, "listen.started")
+    assert st["device"] == "Mic A"
+    w = wait_for(env.events, "listen.warning")
+    assert w["code"] == "MIC_FALLBACK" and "Unplugged Mic" in w["message"]

@@ -62,7 +62,8 @@ class VoiceInteractionController extends CompanionStateSource {
     _subs.add(service.finals.listen(_onFinal));
     _subs.add(service.problems.listen(_onProblem));
     _subs.add(service.spokenEnds.listen(_onSpokenEnd));
-    service.status.addListener(notifyListeners);
+    _subs.add(service.spokenStarts.listen(_onSpokenStart));
+    service.status.addListener(_onStatus);
   }
 
   final LiveVoiceService service;
@@ -88,6 +89,11 @@ class VoiceInteractionController extends CompanionStateSource {
 
   String? _captureId;
   String? _utteranceId;
+
+  /// Incremented by every press, release and cancel. A press that waited for
+  /// the service to start opens the microphone only if nothing happened in
+  /// between (a key released during start-up must not open it afterwards).
+  int _pressGen = 0;
 
   /// The last finished utterance, shown until the next one.
   VoiceFinal? lastFinal;
@@ -131,8 +137,12 @@ class VoiceInteractionController extends CompanionStateSource {
       return;
     }
     _stopReplyTracking();
+    final gen = ++_pressGen;
     _setStage(VoiceStage.opening);
-    if (!await service.ensureStarted()) {
+    final started = await service.ensureStarted();
+    // Released or cancelled meanwhile: the microphone stays closed.
+    if (_disposed || gen != _pressGen) return;
+    if (!started) {
       _setStage(VoiceStage.idle);
       _setNotice(
         service.status.value.problemCode ?? 'VOICE_UNAVAILABLE',
@@ -159,6 +169,7 @@ class VoiceInteractionController extends CompanionStateSource {
       if (_stage == VoiceStage.opening) cancel();
       return;
     }
+    _pressGen++;
     _releasedAt = DateTime.now();
     service.listenStop(id);
     _setStage(VoiceStage.transcribing);
@@ -166,6 +177,13 @@ class VoiceInteractionController extends CompanionStateSource {
 
   /// Cancels a capture (nothing is transcribed or sent) or stops URI talking.
   void cancel() {
+    _pressGen++;
+    if (_stage == VoiceStage.opening && _captureId == null) {
+      _setStage(
+        VoiceStage.idle,
+      ); // the press is abandoned before the mic opened
+      return;
+    }
     final id = _captureId;
     if (id != null &&
         (_stage == VoiceStage.listening ||
@@ -368,17 +386,39 @@ class VoiceInteractionController extends CompanionStateSource {
     final id = _utteranceId;
     if (id == null) return;
     if (text.isNotEmpty && _stage != VoiceStage.speaking) {
-      if (_sentAt != null) {
-        timings.add({
-          'final_to_first_reply_sentence_ms': DateTime.now()
-              .difference(_sentAt!)
-              .inMilliseconds,
-        });
-        _sentAt = null;
-      }
       _setStage(VoiceStage.speaking);
     }
     service.speak(id, text, preferences.voice, last: last);
+  }
+
+  /// Final transcript handed to URI -> the reply's first audio playing.
+  void _onSpokenStart(String id) {
+    if (id != _utteranceId || _sentAt == null) return;
+    timings.add({
+      'final_to_first_reply_audio_ms': DateTime.now()
+          .difference(_sentAt!)
+          .inMilliseconds,
+    });
+    _sentAt = null;
+  }
+
+  /// The voice process went away: whatever was in progress is over. The
+  /// next press starts the service again.
+  void _onStatus() {
+    final st = service.status.value.state;
+    if ((st == VoiceServiceState.unavailable ||
+            st == VoiceServiceState.stopped) &&
+        _stage != VoiceStage.idle) {
+      _pressGen++;
+      _captureId = null;
+      _stopReplyTracking();
+      _setStage(VoiceStage.idle);
+      _setNotice(
+        service.status.value.problemCode ?? 'VOICE_SERVICE_STOPPED',
+        service.status.value.problem ?? 'The voice service stopped.',
+      );
+    }
+    notifyListeners();
   }
 
   void _onSpokenEnd((String, VoiceEndReason) e) {
@@ -397,7 +437,14 @@ class VoiceInteractionController extends CompanionStateSource {
   // ---- problems and notices --------------------------------------------------
 
   void _onProblem(VoiceProblem p) {
-    if (p.code == 'MIC_SILENT') {
+    if (p.code == 'MIC_SILENT' || p.code == 'MIC_FALLBACK') {
+      _setNotice(p.code, p.message);
+      return;
+    }
+    if (p.code == 'MAX_LENGTH') {
+      if (p.id != null && p.id == _captureId) {
+        _setStage(VoiceStage.transcribing);
+      }
       _setNotice(p.code, p.message);
       return;
     }
@@ -469,7 +516,11 @@ class VoiceInteractionController extends CompanionStateSource {
   }
 
   static bool _isSoftNotice(String? code) =>
-      code == 'NO_SPEECH' || code == 'BUSY' || code == 'MIC_SILENT';
+      code == 'NO_SPEECH' ||
+      code == 'BUSY' ||
+      code == 'MIC_SILENT' ||
+      code == 'MIC_FALLBACK' ||
+      code == 'MAX_LENGTH';
 
   @override
   void dispose() {
@@ -479,7 +530,7 @@ class VoiceInteractionController extends CompanionStateSource {
     for (final s in _subs) {
       s.cancel();
     }
-    service.status.removeListener(notifyListeners);
+    service.status.removeListener(_onStatus);
     super.dispose();
   }
 }

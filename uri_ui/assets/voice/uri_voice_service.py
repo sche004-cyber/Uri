@@ -165,7 +165,12 @@ def resolve_device(sd, name: str | None):
         for r in rows:
             if r["name"] == name:
                 return r, None, None
-        return None, "MIC_NOT_FOUND", f"The selected microphone is not available: {name}"
+        # The chosen device is unplugged: use the Windows default and say so
+        # (listen.warning MIC_FALLBACK), as the settings page tells the user.
+        for r in rows:
+            if r["default"]:
+                return r, "MIC_FALLBACK", f"The selected microphone is not available ({name}); using {r['name']}."
+        return rows[0], "MIC_FALLBACK", f"The selected microphone is not available ({name}); using {rows[0]['name']}."
     for r in rows:
         if r["default"]:
             return r, None, None
@@ -381,6 +386,9 @@ class Speaker:
         self.stop_flag = threading.Event()
         self.current = None  # utterance id being played
         self.started_ids: set[str] = set()
+        # Utterances whose sentence failed: their later sentences are dropped,
+        # so nothing is heard after the utterance was reported ended.
+        self.failed: set[str] = set()
         threading.Thread(target=self._render_loop, name="render", daemon=True).start()
         threading.Thread(target=self._play_loop, name="play", daemon=True).start()
         threading.Thread(target=self._ensure_ps, name="ps-warm", daemon=True).start()
@@ -450,6 +458,9 @@ class Speaker:
             gen, uid, text, voice, final = self.render_q.get()
             if gen != self.gen:
                 continue
+            if uid in self.failed:
+                self.play_q.put((gen, uid, "", None, final, None, 0))
+                continue
             clean = text.strip()
             path = None
             err = None
@@ -476,14 +487,32 @@ class Speaker:
 
         sd = self.svc.sd
         while True:
-            gen, uid, text, path, final, err, render_ms = self.play_q.get()
+            try:
+                item = self.play_q.get(timeout=0.25)
+            except queue.Empty:
+                # An utterance is open but its next sentence is not ready yet
+                # (rendering, or URI is still writing it). Report the silence
+                # that is actually playing, so the client's watchdog does not
+                # mistake the gap for a lost voice service.
+                cur = self.current
+                if cur is not None:
+                    emit("speak.level", id=cur, rms=0.0, block_ms=20.0)
+                continue
+            gen, uid, text, path, final, err, render_ms = item
             if gen != self.gen:
                 _unlink(path)
+                continue
+            if uid in self.failed:
+                _unlink(path)
+                if final:
+                    self.failed.discard(uid)
                 continue
             if err:
                 emit("speak.error", id=uid, code="TTS_FAILED", message=err)
                 emit("speak.ended", id=uid, reason="failed")
                 self._finish(uid)
+                if not final:
+                    self.failed.add(uid)
                 continue
             if path is not None:
                 try:
@@ -501,6 +530,8 @@ class Speaker:
                     emit("speak.error", id=uid, code="TTS_FAILED", message=f"unreadable speech audio: {e}")
                     emit("speak.ended", id=uid, reason="failed")
                     self._finish(uid)
+                    if not final:
+                        self.failed.add(uid)
                     continue
                 with self.lock:
                     if gen != self.gen:
@@ -551,6 +582,7 @@ class Speaker:
             emit("speak.error", id=uid, code="PLAYBACK_FAILED", message=f"cannot open the speakers: {e}")
             emit("speak.ended", id=uid, reason="failed")
             self._finish(uid)
+            self.failed.add(uid)
             return False
         last_progress = 0.0
         with stream:
@@ -633,6 +665,8 @@ class Service:
             if dev is None:
                 emit("listen.error", id=cid, code=code, message=msg)
                 return
+            if code == "MIC_FALLBACK":
+                emit("listen.warning", id=cid, code=code, message=msg)
             cap = Capture(self, cid, dev, max_s, vocabulary)
             try:
                 cap.open()
