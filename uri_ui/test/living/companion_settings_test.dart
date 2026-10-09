@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -962,6 +963,54 @@ void main() {
       expect(find.byType(VoiceTranscript), findsOneWidget);
       await adapter.ctl.close();
       await tester.pumpAndSettle();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  group('voice dock layout', () {
+    test(
+      'never over the companion, never over the Companion-mode controls',
+      () {
+        for (final shell in const [
+          Size(1280, 860),
+          Size(1024, 700),
+          Size(800, 600),
+          Size(640, 480),
+        ]) {
+          for (final mode in UiPresentationMode.values) {
+            final orb = OrbDock.forMode(mode, shell).rect;
+            final v = VoiceDock.forMode(mode, shell, orb).rect;
+            final where = "${mode.name} $shell";
+            expect(v.overlaps(orb), isFalse, reason: where);
+            expect(v.left, greaterThanOrEqualTo(0), reason: where);
+            expect(v.right, lessThanOrEqualTo(shell.width), reason: where);
+            if (mode == UiPresentationMode.companion) {
+              expect(
+                v.bottom,
+                lessThanOrEqualTo(
+                  math.max(
+                    shell.height - VoiceDock.companionControls,
+                    v.top + VoiceStage.heightFor(v.width, waveform: false),
+                  ),
+                ),
+                reason: where,
+              );
+            }
+          }
+        }
+      },
+    );
+
+    test('the transcript always fits; the waveform shrinks first', () {
+      final w = 520.0;
+      expect(
+        VoiceStage.heightFor(w),
+        greaterThan(VoiceStage.heightFor(w, waveform: false)),
+      );
+      expect(
+        VoiceStage.heightFor(w, waveform: false),
+        VoiceTranscript.heightFor(),
+      );
     });
   });
 

@@ -59,31 +59,61 @@ class OrbDock {
   }
 }
 
-/// Where the voice exchange (waveform and transcript) sits in each form:
-/// under the companion in Companion mode, beside it when it is docked. It is
-/// placed next to the companion, never over it.
+/// Where the voice exchange (waveform and transcript) sits in each form. It
+/// is placed next to the companion and never over it, nor over the controls:
+///
+/// * Companion mode: under the status line, sized to the space left above the
+///   composer (the waveform shrinks first; the transcript always fits).
+/// * Workspace: a slim pill centred in the header row.
+/// * Dashboard: a slim pill beside the companion.
 @immutable
 class VoiceDock {
   const VoiceDock({required this.rect, required this.compact});
   final Rect rect;
   final bool compact;
 
+  /// Height the Companion-mode controls take at the bottom of the shell
+  /// (composer, mode chips, hint and their gaps).
+  static const double companionControls = 168;
+
+  /// Height of the status line and its detail under the companion.
+  static const double companionStatus = 66;
+
   static VoiceDock forMode(UiPresentationMode mode, Size shell, Rect orb) {
     switch (mode) {
       case UiPresentationMode.companion:
         final w = (shell.width - 32).clamp(200.0, 520.0);
-        final h = VoiceStage.heightFor(w);
+        final top = orb.bottom + companionStatus;
+        final room = shell.height - companionControls - top;
+        final h = room.clamp(
+          VoiceStage.heightFor(w, waveform: false),
+          VoiceStage.heightFor(w),
+        );
         return VoiceDock(
-          rect: Rect.fromLTWH((shell.width - w) / 2, orb.bottom + 64, w, h),
+          rect: Rect.fromLTWH((shell.width - w) / 2, top, w, h),
           compact: false,
         );
       case UiPresentationMode.workspace:
-      case UiPresentationMode.dashboard:
-        final w = (shell.width * 0.42).clamp(220.0, 380.0);
-        final h = VoiceStage.heightFor(w, compact: true);
-        final left = (orb.right + 12).clamp(8.0, shell.width - w - 8);
+        final w = (shell.width * 0.36).clamp(240.0, 440.0);
         return VoiceDock(
-          rect: Rect.fromLTWH(left, orb.top, w, h),
+          rect: Rect.fromLTWH(
+            (shell.width - w) / 2,
+            6,
+            w,
+            VoiceStage.compactHeight,
+          ),
+          compact: true,
+        );
+      case UiPresentationMode.dashboard:
+        final left = orb.right + 24;
+        final w = (shell.width - left - 24).clamp(200.0, 420.0);
+        return VoiceDock(
+          rect: Rect.fromLTWH(
+            left,
+            orb.center.dy - VoiceStage.compactHeight / 2,
+            w,
+            VoiceStage.compactHeight,
+          ),
           compact: true,
         );
     }
