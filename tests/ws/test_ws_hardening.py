@@ -684,6 +684,8 @@ def test_eviction_after_load_is_reported_without_any_request_to_the_brain(tmp_pa
     assert h.residency_alert(h.residency(8008)) is False and "residency_alert" not in h.report
     assert h.residency_alert(h.residency(8008)) is True
     assert h.report["residency_alert"]["growth_mib"] == 1633.0
+    assert h.residency_alert({"non_local_mib": None}) is True and "residency_alert" in h.report   # unknown keeps it
+    assert h.residency_alert({"non_local_mib": 1200.0}) is False and "residency_alert" not in h.report  # measured recovery
     import inspect
     src = inspect.getsource(H.Host.residency_alert)
     assert "httpx" not in src and "calibrate(" not in src           # the host sends nothing to the Brain here

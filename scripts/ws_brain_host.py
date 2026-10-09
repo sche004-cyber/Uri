@@ -305,7 +305,10 @@ class Host:
         cal = self.report.get("calibration") or {}
         before = (cal.get("residency") or {}).get("non_local_mib")
         now = (now_res or {}).get("non_local_mib")
-        if before is not None and now is not None and now - before >= RESIDENCY_ALERT_GROWTH_MIB:
+        if before is None or now is None:
+            # Unknown sample: keep what was last measured (Codex H-r9); only a measured value clears the alert.
+            return "residency_alert" in self.report
+        if now - before >= RESIDENCY_ALERT_GROWTH_MIB:
             self.report["residency_alert"] = {"growth_mib": round(now - before, 1), "non_local_mib": now,
                                               "t": (now_res or {}).get("t"), "server_pid": cal.get("server_pid"),
                                               "server_create_time": cal.get("server_create_time")}
