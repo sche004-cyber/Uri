@@ -145,13 +145,14 @@ def test_l2_dictated_payload_and_ambiguous_sentences_are_exact():
     assert X.action_sentences("Dear all. Send the form by Friday. Thanks.") == ["Send the form by Friday"]
 
 
-# LV-1 (live finding, kept as a limitation): "ghar mein function hai" is a family event, but any use of "function"
-# routes to the ordinary path (safe direction). Three narrower exemptions were rejected by Codex TIWS r6-r8 because
+# LV-1 (live finding, kept as a limitation): "ghar mein function hai" is a family event, but a Hinglish letter that
+# contains a code word (here "function") routes to the ordinary path (safe direction); English drafting requests keep
+# their _DRAFT_NEW exception. Three narrower exemptions were rejected by Codex TIWS r6-r8 because
 # each let some code-action request reach the desk, and plural code words (r8/r9) would divert corrections such as
 # "exam scripts"; so the accepted round-5 routing stays unchanged (LV-1, LV-3 limitations).
 @pytest.mark.parametrize("text", [
     "Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
     "bug report likho aur bug fix karo", "is function ka note likho aur function ko badlo",
     "Ek function hai, usko run karo aur application likho"])
-def test_lv1_any_code_word_including_plurals_keeps_the_code_route(text):
+def test_lv1_singular_code_words_keep_the_code_route(text):
     assert X.classify(text, has_draft=False).reasons == ["code_work"]
