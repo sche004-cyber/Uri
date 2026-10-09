@@ -433,7 +433,13 @@ List<A2uiError> validateData(Object? value, String path, String raw) {
     if (v is String && (v.length > a2uiMaxString || hasLoneSurrogate(v))) {
       errs.add(A2uiError('BAD_TEXT', p));
     } else if (v is Map) {
-      v.forEach((k, x) => walk(x, '$p/$k'));
+      v.forEach((k, x) {
+        if (k is! String || k.length > 256 || hasLoneSurrogate(k)) {
+          errs.add(A2uiError('BAD_KEY', p));
+        } else {
+          walk(x, '$p/$k');
+        }
+      });
     } else if (v is List) {
       for (var i = 0; i < v.length; i++) {
         walk(v[i], '$p/$i');

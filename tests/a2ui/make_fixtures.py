@@ -109,6 +109,7 @@ CASES = [
     ("lone_surrogate_text", [comps(mutate(lambda c: c[1].update(text="a\ud800b")))], "BAD_TEXT"),
     ("lone_surrogate_data", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "/", "value": {"x": "\udfff"}}}], "BAD_TEXT"),
     ("paired_surrogates_ok", [create(), comps(mutate(lambda c: c[1].update(text=json.loads('"\\ud83d\\ude00"'))))], "valid"),   # decoded like the wire: one code point
+    ("lone_surrogate_key", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "/", "value": {json.loads('"\\ud800"'): "ok"}}}], "BAD_KEY"),
     ("too_nested", [comps(mutate(lambda c: c[1].update(variant=_deep(40))))], "TOO_NESTED"),
 ]
 

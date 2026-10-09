@@ -76,15 +76,42 @@ class SchedulerA2ui:
             raise A2uiHostError("UNKNOWN_SURFACE", surface_id)
         if r["owner"] != self.owner:
             raise A2uiHostError("NOT_OWNER", surface_id)
-        return Surface.from_record(json.loads(r["record_json"]))
+        surface = self._reconcile(Surface.from_record(json.loads(r["record_json"])))
+        if surface is None:
+            raise A2uiHostError("UNKNOWN_SURFACE", surface_id)
+        return surface
+
+    def _reconcile(self, surface):
+        """The authority's state wins over a stored surface (A2UI r5, R5-2): an engine transition whose surface update was
+        not stored (e.g. a storage failure between the two transactions) is reflected the next time the surface is used.
+        A proposal surface whose job is ACTIVE becomes the status surface; one whose job is CANCELLED is closed. Returns
+        the current surface, or None when it was closed."""
+        if surface.kind != "schedule_proposal":
+            return surface
+        try:
+            job = self.s.job(surface.bound["job_id"])
+        except SchedulerError:
+            self._save(surface, state="CLOSED")
+            return None
+        if job["state"] == "PROPOSED":
+            return surface
+        if job["state"] in ("ACTIVE", "PAUSED"):
+            new = self._status_surface(surface, job)
+            self._save(new)
+            return new
+        self._save(surface, state="CLOSED")
+        return None
 
     def open_messages(self) -> list:
         """Every open surface, re-rendered from the stored record (after a UI or scheduler restart)."""
         self.sync_reviews()
         out = []
-        for r in self.s.store.q("SELECT record_json FROM a2ui_surface WHERE owner=? AND state='OPEN' ORDER BY created_at_us",
-                                (self.owner,)):
-            out += Surface.from_record(json.loads(r["record_json"])).messages()
+        with self.s._mutex:
+            for r in self.s.store.q("SELECT record_json FROM a2ui_surface WHERE owner=? AND state='OPEN' ORDER BY "
+                                    "created_at_us", (self.owner,)):
+                current = self._reconcile(Surface.from_record(json.loads(r["record_json"])))
+                if current is not None:
+                    out += current.messages()
         return out
 
     # ---- schedule proposal ----------------------------------------------------------------------------------------
@@ -343,19 +370,20 @@ class SchedulerA2ui:
         if _norm(req) == _norm(old):
             return {"result": "UNCHANGED", "messages": surface.messages()}
         prop = self._propose_job(req)
-        with self.s._mutex:
-            if self.s.job(surface.bound["job_id"])["state"] == "PROPOSED":
-                self.s.cancel_job(surface.bound["job_id"], self.owner)
-        new = self._proposal_surface(surface.surface_id, req, prop, revision=surface.revision + 1)
-        self._save(new)
+        try:
+            new = self._proposal_surface(surface.surface_id, req, prop, revision=surface.revision + 1)
+            self._save(new)
+        except Exception:
+            self.s.cancel_job(prop["job_id"], self.owner)       # the shown surface still names the old proposal
+            raise
+        # Only after the new surface is stored is the superseded proposal withdrawn (A2UI r5, R5-2). If this step fails,
+        # the old proposal stays PROPOSED: inert (a PROPOSED job never runs) and closed by reconciliation below.
+        if self.s.job(surface.bound["job_id"])["state"] == "PROPOSED":
+            self.s.cancel_job(surface.bound["job_id"], self.owner)
         return {"result": "REVISED", "job_id": prop["job_id"], "messages": new.messages()[1:]}
 
-    def _do_confirm_proposal(self, surface, ctx):
-        old = surface.bound["request"]
-        drafted = {"festivals": ctx["selection"], "time": ctx["time"], "offset_days": int(ctx["offset_days"])}
-        if _norm(drafted) != _norm(old):
-            raise A2uiHostError("DRAFT_CHANGED", "update the proposal before confirming the changed choices")
-        job = self.s.confirm(surface.bound["job_id"], self.owner, ctx["proposal_sha256"])
+    def _status_surface(self, surface, job) -> Surface:
+        """What was activated, built from the engine's job record (also used to reconcile after a failed save)."""
         gate = self.s.harness.gate().to_json() if self.s.harness is not None else {"available": False, "code": "NO_HARNESS"}
         nxt = self.s.store.q("SELECT occurrence_key, due_at_us, state FROM occurrence WHERE job_id=? ORDER BY due_at_us LIMIT 3",
                              (job["job_id"],))
@@ -365,7 +393,7 @@ class SchedulerA2ui:
              "gap": "medium"},
             _t("title", "Festival GIF schedule is active", "title"),
             {"id": "state", "component": "Badge", "text": "Active", "tone": "success"},
-            _t("interp", timespec.describe(job["schedule"])),
+            _t("interp", self._readable(timespec.describe(job["schedule"]), job["schedule"].get("selection", []))),
             _t("next", "\n".join(lines) or "No run in the coming year."),
             {"id": "harness", "component": "Badge", "tone": "success" if gate.get("available") else "warning",
              "text": "Claude is ready" if gate.get("available") else
@@ -375,6 +403,15 @@ class SchedulerA2ui:
         new = Surface(surface.surface_id, "schedule_status", comps, bound={"job_id": job["job_id"]},
                       actions=("surface.dismiss",), placement="companion", title="Festival GIF schedule",
                       revision=surface.revision + 1)
+        return new
+
+    def _do_confirm_proposal(self, surface, ctx):
+        old = surface.bound["request"]
+        drafted = {"festivals": ctx["selection"], "time": ctx["time"], "offset_days": int(ctx["offset_days"])}
+        if _norm(drafted) != _norm(old):
+            raise A2uiHostError("DRAFT_CHANGED", "update the proposal before confirming the changed choices")
+        job = self.s.confirm(surface.bound["job_id"], self.owner, ctx["proposal_sha256"])
+        new = self._status_surface(surface, job)
         self._save(new)
         return {"result": "ACTIVATED", "job_id": job["job_id"], "messages": new.messages()[1:]}
 

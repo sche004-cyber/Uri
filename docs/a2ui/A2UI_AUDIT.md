@@ -53,3 +53,14 @@ R3-1 PARTIAL: validation no longer crashed, but an accepted lone surrogate still
 
 After repair: Python 399 passed / 20 skipped (a2ui + scheduler + OI + WS); Flutter 444 passed / 4 skipped; analyze: the 2
 pre-existing infos; live check re-run PASS.
+
+## Round 5 — candidate `561d771` (scope `git diff 186fc31 561d771`) — **ACCEPT WITH FINDINGS**
+
+R4-2 FIXED; R4-3 FIXED for values; R4-1 PARTIAL (the compensating cancel is a second transaction) → R5-2. Codex re-confirmed
+the whole scope against the owner principles (presentation only, restricted registry, authority re-checks digest, button,
+bound values, owner and hashes; ordinary requests stay conversational; only recorded hooks and exact-path guards changed).
+
+| # | Codex severity | finding | classification (rule: repair unless the governing contract documents it) | disposition |
+|---|---|---|---|---|
+| R5-1 | Medium | data-model **keys** were not checked (a lone-surrogate key passed both validators and broke SQLite) | violates A-AC2 | **repaired**: keys must be strings ≤ 256 UTF-16 units without lone surrogates on both sides (`BAD_KEY`); shared case `lone_surrogate_key` (48 cases agree) |
+| R5-2 | Medium | an engine transition and the following surface write are separate transactions; a storage failure between them leaves the surface behind the engine (revise could orphan the new proposal and cancel the old one) | violates A-AC5 (persistence) — not a documented limitation | **repaired**: (a) revise stores the new surface BEFORE withdrawing the superseded proposal; a failed save withdraws the new proposal so the shown one stays valid; (b) every load of a stored surface reconciles with the authority: a proposal surface whose job is ACTIVE/PAUSED becomes the status surface, one whose job is CANCELLED/unknown is closed; (c) review surfaces were already reconciled (`sync_reviews`) and the calendar surface is rebuilt from the records on open. Tests `test_r5_surfaces_follow_the_authority_after_a_failed_surface_save`, `test_r5_failed_revise_save_keeps_the_shown_proposal_valid`. Residual: if both the save and the compensating cancel fail (storage down), the extra proposal stays PROPOSED — inert by design (a PROPOSED job never runs) and visible in the Scheduler view |

@@ -2140,6 +2140,22 @@
   "expect": "valid"
  },
  {
+  "name": "lone_surrogate_key",
+  "messages": [
+   {
+    "version": "v0.9",
+    "updateDataModel": {
+     "surfaceId": "s1",
+     "path": "/",
+     "value": {
+      "\ud800": "ok"
+     }
+    }
+   }
+  ],
+  "expect": "BAD_KEY"
+ },
+ {
   "name": "too_nested",
   "messages": [
    {

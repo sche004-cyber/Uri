@@ -254,6 +254,9 @@ def validate_data(value, path="/value"):
             errs.append(_err("BAD_TEXT", p))
         elif isinstance(v, dict):
             for k, x in v.items():
+                if not isinstance(k, str) or u16(k) > 256 or lone_surrogate(k):    # keys too (A2UI r5, R5-1)
+                    errs.append(_err("BAD_KEY", p))
+                    continue
                 walk(x, f"{p}/{k}")
         elif isinstance(v, list):
             for i, x in enumerate(v):

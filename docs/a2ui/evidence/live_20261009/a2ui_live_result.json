@@ -1,8 +1,8 @@
 {
- "started_utc": "2026-10-09T12:15:49.369357+00:00",
+ "started_utc": "2026-10-09T12:24:14.836360+00:00",
  "evidence_level": "P (process: real service + real renderer; executor is the SYNTHETIC fixture, not Claude)",
  "checks": {
-  "fixture_artifact_ready_s": 7.0,
+  "fixture_artifact_ready_s": 8.1,
   "service_killed_and_restarted": true,
   "activated_schedule": {
    "selection": [
@@ -23,7 +23,7 @@
   "hash_chain": {
    "ok": true,
    "checked": 27,
-   "head": "ee8b123e46fe2464229223e907c14941e04b938a271e35d04eb06e81b819d2f5"
+   "head": "52fc48f41d54452b80b65494882cb2dcdf8bd8b75ea5c73a1428d2211c2d3339"
   },
   "a2ui_actions_audited": [
    [
@@ -54,70 +54,70 @@
  },
  "phase_a": {
   "exit": 0,
-  "seconds": 14.2
+  "seconds": 14.7
  },
  "phase_b": {
   "exit": 0,
-  "seconds": 6.0
+  "seconds": 5.9
  },
  "renderer_timings_ms": {
   "phase_a": [
    {
     "what": "handoff->surface",
-    "ms": 34.114
+    "ms": 36.808
    },
    {
     "what": "apply",
-    "ms": 12.643
+    "ms": 11.71
    },
    {
     "what": "action:scheduler.revise_proposal",
-    "ms": 10.836
+    "ms": 12.181
    },
    {
     "what": "apply",
-    "ms": 1.144
+    "ms": 1.504
    },
    {
     "what": "apply",
-    "ms": 4.06
+    "ms": 6.972
    },
    {
     "what": "action:scheduler.review_artifact",
-    "ms": 10.579
+    "ms": 8.019
    },
    {
     "what": "apply",
-    "ms": 0.143
+    "ms": 0.102
    },
    {
     "what": "apply",
-    "ms": 0.838
+    "ms": 1.945
    },
    {
     "what": "action:calendar.correct_record",
-    "ms": 11.924
+    "ms": 17.011
    },
    {
     "what": "apply",
-    "ms": 1.655
+    "ms": 2.431
    }
   ],
   "phase_b": [
    {
     "what": "apply",
-    "ms": 13.334
+    "ms": 12.052
    },
    {
     "what": "action:scheduler.confirm_proposal",
-    "ms": 9.117
+    "ms": 8.903
    },
    {
     "what": "apply",
-    "ms": 0.772
+    "ms": 0.61
    }
   ]
  },
  "verdict": "PASS",
- "finished_utc": "2026-10-09T12:16:17.613196+00:00"
+ "finished_utc": "2026-10-09T12:24:44.413944+00:00"
 }

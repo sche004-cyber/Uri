@@ -232,3 +232,34 @@ def test_r4_proposal_is_withdrawn_if_its_surface_cannot_be_saved(env, monkeypatc
         host.propose_from_request({"festivals": ["diwali"]})
     states = [r[0] for r in s.store.q("SELECT state FROM job")]
     assert states and all(x == "CANCELLED" for x in states)
+
+
+def test_r5_surfaces_follow_the_authority_after_a_failed_surface_save(env, monkeypatch):
+    """A2UI audit round 5, R5-2: the engine transition commits, the surface save fails; the next use reconciles."""
+    s, host, *_ = env
+    r = host.propose_from_request({"festivals": ["diwali"]})
+    real_save = host._save
+    def fail_once(surface, state="OPEN"):
+        monkeypatch.setattr(host, "_save", real_save)
+        raise RuntimeError("disk full")
+    monkeypatch.setattr(host, "_save", fail_once)
+    with pytest.raises(RuntimeError):
+        click(host, r["surface_id"], r["messages"], "confirm")
+    assert s.job(r["job_id"])["state"] == "ACTIVE"                      # the engine transition committed
+    msgs = [m for m in host.open_messages() if r["surface_id"] in str(m)]
+    assert components(msgs)["title"]["text"] == "Festival GIF schedule is active"   # reconciled to the status surface
+
+
+def test_r5_failed_revise_save_keeps_the_shown_proposal_valid(env, monkeypatch):
+    s, host, *_ = env
+    r = host.propose_from_request({"festivals": ["diwali"]})
+    def boom(*a, **k):
+        raise RuntimeError("disk full")
+    monkeypatch.setattr(host, "_save", boom)
+    with pytest.raises(RuntimeError):
+        click(host, r["surface_id"], r["messages"], "revise", selection=["diwali", "holi"])
+    monkeypatch.undo()
+    states = {row[0]: row[1] for row in s.store.q("SELECT job_id, state FROM job")}
+    assert states[r["job_id"]] == "PROPOSED"                             # the shown proposal is untouched
+    assert sorted(states.values()).count("CANCELLED") == 1               # the new one was withdrawn
+    assert click(host, r["surface_id"], r["messages"], "confirm")["result"] == "ACTIVATED"
