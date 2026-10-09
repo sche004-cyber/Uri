@@ -69,8 +69,12 @@ class VoiceServiceStatus {
     this.problemCode,
     this.problem,
     this.modelLoadMs,
+    this.modelLoading = false,
   });
   final VoiceServiceState state;
+
+  /// The recogniser is still loading; capture works, the transcript waits.
+  final bool modelLoading;
   final String? engine;
   final List<VoiceInputDevice> inputs;
 
@@ -92,6 +96,7 @@ class VoiceServiceStatus {
     Object? problemCode = _keep,
     Object? problem = _keep,
     int? modelLoadMs,
+    bool? modelLoading,
   }) => VoiceServiceStatus(
     state: state ?? this.state,
     engine: engine ?? this.engine,
@@ -102,6 +107,7 @@ class VoiceServiceStatus {
         : problemCode as String?,
     problem: identical(problem, _keep) ? this.problem : problem as String?,
     modelLoadMs: modelLoadMs ?? this.modelLoadMs,
+    modelLoading: modelLoading ?? this.modelLoading,
   );
   static const Object _keep = Object();
 }
@@ -461,7 +467,22 @@ class LiveVoiceService implements VoiceServiceAdapter {
           problemCode: code,
           problem: msg,
           modelLoadMs: (e['model_load_ms'] as num?)?.toInt(),
+          modelLoading: (e['model'] as Map?)?['state'] == 'loading',
         );
+      case 'model':
+        if (e['state'] == 'failed') {
+          status.value = status.value.copyWith(
+            state: VoiceServiceState.degraded,
+            modelLoading: false,
+            problemCode: '${e['code']}',
+            problem: '${e['message']}',
+          );
+        } else if (e['state'] == 'ready') {
+          status.value = status.value.copyWith(
+            modelLoading: false,
+            modelLoadMs: (e['load_ms'] as num?)?.toInt(),
+          );
+        }
       case 'devices':
         status.value = status.value.copyWith(
           inputs: _inputs(e['inputs']),

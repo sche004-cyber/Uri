@@ -1,0 +1,831 @@
+{
+ "summary": {
+  "nsp<0.6": {
+   "noise_clips_with_text": 6,
+   "speech_words_lost": 0,
+   "speech_words": 484
+  },
+  "lp>-0.8": {
+   "noise_clips_with_text": 1,
+   "speech_words_lost": 1,
+   "speech_words": 484
+  },
+  "nsp<0.5 and lp>-1.0": {
+   "noise_clips_with_text": 1,
+   "speech_words_lost": 0,
+   "speech_words": 484
+  },
+  "lp>-0.7 and cr<2.4": {
+   "noise_clips_with_text": 0,
+   "speech_words_lost": 1,
+   "speech_words": 484
+  }
+ },
+ "items": [
+  {
+   "kind": "noise",
+   "src": "v0_s00.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s00.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s00.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s01.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s01.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s01.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s02.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s02.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s02.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s03.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s03.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s03.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s04.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s04.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s04.wav",
+   "rms": 0.02,
+   "segs": [
+    {
+     "text": ".",
+     "nsp": 0.584,
+     "lp": -1.552,
+     "cr": 0.11
+    }
+   ]
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s05.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s05.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s05.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s06.wav",
+   "rms": 0.005,
+   "segs": [
+    {
+     "text": "I know why not much, but I know why not no I know why not much when I lost,",
+     "nsp": 0.521,
+     "lp": -2.35,
+     "cr": 1.44
+    }
+   ]
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s06.wav",
+   "rms": 0.01,
+   "segs": [
+    {
+     "text": "it's",
+     "nsp": 0.464,
+     "lp": -2.753,
+     "cr": 0.33
+    }
+   ]
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s06.wav",
+   "rms": 0.02,
+   "segs": [
+    {
+     "text": "I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I know. I",
+     "nsp": 0.476,
+     "lp": -0.083,
+     "cr": 26.95
+    }
+   ]
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s07.wav",
+   "rms": 0.005,
+   "segs": [
+    {
+     "text": "Yeah.",
+     "nsp": 0.422,
+     "lp": -1.56,
+     "cr": 0.38
+    }
+   ]
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s07.wav",
+   "rms": 0.01,
+   "segs": [
+    {
+     "text": "Evans Evans Evans Evans Evans Evans",
+     "nsp": 0.354,
+     "lp": -1.32,
+     "cr": 2.06
+    }
+   ]
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s07.wav",
+   "rms": 0.02,
+   "segs": [
+    {
+     "text": "Yeah.",
+     "nsp": 0.311,
+     "lp": -1.734,
+     "cr": 0.38
+    }
+   ]
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s08.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s08.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s08.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s09.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s09.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s09.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s10.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s10.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s10.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s11.wav",
+   "rms": 0.005,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s11.wav",
+   "rms": 0.01,
+   "segs": []
+  },
+  {
+   "kind": "noise",
+   "src": "v0_s11.wav",
+   "rms": 0.02,
+   "segs": []
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s00.wav",
+   "segs": [
+    {
+     "text": "What is the weather usually like in going talk in October?",
+     "nsp": 0.032,
+     "lp": -0.441,
+     "cr": 0.94
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s01.wav",
+   "segs": [
+    {
+     "text": "Can you remind me what meetings I have tomorrow morning?",
+     "nsp": 0.04,
+     "lp": -0.248,
+     "cr": 0.93
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s02.wav",
+   "segs": [
+    {
+     "text": "How long does it take to drive from siligary to contalk?",
+     "nsp": 0.03,
+     "lp": -0.504,
+     "cr": 0.9
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s03.wav",
+   "segs": [
+    {
+     "text": "Explain the difference between a casual leave and an earned leave.",
+     "nsp": 0.086,
+     "lp": -0.328,
+     "cr": 1.0
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s04.wav",
+   "segs": [
+    {
+     "text": "Which festival holidays are left this year?",
+     "nsp": 0.051,
+     "lp": -0.453,
+     "cr": 0.84
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s05.wav",
+   "segs": [
+    {
+     "text": "Please summarize the last message from the finance department.",
+     "nsp": 0.041,
+     "lp": -0.36,
+     "cr": 0.95
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s06.wav",
+   "segs": [
+    {
+     "text": "Is the local brain running right now?",
+     "nsp": 0.06,
+     "lp": -0.479,
+     "cr": 0.82
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s07.wav",
+   "segs": [
+    {
+     "text": "Tell me three ways to reduce paper use in the office.",
+     "nsp": 0.041,
+     "lp": -0.347,
+     "cr": 0.9
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s08.wav",
+   "segs": [
+    {
+     "text": "What time is it in London when it is noon in India?",
+     "nsp": 0.022,
+     "lp": -0.274,
+     "cr": 0.96
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s09.wav",
+   "segs": [
+    {
+     "text": "Remember that the laboratory is closed on Friday afternoon.",
+     "nsp": 0.022,
+     "lp": -0.371,
+     "cr": 0.91
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s10.wav",
+   "segs": [
+    {
+     "text": "Stop.",
+     "nsp": 0.179,
+     "lp": -0.956,
+     "cr": 0.38
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s11.wav",
+   "segs": [
+    {
+     "text": "Open the dashboard.",
+     "nsp": 0.162,
+     "lp": -0.603,
+     "cr": 0.7
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s12.wav",
+   "segs": [
+    {
+     "text": "Dear sir, I request leave from October 15th to October 17th because of a family function.",
+     "nsp": 0.024,
+     "lp": -0.267,
+     "cr": 1.06
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s13.wav",
+   "segs": [
+    {
+     "text": "The meeting with the director is rescheduled to Monday at 3.30 in the afternoon.",
+     "nsp": 0.046,
+     "lp": -0.235,
+     "cr": 1.03
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s14.wav",
+   "segs": [
+    {
+     "text": "Please release the payment of Rs 5,000 to the vendor before the end of the month.",
+     "nsp": 0.045,
+     "lp": -0.256,
+     "cr": 1.12
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s15.wav",
+   "segs": [
+    {
+     "text": "Kindly forward the attendance register for September to the establishment section.",
+     "nsp": 0.033,
+     "lp": -0.299,
+     "cr": 1.05
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s16.wav",
+   "segs": [
+    {
+     "text": "I will not be able to attend the training program on Thursday due to illness.",
+     "nsp": 0.057,
+     "lp": -0.238,
+     "cr": 1.0
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s17.wav",
+   "segs": [
+    {
+     "text": "The budget proposal for the next financial year must reach this office by November 30th",
+     "nsp": 0.061,
+     "lp": -0.303,
+     "cr": 1.04
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s18.wav",
+   "segs": [
+    {
+     "text": "Mr. Charing-Buddhiya has joined the department as an assistant engineer.",
+     "nsp": 0.013,
+     "lp": -0.512,
+     "cr": 0.99
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s19.wav",
+   "segs": [
+    {
+     "text": "Please treat this as urgent and send a reply by tomorrow evening.",
+     "nsp": 0.015,
+     "lp": -0.314,
+     "cr": 0.97
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s20.wav",
+   "segs": [
+    {
+     "text": "The committee has approved the purchase of two printers and one scanner.",
+     "nsp": 0.026,
+     "lp": -0.298,
+     "cr": 1.03
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s21.wav",
+   "segs": [
+    {
+     "text": "Copy to the Joint Secretary for Information and Necessary Action",
+     "nsp": 0.034,
+     "lp": -0.346,
+     "cr": 0.97
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s22.wav",
+   "segs": [
+    {
+     "text": "The office will remain closed on account of Dusra",
+     "nsp": 0.031,
+     "lp": -0.363,
+     "cr": 0.88
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v0_s23.wav",
+   "segs": [
+    {
+     "text": "Thank you for your cooperation, and please let me know if you need anything else.",
+     "nsp": 0.073,
+     "lp": -0.316,
+     "cr": 1.04
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s00.wav",
+   "segs": [
+    {
+     "text": "What is the weather usually like in gang toke in October?",
+     "nsp": 0.06,
+     "lp": -0.448,
+     "cr": 0.97
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s01.wav",
+   "segs": [
+    {
+     "text": "Can you remind me what meetings I have tomorrow morning?",
+     "nsp": 0.058,
+     "lp": -0.247,
+     "cr": 0.93
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s02.wav",
+   "segs": [
+    {
+     "text": "How long does it take to drive from silly goody to gang took?",
+     "nsp": 0.018,
+     "lp": -0.373,
+     "cr": 0.95
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s03.wav",
+   "segs": [
+    {
+     "text": "Explain the difference between a casual leave and an earned leave.",
+     "nsp": 0.033,
+     "lp": -0.302,
+     "cr": 1.0
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s04.wav",
+   "segs": [
+    {
+     "text": "Which festival holidays are left this year?",
+     "nsp": 0.034,
+     "lp": -0.428,
+     "cr": 0.84
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s05.wav",
+   "segs": [
+    {
+     "text": "Please summarize the last message from the finance department.",
+     "nsp": 0.034,
+     "lp": -0.44,
+     "cr": 0.95
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s06.wav",
+   "segs": [
+    {
+     "text": "Is the local brain running right now?",
+     "nsp": 0.1,
+     "lp": -0.278,
+     "cr": 0.82
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s07.wav",
+   "segs": [
+    {
+     "text": "Tell me three ways to reduce paper use in the office",
+     "nsp": 0.038,
+     "lp": -0.331,
+     "cr": 0.93
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s08.wav",
+   "segs": [
+    {
+     "text": "What time is it in London when it is noon in India?",
+     "nsp": 0.028,
+     "lp": -0.239,
+     "cr": 0.96
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s09.wav",
+   "segs": [
+    {
+     "text": "Remember that the laboratory is closed on Friday afternoon.",
+     "nsp": 0.031,
+     "lp": -0.416,
+     "cr": 0.91
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s10.wav",
+   "segs": [
+    {
+     "text": "Stop",
+     "nsp": 0.223,
+     "lp": -0.362,
+     "cr": 0.33
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s11.wav",
+   "segs": [
+    {
+     "text": "Open the dashboard.",
+     "nsp": 0.125,
+     "lp": -0.692,
+     "cr": 0.7
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s12.wav",
+   "segs": [
+    {
+     "text": "Dear sir, I request leave from October 15th to October 17th because of a family function.",
+     "nsp": 0.052,
+     "lp": -0.293,
+     "cr": 1.06
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s13.wav",
+   "segs": [
+    {
+     "text": "The meeting with the director is rescheduled to Monday at 3 30 in the afternoon.",
+     "nsp": 0.087,
+     "lp": -0.279,
+     "cr": 1.03
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s14.wav",
+   "segs": [
+    {
+     "text": "Please release the payment of 5,000 rupees to the vendor before the end of the month.",
+     "nsp": 0.052,
+     "lp": -0.275,
+     "cr": 1.12
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s15.wav",
+   "segs": [
+    {
+     "text": "Kindly forward the attendance register for September to the establishment section.",
+     "nsp": 0.046,
+     "lp": -0.283,
+     "cr": 1.05
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s16.wav",
+   "segs": [
+    {
+     "text": "I will not be able to attend the training program on Thursday due to illness.",
+     "nsp": 0.048,
+     "lp": -0.241,
+     "cr": 1.0
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s17.wav",
+   "segs": [
+    {
+     "text": "The budget proposal for the next financial year must reach this office by November 30th",
+     "nsp": 0.059,
+     "lp": -0.336,
+     "cr": 1.04
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s18.wav",
+   "segs": [
+    {
+     "text": "Mr. Charing Bootyya has joined the department as an assistant engineer.",
+     "nsp": 0.018,
+     "lp": -0.531,
+     "cr": 1.0
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s19.wav",
+   "segs": [
+    {
+     "text": "Please treat this as urgent and send a reply by tomorrow evening.",
+     "nsp": 0.021,
+     "lp": -0.333,
+     "cr": 0.97
+    }
+   ]
+  },
+  {
+   "kind": "speech",
+   "src": "v1_s20.wav",
+   "segs": [
+    {
+     "text": "The committee has approved the purchase of two printers in one skin.",
+     "nsp": 0.073,
+     "lp": -0.418,
+     "cr": 1.01
+    }
+   ]
+  }
+ ]
+}

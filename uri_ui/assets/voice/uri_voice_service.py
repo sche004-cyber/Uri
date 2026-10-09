@@ -230,6 +230,16 @@ class Recogniser:
             self.error = ("RECOGNIZER_FAILED", f"Speech model could not be loaded: {e}")
         finally:
             self.ready.set()
+            emit("model", **self.state())
+
+    def state(self) -> dict:
+        """loading / ready / failed, with the reason and the load time."""
+        if not self.ready.is_set():
+            return {"state": "loading"}
+        if self.model is None:
+            code, msg = self.error or ("RECOGNIZER_FAILED", "speech model unavailable")
+            return {"state": "failed", "code": code, "message": msg}
+        return {"state": "ready", "load_ms": self.load_ms}
 
     def transcribe(self, audio, final: bool, hotwords: str = ""):
         if not self.ready.wait(30):
@@ -247,7 +257,7 @@ class Recogniser:
                 without_timestamps=not final,
                 hotwords=bias_words(hotwords),
             )
-            segs = list(segments)
+            segs = [seg for seg in segments if is_speech_segment(seg)]
         text = " ".join(s.text.strip() for s in segs).strip()
         words = []
         if final:
@@ -255,6 +265,24 @@ class Recogniser:
                 for w in s.words or []:
                     words.append((w.word.strip(), float(w.probability)))
         return text, words, segs
+
+
+# Noise guard. The recogniser writes text for room noise ("Yeah.", "Yes you know
+# you're right.", "I know. I know. ...") even after its VAD filter, which kept up to
+# 3 s of noise as speech. Measured on 36 room-noise clips and the 45 real-microphone
+# speech recordings (docs/voice/live/evidence/stt/noise_guard_segments.json): every
+# speech segment had no_speech_prob <= 0.223, avg_logprob >= -0.956 and compression
+# <= 1.12; every noise segment had no_speech_prob >= 0.311 (the repetition loop also
+# compression 27). A segment is speech only if all three hold. Dropping too much is
+# the safe direction: the user is told nothing was heard and repeats.
+MAX_NO_SPEECH_PROB = 0.3
+MIN_AVG_LOGPROB = -1.2
+MAX_COMPRESSION = 2.4
+
+
+def is_speech_segment(seg) -> bool:
+    return (seg.no_speech_prob < MAX_NO_SPEECH_PROB and seg.avg_logprob > MIN_AVG_LOGPROB
+            and seg.compression_ratio < MAX_COMPRESSION)
 
 
 def uncertain_spans(text: str, words) -> list[str]:
@@ -637,11 +665,14 @@ class Service:
         self.cap_lock = threading.Lock()
 
     def hello(self):
-        self.recogniser.ready.wait(20)
-        err = self.recogniser.error
-        emit("ready", engine=ENGINE_NAME, model_ok=self.recogniser.model is not None,
-             model_error=None if err is None else {"code": err[0], "message": err[1]},
-             model_load_ms=self.recogniser.load_ms, privacy=microphone_privacy(), pid=os.getpid(),
+        # Answers at once. The model may still be loading (measured 3.3 s alone,
+        # over 20 s while a Brain loaded from the same disk); a `model` event
+        # follows when it is ready or has failed. Capture works meanwhile; the
+        # final pass waits for the model.
+        m = self.recogniser.state()
+        emit("ready", engine=ENGINE_NAME, model=m, model_ok=m["state"] == "ready",
+             model_error={"code": m["code"], "message": m["message"]} if m["state"] == "failed" else None,
+             model_load_ms=m.get("load_ms"), privacy=microphone_privacy(), pid=os.getpid(),
              **list_devices(self.sd))
 
     def listen_start(self, cid: str, device: str | None, max_s: float, vocabulary: str = ""):

@@ -1,0 +1,40 @@
+{
+ "ready": {
+  "engine": "faster-whisper-base.en-int8",
+  "model_ok": false,
+  "model_load_ms": null
+ },
+ "idle_after_load": {
+  "ws_mb": 3.9,
+  "cpu_s": 0,
+  "child_ws_mb": 32.2,
+  "child_cpu_s": 0.31
+ },
+ "final": {
+  "text": "",
+  "audio_ms": 8180,
+  "transcribe_ms": 157
+ },
+ "while_capturing": {
+  "ws_mb": 3.9,
+  "cpu_s": 0,
+  "child_ws_mb": 355.4,
+  "child_cpu_s": 13.67
+ },
+ "after_final": {
+  "ws_mb": 3.9,
+  "cpu_s": 0,
+  "child_ws_mb": 195.8,
+  "child_cpu_s": 15.64
+ },
+ "after_reply": {
+  "ws_mb": 3.9,
+  "cpu_s": 0,
+  "child_ws_mb": 195.9,
+  "child_cpu_s": 15.64
+ },
+ "cpu_s_for_utterance_incl_partials": 0,
+ "cpu_s_for_reply_python": 0,
+ "cpu_s_for_reply_engine_bridge": 0.0,
+ "gpu": "none requested: device=cpu, compute_type=int8; the process is absent from per-process GPU memory samples (threshold 32 MiB)"
+}

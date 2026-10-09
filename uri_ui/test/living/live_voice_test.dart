@@ -264,6 +264,34 @@ void main() {
       });
     });
 
+    test(
+      'a loading model is reported as loading, then ready or failed',
+      () async {
+        await svc.ensureStarted();
+        t.push({
+          ...ready(),
+          'model': {'state': 'loading'},
+          'model_ok': false,
+        });
+        await pump();
+        expect(svc.status.value.ready, isTrue);
+        expect(svc.status.value.modelLoading, isTrue);
+        t.push({'ev': 'model', 'state': 'ready', 'load_ms': 21000});
+        await pump();
+        expect(svc.status.value.modelLoading, isFalse);
+        expect(svc.status.value.modelLoadMs, 21000);
+        t.push({
+          'ev': 'model',
+          'state': 'failed',
+          'code': 'MODEL_INTEGRITY',
+          'message': 'hash mismatch',
+        });
+        await pump();
+        expect(svc.status.value.state, VoiceServiceState.degraded);
+        expect(svc.status.value.problemCode, 'MODEL_INTEGRITY');
+      },
+    );
+
     test('dispose shuts the process down', () async {
       await svc.ensureStarted();
       await svc.dispose();

@@ -435,3 +435,45 @@ def test_r1_5_unplugged_choice_falls_back_to_the_default_with_a_warning(env):
     assert st["device"] == "Mic A"
     w = wait_for(env.events, "listen.warning")
     assert w["code"] == "MIC_FALLBACK" and "Unplugged Mic" in w["message"]
+
+
+def test_noise_segments_are_not_speech():
+    """Regression (2026-10-09): room noise came back as "Yeah." / "Yes you know you're
+    right." / "I know. I know. ..." after the VAD filter."""
+    mod = load_module()
+    seg = lambda text, nsp, lp, cr: types.SimpleNamespace(text=text, no_speech_prob=nsp, avg_logprob=lp,
+                                                          compression_ratio=cr, words=[])
+    # Measured noise segments (noise_guard_segments.json)
+    assert not mod.is_speech_segment(seg("Yeah.", 0.422, -1.56, 0.38))
+    assert not mod.is_speech_segment(seg("Evans Evans Evans", 0.354, -1.32, 2.06))
+    assert not mod.is_speech_segment(seg("I know. I know.", 0.476, -0.083, 26.95))
+    # Measured speech segments with the weakest scores
+    assert mod.is_speech_segment(seg("Stop.", 0.179, -0.956, 0.6))
+    assert mod.is_speech_segment(seg("Stop", 0.223, -0.362, 0.6))
+
+    class FakeModel:
+        def transcribe(self, audio, **kw):
+            return iter([seg("Yeah.", 0.42, -1.56, 0.38), seg("Open the dashboard.", 0.16, -0.6, 0.9)]), None
+
+    r = mod.Recogniser.__new__(mod.Recogniser)
+    r.lock = threading.Lock()
+    r.ready = threading.Event()
+    r.ready.set()
+    r.model = FakeModel()
+    r.error = None
+    text, words, segs = r.transcribe(np.zeros(16000, dtype="float32"), final=True)
+    assert text == "Open the dashboard."
+
+
+def test_hello_answers_at_once_while_the_model_loads(env):
+    """Regression (2026-10-09): hello blocked 20 s and then reported model_ok false
+    with no error while a Brain loaded from the same disk; the client showed Ready."""
+    r0 = env.svc.recogniser
+    r0.state = types.MethodType(env.mod.Recogniser.state, r0)
+    r0.ready.clear()
+    r0.model = None
+    t = time.time()
+    env.svc.hello()
+    assert time.time() - t < 2
+    r = wait_for(env.events, "ready")
+    assert r["model"] == {"state": "loading"} and r["model_error"] is None

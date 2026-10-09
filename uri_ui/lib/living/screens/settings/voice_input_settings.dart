@@ -66,6 +66,9 @@ class _VoiceInputSettingsState extends State<VoiceInputSettings> {
         final statusText = switch (st.state) {
           VoiceServiceState.stopped => 'Not started',
           VoiceServiceState.starting => 'Starting…',
+          VoiceServiceState.ready when st.modelLoading =>
+            'Ready to listen; the speech model is still loading (the first '
+                'transcript waits for it)',
           VoiceServiceState.ready =>
             'Ready: ${st.engine ?? 'local recogniser'} on the CPU'
                 '${st.modelLoadMs == null ? '' : ' (model loaded in ${st.modelLoadMs} ms)'}',
