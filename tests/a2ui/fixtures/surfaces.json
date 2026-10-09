@@ -14,12 +14,12 @@
   }
  },
  "proposal": {
-  "surface_id": "sched-54963cdebcca",
+  "surface_id": "sched-5674fe6d7433",
   "messages": [
    {
     "version": "v0.9",
     "createSurface": {
-     "surfaceId": "sched-54963cdebcca",
+     "surfaceId": "sched-5674fe6d7433",
      "catalogId": "uri:a2ui/catalog/v1",
      "theme": {
       "agentDisplayName": "URI",
@@ -30,7 +30,7 @@
    {
     "version": "v0.9",
     "updateComponents": {
-     "surfaceId": "sched-54963cdebcca",
+     "surfaceId": "sched-5674fe6d7433",
      "components": [
       {
        "id": "root",
@@ -363,7 +363,7 @@
    {
     "version": "v0.9",
     "updateDataModel": {
-     "surfaceId": "sched-54963cdebcca",
+     "surfaceId": "sched-5674fe6d7433",
      "path": "/",
      "value": {
       "draft": {
@@ -385,8 +385,8 @@
        "offset": "2"
       },
       "bound": {
-       "proposal_sha256": "327a9e688c332427a02e8017307f9f71ad746b8c82f9af9b9dd546d533117cd0",
-       "job_id": "job_b796f3889a6f",
+       "proposal_sha256": "8f811e069f04920c6026087f5fe2ddb605bfbb1fb2ba1a33bcee0a8995b5d8f3",
+       "job_id": "job_bf059d7f579f",
        "request": {
         "festivals": [
          "holi",
@@ -406,7 +406,7 @@
         "offset_days": 2
        },
        "surface": {
-        "digest": "786a492a165b77d4e2fbeacec44cb80b6062aba0b5181e9d2c49f4d122d0a189",
+        "digest": "b00fd7de968611320dae64df01a5172798365a2f016657ab756dc6e683d5fcca",
         "revision": 1,
         "kind": "schedule_proposal",
         "title": "Festival GIF schedule"
@@ -416,10 +416,10 @@
     }
    }
   ],
-  "job_id": "job_b796f3889a6f"
+  "job_id": "job_bf059d7f579f"
  },
  "revise_context": {
-  "surface_digest": "786a492a165b77d4e2fbeacec44cb80b6062aba0b5181e9d2c49f4d122d0a189",
+  "surface_digest": "b00fd7de968611320dae64df01a5172798365a2f016657ab756dc6e683d5fcca",
   "selection": [
    "diwali",
    "holi"
@@ -429,12 +429,12 @@
  },
  "revised": {
   "result": "REVISED",
-  "job_id": "job_fcd63f6b200e",
+  "job_id": "job_d087f5cf8037",
   "messages": [
    {
     "version": "v0.9",
     "updateComponents": {
-     "surfaceId": "sched-54963cdebcca",
+     "surfaceId": "sched-5674fe6d7433",
      "components": [
       {
        "id": "root",
@@ -760,7 +760,7 @@
    {
     "version": "v0.9",
     "updateDataModel": {
-     "surfaceId": "sched-54963cdebcca",
+     "surfaceId": "sched-5674fe6d7433",
      "path": "/",
      "value": {
       "draft": {
@@ -772,8 +772,8 @@
        "offset": "2"
       },
       "bound": {
-       "proposal_sha256": "bc73c5eaf8f883ed8bc91c3265e1dfa37c5f4d30568667d173453df22a856086",
-       "job_id": "job_fcd63f6b200e",
+       "proposal_sha256": "cb658bb0462a8fc9c046319702a2acf5bab7896ea7454c6189bacd8ddd05294c",
+       "job_id": "job_d087f5cf8037",
        "request": {
         "festivals": [
          "diwali",
@@ -782,8 +782,9 @@
         "time": "09:00",
         "offset_days": 2
        },
+       "supersedes": "job_bf059d7f579f",
        "surface": {
-        "digest": "8534006ddf9df565c1196da0ff2725310e125513f49d1f4122a6b07114350b63",
+        "digest": "9b794e5c00447ef09ca3dfcc2fbd92aa26911b9aeb898711ea3a4c05f2690ca6",
         "revision": 2,
         "kind": "schedule_proposal",
         "title": "Festival GIF schedule"

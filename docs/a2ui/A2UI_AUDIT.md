@@ -64,3 +64,16 @@ bound values, owner and hashes; ordinary requests stay conversational; only reco
 |---|---|---|---|---|
 | R5-1 | Medium | data-model **keys** were not checked (a lone-surrogate key passed both validators and broke SQLite) | violates A-AC2 | **repaired**: keys must be strings ≤ 256 UTF-16 units without lone surrogates on both sides (`BAD_KEY`); shared case `lone_surrogate_key` (48 cases agree) |
 | R5-2 | Medium | an engine transition and the following surface write are separate transactions; a storage failure between them leaves the surface behind the engine (revise could orphan the new proposal and cancel the old one) | violates A-AC5 (persistence) — not a documented limitation | **repaired**: (a) revise stores the new surface BEFORE withdrawing the superseded proposal; a failed save withdraws the new proposal so the shown one stays valid; (b) every load of a stored surface reconciles with the authority: a proposal surface whose job is ACTIVE/PAUSED becomes the status surface, one whose job is CANCELLED/unknown is closed; (c) review surfaces were already reconciled (`sync_reviews`) and the calendar surface is rebuilt from the records on open. Tests `test_r5_surfaces_follow_the_authority_after_a_failed_surface_save`, `test_r5_failed_revise_save_keeps_the_shown_proposal_valid`. Residual: if both the save and the compensating cancel fail (storage down), the extra proposal stays PROPOSED — inert by design (a PROPOSED job never runs) and visible in the Scheduler view |
+
+## Round 6 — candidate `eb78607` (scope `git diff 561d771 eb78607`) — **ACCEPT WITH FINDINGS**
+
+R5-1 **FIXED**. R5-2 PARTIAL → R6-2. Codex verified that reconciliation only reads engine state and rewrites or closes
+surfaces (never confirms, approves or runs work), is reached only through authenticated, owner-checked paths, and that
+the reentrant lock cannot deadlock.
+
+| # | Codex severity | finding | disposition |
+|---|---|---|---|
+| R6-1 | Medium | building a status surface under the engine lock called `harness.gate()`; in live mode a version + auth probe (up to ~50 s) would hold the lock and stall materialization and dispatch | **repaired**: surfaces never probe; the host reads the service's last cached gate (`gate_snapshot`, no probe) and says "Claude status not checked yet" when there is none; the cache is filled outside the engine lock by `/status` and `/overview`. Test `test_r6_status_surface_never_probes_the_harness`; live phase b shows the not-checked badge |
+| R6-2 | Medium | if the new surface was stored but cancelling the superseded proposal failed, nothing would later withdraw it (the record's residual omitted this case) | **repaired**: the new surface records `supersedes`; the owner's next action on that surface (revise, confirm, discard) withdraws the superseded proposal if it is still PROPOSED. Test `test_r6_superseded_proposal_is_withdrawn_on_the_next_owner_action`. Remaining residual (unchanged): an extra PROPOSED job stays only if storage fails and the owner never acts on the surface again; a PROPOSED job never runs and is visible in the Scheduler view |
+
+After repair: Python 404 passed / 20 skipped; Flutter A2UI 13 passed (+1 opt-in live); live check PASS.

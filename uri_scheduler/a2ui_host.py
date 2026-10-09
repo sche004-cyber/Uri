@@ -56,8 +56,11 @@ def _btn(i, label, name, context=None, variant="secondary"):
 
 
 class SchedulerA2ui:
-    def __init__(self, sched, owner):
+    def __init__(self, sched, owner, gate_snapshot=None):
+        """`gate_snapshot()` returns the last known harness gate (a dict) WITHOUT probing, or None. Surfaces are built
+        under the engine mutex, so they never run a harness probe themselves (A2UI r6, R6-1)."""
         self.s, self.owner = sched, owner
+        self._gate_snapshot = gate_snapshot or (lambda: None)
         with self.s.store._lock:
             self.s.store.db.executescript(SCHEMA)
 
@@ -172,7 +175,7 @@ class SchedulerA2ui:
         head = head.replace("each selected event in 'in_festivals'", "each selected festival")
         return f"{head}: {listed}"
 
-    def _proposal_surface(self, surface_id, req, prop, revision=1) -> Surface:
+    def _proposal_surface(self, surface_id, req, prop, revision=1, supersedes=None) -> Surface:
         rows = prop["upcoming"]
         lines = [f"• {r.get('festival', r['key'])} {r.get('festival_date', '')}: GIF {r['due_local'].replace('T', ' ')[:16]} IST"
                  for r in rows[:8]]
@@ -215,7 +218,8 @@ class SchedulerA2ui:
         return Surface(surface_id, "schedule_proposal", comps,
                        data={"draft": {"selection": req["festivals"], "time": req["time"], "offset": str(req["offset_days"])}},
                        bound={"proposal_sha256": prop["proposal_sha256"], "job_id": prop["job_id"],
-                              "request": {k: req[k] for k in ("festivals", "time", "offset_days")}},
+                              "request": {k: req[k] for k in ("festivals", "time", "offset_days")},
+                              **({"supersedes": supersedes} if supersedes else {})},
                        actions=("scheduler.revise_proposal", "scheduler.confirm_proposal", "scheduler.discard_proposal"),
                        placement="companion", title="Festival GIF schedule", revision=revision)
 
@@ -363,7 +367,19 @@ class SchedulerA2ui:
                                                           "component": str(msg.get("sourceComponentId"))[:64],
                                                           "result": code})
 
+    def _withdraw_superseded(self, surface):
+        """If the proposal this surface replaced is still PROPOSED (its cancel failed during revise), withdraw it now, as
+        part of the owner's own next action on this surface (A2UI r6, R6-2). Never touches anything else."""
+        old = surface.bound.get("supersedes")
+        if old:
+            try:
+                if self.s.job(old)["state"] == "PROPOSED":
+                    self.s.cancel_job(old, self.owner)
+            except SchedulerError:
+                pass
+
     def _do_revise_proposal(self, surface, ctx):
+        self._withdraw_superseded(surface)
         req = self._check_request({"festivals": ctx["selection"], "time": ctx["time"], "offset_days": ctx["offset_days"],
                                    "assumptions": []})
         old = surface.bound["request"]
@@ -371,7 +387,8 @@ class SchedulerA2ui:
             return {"result": "UNCHANGED", "messages": surface.messages()}
         prop = self._propose_job(req)
         try:
-            new = self._proposal_surface(surface.surface_id, req, prop, revision=surface.revision + 1)
+            new = self._proposal_surface(surface.surface_id, req, prop, revision=surface.revision + 1,
+                                         supersedes=surface.bound["job_id"])
             self._save(new)
         except Exception:
             self.s.cancel_job(prop["job_id"], self.owner)       # the shown surface still names the old proposal
@@ -384,7 +401,7 @@ class SchedulerA2ui:
 
     def _status_surface(self, surface, job) -> Surface:
         """What was activated, built from the engine's job record (also used to reconcile after a failed save)."""
-        gate = self.s.harness.gate().to_json() if self.s.harness is not None else {"available": False, "code": "NO_HARNESS"}
+        gate = self._gate_snapshot()
         nxt = self.s.store.q("SELECT occurrence_key, due_at_us, state FROM occurrence WHERE job_id=? ORDER BY due_at_us LIMIT 3",
                              (job["job_id"],))
         lines = [f"• {r['occurrence_key']}: {timespec_local(r['due_at_us'])} ({r['state'].lower().replace('_', ' ')})" for r in nxt]
@@ -395,9 +412,10 @@ class SchedulerA2ui:
             {"id": "state", "component": "Badge", "text": "Active", "tone": "success"},
             _t("interp", self._readable(timespec.describe(job["schedule"]), job["schedule"].get("selection", []))),
             _t("next", "\n".join(lines) or "No run in the coming year."),
-            {"id": "harness", "component": "Badge", "tone": "success" if gate.get("available") else "warning",
-             "text": "Claude is ready" if gate.get("available") else
-             f"Claude is not available ({gate.get('code')}): runs wait and are shown as blocked; no other provider is used"},
+            {"id": "harness", "component": "Badge", "tone": "success" if (gate or {}).get("available") else "warning",
+             "text": "Claude is ready" if (gate or {}).get("available") else
+             ("Claude status not checked yet: see the Scheduler view; runs never use another provider" if gate is None else
+              f"Claude is not available ({gate.get('code')}): runs wait and are shown as blocked; no other provider is used")},
             _btn("dismiss", "Done", "surface.dismiss"),
         ]
         new = Surface(surface.surface_id, "schedule_status", comps, bound={"job_id": job["job_id"]},
@@ -410,12 +428,14 @@ class SchedulerA2ui:
         drafted = {"festivals": ctx["selection"], "time": ctx["time"], "offset_days": int(ctx["offset_days"])}
         if _norm(drafted) != _norm(old):
             raise A2uiHostError("DRAFT_CHANGED", "update the proposal before confirming the changed choices")
+        self._withdraw_superseded(surface)
         job = self.s.confirm(surface.bound["job_id"], self.owner, ctx["proposal_sha256"])
         new = self._status_surface(surface, job)
         self._save(new)
         return {"result": "ACTIVATED", "job_id": job["job_id"], "messages": new.messages()[1:]}
 
     def _do_discard_proposal(self, surface, ctx):
+        self._withdraw_superseded(surface)
         if self.s.job(surface.bound["job_id"])["state"] == "PROPOSED":
             self.s.cancel_job(surface.bound["job_id"], self.owner)
         self._save(surface, state="CLOSED")

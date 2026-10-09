@@ -55,7 +55,7 @@ class Service:
         self.last_tick = None
         self.last_error = None
         self._gate_cache = (0.0, None)
-        self.a2ui = SchedulerA2ui(sched, owner)
+        self.a2ui = SchedulerA2ui(sched, owner, gate_snapshot=lambda: self._gate_cache[1])
 
     def gate_cached(self, ttl=60):
         t, g = self._gate_cache

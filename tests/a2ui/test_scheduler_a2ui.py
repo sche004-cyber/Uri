@@ -75,7 +75,7 @@ def test_proposal_revise_confirm_journey(env):
     assert done["result"] == "ACTIVATED" and s.job(out["job_id"])["state"] == "ACTIVE"
     sched = s.job(out["job_id"])["schedule"]
     assert sched["offset_days"] == -3 and sched["time"] == "08:30" and sorted(sched["selection"]) == ["diwali", "holi"]
-    assert "not available" not in components(done["messages"])["harness"]["text"]   # fake harness is AVAILABLE
+    assert "not checked yet" in components(done["messages"])["harness"]["text"]   # no probe under the engine lock
     kinds = [ev["payload"]["result"] for ev in s.store.events(limit=500) if ev["kind"] == "a2ui.action"]
     assert kinds.count("OK") == 2 and "STALE_SURFACE" in kinds and "DRAFT_CHANGED" in kinds
 
@@ -263,3 +263,34 @@ def test_r5_failed_revise_save_keeps_the_shown_proposal_valid(env, monkeypatch):
     assert states[r["job_id"]] == "PROPOSED"                             # the shown proposal is untouched
     assert sorted(states.values()).count("CANCELLED") == 1               # the new one was withdrawn
     assert click(host, r["surface_id"], r["messages"], "confirm")["result"] == "ACTIVATED"
+
+
+def test_r6_status_surface_never_probes_the_harness(env):
+    """A2UI audit round 6, R6-1: building surfaces under the engine mutex never calls the harness gate."""
+    s, host, h, *_ = env
+    calls = []
+    h.gate = lambda: calls.append(1)
+    host._gate_snapshot = lambda: {"available": False, "code": "NOT_AUTHENTICATED"}
+    r = host.propose_from_request({"festivals": ["diwali"]})
+    out = click(host, r["surface_id"], r["messages"], "confirm")
+    assert calls == [] and "NOT_AUTHENTICATED" in components(out["messages"])["harness"]["text"]
+
+
+def test_r6_superseded_proposal_is_withdrawn_on_the_next_owner_action(env, monkeypatch):
+    """A2UI audit round 6, R6-2: the old proposal's cancel fails during revise; the next action on the surface withdraws it."""
+    s, host, *_ = env
+    r = host.propose_from_request({"festivals": ["diwali"]})
+    real = s.cancel_job
+    def fail_old(job_id, principal):
+        if job_id == r["job_id"]:
+            raise RuntimeError("storage hiccup")
+        return real(job_id, principal)
+    monkeypatch.setattr(s, "cancel_job", fail_old)
+    with pytest.raises(RuntimeError):
+        click(host, r["surface_id"], r["messages"], "revise", selection=["diwali", "holi"])
+    monkeypatch.undo()
+    assert s.job(r["job_id"])["state"] == "PROPOSED"                     # inert, recorded in the new surface
+    msgs = [m for m in host.open_messages() if r["surface_id"] in str(m)]
+    assert model(msgs)["bound"]["supersedes"] == r["job_id"]
+    out = click(host, r["surface_id"], msgs, "confirm")
+    assert out["result"] == "ACTIVATED" and s.job(r["job_id"])["state"] == "CANCELLED"
