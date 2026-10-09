@@ -19,7 +19,7 @@
 // | URI_CP_IDENTITY | solar, sakura, lunar, moonlit or classic |
 // | URI_CP_FPS | adaptive, fps30, fps60, fps90, fps144 |
 // | URI_CP_QUALITY | full, balanced, performance |
-// | URI_CP_LAYOUT | shell (Companion mode of the app) or large (one companion filling the window) |
+// | URI_CP_LAYOUT | shell (Companion mode of the app), large (one companion filling the window) or stress (24 companions: a synthetic GPU load for the contention check) |
 // | URI_CP_CYCLE | 1: step the companion through its states every 4 s |
 //
 // Preferences are in memory only; the shared preferences file is never read
@@ -127,11 +127,11 @@ Future<void> main() async {
     }
   });
 
-  if (layout == 'large') {
+  if (layout == 'large' || layout == 'stress') {
     final prefs = services.companionPrefs;
     services.companionPrefs.restoreFrom(await SharedPreferences.getInstance());
     services.frameGovernor.install();
-    runApp(_Large(services: services, prefs: prefs));
+    runApp(_Large(services: services, prefs: prefs, grid: layout == 'stress'));
     // The shell does this in LivingApp; here the governor learns the display
     // rate directly, so a fixed cap means the same thing in both layouts.
     await WidgetsBinding.instance.endOfFrame;
@@ -268,9 +268,18 @@ Future<void> main() async {
 
 /// One companion filling the window: isolates the shader's cost.
 class _Large extends StatelessWidget {
-  const _Large({required this.services, required this.prefs});
+  const _Large({
+    required this.services,
+    required this.prefs,
+    this.grid = false,
+  });
   final LivingServices services;
   final CompanionPreferences prefs;
+
+  /// A synthetic GPU load: a grid of 24 companions at full resolution. Used
+  /// only as the competing process in the contention check, never measured
+  /// as a companion result.
+  final bool grid;
 
   @override
   Widget build(BuildContext context) {
@@ -292,6 +301,18 @@ class _Large extends StatelessWidget {
               backgroundColor: Colors.black,
               body: LayoutBuilder(
                 builder: (context, box) {
+                  if (grid) {
+                    final side = box.maxWidth / 6;
+                    return Wrap(
+                      children: [
+                        for (var i = 0; i < 24; i++)
+                          LivingCompanion(
+                            state: CompanionState.working,
+                            size: side,
+                          ),
+                      ],
+                    );
+                  }
                   final side = box.biggest.shortestSide * 0.9;
                   return Center(
                     child: LivingCompanion(
