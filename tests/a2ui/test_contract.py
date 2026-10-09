@@ -166,3 +166,20 @@ def test_r1_bound_cannot_be_patched_and_deep_nesting_is_refused():
     errs = V.validate_message({"version": "v0.9", "updateComponents": {"surfaceId": "s", "components": [
         {"id": "root", "component": "Text", "text": "x", "variant": d}]}})
     assert errs[0]["code"] == "TOO_NESTED"
+
+
+def test_r3_lone_surrogates_never_crash_the_validator():
+    """A2UI audit round 3, R3-1: hostile unpaired surrogates (valid JSON escapes) give codes or pass, never an exception."""
+    msgs = [
+        {"version": "v0.9", "updateComponents": {"surfaceId": "s", "components": [
+            {"id": "root", "component": "Text", "text": "a\ud800b"}]}},
+        {"version": "v0.9", "updateDataModel": {"surfaceId": "s", "path": "/", "value": {"x": "\udfff" * 10}}},
+        {"version": "v0.9", "updateDataModel": {"surfaceId": "s", "path": "/\ud800", "value": 1}},
+        {"version": "v0.9", "updateComponents": {"surfaceId": "s", "components": [
+            {"id": "root", "component": "Text", "text": "\ud800" * 4001}]}},
+    ]
+    out = [V.validate_message(m) for m in msgs]
+    assert out[0] == [] and out[1] == [] and out[2] == []
+    assert out[3][0]["code"] == "BAD_TEXT"
+    s = Surface("x", "k", [{"id": "root", "component": "Text", "text": "a\ud800b"}])
+    assert len(s.digest) == 64

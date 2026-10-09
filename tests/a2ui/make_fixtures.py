@@ -106,6 +106,7 @@ CASES = [
     ("data_root_load_ok", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "/", "value": {"bound": {"x": 1}}}}], "valid"),
     ("emoji_text_utf16_limit", [comps(mutate(lambda c: c[1].update(text="\U0001F600" * 2001)))], "BAD_TEXT"),
     ("emoji_text_under_limit", [create(), comps(mutate(lambda c: c[1].update(text="\U0001F600" * 2000)))], "valid"),
+    ("lone_surrogate_text", [create(), comps(mutate(lambda c: c[1].update(text="a\ud800b")))], "valid"),
     ("too_nested", [comps(mutate(lambda c: c[1].update(variant=_deep(40))))], "TOO_NESTED"),
 ]
 
@@ -121,7 +122,8 @@ def main():
         out.append({"name": name, "messages": msgs, "expect": expect})
     p = ROOT / "tests" / "a2ui" / "fixtures" / "contract_cases.json"
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    # ASCII escapes: a lone surrogate (hostile case) travels as \ud800 text and decodes the same in Python and Dart.
+    p.write_text(json.dumps(out, indent=1, ensure_ascii=True) + "\n", encoding="utf-8")
     print(f"{len(out)} cases -> {p}")
 
 

@@ -31,3 +31,12 @@ F3 PARTIAL → N1.
 |---|---|---|---|---|
 | N1 | Medium | "Cancel my schedule to create a festival GIF …" produced a NEW proposal; "… and send it to me for approval" stayed conversational | reproduced both | **repaired**: change/cancel verbs (cancel, stop, pause, delete, edit, change, reschedule, …) never produce a proposal; approval-delivery phrases ("bring/send/show it to me", "for approval/review") are removed before the competing-action check; tests for both directions |
 | N2 | Medium | string limits counted code points in Python and UTF-16 units in Dart (3,000 emoji passed Python, failed Dart) | confirmed | **repaired**: Python counts UTF-16 code units everywhere a limit applies (`u16`); shared fixture cases `emoji_text_utf16_limit` (2,001 emoji → BAD_TEXT) and `emoji_text_under_limit` (2,000 → valid) agree on both sides (44 cases) |
+
+## Round 3 — candidate `a85d893` (scope `git diff 29692c0 a85d893`) — **REJECT**
+
+N1 **FIXED** (change/cancel requests return no handoff; approval phrasing and the owner's sentence match; no catastrophic
+backtracking within the 2,000-character cap). N2 PARTIAL → R3-1.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R3-1 | High | the new UTF-16 length helper raised `UnicodeEncodeError` on an unpaired surrogate (a valid JSON escape in hostile text) instead of returning a code | reproduced; the same crash existed in `validate_data` (UTF-8 size) and in `canonical()` (surface digest) | **repaired**: `surrogatepass` in all three (a lone surrogate counts as one UTF-16 unit, like Dart; UTF-8 size as 3 bytes, like the Dart counter); `test_r3_lone_surrogates_never_crash_the_validator`; shared fixture `lone_surrogate_text` (fixtures now ASCII-escaped so the case reaches Dart intact); 45 shared cases agree |

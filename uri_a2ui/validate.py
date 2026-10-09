@@ -22,7 +22,7 @@ MESSAGE_KEYS = ("createSurface", "updateComponents", "updateDataModel", "deleteS
 
 def u16(s: str) -> int:
     """Length in UTF-16 code units: the unit Dart's String.length uses, so both sides agree (A2UI r2, N2)."""
-    return len(s.encode("utf-16-le")) // 2
+    return len(s.encode("utf-16-le", "surrogatepass")) // 2   # lone surrogates count as one unit, like Dart
 
 
 class A2uiInvalid(ValueError):
@@ -240,7 +240,7 @@ def validate_data(value, path="/value"):
         raw = json.dumps(value, ensure_ascii=False, allow_nan=False)
     except (TypeError, ValueError):
         return [_err("BAD_DATA", path, "not JSON")]
-    if len(raw.encode("utf-8")) > C.MAX_DATA_BYTES:
+    if len(raw.encode("utf-8", "surrogatepass")) > C.MAX_DATA_BYTES:
         return [_err("DATA_TOO_LARGE", path)]
 
     def walk(v, p):

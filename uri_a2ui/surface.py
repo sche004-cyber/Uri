@@ -30,7 +30,7 @@ _SHA = re.compile(r"^[0-9a-f]{64}$")
 
 
 def canonical(obj) -> bytes:
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8", "surrogatepass")
 
 
 def resolve(data, pointer):
