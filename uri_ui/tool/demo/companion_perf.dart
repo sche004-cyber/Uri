@@ -19,7 +19,7 @@
 // | URI_CP_IDENTITY | solar, sakura, lunar, moonlit or classic |
 // | URI_CP_FPS | adaptive, fps30, fps60, fps90, fps144 |
 // | URI_CP_QUALITY | full, balanced, performance |
-// | URI_CP_LAYOUT | shell (Companion mode of the app), large (one companion filling the window) or stress (24 companions: a synthetic GPU load for the contention check) |
+// | URI_CP_LAYOUT | shell (Companion mode of the app), large (one companion filling the window) stress (24 companions: a synthetic GPU load for the contention check) or blank (no companion: a memory control) |
 // | URI_CP_CYCLE | 1: step the companion through its states every 4 s |
 //
 // Preferences are in memory only; the shared preferences file is never read
@@ -127,7 +127,11 @@ Future<void> main() async {
     }
   });
 
-  if (layout == 'large' || layout == 'stress') {
+  if (layout == 'blank') {
+    // Control for the memory soak: no companion, no living code, one plain
+    // animated square at the display rate. Growth seen here is the engine's.
+    runApp(const _Blank());
+  } else if (layout == 'large' || layout == 'stress') {
     final prefs = services.companionPrefs;
     services.companionPrefs.restoreFrom(await SharedPreferences.getInstance());
     services.frameGovernor.install();
@@ -264,6 +268,40 @@ Future<void> main() async {
     stderr.writeln('report write failed: $e');
   }
   exit(0);
+}
+
+class _Blank extends StatefulWidget {
+  const _Blank();
+  @override
+  State<_Blank> createState() => _BlankState();
+}
+
+class _BlankState extends State<_Blank> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 4),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: Colors.black,
+    child: Center(
+      child: RotationTransition(
+        turns: _c,
+        child: const SizedBox(
+          width: 200,
+          height: 200,
+          child: ColoredBox(color: Colors.orange),
+        ),
+      ),
+    ),
+  );
 }
 
 /// One companion filling the window: isolates the shader's cost.

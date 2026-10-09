@@ -1,0 +1,498 @@
+{
+ "config": {
+  "identity": "lunar",
+  "fps": "fps144",
+  "quality": "full",
+  "layout": "stress",
+  "cycle": false,
+  "seconds": 40,
+  "build": "profile"
+ },
+ "display_hz": 144.0,
+ "window": {
+  "width": 1264.0,
+  "height": 681.0,
+  "dpr": 1.0
+ },
+ "overall": {
+  "frames": 5490,
+  "span_s": 40.042205810546875,
+  "fps": 137.1053339562519,
+  "companion_frames": 5492,
+  "build_p50": 0.3009999990463257,
+  "build_p90": 0.3970000147819519,
+  "raster_p50": 4.354000091552734,
+  "raster_p90": 5.423999786376953,
+  "raster_p99": 9.095999717712402,
+  "raster_max": 60.49599838256836,
+  "over_16ms": 1
+ },
+ "per_second": [
+  {
+   "t_s": 1,
+   "frames": 1,
+   "companion_frames": 2,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 2,
+   "frames": 16,
+   "companion_frames": 17,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 3,
+   "frames": 139,
+   "companion_frames": 145,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 4,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 5,
+   "frames": 142,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 6,
+   "frames": 156,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 7,
+   "frames": 142,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 8,
+   "frames": 140,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 9,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 10,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 11,
+   "frames": 156,
+   "companion_frames": 145,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 12,
+   "frames": 140,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 13,
+   "frames": 137,
+   "companion_frames": 143,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 14,
+   "frames": 156,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 15,
+   "frames": 142,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 16,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 17,
+   "frames": 141,
+   "companion_frames": 145,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 18,
+   "frames": 140,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 19,
+   "frames": 154,
+   "companion_frames": 143,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 20,
+   "frames": 140,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 21,
+   "frames": 143,
+   "companion_frames": 143,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 22,
+   "frames": 140,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 23,
+   "frames": 155,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 24,
+   "frames": 140,
+   "companion_frames": 143,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 25,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 26,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 27,
+   "frames": 142,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 28,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 29,
+   "frames": 156,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 30,
+   "frames": 142,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 31,
+   "frames": 139,
+   "companion_frames": 145,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 32,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 33,
+   "frames": 156,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 34,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 35,
+   "frames": 142,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 36,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 37,
+   "frames": 141,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 38,
+   "frames": 143,
+   "companion_frames": 145,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 39,
+   "frames": 156,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  },
+  {
+   "t_s": 40,
+   "frames": 143,
+   "companion_frames": 144,
+   "cap": 144.0,
+   "hidden": 0,
+   "clock_running": 1,
+   "view_w": 1264.0
+  }
+ ],
+ "cap_changes": [
+  {
+   "t_s": 0.0,
+   "cap": 60.0
+  },
+  {
+   "t_s": 0.002,
+   "cap": 144.0
+  }
+ ],
+ "lifecycle": [],
+ "rss": [
+  {
+   "t_s": 1,
+   "rss": 153653248
+  },
+  {
+   "t_s": 5,
+   "rss": 135516160
+  },
+  {
+   "t_s": 10,
+   "rss": 136658944
+  },
+  {
+   "t_s": 15,
+   "rss": 136736768
+  },
+  {
+   "t_s": 20,
+   "rss": 137084928
+  },
+  {
+   "t_s": 25,
+   "rss": 137043968
+  },
+  {
+   "t_s": 30,
+   "rss": 137015296
+  },
+  {
+   "t_s": 35,
+   "rss": 137285632
+  },
+  {
+   "t_s": 40,
+   "rss": 137355264
+  }
+ ],
+ "heap": [
+  {
+   "t_s": 1,
+   "heap_used": 12658432,
+   "heap_capacity": 12984320,
+   "external": 6160
+  },
+  {
+   "t_s": 5,
+   "heap_used": 11717744,
+   "heap_capacity": 12984320,
+   "external": 5040
+  },
+  {
+   "t_s": 10,
+   "heap_used": 10418576,
+   "heap_capacity": 12402688,
+   "external": 4240
+  },
+  {
+   "t_s": 15,
+   "heap_used": 12014320,
+   "heap_capacity": 12926976,
+   "external": 17840
+  },
+  {
+   "t_s": 20,
+   "heap_used": 11983968,
+   "heap_capacity": 12926976,
+   "external": 17040
+  },
+  {
+   "t_s": 25,
+   "heap_used": 11685152,
+   "heap_capacity": 12926976,
+   "external": 13840
+  },
+  {
+   "t_s": 30,
+   "heap_used": 11662128,
+   "heap_capacity": 12402688,
+   "external": 13040
+  },
+  {
+   "t_s": 35,
+   "heap_used": 11823920,
+   "heap_capacity": 13451264,
+   "external": 13040
+  },
+  {
+   "t_s": 40,
+   "heap_used": 11783792,
+   "heap_capacity": 12926976,
+   "external": 12240
+  }
+ ],
+ "vm_service": true
+}
