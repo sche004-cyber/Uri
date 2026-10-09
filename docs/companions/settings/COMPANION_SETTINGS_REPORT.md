@@ -35,7 +35,7 @@ before implementation). Branch `phase/companion-voice`, worktree
 | AC-6 | Persistence, per-companion looks, one namespaced store | met | round-trip, corruption and namespace tests |
 | AC-7 | Fixed rates control rendering; nothing when hidden | met | §4.1, §4.3 |
 | AC-8 | Quality changes cost; companion recognisable | met | §4.2, `capture2/quality_*` |
-| AC-9 | Adaptive responds to pressure and recovers | BRAIN_AC9 | §4.4 |
+| AC-9 | Adaptive responds to pressure and recovers | met with a gap: responds and recovers (tests, contention runs); back-off verified by tests, not yet against a live Brain | §4.4 |
 | AC-10 | Memory bounded or explained | met (growth is not companion-specific: a no-companion control grows similarly; plateau not established) | §4.5 |
 | AC-11 | Voice interface; simulated labelled; live deferred | met | §5 |
 | AC-12 | Only real voices and measured parameters | met | §5 |
@@ -169,7 +169,68 @@ for both Adaptive and fixed 144. Adaptive did not step down, so it does not
 degrade quality for graphics contention the GPU absorbs. This load is
 graphics work; it does not reproduce a language model saturating compute.
 
-BRAIN_SECTION
+**Real Brain (controlled, `perf/brain`)**, run under the machine-wide URI
+GPU lease (`gpu_lease run --purpose benchmark`, waited until another
+session's regression chain released it) with this phase's own Runtime v1
+instance: the pinned llama.cpp b11425 binary, the frozen model and argv, on
+private port 18499 (`rnd/companions/settings/brain_contention.py`). No other
+session's Brain was touched; every process was stopped at the end. Decode =
+256 tokens of the Runtime v1 calibration prompt, temperature 0, MTP on.
+
+*Order 1, Brain first, then the companion (14:47:56–14:55:12).* The lease's fit
+check had reported a 60 MB VRAM margin before the server started.
+
+| Condition | Brain decode tok/s | Companion frames/s during generation | Raster p99 | Frames > 16.7 ms |
+|---|---|---|---|---|
+| Brain alone, before | 159.3 / 161.9 / 161.8 | — | — | — |
+| Companion fixed 144 | 45.2–46.7 | 144.5 | 12.4 ms | 6 of 14 480 |
+| Companion Adaptive (build before the back-off fix) | 47.5–48.2 | 103.7 (cap alternated 144 / 90 every ~8 s) | 10.3 ms | 2 of 12 369 |
+| Companion fixed 30 | 50.0–50.2 | 29.9 | 2.7 ms | 1 of 3 037 |
+| Brain alone, after the companion exited | 50.9 / 51.2 | — | — | — |
+
+The decode rate fell from 160 to about 50 tok/s **as soon as the companion
+window opened, and stayed there after it closed**. That is not a frame-rate
+effect. It is the VRAM demotion already recorded for the frozen Runtime v1
+(Adaptive Runtime R1): the server asks for 15.26 GiB of a 16 GiB card, and a
+window that later takes a few hundred MB (this app holds about 300 MB
+dedicated) pushes part of the model into system memory for the life of the
+process. Frame rate then only moves it a little: 30 FPS left 50 tok/s, 144
+left 46.
+
+*Order 2, companion first, then the Brain (14:59:08–15:05:17)*, i.e. URI's window
+already open when the Brain starts, which the lease's fit check accounts for:
+
+| Condition | Brain decode tok/s | Companion frames/s | Raster p99 / frames > 16.7 ms (360 s) |
+|---|---|---|---|
+| Companion Adaptive, Brain generating for 120 s | 132.7–146.9 (62 requests, median about 140) | 144.7 during, 145.2 before, 146.6 after | 3.6 ms / 24 of 51 814 (0.05 %) |
+| Brain alone, after the companion exited | 160.9 / 160.5 | — | — |
+
+With the Brain healthy, the companion was unaffected while it generated (the
+generation runs on the GPU's compute queue: whole-adapter 3D utilisation
+stayed about 11 %) and the Brain ran about 12 % slower with the companion
+animating at 144 FPS. Adaptive stepped down once, to 90, for 8 s while the
+model loaded, and returned.
+
+**Findings.**
+1. (AMBER, owner) *Start order decides the Brain's speed, not the companion's
+   settings.* Opening any URI window after the Brain has loaded can demote the
+   Brain to about a third of its speed until it restarts. This belongs to the
+   frozen Runtime v1 memory budget and the working-system host's start policy
+   (the lease's fit check and calibration already exist for it), not to the
+   companion; it is recorded here because the companion is such a window.
+2. (fixed) *Adaptive oscillated* between 144 and 90 under sustained load in
+   the first run, because three calm windows at 90 were enough to try 144
+   again. Since this report's back-off fix, a step up that is followed by
+   stress within ten windows doubles the calm needed for the next one (3, 6,
+   12, 24, 30 windows; forgotten after 30 calm windows). Verified by
+   deterministic tests (`adaptive backs off instead of oscillating under
+   sustained load`: at most one probe a minute, the cap at 90 for more than 100
+   of 120 windows). The UI-first run did not sustain stress, so the back-off
+   has **not** yet been observed against a live Brain.
+3. The previous phase's measurement (100–108 frames/s, 17 % late frames while
+   a Brain generated) was not reproduced in either order here; that run was
+   uncontrolled (another session's Brain, unknown start order and load).
+
 
 ### 4.5 Memory
 

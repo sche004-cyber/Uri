@@ -13,13 +13,19 @@ URI GPU workload starts alongside:
         --label "companion contention" --max-hold 1200 -- \
         python <this repo>/rnd/companions/settings/brain_contention.py <out dir>
 
-Steps:
+Steps (default order, Brain first):
   1. start the server, wait until it answers /health;
   2. decode three times with nothing else running (baseline tok/s);
   3. for each companion frame-rate setting (fps144, adaptive, fps30): launch
      the profile perf harness (Lunar, Companion mode, 100 s) and, from second
      30 to second 70, keep the Brain decoding; record each request's tok/s;
   4. stop the server and write brain_contention.json.
+
+With --ui-first the order is reversed, as when URI's window is already open
+when the Brain starts: the companion (Lunar, adaptive, 360 s) starts first,
+the server 10 s later; once healthy the Brain decodes for 120 s; the
+companion keeps running 2 minutes more so recovery is visible. Writes
+brain_contention_ui_first.json.
 """
 import json
 import os
@@ -69,8 +75,64 @@ def decode(n=256):
             'wall_s': round(time.time() - t0, 2)}
 
 
+def ui_first(out):
+    log = open(os.path.join(out, 'llama_server_ui_first.log'), 'w', encoding='utf-8')
+    perf = subprocess.Popen(['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', RUN,
+                             '-Identity', 'lunar', '-Fps', 'adaptive', '-Quality', 'full', '-Layout', 'shell',
+                             '-Seconds', '360', '-OutDir', out, '-Tag', 'brain-ui-first-lunar-adaptive'],
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    launched = time.time()
+    server = None
+    result = {'order': 'ui_first', 'started': time.strftime('%Y-%m-%dT%H:%M:%S'), 'perf_launched': round(launched, 2)}
+    try:
+        time.sleep(10)
+        server = subprocess.Popen(ARGV, stdout=log, stderr=subprocess.STDOUT)
+        t0 = time.time()
+        while not healthy():
+            if server.poll() is not None:
+                raise RuntimeError('server exited during load')
+            if time.time() - t0 > 400:
+                raise RuntimeError('server not healthy after 400 s')
+            time.sleep(2)
+        result['load_s'] = round(time.time() - t0, 1)
+        decode(32)
+        gen_start = time.time()
+        result['gen_start_s'] = round(gen_start - launched, 1)
+        reqs = []
+        while time.time() - gen_start < 120:
+            reqs.append(decode())
+        result['gen_end_s'] = round(time.time() - launched, 1)
+        result['requests'] = reqs
+        perf_out, _ = perf.communicate(timeout=600)
+        result['runner'] = perf_out.strip().splitlines()[-1:]
+        result['after_ui_exit'] = [decode() for _ in range(2)]
+    finally:
+        if perf.poll() is None:
+            subprocess.run(['powershell', '-NoProfile', '-Command',
+                            "Get-Process uri_ui -ErrorAction SilentlyContinue | "
+                            "Where-Object { $_.Path -like '*uri-companion-voice*' } | Stop-Process -Force"],
+                           check=False)
+            perf.kill()
+        if server is not None:
+            server.terminate()
+            try:
+                server.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                server.kill()
+        log.close()
+        result['finished'] = time.strftime('%Y-%m-%dT%H:%M:%S')
+        with open(os.path.join(out, 'brain_contention_ui_first.json'), 'w', encoding='utf-8', newline='\n') as f:
+            json.dump(result, f, indent=1)
+    print(json.dumps({k: v for k, v in result.items() if k != 'requests'}, indent=1))
+    print('tok_s', [round(r['tok_s'], 1) for r in result.get('requests', [])])
+
+
 def main():
     out = os.path.abspath(sys.argv[1])
+    if '--ui-first' in sys.argv:
+        os.makedirs(out, exist_ok=True)
+        ui_first(out)
+        return
     os.makedirs(out, exist_ok=True)
     log = open(os.path.join(out, 'llama_server.log'), 'w', encoding='utf-8')
     server = subprocess.Popen(ARGV, stdout=log, stderr=subprocess.STDOUT)

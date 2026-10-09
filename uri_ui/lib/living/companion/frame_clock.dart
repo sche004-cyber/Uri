@@ -391,18 +391,40 @@ class FrameWindowStats {
 /// consecutive calm windows whose 90th percentile would fit comfortably in the
 /// faster tier's interval, so a brief lull does not cause oscillation.
 class AdaptiveRatePolicy {
-  AdaptiveRatePolicy({required double displayHz, this.recoverWindows = 3})
-    : tiers = tiersFor(displayHz) {
+  AdaptiveRatePolicy({
+    required double displayHz,
+    this.recoverWindows = 3,
+    this.maxRecoverWindows = 30,
+    this.settleWindows = 30,
+  }) : tiers = tiersFor(displayHz) {
     _index = 0;
+    _recoverNeeded = recoverWindows;
   }
 
   final List<double> tiers;
+
+  /// Calm windows needed to step up, at first.
   final int recoverWindows;
+
+  /// Upper bound of the back-off below.
+  final int maxRecoverWindows;
+
+  /// Windows without stress after which the back-off is forgotten.
+  final int settleWindows;
+
   late int _index;
+  late int _recoverNeeded;
   int _calm = 0;
+
+  /// Windows since the last step up, or null if none is pending judgement.
+  int? _sinceUp;
+  int _sinceStress = 0;
 
   double get cap => tiers[_index];
   int get tierIndex => _index;
+
+  /// Calm windows the next step up needs (grows with back-off).
+  int get recoverNeeded => _recoverNeeded;
 
   static List<double> tiersFor(double displayHz) {
     final top = displayHz.clamp(30.0, 144.0).roundToDouble();
@@ -414,25 +436,43 @@ class AdaptiveRatePolicy {
   }
 
   /// Returns true when the cap changed.
+  ///
+  /// Back-off: a step up that is followed by stress within ten windows was
+  /// premature, so the calm needed for the next step up doubles (up to
+  /// [maxRecoverWindows]). Measured with the local Brain generating
+  /// (2026-10-09): without it the cap alternated 144 / 90 every 8 s for the
+  /// whole generation, because 90 was sustainable and 144 was not.
   bool observe(FrameWindowStats w) {
     if (w.frames < 10) return false; // too little to judge
     final budget = 1000 / cap;
     final stressed = w.overBudget > 0.05 || w.workP90Ms > 0.85 * budget;
     if (stressed) {
       _calm = 0;
+      _sinceStress = 0;
+      if (_sinceUp != null && _sinceUp! < 10) {
+        _recoverNeeded = (_recoverNeeded * 2).clamp(
+          recoverWindows,
+          maxRecoverWindows,
+        );
+      }
+      _sinceUp = null;
       if (_index < tiers.length - 1) {
         _index++;
         return true;
       }
       return false;
     }
+    _sinceStress++;
+    if (_sinceUp != null) _sinceUp = _sinceUp! + 1;
+    if (_sinceStress >= settleWindows) _recoverNeeded = recoverWindows;
     if (_index == 0) return false;
     final faster = 1000 / tiers[_index - 1];
     if (w.overBudget < 0.01 && w.workP90Ms < 0.5 * faster) {
       _calm++;
-      if (_calm >= recoverWindows) {
+      if (_calm >= _recoverNeeded) {
         _calm = 0;
         _index--;
+        _sinceUp = 0;
         return true;
       }
     } else {

@@ -433,6 +433,46 @@ void main() {
       expect(p.cap, 90);
     });
 
+    test('adaptive backs off instead of oscillating under sustained load', () {
+      // As measured with the Brain generating: 90 holds, 144 does not.
+      final p = AdaptiveRatePolicy(displayHz: 144);
+      final caps = <double>[];
+      for (var i = 0; i < 120; i++) {
+        final atTop = p.cap >= 144;
+        p.observe(atTop ? window(3, over: 0.2) : window(1.5, cap: p.cap));
+        caps.add(p.cap);
+      }
+      var ups = 0;
+      for (var i = 1; i < caps.length; i++) {
+        if (caps[i] > caps[i - 1]) ups++;
+      }
+      // Without back-off this is about 30 retries in 120 windows (every 4).
+      // With it the waits are 3, 6, 12, 24, then 30 windows: at most one
+      // probe a minute once the load has proved sustained.
+      expect(ups, lessThanOrEqualTo(8));
+      expect(p.recoverNeeded, greaterThan(3));
+      expect(caps.where((c) => c == 90).length, greaterThan(100));
+    });
+
+    test(
+      'back-off is forgotten after a long calm, so recovery is quick again',
+      () {
+        final p = AdaptiveRatePolicy(displayHz: 144);
+        for (var i = 0; i < 40; i++) {
+          p.observe(
+            p.cap >= 144 ? window(3, over: 0.2) : window(1.5, cap: p.cap),
+          );
+        }
+        expect(p.recoverNeeded, greaterThan(3));
+        // Load gone: once at the top and calm long enough, back to 3.
+        for (var i = 0; i < 80; i++) {
+          p.observe(window(1.2, cap: p.cap));
+        }
+        expect(p.cap, 144);
+        expect(p.recoverNeeded, 3);
+      },
+    );
+
     test('adaptive never goes below 30 and ignores tiny windows', () {
       final p = AdaptiveRatePolicy(displayHz: 60);
       for (var i = 0; i < 10; i++) {
