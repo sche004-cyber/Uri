@@ -32,6 +32,7 @@ from collections import deque
 from . import brain_catalog
 from . import brain_health
 from . import cloud_policy
+from . import schedule_intent
 from .events import EventSink
 from .perf_monitor import PerfMonitor
 
@@ -203,6 +204,12 @@ class IntegratedTurns:
             raise BridgeRefused("DEPTH_INVALID")
         turn_id = str(uuid.uuid4())
         history = list(self.history.get(session_id, ()))
+        handoff = schedule_intent.interpret(text)
+        if handoff is not None:
+            # A2UI slice (docs/a2ui/A2UI_ARCHITECTURE.md): a festival-greeting scheduling request is handed to the
+            # scheduler, which proposes and renders an editable surface. No authority is exercised here.
+            self._start(turn_id, lambda: self._a2ui_handoff(turn_id, session_id, text, handoff))
+            return {"turn_id": turn_id, "accepted": True, "selection": self.selected}
 
         def run():
             sink = self._sink(turn_id)
@@ -217,6 +224,20 @@ class IntegratedTurns:
 
         self._start(turn_id, run)
         return {"turn_id": turn_id, "accepted": True, "selection": self.selected}
+
+    def _a2ui_handoff(self, turn_id, session_id, text, handoff):
+        sink = self._sink(turn_id)
+        emit = lambda t, **d: sink.emit(turn_id, t, **d)   # noqa: E731
+        reply = "I've prepared a festival GIF schedule for you to review. Nothing runs until you confirm it."
+        emit("turn.started", text_chars=len(text), depth="auto")
+        emit("turn.routed", route="a2ui", triage={"kind": "SCHEDULE_REQUEST", "interpreter": handoff["interpreter"]},
+             tier={"tier": "NONE", "selected_by": "deterministic", "reason": "no model call"})
+        emit("a2ui.handoff", **handoff)
+        emit("answer.delta", text=reply)
+        emit("answer.done", status="COMPLETE", complete=True, escalation_candidate=False, flags=[], metrics={})
+        emit("turn.finished", status="ok", route="a2ui", total_s=0)
+        emit("companion.state", state="waiting_user")
+        self._record_history(session_id, text, reply)
 
     def _remember(self, turn_id, session_id, text, env, status):
         if env is not None and status == "needs_user":

@@ -16,7 +16,8 @@ EVENT_TYPES = {
     "brain.status": "state (READY|LOADING|STOPPED|DEGRADED|...), model_id, owned, detail, identity {artifacts, live}, "
                     "performance? {state, reasons, decode_tps_median, residency, recovery_options}",
     "turn.started": "text_chars, depth",
-    "turn.routed": "route (answer|core|plan|harness_choice|escalation_offer), triage, tier {tier, selected_by, reason}",
+    "turn.routed": "route (answer|core|plan|harness_choice|escalation_offer|a2ui), triage, tier {tier, selected_by, reason}",
+    "a2ui.handoff": "domain (scheduler), kind, interpreter, request (interpreted, no authority; the domain proposes and renders the A2UI surface)",
     "companion.state": "state (idle|listening|thinking|speaking|waiting_user|error)",
     "thinking.progress": "chars (reasoning characters so far; reasoning text is not sent)",
     "answer.delta": "text",
