@@ -475,6 +475,20 @@ def date_mentions(text) -> list:
     return list(dict.fromkeys(found))
 
 
+def correction_visible(instruction, old_text, new_text) -> bool:
+    """A revision instruction's correction is visibly applied (live finding LQ-24): a phrase the user swapped out
+    is gone, or a detail the instruction names is now in the text and some detail left it."""
+    swapped = [p for p in user_exclusions(instruction) + _swap_phrases(instruction) if p]
+    if swapped and not any(_phrase_present(p, new_text) for p in swapped):
+        return True
+    named = _details(instruction)
+    if not named:
+        return False
+    have = {str(x) for x in canonical_numbers(new_text)} | set(_tokens(new_text))
+    gone = _details(old_text) - _details(new_text)
+    return bool(named & have) and bool(gone)
+
+
 def check_correction_accounted(cues, facts, clarification) -> list:
     if not cues or clarification:
         return []

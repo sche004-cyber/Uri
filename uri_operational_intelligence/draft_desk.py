@@ -531,8 +531,9 @@ class DraftDesk:
             gone = (V.verified_superseded(user_words, [s for f in facts for s in f["superseded"]])[0] + exclusions
                     + V.verified_across_turns(interpreted, old_text, new_sup))
             flags += V.check_details_kept(old_text, new_text, gone + [interpreted])
-            flags += V.check_new_details(new_text, known) + V.check_correction_accounted(
-                cues, _clean_facts(data.get("fact_updates")), None)
+            flags += V.check_new_details(new_text, known)
+            if not V.correction_visible(interpreted, old_text, new_text):
+                flags += V.check_correction_accounted(cues, _clean_facts(data.get("fact_updates")), None)
         flags += V.check_uncertain(inp.uncertain, new_text)
         if dropped:
             flags.append({"code": "EDIT_OUTSIDE_TARGET", "severity": "review",

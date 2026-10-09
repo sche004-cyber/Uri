@@ -92,3 +92,10 @@ def test_lq23_tone_is_not_a_fact():
     from uri_operational_intelligence.draft_desk import _clean_facts
     assert _clean_facts([{"key": "tone", "value": "formal"}, {"key": "day", "value": "Monday"}]) == [
         {"key": "day", "value": "Monday", "superseded": []}]
+
+
+def test_lq24_visible_correction_needs_no_review_line():
+    assert V.correction_visible("Sorry, not two days, three.", "closed for two days", "closed for three days")
+    assert V.correction_visible("Actually, don't say without permission. Say they left without recording.",
+                                "left without permission", "left without recording")
+    assert not V.correction_visible("Sorry, not two days, three.", "closed for two days", "closed for two days")
