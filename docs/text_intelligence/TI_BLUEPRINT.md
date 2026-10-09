@@ -97,3 +97,12 @@ cross-restart draft persistence, production cutover, launcher changes.
 ## 9. Change log
 
 - 2026-10-09: initial freeze.
+- Audit round 3: added a model-side action guard (`actions_requested` in both JSON schemas; non-empty hands the turn
+  to the ordinary path, the same pattern as the answer channel's ACTION marker). Refines D2; no architecture change.
+- Audit round 7/9: D6 refined — the verifier never excuses an absent detail silently; it only chooses severity
+  (error / review / info), and an excused value is shown as an info line.
+- Audit round 12: partial fact matches are FACT_REWORDED review lines, never "present".
+- Live run: D3 refined — one block per paragraph is enforced deterministically (`split_paragraphs`), including edits.
+- Live run: deterministic clarification for "change the date" when several dates exist (TI-AC5), no model call.
+- Live run: work item T8 used the accepted machine-wide GPU lease (WS hardening) for every Runtime v1 start after
+  07:10; see the report's correction history for the 07:05 collision.
