@@ -15,13 +15,14 @@
       * every precondition in the plan passes (Python exists and imports uri_scheduler from the repository,
         the state directory's parent exists, the client home exists), and
       * -LiveValidation names the result.json of a passed live-Claude test (scripts/scheduler_live_test.py
-        --mode live): "simulated" false, "verdict" PASS, a LIVE available harness, a verified chain, and a
-        LIVE claude_code attempt in the sibling attempts.json (journal.json present), and
+        --mode live) whose evidence directory describes ONE live run (result, journal steps, both GIF hashes,
+        every attempt LIVE by claude_code; see Test-LiveValidation), and
       * no task with that name exists yet (an existing one is never overwritten silently).
 
-    uninstall (rollback) stops the task, stops the scheduler service process recorded in <State>\service.json
-    (only if its command line is uri_scheduler.service for that state directory), unregisters the task, and
-    verifies it is gone. Scheduler state, artifacts and history are never deleted.
+    uninstall (rollback, -State required with -Apply) stops the task, stops the scheduler service process recorded
+    in <State>\service.json (only if its parsed argv is `python -m uri_scheduler.service run ... --state <State>` and
+    its start time matches the record), unregisters the task, and verifies it is gone. Scheduler state, artifacts
+    and history are never deleted.
 
     verify builds the task definition in memory (New-ScheduledTask) without registering anything.
 
@@ -88,22 +89,82 @@ function Get-Preconditions {
 }
 
 function Test-LiveValidation {
-    # The live leg of scripts/scheduler_live_test.py writes result.json, journal.json and attempts.json into one
-    # evidence directory. All three must agree: a real (not simulated) PASS, a LIVE harness that was available, a
-    # verified hash chain, and at least one LIVE attempt by claude_code. This guards against a wrong or partial file;
-    # it is an owner-run safeguard, not proof against a file the owner forges (review round 9, C3-01).
+    # The live leg of scripts/scheduler_live_test.py writes result.json, journal.json, attempts.json and the two GIF
+    # versions into one evidence directory. Everything must describe ONE live run (review rounds 9-10, C3-01/R10-02):
+    # result: live, not simulated, PASS, LIVE available harness, verified chain; journal: the service started in live
+    # mode, v1 and v2 verified with the result's hashes, v2 approved; v1.gif/v2.gif hash to those values; attempts: at
+    # least two (generate + refine), every one LIVE by claude_code. An owner-run safeguard against a wrong, partial or
+    # mixed evidence set, not proof against evidence the owner forges.
     if (-not $LiveValidation -or -not (Test-Path -LiteralPath $LiveValidation -PathType Leaf)) { return $false }
     if ((Split-Path -Leaf $LiveValidation) -ne "result.json") { return $false }
     $dir = Split-Path -Parent $LiveValidation
     try {
         $r = Get-Content -LiteralPath $LiveValidation -Raw -Encoding UTF8 | ConvertFrom-Json
-        $att = Get-Content -LiteralPath (Join-Path $dir "attempts.json") -Raw -Encoding UTF8 | ConvertFrom-Json
-        if (-not (Test-Path -LiteralPath (Join-Path $dir "journal.json") -PathType Leaf)) { return $false }
+        # Windows PowerShell 5.1 emits a JSON array as ONE object: assign it first, then enumerate it with @().
+        $attRaw = Get-Content -LiteralPath (Join-Path $dir "attempts.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+        $jrRaw = Get-Content -LiteralPath (Join-Path $dir "journal.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+        $att = @($attRaw)
+        $jr = @($jrRaw)
+        $h1 = (Get-FileHash -LiteralPath (Join-Path $dir "v1.gif") -Algorithm SHA256).Hash.ToLowerInvariant()
+        $h2 = (Get-FileHash -LiteralPath (Join-Path $dir "v2.gif") -Algorithm SHA256).Hash.ToLowerInvariant()
     } catch { return $false }
-    $liveAttempts = @($att | Where-Object { $_.mode -eq "LIVE" -and $_.harness -eq "claude_code" })
-    return ($r.mode -eq "live") -and ($r.simulated -eq $false) -and ($r.verdict -eq "PASS") -and
+    $resultOk = ($r.mode -eq "live") -and ($r.simulated -eq $false) -and ($r.verdict -eq "PASS") -and
         ($r.harness.mode -eq "LIVE") -and ($r.harness.available -eq $true) -and ($r.chain.ok -eq $true) -and
-        ($liveAttempts.Count -ge 1)
+        $r.v1.sha256 -and $r.v2.sha256 -and ($r.v1.sha256 -ne $r.v2.sha256)
+    if (-not $resultOk) { return $false }
+    $started = @($jr | Where-Object { $_.step -eq "1.service_started" -and $_.mode -eq "live" })
+    $j1 = @($jr | Where-Object { $_.step -eq "6.gif_v1_verified" -and $_.sha256 -eq $r.v1.sha256 })
+    $j2 = @($jr | Where-Object { $_.step -eq "9.gif_v2_verified" -and $_.sha256 -eq $r.v2.sha256 })
+    $ap = @($jr | Where-Object { $_.step -eq "10.approved_v2" })
+    $journalOk = ($started.Count -eq 1) -and ($j1.Count -eq 1) -and ($j2.Count -eq 1) -and ($ap.Count -eq 1)
+    $filesOk = ($h1 -eq $r.v1.sha256) -and ($h2 -eq $r.v2.sha256)
+    $nonLive = @($att | Where-Object { $_.mode -ne "LIVE" -or $_.harness -ne "claude_code" })
+    $attemptsOk = ($att.Count -ge 2) -and ($nonLive.Count -eq 0)
+    return $journalOk -and $filesOk -and $attemptsOk
+}
+
+if (-not ("UriSchedulerArgv" -as [type])) {
+    Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public static class UriSchedulerArgv {
+    [DllImport("shell32.dll", SetLastError = true)]
+    static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string cmd, out int n);
+    [DllImport("kernel32.dll")]
+    static extern IntPtr LocalFree(IntPtr p);
+    public static string[] Split(string cmd) {
+        int n;
+        IntPtr p = CommandLineToArgvW(cmd, out n);
+        if (p == IntPtr.Zero) return new string[0];
+        try {
+            string[] a = new string[n];
+            for (int i = 0; i < n; i++) a[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(p, i * IntPtr.Size));
+            return a;
+        } finally { LocalFree(p); }
+    }
+}
+"@
+}
+
+function Test-IsThisService($proc, $svc) {
+    # Windows' own argument splitting, then fixed positions: <python>.exe -m uri_scheduler.service run ... --state <State>.
+    # A quoted argument that merely contains this text is one argument and cannot match (round 10, R10-03).
+    $argv = [UriSchedulerArgv]::Split([string]$proc.CommandLine)
+    if ($argv.Count -lt 6) { return $false }
+    if ((Split-Path -Leaf $argv[0]) -notmatch '^pythonw?(\d+(\.\d+)?)?(\.exe)?$') { return $false }
+    if ($argv[1] -ne "-m" -or $argv[2] -ne "uri_scheduler.service" -or $argv[3] -ne "run") { return $false }
+    $want = [System.IO.Path]::GetFullPath($State).TrimEnd([char]92)
+    $ok = $false
+    for ($i = 4; $i -lt $argv.Count - 1; $i++) {
+        if ($argv[$i] -eq "--state") {
+            try { $got = [System.IO.Path]::GetFullPath($argv[$i + 1]).TrimEnd([char]92) } catch { $got = "" }
+            $ok = [string]::Equals($got, $want, [StringComparison]::OrdinalIgnoreCase)
+        }
+    }
+    if (-not $ok) { return $false }
+    # A reused PID belongs to a process that started at another time than the service recorded in service.json.
+    $created = ([DateTimeOffset]$proc.CreationDate).ToUnixTimeMilliseconds() / 1000.0
+    return [Math]::Abs($created - [double]$svc.started) -le 120
 }
 
 function New-TaskDefinition($p) {
@@ -121,12 +182,7 @@ function Stop-SchedulerService {
     $svc = Get-Content -LiteralPath $info -Raw -Encoding UTF8 | ConvertFrom-Json
     $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$([int]$svc.pid)" -ErrorAction SilentlyContinue
     if (-not $proc) { return "recorded pid $($svc.pid) is not running" }
-    # Only the scheduler service for THIS state directory: `-m uri_scheduler.service run` and `--state <State>` as one
-    # argument (quoted or not), not merely both strings somewhere in the command line (review round 9, C3-02).
-    $cl = [string]$proc.CommandLine
-    $st = [regex]::Escape($State.TrimEnd([char]92))
-    if ($cl -notmatch '(^|\s)-m\s+uri_scheduler\.service\s+run(\s|$)' -or
-        $cl -notmatch ('--state\s+"?' + $st + '\\?"?(\s|$)')) {
+    if (-not (Test-IsThisService $proc $svc)) {
         return "pid $($svc.pid) is not this scheduler service; left alone"
     }
     if (-not $Apply) { return "DRY RUN: would stop scheduler service pid $($svc.pid)" }

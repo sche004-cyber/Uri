@@ -109,3 +109,13 @@ pre-repair engine.
 Codex also verified: calendar validates (77 occurrences, sources present, Sikkim 2027 absent, Bakrid history kept); correction
 rows are append-only and audited; the shipped calendar is never written; trigger bound to the current user; `uri_supervisor`
 unchanged; F2 and R7-1 remain recorded as unresolved; the cancel-window record matches its measurement and is not a guarantee.
+
+## Round 10 (closure) — candidate `2da36ad` — **REJECT**
+
+Round-9 status: C1-02 FIXED; C1-01, C3-01, C3-02 PARTIAL.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R10-01 | High | `materialize()` / `refresh_calendar()` did not take the engine mutex; a reconciliation could change a row after `_pre_claim` read it, and the late-run branch could set a moved, unconfirmed occurrence back to `SCHEDULED` | confirmed by reading (the round-9 test covered only `correct_calendar`, which holds the mutex) | **repaired**: `materialize` and `refresh_calendar` run under the engine mutex (RLock, re-entrant from `confirm`/`correct_calendar`); every pre-claim transition (missed, late-run) first re-checks that state and due time are unchanged (`_still`). Test `test_r10_reconciliation_and_pre_claim_are_serialized` (stale read is never acted on; materialize blocks while another holder has the mutex) |
+| R10-02 | Medium | the live gate accepted an empty journal and did not bind result and attempts to one run | confirmed | **repaired**: the journal must contain the live service start, v1 and v2 verified with the result's hashes, and the v2 approval; `v1.gif`/`v2.gif` must hash to those values; at least two attempts, all LIVE by `claude_code` |
+| R10-03 | Medium | a quoted argument containing the expected text matched; a reused PID could be stopped | confirmed | **repaired**: Windows' own argument splitting (`CommandLineToArgvW`), fixed positions (`<python> -m uri_scheduler.service run ... --state <State>`, full-path comparison), and the process start time must match `service.json` within 120 s. The test runs a real scheduler service process and look-alikes (extra argv, one quoted argument, wrong start time, other state dir) |

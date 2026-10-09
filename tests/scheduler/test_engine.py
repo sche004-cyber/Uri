@@ -697,3 +697,30 @@ def test_r9_obsolete_correction_never_blocks_later_ones(env):
         assert s2.store.q1("SELECT COUNT(*) FROM calendar_correction")[0] == 2               # history kept
     finally:
         s2.close()
+
+
+def test_r10_reconciliation_and_pre_claim_are_serialized(env):
+    """Codex round 10, R10-01: materialize/refresh take the engine mutex, and each pre-claim transition re-checks the row."""
+    import threading
+    s, h, clock, _ = env
+    p = festival_job(s, ("dussehra",))
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    occ_id = s.store.q1("SELECT occ_id FROM occurrence WHERE occurrence_key='dussehra:2026'")[0]
+    clock.set("2026-10-18T09:20:00+05:30")
+    stale = s.occurrence(occ_id)                              # what a dispatch read before a concurrent change
+    s.correct_calendar("owner", "in_festivals", "dussehra", 2026, "set_date", start="2026-10-21")
+    real = s.occurrence
+    s.occurrence = lambda oid: stale if oid == occ_id else real(oid)
+    try:
+        assert s._dispatch(occ_id)["result"] == "NOT_CLAIMED"     # the late-run transition saw the row had changed
+    finally:
+        s.occurrence = real
+    assert s.store.q1("SELECT state FROM occurrence WHERE occ_id=?", (occ_id,))[0] == "AWAITING_CONFIRMATION"
+    assert h.calls == []
+    done = threading.Event()
+    with s._mutex:
+        t = threading.Thread(target=lambda: (s.materialize(), done.set()))
+        t.start()
+        assert not done.wait(0.3)                              # blocked while another holder has the mutex
+    assert done.wait(10)
+    t.join()
