@@ -33,7 +33,8 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             # WS hardening (docs/working_system/WS_HARDENING_PLAN.md): new paths only.
             "scripts/ws_brain_host.py",
             # URI Scheduler (docs/scheduler/SCHEDULER_ARCHITECTURE.md): new paths only.
-            "uri_scheduler", "tests/scheduler", "scripts/scheduler_live_test.py"]
+            "uri_scheduler", "tests/scheduler", "scripts/scheduler_live_test.py",
+            "scripts/scheduler_task_ctl.ps1"]
 TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler")
 # Accepted files the owner authorized to extend (WS-D3: exact-path scope guards). They replace the overlay copy; the
 # receipt records both digests so the replacement is auditable.
