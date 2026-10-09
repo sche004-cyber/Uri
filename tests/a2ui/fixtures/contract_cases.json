@@ -2039,6 +2039,61 @@
   "messages": [
    {
     "version": "v0.9",
+    "updateComponents": {
+     "surfaceId": "s1",
+     "components": [
+      {
+       "id": "root",
+       "component": "Column",
+       "children": [
+        "t",
+        "b"
+       ]
+      },
+      {
+       "id": "t",
+       "component": "Text",
+       "text": "a\ud800b",
+       "variant": "title"
+      },
+      {
+       "id": "b",
+       "component": "Button",
+       "label": "OK",
+       "action": {
+        "event": {
+         "name": "surface.dismiss",
+         "context": {}
+        }
+       }
+      }
+     ]
+    }
+   }
+  ],
+  "expect": "BAD_TEXT"
+ },
+ {
+  "name": "lone_surrogate_data",
+  "messages": [
+   {
+    "version": "v0.9",
+    "updateDataModel": {
+     "surfaceId": "s1",
+     "path": "/",
+     "value": {
+      "x": "\udfff"
+     }
+    }
+   }
+  ],
+  "expect": "BAD_TEXT"
+ },
+ {
+  "name": "paired_surrogates_ok",
+  "messages": [
+   {
+    "version": "v0.9",
     "createSurface": {
      "surfaceId": "s1",
      "catalogId": "uri:a2ui/catalog/v1",
@@ -2064,7 +2119,7 @@
       {
        "id": "t",
        "component": "Text",
-       "text": "a\ud800b",
+       "text": "\ud83d\ude00",
        "variant": "title"
       },
       {

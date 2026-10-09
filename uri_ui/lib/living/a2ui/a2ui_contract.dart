@@ -126,8 +126,28 @@ class A2uiError {
   String toString() => '$code@$path${message.isEmpty ? '' : ' ($message)'}';
 }
 
+/// An unpaired UTF-16 surrogate (mirrors Python `lone_surrogate`): refused as
+/// text everywhere, so both sides size and store strings identically.
+bool hasLoneSurrogate(String s) {
+  for (var i = 0; i < s.length; i++) {
+    final c = s.codeUnitAt(i);
+    if (c >= 0xD800 && c <= 0xDBFF) {
+      if (i + 1 < s.length) {
+        final d = s.codeUnitAt(i + 1);
+        if (d >= 0xDC00 && d <= 0xDFFF) {
+          i++;
+          continue;
+        }
+      }
+      return true;
+    }
+    if (c >= 0xDC00 && c <= 0xDFFF) return true;
+  }
+  return false;
+}
+
 bool isPointer(Object? p, {bool relativeOk = true}) {
-  if (p is! String || p.length > 256) return false;
+  if (p is! String || p.length > 256 || hasLoneSurrogate(p)) return false;
   if (p == '/') return true;
   String body;
   if (p.startsWith('/')) {
@@ -144,7 +164,10 @@ bool isBinding(Object? v) =>
     v is Map && v.length == 1 && v.containsKey('path') && isPointer(v['path']);
 
 bool _textOk(Object? s) =>
-    s is String && s.length <= a2uiMaxString && !s.contains('\u0000');
+    s is String &&
+    s.length <= a2uiMaxString &&
+    !s.contains('\u0000') &&
+    !hasLoneSurrogate(s);
 
 bool _isInt(Object? v) => v is int;
 
@@ -214,7 +237,8 @@ List<A2uiError> checkValue(
           _textOk(o['label']) &&
           o['value'] is String &&
           (o['value'] as String).isNotEmpty &&
-          (o['value'] as String).length <= 128;
+          (o['value'] as String).length <= 128 &&
+          !hasLoneSurrogate(o['value'] as String);
       if (!ok) errs.add(A2uiError('BAD_OPTION', '$path/$i'));
     }
     final values = v.whereType<Map>().map((o) => o['value']).toSet();
@@ -265,10 +289,12 @@ List<A2uiError> _checkActionDecl(Object? v, String path, Set<String>? allowed) {
 bool _literalOk(Object? v) {
   if (v == null || v is bool) return true;
   if (v is int) return v >= 0 && v <= 1000000000;
-  if (v is String) return v.length <= a2uiMaxContextString;
+  if (v is String) {
+    return v.length <= a2uiMaxContextString && !hasLoneSurrogate(v);
+  }
   if (v is List) {
     return v.length <= a2uiMaxOptions &&
-        v.every((x) => x is String && x.length <= 128);
+        v.every((x) => x is String && x.length <= 128 && !hasLoneSurrogate(x));
   }
   return false;
 }
@@ -404,7 +430,7 @@ List<A2uiError> validateData(Object? value, String path, String raw) {
   }
   final errs = <A2uiError>[];
   void walk(Object? v, String p) {
-    if (v is String && v.length > a2uiMaxString) {
+    if (v is String && (v.length > a2uiMaxString || hasLoneSurrogate(v))) {
       errs.add(A2uiError('BAD_TEXT', p));
     } else if (v is Map) {
       v.forEach((k, x) => walk(x, '$p/$k'));
@@ -544,6 +570,10 @@ bool a2uiTyped(String kind, Object? v) {
   final opt = kind.endsWith('?');
   final k = opt ? kind.substring(0, kind.length - 1) : kind;
   if (v == null || v == '') return opt;
+  if (v is String && hasLoneSurrogate(v)) return false;
+  if (v is List && v.any((x) => x is String && hasLoneSurrogate(x))) {
+    return false;
+  }
   return switch (k) {
     'str' => v is String && v.length <= a2uiMaxContextString,
     'int' => v is int && v >= 0 && v <= 1000000,

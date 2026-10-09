@@ -21,7 +21,7 @@ import uuid
 from datetime import date
 
 from uri_a2ui.surface import ActionRefused, Surface, check_action
-from uri_a2ui.validate import A2uiInvalid
+from uri_a2ui.validate import A2uiInvalid, lone_surrogate
 
 from . import timespec
 from .engine import SchedulerError
@@ -123,7 +123,7 @@ class SchedulerA2ui:
             raise A2uiHostError("BAD_TIME_OR_OFFSET")
         assumptions = req.get("assumptions") or []
         if not isinstance(assumptions, list) or len(assumptions) > MAX_ASSUMPTIONS or \
-                not all(isinstance(a, str) and len(a) <= 300 for a in assumptions):
+                not all(isinstance(a, str) and len(a) <= 300 and not lone_surrogate(a) for a in assumptions):
             raise A2uiHostError("BAD_ASSUMPTIONS")
         if undated:
             note = "No dated occurrence in the coming year, so not included: " + ", ".join(greeting[k] for k in undated) + "."
@@ -195,9 +195,15 @@ class SchedulerA2ui:
     def propose_from_request(self, req) -> dict:
         """An interpreted scheduling request (from intent discovery) becomes a PROPOSED job and its proposal surface."""
         req = self._check_request(req)
-        prop = self._propose_job(req)
-        surface = self._proposal_surface("sched-" + uuid.uuid4().hex[:12], req, prop)
-        self._save(surface)
+        with self.s._mutex:
+            prop = self._propose_job(req)
+            try:
+                surface = self._proposal_surface("sched-" + uuid.uuid4().hex[:12], req, prop)
+                self._save(surface)
+            except Exception:
+                # No orphan: a proposal whose surface cannot be built or stored is withdrawn at once (A2UI r4, R4-1).
+                self.s.cancel_job(prop["job_id"], self.owner)
+                raise
         return {"surface_id": surface.surface_id, "messages": surface.messages(), "job_id": prop["job_id"]}
 
     # ---- artifact review ------------------------------------------------------------------------------------------
@@ -293,6 +299,10 @@ class SchedulerA2ui:
     def action(self, msg) -> dict:
         """One client `action`. Returns {"result", "messages"}; refusals raise A2uiHostError with a stable code."""
         if not isinstance(msg, dict) or not isinstance(msg.get("surfaceId"), str):
+            raise A2uiHostError("BAD_ACTION_MESSAGE")
+        # Hostile identifiers are refused before anything is looked up or audited (A2UI r4, R4-2).
+        if any(not isinstance(msg.get(k), str) or len(msg[k]) > 128 or lone_surrogate(msg[k])
+               for k in ("surfaceId", "name", "sourceComponentId")):
             raise A2uiHostError("BAD_ACTION_MESSAGE")
         # The whole action (surface load, gate, state checks, engine call, surface update) is one critical section
         # under the engine mutex: no concurrent action, tick or reconciliation can interleave (A2UI r1, F2).

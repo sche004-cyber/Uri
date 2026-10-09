@@ -179,7 +179,7 @@ def test_r3_lone_surrogates_never_crash_the_validator():
             {"id": "root", "component": "Text", "text": "\ud800" * 4001}]}},
     ]
     out = [V.validate_message(m) for m in msgs]
-    assert out[0] == [] and out[1] == [] and out[2] == []
+    assert out[0][0]["code"] == "BAD_TEXT" and out[1][0]["code"] == "BAD_TEXT" and out[2][0]["code"] == "BAD_PATH"
     assert out[3][0]["code"] == "BAD_TEXT"
-    s = Surface("x", "k", [{"id": "root", "component": "Text", "text": "a\ud800b"}])
-    assert len(s.digest) == 64
+    with pytest.raises(A2uiInvalid):
+        Surface("x", "k", [{"id": "root", "component": "Text", "text": "a\ud800b"}])

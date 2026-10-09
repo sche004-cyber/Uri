@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 
 from . import actions as A
 from . import catalog as C
-from .validate import A2uiInvalid, is_binding, require_valid, u16, validate_components
+from .validate import A2uiInvalid, is_binding, lone_surrogate, require_valid, u16, validate_components
 
 _SLUG = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 _TIME = re.compile(r"^(?:[01]\d|2[0-3]):[0-5]\d$")
@@ -121,6 +121,8 @@ def _typed(kind, v):
     kind = kind.rstrip("?")
     if v is None or v == "":
         return opt
+    if isinstance(v, str) and lone_surrogate(v) or isinstance(v, list) and any(isinstance(x, str) and lone_surrogate(x) for x in v):
+        return False
     if kind == "str":
         return isinstance(v, str) and u16(v) <= A.MAX_CONTEXT_STRING
     if kind == "int":

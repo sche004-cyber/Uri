@@ -2,17 +2,17 @@
  "phase": "b",
  "steps": [
   {
-   "t": "2026-10-09T11:57:18.380942Z",
+   "t": "2026-10-09T12:16:16.682357Z",
    "step": "rerendered_after_restart",
-   "digest": "7c04b44b01f95de4b7877e637086c7f065cfd464a5c75ecc8bc4bca8f9c292da"
+   "digest": "80f224c41cb6ba1e01fb49e65d73172f26049fe48852fc69a0bc96604ce3e43c"
   },
   {
-   "t": "2026-10-09T11:57:18.392476Z",
+   "t": "2026-10-09T12:16:16.695128Z",
    "step": "stale_digest_refused",
    "code": "STALE_SURFACE"
   },
   {
-   "t": "2026-10-09T11:57:18.825764Z",
+   "t": "2026-10-09T12:16:17.143301Z",
    "step": "confirmed",
    "harness_badge": "Claude is ready"
   }
@@ -20,15 +20,15 @@
  "timings": [
   {
    "what": "apply",
-   "ms": 12.029
+   "ms": 13.334
   },
   {
    "what": "action:scheduler.confirm_proposal",
-   "ms": 6.623
+   "ms": 9.117
   },
   {
    "what": "apply",
-   "ms": 0.588
+   "ms": 0.772
   }
  ],
  "notices": []

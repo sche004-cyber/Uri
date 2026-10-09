@@ -201,3 +201,34 @@ def test_r1_discard_and_confirm_are_serialized(env):
     assert done.wait(10)
     t.join()
     assert s.job(r["job_id"])["state"] == "CANCELLED"
+
+
+def test_r4_hostile_strings_are_refused_before_any_state_change(env):
+    """A2UI audit round 4, R4-1/R4-2: no orphaned proposal, no 500 from auditing hostile identifiers."""
+    s, host, *_ = env
+    n = s.store.q1("SELECT COUNT(*) FROM job")[0]
+    with pytest.raises(A2uiHostError) as e:
+        host.propose_from_request({"festivals": ["diwali"], "assumptions": ["x\ud800"]})
+    assert e.value.code == "BAD_ASSUMPTIONS" and s.store.q1("SELECT COUNT(*) FROM job")[0] == n
+    r = host.propose_from_request({"festivals": ["diwali"]})
+    for bad in ({"name": "x\ud800"}, {"sourceComponentId": "\udfff"}, {"name": 5}):
+        msg = dict({"name": "surface.dismiss", "surfaceId": r["surface_id"], "sourceComponentId": "discard",
+                    "context": {}}, **bad)
+        with pytest.raises(A2uiHostError) as e:
+            host.action(msg)
+        assert e.value.code == "BAD_ACTION_MESSAGE"
+    with pytest.raises(A2uiHostError) as e:      # a hostile value in the context: refused by the gate, audited safely
+        click(host, r["surface_id"], r["messages"], "revise", time="09:00\ud800")
+    assert e.value.code == "BAD_CONTEXT_VALUE"
+    assert s.store.verify_chain()["ok"]
+
+
+def test_r4_proposal_is_withdrawn_if_its_surface_cannot_be_saved(env, monkeypatch):
+    s, host, *_ = env
+    def boom(*a, **k):
+        raise RuntimeError("disk full")
+    monkeypatch.setattr(host, "_save", boom)
+    with pytest.raises(RuntimeError):
+        host.propose_from_request({"festivals": ["diwali"]})
+    states = [r[0] for r in s.store.q("SELECT state FROM job")]
+    assert states and all(x == "CANCELLED" for x in states)

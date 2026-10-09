@@ -40,3 +40,16 @@ backtracking within the 2,000-character cap). N2 PARTIAL → R3-1.
 | # | Codex severity | finding | Claude verification | disposition |
 |---|---|---|---|---|
 | R3-1 | High | the new UTF-16 length helper raised `UnicodeEncodeError` on an unpaired surrogate (a valid JSON escape in hostile text) instead of returning a code | reproduced; the same crash existed in `validate_data` (UTF-8 size) and in `canonical()` (surface digest) | **repaired**: `surrogatepass` in all three (a lone surrogate counts as one UTF-16 unit, like Dart; UTF-8 size as 3 bytes, like the Dart counter); `test_r3_lone_surrogates_never_crash_the_validator`; shared fixture `lone_surrogate_text` (fixtures now ASCII-escaped so the case reaches Dart intact); 45 shared cases agree |
+
+## Round 4 — candidate `186fc31` (scope `git diff a85d893 186fc31`) — **REJECT**
+
+R3-1 PARTIAL: validation no longer crashed, but an accepted lone surrogate still broke persistence and auditing.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R4-1 | High | a lone surrogate in a request `assumptions` string: the PROPOSED job was committed, then the surface save failed in SQLite → 500 and an orphaned proposal | confirmed by reading (job before surface) and Codex's SQLite reproduction | **repaired at the root**: unpaired surrogates are refused as text everywhere on both sides (`lone_surrogate` / `hasLoneSurrogate`: definitions, data, options, pointers, context values, request assumptions); `propose_from_request` runs under the engine mutex and withdraws the job if its surface cannot be built or stored (`test_r4_proposal_is_withdrawn_if_its_surface_cannot_be_saved`) |
+| R4-2 | Medium | a hostile `name`/`sourceComponentId` reached the audit event and its UTF-8 hashing → 500 | confirmed by reading | **repaired**: identifiers must be strings ≤ 128 without lone surrogates before any lookup or audit (`BAD_ACTION_MESSAGE`); hostile context values are refused by the gate and only the result code is audited; hash chain verified in the test |
+| R4-3 | Medium | Python and Dart sized lone surrogates differently in the 64 KiB data limit | confirmed | **repaired by R4-1** (no lone surrogate is accepted on either side); shared cases `lone_surrogate_text`, `lone_surrogate_data` (BAD_TEXT) and `paired_surrogates_ok` (valid, decoded like the wire); 47 shared cases agree |
+
+After repair: Python 399 passed / 20 skipped (a2ui + scheduler + OI + WS); Flutter 444 passed / 4 skipped; analyze: the 2
+pre-existing infos; live check re-run PASS.
