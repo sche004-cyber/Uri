@@ -135,7 +135,7 @@ def _core_only(t: str) -> bool:
     return False
 
 
-_CODE = re.compile(r"\b(?:code|bugs?|functions?|stack ?traces?|compile|repo(?:sitory|sitories|s)?|python|flutter|scripts?)\b", re.I)
+_CODE = re.compile(r"\b(?:code|bug|function|stack ?trace|compile|repo(?:sitory)?|python|flutter|script)\b", re.I)
 
 _UNDO = re.compile(r"^\s*(?:(?:uri|ok|okay|no|please)[,!]?\s+)*(?:undo|revert|roll back|rollback|go back|take back|"
                    r"cancel)(?:\s+(?:that|this|it|the|my|your))?(?:\s+(?:last|previous|latest))?(?:\s+(?:change|changes|"
