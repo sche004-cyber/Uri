@@ -20,6 +20,11 @@ _URLISH = re.compile(r"(?i)\b(?:https?|ftp|file)://|\b(?:javascript|vbscript|dat
 MESSAGE_KEYS = ("createSurface", "updateComponents", "updateDataModel", "deleteSurface")
 
 
+def u16(s: str) -> int:
+    """Length in UTF-16 code units: the unit Dart's String.length uses, so both sides agree (A2UI r2, N2)."""
+    return len(s.encode("utf-16-le")) // 2
+
+
 class A2uiInvalid(ValueError):
     def __init__(self, errors):
         self.errors = list(errors)
@@ -31,7 +36,7 @@ def _err(code, path, message=""):
 
 
 def is_pointer(p, *, relative_ok=True) -> bool:
-    if not isinstance(p, str) or len(p) > 256:
+    if not isinstance(p, str) or u16(p) > 256:
         return False
     if p == "/":
         return True
@@ -49,7 +54,7 @@ def is_binding(v) -> bool:
 
 
 def _text_ok(s) -> bool:
-    return isinstance(s, str) and len(s) <= C.MAX_STRING and "\x00" not in s
+    return isinstance(s, str) and u16(s) <= C.MAX_STRING and "\x00" not in s
 
 
 def check_value(kind, v, path, allowed_actions=None):
@@ -90,7 +95,7 @@ def check_value(kind, v, path, allowed_actions=None):
         errs = []
         for i, o in enumerate(v):
             if not (isinstance(o, dict) and set(o) == {"label", "value"} and _text_ok(o["label"])
-                    and isinstance(o["value"], str) and 0 < len(o["value"]) <= 128):
+                    and isinstance(o["value"], str) and 0 < u16(o["value"]) <= 128):
                 errs.append(_err("BAD_OPTION", f"{path}/{i}"))
         if len({o["value"] for o in v if isinstance(o, dict) and isinstance(o.get("value"), str)}) != len(v):
             errs.append(_err("DUPLICATE_OPTION", path))
@@ -130,9 +135,9 @@ def _literal_ok(v) -> bool:
     if isinstance(v, int):
         return 0 <= v <= 10 ** 9
     if isinstance(v, str):
-        return len(v) <= A.MAX_CONTEXT_STRING
+        return u16(v) <= A.MAX_CONTEXT_STRING
     if isinstance(v, list):
-        return len(v) <= C.MAX_OPTIONS and all(isinstance(x, str) and len(x) <= 128 for x in v)
+        return len(v) <= C.MAX_OPTIONS and all(isinstance(x, str) and u16(x) <= 128 for x in v)
     return False
 
 
@@ -239,7 +244,7 @@ def validate_data(value, path="/value"):
         return [_err("DATA_TOO_LARGE", path)]
 
     def walk(v, p):
-        if isinstance(v, str) and len(v) > C.MAX_STRING:
+        if isinstance(v, str) and u16(v) > C.MAX_STRING:
             errs.append(_err("BAD_TEXT", p))
         elif isinstance(v, dict):
             for k, x in v.items():

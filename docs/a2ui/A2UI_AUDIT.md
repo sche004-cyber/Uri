@@ -20,3 +20,14 @@ unchanged.
 
 After repair: Python `tests/a2ui tests/scheduler tests/oi tests/ws` 386 passed / 20 skipped; Flutter 444 passed / 4 skipped;
 live check re-run **PASS** (`evidence/live_20261009`).
+
+## Round 2 — candidate `29692c0` — **ACCEPT WITH FINDINGS**
+
+F1, F2, F4, F5 **FIXED** (F2: the action path holds the engine RLock through load, gate, engine call and save; it never
+waits for a harness run; Codex notes that other tick bookkeeping is outside the lock, which is not claimed otherwise).
+F3 PARTIAL → N1.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| N1 | Medium | "Cancel my schedule to create a festival GIF …" produced a NEW proposal; "… and send it to me for approval" stayed conversational | reproduced both | **repaired**: change/cancel verbs (cancel, stop, pause, delete, edit, change, reschedule, …) never produce a proposal; approval-delivery phrases ("bring/send/show it to me", "for approval/review") are removed before the competing-action check; tests for both directions |
+| N2 | Medium | string limits counted code points in Python and UTF-16 units in Dart (3,000 emoji passed Python, failed Dart) | confirmed | **repaired**: Python counts UTF-16 code units everywhere a limit applies (`u16`); shared fixture cases `emoji_text_utf16_limit` (2,001 emoji → BAD_TEXT) and `emoji_text_under_limit` (2,000 → valid) agree on both sides (44 cases) |

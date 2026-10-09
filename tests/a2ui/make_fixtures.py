@@ -104,6 +104,8 @@ CASES = [
     ("data_bad_path", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "draft", "value": 1}}], "BAD_PATH"),
     ("data_patch_bound", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "/bound/surface/digest", "value": "x"}}], "READ_ONLY_PATH"),
     ("data_root_load_ok", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "/", "value": {"bound": {"x": 1}}}}], "valid"),
+    ("emoji_text_utf16_limit", [comps(mutate(lambda c: c[1].update(text="\U0001F600" * 2001)))], "BAD_TEXT"),
+    ("emoji_text_under_limit", [create(), comps(mutate(lambda c: c[1].update(text="\U0001F600" * 2000)))], "valid"),
     ("too_nested", [comps(mutate(lambda c: c[1].update(variant=_deep(40))))], "TOO_NESTED"),
 ]
 

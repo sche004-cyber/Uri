@@ -44,6 +44,10 @@ _OFFSET = re.compile(r"\b(\d{1,2}|a week|one week|a|one|two|three|four|five|six|
 _TIME = re.compile(r"\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\b")
 
 
+# Requests about an existing schedule (cancel, stop, change ...) are never turned into a NEW proposal (A2UI r2, N1).
+_CHANGE = re.compile(r"\b(cancel|stop|pause|resume|delete|remove|disable|turn off|unschedule|edit|change|modify|update|reschedule|undo)\b")
+# Asking for the result to be brought back for approval is part of the request, not another action.
+_DELIVERY = re.compile(r"\b(bring|send|show|give|return)\s+(it|them|the gifs?|the results?)\s+(back\s+)?to me\b|\bfor (my )?(approval|review)\b")
 _MAKE = re.compile(r"\b(create|make|generate|design|draw|prepare|produce|render|animate)\b")
 _COMPETING = re.compile(r"\b(email|e-mail|mail|meeting|meet|call|phone|remind|reminder|reminders|message|whatsapp|sms|"
                         r"post|tweet|publish|send|share|upload|invite|invitation|discuss|book|order|buy|pay)\b")
@@ -62,7 +66,7 @@ def interpret(text):
         return None
     # URI must be asked to MAKE the greeting, and the sentence must not be about another action that only mentions
     # festivals or greetings (an email, a meeting, a reminder, posting ...): those keep the normal path (A2UI r1, F3).
-    if not _MAKE.search(t) or _COMPETING.search(t.replace("bring it to me", "")):
+    if _CHANGE.search(t) or not _MAKE.search(t) or _COMPETING.search(_DELIVERY.sub(" ", t)):
         return None
     assumptions = []
     offset = 2

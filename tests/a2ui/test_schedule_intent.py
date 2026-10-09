@@ -49,6 +49,9 @@ def test_unsupported_offset_and_other_harness_are_stated():
     "Schedule an email to remind me about a festival greeting card", "schedule a meeting to discuss festival GIFs",
     "every Diwali send my team a greeting card", "post a festival greeting GIF every year on Holi",
     "remind me to make a Diwali greeting card two days before", "schedule a festival greeting card",
+    # A2UI audit round 2, N1: requests about an existing schedule never become a new proposal
+    "Cancel my schedule to create a festival GIF before each Indian festival",
+    "stop making Diwali greeting GIFs every year", "change the festival GIF schedule to make them 3 days before",
 ])
 def test_ordinary_requests_stay_conversational(text):
     assert SI.interpret(text) is None
@@ -87,3 +90,11 @@ def test_worker_handoff_turn_never_reaches_the_brain_or_core(tmp_path):
         r2 = b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "When is Diwali?", "depth": "auto"})
         b.wait(10)
         assert "a2ui.handoff" not in frames.types(r2["turn_id"])
+
+
+@pytest.mark.parametrize("text", [
+    "Schedule Claude to create a GIF before each Indian festival and send it to me for approval",
+    "make a festival greeting GIF two days before every festival and show it to me for review",
+])
+def test_r2_approval_delivery_phrasing_is_part_of_the_request(text):
+    assert SI.interpret(text) is not None
