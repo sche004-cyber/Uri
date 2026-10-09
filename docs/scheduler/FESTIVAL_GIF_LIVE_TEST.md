@@ -19,20 +19,23 @@ repository to `C:\Users\cheta\Development\uri-scheduler-state\evidence_state` (o
 
 ## 2. Results by leg
 
+Both legs were re-run on the final candidate `7496bba` (2026-10-09 UTC); earlier runs on `152c8e9` gave the same
+outcomes and the same GIF hashes (the renderer is deterministic).
+
 ### Leg A — `fixture_e2e` (genuine scheduler + supervisor, **SYNTHETIC Claude stand-in**) — PASS
 
-| step | time (UTC, 2026-10-08) | result |
+| step | time (UTC, 2026-10-09) | result |
 |---|---|---|
-| 1 service started | 21:02:18.625 | pid recorded, mode `fixture` |
-| 2 proposed + confirmed through API | 21:02:18.676 / .699 | `Once at 2026-10-09 02:33:33 (Asia/Kolkata)` |
-| 3 persisted before due | 21:02:18.712 | row `SCHEDULED`, 74.3 s before due |
-| 4 triggered by the scheduler | 21:03:34.023 | **1.01 s** after due (tick 5 s) |
-| 5 harness finished | 21:03:40.062 | supervisor `COMPLETE` (URI-observed postcondition), attempt mode `FIXTURE` |
-| 6 GIF v1 verified (by the driver, independently) | 21:03:40.189 | `GIF89a`, 30 frames, 320×320, animated, 6 distinct sampled frames, sha256 `b1065534…` |
-| 7 in review interface | 21:03:40.189 | `/overview` pending approval, version 1 |
-| 8 refine "More floral energy" | 21:03:40.194 | occurrence `REVISION_QUEUED` |
-| 9 GIF v2 verified | 21:03:46.285 | parent = v1, sha256 `22c4ee0e…` ≠ v1, concept records the change |
-| 10 approve v2 by sha256 | 21:03:46.321 | occurrence `APPROVED`, v2 `APPROVED`, v1 `SUPERSEDED`, every review event `published: false` |
+| 1 service started | 01:56:20.355 | pid recorded, mode `fixture` |
+| 2 proposed + confirmed through API | 01:56:20.430 / .458 | `Once at 2026-10-09 07:27:35 (Asia/Kolkata)` |
+| 3 persisted before due | 01:56:20.473 | row `SCHEDULED`, 74.5 s before due |
+| 4 triggered by the scheduler | 01:57:35.829 | **0.83 s** after due (tick 5 s) |
+| 5 harness finished | 01:57:39.834 | supervisor `COMPLETE` (URI-observed postcondition), attempt mode `FIXTURE` |
+| 6 GIF v1 verified (by the driver, independently) | 01:57:39.924 | `GIF89a`, 30 frames, 320×320, animated, 6 distinct sampled frames, sha256 `b1065534…` |
+| 7 in review interface | 01:57:39.924 | `/overview` pending approval, version 1 |
+| 8 refine "More floral energy" | 01:57:39.929 | occurrence `REVISION_QUEUED` |
+| 9 GIF v2 verified | 01:57:43.996 | parent = v1, sha256 `22c4ee0e…` ≠ v1, concept records the change |
+| 10 approve v2 by sha256 | 01:57:44.024 | occurrence `APPROVED`, v2 `APPROVED`, v1 `SUPERSEDED`, every review event `published: false` |
 
 What is genuine here: the scheduler process, persistence, timing, claim, supervisor admission, contained spawn, stream
 interpretation, postcondition check, renderer, GIF verification, review flow, audit chain. What is **simulated**: the
@@ -41,8 +44,8 @@ creative content (written by `tests/scheduler/helpers/fake_claude.py`; its resea
 ### Leg B — `live_blocked_probe` (genuine scheduler + **REAL Claude CLI gate**) — BLOCKED AS EXPECTED
 
 Same driver, `--mode live --qualification probe --client-home C:\Users\cheta\Development\uri-scheduler-state\client_home` (an isolated, empty client
-profile; at run time it lived at `work/scheduler_client_home` inside the worktree, as the journal's argv shows, and was
-moved outside the repository afterwards so that a future login's credential file can never be committed). The task was persisted 29.5 s before due and triggered 0.85 s after due. The gate resolved the real native
+profile, kept outside the repository so that a future login's credential file can never be committed). The task was
+persisted 29.7 s before due and triggered 0.71 s after due. The gate resolved the real native
 executable (`…\@anthropic-ai\claude-code\bin\claude.exe`, version 2.1.287), ran `claude auth status` under the client home
 and got `loggedIn: false`. Result: occurrence `BLOCKED_HARNESS` / `NOT_AUTHENTICATED`, no attempt consumed, event
 `harness.unavailable` with recovery options and `substitution: none (no other or paid provider is ever used)`, automatic

@@ -1,13 +1,13 @@
 [
  {
-  "t_utc": "2026-10-08T21:02:18.625+00:00",
+  "t_utc": "2026-10-09T01:56:20.355+00:00",
   "step": "1.service_started",
-  "pid": 21828,
-  "port": 56306,
+  "pid": 12360,
+  "port": 58596,
   "mode": "fixture",
   "ready": {
    "ready": true,
-   "port": 56306,
+   "port": 58596,
    "mode": "fixture",
    "startup": {
     "interrupted": [],
@@ -24,7 +24,7 @@
    "--mode",
    "fixture",
    "--port",
-   "56306",
+   "58596",
    "--tick-s",
    "5",
    "--timeout-s",
@@ -38,46 +38,46 @@
   ]
  },
  {
-  "t_utc": "2026-10-08T21:02:18.676+00:00",
+  "t_utc": "2026-10-09T01:56:20.430+00:00",
   "step": "2a.proposed",
-  "job_id": "job_f8c2666c04eb",
-  "interpretation": "Once at 2026-10-09 02:33:33 (Asia/Kolkata)",
+  "job_id": "job_a82d8be14980",
+  "interpretation": "Once at 2026-10-09 07:27:35 (Asia/Kolkata)",
   "upcoming": [
    {
     "key": "once",
-    "due_local": "2026-10-09T02:33+05:30",
-    "due_utc": "2026-10-08T21:03:33+00:00"
+    "due_local": "2026-10-09T07:27+05:30",
+    "due_utc": "2026-10-09T01:57:35+00:00"
    }
   ]
  },
  {
-  "t_utc": "2026-10-08T21:02:18.699+00:00",
+  "t_utc": "2026-10-09T01:56:20.458+00:00",
   "step": "2b.confirmed",
   "state": "ACTIVE",
-  "due_local": "2026-10-09T02:33:33"
+  "due_local": "2026-10-09T07:27:35"
  },
  {
-  "t_utc": "2026-10-08T21:02:18.712+00:00",
+  "t_utc": "2026-10-09T01:56:20.473+00:00",
   "step": "3.persisted_before_due",
   "occ_id": 1,
   "state": "SCHEDULED",
-  "due_utc": "2026-10-08T21:03:33+00:00",
-  "seconds_until_due": 74.3
+  "due_utc": "2026-10-09T01:57:35+00:00",
+  "seconds_until_due": 74.5
  },
  {
-  "t_utc": "2026-10-08T21:03:34.023+00:00",
+  "t_utc": "2026-10-09T01:57:35.829+00:00",
   "step": "4.triggered",
   "state": "RUNNING",
-  "trigger_delay_s": 1.01
+  "trigger_delay_s": 0.83
  },
  {
-  "t_utc": "2026-10-08T21:03:40.062+00:00",
+  "t_utc": "2026-10-09T01:57:39.834+00:00",
   "step": "5.harness_finished",
   "state": "AWAITING_REVIEW",
   "reason": "REVIEW_PENDING"
  },
  {
-  "t_utc": "2026-10-08T21:03:40.189+00:00",
+  "t_utc": "2026-10-09T01:57:39.924+00:00",
   "step": "6.gif_v1_verified",
   "signature": "GIF89a",
   "format": "GIF",
@@ -100,19 +100,19 @@
   "mode": "FIXTURE"
  },
  {
-  "t_utc": "2026-10-08T21:03:40.189+00:00",
+  "t_utc": "2026-10-09T01:57:39.924+00:00",
   "step": "7.in_review_interface",
   "artifact_id": 1,
   "version": 1,
   "concept": "# Rows of light\n\nRows of diyas glow over a slowly turning rangoli while marigold petals fall and embers rise.\n"
  },
  {
-  "t_utc": "2026-10-08T21:03:40.194+00:00",
+  "t_utc": "2026-10-09T01:57:39.929+00:00",
   "step": "8.refine_requested",
   "occ_state": "REVISION_QUEUED"
  },
  {
-  "t_utc": "2026-10-08T21:03:46.285+00:00",
+  "t_utc": "2026-10-09T01:57:43.996+00:00",
   "step": "9.gif_v2_verified",
   "signature": "GIF89a",
   "format": "GIF",
@@ -129,7 +129,7 @@
   "concept": "# Rows of light (more floral energy)\n\nChanges: doubled the marigold fall and added a swirling petal ring for more floral energy.\n"
  },
  {
-  "t_utc": "2026-10-08T21:03:46.321+00:00",
+  "t_utc": "2026-10-09T01:57:44.024+00:00",
   "step": "10.approved_v2",
   "occ_state": "APPROVED",
   "v2_status": "APPROVED",
@@ -142,7 +142,7 @@
     "action": "approve",
     "instruction": null,
     "artifact_sha256": "22c4ee0e6dd42e4901bd61cd4ed07cb49e6869633694ce6e939a0c1e900c07c6",
-    "at_us": 1791493426306908
+    "at_us": 1791511064022121
    }
   ]
  }
