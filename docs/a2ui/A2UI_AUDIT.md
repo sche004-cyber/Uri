@@ -74,6 +74,17 @@ the reentrant lock cannot deadlock.
 | # | Codex severity | finding | disposition |
 |---|---|---|---|
 | R6-1 | Medium | building a status surface under the engine lock called `harness.gate()`; in live mode a version + auth probe (up to ~50 s) would hold the lock and stall materialization and dispatch | **repaired**: surfaces never probe; the host reads the service's last cached gate (`gate_snapshot`, no probe) and says "Claude status not checked yet" when there is none; the cache is filled outside the engine lock by `/status` and `/overview`. Test `test_r6_status_surface_never_probes_the_harness`; live phase b shows the not-checked badge |
-| R6-2 | Medium | if the new surface was stored but cancelling the superseded proposal failed, nothing would later withdraw it (the record's residual omitted this case) | **repaired**: the new surface records `supersedes`; the owner's next action on that surface (revise, confirm, discard) withdraws the superseded proposal if it is still PROPOSED. Test `test_r6_superseded_proposal_is_withdrawn_on_the_next_owner_action`. Remaining residual (unchanged): an extra PROPOSED job stays only if storage fails and the owner never acts on the surface again; a PROPOSED job never runs and is visible in the Scheduler view |
+| R6-2 | Medium | if the new surface was stored but cancelling the superseded proposal failed, nothing would later withdraw it (the record's residual omitted this case) | **repaired**: the new surface records `supersedes`; the owner's next action on that surface (revise, confirm, discard) withdraws the superseded proposal if it is still PROPOSED. Test `test_r6_superseded_proposal_is_withdrawn_on_the_next_owner_action`. Remaining residual (wording corrected in round 7): an extra PROPOSED job stays until a successful, gated owner action on the refreshed proposal surface completes the withdrawal (it also stays if that withdrawal fails again, or if the owner acts from a stale surface and the gate refuses); a PROPOSED job never runs and is visible in the Scheduler view, where the owner can cancel it |
 
 After repair: Python 404 passed / 20 skipped; Flutter A2UI 13 passed (+1 opt-in live); live check PASS.
+
+## Round 7 — candidate `199b08a` (scope `git diff eb78607 199b08a`) — **ACCEPT WITH FINDINGS** (final)
+
+R6-1 **FIXED** (no probe under the engine lock; the cached gate is read as one tuple element; honest "not checked yet" text).
+R6-2 **FIXED** (withdrawal only of the authority-built, digest-covered `bound.supersedes` job, only while PROPOSED, only after
+the action gate passed on that surface). No new code defect, no HIGH path. One documentation finding: the residual's
+wording was too narrow — corrected above in the R6-2 row.
+
+**Status: independently accepted with findings (7 rounds: 1 REJECT, 2 AwF, 3 REJECT, 4 REJECT, 5 AwF, 6 AwF, 7 AwF).**
+Residual for owner acceptance: R6-2's inert PROPOSED proposal after a storage failure (above). Everything else is
+repaired with regression tests.
