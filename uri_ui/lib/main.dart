@@ -6,6 +6,7 @@
 /// import it without pulling the plugin in — which hangs `flutter test`.
 library;
 
+import 'dart:async' show unawaited;
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
@@ -18,6 +19,8 @@ import 'services/platform_attachment_opener.dart';
 import 'services/platform_file_picker.dart';
 import 'services/platform_window_controller.dart';
 import 'services/integrated_runtime.dart';
+import 'services/window_visibility.dart';
+import 'services/windows_voice_catalog.dart';
 import 'working_system_app.dart';
 
 void main() async {
@@ -43,6 +46,13 @@ void main() async {
         filePicker: pickPlatformFile,
         attachmentOpener: openPlatformAttachment,
         skipOnboarding: Platform.environment['URI_LIVING_SKIP_ONBOARDING'] == '1',
+        // Companion settings: installed Windows voices, and no companion
+        // frames while the window is minimised (the binding is removed when
+        // the services are disposed).
+        configureServices: (services) {
+          if (Platform.isWindows) services.voiceCatalog = WindowsVoiceCatalog();
+          unawaited(bindWindowVisibility(services.frameClock));
+        },
       ),
     );
     return;
