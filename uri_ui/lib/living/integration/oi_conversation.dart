@@ -302,16 +302,21 @@ class OiConversation extends ChangeNotifier {
       await old.kill();
     } catch (_) {}
     IntegratedRuntime? fresh;
+    String reason = 'not configured';
     try {
       fresh = await start();
-    } catch (_) {
+    } on IntegratedRuntimeException catch (e) {
+      reason = e.code;
+      fresh = null;
+    } catch (e) {
+      reason = e.runtimeType.toString();
       fresh = null;
     }
     if (fresh == null) {
       lastError = 'WORKER_RESTART_FAILED';
       workerExited = true;
       restarting = false;
-      messages.add(OiMessage(role: OiRole.system, text: 'URI could not restart its worker. Close and reopen the app.'));
+      messages.add(OiMessage(role: OiRole.system, text: 'URI could not restart its worker ($reason). Close and reopen the app.'));
       notifyListeners();
       return;
     }

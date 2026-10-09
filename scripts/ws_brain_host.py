@@ -54,6 +54,10 @@ RELEASE_TIMEOUT_S = 300.0
 QUIET_S = 180.0
 GPU_POLL_S = 10.0
 RESIDENCY_EVERY_S = 60.0
+# Re-measure the speed when the Brain's system-memory share grew by half a demotion block since its calibration
+# (measured live 2026-10-09: another session opened ~1 GB of GPU apps after load; non-local rose 1.1 -> 2.75 GB and
+# decode fell from 141 to 27-38 tok/s). The calibration request is one 160-token decode (~1-6 s).
+RECALIBRATE_GROWTH_MIB = 512.0
 
 
 class Host:
@@ -294,12 +298,18 @@ class Host:
         self.calibrate(r.pid)
         return True
 
-    def calibrate(self, pid):
+    def needs_recalibration(self, now_res):
+        cal = self.report.get("calibration") or {}
+        before = (cal.get("residency") or {}).get("non_local_mib")
+        now = (now_res or {}).get("non_local_mib")
+        return before is not None and now is not None and now - before >= RECALIBRATE_GROWTH_MIB
+
+    def calibrate(self, pid, reason="START"):
         import httpx
         self.set("CALIBRATING", detail=None, explain="Measuring Brain speed.")
         cal = {"t": round(self.now(), 3), "tokens": CALIBRATION_TOKENS, "threshold_tps": DEGRADED_TPS,
                # The instance this measurement belongs to (Codex H-r5): health uses it only for this process.
-               "server_pid": pid, "server_create_time": R._create_time(pid)}
+               "server_pid": pid, "server_create_time": R._create_time(pid), "reason": reason}
         try:
             with httpx.Client(base_url=R.base_url(self.cfg), timeout=httpx.Timeout(120.0, connect=3.0)) as c:
                 res = c.post("/completion", json={"prompt": CALIBRATION_PROMPT, "n_predict": CALIBRATION_TOKENS,
@@ -373,7 +383,10 @@ class Host:
                 if action is not None or self.report.get("last_request", {}).get("result") == "ACCEPTED":
                     self.finish_request()
                 if (self.mgr is not None and self.mgr.owns_instance and time.monotonic() - last_res >= RESIDENCY_EVERY_S):
-                    self.residency(self.report.get("server", {}).get("pid"))
+                    pid = self.report.get("server", {}).get("pid")
+                    now_res = self.residency(pid)
+                    if self.needs_recalibration(now_res):
+                        self.calibrate(pid, reason="RESIDENCY_CHANGED")
                     if self.lease is not None:
                         self.lease.heartbeat()
                     self.write()

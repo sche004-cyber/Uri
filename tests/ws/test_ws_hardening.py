@@ -666,6 +666,27 @@ def test_calibration_classifies_the_instance(tmp_path, tps, state):
         srv.shutdown()
 
 
+def test_eviction_after_load_triggers_a_new_measurement(tmp_path):
+    handler = type("T", (Timings,), {"tps": 141.0})
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        loaded = G.census(raw([(1580, 330, 9), (8008, 15555, 1120)], 15900), card=CARD)
+        evicted = G.census(raw([(1580, 330, 9), (8008, 13987, 2753), (1340, 345, 5), (2436, 344, 4), (4340, 351, 5)],
+                               15400), card=CARD)
+        H, h = new_host(tmp_path, Seq([loaded, loaded, evicted]), port=srv.server_address[1])
+        h.calibrate(pid=8008)
+        assert h.report["state"] == "READY"
+        assert not h.needs_recalibration(h.residency(8008))
+        handler.tps = 31.0
+        now = h.residency(8008)
+        assert h.needs_recalibration(now)
+        h.calibrate(8008, reason="RESIDENCY_CHANGED")
+        assert h.report["state"] == "DEGRADED" and h.report["calibration"]["reason"] == "RESIDENCY_CHANGED"
+    finally:
+        srv.shutdown()
+
+
 def test_calibration_failure_is_reported_as_degraded(tmp_path):
     H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]), port=1)    # nothing listens
     h.calibrate(pid=1)
