@@ -310,6 +310,14 @@ class OiConversation extends ChangeNotifier {
     if (_sendingSince != null) {
       messages.add(OiMessage(role: OiRole.system, text: 'A request was still being sent; it was not repeated and may not have started.'));
     }
+    // Drafts live in the worker's memory (TI limitation L-7): the new worker has none, so the panel must not keep
+    // offering Undo/Redo on a draft that no longer exists.
+    if (draft != null) {
+      messages.add(OiMessage(role: OiRole.system, text: 'The draft was held by the old worker and is gone after the restart.'));
+    }
+    draft = null;
+    draftQuestion = null;
+    draftProgress = 0;
     activeTurnId = null;
     _sendingSince = null;
     pendingApproval = null;
@@ -563,29 +571,36 @@ class OiConversation extends ChangeNotifier {
   /// Deterministic draft operation from a button: undo, redo, restore
   /// (with [version]) or discard. No model call; nothing is sent or saved.
   Future<void> draftOp(String op, {int? version}) async {
-    if (busy) return;
+    if (busy || restarting) return;
+    final rt = runtime;
     try {
-      final r = await runtime.call({
+      final r = await rt.call({
         'command': 'draft_op',
         'session_id': sessionId,
         'op': op,
         'version': ?version,
       });
+      if (!identical(rt, runtime)) return; // late reply from a replaced worker (WS hardening)
       draft = OiDraft.parse(r['draft']);
       draftQuestion = draft?.pendingQuestion;
       lastError = null;
     } on IntegratedRuntimeException catch (e) {
+      if (!identical(rt, runtime)) return;
       lastError = e.code;
     }
     notifyListeners();
   }
 
   Future<void> refreshDraft() async {
+    if (restarting) return;
+    final rt = runtime;
     try {
-      final r = await runtime.call({'command': 'draft_get', 'session_id': sessionId});
+      final r = await rt.call({'command': 'draft_get', 'session_id': sessionId});
+      if (!identical(rt, runtime)) return;
       draft = OiDraft.parse(r['draft']);
       draftQuestion = draft?.pendingQuestion;
     } on IntegratedRuntimeException catch (e) {
+      if (!identical(rt, runtime)) return;
       lastError = e.code;
     }
     notifyListeners();
