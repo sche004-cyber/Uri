@@ -71,7 +71,7 @@ def flutter(phase, env_extra, out_file, log):
     env = dict(os.environ, URI_A2UI_LIVE="1", URI_A2UI_PHASE=phase, URI_A2UI_OUT=str(out_file), **env_extra)
     t0 = time.time()
     r = subprocess.run(["flutter", "test", "test/a2ui/a2ui_service_live_test.dart"], cwd=str(ROOT / "uri_ui"), env=env,
-                       capture_output=True, text=True, timeout=900, shell=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=900, shell=True)
     Path(log).write_text(r.stdout + "\n" + r.stderr, encoding="utf-8")
     return r.returncode, round(time.time() - t0, 1)
 

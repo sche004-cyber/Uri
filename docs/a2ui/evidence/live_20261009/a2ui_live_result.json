@@ -1,0 +1,123 @@
+{
+ "started_utc": "2026-10-09T11:39:59.082681+00:00",
+ "evidence_level": "P (process: real service + real renderer; executor is the SYNTHETIC fixture, not Claude)",
+ "checks": {
+  "fixture_artifact_ready_s": 7.0,
+  "service_killed_and_restarted": true,
+  "activated_schedule": {
+   "selection": [
+    "diwali",
+    "holi"
+   ],
+   "time": "08:30",
+   "offset_days": -2
+  },
+  "superseded_proposals_cancelled": 1,
+  "artifact_approved_occurrences": 1,
+  "calendar_correction": {
+   "festival_key": "karva_chauth",
+   "year": 2026,
+   "action": "dispute",
+   "note": "live check: disputed"
+  },
+  "hash_chain": {
+   "ok": true,
+   "checked": 27,
+   "head": "7c708e04d234efab1aa430628f0ab76502477b7c7eccac0b19fff0a68abe6341"
+  },
+  "a2ui_actions_audited": [
+   [
+    "scheduler.confirm_proposal",
+    "DRAFT_CHANGED"
+   ],
+   [
+    "scheduler.revise_proposal",
+    "OK"
+   ],
+   [
+    "scheduler.review_artifact",
+    "OK"
+   ],
+   [
+    "calendar.correct_record",
+    "OK"
+   ],
+   [
+    "scheduler.confirm_proposal",
+    "STALE_SURFACE"
+   ],
+   [
+    "scheduler.confirm_proposal",
+    "OK"
+   ]
+  ]
+ },
+ "phase_a": {
+  "exit": 0,
+  "seconds": 14.1
+ },
+ "phase_b": {
+  "exit": 0,
+  "seconds": 5.8
+ },
+ "renderer_timings_ms": {
+  "phase_a": [
+   {
+    "what": "handoff->surface",
+    "ms": 33.274
+   },
+   {
+    "what": "apply",
+    "ms": 8.318
+   },
+   {
+    "what": "action:scheduler.revise_proposal",
+    "ms": 8.644
+   },
+   {
+    "what": "apply",
+    "ms": 0.997
+   },
+   {
+    "what": "apply",
+    "ms": 4.156
+   },
+   {
+    "what": "action:scheduler.review_artifact",
+    "ms": 10.687
+   },
+   {
+    "what": "apply",
+    "ms": 0.121
+   },
+   {
+    "what": "apply",
+    "ms": 0.795
+   },
+   {
+    "what": "action:calendar.correct_record",
+    "ms": 10.373
+   },
+   {
+    "what": "apply",
+    "ms": 1.355
+   }
+  ],
+  "phase_b": [
+   {
+    "what": "apply",
+    "ms": 9.905
+   },
+   {
+    "what": "action:scheduler.confirm_proposal",
+    "ms": 6.508
+   },
+   {
+    "what": "apply",
+    "ms": 0.555
+   }
+  ]
+ },
+ "verdict": "PASS",
+ "finished_utc": "2026-10-09T11:40:26.867137+00:00"
+}
