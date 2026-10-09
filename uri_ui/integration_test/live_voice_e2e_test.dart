@@ -508,6 +508,46 @@ void main() {
         await tester.pump(const Duration(seconds: 1));
       }
 
+      if (scenarios.contains('manual')) {
+        // A person drives the real app (talk button, Ctrl+Space, Esc, Stop).
+        // Nothing is pressed by the test; it only records what happens and
+        // takes a screenshot whenever the voice stage changes.
+        final seconds =
+            int.tryParse(env['URI_VOICE_E2E_MANUAL_S'] ?? '') ?? 600;
+        record('scenario', {'id': 'M manual session', 'seconds': seconds});
+        final end = DateTime.now().add(Duration(seconds: seconds));
+        var lastShot = voice.stage;
+        var n = 0;
+        while (DateTime.now().isBefore(end)) {
+          await tester.pump(const Duration(milliseconds: 100));
+          if (voice.stage != lastShot) {
+            lastShot = voice.stage;
+            if (lastShot != VoiceStage.idle && n < 60) {
+              n++;
+              await shot(
+                tester,
+                'M_${n.toString().padLeft(2, '0')}_${lastShot.name}',
+              );
+            }
+          }
+        }
+        record('result', {
+          'id': 'M',
+          'messages': [
+            for (final m in oi.messages)
+              {
+                'role': m.role.name,
+                'text': m.text.length > 400
+                    ? '${m.text.substring(0, 400)}...'
+                    : m.text,
+                'core': m.coreCode,
+                'metrics': m.metrics,
+              },
+          ],
+          'timings': voice.timings,
+        });
+      }
+
       if (scenarios.contains('drafting')) {
         record('scenario', {'id': 'R1 drafting mode'});
         services.companionPrefs.setVoice(
