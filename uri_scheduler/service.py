@@ -25,6 +25,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from .a2ui_host import A2uiHostError, A2uiInvalid, SchedulerA2ui
 from .engine import Scheduler, SchedulerAlreadyRunning, SchedulerError
 from .harness import ClaudeHarness
 
@@ -54,6 +55,7 @@ class Service:
         self.last_tick = None
         self.last_error = None
         self._gate_cache = (0.0, None)
+        self.a2ui = SchedulerA2ui(sched, owner)
 
     def gate_cached(self, ttl=60):
         t, g = self._gate_cache
@@ -141,6 +143,10 @@ def make_handler(svc: Service, token: str):
                     own = {r[0] for r in s.store.q("SELECT job_id FROM job WHERE owner=?", (svc.owner,))}
                     evs = s.store.events(job_id=qs.get("job", [None])[0], limit=int(qs.get("limit", ["200"])[0]))
                     self._send(200, [e for e in evs if e["job_id"] is None or e["job_id"] in own])
+                elif u.path == "/a2ui/surfaces":
+                    self._send(200, {"messages": svc.a2ui.open_messages()})
+                elif u.path == "/a2ui/calendar":
+                    self._send(200, svc.a2ui.calendar_surface())
                 elif u.path == "/festivals":
                     self._send(200, s.calendar.festivals("in_festivals"))
                 elif u.path == "/calendar":
@@ -149,7 +155,7 @@ def make_handler(svc: Service, token: str):
                                      "corrections": s._corrections("in_festivals")})
                 else:
                     self._send(404, {"error": "NOT_FOUND"})
-            except SchedulerError as exc:
+            except (SchedulerError, A2uiHostError) as exc:
                 self._send(400, {"error": exc.code, "detail": exc.detail})
             except Exception as exc:              # noqa: BLE001
                 self._send(500, {"error": type(exc).__name__, "detail": str(exc)})
@@ -193,6 +199,10 @@ def make_handler(svc: Service, token: str):
                 elif u.path == "/calendar/correct":
                     r = s.correct_calendar(p, "in_festivals", b["festival_key"], b["year"], b["action"],
                                            start=b.get("start"), end=b.get("end"), note=b.get("note", ""))
+                elif u.path == "/a2ui/propose":
+                    r = svc.a2ui.propose_from_request(b["request"])
+                elif u.path == "/a2ui/action":
+                    r = svc.a2ui.action(b["action"])
                 elif u.path == "/tick":
                     svc.poke()
                     r = {"poked": True}
@@ -201,8 +211,10 @@ def make_handler(svc: Service, token: str):
                     return
                 svc.poke()
                 self._send(200, r)
-            except SchedulerError as exc:
+            except (SchedulerError, A2uiHostError) as exc:
                 self._send(400, {"error": exc.code, "detail": exc.detail})
+            except A2uiInvalid as exc:
+                self._send(400, {"error": "A2UI_INVALID", "detail": exc.errors[:10]})
             except (KeyError, ValueError) as exc:
                 self._send(400, {"error": "BAD_REQUEST", "detail": str(exc)})
             except Exception as exc:              # noqa: BLE001
