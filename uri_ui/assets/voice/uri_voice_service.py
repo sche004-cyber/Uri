@@ -282,6 +282,7 @@ class Recogniser:
 # <= 1.12; every noise segment had no_speech_prob >= 0.311 (the repetition loop also
 # compression 27). A segment is speech only if all three hold. Dropping too much is
 # the safe direction: the user is told nothing was heard and repeats.
+RENDER_TIMEOUT_S = 20.0  # one sentence renders in about 0.3 s when warm
 TOKENS_PER_SECOND = 8  # speech runs at about 3-4 tokens a second
 MAX_NO_SPEECH_PROB = 0.3
 MIN_AVG_LOGPROB = -1.2
@@ -452,7 +453,17 @@ class Speaker:
         with self.ps_lock:
             ps.stdin.write((json.dumps(req, ensure_ascii=False) + "\n").encode("utf-8"))
             ps.stdin.flush()
-            line = ps.stdout.readline().decode("utf-8", "replace").strip()
+            box: list = []
+            reader = threading.Thread(target=lambda: box.append(ps.stdout.readline()), daemon=True)
+            reader.start()
+            reader.join(RENDER_TIMEOUT_S)
+            if reader.is_alive():
+                # A hung engine is ended rather than waited for; the next
+                # sentence starts a fresh bridge.
+                ps.kill()
+                self.ps = None
+                raise RuntimeError(f"speech engine did not answer within {RENDER_TIMEOUT_S:.0f} s")
+            line = box[0].decode("utf-8", "replace").strip() if box else ""
         if not line:
             raise RuntimeError("speech engine bridge stopped")
         r = json.loads(line)
@@ -575,12 +586,14 @@ class Speaker:
                     if gen != self.gen:
                         continue
                     self.current = uid
-                if uid not in self.started_ids:
-                    self.started_ids.add(uid)
-                    emit("speak.started", id=uid, text=text, render_ms=render_ms)
-                else:
-                    emit("speak.chunk", id=uid, text=text, render_ms=render_ms)
-                ok = self._play(uid, gen, pcm, sr, np, sd)
+                def announce(uid=uid, text=text, render_ms=render_ms):
+                    if uid not in self.started_ids:
+                        self.started_ids.add(uid)
+                        emit("speak.started", id=uid, text=text, render_ms=render_ms)
+                    else:
+                        emit("speak.chunk", id=uid, text=text, render_ms=render_ms)
+
+                ok = self._play(uid, gen, pcm, sr, np, sd, final, announce)
                 if not ok:
                     continue  # stopped: stop() already reported it
             if final and gen == self.gen:
@@ -593,7 +606,7 @@ class Speaker:
                 self.current = None
         self.started_ids.discard(uid)
 
-    def _play(self, uid, gen, pcm, sr, np, sd) -> bool:
+    def _play(self, uid, gen, pcm, sr, np, sd, final=True, announce=None) -> bool:
         block = max(1, int(sr * 0.02))
         pos = [0]
         done = threading.Event()
@@ -616,14 +629,21 @@ class Speaker:
         try:
             stream = sd.OutputStream(samplerate=sr, channels=1, dtype="float32", blocksize=block, callback=cb,
                                      finished_callback=done.set)
+            stream.start()
         except Exception as e:  # noqa: BLE001
             emit("speak.error", id=uid, code="PLAYBACK_FAILED", message=f"cannot open the speakers: {e}")
             emit("speak.ended", id=uid, reason="failed")
             self._finish(uid)
-            self.failed.add(uid)
+            if not final:  # R2-5: a final piece leaves nothing to drop later
+                self.failed.add(uid)
             return False
+        # The speakers are open and playing: only now is this audio "started".
+        if announce is not None:
+            announce()
         last_progress = 0.0
-        with stream:
+        # Already started above (so the announcement follows real playback);
+        # `with stream:` would start it a second time, which PortAudio refuses.
+        try:
             while not done.is_set():
                 try:
                     rms, n = levels.get(timeout=0.05)
@@ -636,18 +656,26 @@ class Speaker:
                 if now - last_progress > 0.1:
                     last_progress = now
                     emit("speak.progress", id=uid, ms=round(1000 * pos[0] / sr))
+        finally:
+            try:
+                stream.close()
+            except Exception:  # noqa: BLE001
+                pass
         return gen == self.gen and not self.stop_flag.is_set()
 
     def close(self):
         self.stop("stopped")
-        with self.ps_lock:
-            if self.ps is not None and self.ps.poll() is None:
-                try:
-                    self.ps.stdin.write(b"\n")
-                    self.ps.stdin.flush()
-                    self.ps.wait(2)
-                except Exception:  # noqa: BLE001
-                    self.ps.kill()
+        # Not under ps_lock: a render may hold it while the engine is busy.
+        ps = self.ps
+        if ps is not None and ps.poll() is None:
+            try:
+                ps.stdin.write(b"\n")
+                ps.stdin.flush()
+                ps.wait(2)
+            except Exception:  # noqa: BLE001
+                pass
+            if ps.poll() is None:
+                ps.kill()
         shutil.rmtree(self.tmp, ignore_errors=True)
 
 

@@ -82,6 +82,17 @@ class FakeRuntime implements IntegratedRuntime {
   Future<void> kill() async {}
 }
 
+/// A worker whose oi_turn reply waits until [release] completes.
+class SlowRuntime extends FakeRuntime {
+  final release = Completer<void>();
+
+  @override
+  Future<Map<String, dynamic>> call(Map<String, dynamic> command) async {
+    if (command['command'] == 'oi_turn') await release.future;
+    return super.call(command);
+  }
+}
+
 Map<String, dynamic> ready({
   String privacy = 'allowed',
   Map<String, dynamic>? modelError,
@@ -688,6 +699,72 @@ void main() {
       await pump();
       expect(ctl.noticeCode, 'MIC_FALLBACK');
       expect(ctl.signal.state, isNot(CompanionState.error));
+    });
+
+    test('R2-1: the service dying while the turn is sent leaves nothing to speak', () async {
+      final current = FakeVoiceTransport();
+      final svc2 = LiveVoiceService(launch: () async => current);
+      final slowRt = SlowRuntime();
+      final oi2 = OiConversation(slowRt, sessionId: 's2');
+      final c2 = VoiceInteractionController(
+        service: svc2,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi2,
+      );
+      await c2.pressTalk();
+      c2.releaseTalk();
+      final id =
+          '${current.sent.lastWhere((c) => c['cmd'] == 'listen_start')['id']}';
+      current.push({
+        'ev': 'listen.final',
+        'id': id,
+        'text': 'Hello?',
+        'reason': 'completed',
+        'engine': 'e',
+        'uncertain': <String>[],
+      });
+      await pump();
+      expect(c2.stage, VoiceStage.waiting);
+      current.die();
+      await pump();
+      slowRt.release.complete();
+      await pump();
+      await pump();
+      slowRt.emit('t1', 'answer.delta', {'text': 'Hi there. '});
+      slowRt.emit('t1', 'turn.finished', {'status': 'COMPLETE'});
+      await pump();
+      expect(current.cmds.where((c) => c == 'speak'), isEmpty);
+      expect(c2.stage, VoiceStage.idle);
+      c2.dispose();
+      oi2.dispose();
+    });
+
+    test('R2-4: the spoken cap also holds for a long first sentence', () async {
+      final c2 = VoiceInteractionController(
+        service: svc,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+        maxSpokenChars: 40,
+      );
+      await c2.pressTalk();
+      c2.releaseTalk();
+      await finalText('Explain.');
+      rt.emit('t1', 'answer.delta', {
+        'text': 'This first sentence is very much longer than the forty character cap allows. Next. ',
+      });
+      rt.emit('t1', 'turn.finished', {'status': 'COMPLETE'});
+      await pump();
+      final speaks = t.sent
+          .where((c) => c['cmd'] == 'speak')
+          .map((c) => '${c['text']}')
+          .toList();
+      expect(speaks.first.length, lessThanOrEqualTo(41));
+      expect(speaks.first, endsWith('…'));
+      expect(speaks[1], 'The rest of the answer is on screen.');
+      expect(speaks.join(' '), isNot(contains('Next.')));
+      c2.dispose();
     });
 
     test(

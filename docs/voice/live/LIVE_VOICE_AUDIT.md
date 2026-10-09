@@ -22,3 +22,22 @@ Thread `01a120b7-dbab-7c63-9dd6-8bbcb3542c35`.
 Correction recorded during repair: the first version of the R1-3 test also passed on the pre-repair
 code (a clip's final empty block reports one zero level); it was tightened to require the repeated
 silence reports only the repair produces.
+
+## Round 2 (candidate `d6709df`): REJECT
+
+Thread `01a12113-e8be-7620-979d-2e2ab6d9084c`. Codex confirmed R1-1, R1-3, R1-5, R1-6 repaired with
+exercising tests; found R1-2 and R1-7 incomplete (R2-1, R2-2). No speech path to `decide`, `confirm`,
+`abandon` or `selectBrain`; reducer, companion priority, `voice_engine.ps1` verbs and preference JSON unchanged.
+
+| ID | Severity | Finding (Codex) | Checked | Repair | Test (fails before / passes after) |
+|---|---|---|---|---|---|
+| R2-1 | HIGH | service death while `send` awaited: the reply was still tracked against the dead service | confirmed | a service epoch, bumped on loss, is checked after the await | `R2-1: the service dying while the turn is sent leaves nothing to speak` |
+| R2-2 | MEDIUM | `speak.started` emitted before the speakers opened, so first-audio latency could be recorded with no audio | confirmed | the stream is started first; the announcement follows; `with stream:` replaced by an explicit close (PortAudio refuses a second start) | `test_r2_2_and_r2_5_speaker_open_failure_announces_nothing_and_forgets_final` |
+| R2-3 | MEDIUM | a hung engine bridge blocked shutdown (lock held across a blocking read) | confirmed | the bridge answer is bounded (20 s, then the bridge is ended); `close()` no longer takes the render lock | `test_r2_3_a_hung_engine_is_ended_not_waited_for` |
+| R2-4 | MEDIUM | the 600-character cap did not bound a long first sentence or the fallback text | confirmed | both are clipped at a word boundary | `R2-4: the spoken cap also holds for a long first sentence` |
+| R2-5 | LOW | a failed final piece left its id in `failed` forever | confirmed | only non-final failures are remembered | same test as R2-2 |
+
+Also fixed between rounds from live evidence (not Codex findings): Stop button hold did nothing (live run 6),
+recogniser hallucinations on room noise, native-import deadlock in the service (thread dump), unbounded decoding
+(54 CPU-seconds worst case). Correction recorded: an earlier note attributed the slow model load to a Brain loading
+from the same disk; the thread dump showed the import deadlock instead.

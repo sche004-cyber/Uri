@@ -57,7 +57,16 @@ class FakeOutput:
         self.sd, self.cb, self.done, self.block = sd, callback, finished_callback, blocksize
         self.thread = None
 
+    def start(self):
+        self.__enter__()
+
+    def close(self):
+        if self.thread is not None:
+            self.thread.join(2)
+
     def __enter__(self):
+        if self.thread is not None:
+            raise RuntimeError("stream already started")  # as PortAudio refuses a second start
         def run():
             buf = np.zeros((self.block, 1), dtype="float32")
             try:
@@ -526,3 +535,49 @@ def test_partials_wait_for_detected_speech(env, monkeypatch):
     time.sleep(0.4)
     assert not any(final is False for _, final in env.svc.recogniser.calls)
     env.svc.listen_cancel("c1")
+
+
+def test_r2_2_and_r2_5_speaker_open_failure_announces_nothing_and_forgets_final(env, tmp_path):
+    sp = make_speaker(env, tmp_path, wav_render(0.2))
+
+    def broken(**kw):
+        raise RuntimeError("no output device")
+
+    env.sd.OutputStream = broken
+    sp.speak("u1", "hello", {}, True)
+    end = wait_for(env.events, "speak.ended")
+    assert end["reason"] == "failed"
+    assert not any(e["ev"] in ("speak.started", "speak.chunk") for e in env.events)
+    assert "u1" not in sp.failed
+
+
+def test_r2_3_a_hung_engine_is_ended_not_waited_for(env, monkeypatch, tmp_path):
+    mod = env.mod
+    monkeypatch.setattr(mod, "RENDER_TIMEOUT_S", 0.3)
+    sp = mod.Speaker.__new__(mod.Speaker)
+    sp.ps_lock = threading.Lock()
+
+    class HungPS:
+        def __init__(self):
+            self.killed = False
+            self.stdin = io.BytesIO()
+            self.stdout = self
+
+        def readline(self):
+            time.sleep(5)
+            return b""
+
+        def poll(self):
+            return 1 if self.killed else None
+
+        def kill(self):
+            self.killed = True
+
+    hung = HungPS()
+    sp.ps = hung
+    sp._ensure_ps = lambda: hung
+    t = time.time()
+    with pytest.raises(RuntimeError, match="did not answer"):
+        sp._render("hello", {}, tmp_path / "x.wav")
+    assert time.time() - t < 2
+    assert hung.killed and sp.ps is None

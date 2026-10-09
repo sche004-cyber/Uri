@@ -95,6 +95,10 @@ class VoiceInteractionController extends CompanionStateSource {
   /// between (a key released during start-up must not open it afterwards).
   int _pressGen = 0;
 
+  /// Incremented whenever the voice process is lost. Work that awaited across
+  /// a loss (a turn being sent) must not continue against the dead process.
+  int _serviceEpoch = 0;
+
   /// The last finished utterance, shown until the next one.
   VoiceFinal? lastFinal;
 
@@ -263,8 +267,12 @@ class VoiceInteractionController extends CompanionStateSource {
     _setStage(VoiceStage.waiting);
     _sentAt = DateTime.now();
     final before = conv.messages.length;
+    final epoch = _serviceEpoch;
     await conv.send(text);
     if (_disposed) return;
+    // R2-1: the voice process died while the turn was being sent. The turn is
+    // URI's (it is shown on screen); there is nothing left to speak it with.
+    if (epoch != _serviceEpoch) return;
     // `send` added the user's message and, when the worker accepted the
     // turn, URI's streaming message after it.
     OiMessage? reply;
@@ -349,8 +357,12 @@ class VoiceInteractionController extends CompanionStateSource {
       final pieces = completeSentences(spoken, _spokenUpTo, finished: finished);
       for (final (end, sentence) in pieces) {
         _spokenUpTo = end;
-        if (_spokenChars + sentence.length > maxSpokenChars &&
-            _spokenChars > 0) {
+        if (_spokenChars + sentence.length > maxSpokenChars) {
+          // R2-4: the cap holds for the first sentence too. A first sentence
+          // longer than the cap is spoken up to the cap at a word boundary.
+          if (_spokenChars == 0) {
+            _say(clipToWords(sentence, maxSpokenChars), last: false);
+          }
           _replyCut = true;
           _say('The rest of the answer is on screen.', last: false);
           break;
@@ -371,7 +383,10 @@ class VoiceInteractionController extends CompanionStateSource {
         // No answer text: speak Core's message or the error, briefly.
         final fallback = m.coreMessage ?? m.errorMessage;
         if (fallback != null && fallback.trim().isNotEmpty) {
-          _say(speakableText(fallback), last: true);
+          _say(
+            clipToWords(speakableText(fallback), maxSpokenChars),
+            last: true,
+          );
           return;
         }
         _say('', last: true);
@@ -410,6 +425,7 @@ class VoiceInteractionController extends CompanionStateSource {
             st == VoiceServiceState.stopped) &&
         _stage != VoiceStage.idle) {
       _pressGen++;
+      _serviceEpoch++;
       _captureId = null;
       _stopReplyTracking();
       _setStage(VoiceStage.idle);
@@ -567,6 +583,14 @@ String speakableText(String md) {
   t = t.replaceAll(RegExp(r'(\*\*|__|\*|_|`|~~)'), '');
   t = t.replaceAll(RegExp(r'[ \t]+'), ' ');
   return t.trim();
+}
+
+/// [text] cut to at most [max] characters at a word boundary, with an
+/// ellipsis when anything was cut.
+String clipToWords(String text, int max) {
+  if (text.length <= max) return text;
+  final cut = text.lastIndexOf(' ', max);
+  return '${text.substring(0, cut > 0 ? cut : max).trimRight()}…';
 }
 
 /// Sentences of [text] after character [from] that are complete: followed
