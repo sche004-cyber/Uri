@@ -203,8 +203,19 @@ class CompanionFrameClock extends ChangeNotifier {
     FineTimer.request(on);
   }
 
+  final List<VoidCallback> _onDispose = <VoidCallback>[];
+
+  /// Runs [callback] when this clock is disposed (e.g. removing a window
+  /// listener that drives [setHidden]), so nothing outside can call a
+  /// disposed clock.
+  void addDisposer(VoidCallback callback) => _onDispose.add(callback);
+
   @override
   void dispose() {
+    for (final c in _onDispose) {
+      c();
+    }
+    _onDispose.clear();
     _stop();
     _lifecycle?.dispose();
     visibility.dispose();

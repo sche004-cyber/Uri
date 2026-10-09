@@ -74,6 +74,7 @@ def main():
     os.makedirs(out, exist_ok=True)
     log = open(os.path.join(out, 'llama_server.log'), 'w', encoding='utf-8')
     server = subprocess.Popen(ARGV, stdout=log, stderr=subprocess.STDOUT)
+    perf = None
     result = {'argv_port': PORT, 'started': time.strftime('%Y-%m-%dT%H:%M:%S'), 'baseline': [], 'runs': {}}
     try:
         t0 = time.time()
@@ -103,6 +104,13 @@ def main():
             time.sleep(5)
         result['after'] = [decode() for _ in range(2)]
     finally:
+        # Never leave the measured app behind if a step failed mid-run.
+        if perf is not None and perf.poll() is None:
+            subprocess.run(['powershell', '-NoProfile', '-Command',
+                            "Get-Process uri_ui -ErrorAction SilentlyContinue | "
+                            "Where-Object { $_.Path -like '*uri-companion-voice*' } | Stop-Process -Force"],
+                           check=False)
+            perf.kill()
         server.terminate()
         try:
             server.wait(timeout=30)

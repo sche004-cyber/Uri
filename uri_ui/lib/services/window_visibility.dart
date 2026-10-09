@@ -16,9 +16,9 @@ import '../living/companion/frame_clock.dart';
 /// dependency of this app) decide instead.
 ///
 /// Call once from an entry point after `WidgetsFlutterBinding` is ready. The
-/// returned callback removes the window listener (call it when the clock is
-/// disposed before the process ends). Any failure leaves the clock running as
-/// before and returns a no-op.
+/// window listener is removed when the clock is disposed (and by the returned
+/// callback, for an owner that ends the binding earlier). Any failure leaves
+/// the clock running as before and returns a no-op.
 Future<void Function()> bindWindowVisibility(CompanionFrameClock clock) async {
   if (!(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     return () {};
@@ -28,7 +28,15 @@ Future<void Function()> bindWindowVisibility(CompanionFrameClock clock) async {
     final listener = _ClockWindowListener(clock);
     windowManager.addListener(listener);
     clock.setHidden(await windowManager.isMinimized());
-    return () => windowManager.removeListener(listener);
+    var removed = false;
+    void remove() {
+      if (removed) return;
+      removed = true;
+      windowManager.removeListener(listener);
+    }
+
+    clock.addDisposer(remove);
+    return remove;
   } catch (_) {
     // No window plugin (a test, an unsupported embedder): keep animating.
     return () {};

@@ -64,14 +64,25 @@ class OrbDock {
 ///
 /// * Companion mode: under the status line, sized to the space left above the
 ///   composer (the waveform shrinks first). When even the transcript does not
-///   fit there, a slim pill above the companion instead.
+///   fit there, a slim pill above the companion; in a window too short for
+///   either, no stage at all rather than an overlap.
 /// * Workspace: a slim pill centred in the header row.
 /// * Dashboard: a slim pill beside the companion.
 @immutable
 class VoiceDock {
-  const VoiceDock({required this.rect, required this.compact});
+  const VoiceDock({
+    required this.rect,
+    required this.compact,
+    this.hidden = false,
+  });
   final Rect rect;
   final bool compact;
+
+  /// True when the window is too short for any place that covers neither
+  /// the companion nor the controls (below about 560 px of height, where
+  /// Companion mode's own column no longer fits). The stage is then not
+  /// shown; the status line still says who is speaking.
+  final bool hidden;
 
   /// Height the Companion-mode controls take at the bottom of the shell
   /// (composer, mode chips, hint and their gaps).
@@ -101,18 +112,20 @@ class VoiceDock {
         // A short window has no room under the companion: the slim pill goes
         // above it instead, in the space Companion mode leaves at the top.
         final pw = (shell.width - 32).clamp(200.0, 440.0);
-        return VoiceDock(
-          rect: Rect.fromLTWH(
-            (shell.width - pw) / 2,
-            (orb.top - VoiceStage.compactHeight - 6).clamp(
-              4.0,
-              double.infinity,
+        final above = orb.top - VoiceStage.compactHeight - 6;
+        if (above >= 4) {
+          return VoiceDock(
+            rect: Rect.fromLTWH(
+              (shell.width - pw) / 2,
+              above,
+              pw,
+              VoiceStage.compactHeight,
             ),
-            pw,
-            VoiceStage.compactHeight,
-          ),
-          compact: true,
-        );
+            compact: true,
+          );
+        }
+        // Shorter still: no free place, so no stage rather than an overlap.
+        return const VoiceDock(rect: Rect.zero, compact: true, hidden: true);
       case UiPresentationMode.workspace:
         final w = (shell.width * 0.36).clamp(240.0, 440.0);
         return VoiceDock(
@@ -126,12 +139,16 @@ class VoiceDock {
         );
       case UiPresentationMode.dashboard:
         final left = orb.right + 24;
-        final w = (shell.width - left - 24).clamp(200.0, 420.0);
+        final room = shell.width - left - 24;
+        // A narrow Dashboard has no free place beside the companion.
+        if (room < 200) {
+          return const VoiceDock(rect: Rect.zero, compact: true, hidden: true);
+        }
         return VoiceDock(
           rect: Rect.fromLTWH(
             left,
             orb.center.dy - VoiceStage.compactHeight / 2,
-            w,
+            room.clamp(200.0, 420.0),
             VoiceStage.compactHeight,
           ),
           compact: true,
@@ -302,18 +319,19 @@ class _LivingShellState extends State<LivingShell> {
                           ),
                         ),
                         // The voice exchange, beside the companion.
-                        AnimatedPositioned.fromRect(
-                          duration: UriMotion.mode,
-                          curve: UriMotion.move,
-                          rect: voiceDock.rect,
-                          child: IgnorePointer(
-                            child: VoiceStage(
-                              key: const ValueKey('shell-voice-stage'),
-                              voice: services.voice,
-                              compact: voiceDock.compact,
+                        if (!voiceDock.hidden)
+                          AnimatedPositioned.fromRect(
+                            duration: UriMotion.mode,
+                            curve: UriMotion.move,
+                            rect: voiceDock.rect,
+                            child: IgnorePointer(
+                              child: VoiceStage(
+                                key: const ValueKey('shell-voice-stage'),
+                                voice: services.voice,
+                                compact: voiceDock.compact,
+                              ),
                             ),
                           ),
-                        ),
                         _QuestionBubble(
                           text: _bubbleText,
                           orbRect: dock.rect,

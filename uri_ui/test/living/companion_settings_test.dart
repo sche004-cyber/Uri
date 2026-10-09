@@ -1027,8 +1027,6 @@ void main() {
     test(
       'never over the companion, never over the Companion-mode controls',
       () {
-        // Sizes a desktop window realistically takes. Below about 600 px of
-        // height Companion mode's own column no longer fits (accepted layout).
         for (final shell in const [
           Size(1920, 1080),
           Size(1366, 768),
@@ -1036,10 +1034,20 @@ void main() {
           Size(1024, 700),
           Size(900, 640),
           Size(800, 600),
+          Size(700, 520),
+          Size(640, 480),
+          Size(560, 420),
         ]) {
           for (final mode in UiPresentationMode.values) {
             final orb = OrbDock.forMode(mode, shell).rect;
-            final v = VoiceDock.forMode(mode, shell, orb).rect;
+            final dock = VoiceDock.forMode(mode, shell, orb);
+            final v = dock.rect;
+            // Supported desktop sizes always get a stage; a window too short
+            // for any free place gets none instead of an overlap.
+            if (shell.height >= 600) {
+              expect(dock.hidden, isFalse, reason: "${mode.name} $shell");
+            }
+            if (dock.hidden) continue;
             final where = "${mode.name} $shell";
             expect(v.overlaps(orb), isFalse, reason: where);
             expect(v.left, greaterThanOrEqualTo(0), reason: where);
@@ -1067,6 +1075,29 @@ void main() {
         }
       },
     );
+
+    testWidgets('a very short window shows no stage rather than an overlap', (
+      tester,
+    ) async {
+      // Companion mode's accepted column already overflows at this height;
+      // that pre-existing layout limit is not this test's subject.
+      final previous = FlutterError.onError;
+      FlutterError.onError = (details) {
+        if (!details.toString().contains('overflowed')) previous?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = previous);
+      final services = await pumpShell(tester, size: const Size(700, 520));
+      final adapter = FakeVoiceAdapter();
+      services.bindVoice(adapter);
+      adapter.ctl.add(const ListeningStarted('s1'));
+      adapter.ctl.add(const UserSpeechStarted('s1'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      expect(find.byType(VoiceStage), findsNothing);
+      expect(services.companion.signal.state, CompanionState.listening);
+      await adapter.ctl.close();
+      await tester.pumpAndSettle();
+    });
 
     test('the transcript always fits; the waveform shrinks first', () {
       final w = 520.0;

@@ -36,7 +36,7 @@ before implementation). Branch `phase/companion-voice`, worktree
 | AC-7 | Fixed rates control rendering; nothing when hidden | met | §4.1, §4.3 |
 | AC-8 | Quality changes cost; companion recognisable | met | §4.2, `capture2/quality_*` |
 | AC-9 | Adaptive responds to pressure and recovers | BRAIN_AC9 | §4.4 |
-| AC-10 | Memory bounded or explained | met (explained: engine baseline, control run; Dart heap bounded; plateau of the engine itself not proven) | §4.5 |
+| AC-10 | Memory bounded or explained | met (growth is not companion-specific: a no-companion control grows similarly; plateau not established) | §4.5 |
 | AC-11 | Voice interface; simulated labelled; live deferred | met | §5 |
 | AC-12 | Only real voices and measured parameters | met | §5 |
 | AC-13 | Boundaries, formatting, line endings, output paths | met | §7 |
@@ -128,19 +128,27 @@ on a display it reports as 144 Hz; noted, not explained.
 
 ### 4.2 Render quality changes cost (`perf/matrix2`, one large companion, uncapped)
 
-GPU time per frame = own GPU 3D share ÷ frames per second:
+GPU time per frame = mean own GPU 3D share ÷ mean engine frames per second
+(seconds 4 onward). Samples whose process counters were absent (dedicated
+VRAM reads 0, which happens on the last sample as the process exits) are
+excluded: 8 of 9 samples per run. The all-sample means, which include that
+zero, are about 11 % lower and are given in brackets.
 
 | Identity | Full | Balanced (0.75) | Performance (0.5) |
 |---|---|---|---|
-| Lunar | 1.23 ms | 0.99 ms (−20 %) | 0.64 ms (−48 %) |
-| Solar | 0.56 ms | 0.48 ms (−14 %) | 0.37 ms (−34 %) |
-| Sakura | 0.39 ms | 0.34 ms (−13 %) | 0.26 ms (−33 %) |
+| Lunar | 1.23 ms (1.09) | 0.99 ms (0.88), −20 % | 0.64 ms (0.57), −48 % |
+| Solar | 0.49 ms (0.43) | 0.42 ms (0.38), −14 % | 0.32 ms (0.29), −34 % |
+| Sakura | 0.39 ms (0.35) | 0.34 ms (0.30), −14 % | 0.26 ms (0.23), −33 % |
 
 Savings are smaller than the pixel ratio because the offscreen pass, the
 upscale and the rest of the frame are fixed costs. `capture2/quality_*.png`
 shows each companion stays recognisable; Performance softens Lunar's crater
 detail and Sakura's petal edges. Run `matrix1/large-*` is superseded: the
 harness had not told the governor the display rate (fixed in the next build).
+
+*Correction (round 2 review):* the first draft of this table filtered samples
+by "GPU share above zero" without saying so, which also dropped one valid
+Solar sample (Solar Full read 0.56 ms); the rule above replaces it.
 
 ### 4.3 Minimised window (`perf/matrix3/hidden-lunar-fps144`)
 
@@ -170,27 +178,28 @@ the app's own VM service) every 5 s. Three ran together at a fixed 60 FPS
 with the companion stepping through six states every 4 s (a resident Brain was
 in VRAM, idle, for most of it); the control ran alone later.
 
-| Run | Frames | RSS after warm-up (150 s) → 30 min | Growth | Per frame | Dart heap |
-|---|---|---|---|---|---|
-| Lunar, Full (direct shader) | 114 k at 63/s | 131 → 150 MB | +18.8 MB | 0.18 KB | 11.7–19.0 MB sawtooth, no trend |
-| Lunar, Balanced (offscreen path) | 114 k at 63/s | 131 → 146 MB | +15.0 MB | 0.15 KB | 11.6–16.1 MB sawtooth, no trend |
-| Classic Energy Orb (own ticker, uncapped) | 248 k at 138/s | 139 → 172 MB | +33.0 MB | 0.15 KB | 10.8–15.7 MB, levels off after 20 min |
-| **Control: no companion, no living code** (one rotating square, uncapped) | 266 k at 147/s | 121 → 144 MB | +22.9 MB | 0.10 KB | ends 17.1 MB |
+| Run | Frames | RSS at 150 s → 30 min | RSS growth | Dart heap used: min–max; first-third → last-third mean |
+|---|---|---|---|---|
+| Lunar, Full (direct shader) | 114 k at 63/s | 131 → 150 MB | +18.8 MB | 10.3–20.3 MB; 13.5 → 16.3 MB |
+| Lunar, Balanced (offscreen path) | 114 k at 63/s | 131 → 146 MB | +15.0 MB | 10.6–16.9 MB; 12.8 → 14.7 MB |
+| Classic Energy Orb (own ticker, uncapped) | 248 k at 138/s | 139 → 172 MB | +33.0 MB | 10.7–16.4 MB; 12.2 → 15.1 MB |
+| **Control: no companion, no living code** (one rotating square, uncapped) | 266 k at 147/s | 121 → 144 MB | +22.9 MB | 10.0–17.5 MB; 11.2 → 13.9 MB |
 
-The harness itself keeps 12 bytes per frame of timing data (about 1.4 MB for
-the Lunar runs, 3.2 MB for the control).
+**What this shows.** Every run grows, the control included: a Flutter window
+with no companion code at all grows by a similar amount in the same time. The
+growth is therefore not specific to the companions, the offscreen quality path
+or the frame clock. These runs cannot apportion it exactly: the companion runs
+may still add something within the spread between runs. Most of it is native
+(RSS), not Dart heap. The Dart heap rises by 2 to 3 MB in every run, the
+control included, which is consistent with the harness's own timing arrays
+(12 bytes per frame in doubling buffers: about 1.4 MB of data for the Lunar
+runs and 3.2 MB for the control); that attribution is not separately proven.
+No run shows a plateau within 30 minutes, so whether this Flutter 3.47.2
+Windows build levels off is not established.
 
-**Explanation.** The Dart heap is bounded in every run: it rises and falls
-with garbage collection and does not trend. The growth is native, and a
-trivial Flutter window with no companion code grows at the same order of
-magnitude over the same time. So the growth is not caused by the companions,
-the offscreen quality path or the frame clock; it belongs to the engine or
-driver baseline of this Flutter 3.47.2 Windows build on this machine. Within
-30 minutes none of the four runs, the control included, shows a clear plateau.
-Frame-rate caps reduce it in proportion to frames drawn. The previous phase's
-open question ("+19 MB in 10 minutes, plateau not established") is therefore
-answered as "not the companion; engine baseline", and a plateau remains
-unproven for the engine itself.
+*Correction (round 2 review):* the first draft said the Dart heap showed "no
+trend" and that frame caps reduce the growth "in proportion"; both were
+stronger than the data and are withdrawn.
 
 ## 5. Voice
 
@@ -234,7 +243,9 @@ REVIEW_SECTION
   (this phase) and `lib/theme/*` (living companions phase).
 * `dart format` was run only on files this phase created or whose committed
   version was already formatted (`companion_orb.dart` is hand-aligned and was
-  not formatted). Changed files are LF.
+  not formatted). Changed source and text files are LF; the evidence CSVs,
+  which the Windows counter sampler writes with CRLF, were normalised to LF
+  before commit (content otherwise unchanged).
 * Every perf runner resolves its output directory to an absolute path; the
   app writes only there.
 * Four accepted assertions in `living_shell_test.dart` were adapted because the
