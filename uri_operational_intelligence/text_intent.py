@@ -137,14 +137,22 @@ def _core_only(t: str) -> bool:
 
 def _family_function_letter(head: str) -> bool:
     """'ghar mein function hai': "function" is also a family event. A Hinglish drafting request is language work when
-    "function" is its ONLY code word and it asks for no code action (live finding LV-1; Codex TIWS r6: "bug report
-    likho aur bug fix karo" must stay code work, so the fix request is never folded into a draft)."""
+    "function" is its only code word AND every occurrence of it sits in a family-event phrase (live finding LV-1).
+    Any other use of "function", whatever the verb, keeps the code-work route: "is function ka note likho aur
+    function ko badlo" stays code work, so a change request is never folded into a draft (Codex TIWS r6, r7)."""
     words = {w.lower() for w in _CODE.findall(head)}
-    return (words == {"function"} and bool(_DRAFT_HINGLISH.search(head))
-            and not _CODE_ACTION.search(head))
+    if words != {"function"} or not _DRAFT_HINGLISH.search(head):
+        return False
+    total = len(re.findall(r"\bfunctions?\b", head, re.I))
+    return total > 0 and len(_FAMILY_FUNCTION.findall(head)) == total
 
 
-_CODE_ACTION = re.compile(r"\b(?:fix|debug|compile|run|deploy|refactor|install|theek kar\w*|sudhar\w*)\b", re.I)
+_FAMILY_FUNCTION = re.compile(
+    r"\b(?:ghar|family|home|shaadi|shadi|wedding|puja|pooja|naamkaran|mundan|engagement|sagai|griha pravesh|"
+    r"birthday|anniversary)(?:\s+(?:mein|me|main|ka|ki|ke|in|at|par|pe))?\s+functions?\b"
+    r"|\bfunctions?\s+(?:hai|tha|thi|hain|the|at home|in the family|ghar par|ghar pe)\b", re.I)
+
+
 _CODE = re.compile(r"\b(?:code|bug|function|stack ?trace|compile|repo(?:sitory)?|python|flutter|script)\b", re.I)
 
 _UNDO = re.compile(r"^\s*(?:(?:uri|ok|okay|no|please)[,!]?\s+)*(?:undo|revert|roll back|rollback|go back|take back|"

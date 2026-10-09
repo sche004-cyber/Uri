@@ -156,3 +156,17 @@ def test_lv1_hinglish_family_function_is_a_letter_not_code_work():
                                   "code ka summary likho"])
 def test_lv1_code_work_with_any_other_code_word_or_action_stays_code_work(text):
     assert X.classify(text, has_draft=False).reasons == ["code_work"]          # Codex TIWS r6
+
+
+@pytest.mark.parametrize("text", ["is function ka note likho aur function ko badlo",
+                                  "function ka naam change karo aur note likho",
+                                  "principal ko application likho aur is function ko optimise karo",
+                                  "ghar mein function hai, application likho aur function hatao"])
+def test_lv1_any_non_family_use_of_function_stays_code_work(text):
+    assert X.classify(text, has_draft=False).reasons == ["code_work"]          # Codex TIWS r7
+
+
+@pytest.mark.parametrize("text", ["Principal ko leave application likho, shaadi ka function hai",
+                                  "Leave application likho: family function hai, do din ki chutti"])
+def test_lv1_family_function_letters_are_drafts(text):
+    assert X.classify(text, has_draft=False).kind == X.DRAFT_NEW
