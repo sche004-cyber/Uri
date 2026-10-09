@@ -29,6 +29,11 @@ EVENT_TYPES = {
     "escalation.offer": "reason, options (harness.choice_required data)",
     "error": "code, message, recoverable, recovery_options[]",
     "turn.finished": "status, route, total_s",
+    # Text intelligence (docs/text_intelligence/TI_BLUEPRINT.md): drafts are language work; no outcome of any action.
+    "draft.updated": "op (created|revised|corrected|rewritten|restored|undo|redo|show|original|unchanged|discard), "
+                     "draft (DraftDesk snapshot or null)",
+    "draft.clarify": "question, draft (snapshot or null)",
+    "draft.progress": "chars (structured output characters so far)",
 }
 
 COMPANION_STATES = ("idle", "listening", "thinking", "speaking", "waiting_user", "error")

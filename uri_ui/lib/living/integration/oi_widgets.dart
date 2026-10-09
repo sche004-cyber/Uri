@@ -99,7 +99,16 @@ class _MessageTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           constraints: const BoxConstraints(maxWidth: 560),
           decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(UriRadius.sm)),
-          child: Text(m.text, style: TextStyle(color: c.ink)),
+          child: m.inputLabel == null
+              ? Text(m.text, style: TextStyle(color: c.ink))
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _Chip(m.inputLabel!, key: const ValueKey('oi-input-label'), tone: c.warning),
+                    const SizedBox(height: 4),
+                    Text(m.text, style: TextStyle(color: c.ink)),
+                  ],
+                ),
         ),
       );
     }
@@ -113,6 +122,7 @@ class _MessageTile extends StatelessWidget {
       if (m.tier != null) _Chip(m.tier == 'NORMAL' ? 'Thinking' : 'Fast', key: const ValueKey('oi-tier')),
       if (m.route != null && m.route != 'answer') _Chip(_routeLabel(m.route!)),
       if (m.streaming && m.thinkingChars > 0 && m.text.isEmpty) _Chip('Reasoning… ${m.thinkingChars} chars'),
+      if (m.streaming && m.draftChars > 0 && m.text.isEmpty) _Chip('Writing… ${m.draftChars} chars'),
       if (m.coreCode != null) _Chip(_coreLabel(m.coreCode!), tone: _coreTone(c, m.coreCode!)),
       if (m.answerStatus != null && m.answerStatus != 'COMPLETE') _Chip(m.answerStatus!, tone: c.warning),
       if (m.unverifiedClaim) _Chip('Not an action receipt', tone: c.danger),
@@ -167,6 +177,7 @@ class _MessageTile extends StatelessWidget {
         'core' => 'URI Core',
         'core+answer' => 'Core → answer',
         'plan' => 'Plan',
+        'draft' => 'Writing desk',
         'harness_choice' => 'Needs a tool choice',
         'escalation_offer' => 'Needs a stronger tool',
         _ => r,

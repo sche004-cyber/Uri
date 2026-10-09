@@ -15,6 +15,8 @@ import '../companion/energy_orb.dart'
     show OrbPalette, OrbPaletteData, OrbVariant, OrbVariantLabel;
 import '../contracts/readiness_report.dart';
 import '../contracts/work_items.dart';
+import '../integration/draft_panel.dart';
+import '../integration/oi_conversation.dart';
 import '../integration/oi_widgets.dart';
 import '../integration/ws_settings.dart';
 import '../living_app.dart';
@@ -338,7 +340,7 @@ class _ConversationRegion extends StatelessWidget {
       children: [
         Expanded(
           child: oi != null
-              ? OiConversationPane(conversation: oi)
+              ? _OiWithDraft(conversation: oi)
               : UriConversationPane(
                   attachmentOpener: attachmentOpener,
                   supervisedHandoff: false,
@@ -354,6 +356,46 @@ class _ConversationRegion extends StatelessWidget {
           child: LivingComposer(filePicker: filePicker, autofocus: true),
         ),
       ],
+    );
+  }
+}
+
+/// Conversation plus the text-intelligence draft: side by side on wide
+/// windows, stacked (draft above the composer) on narrow ones.
+class _OiWithDraft extends StatelessWidget {
+  const _OiWithDraft({required this.conversation});
+  final OiConversation conversation;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: conversation,
+      builder: (context, _) => LayoutBuilder(
+        builder: (context, box) {
+          final pane = OiConversationPane(conversation: conversation);
+          if (conversation.draft == null) return pane;
+          final panel = DraftPanel(conversation: conversation);
+          if (box.maxWidth >= 900) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: pane),
+                const SizedBox(width: UriSpace.sm),
+                SizedBox(
+                  width: (box.maxWidth * 0.45).clamp(360.0, 560.0),
+                  child: Padding(padding: const EdgeInsets.only(top: UriSpace.sm, bottom: UriSpace.sm), child: panel),
+                ),
+              ],
+            );
+          }
+          return Column(
+            children: [
+              Expanded(child: pane),
+              ConstrainedBox(constraints: BoxConstraints(maxHeight: box.maxHeight * 0.55), child: panel),
+            ],
+          );
+        },
+      ),
     );
   }
 }
