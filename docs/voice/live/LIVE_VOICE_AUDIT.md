@@ -41,3 +41,29 @@ Also fixed between rounds from live evidence (not Codex findings): Stop button h
 recogniser hallucinations on room noise, native-import deadlock in the service (thread dump), unbounded decoding
 (54 CPU-seconds worst case). Correction recorded: an earlier note attributed the slow model load to a Brain loading
 from the same disk; the thread dump showed the import deadlock instead.
+
+## History rewrite (privacy), 2026-10-09 20:25 IST
+
+The owner reported that another person in the household was using the microphone during the afternoon. The
+recogniser-comparison recordings (`docs/voice/live/evidence/stt/*.wav`, 48 files, room microphone) could therefore
+contain household speech. Before anything was pushed, the unpushed branch was rewritten to remove those files from
+every commit (`git filter-branch --index-filter`, range `b02ed4f..HEAD`). The recordings are kept only on the
+owner's PC (`C:\Users\cheta\Development\uri-voice-evidence-private\stt\`); their SHA-256 sums are committed
+(`evidence/stt/RECORDINGS_SHA256SUMS`) so the published WER tables stay tied to exact audio. Transcripts in the
+evidence are the recogniser's output for the test sentences plus a few short fragments ("Yeah.", "Thank you.",
+"All right."), nothing identifying.
+
+Commit identities changed by the rewrite (the Codex rounds above reviewed the old identities; the code is identical):
+
+| Before | After | Commit |
+|---|---|---|
+| `5e5d862` | `5e5d862` | live voice implementation (no WAVs; unchanged) |
+| `838c22f` | `9bd96c8` | live-run findings (the commit that had added the WAVs) |
+| `3631c11` | `2c59aca` | user vocabulary (Codex round 1 candidate) |
+| `526f838` | `3bb4af3` | round 1 repairs |
+| `1f17ad2` | `9053a73` | Stop while URI speaks |
+| `b92070f` | `180482d` | noise guard, model state |
+| `e737542` | `26759d2` | import deadlock, bounded decoding |
+| `d6709df` | `79e8221` | manual mode (Codex round 2 candidate) |
+| `f44f014` | `49daf8d` | round 2 repairs |
+| `460de05` | `6e3a068` | manual sessions wait for the Brain; recording hashes |
