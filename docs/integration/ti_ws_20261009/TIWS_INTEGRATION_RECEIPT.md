@@ -18,13 +18,13 @@ this file and in `TIWS_INTEGRATION_REPORT.md`.
 
 | Gate | Result |
 |---|---|
-| Chain at `85bf700` (merge with A2UI; code = final except the Dart-only `9acdfa7` and docs) | see §6 of the report (filled from `evidence/chain_summary_85bf700.json`) |
+| Chain at `85bf700` (merge with A2UI; every Python path, guard list and materializer entry equals the final commit; later commits change only `uri_ui/` and docs) | **ALL_PASS**: phase2 486/0/2, authority 134/0, phase1-full 2,676/11/11 with outcome identity, phase1-scope and residue PASS (`evidence/chain_summary_85bf700.json`). The live-voice side (`6b48830`, uri_ui/docs/rnd only) has its own canonical chain ALL_PASS |
 | Chain at `48d2f78` (before the A2UI move) | ALL_PASS: phase2 486/0/2, authority 134/0, phase1-full 2,676/11/11 with outcome identity, phase1-scope and residue PASS |
 | `pytest tests/ws tests/oi tests/a2ui` at `85bf700` | 583 passed, 22 skipped (= A2UI canonical 333/20 + TI 250/2) |
 | `tests/scheduler` (base interpreter) | 71/71. The venv-redirector failure SCH-ENV-1 also occurs on `b02ed4f` without TI |
-| Flutter full at `82e0b46` (after merging live voice `6b48830`) | 498 passed, 5 skipped (= live-voice canonical 482/4 + TI 16/1) |
+| Flutter full at `0e2969c` | 502 passed, 5 skipped (= live-voice canonical 482/4 + TI 16/1 + 4 INT-3 voice tests) |
 | Frozen check | ok, 121/121 |
-| Codex | TI r16 ACCEPT WITH FINDINGS. TIWS r1 AWF, r2/r3 REJECT (repaired), r4 AWF, r5 ACCEPT, r6-r9 REJECT (LV-1 attempts, reverted), r10 AWF (wording, fixed), r11 AWF on the A2UI merge (one UI LOW fixed in `9acdfa7`; one A2UI-owned LOW relayed; the A2UI owner verified it needs no change). The live-voice merge `82e0b46` touches only `living_composer.dart` (TI's two toggles placed into live voice's layout) and is gated by the Flutter suite; it is outside every Codex round. Codex built none of this code |
+| Codex | TI r16 ACCEPT WITH FINDINGS. TIWS r1 AWF, r2/r3 REJECT (repaired), r4 AWF, r5 ACCEPT, r6-r9 REJECT (LV-1 attempts, reverted), r10 AWF (wording, fixed), r11 AWF on the A2UI merge (one UI LOW fixed in `9acdfa7`; one A2UI-owned LOW relayed; the A2UI owner verified it needs no change). The live-voice merge `82e0b46`: r12 REJECT (real speech could be labelled simulated or typed; voice drafting unwired). Repaired as INT-3 in `05c8486`. r13 REJECT (a dictation while busy was dropped), repaired in `8925c25`. r14 ACCEPT WITH FINDINGS (one LOW: a failing sink lost the words), repaired in `0e2969c`. Each repair has a test that fails without it. Codex built none of this code |
 | Live (Runtime v1, under the lease, no demotion) | matrix 100/103 (M1 model residue L-6; L9d = LV-1); L-9 closed; real worker TI 2/2 and WS 11/1-skip; Living UI TI and WS pass |
 
 ## 3. Limitations carried (owner acceptance needed)
@@ -37,7 +37,7 @@ New environment notes:
 - ENV-C3: an Ollama launched from Git Bash breaks the phase1 c3 test. Launch Ollama from PowerShell for gates.
 - SCH-ENV-1: a scheduler test fails under a venv redirector.
 Owner decision pending: P-GOV-1 (handoff).
-Follow-up (not in this integration): live voice's drafting mode is wired for `OiConversation.sendTranscript(..., dictation: true)` but disabled; enabling it is the one-line `attachLiveVoice(..., dictation: ...)` change named by the Live Voice session, plus a test.
+Live voice drafting mode is now wired to the TI draft desk (INT-3, `05c8486`): real transcripts are sent as `uri.text_input.v1` with the recogniser's engine, and drafting uses `mode: dictation`. This is tested at widget level only; no live microphone run was made in this session.
 
 ## 4. Staging and production
 
