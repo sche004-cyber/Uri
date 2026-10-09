@@ -479,8 +479,10 @@ class Scheduler:
         rows = self.store.q("SELECT occ_id, job_id, attempts, reason, request_json FROM occurrence WHERE state='RUNNING'")
         for row in rows:
             pol = json.loads(self.store.q1("SELECT policy_json FROM job WHERE job_id=?", (row["job_id"],))[0])
-            att = self.store.q1("SELECT attempt_id, supervisor_task_id FROM attempt WHERE occ_id=? AND ended_at_us IS NULL "
-                                "ORDER BY attempt_id DESC LIMIT 1", (row["occ_id"],))
+            # The latest attempt, whether or not it was ended: a RUNNING occurrence may have died between ending its
+            # attempt and moving on, or between claiming a collection and reopening the attempt (review round 2, F1).
+            att = self.store.q1("SELECT attempt_id, supervisor_task_id FROM attempt WHERE occ_id=? ORDER BY attempt_id DESC LIMIT 1",
+                                (row["occ_id"],))
             art = self.store.q1("SELECT artifact_id FROM artifact WHERE attempt_id=?", (att[0],)) if att else None
             settle = None
             if att and art is None and self.harness is not None and hasattr(self.harness, "settlement"):
@@ -504,7 +506,7 @@ class Scheduler:
                 nxt, why = "NEEDS_ATTENTION", "INTERRUPTED_OUTCOME_UNCERTAIN"
             with self.store.tx() as db:
                 if att:
-                    db.execute("UPDATE attempt SET ended_at_us=?, outcome=?, reason=? WHERE attempt_id=? AND ended_at_us IS NULL",
+                    db.execute("UPDATE attempt SET ended_at_us=COALESCE(ended_at_us, ?), outcome=?, reason=? WHERE attempt_id=?",
                                (self.now(), outcome if nxt != "COLLECT_PENDING" else "HARNESS_COMPLETE_RECOVERED",
                                 "SCHEDULER_PROCESS_ENDED:" + why, att[0]))
                 self._set_occ(db, row["occ_id"], nxt, why, lease_owner=None, lease_until_us=None)
@@ -521,23 +523,24 @@ class Scheduler:
         """COLLECT_PENDING: the harness finished before the scheduler died; collect, render and file the review now."""
         occ = self.occurrence(occ_id)
         job = self.job(occ["job_id"])
-        with self.store.tx() as db:
-            cur = db.execute("UPDATE occurrence SET state='RUNNING', lease_owner=?, updated_at_us=? WHERE occ_id=? AND "
-                             "state='COLLECT_PENDING' AND EXISTS (SELECT 1 FROM job j WHERE j.job_id=occurrence.job_id AND "
-                             "j.state<>'CANCELLED')", (self.instance_id, self.now(), occ_id))
+        prev = self.store.q1("SELECT * FROM attempt WHERE occ_id=? ORDER BY attempt_id DESC LIMIT 1", (occ_id,))
+        with self.store.tx() as db:      # claim and attempt reopen in ONE transaction (review round 2, F1)
+            cur = db.execute("UPDATE occurrence SET state='RUNNING', attempts=attempts+1, retry_at_us=NULL, lease_owner=?, "
+                             "updated_at_us=? WHERE occ_id=? AND state='COLLECT_PENDING' AND EXISTS (SELECT 1 FROM job j "
+                             "WHERE j.job_id=occurrence.job_id AND j.state<>'CANCELLED')", (self.instance_id, self.now(), occ_id))
             if cur.rowcount != 1:
                 return {"occ_id": occ_id, "result": "NOT_CLAIMED"}
-        prev = self.store.q1("SELECT * FROM attempt WHERE occ_id=? ORDER BY attempt_id DESC LIMIT 1", (occ_id,))
-        with self.store.tx() as db:
             db.execute("UPDATE attempt SET ended_at_us=NULL WHERE attempt_id=?", (prev["attempt_id"],))
+            self.store.emit(db, "occurrence.collection_resumed", job_id=job["job_id"], occ_id=occ_id,
+                            payload={"attempt_id": prev["attempt_id"], "harness_rerun": False})
         occ = self.occurrence(occ_id)
         try:
             return self._complete(occ, job, prev["attempt_id"], prev["workspace"], prev["mode"], prev["kind"],
                                   self._previous_for(occ), {"recovered": True, "stages": {"research_concept_assets_animation":
                                                                                           "completed (before restart)"}})
         except Exception as exc:                                  # noqa: BLE001
-            return self._retry_or_fail(occ, job, prev["attempt_id"], f"EXECUTION_ERROR:{type(exc).__name__}",
-                                       {"error": str(exc)[:500]})
+            return self._post_harness_failure(occ, job, prev["attempt_id"], f"EXECUTION_ERROR:{type(exc).__name__}",
+                                              {"error": str(exc)[:500]})
 
     # ---- the tick ---------------------------------------------------------------------------------------------------
     def tick(self, *, materialize=True) -> list:
@@ -557,7 +560,8 @@ class Scheduler:
                            "(o.state='REVISION_QUEUED' AND j.state IN ('ACTIVE','PAUSED'))) AND (o.retry_at_us IS NULL OR o.retry_at_us<=?) "
                            "ORDER BY o.due_at_us, o.occ_id", (now, now))
         results = []
-        for (occ_id,) in self.store.q("SELECT occ_id FROM occurrence WHERE state='COLLECT_PENDING' ORDER BY occ_id"):
+        for (occ_id,) in self.store.q("SELECT occ_id FROM occurrence WHERE state='COLLECT_PENDING' AND (retry_at_us IS NULL OR "
+                                      "retry_at_us<=?) ORDER BY occ_id", (now,)):
             results.append(self._resume_collection(occ_id))
         for (occ_id,) in due:
             results.append(self._dispatch(occ_id))
@@ -620,6 +624,10 @@ class Scheduler:
                                 "LIMIT 1", (occ["occ_id"],))
             receipt = {"error": f"{type(exc).__name__}: {str(exc)[:500]}"}
             if att is not None:
+                task = self.store.q1("SELECT supervisor_task_id FROM attempt WHERE attempt_id=?", (att[0],))[0]
+                settle = self.harness.settlement(task) if hasattr(self.harness, "settlement") else None
+                if settle and settle["state"] == "COMPLETE":          # failure after the harness finished (round 2, F2)
+                    return self._post_harness_failure(occ, job, att[0], reason, receipt)
                 return self._retry_or_fail(occ, job, att[0], reason, receipt)
             with self.store.tx() as db:
                 self._set_occ(db, occ["occ_id"], "NEEDS_ATTENTION", reason, lease_owner=None)
@@ -713,7 +721,7 @@ class Scheduler:
             result = template.render_and_validate(collected, out_dir, name)
         except Exception as exc:                               # noqa: BLE001 - renderer failure is a task failure
             receipt["stages"]["render"] = f"{type(exc).__name__}: {exc}"
-            return self._retry_or_fail(occ, job, attempt_id, "RENDER_FAILED", receipt)
+            return self._post_harness_failure(occ, job, attempt_id, "RENDER_FAILED", receipt)
         receipt["stages"].update({"render": "ok", "gif_conversion": "ok", "validation": "ok" if result["ok"] else "failed"})
         if not result["ok"]:
             receipt["validation"] = result
@@ -740,6 +748,16 @@ class Scheduler:
         r = self._finish(occ, job, attempt_id, "AWAITING_REVIEW", "REVIEW_PENDING", receipt, "COMPLETED", request_json=None)
         self.notify("review_pending", {"occ_id": occ_id, "artifact_id": art_id})
         return r | {"artifact_id": art_id}
+
+    def _post_harness_failure(self, occ, job, attempt_id, reason, receipt):
+        """A URI-side failure (render, file I/O, recording) after the harness finished: retry COLLECTION from the existing
+        workspace with backoff; never start another harness run for finished work (review round 2, F2)."""
+        pol = job["policy"]
+        if occ["attempts"] < pol["max_attempts"]:
+            back = pol["retry_backoff_s"][min(max(occ["attempts"], 1) - 1, len(pol["retry_backoff_s"]) - 1)]
+            return self._finish(occ, job, attempt_id, "COLLECT_PENDING", "COLLECT_RETRY:" + reason, receipt, "COLLECT_FAILED",
+                                retry_at_us=self.now() + back * 1_000_000)
+        return self._finish(occ, job, attempt_id, "FAILED", "COLLECT_FAILED:" + reason, receipt, "COLLECT_FAILED")
 
     def _retry_or_fail(self, occ, job, attempt_id, reason, receipt):
         pol = job["policy"]

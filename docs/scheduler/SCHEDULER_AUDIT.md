@@ -10,7 +10,7 @@ bridge (owner rule: audits run on Codex). Review clone: `C:\Users\cheta\Developm
 |---|---|---|---|---|
 | 1 | Blocking | API token authenticates the caller, but the caller names its own `principal` | confirmed (`service.py` read `principal` from the body) | **repaired**: one principal per service (`--owner`); mismatch → 403 `PRINCIPAL_MISMATCH`; reads filtered by owner; test added |
 | 2 | Blocking | Claude gets Read/Edit/Write with no enforced filesystem boundary | partly confirmed. Claude Code docs: `dontAsk` denies every un-approved Edit/Write and anything outside the working directory — which also means the accepted profile could not write its output at all | **repaired + limitation**: `--allowedTools Edit(./**) Write(./**)` scoped to the per-attempt workspace; boundary = Claude Code permission engine, not an OS sandbox; not yet verified live; owner acceptance requested |
-| 3 | Blocking | restart requeues every interrupted occurrence even if the work had finished | confirmed | **repaired**: recovery reconciles artifact rows and the supervisor ledger first (`COLLECT_PENDING`, absence-proven requeue, `NEEDS_ATTENTION`); 5 tests |
+| 3 | Blocking | restart requeues every interrupted occurrence even if the work had finished | confirmed | repaired in `04e9eaa` (reconcile artifact rows and the supervisor ledger first); round 2 found a remaining crash window, closed in round-2 repairs |
 | 4 | High | calendar refresh / later years schedule dates the owner never saw | confirmed (proposal preview is 400 days) | **repaired**: only shown dates are confirmed; others `AWAITING_CONFIRMATION` until the owner confirms; tests + UI *Confirm date* |
 | 5 | High | exceptions in package/execution leave the occurrence `RUNNING` | confirmed | **repaired**: every claimed occurrence is settled (`_execute_settled`); params validated at proposal; test |
 | 6 | High | cancelling a job leaves pending reviews approvable | confirmed | **repaired**: cancel closes every open state; review refuses `JOB_CANCELLED`; test |
@@ -19,6 +19,19 @@ bridge (owner rule: audits run on Codex). Review clone: `C:\Users\cheta\Developm
 | 9 | Medium | oversize GIF can still become a candidate | confirmed | **repaired**: size budget is part of `ok`; test |
 | 10 | Blocking | real Claude generation not run | confirmed (documented as NOT RUN) | **open — owner action**: Claude CLI login; cannot be repaired by the agent |
 
-## Round 2
+## Round 2 — candidate `04e9eaa` — **REJECT**
 
-(appended below after the review runs)
+Round-1 status per Codex: F1, F4, F5, F6, F7, F8, F9 RESOLVED; F2 PARTIAL (relies on the permission engine; no live
+evidence; path-scoped `Write` rules are not consulted); F3 PARTIAL (new crash window). F10 documented truthfully; Codex
+states it alone does not block acceptance as a development candidate, only claims of live end-to-end qualification.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R2-1 | Blocking | `_resume_collection` claimed the occurrence and reopened the attempt in two transactions; a crash between them made `recover()` (which looked only at open attempts) requeue completed work | confirmed | **repaired**: claim + reopen in one transaction; `recover()` reconciles the LATEST attempt whether ended or not; test `test_r2_crash_between_collection_claim_and_attempt_reopen_never_reruns` |
+| R2-2 | High | an exception after the harness completed (render/IO/recording) went to `_retry_or_fail`, re-running Claude | confirmed | **repaired**: `_post_harness_failure` retries COLLECTION from the workspace with backoff (`COLLECT_PENDING`), bounded by the attempt budget; `_execute_settled` consults the supervisor before choosing; test `test_r2_render_failure_after_harness_retries_collection_only` |
+| R2-3 | Medium | docs overstated "duplicates impossible" | confirmed | **repaired**: architecture/ledger state the exact scope of the guarantee (re-run only when the ledger proves no start or no effect; otherwise owner) |
+| R2-4 | Medium | `Write(./**)` is not consulted; `Edit(./**)` is the operative rule | confirmed against the Claude Code permissions documentation | **repaired**: only `--allowedTools Edit(./**)` is passed; docs explain it; limitation retained (permission engine, not OS sandbox; not observed live) |
+
+## Round 3
+
+(appended after the review runs)

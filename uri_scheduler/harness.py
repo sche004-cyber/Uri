@@ -263,11 +263,12 @@ class ClaudeHarness:
                 return RunOutcome(status, "QUOTA_BREAKER_OPEN" if breaker else "NOT_ADMITTED", tid, receipt | {"reset_us": breaker})
             self._running[tid] = admitted.attempt_id
             env = client_environ(self.client_home)
-            # Claude Code `dontAsk` denies every Edit/Write that is not pre-approved, and denies reads and writes outside
-            # its working directory. Pre-approving Edit/Write for `./**` (relative to the per-attempt workspace, which is
-            # the process cwd) is what lets the accepted executor profile write its output at all, and it is the only
-            # place it may write (review round 1, F2). Reads outside the workspace stay denied by `dontAsk`.
-            extra, exe = ["--allowedTools", "Edit(./**)", "Write(./**)"], gate.executable
+            # Claude Code `dontAsk` denies every un-approved file edit and anything outside its working directory.
+            # `Edit(./**)` (relative to the per-attempt workspace, the process cwd) pre-approves edits there; Claude Code
+            # applies Edit rules to every built-in file-editing tool including Write (path-scoped Write rules are not
+            # consulted), so this one rule is what lets the executor write its output, and only inside the workspace
+            # (review rounds 1-2, F2/F4). Reads outside the workspace stay denied by `dontAsk`.
+            extra, exe = ["--allowedTools", "Edit(./**)"], gate.executable
             if self.mode == "fixture":
                 exe, extra = self.fixture_python, [str(self.fixture_script)]
             try:

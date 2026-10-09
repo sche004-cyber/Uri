@@ -489,3 +489,45 @@ def test_event_chain_detects_tamper(env):
     import sqlite3
     with pytest.raises(sqlite3.IntegrityError):
         s.store.db.execute("UPDATE event SET kind='x'")
+
+
+def test_r2_crash_between_collection_claim_and_attempt_reopen_never_reruns(tmp_path):
+    clock = Clock("2026-10-09T10:00:00+05:30")
+    h = FakeHarness()
+    s = Scheduler(tmp_path / "state", harness=h, now_fn=clock).start()
+    occ_id, ws = _interrupt(s, clock, "t1")
+    ws.mkdir(parents=True)
+    (ws / "scene.json").write_text(json.dumps(tiny_scene()), encoding="utf-8")
+    (ws / "concept.md").write_text("# c", encoding="utf-8")
+    (ws / "research.md").write_text("r", encoding="utf-8")
+    with s.store.tx() as db:      # old crash window: occurrence claimed for collection, attempt already ended
+        db.execute("UPDATE attempt SET ended_at_us=1, outcome='HARNESS_COMPLETE_RECOVERED'")
+    s.close()
+    h.settlement = lambda tid: {"task_id": tid, "state": "COMPLETE", "spawned": True, "absence_proven": False}
+    s2 = Scheduler(tmp_path / "state", harness=h, now_fn=clock).start()
+    assert s2.occurrence(occ_id)["state"] == "COLLECT_PENDING"
+    assert s2.tick()[0]["result"] == "AWAITING_REVIEW" and h.calls == []
+    s2.close()
+
+
+def test_r2_render_failure_after_harness_retries_collection_only(env, monkeypatch):
+    s, h, clock, _ = env
+    h.settlement = lambda tid: {"task_id": tid, "state": "COMPLETE", "spawned": True, "absence_proven": False}
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    import uri_scheduler.gif_task as G
+    real = G.render_and_validate
+    calls = {"n": 0}
+
+    def flaky(*a, **k):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise OSError("disk full")
+        return real(*a, **k)
+    monkeypatch.setattr(G, "render_and_validate", flaky)
+    r = s.tick()[0]
+    assert r["result"] == "COLLECT_PENDING" and r["reason"] == "COLLECT_RETRY:RENDER_FAILED" and len(h.calls) == 1
+    assert s.tick() == []                     # waits for the backoff
+    clock.add(301)
+    r = s.tick()[0]
+    assert r["result"] == "AWAITING_REVIEW" and len(h.calls) == 1      # collected again; harness NOT re-run
