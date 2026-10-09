@@ -18,7 +18,16 @@ H-AC2..H-AC9 of `WS_HARDENING_PLAN.md`, plus the frozen-boundary and approval-bo
 | 5 | `f8dd67b` | REJECT | Both FIXED. MEDIUM the host's calibration was not bound to the server readiness verified | Confirmed. Repaired in `9808fb6` (calibration carries pid + start time, cleared on stop, ignored for another instance) |
 | 6 | `9808fb6` | **ACCEPT** | Round-5 item FIXED; "no new or regressed HIGH/MEDIUM findings against H-AC2..H-AC9"; frozen and accepted protected paths unchanged; scope-guard additions exact paths only | — |
 
-Rounds after 6 (documentation, evidence, any change made after the live validation) are listed in §2 when they occur.
+Rounds 7-10 reviewed the changes made after round 6 (live-validation fixes and the reports), scope `git diff 9808fb6..<candidate>`:
+
+| Round | Candidate | Verdict | Findings | Disposition |
+|---|---|---|---|---|
+| 7 | `2831586` | REJECT | HIGH host re-measurement not coordinated with user turns, could hold stop requests 120 s; MEDIUM evidence implied an app-level Restart URI click; MEDIUM two host observations without committed receipt; LOW status still said 1 GiB | Confirmed. `47c1b6d`: /slots-gated bounded re-measurement; wording; receipt `brain_host_report_0858_before_freeze.json`; status fix; SAFE-1 recorded |
+| 8 | `47c1b6d` | REJECT | Click wording and status FIXED. HIGH re-measurement still racy between the last /slots check and the request; MEDIUM SAFE-1 figure (2.6 GB) vs receipt (3,678 MiB) and an unsupported lease statement | Confirmed. `b5fd75c`: the host sends nothing to the Brain after the start calibration (memory taken after load becomes a reported warning; real-answer timings decide DEGRADED); figures and lease history corrected |
+| 9 | `b5fd75c` | REJECT | Race FIXED. MEDIUM an unknown residency sample cleared the warning; MEDIUM "2.6 GB at 08:37" not in a receipt | Confirmed. `9ae28f4` |
+| 10 | `9ae28f4` | **ACCEPT WITH FINDINGS** | Both FIXED; "no remaining HIGH or MEDIUM production-code defect against H-AC2-H-AC9"; MEDIUM documentation: the status table called post-round-6 components "Independently Accepted (round 6)" | Repaired in the final status document (labels now name round 10 at `9ae28f4`) |
+
+After round 10: `1401aba` restored LF line endings on five files that text-mode patch scripts had turned into CRLF (finding INT-EOL-1, reported by the Text Intelligence session); `git diff -w --ignore-cr-at-eol 9ae28f4 1401aba` is empty, so the reviewed content is unchanged. Later commits are documentation and evidence only (listed in `WS_INTEGRATION_RECEIPT.md` §7) and were checked by the final Codex documentation round recorded in §2.
 
 ## 1. Boundary statements Codex made (each round)
 

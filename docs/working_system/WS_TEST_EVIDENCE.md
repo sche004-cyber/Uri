@@ -59,8 +59,44 @@ in §6. The earlier tree (from `99f8041`, before the Codex repairs) was discarde
   stopped immediately; no further input was sent. The owner should know their companion-voice session may have
   received the text "Give three benefits of regular backups as a markdown bullet list, …".
 
-## 4-6. (filled at the end: performance summary, levels not reached, files copied into the runtime tree)
+## 4. Performance summary (measured, Runtime v1, this card)
+
+| Condition | Decode tok/s | Source |
+|---|---|---|
+| Healthy start calibration (160-token decode) | 124.6-158.1 | `restart_exp_2.json` (151-158), host reports (124.6, 141.2, 148.0) |
+| Real answers, healthy | 101.8-131.1 | `worker_live_20261009-081634.json` |
+| Demoted start (desktop only, 1 of 5 loads) | 31.7-32.4 | `restart_exp_2.json` cold |
+| Evicted after load by another session's apps | 27.3-38.3 (real answers), 33.7 (re-measurement) | `ws_ui_live_hardening.json`, `brain_host_report_0858_before_freeze.json` |
+| VRAM release after a stop | 1.5-1.9 s | `restart_exp_2.json` |
+| Load time (frozen argv, artifact check + load) | 93.5-96.2 s | `restart_exp_2.json` |
+
+## 5. Levels not reached
+
+- APP-level click of Restart URI and Restart Brain (only SIM taps; live paths via the controller / worker command).
+- APP-level markdown answer (INC-1 stopped GUI automation).
+- Core (integrated server) restart while the UI is open: not exercised.
+- Live observation of the final residency-warning mechanism (no Brain loaded after SAFE-1 hang 2).
+
+## 6. Runtime tree provenance
+
+`uri-ws-hard` was materialized from `9f2545a` (code = Codex-accepted round-6 `9808fb6`). Copied in afterwards for the
+live runs: `scripts/ws_brain_host.py` and `tests/ws/test_ws_hardening.py` at `1af99e4`, `uri_operational_intelligence/gpu_lease.py`
+at `2083724`. The live UI-widget and worker runs therefore used the host and lease versions of those commits, not the
+final ones (the final host no longer re-measures; the final rule is identical to `2083724`'s). No Brain run used the
+final `ws_brain_host.py`.
 
 ## 7. Final gates
 
-(filled when the chain and suites finish)
+| Gate | Tree / commit | Result |
+|---|---|---|
+| Frozen check (`scripts/ws_frozen_check.py`) | worktree, final tip | see receipt §7 |
+| Flutter full suite | `1401aba` (content = `9ae28f4`) | **313 passed, 3 skipped** |
+| OI + WS Python | `1401aba` | **226 passed, 20 skipped** |
+| `tests/ws/test_ws_hardening.py` | `1401aba` | 44 passed |
+| Chain: phase2 | gate tree `uri-ws-gate3` from `2083724` | **486 passed / 0 failed / 2 skipped** (PASS) |
+| Chain: authority | same | **134 passed / 0 failed** (PASS) |
+| Chain: phase1-scope | same | PASS (outside Phase 2 scope = ∅; importers of Phase 2 = ∅; 98 frozen files byte-identical) |
+| Chain: residue | same | PASS |
+| Chain: phase1-full outcome identity | same | **NOT ESTABLISHED.** Run 1 (09:18-09:41): 2,698 ids, missing = added = ∅, two outcome changes vs the accepted baseline: `test_gemma_worker_mcp.LiveOllamaIntegrationTests::test_live_ollama_status_and_model` passed → skipped (Ollama not running after the reboot) and `test_phase1_offline_components::test_offline_checkpoint_restore_hashes_and_no_application_start` passed → failed (`FileNotFoundError: work\c1\checkpoints\c3-provisional-source.zip`: the local Phase 1 checkpoint fixtures were not copied into the new gate tree). Both are environment/fixture causes, not code: the fixtures were then copied from the canonical Phase 1 worktree (byte-identical to the previous gate tree's) and an idle Ollama started. Run 2 was cut off by SAFE-1 hang 3 at ~78%. The chain's own verdict for this tree is therefore FAIL/incomplete, and no claim of Phase 1 regression identity is made for this phase |
+
+The earlier chain run (`evidence/ws_hardening_chain_interrupted_0858`) was cut off by hang 2 during phase1-full.

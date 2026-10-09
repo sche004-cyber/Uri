@@ -88,3 +88,56 @@ rest on source inspection. The test results above come from this session's own r
 Production cutover and `\URIServer` containment; pushing or merging this branch; a GPU-sharing policy across
 sessions (GPU-1); wiring the OI perf monitor or a recovery control (PERF-W1, R-BUSY); the dashboard Brain card
 (L-DASH); physical gates PA-1..PA-13; paid-API activation (disabled by design).
+
+## 7. Publication and hardening (2026-10-09)
+
+### 7.1 Publication of the accepted integration (done)
+
+`integration/working-system-20261008` was pushed to the canonical repository `uri-repo`
+(`https://github.com/sche004-cyber/Uri.git`) as a NEW branch, no force: remote ref = `68cac3d50b0bd63c833704504c2c59bb43a9b782`.
+A fresh single-branch clone showed the same commit and tree `22c9492c05caad7751962350adfcfb6942e49bfb`. Gates before
+the push: `037229c` ancestor, `ws_frozen_check` ok (121/121, no protected path changed), every path in `037229c..68cac3d`
+attributable to the UI candidate, the OI candidate or the documented WS files, `git fsck` clean.
+
+### 7.2 Hardening branch
+
+Branch `integration/ws-hardening-20261009` (worktree `C:\Users\cheta\Development\uri-ws-hardening`), from `68cac3d`.
+Key commits: implementation `f566e03`, `822aa73`, `99f8041`, `9c0bea5`, `82f75e5`, `938c287`, `e6eddf7`; Codex
+repairs r1 `079bf0d`, r2 `550843a`, r3 `f987025`, r4 `f8dd67b`, r5 `9808fb6` (round 6 ACCEPT); live-validation fixes
+`1af99e4`, `2083724`; Codex repairs r7 `47c1b6d`, r8 `b5fd75c`, r9 `9ae28f4` (round 10 ACCEPT WITH FINDINGS);
+line endings `1401aba` (content-identical); documentation and evidence after that (`git log 1401aba..`).
+
+Changed accepted files: the two WS-D3 scope guards (four exact paths added each: `scripts/ws_brain_host.py`,
+`tests/ws/test_ws_hardening.py`, `uri_operational_intelligence/brain_health.py`, `uri_operational_intelligence/gpu_lease.py`)
+and `scripts/oi_materialize_test_runtime.py` (copies the host). `worker_bridge.py`, the integrated worker, the launcher,
+the WS Dart files and the Dashboard tile are WS-owned. No frozen Phase 1 file, no `uri_core/`, `uri_supervisor*/`,
+`uri_harness_adapters/` or `model_lab/integration/` path changed (frozen check at the tip: ok).
+
+### 7.3 Gates and integration decision
+
+| Gate | Result |
+|---|---|
+| Independent review | Codex hardening round 10 ACCEPT WITH FINDINGS at `9ae28f4` (code); documentation finding repaired |
+| Flutter full / OI+WS Python / hardening tests | 313 passed 3 skipped / 226 passed 20 skipped / 44 passed |
+| Chain phase2 / authority / phase1-scope / residue | PASS / PASS / PASS / PASS (gate tree from `2083724`) |
+| Chain phase1-full outcome identity | **NOT ESTABLISHED** (two environment/fixture outcome changes in run 1; run 2 cut off by SAFE-1 hang 3) |
+| Safety | **SAFE-1 open**: three unclean hard hangs of the PC on 2026-10-09, cause unknown |
+
+**Integration decision:** the canonical development branch `integration/git-sync-20261008` (`037229c`) was **not**
+fast-forwarded. The mandate requires the combined regression gates to pass before integration, and phase1-full
+identity was not re-established; SAFE-1 is an unresolved safety question. The hardening branch is published as a
+separate candidate branch only (§7.4), to protect the work against further unclean shutdowns. No production cutover,
+no shortcut, task or `\URIServer` change, no paid API, no force push.
+
+Rollback: nothing to roll back on the canonical branch; the candidate branch can be deleted by the owner.
+
+### 7.4 Candidate branch publication
+
+(Filled with the remote confirmation.)
+
+### 7.5 Processes and state
+
+After the 13:57 reboot no process of this phase runs: no Brain host, no integrated server (`uri-ws-hard`, port 18301),
+no idle Ollama started by this phase. Disposable trees: `uri-ws-hard` (runtime), `uri-ws-gate3` (gate), `wsa` (review
+clone); removable by the owner. The machine-wide lease record (`%LOCALAPPDATA%\URI\gpu\lease.json`) still names the host
+that died in hang 2; its OS lock is free, so the next holder records the stale recovery.
