@@ -127,3 +127,10 @@ def test_r10_sentence_initial_name_absence_is_flagged():
     assert V.check_user_details("Draft a note: Anil arrived late.", "Anil arrived late.") == []
     flags = V.check_details_kept("Anil arrived late.", "A student arrived late.")
     assert flags and flags[0]["code"] == "DETAIL_REMOVED"
+
+
+# Codex TI round 11: grammar-only correction keeps sentence-initial names too.
+def test_r11_grammar_only_keeps_sentence_initial_names():
+    flags = V.check_meaning_preserved("Anil arrived late yesterday.", "Someone arrived late yesterday.")
+    assert flags and flags[0]["code"] == "MEANING_CHANGED" and "anil" in flags[0]["detail"]
+    assert V.check_meaning_preserved("anil arived late yesterday", "Anil arrived late yesterday.") == []

@@ -219,7 +219,10 @@ def check_meaning_preserved(original, corrected) -> list:
     lost = []
     for k in ("numbers", "months", "weekdays", "relative", "emails"):
         lost += sorted(str(x) for x in a[k] - b[k])
-    lost += sorted(n for n in a["names"] if n not in bwords)
+    # Names include sentence-initial ones ("Anil arrived late" -> "Someone arrived late"), via the wider _details set.
+    initial = {d for d in _details(original) if d.isalpha() and d not in a["months"] and d not in a["weekdays"]
+               and d not in a["relative"]}
+    lost += sorted(n for n in (a["names"] | initial) if n not in bwords)
     added = sorted(str(x) for x in (b["numbers"] - a["numbers"]) | (b["months"] - a["months"]) |
                    (b["weekdays"] - a["weekdays"]))
     awords = set(_tokens(original))
