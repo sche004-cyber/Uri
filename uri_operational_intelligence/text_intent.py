@@ -339,7 +339,9 @@ def classify(text: str, *, has_draft: bool) -> TextIntent:
         return TextIntent(DRAFT_NEW, ["ambiguous_action_sentences"], instruction=t, ambiguous=ambiguous)
     if _core_only(t):
         return TextIntent(NONE, ["core_only_request"])
-    if _CODE.search(head) and not _DRAFT_NEW.match(t):
+    # "function" is also a family event ("ghar mein function hai"): a drafting request in Hinglish is not code work
+    # (live finding LV-1, 2026-10-09), just as an English one is not.
+    if _CODE.search(head) and not _DRAFT_NEW.match(t) and not _DRAFT_HINGLISH.search(head):
         return TextIntent(NONE, ["code_work"])
     if _EXPAND.match(t):
         ins, payload = split_payload(t)

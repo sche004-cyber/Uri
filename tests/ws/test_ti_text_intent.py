@@ -143,3 +143,10 @@ def test_l2_dictated_payload_and_ambiguous_sentences_are_exact():
         "send this letter to the director."
     assert X.classify("Write a notice. Send the form by Friday.", has_draft=False).ambiguous == ["Send the form by Friday"]
     assert X.action_sentences("Dear all. Send the form by Friday. Thanks.") == ["Send the form by Friday"]
+
+
+def test_lv1_hinglish_family_function_is_a_letter_not_code_work():
+    r = X.classify("Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
+                   has_draft=False)
+    assert r.kind == X.DRAFT_NEW
+    assert X.classify("Fix the bug in this function", has_draft=False).reasons == ["code_work"]   # code stays code
