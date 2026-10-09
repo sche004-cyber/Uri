@@ -9,18 +9,18 @@ before implementation). Branch `phase/companion-voice`, worktree
 
 | Item | Researched | Implemented | Tested | Measured on the real app | Independently accepted | Integrated |
 |---|---|---|---|---|---|---|
-| Selected companion in every mode (Companion, Workspace, Dashboard, onboarding, picker) | yes | yes | yes | yes, captures | REVIEW_STATE | INTEGRATION_STATE |
-| Companion-driven theme (existing `UriColors`/`UriGlass`) | yes | yes | yes | yes, captures | REVIEW_STATE | INTEGRATION_STATE |
-| Companion Settings page | yes | yes | yes | yes, captures | REVIEW_STATE | INTEGRATION_STATE |
-| Per-companion appearance (size, particles, glow, atmosphere, animation) | yes | yes | yes | captures | REVIEW_STATE | INTEGRATION_STATE |
-| Frame rate (Adaptive, 30, 60, 90, 144) | yes | yes | yes | yes, profile build | REVIEW_STATE | INTEGRATION_STATE |
-| Render quality (Full, Balanced, Performance) | yes | yes | yes | yes, profile build | REVIEW_STATE | INTEGRATION_STATE |
-| Statistics overlay | yes | yes | yes | capture | REVIEW_STATE | INTEGRATION_STATE |
-| No frames while minimised | yes | yes | yes | yes, profile build | REVIEW_STATE | INTEGRATION_STATE |
-| Voice list, previews, rate / pitch / volume | yes | yes | yes | parameters measured on rendered audio | REVIEW_STATE | INTEGRATION_STATE |
-| Voice service interface (`VoiceServiceAdapter`) | yes | yes | yes (fake adapters) | scripted recording only, SIMULATED | REVIEW_STATE | INTEGRATION_STATE |
+| Selected companion in every mode (Companion, Workspace, Dashboard, onboarding, picker) | yes | yes | yes | yes, captures | yes (Codex r4; integration r2) | yes (canonical) |
+| Companion-driven theme (existing `UriColors`/`UriGlass`) | yes | yes | yes | yes, captures | yes (Codex r4; integration r2) | yes (canonical) |
+| Companion Settings page | yes | yes | yes | yes, captures | yes (Codex r4; integration r2) | yes (canonical) |
+| Per-companion appearance (size, particles, glow, atmosphere, animation) | yes | yes | yes | captures | yes (Codex r4; integration r2) | yes (canonical) |
+| Frame rate (Adaptive, 30, 60, 90, 144) | yes | yes | yes | yes, profile build | yes (Codex r4; integration r2) | yes (canonical) |
+| Render quality (Full, Balanced, Performance) | yes | yes | yes | yes, profile build | yes (Codex r4; integration r2) | yes (canonical) |
+| Statistics overlay | yes | yes | yes | capture | yes (Codex r4; integration r2) | yes (canonical) |
+| No frames while minimised | yes | yes | yes | yes, profile build | yes (Codex r4; integration r2) | yes (canonical) |
+| Voice list, previews, rate / pitch / volume | yes | yes | yes | parameters measured on rendered audio | yes (Codex r4; integration r2) | yes (canonical) |
+| Voice service interface (`VoiceServiceAdapter`) | yes | yes | yes (fake adapters) | scripted recording only, SIMULATED | yes (Codex r4; integration r2) | yes (canonical) |
 | Live microphone capture, URI reply speech | yes | **no (deferred)** | no | no | no | no |
-| Speaking styles, microphone gain | yes | shown unavailable with reason | yes | n/a | REVIEW_STATE | INTEGRATION_STATE |
+| Speaking styles, microphone gain | yes | shown unavailable with reason | yes | n/a | yes (Codex r4; integration r2) | yes (canonical) |
 | Production deployment, live-server cutover, launcher | n/a | **not authorised, not done** | | | | |
 
 ## 1. Acceptance criteria and results
@@ -40,8 +40,8 @@ before implementation). Branch `phase/companion-voice`, worktree
 | AC-11 | Voice interface; simulated labelled; live deferred | met | §5 |
 | AC-12 | Only real voices and measured parameters | met | §5 |
 | AC-13 | Boundaries, formatting, line endings, output paths | met | §7 |
-| AC-14 | Independent Codex verdict | REVIEW_AC14 | §6 |
-| AC-15 | Integration after acceptance with receipt | INTEGRATION_AC15 | `INTEGRATION_RECEIPT.md` |
+| AC-14 | Independent Codex verdict | met: Codex round 4 ACCEPT; integration rounds ACCEPT WITH FINDINGS (repaired / recorded) | §6 |
+| AC-15 | Integration after acceptance with receipt | met: fast-forward of `integration/git-sync-20261008`, receipt | `INTEGRATION_RECEIPT.md` |
 
 ## 2. What was built
 
@@ -305,7 +305,10 @@ was repaired.
 |---|---|---|---|---|
 | 1 | `a978cf5` | REJECT | B1 classic orb outside the frame clock (rate setting and minimise did not apply); B2 voice stage overlapped the Companion-mode controls at 800×600; N3 window listener never removed; N4 listing timeout left PowerShell running | `ebe3828`: rate shown unavailable for classic, every ticker muted while minimised; pill above the companion when there is no room below; removable listener; kill on timeout |
 | 2 | `f73575d` | REJECT | B1 pill still overlapped the orb at 640×480; B2 §4.2 GPU table not reproducible from the stated formula; N3 listener remover never called; N4 §4.5 heap ranges understated, two overclaims; N5 contention script could leave the measured app running; N6 31 evidence CSVs CRLF | `cecb911`: no stage where no free place exists (below about 560 px), narrow Dashboard likewise; §4.2 recomputed with a stated rule, correction recorded; remover runs on clock disposal; §4.5 corrected, overclaims withdrawn; cleanup kills the app; CSVs LF |
-| 3 | REVIEW_R3_HEAD | REVIEW_R3_VERDICT | REVIEW_R3_FINDINGS | REVIEW_R3_REPAIRS |
+| 3 | `a83efe7` | ACCEPT WITH FINDINGS | N1 VRAM demotion and the 60 MB margin stated as established; N2 contention cleanup matched the checkout name; N3 two Brain logs CRLF | `417cd26`: mechanism stated as inferred, unsaved reading labelled; cleanup stops this checkout's exact executable; logs LF |
+| 4 | `417cd26` | **ACCEPT** | none | — |
+| Integration 1 | `ed8a655` | ACCEPT WITH FINDINGS | window binding could outlive a disposed clock | `c0fc8b9` (merged as `6f06c31`) |
+| Integration 2 | `6f06c31` | ACCEPT WITH FINDINGS | the binding test does not simulate disposal during initialisation | recorded as a limitation |
 
 
 ## 7. Boundaries and repository hygiene
@@ -325,17 +328,16 @@ was repaired.
   app writes only there.
 * Four accepted assertions in `living_shell_test.dart` were adapted because the
   default orb changed from the Energy Orb to Solar; the classic-orb checks now
-  select the classic orb first. Full suite: `flutter test` 390 passed, 2 skipped (baseline before this phase: 338 passed, 2 skipped); `flutter analyze` on every changed path: no issues.
+  select the classic orb first. Full suite on the source branch: `flutter test` 391 passed, 2 skipped (baseline before this phase: 338 passed, 2 skipped); on the integrated tree 427 passed, 3 skipped (`INTEGRATION_RECEIPT.md`); `flutter analyze` on every changed path: no issues.
 
 ## 8. Known limitations
 
 1. No live voice (deferred, §5). The voice frames are a scripted recording,
    labelled SIMULATED.
 2. One machine, one GPU, device pixel ratio 1.0, Windows only.
-3. The working-system entry point on the parallel line
-   (`integration/ws-hardening-20261009`, `working_system_app.dart`) must also
-   call `bindWindowVisibility` and set `voiceCatalog` when it adopts this code;
-   until then a minimised working-system window keeps animating.
+3. Resolved at integration (`ed8a655`): the working-system entry installs the
+   voice catalog and the minimise binding. The binding's test does not
+   simulate disposal during plugin initialisation (Codex integration round 2).
 4. The classic orb ignores the appearance sliders and the frame-rate setting
    (shown unavailable with the reason).
 5. Covered windows (not minimised) still render; Windows reports no occlusion
