@@ -149,8 +149,10 @@ def _contiguous_or_all(vt, tt, tset):
         content = vt
     stems = {_stem(t) for t in tset}
     hits = sum(1 for t in content if t in tset or _stem(t) in stems)
-    if len(content) <= 3:
+    if len(content) <= 2:
         return hits == len(content)
+    if len(content) == 3:
+        return hits >= 2                      # live finding LQ-2: one reworded word in a three-word value
     # A long dictated phrase may be reworded by a tone change; most of its content words must survive.
     return hits >= 0.7 * len(content)
 
@@ -159,6 +161,9 @@ def _phrase_present(phrase, text) -> bool:
     p = " ".join(_tokens(phrase))
     if not p:
         return False
+    pn = canonical_numbers(phrase)
+    if pn and all(canonical_numbers(t) or t in ("and",) for t in _tokens(phrase)):
+        return pn <= canonical_numbers(text)    # live finding LQ-1: "two" must not match inside "forty-two"
     t = " " + " ".join(_tokens(text)) + " "
     if (" " + p + " ") in t:
         return True
@@ -237,10 +242,20 @@ def check_meaning_preserved(original, corrected) -> list:
     return flags
 
 
+def _lower_title_line(line):
+    """A Title Case line ("Subject: Unauthorized Absence of Students") capitalises ordinary words; they are not
+    names (live finding LQ-3). Lines where most words are capitalised are lower-cased for the name check only."""
+    words = re.findall(r"[A-Za-z][\w'-]*", line)
+    if len(words) >= 3 and sum(1 for w in words if w[0].isupper()) >= 0.6 * len(words):
+        return line.lower()
+    return line
+
+
 def check_new_details(text, known_text) -> list:
     """Numbers, dates and capitalised names in `text` that never occur in `known_text` (the user's words plus the
     previous version). Bracketed placeholders like [Your Name] are ignored: they mark missing information."""
     body = re.sub(r"\[[^\]]{1,80}\]", " ", text)
+    body = "\n".join(_lower_title_line(ln) for ln in body.splitlines())
     a, k = protected_tokens(body), protected_tokens(known_text)
     kwords = set(_tokens(known_text))
     new = sorted(str(x) for x in a["numbers"] - k["numbers"])
@@ -311,7 +326,11 @@ def verified_superseded(user_words, claimed) -> tuple:
     # happened"): the words right after it must hold a replacement value of the same kind.
     cues = [(m.start(), m.end()) for m in _CORRECTION_CUES.finditer(text) if not _APOLOGY.match(text, m.start())]
     verified, unverified = [], []
+    swapped = [p.lower() for p in user_exclusions(text) + _swap_phrases(text)]
     for value in claimed or ():
+        if any(p and p in value.lower() for p in swapped):
+            verified.append(value)            # the user said "don't say X" / "replace X with": X is replaced (LQ-4)
+            continue
         kind = next((k for k in (_detail_kind(w) for w in re.findall(r"[\w'-]+", value)) if k), None)
         ok = False
         if kind is not None:
@@ -329,6 +348,11 @@ def verified_superseded(user_words, claimed) -> tuple:
                         ok = True
         (verified if ok else unverified).append(value)
     return verified, unverified
+
+
+def _swap_phrases(text):
+    from .text_intent import _PHRASE_SWAP
+    return [next((g for g in m.groups() if g), "").strip(" \"'“”‘’") for m in _PHRASE_SWAP.finditer(text or "")]
 
 
 _APOLOGY = re.compile(r"sorry\s+(?:for|to|about|that|if|i|we|but)\b|actually\s+(?:happened|is|was|were|did|do|does)\b",

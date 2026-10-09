@@ -120,8 +120,8 @@ EDIT_SYSTEM = (
     "so never list a block you are not changing. For replace, give the complete new text of that block. "
     "\"Paragraph N\" means the N-th block whose role is body. \"Previous sentence\" or \"that\" means the text "
     "changed most recently (listed in last_changed). A tone instruction (\"more diplomatic\", \"more formal\") may "
-    "touch every block that needs it, but every fact, name, date and number and the wording the user dictated "
-    "earlier must keep its meaning. \"Keep everything else the same\" means the smallest possible edit.\n"
+    "touch every block that needs it, but every fact, name, date and number must stay, and wording the user "
+    "dictated (\"say they left without ...\") and every fact value must appear VERBATIM in the new text. \"Keep everything else the same\" means the smallest possible edit.\n"
     "When the user corrects a fact, put it in fact_updates with the old value in superseded and edit every block "
     "that states the old value. When the user asks not to mention something, remove it and add the literal words to "
     "exclusions_add.\n"
@@ -393,6 +393,8 @@ class DraftDesk:
             user["note"] = "The user corrected themselves (%s). Use only the final values." % ", ".join(cues[:4])
         if inp.uncertain:
             user["possibly_misheard"] = list(inp.uncertain)
+            user["note_misheard"] = ("Write the draft using these words exactly as heard; URI shows them to the user "
+                                     "for confirmation. Do not ask about anything else that is merely unspecified.")
         data, metrics = self._call(turn_id, CREATE_SYSTEM, user, CREATE_SCHEMA, "draft", MAX_DRAFT_TOKENS, emit)
         if _clean_list(data.get("actions_requested")) and fallback is not None:
             # Model-side guard: the user also asked URI to act. Core decides; nothing was drafted or shown yet.

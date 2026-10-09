@@ -82,7 +82,7 @@ CASES = {
           ("second_para_shorter", lambda r, h: r["body_len"](1, h[-1]) < r["body_len"](1, h[-2]) if len(h) > 1 else False),
           ("version_3", lambda r, h: r["version"] == 3)]),
         ("Undo the last change.", None,
-         [("restored_v2_text", lambda r, h: r["text"] == h[-2]["text"]),
+         [("restored_v2_text", lambda r, h: r["text"] == h[-3]["text"]),      # h[-1] is this step, h[-2] is v3
           ("no_model_call", lambda r, h: not r["metrics"].get("model_used")),
           ("position_2_of_3", lambda r, h: r["position"] == 2 and r["count"] == 3)]),
     ],
@@ -146,7 +146,7 @@ CASES = {
           ("11", lambda r, h: has(r["text"], "11") or has(r["text"], "eleven")),
           ("6", lambda r, h: has(r["text"], "6") or has(r["text"], "six")),
           ("three_windows", lambda r, h: has(r["text"], "three") or has(r["text"], "3")),
-          ("two_windows_gone", lambda r, h: lacks(r["text"], "two rooms", "2 rooms")),
+          ("two_windows_gone", lambda r, h: not re.search(r"(?<!forty-)(?<!forty )\b(?:two|2) rooms", r["text"], re.I)),
           ("85000", lambda r, h: any(x in r["text"].lower().replace(",", "") for x in ("85000", "eighty-five thousand",
                                                                                         "eighty five thousand", "85 thousand"))),
           ("november", lambda r, h: has(r["text"], "november")), ("3rd_oct", lambda r, h: has(r["text"], "october"))]),
@@ -195,7 +195,7 @@ CASES = {
     ],
     "M16_rewrite_politely": [
         ("Rewrite politely: send me the attendance report by today evening otherwise I will escalate.", None,
-         [("today_evening", lambda r, h: has(r["text"], "today") and has(r["text"], "evening")),
+         [("today_evening", lambda r, h: has(r["text"], "evening") and (has(r["text"], "today") or has(r["text"], "this evening"))),
           ("no_new_detail", lambda r, h: "NEW_DETAIL" not in r["flag_codes"])]),
     ],
     "M17_expand_notes": [

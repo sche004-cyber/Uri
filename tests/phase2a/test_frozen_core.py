@@ -78,6 +78,7 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                "tests/ws/test_ti_audit_r3_regressions.py",
                "tests/ws/test_ti_audit_r4_regressions.py",
                "tests/ws/test_ti_desk_bridge.py",
+               "tests/ws/test_ti_live_findings.py",
                "tests/ws/test_ti_store_verify_input.py",
                "tests/ws/test_ti_text_intent.py",
                "tests/ws/test_ti_worker_live.py",
