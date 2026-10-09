@@ -56,7 +56,7 @@ class VoiceInteractionController extends CompanionStateSource {
     this.oi,
     this.dictation,
     this.keepInComposer,
-    this.maxSpokenChars = 900,
+    this.maxSpokenChars = 600,
     this.noticeHold = const Duration(seconds: 6),
   }) {
     _subs.add(service.finals.listen(_onFinal));
@@ -559,6 +559,7 @@ String speakableText(String md) {
     l = l.replaceFirst(RegExp(r'^#{1,6}\s+'), '');
     l = l.replaceFirst(RegExp(r'^([-*+]|\d+[.)])\s+'), '');
     l = l.replaceFirst(RegExp(r'^>\s*'), '');
+    l = l.replaceAll(RegExp(r'(\*\*|__|\*|_|`|~~)'), '').trim();
     if (!RegExp(r'[.!?:;]$').hasMatch(l)) l = '$l.';
     lines.add(l);
   }

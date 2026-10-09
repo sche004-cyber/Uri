@@ -735,6 +735,109 @@ void main() {
     },
   );
 
+  group('Stop while URI speaks (live run 6 finding)', () {
+    Future<VoiceInteractionController> speakingController(
+      WidgetTester tester,
+    ) async {
+      // Built inside runAsync: stream subscriptions belong to the zone that
+      // creates them, and the fake-async test zone would never deliver them.
+      late FakeRuntime rt;
+      late VoiceInteractionController ctl;
+      await tester.runAsync(() async {
+        rt = FakeRuntime();
+        final oi = OiConversation(rt, sessionId: 's');
+        ctl = VoiceInteractionController(
+          service: svc,
+          preferences: CompanionPreferences(),
+          presentation: UiPresentationController(),
+          oi: oi,
+        );
+        await svc.ensureStarted();
+        t.push(ready());
+        await pump();
+        await ctl.pressTalk();
+        ctl.releaseTalk();
+        final id =
+            '${t.sent.lastWhere((c) => c['cmd'] == 'listen_start')['id']}';
+        t.push({
+          'ev': 'listen.final',
+          'id': id,
+          'text': 'Tell me a story.',
+          'reason': 'completed',
+          'engine': 'e',
+          'uncertain': <String>[],
+        });
+        await pump();
+        await pump();
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        rt.emit('t1', 'answer.delta', {
+          'text': 'Once upon a time. There was a king. ',
+        });
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+      expect(ctl.stage, VoiceStage.speaking);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildUriTheme(UriColors.graphite),
+          home: Scaffold(
+            body: Center(child: VoiceTalkButton(controller: ctl)),
+          ),
+        ),
+      );
+      return ctl;
+    }
+
+    testWidgets('a tap on Stop silences URI and captures nothing', (
+      tester,
+    ) async {
+      final ctl = await speakingController(tester);
+      final stop = find.byKey(const ValueKey('voice-stop-speaking'));
+      expect(stop, findsOneWidget);
+      final before = t.sent.length;
+      await tester.runAsync(() async {
+        final g = await tester.startGesture(tester.getCenter(stop));
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+        await g.up();
+        await pump();
+      });
+      final cmds = [for (final c in t.sent.skip(before)) '${c['cmd']}'];
+      // The press opens the microphone (the process stops playback first),
+      // the short release discards it: nothing is transcribed.
+      expect(cmds, ['listen_start', 'listen_cancel']);
+      expect(ctl.stage, VoiceStage.idle);
+      ctl.dispose();
+    });
+
+    testWidgets('holding Stop interrupts URI and becomes the user turn', (
+      tester,
+    ) async {
+      final ctl = await speakingController(tester);
+      final stop = find.byKey(const ValueKey('voice-stop-speaking'));
+      final before = t.sent.length;
+      late TestGesture g;
+      await tester.runAsync(() async {
+        g = await tester.startGesture(tester.getCenter(stop));
+        await pump();
+      });
+      await tester.pump(); // the disc becomes the talk button under the finger
+      expect(ctl.stage, VoiceStage.listening);
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        await g.up();
+        await pump();
+      });
+      final cmds = [for (final c in t.sent.skip(before)) '${c['cmd']}'];
+      expect(cmds, ['listen_start', 'listen_stop']);
+      expect(ctl.stage, VoiceStage.transcribing);
+      ctl.cancel();
+      ctl.dispose();
+    });
+  });
+
+  test('bold labels do not gain a stray full stop', () {
+    expect(speakableText('1. **Implement DMS:**'), 'Implement DMS:');
+  });
+
   group('speakableText and completeSentences', () {
     test('markdown marks, code and tables are not read aloud', () {
       final s = speakableText(

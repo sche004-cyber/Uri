@@ -271,6 +271,25 @@ void main() {
     }
 
     try {
+      if (scenarios.contains('brain')) {
+        // UI first: the Brain host is started after this window opened. The
+        // run waits for it before any scenario, so an action reaches Core with
+        // a Brain to interpret it (approval card scenario D4).
+        record('brain.wait');
+        final until20 = DateTime.now().add(const Duration(minutes: 40));
+        while (oi.brainStatus['state'] != 'READY' &&
+            DateTime.now().isBefore(until20)) {
+          await oi.refreshStatus();
+          await tester.pump(const Duration(seconds: 3));
+        }
+        await oi.refreshHealth();
+        record('brain.ready', {
+          'brain': oi.brainStatus,
+          'health': oi.brainHealth,
+        });
+        await shot(tester, '01_brain_ready');
+      }
+
       if (scenarios.contains('deterministic')) {
         // D1: a local presentation command by voice. A recognition miss is
         // recorded, not fatal: the words then reach URI as an ordinary turn.
@@ -404,19 +423,6 @@ void main() {
       }
 
       if (scenarios.contains('brain')) {
-        // UI first: the Brain host is started after this window opened.
-        record('brain.wait');
-        final until10 = DateTime.now().add(const Duration(minutes: 12));
-        while (oi.brainStatus['state'] != 'READY' &&
-            DateTime.now().isBefore(until10)) {
-          await oi.refreshStatus();
-          await tester.pump(const Duration(seconds: 3));
-        }
-        await oi.refreshHealth();
-        record('brain.ready', {
-          'brain': oi.brainStatus,
-          'health': oi.brainHealth,
-        });
         services.presentation.setMode(UiPresentationMode.companion);
         await tester.pump(const Duration(seconds: 1));
         // B1: a conversational question answered by the Brain and spoken.
@@ -448,7 +454,7 @@ void main() {
                 .first,
           ),
         );
-        await tester.pump(const Duration(milliseconds: 600));
+        await tester.pump(const Duration(milliseconds: 120)); // a tap on Stop
         await gb.up();
         record('bargein.release');
         await until(
@@ -558,5 +564,5 @@ void main() {
       await File('${out.path}\\e2e_levels.json')
           .writeAsString(jsonEncode(levelSeries));
     }
-  }, timeout: const Timeout(Duration(minutes: 20)));
+  }, timeout: const Timeout(Duration(minutes: 60)));
 }

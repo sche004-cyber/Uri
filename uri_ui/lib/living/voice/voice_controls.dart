@@ -79,8 +79,16 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton> {
     return false;
   }
 
+  /// True when the current press started while URI was speaking. Such a
+  /// press stops URI at once (the voice process stops playback before it
+  /// opens the microphone); released quickly it was only "stop", so the
+  /// capture is discarded; held, it is the user's turn to talk.
+  bool _bargeIn = false;
+
   void _down() {
+    if (_c.stage == VoiceStage.transcribing) return;
     if (_toggled) return;
+    _bargeIn = _c.stage == VoiceStage.speaking;
     _downAt = DateTime.now();
     _c.pressTalk();
   }
@@ -95,7 +103,17 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton> {
     }
     if (down == null) return;
     final held = DateTime.now().difference(down);
-    if (held < VoiceTalkButton.holdThreshold &&
+    final short = held < VoiceTalkButton.holdThreshold;
+    if (_bargeIn) {
+      _bargeIn = false;
+      if (short) {
+        _c.cancel(); // a tap on Stop: URI is silent, nothing is captured
+        return;
+      }
+      _c.releaseTalk();
+      return;
+    }
+    if (short &&
         (_c.stage == VoiceStage.listening || _c.stage == VoiceStage.opening)) {
       _toggled = true; // tap: keep listening until the next tap
       return;
@@ -129,50 +147,41 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton> {
                 ? 'Hold to dictate a draft (Ctrl+Space)'
                 : 'Hold to talk (Ctrl+Space)',
         };
-        if (speaking) {
-          return Tooltip(
-            message: tip,
-            child: Listener(
-              onPointerDown: (_) => _downAt = DateTime.now(),
-              onPointerUp: (_) {
-                final d = _downAt;
-                _downAt = null;
-                if (d != null &&
-                    DateTime.now().difference(d) >=
-                        VoiceTalkButton.holdThreshold) {
-                  return;
-                }
-                _c.stopSpeaking();
-              },
-              child: _Disc(
-                key: const ValueKey('voice-stop-speaking'),
-                color: glass.glow,
-                icon: Icons.stop_rounded,
-                iconColor: c.canvas,
-              ),
-            ),
-          );
-        }
+        // One Listener for every state, so a press that starts on Stop and
+        // turns into talking keeps receiving its own release.
         return Tooltip(
           message: tip,
           child: Listener(
-            onPointerDown: busy ? null : (_) => _down(),
-            onPointerUp: busy ? null : (_) => _up(),
-            onPointerCancel: busy ? null : (_) => _c.cancel(),
-            child: _Disc(
-              key: const ValueKey('voice-talk'),
-              color: listening ? c.danger.withValues(alpha: 0.85) : glass.fill,
-              icon: busy
-                  ? Icons.graphic_eq_rounded
-                  : drafting
-                  ? Icons.edit_note_rounded
-                  : Icons.mic_rounded,
-              iconColor: listening
-                  ? c.canvas
-                  : unavailable
-                  ? c.inkFaint
-                  : c.inkSoft,
-            ),
+            onPointerDown: (_) => _down(),
+            onPointerUp: (_) => _up(),
+            onPointerCancel: (_) {
+              _downAt = null;
+              _bargeIn = false;
+              _c.cancel();
+            },
+            child: speaking
+                ? _Disc(
+                    key: const ValueKey('voice-stop-speaking'),
+                    color: glass.glow,
+                    icon: Icons.stop_rounded,
+                    iconColor: c.canvas,
+                  )
+                : _Disc(
+                    key: const ValueKey('voice-talk'),
+                    color: listening
+                        ? c.danger.withValues(alpha: 0.85)
+                        : glass.fill,
+                    icon: busy
+                        ? Icons.graphic_eq_rounded
+                        : drafting
+                        ? Icons.edit_note_rounded
+                        : Icons.mic_rounded,
+                    iconColor: listening
+                        ? c.canvas
+                        : unavailable
+                        ? c.inkFaint
+                        : c.inkSoft,
+                  ),
           ),
         );
       },
