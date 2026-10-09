@@ -17,12 +17,14 @@ import '../models/user_preferences.dart';
 import '../services/file_picker_service.dart';
 import '../services/preferences_store.dart';
 import '../theme/uri_theme.dart';
+import 'a2ui/a2ui_hub.dart';
 import 'companion/companion_sources.dart';
 import 'companion/effects_settings.dart';
 import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
 import 'integration/oi_conversation.dart';
 import 'integration/oi_sources.dart';
+import 'integration/scheduler_client.dart';
 import 'living_scope.dart';
 import 'presentation/living_shell.dart';
 import 'presentation/presentation_controller.dart';
@@ -131,6 +133,15 @@ class LivingApp extends StatefulWidget {
   /// Working-system wiring (WS blueprint W9): the orb follows the real OI
   /// event stream and readiness comes from the integrated worker. Office
   /// work items have no backend yet and stay on the flagged simulator.
+  /// A2UI: surfaces come from the scheduler (`URI_SCHEDULER_STATE`); the
+  /// worker's `a2ui.handoff` events ask it to propose. Without a scheduler
+  /// the hub still shows an honest notice for a handoff.
+  static A2uiHub _a2uiHub(OiConversation oi) {
+    final hub = A2uiHub(scheduler: SchedulerClient.fromEnvironment(), handoffs: oi.a2uiHandoffs);
+    hub.refresh();
+    return hub;
+  }
+
   static LivingServices buildIntegratedServices(OiConversation oi) {
     final demo = MockCompanionSource();
     final work = MockWorkSimulator();
@@ -143,6 +154,7 @@ class LivingApp extends StatefulWidget {
       demo: demo,
       appDataIsMock: true,
       oi: oi,
+      a2ui: _a2uiHub(oi),
     );
   }
 }

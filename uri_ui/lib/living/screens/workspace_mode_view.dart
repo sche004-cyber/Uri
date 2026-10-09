@@ -10,6 +10,7 @@ import '../../services/file_picker_service.dart';
 import '../../services/uri_client.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
+import '../a2ui/a2ui_dock.dart';
 import '../companion/companion_state.dart';
 import '../companion/energy_orb.dart'
     show OrbPalette, OrbPaletteData, OrbVariant, OrbVariantLabel;
@@ -334,6 +335,7 @@ class _ConversationRegion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final oi = LivingScope.of(context).oi;
+    final a2ui = LivingScope.of(context).a2ui;
     return Column(
       children: [
         Expanded(
@@ -344,6 +346,7 @@ class _ConversationRegion extends StatelessWidget {
                   supervisedHandoff: false,
                 ),
         ),
+        if (a2ui != null) A2uiDock(hub: a2ui, maxHeightFraction: 0.45),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             UriSpace.md,
@@ -394,6 +397,13 @@ class TasksRegion extends StatelessWidget {
             UriSpace.lg,
           ),
           children: [
+            if (services.a2ui != null)
+              A2uiDock(
+                hub: services.a2ui!,
+                placements: const ['workspace'],
+                maxHeightFraction: 0.7,
+                showCalendarEntry: true,
+              ),
             Eyebrow(
               'Needs your decision',
               trailing: Text(

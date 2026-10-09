@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import 'a2ui/a2ui_hub.dart';
 import 'companion/companion_sources.dart';
 import 'companion/energy_orb.dart' show OrbPalette, OrbVariant;
 import 'companion/effects_settings.dart';
@@ -37,7 +38,12 @@ class LivingServices {
     required this.demo,
     this.appDataIsMock = true,
     this.oi,
+    this.a2ui,
   });
+
+  /// A2UI renderer hub (docs/a2ui/A2UI_ARCHITECTURE.md). Null when no
+  /// surface source is configured; owned by the root that created it.
+  final A2uiHub? a2ui;
 
   /// Working-system integration: the real conversation over the integrated
   /// worker (Core + Operational Intelligence + Runtime v1). Null in the mock

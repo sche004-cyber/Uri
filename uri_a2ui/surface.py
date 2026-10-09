@@ -136,7 +136,7 @@ def _typed(kind, v):
     if kind == "keys":
         return isinstance(v, list) and len(v) <= C.MAX_OPTIONS and all(isinstance(x, str) and _SLUG.match(x) for x in v)
     if kind.startswith("enum:"):
-        return v in kind[5:].split("|")
+        return isinstance(v, str) and v in kind[5:].split("|")
     return False
 
 
@@ -153,9 +153,9 @@ def check_action(surface: Surface, action) -> dict:
     if ctx.get("surface_digest") != surface.digest:
         raise ActionRefused("STALE_SURFACE", "the surface changed since it was shown; review it again")
     name = action["name"]
-    if name not in surface.actions:
+    if not isinstance(name, str) or name not in surface.actions:
         raise ActionRefused("ACTION_NOT_ALLOWED_ON_SURFACE", str(name)[:64])
-    comp = surface.component(action["sourceComponentId"])
+    comp = surface.component(action["sourceComponentId"]) if isinstance(action["sourceComponentId"], str) else None
     if comp is None or comp["component"] != "Button" or comp["action"]["event"]["name"] != name:
         raise ActionRefused("NOT_FROM_THIS_BUTTON")
     declared = comp["action"]["event"].get("context", {})

@@ -49,7 +49,7 @@ class SchedulerClient {
 
   Future<Map<String, dynamic>> _get(String path) async {
     final r = await _http.get(Uri.parse('$baseUrl$path'), headers: _headers);
-    final body = jsonDecode(r.body);
+    final body = jsonDecode(utf8.decode(r.bodyBytes)); // JSON is UTF-8 whatever the header says
     if (r.statusCode != 200) throw SchedulerApiError.from(body);
     return body as Map<String, dynamic>;
   }
@@ -63,7 +63,7 @@ class SchedulerClient {
       headers: _headers,
       body: jsonEncode({'principal': principal, ...?body}),
     );
-    final decoded = jsonDecode(r.body);
+    final decoded = jsonDecode(utf8.decode(r.bodyBytes));
     if (r.statusCode != 200) throw SchedulerApiError.from(decoded);
     return decoded as Map<String, dynamic>;
   }
@@ -109,6 +109,24 @@ class SchedulerClient {
     'sha256': sha256,
     'instruction': ?instruction,
   });
+
+  // ---- A2UI (docs/a2ui/A2UI_ARCHITECTURE.md): the scheduler renders its own
+  // surfaces; the UI only forwards an interpreted request and user actions.
+
+  /// An interpreted scheduling request (from the worker's `a2ui.handoff`)
+  /// becomes a PROPOSED job and a proposal surface. Nothing is activated.
+  Future<Map<String, dynamic>> a2uiPropose(Map<String, dynamic> request) =>
+      _post('/a2ui/propose', {'request': request});
+
+  /// One A2UI `action` message; the scheduler re-validates everything.
+  Future<Map<String, dynamic>> a2uiAction(Map<String, dynamic> action) =>
+      _post('/a2ui/action', {'action': action});
+
+  /// Every open surface (re-render after a UI or scheduler restart).
+  Future<Map<String, dynamic>> a2uiSurfaces() => _get('/a2ui/surfaces');
+
+  /// The festival calendar review surface (rebuilt from current records).
+  Future<Map<String, dynamic>> a2uiCalendar() => _get('/a2ui/calendar');
 }
 
 class SchedulerApiError implements Exception {

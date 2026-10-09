@@ -65,7 +65,7 @@ def check_value(kind, v, path, allowed_actions=None):
     if kind == "sha256":
         return [] if isinstance(v, str) and _SHA.match(v) else [_err("BAD_SHA256", path)]
     if kind.startswith("enum:"):
-        return [] if v in kind[5:].split("|") else [_err("BAD_ENUM", path, f"allowed: {kind[5:]}")]
+        return [] if isinstance(v, str) and v in kind[5:].split("|") else [_err("BAD_ENUM", path, f"allowed: {kind[5:]}")]
     if kind == "ref":
         return [] if isinstance(v, str) and _ID.match(v) else [_err("BAD_REF", path)]
     if kind == "refs":
@@ -92,7 +92,7 @@ def check_value(kind, v, path, allowed_actions=None):
             if not (isinstance(o, dict) and set(o) == {"label", "value"} and _text_ok(o["label"])
                     and isinstance(o["value"], str) and 0 < len(o["value"]) <= 128):
                 errs.append(_err("BAD_OPTION", f"{path}/{i}"))
-        if len({o.get("value") for o in v if isinstance(o, dict)}) != len(v):
+        if len({o["value"] for o in v if isinstance(o, dict) and isinstance(o.get("value"), str)}) != len(v):
             errs.append(_err("DUPLICATE_OPTION", path))
         return errs
     if kind == "action":
@@ -105,7 +105,7 @@ def _check_action_decl(v, path, allowed_actions):
             and set(v["event"]) <= {"name", "context"} and "name" in v["event"]):
         return [_err("BAD_ACTION", path, "only {event: {name, context}} is allowed (no functionCall)")]
     name, ctx = v["event"]["name"], v["event"].get("context", {})
-    if name not in A.ACTIONS:
+    if not isinstance(name, str) or name not in A.ACTIONS:
         return [_err("UNKNOWN_ACTION", path, str(name)[:64])]
     if allowed_actions is not None and name not in allowed_actions:
         return [_err("ACTION_NOT_ALLOWED_ON_SURFACE", path, name)]
@@ -168,7 +168,7 @@ def validate_components(components, allowed_actions=None, path="/components"):
         if cid in by_id:
             errs.append(_err("DUPLICATE_ID", p, cid))
             continue
-        if ctype not in C.COMPONENTS:
+        if not isinstance(ctype, str) or ctype not in C.COMPONENTS:
             errs.append(_err("UNKNOWN_COMPONENT", p, str(ctype)[:64]))
             continue
         spec = C.COMPONENTS[ctype]

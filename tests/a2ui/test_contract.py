@@ -113,3 +113,41 @@ def test_check_action_refuses_changed_literal():
 def test_record_roundtrip_keeps_digest():
     s = proposal_surface(rev=3)
     assert Surface.from_record(json.loads(json.dumps(s.to_record()))).digest == s.digest
+
+
+def test_fuzzed_definitions_never_crash_the_validator():
+    """Random structural mutations of valid messages: the validator returns codes, it never raises."""
+    import random
+    rnd = random.Random(20261009)
+    junk = [None, True, 0, -1, 10 ** 12, 1.5, "", "x" * 5000, [], {}, ["a"], {"path": "/x"}, {"path": 5}, [[1]], {"a": {"b": []}},
+            "javascript:x", {"event": {"name": ["x"]}}, {"componentId": [1], "path": "/a"}]
+    base = [c["messages"] for c in CASES if c["expect"] == "valid"]
+    s = proposal_surface()
+    base.append(s.messages())
+    n = 0
+    for _ in range(3000):
+        msgs = json.loads(json.dumps(rnd.choice(base)))
+        m = rnd.choice(msgs)
+        node, path = m, []
+        for _ in range(rnd.randint(1, 6)):
+            if isinstance(node, dict) and node:
+                k = rnd.choice(list(node))
+            elif isinstance(node, list) and node:
+                k = rnd.randrange(len(node))
+            else:
+                break
+            path.append((node, k))
+            node = node[k]
+        if path:
+            parent, k = path[-1]
+            parent[k] = rnd.choice(junk)
+        for mm in msgs:
+            V.validate_message(mm)                       # must not raise
+        n += 1
+        try:
+            check_action(s, {"name": rnd.choice(junk + ["scheduler.confirm_proposal"]), "surfaceId": s.surface_id,
+                             "sourceComponentId": rnd.choice(junk + ["confirm"]),
+                             "context": rnd.choice([{"surface_digest": s.digest}, junk[-1], {}])})
+        except ActionRefused:
+            pass
+    assert n == 3000
