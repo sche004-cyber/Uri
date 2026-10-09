@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/file_picker_service.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
+import '../a2ui/a2ui_dock.dart';
 import '../companion/companion_state.dart';
 import '../living_scope.dart';
 import '../presentation/presentation_controller.dart';
@@ -105,7 +106,22 @@ class CompanionModeView extends StatelessWidget {
                     icon: const Icon(Icons.rule_rounded, size: 16),
                     label: const Text('Review and decide'),
                   ),
-                const Spacer(),
+                if (services.a2ui != null)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: A2uiCompanionSlot(
+                          hub: services.a2ui!,
+                          presentation: services.presentation,
+                          width: composerWidth,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  const Spacer(),
                 SizedBox(
                   width: composerWidth,
                   child: LivingComposer(

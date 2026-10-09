@@ -21,6 +21,7 @@
 /// | `URI_LIVING_ORB_PALETTE=signature|deepOcean|aurora|nature|sunset|royal|passion|softPastel|monochrome|rainbow` | orb colour palette (default: the style's own) |
 /// | `URI_LIVING_REDUCED_EFFECTS=1` | start with effects reduced |
 /// | `URI_LIVING_PERF=1` | print frame-timing summaries to stdout |
+/// | `URI_SCHEDULER_STATE=<dir>` | show the open A2UI surfaces of the local scheduler service in that state dir |
 library;
 
 import 'dart:io' show Platform;

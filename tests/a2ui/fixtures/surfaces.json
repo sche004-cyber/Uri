@@ -1,0 +1,1171 @@
+{
+ "handoff": {
+  "domain": "scheduler",
+  "kind": "festival_gif_schedule",
+  "interpreter": "deterministic.schedule_intent.v1",
+  "request": {
+   "festivals": null,
+   "time": "09:00",
+   "offset_days": 2,
+   "assumptions": [
+    "You did not give a time; I used 09:00 Asia/Kolkata.",
+    "'Major festivals' means the 12 national festivals; add or remove any below."
+   ]
+  }
+ },
+ "proposal": {
+  "surface_id": "sched-5674fe6d7433",
+  "messages": [
+   {
+    "version": "v0.9",
+    "createSurface": {
+     "surfaceId": "sched-5674fe6d7433",
+     "catalogId": "uri:a2ui/catalog/v1",
+     "theme": {
+      "agentDisplayName": "URI",
+      "placement": "companion"
+     }
+    }
+   },
+   {
+    "version": "v0.9",
+    "updateComponents": {
+     "surfaceId": "sched-5674fe6d7433",
+     "components": [
+      {
+       "id": "root",
+       "component": "Column",
+       "children": [
+        "title",
+        "interp",
+        "assumptions",
+        "upcoming_hdr",
+        "upcoming",
+        "picker",
+        "time",
+        "offset",
+        "safety",
+        "buttons"
+       ],
+       "gap": "medium"
+      },
+      {
+       "id": "title",
+       "component": "Text",
+       "text": "Festival greeting GIFs: proposed schedule",
+       "variant": "title"
+      },
+      {
+       "id": "interp",
+       "component": "Text",
+       "text": "2 calendar days before each selected festival at 09:00 (Asia/Kolkata): Buddha Purnima, Christmas, Diwali (Deepavali), Dussehra (Vijaya Dashami), Guru Nanak Jayanti, Holi, Id-ul-Fitr, Id-ul-Zuha (Bakrid), Janmashtami, Mahavir Jayanti, Milad-un-Nabi (Id-e-Milad), Ram Navami",
+       "variant": "body"
+      },
+      {
+       "id": "assumptions",
+       "component": "Text",
+       "text": "I assumed: You did not give a time; I used 09:00 Asia/Kolkata. 'Major festivals' means the 12 national festivals; add or remove any below.",
+       "variant": "caption"
+      },
+      {
+       "id": "upcoming_hdr",
+       "component": "Text",
+       "text": "Next runs (15 in the coming year)",
+       "variant": "label"
+      },
+      {
+       "id": "upcoming",
+       "component": "Text",
+       "text": "• Dussehra (Vijaya Dashami) 2026-10-20: GIF 2026-10-18 09:00 IST\n• Diwali (Deepavali) 2026-11-08: GIF 2026-11-06 09:00 IST\n• Guru Nanak Jayanti 2026-11-24: GIF 2026-11-22 09:00 IST\n• Christmas 2026-12-25: GIF 2026-12-23 09:00 IST\n• Id-ul-Fitr 2027-03-10: GIF 2027-03-08 09:00 IST\n• Holi 2027-03-23: GIF 2027-03-21 09:00 IST\n• Ram Navami 2027-04-15: GIF 2027-04-13 09:00 IST\n• Mahavir Jayanti 2027-04-19: GIF 2027-04-17 09:00 IST\n… and 7 more",
+       "variant": "body"
+      },
+      {
+       "id": "picker",
+       "component": "ChoicePicker",
+       "label": "Festivals",
+       "multiple": true,
+       "value": {
+        "path": "/draft/selection"
+       },
+       "options": [
+        {
+         "label": "Dussehra (Vijaya Dashami) · next 2026-10-20",
+         "value": "dussehra"
+        },
+        {
+         "label": "Diwali (Deepavali) · next 2026-11-08",
+         "value": "diwali"
+        },
+        {
+         "label": "Govardhan Puja · next 2026-11-09",
+         "value": "govardhan_puja"
+        },
+        {
+         "label": "Bhai Dooj · next 2026-11-11",
+         "value": "bhai_dooj"
+        },
+        {
+         "label": "Guru Nanak Jayanti · next 2026-11-24",
+         "value": "guru_nanak_jayanti"
+        },
+        {
+         "label": "Christmas · next 2026-12-25",
+         "value": "christmas"
+        },
+        {
+         "label": "Makar Sankranti · next 2027-01-14",
+         "value": "makar_sankranti"
+        },
+        {
+         "label": "Republic Day · next 2027-01-26",
+         "value": "republic_day"
+        },
+        {
+         "label": "Basant Panchami · next 2027-02-11",
+         "value": "basant_panchami"
+        },
+        {
+         "label": "Maha Shivratri · next 2027-03-06",
+         "value": "maha_shivratri"
+        },
+        {
+         "label": "Id-ul-Fitr · next 2027-03-10",
+         "value": "eid_ul_fitr"
+        },
+        {
+         "label": "Holi · next 2027-03-23",
+         "value": "holi"
+        },
+        {
+         "label": "Ram Navami · next 2027-04-15",
+         "value": "ram_navami"
+        },
+        {
+         "label": "Mahavir Jayanti · next 2027-04-19",
+         "value": "mahavir_jayanti"
+        },
+        {
+         "label": "Id-ul-Zuha (Bakrid) · next 2027-05-17",
+         "value": "eid_ul_zuha"
+        },
+        {
+         "label": "Buddha Purnima · next 2027-05-20",
+         "value": "buddha_purnima"
+        },
+        {
+         "label": "Independence Day · next 2027-08-15",
+         "value": "independence_day"
+        },
+        {
+         "label": "Milad-un-Nabi (Id-e-Milad) · next 2027-08-15",
+         "value": "milad_un_nabi"
+        },
+        {
+         "label": "Raksha Bandhan · next 2027-08-17",
+         "value": "raksha_bandhan"
+        },
+        {
+         "label": "Janmashtami · next 2027-08-25",
+         "value": "janmashtami"
+        },
+        {
+         "label": "Gandhi Jayanti · next 2027-10-02",
+         "value": "gandhi_jayanti"
+        },
+        {
+         "label": "Durga Puja (Dasain), Sikkim · next 2026-10-19 · sikkim",
+         "value": "dasain_sikkim"
+        },
+        {
+         "label": "Karva Chauth · next 2026-10-29 · north_india",
+         "value": "karva_chauth"
+        },
+        {
+         "label": "Lhabab Duechen · next 2026-11-01 · sikkim",
+         "value": "lhabab_duechen"
+        },
+        {
+         "label": "Laxmi Puja (Deepawali / Tihar), Sikkim · next 2026-11-09 · sikkim",
+         "value": "tihar_sikkim"
+        },
+        {
+         "label": "Chhath Puja · next 2026-11-15 · bihar, jharkhand",
+         "value": "chhath_puja"
+        },
+        {
+         "label": "Sakewa · next 2026-11-30 · sikkim",
+         "value": "sakewa"
+        },
+        {
+         "label": "Kagyed Dance · next 2026-12-07 · sikkim",
+         "value": "kagyed_dance"
+        },
+        {
+         "label": "Losoong / Namsoong · next 2026-12-09 · sikkim",
+         "value": "losoong_namsoong"
+        },
+        {
+         "label": "Chasok Tongnam · next 2026-12-15 · sikkim",
+         "value": "chasok_tongnam"
+        },
+        {
+         "label": "Barahimijong · next 2026-12-28 · sikkim",
+         "value": "barahimijong"
+        },
+        {
+         "label": "Tamu Lochar · next 2026-12-30 · sikkim",
+         "value": "tamu_lochar"
+        },
+        {
+         "label": "Pongal · next 2027-01-15 · tamil_nadu",
+         "value": "pongal"
+        },
+        {
+         "label": "Ugadi / Gudi Padwa · next 2027-04-07 · karnataka, andhra_pradesh, telangana, maharashtra",
+         "value": "ugadi_gudi_padwa"
+        },
+        {
+         "label": "Vaisakhi · next 2027-04-14 · punjab",
+         "value": "vaisakhi"
+        },
+        {
+         "label": "Rath Yatra · next 2027-07-05 · odisha",
+         "value": "rath_yatra"
+        },
+        {
+         "label": "Ganesh Chaturthi · next 2027-09-04",
+         "value": "ganesh_chaturthi"
+        },
+        {
+         "label": "Onam · next 2027-09-12 · kerala",
+         "value": "onam"
+        }
+       ]
+      },
+      {
+       "id": "time",
+       "component": "DateTimeInput",
+       "label": "Time (Asia/Kolkata)",
+       "mode": "time",
+       "value": {
+        "path": "/draft/time"
+       }
+      },
+      {
+       "id": "offset",
+       "component": "ChoicePicker",
+       "label": "Days before the festival",
+       "multiple": false,
+       "value": {
+        "path": "/draft/offset"
+       },
+       "options": [
+        {
+         "label": "1 day",
+         "value": "1"
+        },
+        {
+         "label": "2 days",
+         "value": "2"
+        },
+        {
+         "label": "3 days",
+         "value": "3"
+        },
+        {
+         "label": "5 days",
+         "value": "5"
+        },
+        {
+         "label": "7 days",
+         "value": "7"
+        }
+       ]
+      },
+      {
+       "id": "safety",
+       "component": "Text",
+       "text": "Nothing runs until you confirm. Each GIF waits for your approval; nothing is posted or sent.",
+       "variant": "caption"
+      },
+      {
+       "id": "revise",
+       "component": "Button",
+       "label": "Update proposal",
+       "variant": "secondary",
+       "action": {
+        "event": {
+         "name": "scheduler.revise_proposal",
+         "context": {
+          "selection": {
+           "path": "/draft/selection"
+          },
+          "time": {
+           "path": "/draft/time"
+          },
+          "offset_days": {
+           "path": "/draft/offset"
+          }
+         }
+        }
+       }
+      },
+      {
+       "id": "confirm",
+       "component": "Button",
+       "label": "Confirm schedule",
+       "variant": "primary",
+       "action": {
+        "event": {
+         "name": "scheduler.confirm_proposal",
+         "context": {
+          "proposal_sha256": {
+           "path": "/bound/proposal_sha256"
+          },
+          "selection": {
+           "path": "/draft/selection"
+          },
+          "time": {
+           "path": "/draft/time"
+          },
+          "offset_days": {
+           "path": "/draft/offset"
+          }
+         }
+        }
+       }
+      },
+      {
+       "id": "discard",
+       "component": "Button",
+       "label": "Discard",
+       "variant": "secondary",
+       "action": {
+        "event": {
+         "name": "scheduler.discard_proposal",
+         "context": {}
+        }
+       }
+      },
+      {
+       "id": "buttons",
+       "component": "Row",
+       "children": [
+        "revise",
+        "confirm",
+        "discard"
+       ],
+       "gap": "small"
+      }
+     ]
+    }
+   },
+   {
+    "version": "v0.9",
+    "updateDataModel": {
+     "surfaceId": "sched-5674fe6d7433",
+     "path": "/",
+     "value": {
+      "draft": {
+       "selection": [
+        "holi",
+        "ram_navami",
+        "mahavir_jayanti",
+        "buddha_purnima",
+        "eid_ul_fitr",
+        "eid_ul_zuha",
+        "janmashtami",
+        "dussehra",
+        "diwali",
+        "guru_nanak_jayanti",
+        "christmas",
+        "milad_un_nabi"
+       ],
+       "time": "09:00",
+       "offset": "2"
+      },
+      "bound": {
+       "proposal_sha256": "8f811e069f04920c6026087f5fe2ddb605bfbb1fb2ba1a33bcee0a8995b5d8f3",
+       "job_id": "job_bf059d7f579f",
+       "request": {
+        "festivals": [
+         "holi",
+         "ram_navami",
+         "mahavir_jayanti",
+         "buddha_purnima",
+         "eid_ul_fitr",
+         "eid_ul_zuha",
+         "janmashtami",
+         "dussehra",
+         "diwali",
+         "guru_nanak_jayanti",
+         "christmas",
+         "milad_un_nabi"
+        ],
+        "time": "09:00",
+        "offset_days": 2
+       },
+       "surface": {
+        "digest": "b00fd7de968611320dae64df01a5172798365a2f016657ab756dc6e683d5fcca",
+        "revision": 1,
+        "kind": "schedule_proposal",
+        "title": "Festival GIF schedule"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "job_id": "job_bf059d7f579f"
+ },
+ "revise_context": {
+  "surface_digest": "b00fd7de968611320dae64df01a5172798365a2f016657ab756dc6e683d5fcca",
+  "selection": [
+   "diwali",
+   "holi"
+  ],
+  "time": "09:00",
+  "offset_days": "2"
+ },
+ "revised": {
+  "result": "REVISED",
+  "job_id": "job_d087f5cf8037",
+  "messages": [
+   {
+    "version": "v0.9",
+    "updateComponents": {
+     "surfaceId": "sched-5674fe6d7433",
+     "components": [
+      {
+       "id": "root",
+       "component": "Column",
+       "children": [
+        "title",
+        "interp",
+        "upcoming_hdr",
+        "upcoming",
+        "picker",
+        "time",
+        "offset",
+        "safety",
+        "buttons"
+       ],
+       "gap": "medium"
+      },
+      {
+       "id": "title",
+       "component": "Text",
+       "text": "Festival greeting GIFs: proposed schedule",
+       "variant": "title"
+      },
+      {
+       "id": "interp",
+       "component": "Text",
+       "text": "2 calendar days before each selected festival at 09:00 (Asia/Kolkata): Diwali (Deepavali), Holi",
+       "variant": "body"
+      },
+      {
+       "id": "upcoming_hdr",
+       "component": "Text",
+       "text": "Next runs (3 in the coming year)",
+       "variant": "label"
+      },
+      {
+       "id": "upcoming",
+       "component": "Text",
+       "text": "• Diwali (Deepavali) 2026-11-08: GIF 2026-11-06 09:00 IST\n• Holi 2027-03-23: GIF 2027-03-21 09:00 IST\n• Diwali (Deepavali) 2027-10-29: GIF 2027-10-27 09:00 IST",
+       "variant": "body"
+      },
+      {
+       "id": "picker",
+       "component": "ChoicePicker",
+       "label": "Festivals",
+       "multiple": true,
+       "value": {
+        "path": "/draft/selection"
+       },
+       "options": [
+        {
+         "label": "Dussehra (Vijaya Dashami) · next 2026-10-20",
+         "value": "dussehra"
+        },
+        {
+         "label": "Diwali (Deepavali) · next 2026-11-08",
+         "value": "diwali"
+        },
+        {
+         "label": "Govardhan Puja · next 2026-11-09",
+         "value": "govardhan_puja"
+        },
+        {
+         "label": "Bhai Dooj · next 2026-11-11",
+         "value": "bhai_dooj"
+        },
+        {
+         "label": "Guru Nanak Jayanti · next 2026-11-24",
+         "value": "guru_nanak_jayanti"
+        },
+        {
+         "label": "Christmas · next 2026-12-25",
+         "value": "christmas"
+        },
+        {
+         "label": "Makar Sankranti · next 2027-01-14",
+         "value": "makar_sankranti"
+        },
+        {
+         "label": "Republic Day · next 2027-01-26",
+         "value": "republic_day"
+        },
+        {
+         "label": "Basant Panchami · next 2027-02-11",
+         "value": "basant_panchami"
+        },
+        {
+         "label": "Maha Shivratri · next 2027-03-06",
+         "value": "maha_shivratri"
+        },
+        {
+         "label": "Id-ul-Fitr · next 2027-03-10",
+         "value": "eid_ul_fitr"
+        },
+        {
+         "label": "Holi · next 2027-03-23",
+         "value": "holi"
+        },
+        {
+         "label": "Ram Navami · next 2027-04-15",
+         "value": "ram_navami"
+        },
+        {
+         "label": "Mahavir Jayanti · next 2027-04-19",
+         "value": "mahavir_jayanti"
+        },
+        {
+         "label": "Id-ul-Zuha (Bakrid) · next 2027-05-17",
+         "value": "eid_ul_zuha"
+        },
+        {
+         "label": "Buddha Purnima · next 2027-05-20",
+         "value": "buddha_purnima"
+        },
+        {
+         "label": "Independence Day · next 2027-08-15",
+         "value": "independence_day"
+        },
+        {
+         "label": "Milad-un-Nabi (Id-e-Milad) · next 2027-08-15",
+         "value": "milad_un_nabi"
+        },
+        {
+         "label": "Raksha Bandhan · next 2027-08-17",
+         "value": "raksha_bandhan"
+        },
+        {
+         "label": "Janmashtami · next 2027-08-25",
+         "value": "janmashtami"
+        },
+        {
+         "label": "Gandhi Jayanti · next 2027-10-02",
+         "value": "gandhi_jayanti"
+        },
+        {
+         "label": "Durga Puja (Dasain), Sikkim · next 2026-10-19 · sikkim",
+         "value": "dasain_sikkim"
+        },
+        {
+         "label": "Karva Chauth · next 2026-10-29 · north_india",
+         "value": "karva_chauth"
+        },
+        {
+         "label": "Lhabab Duechen · next 2026-11-01 · sikkim",
+         "value": "lhabab_duechen"
+        },
+        {
+         "label": "Laxmi Puja (Deepawali / Tihar), Sikkim · next 2026-11-09 · sikkim",
+         "value": "tihar_sikkim"
+        },
+        {
+         "label": "Chhath Puja · next 2026-11-15 · bihar, jharkhand",
+         "value": "chhath_puja"
+        },
+        {
+         "label": "Sakewa · next 2026-11-30 · sikkim",
+         "value": "sakewa"
+        },
+        {
+         "label": "Kagyed Dance · next 2026-12-07 · sikkim",
+         "value": "kagyed_dance"
+        },
+        {
+         "label": "Losoong / Namsoong · next 2026-12-09 · sikkim",
+         "value": "losoong_namsoong"
+        },
+        {
+         "label": "Chasok Tongnam · next 2026-12-15 · sikkim",
+         "value": "chasok_tongnam"
+        },
+        {
+         "label": "Barahimijong · next 2026-12-28 · sikkim",
+         "value": "barahimijong"
+        },
+        {
+         "label": "Tamu Lochar · next 2026-12-30 · sikkim",
+         "value": "tamu_lochar"
+        },
+        {
+         "label": "Pongal · next 2027-01-15 · tamil_nadu",
+         "value": "pongal"
+        },
+        {
+         "label": "Ugadi / Gudi Padwa · next 2027-04-07 · karnataka, andhra_pradesh, telangana, maharashtra",
+         "value": "ugadi_gudi_padwa"
+        },
+        {
+         "label": "Vaisakhi · next 2027-04-14 · punjab",
+         "value": "vaisakhi"
+        },
+        {
+         "label": "Rath Yatra · next 2027-07-05 · odisha",
+         "value": "rath_yatra"
+        },
+        {
+         "label": "Ganesh Chaturthi · next 2027-09-04",
+         "value": "ganesh_chaturthi"
+        },
+        {
+         "label": "Onam · next 2027-09-12 · kerala",
+         "value": "onam"
+        }
+       ]
+      },
+      {
+       "id": "time",
+       "component": "DateTimeInput",
+       "label": "Time (Asia/Kolkata)",
+       "mode": "time",
+       "value": {
+        "path": "/draft/time"
+       }
+      },
+      {
+       "id": "offset",
+       "component": "ChoicePicker",
+       "label": "Days before the festival",
+       "multiple": false,
+       "value": {
+        "path": "/draft/offset"
+       },
+       "options": [
+        {
+         "label": "1 day",
+         "value": "1"
+        },
+        {
+         "label": "2 days",
+         "value": "2"
+        },
+        {
+         "label": "3 days",
+         "value": "3"
+        },
+        {
+         "label": "5 days",
+         "value": "5"
+        },
+        {
+         "label": "7 days",
+         "value": "7"
+        }
+       ]
+      },
+      {
+       "id": "safety",
+       "component": "Text",
+       "text": "Nothing runs until you confirm. Each GIF waits for your approval; nothing is posted or sent.",
+       "variant": "caption"
+      },
+      {
+       "id": "revise",
+       "component": "Button",
+       "label": "Update proposal",
+       "variant": "secondary",
+       "action": {
+        "event": {
+         "name": "scheduler.revise_proposal",
+         "context": {
+          "selection": {
+           "path": "/draft/selection"
+          },
+          "time": {
+           "path": "/draft/time"
+          },
+          "offset_days": {
+           "path": "/draft/offset"
+          }
+         }
+        }
+       }
+      },
+      {
+       "id": "confirm",
+       "component": "Button",
+       "label": "Confirm schedule",
+       "variant": "primary",
+       "action": {
+        "event": {
+         "name": "scheduler.confirm_proposal",
+         "context": {
+          "proposal_sha256": {
+           "path": "/bound/proposal_sha256"
+          },
+          "selection": {
+           "path": "/draft/selection"
+          },
+          "time": {
+           "path": "/draft/time"
+          },
+          "offset_days": {
+           "path": "/draft/offset"
+          }
+         }
+        }
+       }
+      },
+      {
+       "id": "discard",
+       "component": "Button",
+       "label": "Discard",
+       "variant": "secondary",
+       "action": {
+        "event": {
+         "name": "scheduler.discard_proposal",
+         "context": {}
+        }
+       }
+      },
+      {
+       "id": "buttons",
+       "component": "Row",
+       "children": [
+        "revise",
+        "confirm",
+        "discard"
+       ],
+       "gap": "small"
+      }
+     ]
+    }
+   },
+   {
+    "version": "v0.9",
+    "updateDataModel": {
+     "surfaceId": "sched-5674fe6d7433",
+     "path": "/",
+     "value": {
+      "draft": {
+       "selection": [
+        "diwali",
+        "holi"
+       ],
+       "time": "09:00",
+       "offset": "2"
+      },
+      "bound": {
+       "proposal_sha256": "cb658bb0462a8fc9c046319702a2acf5bab7896ea7454c6189bacd8ddd05294c",
+       "job_id": "job_d087f5cf8037",
+       "request": {
+        "festivals": [
+         "diwali",
+         "holi"
+        ],
+        "time": "09:00",
+        "offset_days": 2
+       },
+       "supersedes": "job_bf059d7f579f",
+       "surface": {
+        "digest": "9b794e5c00447ef09ca3dfcc2fbd92aa26911b9aeb898711ea3a4c05f2690ca6",
+        "revision": 2,
+        "kind": "schedule_proposal",
+        "title": "Festival GIF schedule"
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ "calendar": {
+  "surface_id": "calendar-review",
+  "messages": [
+   {
+    "version": "v0.9",
+    "createSurface": {
+     "surfaceId": "calendar-review",
+     "catalogId": "uri:a2ui/catalog/v1",
+     "theme": {
+      "agentDisplayName": "URI",
+      "placement": "workspace"
+     }
+    }
+   },
+   {
+    "version": "v0.9",
+    "updateComponents": {
+     "surfaceId": "calendar-review",
+     "components": [
+      {
+       "id": "root",
+       "component": "Column",
+       "children": [
+        "title",
+        "about",
+        "record",
+        "start",
+        "note",
+        "safety",
+        "buttons"
+       ],
+       "gap": "medium"
+      },
+      {
+       "id": "title",
+       "component": "Text",
+       "text": "Festival calendar: review and correct",
+       "variant": "title"
+      },
+      {
+       "id": "about",
+       "component": "Text",
+       "text": "Calendar 2026-10-09.verified. Every date was read from a government notification; the source of each record is shown in the list.",
+       "variant": "caption"
+      },
+      {
+       "id": "record",
+       "component": "ChoicePicker",
+       "label": "Record",
+       "multiple": false,
+       "value": {
+        "path": "/draft/record"
+       },
+       "options": [
+        {
+         "label": "2026-10-19 · Durga Puja (Dasain), Sikkim · published · official_gazette_read",
+         "value": "dasain_sikkim:2026"
+        },
+        {
+         "label": "2026-10-20 · Dussehra (Vijaya Dashami) · published · om_document_read",
+         "value": "dussehra:2026"
+        },
+        {
+         "label": "2026-10-29 · Karva Chauth · published · om_document_read",
+         "value": "karva_chauth:2026"
+        },
+        {
+         "label": "2026-11-01 · Lhabab Duechen · published · official_gazette_read",
+         "value": "lhabab_duechen:2026"
+        },
+        {
+         "label": "2026-11-08 · Diwali (Deepavali) · published · om_document_read",
+         "value": "diwali:2026"
+        },
+        {
+         "label": "2026-11-09 · Govardhan Puja · published · om_document_read",
+         "value": "govardhan_puja:2026"
+        },
+        {
+         "label": "2026-11-09 · Laxmi Puja (Deepawali / Tihar), Sikkim · published · official_gazette_read",
+         "value": "tihar_sikkim:2026"
+        },
+        {
+         "label": "2026-11-11 · Bhai Dooj · published · om_document_read",
+         "value": "bhai_dooj:2026"
+        },
+        {
+         "label": "2026-11-15 · Chhath Puja · published · om_document_read",
+         "value": "chhath_puja:2026"
+        },
+        {
+         "label": "2026-11-24 · Guru Nanak Jayanti · published · om_document_read",
+         "value": "guru_nanak_jayanti:2026"
+        },
+        {
+         "label": "2026-11-30 · Sakewa · published · official_gazette_read",
+         "value": "sakewa:2026"
+        },
+        {
+         "label": "2026-12-07 · Kagyed Dance · published · official_gazette_read",
+         "value": "kagyed_dance:2026"
+        },
+        {
+         "label": "2026-12-09 · Losoong / Namsoong · published · official_gazette_read",
+         "value": "losoong_namsoong:2026"
+        },
+        {
+         "label": "2026-12-15 · Chasok Tongnam · published · official_gazette_read",
+         "value": "chasok_tongnam:2026"
+        },
+        {
+         "label": "2026-12-25 · Christmas · published · om_document_read",
+         "value": "christmas:2026"
+        },
+        {
+         "label": "2026-12-28 · Barahimijong · published · official_gazette_read",
+         "value": "barahimijong:2026"
+        },
+        {
+         "label": "2026-12-30 · Tamu Lochar · published · official_gazette_read",
+         "value": "tamu_lochar:2026"
+        },
+        {
+         "label": "2027-01-14 · Makar Sankranti · published · om_document_read",
+         "value": "makar_sankranti:2027"
+        },
+        {
+         "label": "2027-01-15 · Pongal · published · om_document_read",
+         "value": "pongal:2027"
+        },
+        {
+         "label": "2027-01-26 · Republic Day · published · om_document_read",
+         "value": "republic_day:2027"
+        },
+        {
+         "label": "2027-02-11 · Basant Panchami · published · om_document_read",
+         "value": "basant_panchami:2027"
+        },
+        {
+         "label": "2027-03-06 · Maha Shivratri · published · om_document_read",
+         "value": "maha_shivratri:2027"
+        },
+        {
+         "label": "2027-03-10 · Id-ul-Fitr · published · om_document_read",
+         "value": "eid_ul_fitr:2027"
+        },
+        {
+         "label": "2027-03-23 · Holi · published · om_document_read",
+         "value": "holi:2027"
+        },
+        {
+         "label": "2027-03-26 · Good Friday · published · om_document_read",
+         "value": "good_friday:2027"
+        },
+        {
+         "label": "2027-04-07 · Ugadi / Gudi Padwa · published · om_document_read",
+         "value": "ugadi_gudi_padwa:2027"
+        },
+        {
+         "label": "2027-04-14 · Vaisakhi · published · om_document_read",
+         "value": "vaisakhi:2027"
+        },
+        {
+         "label": "2027-04-15 · Ram Navami · published · om_document_read",
+         "value": "ram_navami:2027"
+        },
+        {
+         "label": "2027-04-19 · Mahavir Jayanti · published · om_document_read",
+         "value": "mahavir_jayanti:2027"
+        },
+        {
+         "label": "2027-05-17 · Id-ul-Zuha (Bakrid) · published · om_document_read",
+         "value": "eid_ul_zuha:2027"
+        },
+        {
+         "label": "2027-05-20 · Buddha Purnima · published · om_document_read",
+         "value": "buddha_purnima:2027"
+        },
+        {
+         "label": "2027-06-16 · Muharram · published · om_document_read",
+         "value": "muharram:2027"
+        },
+        {
+         "label": "2027-07-05 · Rath Yatra · published · om_document_read",
+         "value": "rath_yatra:2027"
+        },
+        {
+         "label": "2027-08-15 · Independence Day · published · om_document_read",
+         "value": "independence_day:2027"
+        },
+        {
+         "label": "2027-08-15 · Milad-un-Nabi (Id-e-Milad) · published · om_document_read",
+         "value": "milad_un_nabi:2027"
+        },
+        {
+         "label": "2027-08-17 · Raksha Bandhan · published · om_document_read",
+         "value": "raksha_bandhan:2027"
+        },
+        {
+         "label": "2027-08-25 · Janmashtami · published · om_document_read",
+         "value": "janmashtami:2027"
+        },
+        {
+         "label": "2027-09-04 · Ganesh Chaturthi · published · om_document_read",
+         "value": "ganesh_chaturthi:2027"
+        },
+        {
+         "label": "2027-09-12 · Onam · published · om_document_read",
+         "value": "onam:2027"
+        },
+        {
+         "label": "2027-10-02 · Gandhi Jayanti · published · om_document_read",
+         "value": "gandhi_jayanti:2027"
+        },
+        {
+         "label": "2027-10-09 · Dussehra (Vijaya Dashami) · published · om_document_read",
+         "value": "dussehra:2027"
+        },
+        {
+         "label": "2027-10-18 · Karva Chauth · published · om_document_read",
+         "value": "karva_chauth:2027"
+        },
+        {
+         "label": "2027-10-29 · Diwali (Deepavali) · published · om_document_read",
+         "value": "diwali:2027"
+        },
+        {
+         "label": "2027-10-30 · Govardhan Puja · published · om_document_read",
+         "value": "govardhan_puja:2027"
+        },
+        {
+         "label": "2027-10-31 · Bhai Dooj · published · om_document_read",
+         "value": "bhai_dooj:2027"
+        },
+        {
+         "label": "2027-11-04 · Chhath Puja · published · om_document_read",
+         "value": "chhath_puja:2027"
+        },
+        {
+         "label": "2027-11-14 · Guru Nanak Jayanti · published · om_document_read",
+         "value": "guru_nanak_jayanti:2027"
+        },
+        {
+         "label": "2027-12-25 · Christmas · published · om_document_read",
+         "value": "christmas:2027"
+        }
+       ]
+      },
+      {
+       "id": "start",
+       "component": "DateTimeInput",
+       "label": "Correct date (for Correct date)",
+       "mode": "date",
+       "value": {
+        "path": "/draft/start"
+       }
+      },
+      {
+       "id": "note",
+       "component": "TextField",
+       "label": "Note",
+       "maxLength": 300,
+       "value": {
+        "path": "/draft/note"
+       }
+      },
+      {
+       "id": "safety",
+       "component": "Text",
+       "text": "A corrected or restored date never runs before you confirm it in the schedule.",
+       "variant": "caption"
+      },
+      {
+       "id": "set_date",
+       "component": "Button",
+       "label": "Correct date",
+       "variant": "primary",
+       "action": {
+        "event": {
+         "name": "calendar.correct_record",
+         "context": {
+          "record": {
+           "path": "/draft/record"
+          },
+          "start": {
+           "path": "/draft/start"
+          },
+          "note": {
+           "path": "/draft/note"
+          },
+          "correction": "set_date"
+         }
+        }
+       }
+      },
+      {
+       "id": "dispute",
+       "component": "Button",
+       "label": "Mark disputed",
+       "variant": "danger",
+       "action": {
+        "event": {
+         "name": "calendar.correct_record",
+         "context": {
+          "record": {
+           "path": "/draft/record"
+          },
+          "note": {
+           "path": "/draft/note"
+          },
+          "correction": "dispute"
+         }
+        }
+       }
+      },
+      {
+       "id": "accept",
+       "component": "Button",
+       "label": "Accept",
+       "variant": "secondary",
+       "action": {
+        "event": {
+         "name": "calendar.correct_record",
+         "context": {
+          "record": {
+           "path": "/draft/record"
+          },
+          "note": {
+           "path": "/draft/note"
+          },
+          "correction": "accept"
+         }
+        }
+       }
+      },
+      {
+       "id": "buttons",
+       "component": "Row",
+       "children": [
+        "set_date",
+        "dispute",
+        "accept"
+       ],
+       "gap": "small"
+      }
+     ]
+    }
+   },
+   {
+    "version": "v0.9",
+    "updateDataModel": {
+     "surfaceId": "calendar-review",
+     "path": "/",
+     "value": {
+      "draft": {
+       "record": "dasain_sikkim:2026",
+       "start": "",
+       "note": ""
+      },
+      "bound": {
+       "calendar_version": "2026-10-09.verified",
+       "surface": {
+        "digest": "e033ac136489cf26916626ab435b404cd4724a1a5b21f7c5f7f1b23c95af5248",
+        "revision": 1,
+        "kind": "calendar_review",
+        "title": "Festival calendar"
+       }
+      }
+     }
+    }
+   }
+  ]
+ }
+}

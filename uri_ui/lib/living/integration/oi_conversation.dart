@@ -125,6 +125,12 @@ class OiConversation extends ChangeNotifier {
   Map<String, dynamic> brainHealth = const {};
 
   final List<OiMessage> messages = [];
+
+  final _a2uiHandoffs = StreamController<Map<String, dynamic>>.broadcast();
+
+  /// `a2ui.handoff` events (A2UI slice): an interpreted request for a domain
+  /// authority to propose a surface. Carries no authority itself.
+  Stream<Map<String, dynamic>> get a2uiHandoffs => _a2uiHandoffs.stream;
   final Map<String, OiMessage> _byTurn = {};
 
   /// Events for a turn id this model has not registered yet (defensive: the
@@ -582,6 +588,9 @@ class OiConversation extends ChangeNotifier {
         }
         // Memory may have changed after an approved action: re-read it (deterministic).
         if (m?.coreCode == 'SETTLED_VERIFIED') unawaited(refreshMemory());
+      case 'a2ui.handoff':
+        _a2uiHandoffs.add(Map<String, dynamic>.of(data));
+        return;
       default:
         return; // unknown types are ignored (contract rule)
     }
@@ -592,6 +601,7 @@ class OiConversation extends ChangeNotifier {
   void dispose() {
     _monitor?.cancel();
     _sub.cancel();
+    _a2uiHandoffs.close();
     super.dispose();
   }
 }
