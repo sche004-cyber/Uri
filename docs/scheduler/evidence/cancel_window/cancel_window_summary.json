@@ -1,0 +1,24 @@
+{
+ "python": {
+  "runs": 30,
+  "effects_before_kill": 0,
+  "end_reasons": [
+   "cancelled_killed"
+  ],
+  "spawn_to_end_ms_median": 1.4,
+  "spawn_to_end_ms_max": 2.1,
+  "control_runs": 3,
+  "control_effects": 3
+ },
+ "batch": {
+  "runs": 30,
+  "effects_before_kill": 0,
+  "end_reasons": [
+   "cancelled_killed"
+  ],
+  "spawn_to_end_ms_median": 1.5,
+  "spawn_to_end_ms_max": 3.6,
+  "control_runs": 3,
+  "control_effects": 3
+ }
+}

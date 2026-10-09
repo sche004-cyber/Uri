@@ -113,6 +113,7 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                "tests/scheduler/test_renderer_gif.py",
                "tests/scheduler/test_service_process.py",
                "tests/scheduler/test_supervised.py",
+               "tests/scheduler/test_task_ctl.py",
                "tests/scheduler/test_timespec_calendar.py",
                "uri_scheduler/__init__.py",
                "uri_scheduler/calendar_store.py",
