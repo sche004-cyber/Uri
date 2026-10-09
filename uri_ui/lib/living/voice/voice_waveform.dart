@@ -2,11 +2,11 @@ import 'dart:math' as math;
 import 'dart:ui' as ui show FragmentProgram, FragmentShader;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../theme/uri_theme.dart';
 import '../companion/effects_settings.dart';
+import '../companion/frame_clock.dart';
 
 /// The shared voice waveform: one horizontal oval of soft flowing bands.
 ///
@@ -149,19 +149,11 @@ class VoiceWaveform extends StatefulWidget {
 }
 
 class _VoiceWaveformState extends State<VoiceWaveform>
-    with SingleTickerProviderStateMixin {
-  late final Ticker _ticker;
+    with SingleTickerProviderStateMixin, CompanionFrameDriver {
   double _seconds = 0;
   double _level = 0;
   double _flux = 0;
-  Duration _last = Duration.zero;
   bool _reduced = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _ticker = createTicker(_tick)..start();
-  }
 
   @override
   void didChangeDependencies() {
@@ -169,12 +161,13 @@ class _VoiceWaveformState extends State<VoiceWaveform>
     _reduced = EffectsSettings.of(context).reducedMotion;
   }
 
-  void _tick(Duration elapsed) {
-    final dt = (elapsed - _last).inMicroseconds / 1e6;
-    _last = elapsed;
+  // Runs on the same clock as the companion, so a frame-rate cap applies to
+  // both and their frames coincide.
+  @override
+  void onCompanionFrame(double seconds, double dt) {
     final reduced = _reduced;
     setState(() {
-      _seconds = elapsed.inMicroseconds / 1e6;
+      _seconds = seconds;
       _level = voiceGlide(_level, widget.level.value, dt, reduced: reduced);
       _flux = voiceGlide(
         _flux,
@@ -183,12 +176,6 @@ class _VoiceWaveformState extends State<VoiceWaveform>
         reduced: reduced,
       );
     });
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
   }
 
   @override

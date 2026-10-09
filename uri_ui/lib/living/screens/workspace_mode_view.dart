@@ -11,8 +11,6 @@ import '../../services/uri_client.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
 import '../companion/companion_state.dart';
-import '../companion/energy_orb.dart'
-    show OrbPalette, OrbPaletteData, OrbVariant, OrbVariantLabel;
 import '../contracts/readiness_report.dart';
 import '../contracts/work_items.dart';
 import '../living_app.dart';
@@ -22,6 +20,7 @@ import '../widgets/glass_panel.dart';
 import '../widgets/living_composer.dart';
 import '../widgets/status_badge.dart';
 import 'intelligence/intelligence_overview_view.dart';
+import 'settings/companion_settings_section.dart';
 
 /// Workspace: rail (the orb docks at its top) | focus region | context
 /// panel. Progressive disclosure: the context panel is open only on
@@ -837,6 +836,9 @@ class _TemplateTile extends StatelessWidget {
 // Settings (executor, Brain, reasoning, permissions, appearance)
 // ---------------------------------------------------------------------------
 
+/// Executor, Brain, reasoning and approvals; then the companion, its
+/// appearance, performance and voice ([CompanionSettingsSection]), which also
+/// carries the classic orb's free theme choice ([LivingThemeController]).
 class WorkspaceSettingsRegion extends StatefulWidget {
   const WorkspaceSettingsRegion({super.key});
 
@@ -862,7 +864,6 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
     final services = LivingScope.of(context);
     final appState = AppStateScope.of(context);
     final c = UriColors.of(context);
-    final themeCtl = LivingThemeController.maybeOf(context);
     return ListenableBuilder(
       listenable: Listenable.merge([
         services.readiness,
@@ -970,112 +971,9 @@ class _WorkspaceSettingsRegionState extends State<WorkspaceSettingsRegion> {
             for (final p in services.readiness.permissions)
               PermissionRow(fact: p),
             const SizedBox(height: UriSpace.lg),
-            const Eyebrow('Orb style'),
-            const SizedBox(height: 8),
-            ListenableBuilder(
-              listenable: services.orbVariant,
-              builder: (context, _) => Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final v in OrbVariant.values)
-                    ChoiceChip(
-                      key: ValueKey('orb-variant-${v.name}'),
-                      label: Text(v.label),
-                      selected: services.orbVariant.value == v,
-                      onSelected: (_) => services.orbVariant.value = v,
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: UriSpace.md),
-            const Eyebrow('Orb palette'),
-            const SizedBox(height: 8),
-            ListenableBuilder(
-              listenable: Listenable.merge([
-                services.orbPalette,
-                services.orbVariant,
-              ]),
-              builder: (context, _) => Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ChoiceChip(
-                    key: const ValueKey('orb-palette-default'),
-                    label: const Text('Style default'),
-                    selected: services.orbPalette.value == null,
-                    onSelected: (_) => services.orbPalette.value = null,
-                  ),
-                  for (final p in OrbPalette.values)
-                    ChoiceChip(
-                      key: ValueKey('orb-palette-${p.name}'),
-                      avatar: SizedBox(
-                        width: 18,
-                        height: 10,
-                        child: Row(
-                          children: [
-                            for (final h in p.hues.take(3))
-                              Expanded(child: ColoredBox(color: h)),
-                          ],
-                        ),
-                      ),
-                      label: Text(p.label),
-                      selected: services.orbPalette.value == p,
-                      onSelected: (_) => services.orbPalette.value = p,
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: UriSpace.lg),
-            const Eyebrow('Appearance'),
-            const SizedBox(height: 8),
-            if (themeCtl != null)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final t in UriThemeChoice.values)
-                    if (t != UriThemeChoice.system)
-                      ChoiceChip(
-                        avatar: CircleAvatar(
-                          backgroundColor: t.swatch,
-                          radius: 6,
-                        ),
-                        label: Text(t.label),
-                        selected: themeCtl.current == t,
-                        onSelected: (_) => themeCtl.setTheme(t),
-                      ),
-                ],
-              ),
-            SwitchListTile(
-              key: const ValueKey('reduced-effects-switch'),
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'Reduced visual effects',
-                style: TextStyle(fontSize: 13, color: c.ink),
-              ),
-              subtitle: Text(
-                'No shader, blur or glow. Every state stays readable.',
-                style: TextStyle(fontSize: 12, color: c.inkFaint),
-              ),
-              value: services.effects.reducedEffects,
-              onChanged: (v) => services.effects.setReducedEffects(v),
-            ),
-            SwitchListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'Reduced motion',
-                style: TextStyle(fontSize: 13, color: c.ink),
-              ),
-              subtitle: Text(
-                'The orb holds still; state shows by colour and badge.',
-                style: TextStyle(fontSize: 12, color: c.inkFaint),
-              ),
-              value: services.effects.reducedMotion,
-              onChanged: (v) => services.effects.setReducedMotion(v),
-            ),
+            // Companion, appearance, performance and voice: one section, in
+            // the selected companion's own theme.
+            const CompanionSettingsSection(),
           ],
         );
       },

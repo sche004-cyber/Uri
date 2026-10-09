@@ -7,8 +7,10 @@ import '../../services/attachment_opener_service.dart';
 import '../../services/file_picker_service.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
-import '../companion/energy_orb.dart';
+import '../companion/living_companion.dart';
 import '../living_scope.dart';
+import '../voice/voice_stage.dart';
+import '../widgets/frame_stats_overlay.dart';
 import '../widgets/glass_panel.dart';
 import '../screens/companion_mode_view.dart';
 import '../screens/dashboard_mode_view.dart';
@@ -52,6 +54,37 @@ class OrbDock {
         return OrbDock(
           rect: Rect.fromLTWH(shell.width / 2 - size / 2, 18, size, size),
           lightAt: const Alignment(0, -1),
+        );
+    }
+  }
+}
+
+/// Where the voice exchange (waveform and transcript) sits in each form:
+/// under the companion in Companion mode, beside it when it is docked. It is
+/// placed next to the companion, never over it.
+@immutable
+class VoiceDock {
+  const VoiceDock({required this.rect, required this.compact});
+  final Rect rect;
+  final bool compact;
+
+  static VoiceDock forMode(UiPresentationMode mode, Size shell, Rect orb) {
+    switch (mode) {
+      case UiPresentationMode.companion:
+        final w = (shell.width - 32).clamp(200.0, 520.0);
+        final h = VoiceStage.heightFor(w);
+        return VoiceDock(
+          rect: Rect.fromLTWH((shell.width - w) / 2, orb.bottom + 64, w, h),
+          compact: false,
+        );
+      case UiPresentationMode.workspace:
+      case UiPresentationMode.dashboard:
+        final w = (shell.width * 0.42).clamp(220.0, 380.0);
+        final h = VoiceStage.heightFor(w, compact: true);
+        final left = (orb.right + 12).clamp(8.0, shell.width - w - 8);
+        return VoiceDock(
+          rect: Rect.fromLTWH(left, orb.top, w, h),
+          compact: true,
         );
     }
   }
@@ -109,6 +142,7 @@ class _LivingShellState extends State<LivingShell> {
         services.companion,
         services.orbVariant,
         services.orbPalette,
+        services.companionPrefs,
       ]),
       builder: (context, _) {
         final mode = services.presentation.mode;
@@ -117,6 +151,8 @@ class _LivingShellState extends State<LivingShell> {
           builder: (context, constraints) {
             final shellSize = Size(constraints.maxWidth, constraints.maxHeight);
             final dock = OrbDock.forMode(mode, shellSize);
+            final voiceDock = VoiceDock.forMode(mode, shellSize, dock.rect);
+            final prefs = services.companionPrefs;
             return CallbackShortcuts(
               // Keyboard: Esc -> Companion, Ctrl+1/2/3 -> the three forms.
               bindings: {
@@ -201,7 +237,10 @@ class _LivingShellState extends State<LivingShell> {
                             onDoubleTap: () => services.presentation.setMode(
                               UiPresentationMode.workspace,
                             ),
-                            child: EnergyOrb(
+                            // The user's companion (Companion Settings): a
+                            // living identity, or the classic orb with its
+                            // style and palette.
+                            child: LivingCompanion(
                               key: LivingShell.orbKey,
                               state: signal.state,
                               progress: signal.progress,
@@ -212,12 +251,33 @@ class _LivingShellState extends State<LivingShell> {
                             ),
                           ),
                         ),
+                        // The voice exchange, beside the companion.
+                        AnimatedPositioned.fromRect(
+                          duration: UriMotion.mode,
+                          curve: UriMotion.move,
+                          rect: voiceDock.rect,
+                          child: IgnorePointer(
+                            child: VoiceStage(
+                              key: const ValueKey('shell-voice-stage'),
+                              voice: services.voice,
+                              compact: voiceDock.compact,
+                            ),
+                          ),
+                        ),
                         _QuestionBubble(
                           text: _bubbleText,
                           orbRect: dock.rect,
                           shellSize: shellSize,
                         ),
                         _CommandNotice(services: services),
+                        if (prefs.statsOverlay)
+                          Positioned(
+                            right: 10,
+                            bottom: 10,
+                            child: FrameStatsOverlay(
+                              governor: services.frameGovernor,
+                            ),
+                          ),
                       ],
                     ),
                   ),

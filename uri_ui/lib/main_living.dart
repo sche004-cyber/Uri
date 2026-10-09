@@ -36,6 +36,7 @@ import 'services/app_state.dart';
 import 'services/mock_uri_client.dart';
 import 'services/platform_attachment_opener.dart';
 import 'services/platform_file_picker.dart';
+import 'services/windows_voice_catalog.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +49,8 @@ Future<void> main() async {
     preferencesStore: LivingPreferencesStore(),
   );
   final services = LivingApp.buildDefaultServices(appState);
+  // Installed voices and previews for Companion Settings (Windows engines).
+  if (Platform.isWindows) services.voiceCatalog = WindowsVoiceCatalog();
 
   final mode = UiPresentationMode.values
       .where((m) => m.name == env['URI_LIVING_START_MODE'])

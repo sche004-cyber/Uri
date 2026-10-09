@@ -310,14 +310,23 @@ VoiceSession reduceVoice(VoiceSession s, VoiceSignal e) {
 /// cannot leave a frozen waveform on screen.
 class VoiceSessionController extends ChangeNotifier {
   VoiceSessionController({
-    this.simulated = false,
+    bool simulated = false,
     this.speechStaleAfter = const Duration(seconds: 4),
     this.listenStaleAfter = const Duration(seconds: 15),
-  });
+  }) : _simulated = simulated; // ignore: prefer_initializing_formals
 
   /// True when the events come from a fixture or script, never a live device.
-  /// Every surface that shows a simulated session must say so.
-  final bool simulated;
+  /// Every surface that shows a simulated session must say so. Set by the
+  /// [VoiceServiceBinding] from its adapter, so it always describes the
+  /// source that is actually feeding the session.
+  bool get simulated => _simulated;
+  bool _simulated;
+  set simulated(bool v) {
+    if (v == _simulated) return;
+    _simulated = v;
+    notifyListeners();
+  }
+
   final Duration speechStaleAfter;
   final Duration listenStaleAfter;
 

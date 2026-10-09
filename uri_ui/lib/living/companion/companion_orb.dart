@@ -1,11 +1,12 @@
 import 'dart:math' as math;
-import 'dart:ui' as ui show FragmentProgram, FragmentShader;
+import 'dart:ui' as ui show FragmentProgram, FragmentShader, PictureRecorder;
 
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
+import 'companion_preferences.dart' show CompanionLook;
 import 'companion_state.dart';
 import 'effects_settings.dart';
+import 'frame_clock.dart';
 
 /// Which living companion is active.
 ///
@@ -351,6 +352,7 @@ class CompanionOrbFrame extends StatefulWidget {
     required this.seconds,
     this.radius,
     this.fallback,
+    this.renderScale = 1,
   });
 
   final CompanionIdentity identity;
@@ -359,6 +361,10 @@ class CompanionOrbFrame extends StatefulWidget {
 
   /// Defaults to the identity's own body radius.
   final double? radius;
+
+  /// Fraction of the covered pixels the shader is evaluated at (see
+  /// [CompanionOrbPainter.renderScale]).
+  final double renderScale;
 
   /// Drawn instead of the shader when the program is unavailable.
   final Widget? fallback;
@@ -421,6 +427,8 @@ class _CompanionOrbFrameState extends State<CompanionOrbFrame> {
         seconds: widget.seconds,
         params: widget.params,
         radius: widget.radius ?? widget.identity.bodyRadius,
+        renderScale: widget.renderScale,
+        devicePixelRatio: MediaQuery.maybeDevicePixelRatioOf(context) ?? 1,
       ),
     );
   }
@@ -437,11 +445,21 @@ class CompanionOrb extends StatefulWidget {
     this.transition = const Duration(milliseconds: 900),
     this.fallback,
     this.attention = false,
+    this.look = CompanionLook.standard,
+    this.renderScale = 1,
   });
 
   final CompanionIdentity identity;
   final CompanionState state;
   final double? radius;
+
+  /// The user's appearance preferences for this companion. Applied on top of
+  /// the state's own parameters; the motion setting scales the companion's
+  /// own time, so changing it never jumps the animation.
+  final CompanionLook look;
+
+  /// See [CompanionOrbPainter.renderScale].
+  final double renderScale;
 
   /// Adds the gentle attention pulse (see [CompanionParams.withAttention]).
   /// Used for `awaitingApproval`. Faded in and out, never switched.
@@ -457,16 +475,13 @@ class CompanionOrb extends StatefulWidget {
 }
 
 class _CompanionOrbState extends State<CompanionOrb>
-    with SingleTickerProviderStateMixin {
-  late final Ticker _ticker;
-
+    with SingleTickerProviderStateMixin, CompanionFrameDriver {
   double _seconds = 0;
   late CompanionParams _current;
   late CompanionParams _from;
   late CompanionParams _target;
   double _blend = 1;
   double _attention = 0;
-  Duration _lastTick = Duration.zero;
 
   @override
   void initState() {
@@ -475,7 +490,6 @@ class _CompanionOrbState extends State<CompanionOrb>
       widget.identity,
       widget.state,
     );
-    _ticker = createTicker(_onTick)..start();
   }
 
   @override
@@ -488,14 +502,33 @@ class _CompanionOrbState extends State<CompanionOrb>
       _target = CompanionParams.of(widget.identity, widget.state);
       _blend = 0;
     }
+    resumeFrames();
   }
 
-  void _onTick(Duration elapsed) {
-    final dt = (elapsed - _lastTick).inMicroseconds / 1e6;
-    _lastTick = elapsed;
+  bool _reducedMotion = false;
+
+  @override
+  void didChangeDependencies() {
+    _reducedMotion = EffectsSettings.of(context).reducedMotion;
+    super.didChangeDependencies();
+  }
+
+  /// Under reduced motion the companion is a still image once its blend and
+  /// attention have settled, so it stops asking for frames.
+  @override
+  bool get wantsFrames {
+    if (!_reducedMotion) return true;
+    final goal = widget.attention ? 1.0 : 0.0;
+    return _blend < 1 || (goal - _attention).abs() > 0.01;
+  }
+
+  @override
+  void onCompanionFrame(double seconds, double dt) {
     final transition = widget.transition.inMicroseconds / 1e6;
     setState(() {
-      _seconds = elapsed.inMicroseconds / 1e6;
+      // The companion's own time: integrated, so a change of the motion
+      // preference changes the speed from here on instead of jumping.
+      _seconds += dt * widget.look.motion;
       if (_blend < 1) {
         // Advance by real elapsed time rather than an assumed 1/60, so the
         // transition lasts the same wall-clock duration at any frame rate.
@@ -507,13 +540,8 @@ class _CompanionOrbState extends State<CompanionOrb>
       // mid-cycle at full strength.
       final goal = widget.attention ? 1.0 : 0.0;
       _attention += (goal - _attention) * (1 - math.exp(-dt / 0.35));
+      if ((goal - _attention).abs() <= 0.01) _attention = goal;
     });
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
   }
 
   @override
@@ -531,15 +559,17 @@ class _CompanionOrbState extends State<CompanionOrb>
     final wave = effects.reducedMotion
         ? 0.5
         : CompanionParams.attentionWave(_seconds);
+    final base = widget.look.apply(_current);
     final params = _attention > 0.001
-        ? _current.withAttention(wave * _attention)
-        : _current;
+        ? base.withAttention(wave * _attention)
+        : base;
     return CompanionOrbFrame(
       identity: widget.identity,
       params: params,
       seconds: seconds,
       radius: widget.radius,
       fallback: widget.fallback,
+      renderScale: widget.renderScale,
     );
   }
 }
@@ -550,12 +580,22 @@ class CompanionOrbPainter extends CustomPainter {
     required this.seconds,
     required this.params,
     required this.radius,
+    this.renderScale = 1,
+    this.devicePixelRatio = 1,
   });
 
   final ui.FragmentShader shader;
   final double seconds;
   final CompanionParams params;
   final double radius;
+
+  /// Below 1 the shader is evaluated into an offscreen image of
+  /// `renderScale` times the covered device pixels and drawn back scaled up
+  /// with bilinear filtering. Fragment work falls with the pixel count (0.5
+  /// computes a quarter of the pixels); the companions are soft-edged light,
+  /// so the loss is mostly in the finest embers and petal edges.
+  final double renderScale;
+  final double devicePixelRatio;
 
   /// The uniform vector, in the order the generated `.frag` headers declare.
   ///
@@ -580,9 +620,17 @@ class CompanionOrbPainter extends CustomPainter {
     params.exposure,
   ];
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (size.isEmpty) return;
+  /// The offscreen size for [renderScale], or null when drawing directly.
+  static Size? offscreenSize(Size size, double renderScale, double dpr) {
+    if (renderScale >= 0.999) return null;
+    final s = renderScale * dpr;
+    return Size(
+      math.max(1, (size.width * s).roundToDouble()),
+      math.max(1, (size.height * s).roundToDouble()),
+    );
+  }
+
+  void _setUniforms(Size size) {
     final values = uniformsFor(
       size: size,
       seconds: seconds,
@@ -592,7 +640,31 @@ class CompanionOrbPainter extends CustomPainter {
     for (var i = 0; i < values.length; i++) {
       shader.setFloat(i, values[i]);
     }
-    canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final low = offscreenSize(size, renderScale, devicePixelRatio);
+    if (low == null) {
+      _setUniforms(size);
+      canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
+      return;
+    }
+    _setUniforms(low);
+    final recorder = ui.PictureRecorder();
+    Canvas(recorder).drawRect(Offset.zero & low, Paint()..shader = shader);
+    final picture = recorder.endRecording();
+    final image = picture.toImageSync(low.width.toInt(), low.height.toInt());
+    picture.dispose();
+    canvas.drawImageRect(
+      image,
+      Offset.zero & low,
+      Offset.zero & size,
+      Paint()..filterQuality = FilterQuality.medium,
+    );
+    // The display list holds its own reference; this releases ours.
+    image.dispose();
   }
 
   @override
@@ -600,5 +672,7 @@ class CompanionOrbPainter extends CustomPainter {
       old.seconds != seconds ||
       old.radius != radius ||
       old.params != params ||
+      old.renderScale != renderScale ||
+      old.devicePixelRatio != devicePixelRatio ||
       !identical(old.shader, shader);
 }
