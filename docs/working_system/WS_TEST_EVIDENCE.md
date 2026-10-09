@@ -90,9 +90,10 @@ final `ws_brain_host.py`.
 | Gate | Tree / commit | Result |
 |---|---|---|
 | Frozen check (`scripts/ws_frozen_check.py`) | worktree, final tip | see receipt §7 |
-| Flutter full suite | `1401aba` (content = `9ae28f4`) | **313 passed, 3 skipped** |
-| OI + WS Python | `1401aba` | **226 passed, 20 skipped** |
-| `tests/ws/test_ws_hardening.py` | `1401aba` | 44 passed |
+| Flutter full suite | `1401aba` (content = `9ae28f4`) | 313 passed, 3 skipped (session-reported; output not committed) |
+| OI + WS Python | `1401aba` | 226 passed, 20 skipped (session-reported; output not committed) |
+| WS Python (`test_ws_hardening`, `test_ws_worker_bridge`, `test_ws_cloud_and_composition`) | final docs commit (code = `1401aba`) | **65 passed** (`hardening/evidence/pytest_ws_final.txt`) |
+| Flutter `test/ws` | same | **36 passed** (`hardening/evidence/flutter_test_ws_final.txt`) |
 | Chain: phase2 | gate tree `uri-ws-gate3` from `2083724` | **486 passed / 0 failed / 2 skipped** (PASS) |
 | Chain: authority | same | **134 passed / 0 failed** (PASS) |
 | Chain: phase1-scope | same | PASS (outside Phase 2 scope = ∅; importers of Phase 2 = ∅; 98 frozen files byte-identical) |

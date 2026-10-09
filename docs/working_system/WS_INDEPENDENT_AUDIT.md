@@ -37,6 +37,9 @@ After round 10: `1401aba` restored LF line endings on five files that text-mode 
 - `tests/phase2a/test_frozen_core.py` and `scripts/phase2close_chain.py` change only by enumerated exact paths
   (owner decision WS-D3).
 
-## 2. Later rounds
+## 2. Final documentation round
 
-(Filled in after the live validation; see the change log of `WS_HARDENING_PLAN.md`.)
+| Round | Candidate | Verdict | Findings | Disposition |
+|---|---|---|---|---|
+| docs-1 | `1b424a2` | REJECT (documentation evidence only; the round-10 code verdict unchanged; `9ae28f4..1401aba` content-empty diff and docs-only changes after `1401aba` verified) | MEDIUM receipt §7.4 placeholder; MEDIUM this §2 placeholder; MEDIUM final suite counts without committed output; MEDIUM SAFE-1 OS events without receipt | Repaired: remote confirmation recorded (§7.4 of the receipt); this table; `pytest_ws_final.txt` (65 passed) and `flutter_test_ws_final.txt` (36 passed) committed, full-suite counts labelled session-reported; `safe1_os_events_20261009.txt` committed |
+| docs-2 | see the commit after the repair | see below | | |
