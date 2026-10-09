@@ -760,7 +760,7 @@ void main() {
           .where((c) => c['cmd'] == 'speak')
           .map((c) => '${c['text']}')
           .toList();
-      expect(speaks.first.length, lessThanOrEqualTo(41));
+      expect(speaks.first.length, lessThanOrEqualTo(40));
       expect(speaks.first, endsWith('…'));
       expect(speaks[1], 'The rest of the answer is on screen.');
       expect(speaks.join(' '), isNot(contains('Next.')));
@@ -937,6 +937,15 @@ void main() {
       ctl.cancel();
       ctl.dispose();
     });
+  });
+
+  test('R3-3: clipped text never exceeds the cap, with or without spaces', () {
+    final long = 'x' * 700;
+    expect(clipToWords(long, 600).length, 600);
+    expect(clipToWords(long, 600), endsWith('…'));
+    final words = List.filled(200, 'word').join(' ');
+    expect(clipToWords(words, 600).length, lessThanOrEqualTo(600));
+    expect(clipToWords('short', 600), 'short');
   });
 
   test('bold labels do not gain a stray full stop', () {

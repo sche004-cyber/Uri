@@ -417,7 +417,11 @@ class Speaker:
         self.engine_script = engine_script
         self.tmp = Path(tempfile.mkdtemp(prefix="uri_voice_"))
         self.ps = None
-        self.ps_lock = threading.Lock()
+        self.ps_lock = threading.Lock()  # pairs one request with its answer
+        # Creation and shutdown of the engine bridge: a bridge is never created
+        # after close() began, and close() ends whichever bridge exists.
+        self.bridge_lock = threading.Lock()
+        self.closing = False
         self.gen = 0
         self.lock = threading.Lock()
         self.render_q: queue.Queue = queue.Queue()
@@ -434,7 +438,9 @@ class Speaker:
 
     # -- engine bridge
     def _ensure_ps(self):
-        with self.ps_lock:
+        with self.bridge_lock:
+            if self.closing:
+                raise RuntimeError("voice service is shutting down")
             if self.ps is not None and self.ps.poll() is None:
                 return self.ps
             env = {**os.environ, "URI_VOICE_VERB": "serve"}
@@ -626,11 +632,17 @@ class Speaker:
             if n < frames:
                 raise sd.CallbackStop
 
+        stream = None
         try:
             stream = sd.OutputStream(samplerate=sr, channels=1, dtype="float32", blocksize=block, callback=cb,
                                      finished_callback=done.set)
             stream.start()
         except Exception as e:  # noqa: BLE001
+            if stream is not None:
+                try:
+                    stream.close()
+                except Exception:  # noqa: BLE001
+                    pass
             emit("speak.error", id=uid, code="PLAYBACK_FAILED", message=f"cannot open the speakers: {e}")
             emit("speak.ended", id=uid, reason="failed")
             self._finish(uid)
@@ -666,7 +678,9 @@ class Speaker:
     def close(self):
         self.stop("stopped")
         # Not under ps_lock: a render may hold it while the engine is busy.
-        ps = self.ps
+        with self.bridge_lock:
+            self.closing = True
+            ps = self.ps
         if ps is not None and ps.poll() is None:
             try:
                 ps.stdin.write(b"\n")

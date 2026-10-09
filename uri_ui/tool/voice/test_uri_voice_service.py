@@ -581,3 +581,67 @@ def test_r2_3_a_hung_engine_is_ended_not_waited_for(env, monkeypatch, tmp_path):
         sp._render("hello", {}, tmp_path / "x.wav")
     assert time.time() - t < 2
     assert hung.killed and sp.ps is None
+
+
+def test_r3_1_a_stream_that_fails_to_start_is_closed(env, tmp_path):
+    sp = make_speaker(env, tmp_path, wav_render(0.2))
+    built = []
+
+    class NoStart:
+        def __init__(self, **kw):
+            self.closed = False
+            built.append(self)
+
+        def start(self):
+            raise RuntimeError("device busy")
+
+        def close(self):
+            self.closed = True
+
+    env.sd.OutputStream = NoStart
+    sp.speak("u1", "hello", {}, True)
+    assert wait_for(env.events, "speak.ended")["reason"] == "failed"
+    assert built and built[0].closed
+    assert not any(e["ev"] == "speak.started" for e in env.events)
+
+
+def test_r3_2_no_engine_bridge_after_close_and_close_ends_a_busy_one(env, tmp_path):
+    mod = env.mod
+    sp = mod.Speaker.__new__(mod.Speaker)
+    sp.svc = env.svc
+    sp.tmp = tmp_path
+    sp.gen = 0
+    sp.lock = threading.Lock()
+    sp.ps_lock = threading.Lock()
+    sp.bridge_lock = threading.Lock()
+    sp.closing = False
+    sp.render_q, sp.play_q = mod.queue.Queue(), mod.queue.Queue()
+    sp.stop_flag = threading.Event()
+    sp.current = None
+    sp.started_ids = set()
+    sp.failed = set()
+
+    class Busy:
+        def __init__(self):
+            self.killed = False
+            self.stdin = io.BytesIO()
+
+        def poll(self):
+            return 1 if self.killed else None
+
+        def wait(self, t):
+            time.sleep(min(t, 0.1))
+
+        def kill(self):
+            self.killed = True
+
+    busy = Busy()
+    sp.ps = busy
+    sp.ps_lock.acquire()  # a render is waiting on the engine
+    try:
+        sp.close()
+    finally:
+        sp.ps_lock.release()
+    assert busy.killed
+    with pytest.raises(RuntimeError, match="shutting down"):
+        sp._ensure_ps()

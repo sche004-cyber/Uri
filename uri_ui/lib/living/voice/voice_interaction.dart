@@ -589,8 +589,9 @@ String speakableText(String md) {
 /// ellipsis when anything was cut.
 String clipToWords(String text, int max) {
   if (text.length <= max) return text;
-  final cut = text.lastIndexOf(' ', max);
-  return '${text.substring(0, cut > 0 ? cut : max).trimRight()}…';
+  final room = max - 1; // the ellipsis takes one character
+  final cut = text.lastIndexOf(' ', room);
+  return '${text.substring(0, cut > 0 ? cut : room).trimRight()}…';
 }
 
 /// Sentences of [text] after character [from] that are complete: followed
