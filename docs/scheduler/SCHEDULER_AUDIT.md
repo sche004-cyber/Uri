@@ -9,7 +9,7 @@ bridge (owner rule: audits run on Codex). Review clone: `C:\Users\cheta\Developm
 | # | Codex severity | finding | Claude verification | disposition |
 |---|---|---|---|---|
 | 1 | Blocking | API token authenticates the caller, but the caller names its own `principal` | confirmed (`service.py` read `principal` from the body) | **repaired**: one principal per service (`--owner`); mismatch → 403 `PRINCIPAL_MISMATCH`; reads filtered by owner; test added |
-| 2 | Blocking | Claude gets Read/Edit/Write with no enforced filesystem boundary | partly confirmed. Claude Code docs: `dontAsk` denies every un-approved Edit/Write and anything outside the working directory — which also means the accepted profile could not write its output at all | **repaired + limitation**: `--allowedTools Edit(./**) Write(./**)` scoped to the per-attempt workspace; boundary = Claude Code permission engine, not an OS sandbox; not yet verified live; owner acceptance requested |
+| 2 | Blocking | Claude gets Read/Edit/Write with no enforced filesystem boundary | partly confirmed. Claude Code docs: `dontAsk` denies every un-approved Edit/Write and anything outside the working directory — which also means the accepted profile could not write its output at all | **repaired + limitation** (historical; superseded by R2-4: only `Edit(./**)` is passed): `--allowedTools Edit(./**) Write(./**)` scoped to the per-attempt workspace; boundary = Claude Code permission engine, not an OS sandbox; not yet verified live; owner acceptance requested |
 | 3 | Blocking | restart requeues every interrupted occurrence even if the work had finished | confirmed | repaired in `04e9eaa` (reconcile artifact rows and the supervisor ledger first); round 2 found a remaining crash window, closed in round-2 repairs |
 | 4 | High | calendar refresh / later years schedule dates the owner never saw | confirmed (proposal preview is 400 days) | **repaired**: only shown dates are confirmed; others `AWAITING_CONFIRMATION` until the owner confirms; tests + UI *Confirm date* |
 | 5 | High | exceptions in package/execution leave the occurrence `RUNNING` | confirmed | **repaired**: every claimed occurrence is settled (`_execute_settled`); params validated at proposal; test |
@@ -32,6 +32,17 @@ states it alone does not block acceptance as a development candidate, only claim
 | R2-3 | Medium | docs overstated "duplicates impossible" | confirmed | **repaired**: architecture/ledger state the exact scope of the guarantee (re-run only when the ledger proves no start or no effect; otherwise owner) |
 | R2-4 | Medium | `Write(./**)` is not consulted; `Edit(./**)` is the operative rule | confirmed against the Claude Code permissions documentation | **repaired**: only `--allowedTools Edit(./**)` is passed; docs explain it; limitation retained (permission engine, not OS sandbox; not observed live) |
 
-## Round 3
+## Round 3 — candidate `02938ca` — **REJECT**
+
+Codex: R2-1 RESOLVED, R2-4 RESOLVED (live enforcement unverified; owner-acceptance limitation), R2-2/R2-3 PARTIAL because of
+R3-1/R3-2. F10 and the F2 limitation confirmed as owner-gated items, not reasons for rejecting a development candidate.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R3-1 | High | a COMPLETE supervisor task whose output is missing/invalid goes to `_retry_or_fail` and re-runs Claude, contradicting the no-rerun claim | confirmed; this is intended behaviour (nothing usable exists), but it was undocumented and the docs claimed no rerun | **repaired (documented as a distinct authorized retry)**: "Content retry" defined in the architecture (policy budget, backoff), receipts carry `content_retry: true`, ledger and duplicate-guarantee text updated |
+| R3-2 | High | an exception after the artifact insert (e.g. in `_finish`) sends the attempt to collection again, creating a second version of the same work | confirmed | **repaired**: `_settle_recorded_artifact` files the attempt's existing artifact for review in `_post_harness_failure` and at the start of `_resume_collection`; test `test_r3_failure_after_artifact_insert_does_not_duplicate` |
+| R3-3 | Low | audit row 2 still shows `Edit(./**) Write(./**)` | confirmed | **repaired**: row labelled historical, pointing to R2-4 |
+
+## Round 4
 
 (appended after the review runs)

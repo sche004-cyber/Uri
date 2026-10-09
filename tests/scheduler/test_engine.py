@@ -531,3 +531,22 @@ def test_r2_render_failure_after_harness_retries_collection_only(env, monkeypatc
     clock.add(301)
     r = s.tick()[0]
     assert r["result"] == "AWAITING_REVIEW" and len(h.calls) == 1      # collected again; harness NOT re-run
+
+
+def test_r3_failure_after_artifact_insert_does_not_duplicate(env, monkeypatch):
+    s, h, clock, _ = env
+    h.settlement = lambda tid: {"task_id": tid, "state": "COMPLETE", "spawned": True, "absence_proven": False}
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    real = s._finish
+    calls = {"n": 0}
+
+    def flaky(occ, job, attempt_id, state, reason, receipt, outcome, **cols):
+        calls["n"] += 1
+        if calls["n"] == 1 and state == "AWAITING_REVIEW":
+            raise OSError("disk hiccup after the artifact row was committed")
+        return real(occ, job, attempt_id, state, reason, receipt, outcome, **cols)
+    monkeypatch.setattr(s, "_finish", flaky)
+    r = s.tick()[0]
+    assert r["result"] == "AWAITING_REVIEW" and s.store.q1("SELECT COUNT(*) FROM artifact")[0] == 1
+    assert len(h.calls) == 1 and s.store.q1("SELECT COUNT(*) FROM occurrence WHERE state='RUNNING'")[0] == 0

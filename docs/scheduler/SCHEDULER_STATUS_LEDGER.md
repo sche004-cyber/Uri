@@ -13,7 +13,7 @@ accepted supervisor + synthetic Claude stand-in process), **P** process-level (r
 | Asia/Kolkata default, DST-safe conversion | Qualified | S | `test_once_is_local_wall_time_in_kolkata`, `test_dst_zone_gap_is_normalized` |
 | Persistence across restart | Qualified | S, P | `test_due_run_..._persists_across_restart`, `test_kill_during_run_then_restart_recovers` |
 | Missed-execution detection (run late / skip / deadline → MISSED) | Qualified | S | `test_missed_execution_runs_late_then_deadline_means_missed`, `test_skip_policy` |
-| Duplicate prevention (unique key, CAS claim incl. job state, single instance, deterministic task id; recovery never re-runs finished work, uncertain work goes to the owner) | Qualified | S, W, P | `test_duplicate_scheduler_refused`, `test_duplicate_startup_and_api`, `test_crashing_executor_retries_then_fails`, `test_r1_restart_reconciles_before_rerunning`, `test_r2_*` |
+| Duplicate prevention (unique key, CAS claim incl. job state, single instance, deterministic task id; recovery never re-runs finished work, uncertain work goes to the owner; invalid output triggers a documented content retry under the retry budget) | Qualified | S, W, P | `test_duplicate_scheduler_refused`, `test_duplicate_startup_and_api`, `test_crashing_executor_retries_then_fails`, `test_r1_restart_reconciles_before_rerunning`, `test_r2_*` |
 | Calendar refresh moves/withdraws, never duplicates | Qualified | S | `test_calendar_refresh_moves_not_duplicates` |
 | Pause / resume / cancel / reschedule | Qualified | S, P | `test_cancel_pause_resume_reschedule`; API |
 | Cancel while running (executor killed) | Qualified | W | `test_cancel_while_running_kills_executor` |

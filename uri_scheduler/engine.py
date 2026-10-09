@@ -534,6 +534,9 @@ class Scheduler:
             self.store.emit(db, "occurrence.collection_resumed", job_id=job["job_id"], occ_id=occ_id,
                             payload={"attempt_id": prev["attempt_id"], "harness_rerun": False})
         occ = self.occurrence(occ_id)
+        done = self._settle_recorded_artifact(occ, job, prev["attempt_id"], {"recovered": True})
+        if done is not None:
+            return done
         try:
             return self._complete(occ, job, prev["attempt_id"], prev["workspace"], prev["mode"], prev["kind"],
                                   self._previous_for(occ), {"recovered": True, "stages": {"research_concept_assets_animation":
@@ -707,7 +710,11 @@ class Scheduler:
         try:
             collected = template.collect(workspace)
         except gif_task.TaskError as exc:
+            # The harness finished but its output is unusable (missing/invalid files). Producing new content is a CONTENT
+            # retry under the job's retry budget, not a duplicate of finished work: nothing usable exists to collect
+            # (review round 3, F1; documented in SCHEDULER_ARCHITECTURE.md "Content retry").
             receipt["stages"]["collect"] = str(exc)
+            receipt["content_retry"] = True
             return self._retry_or_fail(occ, job, attempt_id, "OUTPUT_INVALID:" + str(exc), receipt)
         version = (self.store.q1("SELECT COALESCE(MAX(version),0) FROM artifact WHERE occ_id=?", (occ_id,))[0]) + 1
         raw = occ["meta"].get("festival_key") or (job["params"].get("festival") or {}).get("key") or "task"
@@ -725,6 +732,7 @@ class Scheduler:
         receipt["stages"].update({"render": "ok", "gif_conversion": "ok", "validation": "ok" if result["ok"] else "failed"})
         if not result["ok"]:
             receipt["validation"] = result
+            receipt["content_retry"] = True        # rendered output fails the GIF/legibility/size gate: new content needed
             return self._retry_or_fail(occ, job, attempt_id, "VALIDATION_FAILED", receipt)
         shutil.copyfile(workspace / "scene.json", out_dir / f"{name}.scene.json")
         (out_dir / f"{name}.concept.md").write_text(collected["concept"], encoding="utf-8")
@@ -749,9 +757,22 @@ class Scheduler:
         self.notify("review_pending", {"occ_id": occ_id, "artifact_id": art_id})
         return r | {"artifact_id": art_id}
 
+    def _settle_recorded_artifact(self, occ, job, attempt_id, receipt):
+        """If this attempt already recorded its artifact (a failure happened after the insert, e.g. in `_finish`), file
+        that artifact for review instead of collecting again: no second version of the same work (review round 3, F2)."""
+        art = self.store.q1("SELECT artifact_id FROM artifact WHERE attempt_id=?", (attempt_id,))
+        if art is None:
+            return None
+        receipt = dict(receipt, settled_existing_artifact=art[0])
+        r = self._finish(occ, job, attempt_id, "AWAITING_REVIEW", "REVIEW_PENDING", receipt, "COMPLETED", request_json=None)
+        return r | {"artifact_id": art[0]}
+
     def _post_harness_failure(self, occ, job, attempt_id, reason, receipt):
         """A URI-side failure (render, file I/O, recording) after the harness finished: retry COLLECTION from the existing
         workspace with backoff; never start another harness run for finished work (review round 2, F2)."""
+        done = self._settle_recorded_artifact(occ, job, attempt_id, receipt)
+        if done is not None:
+            return done
         pol = job["policy"]
         if occ["attempts"] < pol["max_attempts"]:
             back = pol["retry_backoff_s"][min(max(occ["attempts"], 1) - 1, len(pol["retry_backoff_s"]) - 1)]
