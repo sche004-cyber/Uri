@@ -123,3 +123,18 @@ def test_crashing_executor_retries_then_fails(tmp_path):
         assert len(set(tids)) == 2
     finally:
         s.close()
+
+
+def test_r6_harness_cancel_before_spawn_never_spawns(tmp_path):
+    s, h = make(tmp_path, "honest")
+    try:
+        from uri_scheduler.harness import ClaudeHarness as CH
+        key = "job:1:1"
+        tid = CH.task_id_for(key)
+        h.cancel(tid)                                 # recorded before submission
+        ws = tmp_path / "ws"
+        ws.mkdir()
+        out = h.run(attempt_key=key, principal="owner", workspace=ws, instructions=b"x", gate=h.gate())
+        assert out.status == "cancelled" and h.sup.ledger.task(tid) is None
+    finally:
+        s.close()

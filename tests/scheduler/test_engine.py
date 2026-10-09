@@ -598,3 +598,18 @@ def test_r5_cancel_during_gate_is_not_overwritten_by_blocked(env):
     assert occ["state"] == "CANCELLED" and occ["retry_at_us"] is None
     clock.add(7200)
     assert s.tick() == [] and h.calls == []
+
+
+def test_r6_cancel_during_available_gate_never_runs_harness(env):
+    s, h, clock, _ = env
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    real_gate = h.gate
+
+    def gate_while_owner_cancels():
+        s.cancel_occurrence(s.store.q1("SELECT occ_id FROM occurrence")[0], "owner")
+        return real_gate()                      # gate says AVAILABLE
+    h.gate = gate_while_owner_cancels
+    r = s.tick()[0]
+    assert r["result"] == "CANCELLED" and h.calls == []
+    assert s.store.q1("SELECT COUNT(*) FROM attempt")[0] == 0

@@ -716,6 +716,13 @@ class Scheduler:
             workspace = workspace.with_name(workspace.name + "_" + uuid.uuid4().hex[:6])
         kind = (occ["request"] or {}).get("kind", "generate")
         with self.store.tx() as db:
+            # Cancellation recorded while the gate ran (review round 6, F1): settle it here, before any attempt exists or
+            # any harness work is submitted. After this transaction, cancel_occurrence finds the attempt and withdraws its
+            # supervisor task through harness.cancel (never spawned, or killed).
+            if db.execute("SELECT reason FROM occurrence WHERE occ_id=?", (occ_id,)).fetchone()["reason"] == "CANCEL_REQUESTED":
+                self._set_occ(db, occ_id, "CANCELLED", "CANCELLED_BY_OWNER", lease_owner=None)
+                self.store.emit(db, "occurrence.cancelled_before_start", job_id=job["job_id"], occ_id=occ_id, payload={})
+                return {"occ_id": occ_id, "result": "CANCELLED", "reason": "CANCELLED_BY_OWNER"}
             cur = db.execute("INSERT INTO attempt(occ_id,kind,mode,harness,started_at_us,supervisor_task_id,workspace) "
                              "VALUES (?,?,?,?,?,?,?)", (occ_id, kind, gate.mode, gate.executor_id, self.now(),
                                                      self.harness.task_id_for(attempt_key), str(workspace)))

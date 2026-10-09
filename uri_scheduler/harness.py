@@ -27,6 +27,7 @@ import json
 import os
 import shutil
 import sys
+import threading
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -97,6 +98,8 @@ class ClaudeHarness:
         self.sup = None
         self.startup_report = []
         self._running: dict[str, int] = {}
+        self._cancelled: set[str] = set()       # task ids withdrawn by the owner (bridge discipline, review round 6)
+        self._cancel_lock = threading.Lock()
 
     # ---- lifecycle ------------------------------------------------------------------------------------------------
     def open(self):
@@ -225,8 +228,17 @@ class ClaudeHarness:
                 "last_decision": dict(last) | {"evidence_json": None} if last else None}
 
     def cancel(self, task_id) -> dict:
-        aid = self._running.get(task_id)
-        return self.sup.request_cancel(aid) if aid is not None else {"granted": False, "reason": "NOT_RUNNING"}
+        """Withdraw one attempt's task. Before submission/admission it will never spawn; between admission and spawn the
+        attempt is ended spawn_failed; while running the executor is killed through its job object (SupervisorBridge
+        semantics). Safe from another thread while `run` executes."""
+        with self._cancel_lock:
+            self._cancelled.add(task_id)
+            aid = self._running.get(task_id)
+        return self.sup.request_cancel(aid) if aid is not None else {"granted": False, "reason": "NOT_RUNNING", "recorded": True}
+
+    def _is_cancelled(self, task_id) -> bool:
+        with self._cancel_lock:
+            return task_id in self._cancelled
 
     def run(self, *, attempt_key, principal, workspace: Path, instructions: bytes, gate: GateResult,
             valid_until_us=None, expected_file="scene.json") -> RunOutcome:
@@ -237,6 +249,8 @@ class ClaudeHarness:
                    "instructions_sha256": __import__("hashlib").sha256(instructions).hexdigest()}
         scope = {"allowed_op_classes": ["read", "local_write"], "allowed_executors": [self.executor_id],
                  "workspace": str(workspace), "capability": "uri_scheduler.job", "attempt_key": attempt_key}
+        if self._is_cancelled(tid):
+            return RunOutcome("cancelled", "CANCELLED_BEFORE_SUBMIT", tid, {"supervisor_task": tid})
         try:
             self.sup.submit_task(tid, principal, request,
                                  authorization={"scope": scope, "issued_by": "uri_scheduler.job_grant",
@@ -261,7 +275,14 @@ class ClaudeHarness:
                 breaker = self.breaker_reset_us()
                 status = "quota" if breaker else "not_started"
                 return RunOutcome(status, "QUOTA_BREAKER_OPEN" if breaker else "NOT_ADMITTED", tid, receipt | {"reset_us": breaker})
-            self._running[tid] = admitted.attempt_id
+            with self._cancel_lock:
+                self._running[tid] = admitted.attempt_id
+                cancelled = tid in self._cancelled
+            if cancelled:                                   # withdrawn between admission and spawn: never spawn
+                self._running.pop(tid, None)
+                self.sup._spawn_failed(admitted, "CANCELLED_BEFORE_SPAWN")
+                self._expire(tid)
+                return RunOutcome("cancelled", "CANCELLED_BEFORE_SPAWN", tid, receipt)
             env = client_environ(self.client_home)
             # Claude Code `dontAsk` denies every un-approved file edit and anything outside its working directory.
             # `Edit(./**)` (relative to the per-attempt workspace, the process cwd) pre-approves edits there; Claude Code

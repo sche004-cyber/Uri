@@ -63,6 +63,14 @@ Codex: R4-1..R4-5 RESOLVED. F10/F2 owner-gated, not the reason for rejection.
 |---|---|---|---|---|
 | R5-1 | High | a cancel recorded while `harness.gate()` ran was overwritten by `BLOCKED_HARNESS` (and the same pattern on other non-`_finish` settlements), so the recheck could re-queue cancelled work | confirmed; reproduced by a failing test before the fix | **repaired**: the cancellation check moved into `_set_occ`, the single choke point for every occurrence transition: a running occurrence with `CANCEL_REQUESTED` always settles `CANCELLED` (retry time cleared); test `test_r5_cancel_during_gate_is_not_overwritten_by_blocked` |
 
-## Round 6
+## Round 6 — candidate `8a73605` — **REJECT**
+
+Codex: R5-1 RESOLVED (all `_set_occ` callers traced; no legitimate transition wrongly converted).
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R6-1 | High | a cancel recorded while an AVAILABLE gate ran had no attempt to stop; `_execute` then created an attempt and launched the harness, discarding the result afterwards | confirmed; reproduced by a failing test | **repaired**: the attempt-creating transaction re-reads the occurrence and settles `CANCELLED` before any attempt exists; `ClaudeHarness.cancel` records the withdrawal (bridge discipline) so a task cancelled before submission is never submitted and one cancelled between admission and spawn is ended `spawn_failed`; tests `test_r6_cancel_during_available_gate_never_runs_harness`, `test_r6_harness_cancel_before_spawn_never_spawns` |
+
+## Round 7
 
 (appended after the review runs)
