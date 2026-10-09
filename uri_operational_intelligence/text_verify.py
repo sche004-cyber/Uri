@@ -64,6 +64,8 @@ def _fold(s):
     # A clock time becomes one token with hour, minutes and half of day ("6 pm" = "6:00 PM" = clock1800, but
     # "6 am" = clock0600): Codex TI r12, a time must never lose its minutes or am/pm when compared.
     s = re.sub(r"\b(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)(?![a-z])", _clock, s)
+    s = re.sub(r"\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*(?:a\.?m|p\.?m))", lambda m: " clock%02d%s " % (int(m.group(1)),
+               m.group(2)), s)
     return s
 
 
@@ -81,6 +83,7 @@ def _tokens(s):
 
 
 _SCALES = {"hundred": 100, "thousand": 1000, "lakh": 100000, "crore": 10000000}
+CLOCK_BASE = 10 ** 12
 
 
 def _phrase_value(toks, i):
@@ -117,7 +120,12 @@ def canonical_numbers(s) -> set:
     # List enumerators ("5. [Student Name 5]") are not quantities (live finding LQ-25).
     f = re.sub(r"(?m)^\s*\d{1,2}[.)]\s", " ", _fold(s))
     f = re.sub(r"\[[^\]]{1,80}\]", " ", f)          # nor are numbers inside [placeholders]
-    for m in re.finditer(r"(?<![\w])(\d{1,9})(?:st|nd|rd|th)?(?![\d])", f.replace(",", "")):
+    # A clock time is a quantity of its own kind (CLOCK_BASE + HHMM), so "6 pm" vs "7 pm" is a numeric change and
+    # its digits are not read again as plain numbers (Codex TI r13).
+    for m in re.finditer(r"clock(\d{4})", f):
+        out.add(CLOCK_BASE + int(m.group(1)))
+    f = re.sub(r"clock\d{4}", " ", f)
+    for m in re.finditer(r"(?<![\d])(\d{1,9})(?:st|nd|rd|th)?(?![\d])", f.replace(",", "")):
         out.add(int(m.group(1)))
     toks = re.findall(r"[a-z]+", f)
     i = 0
@@ -281,14 +289,20 @@ def _lower_title_line(line, known_words=frozenset()):
     words = list(re.finditer(r"[A-Za-z][\w'-]*", line))
     if len(words) < 3 or sum(1 for w in words if w.group(0)[0].isupper()) < 0.6 * len(words):
         return line
-    keep = set()
-    for i, w in enumerate(words):
-        low = w.group(0).lower()
-        neighbours = [words[j].group(0) for j in (i - 1, i + 1) if 0 <= j < len(words)]
-        if w.group(0)[0].isupper() and low not in known_words and any(
-                n.lower() in known_words and n[0].isupper() and n.lower() not in _COMMON_CAPS or
-                re.fullmatch(r"(?:Mr|Mrs|Ms|Dr|Prof|Shri|Smt|Sri)\.?", n) for n in neighbours):
-            keep.add(i)
+    def anchor(i):
+        n = words[i].group(0)
+        return (n.lower() in known_words and n[0].isupper() and n.lower() not in _COMMON_CAPS
+                and n.lower() not in _FUNCTION_WORDS) or re.fullmatch(r"(?:Mr|Mrs|Ms|Dr|Prof|Shri|Smt|Sri)\.?", n)
+
+    keep, changed = set(), True
+    while changed:                      # a capitalised run next to a known name is kept whole (Codex TI r13)
+        changed = False
+        for i, w in enumerate(words):
+            if i in keep or not w.group(0)[0].isupper() or w.group(0).lower() in known_words:
+                continue
+            if any(0 <= j < len(words) and (j in keep or anchor(j)) for j in (i - 1, i + 1)):
+                keep.add(i)
+                changed = True
     out, last = [], 0
     for i, w in enumerate(words):
         out.append(line[last:w.start()].lower())
@@ -462,7 +476,7 @@ def check_supersession(user_words, claimed, *, instruction=None, previous_text=N
 
 
 _EQUIV = {"aaj": {"today"}}
-_PAST = re.compile(r"\b(?:tha|thi|the|hua|hui|hue|gaya|gayi|gaye|gya|gyi|liya|kiya|diya|aaya|aayi|chala|chali|nikla|"
+_PAST = re.compile(r"\b(?:tha|thi|hua|hui|hue|gaya|gayi|gaye|gya|gyi|liya|kiya|diya|aaya|aayi|chala|chali|nikla|"
                    r"nikle|nikli)\b", re.I)
 _FUTURE = re.compile(r"\b(?:hoga|hogi|honge|chahiye|karna|jaana|jana|aana|se|tak|karenge|jayenge|aayenge|rahega|"
                      r"rahegi|milega|milegi)\b", re.I)
@@ -486,7 +500,8 @@ def _absent(details, text, dropped_ok, code, label, source_words=""):
     """Every absent detail is reported. One the user corrected/excluded/mentioned is an INFO line (visible), every
     other one a REVIEW flag. Nothing is excused silently (Codex TI rounds 3-9)."""
     have = {str(x) for x in canonical_numbers(text)} | set(_tokens(text))
-    absent = sorted(d for d in details if d not in have and not (_equivalents(d, source_words) & have))
+    absent = sorted(d for d in details if d not in have
+                    and not any(_phrase_present(e, text) for e in _equivalents(d, source_words)))
     excused = [d for d in absent if _covered(d, dropped_ok)]
     unexcused = [d for d in absent if d not in excused]
     flags = []
@@ -533,8 +548,8 @@ def date_mentions(text) -> list:
 
 
 _SWAP_PAIR = re.compile(
-    r"(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\s+[\"'“‘]?(?P<x1>.{2,120}?)[\"'”’]?\s*[.,;]\s*(?:instead\s+)?"
-    r"(?:say|write|use|put)\s+[\"'“‘]?(?P<y1>[^.;\n\"”’]{2,160})|"
+    r"(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\s+[\"'“‘]?(?P<x1>.{1,120}?)[\"'”’]?\s*[.,;]\s*(?:instead\s+)?"
+    r"(?:say|write|use|put)\s+[\"'“‘]?(?P<y1>[^.;\n\"”’]{1,160})|"
     r"replace\s+[\"'“‘]?(?P<x2>.{2,120}?)[\"'”’]?\s+with\s+[\"'“‘]?(?P<y2>[^.;\n\"”’]{2,160})|"
     r"change\s+[\"'“‘]?(?P<x3>.{2,120}?)[\"'”’]?\s+to\s+[\"'“‘]?(?P<y3>[^.;\n\"”’]{2,160})|"
     r"instead of\s+[\"'“‘]?(?P<x4>.{2,120}?)[\"'”’]?\s*,?\s*(?:say|write|use|put)\s+[\"'“‘]?(?P<y4>[^.;\n\"”’]{2,160})",
@@ -547,7 +562,9 @@ def swap_pairs(instruction) -> list:
     for m in _SWAP_PAIR.finditer(instruction or ""):
         for i in "1234":
             if m.group("x" + i):
-                out.append((m.group("x" + i).strip(" \"'“”‘’"), m.group("y" + i).strip(" \"'“”‘’")))
+                y = re.split(r"\s*,\s*|\s+(?:and|but)\s+(?:keep|leave|make|don'?t|do not|also|then)\b", m.group("y" + i),
+                             maxsplit=1, flags=re.I)[0]
+                out.append((m.group("x" + i).strip(" \"'“”‘’"), y.strip(" \"'“”‘’")))
     return out
 
 

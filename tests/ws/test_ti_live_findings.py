@@ -175,3 +175,26 @@ def test_r12_inserted_paragraphs_are_separate_blocks():
     out, _, _ = DS.apply_edits(d, d.current.blocks, [{"op": "insert_after", "block_id": "b1", "role": "body",
                                                       "text": "Second.\n\nThird."}])
     assert [b.text for b in out] == ["First.", "Second.", "Third."]
+
+
+
+# Codex TI round 13.
+def test_r13_currency_prefixed_amounts_and_clock_changes_are_numbers():
+    assert V.check_meaning_preserved("Pay Rs5400 today", "Pay Rs5500 today.")
+    assert V.check_meaning_preserved("Meet at 6 pm", "Meet at 7 pm.")
+    assert V.check_meaning_preserved("Meet at 6 pm", "Meet at 6:00 PM.") == []
+    assert V._value_present("6 pm", "at 18:00")
+
+
+def test_r13_capitalised_run_next_to_a_known_name_is_kept():
+    f = V.check_new_details("Subject: Meeting With Kavya Devi Sharma", "a meeting with Kavya")
+    assert f and "sharma" in f[0]["detail"] and "devi" in f[0]["detail"]
+
+
+def test_r13_english_the_is_not_hindi_past():
+    assert V.check_user_details("kal meeting with the principal", "The meeting with the principal was yesterday.")
+
+
+def test_r13_short_and_bounded_swap_values():
+    assert V.swap_pairs("don't say A; say B") == [("A", "B")]
+    assert V.swap_pairs("Don't say wing, say east and keep the rest unchanged") == [("wing", "east")]
