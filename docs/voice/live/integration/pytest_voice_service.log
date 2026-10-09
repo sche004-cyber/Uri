@@ -1,0 +1,37 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.15, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\cheta\AppData\Local\URI\voice\venv\Scripts\python.exe
+rootdir: C:\Users\cheta\Development\uri-voice-integ
+plugins: anyio-4.15.1
+collecting ... collected 29 items
+
+uri_ui/tool/voice/test_uri_voice_service.py::test_capture_reports_level_onset_and_final_with_uncertain_words PASSED [  3%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_selected_microphone_is_used PASSED [  6%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_denied_privacy_switch_never_opens_the_device PASSED [ 10%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_cancel_closes_the_microphone_and_produces_no_transcript PASSED [ 13%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_silence_gives_no_speech_without_calling_the_recogniser PASSED [ 17%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_length_bound_stops_capture_and_still_transcribes PASSED [ 20%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_recogniser_failure_is_reported PASSED [ 24%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_opening_the_microphone_stops_uri_speaking_first PASSED [ 27%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_microphone_that_sends_only_zeros_is_flagged PASSED [ 31%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_uncertain_spans_follow_the_contract PASSED [ 34%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_speaker_plays_in_order_measures_levels_and_stops PASSED [ 37%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_speak_is_refused_while_the_microphone_is_open PASSED [ 41%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_model_integrity_failure_is_reported PASSED [ 44%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_speech_from_the_first_block_is_transcribed PASSED [ 48%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_punctuation_only_transcript_is_no_speech PASSED [ 51%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_user_vocabulary_reaches_the_recogniser_and_is_sanitised PASSED [ 55%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_r1_4_a_failed_sentence_drops_the_rest_of_its_utterance PASSED [ 58%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_r1_3_a_gap_between_sentences_reports_silence PASSED [ 62%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_r1_5_unplugged_choice_falls_back_to_the_default_with_a_warning PASSED [ 65%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_noise_segments_are_not_speech PASSED [ 68%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_hello_answers_at_once_while_the_model_loads PASSED [ 72%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_native_modules_are_imported_before_worker_threads_start PASSED [ 75%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_decoding_is_bounded PASSED [ 79%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_partials_wait_for_detected_speech PASSED [ 82%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_r2_2_and_r2_5_speaker_open_failure_announces_nothing_and_forgets_final PASSED [ 86%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_r2_3_a_hung_engine_is_ended_not_waited_for PASSED [ 89%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_r3_1_a_stream_that_fails_to_start_is_closed PASSED [ 93%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_r3_2_no_engine_bridge_after_close_and_close_ends_a_busy_one PASSED [ 96%]
+uri_ui/tool/voice/test_uri_voice_service.py::test_r4_1_warm_up_after_shutdown_is_quiet PASSED [100%]
+
+============================= 29 passed in 3.96s ==============================

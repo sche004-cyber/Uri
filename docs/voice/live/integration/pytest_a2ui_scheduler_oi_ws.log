@@ -1,0 +1,45 @@
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+....................F................................................... [ 50%]
+..............................................ssssssss.................. [ 67%]
+........................................................................ [ 84%]
+....................................................ssssssssssss         [100%]
+================================== FAILURES ===================================
+__________ test_rollback_dry_run_only_targets_this_scheduler_service __________
+
+tmp_path = WindowsPath('C:/Users/cheta/AppData/Local/Temp/pytest-of-cheta/pytest-1129/test_rollback_dry_run_only_tar0')
+inv = ['"\\AMDAutoUpdate"', '"\\EqualizerAPOUpdateChecker"', '"\\GoogleUserPEH\\RunPlatformExperienceHelperOnUnlock"', '"\\G...icrosoftEdgeUpdateTaskUserS-1-5-21-535365824-765655993-410416372-1001Core{4FCF7AAA-0F09-4C04-8722-45AF2947915F}"', ...]
+
+    def test_rollback_dry_run_only_targets_this_scheduler_service(tmp_path, inv):
+        """Codex rounds 9-10 (C3-02, R10-03): real argv positions, the exact state dir, and the recorded start time."""
+        import os
+        import socket
+        state = tmp_path / "scheduler"
+        with socket.socket() as so:
+            so.bind(("127.0.0.1", 0))
+            port = so.getsockname()[1]
+        fake = ROOT / "tests" / "scheduler" / "helpers" / "fake_claude.py"
+        svc = subprocess.Popen([sys.executable, "-m", "uri_scheduler.service", "run", "--state", str(state), "--mode", "fixture",
+                                "--fixture-script", str(fake), "--port", str(port), "--tick-s", "30"], cwd=str(ROOT),
+                               env=dict(os.environ, PYTHONPATH=str(ROOT)), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sleep = "import time; time.sleep(60)"
+        other = subprocess.Popen([sys.executable, "-c", sleep])
+        lookalike = subprocess.Popen([sys.executable, "-c", sleep, "-m", "uri_scheduler.service", "run", "--state", str(state)])
+        quoted = subprocess.Popen([sys.executable, "-c", sleep, f" -m uri_scheduler.service run --state {state} "])
+        try:
+            assert json.loads(svc.stdout.readline())["ready"]
+            real = json.loads((state / "service.json").read_text(encoding="utf-8"))
+            code, out = ps("-Action", "uninstall", "-State", str(state))
+>           assert code == 0 and f"would stop scheduler service pid {svc.pid}" in out and svc.poll() is None
+E           AssertionError: assert (0 == 0 and 'would stop scheduler service pid 5824' in 'DRY RUN: would stop and unregister URIScheduler only (exists: False); state and artifacts are kept.\nDRY RUN: would stop scheduler service pid 3568\n')
+
+tests\scheduler\test_task_ctl.py:127: AssertionError
+============================== warnings summary ===============================
+..\uri-voice-rt\.venv\Lib\site-packages\starlette\testclient.py:53
+  C:\Users\cheta\Development\uri-voice-rt\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/scheduler/test_task_ctl.py::test_rollback_dry_run_only_targets_this_scheduler_service
+1 failed, 403 passed, 20 skipped, 1 warning in 186.07s (0:03:06)
