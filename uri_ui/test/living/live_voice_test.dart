@@ -438,6 +438,49 @@ void main() {
       },
     );
 
+    test('INT-3: real speech keeps its real provenance whatever the composer toggles say', () async {
+      oi.setTranscriptMode(true); // the composer's SIMULATED-transcript toggle
+      oi.setDictationMode(true); // and its typed Dictation toggle
+      await ctl.pressTalk();
+      ctl.releaseTalk();
+      await finalText('What is the capital of Sikkim?');
+      final turn = rt.commands.lastWhere((c) => c['command'] == 'oi_turn');
+      final input = turn['input'] as Map;
+      expect(input['source'], 'transcript');
+      expect(input['transcript'], {
+        'raw': 'What is the capital of Sikkim?',
+        'engine': 'faster-whisper-base.en-int8',
+        'simulated': false,
+      });
+      expect(input.containsKey('mode'), isFalse); // conversation mode: an ordinary turn, not dictation
+      expect(turn['text'], 'What is the capital of Sikkim?');
+    });
+
+    test('INT-3: voice drafting sends the real transcript to the draft desk as dictation', () async {
+      ctl.dispose();
+      prefs.setVoice(prefs.voice.copyWith(inputMode: VoiceInputMode.drafting));
+      ctl = VoiceInteractionController(
+        service: svc,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+        keepInComposer: kept.add,
+        noticeHold: const Duration(milliseconds: 50),
+        dictation: (raw, {required engine, uncertain = const <String>[]}) => oi.sendTranscript(raw,
+            engine: engine, simulated: false, uncertain: uncertain, dictation: true),
+      );
+      expect(ctl.dictationAvailable, isTrue);
+      await ctl.pressTalk();
+      ctl.releaseTalk();
+      await finalText('Send the form to the office by Friday.');
+      final turn = rt.commands.lastWhere((c) => c['command'] == 'oi_turn');
+      final input = turn['input'] as Map;
+      expect(input['mode'], 'dictation');
+      expect((input['transcript'] as Map)['engine'], 'faster-whisper-base.en-int8');
+      expect((input['transcript'] as Map)['simulated'], isFalse);
+      expect(kept, isEmpty); // not left in the composer: it went to the desk
+    });
+
     test('a local presentation command is applied, not sent', () async {
       await ctl.pressTalk();
       ctl.releaseTalk();

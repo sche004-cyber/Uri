@@ -58,7 +58,16 @@ void main() async {
             // so the model is warm before the first press; it holds no GPU
             // memory.
             final live = LiveVoiceService();
-            services.attachLiveVoice(live);
+            // Drafting mode sends real transcripts to the Text Intelligence draft desk (uri.text_input.v1,
+            // mode dictation): dictated words become draft text and are never carried out.
+            services.attachLiveVoice(
+              live,
+              dictation: (raw, {required engine, uncertain = const <String>[]}) async {
+                final oi = services.oi;
+                if (oi == null) return;
+                await oi.sendTranscript(raw, engine: engine, simulated: false, uncertain: uncertain, dictation: true);
+              },
+            );
             unawaited(
               Future<void>.delayed(const Duration(seconds: 3), live.ensureStarted),
             );

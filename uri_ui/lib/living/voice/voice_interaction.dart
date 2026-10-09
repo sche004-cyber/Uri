@@ -268,7 +268,10 @@ class VoiceInteractionController extends CompanionStateSource {
     _sentAt = DateTime.now();
     final before = conv.messages.length;
     final epoch = _serviceEpoch;
-    await conv.send(text);
+    // Real speech is sent as what it is (uri.text_input.v1, the recogniser's own engine and uncertain spans), never
+    // through the typed path, so the composer's simulated-transcript and Dictation toggles cannot relabel it
+    // (TI-AC6; Codex TIWS r12 INT-3). Conversation mode is an ordinary turn: dictation stays off here.
+    await conv.sendTranscript(f.text, engine: f.engine, simulated: false, uncertain: f.uncertain);
     if (_disposed) return;
     // R2-1: the voice process died while the turn was being sent. The turn is
     // URI's (it is shown on screen); there is nothing left to speak it with.
