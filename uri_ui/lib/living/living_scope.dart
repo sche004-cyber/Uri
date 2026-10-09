@@ -8,9 +8,11 @@ import 'companion/effects_settings.dart';
 import 'companion/frame_clock.dart';
 import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
+import '../services/live_voice_service.dart';
 import 'integration/oi_conversation.dart';
 import 'presentation/presentation_controller.dart';
 import 'voice/voice_catalog.dart';
+import 'voice/voice_interaction.dart';
 import 'voice/voice_session.dart';
 
 /// Reasoning depth the user asks for. UI-only preference in this phase;
@@ -138,6 +140,34 @@ class LivingServices {
     companion.addSource(_voiceSource ??= VoiceCompanionSource(voice));
   }
 
+  /// Live voice (push-to-talk, recognition, reply speech). Null until a live
+  /// voice service is attached (Windows working-system entry).
+  LiveVoiceService? liveVoice;
+  VoiceInteractionController? voiceInteraction;
+
+  /// Text the composer should take in (spoken words that were not sent).
+  final ValueNotifier<String?> composerInsert = ValueNotifier<String?>(null);
+
+  /// Connects the live voice service: its events feed [voice] (the
+  /// presentation), and a [VoiceInteractionController] routes finished
+  /// transcripts like typed text. [dictation] is the draft desk, when this
+  /// build has one.
+  void attachLiveVoice(LiveVoiceService service, {DictationSink? dictation}) {
+    if (liveVoice != null) return;
+    liveVoice = service;
+    bindVoice(service);
+    final controller = VoiceInteractionController(
+      service: service,
+      preferences: companionPrefs,
+      presentation: presentation,
+      oi: oi,
+      dictation: dictation,
+      keepInComposer: (text) => composerInsert.value = text,
+    );
+    voiceInteraction = controller;
+    companion.addSource(controller);
+  }
+
   void dispose() {
     presentation.dispose();
     companion.dispose();
@@ -153,6 +183,9 @@ class LivingServices {
     composerFocus.dispose();
     _voiceBinding?.dispose();
     _voiceSource?.dispose();
+    voiceInteraction?.dispose();
+    liveVoice?.dispose();
+    composerInsert.dispose();
     voice.dispose();
     frameGovernor.dispose();
     frameClock.dispose();

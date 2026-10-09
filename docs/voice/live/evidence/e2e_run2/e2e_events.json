@@ -1,0 +1,247 @@
+{
+ "audio_level_events": 385,
+ "events": [
+  {
+   "t_ms": 0,
+   "kind": "run.start",
+   "scenarios": [
+    "deterministic",
+    "drafting"
+   ],
+   "manifest_set": true
+  },
+  {
+   "t_ms": 24559,
+   "kind": "companion",
+   "state": "unavailable",
+   "detail": "Brain STOPPED",
+   "source": "URI"
+  },
+  {
+   "t_ms": 24559,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 24622,
+   "kind": "voice.status",
+   "state": "ready",
+   "engine": "faster-whisper-base.en-int8",
+   "inputs": [
+    "Microphone (Sennheiser Profile)"
+   ],
+   "privacy": "allowed",
+   "problem": null,
+   "model_load_ms": null,
+   "ready_after_ms": 16169
+  },
+  {
+   "t_ms": 40943,
+   "kind": "brain.status",
+   "brain": {
+    "artifacts": null,
+    "checked_at": 1791549703.7354088,
+    "detail": null,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "owned": false,
+    "pid": null,
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "STOPPED",
+    "url": "http://127.0.0.1:18470"
+   }
+  },
+  {
+   "t_ms": 41000,
+   "kind": "screenshot",
+   "name": "00_ready"
+  },
+  {
+   "t_ms": 41000,
+   "kind": "scenario",
+   "id": "D1 presentation command"
+  },
+  {
+   "t_ms": 41015,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 41031,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 41032,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 41201,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 41202,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 41452,
+   "kind": "talker.start",
+   "text": "URI, dashboard."
+  },
+  {
+   "t_ms": 41721,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 41721,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 42973,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": ".",
+   "final": false
+  },
+  {
+   "t_ms": 44071,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "You are right",
+   "final": false
+  },
+  {
+   "t_ms": 45114,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 45180,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "URI Dashboard",
+   "final": false
+  },
+  {
+   "t_ms": 45570,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 45570,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 45573,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 45578,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 46133,
+   "kind": "companion",
+   "state": "unavailable",
+   "detail": "Brain STOPPED",
+   "source": "URI"
+  },
+  {
+   "t_ms": 46133,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 46134,
+   "kind": "final",
+   "text": "You are I. Dashboard.",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 4340,
+   "transcribe_ms": 554,
+   "uncertain": [
+    "You"
+   ]
+  },
+  {
+   "t_ms": 47661,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 49929,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 49929,
+   "kind": "companion",
+   "state": "error",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 50211,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The local Brain is not ready (STOPPED)."
+  },
+  {
+   "t_ms": 53847,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 53848,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 53890,
+   "kind": "result",
+   "id": "D1",
+   "mode": "companion",
+   "final": "You are I. Dashboard.",
+   "sent_as_turn": true
+  },
+  {
+   "t_ms": 53946,
+   "kind": "screenshot",
+   "name": "D1_dashboard"
+  },
+  {
+   "t_ms": 55074,
+   "kind": "scenario",
+   "id": "D2 silence"
+  },
+  {
+   "t_ms": 55080,
+   "kind": "run.end"
+  }
+ ]
+}

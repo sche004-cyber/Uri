@@ -11,6 +11,7 @@ import '../../living_scope.dart';
 import '../../voice/companion_presence.dart' show SoftDisc, presenceScale;
 import '../../voice/voice_catalog.dart';
 import '../../widgets/status_badge.dart';
+import 'voice_input_settings.dart';
 
 /// Companion Settings: which companion, how it looks, how it is rendered,
 /// and how URI sounds.
@@ -738,6 +739,8 @@ class _VoiceSettingsState extends State<_VoiceSettings> {
           ],
         ),
         const SizedBox(height: 10),
+        if (services.voiceInteraction != null)
+          VoiceInputSettings(controller: services.voiceInteraction!),
         FutureBuilder<VoiceListing>(
           future: _listing,
           builder: (context, snap) {
@@ -898,12 +901,14 @@ class _VoiceSettingsState extends State<_VoiceSettings> {
             title: 'Tone and speaking style',
             reason: 'None of the installed voices offers speaking styles.',
           ),
-        const _Unavailable(
-          key: ValueKey('mic-gain-unavailable'),
+        _Unavailable(
+          key: const ValueKey('mic-gain-unavailable'),
           title: 'Microphone input gain',
-          reason:
-              'URI does not capture microphone audio in this build. Windows '
-              'sets the microphone level in Sound settings.',
+          reason: LivingScope.of(context).voiceInteraction == null
+              ? 'URI does not capture microphone audio in this build. Windows '
+                    'sets the microphone level in Sound settings.'
+              : 'URI records at the level Windows sets; change it in Windows '
+                    'Sound settings.',
         ),
       ],
     );

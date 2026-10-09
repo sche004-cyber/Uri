@@ -1,0 +1,1210 @@
+{
+ "audio_level_events": 2850,
+ "events": [
+  {
+   "t_ms": 0,
+   "kind": "run.start",
+   "scenarios": [
+    "deterministic",
+    "brain"
+   ],
+   "manifest_set": true
+  },
+  {
+   "t_ms": 24474,
+   "kind": "companion",
+   "state": "unavailable",
+   "detail": "Brain STOPPED",
+   "source": "URI"
+  },
+  {
+   "t_ms": 24474,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 24513,
+   "kind": "voice.status",
+   "state": "ready",
+   "engine": "faster-whisper-base.en-int8",
+   "inputs": [
+    "Microphone (Sennheiser Profile)"
+   ],
+   "privacy": "allowed",
+   "problem": null,
+   "model_load_ms": null,
+   "ready_after_ms": 16157
+  },
+  {
+   "t_ms": 40834,
+   "kind": "brain.status",
+   "brain": {
+    "artifacts": null,
+    "checked_at": 1791550777.1520407,
+    "detail": null,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "owned": false,
+    "pid": null,
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "STOPPED",
+    "url": "http://127.0.0.1:18470"
+   }
+  },
+  {
+   "t_ms": 40891,
+   "kind": "screenshot",
+   "name": "00_ready"
+  },
+  {
+   "t_ms": 40891,
+   "kind": "brain.wait"
+  },
+  {
+   "t_ms": 2450338,
+   "kind": "brain.ready",
+   "brain": {
+    "artifacts": null,
+    "checked_at": 1791553193.365816,
+    "detail": null,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "owned": false,
+    "pid": null,
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "STOPPED",
+    "url": "http://127.0.0.1:18470"
+   },
+   "health": {
+    "backend": {
+     "context": 32768,
+     "engine": "llama.cpp b11425 (Vulkan, win x64)",
+     "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+     "model_repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+     "provider": "Runtime v1 (local)",
+     "speculative": "MTP draft",
+     "thinking_tiers": [
+      "deep",
+      "fast",
+      "normal"
+     ],
+     "vision": true
+    },
+    "busy": false,
+    "checked_at": 1791553197.829,
+    "explain": "The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: chrome.exe from chrome.exe (0.6 GB), dwm.exe (desktop compositor, 0.5 GB), uri_ui.exe from dartvm.exe (0.3 GB). Close those or wait; URI will not stop them.",
+    "gpu": {
+     "consumers": [
+      {
+       "dedicated_mib": 611.1,
+       "name": "chrome.exe",
+       "parent": "chrome.exe",
+       "pid": 9824,
+       "role": null
+      },
+      {
+       "dedicated_mib": 504.3,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "pid": 1784,
+       "role": "desktop compositor"
+      },
+      {
+       "dedicated_mib": 336.5,
+       "name": "uri_ui.exe",
+       "parent": "dartvm.exe",
+       "pid": 16800,
+       "role": null
+      }
+     ],
+     "free_mib_at_start": 14561.3,
+     "lease": {
+      "acquired_at": 1791550802.78,
+      "held": true,
+      "recovered_from": null
+     },
+     "measured": true,
+     "others_mib": 1806.7,
+     "release": null,
+     "sampled_t": null,
+     "server_dedicated_mib": null,
+     "server_non_local_mib": null,
+     "verdict_at_start": "CONTENDED",
+     "verdict_now": null
+    },
+    "host": {
+     "explain": "The Brain needs 15.3 GB of GPU memory but only 14.2 GB is free. In use by: chrome.exe from chrome.exe (0.6 GB), dwm.exe (desktop compositor, 0.5 GB), uri_ui.exe from dartvm.exe (0.3 GB). Close those or wait; URI will not stop them.",
+     "override": null,
+     "running": true,
+     "state": "WAITING_FOR_GPU",
+     "updated_age_s": 2.0
+    },
+    "performance": {
+     "calibration_error": null,
+     "calibration_t": null,
+     "calibration_tps": null,
+     "decode_samples": 0,
+     "decode_tps_median": null,
+     "threshold_source": "decode below 60 tok/s: healthy instances measured 96-157 tok/s (freeze record) and 110-131 (WS runs); demoted instances 24-42 tok/s (Adaptive Runtime R1, OI-PERF-1, WS PERF-W1)",
+     "threshold_tps": 60.0
+    },
+    "readiness": "STOPPED",
+    "reasons": [
+     "GPU_CONTENDED"
+    ],
+    "recovery_options": [
+     "close_gpu_apps",
+     "wait"
+    ],
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "UNAVAILABLE"
+   }
+  },
+  {
+   "t_ms": 2450388,
+   "kind": "screenshot",
+   "name": "01_brain_ready"
+  },
+  {
+   "t_ms": 2450388,
+   "kind": "scenario",
+   "id": "D1 presentation command"
+  },
+  {
+   "t_ms": 2450404,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 2450420,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 2450420,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 2450583,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 2450583,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 2450838,
+   "kind": "talker.start",
+   "text": "URI, dashboard."
+  },
+  {
+   "t_ms": 2451362,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 2451362,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 2451711,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Thank you.",
+   "final": false
+  },
+  {
+   "t_ms": 2453293,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Thank you.",
+   "final": false
+  },
+  {
+   "t_ms": 2454376,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "You are I dashboard",
+   "final": false
+  },
+  {
+   "t_ms": 2454437,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 2454861,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 2454861,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 2454864,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 2454869,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2455402,
+   "kind": "companion",
+   "state": "unavailable",
+   "detail": "Brain STOPPED",
+   "source": "URI"
+  },
+  {
+   "t_ms": 2455402,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 2455403,
+   "kind": "final",
+   "text": "You are I dashboard.",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 4220,
+   "transcribe_ms": 532,
+   "uncertain": [
+    "You",
+    "I"
+   ]
+  },
+  {
+   "t_ms": 2459280,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2461550,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 2461551,
+   "kind": "companion",
+   "state": "error",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2461837,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The local Brain is not ready (STOPPED)."
+  },
+  {
+   "t_ms": 2465473,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2465473,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 2465529,
+   "kind": "result",
+   "id": "D1",
+   "mode": "companion",
+   "final": "You are I dashboard.",
+   "sent_as_turn": true
+  },
+  {
+   "t_ms": 2465584,
+   "kind": "screenshot",
+   "name": "D1_dashboard"
+  },
+  {
+   "t_ms": 2466694,
+   "kind": "scenario",
+   "id": "D2 silence"
+  },
+  {
+   "t_ms": 2466700,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 2466700,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 2466753,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 2467519,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 2468240,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 2468273,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2468273,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 2468273,
+   "kind": "final",
+   "text": "",
+   "reason": "no_speech",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 1500,
+   "transcribe_ms": 4,
+   "uncertain": []
+  },
+  {
+   "t_ms": 2468315,
+   "kind": "result",
+   "id": "D2",
+   "notice": "NO_SPEECH",
+   "final": "no_speech"
+  },
+  {
+   "t_ms": 2468359,
+   "kind": "screenshot",
+   "name": "D2_no_speech"
+  },
+  {
+   "t_ms": 2468359,
+   "kind": "scenario",
+   "id": "D3 cancel"
+  },
+  {
+   "t_ms": 2468361,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": "No speech was heard."
+  },
+  {
+   "t_ms": 2468362,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 2468362,
+   "kind": "talker.start",
+   "text": "Send the monthly report to the director."
+  },
+  {
+   "t_ms": 2468399,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 2468518,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 2469899,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 2469906,
+   "kind": "esc"
+  },
+  {
+   "t_ms": 2469907,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "cancelled"
+  },
+  {
+   "t_ms": 2472326,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 2475385,
+   "kind": "result",
+   "id": "D3",
+   "stage": "idle",
+   "new_messages": 0
+  },
+  {
+   "t_ms": 2475385,
+   "kind": "scenario",
+   "id": "D4 approval by voice is refused"
+  },
+  {
+   "t_ms": 2475386,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 2475386,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 2475387,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 2475405,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 2475797,
+   "kind": "talker.start",
+   "text": "Remember that the laboratory is closed on Friday afternoon."
+  },
+  {
+   "t_ms": 2476089,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 2478800,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": ".",
+   "final": false
+  },
+  {
+   "t_ms": 2479881,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Remember that the laboratory is closed on Friday.",
+   "final": false
+  },
+  {
+   "t_ms": 2480973,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Remember that the laboratory is closed on Friday afternoon.",
+   "final": false
+  },
+  {
+   "t_ms": 2481066,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 2481517,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 2481517,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 2481535,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2481991,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 2481991,
+   "kind": "final",
+   "text": "Remember that the laboratory is closed on Friday afternoon.",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 6080,
+   "transcribe_ms": 463,
+   "uncertain": []
+  },
+  {
+   "t_ms": 2481992,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2484216,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 2484216,
+   "kind": "companion",
+   "state": "error",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2484265,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The selected Brain is not ready (STOPPED); nothing was done."
+  },
+  {
+   "t_ms": 2489382,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2489382,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 2490508,
+   "kind": "screenshot",
+   "name": "D4_approval_card"
+  },
+  {
+   "t_ms": 2490508,
+   "kind": "result",
+   "id": "D4a",
+   "approval_capability": null,
+   "approval_args": null
+  },
+  {
+   "t_ms": 2490510,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 2490510,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 2490511,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 2490529,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 2490649,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 2490926,
+   "kind": "talker.start",
+   "text": "Yes, approve it."
+  },
+  {
+   "t_ms": 2492364,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "All right.",
+   "final": false
+  },
+  {
+   "t_ms": 2493439,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Yes",
+   "final": false
+  },
+  {
+   "t_ms": 2494295,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 2494522,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Yes, approve it.",
+   "final": false
+  },
+  {
+   "t_ms": 2494749,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 2494749,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 2494764,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2495196,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 2495197,
+   "kind": "final",
+   "text": "Yes, approve it.",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 4200,
+   "transcribe_ms": 439,
+   "uncertain": []
+  },
+  {
+   "t_ms": 2495214,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2497440,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 2497440,
+   "kind": "companion",
+   "state": "error",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2497487,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The local Brain is not ready (STOPPED)."
+  },
+  {
+   "t_ms": 2501115,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2501115,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 2501173,
+   "kind": "result",
+   "id": "D4b",
+   "approval_still_pending_or_not_executed": false,
+   "settled_by_voice": false
+  },
+  {
+   "t_ms": 2501227,
+   "kind": "screenshot",
+   "name": "D4_after_spoken_yes"
+  },
+  {
+   "t_ms": 2502235,
+   "kind": "scenario",
+   "id": "B1 conversation"
+  },
+  {
+   "t_ms": 2502236,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 2502237,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 2502237,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 2502256,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 2502650,
+   "kind": "talker.start",
+   "text": "What is the capital of Sikkim, and what is it known for?"
+  },
+  {
+   "t_ms": 2503016,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 2504890,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "All right.",
+   "final": false
+  },
+  {
+   "t_ms": 2505981,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "What is the capital of second?",
+   "final": false
+  },
+  {
+   "t_ms": 2507099,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "What is the capital of Second? And what is it known?",
+   "final": false
+  },
+  {
+   "t_ms": 2507686,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 2507787,
+   "kind": "screenshot",
+   "name": "B1_listening"
+  },
+  {
+   "t_ms": 2508194,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 2508194,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 2508215,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2508708,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 2508709,
+   "kind": "final",
+   "text": "What is the capital of Sycam, and what is it known for?",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 5900,
+   "transcribe_ms": 496,
+   "uncertain": [
+    "Sycam"
+   ]
+  },
+  {
+   "t_ms": 2511380,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2513646,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 2513646,
+   "kind": "companion",
+   "state": "error",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2513694,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The local Brain is not ready (STOPPED)."
+  },
+  {
+   "t_ms": 2513727,
+   "kind": "screenshot",
+   "name": "B1_speaking"
+  },
+  {
+   "t_ms": 2517329,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2517329,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 2517362,
+   "kind": "turn.done",
+   "label": "B1",
+   "last_message": "",
+   "core_code": null,
+   "metrics": {},
+   "timings": {
+    "final_to_first_reply_audio_ms": 4986
+   }
+  },
+  {
+   "t_ms": 2517362,
+   "kind": "scenario",
+   "id": "B2 barge-in"
+  },
+  {
+   "t_ms": 2517363,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 2517364,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 2517364,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 2517385,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 2517523,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 2517775,
+   "kind": "talker.start",
+   "text": "Tell me five ways to reduce paper use in a government office."
+  },
+  {
+   "t_ms": 2520640,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Tell me five ways to",
+   "final": false
+  },
+  {
+   "t_ms": 2521773,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Tell me five ways to reduce paper use and",
+   "final": false
+  },
+  {
+   "t_ms": 2522886,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Tell me five ways to reduce paper use in a government office.",
+   "final": false
+  },
+  {
+   "t_ms": 2523077,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 2523533,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 2523533,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 2523549,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2524034,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 2524035,
+   "kind": "final",
+   "text": "Tell me five ways to reduce paper use in a government office.",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 6120,
+   "transcribe_ms": 490,
+   "uncertain": []
+  },
+  {
+   "t_ms": 2525210,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2527456,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 2527456,
+   "kind": "companion",
+   "state": "error",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2527512,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The local Brain is not ready (STOPPED)."
+  },
+  {
+   "t_ms": 2530018,
+   "kind": "bargein.press"
+  },
+  {
+   "t_ms": 2530625,
+   "kind": "bargein.release"
+  },
+  {
+   "t_ms": 2531140,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2531140,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 2533197,
+   "kind": "scenario",
+   "id": "B3 minimised"
+  },
+  {
+   "t_ms": 2533199,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 2533199,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 2533199,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 2533220,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 2533358,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 2533608,
+   "kind": "talker.start",
+   "text": "Give me a two sentence tip for writing a clear office note."
+  },
+  {
+   "t_ms": 2535934,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": ".",
+   "final": false
+  },
+  {
+   "t_ms": 2537011,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Give me a two sentence tip for right",
+   "final": false
+  },
+  {
+   "t_ms": 2538103,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "Give me a two sentence tip for writing a clear office",
+   "final": false
+  },
+  {
+   "t_ms": 2538666,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 2539097,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 2539097,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 2539115,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2539713,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 2539713,
+   "kind": "final",
+   "text": "Give me a two sentence tip for writing a clear office note",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 5840,
+   "transcribe_ms": 484,
+   "uncertain": []
+  },
+  {
+   "t_ms": 2541514,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2543757,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 2543757,
+   "kind": "companion",
+   "state": "error",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 2543804,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The local Brain is not ready (STOPPED)."
+  },
+  {
+   "t_ms": 2543804,
+   "kind": "window.minimized"
+  },
+  {
+   "t_ms": 2544624,
+   "kind": "minimised.state",
+   "frame_clock_hidden": true,
+   "stage": "speaking"
+  },
+  {
+   "t_ms": 2547435,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 2547435,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 2547472,
+   "kind": "result",
+   "id": "B3",
+   "frame_clock_suspended_while_minimised": true
+  },
+  {
+   "t_ms": 2547480,
+   "kind": "window.restored"
+  },
+  {
+   "t_ms": 2548490,
+   "kind": "run.end"
+  }
+ ]
+}
