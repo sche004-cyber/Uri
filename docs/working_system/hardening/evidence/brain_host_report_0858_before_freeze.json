@@ -1,0 +1,207 @@
+{
+ "calibration": {
+  "decode_tps": 33.7,
+  "predicted_n": 160,
+  "prompt_ms": 391.189,
+  "reason": "RESIDENCY_CHANGED",
+  "residency": {
+   "consumers": [
+    {
+     "dedicated_mib": 372.5,
+     "name": "uri_ui.exe",
+     "parent": null,
+     "pid": 5716,
+     "role": null
+    },
+    {
+     "dedicated_mib": 367.0,
+     "name": "uri_ui.exe",
+     "parent": "dartvm.exe",
+     "pid": 8588,
+     "role": null
+    },
+    {
+     "dedicated_mib": 359.5,
+     "name": "uri_ui.exe",
+     "parent": "powershell.exe",
+     "pid": 2436,
+     "role": null
+    },
+    {
+     "dedicated_mib": 353.5,
+     "name": "uri_ui.exe",
+     "parent": "powershell.exe",
+     "pid": 4340,
+     "role": null
+    },
+    {
+     "dedicated_mib": 341.0,
+     "name": "uri_ui.exe",
+     "parent": "powershell.exe",
+     "pid": 1340,
+     "role": null
+    },
+    {
+     "dedicated_mib": 335.6,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1840,
+     "role": "desktop compositor"
+    }
+   ],
+   "dedicated_mib": 12997.9,
+   "non_local_mib": 3678.3,
+   "others_mib": 2343.5,
+   "t": 1791515242.36,
+   "verdict_now": "CONTENDED"
+  },
+  "server_create_time": 1791514812.6639483,
+  "server_pid": 9236,
+  "t": 1791515236.797,
+  "threshold_tps": 60.0,
+  "tokens": 160
+ },
+ "detail": "DECODE_THROUGHPUT_LOW",
+ "explain": "The Brain is running slowly (34 tok/s, healthy is above 60). GPU memory was short when it loaded. Restart it when the GPU is free.",
+ "gpu": {
+  "census_s": 3.44,
+  "census_t": 1791514804.314,
+  "explain": "GPU memory is 914 MB short of the Brain's full request; it may run slowly. URI checks its speed after loading.",
+  "fit": {
+   "card_mib": 16368,
+   "consumers": [
+    {
+     "dedicated_mib": 367.0,
+     "name": "uri_ui.exe",
+     "parent": "powershell.exe",
+     "pid": 2436,
+     "role": null
+    },
+    {
+     "dedicated_mib": 354.5,
+     "name": "uri_ui.exe",
+     "parent": "powershell.exe",
+     "pid": 1340,
+     "role": null
+    },
+    {
+     "dedicated_mib": 349.3,
+     "name": "uri_ui.exe",
+     "parent": "powershell.exe",
+     "pid": 4340,
+     "role": null
+    },
+    {
+     "dedicated_mib": 332.8,
+     "name": "dwm.exe",
+     "parent": "winlogon.exe",
+     "pid": 1840,
+     "role": "desktop compositor"
+    }
+   ],
+   "free_mib": 14712.5,
+   "margin_mib": -913.5,
+   "others_mib": 1655.5,
+   "owner_mib": 0,
+   "required_mib": 15626,
+   "unattributed_mib": 0.0,
+   "verdict": "AT_RISK"
+  }
+ },
+ "heartbeat_at": 1791516502.452,
+ "history": [
+  {
+   "detail": null,
+   "state": "STARTING",
+   "t": 1791514807.758
+  },
+  {
+   "detail": null,
+   "state": "LOADING",
+   "t": 1791514813.586
+  },
+  {
+   "detail": null,
+   "state": "CALIBRATING",
+   "t": 1791514907.484
+  },
+  {
+   "detail": "DECODE_THROUGHPUT_LOW",
+   "state": "DEGRADED",
+   "t": 1791514917.614
+  },
+  {
+   "detail": null,
+   "state": "CALIBRATING",
+   "t": 1791515236.79
+  },
+  {
+   "detail": "DECODE_THROUGHPUT_LOW",
+   "state": "DEGRADED",
+   "t": 1791515246.038
+  }
+ ],
+ "host_pid": 8376,
+ "host_started": 1791514804.268,
+ "last_request": {
+  "action": "restart",
+  "id": "0b880d8d-268a-4ec6-a813-a7293291e266",
+  "result": "IGNORED_INVALID_OR_STALE",
+  "t": 1791514917.62
+ },
+ "lease": {
+  "acquired_at": 1791514804.312,
+  "held": true,
+  "recovered_from": null
+ },
+ "override": null,
+ "requests": {
+  "0b880d8d-268a-4ec6-a813-a7293291e266": "IGNORED_INVALID_OR_STALE"
+ },
+ "residency": {
+  "consumers": [
+   {
+    "dedicated_mib": 454.2,
+    "name": "uri_ui.exe",
+    "parent": "powershell.exe",
+    "pid": 9992,
+    "role": null
+   },
+   {
+    "dedicated_mib": 371.5,
+    "name": "uri_ui.exe",
+    "parent": null,
+    "pid": 5716,
+    "role": null
+   },
+   {
+    "dedicated_mib": 331.8,
+    "name": "dwm.exe",
+    "parent": "winlogon.exe",
+    "pid": 1840,
+    "role": "desktop compositor"
+   },
+   {
+    "dedicated_mib": 320.7,
+    "name": "uri_ui.exe",
+    "parent": "powershell.exe",
+    "pid": 11484,
+    "role": null
+   }
+  ],
+  "dedicated_mib": 12997.9,
+  "non_local_mib": 3678.3,
+  "others_mib": 1758.7,
+  "t": 1791516453.077,
+  "verdict_now": "AT_RISK"
+ },
+ "schema": "uri.ws.brain_host.v1",
+ "server": {
+  "load_seconds": 94.8,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": true,
+  "pid": 9236
+ },
+ "state": "DEGRADED",
+ "updated_at": 1791515246.038
+}

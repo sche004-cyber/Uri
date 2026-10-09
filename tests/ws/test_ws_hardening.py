@@ -695,6 +695,22 @@ def test_eviction_after_load_triggers_a_new_measurement(tmp_path):
         srv.shutdown()
 
 
+def test_recalibration_never_competes_with_a_turn_and_is_rate_limited(tmp_path, monkeypatch):
+    H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
+    calls = []
+    monkeypatch.setattr(h, "calibrate", lambda pid, reason="START", timeout=120.0: calls.append((reason, timeout)))
+    h.report["calibration"] = {"t": h.now() - 3600}
+    states = iter([False])
+    monkeypatch.setattr(h, "server_idle", lambda: next(states, False))        # a turn is running
+    assert h.maybe_recalibrate(1) is False and calls == [] and h.report["recalibration_pending"] == "SERVER_BUSY_OR_UNKNOWN"
+    monkeypatch.setattr(h, "server_idle", lambda: None)                        # /slots unreadable: send nothing
+    assert h.maybe_recalibrate(1) is False and calls == []
+    monkeypatch.setattr(h, "server_idle", lambda: True)
+    assert h.maybe_recalibrate(1) is True and calls == [("RESIDENCY_CHANGED", H.RECALIBRATE_TIMEOUT_S)]
+    h.report["calibration"] = {"t": h.now() - 10}                             # just measured: rate limit
+    assert h.maybe_recalibrate(1) is False and h.report["recalibration_pending"] == "MIN_GAP"
+
+
 def test_calibration_failure_is_reported_as_degraded(tmp_path):
     H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]), port=1)    # nothing listens
     h.calibrate(pid=1)

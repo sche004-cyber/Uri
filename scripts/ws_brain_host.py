@@ -58,6 +58,11 @@ RESIDENCY_EVERY_S = 60.0
 # (measured live 2026-10-09: another session opened ~1 GB of GPU apps after load; non-local rose 1.1 -> 2.75 GB and
 # decode fell from 141 to 27-38 tok/s). The calibration request is one 160-token decode (~1-6 s).
 RECALIBRATE_GROWTH_MIB = 512.0
+# A re-measurement never competes with a user turn (Codex H-r7): it runs only when llama-server's own /slots endpoint
+# (enabled by default in the frozen build) reports its single slot idle, checked again right before the request; it is
+# bounded (30 s) so stop/restart requests are not held long, and it happens at most once per RECALIBRATE_MIN_GAP_S.
+RECALIBRATE_TIMEOUT_S = 30.0
+RECALIBRATE_MIN_GAP_S = 600.0
 
 
 class Host:
@@ -304,14 +309,36 @@ class Host:
         now = (now_res or {}).get("non_local_mib")
         return before is not None and now is not None and now - before >= RECALIBRATE_GROWTH_MIB
 
-    def calibrate(self, pid, reason="START"):
+    def server_idle(self):
+        """True / False from llama-server's /slots; None when it cannot be read (then nothing is sent)."""
+        import httpx
+        try:
+            slots = httpx.get(R.base_url(self.cfg) + "/slots", timeout=2.0).json()
+            return bool(slots) and all(not s.get("is_processing") for s in slots)
+        except Exception:
+            return None
+
+    def maybe_recalibrate(self, pid):
+        last = (self.report.get("calibration") or {}).get("t") or 0
+        if self.now() - last < RECALIBRATE_MIN_GAP_S:
+            self.report["recalibration_pending"] = "MIN_GAP"
+            return False
+        if self.server_idle() is not True or self.server_idle() is not True:     # checked twice, just before posting
+            self.report["recalibration_pending"] = "SERVER_BUSY_OR_UNKNOWN"
+            self.write()
+            return False
+        self.report.pop("recalibration_pending", None)
+        self.calibrate(pid, reason="RESIDENCY_CHANGED", timeout=RECALIBRATE_TIMEOUT_S)
+        return True
+
+    def calibrate(self, pid, reason="START", timeout=120.0):
         import httpx
         self.set("CALIBRATING", detail=None, explain="Measuring Brain speed.")
         cal = {"t": round(self.now(), 3), "tokens": CALIBRATION_TOKENS, "threshold_tps": DEGRADED_TPS,
                # The instance this measurement belongs to (Codex H-r5): health uses it only for this process.
                "server_pid": pid, "server_create_time": R._create_time(pid), "reason": reason}
         try:
-            with httpx.Client(base_url=R.base_url(self.cfg), timeout=httpx.Timeout(120.0, connect=3.0)) as c:
+            with httpx.Client(base_url=R.base_url(self.cfg), timeout=httpx.Timeout(timeout, connect=3.0)) as c:
                 res = c.post("/completion", json={"prompt": CALIBRATION_PROMPT, "n_predict": CALIBRATION_TOKENS,
                                                   "temperature": 0, "cache_prompt": False, "ignore_eos": True})
                 tim = (res.json() or {}).get("timings") or {}
@@ -386,7 +413,7 @@ class Host:
                     pid = self.report.get("server", {}).get("pid")
                     now_res = self.residency(pid)
                     if self.needs_recalibration(now_res):
-                        self.calibrate(pid, reason="RESIDENCY_CHANGED")
+                        self.maybe_recalibrate(pid)
                     if self.lease is not None:
                         self.lease.heartbeat()
                     self.write()
