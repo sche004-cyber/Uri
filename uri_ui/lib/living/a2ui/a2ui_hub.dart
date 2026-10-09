@@ -51,33 +51,60 @@ class A2uiSurface {
     return cur;
   }
 
-  /// Writes an input value. Refuses read-only data (returns false).
+  /// Writes an input value. Refuses read-only data (returns false). Walks
+  /// lists by index (template items) and decodes `~1`/`~0` (A2UI r1, F4).
   bool write(String pointer, Object? value, {String? scope}) {
     final abs = pointer.startsWith('/') ? pointer : '${scope ?? ''}/$pointer';
-    if (a2uiReadOnlyPrefixes.any((p) => abs == p || abs.startsWith('$p/'))) {
+    if (abs == '/' ||
+        a2uiReadOnlyPrefixes.any((p) => abs == p || abs.startsWith('$p/'))) {
       return false;
     }
-    final segs = abs.substring(1).split('/');
-    Map<String, dynamic> cur = data;
-    for (final s in segs.take(segs.length - 1)) {
-      final next = cur[s];
-      if (next is Map<String, dynamic>) {
-        cur = next;
+    final segs = [
+      for (final raw in abs.substring(1).split('/'))
+        raw.replaceAll('~1', '/').replaceAll('~0', '~'),
+    ];
+    Object cur = data;
+    for (var i = 0; i < segs.length - 1; i++) {
+      final seg = segs[i];
+      if (cur is List) {
+        final idx = int.tryParse(seg);
+        if (idx == null || idx < 0 || idx >= cur.length) return false;
+        var next = cur[idx];
+        if (next is! Map && next is! List) {
+          next = <String, dynamic>{};
+          cur[idx] = next;
+        }
+        cur = next as Object;
+      } else if (cur is Map) {
+        var next = cur[seg];
+        if (next is! Map && next is! List) {
+          next = <String, dynamic>{};
+          cur[seg] = next;
+        }
+        cur = next as Object;
       } else {
-        final m = <String, dynamic>{};
-        cur[s] = m;
-        cur = m;
+        return false;
       }
     }
-    cur[segs.last] = value;
+    final last = segs.last;
+    if (cur is List) {
+      final idx = int.tryParse(last);
+      if (idx == null || idx < 0 || idx >= cur.length) return false;
+      cur[idx] = value;
+    } else if (cur is Map) {
+      cur[last] = value;
+    } else {
+      return false;
+    }
     return true;
   }
 }
 
 /// Calls the authority for an action and returns its reply
 /// (`{"result", "messages"}`); throws with the authority's refusal code.
-typedef A2uiAuthorityCall =
-    Future<Map<String, dynamic>> Function(Map<String, dynamic> action);
+typedef A2uiAuthorityCall = Future<Map<String, dynamic>> Function(
+  Map<String, dynamic> action,
+);
 
 /// The renderer side of URI A2UI: applies validated messages, keeps surfaces,
 /// and routes Button actions through a registry of authorized calls.
@@ -164,7 +191,9 @@ class A2uiHub extends ChangeNotifier {
     }
     for (final e in refused.entries) {
       batches.remove(e.key);
-      _notice('URI refused an interface definition (${e.value}); nothing from it is shown.');
+      _notice(
+        'URI refused an interface definition (${e.value}); nothing from it is shown.',
+      );
     }
     final changed = <String>{};
     for (final e in batches.entries) {
@@ -227,17 +256,23 @@ class A2uiHub extends ChangeNotifier {
         final value = jsonDecode(jsonEncode(u['value']));
         if (path == '/') {
           s.data = value is Map<String, dynamic> ? value : <String, dynamic>{};
+        } else if (u.containsKey('value')) {
+          // Same list-aware writer as inputs; `/bound` was already refused by the validator.
+          if (!s.write(path, value)) {
+            _notice('URI sent a data update the surface cannot hold; ignored.');
+            return null;
+          }
         } else {
-          final segs = path.substring(1).split('/');
-          Map<String, dynamic> c = s.data;
-          for (final seg in segs.take(segs.length - 1)) {
-            c = (c[seg] is Map<String, dynamic>) ? c[seg] : (c[seg] = <String, dynamic>{});
-          }
-          if (u.containsKey('value')) {
-            c[segs.last] = value;
-          } else {
-            c.remove(segs.last);
-          }
+          final parent = s.read(
+            path.substring(0, path.lastIndexOf('/')).isEmpty
+                ? '/'
+                : path.substring(0, path.lastIndexOf('/')),
+          );
+          final key = path
+              .substring(path.lastIndexOf('/') + 1)
+              .replaceAll('~1', '/')
+              .replaceAll('~0', '~');
+          if (parent is Map) parent.remove(key);
         }
       }
     }
@@ -259,7 +294,10 @@ class A2uiHub extends ChangeNotifier {
   Future<void> act(String sid, String componentId, {String? scope}) async {
     final s = _surfaces[sid];
     final comp = s?.byId[componentId];
-    if (s == null || comp == null || comp['component'] != 'Button' || busy.contains(sid)) {
+    if (s == null ||
+        comp == null ||
+        comp['component'] != 'Button' ||
+        busy.contains(sid)) {
       return;
     }
     final ev = (comp['action'] as Map)['event'] as Map;
@@ -275,7 +313,9 @@ class A2uiHub extends ChangeNotifier {
     final declared = (ev['context'] as Map?) ?? const {};
     for (final e in declared.entries) {
       final v = e.value;
-      final resolved = isBinding(v) ? s.read((v as Map)['path'] as String, scope: scope) : v;
+      final resolved = isBinding(v)
+          ? s.read((v as Map)['path'] as String, scope: scope)
+          : v;
       if (!a2uiTyped(schema[e.key]!, resolved)) {
         errors[sid] = _humanField(e.key);
         notifyListeners();
@@ -327,7 +367,8 @@ class A2uiHub extends ChangeNotifier {
       'The GIF is not the version shown. Nothing was decided.',
     'INSTRUCTION_REQUIRED' => 'Say what should change.',
     'DATE_REQUIRED' => 'Pick the corrected date.',
-    _ => 'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
+    _ =>
+      'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
   };
 
   /// A worker `a2ui.handoff`: ask the domain authority to propose.
@@ -335,13 +376,17 @@ class A2uiHub extends ChangeNotifier {
     final s = scheduler;
     if (data['domain'] != 'scheduler' || data['request'] is! Map) return;
     if (s == null) {
-      _notice('The scheduler is not running, so the schedule could not be prepared. Start it and ask again.');
+      _notice(
+        'The scheduler is not running, so the schedule could not be prepared. Start it and ask again.',
+      );
       notifyListeners();
       return;
     }
     final sw = Stopwatch()..start();
     try {
-      final r = await s.a2uiPropose((data['request'] as Map).cast<String, dynamic>());
+      final r = await s.a2uiPropose(
+        (data['request'] as Map).cast<String, dynamic>(),
+      );
       _time('handoff->surface', sw);
       apply((r['messages'] as List?) ?? const []);
     } on SchedulerApiError catch (e) {

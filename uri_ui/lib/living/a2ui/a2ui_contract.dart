@@ -104,7 +104,10 @@ const a2uiActions = <String, Map<String, String>>{
     'artifact_sha256': 'sha256',
     'decision': 'enum:approve|regenerate|reject',
   },
-  'scheduler.refine_artifact': {'artifact_sha256': 'sha256', 'instruction': 'str'},
+  'scheduler.refine_artifact': {
+    'artifact_sha256': 'sha256',
+    'instruction': 'str',
+  },
   'calendar.correct_record': {
     'record': 'str',
     'start': 'date?',
@@ -157,7 +160,9 @@ List<A2uiError> checkValue(
   }
   if (kind == 'bool') return v is bool || isBinding(v) ? [] : [e('BAD_BOOL')];
   if (kind == 'int') {
-    return _isInt(v) && (v as int) >= 0 && v <= 1000000000 ? [] : [e('BAD_INT')];
+    return _isInt(v) && (v as int) >= 0 && v <= 1000000000
+        ? []
+        : [e('BAD_INT')];
   }
   if (kind == 'sha256') {
     return v is String && _sha.hasMatch(v) ? [] : [e('BAD_SHA256')];
@@ -167,7 +172,9 @@ List<A2uiError> checkValue(
         ? []
         : [e('BAD_ENUM', 'allowed: ${kind.substring(5)}')];
   }
-  if (kind == 'ref') return v is String && _id.hasMatch(v) ? [] : [e('BAD_REF')];
+  if (kind == 'ref') {
+    return v is String && _id.hasMatch(v) ? [] : [e('BAD_REF')];
+  }
   if (kind == 'refs') {
     if (v is List) {
       if (v.length > a2uiMaxComponents ||
@@ -200,7 +207,8 @@ List<A2uiError> checkValue(
     final errs = <A2uiError>[];
     for (var i = 0; i < v.length; i++) {
       final o = v[i];
-      final ok = o is Map &&
+      final ok =
+          o is Map &&
           o.length == 2 &&
           o.containsKey('label') &&
           _textOk(o['label']) &&
@@ -217,11 +225,7 @@ List<A2uiError> checkValue(
   return [e('UNKNOWN_KIND', kind)];
 }
 
-List<A2uiError> _checkActionDecl(
-  Object? v,
-  String path,
-  Set<String>? allowed,
-) {
+List<A2uiError> _checkActionDecl(Object? v, String path, Set<String>? allowed) {
   final ev = v is Map && v.length == 1 ? v['event'] : null;
   if (ev is! Map ||
       !ev.containsKey('name') ||
@@ -378,7 +382,8 @@ List<A2uiError> validateComponents(
 
   walk('root', 1, {});
   errs.addAll(depthErr);
-  final unreachable = byId.keys.where((k) => !seen.contains(k)).toList()..sort();
+  final unreachable = byId.keys.where((k) => !seen.contains(k)).toList()
+    ..sort();
   if (unreachable.isNotEmpty && depthErr.isEmpty) {
     errs.add(A2uiError('UNREACHABLE', path, unreachable.take(5).join(',')));
   }
@@ -429,11 +434,40 @@ const _allowedFields = {
 
 /// Errors for one server->client message (empty = valid). [encode] must be
 /// the JSON encoder used for size checks (`jsonEncode`).
+const a2uiMaxNesting = 32;
+
+/// Iterative depth check before any recursive inspection (mirrors Python
+/// `_nesting_ok`): hostile nesting is refused, never a stack overflow.
+bool nestingOk(Object? obj, [int limit = a2uiMaxNesting]) {
+  final stack = <(Object?, int)>[(obj, 1)];
+  var seen = 0;
+  while (stack.isNotEmpty) {
+    final (v, d) = stack.removeLast();
+    if (d > limit) return false;
+    if (++seen > 200000) return false;
+    if (v is Map) {
+      for (final x in v.values) {
+        stack.add((x, d + 1));
+      }
+    } else if (v is List) {
+      for (final x in v) {
+        stack.add((x, d + 1));
+      }
+    }
+  }
+  return true;
+}
+
 List<A2uiError> validateMessage(
   Object? msg,
   String Function(Object?) encode, [
   Set<String>? allowedActions,
 ]) {
+  if (!nestingOk(msg)) {
+    return [
+      const A2uiError('TOO_NESTED', '/', 'more than $a2uiMaxNesting levels'),
+    ];
+  }
   if (msg is! Map || msg['version'] != a2uiVersion) {
     return [A2uiError('BAD_VERSION', '/version', 'expected $a2uiVersion')];
   }
@@ -484,9 +518,16 @@ List<A2uiError> validateMessage(
     final p = body['path'] ?? '/';
     if (!isPointer(p, relativeOk: false)) {
       errs.add(A2uiError('BAD_PATH', '/$kind/path'));
+    } else if (a2uiReadOnlyPrefixes.any(
+      (pre) => p == pre || (p as String).startsWith('$pre/'),
+    )) {
+      // Bound data is set only by the authority's full model load (path "/").
+      errs.add(A2uiError('READ_ONLY_PATH', '/$kind/path'));
     }
     if (body.containsKey('value')) {
-      errs.addAll(validateData(body['value'], '/$kind/value', encode(body['value'])));
+      errs.addAll(
+        validateData(body['value'], '/$kind/value', encode(body['value'])),
+      );
     }
     return errs;
   }
@@ -510,9 +551,10 @@ bool a2uiTyped(String kind, Object? v) {
     'sha256' => v is String && _sha.hasMatch(v),
     'time' => v is String && _time.hasMatch(v),
     'date' => v is String && _date.hasMatch(v),
-    'keys' => v is List &&
-        v.length <= a2uiMaxOptions &&
-        v.every((x) => x is String && _slug.hasMatch(x)),
+    'keys' =>
+      v is List &&
+          v.length <= a2uiMaxOptions &&
+          v.every((x) => x is String && _slug.hasMatch(x)),
     _ => k.startsWith('enum:') && k.substring(5).split('|').contains(v),
   };
 }

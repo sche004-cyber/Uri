@@ -2,88 +2,88 @@
  "phase": "a",
  "steps": [
   {
-   "t": "2026-10-09T11:40:11.305417Z",
+   "t": "2026-10-09T11:57:03.726061Z",
    "step": "proposal_rendered",
-   "surface": "sched-512e869bc022",
-   "digest": "a9262c5554beead93cd51b4ec62828e66adb0484abeb02d17167684cab02a48e"
+   "surface": "sched-5d46c16a7d26",
+   "digest": "fa636e815e6aa200e00e7777089f48e7829364562cc861448580a6613c2be73a"
   },
   {
-   "t": "2026-10-09T11:40:18.342606Z",
+   "t": "2026-10-09T11:57:10.733163Z",
    "step": "draft_confirm_refused",
    "error": "You changed the choices. Press \"Update proposal\" first, then confirm the new proposal."
   },
   {
-   "t": "2026-10-09T11:40:18.766249Z",
+   "t": "2026-10-09T11:57:11.146902Z",
    "step": "revised",
    "revision": 2,
-   "digest": "d52b0890f65bf3c4febef0da3c8853e83c4634dd270ccc3eb1deeb3df8a14e5a",
-   "proposal_sha256": "1b156f93b732cd4afb4565039da2ce9bd4b2be400d422fdaebad8562e9629e1b"
+   "digest": "7c04b44b01f95de4b7877e637086c7f065cfd464a5c75ecc8bc4bca8f9c292da",
+   "proposal_sha256": "88228ac7f01ee86dfda2491204e087eea02f6d9d5b7c5b11f77706e5396417b7"
   },
   {
-   "t": "2026-10-09T11:40:18.990596Z",
+   "t": "2026-10-09T11:57:11.366724Z",
    "step": "review_image_verified",
    "bytes": 1592267,
    "wrong_hash_refused": true
   },
   {
-   "t": "2026-10-09T11:40:18.990596Z",
+   "t": "2026-10-09T11:57:11.366724Z",
    "step": "review_rendered",
    "surface": "review-1",
    "artifact_sha256": "b10655348883aeaebc322872058fbf0138cda6252f570b9261f41357f312ef36"
   },
   {
-   "t": "2026-10-09T11:40:19.380053Z",
+   "t": "2026-10-09T11:57:11.750827Z",
    "step": "artifact_approved",
    "surface": "review-1"
   },
   {
-   "t": "2026-10-09T11:40:20.164638Z",
+   "t": "2026-10-09T11:57:12.522978Z",
    "step": "calendar_disputed",
    "record": "karva_chauth:2026"
   }
  ],
- "surface": "sched-512e869bc022",
- "stale_digest": "a9262c5554beead93cd51b4ec62828e66adb0484abeb02d17167684cab02a48e",
+ "surface": "sched-5d46c16a7d26",
+ "stale_digest": "fa636e815e6aa200e00e7777089f48e7829364562cc861448580a6613c2be73a",
  "timings": [
   {
    "what": "handoff->surface",
-   "ms": 33.274
+   "ms": 33.632
   },
   {
    "what": "apply",
-   "ms": 8.318
+   "ms": 11.791
   },
   {
    "what": "action:scheduler.revise_proposal",
-   "ms": 8.644
+   "ms": 8.796
   },
   {
    "what": "apply",
-   "ms": 0.997
+   "ms": 0.882
   },
   {
    "what": "apply",
-   "ms": 4.156
+   "ms": 3.843
   },
   {
    "what": "action:scheduler.review_artifact",
-   "ms": 10.687
+   "ms": 9.697
   },
   {
    "what": "apply",
-   "ms": 0.121
+   "ms": 0.149
   },
   {
    "what": "apply",
-   "ms": 0.795
+   "ms": 0.7
   },
   {
    "what": "action:calendar.correct_record",
-   "ms": 10.373
+   "ms": 10.442
   },
   {
    "what": "apply",
-   "ms": 1.355
+   "ms": 1.391
   }
  ],
  "notices": []

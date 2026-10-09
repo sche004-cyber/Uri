@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-10-09T11:39:59.082681+00:00",
+ "started_utc": "2026-10-09T11:56:51.299694+00:00",
  "evidence_level": "P (process: real service + real renderer; executor is the SYNTHETIC fixture, not Claude)",
  "checks": {
   "fixture_artifact_ready_s": 7.0,
@@ -23,7 +23,7 @@
   "hash_chain": {
    "ok": true,
    "checked": 27,
-   "head": "7c708e04d234efab1aa430628f0ab76502477b7c7eccac0b19fff0a68abe6341"
+   "head": "129e49e96010c34552d646a7e6b2961a637184363b9c53281f998a3ae9bc5e17"
   },
   "a2ui_actions_audited": [
    [
@@ -54,70 +54,70 @@
  },
  "phase_a": {
   "exit": 0,
-  "seconds": 14.1
+  "seconds": 14.2
  },
  "phase_b": {
   "exit": 0,
-  "seconds": 5.8
+  "seconds": 5.9
  },
  "renderer_timings_ms": {
   "phase_a": [
    {
     "what": "handoff->surface",
-    "ms": 33.274
+    "ms": 33.632
    },
    {
     "what": "apply",
-    "ms": 8.318
+    "ms": 11.791
    },
    {
     "what": "action:scheduler.revise_proposal",
-    "ms": 8.644
+    "ms": 8.796
    },
    {
     "what": "apply",
-    "ms": 0.997
+    "ms": 0.882
    },
    {
     "what": "apply",
-    "ms": 4.156
+    "ms": 3.843
    },
    {
     "what": "action:scheduler.review_artifact",
-    "ms": 10.687
+    "ms": 9.697
    },
    {
     "what": "apply",
-    "ms": 0.121
+    "ms": 0.149
    },
    {
     "what": "apply",
-    "ms": 0.795
+    "ms": 0.7
    },
    {
     "what": "action:calendar.correct_record",
-    "ms": 10.373
+    "ms": 10.442
    },
    {
     "what": "apply",
-    "ms": 1.355
+    "ms": 1.391
    }
   ],
   "phase_b": [
    {
     "what": "apply",
-    "ms": 9.905
+    "ms": 12.029
    },
    {
     "what": "action:scheduler.confirm_proposal",
-    "ms": 6.508
+    "ms": 6.623
    },
    {
     "what": "apply",
-    "ms": 0.555
+    "ms": 0.588
    }
   ]
  },
  "verdict": "PASS",
- "finished_utc": "2026-10-09T11:40:26.867137+00:00"
+ "finished_utc": "2026-10-09T11:57:19.254625+00:00"
 }

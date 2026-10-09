@@ -47,13 +47,21 @@ class A2uiCompanionSlot extends StatelessWidget {
                   for (final s in mine)
                     Padding(
                       padding: const EdgeInsets.only(bottom: UriSpace.sm),
-                      child: A2uiSurfaceView(hub: hub, surfaceId: s.id, compact: true),
+                      child: A2uiSurfaceView(
+                        hub: hub,
+                        surfaceId: s.id,
+                        compact: true,
+                      ),
                     ),
                   if (elsewhere.isNotEmpty)
                     Center(
                       child: ActionChip(
                         key: const ValueKey('a2ui.open-workspace'),
-                        avatar: Icon(Icons.rule_rounded, size: 16, color: c.accent),
+                        avatar: Icon(
+                          Icons.rule_rounded,
+                          size: 16,
+                          color: c.accent,
+                        ),
                         label: Text(
                           elsewhere.length == 1
                               ? '${elsewhere.first.title}: ready for you in Workspace'
@@ -105,13 +113,20 @@ class A2uiDock extends StatelessWidget {
           constraints: BoxConstraints(maxHeight: h),
           child: SingleChildScrollView(
             key: ValueKey('a2ui.dock.${placements.join('-')}'),
-            padding: const EdgeInsets.fromLTRB(UriSpace.md, UriSpace.sm, UriSpace.md, UriSpace.sm),
+            padding: const EdgeInsets.fromLTRB(
+              UriSpace.md,
+              UriSpace.sm,
+              UriSpace.md,
+              UriSpace.sm,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 A2uiNotices(hub: hub),
-                if (showCalendarEntry && hub.scheduler != null && hub.surface('calendar-review') == null)
+                if (showCalendarEntry &&
+                    hub.scheduler != null &&
+                    hub.surface('calendar-review') == null)
                   Align(
                     alignment: Alignment.centerLeft,
                     child: TextButton.icon(

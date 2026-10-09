@@ -34,6 +34,14 @@ GOOD = [{"id": "root", "component": "Column", "children": ["t", "b"]},
         {"id": "t", "component": "Text", "text": "Hello", "variant": "title"}, btn()]
 
 
+def _deep(n):
+    d = c = {}
+    for _ in range(n):
+        c["a"] = {}
+        c = c["a"]
+    return d
+
+
 def mutate(fn):
     c = copy.deepcopy(GOOD)
     fn(c)
@@ -94,6 +102,9 @@ CASES = [
          "options": [{"label": "a", "value": "a"}, {"label": "b", "value": "a"}]}))))], "DUPLICATE_OPTION"),
     ("data_too_large", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "/", "value": {"x": "y" * 3999, "z": ["y" * 3999] * 20}}}], "DATA_TOO_LARGE"),
     ("data_bad_path", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "draft", "value": 1}}], "BAD_PATH"),
+    ("data_patch_bound", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "/bound/surface/digest", "value": "x"}}], "READ_ONLY_PATH"),
+    ("data_root_load_ok", [{"version": "v0.9", "updateDataModel": {"surfaceId": "s1", "path": "/", "value": {"bound": {"x": 1}}}}], "valid"),
+    ("too_nested", [comps(mutate(lambda c: c[1].update(variant=_deep(40))))], "TOO_NESTED"),
 ]
 
 

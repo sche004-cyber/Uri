@@ -1912,5 +1912,156 @@
    }
   ],
   "expect": "BAD_PATH"
+ },
+ {
+  "name": "data_patch_bound",
+  "messages": [
+   {
+    "version": "v0.9",
+    "updateDataModel": {
+     "surfaceId": "s1",
+     "path": "/bound/surface/digest",
+     "value": "x"
+    }
+   }
+  ],
+  "expect": "READ_ONLY_PATH"
+ },
+ {
+  "name": "data_root_load_ok",
+  "messages": [
+   {
+    "version": "v0.9",
+    "updateDataModel": {
+     "surfaceId": "s1",
+     "path": "/",
+     "value": {
+      "bound": {
+       "x": 1
+      }
+     }
+    }
+   }
+  ],
+  "expect": "valid"
+ },
+ {
+  "name": "too_nested",
+  "messages": [
+   {
+    "version": "v0.9",
+    "updateComponents": {
+     "surfaceId": "s1",
+     "components": [
+      {
+       "id": "root",
+       "component": "Column",
+       "children": [
+        "t",
+        "b"
+       ]
+      },
+      {
+       "id": "t",
+       "component": "Text",
+       "text": "Hello",
+       "variant": {
+        "a": {
+         "a": {
+          "a": {
+           "a": {
+            "a": {
+             "a": {
+              "a": {
+               "a": {
+                "a": {
+                 "a": {
+                  "a": {
+                   "a": {
+                    "a": {
+                     "a": {
+                      "a": {
+                       "a": {
+                        "a": {
+                         "a": {
+                          "a": {
+                           "a": {
+                            "a": {
+                             "a": {
+                              "a": {
+                               "a": {
+                                "a": {
+                                 "a": {
+                                  "a": {
+                                   "a": {
+                                    "a": {
+                                     "a": {
+                                      "a": {
+                                       "a": {
+                                        "a": {
+                                         "a": {
+                                          "a": {
+                                           "a": {
+                                            "a": {
+                                             "a": {
+                                              "a": {
+                                               "a": {}
+                                              }
+                                             }
+                                            }
+                                           }
+                                          }
+                                         }
+                                        }
+                                       }
+                                      }
+                                     }
+                                    }
+                                   }
+                                  }
+                                 }
+                                }
+                               }
+                              }
+                             }
+                            }
+                           }
+                          }
+                         }
+                        }
+                       }
+                      }
+                     }
+                    }
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      {
+       "id": "b",
+       "component": "Button",
+       "label": "OK",
+       "action": {
+        "event": {
+         "name": "surface.dismiss",
+         "context": {}
+        }
+       }
+      }
+     ]
+    }
+   }
+  ],
+  "expect": "TOO_NESTED"
  }
 ]

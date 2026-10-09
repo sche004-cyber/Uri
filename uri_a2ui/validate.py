@@ -251,8 +251,31 @@ def validate_data(value, path="/value"):
     return errs
 
 
+MAX_NESTING = 32
+
+
+def _nesting_ok(obj, limit=MAX_NESTING) -> bool:
+    """Iterative depth check before any recursive inspection: hostile nesting is refused, never a RecursionError."""
+    stack = [(obj, 1)]
+    seen = 0
+    while stack:
+        v, d = stack.pop()
+        if d > limit:
+            return False
+        seen += 1
+        if seen > 200_000:
+            return False
+        if isinstance(v, dict):
+            stack.extend((x, d + 1) for x in v.values())
+        elif isinstance(v, list):
+            stack.extend((x, d + 1) for x in v)
+    return True
+
+
 def validate_message(msg, allowed_actions=None):
     """Errors for one server->client message (empty list = valid)."""
+    if not _nesting_ok(msg):
+        return [_err("TOO_NESTED", "/", f"more than {MAX_NESTING} levels")]
     if not isinstance(msg, dict) or msg.get("version") != C.VERSION:
         return [_err("BAD_VERSION", "/version", f"expected {C.VERSION}")]
     keys = [k for k in msg if k != "version"]
@@ -291,6 +314,9 @@ def validate_message(msg, allowed_actions=None):
         p = body.get("path", "/")
         if not is_pointer(p, relative_ok=False):
             errs.append(_err("BAD_PATH", f"/{kind}/path"))
+        elif any(p == pre or p.startswith(pre + "/") for pre in C.READ_ONLY_PREFIXES):
+            # Bound data is set only by the authority's full model load (path "/"), never patched (A2UI r1, F1).
+            errs.append(_err("READ_ONLY_PATH", f"/{kind}/path", "bound data cannot be updated in part"))
         if "value" in body:
             errs += validate_data(body["value"], f"/{kind}/value")
         return errs

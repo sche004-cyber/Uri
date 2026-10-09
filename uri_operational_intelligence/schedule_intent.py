@@ -44,6 +44,11 @@ _OFFSET = re.compile(r"\b(\d{1,2}|a week|one week|a|one|two|three|four|five|six|
 _TIME = re.compile(r"\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\b")
 
 
+_MAKE = re.compile(r"\b(create|make|generate|design|draw|prepare|produce|render|animate)\b")
+_COMPETING = re.compile(r"\b(email|e-mail|mail|meeting|meet|call|phone|remind|reminder|reminders|message|whatsapp|sms|"
+                        r"post|tweet|publish|send|share|upload|invite|invitation|discuss|book|order|buy|pay)\b")
+
+
 def _norm(text):
     return re.sub(r"\s+", " ", text.lower()).strip()
 
@@ -54,6 +59,10 @@ def interpret(text):
         return None
     t = _norm(text)
     if _QUESTION.match(t) or not (_SCHEDULE.search(t) and _FESTIVAL.search(t) and _ARTIFACT.search(t)):
+        return None
+    # URI must be asked to MAKE the greeting, and the sentence must not be about another action that only mentions
+    # festivals or greetings (an email, a meeting, a reminder, posting ...): those keep the normal path (A2UI r1, F3).
+    if not _MAKE.search(t) or _COMPETING.search(t.replace("bring it to me", "")):
         return None
     assumptions = []
     offset = 2

@@ -22,7 +22,7 @@ def test_owner_request():
 
 @pytest.mark.parametrize("text,festivals,offset,time", [
     ("Every year make a Diwali and Holi greeting GIF 3 days before, at 8:30 am", ["diwali", "holi"], 3, "08:30"),
-    ("schedule a greeting card a week before each Sikkim festival", "sikkim", 7, "09:00"),
+    ("make a greeting card a week before each Sikkim festival", "sikkim", 7, "09:00"),
     ("Please create festival wishes GIFs four days ahead of every festival at 6 pm", None, 3, "18:00"),
     ("automatically make an animated greeting for Eid ul Fitr and Christmas one day before", ["eid_ul_fitr", "christmas"], 1, "09:00"),
 ])
@@ -45,6 +45,10 @@ def test_unsupported_offset_and_other_harness_are_stated():
     "When is Diwali this year?", "What festivals are in November?", "schedule a meeting with Ravi tomorrow at 10",
     "make me a Diwali GIF", "Tell me about Losar", "Is Holi a holiday?", "every morning remind me to drink water",
     "", "x" * 3000,
+    # A2UI audit round 1, F3: other actions that merely mention festival greetings keep the normal path
+    "Schedule an email to remind me about a festival greeting card", "schedule a meeting to discuss festival GIFs",
+    "every Diwali send my team a greeting card", "post a festival greeting GIF every year on Holi",
+    "remind me to make a Diwali greeting card two days before", "schedule a festival greeting card",
 ])
 def test_ordinary_requests_stay_conversational(text):
     assert SI.interpret(text) is None

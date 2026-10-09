@@ -177,7 +177,7 @@ def test_sikkim_request_leaves_out_undated_festivals_and_says_so(env):
     """A 'Sikkim festivals' handoff names festivals whose 2026 date has passed and whose 2027 date is not notified."""
     from uri_operational_intelligence.schedule_intent import interpret
     s, host, *_ = env
-    req = interpret("schedule a greeting card a week before each Sikkim festival")["request"]
+    req = interpret("make a greeting card a week before each Sikkim festival")["request"]
     r = host.propose_from_request(req)
     sel = s.job(r["job_id"])["schedule"]["selection"]
     assert "losar" not in sel and "losoong_namsoong" in sel and "tihar_sikkim" in sel
@@ -186,3 +186,18 @@ def test_sikkim_request_leaves_out_undated_festivals_and_says_so(env):
     with pytest.raises(A2uiHostError) as e:
         host.propose_from_request({"festivals": ["losar"]})
     assert e.value.code == "NO_UPCOMING_FESTIVAL"
+
+
+def test_r1_discard_and_confirm_are_serialized(env):
+    """A2UI audit round 1, F2: an action is one critical section under the engine mutex."""
+    import threading
+    s, host, *_ = env
+    r = host.propose_from_request({"festivals": ["diwali"]})
+    done = threading.Event()
+    with s._mutex:
+        t = threading.Thread(target=lambda: (click(host, r["surface_id"], r["messages"], "discard"), done.set()))
+        t.start()
+        assert not done.wait(0.3)                       # waits while another holder (e.g. a confirm) has the mutex
+    assert done.wait(10)
+    t.join()
+    assert s.job(r["job_id"])["state"] == "CANCELLED"

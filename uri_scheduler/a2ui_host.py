@@ -294,6 +294,12 @@ class SchedulerA2ui:
         """One client `action`. Returns {"result", "messages"}; refusals raise A2uiHostError with a stable code."""
         if not isinstance(msg, dict) or not isinstance(msg.get("surfaceId"), str):
             raise A2uiHostError("BAD_ACTION_MESSAGE")
+        # The whole action (surface load, gate, state checks, engine call, surface update) is one critical section
+        # under the engine mutex: no concurrent action, tick or reconciliation can interleave (A2UI r1, F2).
+        with self.s._mutex:
+            return self._action_locked(msg)
+
+    def _action_locked(self, msg) -> dict:
         surface = self._load(msg["surfaceId"])
         try:
             ctx = check_action(surface, msg)

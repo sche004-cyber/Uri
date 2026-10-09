@@ -151,3 +151,18 @@ def test_fuzzed_definitions_never_crash_the_validator():
         except ActionRefused:
             pass
     assert n == 3000
+
+
+def test_r1_bound_cannot_be_patched_and_deep_nesting_is_refused():
+    """A2UI audit round 1, F1 and F5."""
+    for path in ("/bound", "/bound/surface/digest", "/bound/proposal_sha256"):
+        errs = V.validate_message({"version": "v0.9", "updateDataModel": {"surfaceId": "s", "path": path, "value": "x"}})
+        assert errs and errs[0]["code"] == "READ_ONLY_PATH"
+    assert V.validate_message({"version": "v0.9", "updateDataModel": {"surfaceId": "s", "path": "/", "value": {"bound": {}}}}) == []
+    d = c = {}
+    for _ in range(1100):
+        c["a"] = {}
+        c = c["a"]
+    errs = V.validate_message({"version": "v0.9", "updateComponents": {"surfaceId": "s", "components": [
+        {"id": "root", "component": "Text", "text": "x", "variant": d}]}})
+    assert errs[0]["code"] == "TOO_NESTED"

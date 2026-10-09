@@ -88,14 +88,21 @@ class _Node extends StatelessWidget {
     return v == null ? '' : '$v';
   }
 
-  ValueKey<String> _key([String suffix = '']) => ValueKey('a2ui.${s.id}.$id$suffix');
+  ValueKey<String> _key([String suffix = '']) =>
+      ValueKey('a2ui.${s.id}.$id$suffix');
 
   List<Widget> _children(Map comp) {
     final ch = comp['children'];
     if (ch is List) {
       return [
         for (final k in ch)
-          _Node(hub: hub, s: s, id: k as String, compact: compact, scope: scope),
+          _Node(
+            hub: hub,
+            s: s,
+            id: k as String,
+            compact: compact,
+            scope: scope,
+          ),
       ];
     }
     if (ch is Map) {
@@ -158,7 +165,13 @@ class _Node extends StatelessWidget {
       case 'Card':
         return GlassPanel(
           padding: const EdgeInsets.all(UriSpace.md),
-          child: _Node(hub: hub, s: s, id: comp['child'] as String, compact: compact, scope: scope),
+          child: _Node(
+            hub: hub,
+            s: s,
+            id: comp['child'] as String,
+            compact: compact,
+            scope: scope,
+          ),
         );
       case 'Divider':
         return Divider(color: c.border, height: 1);
@@ -168,9 +181,21 @@ class _Node extends StatelessWidget {
           _text(comp['text']),
           key: _key(),
           style: switch (variant) {
-            'title' => TextStyle(fontSize: compact ? 16 : 18, fontWeight: FontWeight.w700, color: c.ink),
-            'label' => TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.inkSoft),
-            'caption' => TextStyle(fontSize: 12, color: c.inkSoft, height: 1.35),
+            'title' => TextStyle(
+              fontSize: compact ? 16 : 18,
+              fontWeight: FontWeight.w700,
+              color: c.ink,
+            ),
+            'label' => TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: c.inkSoft,
+            ),
+            'caption' => TextStyle(
+              fontSize: 12,
+              color: c.inkSoft,
+              height: 1.35,
+            ),
             _ => TextStyle(fontSize: 14, color: c.ink, height: 1.4),
           },
         );
@@ -187,23 +212,45 @@ class _Node extends StatelessWidget {
           child: Container(
             key: _key(),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
-            child: Text(_text(comp['text']), style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600)),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              _text(comp['text']),
+              style: TextStyle(
+                color: fg,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         );
       case 'Button':
-        final enabled = (_v(comp['enabled']) ?? true) == true && !hub.busy.contains(s.id);
+        final enabled =
+            (_v(comp['enabled']) ?? true) == true && !hub.busy.contains(s.id);
         final label = Text(_text(comp['label']));
         void onTap() => hub.act(s.id, id, scope: scope);
         return switch (comp['variant']) {
-          'primary' => FilledButton(key: _key(), onPressed: enabled ? onTap : null, child: label),
-          'danger' => OutlinedButton(
+          'primary' => FilledButton(
             key: _key(),
-            style: OutlinedButton.styleFrom(foregroundColor: c.danger, side: BorderSide(color: c.danger)),
             onPressed: enabled ? onTap : null,
             child: label,
           ),
-          _ => OutlinedButton(key: _key(), onPressed: enabled ? onTap : null, child: label),
+          'danger' => OutlinedButton(
+            key: _key(),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: c.danger,
+              side: BorderSide(color: c.danger),
+            ),
+            onPressed: enabled ? onTap : null,
+            child: label,
+          ),
+          _ => OutlinedButton(
+            key: _key(),
+            onPressed: enabled ? onTap : null,
+            child: label,
+          ),
         };
       case 'CheckBox':
         final p = (comp['value'] as Map)['path'] as String;
@@ -212,15 +259,37 @@ class _Node extends StatelessWidget {
           dense: true,
           contentPadding: EdgeInsets.zero,
           value: s.read(p, scope: scope) == true,
-          title: Text(_text(comp['label']), style: TextStyle(color: c.ink, fontSize: 14)),
+          title: Text(
+            _text(comp['label']),
+            style: TextStyle(color: c.ink, fontSize: 14),
+          ),
           onChanged: (v) => hub.input(s.id, p, v == true, scope: scope),
         );
       case 'ChoicePicker':
-        return _Choice(hub: hub, s: s, comp: comp, scope: scope, keyBase: 'a2ui.${s.id}.$id', compact: compact);
+        return _Choice(
+          hub: hub,
+          s: s,
+          comp: comp,
+          scope: scope,
+          keyBase: 'a2ui.${s.id}.$id',
+          compact: compact,
+        );
       case 'DateTimeInput':
-        return _DateTime(hub: hub, s: s, comp: comp, scope: scope, keyBase: 'a2ui.${s.id}.$id');
+        return _DateTime(
+          hub: hub,
+          s: s,
+          comp: comp,
+          scope: scope,
+          keyBase: 'a2ui.${s.id}.$id',
+        );
       case 'TextField':
-        return _Field(hub: hub, s: s, comp: comp, scope: scope, keyBase: 'a2ui.${s.id}.$id');
+        return _Field(
+          hub: hub,
+          s: s,
+          comp: comp,
+          scope: scope,
+          keyBase: 'a2ui.${s.id}.$id',
+        );
       case 'ArtifactImage':
         return _Artifact(hub: hub, comp: comp, keyBase: 'a2ui.${s.id}.$id');
     }
@@ -250,7 +319,9 @@ class _Choice extends StatelessWidget {
     final p = (comp['value'] as Map)['path'] as String;
     final multiple = comp['multiple'] == true;
     final cur = s.read(p, scope: scope);
-    final selected = multiple ? {for (final x in (cur is List ? cur : const [])) '$x'} : {'${cur ?? ''}'};
+    final selected = multiple
+        ? {for (final x in (cur is List ? cur : const [])) '$x'}
+        : {'${cur ?? ''}'};
     final options = (comp['options'] as List).cast<Map>();
     final chips = Wrap(
       spacing: 6,
@@ -266,7 +337,10 @@ class _Choice extends StatelessWidget {
               if (multiple) {
                 final next = [
                   for (final x in options)
-                    if ((x['value'] == o['value']) ? on : selected.contains(x['value'])) x['value'] as String,
+                    if ((x['value'] == o['value'])
+                        ? on
+                        : selected.contains(x['value']))
+                      x['value'] as String,
                 ];
                 hub.input(s.id, p, next, scope: scope);
               } else if (on) {
@@ -280,7 +354,14 @@ class _Choice extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('${comp['label']}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.inkSoft)),
+        Text(
+          '${comp['label']}',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: c.inkSoft,
+          ),
+        ),
         const SizedBox(height: 6),
         if (options.length > 12)
           ConstrainedBox(
@@ -295,7 +376,13 @@ class _Choice extends StatelessWidget {
 }
 
 class _DateTime extends StatelessWidget {
-  const _DateTime({required this.hub, required this.s, required this.comp, required this.scope, required this.keyBase});
+  const _DateTime({
+    required this.hub,
+    required this.s,
+    required this.comp,
+    required this.scope,
+    required this.keyBase,
+  });
   final A2uiHub hub;
   final A2uiSurface s;
   final Map comp;
@@ -311,11 +398,21 @@ class _DateTime extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text('${comp['label']}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.inkSoft)),
+          child: Text(
+            '${comp['label']}',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: c.inkSoft,
+            ),
+          ),
         ),
         OutlinedButton.icon(
           key: ValueKey(keyBase),
-          icon: Icon(isTime ? Icons.schedule_rounded : Icons.event_rounded, size: 16),
+          icon: Icon(
+            isTime ? Icons.schedule_rounded : Icons.event_rounded,
+            size: 16,
+          ),
           label: Text(cur.isEmpty ? 'Pick' : cur),
           onPressed: () async {
             if (isTime) {
@@ -328,8 +425,12 @@ class _DateTime extends StatelessWidget {
                 ),
               );
               if (t != null) {
-                hub.input(s.id, p, '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}',
-                    scope: scope);
+                hub.input(
+                  s.id,
+                  p,
+                  '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}',
+                  scope: scope,
+                );
               }
             } else {
               final now = DateTime.now();
@@ -340,7 +441,12 @@ class _DateTime extends StatelessWidget {
                 lastDate: DateTime(now.year + 3),
               );
               if (d != null) {
-                hub.input(s.id, p, d.toIso8601String().substring(0, 10), scope: scope);
+                hub.input(
+                  s.id,
+                  p,
+                  d.toIso8601String().substring(0, 10),
+                  scope: scope,
+                );
               }
             }
           },
@@ -351,7 +457,13 @@ class _DateTime extends StatelessWidget {
 }
 
 class _Field extends StatefulWidget {
-  const _Field({required this.hub, required this.s, required this.comp, required this.scope, required this.keyBase});
+  const _Field({
+    required this.hub,
+    required this.s,
+    required this.comp,
+    required this.scope,
+    required this.keyBase,
+  });
   final A2uiHub hub;
   final A2uiSurface s;
   final Map comp;
@@ -369,7 +481,9 @@ class _FieldState extends State<_Field> {
   @override
   void initState() {
     super.initState();
-    _ctl = TextEditingController(text: '${widget.s.read(_path, scope: widget.scope) ?? ''}');
+    _ctl = TextEditingController(
+      text: '${widget.s.read(_path, scope: widget.scope) ?? ''}',
+    );
   }
 
   @override
@@ -386,14 +500,22 @@ class _FieldState extends State<_Field> {
       controller: _ctl,
       maxLength: max,
       maxLines: widget.comp['multiline'] == true ? 3 : 1,
-      decoration: InputDecoration(labelText: '${widget.comp['label']}', isDense: true),
-      onChanged: (v) => widget.hub.input(widget.s.id, _path, v, scope: widget.scope),
+      decoration: InputDecoration(
+        labelText: '${widget.comp['label']}',
+        isDense: true,
+      ),
+      onChanged: (v) =>
+          widget.hub.input(widget.s.id, _path, v, scope: widget.scope),
     );
   }
 }
 
 class _Artifact extends StatefulWidget {
-  const _Artifact({required this.hub, required this.comp, required this.keyBase});
+  const _Artifact({
+    required this.hub,
+    required this.comp,
+    required this.keyBase,
+  });
   final A2uiHub hub;
   final Map comp;
   final String keyBase;
@@ -403,13 +525,19 @@ class _Artifact extends StatefulWidget {
 }
 
 class _ArtifactState extends State<_Artifact> {
-  late Future<Uint8List> _bytes = widget.hub.artifact(widget.comp['artifactId'] as int, widget.comp['sha256'] as String);
+  late Future<Uint8List> _bytes = widget.hub.artifact(
+    widget.comp['artifactId'] as int,
+    widget.comp['sha256'] as String,
+  );
 
   @override
   void didUpdateWidget(_Artifact old) {
     super.didUpdateWidget(old);
     if (old.comp['sha256'] != widget.comp['sha256']) {
-      _bytes = widget.hub.artifact(widget.comp['artifactId'] as int, widget.comp['sha256'] as String);
+      _bytes = widget.hub.artifact(
+        widget.comp['artifactId'] as int,
+        widget.comp['sha256'] as String,
+      );
     }
   }
 
@@ -430,12 +558,21 @@ class _ArtifactState extends State<_Artifact> {
                 style: TextStyle(color: c.danger, fontSize: 13),
               );
             }
-            if (!snap.hasData) return const SizedBox(height: 120, child: Center(child: CircularProgressIndicator()));
+            if (!snap.hasData) {
+              return const SizedBox(
+                height: 120,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
             return ClipRRect(
               borderRadius: BorderRadius.circular(UriRadius.sm),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 320),
-                child: Image.memory(snap.data!, key: ValueKey(widget.keyBase), gaplessPlayback: true),
+                child: Image.memory(
+                  snap.data!,
+                  key: ValueKey(widget.keyBase),
+                  gaplessPlayback: true,
+                ),
               ),
             );
           },
@@ -443,7 +580,10 @@ class _ArtifactState extends State<_Artifact> {
         if (widget.comp['caption'] != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text('${widget.comp['caption']}', style: TextStyle(fontSize: 11, color: c.inkFaint)),
+            child: Text(
+              '${widget.comp['caption']}',
+              style: TextStyle(fontSize: 11, color: c.inkFaint),
+            ),
           ),
       ],
     );
@@ -470,11 +610,22 @@ class A2uiNotices extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Container(
                   key: ValueKey('a2ui.notice.$i'),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(color: c.warningSoft, borderRadius: BorderRadius.circular(UriRadius.sm)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: c.warningSoft,
+                    borderRadius: BorderRadius.circular(UriRadius.sm),
+                  ),
                   child: Row(
                     children: [
-                      Expanded(child: Text(hub.notices[i], style: TextStyle(color: c.ink, fontSize: 13))),
+                      Expanded(
+                        child: Text(
+                          hub.notices[i],
+                          style: TextStyle(color: c.ink, fontSize: 13),
+                        ),
+                      ),
                       IconButton(
                         visualDensity: VisualDensity.compact,
                         icon: const Icon(Icons.close_rounded, size: 16),
