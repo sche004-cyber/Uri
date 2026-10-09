@@ -110,8 +110,9 @@ class FakeRecogniser:
         self.error = None
         self.load_ms = 1
 
-    def transcribe(self, audio, final):
+    def transcribe(self, audio, final, hotwords=""):
         self.calls.append((len(audio), final))
+        self.hotwords = hotwords
         if self.fail:
             raise RuntimeError("decoder crashed")
         return self.text, self.words if final else [], []
@@ -358,3 +359,14 @@ def test_punctuation_only_transcript_is_no_speech(env):
     env.svc.listen_stop("c1")
     fin = wait_for(env.events, "listen.final")
     assert fin["text"] == "" and fin["reason"] == "no_speech"
+
+
+def test_user_vocabulary_reaches_the_recogniser_and_is_sanitised(env):
+    env.svc.listen_start("c1", None, 60, "Gangtok; Tshering <script> Bhutia")
+    env.sd.streams[-1].feed(speech())
+    env.svc.listen_stop("c1")
+    wait_for(env.events, "listen.final")
+    assert env.svc.recogniser.hotwords == "Gangtok; Tshering <script> Bhutia"
+    assert env.mod.bias_words("Gangtok; Tshering <script> Bhutia") == "URI Gangtok Tshering script Bhutia"
+    assert env.mod.bias_words("") == "URI"
+    assert len(env.mod.bias_words("x" * 5000)) <= 4 + env.mod.VOCAB_MAX_CHARS

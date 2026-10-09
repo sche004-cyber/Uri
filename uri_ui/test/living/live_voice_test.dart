@@ -322,11 +322,17 @@ void main() {
     }
 
     test('push to talk opens the chosen microphone and release asks for the transcript', () async {
-      prefs.setVoice(prefs.voice.copyWith(microphone: 'USB Mic'));
+      prefs.setVoice(
+        prefs.voice.copyWith(
+          microphone: 'USB Mic',
+          vocabulary: 'Gangtok Tshering',
+        ),
+      );
       await ctl.pressTalk();
       expect(ctl.stage, VoiceStage.listening);
       final start = t.sent.lastWhere((c) => c['cmd'] == 'listen_start');
       expect(start['device'], 'USB Mic');
+      expect(start['vocabulary'], 'Gangtok Tshering');
       ctl.releaseTalk();
       expect(t.cmds.last, 'listen_stop');
       expect(ctl.stage, VoiceStage.transcribing);
@@ -603,6 +609,24 @@ void main() {
       },
     );
   });
+
+  test(
+    'voice preferences keep microphone, mode, reply speech and vocabulary',
+    () {
+      const p = VoicePreferences(
+        microphone: 'USB Mic',
+        speakReplies: false,
+        inputMode: VoiceInputMode.drafting,
+        vocabulary: 'Gangtok',
+      );
+      expect(VoicePreferences.fromJson(p.toJson()), p);
+      expect(
+        VoicePreferences.fromJson({'inputMode': 'bogus'}).inputMode,
+        VoiceInputMode.conversation,
+      );
+      expect(VoicePreferences.fromJson({}).speakReplies, isTrue);
+    },
+  );
 
   group('speakableText and completeSentences', () {
     test('markdown marks, code and tables are not read aloud', () {

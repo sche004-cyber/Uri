@@ -144,7 +144,11 @@ class VoiceInteractionController extends CompanionStateSource {
         'cap-${DateTime.now().microsecondsSinceEpoch}-${_rng.nextInt(1 << 20)}';
     _captureId = id;
     _clearNotice();
-    service.listenStart(id, device: preferences.voice.microphone);
+    service.listenStart(
+      id,
+      device: preferences.voice.microphone,
+      vocabulary: preferences.voice.vocabulary,
+    );
     _setStage(VoiceStage.listening);
   }
 

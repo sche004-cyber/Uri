@@ -20,10 +20,26 @@ class VoiceInputSettings extends StatefulWidget {
 }
 
 class _VoiceInputSettingsState extends State<VoiceInputSettings> {
+  TextEditingController? _vocabulary;
+
   @override
   void initState() {
     super.initState();
     _check();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _vocabulary ??= TextEditingController(
+      text: CompanionPreferences.of(context).voice.vocabulary,
+    );
+  }
+
+  @override
+  void dispose() {
+    _vocabulary?.dispose();
+    super.dispose();
   }
 
   Future<void> _check() async {
@@ -168,6 +184,24 @@ class _VoiceInputSettingsState extends State<VoiceInputSettings> {
                         : 'Spoken questions go to URI like typed ones; URI answers aloud.')
                   : 'Drafting by voice needs the Text Intelligence draft desk, which is not in this build.',
               key: const ValueKey('voice-mode-note'),
+              style: note,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              key: const ValueKey('voice-vocabulary'),
+              controller: _vocabulary,
+              maxLength: 400,
+              decoration: const InputDecoration(
+                labelText: 'Words URI should recognise',
+                hintText:
+                    'Names, places, terms, e.g. Gangtok Tshering Dussehra',
+                isDense: true,
+              ),
+              onChanged: (v) =>
+                  prefs.setVoice(prefs.voice.copyWith(vocabulary: v)),
+            ),
+            Text(
+              "Spoken names in this list are recognised more reliably. URI's own name is always expected.",
               style: note,
             ),
             SwitchListTile(

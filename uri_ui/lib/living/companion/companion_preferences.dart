@@ -275,6 +275,7 @@ class VoicePreferences {
     this.microphone,
     this.speakReplies = true,
     this.inputMode = VoiceInputMode.conversation,
+    this.vocabulary = '',
   });
 
   /// `<engine>:<voice name>`, or null for the engine default.
@@ -305,6 +306,10 @@ class VoicePreferences {
 
   final VoiceInputMode inputMode;
 
+  /// Names and words the recogniser should expect (people, places, terms),
+  /// space separated. Empty: only URI's own name is expected.
+  final String vocabulary;
+
   VoicePreferences copyWith({
     Object? voiceId = _keep,
     int? volume,
@@ -315,6 +320,7 @@ class VoicePreferences {
     Object? microphone = _keep,
     bool? speakReplies,
     VoiceInputMode? inputMode,
+    String? vocabulary,
   }) => VoicePreferences(
     voiceId: identical(voiceId, _keep) ? this.voiceId : voiceId as String?,
     volume: (volume ?? this.volume).clamp(0, 100),
@@ -327,6 +333,7 @@ class VoicePreferences {
         : microphone as String?,
     speakReplies: speakReplies ?? this.speakReplies,
     inputMode: inputMode ?? this.inputMode,
+    vocabulary: vocabulary ?? this.vocabulary,
   );
 
   static const Object _keep = Object();
@@ -341,6 +348,7 @@ class VoicePreferences {
     'microphone': microphone,
     'speakReplies': speakReplies,
     'inputMode': inputMode.name,
+    'vocabulary': vocabulary,
   };
 
   static VoicePreferences fromJson(Object? json) {
@@ -356,6 +364,7 @@ class VoicePreferences {
     final mic = json['microphone'];
     final sr = json['speakReplies'];
     final mode = json['inputMode'];
+    final vocab = json['vocabulary'];
     return VoicePreferences(
       voiceId: id is String && id.contains(':') ? id : null,
       volume: i('volume', 100, 0, 100),
@@ -369,6 +378,7 @@ class VoicePreferences {
         (m) => m.name == mode,
         orElse: () => VoiceInputMode.conversation,
       ),
+      vocabulary: vocab is String ? vocab : '',
     );
   }
 
@@ -383,7 +393,8 @@ class VoicePreferences {
       other.waveform == waveform &&
       other.microphone == microphone &&
       other.speakReplies == speakReplies &&
-      other.inputMode == inputMode;
+      other.inputMode == inputMode &&
+      other.vocabulary == vocabulary;
 
   @override
   int get hashCode => Object.hash(
@@ -396,6 +407,7 @@ class VoicePreferences {
     microphone,
     speakReplies,
     inputMode,
+    vocabulary,
   );
 }
 

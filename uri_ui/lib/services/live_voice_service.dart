@@ -353,13 +353,18 @@ class LiveVoiceService implements VoiceServiceAdapter {
 
   // ---- commands --------------------------------------------------------
 
-  void listenStart(String id, {String? device, double maxSeconds = 60}) =>
-      _transport?.send({
-        'cmd': 'listen_start',
-        'id': id,
-        'device': device,
-        'max_s': maxSeconds,
-      });
+  void listenStart(
+    String id, {
+    String? device,
+    double maxSeconds = 60,
+    String vocabulary = '',
+  }) => _transport?.send({
+    'cmd': 'listen_start',
+    'id': id,
+    'device': device,
+    'max_s': maxSeconds,
+    'vocabulary': vocabulary,
+  });
 
   void listenStop(String id) =>
       _transport?.send({'cmd': 'listen_stop', 'id': id});

@@ -22,7 +22,7 @@ Rules this process enforces itself, whatever the client asks:
 Commands (stdin):
   {"cmd": "hello"}                                   -> ready
   {"cmd": "devices"}                                 -> devices
-  {"cmd": "listen_start", "id", "device"?, "max_s"?} -> listen.started | listen.error
+  {"cmd": "listen_start", "id", "device"?, "max_s"?, "vocabulary"?} -> listen.started | listen.error
   {"cmd": "listen_stop", "id"}                       -> listen.closed, listen.final
   {"cmd": "listen_cancel", "id"}                     -> listen.closed (no transcript)
   {"cmd": "speak", "id", "text", "voice", "final"}   -> speak.started / level / progress / ended
@@ -63,6 +63,19 @@ SILENT_PEAK = 0.004
 # "Yuri" or "Fury" in 6 of 6 real-microphone trials; with it 4 of 6 were right
 # and "You are right" stayed unchanged (docs/voice/live/evidence/name_bias).
 HOTWORDS = "URI"
+# A user vocabulary (names, places) adds to the bias. On the 45-recording set a
+# vocabulary of its local names took format-normalised WER from 3.9 % to 1.0 %
+# with no sentence worse (docs/voice/live/evidence/stt/vocab_probe.json; the
+# vocabulary came from the test sentences, so the gain is optimistic).
+VOCAB_MAX_CHARS = 400
+
+
+def bias_words(vocabulary: str) -> str:
+    """The assistant's name plus the user's words: letters, digits, spaces,
+    hyphens and apostrophes only, bounded in length."""
+    clean = re.sub(r"[^A-Za-z0-9' -]+", " ", vocabulary or "")
+    clean = " ".join(clean.split())[:VOCAB_MAX_CHARS]
+    return (HOTWORDS + " " + clean).strip()
 
 _out_lock = threading.Lock()
 
@@ -213,7 +226,7 @@ class Recogniser:
         finally:
             self.ready.set()
 
-    def transcribe(self, audio, final: bool):
+    def transcribe(self, audio, final: bool, hotwords: str = ""):
         if not self.ready.wait(30):
             raise RuntimeError("speech model still loading")
         if self.model is None:
@@ -227,7 +240,7 @@ class Recogniser:
                 word_timestamps=final,
                 condition_on_previous_text=False,
                 without_timestamps=not final,
-                hotwords=HOTWORDS,
+                hotwords=bias_words(hotwords),
             )
             segs = list(segments)
         text = " ".join(s.text.strip() for s in segs).strip()
@@ -256,7 +269,7 @@ def uncertain_spans(text: str, words) -> list[str]:
 
 
 class Capture:
-    def __init__(self, svc: "Service", cid: str, device: dict, max_s: float):
+    def __init__(self, svc: "Service", cid: str, device: dict, max_s: float, vocabulary: str = ""):
         import numpy as np
 
         self.np = np
@@ -264,6 +277,7 @@ class Capture:
         self.id = cid
         self.device = device
         self.max_s = max_s
+        self.vocabulary = vocabulary
         self.blocks: list = []
         self.samples = 0
         self.closed = threading.Event()
@@ -330,7 +344,7 @@ class Capture:
             last = self.samples
             a = self.audio()[-int(PARTIAL_WINDOW_S * SR):]
             try:
-                text, _, _ = self.svc.recogniser.transcribe(a, final=False)
+                text, _, _ = self.svc.recogniser.transcribe(a, final=False, hotwords=self.vocabulary)
             except Exception:  # noqa: BLE001 - a failed partial is not fatal
                 continue
             if text and not self.closed.is_set():
@@ -598,7 +612,7 @@ class Service:
              model_load_ms=self.recogniser.load_ms, privacy=microphone_privacy(), pid=os.getpid(),
              **list_devices(self.sd))
 
-    def listen_start(self, cid: str, device: str | None, max_s: float):
+    def listen_start(self, cid: str, device: str | None, max_s: float, vocabulary: str = ""):
         priv = microphone_privacy()
         if priv["state"] == "denied":
             emit("listen.error", id=cid, code="MIC_DENIED", message=priv["detail"])
@@ -619,7 +633,7 @@ class Service:
             if dev is None:
                 emit("listen.error", id=cid, code=code, message=msg)
                 return
-            cap = Capture(self, cid, dev, max_s)
+            cap = Capture(self, cid, dev, max_s, vocabulary)
             try:
                 cap.open()
             except Exception as e:  # noqa: BLE001
@@ -658,7 +672,7 @@ class Service:
             return
         t = time.perf_counter()
         try:
-            text, words, _ = self.recogniser.transcribe(audio, final=True)
+            text, words, _ = self.recogniser.transcribe(audio, final=True, hotwords=cap.vocabulary)
         except Exception as e:  # noqa: BLE001
             emit("listen.error", id=cap.id, code="RECOGNIZER_FAILED", message=f"Recognition failed: {e}")
             return
@@ -685,7 +699,8 @@ class Service:
                     emit("devices", privacy=microphone_privacy(), **list_devices(self.sd))
                 elif cmd == "listen_start":
                     self.listen_start(str(c["id"]), c.get("device") or None,
-                                      min(float(c.get("max_s") or DEFAULT_MAX_S), 120.0))
+                                      min(float(c.get("max_s") or DEFAULT_MAX_S), 120.0),
+                                      str(c.get("vocabulary") or ""))
                 elif cmd == "listen_stop":
                     self.listen_stop(str(c["id"]))
                 elif cmd == "listen_cancel":
