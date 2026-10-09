@@ -150,3 +150,9 @@ def test_lv1_hinglish_family_function_is_a_letter_not_code_work():
                    has_draft=False)
     assert r.kind == X.DRAFT_NEW
     assert X.classify("Fix the bug in this function", has_draft=False).reasons == ["code_work"]   # code stays code
+
+
+@pytest.mark.parametrize("text", ["bug report likho aur bug fix karo", "is function ka note likho aur function fix karo",
+                                  "code ka summary likho"])
+def test_lv1_code_work_with_any_other_code_word_or_action_stays_code_work(text):
+    assert X.classify(text, has_draft=False).reasons == ["code_work"]          # Codex TIWS r6

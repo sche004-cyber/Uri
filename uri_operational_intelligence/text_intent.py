@@ -135,6 +135,16 @@ def _core_only(t: str) -> bool:
     return False
 
 
+def _family_function_letter(head: str) -> bool:
+    """'ghar mein function hai': "function" is also a family event. A Hinglish drafting request is language work when
+    "function" is its ONLY code word and it asks for no code action (live finding LV-1; Codex TIWS r6: "bug report
+    likho aur bug fix karo" must stay code work, so the fix request is never folded into a draft)."""
+    words = {w.lower() for w in _CODE.findall(head)}
+    return (words == {"function"} and bool(_DRAFT_HINGLISH.search(head))
+            and not _CODE_ACTION.search(head))
+
+
+_CODE_ACTION = re.compile(r"\b(?:fix|debug|compile|run|deploy|refactor|install|theek kar\w*|sudhar\w*)\b", re.I)
 _CODE = re.compile(r"\b(?:code|bug|function|stack ?trace|compile|repo(?:sitory)?|python|flutter|script)\b", re.I)
 
 _UNDO = re.compile(r"^\s*(?:(?:uri|ok|okay|no|please)[,!]?\s+)*(?:undo|revert|roll back|rollback|go back|take back|"
@@ -339,9 +349,7 @@ def classify(text: str, *, has_draft: bool) -> TextIntent:
         return TextIntent(DRAFT_NEW, ["ambiguous_action_sentences"], instruction=t, ambiguous=ambiguous)
     if _core_only(t):
         return TextIntent(NONE, ["core_only_request"])
-    # "function" is also a family event ("ghar mein function hai"): a drafting request in Hinglish is not code work
-    # (live finding LV-1, 2026-10-09), just as an English one is not.
-    if _CODE.search(head) and not _DRAFT_NEW.match(t) and not _DRAFT_HINGLISH.search(head):
+    if _CODE.search(head) and not _DRAFT_NEW.match(t) and not _family_function_letter(head):
         return TextIntent(NONE, ["code_work"])
     if _EXPAND.match(t):
         ins, payload = split_payload(t)
