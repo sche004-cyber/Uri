@@ -210,6 +210,19 @@ def test_r14_comma_does_not_cut_the_replacement():
 
 
 def test_r14_score_is_not_a_time_and_flags_show_clock_text():
-    assert V.canonical_numbers("The match ended 3:20.") >= {3, 20}
+    # Revised after Codex TI r15: every HH:MM is a clock token; a changed score is still a visible change.
+    assert V.check_meaning_preserved("The match ended 3:20.", "The match ended 3:21.")
     f = V.check_meaning_preserved("Meet at 6 pm", "Meet at 7 pm.")
     assert "18:00" in f[0]["detail"] and "1000" not in f[0]["detail"]
+
+
+
+# Codex TI round 15.
+def test_r15_honorific_period_does_not_end_the_replacement():
+    assert V.swap_pairs("Replace advisor with Dr. Mehta") == [("advisor", "Dr. Mehta")]
+    assert not V.correction_visible("Replace advisor with Dr. Mehta", "The advisor will attend.", "Dr. will attend.")
+
+
+def test_r15_any_hh_mm_change_is_flagged():
+    assert V.check_meaning_preserved("Departure: 18:00", "Departure: 00:18.")
+    assert V.check_meaning_preserved("Departure: 18:00", "Departure: 18:00.") == []

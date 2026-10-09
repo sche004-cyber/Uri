@@ -64,11 +64,10 @@ def _fold(s):
     # A clock time becomes one token with hour, minutes and half of day ("6 pm" = "6:00 PM" = clock1800, but
     # "6 am" = clock0600): Codex TI r12, a time must never lose its minutes or am/pm when compared.
     s = re.sub(r"\b(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)(?![a-z])", _clock, s)
-    # 24-hour times only where a time is meant ("at 18:00", "from 09:30", "18:00 hrs"); a score or verse "3:20" stays.
-    s = re.sub(r"\b(at|from|to|till|until|by|before|after|between|and)\s+([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*(?:a\.?m|p\.?m))|"
-               r"\b([01]?\d|2[0-3]):([0-5]\d)\s*(?:hrs|hours|h)\b",
-               lambda m: (" %s clock%02d%s " % (m.group(1), int(m.group(2)), m.group(3)) if m.group(1)
-                          else " clock%02d%s " % (int(m.group(4)), m.group(5))), s)
+    # Every HH:MM becomes a clock token (Codex TI r15: "Departure: 18:00" -> "00:18" must be a visible change). A
+    # score such as "3:20" is folded too; any change to it still changes the token, so nothing is hidden.
+    s = re.sub(r"\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*(?:a\.?m|p\.?m))",
+               lambda m: " clock%02d%s " % (int(m.group(1)), m.group(2)), s)
     return s
 
 
@@ -554,10 +553,10 @@ def date_mentions(text) -> list:
 
 _SWAP_PAIR = re.compile(
     r"(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\s+[\"'“‘]?(?P<x1>.{1,120}?)[\"'”’]?\s*[.,;]\s*(?:instead\s+)?"
-    r"(?:say|write|use|put)\s+[\"'“‘]?(?P<y1>[^.;\n\"”’]{1,160})|"
-    r"replace\s+[\"'“‘]?(?P<x2>.{1,120}?)[\"'”’]?\s+with\s+[\"'“‘]?(?P<y2>[^.;\n\"”’]{1,160})|"
-    r"change\s+[\"'“‘]?(?P<x3>.{1,120}?)[\"'”’]?\s+to\s+[\"'“‘]?(?P<y3>[^.;\n\"”’]{1,160})|"
-    r"instead of\s+[\"'“‘]?(?P<x4>.{1,120}?)[\"'”’]?\s*,?\s*(?:say|write|use|put)\s+[\"'“‘]?(?P<y4>[^.;\n\"”’]{1,160})",
+    r"(?:say|write|use|put)\s+[\"'“‘]?(?P<y1>(?:(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|Shri|Smt|No|[A-Z])\.\s*|[^.;\n\"”’]){1,160})|"
+    r"replace\s+[\"'“‘]?(?P<x2>.{1,120}?)[\"'”’]?\s+with\s+[\"'“‘]?(?P<y2>(?:(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|Shri|Smt|No|[A-Z])\.\s*|[^.;\n\"”’]){1,160})|"
+    r"change\s+[\"'“‘]?(?P<x3>.{1,120}?)[\"'”’]?\s+to\s+[\"'“‘]?(?P<y3>(?:(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|Shri|Smt|No|[A-Z])\.\s*|[^.;\n\"”’]){1,160})|"
+    r"instead of\s+[\"'“‘]?(?P<x4>.{1,120}?)[\"'”’]?\s*,?\s*(?:say|write|use|put)\s+[\"'“‘]?(?P<y4>(?:(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|Shri|Smt|No|[A-Z])\.\s*|[^.;\n\"”’]){1,160})",
     re.I | re.S)
 
 
