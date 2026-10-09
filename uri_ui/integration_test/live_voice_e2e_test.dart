@@ -271,7 +271,7 @@ void main() {
     }
 
     try {
-      if (scenarios.contains('brain')) {
+      if (scenarios.contains('brain') || scenarios.contains('manual')) {
         // UI first: the Brain host is started after this window opened. The
         // run waits for it before any scenario, so an action reaches Core with
         // a Brain to interpret it (approval card scenario D4).
