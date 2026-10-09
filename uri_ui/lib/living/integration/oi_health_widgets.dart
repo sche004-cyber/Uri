@@ -77,7 +77,8 @@ class OiHealthBanner extends StatelessWidget {
     final c = UriColors.of(context);
     final h = conversation.brainHealth;
     final st = conversation.healthState;
-    if (st == null || st == 'READY' || st == 'BUSY') return const SizedBox.shrink();
+    final warning = h['warning'] as String?;
+    if (st == null || ((st == 'READY' || st == 'BUSY') && warning == null)) return const SizedBox.shrink();
     final options = [for (final o in (h['recovery_options'] as List? ?? const [])) '$o'];
     final consumers = [
       for (final x in ((h['gpu'] as Map?)?['consumers'] as List? ?? const []))
@@ -93,9 +94,15 @@ class OiHealthBanner extends StatelessWidget {
             Row(children: [
               Icon(st == 'RECOVERING' ? Icons.autorenew_rounded : Icons.speed_rounded, size: 16, color: healthColor(c, st)),
               const SizedBox(width: 6),
-              Text('Brain: ${healthLabel(st)}', style: TextStyle(color: c.ink, fontWeight: FontWeight.w600)),
+              Text('Brain: ${healthLabel(st)}${warning != null ? ' · GPU memory taken' : ''}',
+                  style: TextStyle(color: c.ink, fontWeight: FontWeight.w600)),
             ]),
-            if (h['explain'] != null)
+            if (warning != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(warning, key: const ValueKey('oi-health-warning'), style: TextStyle(color: c.warning, fontSize: 12.5)),
+              ),
+            if (h['explain'] != null && warning == null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text('${h['explain']}', key: const ValueKey('oi-health-explain'), style: TextStyle(color: c.inkSoft, fontSize: 12.5)),

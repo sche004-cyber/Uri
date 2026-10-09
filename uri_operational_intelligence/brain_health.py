@@ -29,6 +29,10 @@ REPORT_SCHEMA = "uri.ws.brain_host.v1"
 REQUEST_SCHEMA = "uri.ws.brain_request.v1"
 REPORT_FILE, REQUEST_FILE = "brain_host.json", "brain_request.json"
 ACTIONS = ("restart", "stop", "start")
+# The Brain host rewrites its report at least this often (heartbeat). A report older than HOST_STALE_S whose process
+# cannot be inspected is evidence of a dead host; a fresh one is evidence of a live host.
+HOST_HEARTBEAT_S = 15.0
+HOST_STALE_S = 90.0
 
 READY, BUSY, DEGRADED, UNAVAILABLE, RECOVERING = "READY", "BUSY", "DEGRADED", "UNAVAILABLE", "RECOVERING"
 HOST_RECOVERING = {"STARTING", "LOADING", "CALIBRATING", "RELEASE_WAIT", "STOPPING", "STARTING_HOST"}
@@ -47,7 +51,7 @@ def backend(cfg) -> dict:
 
 
 def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, busy: bool, selected: dict,
-           cfg: dict, now=None) -> dict:
+           cfg: dict, now=None, server=None) -> dict:
     """readiness: Readiness.to_dict(); host: the host report (or None); perf: PerfMonitor.assess(sample=False) for the
     current server process; selected: the bridge's Brain selection."""
     now = now or time.time()
@@ -56,6 +60,9 @@ def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, 
     h = host if (host and host_alive) else None
     h_state = h.get("state") if h else None
     cal = (h or {}).get("calibration") or {}
+    # The host's calibration counts only for the server process readiness just verified (Codex H-r5).
+    if cal and not _same_instance(cal, server):
+        cal = {}
     out = {"readiness": r_state, "busy": bool(busy), "backend": backend(cfg), "selected": selected,
            "host": {"running": bool(h), "state": h_state, "explain": h and h.get("explain"),
                     "updated_age_s": round(now - h["updated_at"], 1) if h and h.get("updated_at") else None,
@@ -84,6 +91,17 @@ def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, 
             state = BUSY if busy else READY
             if slow is None:
                 reasons.append("SPEED_NOT_MEASURED")
+        alert = (h or {}).get("residency_alert") or {}
+        if alert and state in (READY, BUSY) and _same_instance(
+                {"server_pid": alert.get("server_pid"), "server_create_time": alert.get("server_create_time")}, server):
+            # Memory was taken after load; no speed evidence yet, so the state stays READY/BUSY with a warning.
+            reasons.append("GPU_MEMORY_TAKEN_AFTER_LOAD")
+            options.append("restart_brain")
+            if any(not c.get("role") for c in out["gpu"].get("consumers") or []):
+                options.append("close_gpu_apps")
+            out["warning"] = ("Another app took GPU memory after the Brain loaded (%.1f GB moved to system memory). "
+                              "It may answer more slowly; the next answers will show it."
+                              % ((alert.get("growth_mib") or 0) / 1024))
         if state == DEGRADED:
             if h:
                 options.append("restart_brain")
@@ -121,6 +139,13 @@ def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, 
     return out
 
 
+def _same_instance(cal, server) -> bool:
+    if not server or server.get("pid") is None or cal.get("server_pid") != server.get("pid"):
+        return False
+    a, b = cal.get("server_create_time"), server.get("create_time")
+    return a is not None and b is not None and abs(float(a) - float(b)) < 1.0
+
+
 def _speed(perf, cal):
     """(slow?, evidence). Real-turn evidence (>= 3 samples of the current instance) is newer than the calibration
     taken when the instance became READY, so it decides when present."""
@@ -153,14 +178,24 @@ def read_host_report(report_dir) -> tuple[dict | None, bool]:
         return None, False
     if not isinstance(rep, dict) or rep.get("schema") != REPORT_SCHEMA:
         return None, False
-    alive = False
+    return rep, host_alive(rep)
+
+
+def host_alive(rep, now=None) -> bool:
+    """Positive evidence only (Codex H-r3): the process is gone or its start time differs (pid reused) means dead;
+    a successful inspection means alive. When the process cannot be inspected (access denied, transient error), the
+    heartbeat decides: fresh means alive, stale means dead."""
     try:
         import psutil
         p = psutil.Process(int(rep.get("host_pid")))
-        alive = p.is_running() and abs(p.create_time() - float(rep.get("host_started") or 0)) < 5.0
-    except Exception:
-        alive = False
-    return rep, alive
+        return p.is_running() and abs(p.create_time() - float(rep.get("host_started") or 0)) < 5.0
+    except (ImportError, ValueError, TypeError):
+        pass
+    except Exception as exc:
+        if type(exc).__name__ in ("NoSuchProcess", "ZombieProcess"):
+            return False
+    beat = max(float(rep.get("updated_at") or 0), float(rep.get("heartbeat_at") or 0))
+    return ((now or time.time()) - beat) < HOST_STALE_S
 
 
 def write_host_request(report_dir, action) -> dict:

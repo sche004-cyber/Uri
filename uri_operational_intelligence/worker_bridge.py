@@ -53,6 +53,10 @@ COMMANDS = {
 }
 OPEN_WHILE_BUSY = {"oi_cancel", "brain_status", "brain_catalog", "cloud_policy", "brain_health", "oi_turn_status"}
 PERF_SAMPLES = 48
+# A Brain restart/stop request blocks new turns until the host has acted on it (Codex H-r1 F2): the busy check and
+# the request are made on the worker's single command thread, and no turn can start between them or after them while
+# the host has not finished. Bounded: a host that never answers releases the gate after this long.
+RESTART_GATE_S = 600.0
 # A decision on the turn whose job is still finishing (the card is shown by an event the job emits before it records
 # the continuation) waits for that job instead of being refused (Codex WS round 1, F1).
 CONTINUATIONS = {"oi_decide", "oi_confirm", "oi_abandon"}
@@ -116,6 +120,8 @@ class IntegratedTurns:
         self._job_started = None      # monotonic start of the running job
         self._last_event = None       # monotonic time of the job's last event frame
         self._job_events = 0
+        self._restart = None          # {"id", "t", "until"} of a Brain request the host has not finished
+        self._perf_ident = None       # (pid, create_time) of the server the timing samples belong to
 
     # ---- state ---------------------------------------------------------------------------------
     @property
@@ -139,7 +145,25 @@ class IntegratedTurns:
                 job[1].join(JOIN_S)
         if kind not in OPEN_WHILE_BUSY and self.busy:
             raise BridgeRefused("TURN_IN_PROGRESS")
+        if kind == "oi_turn" and self._restart_pending():
+            raise BridgeRefused("BRAIN_RESTARTING")
         return getattr(self, "_" + kind)(command)
+
+    def _restart_pending(self):
+        """Open the gate only on positive evidence (Codex H-r2): the host marked THIS request DONE, or a readable
+        report names a host process that no longer exists, or the bounded gate expired. An unreadable report keeps
+        the gate closed."""
+        r = self._restart
+        if r is None:
+            return False
+        host, alive = self._host()
+        result = ((host or {}).get("requests") or {}).get(r["id"])
+        done = (time.time() > r["until"]
+                or (host is not None and alive is False)
+                or result in ("DONE", "IGNORED_INVALID_OR_STALE"))
+        if done:
+            self._restart = None
+        return not done
 
     def _start(self, turn_id, fn):
         with self._lock:
@@ -392,18 +416,30 @@ class IntegratedTurns:
             readiness = self._status().to_dict()
         except Exception as exc:
             readiness = {"state": "UNKNOWN", "detail": type(exc).__name__}
-        readiness.pop("live_identity", None)
+        proc = ((readiness.pop("live_identity", None) or {}).get("process") or {})
         host, alive = self._host()
-        # Real-turn timings of the CURRENT instance only: samples older than this instance's calibration belong to a
-        # previous process (a restart resets the evidence).
-        since = ((host or {}).get("calibration") or {}).get("t") if alive else None
+        # Real-turn timings of the CURRENT instance only (Codex H-r4). The instance is the verified server process
+        # (pid + start time from the accepted readiness check); when it changes the samples are dropped, and when it
+        # cannot be established none is used. With a live host, samples older than its calibration are excluded too.
+        ident = (proc.get("pid"), proc.get("create_time")) if readiness.get("state") == "READY" else None
+        if ident is None or None in ident:
+            samples = []
+        else:
+            if ident != self._perf_ident:
+                self._perf_ident = ident
+                self._perf = deque((s for s in self._perf if s[0] >= (proc.get("create_time") or 0)), maxlen=PERF_SAMPLES)
+            since = ((host or {}).get("calibration") or {}).get("t") if alive else None
+            samples = [timings for t, timings in list(self._perf) if since is None or t >= since]
         mon = PerfMonitor(sampler=lambda _pid: (None, None))
-        for t, timings in list(self._perf):
-            if since is None or t >= since:
-                mon.record(timings)
+        for timings in samples:
+            mon.record(timings)
         perf = mon.assess(sample=False)
         out = brain_health.assess(readiness=readiness, host=host, host_alive=alive, perf=perf, busy=self.busy,
-                                  selected=self.selected, cfg=self.cfg)
+                                  selected=self.selected, cfg=self.cfg,
+                                  server={"pid": proc.get("pid"), "create_time": proc.get("create_time")})
+        if self._restart_pending() and out["state"] != brain_health.RECOVERING:
+            out.update(state=brain_health.RECOVERING, reasons=["RESTART_REQUESTED"] + list(out.get("reasons") or []),
+                       recovery_options=[], explain="The Brain restart was requested; URI is waiting for it.")
         out["checked_at"] = round(time.time(), 3)
         return out
 
@@ -416,7 +452,11 @@ class IntegratedTurns:
         host, alive = self._host()
         if not alive:
             raise BridgeRefused("BRAIN_HOST_NOT_RUNNING")
+        now = time.time()
         req = self._host_request(action)
+        # The gate follows the LATEST control request (Codex H-r3): a later request overwrites the request file, so
+        # an earlier one may never be read; the host acts on the latest and marks its id.
+        self._restart = {"id": req.get("id"), "t": now, "until": now + RESTART_GATE_S}
         return {"requested": action, "request_id": req.get("id"), "host_state": host.get("state")}
 
     def _oi_turn_status(self, _c):

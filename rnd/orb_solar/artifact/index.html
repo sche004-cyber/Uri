@@ -1,0 +1,282 @@
+<title>URI Solar Orb</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: a full-bleed dark observatory wall - control strip, 2x2 plate of
+     live orbs, then the written findings in a single reading column. */
+  :root {
+    --bg:     #0a0705;
+    --panel:  #140e0b;
+    --plate:  #000000;
+    --line:   #2b1d16;
+    --ink:    #f6ece3;
+    --dim:    #a3907f;
+    --accent: #ffae4d;
+    --hot:    #ffd79a;
+    --ember:  #d4491f;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+    --serif: "Spectral", Georgia, "Times New Roman", serif;
+    color-scheme: dark;
+  }
+
+  /* Deliberately single-theme: the orb is an emissive object and only reads
+     against a near-black ground, so there is no light variant. */
+
+  html, body { background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { padding-inline: 20px; max-width: 1240px; margin: 0 auto; }
+
+  header.top {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar {
+    display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center;
+    padding-block: 12px;
+  }
+  .brand {
+    font-family: var(--serif); font-size: 19px; font-weight: 600;
+    letter-spacing: .01em; margin: 0; color: var(--hot);
+  }
+  .brand em { font-style: italic; color: var(--accent); }
+  .ctl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .ctl > span.lbl {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dim); margin-right: 2px;
+  }
+  button {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .02em;
+    color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 5px 11px; cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  button:hover { border-color: #6b4524; }
+  button.on { background: #35200d; border-color: var(--accent); color: var(--accent); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input[type=range] { accent-color: var(--accent); width: 96px; }
+  #fps, #speedVal {
+    font-family: var(--mono); font-size: 11.5px; color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+  #fps { margin-left: auto; }
+
+  .plate {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden; margin-block: 20px;
+  }
+  .cell { background: var(--plate); position: relative; }
+  .cell canvas { display: block; width: 100%; aspect-ratio: 4 / 3; max-width: 100%; }
+  .cap {
+    position: absolute; inset: 0 0 auto 0; z-index: 2; pointer-events: none;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 10px; padding: 11px 13px;
+    background: linear-gradient(#000000cc, #0000);
+  }
+  .cap b {
+    display: block; font-family: var(--mono); font-size: 11px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--hot);
+    font-weight: 500;
+  }
+  .cap i {
+    display: block; font-style: normal; font-size: 12px; color: var(--dim);
+    margin-top: 2px; max-width: 42ch;
+  }
+  .badge {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--dim);
+    border: 1px solid var(--line); border-radius: 99px; padding: 2px 7px;
+    white-space: nowrap; background: #0008;
+  }
+  .badge.bad { color: #ff7a66; border-color: #5e2320; background: #2a1110; }
+
+  main { padding-bottom: 56px; }
+  .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 40px; }
+  section { min-width: 0; }
+  h2 {
+    font-family: var(--serif); font-size: 22px; font-weight: 600;
+    margin: 34px 0 10px; text-wrap: balance; color: var(--hot);
+  }
+  h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent);
+    margin: 22px 0 7px; font-weight: 500;
+  }
+  p { margin: 0 0 11px; max-width: 68ch; }
+  .dim { color: var(--dim); }
+  ul { margin: 0 0 11px; padding-left: 17px; max-width: 68ch; }
+  li { margin-bottom: 5px; }
+  li::marker { color: var(--ember); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  caption {
+    text-align: left; color: var(--dim); font-size: 12px;
+    padding-bottom: 7px; font-family: var(--mono);
+  }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+  th {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--dim); font-weight: 500;
+  }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+  tr.win td { color: var(--hot); }
+  .scroller { overflow-x: auto; }
+
+  .verdict {
+    border-left: 2px solid var(--accent);
+    background: linear-gradient(90deg, #ffae4d14, transparent 70%);
+    padding: 14px 18px; margin: 18px 0; border-radius: 0 8px 8px 0;
+  }
+  .verdict p:last-child { margin-bottom: 0; }
+  code {
+    font-family: var(--mono); font-size: 12.5px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 5px; color: var(--hot);
+  }
+  #diag {
+    font-family: var(--mono); font-size: 11px; color: var(--dim);
+    white-space: pre-wrap; margin: 14px 0 0;
+  }
+  footer {
+    border-top: 1px solid var(--line); margin-top: 38px; padding-block: 18px;
+    font-family: var(--mono); font-size: 11px; color: var(--dim);
+  }
+
+  @media (max-width: 760px) {
+    .plate { grid-template-columns: 1fr; }
+    .cols { grid-template-columns: 1fr; }
+    .cap i { display: none; }
+    #fps { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    button { transition: none; }
+  }
+</style>
+
+<header class="top">
+  <div class="wrap topbar">
+    <h1 class="brand">URI <em>Solar Orb</em></h1>
+    <div class="ctl">
+      <span class="lbl">state</span>
+      <button data-state="idle" class="on">idle</button>
+      <button data-state="listening">listening</button>
+      <button data-state="thinking">thinking</button>
+      <button data-state="speaking">speaking</button>
+      <button data-state="acting">acting</button>
+    </div>
+    <div class="ctl">
+      <span class="lbl">time</span>
+      <button id="pause">pause</button>
+      <input id="speed" type="range" min="0.1" max="2" step="0.05" value="1" aria-label="Time scale">
+      <span id="speedVal">1.00x</span>
+    </div>
+    <span id="fps">-- fps</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="plate">
+    <div class="cell">
+      <div class="cap">
+        <span><b>A &middot; Solar Intelligence</b><i>Composed star core. Convective mottling, filament crests, a few corona streamers.</i></span>
+        <span class="badge" data-badge="A">shader</span>
+      </div>
+      <canvas data-proto="A" data-radius="0.34" aria-label="Prototype A, Solar Intelligence"></canvas>
+    </div>
+    <div class="cell">
+      <div class="cap">
+        <span><b>B &middot; Ember Storm</b><i>One flame volume with a ragged, non-circular outline. Dense ember field.</i></span>
+        <span class="badge" data-badge="B">shader</span>
+      </div>
+      <canvas data-proto="B" data-radius="0.30" aria-label="Prototype B, Ember Storm"></canvas>
+    </div>
+    <div class="cell">
+      <div class="cap">
+        <span><b>C &middot; Magnetic Sun</b><i>Photosphere plus parametric prominence arcs on staggered lifecycles.</i></span>
+        <span class="badge" data-badge="C">shader</span>
+      </div>
+      <canvas data-proto="C" data-radius="0.32" aria-label="Prototype C, Magnetic Sun"></canvas>
+    </div>
+    <div class="cell">
+      <div class="cap">
+        <span><b>D &middot; Refined</b><i>C's arcs plus B's silhouette breach, gated by energy. The recommendation.</i></span>
+        <span class="badge" data-badge="D">shader</span>
+      </div>
+      <canvas data-proto="D" data-radius="0.32" aria-label="Prototype D, Refined"></canvas>
+    </div>
+  </div>
+  <pre id="diag"></pre>
+</div>
+
+<main class="wrap">
+  <h2>What each direction does</h2>
+  <div class="cols">
+    <section>
+      <h3>A &mdash; Solar Intelligence</h3>
+      <p>A photosphere built from domain-warped mottling with ridged fibril crests, a limb that darkens the way a real stellar disc does, and a corona clumped into a handful of curved streamers rather than an even halo.</p>
+      <p class="dim">Strong: the most composed and the cheapest. Weak: the silhouette stays a circle, so at low energy it is the closest of the four to an ordinary glowing ball.</p>
+
+      <h3>B &mdash; Ember Storm</h3>
+      <p>Not a disc with decoration on top. The flame is a single field whose outer boundary varies with angle and time, so the outline is genuinely ragged, and three parallax layers of embers drift across the whole frame.</p>
+      <p class="dim">Strong: by far the most convincing as fire, and the only one that never reads as a circle. Weak: turbulence without intent &mdash; it looks energetic rather than aware &mdash; and it is the most expensive.</p>
+    </section>
+    <section>
+      <h3>C &mdash; Magnetic Sun</h3>
+      <p>The photosphere from A, plus four magnetic loop arcs anchored on the limb. Each arc is explicit geometry on its own rise-hold-decay lifecycle, with plasma knots travelling between its footpoints.</p>
+      <p class="dim">Strong: the arcs are the only motion in the set that reads as deliberate, which is what makes the orb feel like a presence. Weak: the limb itself stays circular.</p>
+
+      <h3>D &mdash; Refined</h3>
+      <p>The improvement pass on the strongest direction: C's arcs and photosphere, with B's silhouette breach gated behind energy. At idle the limb is clean and composed; as energy rises it erupts.</p>
+      <p class="dim">Strong: it has somewhere to go. The orb is calm when calm and violent when busy, so the state is legible without reading any label. Weak: at peak energy the core still flattens toward white, and the corona can drift smoky.</p>
+    </section>
+  </div>
+
+  <h2>Measured cost</h2>
+  <div class="scroller">
+    <table>
+      <caption>GPU time per frame, EXT_disjoint_timer_query_webgl2, two repeats. AMD Radeon RX 7900 GRE via ANGLE D3D11.</caption>
+      <thead>
+        <tr><th>Direction</th><th>420 &times; 420</th><th>900 &times; 900</th><th>Share of a 60fps frame at 900&sup2;</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>A &middot; Solar Intelligence</td><td class="num">0.136 ms</td><td class="num">0.302 ms</td><td class="num">1.8%</td></tr>
+        <tr><td>B &middot; Ember Storm</td><td class="num">0.193 ms</td><td class="num">0.760 ms</td><td class="num">4.6%</td></tr>
+        <tr><td>C &middot; Magnetic Sun</td><td class="num">0.077 ms</td><td class="num">0.311 ms</td><td class="num">1.9%</td></tr>
+        <tr class="win"><td>D &middot; Refined</td><td class="num">0.188 ms</td><td class="num">0.583 ms</td><td class="num">3.5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="dim">This is a high-end discrete GPU. Integrated and mobile parts run heavy fragment work roughly 10&ndash;30&times; slower, so D at 900&sup2; could cost 6&ndash;17&nbsp;ms there. Cap the backing resolution rather than the logical size, and drop the ember layer count on weak hardware.</p>
+
+  <h2>Recommendation</h2>
+  <div class="verdict">
+    <p><strong>Ship D as a Flutter <code>FragmentShader</code>.</strong> No Blender, no particle system, no video. One fragment program, one <code>drawRect</code>, ten float uniforms; the ember field is analytic in the shader, so there is nothing to simulate on the CPU and no overdraw.</p>
+    <p class="dim">The shader in this page and the <code>.frag</code> in the Flutter app are generated from one source, so the prototype cannot drift from what ships.</p>
+  </div>
+
+  <h2>How the states work</h2>
+  <p>All five states are points in the same six-parameter space &mdash; energy, turbulence, flare, ember density, focus and exposure &mdash; so the orb can move between any two without a cut. Nothing is a separate animation.</p>
+  <ul>
+    <li><strong>idle</strong> &mdash; slow breathing on three incommensurate periods, clean limb, sparse embers.</li>
+    <li><strong>listening</strong> &mdash; brighter and more coherent; focus rises, so the arcs tighten.</li>
+    <li><strong>thinking</strong> &mdash; turbulence up and focus down: the surface churns and the arcs thicken and loosen.</li>
+    <li><strong>speaking</strong> &mdash; flare activity dominates; prominences rise and fall while the surface stays composed.</li>
+    <li><strong>acting</strong> &mdash; everything open. The limb breaches, embers fill the frame, arcs reach furthest.</li>
+  </ul>
+
+  <footer>
+    Real-time GLSL ES 3.0, four independent WebGL2 contexts. Prototype harness for URI &mdash; isolated branch <code>phase/orb-solar-rnd</code>.
+  </footer>
+</main>
+
+<script type="module">await import(`./app.js?v=${Date.now()}`);</script>

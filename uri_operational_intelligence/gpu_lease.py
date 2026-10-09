@@ -40,8 +40,15 @@ SCHEMA = "uri.gpu.lease.v1"
 RUNTIME_V1_DEVICE_MIB = 15626
 # A process below this is not listed as a separate consumer (it still counts in the budget).
 LIST_MIN_MIB = 128
-# Margin below which a fitting start is reported as AT_RISK (half a demotion block; R1 blocks are 1 GiB).
+# Margin below which a start is reported as AT_RISK (half a demotion block; R1 blocks are 1 GiB).
 AT_RISK_MARGIN_MIB = 512
+# Shortfall at which a start is refused as CONTENDED: half a 1 GiB demotion block. Measured starts on this card
+# (WS hardening evidence, 2026-10-09): shortfall 78 MB -> 90.8 tok/s (healthy); shortfall 913 MB next to another
+# session's three app windows -> 29.9 tok/s (slow); ~1.2-1.4 GB next to a 1.6 GB consumer -> ~25 tok/s (R1, R2, WS).
+# Even with a positive margin (desktop only, +340 MB) 1 of 5 loads came up slow, so the budget cannot promise a fast
+# load: below the threshold the start is AT_RISK and the post-start calibration classifies the instance. (First set to
+# 1024 MiB; tightened after the 913 MB slow start, see WS_HARDENING_PLAN.md change log.)
+CONTENDED_SHORTFALL_MIB = 512
 DESKTOP = {"dwm.exe": "desktop compositor"}
 
 FITS, AT_RISK, CONTENDED, UNKNOWN = "FITS", "AT_RISK", "CONTENDED", "UNKNOWN"
@@ -214,6 +221,21 @@ def acquire(purpose, *, label="", session="", expected_vram_mib=None, max_hold_s
     return GpuLease(fd, record, d)
 
 
+def record_contention(directory=None, fit=None):
+    """Machine-wide memory of the last time a URI GPU workload saw the GPU CONTENDED (wall time), so a quiet window
+    survives a restart of the process that observed it."""
+    d = Path(directory or lease_dir())
+    d.mkdir(parents=True, exist_ok=True)
+    _atomic_json(d / "contention.json", {"t": round(time.time(), 3), "pid": os.getpid(),
+                                         "consumers": (fit or {}).get("consumers")})
+
+
+def last_contention(directory=None):
+    rec = _read_json(Path(directory or lease_dir()) / "contention.json") or {}
+    t = rec.get("t")
+    return float(t) if isinstance(t, (int, float)) else None
+
+
 # ---- census and budget -------------------------------------------------------------------------------------------
 _PS_CENSUS = (
     "$ErrorActionPreference='SilentlyContinue';"
@@ -299,9 +321,10 @@ def owner_pids(lease_pid=None, extra=()):
 
 def assess_fit(c: dict, *, owners=(), required_mib=RUNTIME_V1_DEVICE_MIB) -> dict:
     """Budget rule: free = card - (dedicated memory of every non-owner process) - unattributed adapter memory
-    (memory still committed after a process exit). CONTENDED when free < required (the measured request), AT_RISK
-    when the margin is below half a demotion block. Owner processes (the lease holder and its children, e.g. our own
-    server) are excluded, so an already loaded Brain does not count against itself."""
+    (memory still committed after a process exit); margin = free - required (the measured request). CONTENDED when the
+    shortfall reaches half a demotion block, AT_RISK when the margin is below half a block, FITS otherwise. Owner
+    processes (the lease holder and its children, e.g. our own server) are excluded, so an already loaded Brain does
+    not count against itself."""
     if not c.get("ok") or not c.get("card_mib"):
         return {"verdict": UNKNOWN, "reason": c.get("error") or "CARD_SIZE_UNKNOWN"}
     owners = set(owners)
@@ -310,7 +333,7 @@ def assess_fit(c: dict, *, owners=(), required_mib=RUNTIME_V1_DEVICE_MIB) -> dic
     owner_mib = round(sum(p["dedicated_mib"] for p in c["processes"] if p["pid"] in owners), 1)
     free = round(c["card_mib"] - others_mib - c["unattributed_mib"], 1)
     margin = round(free - required_mib, 1)
-    verdict = CONTENDED if margin < 0 else AT_RISK if margin < AT_RISK_MARGIN_MIB else FITS
+    verdict = CONTENDED if margin <= -CONTENDED_SHORTFALL_MIB else AT_RISK if margin < AT_RISK_MARGIN_MIB else FITS
     consumers = [{"pid": p["pid"], "name": p.get("name"), "parent": p.get("parent"),
                   "dedicated_mib": p["dedicated_mib"], "role": DESKTOP.get((p.get("name") or "").lower())}
                  for p in others if p["dedicated_mib"] >= LIST_MIN_MIB]
@@ -335,6 +358,9 @@ def explain(fit: dict) -> str:
                 "URI will not stop them." % (fit["required_mib"] / 1024, max(0, fit["free_mib"]) / 1024,
                                              ", ".join(named) or "unattributed memory still being released"))
     if v == AT_RISK:
+        if fit["margin_mib"] < 0:
+            return ("GPU memory is %.0f MB short of the Brain's full request; it may run slowly. URI checks its speed "
+                    "after loading." % -fit["margin_mib"])
         return "The Brain fits with a small margin (%.0f MB); other GPU apps may slow it down." % fit["margin_mib"]
     return "The Brain fits in GPU memory (margin %.0f MB)." % fit["margin_mib"]
 
@@ -369,7 +395,17 @@ def main(argv=None):
         print(json.dumps({"refused": exc.code, "holder": exc.holder}), file=sys.stderr)
         return 75
     with lease:
-        return subprocess.call(cmd)
+        # The workload lives in a kill-on-close job owned by this holder (the accepted Supervisor containment): if
+        # the holder dies, the OS ends the workload with it, so the workload never keeps using the GPU
+        # after its lease is gone (Codex H-r4).
+        import uuid
+        from uri_supervisor.winproc import spawn_contained
+        c = spawn_contained(cmd, "uri-gpu-lease-" + uuid.uuid4().hex, stdin=subprocess.DEVNULL,
+                            stdout=sys.stdout, stderr=sys.stderr)
+        try:
+            return c.proc.wait()
+        finally:
+            c.close()
 
 
 if __name__ == "__main__":

@@ -17,6 +17,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:uri_ui/living/integration/oi_conversation.dart';
+import 'package:uri_ui/living/integration/oi_health_widgets.dart';
+import 'package:uri_ui/living/integration/oi_markdown.dart';
 import 'package:uri_ui/living/living_app.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
 import 'package:uri_ui/services/app_state.dart';
@@ -69,7 +71,8 @@ void main() {
     await t.binding.setSurfaceSize(const Size(1400, 900));
     final manifest = env['URI_CLIENT_MANIFEST'];
     final rt = (await t.runAsync(() => WorkerIntegratedRuntime.fromManifest(manifest)))!;
-    final conv = OiConversation(rt);
+    // Restart URI (WS hardening) starts a fresh real worker through the same manifest path.
+    final conv = OiConversation(rt, respawn: () => WorkerIntegratedRuntime.fromManifest(manifest));
     final services = LivingApp.buildIntegratedServices(conv);
     services.effects.setReducedMotion(true);
     services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.conversation);
@@ -188,12 +191,75 @@ void main() {
       services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.conversation);
       await t.pump(const Duration(milliseconds: 300));
       (receipt['journeys'] as List).add({'journey': 'presentation_command_local', 'mode_reached': 'dashboard'});
+
+      // 9. WS hardening: real health, real Dashboard Brain card, markdown, worker exit + Restart URI.
+      await t.runAsync(() => conv.refreshHealth());
+      await t.pump();
+      final speed = measuredSpeed(conv.brainHealth);
+      if (ready) {
+        expect(conv.healthState, anyOf('READY', 'DEGRADED'));
+        expect(speed?.tps, isNotNull);
+      } else {
+        expect(conv.healthState, anyOf('UNAVAILABLE', 'RECOVERING'));
+      }
+      expect(find.byKey(const ValueKey('oi-health-chip')), findsOneWidget);
+      (receipt['journeys'] as List).add({'journey': 'health', 'state': conv.healthState, 'tps': speed?.tps,
+        'source': speed?.source, 'reasons': conv.brainHealth['reasons'], 'gpu': conv.brainHealth['gpu']});
+
+      services.presentation.setMode(UiPresentationMode.dashboard);
+      for (var i = 0; i < 10; i++) {
+        await t.pump(const Duration(milliseconds: 60));
+      }
+      expect(find.byKey(const ValueKey('oi-brain-card')), findsOneWidget);
+      expect(find.text('integrated worker · brain_health'), findsOneWidget);
+      (receipt['journeys'] as List).add({'journey': 'dashboard_brain_card_real',
+        'speed_line': (t.widget<Text>(find.byKey(const ValueKey('oi-brain-card-speed')))).data,
+        'gpu_line': (t.widget<Text>(find.byKey(const ValueKey('oi-brain-card-gpu')))).data});
+      services.presentation.setMode(UiPresentationMode.workspace, focus: WorkspaceFocus.conversation);
+      await t.pump(const Duration(milliseconds: 300));
+
+      if (ready) {
+        await say(t, 'Give three benefits of regular backups as a markdown bullet list, with the key word of each in bold.');
+        await until(t, () => !conv.busy && conv.messages.last.finishedStatus != null, what: 'markdown');
+        final src = conv.messages.last.text;
+        await t.pump();
+        expect(find.byType(OiMarkdown), findsWidgets);
+        final rawShown = find.byWidgetPredicate((w) =>
+            (w is Text && (w.data ?? w.textSpan?.toPlainText() ?? '').contains('**')) ||
+            (w is RichText && w.text.toPlainText().contains('**')));
+        expect(rawShown, findsNothing, reason: 'raw ** markers must not be shown');
+        record('markdown_rendered', conv, extra: {'source_has_markers': src.contains('**') || src.contains('- '),
+          'blocks': parseMarkdownBlocks(src).map((b) => b.kind.name).toList()});
+      }
+
+      // Unexpected worker exit: the real worker process is ended; the UI offers Restart URI; a fresh worker serves.
+      final nonce = List.filled(64, 'a').join();
+      final ident = (await t.runAsync(() => conv.runtime.call({'command': 'identity', 'nonce': nonce})))!;
+      final oldPid = ident['pid'] as int;
+      await t.runAsync(() async {
+        Process.killPid(oldPid, ProcessSignal.sigkill);
+      });
+      await until(t, () => conv.workerExited, seconds: 30, what: 'worker exit noticed');
+      await t.pump();
+      expect(find.byKey(const ValueKey('oi-restart-worker')), findsOneWidget);
+      // The button calls conv.restartWorker (simulation widget test). Here the same call runs in a real async zone:
+      // the widget tester's fake zone does not advance real process I/O and timers.
+      await t.runAsync(conv.restartWorker);
+      await t.pump();
+      expect(conv.workerExited, isFalse, reason: conv.messages.last.text);
+      final ident2 = (await t.runAsync(() => conv.runtime.call({'command': 'identity', 'nonce': nonce})))!;
+      expect(ident2['pid'], isNot(oldPid));
+      await say(t, 'In one short sentence, what is a backup?');
+      await until(t, () => !conv.busy && conv.messages.last.finishedStatus != null, what: 'after restart');
+      if (ready) expect(conv.messages.last.answerStatus, 'COMPLETE');
+      record('worker_exit_restart_uri', conv, extra: {'old_pid': oldPid, 'new_pid': ident2['pid'],
+        'system_messages': conv.messages.where((m) => m.role == OiRole.system).map((m) => m.text).toList()});
     } finally {
       receipt['memory_end'] = conv.memory;
       final partial = File(env['URI_WS_EVIDENCE'] ?? 'build/ws_ui_live.json');
       partial.parent.createSync(recursive: true);
       partial.writeAsStringSync(const JsonEncoder.withIndent(' ').convert(receipt));
-      await t.runAsync(rt.close);
+      await t.runAsync(conv.runtime.close);
     }
 
     // 8. Restart: a fresh worker process over the same client root recovers and serves.

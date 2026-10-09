@@ -9,7 +9,7 @@
   from the working-system installation and stopped at the end. Nothing else is touched.
 #>
 param(
-  [string]$Exe = 'C:\Users\cheta\Development\uri-working-system\uri_ui\build\windows\x64\runner\Release\uri_ui.exe',
+  [string]$Exe = 'C:\Users\cheta\Development\uri-ws-hardening\uri_ui\build\windows\x64\runner\Release\uri_ui.exe',
   [string]$Manifest,
   [string]$OutDir,
   [string]$Steps,     # steps separated by ';;'

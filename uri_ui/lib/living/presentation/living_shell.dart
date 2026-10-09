@@ -7,8 +7,10 @@ import '../../services/attachment_opener_service.dart';
 import '../../services/file_picker_service.dart';
 import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
-import '../companion/energy_orb.dart';
+import '../companion/living_companion.dart';
 import '../living_scope.dart';
+import '../voice/voice_stage.dart';
+import '../widgets/frame_stats_overlay.dart';
 import '../widgets/glass_panel.dart';
 import '../screens/companion_mode_view.dart';
 import '../screens/dashboard_mode_view.dart';
@@ -52,6 +54,104 @@ class OrbDock {
         return OrbDock(
           rect: Rect.fromLTWH(shell.width / 2 - size / 2, 18, size, size),
           lightAt: const Alignment(0, -1),
+        );
+    }
+  }
+}
+
+/// Where the voice exchange (waveform and transcript) sits in each form. It
+/// is placed next to the companion and never over it, nor over the controls:
+///
+/// * Companion mode: under the status line, sized to the space left above the
+///   composer (the waveform shrinks first). When even the transcript does not
+///   fit there, a slim pill above the companion; in a window too short for
+///   either, no stage at all rather than an overlap.
+/// * Workspace: a slim pill centred in the header row.
+/// * Dashboard: a slim pill beside the companion.
+@immutable
+class VoiceDock {
+  const VoiceDock({
+    required this.rect,
+    required this.compact,
+    this.hidden = false,
+  });
+  final Rect rect;
+  final bool compact;
+
+  /// True when the window is too short for any place that covers neither
+  /// the companion nor the controls (below about 560 px of height, where
+  /// Companion mode's own column no longer fits). The stage is then not
+  /// shown; the status line still says who is speaking.
+  final bool hidden;
+
+  /// Height the Companion-mode controls take at the bottom of the shell
+  /// (composer, mode chips, hint and their gaps).
+  static const double companionControls = 168;
+
+  /// Height of the status line and its detail under the companion.
+  static const double companionStatus = 66;
+
+  static VoiceDock forMode(UiPresentationMode mode, Size shell, Rect orb) {
+    switch (mode) {
+      case UiPresentationMode.companion:
+        final w = (shell.width - 32).clamp(200.0, 520.0);
+        final top = orb.bottom + companionStatus;
+        final room = shell.height - companionControls - top;
+        final minimum = VoiceStage.heightFor(w, waveform: false);
+        if (room >= minimum) {
+          return VoiceDock(
+            rect: Rect.fromLTWH(
+              (shell.width - w) / 2,
+              top,
+              w,
+              room.clamp(minimum, VoiceStage.heightFor(w)),
+            ),
+            compact: false,
+          );
+        }
+        // A short window has no room under the companion: the slim pill goes
+        // above it instead, in the space Companion mode leaves at the top.
+        final pw = (shell.width - 32).clamp(200.0, 440.0);
+        final above = orb.top - VoiceStage.compactHeight - 6;
+        if (above >= 4) {
+          return VoiceDock(
+            rect: Rect.fromLTWH(
+              (shell.width - pw) / 2,
+              above,
+              pw,
+              VoiceStage.compactHeight,
+            ),
+            compact: true,
+          );
+        }
+        // Shorter still: no free place, so no stage rather than an overlap.
+        return const VoiceDock(rect: Rect.zero, compact: true, hidden: true);
+      case UiPresentationMode.workspace:
+        final w = (shell.width * 0.36).clamp(240.0, 440.0);
+        return VoiceDock(
+          rect: Rect.fromLTWH(
+            (shell.width - w) / 2,
+            6,
+            w,
+            VoiceStage.compactHeight,
+          ),
+          compact: true,
+        );
+      case UiPresentationMode.dashboard:
+        final left = orb.right + 24;
+        final room = shell.width - left - 24;
+        // A narrow Dashboard has no free place beside the companion.
+        if (room < 200) {
+          return const VoiceDock(rect: Rect.zero, compact: true, hidden: true);
+        }
+        return VoiceDock(
+          rect: Rect.fromLTWH(
+            left,
+            orb.center.dy - VoiceStage.compactHeight / 2,
+            room.clamp(200.0, 420.0),
+            VoiceStage.compactHeight,
+          ),
+          compact: true,
         );
     }
   }
@@ -109,6 +209,7 @@ class _LivingShellState extends State<LivingShell> {
         services.companion,
         services.orbVariant,
         services.orbPalette,
+        services.companionPrefs,
       ]),
       builder: (context, _) {
         final mode = services.presentation.mode;
@@ -117,6 +218,8 @@ class _LivingShellState extends State<LivingShell> {
           builder: (context, constraints) {
             final shellSize = Size(constraints.maxWidth, constraints.maxHeight);
             final dock = OrbDock.forMode(mode, shellSize);
+            final voiceDock = VoiceDock.forMode(mode, shellSize, dock.rect);
+            final prefs = services.companionPrefs;
             return CallbackShortcuts(
               // Keyboard: Esc -> Companion, Ctrl+1/2/3 -> the three forms.
               bindings: {
@@ -201,7 +304,10 @@ class _LivingShellState extends State<LivingShell> {
                             onDoubleTap: () => services.presentation.setMode(
                               UiPresentationMode.workspace,
                             ),
-                            child: EnergyOrb(
+                            // The user's companion (Companion Settings): a
+                            // living identity, or the classic orb with its
+                            // style and palette.
+                            child: LivingCompanion(
                               key: LivingShell.orbKey,
                               state: signal.state,
                               progress: signal.progress,
@@ -212,12 +318,34 @@ class _LivingShellState extends State<LivingShell> {
                             ),
                           ),
                         ),
+                        // The voice exchange, beside the companion.
+                        if (!voiceDock.hidden)
+                          AnimatedPositioned.fromRect(
+                            duration: UriMotion.mode,
+                            curve: UriMotion.move,
+                            rect: voiceDock.rect,
+                            child: IgnorePointer(
+                              child: VoiceStage(
+                                key: const ValueKey('shell-voice-stage'),
+                                voice: services.voice,
+                                compact: voiceDock.compact,
+                              ),
+                            ),
+                          ),
                         _QuestionBubble(
                           text: _bubbleText,
                           orbRect: dock.rect,
                           shellSize: shellSize,
                         ),
                         _CommandNotice(services: services),
+                        if (prefs.statsOverlay)
+                          Positioned(
+                            right: 10,
+                            bottom: 10,
+                            child: FrameStatsOverlay(
+                              governor: services.frameGovernor,
+                            ),
+                          ),
                       ],
                     ),
                   ),

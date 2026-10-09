@@ -120,6 +120,28 @@ def test_override_is_recorded(tmp_path):
         assert lease.record["override"]
 
 
+def test_cli_workload_dies_with_its_lease_holder(tmp_path):
+    import psutil
+    env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
+    marker = tmp_path / "child.pid"
+    child = "import os,time; open(%r,'w').write(str(os.getpid())); time.sleep(120)" % str(marker)
+    p = subprocess.Popen([sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "run", "--purpose", "benchmark",
+                          "--", sys.executable, "-c", child], env=env, cwd=REPO)
+    t0 = time.monotonic()
+    while not marker.exists() and time.monotonic() - t0 < 30:
+        time.sleep(0.2)
+    workload = int(marker.read_text())
+    assert G.status(tmp_path)["state"] == "HELD"
+    holder = json.loads((tmp_path / "lease.json").read_text())["pid"]
+    psutil.Process(holder).kill()                            # the holder crashes
+    p.wait(30)
+    t0 = time.monotonic()
+    while psutil.pid_exists(workload) and time.monotonic() - t0 < 10:
+        time.sleep(0.2)
+    assert not psutil.pid_exists(workload)                   # the workload went with it
+    assert G.status(tmp_path)["state"] == "FREE"
+
+
 def test_cli_run_refuses_while_held_and_runs_when_free(tmp_path):
     env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
     cmd = [sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "run", "--purpose", "benchmark", "--",
@@ -145,10 +167,23 @@ def test_fit_desktop_only_fits_and_a_1gb_consumer_contends():
     assert f["verdict"] == G.AT_RISK and 0 < f["margin_mib"] < G.AT_RISK_MARGIN_MIB     # 281 MB margin, measured case
     ollama = G.census(raw([(1580, 311.3, 9), (18372, 1601.9, 349)], 1920), card=CARD)
     f2 = G.assess_fit(ollama)
-    assert f2["verdict"] == G.CONTENDED and f2["margin_mib"] < 0
+    assert f2["verdict"] == G.CONTENDED and f2["margin_mib"] <= -G.CONTENDED_SHORTFALL_MIB
+    # measured live 2026-10-09: desktop + an open URI window, 15.2 GB free: a small shortfall starts AT_RISK
+    ui_open = G.census(raw([(1580, 318, 9), (3144, 84, 23), (5384, 66, 1), (9999, 210, 5), (7777, 440, 12), (9252, 33, 1)], 1160), card=CARD)
+    f3 = G.assess_fit(ui_open)
+    assert f3["verdict"] == G.AT_RISK and -G.CONTENDED_SHORTFALL_MIB < f3["margin_mib"] < 0
+    assert "short" in G.explain(f3)
     text = G.explain(f2)
     assert "llama-server" in text or "pid 18372" in text
     assert "will not stop" in text
+
+
+def test_the_measured_913_mb_shortfall_is_contended():
+    # live 2026-10-09: three uri_ui windows of another session + desktop; the start that went ahead came up at 29.9 tok/s
+    c = G.census(raw([(1580, 333, 9), (1340, 345, 5), (2436, 344, 4), (4340, 351, 5), (14620, 48, 1), (1600, 40, 1),
+                      (10188, 36, 1)], 1560), card=CARD)
+    f = G.assess_fit(c)
+    assert f["margin_mib"] < -G.CONTENDED_SHORTFALL_MIB and f["verdict"] == G.CONTENDED
 
 
 def test_own_server_is_not_counted_against_itself_and_unattributed_memory_blocks():
@@ -171,12 +206,17 @@ FULLCFG = {"model": {"id": "qwen-test", "mtp_draft": {}}, "runtime": {"engine": 
            "ctx": 32768, "vision_enabled": True}, "tiers": {"fast": {}, "normal": {}, "deep": {}}}
 
 
-def health(r="READY", host=None, alive=True, perf=None, busy=False, sel=SEL):
+SERVER = {"pid": 4242, "create_time": 500.0}
+
+
+def health(r="READY", host=None, alive=True, perf=None, busy=False, sel=SEL, server=SERVER):
     return BH.assess(readiness={"state": r}, host=host, host_alive=alive, perf=perf or {}, busy=busy, selected=sel,
-                     cfg=FULLCFG, now=1000.0)
+                     cfg=FULLCFG, now=1000.0, server=server)
 
 
 def host(state, **kw):
+    if "calibration" in kw:
+        kw["calibration"] = dict({"server_pid": 4242, "server_create_time": 500.0}, **kw["calibration"])
     return {"schema": BH.REPORT_SCHEMA, "state": state, "updated_at": 990.0, **kw}
 
 
@@ -207,6 +247,15 @@ def test_turn_evidence_supersedes_calibration_and_dead_host_is_ignored():
     assert stale["state"] == BH.READY and "SPEED_NOT_MEASURED" in stale["reasons"] and not stale["host"]["running"]
 
 
+def test_calibration_of_another_instance_is_ignored():
+    h = host("DEGRADED", calibration={"decode_tps": 27.0, "t": 900})
+    assert health(host=h)["state"] == BH.DEGRADED
+    other = health(host=h, server={"pid": 5151, "create_time": 800.0})       # a different server now answers
+    assert other["state"] == BH.READY and other["performance"]["calibration_tps"] is None
+    assert "SPEED_NOT_MEASURED" in other["reasons"]
+    assert health(host=h, server=None)["performance"]["calibration_tps"] is None
+
+
 def test_desktop_compositor_alone_does_not_suggest_closing_apps():
     h = host("DEGRADED", calibration={"decode_tps": 27.0, "t": 900},
              residency={"consumers": [{"pid": 1, "name": "dwm.exe", "role": "desktop compositor", "dedicated_mib": 311}]})
@@ -232,11 +281,15 @@ def test_host_request_and_report_link(tmp_path):
 # ---- T3 bridge commands ------------------------------------------------------------------------------------------
 def test_bridge_health_restart_and_turn_status(fake, tmp_path):  # noqa: F811
     requests = []
-    rep = {"schema": BH.REPORT_SCHEMA, "state": "READY", "calibration": {"decode_tps": 119.0, "t": time.time() - 5},
-           "updated_at": time.time()}
+    srv_ct = time.time() - 3600
+    rep = {"schema": BH.REPORT_SCHEMA, "state": "READY", "calibration": {"decode_tps": 119.0, "t": time.time() - 5,
+           "server_pid": 77, "server_create_time": srv_ct}, "updated_at": time.time()}
     b, frames, _ = make(fake, tmp_path, FakeCore())
     b._host_report = lambda: (rep, True)
     b._host_request = lambda a: requests.append(a) or {"id": "r1"}
+    from uri_operational_intelligence.runtime_v1 import Readiness
+    b._status = lambda: Readiness("READY", fake.url, model_id="qwen-test",
+                                  live_identity={"process": {"pid": 77, "create_time": srv_ct}})
     h = b.handle("brain_health", {"command": "brain_health"})
     assert h["state"] == "READY" and h["performance"]["calibration_tps"] == 119.0
     # samples of a previous instance (before this calibration) never count
@@ -259,6 +312,91 @@ def test_bridge_health_restart_and_turn_status(fake, tmp_path):  # noqa: F811
     assert e.value.code == "BRAIN_HOST_NOT_RUNNING"
     st = b.handle("oi_turn_status", {"command": "oi_turn_status"})
     assert st["busy"] is False and st["turn_id"] is None
+
+
+def test_no_turn_starts_until_the_host_has_acted_on_a_restart(fake, tmp_path):  # noqa: F811
+    rep = {"schema": BH.REPORT_SCHEMA, "state": "READY", "updated_at": time.time() - 10}
+    b, frames, _ = make(fake, tmp_path, FakeCore())
+    b._host_report = lambda: (rep, True)
+    b._host_request = lambda a: {"id": "req-1"}
+    b.handle("brain_restart", {"command": "brain_restart", "action": "restart"})
+    with pytest.raises(BridgeRefused) as e:
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
+    assert e.value.code == "BRAIN_RESTARTING"
+    assert b.handle("brain_health", {"command": "brain_health"})["state"] == "RECOVERING"
+    rep.update(state="READY", last_request={"id": "req-1", "result": "ACCEPTED"}, updated_at=time.time() + 1)
+    with pytest.raises(BridgeRefused):            # accepted but not acted on yet: still gated
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
+    b._host_report = lambda: (None, False)          # an unreadable report is not evidence of a dead host
+    with pytest.raises(BridgeRefused):
+        b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})
+    b._host_report = lambda: (rep, True)
+    rep.update(last_request={"id": "req-1", "result": "DONE", "done_state": "READY"}, requests={"req-1": "DONE"})
+    fake.scripts.append({"chunks": [("answer", "ok")], "finish": "stop"})
+    assert b.handle("oi_turn", {"command": "oi_turn", "session_id": SID, "text": "hi", "depth": "fast"})["accepted"]
+    b.wait(10)
+
+
+def test_restart_gate_opens_when_the_host_is_gone(fake, tmp_path):  # noqa: F811
+    state = {"alive": True}
+    b, _, _ = make(fake, tmp_path, FakeCore())
+    b._host_report = lambda: ({"schema": BH.REPORT_SCHEMA, "state": "READY"}, state["alive"])
+    b._host_request = lambda a: {"id": "req-2"}
+    b.handle("brain_restart", {"command": "brain_restart", "action": "stop"})
+    assert b._restart_pending()
+    state["alive"] = False
+    assert not b._restart_pending()
+
+
+def test_the_gate_follows_the_latest_request_and_ignored_requests_open_it(fake, tmp_path):  # noqa: F811
+    rep = {"schema": BH.REPORT_SCHEMA, "state": "READY", "requests": {}}
+    ids = iter(["a", "b", "c"])
+    b, _, _ = make(fake, tmp_path, FakeCore())
+    b._host_report = lambda: (rep, True)
+    b._host_request = lambda a: {"id": next(ids)}
+    b.handle("brain_restart", {"command": "brain_restart", "action": "stop"})       # "a" overwritten before read
+    b.handle("brain_restart", {"command": "brain_restart", "action": "start"})      # "b"
+    assert b._restart_pending()
+    rep["requests"] = {"b": "DONE"}
+    assert not b._restart_pending()
+    b.handle("brain_restart", {"command": "brain_restart", "action": "restart"})    # "c"
+    rep["requests"] = {"b": "DONE", "c": "IGNORED_INVALID_OR_STALE"}
+    assert not b._restart_pending()
+
+
+def test_host_liveness_needs_positive_evidence(monkeypatch):
+    import psutil
+    now = time.time()
+
+    def denied(pid):
+        raise psutil.AccessDenied(pid)
+    monkeypatch.setattr(psutil, "Process", denied)
+    assert BH.host_alive({"host_pid": 1, "updated_at": now - 5}, now=now) is True       # fresh heartbeat
+    assert BH.host_alive({"host_pid": 1, "updated_at": now - 500}, now=now) is False    # stale heartbeat
+
+    def gone(pid):
+        raise psutil.NoSuchProcess(pid)
+    monkeypatch.setattr(psutil, "Process", gone)
+    assert BH.host_alive({"host_pid": 1, "updated_at": now}, now=now) is False
+
+
+def test_timings_belong_to_the_verified_server_instance(fake, tmp_path):  # noqa: F811
+    from uri_operational_intelligence.runtime_v1 import Readiness
+    ident = {"pid": 4242, "create_time": time.time() - 100}
+    b, _, _ = make(fake, tmp_path, FakeCore())
+    b._status = lambda: Readiness("READY", fake.url, model_id="qwen-test",
+                                  live_identity={"process": dict(ident)})
+    b._host_report = lambda: (None, False)                    # no host: identity alone decides
+    for _ in range(3):
+        b._perf.append((time.time(), {"predicted_n": 200, "predicted_per_second": 25.0}))
+    assert b.handle("brain_health", {"command": "brain_health"})["state"] == "DEGRADED"
+    ident.update(pid=5151, create_time=time.time())           # a new instance: old samples are dropped
+    h = b.handle("brain_health", {"command": "brain_health"})
+    assert h["state"] == "READY" and h["performance"]["decode_samples"] == 0
+    b._status = lambda: Readiness("READY", fake.url, model_id="qwen-test")      # identity not established
+    for _ in range(3):
+        b._perf.append((time.time(), {"predicted_n": 200, "predicted_per_second": 25.0}))
+    assert b.handle("brain_health", {"command": "brain_health"})["performance"]["decode_samples"] == 0
 
 
 def test_restart_refused_while_a_turn_runs_and_status_stays_open(fake, tmp_path):  # noqa: F811
@@ -306,9 +444,10 @@ class Seq:
         return s
 
 
-def new_host(tmp_path, census, override=False, port=18470):
+def new_host(tmp_path, census, override=False, port=18470, quiet=0.05):
     H = load_host()
     H.GPU_POLL_S = 0.05
+    H.QUIET_S = quiet
     cfg = {"model": {"id": "qwen-test"}, "runtime": {"port": port, "ctx": 32768}}
     h = H.Host(tmp_path / "client", minutes=1, override=override, cfg=cfg, state_dir=tmp_path / "state",
                census=census, lease_dir=tmp_path / "lease")
@@ -327,6 +466,38 @@ def test_host_waits_while_contended_and_explains_then_starts_when_free(tmp_path)
     assert "will not stop" in rep["explain"]          # the last waiting explanation stays until the next state
 
 
+def test_host_waits_for_a_quiet_window_after_contention(tmp_path):
+    busy = G.census(raw([(1580, 311, 9), (20036, 13907, 1819)], 14300), card=CARD)    # another session's load
+    gap = G.census(raw([(1580, 311, 9)], 330), card=CARD)                              # between its loads
+    H, h = new_host(tmp_path, Seq([busy, gap, gap, gap]))
+    H.QUIET_S = 1.0
+    t0 = time.monotonic()
+    assert h.wait_for_gpu() is True
+    assert time.monotonic() - t0 >= 1.0
+    details = [x["detail"] for x in h.report["history"]]
+    assert "GPU_CONTENDED" in details and "GPU_QUIET_WINDOW" in details
+
+
+def test_quiet_window_survives_a_host_restart(tmp_path):
+    busy = G.census(raw([(1580, 311, 9), (20036, 13907, 1819)], 14300), card=CARD)
+    gap = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    H, h = new_host(tmp_path, Seq([busy]), quiet=600)
+    h.deadline = time.monotonic() + 0.2
+    assert h.wait_for_gpu() is False                       # saw contention, then the host exited
+    H2, h2 = new_host(tmp_path, Seq([gap]), quiet=600)     # a fresh host process on a momentarily free GPU
+    h2.deadline = time.monotonic() + 0.3
+    assert h2.wait_for_gpu() is False
+    assert h2.report["detail"] == "GPU_QUIET_WINDOW"
+
+
+def test_host_starts_at_once_on_a_free_gpu(tmp_path):
+    free = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    H, h = new_host(tmp_path, Seq([free]))
+    t0 = time.monotonic()
+    assert h.wait_for_gpu() is True and time.monotonic() - t0 < 1.0
+    assert "WAITING_FOR_GPU" not in [x["state"] for x in h.report["history"]]
+
+
 def test_host_override_starts_next_to_contention_and_records_it(tmp_path):
     busy = G.census(raw([(1580, 311, 9), (18372, 1602, 349)], 1950), card=CARD)
     H, h = new_host(tmp_path, Seq([busy]), override=True)
@@ -342,6 +513,121 @@ def test_host_release_wait_is_measured_not_a_fixed_delay(tmp_path):
     assert h.wait_for_gpu() is True
     assert "RELEASE_WAIT" in [x["state"] for x in h.report["history"]]
     assert h.report["release_measurement"]["unattributed_mib"] < H.RELEASE_UNATTRIBUTED_MIB
+
+
+def test_stop_during_load_kills_the_owned_job_without_waiting(tmp_path, monkeypatch):
+    H, h = new_host(tmp_path, Seq([G.census(raw([(1580, 311, 9)], 330), card=CARD)]))
+    events = {"stopped": False}
+
+    class SlowManager:
+        owns_instance = True
+
+        def __init__(self, *a, **k):
+            pass
+
+        def ensure_ready(self, on_state=None):
+            on_state and on_state("LOADING")
+            while not events["stopped"]:
+                time.sleep(0.05)
+            time.sleep(5)              # the accepted manager keeps polling after a kill; the host must not wait
+            return None
+
+        def stop(self):
+            events["stopped"] = True
+            return True
+    monkeypatch.setattr(H.R, "RuntimeManager", SlowManager)
+    (tmp_path / "client").mkdir(parents=True, exist_ok=True)
+    threading.Timer(0.5, lambda: BH.write_host_request(tmp_path / "client", "stop")).start()
+    t0 = time.monotonic()
+    assert h.start_brain() is False
+    assert time.monotonic() - t0 < 3 and events["stopped"] is True
+    assert h.report["detail"] == "STOPPED_DURING_LOAD"
+
+
+def test_a_restart_request_during_load_is_kept_for_later(tmp_path):
+    H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
+    (tmp_path / "client").mkdir(parents=True, exist_ok=True)
+    BH.write_host_request(tmp_path / "client", "restart")
+    assert h.take_request(only="stop") is None
+    assert h.take_request() == "restart"
+
+
+def test_unmeasurable_gpu_and_unfinished_release_wait_instead_of_starting(tmp_path):
+    H, h = new_host(tmp_path, Seq([{"ok": False, "error": "TimeoutExpired"}]))
+    h.deadline = time.monotonic() + 0.3
+    assert h.wait_for_gpu() is False and h.report["detail"] == "GPU_UNMEASURED"
+    releasing = G.census(raw([(1580, 311, 9)], 9000), card=CARD)
+    H, h = new_host(tmp_path, Seq([releasing]))
+    H.RELEASE_TIMEOUT_S = 0.0
+    h.deadline = time.monotonic() + 0.3
+    assert h.wait_for_gpu() is False and h.report["detail"] == "VRAM_RELEASE_TIMEOUT"
+
+
+def test_a_load_stopped_before_its_spawn_is_reaped_before_the_lease_goes(tmp_path, monkeypatch):
+    H, h = new_host(tmp_path, Seq([G.census(raw([(1580, 311, 9)], 330), card=CARD)]))
+    killed = []
+
+    class Contained:
+        pass
+
+    class LateSpawner:
+        owns_instance = True
+
+        def __init__(self, *a, **k):
+            self._contained = None
+
+        def ensure_ready(self, on_state=None):
+            time.sleep(1.0)                    # the stop arrives before the spawn
+            self._contained = Contained()      # ... and the spawn still happens
+            time.sleep(0.5)
+            return None
+
+        def stop(self):
+            if self._contained is not None:
+                killed.append(True)
+            self._contained = None
+            return True
+    monkeypatch.setattr(H.R, "RuntimeManager", LateSpawner)
+    assert h.acquire_lease()
+    (tmp_path / "client").mkdir(parents=True, exist_ok=True)
+    threading.Timer(0.3, lambda: BH.write_host_request(tmp_path / "client", "stop")).start()
+    assert h.start_brain() is False
+    assert h.loaders and G.status(tmp_path / "lease")["state"] == "HELD"     # still held while the loader lives
+    h.release_lease("test")                                                   # waits for the loader, however long
+    assert killed == [True] and h.loaders == [] and G.status(tmp_path / "lease")["state"] == "FREE"
+
+
+def test_a_long_living_loader_keeps_the_lease_and_exit_leaves_release_to_the_os(tmp_path):
+    H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
+    assert h.acquire_lease()
+    stop = threading.Event()
+    t = threading.Thread(target=stop.wait, daemon=True)
+    t.start()
+
+    class M:
+        _contained = None
+
+        def stop(self):
+            return True
+    h.loaders.append((t, M()))
+    h.deadline = time.monotonic() - 1            # host exiting
+    h.release_lease("host exit", at_exit=True)
+    assert G.status(tmp_path / "lease")["state"] == "HELD" and h.report["lease"]["released_by"].startswith("process exit")
+    stop.set()
+    t.join(2)
+    h.release_lease("later")
+    assert G.status(tmp_path / "lease")["state"] == "FREE"
+
+
+def test_requests_are_marked_done_with_the_state_they_left(tmp_path):
+    H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
+    (tmp_path / "client").mkdir(parents=True, exist_ok=True)
+    BH.write_host_request(tmp_path / "client", "stop")
+    assert h.take_request() == "stop" and h.report["last_request"]["result"] == "ACCEPTED"
+    h.set("STOPPED", detail="STOP_REQUESTED")
+    h.finish_request()
+    lr = json.loads((tmp_path / "client" / BH.REPORT_FILE).read_text())["last_request"]
+    assert lr["result"] == "DONE" and lr["done_state"] == "STOPPED"
 
 
 def test_host_requests_are_explicit_fresh_and_used_once(tmp_path):
@@ -386,6 +672,37 @@ def test_calibration_classifies_the_instance(tmp_path, tps, state):
         assert h.report["state"] == state and h.report["calibration"]["decode_tps"] == tps
     finally:
         srv.shutdown()
+
+
+def test_eviction_after_load_is_reported_without_any_request_to_the_brain(tmp_path):
+    loaded = G.census(raw([(1580, 330, 9), (8008, 15555, 1120)], 15900), card=CARD)
+    evicted = G.census(raw([(1580, 330, 9), (8008, 13987, 2753), (1340, 345, 5), (2436, 344, 4), (4340, 351, 5)],
+                           15400), card=CARD)
+    H, h = new_host(tmp_path, Seq([loaded, evicted]))
+    h.report["calibration"] = {"decode_tps": 141.0, "server_pid": 8008, "server_create_time": 500.0,
+                               "residency": {"non_local_mib": 1120.0}}
+    assert h.residency_alert(h.residency(8008)) is False and "residency_alert" not in h.report
+    assert h.residency_alert(h.residency(8008)) is True
+    assert h.report["residency_alert"]["growth_mib"] == 1633.0
+    assert h.residency_alert({"non_local_mib": None}) is True and "residency_alert" in h.report   # unknown keeps it
+    assert h.residency_alert({"non_local_mib": 1200.0}) is False and "residency_alert" not in h.report  # measured recovery
+    import inspect
+    src = inspect.getsource(H.Host.residency_alert)
+    assert "httpx" not in src and "calibrate(" not in src           # the host sends nothing to the Brain here
+
+
+def test_health_warns_on_memory_taken_after_load_without_claiming_slowness():
+    h = host("READY", calibration={"decode_tps": 141.0, "t": 900},
+             residency_alert={"growth_mib": 1633.0, "server_pid": 4242, "server_create_time": 500.0},
+             residency={"consumers": [{"pid": 1340, "name": "uri_ui.exe", "role": None, "dedicated_mib": 345}]})
+    out = health(host=h)
+    assert out["state"] == BH.READY and "GPU_MEMORY_TAKEN_AFTER_LOAD" in out["reasons"]
+    assert "restart_brain" in out["recovery_options"] and "close_gpu_apps" in out["recovery_options"]
+    assert "1.6 GB" in out["warning"]
+    other = health(host=h, server={"pid": 5151, "create_time": 800.0})     # alert about a previous instance
+    assert "GPU_MEMORY_TAKEN_AFTER_LOAD" not in other["reasons"]
+    slow = health(host=h, perf={"decode_tps_median": 30.0, "decode_samples": 3})
+    assert slow["state"] == BH.DEGRADED                                  # real answers decide slowness
 
 
 def test_calibration_failure_is_reported_as_degraded(tmp_path):

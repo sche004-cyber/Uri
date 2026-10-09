@@ -222,3 +222,101 @@ def test_forged_digest_is_refused(w):
     assert rep == {"result": "REFUSED", "code": "APPROVAL_DIGEST_MISMATCH"}
     assert w.ok({"command": "memory_list"})["facts"] == before
     record("forged_digest", evs, reply=rep)
+
+
+# ---- WS hardening (H-AC5/6/7): health, turn status, unresponsive worker, Brain restart through the host ----------
+def _tree(w):
+    import psutil
+    root = psutil.Process(w.p.pid)
+    return [root] + root.children(recursive=True)
+
+
+def test_health_matches_readiness(w):
+    h = w.ok({"command": "brain_health"})
+    r = brain_state(w)
+    assert h["state"] in {"READY", "BUSY", "DEGRADED", "UNAVAILABLE", "RECOVERING"}
+    if r == "READY":
+        assert h["state"] in {"READY", "DEGRADED", "RECOVERING"}
+    else:
+        assert h["state"] in {"UNAVAILABLE", "RECOVERING"}
+    assert "b11425" in (h["backend"]["engine"] or "")
+    EVIDENCE.setdefault("health_samples", []).append({"readiness": r, "health": h})
+
+
+def test_turn_status_is_open_while_busy_and_restart_is_refused(w):
+    if brain_state(w) != "READY":
+        pytest.skip("Runtime v1 not READY")
+    n = len(w.events)
+    r = w.ok({"command": "oi_turn", "session_id": str(uuid.uuid4()), "depth": "fast",
+              "text": "Write a detailed paragraph about how tides work, about 300 words."})
+    st = w.ok({"command": "oi_turn_status"})
+    assert st["busy"] is True and st["turn_id"] == r["turn_id"]
+    busy_health = w.ok({"command": "brain_health"})
+    rep = w.call({"command": "brain_restart", "action": "restart"})
+    evs = w.until_finished(r["turn_id"], after=n)
+    assert rep == {"result": "REFUSED", "code": "TURN_IN_PROGRESS"}
+    assert busy_health["state"] in {"BUSY", "DEGRADED"}
+    assert w.ok({"command": "oi_turn_status"})["busy"] is False
+    done = [e for e in evs if e["type"] == "answer.done"][0]["data"]
+    record("turn_status_and_restart_refused", evs, status=st, restart_reply=rep, busy_health=busy_health["state"],
+           decode_tps=(done.get("metrics") or {}).get("predicted_per_second"))
+
+
+def test_alive_but_unresponsive_worker_is_detectable(w):
+    """The real worker process is suspended (alive, silent): a status probe gets no reply within its bound. After
+    resume the reply arrives in order and the worker keeps working. This is what the UI's liveness monitor relies on."""
+    procs = _tree(w)
+    with w.cv:
+        m = len(w.replies)
+    for p in procs:
+        p.suspend()
+    t0 = time.monotonic()
+    try:
+        with pytest.raises(AssertionError, match="NO_REPLY"):
+            w.call({"command": "oi_turn_status"}, timeout=5)
+        silent_s = round(time.monotonic() - t0, 2)
+        assert all(p.is_running() for p in procs)          # alive the whole time
+    finally:
+        for p in procs:
+            p.resume()
+    with w.cv:
+        assert w.cv.wait_for(lambda: len(w.replies) > m, 30)      # the late reply to the timed-out probe
+        assert "busy" in w.replies[m]["value"]
+    assert w.ok({"command": "oi_turn_status"})["busy"] is False
+    EVIDENCE["unresponsive_worker"] = {"suspended_processes": len(procs), "probe_bound_s": 5, "silent_s": silent_s,
+                                       "recovered_after_resume": True}
+
+
+@pytest.mark.skipif(os.environ.get("URI_WS_RESTART") != "1", reason="opt-in: URI_WS_RESTART=1 (reloads the Brain)")
+def test_brain_restart_through_the_host(w):
+    h0 = w.ok({"command": "brain_health"})
+    if not h0["host"]["running"]:
+        pytest.skip("no Brain host running")
+    t0 = time.monotonic()
+    w.ok({"command": "brain_restart", "action": "restart"})
+    seen, last = [], None
+    while time.monotonic() - t0 < 420:
+        h = w.ok({"command": "brain_health"})
+        key = (h["state"], h["host"]["state"])
+        if key != last:
+            seen.append({"t": round(time.monotonic() - t0, 1), "state": h["state"], "host": h["host"]["state"],
+                         "reasons": h.get("reasons")})
+            last = key
+        if len(seen) > 1 and h["host"]["state"] in ("READY", "DEGRADED", "FAILED"):
+            break
+        time.sleep(1.0)
+    assert any(s["state"] == "RECOVERING" for s in seen), seen
+    assert seen[-1]["host"] in ("READY", "DEGRADED"), seen
+    report = json.loads((Path(json.loads((ROOT / "work/c1/ws-current.json").read_text())["client_root"])
+                         / "control/oi/brain_host.json").read_text(encoding="utf-8"))
+    n = len(w.events)
+    r = w.ok({"command": "oi_turn", "session_id": str(uuid.uuid4()), "depth": "fast",
+              "text": "In three sentences, explain what a lighthouse does."})
+    evs = w.until_finished(r["turn_id"], after=n)
+    done = [e for e in evs if e["type"] == "answer.done"]
+    EVIDENCE["brain_restart"] = {"transitions": seen, "restart_s": round(time.monotonic() - t0, 1),
+                                 "calibration": report.get("calibration"),
+                                 "release_measurement": report.get("release_measurement"),
+                                 "host_history": report.get("history"),
+                                 "first_answer_tps": (done[0]["data"].get("metrics") or {}).get("predicted_per_second")
+                                 if done else None}

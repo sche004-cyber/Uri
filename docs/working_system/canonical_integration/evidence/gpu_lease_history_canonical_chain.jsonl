@@ -1,0 +1,6 @@
+{"t": 1791536036.532, "event": "STALE_RECOVERED", "pid": 8376, "purpose": "runtime_v1_brain", "label": "WS Brain host", "session": "C:\\Users\\cheta\\Development\\uri-ws-hard", "override": null}
+{"t": 1791536036.534, "event": "ACQUIRED", "pid": 9700, "purpose": "regression_chain", "label": "test", "session": "", "override": null}
+{"t": 1791536036.62, "event": "RELEASED", "pid": 9700, "purpose": "regression_chain", "label": "test", "session": "", "override": null}
+{"t": 1791536045.091, "event": "ACQUIRED", "pid": 12796, "purpose": "regression_chain", "label": "canonical integration chain gate4 (CPU; held to keep competing GPU-heavy tests off)", "session": "", "override": null}
+{"t": 1791537475.284, "event": "RELEASED", "pid": 12796, "purpose": "regression_chain", "label": "canonical integration chain gate4 (CPU; held to keep competing GPU-heavy tests off)", "session": "", "override": null}
+{"t": 1791537475.811, "event": "ACQUIRED", "pid": 14356, "purpose": "benchmark", "label": "companion contention check (uri-companion-voice, own llama-server on :18499)", "session": "", "override": null}

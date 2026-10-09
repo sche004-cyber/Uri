@@ -1,0 +1,6545 @@
+{
+ "journeys": [
+  {
+   "journey": "question",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791513874.771,
+     "data": {
+      "depth": "auto",
+      "text_chars": 30
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791513874.771,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791513875.097,
+     "data": {
+      "route": "answer",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "simple_language_task",
+       "selected_by": "policy",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 0,
+       "kind": "QUESTION",
+       "reasons": [
+        "default_conversation"
+       ]
+      }
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791513875.981,
+     "data": {
+      "state": "speaking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 5,
+     "t": 1791513875.981,
+     "data": {
+      "text": "VR"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 6,
+     "t": 1791513875.989,
+     "data": {
+      "text": "AM"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 7,
+     "t": 1791513875.989,
+     "data": {
+      "text": " ("
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 8,
+     "t": 1791513876.012,
+     "data": {
+      "text": "Video"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 9,
+     "t": 1791513876.012,
+     "data": {
+      "text": " Random"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 10,
+     "t": 1791513876.012,
+     "data": {
+      "text": " Access"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 11,
+     "t": 1791513876.035,
+     "data": {
+      "text": " Memory"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 12,
+     "t": 1791513876.035,
+     "data": {
+      "text": ")"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 13,
+     "t": 1791513876.036,
+     "data": {
+      "text": " is"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 14,
+     "t": 1791513876.058,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 15,
+     "t": 1791513876.058,
+     "data": {
+      "text": " specialized"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 16,
+     "t": 1791513876.058,
+     "data": {
+      "text": " type"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 17,
+     "t": 1791513876.08,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 18,
+     "t": 1791513876.08,
+     "data": {
+      "text": " memory"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 19,
+     "t": 1791513876.08,
+     "data": {
+      "text": " used"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 20,
+     "t": 1791513876.102,
+     "data": {
+      "text": " by"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 21,
+     "t": 1791513876.102,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 22,
+     "t": 1791513876.102,
+     "data": {
+      "text": " computer"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 23,
+     "t": 1791513876.125,
+     "data": {
+      "text": "'s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 24,
+     "t": 1791513876.125,
+     "data": {
+      "text": " graphics"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 25,
+     "t": 1791513876.125,
+     "data": {
+      "text": " processing"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 26,
+     "t": 1791513876.147,
+     "data": {
+      "text": " unit"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 27,
+     "t": 1791513876.147,
+     "data": {
+      "text": " ("
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 28,
+     "t": 1791513876.169,
+     "data": {
+      "text": "GPU"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 29,
+     "t": 1791513876.169,
+     "data": {
+      "text": ")"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 30,
+     "t": 1791513876.169,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 31,
+     "t": 1791513876.191,
+     "data": {
+      "text": " store"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 32,
+     "t": 1791513876.191,
+     "data": {
+      "text": " image"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 33,
+     "t": 1791513876.212,
+     "data": {
+      "text": " data"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 34,
+     "t": 1791513876.212,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 35,
+     "t": 1791513876.213,
+     "data": {
+      "text": " textures"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 36,
+     "t": 1791513876.236,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 37,
+     "t": 1791513876.236,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 38,
+     "t": 1791513876.236,
+     "data": {
+      "text": " frame"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 39,
+     "t": 1791513876.265,
+     "data": {
+      "text": " buffers"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 40,
+     "t": 1791513876.266,
+     "data": {
+      "text": " for"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 41,
+     "t": 1791513876.266,
+     "data": {
+      "text": " rapid"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 42,
+     "t": 1791513876.289,
+     "data": {
+      "text": " display"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 43,
+     "t": 1791513876.289,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 44,
+     "t": 1791513876.312,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 45,
+     "t": 1791513876.336,
+     "data": {
+      "text": " monitor"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 46,
+     "t": 1791513876.336,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.done",
+     "seq": 47,
+     "t": 1791513876.347,
+     "data": {
+      "complete": true,
+      "escalation_candidate": false,
+      "flags": [],
+      "metrics": {
+       "cache_n": 0,
+       "draft_n": 32,
+       "draft_n_accepted": 26,
+       "first_answer_s": 0.8838,
+       "predicted_n": 43,
+       "predicted_per_second": 112.1414477460904,
+       "prompt_n": 222,
+       "prompt_per_second": 568.7874067393622,
+       "reasoning_chars": 0,
+       "retried": false,
+       "total_s": 1.2503,
+       "ttft_s": 0.8838
+      },
+      "status": "COMPLETE"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 48,
+     "t": 1791513876.347,
+     "data": {
+      "route": "answer",
+      "status": "ok",
+      "total_s": 1.5766
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 49,
+     "t": 1791513876.347,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "brain": "READY",
+   "reply_s": 0.001
+  },
+  {
+   "journey": "reasoning",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791513877.139,
+     "data": {
+      "depth": "normal",
+      "text_chars": 98
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791513877.139,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791513877.496,
+     "data": {
+      "route": "answer",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "user_selected_normal",
+       "selected_by": "user",
+       "tier": "NORMAL"
+      },
+      "triage": {
+       "action_clauses": 0,
+       "kind": "ANALYSIS",
+       "reasons": [
+        "analysis_cue"
+       ]
+      }
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 4,
+     "t": 1791513878.212,
+     "data": {
+      "chars": 200
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 5,
+     "t": 1791513878.563,
+     "data": {
+      "chars": 408
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 6,
+     "t": 1791513879.002,
+     "data": {
+      "chars": 610
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 7,
+     "t": 1791513879.419,
+     "data": {
+      "chars": 810
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 8,
+     "t": 1791513879.8,
+     "data": {
+      "chars": 1013
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 9,
+     "t": 1791513880.249,
+     "data": {
+      "chars": 1213
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 10,
+     "t": 1791513880.631,
+     "data": {
+      "chars": 1414
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 11,
+     "t": 1791513881.01,
+     "data": {
+      "chars": 1617
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 12,
+     "t": 1791513881.35,
+     "data": {
+      "chars": 1817
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 13,
+     "t": 1791513881.672,
+     "data": {
+      "chars": 2017
+     }
+    },
+    {
+     "type": "thinking.progress",
+     "seq": 14,
+     "t": 1791513882.042,
+     "data": {
+      "chars": 2217
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 15,
+     "t": 1791513882.119,
+     "data": {
+      "state": "speaking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 16,
+     "t": 1791513882.12,
+     "data": {
+      "text": "**"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 17,
+     "t": 1791513882.139,
+     "data": {
+      "text": "Paper"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 18,
+     "t": 1791513882.139,
+     "data": {
+      "text": " Records"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 19,
+     "t": 1791513882.139,
+     "data": {
+      "text": "**"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 20,
+     "t": 1791513882.158,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 21,
+     "t": 1791513882.158,
+     "data": {
+      "text": "*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 22,
+     "t": 1791513882.177,
+     "data": {
+      "text": "Pros"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 23,
+     "t": 1791513882.177,
+     "data": {
+      "text": ":*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 24,
+     "t": 1791513882.177,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 25,
+     "t": 1791513882.197,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 26,
+     "t": 1791513882.197,
+     "data": {
+      "text": " No"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 27,
+     "t": 1791513882.197,
+     "data": {
+      "text": " technology"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 28,
+     "t": 1791513882.216,
+     "data": {
+      "text": " needed"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 29,
+     "t": 1791513882.216,
+     "data": {
+      "text": ";"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 30,
+     "t": 1791513882.216,
+     "data": {
+      "text": " accessible"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 31,
+     "t": 1791513882.235,
+     "data": {
+      "text": " anywhere"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 32,
+     "t": 1791513882.254,
+     "data": {
+      "text": " without"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 33,
+     "t": 1791513882.254,
+     "data": {
+      "text": " power"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 34,
+     "t": 1791513882.254,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 35,
+     "t": 1791513882.273,
+     "data": {
+      "text": " devices"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 36,
+     "t": 1791513882.274,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 37,
+     "t": 1791513882.274,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 38,
+     "t": 1791513882.293,
+     "data": {
+      "text": " software"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 39,
+     "t": 1791513882.293,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 40,
+     "t": 1791513882.293,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 41,
+     "t": 1791513882.312,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 42,
+     "t": 1791513882.312,
+     "data": {
+      "text": " Imm"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 43,
+     "t": 1791513882.331,
+     "data": {
+      "text": "une"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 44,
+     "t": 1791513882.331,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 45,
+     "t": 1791513882.35,
+     "data": {
+      "text": " digital"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 46,
+     "t": 1791513882.35,
+     "data": {
+      "text": " threats"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 47,
+     "t": 1791513882.369,
+     "data": {
+      "text": " like"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 48,
+     "t": 1791513882.369,
+     "data": {
+      "text": " hacking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 49,
+     "t": 1791513882.389,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 50,
+     "t": 1791513882.389,
+     "data": {
+      "text": " malware"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 51,
+     "t": 1791513882.389,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 52,
+     "t": 1791513882.411,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 53,
+     "t": 1791513882.411,
+     "data": {
+      "text": " software"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 54,
+     "t": 1791513882.411,
+     "data": {
+      "text": " crashes"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 55,
+     "t": 1791513882.431,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 56,
+     "t": 1791513882.431,
+     "data": {
+      "text": "\n\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 57,
+     "t": 1791513882.431,
+     "data": {
+      "text": "*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 58,
+     "t": 1791513882.452,
+     "data": {
+      "text": "Cons"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 59,
+     "t": 1791513882.452,
+     "data": {
+      "text": ":*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 60,
+     "t": 1791513882.452,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 61,
+     "t": 1791513882.473,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 62,
+     "t": 1791513882.473,
+     "data": {
+      "text": " Hard"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 63,
+     "t": 1791513882.494,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 64,
+     "t": 1791513882.494,
+     "data": {
+      "text": " search"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 65,
+     "t": 1791513882.495,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 66,
+     "t": 1791513882.514,
+     "data": {
+      "text": " edit"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 67,
+     "t": 1791513882.514,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 68,
+     "t": 1791513882.514,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 69,
+     "t": 1791513882.534,
+     "data": {
+      "text": " update"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 70,
+     "t": 1791513882.534,
+     "data": {
+      "text": ";"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 71,
+     "t": 1791513882.534,
+     "data": {
+      "text": " manual"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 72,
+     "t": 1791513882.554,
+     "data": {
+      "text": " entry"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 73,
+     "t": 1791513882.554,
+     "data": {
+      "text": " increases"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 74,
+     "t": 1791513882.554,
+     "data": {
+      "text": " errors"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 75,
+     "t": 1791513882.574,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 76,
+     "t": 1791513882.574,
+     "data": {
+      "text": " wasted"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 77,
+     "t": 1791513882.594,
+     "data": {
+      "text": " time"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 78,
+     "t": 1791513882.594,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 79,
+     "t": 1791513882.594,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 80,
+     "t": 1791513882.614,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 81,
+     "t": 1791513882.615,
+     "data": {
+      "text": " Bul"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 82,
+     "t": 1791513882.635,
+     "data": {
+      "text": "ky"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 83,
+     "t": 1791513882.635,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 84,
+     "t": 1791513882.655,
+     "data": {
+      "text": " store"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 85,
+     "t": 1791513882.655,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 86,
+     "t": 1791513882.675,
+     "data": {
+      "text": " easily"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 87,
+     "t": 1791513882.695,
+     "data": {
+      "text": " lost"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 88,
+     "t": 1791513882.695,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 89,
+     "t": 1791513882.716,
+     "data": {
+      "text": " damaged"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 90,
+     "t": 1791513882.716,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 91,
+     "t": 1791513882.716,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 92,
+     "t": 1791513882.736,
+     "data": {
+      "text": " difficult"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 93,
+     "t": 1791513882.736,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 94,
+     "t": 1791513882.736,
+     "data": {
+      "text": " back"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 95,
+     "t": 1791513882.756,
+     "data": {
+      "text": " up"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 96,
+     "t": 1791513882.756,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 97,
+     "t": 1791513882.756,
+     "data": {
+      "text": " share"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 98,
+     "t": 1791513882.776,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 99,
+     "t": 1791513882.777,
+     "data": {
+      "text": "\n\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 100,
+     "t": 1791513882.777,
+     "data": {
+      "text": "**"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 101,
+     "t": 1791513882.797,
+     "data": {
+      "text": "Spread"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 102,
+     "t": 1791513882.797,
+     "data": {
+      "text": "sheet"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 103,
+     "t": 1791513882.798,
+     "data": {
+      "text": " Records"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 104,
+     "t": 1791513882.818,
+     "data": {
+      "text": "**"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 105,
+     "t": 1791513882.819,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 106,
+     "t": 1791513882.819,
+     "data": {
+      "text": "*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 107,
+     "t": 1791513882.839,
+     "data": {
+      "text": "Pros"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 108,
+     "t": 1791513882.839,
+     "data": {
+      "text": ":*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 109,
+     "t": 1791513882.84,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 110,
+     "t": 1791513882.86,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 111,
+     "t": 1791513882.86,
+     "data": {
+      "text": " Instant"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 112,
+     "t": 1791513882.86,
+     "data": {
+      "text": " search"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 113,
+     "t": 1791513882.881,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 114,
+     "t": 1791513882.881,
+     "data": {
+      "text": " sorting"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 115,
+     "t": 1791513882.881,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 116,
+     "t": 1791513882.902,
+     "data": {
+      "text": " filtering"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 117,
+     "t": 1791513882.902,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 118,
+     "t": 1791513882.903,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 119,
+     "t": 1791513882.923,
+     "data": {
+      "text": " automated"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 120,
+     "t": 1791513882.923,
+     "data": {
+      "text": " calculations"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 121,
+     "t": 1791513882.923,
+     "data": {
+      "text": " streamline"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 122,
+     "t": 1791513882.942,
+     "data": {
+      "text": " management"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 123,
+     "t": 1791513882.963,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 124,
+     "t": 1791513882.963,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 125,
+     "t": 1791513882.964,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 126,
+     "t": 1791513882.983,
+     "data": {
+      "text": " Compact"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 127,
+     "t": 1791513883.003,
+     "data": {
+      "text": " digital"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 128,
+     "t": 1791513883.003,
+     "data": {
+      "text": " storage"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 129,
+     "t": 1791513883.003,
+     "data": {
+      "text": " enables"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 130,
+     "t": 1791513883.023,
+     "data": {
+      "text": " easy"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 131,
+     "t": 1791513883.024,
+     "data": {
+      "text": " backups"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 132,
+     "t": 1791513883.024,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 133,
+     "t": 1791513883.044,
+     "data": {
+      "text": " sharing"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 134,
+     "t": 1791513883.045,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 135,
+     "t": 1791513883.045,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 136,
+     "t": 1791513883.064,
+     "data": {
+      "text": " long"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 137,
+     "t": 1791513883.064,
+     "data": {
+      "text": "-term"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 138,
+     "t": 1791513883.064,
+     "data": {
+      "text": " arch"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 139,
+     "t": 1791513883.083,
+     "data": {
+      "text": "iving"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 140,
+     "t": 1791513883.084,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 141,
+     "t": 1791513883.084,
+     "data": {
+      "text": "\n\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 142,
+     "t": 1791513883.103,
+     "data": {
+      "text": "*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 143,
+     "t": 1791513883.103,
+     "data": {
+      "text": "Cons"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 144,
+     "t": 1791513883.103,
+     "data": {
+      "text": ":*"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 145,
+     "t": 1791513883.123,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 146,
+     "t": 1791513883.123,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 147,
+     "t": 1791513883.123,
+     "data": {
+      "text": " Requires"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 148,
+     "t": 1791513883.143,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 149,
+     "t": 1791513883.143,
+     "data": {
+      "text": " device"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 150,
+     "t": 1791513883.144,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 151,
+     "t": 1791513883.163,
+     "data": {
+      "text": " compatible"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 152,
+     "t": 1791513883.183,
+     "data": {
+      "text": " software"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 153,
+     "t": 1791513883.183,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 154,
+     "t": 1791513883.183,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 155,
+     "t": 1791513883.202,
+     "data": {
+      "text": " basic"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 156,
+     "t": 1791513883.202,
+     "data": {
+      "text": " digital"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 157,
+     "t": 1791513883.203,
+     "data": {
+      "text": " skills"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 158,
+     "t": 1791513883.223,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 159,
+     "t": 1791513883.223,
+     "data": {
+      "text": " use"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 160,
+     "t": 1791513883.224,
+     "data": {
+      "text": " effectively"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 161,
+     "t": 1791513883.244,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 162,
+     "t": 1791513883.244,
+     "data": {
+      "text": "\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 163,
+     "t": 1791513883.244,
+     "data": {
+      "text": "-"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 164,
+     "t": 1791513883.264,
+     "data": {
+      "text": " Dep"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 165,
+     "t": 1791513883.264,
+     "data": {
+      "text": "endent"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 166,
+     "t": 1791513883.264,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 167,
+     "t": 1791513883.283,
+     "data": {
+      "text": " technology"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 168,
+     "t": 1791513883.283,
+     "data": {
+      "text": ";"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 169,
+     "t": 1791513883.283,
+     "data": {
+      "text": " vulnerable"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 170,
+     "t": 1791513883.303,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 171,
+     "t": 1791513883.303,
+     "data": {
+      "text": " file"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 172,
+     "t": 1791513883.322,
+     "data": {
+      "text": " corruption"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 173,
+     "t": 1791513883.322,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 174,
+     "t": 1791513883.323,
+     "data": {
+      "text": " data"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 175,
+     "t": 1791513883.342,
+     "data": {
+      "text": " breaches"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 176,
+     "t": 1791513883.342,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 177,
+     "t": 1791513883.342,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 178,
+     "t": 1791513883.361,
+     "data": {
+      "text": " platform"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 179,
+     "t": 1791513883.361,
+     "data": {
+      "text": " dependency"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 180,
+     "t": 1791513883.381,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.done",
+     "seq": 181,
+     "t": 1791513883.381,
+     "data": {
+      "complete": true,
+      "escalation_candidate": false,
+      "flags": [],
+      "metrics": {
+       "cache_n": 201,
+       "draft_n": 570,
+       "draft_n_accepted": 448,
+       "first_answer_s": 4.6232,
+       "predicted_n": 733,
+       "predicted_per_second": 131.05847804224416,
+       "prompt_n": 29,
+       "prompt_per_second": 144.4438910195746,
+       "reasoning_chars": 2253,
+       "retried": false,
+       "total_s": 5.8849,
+       "ttft_s": 0.2992
+      },
+      "status": "COMPLETE"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 182,
+     "t": 1791513883.381,
+     "data": {
+      "route": "answer",
+      "status": "ok",
+      "total_s": 6.2421
+     }
+    }
+   ]
+  },
+  {
+   "journey": "cancel",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791513883.696,
+     "data": {
+      "depth": "fast",
+      "text_chars": 75
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791513883.696,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791513884.008,
+     "data": {
+      "route": "answer",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "user_selected_fast",
+       "selected_by": "user",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "QUESTION",
+       "reasons": [
+        "default_conversation"
+       ]
+      }
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791513884.252,
+     "data": {
+      "state": "speaking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 5,
+     "t": 1791513884.252,
+     "data": {
+      "text": "The"
+     }
+    },
+    {
+     "type": "answer.done",
+     "seq": 6,
+     "t": 1791513884.252,
+     "data": {
+      "complete": false,
+      "escalation_candidate": false,
+      "flags": [],
+      "metrics": {
+       "cache_n": null,
+       "draft_n": null,
+       "draft_n_accepted": null,
+       "first_answer_s": 0.243,
+       "predicted_n": null,
+       "predicted_per_second": null,
+       "prompt_n": null,
+       "prompt_per_second": null,
+       "reasoning_chars": 0,
+       "retried": false,
+       "total_s": 0.2435,
+       "ttft_s": 0.243
+      },
+      "status": "CANCELLED"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 7,
+     "t": 1791513884.252,
+     "data": {
+      "route": "answer",
+      "status": "cancelled",
+      "total_s": 0.5563
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 8,
+     "t": 1791513884.252,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ]
+  },
+  {
+   "journey": "action_approved",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791513884.627,
+     "data": {
+      "depth": "auto",
+      "text_chars": 49
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791513884.627,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791513884.627,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791513889.627,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "2e8fd7a7efe9107e81be1dffb6f2b470e8a8f413e07474decc807fd205d4ed48",
+       "intent_id": "6735aa83e5274798a6b3aa3e27530bcd",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the science lab is closed on Friday",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the science lab is closed on Friday"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791513889.628,
+     "data": {
+      "approval_digest": "5f4ebd51a57ab0b452c62784d01a6505a553429e2a8b890ad9a9767eaee93fb9",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the science lab is closed on Friday"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "f7b476fd-0bc9-4fcb-853c-eba1aab7e792",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791513889.628,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 5.0006
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 1,
+     "t": 1791513889.665,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 2,
+     "t": 1791513890.077,
+     "data": {
+      "code": "SETTLED_VERIFIED",
+      "core_turn_id": "f7b476fd-0bc9-4fcb-853c-eba1aab7e792",
+      "message": "Done. The result was independently verified by URI.",
+      "needs": "none",
+      "state": "reply"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 3,
+     "t": 1791513890.077,
+     "data": {
+      "route": "core",
+      "status": "ok",
+      "total_s": 0
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791513890.077,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "selected": "runtime-v1",
+   "memory_before": 0,
+   "memory_after": 1
+  },
+  {
+   "journey": "action_denied",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791513890.555,
+     "data": {
+      "depth": "auto",
+      "text_chars": 45
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791513890.555,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791513890.555,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791513892.682,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "9a9e0581431d976b526807ea12c6fcdd497b6e746f658edf93f91b625cf7ab6c",
+       "intent_id": "b245b7acb9934612b1c3e4a5fe6c478c",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the staff meeting moved to 4 pm",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the staff meeting moved to 4 pm"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791513892.682,
+     "data": {
+      "approval_digest": "0beed2a3f6f043c33d9aeb763df2dd0d612686064835c1d73f5be1e1cb7d3363",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the staff meeting moved to 4 pm"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "d9cccfef-209d-4d5f-8914-1ebed1b379fe",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791513892.682,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 2.1272
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 7,
+     "t": 1791513892.682,
+     "data": {
+      "state": "waiting_user"
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 1,
+     "t": 1791513892.717,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 2,
+     "t": 1791513892.899,
+     "data": {
+      "code": "APPROVAL_DENIED",
+      "core_turn_id": "d9cccfef-209d-4d5f-8914-1ebed1b379fe",
+      "message": "You declined; nothing was changed.",
+      "needs": "none",
+      "state": "cancelled"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 3,
+     "t": 1791513892.9,
+     "data": {
+      "route": "core",
+      "status": "not_verified",
+      "total_s": 0
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791513892.9,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "selected": "runtime-v1"
+  },
+  {
+   "journey": "refusal",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791513892.938,
+     "data": {
+      "depth": "auto",
+      "text_chars": 41
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791513892.939,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791513892.939,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "imperative_action_verb"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791513893.177,
+     "data": {
+      "code": "REFUSED_UNSUPPORTED",
+      "message": "That is not something URI can do.",
+      "needs": "none",
+      "state": "reply"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 5,
+     "t": 1791513893.177,
+     "data": {
+      "route": "core",
+      "status": "refused",
+      "total_s": 0.2388
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 6,
+     "t": 1791513893.177,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "finished": "refused"
+  },
+  {
+   "journey": "forged_digest",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791513893.179,
+     "data": {
+      "depth": "auto",
+      "text_chars": 33
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791513893.179,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791513893.179,
+     "data": {
+      "route": "core",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "core_decides_actions_on_fast_seams",
+       "selected_by": "core_seam",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "ACTION",
+       "reasons": [
+        "remember_or_forget"
+       ]
+      }
+     }
+    },
+    {
+     "type": "core.result",
+     "seq": 4,
+     "t": 1791513893.252,
+     "data": {
+      "code": "APPROVAL_REQUIRED",
+      "intent": {
+       "capability": "remember_fact",
+       "corrections": [],
+       "digest": "355ba231f68c9d0905bf93a0a0f9f1520e118152b8863c4231d9daec50b988e5",
+       "intent_id": "41f91084190847cfb25ce351559b0a91",
+       "questions_asked": 0,
+       "references": {},
+       "request": "remember that the bus leaves at 7",
+       "revision": 1,
+       "sources": {
+        "statement": "user_request"
+       },
+       "status": "CONFIRMED",
+       "superseded": [],
+       "values": {
+        "statement": "the bus leaves at 7"
+       }
+      },
+      "message": null,
+      "needs": "approval",
+      "state": "approval_required"
+     }
+    },
+    {
+     "type": "approval.required",
+     "seq": 5,
+     "t": 1791513893.253,
+     "data": {
+      "approval_digest": "48d3b34238c08813e4fba94988e4503a83692a5726e66fb3014c76d690b37687",
+      "arguments": {
+       "action": "remember_fact",
+       "inputs": {
+        "request_text": "remember that the bus leaves at 7"
+       }
+      },
+      "capability_id": "remember_fact",
+      "core_turn_id": "a48650df-2656-4439-88c7-c29d615d034f",
+      "effect": "local_write",
+      "reversible": true
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 6,
+     "t": 1791513893.253,
+     "data": {
+      "route": "core",
+      "status": "needs_user",
+      "total_s": 0.0737
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 7,
+     "t": 1791513893.253,
+     "data": {
+      "state": "waiting_user"
+     }
+    }
+   ],
+   "reply": {
+    "code": "APPROVAL_DIGEST_MISMATCH",
+    "result": "REFUSED"
+   }
+  },
+  {
+   "journey": "turn_status_and_restart_refused",
+   "events": [
+    {
+     "type": "turn.started",
+     "seq": 1,
+     "t": 1791513894.722,
+     "data": {
+      "depth": "fast",
+      "text_chars": 65
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 2,
+     "t": 1791513894.723,
+     "data": {
+      "state": "thinking"
+     }
+    },
+    {
+     "type": "turn.routed",
+     "seq": 3,
+     "t": 1791513895.176,
+     "data": {
+      "route": "answer",
+      "tier": {
+       "escalation_offer": false,
+       "reason": "user_selected_fast",
+       "selected_by": "user",
+       "tier": "FAST"
+      },
+      "triage": {
+       "action_clauses": 1,
+       "kind": "QUESTION",
+       "reasons": [
+        "default_conversation"
+       ]
+      }
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 4,
+     "t": 1791513895.515,
+     "data": {
+      "state": "speaking"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 5,
+     "t": 1791513895.515,
+     "data": {
+      "text": "T"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 6,
+     "t": 1791513895.545,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 7,
+     "t": 1791513895.545,
+     "data": {
+      "text": " are"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 8,
+     "t": 1791513895.545,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 9,
+     "t": 1791513895.568,
+     "data": {
+      "text": " rhyth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 10,
+     "t": 1791513895.568,
+     "data": {
+      "text": "mic"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 11,
+     "t": 1791513895.568,
+     "data": {
+      "text": " rise"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 12,
+     "t": 1791513895.591,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 13,
+     "t": 1791513895.591,
+     "data": {
+      "text": " fall"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 14,
+     "t": 1791513895.591,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 15,
+     "t": 1791513895.613,
+     "data": {
+      "text": " ocean"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 16,
+     "t": 1791513895.635,
+     "data": {
+      "text": " levels"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 17,
+     "t": 1791513895.635,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 18,
+     "t": 1791513895.635,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 19,
+     "t": 1791513895.656,
+     "data": {
+      "text": " phenomenon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 20,
+     "t": 1791513895.656,
+     "data": {
+      "text": " primarily"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 21,
+     "t": 1791513895.678,
+     "data": {
+      "text": " driven"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 22,
+     "t": 1791513895.678,
+     "data": {
+      "text": " by"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 23,
+     "t": 1791513895.678,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 24,
+     "t": 1791513895.699,
+     "data": {
+      "text": " gravitational"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 25,
+     "t": 1791513895.699,
+     "data": {
+      "text": " inter"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 26,
+     "t": 1791513895.721,
+     "data": {
+      "text": "play"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 27,
+     "t": 1791513895.721,
+     "data": {
+      "text": " between"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 28,
+     "t": 1791513895.721,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 29,
+     "t": 1791513895.743,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 30,
+     "t": 1791513895.743,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 31,
+     "t": 1791513895.744,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 32,
+     "t": 1791513895.774,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 33,
+     "t": 1791513895.774,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 34,
+     "t": 1791513895.774,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 35,
+     "t": 1791513895.796,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 36,
+     "t": 1791513895.796,
+     "data": {
+      "text": " Sun"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 37,
+     "t": 1791513895.796,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 38,
+     "t": 1791513895.818,
+     "data": {
+      "text": " The"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 39,
+     "t": 1791513895.818,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 40,
+     "t": 1791513895.84,
+     "data": {
+      "text": "\u2019s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 41,
+     "t": 1791513895.84,
+     "data": {
+      "text": " gravity"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 42,
+     "t": 1791513895.862,
+     "data": {
+      "text": " is"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 43,
+     "t": 1791513895.862,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 44,
+     "t": 1791513895.862,
+     "data": {
+      "text": " dominant"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 45,
+     "t": 1791513895.884,
+     "data": {
+      "text": " force"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 46,
+     "t": 1791513895.885,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 47,
+     "t": 1791513895.885,
+     "data": {
+      "text": " pulling"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 48,
+     "t": 1791513895.906,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 49,
+     "t": 1791513895.906,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 50,
+     "t": 1791513895.906,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 51,
+     "t": 1791513895.928,
+     "data": {
+      "text": "\u2019s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 52,
+     "t": 1791513895.928,
+     "data": {
+      "text": " oceans"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 53,
+     "t": 1791513895.928,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 54,
+     "t": 1791513895.949,
+     "data": {
+      "text": " creating"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 55,
+     "t": 1791513895.949,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 56,
+     "t": 1791513895.972,
+     "data": {
+      "text": " bul"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 57,
+     "t": 1791513895.972,
+     "data": {
+      "text": "ge"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 58,
+     "t": 1791513895.972,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 59,
+     "t": 1791513895.994,
+     "data": {
+      "text": " water"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 60,
+     "t": 1791513895.994,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 61,
+     "t": 1791513895.994,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 62,
+     "t": 1791513896.016,
+     "data": {
+      "text": " side"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 63,
+     "t": 1791513896.017,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 64,
+     "t": 1791513896.038,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 65,
+     "t": 1791513896.038,
+     "data": {
+      "text": " planet"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 66,
+     "t": 1791513896.038,
+     "data": {
+      "text": " facing"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 67,
+     "t": 1791513896.06,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 68,
+     "t": 1791513896.06,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 69,
+     "t": 1791513896.06,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 70,
+     "t": 1791513896.081,
+     "data": {
+      "text": " Sim"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 71,
+     "t": 1791513896.103,
+     "data": {
+      "text": "ult"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 72,
+     "t": 1791513896.103,
+     "data": {
+      "text": "aneously"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 73,
+     "t": 1791513896.103,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 74,
+     "t": 1791513896.124,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 75,
+     "t": 1791513896.124,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 76,
+     "t": 1791513896.124,
+     "data": {
+      "text": " opposite"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 77,
+     "t": 1791513896.144,
+     "data": {
+      "text": " side"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 78,
+     "t": 1791513896.144,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 79,
+     "t": 1791513896.144,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 80,
+     "t": 1791513896.165,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 81,
+     "t": 1791513896.165,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 82,
+     "t": 1791513896.165,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 83,
+     "t": 1791513896.186,
+     "data": {
+      "text": " second"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 84,
+     "t": 1791513896.186,
+     "data": {
+      "text": " bul"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 85,
+     "t": 1791513896.186,
+     "data": {
+      "text": "ge"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 86,
+     "t": 1791513896.208,
+     "data": {
+      "text": " forms"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 87,
+     "t": 1791513896.228,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 88,
+     "t": 1791513896.249,
+     "data": {
+      "text": " This"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 89,
+     "t": 1791513896.249,
+     "data": {
+      "text": " counter"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 90,
+     "t": 1791513896.27,
+     "data": {
+      "text": "-int"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 91,
+     "t": 1791513896.292,
+     "data": {
+      "text": "uitive"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 92,
+     "t": 1791513896.292,
+     "data": {
+      "text": " effect"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 93,
+     "t": 1791513896.315,
+     "data": {
+      "text": " occurs"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 94,
+     "t": 1791513896.338,
+     "data": {
+      "text": " because"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 95,
+     "t": 1791513896.338,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 96,
+     "t": 1791513896.338,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 97,
+     "t": 1791513896.358,
+     "data": {
+      "text": "\u2019s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 98,
+     "t": 1791513896.359,
+     "data": {
+      "text": " gravitational"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 99,
+     "t": 1791513896.38,
+     "data": {
+      "text": " pull"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 100,
+     "t": 1791513896.38,
+     "data": {
+      "text": " is"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 101,
+     "t": 1791513896.38,
+     "data": {
+      "text": " weaker"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 102,
+     "t": 1791513896.401,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 103,
+     "t": 1791513896.402,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 104,
+     "t": 1791513896.402,
+     "data": {
+      "text": " far"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 105,
+     "t": 1791513896.422,
+     "data": {
+      "text": " side"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 106,
+     "t": 1791513896.422,
+     "data": {
+      "text": " than"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 107,
+     "t": 1791513896.442,
+     "data": {
+      "text": " it"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 108,
+     "t": 1791513896.463,
+     "data": {
+      "text": " is"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 109,
+     "t": 1791513896.463,
+     "data": {
+      "text": " at"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 110,
+     "t": 1791513896.463,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 111,
+     "t": 1791513896.485,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 112,
+     "t": 1791513896.485,
+     "data": {
+      "text": "\u2019s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 113,
+     "t": 1791513896.486,
+     "data": {
+      "text": " center"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 114,
+     "t": 1791513896.508,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 115,
+     "t": 1791513896.508,
+     "data": {
+      "text": " causing"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 116,
+     "t": 1791513896.53,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 117,
+     "t": 1791513896.53,
+     "data": {
+      "text": " water"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 118,
+     "t": 1791513896.53,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 119,
+     "t": 1791513896.551,
+     "data": {
+      "text": " be"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 120,
+     "t": 1791513896.551,
+     "data": {
+      "text": " \""
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 121,
+     "t": 1791513896.572,
+     "data": {
+      "text": "left"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 122,
+     "t": 1791513896.572,
+     "data": {
+      "text": " behind"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 123,
+     "t": 1791513896.572,
+     "data": {
+      "text": "\""
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 124,
+     "t": 1791513896.594,
+     "data": {
+      "text": " as"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 125,
+     "t": 1791513896.595,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 126,
+     "t": 1791513896.595,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 127,
+     "t": 1791513896.616,
+     "data": {
+      "text": " is"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 128,
+     "t": 1791513896.616,
+     "data": {
+      "text": " pulled"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 129,
+     "t": 1791513896.616,
+     "data": {
+      "text": " slightly"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 130,
+     "t": 1791513896.637,
+     "data": {
+      "text": " more"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 131,
+     "t": 1791513896.637,
+     "data": {
+      "text": " toward"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 132,
+     "t": 1791513896.638,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 133,
+     "t": 1791513896.66,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 134,
+     "t": 1791513896.66,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 135,
+     "t": 1791513896.66,
+     "data": {
+      "text": " As"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 136,
+     "t": 1791513896.682,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 137,
+     "t": 1791513896.705,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 138,
+     "t": 1791513896.705,
+     "data": {
+      "text": " rotates"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 139,
+     "t": 1791513896.705,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 140,
+     "t": 1791513896.727,
+     "data": {
+      "text": " its"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 141,
+     "t": 1791513896.728,
+     "data": {
+      "text": " axis"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 142,
+     "t": 1791513896.728,
+     "data": {
+      "text": " once"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 143,
+     "t": 1791513896.748,
+     "data": {
+      "text": " every"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 144,
+     "t": 1791513896.748,
+     "data": {
+      "text": " twenty"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 145,
+     "t": 1791513896.77,
+     "data": {
+      "text": "-four"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 146,
+     "t": 1791513896.77,
+     "data": {
+      "text": " hours"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 147,
+     "t": 1791513896.77,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 148,
+     "t": 1791513896.791,
+     "data": {
+      "text": " any"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 149,
+     "t": 1791513896.791,
+     "data": {
+      "text": " given"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 150,
+     "t": 1791513896.791,
+     "data": {
+      "text": " coastal"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 151,
+     "t": 1791513896.814,
+     "data": {
+      "text": " location"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 152,
+     "t": 1791513896.814,
+     "data": {
+      "text": " passes"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 153,
+     "t": 1791513896.814,
+     "data": {
+      "text": " through"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 154,
+     "t": 1791513896.837,
+     "data": {
+      "text": " these"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 155,
+     "t": 1791513896.837,
+     "data": {
+      "text": " two"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 156,
+     "t": 1791513896.837,
+     "data": {
+      "text": " bul"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 157,
+     "t": 1791513896.859,
+     "data": {
+      "text": "ges"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 158,
+     "t": 1791513896.859,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 159,
+     "t": 1791513896.86,
+     "data": {
+      "text": " two"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 160,
+     "t": 1791513896.881,
+     "data": {
+      "text": " trough"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 161,
+     "t": 1791513896.903,
+     "data": {
+      "text": "s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 162,
+     "t": 1791513896.903,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 163,
+     "t": 1791513896.903,
+     "data": {
+      "text": " resulting"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 164,
+     "t": 1791513896.925,
+     "data": {
+      "text": " in"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 165,
+     "t": 1791513896.925,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 166,
+     "t": 1791513896.947,
+     "data": {
+      "text": " familiar"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 167,
+     "t": 1791513896.969,
+     "data": {
+      "text": " cycle"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 168,
+     "t": 1791513896.969,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 169,
+     "t": 1791513896.969,
+     "data": {
+      "text": " two"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 170,
+     "t": 1791513896.991,
+     "data": {
+      "text": " high"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 171,
+     "t": 1791513896.991,
+     "data": {
+      "text": " t"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 172,
+     "t": 1791513896.991,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 173,
+     "t": 1791513897.012,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 174,
+     "t": 1791513897.012,
+     "data": {
+      "text": " two"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 175,
+     "t": 1791513897.012,
+     "data": {
+      "text": " low"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 176,
+     "t": 1791513897.034,
+     "data": {
+      "text": " t"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 177,
+     "t": 1791513897.035,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 178,
+     "t": 1791513897.035,
+     "data": {
+      "text": " each"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 179,
+     "t": 1791513897.057,
+     "data": {
+      "text": " day"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 180,
+     "t": 1791513897.057,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 181,
+     "t": 1791513897.058,
+     "data": {
+      "text": "\n\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 182,
+     "t": 1791513897.08,
+     "data": {
+      "text": "However"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 183,
+     "t": 1791513897.08,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 184,
+     "t": 1791513897.08,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 185,
+     "t": 1791513897.101,
+     "data": {
+      "text": " Sun"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 186,
+     "t": 1791513897.122,
+     "data": {
+      "text": " also"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 187,
+     "t": 1791513897.143,
+     "data": {
+      "text": " ex"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 188,
+     "t": 1791513897.165,
+     "data": {
+      "text": "erts"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 189,
+     "t": 1791513897.165,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 190,
+     "t": 1791513897.186,
+     "data": {
+      "text": " gravitational"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 191,
+     "t": 1791513897.187,
+     "data": {
+      "text": " pull"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 192,
+     "t": 1791513897.209,
+     "data": {
+      "text": " on"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 193,
+     "t": 1791513897.209,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 194,
+     "t": 1791513897.209,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 195,
+     "t": 1791513897.23,
+     "data": {
+      "text": "\u2019s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 196,
+     "t": 1791513897.253,
+     "data": {
+      "text": " oceans"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 197,
+     "t": 1791513897.253,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 198,
+     "t": 1791513897.253,
+     "data": {
+      "text": " though"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 199,
+     "t": 1791513897.274,
+     "data": {
+      "text": " it"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 200,
+     "t": 1791513897.295,
+     "data": {
+      "text": " is"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 201,
+     "t": 1791513897.295,
+     "data": {
+      "text": " less"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 202,
+     "t": 1791513897.317,
+     "data": {
+      "text": " than"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 203,
+     "t": 1791513897.34,
+     "data": {
+      "text": " half"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 204,
+     "t": 1791513897.34,
+     "data": {
+      "text": " as"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 205,
+     "t": 1791513897.362,
+     "data": {
+      "text": " strong"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 206,
+     "t": 1791513897.362,
+     "data": {
+      "text": " as"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 207,
+     "t": 1791513897.362,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 208,
+     "t": 1791513897.383,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 209,
+     "t": 1791513897.383,
+     "data": {
+      "text": "\u2019s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 210,
+     "t": 1791513897.383,
+     "data": {
+      "text": " due"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 211,
+     "t": 1791513897.405,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 212,
+     "t": 1791513897.405,
+     "data": {
+      "text": " its"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 213,
+     "t": 1791513897.405,
+     "data": {
+      "text": " immense"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 214,
+     "t": 1791513897.428,
+     "data": {
+      "text": " distance"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 215,
+     "t": 1791513897.428,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 216,
+     "t": 1791513897.428,
+     "data": {
+      "text": " The"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 217,
+     "t": 1791513897.45,
+     "data": {
+      "text": " Sun"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 218,
+     "t": 1791513897.45,
+     "data": {
+      "text": "\u2019s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 219,
+     "t": 1791513897.45,
+     "data": {
+      "text": " influence"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 220,
+     "t": 1791513897.471,
+     "data": {
+      "text": " becomes"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 221,
+     "t": 1791513897.493,
+     "data": {
+      "text": " significant"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 222,
+     "t": 1791513897.493,
+     "data": {
+      "text": " when"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 223,
+     "t": 1791513897.493,
+     "data": {
+      "text": " it"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 224,
+     "t": 1791513897.515,
+     "data": {
+      "text": " align"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 225,
+     "t": 1791513897.515,
+     "data": {
+      "text": "s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 226,
+     "t": 1791513897.515,
+     "data": {
+      "text": " with"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 227,
+     "t": 1791513897.536,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 228,
+     "t": 1791513897.536,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 229,
+     "t": 1791513897.536,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 230,
+     "t": 1791513897.56,
+     "data": {
+      "text": " During"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 231,
+     "t": 1791513897.56,
+     "data": {
+      "text": " new"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 232,
+     "t": 1791513897.582,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 233,
+     "t": 1791513897.582,
+     "data": {
+      "text": " full"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 234,
+     "t": 1791513897.582,
+     "data": {
+      "text": " moons"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 235,
+     "t": 1791513897.603,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 236,
+     "t": 1791513897.603,
+     "data": {
+      "text": " when"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 237,
+     "t": 1791513897.624,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 238,
+     "t": 1791513897.624,
+     "data": {
+      "text": " Sun"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 239,
+     "t": 1791513897.624,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 240,
+     "t": 1791513897.646,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 241,
+     "t": 1791513897.646,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 242,
+     "t": 1791513897.646,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 243,
+     "t": 1791513897.669,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 244,
+     "t": 1791513897.669,
+     "data": {
+      "text": " are"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 245,
+     "t": 1791513897.669,
+     "data": {
+      "text": " in"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 246,
+     "t": 1791513897.691,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 247,
+     "t": 1791513897.691,
+     "data": {
+      "text": " straight"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 248,
+     "t": 1791513897.691,
+     "data": {
+      "text": " line"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 249,
+     "t": 1791513897.712,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 250,
+     "t": 1791513897.712,
+     "data": {
+      "text": " their"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 251,
+     "t": 1791513897.733,
+     "data": {
+      "text": " gravitational"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 252,
+     "t": 1791513897.733,
+     "data": {
+      "text": " forces"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 253,
+     "t": 1791513897.734,
+     "data": {
+      "text": " combine"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 254,
+     "t": 1791513897.755,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 255,
+     "t": 1791513897.776,
+     "data": {
+      "text": " create"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 256,
+     "t": 1791513897.776,
+     "data": {
+      "text": " higher"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 257,
+     "t": 1791513897.796,
+     "data": {
+      "text": " high"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 258,
+     "t": 1791513897.817,
+     "data": {
+      "text": " t"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 259,
+     "t": 1791513897.817,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 260,
+     "t": 1791513897.817,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 261,
+     "t": 1791513897.839,
+     "data": {
+      "text": " lower"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 262,
+     "t": 1791513897.839,
+     "data": {
+      "text": " low"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 263,
+     "t": 1791513897.839,
+     "data": {
+      "text": " t"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 264,
+     "t": 1791513897.861,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 265,
+     "t": 1791513897.861,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 266,
+     "t": 1791513897.861,
+     "data": {
+      "text": " known"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 267,
+     "t": 1791513897.884,
+     "data": {
+      "text": " as"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 268,
+     "t": 1791513897.884,
+     "data": {
+      "text": " spring"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 269,
+     "t": 1791513897.885,
+     "data": {
+      "text": " t"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 270,
+     "t": 1791513897.908,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 271,
+     "t": 1791513897.908,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 272,
+     "t": 1791513897.908,
+     "data": {
+      "text": " Conversely"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 273,
+     "t": 1791513897.931,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 274,
+     "t": 1791513897.931,
+     "data": {
+      "text": " during"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 275,
+     "t": 1791513897.955,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 276,
+     "t": 1791513897.955,
+     "data": {
+      "text": " first"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 277,
+     "t": 1791513897.956,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 278,
+     "t": 1791513897.979,
+     "data": {
+      "text": " third"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 279,
+     "t": 1791513897.979,
+     "data": {
+      "text": " quarters"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 280,
+     "t": 1791513897.979,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 281,
+     "t": 1791513898.002,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 282,
+     "t": 1791513898.002,
+     "data": {
+      "text": " moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 283,
+     "t": 1791513898.002,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 284,
+     "t": 1791513898.025,
+     "data": {
+      "text": " when"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 285,
+     "t": 1791513898.025,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 286,
+     "t": 1791513898.025,
+     "data": {
+      "text": " Sun"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 287,
+     "t": 1791513898.054,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 288,
+     "t": 1791513898.054,
+     "data": {
+      "text": " Moon"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 289,
+     "t": 1791513898.054,
+     "data": {
+      "text": " are"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 290,
+     "t": 1791513898.076,
+     "data": {
+      "text": " at"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 291,
+     "t": 1791513898.076,
+     "data": {
+      "text": " right"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 292,
+     "t": 1791513898.076,
+     "data": {
+      "text": " angles"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 293,
+     "t": 1791513898.098,
+     "data": {
+      "text": " relative"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 294,
+     "t": 1791513898.098,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 295,
+     "t": 1791513898.098,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 296,
+     "t": 1791513898.12,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 297,
+     "t": 1791513898.12,
+     "data": {
+      "text": " their"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 298,
+     "t": 1791513898.12,
+     "data": {
+      "text": " forces"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 299,
+     "t": 1791513898.141,
+     "data": {
+      "text": " partially"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 300,
+     "t": 1791513898.141,
+     "data": {
+      "text": " cancel"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 301,
+     "t": 1791513898.141,
+     "data": {
+      "text": " each"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 302,
+     "t": 1791513898.164,
+     "data": {
+      "text": " other"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 303,
+     "t": 1791513898.164,
+     "data": {
+      "text": " out"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 304,
+     "t": 1791513898.187,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 305,
+     "t": 1791513898.187,
+     "data": {
+      "text": " resulting"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 306,
+     "t": 1791513898.187,
+     "data": {
+      "text": " in"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 307,
+     "t": 1791513898.208,
+     "data": {
+      "text": " less"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 308,
+     "t": 1791513898.229,
+     "data": {
+      "text": " extreme"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 309,
+     "t": 1791513898.229,
+     "data": {
+      "text": " tidal"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 310,
+     "t": 1791513898.25,
+     "data": {
+      "text": " ranges"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 311,
+     "t": 1791513898.271,
+     "data": {
+      "text": " called"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 312,
+     "t": 1791513898.294,
+     "data": {
+      "text": " ne"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 313,
+     "t": 1791513898.294,
+     "data": {
+      "text": "ap"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 314,
+     "t": 1791513898.294,
+     "data": {
+      "text": " t"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 315,
+     "t": 1791513898.317,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 316,
+     "t": 1791513898.317,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 317,
+     "t": 1791513898.318,
+     "data": {
+      "text": "\n\n"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 318,
+     "t": 1791513898.339,
+     "data": {
+      "text": "Beyond"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 319,
+     "t": 1791513898.339,
+     "data": {
+      "text": " these"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 320,
+     "t": 1791513898.36,
+     "data": {
+      "text": " astronomical"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 321,
+     "t": 1791513898.382,
+     "data": {
+      "text": " factors"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 322,
+     "t": 1791513898.403,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 323,
+     "t": 1791513898.404,
+     "data": {
+      "text": " local"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 324,
+     "t": 1791513898.426,
+     "data": {
+      "text": " geography"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 325,
+     "t": 1791513898.426,
+     "data": {
+      "text": " plays"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 326,
+     "t": 1791513898.426,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 327,
+     "t": 1791513898.449,
+     "data": {
+      "text": " crucial"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 328,
+     "t": 1791513898.449,
+     "data": {
+      "text": " role"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 329,
+     "t": 1791513898.449,
+     "data": {
+      "text": " in"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 330,
+     "t": 1791513898.472,
+     "data": {
+      "text": " determining"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 331,
+     "t": 1791513898.494,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 332,
+     "t": 1791513898.494,
+     "data": {
+      "text": " specific"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 333,
+     "t": 1791513898.516,
+     "data": {
+      "text": " timing"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 334,
+     "t": 1791513898.516,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 335,
+     "t": 1791513898.516,
+     "data": {
+      "text": " height"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 336,
+     "t": 1791513898.538,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 337,
+     "t": 1791513898.538,
+     "data": {
+      "text": " t"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 338,
+     "t": 1791513898.559,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 339,
+     "t": 1791513898.559,
+     "data": {
+      "text": " in"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 340,
+     "t": 1791513898.58,
+     "data": {
+      "text": " any"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 341,
+     "t": 1791513898.603,
+     "data": {
+      "text": " given"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 342,
+     "t": 1791513898.603,
+     "data": {
+      "text": " location"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 343,
+     "t": 1791513898.625,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 344,
+     "t": 1791513898.625,
+     "data": {
+      "text": " The"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 345,
+     "t": 1791513898.647,
+     "data": {
+      "text": " shape"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 346,
+     "t": 1791513898.647,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 347,
+     "t": 1791513898.647,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 348,
+     "t": 1791513898.669,
+     "data": {
+      "text": " coastline"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 349,
+     "t": 1791513898.669,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 350,
+     "t": 1791513898.669,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 351,
+     "t": 1791513898.691,
+     "data": {
+      "text": " depth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 352,
+     "t": 1791513898.691,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 353,
+     "t": 1791513898.691,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 354,
+     "t": 1791513898.714,
+     "data": {
+      "text": " ocean"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 355,
+     "t": 1791513898.714,
+     "data": {
+      "text": " floor"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 356,
+     "t": 1791513898.714,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 357,
+     "t": 1791513898.736,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 358,
+     "t": 1791513898.736,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 359,
+     "t": 1791513898.736,
+     "data": {
+      "text": " resonance"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 360,
+     "t": 1791513898.758,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 361,
+     "t": 1791513898.758,
+     "data": {
+      "text": " b"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 362,
+     "t": 1791513898.78,
+     "data": {
+      "text": "ays"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 363,
+     "t": 1791513898.78,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 364,
+     "t": 1791513898.801,
+     "data": {
+      "text": " est"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 365,
+     "t": 1791513898.801,
+     "data": {
+      "text": "u"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 366,
+     "t": 1791513898.801,
+     "data": {
+      "text": "aries"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 367,
+     "t": 1791513898.823,
+     "data": {
+      "text": " can"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 368,
+     "t": 1791513898.824,
+     "data": {
+      "text": " amplify"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 369,
+     "t": 1791513898.846,
+     "data": {
+      "text": " or"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 370,
+     "t": 1791513898.846,
+     "data": {
+      "text": " damp"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 371,
+     "t": 1791513898.846,
+     "data": {
+      "text": "en"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 372,
+     "t": 1791513898.868,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 373,
+     "t": 1791513898.89,
+     "data": {
+      "text": " tidal"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 374,
+     "t": 1791513898.89,
+     "data": {
+      "text": " wave"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 375,
+     "t": 1791513898.911,
+     "data": {
+      "text": " as"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 376,
+     "t": 1791513898.933,
+     "data": {
+      "text": " it"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 377,
+     "t": 1791513898.933,
+     "data": {
+      "text": " moves"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 378,
+     "t": 1791513898.933,
+     "data": {
+      "text": " across"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 379,
+     "t": 1791513898.955,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 380,
+     "t": 1791513898.955,
+     "data": {
+      "text": " globe"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 381,
+     "t": 1791513898.978,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 382,
+     "t": 1791513898.979,
+     "data": {
+      "text": " For"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 383,
+     "t": 1791513899.002,
+     "data": {
+      "text": " instance"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 384,
+     "t": 1791513899.002,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 385,
+     "t": 1791513899.002,
+     "data": {
+      "text": " in"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 386,
+     "t": 1791513899.023,
+     "data": {
+      "text": " some"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 387,
+     "t": 1791513899.044,
+     "data": {
+      "text": " narrow"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 388,
+     "t": 1791513899.065,
+     "data": {
+      "text": " b"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 389,
+     "t": 1791513899.089,
+     "data": {
+      "text": "ays"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 390,
+     "t": 1791513899.089,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 391,
+     "t": 1791513899.089,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 392,
+     "t": 1791513899.112,
+     "data": {
+      "text": " incoming"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 393,
+     "t": 1791513899.112,
+     "data": {
+      "text": " tide"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 394,
+     "t": 1791513899.112,
+     "data": {
+      "text": " can"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 395,
+     "t": 1791513899.134,
+     "data": {
+      "text": " reflect"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 396,
+     "t": 1791513899.134,
+     "data": {
+      "text": " off"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 397,
+     "t": 1791513899.134,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 398,
+     "t": 1791513899.157,
+     "data": {
+      "text": " shore"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 399,
+     "t": 1791513899.18,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 400,
+     "t": 1791513899.18,
+     "data": {
+      "text": " creating"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 401,
+     "t": 1791513899.18,
+     "data": {
+      "text": " a"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 402,
+     "t": 1791513899.203,
+     "data": {
+      "text": " standing"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 403,
+     "t": 1791513899.203,
+     "data": {
+      "text": " wave"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 404,
+     "t": 1791513899.203,
+     "data": {
+      "text": " that"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 405,
+     "t": 1791513899.224,
+     "data": {
+      "text": " significantly"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 406,
+     "t": 1791513899.246,
+     "data": {
+      "text": " increases"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 407,
+     "t": 1791513899.267,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 408,
+     "t": 1791513899.268,
+     "data": {
+      "text": " tidal"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 409,
+     "t": 1791513899.29,
+     "data": {
+      "text": " range"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 410,
+     "t": 1791513899.29,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 411,
+     "t": 1791513899.291,
+     "data": {
+      "text": " Consequently"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 412,
+     "t": 1791513899.312,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 413,
+     "t": 1791513899.312,
+     "data": {
+      "text": " while"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 414,
+     "t": 1791513899.334,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 415,
+     "t": 1791513899.334,
+     "data": {
+      "text": " gravitational"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 416,
+     "t": 1791513899.355,
+     "data": {
+      "text": " mechanics"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 417,
+     "t": 1791513899.376,
+     "data": {
+      "text": " are"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 418,
+     "t": 1791513899.376,
+     "data": {
+      "text": " universal"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 419,
+     "t": 1791513899.376,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 420,
+     "t": 1791513899.397,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 421,
+     "t": 1791513899.397,
+     "data": {
+      "text": " actual"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 422,
+     "t": 1791513899.397,
+     "data": {
+      "text": " experience"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 423,
+     "t": 1791513899.42,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 424,
+     "t": 1791513899.42,
+     "data": {
+      "text": " t"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 425,
+     "t": 1791513899.42,
+     "data": {
+      "text": "ides"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 426,
+     "t": 1791513899.442,
+     "data": {
+      "text": " varies"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 427,
+     "t": 1791513899.442,
+     "data": {
+      "text": " dramatically"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 428,
+     "t": 1791513899.442,
+     "data": {
+      "text": " from"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 429,
+     "t": 1791513899.464,
+     "data": {
+      "text": " place"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 430,
+     "t": 1791513899.486,
+     "data": {
+      "text": " to"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 431,
+     "t": 1791513899.486,
+     "data": {
+      "text": " place"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 432,
+     "t": 1791513899.486,
+     "data": {
+      "text": ","
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 433,
+     "t": 1791513899.509,
+     "data": {
+      "text": " influenced"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 434,
+     "t": 1791513899.509,
+     "data": {
+      "text": " by"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 435,
+     "t": 1791513899.509,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 436,
+     "t": 1791513899.531,
+     "data": {
+      "text": " complex"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 437,
+     "t": 1791513899.531,
+     "data": {
+      "text": " top"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 438,
+     "t": 1791513899.554,
+     "data": {
+      "text": "ography"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 439,
+     "t": 1791513899.554,
+     "data": {
+      "text": " of"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 440,
+     "t": 1791513899.554,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 441,
+     "t": 1791513899.575,
+     "data": {
+      "text": " Earth"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 442,
+     "t": 1791513899.575,
+     "data": {
+      "text": "\u2019s"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 443,
+     "t": 1791513899.576,
+     "data": {
+      "text": " surface"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 444,
+     "t": 1791513899.597,
+     "data": {
+      "text": " and"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 445,
+     "t": 1791513899.597,
+     "data": {
+      "text": " the"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 446,
+     "t": 1791513899.619,
+     "data": {
+      "text": " underlying"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 447,
+     "t": 1791513899.64,
+     "data": {
+      "text": " ocean"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 448,
+     "t": 1791513899.64,
+     "data": {
+      "text": " bas"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 449,
+     "t": 1791513899.64,
+     "data": {
+      "text": "ins"
+     }
+    },
+    {
+     "type": "answer.delta",
+     "seq": 450,
+     "t": 1791513899.662,
+     "data": {
+      "text": "."
+     }
+    },
+    {
+     "type": "answer.done",
+     "seq": 451,
+     "t": 1791513899.663,
+     "data": {
+      "complete": true,
+      "escalation_candidate": false,
+      "flags": [],
+      "metrics": {
+       "cache_n": 201,
+       "draft_n": 376,
+       "draft_n_accepted": 259,
+       "first_answer_s": 0.3382,
+       "predicted_n": 447,
+       "predicted_per_second": 107.52905936664901,
+       "prompt_n": 29,
+       "prompt_per_second": 150.9033386062776,
+       "reasoning_chars": 0,
+       "retried": false,
+       "total_s": 4.4863,
+       "ttft_s": 0.3382
+      },
+      "status": "COMPLETE"
+     }
+    },
+    {
+     "type": "turn.finished",
+     "seq": 452,
+     "t": 1791513899.663,
+     "data": {
+      "route": "answer",
+      "status": "ok",
+      "total_s": 4.9404
+     }
+    },
+    {
+     "type": "companion.state",
+     "seq": 453,
+     "t": 1791513899.663,
+     "data": {
+      "state": "idle"
+     }
+    }
+   ],
+   "status": {
+    "age_s": 0.0,
+    "busy": true,
+    "events": 0,
+    "idle_s": 0.0,
+    "pending_cards": 0,
+    "turn_id": "68db8cc5-b4fa-47a6-b402-093f88e2e6bb"
+   },
+   "restart_reply": {
+    "code": "TURN_IN_PROGRESS",
+    "result": "REFUSED"
+   },
+   "busy_health": "BUSY",
+   "decode_tps": 107.52905936664901
+  }
+ ],
+ "installation": {
+  "name": "hard",
+  "port": 18301,
+  "provisioned": "2026-10-09T08:10:20"
+ },
+ "preflight": {
+  "worker_profile": "ws-integrated",
+  "production_cutover": false,
+  "oi_commands": [
+   "brain_catalog",
+   "brain_health",
+   "brain_restart",
+   "brain_select",
+   "brain_status",
+   "cloud_policy",
+   "memory_list",
+   "oi_abandon",
+   "oi_cancel",
+   "oi_confirm",
+   "oi_decide",
+   "oi_turn",
+   "oi_turn_status"
+  ]
+ },
+ "catalog": {
+  "fallback": "none",
+  "rows": [
+   {
+    "answers_questions": true,
+    "available": true,
+    "default": true,
+    "display": "Runtime v1 (local)",
+    "id": "runtime-v1",
+    "qualification": "Runtime v1 freeze 2026-10-07 (stock llama.cpp b11425 + MTP)",
+    "qualified": true,
+    "selectable": true,
+    "selected": true,
+    "selection": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "READY",
+    "why_not": null
+   },
+   {
+    "answers_questions": false,
+    "available": true,
+    "default": false,
+    "display": "No Brain (deterministic rules)",
+    "id": "deterministic",
+    "note": "Core acts on recognised commands only; open questions are not answered.",
+    "qualification": "Core deterministic source",
+    "qualified": true,
+    "selectable": true,
+    "selected": false,
+    "selection": {
+     "kind": "server_local_model",
+     "model": null,
+     "provider": "uri-deterministic"
+    },
+    "state": "READY",
+    "why_not": null
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Other local models",
+    "id": "other-local",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "NOT_QUALIFIED",
+    "why_not": "No qualification record. A model must pass the model_lab qualification before it can be offered."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Anthropic Claude (cloud)",
+    "id": "cloud-anthropic",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "OpenAI (cloud)",
+    "id": "cloud-openai",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   },
+   {
+    "answers_questions": false,
+    "available": false,
+    "default": false,
+    "display": "Google Gemini (cloud)",
+    "id": "cloud-google",
+    "qualification": null,
+    "qualified": false,
+    "selectable": false,
+    "selected": false,
+    "selection": null,
+    "state": "DISABLED",
+    "why_not": "Cloud activation is disabled (no credentials, $5.00/month policy)."
+   }
+  ],
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  }
+ },
+ "brain_status_start": {
+  "artifacts": "MATCH",
+  "checked_at": 1791513874.769178,
+  "detail": null,
+  "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+  "owned": false,
+  "pid": 3180,
+  "selected": {
+   "kind": "server_local_model",
+   "model": "qwen3.6-35b-a3b-ud-iq3_s",
+   "provider": "llamacpp-runtime-v1"
+  },
+  "state": "READY",
+  "url": "http://127.0.0.1:18470"
+ },
+ "health_samples": [
+  {
+   "readiness": "READY",
+   "health": {
+    "backend": {
+     "context": 32768,
+     "engine": "llama.cpp b11425 (Vulkan, win x64)",
+     "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+     "model_repo": "unsloth/Qwen3.6-35B-A3B-GGUF",
+     "provider": "Runtime v1 (local)",
+     "speculative": "MTP draft",
+     "thinking_tiers": [
+      "deep",
+      "fast",
+      "normal"
+     ],
+     "vision": true
+    },
+    "busy": false,
+    "checked_at": 1791513893.926,
+    "explain": "Brain ready (148 tok/s).",
+    "gpu": {
+     "consumers": [
+      {
+       "dedicated_mib": 321.6,
+       "name": "dwm.exe",
+       "parent": "winlogon.exe",
+       "pid": 1840,
+       "role": "desktop compositor"
+      }
+     ],
+     "free_mib_at_start": 15617.4,
+     "lease": {
+      "acquired_at": 1791513633.049,
+      "held": true,
+      "recovered_from": null
+     },
+     "measured": true,
+     "others_mib": 562.3,
+     "release": null,
+     "sampled_t": 1791513834.676,
+     "server_dedicated_mib": 15555.7,
+     "server_non_local_mib": 1120.6,
+     "verdict_at_start": "AT_RISK",
+     "verdict_now": "AT_RISK"
+    },
+    "host": {
+     "explain": "Brain ready (148 tok/s).",
+     "override": null,
+     "running": true,
+     "state": "READY",
+     "updated_age_s": 119.3
+    },
+    "performance": {
+     "calibration_error": null,
+     "calibration_t": 1791513769.546,
+     "calibration_tps": 148.0,
+     "decode_samples": 1,
+     "decode_tps_median": 131.1,
+     "evidence": "calibration",
+     "threshold_source": "decode below 60 tok/s: healthy instances measured 96-157 tok/s (freeze record) and 110-131 (WS runs); demoted instances 24-42 tok/s (Adaptive Runtime R1, OI-PERF-1, WS PERF-W1)",
+     "threshold_tps": 60.0
+    },
+    "readiness": "READY",
+    "reasons": [],
+    "recovery_options": [],
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "READY"
+   }
+  }
+ ],
+ "unresponsive_worker": {
+  "suspended_processes": 2,
+  "probe_bound_s": 5,
+  "silent_s": 5.01,
+  "recovered_after_resume": true
+ },
+ "brain_restart": {
+  "transitions": [
+   {
+    "t": 0.2,
+    "state": "RECOVERING",
+    "host": "READY",
+    "reasons": [
+     "RESTART_REQUESTED"
+    ]
+   },
+   {
+    "t": 3.5,
+    "state": "RECOVERING",
+    "host": "STOPPING",
+    "reasons": [
+     "RUNTIME_STOPPED",
+     "HOST_STOPPING"
+    ]
+   },
+   {
+    "t": 6.9,
+    "state": "RECOVERING",
+    "host": "STARTING",
+    "reasons": [
+     "RUNTIME_STOPPED",
+     "HOST_STARTING"
+    ]
+   },
+   {
+    "t": 9.7,
+    "state": "RECOVERING",
+    "host": "LOADING",
+    "reasons": [
+     "RUNTIME_LOADING",
+     "HOST_LOADING"
+    ]
+   },
+   {
+    "t": 82.8,
+    "state": "RECOVERING",
+    "host": "CALIBRATING",
+    "reasons": [
+     "HOST_CALIBRATING"
+    ]
+   },
+   {
+    "t": 88.3,
+    "state": "READY",
+    "host": "READY",
+    "reasons": []
+   }
+  ],
+  "restart_s": 89.9,
+  "calibration": {
+   "decode_tps": 141.2,
+   "predicted_n": 160,
+   "prompt_ms": 232.787,
+   "residency": {
+    "consumers": [
+     {
+      "dedicated_mib": 325.3,
+      "name": "dwm.exe",
+      "parent": "winlogon.exe",
+      "pid": 1840,
+      "role": "desktop compositor"
+     },
+     {
+      "dedicated_mib": 158.7,
+      "name": "uri_ui.exe",
+      "parent": "powershell.exe",
+      "pid": 11736,
+      "role": null
+     }
+    ],
+    "dedicated_mib": 14946.2,
+    "non_local_mib": 1730.1,
+    "others_mib": 728.4,
+    "t": 1791513989.44,
+    "verdict_now": "AT_RISK"
+   },
+   "server_create_time": 1791513913.5971596,
+   "server_pid": 8008,
+   "t": 1791513987.706,
+   "threshold_tps": 60.0,
+   "tokens": 160
+  },
+  "release_measurement": {
+   "since_stop_s": 3.5,
+   "unattributed_mib": 0.0,
+   "verdict": "AT_RISK"
+  },
+  "host_history": [
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1791513636.75
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1791513713.112
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1791513769.542
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1791513774.601
+   },
+   {
+    "detail": null,
+    "state": "STOPPING",
+    "t": 1791513905.284
+   },
+   {
+    "detail": null,
+    "state": "STARTING",
+    "t": 1791513908.789
+   },
+   {
+    "detail": null,
+    "state": "LOADING",
+    "t": 1791513914.416
+   },
+   {
+    "detail": null,
+    "state": "CALIBRATING",
+    "t": 1791513987.701
+   },
+   {
+    "detail": null,
+    "state": "READY",
+    "t": 1791513992.985
+   }
+  ],
+  "first_answer_tps": 101.77264763475213
+ },
+ "worker_exit": 0
+}

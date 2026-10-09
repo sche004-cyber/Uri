@@ -45,10 +45,24 @@ class HardeningRuntime implements IntegratedRuntime {
   @override
   bool get closed => _closed;
 
+  final _hung = <Completer<Map<String, dynamic>>>[];
+
+  /// Completes every unanswered call with an error (a late failure after the test moved on).
+  void failPending(String code) {
+    for (final c in _hung) {
+      c.completeError(IntegratedRuntimeException(code));
+    }
+    _hung.clear();
+  }
+
   @override
   Future<Map<String, dynamic>> call(Map<String, dynamic> command) {
     commands.add(command);
-    if (!responsive) return Completer<Map<String, dynamic>>().future; // never answers
+    if (!responsive) {
+      final c = Completer<Map<String, dynamic>>(); // never answers unless failPending()
+      _hung.add(c);
+      return c.future;
+    }
     switch (command['command']) {
       case 'oi_turn':
         return Future.value({'turn_id': '$name-t${++_turn}', 'accepted': true});
@@ -168,6 +182,23 @@ void main() {
       expect(rt.commands.where((c) => c['command'] == 'brain_restart').single['action'], 'restart');
     });
 
+    testWidgets('memory taken after load shows a warning while the state stays Ready', (tester) async {
+      final rt = HardeningRuntime()
+        ..health = {
+          'state': 'READY',
+          'reasons': ['GPU_MEMORY_TAKEN_AFTER_LOAD'],
+          'recovery_options': ['restart_brain'],
+          'warning': 'Another app took GPU memory after the Brain loaded (1.6 GB moved to system memory).',
+          'performance': {'calibration_tps': 141.0},
+        };
+      final conv = OiConversation(rt);
+      await conv.refreshHealth();
+      await tester.pumpWidget(host(OiConversationPane(conversation: conv)));
+      expect(find.byKey(const ValueKey('oi-health-warning')), findsOneWidget);
+      expect(find.textContaining('Ready · 141 tok/s'), findsOneWidget);
+      expect(find.byKey(const ValueKey('oi-health-restart_brain')), findsOneWidget);
+    });
+
     testWidgets('restart is not offered while a turn runs', (tester) async {
       final rt = HardeningRuntime()..health = degraded();
       final conv = OiConversation(rt);
@@ -208,6 +239,20 @@ void main() {
       expect(conv.workerUnresponsive, isTrue);
       expect(conv.workerTrouble, isTrue);
       expect(DateTime.now().difference(t0), lessThan(const Duration(seconds: 2)));
+    });
+
+    test('a worker that hangs before replying to the turn is detected; the request is not repeated', () async {
+      final rt = HardeningRuntime()..responsive = false;
+      final conv = OiConversation(rt, probeAfter: Duration.zero, probeTimeout: shortProbe);
+      final sending = conv.send('hello'); // never answered
+      await Future<void>.delayed(fast);
+      expect(conv.busy, isTrue);
+      await conv.send('second'); // refused locally while the first is outstanding
+      expect(rt.commands.where((c) => c['command'] == 'oi_turn').length, 1);
+      await conv.monitorTick();
+      expect(conv.workerUnresponsive, isTrue);
+      expect(conv.workerTrouble, isTrue);
+      unawaited(sending);
     });
 
     test('a probe that answers clears the alarm; a long-silent job is stalled, not unresponsive', () async {
@@ -260,6 +305,40 @@ void main() {
       await conv.send('next question');
       expect(w2.commands.last['command'], 'oi_turn');
       expect(conv.sessionId, isNotEmpty);
+    });
+
+    test('a late reply or timeout from the replaced worker does not touch the new worker state', () async {
+      final w1 = HardeningRuntime()..responsive = false;
+      final w2 = HardeningRuntime(name: 'w2');
+      final conv = OiConversation(w1, respawn: () async => w2, probeAfter: Duration.zero, probeTimeout: shortProbe);
+      unawaited(conv.send('first')); // outstanding on w1
+      await Future<void>.delayed(fast);
+      await conv.restartWorker();
+      w2.responsive = false; // keep the new send outstanding
+      unawaited(conv.send('second'));
+      await Future<void>.delayed(fast);
+      expect(conv.busy, isTrue);
+      // the old worker's pending call now fails late: nothing about w2 may change
+      w1.failPending('WORKER_TIMEOUT');
+      await Future<void>.delayed(fast);
+      expect(conv.busy, isTrue);
+      expect(conv.workerUnresponsive, isFalse);
+    });
+
+    test('nothing is sent while the worker is being replaced', () async {
+      final w1 = HardeningRuntime();
+      final gate = Completer<IntegratedRuntime?>();
+      final conv = OiConversation(w1, respawn: () => gate.future);
+      final restarting = conv.restartWorker();
+      await Future<void>.delayed(fast);
+      expect(conv.restarting, isTrue);
+      await conv.send('during restart');
+      expect(w1.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
+      final w2 = HardeningRuntime(name: 'w2');
+      gate.complete(w2);
+      await restarting;
+      await conv.send('after restart');
+      expect(w2.commands.last['command'], 'oi_turn');
     });
 
     test('a failed restart says so', () async {

@@ -32,7 +32,7 @@ from fast loads, so only measured decode does. OI-PERF-1: 107-117 to 35-42 tok/s
 |---|---|---|
 | H-AC1 | Publication: the accepted branch is on the canonical remote, no force, verified by a fresh clone | ls-remote + clone tree hash (done: §1) |
 | H-AC2 | GPU lease: one machine-wide URI GPU lease (acquire, wait with timeout, release, automatic stale-owner recovery when the holder dies); a second URI GPU workload cannot start while it is held; nothing is ever terminated | unit tests incl. a real second process; live: Brain host vs a benchmark wrapper |
-| H-AC3 | Contention detection: before a Brain start, foreign GPU processes are listed with their memory, and a budget check (card − others vs the measured 15.26 GiB request) decides FITS / CONTENDED. CONTENDED waits (does not start) and explains; an explicit owner override starts anyway, is recorded, and the result is labelled | unit tests with recorded census samples; live census with the real Ollama consumer |
+| H-AC3 | Contention detection: before a Brain start, foreign GPU processes are listed with their memory, and a budget check (card − others − unattributed vs the measured 15.26 GiB request) decides FITS / AT_RISK / CONTENDED (revised 2026-10-09, see §7). CONTENDED, an unmeasurable GPU and an unfinished VRAM release wait (do not start) and explain; only an explicit owner override starts anyway, is recorded, and the result is calibrated | unit tests with recorded census samples; live census with the real Ollama consumer |
 | H-AC4 | Restart degradation: the cause of 27 vs 117 tok/s is investigated with measurements; the restart policy waits on a measured release signal, not a fixed delay; the post-start calibration classifies the instance | measurement record (release lag, restart immediately vs after release), live restart through the host |
 | H-AC5 | Health: the worker reports READY / BUSY / DEGRADED / UNAVAILABLE / RECOVERING with reasons, measured decode, calibration and GPU state; the DEGRADED threshold is justified by measured distributions | bridge tests; live READY and live DEGRADED (real contention) |
 | H-AC6 | Recovery: a Restart Brain action exists, is refused while a turn runs, never bypasses Core, and the UI shows progress (RECOVERING) and the outcome | bridge tests + live restart from the UI or worker |
@@ -101,3 +101,28 @@ stays off the turn path.
 ## 7. Change log
 
 - 2026-10-09: initial version.
+- 2026-10-09 (correction, before any acceptance): H-AC3 first said "CONTENDED when free < request". Live evidence
+  disproved it as a start rule: with only the desktop and a URI window open the free memory was 15.2 GB (78 MB short of
+  the request), yet the instance loaded healthy (calibration 90.8 tok/s), and earlier WS runs with the app open ran at
+  111-131 tok/s. Adaptive Runtime R1 shows the frozen server tolerates 250-950 MiB of demotion; the collapse needs a
+  ~1 GB consumer (shortfall ~1.2-1.4 GB). Rule now: CONTENDED (wait) at a shortfall of one 1 GiB demotion block;
+  smaller shortfalls start as AT_RISK and the post-start calibration classifies the instance (DEGRADED if slow).
+- 2026-10-09: quiet window (180 s, persisted machine-wide) added after contention, because a host started on a
+  momentarily free GPU between another session's benchmark loads (observed live; the host was stopped at once).
+- 2026-10-09: Codex hardening round 1 REJECT (5 findings: stopped load could spawn after lease release; restart vs new
+  turn race; unmeasurable GPU proceeded; release-wait timeout proceeded; hang before the turn reply undetected). All
+  confirmed in source and repaired with tests. Rounds 2-5 REJECT, round 6 ACCEPT (see WS_INDEPENDENT_AUDIT.md).
+- 2026-10-09 (correction after live validation): the CONTENDED shortfall was first one demotion block (1 GiB). A live
+  start at a 913 MB shortfall (another session opened three app windows, ~1 GB of GPU memory) came up at 29.9 tok/s
+  and was correctly reported DEGRADED by the calibration. The threshold is now half a block (512 MiB): a 913 MB
+  shortfall waits. The 78 MB shortfall that loaded healthy stays AT_RISK.
+- 2026-10-09 (live finding): GPU apps of another session opened after the Brain loaded evicted 1.6 GB of it (decode
+  141 -> 27-38 tok/s) while health still showed the start calibration. The host now re-measures speed when its 60 s
+  residency sample shows the Brain's system-memory share grew by >= 512 MiB.
+  Superseded after Codex rounds 7-8: a host-side re-measurement cannot be guaranteed not to compete with a user
+  turn, so the host now only REPORTS the residency growth (warning GPU_MEMORY_TAKEN_AFTER_LOAD with Restart Brain,
+  state stays READY/BUSY) and sends nothing to the Brain after the start calibration; real-answer timings decide
+  DEGRADED. Fewer GPU requests also suits the open SAFE-1 question.
+- 2026-10-09 (finding, H-AC4): the restart experiment disproved "an immediate restart is slow because VRAM is not yet
+  released": release takes 1.5-1.9 s and a load takes ~94 s; immediate restarts were healthy (2/2) and a cold start
+  with the desktop only was slow (1 of 5 loads). PERF-W1's 27 tok/s was the nondeterministic demotion, not the restart.

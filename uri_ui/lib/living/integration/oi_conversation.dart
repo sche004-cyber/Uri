@@ -157,7 +157,10 @@ class OiConversation extends ChangeNotifier {
   List<String> memory = const [];
   Map<String, dynamic> cloud = const {};
 
-  bool get busy => activeTurnId != null;
+  /// When the `oi_turn` that is awaiting its reply was sent (Codex H-r1 F4).
+  DateTime? _sendingSince;
+
+  bool get busy => activeTurnId != null || _sendingSince != null;
   bool get brainReady => brainStatus['state'] == 'READY';
 
   /// READY / BUSY / DEGRADED / UNAVAILABLE / RECOVERING, or null before the
@@ -292,7 +295,11 @@ class OiConversation extends ChangeNotifier {
     if (pendingApproval != null || pendingConfirmation != null) {
       messages.add(OiMessage(role: OiRole.system, text: 'The open approval was withdrawn by the restart; nothing was approved.'));
     }
+    if (_sendingSince != null) {
+      messages.add(OiMessage(role: OiRole.system, text: 'A request was still being sent; it was not repeated and may not have started.'));
+    }
     activeTurnId = null;
+    _sendingSince = null;
     pendingApproval = null;
     pendingConfirmation = null;
     await _sub.cancel();
@@ -301,16 +308,21 @@ class OiConversation extends ChangeNotifier {
       await old.kill();
     } catch (_) {}
     IntegratedRuntime? fresh;
+    String reason = 'not configured';
     try {
       fresh = await start();
-    } catch (_) {
+    } on IntegratedRuntimeException catch (e) {
+      reason = e.code;
+      fresh = null;
+    } catch (e) {
+      reason = e.runtimeType.toString();
       fresh = null;
     }
     if (fresh == null) {
       lastError = 'WORKER_RESTART_FAILED';
       workerExited = true;
       restarting = false;
-      messages.add(OiMessage(role: OiRole.system, text: 'URI could not restart its worker. Close and reopen the app.'));
+      messages.add(OiMessage(role: OiRole.system, text: 'URI could not restart its worker ($reason). Close and reopen the app.'));
       notifyListeners();
       return;
     }
@@ -347,21 +359,37 @@ class OiConversation extends ChangeNotifier {
   /// Sends the user's words as a turn. Never a decision, whatever it says.
   Future<void> send(String text) async {
     final t = text.trim();
-    if (t.isEmpty || busy) return;
+    if (t.isEmpty || busy || restarting) return; // nothing goes to a worker that is being replaced
     messages.add(OiMessage(role: OiRole.user, text: t));
     lastError = null;
+    _sendingSince = DateTime.now();
+    _lastFrame = DateTime.now();
     notifyListeners();
+    final rt = runtime;
     try {
-      final r = await runtime.call({
+      final r = await rt.call({
         'command': 'oi_turn',
         'session_id': sessionId,
         'text': t,
         'depth': depth.name,
       });
+      // A late reply from a worker that was replaced by Restart URI changes nothing (Codex H-r2).
+      if (!identical(rt, runtime)) return;
+      _sendingSince = null;
       _begin(r['turn_id'] as String);
     } on IntegratedRuntimeException catch (e) {
+      if (!identical(rt, runtime)) return;
+      _sendingSince = null;
       lastError = e.code;
-      messages.add(OiMessage(role: OiRole.system, text: 'Not sent: ${e.code}'));
+      if (e.code == 'WORKER_TIMEOUT') {
+        // The worker said nothing for the whole bound: it may or may not have started the turn.
+        workerUnresponsive = true;
+        messages.add(OiMessage(
+            role: OiRole.system,
+            text: 'No reply from URI. The request may or may not have started; it was not repeated.'));
+      } else {
+        messages.add(OiMessage(role: OiRole.system, text: 'Not sent: ${e.code}'));
+      }
       notifyListeners();
     }
   }
