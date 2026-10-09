@@ -119,6 +119,10 @@ stays off the turn path.
 - 2026-10-09 (live finding): GPU apps of another session opened after the Brain loaded evicted 1.6 GB of it (decode
   141 -> 27-38 tok/s) while health still showed the start calibration. The host now re-measures speed when its 60 s
   residency sample shows the Brain's system-memory share grew by >= 512 MiB.
+  Superseded after Codex rounds 7-8: a host-side re-measurement cannot be guaranteed not to compete with a user
+  turn, so the host now only REPORTS the residency growth (warning GPU_MEMORY_TAKEN_AFTER_LOAD with Restart Brain,
+  state stays READY/BUSY) and sends nothing to the Brain after the start calibration; real-answer timings decide
+  DEGRADED. Fewer GPU requests also suits the open SAFE-1 question.
 - 2026-10-09 (finding, H-AC4): the restart experiment disproved "an immediate restart is slow because VRAM is not yet
   released": release takes 1.5-1.9 s and a load takes ~94 s; immediate restarts were healthy (2/2) and a cold start
   with the desktop only was slow (1 of 5 loads). PERF-W1's 27 tok/s was the nondeterministic demotion, not the restart.

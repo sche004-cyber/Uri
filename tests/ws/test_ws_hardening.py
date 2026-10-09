@@ -674,41 +674,33 @@ def test_calibration_classifies_the_instance(tmp_path, tps, state):
         srv.shutdown()
 
 
-def test_eviction_after_load_triggers_a_new_measurement(tmp_path):
-    handler = type("T", (Timings,), {"tps": 141.0})
-    srv = ThreadingHTTPServer(("127.0.0.1", 0), handler)
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
-    try:
-        loaded = G.census(raw([(1580, 330, 9), (8008, 15555, 1120)], 15900), card=CARD)
-        evicted = G.census(raw([(1580, 330, 9), (8008, 13987, 2753), (1340, 345, 5), (2436, 344, 4), (4340, 351, 5)],
-                               15400), card=CARD)
-        H, h = new_host(tmp_path, Seq([loaded, loaded, evicted]), port=srv.server_address[1])
-        h.calibrate(pid=8008)
-        assert h.report["state"] == "READY"
-        assert not h.needs_recalibration(h.residency(8008))
-        handler.tps = 31.0
-        now = h.residency(8008)
-        assert h.needs_recalibration(now)
-        h.calibrate(8008, reason="RESIDENCY_CHANGED")
-        assert h.report["state"] == "DEGRADED" and h.report["calibration"]["reason"] == "RESIDENCY_CHANGED"
-    finally:
-        srv.shutdown()
+def test_eviction_after_load_is_reported_without_any_request_to_the_brain(tmp_path):
+    loaded = G.census(raw([(1580, 330, 9), (8008, 15555, 1120)], 15900), card=CARD)
+    evicted = G.census(raw([(1580, 330, 9), (8008, 13987, 2753), (1340, 345, 5), (2436, 344, 4), (4340, 351, 5)],
+                           15400), card=CARD)
+    H, h = new_host(tmp_path, Seq([loaded, evicted]))
+    h.report["calibration"] = {"decode_tps": 141.0, "server_pid": 8008, "server_create_time": 500.0,
+                               "residency": {"non_local_mib": 1120.0}}
+    assert h.residency_alert(h.residency(8008)) is False and "residency_alert" not in h.report
+    assert h.residency_alert(h.residency(8008)) is True
+    assert h.report["residency_alert"]["growth_mib"] == 1633.0
+    import inspect
+    src = inspect.getsource(H.Host.residency_alert)
+    assert "httpx" not in src and "calibrate(" not in src           # the host sends nothing to the Brain here
 
 
-def test_recalibration_never_competes_with_a_turn_and_is_rate_limited(tmp_path, monkeypatch):
-    H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
-    calls = []
-    monkeypatch.setattr(h, "calibrate", lambda pid, reason="START", timeout=120.0: calls.append((reason, timeout)))
-    h.report["calibration"] = {"t": h.now() - 3600}
-    states = iter([False])
-    monkeypatch.setattr(h, "server_idle", lambda: next(states, False))        # a turn is running
-    assert h.maybe_recalibrate(1) is False and calls == [] and h.report["recalibration_pending"] == "SERVER_BUSY_OR_UNKNOWN"
-    monkeypatch.setattr(h, "server_idle", lambda: None)                        # /slots unreadable: send nothing
-    assert h.maybe_recalibrate(1) is False and calls == []
-    monkeypatch.setattr(h, "server_idle", lambda: True)
-    assert h.maybe_recalibrate(1) is True and calls == [("RESIDENCY_CHANGED", H.RECALIBRATE_TIMEOUT_S)]
-    h.report["calibration"] = {"t": h.now() - 10}                             # just measured: rate limit
-    assert h.maybe_recalibrate(1) is False and h.report["recalibration_pending"] == "MIN_GAP"
+def test_health_warns_on_memory_taken_after_load_without_claiming_slowness():
+    h = host("READY", calibration={"decode_tps": 141.0, "t": 900},
+             residency_alert={"growth_mib": 1633.0, "server_pid": 4242, "server_create_time": 500.0},
+             residency={"consumers": [{"pid": 1340, "name": "uri_ui.exe", "role": None, "dedicated_mib": 345}]})
+    out = health(host=h)
+    assert out["state"] == BH.READY and "GPU_MEMORY_TAKEN_AFTER_LOAD" in out["reasons"]
+    assert "restart_brain" in out["recovery_options"] and "close_gpu_apps" in out["recovery_options"]
+    assert "1.6 GB" in out["warning"]
+    other = health(host=h, server={"pid": 5151, "create_time": 800.0})     # alert about a previous instance
+    assert "GPU_MEMORY_TAKEN_AFTER_LOAD" not in other["reasons"]
+    slow = health(host=h, perf={"decode_tps_median": 30.0, "decode_samples": 3})
+    assert slow["state"] == BH.DEGRADED                                  # real answers decide slowness
 
 
 def test_calibration_failure_is_reported_as_degraded(tmp_path):

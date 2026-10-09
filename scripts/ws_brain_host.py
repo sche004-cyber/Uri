@@ -54,15 +54,12 @@ RELEASE_TIMEOUT_S = 300.0
 QUIET_S = 180.0
 GPU_POLL_S = 10.0
 RESIDENCY_EVERY_S = 60.0
-# Re-measure the speed when the Brain's system-memory share grew by half a demotion block since its calibration
-# (measured live 2026-10-09: another session opened ~1 GB of GPU apps after load; non-local rose 1.1 -> 2.75 GB and
-# decode fell from 141 to 27-38 tok/s). The calibration request is one 160-token decode (~1-6 s).
-RECALIBRATE_GROWTH_MIB = 512.0
-# A re-measurement never competes with a user turn (Codex H-r7): it runs only when llama-server's own /slots endpoint
-# (enabled by default in the frozen build) reports its single slot idle, checked again right before the request; it is
-# bounded (30 s) so stop/restart requests are not held long, and it happens at most once per RECALIBRATE_MIN_GAP_S.
-RECALIBRATE_TIMEOUT_S = 30.0
-RECALIBRATE_MIN_GAP_S = 600.0
+# Residency alert: the Brain's system-memory share grew by half a demotion block since its calibration (measured live
+# 2026-10-09: another session opened ~1 GB of GPU apps after load; non-local rose 1.1 -> 2.75 GB and decode fell from
+# 141 to 27-38 tok/s). The host only REPORTS it; it sends no request of its own to the Brain after the start
+# calibration, so it never competes with a user turn (Codex H-r7/r8). The slowness verdict comes from the timings of
+# real answers (accepted PerfMonitor in the worker).
+RESIDENCY_ALERT_GROWTH_MIB = 512.0
 
 
 class Host:
@@ -303,33 +300,18 @@ class Host:
         self.calibrate(r.pid)
         return True
 
-    def needs_recalibration(self, now_res):
+    def residency_alert(self, now_res):
+        """Record (or clear) the alert that GPU memory was taken from the Brain after its calibration."""
         cal = self.report.get("calibration") or {}
         before = (cal.get("residency") or {}).get("non_local_mib")
         now = (now_res or {}).get("non_local_mib")
-        return before is not None and now is not None and now - before >= RECALIBRATE_GROWTH_MIB
-
-    def server_idle(self):
-        """True / False from llama-server's /slots; None when it cannot be read (then nothing is sent)."""
-        import httpx
-        try:
-            slots = httpx.get(R.base_url(self.cfg) + "/slots", timeout=2.0).json()
-            return bool(slots) and all(not s.get("is_processing") for s in slots)
-        except Exception:
-            return None
-
-    def maybe_recalibrate(self, pid):
-        last = (self.report.get("calibration") or {}).get("t") or 0
-        if self.now() - last < RECALIBRATE_MIN_GAP_S:
-            self.report["recalibration_pending"] = "MIN_GAP"
-            return False
-        if self.server_idle() is not True or self.server_idle() is not True:     # checked twice, just before posting
-            self.report["recalibration_pending"] = "SERVER_BUSY_OR_UNKNOWN"
-            self.write()
-            return False
-        self.report.pop("recalibration_pending", None)
-        self.calibrate(pid, reason="RESIDENCY_CHANGED", timeout=RECALIBRATE_TIMEOUT_S)
-        return True
+        if before is not None and now is not None and now - before >= RESIDENCY_ALERT_GROWTH_MIB:
+            self.report["residency_alert"] = {"growth_mib": round(now - before, 1), "non_local_mib": now,
+                                              "t": (now_res or {}).get("t"), "server_pid": cal.get("server_pid"),
+                                              "server_create_time": cal.get("server_create_time")}
+            return True
+        self.report.pop("residency_alert", None)
+        return False
 
     def calibrate(self, pid, reason="START", timeout=120.0):
         import httpx
@@ -377,6 +359,7 @@ class Host:
         self.stopped_at = self.now()
         self.report["server"] = {"pid": None, "owned": False, "stopped_clean": ok}
         self.report.pop("calibration", None)          # it described the instance that just stopped
+        self.report.pop("residency_alert", None)
 
     # ---- main loop ------------------------------------------------------------------------------------------
     def run(self):
@@ -411,9 +394,7 @@ class Host:
                     self.finish_request()
                 if (self.mgr is not None and self.mgr.owns_instance and time.monotonic() - last_res >= RESIDENCY_EVERY_S):
                     pid = self.report.get("server", {}).get("pid")
-                    now_res = self.residency(pid)
-                    if self.needs_recalibration(now_res):
-                        self.maybe_recalibrate(pid)
+                    self.residency_alert(self.residency(pid))
                     if self.lease is not None:
                         self.lease.heartbeat()
                     self.write()

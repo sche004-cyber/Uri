@@ -91,6 +91,17 @@ def assess(*, readiness: dict, host: dict | None, host_alive: bool, perf: dict, 
             state = BUSY if busy else READY
             if slow is None:
                 reasons.append("SPEED_NOT_MEASURED")
+        alert = (h or {}).get("residency_alert") or {}
+        if alert and state in (READY, BUSY) and _same_instance(
+                {"server_pid": alert.get("server_pid"), "server_create_time": alert.get("server_create_time")}, server):
+            # Memory was taken after load; no speed evidence yet, so the state stays READY/BUSY with a warning.
+            reasons.append("GPU_MEMORY_TAKEN_AFTER_LOAD")
+            options.append("restart_brain")
+            if any(not c.get("role") for c in out["gpu"].get("consumers") or []):
+                options.append("close_gpu_apps")
+            out["warning"] = ("Another app took GPU memory after the Brain loaded (%.1f GB moved to system memory). "
+                              "It may answer more slowly; the next answers will show it."
+                              % ((alert.get("growth_mib") or 0) / 1024))
         if state == DEGRADED:
             if h:
                 options.append("restart_brain")

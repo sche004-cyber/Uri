@@ -182,6 +182,23 @@ void main() {
       expect(rt.commands.where((c) => c['command'] == 'brain_restart').single['action'], 'restart');
     });
 
+    testWidgets('memory taken after load shows a warning while the state stays Ready', (tester) async {
+      final rt = HardeningRuntime()
+        ..health = {
+          'state': 'READY',
+          'reasons': ['GPU_MEMORY_TAKEN_AFTER_LOAD'],
+          'recovery_options': ['restart_brain'],
+          'warning': 'Another app took GPU memory after the Brain loaded (1.6 GB moved to system memory).',
+          'performance': {'calibration_tps': 141.0},
+        };
+      final conv = OiConversation(rt);
+      await conv.refreshHealth();
+      await tester.pumpWidget(host(OiConversationPane(conversation: conv)));
+      expect(find.byKey(const ValueKey('oi-health-warning')), findsOneWidget);
+      expect(find.textContaining('Ready · 141 tok/s'), findsOneWidget);
+      expect(find.byKey(const ValueKey('oi-health-restart_brain')), findsOneWidget);
+    });
+
     testWidgets('restart is not offered while a turn runs', (tester) async {
       final rt = HardeningRuntime()..health = degraded();
       final conv = OiConversation(rt);
