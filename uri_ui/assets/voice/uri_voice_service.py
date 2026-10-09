@@ -51,7 +51,7 @@ SR = 16000  # recogniser sample rate
 BLOCK = 320  # 20 ms at 16 kHz
 ENGINE_NAME = "faster-whisper-base.en-int8"
 PARTIAL_EVERY_S = 0.7
-PARTIAL_WINDOW_S = 15.0
+PARTIAL_WINDOW_S = 6.0  # display shows the tail; CPU per partial stays bounded
 DEFAULT_MAX_S = 60.0
 UNCERTAIN_BELOW = 0.45
 ONSET_MIN = 0.008
@@ -256,6 +256,13 @@ class Recogniser:
                 condition_on_previous_text=False,
                 without_timestamps=not final,
                 hotwords=bias_words(hotwords),
+                # Bounded decoding: no temperature fallback and a token cap
+                # proportional to the audio. On room noise the unbounded decoder
+                # looped (worst 54 CPU-seconds for 8 s of noise); bounded, the
+                # worst was 2.3 s with the same WER on the 45 speech recordings
+                # (docs/voice/live/evidence/stt/decode_bound.json).
+                temperature=0.0,
+                max_new_tokens=int(len(audio) / SR * TOKENS_PER_SECOND) + 16,
             )
             segs = [seg for seg in segments if is_speech_segment(seg)]
         text = " ".join(s.text.strip() for s in segs).strip()
@@ -275,6 +282,7 @@ class Recogniser:
 # <= 1.12; every noise segment had no_speech_prob >= 0.311 (the repetition loop also
 # compression 27). A segment is speech only if all three hold. Dropping too much is
 # the safe direction: the user is told nothing was heard and repeats.
+TOKENS_PER_SECOND = 8  # speech runs at about 3-4 tokens a second
 MAX_NO_SPEECH_PROB = 0.3
 MIN_AVG_LOGPROB = -1.2
 MAX_COMPRESSION = 2.4
@@ -372,7 +380,9 @@ class Capture:
                 warned = True
                 emit("listen.warning", id=self.id, code="MIC_SILENT",
                      message="The microphone is sending silence. It may be muted, or Windows may be blocking it.")
-            if self.samples - last < SR * 0.3 or self.samples < SR * 0.6 or self.peak_rms < SILENT_PEAK:
+            # Partials are display only: they wait for detected speech, so a
+            # microphone hearing room noise does not decode it every 0.7 s.
+            if self.samples - last < SR * 0.3 or self.samples < SR * 0.6 or not self.onset:
                 continue
             last = self.samples
             a = self.audio()[-int(PARTIAL_WINDOW_S * SR):]
@@ -665,10 +675,10 @@ class Service:
         self.cap_lock = threading.Lock()
 
     def hello(self):
-        # Answers at once. The model may still be loading (measured 3.3 s alone,
-        # over 20 s while a Brain loaded from the same disk); a `model` event
-        # follows when it is ready or has failed. Capture works meanwhile; the
-        # final pass waits for the model.
+        # Answers at once. The model may still be loading (about 0.5 s once the
+        # native imports are preloaded; see preload_native_modules); a `model`
+        # event follows when it is ready or has failed. Capture works meanwhile;
+        # the final pass waits for the model.
         m = self.recogniser.state()
         emit("ready", engine=ENGINE_NAME, model=m, model_ok=m["state"] == "ready",
              model_error={"code": m["code"], "message": m["message"]} if m["state"] == "failed" else None,
@@ -794,6 +804,17 @@ class Service:
         emit("bye")
 
 
+def preload_native_modules() -> None:
+    """Imports every native extension on the main thread before any worker thread
+    starts. Found 2026-10-09 (thread dump): the playback thread importing numpy and
+    the model thread importing faster-whisper (PyAV) at the same time both hung in
+    extension-module initialisation, so the model never became ready. Later
+    imports inside the threads are then plain cache hits."""
+    import numpy  # noqa: F401
+    import sounddevice  # noqa: F401
+    import faster_whisper  # noqa: F401
+
+
 def main(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument("--model-dir", default=os.path.join(os.environ.get("LOCALAPPDATA", ""), "URI", "models",
@@ -804,6 +825,7 @@ def main(argv=None):
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stdin.reconfigure(encoding="utf-8")
     try:
+        preload_native_modules()
         Service(args).run()
     except ImportError as e:
         emit("fatal", code="VOICE_RUNTIME_MISSING", message=f"Voice runtime is not installed: {e}")

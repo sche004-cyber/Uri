@@ -467,7 +467,7 @@ def test_noise_segments_are_not_speech():
 
 def test_hello_answers_at_once_while_the_model_loads(env):
     """Regression (2026-10-09): hello blocked 20 s and then reported model_ok false
-    with no error while a Brain loaded from the same disk; the client showed Ready."""
+    with no error (the load was hung, see the preload test); the client showed Ready."""
     r0 = env.svc.recogniser
     r0.state = types.MethodType(env.mod.Recogniser.state, r0)
     r0.ready.clear()
@@ -477,3 +477,52 @@ def test_hello_answers_at_once_while_the_model_loads(env):
     assert time.time() - t < 2
     r = wait_for(env.events, "ready")
     assert r["model"] == {"state": "loading"} and r["model_error"] is None
+
+
+def test_native_modules_are_imported_before_worker_threads_start():
+    """Regression (2026-10-09): concurrent native imports in two worker threads hung
+    the model load. main() must preload them before Service() starts any thread."""
+    import ast
+
+    tree = ast.parse(SVC_PATH.read_text(encoding="utf-8"))
+    main = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "main")
+    calls = [c.func.id if isinstance(c.func, ast.Name) else getattr(c.func, "attr", "")
+             for c in ast.walk(main) if isinstance(c, ast.Call)]
+    assert "preload_native_modules" in calls
+    order = [n for n in calls if n in ("preload_native_modules", "Service")]
+    assert order.index("preload_native_modules") < order.index("Service")
+    pre = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "preload_native_modules")
+    imported = {a.name for n in ast.walk(pre) if isinstance(n, ast.Import) for a in n.names}
+    assert {"numpy", "sounddevice", "faster_whisper"} <= imported
+
+
+def test_decoding_is_bounded():
+    """Regression (2026-10-09): room noise made the decoder loop with temperature
+    fallback (51 CPU-seconds for one 8 s capture)."""
+    mod = load_module()
+    seen = {}
+
+    class FakeModel:
+        def transcribe(self, audio, **kw):
+            seen.update(kw)
+            return iter([]), None
+
+    r = mod.Recogniser.__new__(mod.Recogniser)
+    r.lock = threading.Lock()
+    r.ready = threading.Event()
+    r.ready.set()
+    r.model = FakeModel()
+    r.error = None
+    r.transcribe(np.zeros(16000 * 10, dtype="float32"), final=True)
+    assert seen["temperature"] == 0.0
+    assert seen["max_new_tokens"] == 10 * mod.TOKENS_PER_SECOND + 16
+
+
+def test_partials_wait_for_detected_speech(env, monkeypatch):
+    monkeypatch.setattr(env.mod, "PARTIAL_EVERY_S", 0.05)
+    env.svc.listen_start("c1", None, 60)
+    noise = (np.random.default_rng(1).standard_normal(16000 * 2) * 0.005).astype("float32")
+    env.sd.streams[-1].feed(noise)  # above the silence gate, below onset
+    time.sleep(0.4)
+    assert not any(final is False for _, final in env.svc.recogniser.calls)
+    env.svc.listen_cancel("c1")

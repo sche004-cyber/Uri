@@ -15,6 +15,18 @@ PY = Path(os.environ["LOCALAPPDATA"]) / "URI" / "voice" / "venv" / "Scripts" / "
 SVC = ROOT / "uri_ui" / "assets" / "voice" / "uri_voice_service.py"
 
 
+def real_pid(launcher_pid):
+    """The venv python.exe is a launcher that starts the base interpreter as its
+    child; the service runs in that child."""
+    ps = "(Get-CimInstance Win32_Process -Filter 'ParentProcessId=%d' | Where-Object Name -eq 'python.exe' | Select-Object -First 1).ProcessId" % launcher_pid
+    for _ in range(50):
+        out = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True).stdout.strip()
+        if out:
+            return int(out)
+        time.sleep(0.2)
+    return launcher_pid
+
+
 def proc_stats(pid):
     ps = ("$p=Get-Process -Id %d; $c=Get-CimInstance Win32_Process -Filter 'ParentProcessId=%d';"
           "$k=@($c | ForEach-Object { Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue });"
@@ -48,9 +60,11 @@ def wait(ev, i=None, t=60):
 
 send(cmd="hello")
 r = wait("ready")
+SPID = real_pid(p.pid)
+wait("model", None, 120)
 time.sleep(2)
-res = {"ready": {k: r[k] for k in ("engine", "model_ok", "model_load_ms")}, "idle_after_load": proc_stats(p.pid)}
-before = proc_stats(p.pid)
+res = {"service_pid": SPID, "model": [e for e in events if e["ev"] == "model"][0], "idle_after_load": proc_stats(SPID)}
+before = proc_stats(SPID)
 send(cmd="listen_start", id="f1")
 wait("listen.started", "f1")
 time.sleep(0.4)
@@ -58,13 +72,13 @@ ps = "Add-Type -AssemblyName System.Speech; $s=New-Object System.Speech.Synthesi
 subprocess.run(["powershell", "-NoProfile", "-Command", ps],
                env={**os.environ, "T": "Please prepare a short note for the director about the training schedule next week."})
 time.sleep(0.3)
-during = proc_stats(p.pid)
+during = proc_stats(SPID)
 send(cmd="listen_stop", id="f1")
 fin = wait("listen.final", "f1")
-after_listen = proc_stats(p.pid)
+after_listen = proc_stats(SPID)
 send(cmd="speak", id="u1", text="The note is ready on screen. Please review it before it goes to the director.", voice={}, final=True)
 wait("speak.ended", "u1", 60)
-after_speak = proc_stats(p.pid)
+after_speak = proc_stats(SPID)
 send(cmd="shutdown")
 p.wait(10)
 res.update({
