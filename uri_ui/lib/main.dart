@@ -20,6 +20,7 @@ import 'services/platform_file_picker.dart';
 import 'services/platform_window_controller.dart';
 import 'services/integrated_runtime.dart';
 import 'services/window_visibility.dart';
+import 'services/live_voice_service.dart';
 import 'services/windows_voice_catalog.dart';
 import 'working_system_app.dart';
 
@@ -50,7 +51,18 @@ void main() async {
         // frames while the window is minimised (the binding is removed when
         // the services are disposed).
         configureServices: (services) {
-          if (Platform.isWindows) services.voiceCatalog = WindowsVoiceCatalog();
+          if (Platform.isWindows) {
+            services.voiceCatalog = WindowsVoiceCatalog();
+            // Live voice: push-to-talk recognition on the CPU and reply
+            // speech. The service process starts a few seconds after launch
+            // so the model is warm before the first press; it holds no GPU
+            // memory.
+            final live = LiveVoiceService();
+            services.attachLiveVoice(live);
+            unawaited(
+              Future<void>.delayed(const Duration(seconds: 3), live.ensureStarted),
+            );
+          }
           unawaited(bindWindowVisibility(services.frameClock));
         },
       ),
