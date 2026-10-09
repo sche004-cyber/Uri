@@ -225,21 +225,24 @@ CASES = {
          [("west_wing", lambda r, h: has(r["text"], "west wing"))]),
         ("Don't say west wing; say east wing, sector C.", None,
          [("replacement_whole_or_flagged", lambda r, h: (has(r["text"], "east wing") and has(r["text"], "sector c"))
-           or bool(r["flags"])),
-          ("old_gone_or_flagged", lambda r, h: lacks(r["text"], "west wing") or bool(r["flags"])),
-          ("time_kept_or_flagged", lambda r, h: kept_or_flagged(r, "9 am", "9:00", "9 a.m.", "09:00"))]),
+           or flag_names(r, "sector c", "east wing")),
+          ("old_gone_or_flagged", lambda r, h: lacks(r["text"], "west wing") or flag_names(r, "west wing")),
+          ("time_kept_or_flagged", lambda r, h: kept_or_flagged(r, "9 am", "9:00", "9 a.m.", "09:00", "9am",
+                                                                "nine"))]),
     ],
     "L9c_title_replacement": [
         ("Write a two-line note that the advisor will attend the parents' meeting on Friday.", None,
          [("advisor", lambda r, h: has(r["text"], "advisor"))]),
         ("Replace advisor with Dr. Mehta.", None,
-         [("dr_mehta_or_flagged", lambda r, h: has(r["text"], "mehta") or bool(r["flags"])),
-          ("no_bare_dr", lambda r, h: not re.search(r"\bDr\.?\s+(will|is|has)\b", r["text"]) or bool(r["flags"])),
+         [("dr_mehta_or_flagged", lambda r, h: has(r["text"], "mehta") or flag_names(r, "mehta")),
+          ("no_bare_dr", lambda r, h: not re.search(r"\bDr\.?\s+(will|is|has)\b", r["text"])
+           or flag_names(r, "mehta", "dr.")),
           ("friday_kept_or_flagged", lambda r, h: kept_or_flagged(r, "friday"))]),
     ],
     "L9d_hinglish_kal": [
         ("Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.", "SIM_HI",
-         [("not_yesterday_or_flagged", lambda r, h: lacks(r["text"], "yesterday") or bool(r["flags"])),
+         [("not_yesterday_or_flagged", lambda r, h: lacks(r["text"], "yesterday")
+           or flag_names(r, "yesterday", "kal", "tomorrow")),
           ("three_days", lambda r, h: kept_or_flagged(r, "three", "3")),
           ("drafted", lambda r, h: r["route"] == "draft" and r["version"] == 1)]),
     ],
@@ -257,11 +260,16 @@ CASES = {
 }
 
 
-def kept_or_flagged(r, *values):
-    """The value is in the draft, or a visible flag names it (nothing is changed silently)."""
-    text = r["text"].lower()
+def flag_names(r, *values):
+    """A visible flag names one of the values (an unrelated flag does not count; Codex TIWS r1 L9-1)."""
     details = " ".join(str(f.get("detail", "")) for f in r["flags"]).lower()
-    return any(v.lower() in text or v.lower() in details for v in values)
+    return any(v.lower() in details for v in values)
+
+
+def kept_or_flagged(r, *values):
+    """The value is in the draft as a whole token, or a visible flag names it (nothing is changed silently).
+    Presence is not meaning: the drafts themselves are read in the review (Codex TIWS r1 L9-2)."""
+    return any(has(r["text"], v) for v in values) or flag_names(r, *values)
 
 
 def error_flags(r):
@@ -439,7 +447,7 @@ def main(argv=None):
     out = EVIDENCE / ("ti_live_matrix_%s_%s.json" % (a.tier, time.strftime("%Y%m%dT%H%M%S")))
     out.write_text(json.dumps(report, indent=1, ensure_ascii=False, default=str), encoding="utf-8", newline="\n")
     print("checks passed %d/%d -> %s" % (passed, total, out))
-    return 0
+    return 0 if passed == total else 1        # a failed check is never an exit-0 run (Codex TIWS r1 L9-3)
 
 
 if __name__ == "__main__":
