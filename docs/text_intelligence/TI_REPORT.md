@@ -126,7 +126,7 @@ Key design decisions beyond the blueprint (recorded in its change log): the mode
 | `tests/oi` | 161 passed, 8 skipped at 18f79ba. An earlier run had 1 failure, `test_total_deadline`, a timing flake that also fails on the untouched baseline `68cac3d` (3 of 4 runs there) |
 | Flutter full suite | 301 passed, 4 skipped |
 | `ws_frozen_check.py` | ok: 121/121 Phase 1 files identical; no protected path changed |
-| Accepted chain (gate tree materialized at 9402c94, accepted layout) | phase2 486 passed / 0 failed / 2 skipped (= accepted baseline); remaining gates: see `TI_INTEGRATION_RECEIPT.md` |
+| Accepted chain (gate tree materialized at 9402c94, accepted layout) | phase2 486/0/2 and authority 134/0 = accepted; phase1-full same 11 failures as accepted, one environmental outcome change (Ollama-dependent live test skipped; Ollama down since reboot), so the strict flag is `ALL_PASS: false`; phase1-scope and residue PASS. Details: `TI_INTEGRATION_RECEIPT.md` |
 
 ## 9. Evidence index
 
