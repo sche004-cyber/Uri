@@ -292,7 +292,17 @@ stronger than the data and are withdrawn.
 
 ## 6. Independent review
 
-REVIEW_SECTION
+Codex CLI (`codex exec`, model gpt-6-sol, reasoning medium, read-only
+sandbox) on a fresh `core.autocrlf=false` clone (`C:\Users\cheta\Development\csr`).
+Every result is a claim; each finding was checked against the code before it
+was repaired.
+
+| Round | Head | Verdict | Findings | Repairs |
+|---|---|---|---|---|
+| 1 | `a978cf5` | REJECT | B1 classic orb outside the frame clock (rate setting and minimise did not apply); B2 voice stage overlapped the Companion-mode controls at 800×600; N3 window listener never removed; N4 listing timeout left PowerShell running | `ebe3828`: rate shown unavailable for classic, every ticker muted while minimised; pill above the companion when there is no room below; removable listener; kill on timeout |
+| 2 | `f73575d` | REJECT | B1 pill still overlapped the orb at 640×480; B2 §4.2 GPU table not reproducible from the stated formula; N3 listener remover never called; N4 §4.5 heap ranges understated, two overclaims; N5 contention script could leave the measured app running; N6 31 evidence CSVs CRLF | `cecb911`: no stage where no free place exists (below about 560 px), narrow Dashboard likewise; §4.2 recomputed with a stated rule, correction recorded; remover runs on clock disposal; §4.5 corrected, overclaims withdrawn; cleanup kills the app; CSVs LF |
+| 3 | REVIEW_R3_HEAD | REVIEW_R3_VERDICT | REVIEW_R3_FINDINGS | REVIEW_R3_REPAIRS |
+
 
 ## 7. Boundaries and repository hygiene
 
@@ -311,7 +321,7 @@ REVIEW_SECTION
   app writes only there.
 * Four accepted assertions in `living_shell_test.dart` were adapted because the
   default orb changed from the Energy Orb to Solar; the classic-orb checks now
-  select the classic orb first. Full suite: TESTS_LINE.
+  select the classic orb first. Full suite: `flutter test` 390 passed, 2 skipped (baseline before this phase: 338 passed, 2 skipped); `flutter analyze` on every changed path: no issues.
 
 ## 8. Known limitations
 

@@ -12,7 +12,7 @@ push or merge.
 | Canonical development branch | `integration/git-sync-20261008`, tip `037229c` (verified with `git ls-remote uri-repo` on 2026-10-09) |
 | Candidate branch | `phase/companion-voice` (local, not pushed) |
 | Review clone | a fresh `core.autocrlf=false` clone of the candidate branch (path given in the prompt) |
-| This phase's commits | `e697dde`, `3b34aa1`, `da245aa`, `45e7b6e`, plus the evidence/report commits after them (`git log --oneline 8fad876..HEAD`) |
+| This phase's commits | `git log --oneline 8fad876..HEAD` (code, repairs after Codex rounds 1 and 2, evidence, report) |
 | Earlier, never independently accepted, commits that integration would also bring in | `07a2f38` (solar orb R&D), `bd542f2`, `d7a052f` (living companions), `4c463e6`, `8fad876` (voice presence) |
 | Already accepted ancestor | `569cf7c` (UI living companion, Codex round 6 accepted with findings) |
 
@@ -102,10 +102,17 @@ git ls-files --eol -- $(git diff --name-only 8fad876..HEAD) | grep -v 'i/lf'   #
 ## Known limitations (stated by the candidate)
 
 No live microphone or URI speech; Windows only verified; one GPU (RX 7900 GRE)
-at device pixel ratio 1.0; Brain contention observed only as available (other
-sessions own the Brain); `window_visibility` must also be bound by any other
+at device pixel ratio 1.0; the Brain contention runs used the phase's own
+Runtime v1 instance under the GPU lease, two start orders, one run each; the
+adaptive back-off is verified by tests, not yet against a live Brain; `window_visibility` must also be bound by any other
 entry point that mounts `LivingApp` (the working-system entry on the parallel
 line does not yet); the classic orb ignores the appearance sliders by design.
+
+## Closure report
+
+`docs/companions/settings/COMPANION_SETTINGS_REPORT.md`: status ledger,
+acceptance results, captures, performance (frame rate, quality, minimise,
+contention, Brain, memory), voice, review history, boundaries, limitations.
 
 ## Requested output
 
