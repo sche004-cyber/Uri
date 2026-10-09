@@ -125,8 +125,10 @@ def test_proposal_needs_owner_confirmation_bound_to_hash(env):
 
 def test_unverified_and_solemn_handling(env):
     s, *_ = env
+    s.correct_calendar("owner", "in_festivals", "losoong_namsoong", 2026, "dispute", note="test: disputed record")
     p = festival_job(s, ("diwali", "losoong_namsoong"))
     assert any(x["festival_key"] == "losoong_namsoong" for x in p["excluded"])
+    assert all(not r["key"].startswith("losoong_namsoong") for r in p["upcoming"])
     with pytest.raises(SchedulerError) as e:
         festival_job(s, ("muharram",))
     assert e.value.code == "NOT_A_GREETING_OCCASION"
@@ -613,3 +615,49 @@ def test_r6_cancel_during_available_gate_never_runs_harness(env):
     r = s.tick()[0]
     assert r["result"] == "CANCELLED" and h.calls == []
     assert s.store.q1("SELECT COUNT(*) FROM attempt")[0] == 0
+
+
+def test_owner_calendar_corrections_move_dispute_restore_and_survive_restart(env):
+    s, h, clock, tmp = env
+    p = festival_job(s, ("diwali", "dussehra"))
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+
+    def occ(k):
+        return tuple(s.store.q1("SELECT occ_id, state, reason FROM occurrence WHERE occurrence_key=?", (k,)))
+
+    assert occ("diwali:2026")[1] == "SCHEDULED"
+    with pytest.raises(SchedulerError) as e:
+        s.correct_calendar("owner", "in_festivals", "diwali", 2026, "set_date", start="2027-11-09")
+    assert e.value.code == "BAD_CORRECTION"
+    with pytest.raises(SchedulerError):
+        s.correct_calendar("", "in_festivals", "diwali", 2026, "dispute")
+    # a corrected date moves the occurrence and waits for the owner's confirmation of the new date
+    r = s.correct_calendar("owner", "in_festivals", "diwali", 2026, "set_date", start="2026-11-09", note="local practice")
+    assert r["version"].endswith("+owner.1") and r["reconcile"]["moved"] == 1
+    assert occ("diwali:2026")[1:] == ("AWAITING_CONFIRMATION", "DATE_CHANGED_SINCE_CONFIRMATION")
+    rec = next(x for x in s.calendar.records("in_festivals") if x["festival_key"] == "diwali" and x["year"] == 2026)
+    assert rec["source"]["id"] == "owner_correction" and rec["corrected_from"]["start"] == "2026-11-08"
+    # disputed: withdrawn; accepted again: back only as a date to confirm, never straight to SCHEDULED
+    s.correct_calendar("owner", "in_festivals", "dussehra", 2026, "dispute", note="unsure")
+    assert occ("dussehra:2026")[1:] == ("CANCELLED", "CALENDAR_WITHDRAWN")
+    r = s.correct_calendar("owner", "in_festivals", "dussehra", 2026, "accept", note="checked")
+    assert r["reconcile"]["restored"] == 1
+    assert occ("dussehra:2026")[1:] == ("AWAITING_CONFIRMATION", "RESTORED_BY_CALENDAR")
+    clock.set("2026-10-18T09:30:00+05:30")
+    assert all(x["occ_id"] != occ("dussehra:2026")[0] for x in s.tick())
+    # append-only and audited
+    with pytest.raises(Exception):
+        s.store.db.execute("UPDATE calendar_correction SET note='x'")
+    kinds = [ev["kind"] for ev in s.store.events(limit=1000)]
+    assert kinds.count("calendar.corrected") == 3
+    # restart: the corrections are re-applied on the shipped calendar; no duplicate occurrences
+    n = s.store.q1("SELECT COUNT(*) FROM occurrence")[0]
+    s.close()
+    s2 = Scheduler(tmp / "state", harness=h, now_fn=clock).start()
+    try:
+        assert s2.calendar.version("in_festivals").endswith("+owner.3")
+        s2.materialize()
+        assert s2.store.q1("SELECT COUNT(*) FROM occurrence")[0] == n
+        assert s2.store.q1("SELECT state FROM occurrence WHERE occurrence_key='diwali:2026'")[0] == "AWAITING_CONFIRMATION"
+    finally:
+        s2.close()

@@ -1,49 +1,60 @@
 {
  "schema": "uri.scheduler.calendar.v1",
  "calendar_id": "in_festivals",
- "version": "2026-10-09.1",
+ "version": "2026-10-09.verified",
  "timezone": "Asia/Kolkata",
  "notes": [
   "Dates are the dates notified for government holiday purposes. Lunar-calendar festivals move every year and can differ by region and by moon sighting; every activation shows the dates for owner approval.",
-  "A record with status 'unverified' is never scheduled until the owner confirms it (status -> published).",
-  "'solemn' observances are listed for completeness and are not offered for greeting GIFs by default."
+  "Every date was read from the notification document itself on 2026-10-09 (docs/scheduler/FESTIVAL_CALENDAR_VERIFICATION.md records how, with document hashes).",
+  "A record with status 'unverified' is never scheduled until the owner confirms it (status -> published). The owner can correct a date or mark a record disputed at any time; corrections are kept in the scheduler state, not here.",
+  "'solemn' observances are listed for completeness and are not offered for greeting GIFs by default.",
+  "Sikkim records come from the Government of Sikkim notification and carry region 'sikkim'. Sikkim observes some festivals on dates that differ from the Government of India list (Holi 2026-03-03, Ram Navami 2026-03-27, Laxmi Puja 2026-11-09..11); these are separate records, never merged with the national ones.",
+  "Sikkim 2027 holidays are not notified yet (the 2026 list was notified on 2025-10-10). No Sikkim 2027 date is guessed."
  ],
  "sources": [
   {
    "id": "dopt_2026_closed",
    "title": "DoP&T O.M. F.No.12/2/2023-JCA dated 03.07.2025, Annexure-I (Closed Holidays 2026, Delhi/New Delhi)",
-   "url": "https://www.staffnews.in/2025/07/list-of-holidays-2026-closed-holidays.html",
+   "url": "https://www.staffnews.in/wp-content/uploads/2025/07/Holidays-to-be-observed-in-Central-Government-Offices-during-the-year-2026.pdf",
    "authority": "Government of India, Department of Personnel and Training",
    "retrieved_at": "2026-10-09",
-   "verification": "secondary_transcription_of_official_om",
-   "notes": "Primary annexure PDF not fetched; india.gov.in/calendar returned HTTP 403 to the research tool."
+   "verification": "om_document_read",
+   "notes": "Scanned O.M. (image-only PDF) read page by page: page 1 header (F.No.12/2/2023-JCA, 3rd July 2025), page 4 Annexure-I, pages 5-6 Annexure-II. PDF obtained from a staff-news mirror because doptcirculars.nic.in lists the O.M. (entry dated 7/3/2025, 'Holidays for Central Government offices', year 2026) but serves no file to the research tool.",
+   "document_sha256": "eee083efff2b4284fd96fb81af8ac0496ed5138cfc3ae3357531dd7f3d4df834",
+   "official_listing": "https://doptcirculars.nic.in/Default.aspx?Hin=Y&URL=dFaVfDsok83H"
   },
   {
    "id": "dopt_2026_restricted",
    "title": "DoP&T O.M. F.No.12/2/2023-JCA dated 03.07.2025, Annexure-II (Restricted Holidays 2026)",
-   "url": "https://www.staffnews.in/2025/07/list-of-holidays-2026-restricted-holidays.html",
+   "url": "https://www.staffnews.in/wp-content/uploads/2025/07/Holidays-to-be-observed-in-Central-Government-Offices-during-the-year-2026.pdf",
    "authority": "Government of India, Department of Personnel and Training",
    "retrieved_at": "2026-10-09",
-   "verification": "secondary_transcription_of_official_om",
-   "notes": ""
+   "verification": "om_document_read",
+   "notes": "Scanned O.M. (image-only PDF) read page by page: page 1 header (F.No.12/2/2023-JCA, 3rd July 2025), page 4 Annexure-I, pages 5-6 Annexure-II. PDF obtained from a staff-news mirror because doptcirculars.nic.in lists the O.M. (entry dated 7/3/2025, 'Holidays for Central Government offices', year 2026) but serves no file to the research tool.",
+   "document_sha256": "eee083efff2b4284fd96fb81af8ac0496ed5138cfc3ae3357531dd7f3d4df834",
+   "official_listing": "https://doptcirculars.nic.in/Default.aspx?Hin=Y&URL=dFaVfDsok83H"
   },
   {
    "id": "dopt_2027_closed",
    "title": "DoP&T O.M. F.No.12/2/2023-JCA dated 16.07.2026, Annexure-I (Gazetted Holidays 2027)",
-   "url": "https://www.staffnews.in/2026/07/list-of-holidays-for-the-year-2027-gazetted.html",
+   "url": "https://www.gconnect.in/gc22/wp-content/uploads/2026/07/Holiday-list-2027.pdf",
    "authority": "Government of India, Department of Personnel and Training",
    "retrieved_at": "2026-10-09",
-   "verification": "secondary_transcription_of_official_om",
-   "notes": "Independence Day and Milad-un-Nabi coincide on 2027-08-15."
+   "verification": "om_document_read",
+   "notes": "O.M. PDF with a text layer; two independent mirrors (gconnect.in, staffnews.in) served byte-identical files. doptcirculars.nic.in lists the O.M. (entry dated 7/16/2026, year 2027) but serves no file to the research tool. Moon-dependent dates (Id-ul-Fitr, Id-ul-Zuha, Muharram, Id-e-Milad) may still be changed by DoPT (O.M. para 5.1). Independence Day and Milad-un-Nabi coincide on 2027-08-15.",
+   "document_sha256": "ad93132c2a5af51bf273e71a42bec3a30ab019f2584026198e7bf9515b2d4fc1",
+   "official_listing": "https://doptcirculars.nic.in/Default.aspx?Hin=Y&URL=dFaVfDsok83H"
   },
   {
    "id": "dopt_2027_restricted",
-   "title": "DoP&T O.M. dated 16.07.2026, Annexure-II (Restricted Holidays 2027)",
-   "url": "https://www.staffnews.in/2026/07/list-of-restricted-holidays-for-the-year-2027.html",
+   "title": "DoP&T O.M. F.No.12/2/2023-JCA dated 16.07.2026, Annexure-II (Restricted Holidays 2027)",
+   "url": "https://www.gconnect.in/gc22/wp-content/uploads/2026/07/Holiday-list-2027.pdf",
    "authority": "Government of India, Department of Personnel and Training",
    "retrieved_at": "2026-10-09",
-   "verification": "secondary_transcription_of_official_om",
-   "notes": ""
+   "verification": "om_document_read",
+   "notes": "O.M. PDF with a text layer; two independent mirrors (gconnect.in, staffnews.in) served byte-identical files. doptcirculars.nic.in lists the O.M. (entry dated 7/16/2026, year 2027) but serves no file to the research tool. Moon-dependent dates (Id-ul-Fitr, Id-ul-Zuha, Muharram, Id-e-Milad) may still be changed by DoPT (O.M. para 5.1).",
+   "document_sha256": "ad93132c2a5af51bf273e71a42bec3a30ab019f2584026198e7bf9515b2d4fc1",
+   "official_listing": "https://doptcirculars.nic.in/Default.aspx?Hin=Y&URL=dFaVfDsok83H"
   },
   {
    "id": "sikkim_2026_secondary",
@@ -51,8 +62,29 @@
    "url": "https://www.greythr.com/wiki/acts/st-sikkim/holidays/2026/",
    "authority": "Government of Sikkim, Home Department",
    "retrieved_at": "2026-10-09",
-   "verification": "aggregator_conflicting",
-   "notes": "The aggregator's table is internally inconsistent with the Government of India list (it shows Tihar/Laxmi Puja on 2026-10-13 while Diwali is 2026-11-08). Sikkim dates here are UNVERIFIED and must be confirmed against the gazette before use."
+   "verification": "superseded",
+   "notes": "Superseded on 2026-10-09 by sikkim_2026_gazette_391 (the gazette itself). The aggregator was wrong for Saga Dawa, Pang Lhabsol and Lhabab Duechen. No record cites this source any more."
+  },
+  {
+   "id": "dopt_2026_bakrid_change",
+   "title": "DoP&T O.M. F.No.12/3/2023-JCA dated 22.05.2026: Id-ul-Zuha (Bakrid) holiday on 28.05.2026 in place of 27.05.2026 (Delhi/New Delhi)",
+   "url": "https://www.icmr.gov.in/icmrobject/uploads/Circular/1779704410_changeofdateofholidayonaccountofid-u-zuha.pdf",
+   "authority": "Government of India, Department of Personnel and Training",
+   "retrieved_at": "2026-10-09",
+   "verification": "official_forwarding_copy",
+   "document_sha256": "1068516bd2a656b0c91ba27488673dca303a18017922a087ee63bd14878959a5",
+   "notes": "ICMR (Government of India) circular dated 25.05.2026 forwarding the DoPT O.M.; the O.M. is attached."
+  },
+  {
+   "id": "sikkim_2026_gazette_391",
+   "title": "Government of Sikkim, Home Department, Notification No. 89/Home/2025 dated 10.10.2025, Sikkim Government Gazette Extraordinary No. 391 (11.10.2025): public holidays 2026",
+   "url": "https://sikkim.gov.in/uploads/Gazette/391_20251105.pdf",
+   "authority": "Government of Sikkim, Home Department",
+   "retrieved_at": "2026-10-09",
+   "verification": "official_gazette_read",
+   "document_sha256": "43cbe1302e25c61df9c48877f077e1981a6eed27b1f5b7deab4464bf932986c9",
+   "official_listing": "https://www.sikkim.gov.in/mygovernment/gazettes",
+   "notes": "Scanned gazette read page by page. 41 public-holiday occasions (49 days) and 7 restricted holidays. One internal inconsistency: restricted holiday 'Chhat Puja 15th November, 2026' is labelled Tuesday; 2026-11-15 is a Sunday (the date agrees with the DoPT list)."
   }
  ],
  "festivals": [
@@ -136,8 +168,7 @@
    "name": "Buddha Purnima",
    "category": "major",
    "regions": [
-    "national",
-    "sikkim"
+    "national"
    ],
    "greeting_appropriate": true,
    "occurrences": [
@@ -193,10 +224,14 @@
    "occurrences": [
     {
      "year": 2026,
-     "start": "2026-05-27",
+     "start": "2026-05-28",
      "end": null,
-     "source": "dopt_2026_closed",
-     "status": "published"
+     "source": "dopt_2026_bakrid_change",
+     "status": "published",
+     "corrects": {
+      "start": "2026-05-27",
+      "source": "dopt_2026_closed"
+     }
     },
     {
      "year": 2027,
@@ -262,8 +297,7 @@
    "name": "Diwali (Deepavali)",
    "category": "major",
    "regions": [
-    "national",
-    "sikkim"
+    "national"
    ],
    "greeting_appropriate": true,
    "occurrences": [
@@ -851,8 +885,8 @@
      "year": 2026,
      "start": "2026-02-18",
      "end": null,
-     "source": "sikkim_2026_secondary",
-     "status": "unverified"
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
     }
    ]
   },
@@ -867,10 +901,10 @@
    "occurrences": [
     {
      "year": 2026,
-     "start": "2026-06-04",
+     "start": "2026-05-31",
      "end": null,
-     "source": "sikkim_2026_secondary",
-     "status": "unverified"
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
     }
    ]
   },
@@ -885,10 +919,10 @@
    "occurrences": [
     {
      "year": 2026,
-     "start": "2026-09-02",
+     "start": "2026-08-28",
      "end": null,
-     "source": "sikkim_2026_secondary",
-     "status": "unverified"
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
     }
    ]
   },
@@ -903,10 +937,10 @@
    "occurrences": [
     {
      "year": 2026,
-     "start": "2026-12-10",
+     "start": "2026-11-01",
      "end": null,
-     "source": "sikkim_2026_secondary",
-     "status": "unverified"
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
     }
    ]
   },
@@ -922,9 +956,189 @@
     {
      "year": 2026,
      "start": "2026-12-09",
+     "end": "2026-12-14",
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "maghe_sankranti",
+   "name": "Maghe Sankranti",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-01-15",
      "end": null,
-     "source": "sikkim_2026_secondary",
-     "status": "unverified"
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "sonam_lochhar",
+   "name": "Sonam Lochhar",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-01-19",
+     "end": null,
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "bhumchu",
+   "name": "Bhumchu",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-03-03",
+     "end": null,
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "dasain_sikkim",
+   "name": "Durga Puja (Dasain), Sikkim",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-10-19",
+     "end": "2026-10-23",
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "tihar_sikkim",
+   "name": "Laxmi Puja (Deepawali / Tihar), Sikkim",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-11-09",
+     "end": "2026-11-11",
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "sakewa",
+   "name": "Sakewa",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-11-30",
+     "end": null,
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "kagyed_dance",
+   "name": "Kagyed Dance",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-12-07",
+     "end": null,
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "chasok_tongnam",
+   "name": "Chasok Tongnam",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-12-15",
+     "end": null,
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "barahimijong",
+   "name": "Barahimijong",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-12-28",
+     "end": null,
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
+    }
+   ]
+  },
+  {
+   "festival_key": "tamu_lochar",
+   "name": "Tamu Lochar",
+   "category": "regional_major",
+   "regions": [
+    "sikkim"
+   ],
+   "greeting_appropriate": true,
+   "occurrences": [
+    {
+     "year": 2026,
+     "start": "2026-12-30",
+     "end": null,
+     "source": "sikkim_2026_gazette_391",
+     "status": "published"
     }
    ]
   }

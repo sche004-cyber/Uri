@@ -126,6 +126,19 @@ class Calendar:
                  "regions": f.get("regions", []), "greeting_appropriate": f.get("greeting_appropriate", True)}
                 for f in self.raw(calendar_id)["festivals"]]
 
+    def records(self, calendar_id) -> list:
+        """Every dated record (any status) with its source, for owner review. Sorted by date."""
+        out = []
+        for f in self.raw(calendar_id)["festivals"]:
+            for o in f.get("occurrences", []):
+                src = self.source(calendar_id, o["source"]) or {}
+                out.append({"festival_key": f["festival_key"], "name": f["name"], "category": f.get("category"),
+                            "regions": f.get("regions", []), "greeting_appropriate": f.get("greeting_appropriate", True),
+                            "year": o["year"], "start": o["start"], "end": o.get("end"), "status": o["status"],
+                            "source": {k: src.get(k) for k in ("id", "title", "url", "verification", "document_sha256")},
+                            "corrected_from": o.get("corrected_from"), "correction": o.get("correction")})
+        return sorted(out, key=lambda r: (r["start"], r["festival_key"]))
+
     def source(self, calendar_id, source_id) -> dict | None:
         return next((s for s in self.raw(calendar_id)["sources"] if s["id"] == source_id), None)
 
@@ -144,6 +157,59 @@ class Calendar:
                     self.put(d)
                     return d
         raise CalendarError(f"NO_SUCH_RECORD:{festival_key}:{year}")
+
+
+OWNER_SOURCE = {"id": "owner_correction", "title": "Owner correction recorded in the scheduler state",
+                "url": "uri://scheduler/calendar-corrections", "authority": "owner", "retrieved_at": "",
+                "verification": "owner_entered", "notes": "Each correction keeps the record it replaced in 'corrected_from'."}
+CORRECTION_ACTIONS = ("set_date", "dispute", "accept")
+
+
+def apply_corrections(base: dict, corrections: list) -> dict:
+    """Owner corrections on top of a shipped calendar, in recorded order (pure; the base is never modified).
+
+      set_date  the festival's date for that year becomes `start` (and `end`); the record is published with source
+                `owner_correction`; the replaced record is kept in `corrected_from`. A year the base lacks is added.
+      dispute   the record becomes `unverified`: never scheduled until accepted again
+      accept    the record becomes `published` (owner checked it)
+    """
+    d = json.loads(json.dumps(base))
+    if not corrections:
+        return validate_calendar(d)
+    if not any(s["id"] == OWNER_SOURCE["id"] for s in d["sources"]):
+        d["sources"].append(dict(OWNER_SOURCE))
+    fests = {f["festival_key"]: f for f in d["festivals"]}
+    for c in corrections:
+        f = fests.get(c["festival_key"])
+        if f is None:
+            raise CalendarError(f"UNKNOWN_FESTIVAL:{c['festival_key']}")
+        if c["action"] not in CORRECTION_ACTIONS:
+            raise CalendarError(f"BAD_ACTION:{c['action']}")
+        year = int(c["year"])
+        o = next((x for x in f["occurrences"] if x["year"] == year), None)
+        stamp = {"by": c["principal"], "note": c.get("note", ""), "correction_id": c.get("correction_id")}
+        if c["action"] == "set_date":
+            try:
+                start = date.fromisoformat(c["start"])
+                end = date.fromisoformat(c["end"]) if c.get("end") else None
+            except (TypeError, ValueError):
+                raise CalendarError(f"BAD_DATE:{c['festival_key']}:{year}") from None
+            if start.year != year or (end is not None and end < start):
+                raise CalendarError(f"BAD_DATE:{c['festival_key']}:{year}")
+            new = {"year": year, "start": start.isoformat(), "end": end.isoformat() if end else None,
+                   "source": OWNER_SOURCE["id"], "status": "published", "correction": stamp}
+            if o is None:
+                f["occurrences"].append(new)
+            else:
+                new["corrected_from"] = o.get("corrected_from") or {k: o.get(k) for k in ("start", "end", "source", "status")}
+                f["occurrences"][f["occurrences"].index(o)] = new
+        else:
+            if o is None:
+                raise CalendarError(f"NO_SUCH_RECORD:{c['festival_key']}:{year}")
+            o["status"] = "unverified" if c["action"] == "dispute" else "published"
+            o["correction"] = stamp
+    d["version"] = f"{base['version']}+owner.{len(corrections)}"
+    return validate_calendar(d)
 
 
 def diff(old: dict, new: dict) -> dict:

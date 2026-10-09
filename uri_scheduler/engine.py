@@ -36,7 +36,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import DEFAULT_TZ, gif_task, timespec
-from .calendar_store import Calendar
+from .calendar_store import CORRECTION_ACTIONS, Calendar, CalendarError, apply_corrections
 from .store import Store, jdump
 
 try:
@@ -90,6 +90,8 @@ class Scheduler:
         self.state_dir = Path(state_dir)
         self.state_dir.mkdir(parents=True, exist_ok=True)
         self.calendar = calendar or Calendar.default()
+        # Shipped calendars as loaded; owner corrections are re-applied on top of these, never written into them.
+        self._calendar_base = {cid: json.loads(json.dumps(d)) for cid, d in self.calendar._data.items()}
         self.harness = harness
         self.now_fn = now_fn
         self.notify = notify or (lambda kind, payload: None)
@@ -120,7 +122,10 @@ class Scheduler:
     def start(self):
         if self.harness is not None and getattr(self.harness, "sup", None) is None:
             self.harness.open()
+        skipped = self._apply_stored_corrections()
         self.startup = self.recover()
+        if skipped:
+            self.startup["calendar_corrections_not_applied"] = skipped
         self._snapshot_calendars()
         return self
 
@@ -366,7 +371,7 @@ class Scheduler:
 
     # ---- materialization ------------------------------------------------------------------------------------------
     def materialize(self, job_id=None) -> dict:
-        report = {"inserted": 0, "moved": 0, "withdrawn": 0}
+        report = {"inserted": 0, "moved": 0, "withdrawn": 0, "restored": 0}
         jobs = [self.job(job_id)] if job_id else [self.job(r[0]) for r in self.store.q("SELECT job_id FROM job WHERE state='ACTIVE'")]
         for job in jobs:
             if job["state"] != "ACTIVE":
@@ -381,7 +386,7 @@ class Scheduler:
             keys = {o.key for o in occs}
             with self.store.tx() as db:
                 for o in occs:
-                    row = db.execute("SELECT occ_id,state,due_at_us,meta_json FROM occurrence WHERE job_id=? AND occurrence_key=?",
+                    row = db.execute("SELECT occ_id,state,reason,due_at_us,meta_json FROM occurrence WHERE job_id=? AND occurrence_key=?",
                                      (job["job_id"], o.key)).fetchone()
                     due, dl = _us(o.due_utc), (_us(o.deadline_utc) if o.deadline_utc else None)
                     confirmed = (sched["kind"] != "calendar_relative"
@@ -398,6 +403,15 @@ class Scheduler:
                                         payload={"key": o.key, "due_utc": _iso(due), "due_local": _local(due, sched["tz"]),
                                                  "festival_date": o.meta.get("festival_date"), "reason": why})
                         report["inserted"] += 1
+                    elif row["state"] == "CANCELLED" and row["reason"] == "CALENDAR_WITHDRAWN":
+                        # The calendar withdrew this date earlier (e.g. the owner disputed it) and lists it again: it comes
+                        # back only as a date for the owner to confirm, never straight to SCHEDULED.
+                        db.execute("UPDATE occurrence SET due_at_us=?, deadline_us=?, meta_json=?, state='AWAITING_CONFIRMATION', "
+                                   "reason='RESTORED_BY_CALENDAR', retry_at_us=NULL, updated_at_us=? WHERE occ_id=?",
+                                   (due, dl, jdump(o.meta), self.now(), row["occ_id"]))
+                        self.store.emit(db, "occurrence.restored_by_calendar", job_id=job["job_id"], occ_id=row["occ_id"],
+                                        payload={"key": o.key, "due_utc": _iso(due), "festival_date": o.meta.get("festival_date")})
+                        report["restored"] += 1
                     elif row["due_at_us"] != due and json.loads(row["meta_json"] or "{}").get("owner_due_local"):
                         pass       # the owner rescheduled this occurrence explicitly: the calendar never overrides that
                     elif row["due_at_us"] != due and row["state"] in ("SCHEDULED", "BLOCKED_HARNESS", "QUOTA_DEFERRED",
@@ -437,6 +451,57 @@ class Scheduler:
             self.store.emit(db, "calendar.refreshed", payload={"calendar_id": cid, "version": data["version"],
                                                                "diff": {k: [list(x) for x in v] for k, v in d.items()}})
         return {"diff": d, "reconcile": self.materialize()}
+
+    # ---- owner calendar corrections -------------------------------------------------------------------------------
+    def _corrections(self, calendar_id) -> list:
+        return [dict(r) for r in self.store.q("SELECT * FROM calendar_correction WHERE calendar_id=? ORDER BY correction_id",
+                                              (calendar_id,))]
+
+    def _apply_stored_corrections(self) -> list:
+        """Re-apply recorded corrections on the shipped calendar. A correction that no longer applies (e.g. a later shipped
+        calendar dropped the festival) is skipped and reported, never silently dropped from the record."""
+        skipped = []
+        for cid, base in self._calendar_base.items():
+            ok = []
+            for c in self._corrections(cid):
+                try:
+                    apply_corrections(base, ok + [c])
+                    ok.append(c)
+                except CalendarError as exc:
+                    skipped.append({"correction_id": c["correction_id"], "error": str(exc)})
+            if ok:
+                self.calendar.put(apply_corrections(base, ok))
+        return skipped
+
+    def correct_calendar(self, principal, calendar_id, festival_key, year, action, *, start=None, end=None, note="") -> dict:
+        """Owner review of the festival calendar: correct a date, mark a record disputed, or accept it.
+
+        The correction is append-only, hash-chain-audited and re-applied on every start. It changes no scheduled work by
+        itself: a moved date of an active job waits for the owner's confirmation of that occurrence, a disputed date is
+        withdrawn, and an accepted date that was withdrawn comes back as awaiting confirmation."""
+        if not principal:
+            raise SchedulerError("NOT_OWNER", "a correction needs a principal")
+        if action not in CORRECTION_ACTIONS:
+            raise SchedulerError("BAD_ACTION", action)
+        if calendar_id not in self._calendar_base:
+            raise SchedulerError("UNKNOWN_CALENDAR", calendar_id)
+        note = str(note or "")[:500]
+        with self._mutex:
+            row = {"calendar_id": calendar_id, "festival_key": festival_key, "year": int(year), "action": action,
+                   "start": start, "end": end, "note": note, "principal": principal}
+            corr = self._corrections(calendar_id)
+            try:
+                data = apply_corrections(self._calendar_base[calendar_id], corr + [row])
+            except (CalendarError, ValueError, TypeError) as exc:
+                raise SchedulerError("BAD_CORRECTION", str(exc)) from None
+            with self.store.tx() as db:
+                cur = db.execute('INSERT INTO calendar_correction(calendar_id,festival_key,year,action,start,"end",note,principal,'
+                                 "base_version,at_us) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                                 (calendar_id, festival_key, int(year), action, start, end, note, principal,
+                                  self._calendar_base[calendar_id]["version"], self.now()))
+                self.store.emit(db, "calendar.corrected", payload=dict(row, correction_id=cur.lastrowid))
+            data = apply_corrections(self._calendar_base[calendar_id], self._corrections(calendar_id))
+            return {"version": data["version"], **self.refresh_calendar(data)}
 
     # ---- occurrence control ---------------------------------------------------------------------------------------
     def cancel_occurrence(self, occ_id, principal, _job_cancel=False):

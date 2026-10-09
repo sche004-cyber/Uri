@@ -1,11 +1,12 @@
 """Schedule expansion, timezone handling and calendar provenance/refresh (pure, no processes)."""
 import copy
+import json
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
 from uri_scheduler import timespec
-from uri_scheduler.calendar_store import Calendar, CalendarError, diff
+from uri_scheduler.calendar_store import Calendar, CalendarError, apply_corrections, diff
 
 UTC = timezone.utc
 IST = timedelta(hours=5, minutes=30)
@@ -69,6 +70,11 @@ def test_calendar_unverified_records_never_expand():
     cal = Calendar.default()
     spec = {"kind": "calendar_relative", "calendar": "in_festivals", "selection": ["losoong_namsoong", "lhabab_duechen"],
             "offset_days": -2}
+    disputed = copy.deepcopy(cal.raw("in_festivals"))
+    for f in disputed["festivals"]:
+        if f["festival_key"] in spec["selection"]:
+            f["occurrences"][0]["status"] = "unverified"
+    cal.put(disputed)
     assert timespec.expand(spec, u(2026, 1, 1), u(2028, 1, 1), cal) == []
     raw = cal.confirm("in_festivals", "lhabab_duechen", 2026, confirmed_by="owner", note="checked gazette")
     assert raw["version"].endswith("+confirm")
@@ -112,3 +118,42 @@ def test_r4_hourly_is_anchored_and_crosses_days():
     keys = [o.key for o in occ]
     assert keys[:5] == ["2026-10-10T09:30", "2026-10-10T14:30", "2026-10-10T19:30", "2026-10-11T00:30", "2026-10-11T05:30"]
     assert all(k >= "2026-10-10T09:30" for k in keys)
+
+
+def test_calendar_v2_every_record_cites_a_read_document():
+    cal = Calendar.default()
+    assert cal.version("in_festivals") == "2026-10-09.verified"
+    for r in cal.records("in_festivals"):
+        assert r["status"] == "published"
+        assert r["source"]["verification"] in ("om_document_read", "official_gazette_read", "official_forwarding_copy")
+        assert len(r["source"]["document_sha256"]) == 64
+    by = {(r["festival_key"], r["year"]): r for r in cal.records("in_festivals")}
+    # values read from the documents themselves (FESTIVAL_CALENDAR_VERIFICATION.md)
+    assert by[("eid_ul_zuha", 2026)]["start"] == "2026-05-28"            # DoPT change O.M. 22.05.2026
+    assert by[("saga_dawa", 2026)]["start"] == "2026-05-31"              # Sikkim gazette No. 391
+    assert by[("pang_lhabsol", 2026)]["start"] == "2026-08-28"
+    assert by[("lhabab_duechen", 2026)]["start"] == "2026-11-01"
+    assert (by[("losoong_namsoong", 2026)]["start"], by[("losoong_namsoong", 2026)]["end"]) == ("2026-12-09", "2026-12-14")
+    assert by[("dasain_sikkim", 2026)]["regions"] == ["sikkim"] and by[("diwali", 2026)]["regions"] == ["national"]
+    assert not [k for k in by if k[1] == 2027 and "sikkim" in by[k]["regions"]]   # Sikkim 2027 not notified: no guess
+
+
+def test_owner_corrections_are_pure_and_validated():
+    base = Calendar.default().raw("in_festivals")
+    snap = json.dumps(base, sort_keys=True)
+    c = [{"festival_key": "losar", "year": 2027, "action": "set_date", "start": "2027-02-07", "principal": "owner"},
+         {"festival_key": "holi", "year": 2027, "action": "dispute", "principal": "owner", "note": "check"}]
+    d = apply_corrections(base, c)
+    assert json.dumps(base, sort_keys=True) == snap                   # base untouched
+    assert d["version"] == base["version"] + "+owner.2"
+    losar = next(f for f in d["festivals"] if f["festival_key"] == "losar")
+    assert [o["start"] for o in losar["occurrences"]] == ["2026-02-18", "2027-02-07"]
+    holi = next(f for f in d["festivals"] if f["festival_key"] == "holi")
+    assert next(o for o in holi["occurrences"] if o["year"] == 2027)["status"] == "unverified"
+    for bad in ({"festival_key": "nope", "year": 2026, "action": "accept", "principal": "o"},
+                {"festival_key": "holi", "year": 2026, "action": "set_date", "start": "2027-01-01", "principal": "o"},
+                {"festival_key": "holi", "year": 2026, "action": "set_date", "start": "garbage", "principal": "o"},
+                {"festival_key": "holi", "year": 2030, "action": "dispute", "principal": "o"},
+                {"festival_key": "holi", "year": 2026, "action": "delete", "principal": "o"}):
+        with pytest.raises(CalendarError):
+            apply_corrections(base, [bad])

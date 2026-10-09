@@ -143,6 +143,10 @@ def make_handler(svc: Service, token: str):
                     self._send(200, [e for e in evs if e["job_id"] is None or e["job_id"] in own])
                 elif u.path == "/festivals":
                     self._send(200, s.calendar.festivals("in_festivals"))
+                elif u.path == "/calendar":
+                    self._send(200, {"calendar_id": "in_festivals", "version": s.calendar.version("in_festivals"),
+                                     "records": s.calendar.records("in_festivals"),
+                                     "corrections": s._corrections("in_festivals")})
                 else:
                     self._send(404, {"error": "NOT_FOUND"})
             except SchedulerError as exc:
@@ -186,6 +190,9 @@ def make_handler(svc: Service, token: str):
                 elif u.path.startswith("/artifacts/") and u.path.endswith("/review"):
                     r = s.review(int(u.path.split("/")[2]), p, b["action"], expected_sha256=b.get("sha256"),
                                  instruction=b.get("instruction"))
+                elif u.path == "/calendar/correct":
+                    r = s.correct_calendar(p, "in_festivals", b["festival_key"], b["year"], b["action"],
+                                           start=b.get("start"), end=b.get("end"), note=b.get("note", ""))
                 elif u.path == "/tick":
                     svc.poke()
                     r = {"poked": True}

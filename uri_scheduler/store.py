@@ -8,6 +8,7 @@ Tables
   review       one owner action on one exact artifact version (bound to its sha256)
   event        append-only audit log, SHA-256 hash-chained (each row hashes the previous row's hash)
   calendar_snapshot  the calendar versions the scheduler reconciled against
+  calendar_correction  append-only owner corrections (date, dispute, accept) applied on top of the shipped calendar
 """
 from __future__ import annotations
 
@@ -63,6 +64,14 @@ CREATE TRIGGER IF NOT EXISTS review_no_update BEFORE UPDATE ON review BEGIN SELE
 CREATE TABLE IF NOT EXISTS calendar_snapshot(
   calendar_id TEXT NOT NULL, version TEXT NOT NULL, digest TEXT NOT NULL, data_json TEXT NOT NULL,
   recorded_at_us INTEGER NOT NULL, PRIMARY KEY(calendar_id, digest));
+CREATE TABLE IF NOT EXISTS calendar_correction(
+  correction_id INTEGER PRIMARY KEY AUTOINCREMENT, calendar_id TEXT NOT NULL, festival_key TEXT NOT NULL,
+  year INTEGER NOT NULL, action TEXT NOT NULL CHECK(action IN ('set_date','dispute','accept')), start TEXT, "end" TEXT,
+  note TEXT NOT NULL DEFAULT '', principal TEXT NOT NULL, base_version TEXT NOT NULL, at_us INTEGER NOT NULL);
+CREATE TRIGGER IF NOT EXISTS calendar_correction_no_update BEFORE UPDATE ON calendar_correction
+  BEGIN SELECT RAISE(ABORT,'CORRECTION_APPEND_ONLY'); END;
+CREATE TRIGGER IF NOT EXISTS calendar_correction_no_delete BEFORE DELETE ON calendar_correction
+  BEGIN SELECT RAISE(ABORT,'CORRECTION_APPEND_ONLY'); END;
 """
 
 GENESIS = "0" * 64
