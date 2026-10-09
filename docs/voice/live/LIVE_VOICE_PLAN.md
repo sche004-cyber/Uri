@@ -89,4 +89,10 @@ fix.
 
 ## 9. Changes to this plan
 
-(none yet)
+| When | Change | Why |
+|---|---|---|
+| 18:07 | Brain runs use the Brain host's own fit check; `--override-contention` only with owner authorisation (given 19:18 for this phase's tests) | the host refused: 15.3 GB needed, 14.2 GB free |
+| 18:20 | user vocabulary added (decision 1 extended) | measured: local names were the main errors |
+| 19:55 | noise guard and bounded decoding added (decision 1) | room-noise hallucinations and CPU loops found in live runs |
+| 20:25 | recogniser recordings kept out of the repository (hashes only) | owner: another household member used the microphone |
+| 20:25 | own-voice session (AC-2/3 human talker) deferred | owner away for some weeks |
