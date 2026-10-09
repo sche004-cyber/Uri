@@ -118,6 +118,10 @@ class LivingApp extends StatefulWidget {
   static LivingServices buildDefaultServices(AppState appState) {
     final demo = MockCompanionSource();
     final work = MockWorkSimulator();
+    // A2UI in the preview: only when a local scheduler service is configured (`URI_SCHEDULER_STATE`); it then
+    // shows the scheduler's open surfaces (no worker, so no new handoffs).
+    final scheduler = SchedulerClient.fromEnvironment();
+    final a2ui = scheduler == null ? null : (A2uiHub(scheduler: scheduler)..refresh());
     return LivingServices(
       presentation: UiPresentationController(),
       companion: CompositeCompanionSource([
@@ -129,6 +133,7 @@ class LivingApp extends StatefulWidget {
       readiness: MockReadinessSource(),
       effects: EffectsSettings(),
       demo: demo,
+      a2ui: a2ui,
     );
   }
 

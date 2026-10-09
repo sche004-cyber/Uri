@@ -171,3 +171,18 @@ def test_surfaces_survive_restart_and_still_enforce_digest(env):
         assert e.value.code == "NOT_OWNER"
     finally:
         s2.close()
+
+
+def test_sikkim_request_leaves_out_undated_festivals_and_says_so(env):
+    """A 'Sikkim festivals' handoff names festivals whose 2026 date has passed and whose 2027 date is not notified."""
+    from uri_operational_intelligence.schedule_intent import interpret
+    s, host, *_ = env
+    req = interpret("schedule a greeting card a week before each Sikkim festival")["request"]
+    r = host.propose_from_request(req)
+    sel = s.job(r["job_id"])["schedule"]["selection"]
+    assert "losar" not in sel and "losoong_namsoong" in sel and "tihar_sikkim" in sel
+    text = " ".join(c.get("text", "") for c in r["messages"][1]["updateComponents"]["components"] if c["id"] == "assumptions")
+    assert "not included" in text and "Losar" in text
+    with pytest.raises(A2uiHostError) as e:
+        host.propose_from_request({"festivals": ["losar"]})
+    assert e.value.code == "NO_UPCOMING_FESTIVAL"

@@ -14,12 +14,12 @@
   }
  },
  "proposal": {
-  "surface_id": "sched-113243be84ef",
+  "surface_id": "sched-54963cdebcca",
   "messages": [
    {
     "version": "v0.9",
     "createSurface": {
-     "surfaceId": "sched-113243be84ef",
+     "surfaceId": "sched-54963cdebcca",
      "catalogId": "uri:a2ui/catalog/v1",
      "theme": {
       "agentDisplayName": "URI",
@@ -30,7 +30,7 @@
    {
     "version": "v0.9",
     "updateComponents": {
-     "surfaceId": "sched-113243be84ef",
+     "surfaceId": "sched-54963cdebcca",
      "components": [
       {
        "id": "root",
@@ -58,7 +58,7 @@
       {
        "id": "interp",
        "component": "Text",
-       "text": "2 calendar days before each selected event in 'in_festivals' at 09:00 (Asia/Kolkata): buddha_purnima, christmas, diwali, dussehra, eid_ul_fitr, eid_ul_zuha, guru_nanak_jayanti, holi, janmashtami, mahavir_jayanti, milad_un_nabi, ram_navami",
+       "text": "2 calendar days before each selected festival at 09:00 (Asia/Kolkata): Buddha Purnima, Christmas, Diwali (Deepavali), Dussehra (Vijaya Dashami), Guru Nanak Jayanti, Holi, Id-ul-Fitr, Id-ul-Zuha (Bakrid), Janmashtami, Mahavir Jayanti, Milad-un-Nabi (Id-e-Milad), Ram Navami",
        "variant": "body"
       },
       {
@@ -363,7 +363,7 @@
    {
     "version": "v0.9",
     "updateDataModel": {
-     "surfaceId": "sched-113243be84ef",
+     "surfaceId": "sched-54963cdebcca",
      "path": "/",
      "value": {
       "draft": {
@@ -385,8 +385,8 @@
        "offset": "2"
       },
       "bound": {
-       "proposal_sha256": "80eb7e0340b1fa152a51e3f3fd533d1c84c2501d1bf403f058e71ea4264255e2",
-       "job_id": "job_a4076ba0abb4",
+       "proposal_sha256": "327a9e688c332427a02e8017307f9f71ad746b8c82f9af9b9dd546d533117cd0",
+       "job_id": "job_b796f3889a6f",
        "request": {
         "festivals": [
          "holi",
@@ -406,7 +406,7 @@
         "offset_days": 2
        },
        "surface": {
-        "digest": "26a6b9665473912ae803a449a73dd2e44d132bb7831cf26ca3621203f05dd02d",
+        "digest": "786a492a165b77d4e2fbeacec44cb80b6062aba0b5181e9d2c49f4d122d0a189",
         "revision": 1,
         "kind": "schedule_proposal",
         "title": "Festival GIF schedule"
@@ -416,10 +416,10 @@
     }
    }
   ],
-  "job_id": "job_a4076ba0abb4"
+  "job_id": "job_b796f3889a6f"
  },
  "revise_context": {
-  "surface_digest": "26a6b9665473912ae803a449a73dd2e44d132bb7831cf26ca3621203f05dd02d",
+  "surface_digest": "786a492a165b77d4e2fbeacec44cb80b6062aba0b5181e9d2c49f4d122d0a189",
   "selection": [
    "diwali",
    "holi"
@@ -429,12 +429,12 @@
  },
  "revised": {
   "result": "REVISED",
-  "job_id": "job_204b686184cf",
+  "job_id": "job_fcd63f6b200e",
   "messages": [
    {
     "version": "v0.9",
     "updateComponents": {
-     "surfaceId": "sched-113243be84ef",
+     "surfaceId": "sched-54963cdebcca",
      "components": [
       {
        "id": "root",
@@ -461,7 +461,7 @@
       {
        "id": "interp",
        "component": "Text",
-       "text": "2 calendar days before each selected event in 'in_festivals' at 09:00 (Asia/Kolkata): diwali, holi",
+       "text": "2 calendar days before each selected festival at 09:00 (Asia/Kolkata): Diwali (Deepavali), Holi",
        "variant": "body"
       },
       {
@@ -760,7 +760,7 @@
    {
     "version": "v0.9",
     "updateDataModel": {
-     "surfaceId": "sched-113243be84ef",
+     "surfaceId": "sched-54963cdebcca",
      "path": "/",
      "value": {
       "draft": {
@@ -772,8 +772,8 @@
        "offset": "2"
       },
       "bound": {
-       "proposal_sha256": "a468502bc98e2901a453d0771607e7132cf489847b8ce6ff4d5a17068a894269",
-       "job_id": "job_204b686184cf",
+       "proposal_sha256": "bc73c5eaf8f883ed8bc91c3265e1dfa37c5f4d30568667d173453df22a856086",
+       "job_id": "job_fcd63f6b200e",
        "request": {
         "festivals": [
          "diwali",
@@ -783,7 +783,7 @@
         "offset_days": 2
        },
        "surface": {
-        "digest": "61c14ef0bf4bda250b7c76a7d8a93dcf357314ae1da8a32fbae7aaab4f1acc63",
+        "digest": "8534006ddf9df565c1196da0ff2725310e125513f49d1f4122a6b07114350b63",
         "revision": 2,
         "kind": "schedule_proposal",
         "title": "Festival GIF schedule"

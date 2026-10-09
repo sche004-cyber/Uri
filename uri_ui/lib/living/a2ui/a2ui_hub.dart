@@ -124,8 +124,17 @@ class A2uiHub extends ChangeNotifier {
       if (_surfaces[id]?.ready ?? false) _surfaces[id]!,
   ];
 
-  List<A2uiSurface> placed(String placement) =>
-      surfaces.where((s) => s.placement == placement).toList();
+  /// Surfaces of one placement; decisions (artifact reviews) first, then in arrival order.
+  List<A2uiSurface> placed(String placement) {
+    final list = surfaces.where((s) => s.placement == placement).toList();
+    final order = {for (var i = 0; i < list.length; i++) list[i].id: i};
+    list.sort((a, b) {
+      final ra = a.kind == 'artifact_review' ? 0 : 1;
+      final rb = b.kind == 'artifact_review' ? 0 : 1;
+      return ra != rb ? ra - rb : order[a.id]! - order[b.id]!;
+    });
+    return list;
+  }
 
   A2uiSurface? surface(String id) => _surfaces[id];
 

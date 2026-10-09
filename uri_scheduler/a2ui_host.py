@@ -107,9 +107,16 @@ class SchedulerA2ui:
             sel = list(DEFAULT_SELECTION)
         if not isinstance(sel, list) or not sel or len(sel) > 80 or not all(isinstance(k, str) for k in sel):
             raise A2uiHostError("BAD_SELECTION")
-        unknown = [k for k in sel if k not in known]
+        greeting = {f["festival_key"]: f["name"] for f in self.s.calendar.festivals(CAL) if f.get("greeting_appropriate", True)}
+        unknown = [k for k in sel if k not in greeting]
         if unknown:
             raise A2uiHostError("UNKNOWN_FESTIVAL", ",".join(unknown[:5]))
+        # A known festival without a dated occurrence in the coming year (e.g. a Sikkim festival whose 2026 date has
+        # passed and whose 2027 date is not notified) is left out and said so, instead of refusing the whole request.
+        undated = [k for k in sel if k not in known]
+        sel = [k for k in sel if k in known]
+        if not sel:
+            raise A2uiHostError("NO_UPCOMING_FESTIVAL", ",".join(undated[:5]))
         tm = req.get("time") or "09:00"
         off = str(req.get("offset_days", 2))
         if not (isinstance(tm, str) and _TIME.match(tm)) or off not in OFFSETS:
@@ -118,6 +125,9 @@ class SchedulerA2ui:
         if not isinstance(assumptions, list) or len(assumptions) > MAX_ASSUMPTIONS or \
                 not all(isinstance(a, str) and len(a) <= 300 for a in assumptions):
             raise A2uiHostError("BAD_ASSUMPTIONS")
+        if undated:
+            note = "No dated occurrence in the coming year, so not included: " + ", ".join(greeting[k] for k in undated) + "."
+            assumptions = (assumptions + [note[:300]])[:MAX_ASSUMPTIONS]
         return {"festivals": sorted(set(sel), key=sel.index), "time": tm, "offset_days": int(off),
                 "assumptions": assumptions}
 
@@ -127,6 +137,14 @@ class SchedulerA2ui:
         return self.s.propose(owner=self.owner, title=f"Festival greeting GIF, {req['offset_days']} day(s) before each "
                               "selected festival", template_id="festival_gif.v1", params={}, schedule=sched)
 
+    def _readable(self, interpretation, keys):
+        """The engine's interpretation with festival keys replaced by their calendar names (display only)."""
+        names = {f["festival_key"]: f["name"] for f in self.s.calendar.festivals(CAL)}
+        listed = ", ".join(names.get(k, k) for k in sorted(set(keys), key=lambda k: names.get(k, k)))
+        head = interpretation.rsplit(": ", 1)[0] if ": " in interpretation else interpretation
+        head = head.replace("each selected event in 'in_festivals'", "each selected festival")
+        return f"{head}: {listed}"
+
     def _proposal_surface(self, surface_id, req, prop, revision=1) -> Surface:
         rows = prop["upcoming"]
         lines = [f"• {r.get('festival', r['key'])} {r.get('festival_date', '')}: GIF {r['due_local'].replace('T', ' ')[:16]} IST"
@@ -135,7 +153,7 @@ class SchedulerA2ui:
         excluded = [f"{x['festival_key']} {x['date']} ({x['status']})" for x in prop.get("excluded", [])]
         kids = ["title", "interp"]
         comps = [_t("title", "Festival greeting GIFs: proposed schedule", "title"),
-                 _t("interp", prop["interpretation"])]
+                 _t("interp", self._readable(prop["interpretation"], req["festivals"]))]
         if req["assumptions"]:
             comps.append(_t("assumptions", "I assumed: " + " ".join(req["assumptions"]), "caption"))
             kids.append("assumptions")
@@ -185,7 +203,8 @@ class SchedulerA2ui:
     # ---- artifact review ------------------------------------------------------------------------------------------
     def _review_surface(self, row, art) -> Surface:
         info = art.get("info") or {}
-        fest = (row.get("meta") or {}).get("festival") or row["occurrence_key"]
+        params = (self.s.job(row["job_id"]).get("params") or {}).get("festival") or {}
+        fest = (row.get("meta") or {}).get("festival") or params.get("name") or row["occurrence_key"]
         att = self.s.store.q1("SELECT mode FROM attempt WHERE attempt_id=?", (art["attempt_id"],))
         mode = (att["mode"] if att else "").upper()
         comps = [
