@@ -239,10 +239,11 @@ class ClaudeHarness:
         r = self.sup.request_cancel(aid)
         if not r.get("granted"):
             # Admitted but not yet active in the supervisor (between our post-admission check and `_supervise`): pre-arm
-            # the supervisor's kill set so its FIRST supervision poll kills the executor, milliseconds after the process
-            # starts and before Claude Code can initialise (review round 7, R6-1). `request_cancel` itself refuses
-            # until the attempt is active; the accepted supervisor is not modified, only its documented kill set is fed.
-            # A guarantee that the process is never started at all would need a change to the accepted supervisor.
+            # the supervisor's kill set so its first supervision poll kills the executor IF the process is still running
+            # (review rounds 7-8). Best effort: a fast process may act or exit before that poll, so effects before the
+            # cancellation are possible (the reconciliation records them). `request_cancel` itself refuses until the
+            # attempt is active; the accepted supervisor is not modified. A never-start guarantee would need a change to
+            # the accepted supervisor (owner decision). The entry is cleared when `run` returns.
             self.sup._cancel.add(aid)
             r = {"granted": True, "reason": "PRE_ARMED_BEFORE_ACTIVE"}
         return r
@@ -309,6 +310,7 @@ class ClaudeHarness:
                                      extra_argv=extra)
             finally:
                 self._running.pop(tid, None)
+                self.sup._cancel.discard(admitted.attempt_id)      # no stale pre-armed entry (review round 8, F2)
         except LedgerError as exc:
             with contextlib.suppress(LedgerError):
                 self._expire(tid)

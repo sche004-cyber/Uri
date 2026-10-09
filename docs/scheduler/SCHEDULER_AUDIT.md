@@ -77,8 +77,18 @@ Codex: no other Blocking/High finding in the final pass; F10/F2 truthfully docum
 
 | # | Codex severity | finding | Claude verification | disposition |
 |---|---|---|---|---|
-| R7-1 (R6-1 PARTIAL) | High | a cancel after the harness's post-admission check but before the supervisor marks the attempt active gets `NOT_RUNNING_HERE`; the process starts. The accepted bridge has the same gap | confirmed by reading `Supervisor.request_cancel` / `_supervise` (the kill set is honoured from the first poll, `request_cancel` only accepts active attempts) | **mitigated + recorded limitation**: `ClaudeHarness.cancel` pre-arms the supervisor's kill set when the attempt is admitted but not yet active, so the executor is killed at the first supervision poll, milliseconds after start (test `test_r7_cancel_between_admission_and_active_is_pre_armed`). A never-start guarantee requires changing the accepted supervisor: owner decision. Classified as a limitation of the accepted Phase 2D cancellation contract (bridge `cancel` docstring: a cancellation after dispatch is never a clean close), not a new scheduler defect |
+| R7-1 (R6-1 PARTIAL) | High | a cancel after the harness's post-admission check but before the supervisor marks the attempt active gets `NOT_RUNNING_HERE`; the process starts. The accepted bridge has the same gap | confirmed by reading `Supervisor.request_cancel` / `_supervise` (the kill set is honoured from the first poll, `request_cancel` only accepts active attempts) | **mitigated + recorded limitation**: `ClaudeHarness.cancel` pre-arms the supervisor's kill set when the attempt is admitted but not yet active, so the executor is killed at the first supervision poll if it is still running — best effort, effects before that poll are possible (test `test_r7_cancel_between_admission_and_active_is_pre_armed`). A never-start guarantee requires changing the accepted supervisor: owner decision. Classified as a limitation of the accepted Phase 2D cancellation contract (bridge `cancel` docstring: a cancellation after dispatch is never a clean close), not a new scheduler defect |
 
-## Round 8
+## Round 8 — candidate `6cefc66` — **ACCEPT WITH FINDINGS**
 
-(appended after the review runs)
+Codex: R7-1 mitigation correct (pre-armed entry honoured at the first poll; AUTOINCREMENT attempt ids rule out a wrong-attempt
+kill); the residual window is consistent with the accepted Phase 2 post-dispatch cancellation contract. No new Blocking/High.
+
+| # | Codex severity | finding | disposition |
+|---|---|---|---|
+| R8-1 | Medium | "milliseconds after start / before Claude Code can initialise" overstated: `_supervise` checks process exit before the kill set and has no timing bound | **repaired**: code comment, architecture and audit now say best-effort kill at the first poll if still running, with possible effects before cancellation |
+| R8-2 | Low | a pre-armed entry can stay in the supervisor's kill set after the attempt ended | **repaired**: the entry is discarded when `run` returns |
+
+Owner-gated items carried forward (not code defects): F10 real Claude generation NOT RUN (CLI login); F2 filesystem boundary
+is Claude Code's permission engine, not an OS sandbox (owner acceptance); R7-1 residual cancellation window (owner acceptance,
+or an owner decision to change the accepted supervisor).
