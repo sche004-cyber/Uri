@@ -112,6 +112,8 @@ def validate_scene(scene: dict) -> dict:
                 raise SceneError(f"TEXT_SCRIPT_UNSUPPORTED:{i}")
             if ly.get("font", "serif") not in FONTS:
                 raise SceneError(f"BAD_FONT:{i}")
+            for k in ("x", "y"):                       # greeting anchored well inside the canvas (review round 4, F3)
+                _num(ly.get(k, 0.5), 0.05, 0.95, f"layers[{i}].{k}")
             _num(ly.get("size", 0.08), 0.03, 0.2, f"layers[{i}].size")
             has_text = True
         if t == "polygon":
@@ -514,23 +516,41 @@ def render_frames(scene: dict):
     return out, info
 
 
-def text_legibility(scene: dict, frame: Image.Image) -> list:
-    """Per text layer: contrast of fill vs stroke and fill vs the rendered background under the text box."""
+def text_legibility(scene: dict, frame: Image.Image, t=None) -> list:
+    """Per text layer, measured on rendered pixels (review round 4, F3): the layer is drawn alone at the frame's size;
+    its opaque glyph pixels must lie inside the canvas and cover a meaningful area, the fill/stroke contrast must hold,
+    and the fill is compared with the actual background under the visible glyphs."""
     res = []
     W, H = frame.size
+    S = min(W, H)
+    dur = float((scene.get("canvas") or {}).get("duration_s", 4))
+    t = dur / 2 if t is None else t
+    rgb = frame.convert("RGB")
     for ly in scene.get("layers") or []:
         if ly.get("type") != "text":
             continue
         fill = _color(ly.get("color", "#fff6e0"))
         stroke = _color(ly.get("stroke", "#2a0f1e"))
-        cx, cy = float(ly.get("x", 0.5)) * W, float(ly.get("y", 0.15)) * H
-        px = float(ly.get("size", 0.08)) * min(W, H)
-        box = (max(0, int(cx - px * len(ly["text"]) * 0.28)), max(0, int(cy - px * 0.6)),
-               min(W, int(cx + px * len(ly["text"]) * 0.28)), min(H, int(cy + px * 0.6)))
-        region = frame.crop(box).resize((1, 1), Image.BOX).getpixel((0, 0)) if box[2] > box[0] and box[3] > box[1] else (0, 0, 0)
+        px = float(ly.get("size", 0.08)) * S
+        solo = dict(ly)
+        solo.pop("glow", None)
+        alpha = _text(solo, W, H, S, t, dur).getchannel("A")
+        mask = alpha.point(lambda v: 255 if v >= 128 else 0)
+        bbox = mask.getbbox()
+        visible = mask.histogram()[255]
+        # glyph pixels that would fall outside the canvas are lost: compare with an oversized canvas render
+        big = _text(dict(solo, x=0.5, y=0.5), W * 3, H * 3, S, t, dur).getchannel("A")
+        full = big.point(lambda v: 255 if v >= 128 else 0).histogram()[255]
+        on_canvas = (visible / full) if full else 0.0
+        if bbox is not None:
+            region = rgb.crop(bbox).resize((1, 1), Image.BOX).getpixel((0, 0))
+        else:
+            region = (0, 0, 0)
+        ok = (contrast_ratio(fill, stroke) >= 4.5 and px >= 14 and bbox is not None and on_canvas >= 0.98
+              and visible >= px * px * 0.25)
         res.append({"text": ly["text"], "fill_vs_stroke": round(contrast_ratio(fill, stroke), 2),
-                    "fill_vs_background": round(contrast_ratio(fill, region), 2),
-                    "px": int(px), "legible": contrast_ratio(fill, stroke) >= 4.5 and px >= 14})
+                    "fill_vs_background": round(contrast_ratio(fill, region), 2), "px": int(px),
+                    "glyph_pixels": visible, "on_canvas_fraction": round(on_canvas, 3), "legible": ok})
     return res
 
 

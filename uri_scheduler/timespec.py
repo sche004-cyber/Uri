@@ -193,17 +193,27 @@ def expand(spec: dict, window_start: datetime, window_end: datetime, calendar=No
         t = _parse_time(spec["time"])
         lo = ws.astimezone(tz).date() - timedelta(days=1)
         hi = we.astimezone(tz).date() + timedelta(days=1)
-        for d in _recurring_dates(spec, lo, hi):
-            if spec["freq"] == "hourly":
-                for h in range(0, 24, spec["interval"]):
-                    due = local_to_utc(d, time(h, t.minute), tz)
-                    if ws <= due <= we:
-                        out.append(Occurrence(datetime.combine(d, time(h, t.minute)).isoformat(timespec="minutes"), due,
-                                              None, {"tz": spec["tz"]}))
-            else:
-                due = local_to_utc(d, t, tz)
+        if spec["freq"] == "hourly":
+            # Anchored at start date + time; the interval runs continuously across day boundaries (review round 4, F4).
+            anchor = datetime.combine(_parse_date(spec["start"]), t)
+            end_d = _parse_date(spec["end"]) if spec.get("end") else None
+            step = timedelta(hours=spec["interval"])
+            first_local = ws.astimezone(tz).replace(tzinfo=None) - timedelta(days=1)
+            k = max(0, int((first_local - anchor) / step))
+            cur = anchor + k * step
+            last_local = we.astimezone(tz).replace(tzinfo=None) + timedelta(days=1)
+            while cur <= last_local and (end_d is None or cur.date() <= end_d):
+                due = local_to_utc(cur.date(), cur.time(), tz)
                 if ws <= due <= we:
-                    out.append(Occurrence(datetime.combine(d, t).isoformat(timespec="minutes"), due, None, {"tz": spec["tz"]}))
+                    out.append(Occurrence(cur.isoformat(timespec="minutes"), due, None, {"tz": spec["tz"]}))
+                if len(out) > MAX_OCCURRENCES_PER_EXPANSION:
+                    raise ScheduleError("EXPANSION_TOO_LARGE")
+                cur += step
+            return out
+        for d in _recurring_dates(spec, lo, hi):
+            due = local_to_utc(d, t, tz)
+            if ws <= due <= we:
+                out.append(Occurrence(datetime.combine(d, t).isoformat(timespec="minutes"), due, None, {"tz": spec["tz"]}))
             if len(out) > MAX_OCCURRENCES_PER_EXPANSION:
                 raise ScheduleError("EXPANSION_TOO_LARGE")
         return out

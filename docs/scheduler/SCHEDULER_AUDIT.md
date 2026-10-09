@@ -43,6 +43,18 @@ R3-1/R3-2. F10 and the F2 limitation confirmed as owner-gated items, not reasons
 | R3-2 | High | an exception after the artifact insert (e.g. in `_finish`) sends the attempt to collection again, creating a second version of the same work | confirmed | **repaired**: `_settle_recorded_artifact` files the attempt's existing artifact for review in `_post_harness_failure` and at the start of `_resume_collection`; test `test_r3_failure_after_artifact_insert_does_not_duplicate` |
 | R3-3 | Low | audit row 2 still shows `Edit(./**) Write(./**)` | confirmed | **repaired**: row labelled historical, pointing to R2-4 |
 
-## Round 4
+## Round 4 — candidate `e7a44bf` — **REJECT**
+
+Codex: R3-3 RESOLVED; R3-1/R3-2 PARTIAL only because of R4-1. Docs on F10/F2/no OS task found truthful.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R4-1 | High | policy accepted unvalidated (`retry_backoff_s: []`, non-finite `max_attempts`) → settlement raises, occurrence stuck `RUNNING`; retry bound defeated | confirmed | **repaired**: `_validate_policy` (known keys, bounded integers, 1-5 backoffs, valid time); `_backoff_s` never raises for a stored malformed policy; test `test_r4_policy_is_fully_validated` |
+| R4-2 | High | a cancel recorded after `_execute` checked it but before `_finish` committed was overwritten by `AWAITING_REVIEW` | confirmed | **repaired**: `_finish` re-reads the occurrence inside its transaction; `CANCEL_REQUESTED` wins, the attempt's candidate artifact is marked `REJECTED`; test `test_r4_cancel_during_run_wins_over_completion` |
+| R4-3 | High | greeting text could be placed off-canvas yet pass legibility (size/contrast only) | confirmed | **repaired**: text anchors restricted to [0.05, 0.95]; legibility measured on rendered glyph pixels (on-canvas fraction ≥ 0.98, minimum glyph area, fill/stroke contrast, background sampled under the glyphs); test `test_r4_greeting_must_be_visible_on_canvas` |
+| R4-4 | High | hourly schedules ignored the configured hour and restarted each day | confirmed | **repaired**: anchored at start date + time, interval carried across days; test `test_r4_hourly_is_anchored_and_crosses_days` |
+| R4-5 | High | `scripts/scheduler_task_ctl.ps1` missing from the exact-path guard lists | confirmed | **repaired**: added to `ALLOWED_NEW` and `WS_EXACT` (byte-preserving edit) |
+
+## Round 5
 
 (appended after the review runs)

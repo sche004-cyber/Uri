@@ -205,6 +205,7 @@ WS_EXACT = frozenset((
     "work/oi/.gitignore",
     # URI Scheduler (docs/scheduler/SCHEDULER_ARCHITECTURE.md): EXACT new paths, same WS-D3 rule.
     "scripts/scheduler_live_test.py",
+    "scripts/scheduler_task_ctl.ps1",
     "tests/scheduler/fixtures/diwali_scene.json",
     "tests/scheduler/helpers/fake_claude.py",
     "tests/scheduler/test_engine.py",

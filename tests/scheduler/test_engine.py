@@ -550,3 +550,32 @@ def test_r3_failure_after_artifact_insert_does_not_duplicate(env, monkeypatch):
     r = s.tick()[0]
     assert r["result"] == "AWAITING_REVIEW" and s.store.q1("SELECT COUNT(*) FROM artifact")[0] == 1
     assert len(h.calls) == 1 and s.store.q1("SELECT COUNT(*) FROM occurrence WHERE state='RUNNING'")[0] == 0
+
+
+def test_r4_policy_is_fully_validated(env):
+    s, *_ = env
+    for pol in ({"retry_backoff_s": []}, {"max_attempts": float("inf")}, {"max_attempts": 0}, {"grace_s": "1"},
+                {"retry_backoff_s": [1, -5]}, {"bogus": 1}, {"max_attempts": True}, {"execution_time": "25:99"}):
+        with pytest.raises(SchedulerError) as e:
+            s.propose(owner="o", title="t", template_id="festival_gif.v1", params={},
+                      schedule={"kind": "once", "at": "2026-10-10T09:00"}, policy=pol)
+        assert e.value.code == "BAD_POLICY", pol
+    assert Scheduler._backoff_s({"retry_backoff_s": []}, 2) == 300      # stored malformed policy never raises
+
+
+def test_r4_cancel_during_run_wins_over_completion(env):
+    s, h, clock, _ = env
+    p = s.propose(owner="owner", title="t", template_id="festival_gif.v1", params={}, schedule={"kind": "once", "at": "2026-10-09T10:00"})
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    real_run = h.run
+
+    def run_then_cancel(**kw):
+        out = real_run(**kw)
+        occ_id = s.store.q1("SELECT occ_id FROM occurrence")[0]
+        s.cancel_occurrence(occ_id, "owner")        # owner cancels while the harness work is finishing
+        return out
+    h.run = run_then_cancel
+    r = s.tick()[0]
+    assert r["result"] == "CANCELLED"
+    assert s.store.q1("SELECT COUNT(*) FROM artifact WHERE status='CANDIDATE'")[0] == 0
+    assert s.overview()["pending_approvals"] == []

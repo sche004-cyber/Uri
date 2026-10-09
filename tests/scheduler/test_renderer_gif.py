@@ -65,3 +65,19 @@ def test_low_contrast_text_fails_legibility(tmp_path):
             ly["color"], ly["stroke"] = "#777777", "#888888"
     info = renderer.render_gif(s, tmp_path / "c.gif")
     assert not all(x["legible"] for x in info["legibility"])
+
+
+def test_r4_greeting_must_be_visible_on_canvas(tmp_path):
+    s = small()
+    for ly in s["layers"]:
+        if ly["type"] == "text":
+            ly["x"] = 1.4
+    with pytest.raises(renderer.SceneError):
+        renderer.validate_scene(s)
+    s = small()
+    for ly in s["layers"]:
+        if ly["type"] == "text":
+            ly["x"] = 0.06                       # anchored inside, but the centred text overflows the left edge
+    info = renderer.render_gif(s, tmp_path / "d.gif")
+    assert not all(x["legible"] for x in info["legibility"])
+    assert min(x["on_canvas_fraction"] for x in info["legibility"]) < 0.98

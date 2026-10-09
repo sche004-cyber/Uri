@@ -104,3 +104,11 @@ def test_describe_is_plain_language():
     s = timespec.describe({"kind": "calendar_relative", "calendar": "in_festivals", "selection": ["diwali"], "offset_days": -2,
                            "time": "09:00"})
     assert s.startswith("2 calendar days before") and "Asia/Kolkata" in s
+
+
+def test_r4_hourly_is_anchored_and_crosses_days():
+    occ = timespec.expand({"kind": "recurring", "freq": "hourly", "interval": 5, "time": "09:30", "start": "2026-10-10"},
+                          u(2026, 10, 9), u(2026, 10, 11, 12))
+    keys = [o.key for o in occ]
+    assert keys[:5] == ["2026-10-10T09:30", "2026-10-10T14:30", "2026-10-10T19:30", "2026-10-11T00:30", "2026-10-11T05:30"]
+    assert all(k >= "2026-10-10T09:30" for k in keys)

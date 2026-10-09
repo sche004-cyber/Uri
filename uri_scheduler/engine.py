@@ -188,9 +188,7 @@ class Scheduler:
         sched = timespec.validate(schedule)
         auth = dict(DEFAULT_AUTHORITY | (authority or {}))
         self._validate_authority(auth)
-        pol = dict(DEFAULT_POLICY | (policy or {}))
-        if pol["missed"] not in ("run_late", "skip"):
-            raise SchedulerError("BAD_POLICY", "missed")
+        pol = self._validate_policy(policy)
         if sched["kind"] == "calendar_relative":
             self._validate_selection(sched)
         self._validate_params(params)
@@ -216,6 +214,44 @@ class Scheduler:
         for flag in ("publish", "paid_services", "network"):
             if auth.get(flag):
                 raise SchedulerError("AUTHORITY_REQUIRES_OWNER_DECISION", flag)
+
+    @staticmethod
+    def _validate_policy(policy) -> dict:
+        """Every policy value is bounded so retry budgets and backoffs are finite and well-formed (review round 4, F1)."""
+        if policy is not None and not isinstance(policy, dict):
+            raise SchedulerError("BAD_POLICY", "policy must be an object")
+        unknown = set(policy or {}) - set(DEFAULT_POLICY)
+        if unknown:
+            raise SchedulerError("BAD_POLICY", sorted(unknown))
+        pol = dict(DEFAULT_POLICY | (policy or {}))
+
+        def int_in(k, lo, hi):
+            v = pol[k]
+            if not isinstance(v, int) or isinstance(v, bool) or not lo <= v <= hi:
+                raise SchedulerError("BAD_POLICY", f"{k} must be an integer in [{lo}, {hi}]")
+        if pol["missed"] not in ("run_late", "skip"):
+            raise SchedulerError("BAD_POLICY", "missed")
+        int_in("grace_s", 0, 86400)
+        int_in("max_attempts", 1, 10)
+        int_in("harness_recheck_s", 60, 86400)
+        int_in("quota_default_wait_s", 60, 86400)
+        b = pol["retry_backoff_s"]
+        if (not isinstance(b, list) or not 1 <= len(b) <= 5
+                or any(not isinstance(x, int) or isinstance(x, bool) or not 1 <= x <= 86400 for x in b)):
+            raise SchedulerError("BAD_POLICY", "retry_backoff_s must be 1-5 integers in [1, 86400]")
+        try:
+            timespec._parse_time(pol["execution_time"])
+        except timespec.ScheduleError:
+            raise SchedulerError("BAD_POLICY", "execution_time") from None
+        return pol
+
+    @staticmethod
+    def _backoff_s(pol, attempts) -> int:
+        """Backoff for the n-th attempt; falls back to 300 s for a malformed stored policy instead of raising."""
+        b = pol.get("retry_backoff_s") if isinstance(pol, dict) else None
+        if not isinstance(b, list) or not b or not all(isinstance(x, int) and x > 0 for x in b):
+            return 300
+        return b[min(max(int(attempts), 1) - 1, len(b) - 1)]
 
     @staticmethod
     def _validate_params(params):
@@ -775,7 +811,7 @@ class Scheduler:
             return done
         pol = job["policy"]
         if occ["attempts"] < pol["max_attempts"]:
-            back = pol["retry_backoff_s"][min(max(occ["attempts"], 1) - 1, len(pol["retry_backoff_s"]) - 1)]
+            back = self._backoff_s(pol, occ["attempts"])
             return self._finish(occ, job, attempt_id, "COLLECT_PENDING", "COLLECT_RETRY:" + reason, receipt, "COLLECT_FAILED",
                                 retry_at_us=self.now() + back * 1_000_000)
         return self._finish(occ, job, attempt_id, "FAILED", "COLLECT_FAILED:" + reason, receipt, "COLLECT_FAILED")
@@ -783,7 +819,7 @@ class Scheduler:
     def _retry_or_fail(self, occ, job, attempt_id, reason, receipt):
         pol = job["policy"]
         if occ["attempts"] < pol["max_attempts"]:
-            back = pol["retry_backoff_s"][min(occ["attempts"] - 1, len(pol["retry_backoff_s"]) - 1)]
+            back = self._backoff_s(pol, occ["attempts"])
             nxt = "REVISION_QUEUED" if occ["request"] else "SCHEDULED"
             return self._finish(occ, job, attempt_id, nxt, "RETRY:" + reason, receipt, "FAILED",
                                 retry_at_us=self.now() + back * 1_000_000)
@@ -791,6 +827,14 @@ class Scheduler:
 
     def _finish(self, occ, job, attempt_id, state, reason, receipt, outcome, **cols):
         with self.store.tx() as db:
+            # Cancellation is checked INSIDE the settling transaction (review round 4, F2): if the owner cancelled while
+            # this attempt ran, the occurrence ends CANCELLED whatever the attempt produced; any artifact stays recorded
+            # but is never offered for review.
+            now_row = db.execute("SELECT reason FROM occurrence WHERE occ_id=?", (occ["occ_id"],)).fetchone()
+            if now_row is not None and now_row["reason"] == "CANCEL_REQUESTED" and state != "CANCELLED":
+                receipt = dict(receipt, cancelled_while_running={"would_have_been": state, "reason": reason})
+                state, reason, cols = "CANCELLED", "CANCELLED_BY_OWNER", {}
+                db.execute("UPDATE artifact SET status='REJECTED' WHERE attempt_id=? AND status='CANDIDATE'", (attempt_id,))
             db.execute("UPDATE attempt SET ended_at_us=?, outcome=?, reason=?, receipt_json=? WHERE attempt_id=?",
                        (self.now(), outcome, reason, jdump(receipt), attempt_id))
             self._set_occ(db, occ["occ_id"], state, reason, lease_owner=None, **cols)
