@@ -1,0 +1,229 @@
+{
+ "audio_level_events": 384,
+ "events": [
+  {
+   "t_ms": 0,
+   "kind": "run.start",
+   "scenarios": [
+    "deterministic",
+    "brain",
+    "drafting"
+   ],
+   "manifest_set": true
+  },
+  {
+   "t_ms": 24634,
+   "kind": "companion",
+   "state": "unavailable",
+   "detail": "Brain STOPPED",
+   "source": "URI"
+  },
+  {
+   "t_ms": 24634,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 24686,
+   "kind": "voice.status",
+   "state": "ready",
+   "engine": "faster-whisper-base.en-int8",
+   "inputs": [
+    "Microphone (Sennheiser Profile)"
+   ],
+   "privacy": "allowed",
+   "problem": null,
+   "model_load_ms": null,
+   "ready_after_ms": 15935
+  },
+  {
+   "t_ms": 41284,
+   "kind": "brain.status",
+   "brain": {
+    "artifacts": null,
+    "checked_at": 1791549480.88922,
+    "detail": null,
+    "model_id": "qwen3.6-35b-a3b-ud-iq3_s",
+    "owned": false,
+    "pid": null,
+    "selected": {
+     "kind": "server_local_model",
+     "model": "qwen3.6-35b-a3b-ud-iq3_s",
+     "provider": "llamacpp-runtime-v1"
+    },
+    "state": "STOPPED",
+    "url": "http://127.0.0.1:18470"
+   }
+  },
+  {
+   "t_ms": 41341,
+   "kind": "screenshot",
+   "name": "00_ready"
+  },
+  {
+   "t_ms": 41341,
+   "kind": "scenario",
+   "id": "D1 presentation command"
+  },
+  {
+   "t_ms": 41356,
+   "kind": "stage",
+   "stage": "opening",
+   "notice": null
+  },
+  {
+   "t_ms": 41373,
+   "kind": "stage",
+   "stage": "listening",
+   "notice": null
+  },
+  {
+   "t_ms": 41373,
+   "kind": "ptt.down"
+  },
+  {
+   "t_ms": 41539,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "Listening",
+   "source": "VoiceSession.listening"
+  },
+  {
+   "t_ms": 41539,
+   "kind": "signal",
+   "type": "ListeningStarted"
+  },
+  {
+   "t_ms": 41795,
+   "kind": "talker.start",
+   "text": "URI, dashboard."
+  },
+  {
+   "t_ms": 43247,
+   "kind": "companion",
+   "state": "listening",
+   "detail": "You are speaking",
+   "source": "VoiceSession.userSpeaking"
+  },
+  {
+   "t_ms": 43247,
+   "kind": "signal",
+   "type": "UserSpeechStarted"
+  },
+  {
+   "t_ms": 43768,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "you",
+   "final": false
+  },
+  {
+   "t_ms": 44876,
+   "kind": "signal",
+   "type": "UserTranscript",
+   "text": "You are I",
+   "final": false
+  },
+  {
+   "t_ms": 45455,
+   "kind": "talker.end"
+  },
+  {
+   "t_ms": 45901,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": "Transcribing",
+   "source": "VoiceInteraction.transcribing"
+  },
+  {
+   "t_ms": 45901,
+   "kind": "stage",
+   "stage": "transcribing",
+   "notice": null
+  },
+  {
+   "t_ms": 45904,
+   "kind": "ptt.up"
+  },
+  {
+   "t_ms": 45910,
+   "kind": "signal",
+   "type": "ListeningEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 46549,
+   "kind": "companion",
+   "state": "unavailable",
+   "detail": "Brain STOPPED",
+   "source": "URI"
+  },
+  {
+   "t_ms": 46549,
+   "kind": "stage",
+   "stage": "waiting",
+   "notice": null
+  },
+  {
+   "t_ms": 46550,
+   "kind": "final",
+   "text": "You are I dashboard",
+   "reason": "completed",
+   "engine": "faster-whisper-base.en-int8",
+   "audio_ms": 4320,
+   "transcribe_ms": 556,
+   "uncertain": [
+    "You",
+    "I"
+   ]
+  },
+  {
+   "t_ms": 48020,
+   "kind": "companion",
+   "state": "thinking",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 50300,
+   "kind": "stage",
+   "stage": "speaking",
+   "notice": null
+  },
+  {
+   "t_ms": 50301,
+   "kind": "companion",
+   "state": "error",
+   "detail": null,
+   "source": "URI"
+  },
+  {
+   "t_ms": 50617,
+   "kind": "signal",
+   "type": "UriSpeechStarted",
+   "text": "The local Brain is not ready (STOPPED)."
+  },
+  {
+   "t_ms": 54242,
+   "kind": "signal",
+   "type": "UriSpeechEnded",
+   "reason": "completed"
+  },
+  {
+   "t_ms": 54242,
+   "kind": "stage",
+   "stage": "idle",
+   "notice": null
+  },
+  {
+   "t_ms": 75944,
+   "kind": "timeout",
+   "waiting_for": "dashboard"
+  },
+  {
+   "t_ms": 75946,
+   "kind": "run.end"
+  }
+ ]
+}

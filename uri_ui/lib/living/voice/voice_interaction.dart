@@ -202,7 +202,8 @@ class VoiceInteractionController extends CompanionStateSource {
     });
     if (timings.length > 50) timings.removeAt(0);
     final text = f.text.trim();
-    if (f.reason == 'no_speech' || text.isEmpty) {
+    // No letter or digit: noise the recogniser rendered as punctuation.
+    if (f.reason == 'no_speech' || !RegExp(r'[A-Za-z0-9]').hasMatch(text)) {
       _setStage(VoiceStage.idle);
       _setNotice('NO_SPEECH', 'No speech was heard.');
       return;

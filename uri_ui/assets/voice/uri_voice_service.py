@@ -54,6 +54,15 @@ PARTIAL_EVERY_S = 0.7
 PARTIAL_WINDOW_S = 15.0
 DEFAULT_MAX_S = 60.0
 UNCERTAIN_BELOW = 0.45
+ONSET_MIN = 0.008
+ONSET_MAX = 0.02
+# Below this block level for the whole capture nothing audible was recorded;
+# anything above goes to the recogniser, whose VAD filter decides what is speech.
+SILENT_PEAK = 0.004
+# The assistant's own name. Without the bias "URI" came back as "You are I",
+# "Yuri" or "Fury" in 6 of 6 real-microphone trials; with it 4 of 6 were right
+# and "You are right" stayed unchanged (docs/voice/live/evidence/name_bias).
+HOTWORDS = "URI"
 
 _out_lock = threading.Lock()
 
@@ -218,6 +227,7 @@ class Recogniser:
                 word_timestamps=final,
                 condition_on_previous_text=False,
                 without_timestamps=not final,
+                hotwords=HOTWORDS,
             )
             segs = list(segments)
         text = " ".join(s.text.strip() for s in segs).strip()
@@ -261,6 +271,7 @@ class Capture:
         self.onset = False
         self._loud = 0
         self.floor = None
+        self.peak_rms = 0.0
         self.nonzero = False
         self.started = time.perf_counter()
         self.stream = None
@@ -285,12 +296,14 @@ class Capture:
         rms = float(self.np.sqrt(self.np.mean(x * x))) if len(x) else 0.0
         if rms > 0:
             self.nonzero = True
-        # Onset: three loud blocks over an adaptive floor (the quietest block of
-        # the first 200 ms; a user who starts talking at once keeps the fixed
-        # minimum threshold).
+        self.peak_rms = max(self.peak_rms, rms)
+        # Onset (for the waveform only): three loud blocks over an adaptive
+        # floor, the quietest block of the first 200 ms. The threshold is
+        # capped, so a user who starts talking at the press (the floor is then
+        # speech) is still detected. The transcript never depends on onset.
         if self.samples <= SR * 0.2 and rms > 0:
             self.floor = rms if self.floor is None else min(self.floor, rms)
-        thr = max(0.008, (self.floor or 0) * 4)
+        thr = min(ONSET_MAX, max(ONSET_MIN, (self.floor or 0) * 4))
         self._loud = self._loud + 1 if rms > thr else 0
         if not self.onset and self._loud >= 3:
             self.onset = True
@@ -312,7 +325,7 @@ class Capture:
                 warned = True
                 emit("listen.warning", id=self.id, code="MIC_SILENT",
                      message="The microphone is sending silence. It may be muted, or Windows may be blocking it.")
-            if self.samples - last < SR * 0.3 or self.samples < SR * 0.6 or not self.onset:
+            if self.samples - last < SR * 0.3 or self.samples < SR * 0.6 or self.peak_rms < SILENT_PEAK:
                 continue
             last = self.samples
             a = self.audio()[-int(PARTIAL_WINDOW_S * SR):]
@@ -639,7 +652,7 @@ class Service:
         cap.partial_thread.join(timeout=10)
         audio = cap.audio()
         audio_ms = round(1000 * len(audio) / SR)
-        if not cap.onset or len(audio) < SR * 0.25:
+        if cap.peak_rms < SILENT_PEAK or len(audio) < SR * 0.25:
             emit("listen.final", id=cap.id, text="", reason="no_speech", engine=ENGINE_NAME, audio_ms=audio_ms,
                  transcribe_ms=0, uncertain=[])
             return
@@ -650,6 +663,11 @@ class Service:
             emit("listen.error", id=cap.id, code="RECOGNIZER_FAILED", message=f"Recognition failed: {e}")
             return
         ms = round((time.perf_counter() - t) * 1000)
+        # A transcript without a single letter or digit ("." or "...") is the
+        # recogniser's output for noise, not speech (live run 3, 2026-10-09:
+        # 1.5 s of room noise came back as ".").
+        if not re.search(r"[A-Za-z0-9]", text):
+            text = ""
         emit("listen.final", id=cap.id, text=text, reason="completed" if text else "no_speech", engine=ENGINE_NAME,
              audio_ms=audio_ms, transcribe_ms=ms, uncertain=uncertain_spans(text, words))
 

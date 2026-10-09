@@ -27,6 +27,11 @@ class VoiceTalkButton extends StatefulWidget {
 }
 
 class _VoiceTalkButtonState extends State<VoiceTalkButton> {
+  /// Mounted buttons, newest last. During a mode change two composers can be
+  /// mounted at once; only the newest handles the keyboard, so one key press
+  /// is one action.
+  static final List<_VoiceTalkButtonState> _mounted = [];
+
   DateTime? _downAt;
   bool _toggled = false;
   bool _keyHeld = false;
@@ -36,16 +41,19 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton> {
   @override
   void initState() {
     super.initState();
+    _mounted.add(this);
     HardwareKeyboard.instance.addHandler(_onKey);
   }
 
   @override
   void dispose() {
+    _mounted.remove(this);
     HardwareKeyboard.instance.removeHandler(_onKey);
     super.dispose();
   }
 
   bool _onKey(KeyEvent e) {
+    if (_mounted.isEmpty || !identical(_mounted.last, this)) return false;
     final k = e.logicalKey;
     if (k == LogicalKeyboardKey.escape && e is KeyDownEvent) {
       if (_c.stage != VoiceStage.idle) {

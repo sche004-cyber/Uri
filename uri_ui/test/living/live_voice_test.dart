@@ -1,14 +1,18 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:uri_ui/living/companion/companion_preferences.dart';
 import 'package:uri_ui/living/companion/companion_state.dart';
 import 'package:uri_ui/living/integration/oi_conversation.dart';
 import 'package:uri_ui/living/presentation/presentation_controller.dart';
+import 'package:uri_ui/living/voice/voice_controls.dart';
 import 'package:uri_ui/living/voice/voice_interaction.dart';
 import 'package:uri_ui/living/voice/voice_session.dart';
 import 'package:uri_ui/services/integrated_runtime.dart';
 import 'package:uri_ui/services/live_voice_service.dart';
+import 'package:uri_ui/theme/uri_theme.dart';
 
 /// The voice process seen through its line protocol; tests push its events.
 class FakeVoiceTransport implements VoiceTransport {
@@ -45,7 +49,11 @@ class FakeRuntime implements IntegratedRuntime {
   final _events = StreamController<Map<String, dynamic>>.broadcast();
   int _turn = 0;
 
-  void emit(String turnId, String type, [Map<String, dynamic> data = const {}]) => _events.add({
+  void emit(
+    String turnId,
+    String type, [
+    Map<String, dynamic> data = const {},
+  ]) => _events.add({
     'schema': 'uri.oi.event.v1',
     'turn_id': turnId,
     'type': type,
@@ -74,15 +82,26 @@ class FakeRuntime implements IntegratedRuntime {
   Future<void> kill() async {}
 }
 
-Map<String, dynamic> ready({String privacy = 'allowed', Map<String, dynamic>? modelError}) => {
+Map<String, dynamic> ready({
+  String privacy = 'allowed',
+  Map<String, dynamic>? modelError,
+}) => {
   'ev': 'ready',
   'engine': 'faster-whisper-base.en-int8',
   'model_ok': modelError == null,
   'model_error': modelError,
   'model_load_ms': 900,
-  'privacy': {'state': privacy, 'detail': 'Windows blocks microphone access for desktop apps'},
+  'privacy': {
+    'state': privacy,
+    'detail': 'Windows blocks microphone access for desktop apps',
+  },
   'inputs': [
-    {'name': 'Microphone (Test)', 'index': 1, 'api': 'Windows WASAPI', 'default': true},
+    {
+      'name': 'Microphone (Test)',
+      'index': 1,
+      'api': 'Windows WASAPI',
+      'default': true,
+    },
     {'name': 'USB Mic', 'index': 2, 'api': 'Windows WASAPI', 'default': false},
   ],
 };
@@ -102,18 +121,21 @@ void main() {
   });
 
   group('LiveVoiceService', () {
-    test('starts once, says hello, and reports readiness and devices', () async {
-      expect(await svc.ensureStarted(), isTrue);
-      expect(await svc.ensureStarted(), isTrue);
-      expect(t.cmds, ['hello']);
-      t.push(ready());
-      await pump();
-      final st = svc.status.value;
-      expect(st.state, VoiceServiceState.ready);
-      expect(st.inputs.map((d) => d.name), ['Microphone (Test)', 'USB Mic']);
-      expect(st.inputs.first.isDefault, isTrue);
-      expect(svc.simulated, isFalse);
-    });
+    test(
+      'starts once, says hello, and reports readiness and devices',
+      () async {
+        expect(await svc.ensureStarted(), isTrue);
+        expect(await svc.ensureStarted(), isTrue);
+        expect(t.cmds, ['hello']);
+        t.push(ready());
+        await pump();
+        final st = svc.status.value;
+        expect(st.state, VoiceServiceState.ready);
+        expect(st.inputs.map((d) => d.name), ['Microphone (Test)', 'USB Mic']);
+        expect(st.inputs.first.isDefault, isTrue);
+        expect(svc.simulated, isFalse);
+      },
+    );
 
     test('a denied microphone is a specific, recoverable problem', () async {
       await svc.ensureStarted();
@@ -121,15 +143,28 @@ void main() {
       await pump();
       expect(svc.status.value.state, VoiceServiceState.degraded);
       expect(svc.status.value.problemCode, 'MIC_DENIED');
-      expect(svc.status.value.problem, contains('Privacy & security > Microphone'));
+      expect(
+        svc.status.value.problem,
+        contains('Privacy & security > Microphone'),
+      );
     });
 
-    test('a model that fails its integrity check is reported, not hidden', () async {
-      await svc.ensureStarted();
-      t.push(ready(modelError: {'code': 'MODEL_INTEGRITY', 'message': 'hash mismatch: model.bin'}));
-      await pump();
-      expect(svc.status.value.problemCode, 'MODEL_INTEGRITY');
-    });
+    test(
+      'a model that fails its integrity check is reported, not hidden',
+      () async {
+        await svc.ensureStarted();
+        t.push(
+          ready(
+            modelError: {
+              'code': 'MODEL_INTEGRITY',
+              'message': 'hash mismatch: model.bin',
+            },
+          ),
+        );
+        await pump();
+        expect(svc.status.value.problemCode, 'MODEL_INTEGRITY');
+      },
+    );
 
     test('events become presentation signals; the final transcript is separate data', () async {
       await svc.ensureStarted();
@@ -181,33 +216,52 @@ void main() {
       await svc.ensureStarted();
       final problems = <VoiceProblem>[];
       svc.problems.listen(problems.add);
-      t.push({'ev': 'listen.error', 'id': 'c1', 'code': 'MIC_OPEN_FAILED', 'message': 'busy device'});
+      t.push({
+        'ev': 'listen.error',
+        'id': 'c1',
+        'code': 'MIC_OPEN_FAILED',
+        'message': 'busy device',
+      });
       await pump();
       expect(signals.single, isA<VoiceFailure>());
       expect(problems.single.code, 'MIC_OPEN_FAILED');
     });
 
-    test('the process dying resets the presentation and marks voice unavailable', () async {
-      await svc.ensureStarted();
-      t.die();
-      await pump();
-      expect(svc.status.value.state, VoiceServiceState.unavailable);
-      expect(svc.status.value.problemCode, 'VOICE_SERVICE_STOPPED');
-      expect(signals.last, isA<VoiceReset>());
-    });
+    test(
+      'the process dying resets the presentation and marks voice unavailable',
+      () async {
+        await svc.ensureStarted();
+        t.die();
+        await pump();
+        expect(svc.status.value.state, VoiceServiceState.unavailable);
+        expect(svc.status.value.problemCode, 'VOICE_SERVICE_STOPPED');
+        expect(signals.last, isA<VoiceReset>());
+      },
+    );
 
     test('speak sends the user voice, rate, pitch and volume', () async {
       await svc.ensureStarted();
       svc.speak(
         'u1',
         'Hello.',
-        const VoicePreferences(voiceId: 'onecore:Microsoft Mark', rate: 3, pitch: -2, volume: 70),
+        const VoicePreferences(
+          voiceId: 'onecore:Microsoft Mark',
+          rate: 3,
+          pitch: -2,
+          volume: 70,
+        ),
         last: false,
       );
       final c = t.sent.last;
       expect(c['cmd'], 'speak');
       expect(c['final'], false);
-      expect(c['voice'], {'engine': 'onecore', 'name': 'Microsoft Mark', 'rate': 3, 'pitch': -2, 'volume': 70});
+      expect(c['voice'], {
+        'engine': 'onecore',
+        'name': 'Microsoft Mark',
+        'rate': 3,
+        'pitch': -2,
+        'volume': 70,
+      });
     });
 
     test('dispose shuts the process down', () async {
@@ -249,7 +303,8 @@ void main() {
       oi.dispose();
     });
 
-    String captureId() => '${t.sent.lastWhere((c) => c['cmd'] == 'listen_start')['id']}';
+    String captureId() =>
+        '${t.sent.lastWhere((c) => c['cmd'] == 'listen_start')['id']}';
 
     Future<void> finalText(String text, {String reason = 'completed'}) async {
       t.push({
@@ -286,7 +341,9 @@ void main() {
       final turn = rt.commands.lastWhere((c) => c['command'] == 'oi_turn');
       expect(turn['text'], 'What is the capital of Sikkim?');
       expect(ctl.stage, VoiceStage.waiting);
-      rt.emit('t1', 'answer.delta', {'text': 'The capital is Gangtok. It is in the '});
+      rt.emit('t1', 'answer.delta', {
+        'text': 'The capital is Gangtok. It is in the ',
+      });
       await pump();
       var speaks = t.sent.where((c) => c['cmd'] == 'speak').toList();
       expect(speaks.map((c) => c['text']), ['The capital is Gangtok.']);
@@ -296,7 +353,11 @@ void main() {
       rt.emit('t1', 'turn.finished', {'status': 'COMPLETE'});
       await pump();
       speaks = t.sent.where((c) => c['cmd'] == 'speak').toList();
-      expect(speaks.map((c) => c['text']), ['The capital is Gangtok.', 'It is in the east of India.', '']);
+      expect(speaks.map((c) => c['text']), [
+        'The capital is Gangtok.',
+        'It is in the east of India.',
+        '',
+      ]);
       expect(speaks.last['final'], true);
       final utt = '${speaks.first['id']}';
       t.push({'ev': 'speak.ended', 'id': utt, 'reason': 'completed'});
@@ -304,27 +365,33 @@ void main() {
       expect(ctl.stage, VoiceStage.idle);
     });
 
-    test('speech never decides: an approval is pointed to, never answered', () async {
-      await ctl.pressTalk();
-      ctl.releaseTalk();
-      await finalText('Remember that the lab is closed on Friday.');
-      rt.emit('t1', 'approval.required', {
-        'capability_id': 'remember_fact',
-        'arguments': {'fact': 'the lab is closed on Friday'},
-        'approval_digest': 'd1',
-      });
-      rt.emit('t1', 'turn.finished', {'status': 'WAITING'});
-      await pump();
-      final speaks = t.sent.where((c) => c['cmd'] == 'speak').map((c) => c['text']).toList();
-      expect(speaks.first, contains('review the card on screen'));
-      // The user then says "yes, approve it": it is only ever a turn text.
-      await ctl.pressTalk();
-      ctl.releaseTalk();
-      await finalText('Yes, approve it.');
-      expect(rt.commands.where((c) => c['command'] == 'oi_decide'), isEmpty);
-      expect(rt.commands.where((c) => c['command'] == 'oi_confirm'), isEmpty);
-      expect(oi.pendingApproval, isNotNull);
-    });
+    test(
+      'speech never decides: an approval is pointed to, never answered',
+      () async {
+        await ctl.pressTalk();
+        ctl.releaseTalk();
+        await finalText('Remember that the lab is closed on Friday.');
+        rt.emit('t1', 'approval.required', {
+          'capability_id': 'remember_fact',
+          'arguments': {'fact': 'the lab is closed on Friday'},
+          'approval_digest': 'd1',
+        });
+        rt.emit('t1', 'turn.finished', {'status': 'WAITING'});
+        await pump();
+        final speaks = t.sent
+            .where((c) => c['cmd'] == 'speak')
+            .map((c) => c['text'])
+            .toList();
+        expect(speaks.first, contains('review the card on screen'));
+        // The user then says "yes, approve it": it is only ever a turn text.
+        await ctl.pressTalk();
+        ctl.releaseTalk();
+        await finalText('Yes, approve it.');
+        expect(rt.commands.where((c) => c['command'] == 'oi_decide'), isEmpty);
+        expect(rt.commands.where((c) => c['command'] == 'oi_confirm'), isEmpty);
+        expect(oi.pendingApproval, isNotNull);
+      },
+    );
 
     test('a local presentation command is applied, not sent', () async {
       await ctl.pressTalk();
@@ -343,6 +410,17 @@ void main() {
       expect(ctl.stage, VoiceStage.idle);
     });
 
+    test(
+      'a punctuation-only transcript is not sent (noise, live run 3)',
+      () async {
+        await ctl.pressTalk();
+        ctl.releaseTalk();
+        await finalText('.');
+        expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
+        expect(ctl.noticeCode, 'NO_SPEECH');
+      },
+    );
+
     test('cancel discards the capture: a late transcript is ignored', () async {
       await ctl.pressTalk();
       final id = captureId();
@@ -360,33 +438,46 @@ void main() {
       expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
     });
 
-    test('drafting without a draft desk keeps the words and sends nothing', () async {
-      prefs.setVoice(prefs.voice.copyWith(inputMode: VoiceInputMode.drafting));
-      await ctl.pressTalk();
-      ctl.releaseTalk();
-      await finalText('dear sir i need leave on monday');
-      expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
-      expect(kept, ['dear sir i need leave on monday']);
-      expect(ctl.noticeCode, 'DRAFTING_UNAVAILABLE');
-    });
+    test(
+      'drafting without a draft desk keeps the words and sends nothing',
+      () async {
+        prefs.setVoice(
+          prefs.voice.copyWith(inputMode: VoiceInputMode.drafting),
+        );
+        await ctl.pressTalk();
+        ctl.releaseTalk();
+        await finalText('dear sir i need leave on monday');
+        expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
+        expect(kept, ['dear sir i need leave on monday']);
+        expect(ctl.noticeCode, 'DRAFTING_UNAVAILABLE');
+      },
+    );
 
-    test('drafting with a draft desk hands over the raw transcript and engine', () async {
-      final got = <(String, String)>[];
-      final c2 = VoiceInteractionController(
-        service: svc,
-        preferences: prefs,
-        presentation: presentation,
-        oi: oi,
-        dictation: (raw, {required engine, uncertain = const []}) async => got.add((raw, engine)),
-      );
-      prefs.setVoice(prefs.voice.copyWith(inputMode: VoiceInputMode.drafting));
-      await c2.pressTalk();
-      c2.releaseTalk();
-      await finalText('dear sir i need leave on monday');
-      expect(got, [('dear sir i need leave on monday', 'faster-whisper-base.en-int8')]);
-      expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
-      c2.dispose();
-    });
+    test(
+      'drafting with a draft desk hands over the raw transcript and engine',
+      () async {
+        final got = <(String, String)>[];
+        final c2 = VoiceInteractionController(
+          service: svc,
+          preferences: prefs,
+          presentation: presentation,
+          oi: oi,
+          dictation: (raw, {required engine, uncertain = const []}) async =>
+              got.add((raw, engine)),
+        );
+        prefs.setVoice(
+          prefs.voice.copyWith(inputMode: VoiceInputMode.drafting),
+        );
+        await c2.pressTalk();
+        c2.releaseTalk();
+        await finalText('dear sir i need leave on monday');
+        expect(got, [
+          ('dear sir i need leave on monday', 'faster-whisper-base.en-int8'),
+        ]);
+        expect(rt.commands.where((c) => c['command'] == 'oi_turn'), isEmpty);
+        c2.dispose();
+      },
+    );
 
     test('talking while URI speaks interrupts the reply (barge-in)', () async {
       await ctl.pressTalk();
@@ -399,7 +490,10 @@ void main() {
       expect(ctl.stage, VoiceStage.speaking);
       await ctl.pressTalk();
       expect(ctl.stage, VoiceStage.listening);
-      expect(t.cmds.last, 'listen_start'); // the service stops speech first (half duplex)
+      expect(
+        t.cmds.last,
+        'listen_start',
+      ); // the service stops speech first (half duplex)
     });
 
     test('a refused press while URI is still answering says why', () async {
@@ -424,31 +518,90 @@ void main() {
       expect(ctl.stage, VoiceStage.idle);
     });
 
-    test('long replies are cut at a sentence end and say the rest is on screen', () async {
-      final c2 = VoiceInteractionController(
-        service: svc,
-        preferences: prefs,
-        presentation: presentation,
-        oi: oi,
-        maxSpokenChars: 40,
-      );
-      await c2.pressTalk();
-      c2.releaseTalk();
-      await finalText('Explain.');
-      rt.emit('t1', 'answer.delta', {'text': 'First sentence is here. Second sentence is longer than that. Third. '});
-      rt.emit('t1', 'turn.finished', {'status': 'COMPLETE'});
-      await pump();
-      final speaks = t.sent.where((c) => c['cmd'] == 'speak').map((c) => c['text']).toList();
-      expect(speaks, ['First sentence is here.', 'The rest of the answer is on screen.', '']);
-      c2.dispose();
-    });
+    test(
+      'long replies are cut at a sentence end and say the rest is on screen',
+      () async {
+        final c2 = VoiceInteractionController(
+          service: svc,
+          preferences: prefs,
+          presentation: presentation,
+          oi: oi,
+          maxSpokenChars: 40,
+        );
+        await c2.pressTalk();
+        c2.releaseTalk();
+        await finalText('Explain.');
+        rt.emit('t1', 'answer.delta', {
+          'text': 'First sentence is here. Second sentence is longer than that. Third. ',
+        });
+        rt.emit('t1', 'turn.finished', {'status': 'COMPLETE'});
+        await pump();
+        final speaks = t.sent
+            .where((c) => c['cmd'] == 'speak')
+            .map((c) => c['text'])
+            .toList();
+        expect(speaks, [
+          'First sentence is here.',
+          'The rest of the answer is on screen.',
+          '',
+        ]);
+        c2.dispose();
+      },
+    );
 
-    test('microphone denied: a press shows the reason and opens nothing', () async {
-      t.push({'ev': 'listen.error', 'id': 'x', 'code': 'MIC_DENIED', 'message': 'Windows blocks microphone access for desktop apps'});
-      await pump();
-      expect(ctl.notice, contains('Privacy & security > Microphone'));
-      expect(ctl.signal.state, CompanionState.error);
-    });
+    test(
+      'microphone denied: a press shows the reason and opens nothing',
+      () async {
+        t.push({
+          'ev': 'listen.error',
+          'id': 'x',
+          'code': 'MIC_DENIED',
+          'message': 'Windows blocks microphone access for desktop apps',
+        });
+        await pump();
+        expect(ctl.notice, contains('Privacy & security > Microphone'));
+        expect(ctl.signal.state, CompanionState.error);
+      },
+    );
+  });
+
+  group('VoiceTalkButton', () {
+    testWidgets(
+      'two mounted buttons: one Ctrl+Space press opens one capture; Esc cancels it',
+      (tester) async {
+        final ctl = VoiceInteractionController(
+          service: svc,
+          preferences: CompanionPreferences(),
+          presentation: UiPresentationController(),
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildUriTheme(UriColors.graphite),
+            home: Scaffold(
+              body: Row(
+                children: [
+                  VoiceTalkButton(controller: ctl),
+                  VoiceTalkButton(controller: ctl),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.runAsync(() async {
+          await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+          await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        });
+        expect(t.cmds.where((c) => c == 'listen_start').length, 1);
+        expect(ctl.stage, VoiceStage.listening);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+        expect(t.cmds.where((c) => c == 'listen_stop').length, 1);
+        ctl.cancel();
+        await tester.pumpWidget(const SizedBox());
+        ctl.dispose();
+      },
+    );
   });
 
   group('speakableText and completeSentences', () {
