@@ -1,0 +1,22 @@
+{
+ "dest": "C:\\Users\\cheta\\Development\\uri-staging2",
+ "head": "e8e3b65259c45fc823addc3ef8969425a265bd1b",
+ "head_is_base": true,
+ "overlay_commit": "759d0d4e4069ddb490e6ce52ac58bf86ef0248f0",
+ "overlay_paths": 273,
+ "candidate_source": "C:\\Users\\cheta\\Development\\uri-staging-src",
+ "candidate_head": "c775997b69c6778891a3c87ded2b61126f9b4166",
+ "porcelain_entries": 171,
+ "venv_source": "C:/Users/cheta/Development/uri-ws-final/.venv",
+ "oi_tests_included": true,
+ "replaced_accepted_files": {
+  "tests/phase2a/test_frozen_core.py": {
+   "overlay_sha256": "5a83fcd22565bd183fd8bde1acc7b0b000763a773952a3a3e0e2238b95012957",
+   "integration_sha256": "7a70bf3fdb99cab36d86d9c4790d4b02fd62f085ddf1d1e8ca4780826713ce79"
+  },
+  "scripts/phase2close_chain.py": {
+   "overlay_sha256": "cef35662cc8f122d584fa88b5cf02c18969e30249f568af840255c013d3004eb",
+   "integration_sha256": "adc1875755fa1e2605112a63867685fef4079570163444b48a673205f0ee505c"
+  }
+ }
+}
