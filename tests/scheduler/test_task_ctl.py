@@ -51,13 +51,38 @@ def test_install_without_apply_lists_failing_preconditions(tmp_path, inv):
         assert name in out.split("Failing preconditions:")[1]
 
 
-def test_live_validation_must_be_a_real_pass(tmp_path, inv):
-    fake = tmp_path / "result.json"
-    for body, ok in (({"simulated": True, "verdict": "PASS"}, False), ({"simulated": False, "verdict": "BLOCKED_AS_EXPECTED"}, False),
-                     ({"simulated": False, "verdict": "PASS"}, True)):
-        fake.write_text(json.dumps(body), encoding="utf-8")
-        code, out = ps("-Action", "plan", "-State", str(tmp_path / "s"), "-PythonExe", sys.executable, "-LiveValidation", str(fake))
-        assert code == 0 and f"live_claude_validation_passed : {ok}" in out
+def test_live_validation_must_be_a_complete_live_pass(tmp_path, inv):
+    """Codex round 9, C3-01: result.json, attempts.json and journal.json of one live run must all agree."""
+    ev = tmp_path / "ev"
+    ev.mkdir()
+    good = {"mode": "live", "simulated": False, "verdict": "PASS", "chain": {"ok": True},
+            "harness": {"mode": "LIVE", "available": True, "qualification": "PROBE_ONLY"}}
+    live_att = [{"mode": "LIVE", "harness": "claude_code", "outcome": "COMPLETED"}]
+
+    def plan(result, attempts=live_att, journal=True, name="result.json"):
+        for f in ev.iterdir():
+            f.unlink()
+        (ev / name).write_text(json.dumps(result), encoding="utf-8")
+        if attempts is not None:
+            (ev / "attempts.json").write_text(json.dumps(attempts), encoding="utf-8")
+        if journal:
+            (ev / "journal.json").write_text("[]", encoding="utf-8")
+        code, out = ps("-Action", "plan", "-State", str(tmp_path / "s"), "-PythonExe", sys.executable,
+                       "-LiveValidation", str(ev / name))
+        assert code == 0, out
+        return "live_claude_validation_passed : True" in out
+
+    assert plan(good)
+    assert not plan({"simulated": False, "verdict": "PASS"})                       # the two-field file of round 9
+    assert not plan(dict(good, simulated=True))
+    assert not plan(dict(good, mode="fixture"))
+    assert not plan(dict(good, verdict="BLOCKED_AS_EXPECTED"))
+    assert not plan(dict(good, harness={"mode": "LIVE", "available": False}))
+    assert not plan(dict(good, chain={"ok": False}))
+    assert not plan(good, attempts=[{"mode": "FIXTURE", "harness": "claude_fixture"}])
+    assert not plan(good, attempts=None)
+    assert not plan(good, journal=False)
+    assert not plan(good, name="other.json")
 
 
 def test_apply_with_another_task_name_or_uriserver_is_refused(tmp_path, inv):
@@ -71,15 +96,23 @@ def test_rollback_dry_run_only_targets_this_scheduler_service(tmp_path, inv):
     state = tmp_path / "scheduler"
     state.mkdir()
     other = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
-    mine = subprocess.Popen([sys.executable, "-c", "import time, sys; time.sleep(60)", "uri_scheduler.service", str(state)])
+    # Codex round 9, C3-02: both strings present, but not as `-m uri_scheduler.service run --state <state>`
+    lookalike = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", "uri_scheduler.service", str(state)])
+    sibling = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", "-m", "uri_scheduler.service", "run",
+                                "--state", str(state) + "-other"])
+    mine = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", "-m", "uri_scheduler.service", "run",
+                             "--state", str(state), "--mode", "live"])
     try:
         time.sleep(0.5)
-        (state / "service.json").write_text(json.dumps({"pid": other.pid}), encoding="utf-8")
-        code, out = ps("-Action", "uninstall", "-State", str(state))
-        assert code == 0 and "left alone" in out and other.poll() is None
+        for p in (other, lookalike, sibling):
+            (state / "service.json").write_text(json.dumps({"pid": p.pid}), encoding="utf-8")
+            code, out = ps("-Action", "uninstall", "-State", str(state))
+            assert code == 0 and "left alone" in out and p.poll() is None
+        code, out = ps("-Action", "uninstall", "-Apply")                         # rollback without -State is refused
+        assert code != 0 and "needs -State" in out
         (state / "service.json").write_text(json.dumps({"pid": mine.pid}), encoding="utf-8")
         code, out = ps("-Action", "uninstall", "-State", str(state))
         assert code == 0 and f"would stop scheduler service pid {mine.pid}" in out and mine.poll() is None
     finally:
-        other.kill()
-        mine.kill()
+        for p in (other, lookalike, sibling, mine):
+            p.kill()

@@ -15,7 +15,8 @@
       * every precondition in the plan passes (Python exists and imports uri_scheduler from the repository,
         the state directory's parent exists, the client home exists), and
       * -LiveValidation names the result.json of a passed live-Claude test (scripts/scheduler_live_test.py
-        --mode live) whose "simulated" is false and whose "verdict" is "PASS", and
+        --mode live): "simulated" false, "verdict" PASS, a LIVE available harness, a verified chain, and a
+        LIVE claude_code attempt in the sibling attempts.json (journal.json present), and
       * no task with that name exists yet (an existing one is never overwritten silently).
 
     uninstall (rollback) stops the task, stops the scheduler service process recorded in <State>\service.json
@@ -81,16 +82,28 @@ function Get-Preconditions {
     }
     $checks["state_parent_exists"] = [bool]($State -and (Test-Path -LiteralPath (Split-Path -Parent $State) -PathType Container))
     $checks["client_home_exists"] = [bool]($ClientHome -and (Test-Path -LiteralPath $ClientHome -PathType Container))
-    $live = $false
-    if ($LiveValidation -and (Test-Path -LiteralPath $LiveValidation -PathType Leaf)) {
-        try {
-            $j = Get-Content -LiteralPath $LiveValidation -Raw -Encoding UTF8 | ConvertFrom-Json
-            $live = ($j.simulated -eq $false) -and ($j.verdict -eq "PASS")
-        } catch { $live = $false }
-    }
-    $checks["live_claude_validation_passed"] = $live
+    $checks["live_claude_validation_passed"] = Test-LiveValidation
     $checks["task_absent"] = -not [bool](Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)
     [pscustomobject]$checks
+}
+
+function Test-LiveValidation {
+    # The live leg of scripts/scheduler_live_test.py writes result.json, journal.json and attempts.json into one
+    # evidence directory. All three must agree: a real (not simulated) PASS, a LIVE harness that was available, a
+    # verified hash chain, and at least one LIVE attempt by claude_code. This guards against a wrong or partial file;
+    # it is an owner-run safeguard, not proof against a file the owner forges (review round 9, C3-01).
+    if (-not $LiveValidation -or -not (Test-Path -LiteralPath $LiveValidation -PathType Leaf)) { return $false }
+    if ((Split-Path -Leaf $LiveValidation) -ne "result.json") { return $false }
+    $dir = Split-Path -Parent $LiveValidation
+    try {
+        $r = Get-Content -LiteralPath $LiveValidation -Raw -Encoding UTF8 | ConvertFrom-Json
+        $att = Get-Content -LiteralPath (Join-Path $dir "attempts.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+        if (-not (Test-Path -LiteralPath (Join-Path $dir "journal.json") -PathType Leaf)) { return $false }
+    } catch { return $false }
+    $liveAttempts = @($att | Where-Object { $_.mode -eq "LIVE" -and $_.harness -eq "claude_code" })
+    return ($r.mode -eq "live") -and ($r.simulated -eq $false) -and ($r.verdict -eq "PASS") -and
+        ($r.harness.mode -eq "LIVE") -and ($r.harness.available -eq $true) -and ($r.chain.ok -eq $true) -and
+        ($liveAttempts.Count -ge 1)
 }
 
 function New-TaskDefinition($p) {
@@ -108,8 +121,12 @@ function Stop-SchedulerService {
     $svc = Get-Content -LiteralPath $info -Raw -Encoding UTF8 | ConvertFrom-Json
     $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$([int]$svc.pid)" -ErrorAction SilentlyContinue
     if (-not $proc) { return "recorded pid $($svc.pid) is not running" }
+    # Only the scheduler service for THIS state directory: `-m uri_scheduler.service run` and `--state <State>` as one
+    # argument (quoted or not), not merely both strings somewhere in the command line (review round 9, C3-02).
     $cl = [string]$proc.CommandLine
-    if ($cl -notmatch "uri_scheduler\.service" -or $cl.IndexOf($State, [StringComparison]::OrdinalIgnoreCase) -lt 0) {
+    $st = [regex]::Escape($State.TrimEnd([char]92))
+    if ($cl -notmatch '(^|\s)-m\s+uri_scheduler\.service\s+run(\s|$)' -or
+        $cl -notmatch ('--state\s+"?' + $st + '\\?"?(\s|$)')) {
         return "pid $($svc.pid) is not this scheduler service; left alone"
     }
     if (-not $Apply) { return "DRY RUN: would stop scheduler service pid $($svc.pid)" }
@@ -154,6 +171,7 @@ switch ($Action) {
         "Registered $TaskName for $UserId. Rollback: -Action uninstall -State `"$State`" -Apply"
     }
     "uninstall" {
+        if ($Apply -and -not $State) { throw "REFUSED: rollback needs -State (the installed service's state directory) so its running service is stopped too" }
         $exists = [bool](Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)
         if (-not $Apply) {
             "DRY RUN: would stop and unregister $TaskName only (exists: $exists); state and artifacts are kept."

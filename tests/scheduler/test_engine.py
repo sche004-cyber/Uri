@@ -661,3 +661,39 @@ def test_owner_calendar_corrections_move_dispute_restore_and_survive_restart(env
         assert s2.store.q1("SELECT state FROM occurrence WHERE occurrence_key='diwali:2026'")[0] == "AWAITING_CONFIRMATION"
     finally:
         s2.close()
+
+
+def test_r9_occurrence_changed_after_selection_is_never_claimed(env):
+    """Codex round 9, C1-01: a correction (or refresh) between due-selection and claim must win."""
+    s, h, clock, _ = env
+    p = festival_job(s, ("dussehra",))
+    s.confirm(p["job_id"], "owner", p["proposal_sha256"])
+    occ_id = s.store.q1("SELECT occ_id FROM occurrence WHERE occurrence_key='dussehra:2026'")[0]
+    clock.set("2026-10-18T09:20:00+05:30")                      # due (09:00) and past the 600 s grace: late-run branch
+    s.correct_calendar("owner", "in_festivals", "dussehra", 2026, "set_date", start="2026-10-21")
+    assert s._dispatch(occ_id) == {"occ_id": occ_id, "result": "NOT_CLAIMED"}
+    row = s.store.q1("SELECT state, reason FROM occurrence WHERE occ_id=?", (occ_id,))
+    assert tuple(row) == ("AWAITING_CONFIRMATION", "DATE_CHANGED_SINCE_CONFIRMATION")   # the late branch did not reset it
+    s.correct_calendar("owner", "in_festivals", "dussehra", 2026, "dispute")
+    assert s._dispatch(occ_id)["result"] == "NOT_CLAIMED"
+    assert s.store.q1("SELECT state FROM occurrence WHERE occ_id=?", (occ_id,))[0] == "CANCELLED"
+    assert h.calls == []
+
+
+def test_r9_obsolete_correction_never_blocks_later_ones(env):
+    """Codex round 9, C1-02: a stored correction that no longer applies is skipped and reported, not fatal."""
+    s, h, clock, tmp = env
+    s.correct_calendar("owner", "in_festivals", "losar", 2026, "dispute", note="old")
+    s.close()
+    cal = Calendar.default()
+    data = json.loads(json.dumps(cal.raw("in_festivals")))
+    data["festivals"] = [f for f in data["festivals"] if f["festival_key"] != "losar"]       # a later shipped calendar
+    cal.put(data)
+    s2 = Scheduler(tmp / "state", harness=h, now_fn=clock, calendar=cal).start()
+    try:
+        assert s2.startup["calendar_corrections_not_applied"][0]["error"].startswith("UNKNOWN_FESTIVAL")
+        r = s2.correct_calendar("owner", "in_festivals", "holi", 2027, "dispute", note="new")
+        assert r["version"].endswith("+owner.1") and r["not_applied"][0]["correction_id"] == 1
+        assert s2.store.q1("SELECT COUNT(*) FROM calendar_correction")[0] == 2               # history kept
+    finally:
+        s2.close()
