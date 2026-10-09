@@ -5,6 +5,9 @@ levels are never merged: **S** automated simulation (scripted harness in-process
 accepted supervisor + synthetic Claude stand-in process), **P** process-level (real service process + HTTP API), **L** live
 (real Claude CLI). Nothing is Frozen.
 
+Candidate `7496bba`: Codex round 8 ACCEPT WITH FINDINGS (repaired); accepted regression chain on the materialized tree
+equal to the baseline (SCHEDULER_INTEGRATION_RECEIPT.md §3). Not published or merged (base line not yet accepted).
+
 | capability | status | evidence level | evidence |
 |---|---|---|---|
 | One-time schedules (local wall time, IANA zone) | Qualified | S, P | `test_timespec_calendar.py`; live test journals step 2–4 |
