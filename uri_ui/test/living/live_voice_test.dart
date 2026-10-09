@@ -504,6 +504,25 @@ void main() {
       expect(kept, ['Send the form to the office by Friday.']); // and nothing lost
     });
 
+    test('INT-3: a failing dictation sink keeps the words in the composer (Codex TIWS r14)', () async {
+      ctl.dispose();
+      prefs.setVoice(prefs.voice.copyWith(inputMode: VoiceInputMode.drafting));
+      ctl = VoiceInteractionController(
+        service: svc,
+        preferences: prefs,
+        presentation: presentation,
+        oi: oi,
+        keepInComposer: kept.add,
+        noticeHold: const Duration(milliseconds: 50),
+        dictation: (raw, {required engine, uncertain = const <String>[]}) async => throw StateError('sink down'),
+      );
+      await ctl.pressTalk();
+      ctl.releaseTalk();
+      await finalText('Send the form to the office by Friday.');
+      expect(kept, ['Send the form to the office by Friday.']);
+      expect(ctl.stage, VoiceStage.idle);
+    });
+
     test('a local presentation command is applied, not sent', () async {
       await ctl.pressTalk();
       ctl.releaseTalk();

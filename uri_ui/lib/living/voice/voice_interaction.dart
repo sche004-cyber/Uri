@@ -318,6 +318,12 @@ class VoiceInteractionController extends CompanionStateSource {
     _setStage(VoiceStage.waiting);
     try {
       await sink(f.text, engine: f.engine, uncertain: f.uncertain);
+    } catch (_) {
+      // A failing sink must not lose the words either (Codex TIWS r14).
+      if (!_disposed) {
+        keepInComposer?.call(f.text);
+        _setNotice('DRAFT_FAILED', 'The draft could not be started. Your words are in the composer.');
+      }
     } finally {
       if (!_disposed) _setStage(VoiceStage.idle);
     }
