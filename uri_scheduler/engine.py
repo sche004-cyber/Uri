@@ -371,6 +371,11 @@ class Scheduler:
 
     # ---- materialization ------------------------------------------------------------------------------------------
     def materialize(self, job_id=None) -> dict:
+        # Under the engine mutex: reconciliation never interleaves with a dispatch's pre-claim checks (round 10, R10-01).
+        with self._mutex:
+            return self._materialize(job_id)
+
+    def _materialize(self, job_id=None) -> dict:
         report = {"inserted": 0, "moved": 0, "withdrawn": 0, "restored": 0}
         jobs = [self.job(job_id)] if job_id else [self.job(r[0]) for r in self.store.q("SELECT job_id FROM job WHERE state='ACTIVE'")]
         for job in jobs:
@@ -440,6 +445,10 @@ class Scheduler:
 
     def refresh_calendar(self, data: dict) -> dict:
         """Load a new version of a calendar, record the diff, and reconcile every active job against it."""
+        with self._mutex:
+            return self._refresh_calendar(data)
+
+    def _refresh_calendar(self, data: dict) -> dict:
         from .calendar_store import diff, validate_calendar
         validate_calendar(data)
         cid = data["calendar_id"]
@@ -457,18 +466,24 @@ class Scheduler:
         return [dict(r) for r in self.store.q("SELECT * FROM calendar_correction WHERE calendar_id=? ORDER BY correction_id",
                                               (calendar_id,))]
 
+    def _applicable(self, calendar_id):
+        """Recorded corrections that still apply to the shipped calendar, in order, and the ones that do not. A correction
+        that no longer applies (e.g. a later shipped calendar dropped the festival) is skipped and reported; it stays in
+        the append-only record and never blocks later corrections (review round 9, C1-02)."""
+        base, ok, skipped = self._calendar_base[calendar_id], [], []
+        for c in self._corrections(calendar_id):
+            try:
+                apply_corrections(base, ok + [c])
+                ok.append(c)
+            except CalendarError as exc:
+                skipped.append({"correction_id": c["correction_id"], "error": str(exc)})
+        return ok, skipped
+
     def _apply_stored_corrections(self) -> list:
-        """Re-apply recorded corrections on the shipped calendar. A correction that no longer applies (e.g. a later shipped
-        calendar dropped the festival) is skipped and reported, never silently dropped from the record."""
         skipped = []
         for cid, base in self._calendar_base.items():
-            ok = []
-            for c in self._corrections(cid):
-                try:
-                    apply_corrections(base, ok + [c])
-                    ok.append(c)
-                except CalendarError as exc:
-                    skipped.append({"correction_id": c["correction_id"], "error": str(exc)})
+            ok, sk = self._applicable(cid)
+            skipped += sk
             if ok:
                 self.calendar.put(apply_corrections(base, ok))
         return skipped
@@ -489,7 +504,7 @@ class Scheduler:
         with self._mutex:
             row = {"calendar_id": calendar_id, "festival_key": festival_key, "year": int(year), "action": action,
                    "start": start, "end": end, "note": note, "principal": principal}
-            corr = self._corrections(calendar_id)
+            corr, _ = self._applicable(calendar_id)
             try:
                 data = apply_corrections(self._calendar_base[calendar_id], corr + [row])
             except (CalendarError, ValueError, TypeError) as exc:
@@ -500,8 +515,9 @@ class Scheduler:
                                  (calendar_id, festival_key, int(year), action, start, end, note, principal,
                                   self._calendar_base[calendar_id]["version"], self.now()))
                 self.store.emit(db, "calendar.corrected", payload=dict(row, correction_id=cur.lastrowid))
-            data = apply_corrections(self._calendar_base[calendar_id], self._corrections(calendar_id))
-            return {"version": data["version"], **self.refresh_calendar(data)}
+            ok, skipped = self._applicable(calendar_id)
+            data = apply_corrections(self._calendar_base[calendar_id], ok)
+            return {"version": data["version"], "not_applied": skipped, **self.refresh_calendar(data)}
 
     # ---- occurrence control ---------------------------------------------------------------------------------------
     def cancel_occurrence(self, occ_id, principal, _job_cancel=False):
@@ -681,14 +697,33 @@ class Scheduler:
         return results
 
     def _dispatch(self, occ_id) -> dict:
+        # Everything up to the claim runs under the engine mutex, so an owner correction, calendar refresh or cancel
+        # cannot change the occurrence between selection and claim (review round 9, C1-01). The run itself does not.
+        with self._mutex:
+            pre = self._pre_claim(occ_id)
+        if "result" in pre:
+            return pre
+        return self._execute_settled(self.occurrence(occ_id), pre["job"])
+
+    @staticmethod
+    def _still(db, occ) -> bool:
+        """The occurrence is unchanged since it was read (same state and due time): guards each pre-claim transition."""
+        r = db.execute("SELECT state, due_at_us FROM occurrence WHERE occ_id=?", (occ["occ_id"],)).fetchone()
+        return r is not None and r["state"] == occ["state"] and r["due_at_us"] == occ["due_at_us"]
+
+    def _pre_claim(self, occ_id) -> dict:
         occ = self.occurrence(occ_id)
         job = self.job(occ["job_id"])
         pol = job["policy"]
         now = self.now()
+        if occ["state"] not in ("SCHEDULED", "REVISION_QUEUED") or (occ["state"] == "SCHEDULED" and occ["due_at_us"] > now):
+            return {"occ_id": occ_id, "result": "NOT_CLAIMED"}
         revision = occ["state"] == "REVISION_QUEUED"
         if not revision:
             if occ["deadline_us"] is not None and now >= occ["deadline_us"]:
                 with self.store.tx() as db:
+                    if not self._still(db, occ):
+                        return {"occ_id": occ_id, "result": "NOT_CLAIMED"}
                     self._set_occ(db, occ_id, "MISSED", "DEADLINE_PASSED")
                     self.store.emit(db, "occurrence.missed", job_id=job["job_id"], occ_id=occ_id,
                                     payload={"due_utc": _iso(occ["due_at_us"]), "deadline_utc": _iso(occ["deadline_us"])})
@@ -696,6 +731,8 @@ class Scheduler:
                 return {"occ_id": occ_id, "result": "MISSED"}
             if now - occ["due_at_us"] > pol["grace_s"] * 1_000_000 and not occ["late"]:
                 with self.store.tx() as db:
+                    if not self._still(db, occ):
+                        return {"occ_id": occ_id, "result": "NOT_CLAIMED"}
                     if pol["missed"] == "skip":
                         self._set_occ(db, occ_id, "MISSED", "LATE_SKIPPED_BY_POLICY")
                     else:
@@ -718,14 +755,15 @@ class Scheduler:
             # The job's state is part of the compare-and-set: a job cancelled (or paused, for scheduled work) after this
             # occurrence was selected can never be claimed (review round 1, F7).
             cur = db.execute("UPDATE occurrence SET state='RUNNING', reason=NULL, attempts=attempts+1, lease_owner=?, updated_at_us=? "
-                             "WHERE occ_id=? AND state=? AND EXISTS (SELECT 1 FROM job j WHERE j.job_id=occurrence.job_id AND "
+                             "WHERE occ_id=? AND state=? AND state IN ('SCHEDULED','REVISION_QUEUED') AND (?=1 OR due_at_us<=?) "
+                             "AND EXISTS (SELECT 1 FROM job j WHERE j.job_id=occurrence.job_id AND "
                              "(j.state='ACTIVE' OR (j.state='PAUSED' AND ?=1)))",
-                             (self.instance_id, now, occ_id, occ["state"], 1 if revision else 0))
+                             (self.instance_id, now, occ_id, occ["state"], 1 if revision else 0, now, 1 if revision else 0))
             if cur.rowcount != 1:
                 return {"occ_id": occ_id, "result": "NOT_CLAIMED"}
             self.store.emit(db, "occurrence.claimed", job_id=job["job_id"], occ_id=occ_id,
                             payload={"instance": self.instance_id, "attempt_no": occ["attempts"] + 1, "revision": revision})
-        return self._execute_settled(self.occurrence(occ_id), job)
+        return {"job": job}
 
     def _execute_settled(self, occ, job) -> dict:
         """Every claimed occurrence leaves RUNNING, whatever raises (review round 1, F5)."""

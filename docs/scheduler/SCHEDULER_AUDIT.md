@@ -92,3 +92,45 @@ kill); the residual window is consistent with the accepted Phase 2 post-dispatch
 Owner-gated items carried forward (not code defects): F10 real Claude generation NOT RUN (CLI login); F2 filesystem boundary
 is Claude Code's permission engine, not an OS sandbox (owner acceptance); R7-1 residual cancellation window (owner acceptance,
 or an owner decision to change the accepted supervisor).
+
+## Round 9 (closure) — candidate `f59aad5` (scope `7496bba..f59aad5`) — **REJECT**
+
+Scope: owner calendar corrections, calendar v2 data, logon-task procedure, security and cancellation record. Codex could not run
+tests (sandbox temp dir); every finding below was confirmed by Claude in the code and, for C1, by a test that fails on the
+pre-repair engine.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| C1-01 | High | `tick()` selects due work without the engine mutex; `_dispatch` re-reads the row and claims whatever state it finds, so a correction between selection and claim could run a moved or disputed date | **confirmed and older than the corrections**: a calendar refresh in that gap had the same effect, and the late-run branch could reset `AWAITING_CONFIRMATION` to `SCHEDULED`. `test_r9_occurrence_changed_after_selection_is_never_claimed` FAILED on `f59aad5` (the moved occurrence ran) | **repaired**: everything up to the claim runs under the engine mutex (`_pre_claim`); an occurrence that is not `SCHEDULED`-and-due or `REVISION_QUEUED` is never claimed; the claim CAS also requires an eligible state and (for scheduled work) `due_at_us <= now` |
+| C1-02 | Medium | start skips stored corrections that no longer apply, but `correct_calendar` replays all rows, so one obsolete row blocks every later correction | confirmed; `test_r9_obsolete_correction_never_blocks_later_ones` FAILED on `f59aad5` | **repaired**: one replay policy (`_applicable`) for start and for new corrections; skipped rows stay in the append-only record and are reported (`not_applied`) |
+| C3-01 | Medium | the live gate accepted any JSON with `simulated: false` and `verdict: PASS` | confirmed | **repaired**: `result.json` + sibling `attempts.json` + `journal.json` of one live run must agree (mode live, not simulated, PASS, LIVE available harness, verified chain, a LIVE `claude_code` attempt). Stated as an owner-run safeguard against a wrong or partial file, not proof against a file the owner forges |
+| C3-02 | Medium | `uninstall -Apply` without `-State` left a running service; the command-line check matched any process containing both strings | confirmed | **repaired**: rollback with `-Apply` requires `-State`; the process must carry `-m uri_scheduler.service run` and `--state <State>` as one argument (a look-alike and a sibling state dir are left alone in the test) |
+
+Codex also verified: calendar validates (77 occurrences, sources present, Sikkim 2027 absent, Bakrid history kept); correction
+rows are append-only and audited; the shipped calendar is never written; trigger bound to the current user; `uri_supervisor`
+unchanged; F2 and R7-1 remain recorded as unresolved; the cancel-window record matches its measurement and is not a guarantee.
+
+## Round 10 (closure) — candidate `2da36ad` — **REJECT**
+
+Round-9 status: C1-02 FIXED; C1-01, C3-01, C3-02 PARTIAL.
+
+| # | Codex severity | finding | Claude verification | disposition |
+|---|---|---|---|---|
+| R10-01 | High | `materialize()` / `refresh_calendar()` did not take the engine mutex; a reconciliation could change a row after `_pre_claim` read it, and the late-run branch could set a moved, unconfirmed occurrence back to `SCHEDULED` | confirmed by reading (the round-9 test covered only `correct_calendar`, which holds the mutex) | **repaired**: `materialize` and `refresh_calendar` run under the engine mutex (RLock, re-entrant from `confirm`/`correct_calendar`); every pre-claim transition (missed, late-run) first re-checks that state and due time are unchanged (`_still`). Test `test_r10_reconciliation_and_pre_claim_are_serialized` (stale read is never acted on; materialize blocks while another holder has the mutex) |
+| R10-02 | Medium | the live gate accepted an empty journal and did not bind result and attempts to one run | confirmed | **repaired**: the journal must contain the live service start, v1 and v2 verified with the result's hashes, and the v2 approval; `v1.gif`/`v2.gif` must hash to those values; at least two attempts, all LIVE by `claude_code` |
+| R10-03 | Medium | a quoted argument containing the expected text matched; a reused PID could be stopped | confirmed | **repaired**: Windows' own argument splitting (`CommandLineToArgvW`), fixed positions (`<python> -m uri_scheduler.service run ... --state <State>`, full-path comparison), and the process start time must match `service.json` within 120 s. The test runs a real scheduler service process and look-alikes (extra argv, one quoted argument, wrong start time, other state dir) |
+
+## Round 11 (closure) — candidate `a3d4d0f` — **ACCEPT WITH FINDINGS**
+
+Codex: R10-01 / C1-01 **FIXED** (reconciliation and pre-claim serialized; the claim compare-and-set requires an eligible,
+due state and an active job; the harness run is outside the mutex, so no deadlock with HTTP threads or the service loop).
+C1-02 FIXED. Remaining findings concern only the owner-gated, not-activated logon-task script:
+
+| # | Codex severity | finding | disposition |
+|---|---|---|---|
+| R10-02 (PARTIAL) | Medium | attempts were not linked to the run's own occurrence | **repaired** (`<this commit>`): every attempt must carry the `occ_id` that journal step `3.persisted_before_due` recorded; test adds attempts of another run |
+| R10-03 (PARTIAL) | Medium | a process with the same command and state started within 120 s of the record is accepted | **recorded residual**: such a process is itself a scheduler service for that state directory (the service holds a single-instance lock per state dir), so stopping it is the intended rollback |
+| R11-01 | Medium | `uninstall -Apply -State <wrong dir>` stopped and unregistered `URIScheduler` anyway | **repaired**: the registered task's `--state` argument (parsed with Windows' argument splitting) must equal `-State`, otherwise the rollback refuses and changes nothing. Verified by reading only: exercising it needs a registered task, which this phase must not create |
+
+Accepted candidate for integration: this commit (code verified by round 11; the two repairs above are confined to the
+dry-run-tested, owner-gated script). Owner gates unchanged: F10 live Claude (login), F2, R7-1, festival activation, logon task.

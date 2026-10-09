@@ -15,12 +15,14 @@
       * every precondition in the plan passes (Python exists and imports uri_scheduler from the repository,
         the state directory's parent exists, the client home exists), and
       * -LiveValidation names the result.json of a passed live-Claude test (scripts/scheduler_live_test.py
-        --mode live) whose "simulated" is false and whose "verdict" is "PASS", and
+        --mode live) whose evidence directory describes ONE live run (result, journal steps, both GIF hashes,
+        every attempt LIVE by claude_code; see Test-LiveValidation), and
       * no task with that name exists yet (an existing one is never overwritten silently).
 
-    uninstall (rollback) stops the task, stops the scheduler service process recorded in <State>\service.json
-    (only if its command line is uri_scheduler.service for that state directory), unregisters the task, and
-    verifies it is gone. Scheduler state, artifacts and history are never deleted.
+    uninstall (rollback, -State required with -Apply) stops the task, stops the scheduler service process recorded
+    in <State>\service.json (only if its parsed argv is `python -m uri_scheduler.service run ... --state <State>` and
+    its start time matches the record), unregisters the task, and verifies it is gone. Scheduler state, artifacts
+    and history are never deleted.
 
     verify builds the task definition in memory (New-ScheduledTask) without registering anything.
 
@@ -81,16 +83,91 @@ function Get-Preconditions {
     }
     $checks["state_parent_exists"] = [bool]($State -and (Test-Path -LiteralPath (Split-Path -Parent $State) -PathType Container))
     $checks["client_home_exists"] = [bool]($ClientHome -and (Test-Path -LiteralPath $ClientHome -PathType Container))
-    $live = $false
-    if ($LiveValidation -and (Test-Path -LiteralPath $LiveValidation -PathType Leaf)) {
-        try {
-            $j = Get-Content -LiteralPath $LiveValidation -Raw -Encoding UTF8 | ConvertFrom-Json
-            $live = ($j.simulated -eq $false) -and ($j.verdict -eq "PASS")
-        } catch { $live = $false }
-    }
-    $checks["live_claude_validation_passed"] = $live
+    $checks["live_claude_validation_passed"] = Test-LiveValidation
     $checks["task_absent"] = -not [bool](Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)
     [pscustomobject]$checks
+}
+
+function Test-LiveValidation {
+    # The live leg of scripts/scheduler_live_test.py writes result.json, journal.json, attempts.json and the two GIF
+    # versions into one evidence directory. Everything must describe ONE live run (review rounds 9-10, C3-01/R10-02):
+    # result: live, not simulated, PASS, LIVE available harness, verified chain; journal: the service started in live
+    # mode, v1 and v2 verified with the result's hashes, v2 approved; v1.gif/v2.gif hash to those values; attempts: at
+    # least two (generate + refine), every one LIVE by claude_code. An owner-run safeguard against a wrong, partial or
+    # mixed evidence set, not proof against evidence the owner forges.
+    if (-not $LiveValidation -or -not (Test-Path -LiteralPath $LiveValidation -PathType Leaf)) { return $false }
+    if ((Split-Path -Leaf $LiveValidation) -ne "result.json") { return $false }
+    $dir = Split-Path -Parent $LiveValidation
+    try {
+        $r = Get-Content -LiteralPath $LiveValidation -Raw -Encoding UTF8 | ConvertFrom-Json
+        # Windows PowerShell 5.1 emits a JSON array as ONE object: assign it first, then enumerate it with @().
+        $attRaw = Get-Content -LiteralPath (Join-Path $dir "attempts.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+        $jrRaw = Get-Content -LiteralPath (Join-Path $dir "journal.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+        $att = @($attRaw)
+        $jr = @($jrRaw)
+        $h1 = (Get-FileHash -LiteralPath (Join-Path $dir "v1.gif") -Algorithm SHA256).Hash.ToLowerInvariant()
+        $h2 = (Get-FileHash -LiteralPath (Join-Path $dir "v2.gif") -Algorithm SHA256).Hash.ToLowerInvariant()
+    } catch { return $false }
+    $resultOk = ($r.mode -eq "live") -and ($r.simulated -eq $false) -and ($r.verdict -eq "PASS") -and
+        ($r.harness.mode -eq "LIVE") -and ($r.harness.available -eq $true) -and ($r.chain.ok -eq $true) -and
+        $r.v1.sha256 -and $r.v2.sha256 -and ($r.v1.sha256 -ne $r.v2.sha256)
+    if (-not $resultOk) { return $false }
+    $started = @($jr | Where-Object { $_.step -eq "1.service_started" -and $_.mode -eq "live" })
+    $j1 = @($jr | Where-Object { $_.step -eq "6.gif_v1_verified" -and $_.sha256 -eq $r.v1.sha256 })
+    $j2 = @($jr | Where-Object { $_.step -eq "9.gif_v2_verified" -and $_.sha256 -eq $r.v2.sha256 })
+    $ap = @($jr | Where-Object { $_.step -eq "10.approved_v2" })
+    $journalOk = ($started.Count -eq 1) -and ($j1.Count -eq 1) -and ($j2.Count -eq 1) -and ($ap.Count -eq 1)
+    $filesOk = ($h1 -eq $r.v1.sha256) -and ($h2 -eq $r.v2.sha256)
+    # Attempts belong to the run's own occurrence (journal step 3), not to another live run (round 11, R10-02).
+    $persisted = @($jr | Where-Object { $_.step -eq "3.persisted_before_due" })
+    $occ = if ($persisted.Count -eq 1) { $persisted[0].occ_id } else { $null }
+    $nonLive = @($att | Where-Object { $_.mode -ne "LIVE" -or $_.harness -ne "claude_code" -or $_.occ_id -ne $occ })
+    $attemptsOk = ($null -ne $occ) -and ($att.Count -ge 2) -and ($nonLive.Count -eq 0)
+    return $journalOk -and $filesOk -and $attemptsOk
+}
+
+if (-not ("UriSchedulerArgv" -as [type])) {
+    Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public static class UriSchedulerArgv {
+    [DllImport("shell32.dll", SetLastError = true)]
+    static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string cmd, out int n);
+    [DllImport("kernel32.dll")]
+    static extern IntPtr LocalFree(IntPtr p);
+    public static string[] Split(string cmd) {
+        int n;
+        IntPtr p = CommandLineToArgvW(cmd, out n);
+        if (p == IntPtr.Zero) return new string[0];
+        try {
+            string[] a = new string[n];
+            for (int i = 0; i < n; i++) a[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(p, i * IntPtr.Size));
+            return a;
+        } finally { LocalFree(p); }
+    }
+}
+"@
+}
+
+function Test-IsThisService($proc, $svc) {
+    # Windows' own argument splitting, then fixed positions: <python>.exe -m uri_scheduler.service run ... --state <State>.
+    # A quoted argument that merely contains this text is one argument and cannot match (round 10, R10-03).
+    $argv = [UriSchedulerArgv]::Split([string]$proc.CommandLine)
+    if ($argv.Count -lt 6) { return $false }
+    if ((Split-Path -Leaf $argv[0]) -notmatch '^pythonw?(\d+(\.\d+)?)?(\.exe)?$') { return $false }
+    if ($argv[1] -ne "-m" -or $argv[2] -ne "uri_scheduler.service" -or $argv[3] -ne "run") { return $false }
+    $want = [System.IO.Path]::GetFullPath($State).TrimEnd([char]92)
+    $ok = $false
+    for ($i = 4; $i -lt $argv.Count - 1; $i++) {
+        if ($argv[$i] -eq "--state") {
+            try { $got = [System.IO.Path]::GetFullPath($argv[$i + 1]).TrimEnd([char]92) } catch { $got = "" }
+            $ok = [string]::Equals($got, $want, [StringComparison]::OrdinalIgnoreCase)
+        }
+    }
+    if (-not $ok) { return $false }
+    # A reused PID belongs to a process that started at another time than the service recorded in service.json.
+    $created = ([DateTimeOffset]$proc.CreationDate).ToUnixTimeMilliseconds() / 1000.0
+    return [Math]::Abs($created - [double]$svc.started) -le 120
 }
 
 function New-TaskDefinition($p) {
@@ -108,8 +185,7 @@ function Stop-SchedulerService {
     $svc = Get-Content -LiteralPath $info -Raw -Encoding UTF8 | ConvertFrom-Json
     $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$([int]$svc.pid)" -ErrorAction SilentlyContinue
     if (-not $proc) { return "recorded pid $($svc.pid) is not running" }
-    $cl = [string]$proc.CommandLine
-    if ($cl -notmatch "uri_scheduler\.service" -or $cl.IndexOf($State, [StringComparison]::OrdinalIgnoreCase) -lt 0) {
+    if (-not (Test-IsThisService $proc $svc)) {
         return "pid $($svc.pid) is not this scheduler service; left alone"
     }
     if (-not $Apply) { return "DRY RUN: would stop scheduler service pid $($svc.pid)" }
@@ -154,13 +230,28 @@ switch ($Action) {
         "Registered $TaskName for $UserId. Rollback: -Action uninstall -State `"$State`" -Apply"
     }
     "uninstall" {
+        if ($Apply -and -not $State) { throw "REFUSED: rollback needs -State (the installed service's state directory) so its running service is stopped too" }
         $exists = [bool](Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)
         if (-not $Apply) {
             "DRY RUN: would stop and unregister $TaskName only (exists: $exists); state and artifacts are kept."
             Stop-SchedulerService
             break
         }
-        if ($exists) { Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue }
+        if ($exists) {
+            # The registered task must be the one for this -State (round 11, R11-01): otherwise nothing is touched.
+            $t = Get-ScheduledTask -TaskName $TaskName
+            $targs = [UriSchedulerArgv]::Split("x " + [string]$t.Actions[0].Arguments)
+            $want = [System.IO.Path]::GetFullPath($State).TrimEnd([char]92)
+            $match = $false
+            for ($i = 0; $i -lt $targs.Count - 1; $i++) {
+                if ($targs[$i] -eq "--state") {
+                    try { $got = [System.IO.Path]::GetFullPath($targs[$i + 1].Trim('"')).TrimEnd([char]92) } catch { $got = "" }
+                    $match = [string]::Equals($got, $want, [StringComparison]::OrdinalIgnoreCase)
+                }
+            }
+            if (-not $match) { throw "REFUSED: $TaskName is registered for another state directory; nothing was changed" }
+            Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+        }
         Stop-SchedulerService
         Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
         if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) { throw "ROLLBACK FAILED: $TaskName still registered" }
