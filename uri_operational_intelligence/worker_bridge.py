@@ -32,6 +32,7 @@ from collections import deque
 from . import brain_catalog
 from . import brain_health
 from . import cloud_policy
+from . import schedule_intent
 from . import text_input as TI
 from . import text_intent as TX
 from .draft_desk import DeskError, DraftDesk
@@ -272,6 +273,16 @@ class IntegratedTurns:
             self._record_history(session_id, words, answer if out.status in ("ok", "incomplete") else None)
             return out
 
+        # A2UI slice (docs/a2ui/A2UI_ARCHITECTURE.md): a festival-greeting scheduling request is handed to the
+        # scheduler, which proposes and renders an editable surface. No authority is exercised here.
+        # Combined with text intelligence: the interpreter reads the cleaned transcript (`plain`); dictated content is
+        # never handed off (TI L-2: dictation is content); a handoff ends an open draft question like any new request.
+        handoff = schedule_intent.interpret(plain) if inp.mode != "dictation" else None
+        if handoff is not None:
+            self.desk.drop_open_question(session_id)
+            self._start(turn_id, lambda: self._a2ui_handoff(turn_id, session_id, plain, handoff))
+            return {"turn_id": turn_id, "accepted": True, "selection": self.selected}
+
         def run():
             sink = self._sink(turn_id)
             try:
@@ -308,6 +319,20 @@ class IntegratedTurns:
 
         self._start(turn_id, run)
         return {"turn_id": turn_id, "accepted": True, "selection": self.selected}
+
+    def _a2ui_handoff(self, turn_id, session_id, text, handoff):
+        sink = self._sink(turn_id)
+        emit = lambda t, **d: sink.emit(turn_id, t, **d)   # noqa: E731
+        reply = "I've prepared a festival GIF schedule for you to review. Nothing runs until you confirm it."
+        emit("turn.started", text_chars=len(text), depth="auto")
+        emit("turn.routed", route="a2ui", triage={"kind": "SCHEDULE_REQUEST", "interpreter": handoff["interpreter"]},
+             tier={"tier": "NONE", "selected_by": "deterministic", "reason": "no model call"})
+        emit("a2ui.handoff", **handoff)
+        emit("answer.delta", text=reply)
+        emit("answer.done", status="COMPLETE", complete=True, escalation_candidate=False, flags=[], metrics={})
+        emit("turn.finished", status="ok", route="a2ui", total_s=0)
+        emit("companion.state", state="waiting_user")
+        self._record_history(session_id, text, reply)
 
     def _remember(self, turn_id, session_id, text, env, status):
         if env is not None and status == "needs_user":

@@ -1,0 +1,125 @@
+{
+ "started_utc": "2026-10-09T13:00:20.089924+00:00",
+ "evidence_level": "P (process: real service + real renderer; executor is the SYNTHETIC fixture, not Claude)",
+ "checks": {
+  "state_dir": "temporary, outside the evidence",
+  "fixture_artifact_ready_s": 7.1,
+  "service_killed_and_restarted": true,
+  "activated_schedule": {
+   "selection": [
+    "diwali",
+    "holi"
+   ],
+   "time": "08:30",
+   "offset_days": -2
+  },
+  "superseded_proposals_cancelled": 1,
+  "artifact_approved_occurrences": 1,
+  "calendar_correction": {
+   "festival_key": "karva_chauth",
+   "year": 2026,
+   "action": "dispute",
+   "note": "live check: disputed"
+  },
+  "hash_chain": {
+   "ok": true,
+   "checked": 27,
+   "head": "36b0852c5940c90b9c72024cda12f0fdaa6495ee09b5dbce7d58b4e911178f2f"
+  },
+  "a2ui_actions_audited": [
+   [
+    "scheduler.confirm_proposal",
+    "DRAFT_CHANGED"
+   ],
+   [
+    "scheduler.revise_proposal",
+    "OK"
+   ],
+   [
+    "scheduler.review_artifact",
+    "OK"
+   ],
+   [
+    "calendar.correct_record",
+    "OK"
+   ],
+   [
+    "scheduler.confirm_proposal",
+    "STALE_SURFACE"
+   ],
+   [
+    "scheduler.confirm_proposal",
+    "OK"
+   ]
+  ]
+ },
+ "phase_a": {
+  "exit": 0,
+  "seconds": 14.4
+ },
+ "phase_b": {
+  "exit": 0,
+  "seconds": 5.8
+ },
+ "renderer_timings_ms": {
+  "phase_a": [
+   {
+    "what": "handoff->surface",
+    "ms": 34.483
+   },
+   {
+    "what": "apply",
+    "ms": 11.782
+   },
+   {
+    "what": "action:scheduler.revise_proposal",
+    "ms": 11.702
+   },
+   {
+    "what": "apply",
+    "ms": 1.329
+   },
+   {
+    "what": "apply",
+    "ms": 5.35
+   },
+   {
+    "what": "action:scheduler.review_artifact",
+    "ms": 7.11
+   },
+   {
+    "what": "apply",
+    "ms": 0.187
+   },
+   {
+    "what": "apply",
+    "ms": 1.22
+   },
+   {
+    "what": "action:calendar.correct_record",
+    "ms": 15.99
+   },
+   {
+    "what": "apply",
+    "ms": 0.788
+   }
+  ],
+  "phase_b": [
+   {
+    "what": "apply",
+    "ms": 12.083
+   },
+   {
+    "what": "action:scheduler.confirm_proposal",
+    "ms": 7.514
+   },
+   {
+    "what": "apply",
+    "ms": 0.65
+   }
+  ]
+ },
+ "verdict": "PASS",
+ "state_snapshot": "state_snapshot.json (inert export; runtime state deleted)",
+ "finished_utc": "2026-10-09T13:00:48.289089+00:00"
+}

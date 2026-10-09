@@ -459,3 +459,44 @@ def test_l2_exact_choices_with_politeness_decide(fake, tmp_path, answer):
         assert core.calls and core.calls[0][1] == "Write a notice. Send the form by Friday."
     else:
         assert core.calls == [] and frames.data("draft.updated")
+
+
+# ---- TI x A2UI (canonical 1587449): the scheduling handoff and the draft desk -------------------------------------
+FESTIVAL = ("URI, schedule Claude to create a festival GIF two days before each major Indian festival and bring it to "
+            "me for approval.")
+
+
+def test_a2ui_handoff_still_precedes_the_desk_in_auto_mode(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, FESTIVAL)
+    assert frames.data("turn.routed")[-1]["route"] == "a2ui" and frames.data("a2ui.handoff")
+    assert fake.requests == [] and core.calls == [] and not frames.data("draft.updated")
+
+
+def test_a2ui_dictated_schedule_request_is_content_never_a_handoff(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    fake.scripts.append(_edit(FESTIVAL.replace("URI, schedule", "Schedule")))
+    turn(b, FESTIVAL, input={"schema": TI.SCHEMA, "source": "typed", "mode": "dictation"})
+    assert not frames.data("a2ui.handoff") and core.calls == []
+    assert frames.data("turn.routed")[-1]["route"] == "draft" and last_draft(frames)["current"]["op"] == "corrected"
+
+
+def test_a2ui_transcript_handoff_reads_the_cleaned_words(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore(REFUSE))
+    raw = "um uri, schedule Claude to to create a festival GIF two days before each major Indian festival and bring it to me for approval"
+    turn(b, raw, input={"schema": TI.SCHEMA, "source": "transcript",
+                        "transcript": {"raw": raw, "engine": "simulated", "simulated": True}})
+    h = frames.data("a2ui.handoff")
+    assert h and h[0]["request"]["offset_days"] == 2
+
+
+def test_a2ui_handoff_drops_an_open_draft_question(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, "Write a notice. Send the form by Friday.")           # TI question is open
+    turn(b, FESTIVAL)                                              # a new request: the scheduler handoff
+    assert frames.data("a2ui.handoff")
+    turn(b, "Do it")                                               # no longer an answer to the TI question
+    assert not any(c[1] == "Write a notice. Send the form by Friday." for c in core.calls)

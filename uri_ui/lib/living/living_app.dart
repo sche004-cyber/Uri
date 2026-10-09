@@ -17,6 +17,7 @@ import '../models/user_preferences.dart';
 import '../services/file_picker_service.dart';
 import '../services/preferences_store.dart';
 import '../theme/uri_theme.dart';
+import 'a2ui/a2ui_hub.dart';
 import 'companion/companion_preferences.dart';
 import 'companion/companion_sources.dart';
 import 'companion/effects_settings.dart';
@@ -25,6 +26,7 @@ import 'contracts/readiness_report.dart';
 import 'contracts/work_items.dart';
 import 'integration/oi_conversation.dart';
 import 'integration/oi_sources.dart';
+import 'integration/scheduler_client.dart';
 import 'living_scope.dart';
 import 'presentation/living_shell.dart';
 import 'presentation/presentation_controller.dart';
@@ -116,6 +118,10 @@ class LivingApp extends StatefulWidget {
   static LivingServices buildDefaultServices(AppState appState) {
     final demo = MockCompanionSource();
     final work = MockWorkSimulator();
+    // A2UI in the preview: only when a local scheduler service is configured (`URI_SCHEDULER_STATE`); it then
+    // shows the scheduler's open surfaces (no worker, so no new handoffs).
+    final scheduler = SchedulerClient.fromEnvironment();
+    final a2ui = scheduler == null ? null : (A2uiHub(scheduler: scheduler)..refresh());
     return LivingServices(
       presentation: UiPresentationController(),
       companion: CompositeCompanionSource([
@@ -127,12 +133,22 @@ class LivingApp extends StatefulWidget {
       readiness: MockReadinessSource(),
       effects: EffectsSettings(),
       demo: demo,
+      a2ui: a2ui,
     );
   }
 
   /// Working-system wiring (WS blueprint W9): the orb follows the real OI
   /// event stream and readiness comes from the integrated worker. Office
   /// work items have no backend yet and stay on the flagged simulator.
+  /// A2UI: surfaces come from the scheduler (`URI_SCHEDULER_STATE`); the
+  /// worker's `a2ui.handoff` events ask it to propose. Without a scheduler
+  /// the hub still shows an honest notice for a handoff.
+  static A2uiHub _a2uiHub(OiConversation oi) {
+    final hub = A2uiHub(scheduler: SchedulerClient.fromEnvironment(), handoffs: oi.a2uiHandoffs);
+    hub.refresh();
+    return hub;
+  }
+
   static LivingServices buildIntegratedServices(OiConversation oi) {
     final demo = MockCompanionSource();
     final work = MockWorkSimulator();
@@ -145,6 +161,7 @@ class LivingApp extends StatefulWidget {
       demo: demo,
       appDataIsMock: true,
       oi: oi,
+      a2ui: _a2uiHub(oi),
     );
   }
 }

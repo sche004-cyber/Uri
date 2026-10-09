@@ -1,0 +1,482 @@
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.1 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.1.3 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.0.0 available)
+  file_picker_web 3.1.0 (4.0.1 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_contract_test.dart
+00:00 +0: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_contract_test.dart: shared contract cases: same first error code as Python
+00:00 +1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_contract_test.dart: the real scheduler surfaces validate in the renderer
+00:00 +2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_contract_test.dart: typed context values
+00:00 +3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_contract_test.dart: sha256 matches the standard vectors
+00:00 +4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:00 +4: loading C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_service_live_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  a2ui-live was used in the suite itself
+
+00:00 +4 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +5 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +6 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +7 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +8 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +9 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +10 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +11 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +12 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:01 +13 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +14 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +15 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +16 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +17 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +18 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/a2ui/a2ui_hub_test.dart: a handoff renders the proposal; inputs stay local; revise sends the exact digest and draft
+00:02 +19 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +20 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +21 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +22 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +23 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +24 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +25 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +26 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +27 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +28 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +29 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +30 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +31 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +32 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:02 +33 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +34 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +35 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +36 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +37 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +38 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +39 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +40 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +41 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +42 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +43 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +44 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +45 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +46 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +47 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:03 +48 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: asking from Home surfaces a proposal that can be approved to a result
+00:04 +49 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:04 +50 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:04 +51 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/chat_lifecycle_test.dart: End-to-end through AskUriScreen (MockUriClient) the message stays visible through pending, then settles to a real result
+00:04 +52 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:04 +53 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +54 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +55 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +56 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +57 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +58 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +59 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +60 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +61 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +62 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: Compact toggle fills the window as the active UI over an inert (offstage) Workspace shell, wide layout only
+00:05 +63 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +64 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +65 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +66 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +67 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +68 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +69 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +70 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +71 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +72 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +73 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +74 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +75 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +76 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +77 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +78 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +79 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +80 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +81 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +82 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +83 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +84 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +85 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +86 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +87 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +88 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +89 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +90 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +91 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +92 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +93 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +94 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +95 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +96 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +97 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +98 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +99 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +100 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +101 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: Connections shows the three distinct connection states
+00:05 +102 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +103 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +104 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +105 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +106 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +107 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +108 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +109 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +110 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +111 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +112 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +113 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +114 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +115 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +116 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +117 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +118 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +119 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: Chat is reachable on route index 1 and renders canonical composer and dock
+00:06 +120 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/ask_uri_flow_test.dart: a request needing a disconnected service is gated, not proposed
+00:06 +121 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
+00:06 +122 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
+00:06 +123 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: a draft typed in Compact survives Expand back to the Workspace composer
+00:06 +124 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +125 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +126 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +127 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +128 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +129 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +130 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +131 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +132 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +133 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +134 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +135 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +136 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +137 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +138 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +139 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +140 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +141 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +142 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +143 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +144 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/connections_screen_test.dart: reconnecting a needs-authorization service updates its state
+00:07 +145 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +146 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +147 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +148 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +149 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +150 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +151 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +152 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +153 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +154 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +155 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +156 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +157 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/dashboard_shell_test.dart: R2: Hoisted composer draft state survives navigation across Chat -> Home -> Tasks -> Chat
+00:07 +158 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:08 +159 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: frame clock a still companion (reduced motion) stops the clock: no frames at all
+00:08 +160 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:08 +161 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: toggling Compact while a request is in flight never duplicates the turn once it resolves
+00:08 +162 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/energy_orb_test.dart: renders unavailable with effects on, animating, no exceptions
+00:08 +163 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/energy_orb_test.dart: renders unavailable with effects on, animating, no exceptions
+00:08 +164 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/energy_orb_test.dart: renders unavailable with effects on, animating, no exceptions
+00:08 +165 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/energy_orb_test.dart: renders unavailable with effects on, animating, no exceptions
+00:08 +166 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/energy_orb_test.dart: renders unavailable with effects on, animating, no exceptions
+00:08 +167 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: entering and expanding Compact calls the native-window hook exactly once each way
+00:08 +168 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: entering and expanding Compact calls the native-window hook exactly once each way
+00:08 +169 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:08 +170 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +171 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +172 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +173 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +174 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +175 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +176 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +177 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +178 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +179 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +180 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +181 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +182 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +183 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme switching companion re-themes everything and keeps the one shell element
+00:09 +184 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:09 +185 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:09 +186 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:09 +187 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: no overflow/overlap at the companion window bound 420x600, with a long draft and a long model name
+00:09 +188 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +189 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +190 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +191 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +192 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +193 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +194 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +195 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +196 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:09 +197 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:10 +198 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: opens in Companion mode with the orb, a status line and a composer
+00:10 +199 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +200 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +201 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +202 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +203 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +204 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +205 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +206 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +207 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +208 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +209 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +210 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +211 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +212 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +213 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +214 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +215 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +216 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +217 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +218 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +219 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +220 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +221 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +222 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +223 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +224 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +225 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +226 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +227 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +228 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +229 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +230 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +231 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +232 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +233 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +234 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +235 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +236 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +237 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +238 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +239 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +240 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +241 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +242 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +243 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +244 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +245 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +246 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +247 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +248 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +249 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:10 +250 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:11 +251 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:11 +252 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:11 +253 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:11 +254 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:11 +255 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/onboarding_test.dart: first run shows onboarding; all eight steps walk; finishing persists and opens the shell
+00:11 +256 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +257 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +258 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +259 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +260 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: shell and theme size, quality and look reach the drawn companion
+00:11 +261 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:12 +262 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:12 +263 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:12 +264 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:12 +265 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:13 +266 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:13 +267 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:13 +268 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:13 +269 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:13 +270 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +271 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +272 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +273 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +274 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +275 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +276 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +277 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +278 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +279 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +280 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/compact_overlay_test.dart: the conversation scrolls inside the Compact window instead of overflowing it
+00:14 +281 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:14 +282 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:14 +283 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: admin sees Capability Grants category and can toggle a grant
+00:14 +284 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page frame-rate choices follow the display
+00:14 +285 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: Settings: harness, Brain, reasoning, approval boundary, orb style, appearance, reduced effects
+00:15 +286 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: Settings: harness, Brain, reasoning, approval boundary, orb style, appearance, reduced effects
+00:15 +287 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: Settings: harness, Brain, reasoning, approval boundary, orb style, appearance, reduced effects
+00:15 +288 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: Settings: harness, Brain, reasoning, approval boundary, orb style, appearance, reduced effects
+00:15 +289 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: Settings: harness, Brain, reasoning, approval boundary, orb style, appearance, reduced effects
+00:15 +290 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: Settings: harness, Brain, reasoning, approval boundary, orb style, appearance, reduced effects
+00:15 +291 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: grant toggle reverts if backend rejects the update
+00:15 +292 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: grant toggle reverts if backend rejects the update
+00:15 +293 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: grant toggle reverts if backend rejects the update
+00:15 +294 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: grant toggle reverts if backend rejects the update
+00:15 +295 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: grant toggle reverts if backend rejects the update
+00:16 +296 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page render quality is offered for living companions only
+00:16 +297 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page render quality is offered for living companions only
+00:16 +298 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: cursor gusts over the orb never throw (all variants, animating)
+00:16 +299 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/living_shell_test.dart: cursor gusts over the orb never throw (all variants, animating)
+00:16 +300 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_8_basic_provider_tier_test.dart: basic provider view never renders token or context window
+00:16 +301 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_8_basic_provider_tier_test.dart: basic provider view never renders token or context window
+00:16 +302 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_8_basic_provider_tier_test.dart: basic provider view never renders token or context window
+00:16 +303 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_8_basic_provider_tier_test.dart: basic provider view never renders token or context window
+00:16 +304 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_8_basic_provider_tier_test.dart: basic provider view never renders token or context window
+00:16 +305 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_8_basic_provider_tier_test.dart: basic provider view never renders token or context window
+00:16 +306 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +307 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +308 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +309 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +310 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +311 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +312 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +313 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +314 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +315 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +316 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +317 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_4_capability_grants_test.dart: non-admin user does NOT see Capability Grants category
+00:16 +318 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page voices: installed ones listed by engine, previews use the prefs
+00:17 +318 ~1: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/paired_runtime_live_test.dart: Dart bridge drives the REAL worker and server
+  Skip: needs URI_CLIENT_MANIFEST (scripts/validate_c6_bridge.py)
+00:17 +318 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page voices: installed ones listed by engine, previews use the prefs
+00:17 +319 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page voices: installed ones listed by engine, previews use the prefs
+00:17 +320 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page voices: installed ones listed by engine, previews use the prefs
+00:17 +321 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page voices: installed ones listed by engine, previews use the prefs
+00:17 +322 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/living/companion_settings_test.dart: settings page voices: installed ones listed by engine, previews use the prefs
+00:17 +323 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:17 +324 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:17 +325 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:17 +326 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:17 +327 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:17 +328 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:17 +329 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +330 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +331 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +332 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +333 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +334 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +335 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +335 ~2: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/supervised_runtime_live_test.dart: Dart runtime drives the REAL supervised worker: lifecycle, mid-run cancel, reconnect
+  Skip: needs URI_CLIENT_MANIFEST (scripts/phase2ops_validate_ui_bridge.py)
+00:18 +335 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +336 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +337 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +338 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +339 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +340 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +341 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +342 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +343 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +344 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +345 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:18 +346 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +347 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +348 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +349 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +350 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +351 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +352 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +353 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +354 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +355 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +356 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +357 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +358 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +359 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +360 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +361 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +362 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: role and experience tier (M22.2) shows the account role and lets the user change tier
+00:19 +363 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:19 +364 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/redesign_test.dart: navigation Hybrid UI has 5 primary destinations, Home shows 4 truthful metric tiles with no embedded composer
+00:19 +365 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:19 +366 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:19 +367 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:19 +368 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:19 +369 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +370 ~3: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +370 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +371 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +372 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +373 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +374 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +375 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +376 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +377 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +378 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +379 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +380 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +381 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +382 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +383 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +384 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +385 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +386 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +387 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +388 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: Test connection uses the typed address even when Save was never pressed
+00:20 +389 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +390 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +391 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +392 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +393 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +394 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +395 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +396 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +397 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:20 +398 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +399 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +400 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +401 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +402 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +403 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +404 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +405 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +406 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +407 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +408 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +409 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +410 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a wide layout shows the real Tasks data table, no cards
+00:21 +411 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:21 +412 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:21 +413 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:21 +414 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:21 +415 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:21 +416 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:21 +417 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:21 +418 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:21 +419 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Profile: devices (M22.2) the confirm dialog is reachable and revoking updates the list
+00:22 +420 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:22 +421 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:22 +422 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:22 +423 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:22 +424 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:22 +425 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:22 +426 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:22 +427 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/tasks_responsive_test.dart: a narrow layout shows the same real tasks as cards, with working Approve/Cancel
+00:22 +428 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Capabilities: model status and human-readable labels (M16/M22.3) shows model/provider status and a humanized capability name
+00:22 +429 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Capabilities: model status and human-readable labels (M16/M22.3) shows model/provider status and a humanized capability name
+00:22 +430 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Capabilities: model status and human-readable labels (M16/M22.3) shows model/provider status and a humanized capability name
+00:22 +431 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Capabilities: model status and human-readable labels (M16/M22.3) shows model/provider status and a humanized capability name
+00:22 +432 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/redesign_test.dart: appearance choosing Deep Navy in Settings actually changes the active theme
+00:22 +433 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/redesign_test.dart: appearance choosing Deep Navy in Settings actually changes the active theme
+00:22 +434 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/redesign_test.dart: appearance choosing Deep Navy in Settings actually changes the active theme
+00:22 +435 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:22 +436 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/settings_server_address_test.dart: a saved address survives a simulated relaunch (persistence unaffected by this fix)
+00:22 +437 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Memory: category picker matches the backend's valid vocabulary offers exactly the five backend-valid categories, no free text
+00:22 +438 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Memory: category picker matches the backend's valid vocabulary offers exactly the five backend-valid categories, no free text
+00:23 +439 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Memory: category picker matches the backend's valid vocabulary offers exactly the five backend-valid categories, no free text
+00:23 +440 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Memory: category picker matches the backend's valid vocabulary offers exactly the five backend-valid categories, no free text
+00:23 +441 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Memory: category picker matches the backend's valid vocabulary offers exactly the five backend-valid categories, no free text
+00:23 +442 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Connections: Google Workspace access is open to every authenticated user (2026-09-12) a non-admin sees enabled connect/reconnect controls and no admin-only notice
+00:24 +443 ~4: C:/Users/cheta/Development/uri-a2ui-integ/uri_ui/test/m22_ui_parity_test.dart: Connections: Google Workspace access is open to every authenticated user (2026-09-12) an admin sees enabled connect/reconnect controls and no notice
+00:24 +444 ~4: All tests passed!

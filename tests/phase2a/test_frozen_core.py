@@ -139,7 +139,23 @@ ALLOWED_NEW = ["uri_supervisor/*", "tests/phase2a/*", "docs/plans/PHASE2A_*", "d
                "uri_scheduler/renderer.py",
                "uri_scheduler/service.py",
                "uri_scheduler/store.py",
-               "uri_scheduler/timespec.py"]
+               "uri_scheduler/timespec.py",
+               # URI A2UI (docs/a2ui/A2UI_ARCHITECTURE.md): EXACT new paths, same WS-D3 rule.
+               "scripts/a2ui_live_check.py",
+               "tests/a2ui/fixtures/contract_cases.json",
+               "tests/a2ui/fixtures/surfaces.json",
+               "tests/a2ui/make_fixtures.py",
+               "tests/a2ui/make_surface_fixtures.py",
+               "tests/a2ui/test_contract.py",
+               "tests/a2ui/test_schedule_intent.py",
+               "tests/a2ui/test_scheduler_a2ui.py",
+               "uri_a2ui/__init__.py",
+               "uri_a2ui/actions.py",
+               "uri_a2ui/catalog.py",
+               "uri_a2ui/surface.py",
+               "uri_a2ui/validate.py",
+               "uri_operational_intelligence/schedule_intent.py",
+               "uri_scheduler/a2ui_host.py"]
 
 needs_zip = pytest.mark.skipif(not CHECKPOINT.exists(), reason="BLOCKED: frozen checkpoint zip not present on this machine")
 
