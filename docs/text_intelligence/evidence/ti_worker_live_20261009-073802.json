@@ -1,0 +1,2895 @@
+{
+ "runs": [
+  {
+   "input": "typed",
+   "steps": [
+    {
+     "text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+     "simulated_transcript": false,
+     "wall_s": 5.199,
+     "route": "draft",
+     "op": "created",
+     "draft": {
+      "can_redo": false,
+      "can_undo": false,
+      "count": 1,
+      "current": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: disciplinary, violation",
+         "severity": "review"
+        },
+        {
+         "code": "DETAIL_DROPPED",
+         "detail": "not in the draft because of your correction or instruction: 5",
+         "severity": "info"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City, State, Zip Code",
+        "Contact Information",
+        "Date",
+        "Hostel Name",
+        "Institution Name",
+        "Warden's Name",
+        "Your Designation",
+        "Your Name",
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "doc_type": "letter",
+      "draft_id": "dd4176f6-8d0c-4654-8f79-8e9917f7306b",
+      "first": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: disciplinary, violation",
+         "severity": "review"
+        },
+        {
+         "code": "DETAIL_DROPPED",
+         "detail": "not in the draft because of your correction or instruction: 5",
+         "severity": "info"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City, State, Zip Code",
+        "Contact Information",
+        "Date",
+        "Hostel Name",
+        "Institution Name",
+        "Warden's Name",
+        "Your Designation",
+        "Your Name",
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "history": [
+       {
+        "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+        "n": 1,
+        "op": "created",
+        "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission."
+       }
+      ],
+      "original_text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+      "pending_question": null,
+      "position": 1,
+      "previous": null,
+      "source": {
+       "source": "typed"
+      },
+      "tone": "formal",
+      "version": 1
+     },
+     "metrics": {
+      "cache_n": 691,
+      "model_used": true,
+      "predicted_n": 556,
+      "predicted_per_second": 123.6524941599261,
+      "prompt_n": 4,
+      "retried": false,
+      "total_s": 4.9172,
+      "ttft_s": 0.4286
+     },
+     "errors": [],
+     "event_types": [
+      "turn.started",
+      "companion.state",
+      "turn.routed",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.updated",
+      "companion.state",
+      "answer.delta",
+      "answer.done",
+      "turn.finished",
+      "companion.state"
+     ]
+    },
+    {
+     "text": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+     "simulated_transcript": false,
+     "wall_s": 1.997,
+     "route": "draft",
+     "op": "revised",
+     "draft": {
+      "can_redo": false,
+      "can_undo": true,
+      "count": 2,
+      "current": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b4"
+       ],
+       "exclusions": [
+        "without permission"
+       ],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [],
+       "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+       "missing": [
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 2,
+       "op": "revised",
+       "removed": [],
+       "summary": "Changed 'without obtaining the necessary permission' to 'without recording their departure in the hostel register' in the first body paragraph.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "doc_type": "letter",
+      "draft_id": "dd4176f6-8d0c-4654-8f79-8e9917f7306b",
+      "first": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: disciplinary, violation",
+         "severity": "review"
+        },
+        {
+         "code": "DETAIL_DROPPED",
+         "detail": "not in the draft because of your correction or instruction: 5",
+         "severity": "info"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City, State, Zip Code",
+        "Contact Information",
+        "Date",
+        "Hostel Name",
+        "Institution Name",
+        "Warden's Name",
+        "Your Designation",
+        "Your Name",
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "history": [
+       {
+        "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+        "n": 1,
+        "op": "created",
+        "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission."
+       },
+       {
+        "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+        "n": 2,
+        "op": "revised",
+        "summary": "Changed 'without obtaining the necessary permission' to 'without recording their departure in the hostel register' in the first body paragraph."
+       }
+      ],
+      "original_text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+      "pending_question": null,
+      "position": 2,
+      "previous": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: disciplinary, violation",
+         "severity": "review"
+        },
+        {
+         "code": "DETAIL_DROPPED",
+         "detail": "not in the draft because of your correction or instruction: 5",
+         "severity": "info"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City, State, Zip Code",
+        "Contact Information",
+        "Date",
+        "Hostel Name",
+        "Institution Name",
+        "Warden's Name",
+        "Your Designation",
+        "Your Name",
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "source": {
+       "source": "typed"
+      },
+      "tone": "formal",
+      "version": 2
+     },
+     "metrics": {
+      "cache_n": 622,
+      "model_used": true,
+      "predicted_n": 165,
+      "predicted_per_second": 119.19488217876616,
+      "prompt_n": 499,
+      "retried": false,
+      "total_s": 1.7512,
+      "ttft_s": 0.3748
+     },
+     "errors": [],
+     "event_types": [
+      "turn.started",
+      "companion.state",
+      "turn.routed",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.updated",
+      "companion.state",
+      "answer.delta",
+      "answer.done",
+      "turn.finished",
+      "companion.state"
+     ]
+    },
+    {
+     "text": "Make it more diplomatic and shorten the second paragraph.",
+     "simulated_transcript": false,
+     "wall_s": 2.569,
+     "route": "draft",
+     "op": "revised",
+     "draft": {
+      "can_redo": false,
+      "can_undo": true,
+      "count": 3,
+      "current": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your attention that seven students left the hostel on Monday without recording their departure in the hostel register."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I would appreciate it if you could review this matter and address it in accordance with hostel regulations. Please let me know if you require any further details regarding the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b4",
+        "b5"
+       ],
+       "exclusions": [
+        "without permission"
+       ],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [],
+       "instruction": "Make it more diplomatic and shorten the second paragraph.",
+       "missing": [
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 3,
+       "op": "revised",
+       "removed": [],
+       "summary": "Made the tone more diplomatic and shortened the second paragraph by removing the request for disciplinary action and simplifying the closing sentence.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your attention that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nI would appreciate it if you could review this matter and address it in accordance with hostel regulations. Please let me know if you require any further details regarding the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "doc_type": "letter",
+      "draft_id": "dd4176f6-8d0c-4654-8f79-8e9917f7306b",
+      "first": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: disciplinary, violation",
+         "severity": "review"
+        },
+        {
+         "code": "DETAIL_DROPPED",
+         "detail": "not in the draft because of your correction or instruction: 5",
+         "severity": "info"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City, State, Zip Code",
+        "Contact Information",
+        "Date",
+        "Hostel Name",
+        "Institution Name",
+        "Warden's Name",
+        "Your Designation",
+        "Your Name",
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "history": [
+       {
+        "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+        "n": 1,
+        "op": "created",
+        "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission."
+       },
+       {
+        "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+        "n": 2,
+        "op": "revised",
+        "summary": "Changed 'without obtaining the necessary permission' to 'without recording their departure in the hostel register' in the first body paragraph."
+       },
+       {
+        "instruction": "Make it more diplomatic and shorten the second paragraph.",
+        "n": 3,
+        "op": "revised",
+        "summary": "Made the tone more diplomatic and shortened the second paragraph by removing the request for disciplinary action and simplifying the closing sentence."
+       }
+      ],
+      "original_text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+      "pending_question": null,
+      "position": 3,
+      "previous": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b4"
+       ],
+       "exclusions": [
+        "without permission"
+       ],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [],
+       "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+       "missing": [
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 2,
+       "op": "revised",
+       "removed": [],
+       "summary": "Changed 'without obtaining the necessary permission' to 'without recording their departure in the hostel register' in the first body paragraph.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "source": {
+       "source": "typed"
+      },
+      "tone": "formal",
+      "version": 3
+     },
+     "metrics": {
+      "cache_n": 622,
+      "model_used": true,
+      "predicted_n": 218,
+      "predicted_per_second": 111.46542619858722,
+      "prompt_n": 473,
+      "retried": false,
+      "total_s": 2.3131,
+      "ttft_s": 0.366
+     },
+     "errors": [],
+     "event_types": [
+      "turn.started",
+      "companion.state",
+      "turn.routed",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.updated",
+      "companion.state",
+      "answer.delta",
+      "answer.done",
+      "turn.finished",
+      "companion.state"
+     ]
+    },
+    {
+     "text": "Undo the last change.",
+     "simulated_transcript": false,
+     "wall_s": 0.001,
+     "route": "draft",
+     "op": "undo",
+     "draft": {
+      "can_redo": true,
+      "can_undo": true,
+      "count": 3,
+      "current": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b4"
+       ],
+       "exclusions": [
+        "without permission"
+       ],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [],
+       "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+       "missing": [
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 2,
+       "op": "revised",
+       "removed": [],
+       "summary": "Changed 'without obtaining the necessary permission' to 'without recording their departure in the hostel register' in the first body paragraph.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "doc_type": "letter",
+      "draft_id": "dd4176f6-8d0c-4654-8f79-8e9917f7306b",
+      "first": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: disciplinary, violation",
+         "severity": "review"
+        },
+        {
+         "code": "DETAIL_DROPPED",
+         "detail": "not in the draft because of your correction or instruction: 5",
+         "severity": "info"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City, State, Zip Code",
+        "Contact Information",
+        "Date",
+        "Hostel Name",
+        "Institution Name",
+        "Warden's Name",
+        "Your Designation",
+        "Your Name",
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "history": [
+       {
+        "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+        "n": 1,
+        "op": "created",
+        "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission."
+       },
+       {
+        "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+        "n": 2,
+        "op": "revised",
+        "summary": "Changed 'without obtaining the necessary permission' to 'without recording their departure in the hostel register' in the first body paragraph."
+       },
+       {
+        "instruction": "Make it more diplomatic and shorten the second paragraph.",
+        "n": 3,
+        "op": "revised",
+        "summary": "Made the tone more diplomatic and shortened the second paragraph by removing the request for disciplinary action and simplifying the closing sentence."
+       }
+      ],
+      "original_text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+      "pending_question": null,
+      "position": 2,
+      "previous": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized Departure of Students from Hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "I am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "I request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved."
+        },
+        {
+         "id": "b6",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b7",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]\n[Contact Information]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        },
+        {
+         "key": "recipient",
+         "superseded": [],
+         "value": "warden"
+        }
+       ],
+       "flags": [
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: disciplinary, violation",
+         "severity": "review"
+        },
+        {
+         "code": "DETAIL_DROPPED",
+         "detail": "not in the draft because of your correction or instruction: 5",
+         "severity": "info"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City, State, Zip Code",
+        "Contact Information",
+        "Date",
+        "Hostel Name",
+        "Institution Name",
+        "Warden's Name",
+        "Your Designation",
+        "Your Name",
+        "[City, State, Zip Code]",
+        "[Contact Information]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Warden's Name]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This action is in violation of the hostel regulations regarding overnight stays and early departures.\n\nI request you to look into this matter and take the appropriate disciplinary action as per the hostel rules. Please let me know if you require any further details regarding the identities of the students involved.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]\n[Contact Information]"
+      },
+      "source": {
+       "source": "typed"
+      },
+      "tone": "formal",
+      "version": 2
+     },
+     "metrics": {
+      "model_used": false
+     },
+     "errors": [],
+     "event_types": [
+      "turn.started",
+      "companion.state",
+      "turn.routed",
+      "draft.updated",
+      "companion.state",
+      "answer.delta",
+      "answer.done",
+      "turn.finished",
+      "companion.state"
+     ]
+    }
+   ]
+  },
+  {
+   "input": "simulated_transcript",
+   "steps": [
+    {
+     "text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+     "simulated_transcript": true,
+     "wall_s": 5.019,
+     "route": "draft",
+     "op": "created",
+     "draft": {
+      "can_redo": false,
+      "can_undo": false,
+      "count": 1,
+      "current": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8",
+        "b9"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        },
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: violation",
+         "severity": "review"
+        },
+        {
+         "code": "NEW_DETAIL",
+         "detail": "not in your words: 1, 2, 3, 4, 6",
+         "severity": "review"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City",
+        "Date",
+        "Hostel name",
+        "Institution name",
+        "Sender's designation",
+        "Sender's name",
+        "Specific names and roll numbers of the seven students",
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "doc_type": "letter",
+      "draft_id": "2b8bf06e-b57d-483e-8112-642e8b0918a6",
+      "first": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8",
+        "b9"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        },
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: violation",
+         "severity": "review"
+        },
+        {
+         "code": "NEW_DETAIL",
+         "detail": "not in your words: 1, 2, 3, 4, 6",
+         "severity": "review"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City",
+        "Date",
+        "Hostel name",
+        "Institution name",
+        "Sender's designation",
+        "Sender's name",
+        "Specific names and roll numbers of the seven students",
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "history": [
+       {
+        "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+        "n": 1,
+        "op": "created",
+        "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission."
+       }
+      ],
+      "original_text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+      "pending_question": null,
+      "position": 1,
+      "previous": null,
+      "source": {
+       "engine": "simulated",
+       "language": "en-IN",
+       "raw": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "simulated": true,
+       "source": "transcript",
+       "uncertain": []
+      },
+      "tone": "formal",
+      "version": 1
+     },
+     "metrics": {
+      "cache_n": 618,
+      "model_used": true,
+      "predicted_n": 592,
+      "predicted_per_second": 131.97190137344566,
+      "prompt_n": 79,
+      "retried": false,
+      "total_s": 4.7776,
+      "ttft_s": 0.2991
+     },
+     "errors": [],
+     "event_types": [
+      "turn.started",
+      "companion.state",
+      "turn.routed",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.updated",
+      "companion.state",
+      "answer.delta",
+      "answer.done",
+      "turn.finished",
+      "companion.state"
+     ]
+    },
+    {
+     "text": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+     "simulated_transcript": true,
+     "wall_s": 1.951,
+     "route": "draft",
+     "op": "revised",
+     "draft": {
+      "can_redo": false,
+      "can_undo": true,
+      "count": 2,
+      "current": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b4"
+       ],
+       "exclusions": [
+        "without permission"
+       ],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        }
+       ],
+       "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+       "missing": [
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 2,
+       "op": "revised",
+       "removed": [],
+       "summary": "Updated the description of the incident to specify that students left without recording their departure in the hostel register.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "doc_type": "letter",
+      "draft_id": "2b8bf06e-b57d-483e-8112-642e8b0918a6",
+      "first": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8",
+        "b9"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        },
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: violation",
+         "severity": "review"
+        },
+        {
+         "code": "NEW_DETAIL",
+         "detail": "not in your words: 1, 2, 3, 4, 6",
+         "severity": "review"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City",
+        "Date",
+        "Hostel name",
+        "Institution name",
+        "Sender's designation",
+        "Sender's name",
+        "Specific names and roll numbers of the seven students",
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "history": [
+       {
+        "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+        "n": 1,
+        "op": "created",
+        "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission."
+       },
+       {
+        "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+        "n": 2,
+        "op": "revised",
+        "summary": "Updated the description of the incident to specify that students left without recording their departure in the hostel register."
+       }
+      ],
+      "original_text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+      "pending_question": null,
+      "position": 2,
+      "previous": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8",
+        "b9"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        },
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: violation",
+         "severity": "review"
+        },
+        {
+         "code": "NEW_DETAIL",
+         "detail": "not in your words: 1, 2, 3, 4, 6",
+         "severity": "review"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City",
+        "Date",
+        "Hostel name",
+        "Institution name",
+        "Sender's designation",
+        "Sender's name",
+        "Specific names and roll numbers of the seven students",
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "source": {
+       "engine": "simulated",
+       "language": "en-IN",
+       "raw": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "simulated": true,
+       "source": "transcript",
+       "uncertain": []
+      },
+      "tone": "formal",
+      "version": 2
+     },
+     "metrics": {
+      "cache_n": 622,
+      "model_used": true,
+      "predicted_n": 152,
+      "predicted_per_second": 115.85254043138575,
+      "prompt_n": 599,
+      "retried": false,
+      "total_s": 1.7148,
+      "ttft_s": 0.4112
+     },
+     "errors": [],
+     "event_types": [
+      "turn.started",
+      "companion.state",
+      "turn.routed",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.updated",
+      "companion.state",
+      "answer.delta",
+      "answer.done",
+      "turn.finished",
+      "companion.state"
+     ]
+    },
+    {
+     "text": "Make it more diplomatic and shorten the second paragraph.",
+     "simulated_transcript": true,
+     "wall_s": 2.52,
+     "route": "draft",
+     "op": "revised",
+     "draft": {
+      "can_redo": false,
+      "can_undo": true,
+      "count": 3,
+      "current": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b4"
+       ],
+       "exclusions": [
+        "without permission"
+       ],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        }
+       ],
+       "instruction": "Make it more diplomatic and shorten the second paragraph.",
+       "missing": [
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 3,
+       "op": "revised",
+       "removed": [],
+       "summary": "Removed the phrase 'This action is in violation of the hostel regulations' from the second paragraph to make it more diplomatic and shorter, while keeping the factual statement about the students leaving without recording their departure.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "doc_type": "letter",
+      "draft_id": "2b8bf06e-b57d-483e-8112-642e8b0918a6",
+      "first": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8",
+        "b9"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        },
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: violation",
+         "severity": "review"
+        },
+        {
+         "code": "NEW_DETAIL",
+         "detail": "not in your words: 1, 2, 3, 4, 6",
+         "severity": "review"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City",
+        "Date",
+        "Hostel name",
+        "Institution name",
+        "Sender's designation",
+        "Sender's name",
+        "Specific names and roll numbers of the seven students",
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "history": [
+       {
+        "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+        "n": 1,
+        "op": "created",
+        "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission."
+       },
+       {
+        "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+        "n": 2,
+        "op": "revised",
+        "summary": "Updated the description of the incident to specify that students left without recording their departure in the hostel register."
+       },
+       {
+        "instruction": "Make it more diplomatic and shorten the second paragraph.",
+        "n": 3,
+        "op": "revised",
+        "summary": "Removed the phrase 'This action is in violation of the hostel regulations' from the second paragraph to make it more diplomatic and shorter, while keeping the factual statement about the students leaving without recording their departure."
+       }
+      ],
+      "original_text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+      "pending_question": null,
+      "position": 3,
+      "previous": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b4"
+       ],
+       "exclusions": [
+        "without permission"
+       ],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        }
+       ],
+       "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+       "missing": [
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 2,
+       "op": "revised",
+       "removed": [],
+       "summary": "Updated the description of the incident to specify that students left without recording their departure in the hostel register.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "source": {
+       "engine": "simulated",
+       "language": "en-IN",
+       "raw": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "simulated": true,
+       "source": "transcript",
+       "uncertain": []
+      },
+      "tone": "formal",
+      "version": 3
+     },
+     "metrics": {
+      "cache_n": 622,
+      "model_used": true,
+      "predicted_n": 216,
+      "predicted_per_second": 115.00616486534919,
+      "prompt_n": 574,
+      "retried": false,
+      "total_s": 2.2833,
+      "ttft_s": 0.4135
+     },
+     "errors": [],
+     "event_types": [
+      "turn.started",
+      "companion.state",
+      "turn.routed",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.progress",
+      "draft.updated",
+      "companion.state",
+      "answer.delta",
+      "answer.done",
+      "turn.finished",
+      "companion.state"
+     ]
+    },
+    {
+     "text": "Undo the last change.",
+     "simulated_transcript": true,
+     "wall_s": 0.001,
+     "route": "draft",
+     "op": "undo",
+     "draft": {
+      "can_redo": true,
+      "can_undo": true,
+      "count": 3,
+      "current": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b4"
+       ],
+       "exclusions": [
+        "without permission"
+       ],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        }
+       ],
+       "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+       "missing": [
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 2,
+       "op": "revised",
+       "removed": [],
+       "summary": "Updated the description of the incident to specify that students left without recording their departure in the hostel register.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "doc_type": "letter",
+      "draft_id": "2b8bf06e-b57d-483e-8112-642e8b0918a6",
+      "first": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8",
+        "b9"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        },
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: violation",
+         "severity": "review"
+        },
+        {
+         "code": "NEW_DETAIL",
+         "detail": "not in your words: 1, 2, 3, 4, 6",
+         "severity": "review"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City",
+        "Date",
+        "Hostel name",
+        "Institution name",
+        "Sender's designation",
+        "Sender's name",
+        "Specific names and roll numbers of the seven students",
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "history": [
+       {
+        "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+        "n": 1,
+        "op": "created",
+        "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission."
+       },
+       {
+        "instruction": "Actually, don't say without permission. Say they left without recording their departure in the hostel register.",
+        "n": 2,
+        "op": "revised",
+        "summary": "Updated the description of the incident to specify that students left without recording their departure in the hostel register."
+       },
+       {
+        "instruction": "Make it more diplomatic and shorten the second paragraph.",
+        "n": 3,
+        "op": "revised",
+        "summary": "Removed the phrase 'This action is in violation of the hostel regulations' from the second paragraph to make it more diplomatic and shorter, while keeping the factual statement about the students leaving without recording their departure."
+       }
+      ],
+      "original_text": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+      "pending_question": null,
+      "position": 2,
+      "previous": {
+       "blocks": [
+        {
+         "id": "b1",
+         "role": "recipient",
+         "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]"
+        },
+        {
+         "id": "b2",
+         "role": "subject",
+         "text": "Subject: Unauthorized departure of students from the hostel"
+        },
+        {
+         "id": "b3",
+         "role": "salutation",
+         "text": "Respected Sir/Madam,"
+        },
+        {
+         "id": "b4",
+         "role": "body",
+         "text": "This is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations."
+        },
+        {
+         "id": "b5",
+         "role": "body",
+         "text": "The names and roll numbers of the concerned students are listed below for your reference:"
+        },
+        {
+         "id": "b6",
+         "role": "body",
+         "text": "1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]"
+        },
+        {
+         "id": "b7",
+         "role": "body",
+         "text": "I request you to take necessary action in this matter."
+        },
+        {
+         "id": "b8",
+         "role": "closing",
+         "text": "Yours faithfully,"
+        },
+        {
+         "id": "b9",
+         "role": "signature",
+         "text": "[Your Name]\n[Your Designation]"
+        }
+       ],
+       "changed": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8",
+        "b9"
+       ],
+       "exclusions": [],
+       "facts": [
+        {
+         "key": "number_of_students",
+         "superseded": [
+          "five"
+         ],
+         "value": "seven"
+        },
+        {
+         "key": "day_of_incident",
+         "superseded": [],
+         "value": "Monday"
+        },
+        {
+         "key": "nature_of_incident",
+         "superseded": [],
+         "value": "left the hostel without permission"
+        }
+       ],
+       "flags": [
+        {
+         "code": "SUPERSEDED_VALUE_PRESENT",
+         "detail": "number_of_students: 'five' was corrected to 'seven'",
+         "severity": "error"
+        },
+        {
+         "code": "ESCALATION_ADDED",
+         "detail": "stronger than your words: violation",
+         "severity": "review"
+        },
+        {
+         "code": "NEW_DETAIL",
+         "detail": "not in your words: 1, 2, 3, 4, 6",
+         "severity": "review"
+        }
+       ],
+       "instruction": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "missing": [
+        "City",
+        "Date",
+        "Hostel name",
+        "Institution name",
+        "Sender's designation",
+        "Sender's name",
+        "Specific names and roll numbers of the seven students",
+        "[City]",
+        "[Hostel Name]",
+        "[Institution Name]",
+        "[Roll Number]",
+        "[Student Name 1]",
+        "[Student Name 2]",
+        "[Student Name 3]",
+        "[Student Name 4]",
+        "[Student Name 5]",
+        "[Student Name 6]",
+        "[Student Name 7]",
+        "[Your Designation]",
+        "[Your Name]"
+       ],
+       "n": 1,
+       "op": "created",
+       "removed": [],
+       "summary": "A formal letter to the hostel warden reporting that seven students left the hostel on Monday without permission.",
+       "text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Unauthorized departure of students from the hostel\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. This action is in violation of the hostel regulations.\n\nThe names and roll numbers of the concerned students are listed below for your reference:\n\n1. [Student Name 1] - [Roll Number]\n2. [Student Name 2] - [Roll Number]\n3. [Student Name 3] - [Roll Number]\n4. [Student Name 4] - [Roll Number]\n5. [Student Name 5] - [Roll Number]\n6. [Student Name 6] - [Roll Number]\n7. [Student Name 7] - [Roll Number]\n\nI request you to take necessary action in this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]"
+      },
+      "source": {
+       "engine": "simulated",
+       "language": "en-IN",
+       "raw": "URI draft a letter to the warden regarding five students, sorry seven students, who left the hostel on Monday without permission. Make it formal.",
+       "simulated": true,
+       "source": "transcript",
+       "uncertain": []
+      },
+      "tone": "formal",
+      "version": 2
+     },
+     "metrics": {
+      "model_used": false
+     },
+     "errors": [],
+     "event_types": [
+      "turn.started",
+      "companion.state",
+      "turn.routed",
+      "draft.updated",
+      "companion.state",
+      "answer.delta",
+      "answer.done",
+      "turn.finished",
+      "companion.state"
+     ]
+    }
+   ]
+  }
+ ],
+ "installation": {
+  "name": "ti",
+  "port": 18300,
+  "provisioned": "2026-10-09T07:11:31"
+ },
+ "worker_exit": 0
+}

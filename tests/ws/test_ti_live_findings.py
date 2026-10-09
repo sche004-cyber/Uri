@@ -99,3 +99,10 @@ def test_lq24_visible_correction_needs_no_review_line():
     assert V.correction_visible("Actually, don't say without permission. Say they left without recording.",
                                 "left without permission", "left without recording")
     assert not V.correction_visible("Sorry, not two days, three.", "closed for two days", "closed for two days")
+
+
+def test_lq25_list_enumerators_and_placeholders_are_not_quantities():
+    text = "Seven students left.\n1. [Student Name 1]\n5. [Student Name 5]\n7. [Student Name 7]"
+    assert V.canonical_numbers(text) == {7}
+    assert V.check_facts([{"key": "students", "value": "seven", "superseded": ["five"]}], text,
+                         "five students, sorry seven students") == []

@@ -105,7 +105,9 @@ def _phrase_value(toks, i):
 def canonical_numbers(s) -> set:
     """All numbers mentioned in s, as ints (digits, number words incl. 'twenty-five', ordinals, Hindi words)."""
     out = set()
-    f = _fold(s)
+    # List enumerators ("5. [Student Name 5]") are not quantities (live finding LQ-25).
+    f = re.sub(r"(?m)^\s*\d{1,2}[.)]\s", " ", _fold(s))
+    f = re.sub(r"\[[^\]]{1,80}\]", " ", f)          # nor are numbers inside [placeholders]
     for m in re.finditer(r"(?<![\d])(\d{1,9})(?:st|nd|rd|th)?(?![\d])", f.replace(",", "")):
         out.add(int(m.group(1)))
     toks = re.findall(r"[a-z]+", f)
