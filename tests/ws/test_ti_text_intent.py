@@ -145,28 +145,13 @@ def test_l2_dictated_payload_and_ambiguous_sentences_are_exact():
     assert X.action_sentences("Dear all. Send the form by Friday. Thanks.") == ["Send the form by Friday"]
 
 
-def test_lv1_hinglish_family_function_is_a_letter_not_code_work():
-    r = X.classify("Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
-                   has_draft=False)
-    assert r.kind == X.DRAFT_NEW
-    assert X.classify("Fix the bug in this function", has_draft=False).reasons == ["code_work"]   # code stays code
-
-
-@pytest.mark.parametrize("text", ["bug report likho aur bug fix karo", "is function ka note likho aur function fix karo",
-                                  "code ka summary likho"])
-def test_lv1_code_work_with_any_other_code_word_or_action_stays_code_work(text):
-    assert X.classify(text, has_draft=False).reasons == ["code_work"]          # Codex TIWS r6
-
-
-@pytest.mark.parametrize("text", ["is function ka note likho aur function ko badlo",
-                                  "function ka naam change karo aur note likho",
-                                  "principal ko application likho aur is function ko optimise karo",
-                                  "ghar mein function hai, application likho aur function hatao"])
-def test_lv1_any_non_family_use_of_function_stays_code_work(text):
-    assert X.classify(text, has_draft=False).reasons == ["code_work"]          # Codex TIWS r7
-
-
-@pytest.mark.parametrize("text", ["Principal ko leave application likho, shaadi ka function hai",
-                                  "Leave application likho: family function hai, do din ki chutti"])
-def test_lv1_family_function_letters_are_drafts(text):
-    assert X.classify(text, has_draft=False).kind == X.DRAFT_NEW
+# LV-1 (live finding, kept as a limitation): "ghar mein function hai" is a family event, but any use of "function"
+# routes to the ordinary path (safe direction). Three narrower exemptions were rejected by Codex TIWS r6-r8 because
+# each let some code-action request reach the desk, so the accepted round-5 routing stays.
+@pytest.mark.parametrize("text", [
+    "Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.",
+    "bug report likho aur bug fix karo", "is function ka note likho aur function ko badlo",
+    "Ek function hai, usko run karo aur application likho", "Functions ko run karo aur application likho",
+    "Scripts ka summary likho aur bugs fix karo"])
+def test_lv1_any_code_word_including_plurals_keeps_the_code_route(text):
+    assert X.classify(text, has_draft=False).reasons == ["code_work"]

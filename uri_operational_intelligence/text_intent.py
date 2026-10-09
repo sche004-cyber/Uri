@@ -135,25 +135,7 @@ def _core_only(t: str) -> bool:
     return False
 
 
-def _family_function_letter(head: str) -> bool:
-    """'ghar mein function hai': "function" is also a family event. A Hinglish drafting request is language work when
-    "function" is its only code word AND every occurrence of it sits in a family-event phrase (live finding LV-1).
-    Any other use of "function", whatever the verb, keeps the code-work route: "is function ka note likho aur
-    function ko badlo" stays code work, so a change request is never folded into a draft (Codex TIWS r6, r7)."""
-    words = {w.lower() for w in _CODE.findall(head)}
-    if words != {"function"} or not _DRAFT_HINGLISH.search(head):
-        return False
-    total = len(re.findall(r"\bfunctions?\b", head, re.I))
-    return total > 0 and len(_FAMILY_FUNCTION.findall(head)) == total
-
-
-_FAMILY_FUNCTION = re.compile(
-    r"\b(?:ghar|family|home|shaadi|shadi|wedding|puja|pooja|naamkaran|mundan|engagement|sagai|griha pravesh|"
-    r"birthday|anniversary)(?:\s+(?:mein|me|main|ka|ki|ke|in|at|par|pe))?\s+functions?\b"
-    r"|\bfunctions?\s+(?:hai|tha|thi|hain|the|at home|in the family|ghar par|ghar pe)\b", re.I)
-
-
-_CODE = re.compile(r"\b(?:code|bug|function|stack ?trace|compile|repo(?:sitory)?|python|flutter|script)\b", re.I)
+_CODE = re.compile(r"\b(?:code|bugs?|functions?|stack ?traces?|compile|repo(?:sitory|sitories|s)?|python|flutter|scripts?)\b", re.I)
 
 _UNDO = re.compile(r"^\s*(?:(?:uri|ok|okay|no|please)[,!]?\s+)*(?:undo|revert|roll back|rollback|go back|take back|"
                    r"cancel)(?:\s+(?:that|this|it|the|my|your))?(?:\s+(?:last|previous|latest))?(?:\s+(?:change|changes|"
@@ -357,7 +339,7 @@ def classify(text: str, *, has_draft: bool) -> TextIntent:
         return TextIntent(DRAFT_NEW, ["ambiguous_action_sentences"], instruction=t, ambiguous=ambiguous)
     if _core_only(t):
         return TextIntent(NONE, ["core_only_request"])
-    if _CODE.search(head) and not _DRAFT_NEW.match(t) and not _family_function_letter(head):
+    if _CODE.search(head) and not _DRAFT_NEW.match(t):
         return TextIntent(NONE, ["code_work"])
     if _EXPAND.match(t):
         ins, payload = split_payload(t)
