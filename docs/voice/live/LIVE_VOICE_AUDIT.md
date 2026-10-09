@@ -67,3 +67,18 @@ Commit identities changed by the rewrite (the Codex rounds above reviewed the ol
 | `d6709df` | `79e8221` | manual mode (Codex round 2 candidate) |
 | `f44f014` | `49daf8d` | round 2 repairs |
 | `460de05` | `6e3a068` | manual sessions wait for the Brain; recording hashes |
+
+## Round 3 (candidate `c230c0b`): REJECT
+
+Thread `01a1212b-9ba2-7e40-a3c0-c7ee2f6c5785`. Codex confirmed the R2-1, R2-2, R2-3 and R2-5 repairs and that no
+protected path (Core, supervisor, Operational Intelligence, scripts, model_lab, root `.gitignore`) changed.
+
+| ID | Severity | Finding (Codex) | Checked | Repair | Test / evidence |
+|---|---|---|---|---|---|
+| R3-1 | HIGH | an output stream built but failing to start was never closed | confirmed | closed on the failure path | `test_r3_1_a_stream_that_fails_to_start_is_closed` (fails before) |
+| R3-2 | HIGH | `close()` raced bridge creation; a bridge could be started after shutdown | confirmed | creation and shutdown share `bridge_lock` and a `closing` flag | `test_r3_2_no_engine_bridge_after_close_and_close_ends_a_busy_one` (fails before) |
+| R3-3 | MEDIUM | the clip plus ellipsis could be 601 characters | confirmed | the ellipsis is inside the cap | `R3-3: clipped text never exceeds the cap` (fails before); R2-4 test tightened to `<= 40` |
+| R3-4 | HIGH | report said run 7 "all passed"; D1 was misheard and D4 reached no card | confirmed (my overstatement) | report: D1 unmet, D4 incomplete | report section 3 |
+| R3-5 | HIGH | AC-7 and AC-13 marked met/VERIFIED without the specified live evidence | confirmed | both "partly met", with what is NOT VERIFIED | report section 1 |
+| R3-6 | MEDIUM | gate counts and some measurements had no committed files | confirmed | gate logs at `88e2dd7` in `evidence/gates/`; `service_startup.json`; two unsaved figures labelled as such | report sections 4, 6, 7 |
+| R3-7 | MEDIUM | "speaking only while reply audio plays" stronger than the timeline | confirmed: the early `speaking` is OI's text-streaming state (source `URI`), 167 ms before audio in run 7 | claim qualified; limitation 11 | report AC-8 |
