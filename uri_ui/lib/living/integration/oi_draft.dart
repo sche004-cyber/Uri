@@ -162,6 +162,9 @@ List<DiffSegment> wordDiff(String before, String after, {int maxTokens = 1500}) 
     ];
   }
   String norm(String t) => t.trim();
+  // A removed word keeps one space, never its line break: otherwise the replacement that follows it is pushed onto
+  // a new line (real-app finding, TI live run 2026-10-09).
+  String gone(String t) => t.trimRight().isEmpty ? '' : '${t.trimRight()} ';
   final n = a.length, m = b.length;
   final lcs = List.generate(n + 1, (_) => List<int>.filled(m + 1, 0));
   for (var i = n - 1; i >= 0; i--) {
@@ -185,13 +188,13 @@ List<DiffSegment> wordDiff(String before, String after, {int maxTokens = 1500}) 
       i++;
       j++;
     } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
-      add(a[i++], DiffKind.removed);
+      add(gone(a[i++]), DiffKind.removed);
     } else {
       add(b[j++], DiffKind.added);
     }
   }
   while (i < n) {
-    add(a[i++], DiffKind.removed);
+    add(gone(a[i++]), DiffKind.removed);
   }
   while (j < m) {
     add(b[j++], DiffKind.added);

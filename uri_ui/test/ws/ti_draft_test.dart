@@ -128,6 +128,11 @@ void main() {
     expect(d.where((s) => s.kind == DiffKind.removed).map((s) => s.text.trim()), ['permission.']);
     expect(d.where((s) => s.kind == DiffKind.added).map((s) => s.text.trim()), ['recording it.']);
     expect(d.where((s) => s.kind == DiffKind.same).map((s) => s.text).join(), 'Seven students left without ');
+    // A removed word at a line end does not carry the line break into the comparison.
+    final nl = wordDiff('Leaving without permission\n\nRespected Sir', 'Leaving without recording it\n\nRespected Sir');
+    final removed = nl.where((s) => s.kind == DiffKind.removed).map((s) => s.text).join();
+    expect(removed.contains('\n'), isFalse);
+    expect(nl.map((s) => s.kind == DiffKind.removed ? '' : s.text).join(), 'Leaving without recording it\n\nRespected Sir');
     final big = List.filled(2000, 'w').join(' ');
     expect(wordDiff(big, '$big x').length, 2); // bounded fallback
   });

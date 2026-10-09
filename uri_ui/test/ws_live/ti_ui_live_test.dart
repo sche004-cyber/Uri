@@ -146,5 +146,7 @@ void main() {
       out.writeAsStringSync(const JsonEncoder.withIndent(' ').convert(receipt));
       await t.runAsync(rt.close);
     }
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.pump(const Duration(seconds: 5)); // let the mock Hybrid client's latency timers finish
   }, skip: !live, timeout: const Timeout(Duration(minutes: 20)));
 }

@@ -5,18 +5,17 @@
    "route": "draft",
    "finished": "ok",
    "error": null,
-   "chat_line": "Letter (version 1 of 1): A formal letter to the warden reporting that seven students left the hostel on Monday without permission. Missing: City, State, Zip Code, Date, Hostel Name, Institution Name, Warden's Name, Your Designation. Nothing has been sent or saved.",
+   "chat_line": "Letter (version 1 of 1): A formal letter to the Warden reporting that seven students left the hostel on Monday without permission. Missing: [City], [Hostel Name], [Institution Name], [Your Designation], [Your Name], Sender's name. Nothing has been sent or saved.",
    "version_label": "Version 1 of 1",
    "source_label": "Typed",
-   "draft_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without obtaining the necessary permission. This departure was made without prior intimation or approval from the hostel administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without permission\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without obtaining prior permission. I am submitting this report for your information and necessary action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
    "changed": [
     "b1",
     "b2",
     "b3",
     "b4",
     "b5",
-    "b6",
-    "b7"
+    "b6"
    ],
    "flags": [
     "DETAIL_DROPPED/info"
@@ -29,11 +28,12 @@
    "route": "draft",
    "finished": "ok",
    "error": null,
-   "chat_line": "Letter (version 2 of 2): Updated the description of the incident to specify that students left without recording their departure in the hostel register. Missing: [City, State, Zip Code], [Hostel Name], [Institution Name], [Warden's Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+   "chat_line": "Letter (version 2 of 2): Updated the subject and body to specify that students left without recording their departure in the hostel register instead of leaving without permission. Missing: [City], [Hostel Name], [Institution Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
    "version_label": "Version 2 of 2",
    "source_label": "Typed",
-   "draft_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This departure was made without prior intimation or approval from the hostel administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. I am submitting this report for your information and necessary action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
    "changed": [
+    "b2",
     "b4"
    ],
    "flags": [],
@@ -45,12 +45,12 @@
    "route": "draft",
    "finished": "ok",
    "error": null,
-   "chat_line": "Letter (version 3 of 3): Rephrased the second paragraph to be more diplomatic and concise, removing the direct request for action and replacing it with a polite appeal for review and protocol adherence. Missing: [City, State, Zip Code], [Hostel Name], [Institution Name], [Warden's Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
+   "chat_line": "Letter (version 3 of 3): Shortened the second paragraph and adopted a more diplomatic tone by removing the direct request for 'necessary action' and replacing it with a polite request for attention. Missing: [City], [Hostel Name], [Institution Name], [Your Designation], [Your Name]. Nothing has been sent or saved.",
    "version_label": "Version 3 of 3",
    "source_label": "Typed",
-   "draft_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This departure was made without prior intimation or approval from the hostel administration.\n\nI would appreciate it if you could review this matter and ensure necessary steps are taken in accordance with hostel protocols.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. We request your kind attention to this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
    "changed": [
-    "b5"
+    "b4"
    ],
    "flags": [],
    "can_undo": true,
@@ -61,11 +61,12 @@
    "route": "draft",
    "finished": "ok",
    "error": null,
-   "chat_line": "Undone. Showing version 2 of 3 (Updated the description of the incident to specify that students left without recording their departure in the hostel register.).",
+   "chat_line": "Undone. Showing version 2 of 3 (Updated the subject and body to specify that students left without recording their departure in the hostel register instead of leaving without permission.).",
    "version_label": "Version 2 of 3",
    "source_label": "Typed",
-   "draft_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This departure was made without prior intimation or approval from the hostel administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. I am submitting this report for your information and necessary action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
    "changed": [
+    "b2",
     "b4"
    ],
    "flags": [],
@@ -77,12 +78,12 @@
    "route": "draft",
    "finished": "ok",
    "error": null,
-   "chat_line": "Undone. Showing version 2 of 3 (Updated the description of the incident to specify that students left without recording their departure in the hostel register.).",
+   "chat_line": "Undone. Showing version 2 of 3 (Updated the subject and body to specify that students left without recording their departure in the hostel register instead of leaving without permission.).",
    "version_label": "Version 3 of 3",
    "source_label": "Typed",
-   "draft_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This departure was made without prior intimation or approval from the hostel administration.\n\nI would appreciate it if you could review this matter and ensure necessary steps are taken in accordance with hostel protocols.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. We request your kind attention to this matter.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
    "changed": [
-    "b5"
+    "b4"
    ],
    "flags": [],
    "can_undo": true,
@@ -93,11 +94,12 @@
    "route": "draft",
    "finished": "ok",
    "error": null,
-   "chat_line": "Undone. Showing version 2 of 3 (Updated the description of the incident to specify that students left without recording their departure in the hostel register.).",
+   "chat_line": "Undone. Showing version 2 of 3 (Updated the subject and body to specify that students left without recording their departure in the hostel register instead of leaving without permission.).",
    "version_label": "Version 2 of 3",
    "source_label": "Typed",
-   "draft_text": "[Warden's Name]\n[Hostel Name]\n[Institution Name]\n[City, State, Zip Code]\n\nSubject: Unauthorized Departure of Students from Hostel\n\nRespected Sir/Madam,\n\nI am writing to bring to your immediate attention that seven students left the hostel on Monday without recording their departure in the hostel register. This departure was made without prior intimation or approval from the hostel administration.\n\nI request you to look into this matter and take the appropriate action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report of students leaving the hostel without recording their departure in the hostel register\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that seven students left the hostel on Monday without recording their departure in the hostel register. I am submitting this report for your information and necessary action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
    "changed": [
+    "b2",
     "b4"
    ],
    "flags": [],
@@ -109,18 +111,17 @@
    "route": "draft",
    "finished": "ok",
    "error": null,
-   "chat_line": "Letter (version 1 of 1): A formal letter to the warden reporting that students left the hostel on the 6th. Missing: Hostel Name/Address, Institution Name, Month/Year of the 6th, Warden's Name, Your Designation, Your Name. Nothing has been sent or saved.",
+   "chat_line": "Letter (version 1 of 1): A formal letter to the warden reporting that students left the hostel on the 6th. Missing: [City], [Hostel Name], [Institution Name], [Your Designation], [Your Name], Sender's name. Nothing has been sent or saved.",
    "version_label": "Version 1 of 1",
    "source_label": "Simulated transcript",
-   "draft_text": "[Warden's Name]\n[Hostel Name/Address]\n[Institution Name]\n\nSubject: Report on Students Leaving Hostel on the 6th\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that a number of students left the hostel on the 6th [Month/Year].\n\nWe request you to look into the matter and take the necessary action as per the hostel regulations.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
+   "draft_text": "The Warden,\n[Hostel Name],\n[Institution Name],\n[City]\n\nSubject: Report on students leaving the hostel on the 6th\n\nRespected Sir/Madam,\n\nThis is to bring to your kind notice that several students were observed leaving the hostel on the 6th. I am writing to inform you of this occurrence for your necessary records and further action.\n\nYours faithfully,\n\n[Your Name]\n[Your Designation]",
    "changed": [
     "b1",
     "b2",
     "b3",
     "b4",
     "b5",
-    "b6",
-    "b7"
+    "b6"
    ],
    "flags": [
     "DETAIL_DROPPED/info"
