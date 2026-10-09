@@ -114,4 +114,18 @@ void main() {
     expect(tester.widget<TextButton>(find.widgetWithText(TextButton, 'Close draft')).onPressed, isNull);
     expect(tester.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Copy')).onPressed, isNotNull);
   });
+
+  test('an A2UI handoff clears an open draft question in the UI (Codex TIWS r11)', () async {
+    final w1 = HardeningRuntime();
+    final conv = OiConversation(w1);
+    await conv.send('Write a notice. Send the form by Friday.');
+    w1.emit('w1-t1', 'draft.clarify', {'question': 'Should it be written into the text, or should URI do it?', 'draft': null});
+    w1.emit('w1-t1', 'turn.finished', {'status': 'needs_user'});
+    await Future<void>.delayed(fast);
+    expect(conv.draftQuestion, isNotNull);
+    await conv.send('Schedule a festival GIF two days before each festival');
+    w1.emit('w1-t2', 'a2ui.handoff', {'domain': 'scheduler', 'kind': 'festival_gif_schedule'});
+    await Future<void>.delayed(fast);
+    expect(conv.draftQuestion, isNull);
+  });
 }

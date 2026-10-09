@@ -728,6 +728,12 @@ class OiConversation extends ChangeNotifier {
         if (m?.coreCode == 'SETTLED_VERIFIED') unawaited(refreshMemory());
       case 'a2ui.handoff':
         _a2uiHandoffs.add(Map<String, dynamic>.of(data));
+        // A handoff is a new request: the worker dropped any open draft question, so the panel stops showing it
+        // (Codex TIWS r11).
+        if (draftQuestion != null) {
+          draftQuestion = null;
+          notifyListeners();
+        }
         return;
       default:
         return; // unknown types are ignored (contract rule)
