@@ -153,7 +153,10 @@ class Draft:
 
     def to_dict(self, *, include_history=True):
         cur = self.current
-        out = {"draft_id": self.draft_id, "doc_type": self.doc_type, "tone": self.tone, "source": dict(self.source),
+        # uri.ti.draft.v1 (docs/integration/ti_ws_20261009/TI_DRAFT_CONTRACT.md): the one contract every surface
+        # (Draft panel, a future A2UI draft surface) reads. A draft never sends, saves or executes anything.
+        out = {"schema": SNAPSHOT_SCHEMA, "execution": dict(EXECUTION_NONE),
+               "draft_id": self.draft_id, "doc_type": self.doc_type, "tone": self.tone, "source": dict(self.source),
                "original_text": self.original_text, "version": cur.n if cur else 0,
                "position": self.cursor + 1, "count": len(self.versions), "can_undo": self.can_undo,
                "can_redo": self.can_redo, "current": cur.to_dict() if cur else None,
@@ -166,6 +169,11 @@ class Draft:
             out["history"] = [{"n": v.n, "op": v.op, "summary": v.summary, "instruction": v.instruction[:200]}
                               for v in self.versions]
         return out
+
+
+SNAPSHOT_SCHEMA = "uri.ti.draft.v1"
+EXECUTION_NONE = {"state": "NOT_EXECUTED", "sent": False, "saved": False,
+                  "note": "Drafting never sends, saves or executes. Actions go to Core, which asks for approval."}
 
 
 def diff_ids(old_blocks, new_blocks):

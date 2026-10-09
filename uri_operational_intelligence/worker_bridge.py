@@ -33,6 +33,7 @@ from . import brain_catalog
 from . import brain_health
 from . import cloud_policy
 from . import text_input as TI
+from . import text_intent as TX
 from .draft_desk import DeskError, DraftDesk
 from .events import EventSink
 from .perf_monitor import PerfMonitor
@@ -262,21 +263,38 @@ class IntegratedTurns:
         # A transcript reaches the ordinary path with fillers removed; the raw transcript stays in the envelope.
         plain = TI.clean_transcript(text) if inp.is_transcript else text
 
-        def ordinary(sink):
-            out = self.o.handle_turn(plain, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id)
+        def ordinary(sink, request=None):
+            words = request if request is not None else plain
+            out = self.o.handle_turn(words, session_id, depth=depth, history=history, sink=sink, turn_id=turn_id)
             out.events = getattr(sink, "events", out.events)
-            self._remember(turn_id, session_id, plain, out.core, out.status)
+            self._remember(turn_id, session_id, words, out.core, out.status)
             answer = (out.answer or {}).get("text")
-            self._record_history(session_id, plain, answer if out.status in ("ok", "incomplete") else None)
+            self._record_history(session_id, words, answer if out.status in ("ok", "incomplete") else None)
             return out
 
         def run():
             sink = self._sink(turn_id)
             try:
-                intent = self.desk.classify(plain, session_id) if depth != "deep" else None
+                # L-2: explicit modes. "command" is an instruction for the ordinary path (intent discovery, Core,
+                # approvals) and never a draft; "dictation" is content and never reaches Core.
+                if inp.mode == "command":
+                    self.desk.drop_open_question(session_id)
+                    ordinary(sink)
+                    return
+                if inp.mode == "dictation":
+                    self.desk.drop_open_question(session_id)
+                    intent = TX.TextIntent(TX.REWRITE if inp.scope == "rewrite" else TX.CORRECT, ["dictation_mode"],
+                                           payload=plain, instruction=plain)
+                else:
+                    intent = self.desk.classify(plain, session_id) if depth != "deep" else None
+                if intent is not None and intent.reasons[:1] == ["ambiguity_action"]:
+                    # The user chose "do it": the ORIGINAL request goes to the ordinary path; Core decides.
+                    ordinary(sink, request=TI.clean_transcript(intent.payload))
+                    return
                 if intent is not None and intent.is_text_task:
-                    out = self.desk.handle(turn_id, text, session_id, intent, inp, sink,
-                                           fallback=lambda: dict(ordinary(_Rerouted(sink)).__dict__, delegated=True))
+                    fb = None if inp.mode == "dictation" else \
+                        (lambda: dict(ordinary(_Rerouted(sink)).__dict__, delegated=True))
+                    out = self.desk.handle(turn_id, text, session_id, intent, inp, sink, fallback=fb)
                     if not out.get("delegated"):
                         cur = (out.get("draft") or {}).get("current") or {}
                         note = ("[Draft version %s]\n%s" % (cur.get("n"), cur.get("text", "")))[:2000] if cur \

@@ -164,6 +164,10 @@ class OiConversation extends ChangeNotifier {
   /// (`uri.text_input.v1`, engine "simulated"). There is no microphone path.
   bool transcriptMode = false;
 
+  /// Dictation (TI L-2): the words are draft CONTENT, never an instruction.
+  /// Sent as `mode: dictation`; the worker never routes them to Core.
+  bool dictationMode = false;
+
   Map<String, dynamic> brainStatus = const {};
   Map<String, dynamic> catalog = const {};
   List<String> memory = const [];
@@ -385,7 +389,10 @@ class OiConversation extends ChangeNotifier {
   /// With [transcriptMode] on, the words are sent as a simulated transcript.
   Future<void> send(String text) async {
     if (transcriptMode) {
-      return sendTranscript(text, engine: 'simulated', simulated: true);
+      return sendTranscript(text, engine: 'simulated', simulated: true, dictation: dictationMode);
+    }
+    if (dictationMode) {
+      return _turn(text.trim(), {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'dictation'}, 'Dictation');
     }
     return _turn(text.trim(), null, null);
   }
@@ -401,6 +408,7 @@ class OiConversation extends ChangeNotifier {
     required bool simulated,
     String? language,
     List<String> uncertain = const [],
+    bool dictation = false,
   }) {
     // The raw transcript is kept byte for byte (contract: turn text == transcript.raw); only emptiness is
     // judged on a trimmed copy.
@@ -415,8 +423,10 @@ class OiConversation extends ChangeNotifier {
         'language': ?language,
         if (uncertain.isNotEmpty) 'uncertain': uncertain,
       },
+      if (dictation) 'mode': 'dictation',
     };
-    return _turn(t, input, simulated ? 'Simulated transcript' : 'Transcript · $engine');
+    final label = simulated ? 'Simulated transcript' : 'Transcript · $engine';
+    return _turn(t, input, dictation ? '$label · Dictation' : label);
   }
 
   Future<void> _turn(String t, Map<String, dynamic>? input, String? label) async {
@@ -570,6 +580,11 @@ class OiConversation extends ChangeNotifier {
 
   void setTranscriptMode(bool on) {
     transcriptMode = on;
+    notifyListeners();
+  }
+
+  void setDictationMode(bool on) {
+    dictationMode = on;
     notifyListeners();
   }
 

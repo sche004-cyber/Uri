@@ -136,6 +136,18 @@ class _LivingComposerState extends State<LivingComposer> {
                   color: c.inkSoft,
                   onPressed: () => oi.setTranscriptMode(!oi.transcriptMode),
                 ),
+              if (oi != null)
+                IconButton(
+                  key: const ValueKey('living-composer-dictation'),
+                  tooltip: oi.dictationMode
+                      ? 'Dictation: your words become draft text and nothing in them is carried out. Tap to give instructions again.'
+                      : 'Dictate draft text (nothing you dictate is carried out)',
+                  isSelected: oi.dictationMode,
+                  icon: const Icon(Icons.edit_note_outlined, size: 18),
+                  selectedIcon: Icon(Icons.edit_note, size: 18, color: c.warning),
+                  color: c.inkSoft,
+                  onPressed: () => oi.setDictationMode(!oi.dictationMode),
+                ),
               Expanded(
                 child: CallbackShortcuts(
                   bindings: {
@@ -151,9 +163,11 @@ class _LivingComposerState extends State<LivingComposer> {
                     onChanged: appState.setComposerDraft,
                     style: TextStyle(color: c.ink, fontSize: 14),
                     decoration: InputDecoration(
-                      hintText: oi != null && oi.transcriptMode
-                          ? 'Type what was said — sent as a SIMULATED transcript'
-                          : widget.hint,
+                      hintText: oi != null && oi.dictationMode
+                          ? 'Dictation — written as draft text, never carried out'
+                          : oi != null && oi.transcriptMode
+                              ? 'Type what was said — sent as a SIMULATED transcript'
+                              : widget.hint,
                       hintStyle: TextStyle(color: c.inkFaint),
                       filled: false,
                       border: InputBorder.none,

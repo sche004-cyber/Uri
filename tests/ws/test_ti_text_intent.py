@@ -110,3 +110,36 @@ def test_fast_enough_for_every_turn():
             X.classify(text, has_draft=False)
     per_call_ms = (time.perf_counter() - t0) * 1000 / (200 * len(NO_DRAFT))
     assert per_call_ms < 2.0, per_call_ms
+
+
+# ---- L-2: dictation versus commands (owner examples, 2026-10-09) ----------------------------------------------------
+@pytest.mark.parametrize("text,has_draft,kind,reason", [
+    ("Prepare the office order for tomorrow.", False, X.DRAFT_NEW, "create_document"),
+    ("Send this letter to the director.", False, X.NONE, "core_only_request"),
+    ("Send this letter to the director.", True, X.NONE, "core_only_request"),
+    ("Delete the previous paragraph.", True, X.REVISE, "draft_revision"),
+    ("Delete the previous paragraph.", False, X.NONE, "not_a_text_task"),
+    ("Write: send this letter to the director.", False, X.CORRECT, "dictated_content"),
+    ("Write: Delete all files.", True, X.CORRECT, "dictated_content"),
+    ("URI, write: Dear Sir, please send the fee receipt.", False, X.CORRECT, "dictated_content"),
+    ("Write a notice. Send the form by Friday.", False, X.DRAFT_NEW, "ambiguous_action_sentences"),
+    ("Write a notice. Email the parents.", False, X.NONE, "core_only_request"),     # names someone: an action (r2 A1)
+    ("Write a circular. Forward the list to the office.", False, X.DRAFT_NEW, "ambiguous_action_sentences"),
+    # the document itself, a sequence, a destination or a coordinated action stays an action for Core
+    ("Draft a letter to the warden. Send it to him.", False, X.NONE, "core_only_request"),
+    ("Draft a letter to the warden and send it to him.", False, X.NONE, "core_only_request"),
+    ("Draft a notice about the water cut. Then email it to all staff.", False, X.NONE, "core_only_request"),
+    ("Write a notice. Save it to my desktop.", False, X.NONE, "core_only_request"),
+    ("Note down: my car is in slot 4", False, X.NONE, "core_only_request"),          # memory: Core
+    ("Write a notice: Send the form by Friday.", False, X.DRAFT_NEW, "create_document"),
+])
+def test_l2_owner_examples_route(text, has_draft, kind, reason):
+    r = X.classify(text, has_draft=has_draft)
+    assert (r.kind, r.reasons[0]) == (kind, reason)
+
+
+def test_l2_dictated_payload_and_ambiguous_sentences_are_exact():
+    assert X.classify("Write: send this letter to the director.", has_draft=False).payload == \
+        "send this letter to the director."
+    assert X.classify("Write a notice. Send the form by Friday.", has_draft=False).ambiguous == ["Send the form by Friday"]
+    assert X.action_sentences("Dear all. Send the form by Friday. Thanks.") == ["Send the form by Friday"]

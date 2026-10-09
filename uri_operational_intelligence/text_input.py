@@ -9,7 +9,15 @@ The same text intelligence serves typed text and transcribed speech. A turn may 
          "engine": str,                   # recogniser id; "simulated" when no recogniser was involved
          "simulated": bool,               # True when the text was typed or scripted to stand in for speech
          "language": str | None,          # BCP-47 hint, e.g. "en-IN", "hi-IN"; None when unknown
-         "uncertain": [str] }}            # spans the recogniser marked low-confidence (possible mishearing)
+         "uncertain": [str] },            # spans the recogniser marked low-confidence (possible mishearing)
+     "mode": "auto" | "dictation" | "command",   # optional, default "auto" (L-2)
+     "scope": "grammar" | "rewrite"}             # optional, only with mode "dictation"; default "grammar"
+
+Modes (L-2, dictation versus commands):
+  * auto: routing as before (text intent -> draft desk, otherwise the ordinary path, where Core decides actions).
+  * dictation: the words are CONTENT. They become a draft (grammar/punctuation only, or a professional rewrite when
+    scope is "rewrite"); nothing in them is ever carried out, even sentences that start with "send" or "delete".
+  * command: the words are an instruction for URI's ordinary path (intent discovery, Core, approvals), never a draft.
 
 Rules (validated here, fail closed):
   * For a transcript, the turn text must equal `transcript.raw`. The interpretation is produced by URI, never by
@@ -26,6 +34,8 @@ from dataclasses import dataclass, field
 
 SCHEMA = "uri.text_input.v1"
 SOURCES = ("typed", "transcript")
+MODES = ("auto", "dictation", "command")
+SCOPES = ("grammar", "rewrite")
 MAX_RAW = 20000
 MAX_UNCERTAIN = 32
 
@@ -44,16 +54,19 @@ class TextInput:
     simulated: bool = False
     language: str | None = None
     uncertain: tuple = field(default_factory=tuple)
+    mode: str = "auto"
+    scope: str | None = None
 
     @property
     def is_transcript(self):
         return self.source == "transcript"
 
     def to_dict(self):
+        extra = {} if self.mode == "auto" else {"mode": self.mode, **({"scope": self.scope} if self.scope else {})}
         if not self.is_transcript:
-            return {"source": "typed"}
+            return {"source": "typed", **extra}
         return {"source": "transcript", "raw": self.raw, "engine": self.engine, "simulated": self.simulated,
-                "language": self.language, "uncertain": list(self.uncertain)}
+                "language": self.language, "uncertain": list(self.uncertain), **extra}
 
 
 TYPED = TextInput()
@@ -70,11 +83,19 @@ def parse(envelope, text: str) -> TextInput:
     src = envelope.get("source")
     if src not in SOURCES:
         raise InputRejected("INPUT_SOURCE")
+    mode, scope = envelope.get("mode", "auto"), envelope.get("scope")
+    if mode not in MODES:
+        raise InputRejected("INPUT_MODE")
+    if scope is not None and (mode != "dictation" or scope not in SCOPES):
+        raise InputRejected("INPUT_SCOPE")
+    if mode == "dictation" and scope is None:
+        scope = "grammar"
+    optional = {"mode", "scope"}
     if src == "typed":
-        if set(envelope) != {"schema", "source"}:
+        if not {"schema", "source"} <= set(envelope) <= {"schema", "source"} | optional:
             raise InputRejected("INPUT_KEYS")
-        return TYPED
-    if set(envelope) != {"schema", "source", "transcript"}:
+        return TYPED if mode == "auto" else TextInput(mode=mode, scope=scope)
+    if not {"schema", "source", "transcript"} <= set(envelope) <= {"schema", "source", "transcript"} | optional:
         raise InputRejected("INPUT_KEYS")
     t = envelope["transcript"]
     if not isinstance(t, dict) or not set(t) <= {"raw", "engine", "simulated", "language", "uncertain"} \
@@ -96,7 +117,7 @@ def parse(envelope, text: str) -> TextInput:
     if not isinstance(unc, list) or len(unc) > MAX_UNCERTAIN or not all(isinstance(u, str) and 0 < len(u) <= 200 and u in raw
                                                                      for u in unc):
         raise InputRejected("TRANSCRIPT_UNCERTAIN")
-    return TextInput("transcript", raw, engine, simulated, lang, tuple(unc))
+    return TextInput("transcript", raw, engine, simulated, lang, tuple(unc), mode, scope)
 
 
 # ---- deterministic cleanup ---------------------------------------------------------------------------------------

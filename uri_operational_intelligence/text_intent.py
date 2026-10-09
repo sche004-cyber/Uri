@@ -216,6 +216,7 @@ class TextIntent:
     payload: str | None = None        # text to correct / rewrite / expand, when given in the same message
     instruction: str = ""             # the user's request with the payload removed
     targets: dict = field(default_factory=dict)   # {"body": [indices], "roles": [...], "phrases": [...], "global": bool}
+    ambiguous: list = field(default_factory=list)   # sentences that may be content or an instruction to URI (L-2)
 
     @property
     def is_text_task(self):
@@ -224,6 +225,51 @@ class TextIntent:
     def to_dict(self):
         return {"kind": self.kind, "reasons": list(self.reasons), "has_payload": self.payload is not None,
                 "targets": dict(self.targets)}
+
+
+# L-2, dictation versus commands. An explicit content marker ("Write: ...", "Type this: ...", "Dictate: ...") makes
+# everything after the colon CONTENT, also sentences that start with an action verb: they are written, never done.
+# ("Note down" stays a memory action for Core.)
+_CONTENT_MARKER = re.compile(_LEAD + r"(?:write|type|write down|dictate|take dictation)(?:\s+(?:this|the following|"
+                             r"exactly|it down|this down|down))?\s*:\s*(\S[\s\S]*)$", re.I)
+
+
+def action_sentences(text: str) -> list:
+    """Sentences of `text` that read as an instruction to URI (the same detector Core routing uses)."""
+    return [m.group(1).strip() for m in _SENTENCE.finditer(text or "") if _START_ACTION.match(m.group(1))]
+
+
+def _ambiguous_actions(t: str) -> list:
+    """'Write a notice. Send the form by Friday.': a drafting request followed by sentences that start with an action
+    verb whose object is not the document. They may be the notice's own words or an instruction to URI: the desk
+    asks (L-2). Anything else that makes the request an action (a destination, 'then email it', 'and send it',
+    'send it/this') keeps the existing route to Core."""
+    sents = [m for m in _SENTENCE.finditer(t)]
+    if len(sents) < 2 or not (_DRAFT_NEW.match(sents[0].group(1)) or _DRAFT_WANT.match(sents[0].group(1))):
+        return []
+    acts = []
+    for m in sents[1:]:
+        s = m.group(1)
+        a = _START_ACTION.match(s)
+        if not a:
+            continue
+        if _DOC_OBJECT.match(s, a.end()) or re.match(r"\s*(?:it|this|that|me)\b", s[a.end():], re.I):
+            return []                      # "Send it to the director." is about the document: an action
+        if re.match(r"\s*(?:to\s+)?(?:" + _DETERMINERS + r"\s+)?" + _RECIPIENTS + r"\b", s[a.end():], re.I) \
+                or re.match(r"\s*(?:to\s+)?[A-Z][a-z]+\b", s[a.end():]):
+            return []                      # "Email the principal." names someone to act towards: an action (Codex TI r2 A1)
+        acts.append(s.strip())
+    if not acts:
+        return []
+    rest = t
+    for s in acts:
+        rest = rest.replace(s, " ")
+    if _DESTINATION.search(t) or _SEQUENCED.search(t) or _core_only(rest):
+        return []
+    for m in _COORDINATED.finditer(t):
+        if not _content_context(t, m.start()):
+            return []
+    return acts
 
 
 def split_payload(text: str):
@@ -285,6 +331,12 @@ def classify(text: str, *, has_draft: bool) -> TextIntent:
                 return TextIntent(kind, ["draft_operation"], instruction=t)
     if T.triage(t).kind == T.TRIVIAL:
         return TextIntent(NONE, ["trivial"])
+    m = _CONTENT_MARKER.match(t)
+    if m and len(m.group(1).strip()) >= 3:
+        return TextIntent(CORRECT, ["dictated_content"], payload=m.group(1).strip(), instruction=t)
+    ambiguous = _ambiguous_actions(t)
+    if ambiguous:
+        return TextIntent(DRAFT_NEW, ["ambiguous_action_sentences"], instruction=t, ambiguous=ambiguous)
     if _core_only(t):
         return TextIntent(NONE, ["core_only_request"])
     if _CODE.search(head) and not _DRAFT_NEW.match(t):

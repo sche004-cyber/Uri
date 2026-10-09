@@ -32,10 +32,12 @@ is also accepted and means the same.
 | `transcript.simulated` | required boolean. The UI labels such input "Simulated transcript" everywhere it appears |
 | `transcript.language` | optional BCP-47 hint (`en-IN`, `hi-IN`) |
 | `transcript.uncertain` | optional list (if present it must be a list) of spans that occur in `raw` and that the recogniser marked low-confidence. URI never "fixes" such a span; when it appears in a draft the user sees a POSSIBLE_MISHEARING review line |
+| `mode` | optional, both sources (added 2026-10-09, L-2): `auto` (default, routing unchanged), `dictation` (the words are draft content and never reach Core, even sentences that start with an action verb; sentences that read as instructions get a `DICTATED_INSTRUCTION` info line), `command` (the ordinary path: intent discovery, Core, approvals; never a draft) |
+| `scope` | optional, only with `mode: dictation`: `grammar` (default, grammar/spelling/punctuation only) or `rewrite` (professional rewrite keeping every fact) |
 | anything else | refused (`INPUT_KEYS`, `TRANSCRIPT_KEYS`) |
 
 Refusal codes: `INPUT_NOT_OBJECT`, `INPUT_SCHEMA`, `INPUT_SOURCE`, `INPUT_KEYS`, `TRANSCRIPT_KEYS`, `TRANSCRIPT_RAW`,
-`TRANSCRIPT_TEXT_MISMATCH`, `TRANSCRIPT_SIMULATED`, `TRANSCRIPT_ENGINE`, `TRANSCRIPT_LANGUAGE`, `TRANSCRIPT_UNCERTAIN`.
+`TRANSCRIPT_TEXT_MISMATCH`, `TRANSCRIPT_SIMULATED`, `TRANSCRIPT_ENGINE`, `TRANSCRIPT_LANGUAGE`, `TRANSCRIPT_UNCERTAIN`, `INPUT_MODE`, `INPUT_SCOPE`.
 
 ## 3. What URI does with a transcript
 

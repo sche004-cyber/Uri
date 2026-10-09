@@ -114,9 +114,12 @@ class OiDraft {
   /// "Typed", "Simulated transcript" or "Transcript · `engine`". A real
   /// recogniser is named; a simulated one is always labelled as such.
   String get sourceLabel {
-    if (!fromTranscript) return 'Typed';
-    if (simulatedTranscript) return 'Simulated transcript';
-    return 'Transcript · ${source['engine'] ?? 'unknown engine'}';
+    final base = !fromTranscript
+        ? 'Typed'
+        : simulatedTranscript
+            ? 'Simulated transcript'
+            : 'Transcript · ${source['engine'] ?? 'unknown engine'}';
+    return source['mode'] == 'dictation' ? '$base · Dictation' : base;
   }
 
   static OiDraft? parse(Object? d) {

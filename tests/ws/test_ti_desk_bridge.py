@@ -282,3 +282,133 @@ def test_draft_get_open_while_busy_and_draft_op_refused(fake, tmp_path):
         b.handle("draft_op", {"command": "draft_op", "session_id": SID, "op": "undo"})
     assert e.value.code == "TURN_IN_PROGRESS"
     b.wait(15)
+
+
+# ---- L-2: dictation versus commands -------------------------------------------------------------------------------
+REFUSE = [{"turn_id": "c1", "state": "failed", "code": "REFUSED_NO_CAPABILITY", "message": "No."}]
+
+
+def _edit(text, actions=()):
+    return {"json": json.dumps({"action": "edit", "clarification": None, "fact_updates": [], "exclusions_add": [],
+                                "actions_requested": list(actions),
+                                "edits": [{"op": "replace", "block_id": "b1", "role": "body", "text": text}],
+                                "summary": "Corrected."})}
+
+
+def test_l2_write_marker_makes_a_dictated_command_content_never_core(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    fake.scripts.append(_edit("Send this letter to the director.", actions=["send this letter"]))
+    turn(b, "Write: send this letter to the director.")
+    assert frames.data("turn.routed")[-1]["route"] == "draft" and core.calls == []
+    d = last_draft(frames)
+    assert d["current"]["text"] == "Send this letter to the director."
+    codes = {f["code"]: f for f in d["current"]["flags"]}
+    assert codes["DICTATED_INSTRUCTION"]["severity"] == "info" and "send this letter" in codes["DICTATED_INSTRUCTION"]["detail"]
+    req = fake.requests[-1]["messages"]
+    assert "grammar-only" in req[0]["content"] and "Dictated content" in req[1]["content"]
+
+
+def test_l2_dictation_mode_never_reaches_core_even_when_the_model_reports_actions(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    fake.scripts.append(_edit("Delete the previous paragraph. Send the form by Friday.", actions=["send the form"]))
+    turn(b, "delete the previous paragraph send the form by friday",
+         input={"schema": TI.SCHEMA, "source": "typed", "mode": "dictation"})
+    assert core.calls == [] and frames.data("turn.routed")[-1]["triage"]["reasons"] == ["dictation_mode"]
+    d = last_draft(frames)
+    assert d["current"]["op"] == "corrected" and d["source"]["mode"] == "dictation"
+    assert d["first"]["text"] == "delete the previous paragraph send the form by friday"
+
+
+def test_l2_dictation_transcript_with_rewrite_scope(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore(REFUSE))
+    fake.scripts.append(_edit("Please submit the form by Friday."))
+    raw = "um send the form by friday"
+    turn(b, raw, input={"schema": TI.SCHEMA, "source": "transcript", "mode": "dictation", "scope": "rewrite",
+                        "transcript": {"raw": raw, "engine": "simulated", "simulated": True}})
+    d = last_draft(frames)
+    assert d["current"]["op"] == "rewritten" and d["source"]["scope"] == "rewrite" and d["source"]["raw"] == raw
+    assert "MODE: rewrite" in fake.requests[-1]["messages"][0]["content"]
+
+
+def test_l2_command_mode_goes_to_the_ordinary_path_never_a_draft(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, "Send the form to the office", input={"schema": TI.SCHEMA, "source": "typed", "mode": "command"})
+    assert core.calls and core.calls[0][0] == "begin" and not frames.data("draft.updated")
+
+
+def test_l2_ambiguous_action_sentence_asks_without_a_model_call_then_write_it_in(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, "Write a notice. Send the form by Friday.")
+    assert frames.data("draft.clarify")[-1]["question"].startswith("Should “Send the form by Friday”")
+    assert fake.requests == [] and core.calls == [] and not frames.data("draft.updated")
+    notice = dict(CREATE, actions_requested=["send the form"], doc_type="notice",
+                  blocks=[{"role": "subject", "text": "Notice"},
+                          {"role": "body", "text": "Send the form to the office by Friday."}])
+    fake.scripts.append({"json": json.dumps(notice)})
+    turn(b, "Write it in")
+    assert core.calls == []                                  # the user's choice: content, so no reroute to Core
+    d = last_draft(frames)
+    assert "Send the form" in d["current"]["text"]
+    assert "DICTATED_INSTRUCTION" in {f["code"] for f in d["current"]["flags"]}
+    assert "dictated_sentences" in fake.requests[-1]["messages"][1]["content"]
+
+
+def test_l2_ambiguous_then_do_it_hands_the_original_request_to_core(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    turn(b, "Write a notice. Send the form by Friday.")
+    turn(b, "Do it")
+    assert core.calls and core.calls[0][0] == "begin" and core.calls[0][1] == "Write a notice. Send the form by Friday."
+    assert not frames.data("draft.updated") and fake.requests == []
+
+
+def test_l2_send_this_letter_is_a_command_and_the_draft_is_untouched(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    fake.scripts.append({"json": json.dumps(CREATE)})
+    turn(b, WARDEN)
+    turn(b, "Send this letter to the director.")
+    assert core.calls and core.calls[-1][0] == "begin"        # Core decides (and here refuses: no capability)
+    assert b.handle("draft_get", {"command": "draft_get", "session_id": SID})["draft"]["version"] == 1
+
+
+def test_l2_delete_the_previous_paragraph_edits_the_draft_only(fake, tmp_path):
+    core = FakeCore(REFUSE)
+    b, frames, _ = make(fake, tmp_path, core)
+    fake.scripts += [{"json": json.dumps(CREATE)},
+                     {"json": json.dumps({"action": "edit", "clarification": None, "fact_updates": [],
+                                          "exclusions_add": [], "edits": [{"op": "delete", "block_id": "b5"}],
+                                          "summary": "Removed the second paragraph."})}]
+    turn(b, WARDEN)
+    turn(b, "Delete the previous paragraph.")
+    assert core.calls == [] and frames.data("turn.routed")[-1]["route"] == "draft"
+
+
+# ---- L-4: value reassignment ----------------------------------------------------------------------------------------
+FEES = dict(CREATE, facts=[], doc_type="note",
+            blocks=[{"role": "body", "text": "Ravi paid Rs 500 and Sita paid Rs 700 for the trip."}])
+
+
+def test_l4_swapped_values_get_an_advisory_flag_and_nothing_is_reverted(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore(REFUSE))
+    fake.scripts += [{"json": json.dumps(FEES)}, _edit("Ravi paid Rs 700 and Sita paid Rs 500 for the school trip.")]
+    turn(b, "Write a note: Ravi paid Rs 500 and Sita paid Rs 700 for the trip.")
+    turn(b, "Make it clearer that it was the school trip.")
+    d = last_draft(frames)
+    f = [x for x in d["current"]["flags"] if x["code"] == "VALUE_REASSIGNED"]
+    assert f and f[0]["severity"] == "review" and "Ravi" in f[0]["detail"] and "Sita" in f[0]["detail"]
+    assert "Rs 700 and Sita paid Rs 500" in d["current"]["text"]            # shown, not reverted
+    assert d["previous"]["text"] == "Ravi paid Rs 500 and Sita paid Rs 700 for the trip."   # Changes view basis
+
+
+def test_l4_an_asked_for_reassignment_is_shown_as_asked(fake, tmp_path):
+    b, frames, _ = make(fake, tmp_path, FakeCore(REFUSE))
+    fake.scripts += [{"json": json.dumps(FEES)}, _edit("Ravi paid Rs 700 and Sita paid Rs 500 for the trip.")]
+    turn(b, "Write a note: Ravi paid Rs 500 and Sita paid Rs 700 for the trip.")
+    turn(b, "Actually Ravi paid 700 and Sita paid 500.")
+    codes = {x["code"]: x["severity"] for x in last_draft(frames)["current"]["flags"]}
+    assert codes.get("VALUE_REASSIGNED_AS_ASKED") == "info" and "VALUE_REASSIGNED" not in codes

@@ -157,3 +157,55 @@ def test_cleanup_keeps_self_corrections_and_content():
     out = TI.clean_transcript(raw)
     assert out == "URI write a letter to the warden about the students leaving hostel yesterday, no wait, on the 6th"
     assert TI.clean_transcript("he had had enough") == "he had had enough"
+
+
+# ---- L-2: input modes ---------------------------------------------------------------------------------------------
+def test_l2_input_modes_and_scope_fail_closed():
+    t = TI.parse({"schema": TI.SCHEMA, "source": "typed", "mode": "dictation"}, "x")
+    assert (t.mode, t.scope) == ("dictation", "grammar") and t.to_dict() == {"source": "typed", "mode": "dictation",
+                                                                              "scope": "grammar"}
+    assert TI.parse({"schema": TI.SCHEMA, "source": "typed", "mode": "command"}, "x").mode == "command"
+    assert TI.parse({"schema": TI.SCHEMA, "source": "typed", "mode": "auto"}, "x") is TI.TYPED
+    tr = TI.parse({"schema": TI.SCHEMA, "source": "transcript", "mode": "dictation", "scope": "rewrite",
+                   "transcript": {"raw": "um hi", "engine": "simulated", "simulated": True}}, "um hi")
+    assert tr.is_transcript and tr.scope == "rewrite" and tr.to_dict()["mode"] == "dictation"
+    for env, code in [({"mode": "execute"}, "INPUT_MODE"), ({"mode": "command", "scope": "grammar"}, "INPUT_SCOPE"),
+                      ({"mode": "dictation", "scope": "verbatim"}, "INPUT_SCOPE"), ({"scope": "grammar"}, "INPUT_SCOPE"),
+                      ({"mode": "dictation", "extra": 1}, "INPUT_KEYS")]:
+        with pytest.raises(TI.InputRejected) as e:
+            TI.parse({"schema": TI.SCHEMA, "source": "typed", **env}, "x")
+        assert e.value.code == code
+    assert TI.parse(None, "x").mode == "auto"                       # no envelope: unchanged behaviour
+
+
+# ---- L-4: value reassignment --------------------------------------------------------------------------------------
+@pytest.mark.parametrize("ref,rev", [
+    ("Ravi paid Rs 500 and Sita paid Rs 700.", "Ravi paid Rs 700 and Sita paid Rs 500."),          # amounts / students
+    ("Monday: 7; Tuesday: 8", "Monday: 8; Tuesday: 7"),                                           # quantities / entries
+    ("The exam is on 5 March and the meeting is on 9 March.",
+     "The meeting is on 5 March and the exam is on 9 March."),                                     # dates / events
+    ("Roll no 12 Anil, roll no 15 Sunil.", "Anil has roll number 15 and Sunil has roll number 12."),  # roll numbers
+    ("The bus leaves at 18:00 and returns at 21:00.", "The bus returns at 18:00 and leaves at 21:00."),
+])
+def test_l4_swapped_associations_are_flagged_for_review(ref, rev):
+    f = V.check_reassignment(ref, rev)
+    assert len(f) == 1 and f[0]["code"] == "VALUE_REASSIGNED" and f[0]["severity"] == "review"
+    assert "Changes and Original" in f[0]["detail"]
+
+
+@pytest.mark.parametrize("ref,rev", [
+    ("Ravi paid Rs 500 and Sita paid Rs 700.", "Kindly note that Ravi paid Rs 500, while Sita paid Rs 700."),
+    ("Ravi paid Rs 500 and Sita paid Rs 700.", "Ravi and Sita paid Rs 500 and Rs 700 respectively."),   # restructured
+    ("Seven students left on Monday.", "Seven students left the hostel on Monday without permission."),
+    ("Class A has 30 students and class B has 25 students.", "Class A has 30 students, and class B has 25."),
+    ("Ravi paid Rs 500 and Sita paid Rs 700.", "Ravi paid Rs 550 and Sita paid Rs 700."),           # a changed value:
+    ("", "Ravi paid Rs 500."),                                                                   # other checks' job
+])
+def test_l4_legitimate_rewrites_are_not_flagged(ref, rev):
+    assert V.check_reassignment(ref, rev) == []
+
+
+def test_l4_intended_reassignment_stays_possible_and_is_shown_as_asked():
+    f = V.check_reassignment("Ravi paid Rs 500 and Sita paid Rs 700.", "Ravi paid Rs 700 and Sita paid Rs 500.",
+                             instruction="Actually Ravi paid 700 and Sita paid 500.")
+    assert [(x["code"], x["severity"]) for x in f] == [("VALUE_REASSIGNED_AS_ASKED", "info")]

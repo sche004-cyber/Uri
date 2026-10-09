@@ -12,6 +12,9 @@ Flags (severity "error" = probably wrong, "review" = the user should look, "info
   NEW_DETAIL                review  a number, date or name appears that the user never gave (possible invention)
   CORRECTION_UNCONFIRMED    review  the user corrected themselves but the model reported no superseded value
   POSSIBLE_MISHEARING       review  the recogniser marked a span as uncertain and it is used in the text
+  VALUE_REASSIGNED          review  a value now sits with another entry's word (values exchanged between entries)
+  VALUE_REASSIGNED_AS_ASKED info    the same, where the user's instruction pairs the value with its new word
+  DICTATED_INSTRUCTION      info    dictated content contains sentences that read as instructions; written, not done
   DETAIL_DROPPED            info    a detail from the user's words is absent because it was corrected or excluded;
                                     shown, never silent, so a wrong attribution by the model is visible
 """
@@ -609,3 +612,88 @@ def check_uncertain(uncertain, text) -> list:
 
 def placeholders(text) -> list:
     return sorted(set(re.findall(r"\[([^\]]{1,80})\]", text or "")))
+
+
+# ---- value reassignment (L-4) -------------------------------------------------------------------------------------
+# A rewrite can keep every value and every name and still move a value to a different entry ("Ravi paid 500 and Sita
+# 700" -> "Ravi paid 700 and Sita 500"). No value is missing and none is new, so the checks above stay silent. This
+# compares which words each value sits with, clause by clause, in the earlier text and in the new one. It flags only
+# on mutual evidence and never changes the text; an intended change stays possible (it is shown as asked).
+_CLAUSE = re.compile(r"[.;\n,!?]+|\b(?:and|while|but|whereas)\b", re.I)
+_UNIT_WORDS = set("""
+rs rupees rupee inr re paise usd dollars amount amounts fee fees paid pay pays paying cost costs total
+day days hour hours minute minutes week weeks month months year years marks mark number no roll
+""".split())
+
+
+def _value_partners(text):
+    """{value: set(partner words)} per clause, with values from canonical_numbers (digits, number words, clock
+    times). Partner words: content tokens of the same clause that are not values, units or function words."""
+    pairs = []
+    for clause in _CLAUSE.split(text or ""):
+        if not clause or not clause.strip():
+            continue
+        values = canonical_numbers(clause)
+        if not values:
+            continue
+        words = {t for t in _tokens(clause)
+                 if len(t) > 2 and not t.isdigit() and not t.startswith("clock") and t not in _FUNCTION_WORDS
+                 and t not in _UNIT_WORDS and t not in _NUMWORD and t not in _TENS and t not in _ORD
+                 and t not in _SCALES}
+        pairs.append((values, words))
+    return pairs
+
+
+def _distinctive(pairs):
+    """Partner words that sit with exactly ONE value in the whole text -> {value: set(words)}."""
+    seen = {}
+    for values, words in pairs:
+        for w in words:
+            seen.setdefault(w, set()).update(values)
+    out = {}
+    for values, words in pairs:
+        for v in values:
+            out.setdefault(v, set()).update(w for w in words if seen[w] == {v})
+    return out
+
+
+def _display_value(v):
+    return "%s:%s" % (str(v - CLOCK_BASE).zfill(4)[:2], str(v - CLOCK_BASE).zfill(4)[2:]) if v >= CLOCK_BASE else str(v)
+
+
+def _as_written(word, text):
+    m = re.search(r"(?<![\w])" + re.escape(word) + r"(?![\w])", _fold(text))
+    return text[m.start():m.end()] if m and len(_fold(text)) == len(text) else word
+
+
+def check_reassignment(reference, revised, instruction="") -> list:
+    """VALUE_REASSIGNED (review) when a value lost every word it uniquely sat with in `reference` and now uniquely sits
+    with a word that belonged to another value, while that word's old value moved too (mutual evidence). When the
+    user's `instruction` itself pairs the value with its new word, the line is VALUE_REASSIGNED_AS_ASKED (info).
+    Conservative by design: a clause that holds two values, or a restructured sentence, gives no distinctive word
+    and therefore no flag (see TI limitation L-4 in the integration report)."""
+    ref, rev = _distinctive(_value_partners(reference)), _distinctive(_value_partners(revised))
+    asked = _value_partners(instruction)
+    flags, reported = [], set()
+    for v, old in sorted(ref.items()):
+        new = rev.get(v) or set()
+        if v in reported or not old or not new or old & new:
+            continue
+        for w in sorted(new):
+            others = [u for u, ws in ref.items() if u != v and w in ws]
+            if not others:
+                continue
+            u = others[0]
+            # the old partner must now sit with a different value (it moved, it was not just dropped)
+            moved = [a for a in old if any(a in ws for x, ws in rev.items() if x != v)]
+            if not moved:
+                continue
+            as_asked = any(v in vals and w in words for vals, words in asked)
+            reported.update((v, u))
+            detail = ("%s was with “%s” and is now with “%s”, which was with %s - check the "
+                      "Changes and Original views" % (_display_value(v), _as_written(sorted(old)[0], reference), _as_written(w, revised),
+                                                      _display_value(u)))
+            flags.append(_flag("VALUE_REASSIGNED_AS_ASKED" if as_asked else "VALUE_REASSIGNED",
+                               "info" if as_asked else "review", detail))
+            break
+    return flags

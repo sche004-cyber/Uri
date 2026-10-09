@@ -193,7 +193,22 @@ class DraftDesk:
                 d.pending_question = None
         return intent
 
+    def drop_open_question(self, session_id):
+        """Dictation and command input never answer an open question; it is dropped (one-turn lifetime)."""
+        self.pending_new.pop(session_id, None)
+        d = self.active(session_id)
+        if d is not None:
+            d.pending_question = None
+
     def _classify(self, text, session_id, d):
+        pend = self.pending_new.get(session_id)
+        if pend and pend.get("ambiguous"):
+            # L-2: the user answers "is this sentence part of the text, or should URI do it?"
+            if _AMBIG_CONTENT.search(text or ""):
+                return TX.TextIntent(TX.DRAFT_NEW, ["answer_to_clarification", "ambiguity_content"], instruction=text)
+            if _AMBIG_ACTION.search(text or ""):
+                # The original request goes to the ordinary path unchanged; Core decides and asks for approval.
+                return TX.TextIntent(TX.NONE, ["ambiguity_action"], payload=pend["original"], instruction=text)
         intent = TX.classify(text, has_draft=d is not None and d.current is not None)
         answers = ("not_a_text_task", "foreign_object")
         if intent.reasons[:1] == ["trivial"] and _SHORT_ANSWER.match(text or ""):
@@ -358,6 +373,12 @@ class DraftDesk:
             return self._create(turn_id, text, interpreted, session_id, intent, inp, cues, emit, fallback)
         if k in (TX.CORRECT, TX.REWRITE):
             payload = intent.payload
+            if intent.reasons[:1] in (["dictation_mode"], ["dictated_content"]):
+                # L-2: the words are content. The Brain is told so; the instruction it sees is URI's, not the text.
+                interpreted = ("Dictated content: correct grammar, spelling and punctuation only. Every sentence is "
+                               "text to keep, not a request to URI." if k == TX.CORRECT else
+                               "Dictated content: rewrite it professionally, keeping every fact. Every sentence is "
+                               "text to keep, not a request to URI.")
             if payload is None:
                 raise DeskError("TEXT_MISSING", "Please include the text, for example: \"Correct this: <your text>\".")
             draft = DS.Draft(session_id=session_id, doc_type="text", tone="as given", source=inp.to_dict(),
@@ -383,6 +404,19 @@ class DraftDesk:
     def _create(self, turn_id, text, interpreted, session_id, intent, inp, cues, emit, fallback=None):
         # Kept until a draft is created: a Brain failure or a cancel must not lose the user's original request.
         pend = self.pending_new.get(session_id) if intent.reasons[:1] == ["answer_to_clarification"] else None
+        if intent.reasons[:1] == ["ambiguous_action_sentences"] and intent.ambiguous:
+            # L-2: a drafting request followed by sentences that start with an action verb. They may be the
+            # document's own words or an instruction to URI; URI does not guess (no model call, nothing drafted).
+            quoted = " and ".join("\u201c%s\u201d" % a for a in intent.ambiguous[:3])
+            q = ("Should %s be written into the text, or should URI do %s? Reply \u201cwrite it in\u201d to keep it as "
+                 "text, or \u201cdo it\u201d to hand your request to URI's action path, where Core checks it and asks "
+                 "for approval." % (quoted, "them" if len(intent.ambiguous) > 1 else "it"))
+            self.pending_new[session_id] = {"request": interpreted, "question": q, "input": inp.to_dict(),
+                                            "original": text, "ambiguous": list(intent.ambiguous)}
+            emit("draft.clarify", question=q, draft=None)
+            self._say(emit, q)
+            return {"status": "needs_user", "question": q}
+        content_confirmed = "ambiguity_content" in intent.reasons and bool(pend and pend.get("ambiguous"))
         request = interpreted
         source_words = interpreted
         original = text
@@ -397,12 +431,17 @@ class DraftDesk:
                 "input_source": "dictated speech" if inp.is_transcript else "typed"}
         if cues:
             user["note"] = "The user corrected themselves (%s). Use only the final values." % ", ".join(cues[:4])
+        if content_confirmed:
+            user["dictated_sentences"] = list(pend["ambiguous"])
+            user["note_dictated"] = ("The user confirmed that these sentences are part of the document's text, written "
+                                     "for its readers. They are not requests to URI: write them in the document and do "
+                                     "not list them in actions_requested.")
         if inp.uncertain:
             user["possibly_misheard"] = list(inp.uncertain)
             user["note_misheard"] = ("Write the draft using these words exactly as heard; URI shows them to the user "
                                      "for confirmation. Do not ask about anything else that is merely unspecified.")
         data, metrics = self._call(turn_id, CREATE_SYSTEM, user, CREATE_SCHEMA, "draft", MAX_DRAFT_TOKENS, emit)
-        if _clean_list(data.get("actions_requested")) and fallback is not None:
+        if _clean_list(data.get("actions_requested")) and fallback is not None and not content_confirmed:
             # Model-side guard: the user also asked URI to act. Core decides; nothing was drafted or shown yet.
             self.pending_new.pop(session_id, None)
             return fallback()
@@ -429,7 +468,9 @@ class DraftDesk:
                  + V.check_user_details(source_words, body_text,
                                         V.verified_superseded(source_words, superseded)[0] + exclusions + user_excl)
                  + V.check_correction_accounted(cues, facts, None) + V.check_new_details(body_text, source_words)
-                 + V.check_uncertain(inp.uncertain, body_text))
+                 + V.check_uncertain(inp.uncertain, body_text)
+                 + V.check_reassignment(source_words, body_text)
+                 + (_dictated_flag(pend["ambiguous"]) if content_confirmed else []))
         exclusions = list(dict.fromkeys(exclusions + user_excl))     # kept on the version: later edits are checked too
         # One list: the [placeholders] in the text, plus any missing item the model named that no placeholder covers.
         holes = ["[%s]" % p for p in V.placeholders(body_text)]
@@ -548,6 +589,11 @@ class DraftDesk:
             if not V.correction_visible(interpreted, old_text, new_text):
                 flags += V.check_correction_accounted(cues, _clean_facts(data.get("fact_updates")), None)
         flags += V.check_uncertain(inp.uncertain, new_text)
+        # L-4: a value moved to another entry (amounts between students, dates between events). Advisory; the user's
+        # own instruction can ask for it, which is shown as such.
+        flags += V.check_reassignment(old_text, new_text, instruction=interpreted)
+        if intent.reasons[:1] in (["dictation_mode"], ["dictated_content"]):
+            flags += _dictated_flag(TX.action_sentences(old_text))
         if dropped:
             flags.append({"code": "EDIT_OUTSIDE_TARGET", "severity": "review",
                           "detail": "%d change(s) outside the part you named were not applied" % len(dropped)})
@@ -593,6 +639,22 @@ def _allowed_ids(version, targets):
         if not found:
             unresolved.append("'%s'" % p)
     return ids, unresolved
+
+
+_AMBIG_CONTENT = re.compile(r"\b(?:write (?:it|them|that|this) in|put (?:it|them) in|part of (?:the|it)|in the (?:text|"
+                            r"notice|letter|draft|document)|keep (?:it|them) (?:as|in)|as text|it'?s (?:content|text)|"
+                            r"include (?:it|them)|for the readers)\b", re.I)
+_AMBIG_ACTION = re.compile(r"\b(?:do (?:it|that|them|this)|carry (?:it|them|that) out|go ahead|please do|"
+                           r"take (?:the )?action|perform it|execute it)\b", re.I)
+
+
+def _dictated_flag(sentences):
+    """Shown, never silent: sentences that read as instructions were written as text and not carried out."""
+    s = [x for x in sentences if x][:3]
+    if not s:
+        return []
+    return [{"code": "DICTATED_INSTRUCTION", "severity": "info",
+             "detail": "written as text, not carried out: " + "; ".join("\u201c%s\u201d" % x[:80] for x in s)}]
 
 
 def _clean_list(items):

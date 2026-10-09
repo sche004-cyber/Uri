@@ -63,6 +63,34 @@ Map<String, dynamic> snapshot({required Map<String, dynamic> current, Map<String
     };
 
 void main() {
+  test('dictation mode (L-2) sends mode dictation, typed and as a transcript, and labels the input', () async {
+    final rt = FakeRuntime();
+    final conv = OiConversation(rt)..setDictationMode(true);
+    await conv.send('Send the form by Friday.');
+    expect(rt.commands.last['input'], {'schema': 'uri.text_input.v1', 'source': 'typed', 'mode': 'dictation'});
+    expect(conv.messages.lastWhere((m) => m.role == OiRole.user).inputLabel, 'Dictation');
+    rt.emit('t1', 'turn.finished', {'status': 'ok'});
+    await pumpEventQueue();
+    conv.setTranscriptMode(true);
+    await conv.send('um send the form by friday');
+    final input = rt.commands.last['input'] as Map;
+    expect(input['mode'], 'dictation');
+    expect(input['transcript'], {'raw': 'um send the form by friday', 'engine': 'simulated', 'simulated': true});
+    expect(conv.messages.lastWhere((m) => m.role == OiRole.user).inputLabel, 'Simulated transcript · Dictation');
+    rt.emit('t2', 'turn.finished', {'status': 'ok'});
+    await pumpEventQueue();
+    conv
+      ..setDictationMode(false)
+      ..setTranscriptMode(false);
+    await conv.send('Send this letter to the director.');
+    expect(rt.commands.last.containsKey('input'), isFalse);   // an instruction: the ordinary path, Core decides
+    final d = OiDraft.parse(snapshot(current: v2, previous: v1, simulated: false));
+    expect(d!.sourceLabel, 'Typed');
+    final dd = OiDraft.parse({...snapshot(current: v2, previous: v1, simulated: false),
+      'source': {'source': 'typed', 'mode': 'dictation', 'scope': 'grammar'}});
+    expect(dd!.sourceLabel, 'Typed · Dictation');
+  });
+
   test('transcript mode sends the uri.text_input.v1 envelope, labelled simulated', () async {
     final rt = FakeRuntime();
     final conv = OiConversation(rt)..setTranscriptMode(true);
