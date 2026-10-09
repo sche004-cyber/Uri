@@ -32,5 +32,5 @@ Evidence levels: **S** automated simulation (in-process engine, scripted harness
 | Renderer (Living theme, inputs local, registry, digest echo, SHA-256-checked images) | Implemented · Tested | S, P | `uri_ui/test/a2ui/a2ui_hub_test.dart`; live check |
 | Companion card / Workspace dock / Tasks region | Implemented · widget-tested | S | companion slot test; not yet captured in the built Windows app |
 | Real-Claude generation behind a surface | **Not run** | — | Claude profile not logged in (owner action); FIXTURE only |
-| Independent audit | pending | — | — |
-| Integration | not integrated | — | waits for audit acceptance and the scheduler's canonical integration |
+| Independent audit | **Accepted with findings** (7 rounds; final r7 AwF; integration review AwF) | — | `A2UI_AUDIT.md` |
+| Integration | **Integrated** into `integration/git-sync-20261008` at `dc1ce81` (chain ALL_PASS with outcome identity) | — | `canonical_integration/A2UI_CANONICAL_INTEGRATION_RECEIPT.md` |

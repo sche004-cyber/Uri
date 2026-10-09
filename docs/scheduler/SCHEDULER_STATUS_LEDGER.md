@@ -5,6 +5,8 @@ levels are never merged: **S** automated simulation (scripted harness in-process
 accepted supervisor + synthetic Claude stand-in process), **P** process-level (real service process + HTTP API), **L** live
 (real Claude CLI). Nothing is Frozen.
 
+**Update 2026-10-09 (closure):** closure Codex rounds 9-11 (r11 ACCEPT WITH FINDINGS, `45e9791`); integrated into the canonical development branch at `b02ed4f` (receipt `canonical_integration/SCHEDULER_CANONICAL_INTEGRATION_RECEIPT.md`); A2UI integrated at `dc1ce81`. Nothing activated. Rows below are corrected where marked.
+
 Candidate `7496bba`: Codex round 8 ACCEPT WITH FINDINGS (repaired); accepted regression chain on the materialized tree
 equal to the baseline (SCHEDULER_INTEGRATION_RECEIPT.md §3). Not published or merged (base line not yet accepted).
 
@@ -28,17 +30,18 @@ equal to the baseline (SCHEDULER_INTEGRATION_RECEIPT.md §3). Not published or m
 | Audit receipts (attempt receipts, hash-chained append-only events) | Qualified | S, P | `verify_chain` in tests and `/status` |
 | Claude harness adapter (gate + supervised run) | Implemented; gate Qualified at L for the *unavailable* path; generation path Qualified at W only | W, L(blocked) | live generation **BLOCKED**: CLI not logged in (owner action) |
 | Phase 2D qualification gate for scheduled runs | Implemented, tested only for "no record" | S | no Claude record exists on any install |
-| Festival calendar data 2026–2027 (GoI) | Implemented; dates from secondary transcriptions | — | FESTIVAL_CALENDAR_PLAN.md |
-| Sikkim festival dates | Proposed (unverified, excluded) | — | owner confirmation needed |
+| Festival calendar data 2026–2027 (GoI) | **Qualified (corrected 2026-10-09)**: every date read from the O.M. documents; Bakrid 2026 corrected to 05-28 | S | FESTIVAL_CALENDAR_VERIFICATION.md |
+| Sikkim festival dates | **Qualified (corrected)**: 2026 from Sikkim gazette No. 391 (3 aggregator dates were wrong); 2027 not notified, nothing guessed | S | FESTIVAL_CALENDAR_VERIFICATION.md |
+| Owner calendar review/correction | Implemented · Tested · Integrated (append-only, audited, re-applied; moved dates wait for confirmation) | S, P | `/calendar`, `/calendar/correct`; A2UI calendar surface |
 | GIF template (package, instructions, collect) | Qualified at W/P with synthetic content; L pending | W, P | fixture E2E journal |
 | URI renderer + animated-GIF verification + legibility | Qualified | S, P | `test_renderer_gif.py`; journals step 6/9 |
 | Review: approve / refine / regenerate / reject, sha256-bound, approval invalidation | Qualified | S, P | `test_review_binding_refine_regenerate_reject`; fixture E2E steps 8–10 |
 | No publication path | Qualified (by absence + assertion) | S, P | no endpoint; `published: False` asserted |
 | Local HTTP API with token | Qualified | P | `test_duplicate_startup_and_api` (401 without token) |
 | UI: Dashboard tile + Scheduler view | Implemented, widget-tested | S | `uri_ui/test/scheduler_view_test.dart`; not exercised in the built Windows app |
-| NL request → proposal ("make me a GIF two days before…") | Proposed | — | button-driven proposal only |
-| Windows lifecycle (URIScheduler logon task) | Proposed (script, dry-run verified) | — | registration is RED |
-| A2UI presentation | Proposed (evaluation only) | — | — |
+| NL request → proposal ("make me a GIF two days before…") | **Implemented · Tested · Integrated via A2UI** (deterministic interpreter; editable proposal surface) | S, P | docs/a2ui/A2UI_REPORT.md |
+| Windows lifecycle (URIScheduler logon task) | Prepared: user-bound trigger, gated on a complete live-Claude PASS, full rollback; dry-run tested; **not registered** (owner gate) | S | SCHEDULER_SECURITY_AND_CANCELLATION.md §4 |
+| A2UI presentation | **Independently accepted (Codex A2UI r7 AwF) · Integrated `dc1ce81`** | S, P | docs/a2ui/ |
 
 | Calendar dates beyond the approved proposal / moved dates wait for owner confirmation | Qualified | S | `test_r1_dates_beyond_the_shown_preview_wait_for_confirmation`, `test_calendar_refresh_moves_not_duplicates`; UI widget test |
 | Claude executor write permission (`--allowedTools Edit(./**)` under `dontAsk`) | Implemented; not observed live | — | docs-based; first live run will show it |
