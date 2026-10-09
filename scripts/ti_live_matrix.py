@@ -208,7 +208,64 @@ CASES = {
     "M18_greeting_fast_path": [
         ("hello", None, [("not_desk", lambda r, h: r["route"] == "answer")]),
     ],
+    # L-9: live runs of the verifier scenarios that Codex TI rounds 12-15 repaired (unit-tested only until now).
+    # Rule checked: every value the user gave is either in the draft or named by a visible flag (TI-AC4: a change is
+    # never hidden); and a draft that keeps every value carries no error flag (precision).
+    "L9a_grammar_clock_currency": [
+        ("Correct the grammar only: the bus departure are at 18:00 from the east gate and the fee are Rs5400 per "
+         "student.", None,
+         [("clock_kept_or_flagged", lambda r, h: kept_or_flagged(r, "18:00")),
+          ("amount_kept_or_flagged", lambda r, h: kept_or_flagged(r, "rs5400", "rs 5400", "rs. 5400", "5400", "5,400")),
+          ("no_error_if_kept", lambda r, h: not (has(r["text"], "18:00") and "5400" in r["text"].replace(",", ""))
+           or not error_flags(r)),
+          ("grammar_route", lambda r, h: r["route"] == "draft")]),
+    ],
+    "L9b_comma_replacement": [
+        ("Write a short notice that the visitors' gate is in the west wing and opens at 9 am.", None,
+         [("west_wing", lambda r, h: has(r["text"], "west wing"))]),
+        ("Don't say west wing; say east wing, sector C.", None,
+         [("replacement_whole_or_flagged", lambda r, h: (has(r["text"], "east wing") and has(r["text"], "sector c"))
+           or bool(r["flags"])),
+          ("old_gone_or_flagged", lambda r, h: lacks(r["text"], "west wing") or bool(r["flags"])),
+          ("time_kept_or_flagged", lambda r, h: kept_or_flagged(r, "9 am", "9:00", "9 a.m.", "09:00"))]),
+    ],
+    "L9c_title_replacement": [
+        ("Write a two-line note that the advisor will attend the parents' meeting on Friday.", None,
+         [("advisor", lambda r, h: has(r["text"], "advisor"))]),
+        ("Replace advisor with Dr. Mehta.", None,
+         [("dr_mehta_or_flagged", lambda r, h: has(r["text"], "mehta") or bool(r["flags"])),
+          ("no_bare_dr", lambda r, h: not re.search(r"\bDr\.?\s+(will|is|has)\b", r["text"]) or bool(r["flags"])),
+          ("friday_kept_or_flagged", lambda r, h: kept_or_flagged(r, "friday"))]),
+    ],
+    "L9d_hinglish_kal": [
+        ("Principal ko leave application likho: kal se teen din ki chutti chahiye, ghar mein function hai.", "SIM_HI",
+         [("not_yesterday_or_flagged", lambda r, h: lacks(r["text"], "yesterday") or bool(r["flags"])),
+          ("three_days", lambda r, h: kept_or_flagged(r, "three", "3")),
+          ("drafted", lambda r, h: r["route"] == "draft" and r["version"] == 1)]),
+    ],
+    "L9e_tone_change_keeps_facts": [
+        ("Draft an email to the accounts office: the fee of 5400 rupees was paid on Wednesday by Sunil Verma, receipt "
+         "number 2231.", None,
+         [("facts", lambda r, h: has(r["text"], "wednesday") and has(r["text"], "sunil") and "2231" in r["text"])]),
+        ("Make it warmer and a bit shorter.", None,
+         [("amount_kept_or_flagged", lambda r, h: kept_or_flagged(r, "5400", "5,400")),
+          ("receipt_kept_or_flagged", lambda r, h: kept_or_flagged(r, "2231")),
+          ("name_kept_or_flagged", lambda r, h: kept_or_flagged(r, "sunil")),
+          ("no_error_if_kept", lambda r, h: not ("2231" in r["text"] and has(r["text"], "sunil"))
+           or not error_flags(r))]),
+    ],
 }
+
+
+def kept_or_flagged(r, *values):
+    """The value is in the draft, or a visible flag names it (nothing is changed silently)."""
+    text = r["text"].lower()
+    details = " ".join(str(f.get("detail", "")) for f in r["flags"]).lower()
+    return any(v.lower() in text or v.lower() in details for v in values)
+
+
+def error_flags(r):
+    return [f for f in r["flags"] if f.get("severity") == "error"]
 
 
 class Recorder:
