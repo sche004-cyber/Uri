@@ -242,7 +242,8 @@ def apply_edits(draft: Draft, blocks, edits, *, allowed_ids=None):
             continue
         role = e.get("role") if e.get("role") in ROLES else "body"
         _check_block(role, text)
-        (after if op == "insert_after" else before).setdefault(bid, []).append((role, text))
+        for part in split_paragraphs(role, text):         # inserted paragraphs are separate blocks too (r12)
+            (after if op == "insert_after" else before).setdefault(bid, []).append((role, part))
         applied.append(e)
     out = []
     for b in cur:

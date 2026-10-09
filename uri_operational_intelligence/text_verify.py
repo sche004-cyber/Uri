@@ -61,9 +61,18 @@ def _fold(s):
     s = s.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
     # Live finding LQ-16: "tue" in notes and "Tuesday" in the draft are the same day; "6:00 pm" is "6 pm".
     s = re.sub(r"\b(mon|tues?|wed|thur?s?|fri)\b\.?", lambda m: _DAY_ABBR.get(m.group(1), m.group(1)), s)
-    s = re.sub(r"\b(\d{1,2})[:.]00\b", r"\1", s)
-    s = re.sub(r"(\d)(am|pm)\b", r"\1 \2", s)
+    # A clock time becomes one token with hour, minutes and half of day ("6 pm" = "6:00 PM" = clock1800, but
+    # "6 am" = clock0600): Codex TI r12, a time must never lose its minutes or am/pm when compared.
+    s = re.sub(r"\b(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)(?![a-z])", _clock, s)
     return s
+
+
+def _clock(m):
+    h, mins, half = int(m.group(1)), m.group(2) or "00", m.group(3).replace(".", "")
+    if not 1 <= h <= 12:
+        return m.group(0)
+    h = (h % 12) + (12 if half == "pm" else 0)
+    return " clock%02d%s " % (h, mins)
 
 
 def _tokens(s):
@@ -108,7 +117,7 @@ def canonical_numbers(s) -> set:
     # List enumerators ("5. [Student Name 5]") are not quantities (live finding LQ-25).
     f = re.sub(r"(?m)^\s*\d{1,2}[.)]\s", " ", _fold(s))
     f = re.sub(r"\[[^\]]{1,80}\]", " ", f)          # nor are numbers inside [placeholders]
-    for m in re.finditer(r"(?<![\d])(\d{1,9})(?:st|nd|rd|th)?(?![\d])", f.replace(",", "")):
+    for m in re.finditer(r"(?<![\w])(\d{1,9})(?:st|nd|rd|th)?(?![\d])", f.replace(",", "")):
         out.add(int(m.group(1)))
     toks = re.findall(r"[a-z]+", f)
     i = 0
@@ -161,12 +170,19 @@ def _contiguous_or_all(vt, tt, tset):
         content = vt
     stems = {_stem(t) for t in tset}
     hits = sum(1 for t in content if t in tset or _stem(t) in stems)
-    if len(content) <= 2:
-        return hits == len(content)
-    if len(content) == 3:
-        return hits >= 2                      # live finding LQ-2: one reworded word in a three-word value
-    # A long dictated phrase may be reworded by a tone change; most of its content words must survive.
-    return hits >= 0.7 * len(content)
+    return hits == len(content)
+
+
+def _value_coverage(value, text) -> float:
+    """Share of the value's content words found in text (stems; numbers by value). Used only to choose between
+    FACT_REWORDED (review) and FACT_MISSING (error); a partial match is never treated as present (Codex TI r12)."""
+    vt = [t for t in _tokens(value) if not canonical_numbers(t)]
+    content = [t for t in vt if t not in _COMMON_CAPS and t not in _FUNCTION_WORDS] or vt
+    if not content:
+        return 1.0
+    tset = set(_tokens(text))
+    stems = {_stem(t) for t in tset}
+    return sum(1 for t in content if t in tset or _stem(t) in stems) / len(content)
 
 
 def _phrase_present(phrase, text) -> bool:
@@ -197,7 +213,11 @@ def check_facts(facts, text, source_text) -> list:
         if value and not _value_present(value, source_text):
             flags.append(_flag("FACT_UNSOURCED", "error", "%s: %s" % (key, value)))
         if value and not _value_present(value, text):
-            flags.append(_flag("FACT_MISSING", "error", "%s: %s" % (key, value)))
+            if canonical_numbers(value) <= canonical_numbers(text) and _value_coverage(value, text) >= 0.6:
+                flags.append(_flag("FACT_REWORDED", "review", "%s: '%s' is not in the text word for word; please "
+                                   "check the wording" % (key, value)))
+            else:
+                flags.append(_flag("FACT_MISSING", "error", "%s: %s" % (key, value)))
         for old in f.get("superseded") or ():
             old = str(old).strip()
             if old and _fold(old) != _fold(value) and not _value_present(old, value) and _phrase_present(old, text):
@@ -254,20 +274,36 @@ def check_meaning_preserved(original, corrected) -> list:
     return flags
 
 
-def _lower_title_line(line):
+def _lower_title_line(line, known_words=frozenset()):
     """A Title Case line ("Subject: Unauthorized Absence of Students") capitalises ordinary words; they are not
-    names (live finding LQ-3). Lines where most words are capitalised are lower-cased for the name check only."""
-    words = re.findall(r"[A-Za-z][\w'-]*", line)
-    if len(words) >= 3 and sum(1 for w in words if w[0].isupper()) >= 0.6 * len(words):
-        return line.lower()
-    return line
+    names (live finding LQ-3), so such a line is lower-cased for the name check, EXCEPT a capitalised word next to a
+    known name ("Meeting with Kavya Sharma": Sharma stays, Codex TI r12) or after an honorific."""
+    words = list(re.finditer(r"[A-Za-z][\w'-]*", line))
+    if len(words) < 3 or sum(1 for w in words if w.group(0)[0].isupper()) < 0.6 * len(words):
+        return line
+    keep = set()
+    for i, w in enumerate(words):
+        low = w.group(0).lower()
+        neighbours = [words[j].group(0) for j in (i - 1, i + 1) if 0 <= j < len(words)]
+        if w.group(0)[0].isupper() and low not in known_words and any(
+                n.lower() in known_words and n[0].isupper() and n.lower() not in _COMMON_CAPS or
+                re.fullmatch(r"(?:Mr|Mrs|Ms|Dr|Prof|Shri|Smt|Sri)\.?", n) for n in neighbours):
+            keep.add(i)
+    out, last = [], 0
+    for i, w in enumerate(words):
+        out.append(line[last:w.start()].lower())
+        out.append(w.group(0) if i in keep else w.group(0).lower())
+        last = w.end()
+    out.append(line[last:].lower())
+    return "".join(out)
 
 
 def check_new_details(text, known_text) -> list:
     """Numbers, dates and capitalised names in `text` that never occur in `known_text` (the user's words plus the
     previous version). Bracketed placeholders like [Your Name] are ignored: they mark missing information."""
     body = re.sub(r"\[[^\]]{1,80}\]", " ", text)
-    body = "\n".join(_lower_title_line(ln) for ln in body.splitlines())
+    kw = frozenset(_tokens(known_text))
+    body = "\n".join(_lower_title_line(ln, kw) for ln in body.splitlines())
     a, k = protected_tokens(body), protected_tokens(known_text)
     kwords = set(_tokens(known_text))
     new = sorted(str(x) for x in a["numbers"] - k["numbers"])
@@ -425,14 +461,32 @@ def check_supersession(user_words, claimed, *, instruction=None, previous_text=N
             for u in unverified]
 
 
-_EQUIV = {"kal": {"tomorrow", "yesterday"}, "aaj": {"today"}, "parson": {"tomorrow", "yesterday"}}
+_EQUIV = {"aaj": {"today"}}
+_PAST = re.compile(r"\b(?:tha|thi|the|hua|hui|hue|gaya|gayi|gaye|gya|gyi|liya|kiya|diya|aaya|aayi|chala|chali|nikla|"
+                   r"nikle|nikli)\b", re.I)
+_FUTURE = re.compile(r"\b(?:hoga|hogi|honge|chahiye|karna|jaana|jana|aana|se|tak|karenge|jayenge|aayenge|rahega|"
+                     r"rahegi|milega|milegi)\b", re.I)
 
 
-def _absent(details, text, dropped_ok, code, label):
+def _equivalents(detail, user_words):
+    """English equivalents of a Hindi relative day, decided by the sentence's tense (Codex TI r12): "kal ... hui thi"
+    is yesterday, "kal se ... chahiye" is tomorrow; without a tense marker it stays unresolved and is reported."""
+    if detail in _EQUIV:
+        return _EQUIV[detail]
+    if detail in ("kal", "parson"):
+        past, future = bool(_PAST.search(user_words or "")), bool(_FUTURE.search(user_words or ""))
+        if past and not future:
+            return {"yesterday"} if detail == "kal" else {"day before yesterday"}
+        if future and not past:
+            return {"tomorrow"} if detail == "kal" else {"day after tomorrow"}
+    return set()
+
+
+def _absent(details, text, dropped_ok, code, label, source_words=""):
     """Every absent detail is reported. One the user corrected/excluded/mentioned is an INFO line (visible), every
     other one a REVIEW flag. Nothing is excused silently (Codex TI rounds 3-9)."""
     have = {str(x) for x in canonical_numbers(text)} | set(_tokens(text))
-    absent = sorted(d for d in details if d not in have and not (_EQUIV.get(d, set()) & have))
+    absent = sorted(d for d in details if d not in have and not (_equivalents(d, source_words) & have))
     excused = [d for d in absent if _covered(d, dropped_ok)]
     unexcused = [d for d in absent if d not in excused]
     flags = []
@@ -447,7 +501,8 @@ def _absent(details, text, dropped_ok, code, label):
 def check_user_details(user_words, text, dropped_ok=()) -> list:
     """Independent of what the model reports: numbers, dates, days and mid-sentence names in the user's words must
     appear in the draft. Absences the user's correction/exclusion explains are still listed (info)."""
-    return _absent(_details(user_words), text, dropped_ok, "USER_DETAIL_MISSING", "from your words, not in the draft: ")
+    return _absent(_details(user_words), text, dropped_ok, "USER_DETAIL_MISSING", "from your words, not in the draft: ",
+                   user_words)
 
 
 def check_details_kept(old_text, new_text, dropped_ok=()) -> list:
@@ -477,11 +532,34 @@ def date_mentions(text) -> list:
     return list(dict.fromkeys(found))
 
 
+_SWAP_PAIR = re.compile(
+    r"(?:don'?t|do not|dont)\s+(?:say|write|use|mention)\s+[\"'“‘]?(?P<x1>.{2,120}?)[\"'”’]?\s*[.,;]\s*(?:instead\s+)?"
+    r"(?:say|write|use|put)\s+[\"'“‘]?(?P<y1>[^.;\n\"”’]{2,160})|"
+    r"replace\s+[\"'“‘]?(?P<x2>.{2,120}?)[\"'”’]?\s+with\s+[\"'“‘]?(?P<y2>[^.;\n\"”’]{2,160})|"
+    r"change\s+[\"'“‘]?(?P<x3>.{2,120}?)[\"'”’]?\s+to\s+[\"'“‘]?(?P<y3>[^.;\n\"”’]{2,160})|"
+    r"instead of\s+[\"'“‘]?(?P<x4>.{2,120}?)[\"'”’]?\s*,?\s*(?:say|write|use|put)\s+[\"'“‘]?(?P<y4>[^.;\n\"”’]{2,160})",
+    re.I | re.S)
+
+
+def swap_pairs(instruction) -> list:
+    """[(old phrase, new wording)] from "don't say X, say Y" / "replace X with Y" / "change X to Y"."""
+    out = []
+    for m in _SWAP_PAIR.finditer(instruction or ""):
+        for i in "1234":
+            if m.group("x" + i):
+                out.append((m.group("x" + i).strip(" \"'“”‘’"), m.group("y" + i).strip(" \"'“”‘’")))
+    return out
+
+
 def correction_visible(instruction, old_text, new_text) -> bool:
-    """A revision instruction's correction is visibly applied (live finding LQ-24): a phrase the user swapped out
-    is gone, or a detail the instruction names is now in the text and some detail left it."""
-    swapped = [p for p in user_exclusions(instruction) + _swap_phrases(instruction) if p]
-    if swapped and not any(_phrase_present(p, new_text) for p in swapped):
+    """A revision instruction's correction is visibly applied (live finding LQ-24): for "don't say X, say Y" the old
+    phrase is gone AND the new wording is present (Codex TI r12); for a plain exclusion the phrase is gone; otherwise
+    a detail the instruction names is now in the text and some detail left it."""
+    pairs = swap_pairs(instruction)
+    if pairs:
+        return all(not _phrase_present(x, new_text) and _value_present(y, new_text) for x, y in pairs)
+    excluded = [p for p in user_exclusions(instruction) if p]
+    if excluded and not any(_phrase_present(p, new_text) for p in excluded):
         return True
     named = _details(instruction)
     if not named:

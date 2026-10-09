@@ -9,9 +9,14 @@ def test_lq1_number_word_compared_by_value():
     assert V._phrase_present("five", "Five students left.")
 
 
-def test_lq2_three_word_value_survives_one_reworded_word():
-    assert V._value_present("needs pest control", "the storage area requires pest control")
-    assert not V._value_present("needs pest control", "the storage area is clean")
+def test_lq2_reworded_value_is_a_visible_review_not_an_error():
+    # Revised after Codex TI r12: a partial match is never "present"; it is reported as FACT_REWORDED (review).
+    f = V.check_facts([{"key": "storage", "value": "needs pest control", "superseded": []}],
+                      "the storage area requires pest control", "storage needs pest control")
+    assert [(x["code"], x["severity"]) for x in f] == [("FACT_REWORDED", "review")]
+    f = V.check_facts([{"key": "storage", "value": "needs pest control", "superseded": []}],
+                      "the storage area is clean", "storage needs pest control")
+    assert [(x["code"], x["severity"]) for x in f] == [("FACT_MISSING", "error")]
 
 
 def test_lq3_title_case_subject_is_not_a_name():
@@ -106,3 +111,67 @@ def test_lq25_list_enumerators_and_placeholders_are_not_quantities():
     assert V.canonical_numbers(text) == {7}
     assert V.check_facts([{"key": "students", "value": "seven", "superseded": ["five"]}], text,
                          "five students, sorry seven students") == []
+
+
+
+# Codex TI round 12: precision fixes must never hide a change an earlier check reported.
+def test_r12_partial_match_is_never_silent():
+    f = V.check_facts([{"key": "gate", "value": "north east gate", "superseded": []}],
+                      "The north west gate is closed.", "the north east gate is closed")
+    assert f and f[0]["severity"] in ("review", "error")
+
+
+def test_r12_clock_times_keep_minutes_and_half_of_day():
+    assert V._value_present("6.00 pm", "at 6 PM") and V._value_present("6 pm", "at 6:00 p.m.")
+    assert not V._value_present("6.00 pm", "at 6 am")
+    assert not V._value_present("6:30 pm", "at 6 pm")
+
+
+def test_r12_invented_surname_in_title_line_is_visible():
+    f = V.check_new_details("Subject: Meeting With Kavya Sharma\n\nKavya will attend.", "a meeting with Kavya")
+    assert f and "sharma" in f[0]["detail"]
+    assert V.check_new_details("Subject: Unauthorized Absence of Students from Hostel", "students left the hostel") == []
+
+
+def test_r12_kal_needs_tense():
+    assert V.check_user_details("kal meeting hui thi", "The meeting was yesterday.") == []
+    assert V.check_user_details("kal meeting hui thi", "The meeting is tomorrow.")          # wrong day is visible
+    assert V.check_user_details("kal se teen din ki chutti chahiye", "Leave from tomorrow for three days.") == []
+    assert V.check_user_details("kal meeting", "The meeting is tomorrow.")                   # ambiguous: reported
+
+
+def test_r12_swap_replacement_is_required():
+    assert V.swap_pairs("Actually, don't say wing; say east") == [("wing", "east")]
+    assert not V.correction_visible("Actually, don't say wing; say east", "The north wing gate.", "The north gate.")
+    assert V.correction_visible("Actually, don't say wing; say east", "The north wing gate.", "The north east gate.")
+
+
+def test_r12_swap_in_desk_makes_new_wording_a_fact(tmp_path):
+    import json
+    from tests.oi.fake_llama import FakeLlama
+    from tests.oi.test_oi_orchestrator import FakeCore
+    from tests.ws.test_ti_desk_bridge import CREATE, last_draft, turn
+    from tests.ws.test_ws_worker_bridge import make
+    with FakeLlama() as fake:
+        b, frames, _ = make(fake, tmp_path, FakeCore())
+        first = dict(CREATE, facts=[{"key": "place", "value": "north wing gate", "superseded": []}],
+                     blocks=[{"role": "body", "text": "The north wing gate is closed."}])
+        edit = {"action": "edit", "clarification": None, "fact_updates": [], "exclusions_add": [],
+                "edits": [{"op": "replace", "block_id": "b1", "role": "body", "text": "The north gate is closed."}],
+                "summary": "Changed."}
+        fake.scripts += [{"json": json.dumps(first)}, {"json": json.dumps(edit)}]
+        turn(b, "Write a notice that the north wing gate is closed")
+        turn(b, "Actually, don't say wing; say east")
+        codes = {f["code"] for f in last_draft(frames)["current"]["flags"]}
+        assert "FACT_MISSING" in codes or "FACT_REWORDED" in codes
+
+
+def test_r12_inserted_paragraphs_are_separate_blocks():
+    from uri_operational_intelligence import draft_store as DS
+    d = DS.Draft(session_id="s", doc_type="letter", tone="", source={}, original_text="x")
+    blocks = DS.blocks_from_model(d, [{"role": "body", "text": "First."}])
+    d.push(blocks=blocks, facts=(), exclusions=(), missing=(), op="created", instruction="", summary="",
+           changed=(), removed=(), flags=())
+    out, _, _ = DS.apply_edits(d, d.current.blocks, [{"op": "insert_after", "block_id": "b1", "role": "body",
+                                                      "text": "Second.\n\nThird."}])
+    assert [b.text for b in out] == ["First.", "Second.", "Third."]

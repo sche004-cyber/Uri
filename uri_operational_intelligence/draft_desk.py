@@ -510,12 +510,18 @@ class DraftDesk:
         facts = _merge_facts(cur.facts, _clean_facts(data.get("fact_updates")))
         # "Don't say X, say Y": a fact whose value contains X is retired deterministically (live finding LQ-9: the
         # model did not always update it, so the stale value was demanded in the next version).
-        swapped = [p.lower() for p in V.user_exclusions(interpreted) + V._swap_phrases(interpreted) if p]
+        # "Don't say X, say Y": the fact holding X is retired and Y becomes a required fact, so the replacement is
+        # checked (Codex TI r12); "don't mention X" alone retires the fact (the user asked for its removal).
+        pairs = V.swap_pairs(interpreted)
+        swapped = [x.lower() for x, _ in pairs] + [p.lower() for p in V.user_exclusions(interpreted) if p]
         for f in facts:
-            if any(p in f["value"].lower() for p in swapped):
+            if any(p and p in f["value"].lower() for p in swapped):
                 f["superseded"] = list(dict.fromkeys(f["superseded"] + [f["value"]]))
                 f["value"] = ""
         facts = [f for f in facts if f["value"]]
+        for x, y in pairs:
+            if y and not any(f["value"].lower() == y.lower() for f in facts):
+                facts.append({"key": "your wording", "value": y, "superseded": [x]})
         exclusions = list(dict.fromkeys(list(cur.exclusions) + _clean_list(data.get("exclusions_add"))))
         new_text, old_text = DS.render(blocks), DS.render(cur.blocks)
         user_words = "\n".join([d.original_text] + [v.instruction for v in d.versions] + [text, interpreted])
