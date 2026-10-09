@@ -66,3 +66,29 @@ def test_lq13_ambiguous_date_change_asks_without_model(tmp_path):
         turn(b, "Change the date to the 10th.")
         assert len(fake.requests) == n
         assert frames.data("draft.clarify")[-1]["question"] == "Which date should change: the 5th or the 15th?"
+
+
+def test_lq15_to_lq20_precision():
+    from uri_operational_intelligence import text_input as TI
+    assert TI.correction_cues("paid on Tuesday, no, Wednesday")                                    # LQ-15
+    assert V.verified_superseded("paid on Tuesday, no, Wednesday", ["Tuesday"])[0] == ["Tuesday"]
+    assert V._value_present("tue", "on Tuesday") and V._value_present("10am-2pm", "from 10:00 AM to 2:00 PM")  # LQ-16
+    assert V.check_new_details("from 6:00 PM to 9:00 PM", "from 6 pm to 9 pm") == []
+    assert V._value_present("about forty students", "approximately forty students")             # LQ-17
+    assert V.check_user_details("Mention that Kavya is the coordinator.", "Kavya is the coordinator.") == []  # LQ-18
+    assert V.check_escalation("Water supply will be suspended.", "water supply off") == []        # LQ-19
+    assert V.check_user_details("kal se teen din ki chutti", "three days of leave from tomorrow") == []  # LQ-20
+
+
+def test_lq21_correction_in_a_later_turn():
+    prev = "Can we move our meeting to Monday at 3 pm?"
+    assert V.verified_across_turns("No, I meant Tuesday.", prev, ["Monday"]) == ["Monday"]
+    assert V.verified_across_turns("Make it shorter.", prev, ["Monday"]) == []
+    assert V.check_supersession("No, I meant Tuesday.", ["Monday"], instruction="No, I meant Tuesday.",
+                                previous_text=prev) == []
+
+
+def test_lq23_tone_is_not_a_fact():
+    from uri_operational_intelligence.draft_desk import _clean_facts
+    assert _clean_facts([{"key": "tone", "value": "formal"}, {"key": "day", "value": "Monday"}]) == [
+        {"key": "day", "value": "Monday", "superseded": []}]

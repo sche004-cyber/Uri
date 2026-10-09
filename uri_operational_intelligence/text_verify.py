@@ -48,13 +48,21 @@ notice circular memo memorandum report summary minutes agenda letter email appli
 mr mrs ms dr prof shri smt sri miss name your our my his her their we you they he she us them
 however therefore further furthermore also moreover accordingly hence thus additionally meanwhile nevertheless
 all any each every some no not none one many most more less few several other another such
-sub: re: encl enclosure cc bcc
+sub: re: encl enclosure cc bcc am pm
 """.split())
+
+
+_DAY_ABBR = {"mon": "monday", "tue": "tuesday", "tues": "tuesday", "wed": "wednesday", "thu": "thursday",
+             "thur": "thursday", "thurs": "thursday", "fri": "friday"}
 
 
 def _fold(s):
     s = unicodedata.normalize("NFKC", s or "").lower()
     s = s.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
+    # Live finding LQ-16: "tue" in notes and "Tuesday" in the draft are the same day; "6:00 pm" is "6 pm".
+    s = re.sub(r"\b(mon|tues?|wed|thur?s?|fri)\b\.?", lambda m: _DAY_ABBR.get(m.group(1), m.group(1)), s)
+    s = re.sub(r"\b(\d{1,2})[:.]00\b", r"\1", s)
+    s = re.sub(r"(\d)(am|pm)\b", r"\1 \2", s)
     return s
 
 
@@ -98,7 +106,7 @@ def canonical_numbers(s) -> set:
     """All numbers mentioned in s, as ints (digits, number words incl. 'twenty-five', ordinals, Hindi words)."""
     out = set()
     f = _fold(s)
-    for m in re.finditer(r"\b(\d{1,9})(?:st|nd|rd|th)?\b", f.replace(",", "")):
+    for m in re.finditer(r"(?<![\d])(\d{1,9})(?:st|nd|rd|th)?(?![\d])", f.replace(",", "")):
         out.add(int(m.group(1)))
     toks = re.findall(r"[a-z]+", f)
     i = 0
@@ -130,7 +138,8 @@ def _value_present(value, text) -> bool:
         tnums = canonical_numbers(text)
         if not vnums <= tnums:
             return False
-        rest = [t for t in vt if not canonical_numbers(t) and t not in ("st", "nd", "rd", "th") and t not in _COMMON_CAPS]
+        rest = [t for t in vt if not canonical_numbers(t) and t not in ("st", "nd", "rd", "th") and t not in _COMMON_CAPS
+                and t not in _FUNCTION_WORDS]
         if not rest:
             return True
         return _contiguous_or_all(rest, tt, tset)
@@ -145,7 +154,7 @@ def _stem(t):
 
 
 def _contiguous_or_all(vt, tt, tset):
-    content = [t for t in vt if t not in _COMMON_CAPS or len(vt) == 1]
+    content = [t for t in vt if (t not in _COMMON_CAPS and t not in _FUNCTION_WORDS) or len(vt) == 1]
     if not content:
         content = vt
     stems = {_stem(t) for t in tset}
@@ -285,6 +294,7 @@ _SENTENCE_STARTERS = set("""
 draft write compose prepare create generate frame type pen correct proofread fix check improve edit rewrite rephrase
 reword paraphrase polish simplify shorten condense summarise summarize expand turn convert develop kindly please
 inform informing request requesting regarding sub respected thanking yours dear hello hi uri attendance repairs
+mention include add say tell ask note ensure keep make use remove also send cc state explain describe pls am pm
 """.split())
 
 
@@ -389,18 +399,38 @@ def _detail_kind(word):
     return None
 
 
-def check_supersession(user_words, claimed) -> list:
-    _, unverified = verified_superseded(user_words, claimed)
+def verified_across_turns(instruction, previous_text, claimed) -> list:
+    """A revision instruction that is itself a correction ("No, I meant Tuesday.", "Sorry, not two days, three.")
+    verifies a claimed old value when that value is in the previous version and the instruction carries a cue and
+    a replacement of the same kind (live finding LQ-21)."""
+    from .text_input import _CORRECTION_CUES
+    if not instruction or not _CORRECTION_CUES.search(instruction):
+        return []
+    kinds = {_detail_kind(w) for w in re.findall(r"[\w'-]+", instruction)} - {None}
+    out = []
+    for value in claimed or ():
+        k = next((x for x in (_detail_kind(w) for w in re.findall(r"[\w'-]+", value)) if x), None)
+        if k and k in kinds and _phrase_present(value, previous_text or ""):
+            out.append(value)
+    return out
+
+
+def check_supersession(user_words, claimed, *, instruction=None, previous_text=None) -> list:
+    across = verified_across_turns(instruction, previous_text, claimed)
+    _, unverified = verified_superseded(user_words, [c for c in claimed or () if c not in across])
     return [_flag("SUPERSESSION_UNVERIFIED", "review",
                   "URI treated '%s' as replaced, but you did not seem to correct it; please check" % u)
             for u in unverified]
+
+
+_EQUIV = {"kal": {"tomorrow", "yesterday"}, "aaj": {"today"}, "parson": {"tomorrow", "yesterday"}}
 
 
 def _absent(details, text, dropped_ok, code, label):
     """Every absent detail is reported. One the user corrected/excluded/mentioned is an INFO line (visible), every
     other one a REVIEW flag. Nothing is excused silently (Codex TI rounds 3-9)."""
     have = {str(x) for x in canonical_numbers(text)} | set(_tokens(text))
-    absent = sorted(d for d in details if d not in have)
+    absent = sorted(d for d in details if d not in have and not (_EQUIV.get(d, set()) & have))
     excused = [d for d in absent if _covered(d, dropped_ok)]
     unexcused = [d for d in absent if d not in excused]
     flags = []
@@ -425,7 +455,7 @@ def check_details_kept(old_text, new_text, dropped_ok=()) -> list:
 
 
 _ESCALATION = re.compile(r"\b(?:disciplinary|punish\w*|penalt\w*|misconduct|serious breach|breach|violation|"
-                         r"violat\w+|strict action|stern action|suspend\w*|expel\w*|rusticat\w*|inquiry|enquiry|"
+                         r"violat\w+|strict action|stern action|expel\w*|rusticat\w*|inquiry|enquiry|"
                          r"investigat\w*)\b", re.I)
 
 

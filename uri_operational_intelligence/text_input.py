@@ -125,7 +125,7 @@ def clean_transcript(raw: str) -> str:
 _CORRECTION_CUES = re.compile(
     r"\b(?:sorry|no,? wait|wait,? no|i mean|i meant|no,? i meant|actually|rather|correction|scratch that|"
     r"not (?:\w+[ ,]+){0,3}but|make that|let me rephrase|oops|nahi(?:n)?,?|matlab|"
-    r"no no|nope)\b", re.I)
+    r"no no|nope)\b|\bno,(?=\s)", re.I)       # "on Tuesday, no, Wednesday" (live finding LQ-15)
 
 
 def correction_cues(text: str) -> list:

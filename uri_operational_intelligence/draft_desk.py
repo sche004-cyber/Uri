@@ -514,14 +514,22 @@ class DraftDesk:
         user_words = "\n".join([d.original_text] + [v.instruction for v in d.versions] + [text, interpreted])
         known = user_words + "\n" + old_text
         exclusions = list(dict.fromkeys(exclusions + V.user_exclusions(interpreted)))
+        excl_low = [e.lower() for e in exclusions]
+        for f in facts:                       # "Don't mention the student's name" -> the name fact is retired (LQ-22)
+            if any(f["value"].lower() in e or e in f["value"].lower() for e in excl_low if len(e) > 2):
+                f["superseded"] = list(dict.fromkeys(f["superseded"] + [f["value"]]))
+                f["value"] = ""
+        facts = [f for f in facts if f["value"]]
         flags = V.check_facts(facts, new_text, user_words) + V.check_exclusions(exclusions, new_text)
         if mode == "correct":
             flags += V.check_meaning_preserved(old_text, new_text)
         else:
             flags += V.check_escalation(new_text, user_words + "\n" + old_text)
             new_sup = [s for f in _clean_facts(data.get("fact_updates")) for s in f["superseded"]]
-            flags += V.check_supersession(interpreted + "\n" + user_words, new_sup)
-            gone = V.verified_superseded(user_words, [s for f in facts for s in f["superseded"]])[0] + exclusions
+            flags += V.check_supersession(interpreted + "\n" + user_words, new_sup, instruction=interpreted,
+                                          previous_text=old_text)
+            gone = (V.verified_superseded(user_words, [s for f in facts for s in f["superseded"]])[0] + exclusions
+                    + V.verified_across_turns(interpreted, old_text, new_sup))
             flags += V.check_details_kept(old_text, new_text, gone + [interpreted])
             flags += V.check_new_details(new_text, known) + V.check_correction_accounted(
                 cues, _clean_facts(data.get("fact_updates")), None)
@@ -577,10 +585,14 @@ def _clean_list(items):
     return [str(x).strip()[:200] for x in (items or []) if isinstance(x, str) and x.strip()][:40]
 
 
+_NOT_A_FACT = re.compile(r"^\s*(?:tone|style|format|formality|register|language|length|document[ _]?type|doc[ _]?type|"
+                         r"type of document|kind)\s*$", re.I)
+
+
 def _clean_facts(items):
     out = []
     for f in items or []:
-        if isinstance(f, dict) and str(f.get("value") or "").strip():
+        if isinstance(f, dict) and str(f.get("value") or "").strip() and not _NOT_A_FACT.match(str(f.get("key") or "")):
             out.append({"key": str(f.get("key") or "")[:80], "value": str(f["value"]).strip()[:300],
                         "superseded": _clean_list(f.get("superseded"))})
     return out[:40]
