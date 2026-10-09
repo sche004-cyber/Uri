@@ -515,34 +515,43 @@ class _PerformanceSettings extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Frame rate', style: _label(context)),
             const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final m in FrameRateMode.values)
-                  Tooltip(
-                    message: m.supportedBy(hz)
-                        ? (m == FrameRateMode.adaptive
-                              ? 'Starts at the display rate and steps down only '
-                                    'while frames run late'
-                              : 'Requests ${m.label}; the hardware may not '
-                                    'deliver every frame')
-                        : 'This display refreshes at ${hz.round()} Hz',
-                    child: ChoiceChip(
-                      key: ValueKey('fps-${m.name}'),
-                      label: Text(
-                        m == FrameRateMode.adaptive
-                            ? 'Adaptive (recommended)'
-                            : m.label,
+            if (!living)
+              const _Unavailable(
+                key: ValueKey('fps-unavailable'),
+                title: 'Frame rate',
+                reason:
+                    'The classic orb runs its own animation at the display '
+                    'rate; frame-rate control applies to the living companions.',
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final m in FrameRateMode.values)
+                    Tooltip(
+                      message: m.supportedBy(hz)
+                          ? (m == FrameRateMode.adaptive
+                                ? 'Starts at the display rate and steps down only '
+                                      'while frames run late'
+                                : 'Requests ${m.label}; the hardware may not '
+                                      'deliver every frame')
+                          : 'This display refreshes at ${hz.round()} Hz',
+                      child: ChoiceChip(
+                        key: ValueKey('fps-${m.name}'),
+                        label: Text(
+                          m == FrameRateMode.adaptive
+                              ? 'Adaptive (recommended)'
+                              : m.label,
+                        ),
+                        selected: prefs.frameRate == m,
+                        onSelected: m.supportedBy(hz)
+                            ? (_) => prefs.setFrameRate(m)
+                            : null,
                       ),
-                      selected: prefs.frameRate == m,
-                      onSelected: m.supportedBy(hz)
-                          ? (_) => prefs.setFrameRate(m)
-                          : null,
                     ),
-                  ),
-              ],
-            ),
+                ],
+              ),
             const SizedBox(height: 6),
             Text(
               _rateNote(governor, prefs),

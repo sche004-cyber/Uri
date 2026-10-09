@@ -63,7 +63,8 @@ class OrbDock {
 /// is placed next to the companion and never over it, nor over the controls:
 ///
 /// * Companion mode: under the status line, sized to the space left above the
-///   composer (the waveform shrinks first; the transcript always fits).
+///   composer (the waveform shrinks first). When even the transcript does not
+///   fit there, a slim pill above the companion instead.
 /// * Workspace: a slim pill centred in the header row.
 /// * Dashboard: a slim pill beside the companion.
 @immutable
@@ -85,13 +86,32 @@ class VoiceDock {
         final w = (shell.width - 32).clamp(200.0, 520.0);
         final top = orb.bottom + companionStatus;
         final room = shell.height - companionControls - top;
-        final h = room.clamp(
-          VoiceStage.heightFor(w, waveform: false),
-          VoiceStage.heightFor(w),
-        );
+        final minimum = VoiceStage.heightFor(w, waveform: false);
+        if (room >= minimum) {
+          return VoiceDock(
+            rect: Rect.fromLTWH(
+              (shell.width - w) / 2,
+              top,
+              w,
+              room.clamp(minimum, VoiceStage.heightFor(w)),
+            ),
+            compact: false,
+          );
+        }
+        // A short window has no room under the companion: the slim pill goes
+        // above it instead, in the space Companion mode leaves at the top.
+        final pw = (shell.width - 32).clamp(200.0, 440.0);
         return VoiceDock(
-          rect: Rect.fromLTWH((shell.width - w) / 2, top, w, h),
-          compact: false,
+          rect: Rect.fromLTWH(
+            (shell.width - pw) / 2,
+            (orb.top - VoiceStage.compactHeight - 6).clamp(
+              4.0,
+              double.infinity,
+            ),
+            pw,
+            VoiceStage.compactHeight,
+          ),
+          compact: true,
         );
       case UiPresentationMode.workspace:
         final w = (shell.width * 0.36).clamp(240.0, 440.0);

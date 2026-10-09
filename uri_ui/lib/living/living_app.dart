@@ -206,37 +206,45 @@ class _LivingAppState extends State<LivingApp> {
             preferences: prefs,
             child: CompanionClockScope(
               clock: _services.frameClock,
-              child: ListenableBuilder(
-                listenable: prefs,
-                builder: (context, _) {
-                  // The selected companion decides the theme; the free theme
-                  // choice applies only to the classic orb.
-                  final theme = CompanionPreferences.themeFor(
-                    prefs.choice,
-                    _theme,
-                  );
-                  final palette = resolveUriColors(theme, platformBrightness);
-                  return LivingThemeController(
-                    current: _theme,
-                    setTheme: setTheme,
-                    child: MaterialApp(
-                      title: 'URI',
-                      debugShowCheckedModeBanner: false,
-                      theme: buildUriTheme(palette),
-                      themeMode: ThemeMode.light,
-                      home: switch (_onboardingDone) {
-                        null => const Scaffold(body: SizedBox.shrink()),
-                        false => LivingOnboardingFlow(
-                          onFinished: _finishOnboarding,
-                        ),
-                        true => LivingShell(
-                          filePicker: widget.filePicker,
-                          attachmentOpener: widget.attachmentOpener,
-                        ),
-                      },
-                    ),
-                  );
-                },
+              // While the window is minimised every ticker below is muted,
+              // including ones that do not run on the companion clock (the
+              // classic orb, transitions): nothing on screen, no frames.
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _services.frameClock.visibility,
+                builder: (context, visible, child) =>
+                    TickerMode(enabled: visible, child: child!),
+                child: ListenableBuilder(
+                  listenable: prefs,
+                  builder: (context, _) {
+                    // The selected companion decides the theme; the free theme
+                    // choice applies only to the classic orb.
+                    final theme = CompanionPreferences.themeFor(
+                      prefs.choice,
+                      _theme,
+                    );
+                    final palette = resolveUriColors(theme, platformBrightness);
+                    return LivingThemeController(
+                      current: _theme,
+                      setTheme: setTheme,
+                      child: MaterialApp(
+                        title: 'URI',
+                        debugShowCheckedModeBanner: false,
+                        theme: buildUriTheme(palette),
+                        themeMode: ThemeMode.light,
+                        home: switch (_onboardingDone) {
+                          null => const Scaffold(body: SizedBox.shrink()),
+                          false => LivingOnboardingFlow(
+                            onFinished: _finishOnboarding,
+                          ),
+                          true => LivingShell(
+                            filePicker: widget.filePicker,
+                            attachmentOpener: widget.attachmentOpener,
+                          ),
+                        },
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),

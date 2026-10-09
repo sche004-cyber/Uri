@@ -59,12 +59,18 @@ class CompanionFrameClock extends ChangeNotifier {
   /// Whether the clock is suspended because the app is not visible.
   bool get hidden => _hidden;
 
+  /// [hidden] as a listenable that changes only with visibility (the clock
+  /// itself notifies every frame). The app root mutes every ticker below it
+  /// with this, including animations that do not run on this clock.
+  final ValueNotifier<bool> visibility = ValueNotifier<bool>(true);
+
   /// Suspends (true) or resumes (false) every animation on this clock. Driven
   /// by the app lifecycle (`hidden`, `paused` suspend; `resumed` resumes) and,
   /// on desktop, by the window's minimise and restore events.
   void setHidden(bool hidden) {
     if (hidden == _hidden) return;
     _hidden = hidden;
+    visibility.value = !hidden;
     _wake?.cancel();
     _wake = null;
     if (hidden) {
@@ -201,6 +207,7 @@ class CompanionFrameClock extends ChangeNotifier {
   void dispose() {
     _stop();
     _lifecycle?.dispose();
+    visibility.dispose();
     _ticker.dispose();
     super.dispose();
   }

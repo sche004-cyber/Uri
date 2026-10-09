@@ -53,24 +53,35 @@ class WindowsVoiceCatalog implements VoiceCatalog {
       return const UnavailableVoiceCatalog().list();
     }
     try {
-      final r = await Process.run(
+      final process = await Process.start(
         'powershell.exe',
         _args(await _command()),
         environment: const {'URI_VOICE_VERB': 'list'},
-      ).timeout(timeout);
-      if (r.exitCode != 0) {
+      );
+      final out = process.stdout.transform(utf8.decoder).join();
+      final err = process.stderr.transform(utf8.decoder).join();
+      final code = await process.exitCode.timeout(
+        timeout,
+        onTimeout: () {
+          // A hung engine must not leave a PowerShell behind.
+          process.kill();
+          return -1;
+        },
+      );
+      if (code == -1) {
+        return const VoiceListing(
+          voices: <VoiceInfo>[],
+          unavailableReason: 'Listing voices timed out.',
+        );
+      }
+      if (code != 0) {
         return VoiceListing(
           voices: const <VoiceInfo>[],
           unavailableReason: 'The Windows speech engines did not respond.',
-          engineErrors: ['${r.stderr}'.trim()],
+          engineErrors: [(await err).trim()],
         );
       }
-      return parseListing('${r.stdout}');
-    } on TimeoutException {
-      return const VoiceListing(
-        voices: <VoiceInfo>[],
-        unavailableReason: 'Listing voices timed out.',
-      );
+      return parseListing(await out);
     } catch (e) {
       return VoiceListing(
         voices: const <VoiceInfo>[],

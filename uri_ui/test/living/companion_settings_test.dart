@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -797,6 +796,35 @@ void main() {
       expect(services.frameClock.cap, 30);
     });
 
+    testWidgets('frame rate is shown unavailable for the classic orb', (
+      tester,
+    ) async {
+      final services = await pumpShell(tester);
+      services.companionPrefs.select(const CompanionChoice.classic());
+      await tester.pumpAndSettle();
+      await openSettings(tester, services);
+      await scrollTo(tester, find.byKey(const ValueKey('fps-unavailable')));
+      expect(find.byKey(const ValueKey('fps-fps30')), findsNothing);
+    });
+
+    testWidgets('minimised: every ticker is muted, the classic orb too', (
+      tester,
+    ) async {
+      final services = await pumpShell(tester);
+      services.companionPrefs.select(const CompanionChoice.classic());
+      services.effects.setReducedMotion(false);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(SchedulerBinding.instance.transientCallbackCount, greaterThan(0));
+      services.frameClock.setHidden(true);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(SchedulerBinding.instance.transientCallbackCount, 0);
+      services.frameClock.setHidden(false);
+      services.effects.setReducedMotion(true);
+      await tester.pumpAndSettle();
+    });
+
     testWidgets('render quality is offered for living companions only', (
       tester,
     ) async {
@@ -999,11 +1027,15 @@ void main() {
     test(
       'never over the companion, never over the Companion-mode controls',
       () {
+        // Sizes a desktop window realistically takes. Below about 600 px of
+        // height Companion mode's own column no longer fits (accepted layout).
         for (final shell in const [
+          Size(1920, 1080),
+          Size(1366, 768),
           Size(1280, 860),
           Size(1024, 700),
+          Size(900, 640),
           Size(800, 600),
-          Size(640, 480),
         ]) {
           for (final mode in UiPresentationMode.values) {
             final orb = OrbDock.forMode(mode, shell).rect;
@@ -1011,18 +1043,25 @@ void main() {
             final where = "${mode.name} $shell";
             expect(v.overlaps(orb), isFalse, reason: where);
             expect(v.left, greaterThanOrEqualTo(0), reason: where);
+            expect(v.top, greaterThanOrEqualTo(0), reason: where);
             expect(v.right, lessThanOrEqualTo(shell.width), reason: where);
             if (mode == UiPresentationMode.companion) {
-              expect(
-                v.bottom,
-                lessThanOrEqualTo(
-                  math.max(
-                    shell.height - VoiceDock.companionControls,
-                    v.top + VoiceStage.heightFor(v.width, waveform: false),
-                  ),
-                ),
-                reason: where,
+              // The real boundaries: the status line under the companion and
+              // the composer, chips and hint at the bottom.
+              final controls = Rect.fromLTRB(
+                0,
+                shell.height - VoiceDock.companionControls,
+                shell.width,
+                shell.height,
               );
+              final status = Rect.fromLTRB(
+                0,
+                orb.bottom,
+                shell.width,
+                orb.bottom + VoiceDock.companionStatus,
+              );
+              expect(v.overlaps(controls), isFalse, reason: where);
+              expect(v.overlaps(status), isFalse, reason: where);
             }
           }
         }
