@@ -35,8 +35,8 @@ param(
   [switch]$OverrideGpu,
   [switch]$NoUi,
   [switch]$SelfTest,
-  # The tree the UI build comes from. Only the integration worktree below, or the exact candidate tree the runtime was
-  # materialized from (its receipt's candidate_source at candidate_head, clean), is accepted.
+  # The tree the UI build comes from. It must be the exact candidate tree the runtime was materialized from (the
+  # receipt's candidate_source at candidate_head, no tracked change); the default is only a default path.
   [string]$UiRoot = ''
 )
 $ErrorActionPreference = 'Stop'
@@ -73,18 +73,17 @@ function Test-Installation([string]$root, [string]$uiExe) {
     $u = Norm $uiExe
     if (-not $u.StartsWith((Norm $UiRoot) + '\')) { $problems += 'UI_OUTSIDE_INTEGRATION_WORKTREE' }
     foreach ($l in $LegacyRoots) { $n = Norm $l; if ($u.StartsWith($n + '\')) { $problems += "LEGACY_UI_REFUSED:$l" } }
-    if ((Norm $UiRoot) -ne (Norm $DefaultUiRoot)) {
-      # A non-default UI tree must be the candidate this runtime was materialized from, at the same commit, clean.
-      $okRoot = $false
-      try {
-        $rc = Get-Content -Raw -Encoding UTF8 (Join-Path $root 'OI_MATERIALIZATION_RECEIPT.json') | ConvertFrom-Json
-        $uh = (& git -C $UiRoot rev-parse HEAD 2>$null)
-        $dirty = (& git -C $UiRoot status --porcelain --untracked-files=no 2>$null | Out-String).Trim()
-        $okRoot = ($rc.candidate_source -and ((Norm $rc.candidate_source) -eq (Norm $UiRoot)) -and $rc.candidate_head -and
-                   ($uh -eq $rc.candidate_head) -and -not $dirty)
-      } catch { $okRoot = $false }
-      if (-not $okRoot) { $problems += 'UI_ROOT_NOT_RUNTIME_CANDIDATE' }
-    }
+    # Every UI tree, the default included (Codex P-GOV-1 r2 H1), must be the candidate this runtime was materialized
+    # from, at the same commit, with no tracked change: the UI and the runtime then come from one accepted commit.
+    $okRoot = $false
+    try {
+      $rc = Get-Content -Raw -Encoding UTF8 (Join-Path $root 'OI_MATERIALIZATION_RECEIPT.json') | ConvertFrom-Json
+      $uh = (& git -C $UiRoot rev-parse HEAD 2>$null)
+      $dirty = (& git -C $UiRoot status --porcelain --untracked-files=no 2>$null | Out-String).Trim()
+      $okRoot = ($rc.candidate_source -and ((Norm $rc.candidate_source) -eq (Norm $UiRoot)) -and $rc.candidate_head -and
+                 ($uh -eq $rc.candidate_head) -and -not $dirty)
+    } catch { $okRoot = $false }
+    if (-not $okRoot) { $problems += 'UI_ROOT_NOT_RUNTIME_CANDIDATE' }
   }
   return [pscustomobject]@{ ok = ($problems.Count -eq 0); problems = $problems; installation = $cur }
 }

@@ -87,16 +87,37 @@ def decode(n=256):
             'wall_s': round(time.time() - t0, 2)}
 
 
+def wait_launch(perf, timeout=1900):
+    """Read the runner's output until it reports LAUNCHED (the window exists) or that it skipped the run (P-GOV-1
+    advisory not GO / WILL_DEGRADE_BRAIN, or the runner ended). Returns (launched, lines read). Nothing is measured
+    before this returns True, so a skipped window can never be reported as a contention or UI-first result."""
+    lines, t0 = [], time.time()
+    for line in perf.stdout:
+        lines.append(line.rstrip())
+        if line.startswith('LAUNCHED'):
+            return True, lines
+        if line.startswith('RUN_SKIPPED') or time.time() - t0 > timeout:
+            return False, lines
+    return False, lines
+
+
 def ui_first(out):
     log = open(os.path.join(out, 'llama_server_ui_first.log'), 'w', encoding='utf-8')
     perf = subprocess.Popen(['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', RUN,
                              '-Identity', 'lunar', '-Fps', 'adaptive', '-Quality', 'full', '-Layout', 'shell',
                              '-Seconds', '360', '-OutDir', out, '-Tag', 'brain-ui-first-lunar-adaptive'],
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    launched = time.time()
     server = None
-    result = {'order': 'ui_first', 'started': time.strftime('%Y-%m-%dT%H:%M:%S'), 'perf_launched': round(launched, 2)}
+    result = {'order': 'ui_first', 'started': time.strftime('%Y-%m-%dT%H:%M:%S')}
     try:
+        ok, head = wait_launch(perf)
+        result['runner_head'] = head
+        result['gpu_advise'] = gpu_advise(out, 'brain-ui-first-lunar-adaptive')
+        if not ok:
+            result['skipped'] = 'window not launched (see runner_head)'
+            return
+        launched = time.time()
+        result['perf_launched'] = round(launched, 2)
         time.sleep(10)
         server = subprocess.Popen(ARGV, stdout=log, stderr=subprocess.STDOUT)
         t0 = time.time()
@@ -117,7 +138,6 @@ def ui_first(out):
         result['requests'] = reqs
         perf_out, _ = perf.communicate(timeout=600)
         result['runner'] = perf_out.strip().splitlines()[-1:]
-        result['gpu_advise'] = gpu_advise(out, 'brain-ui-first-lunar-adaptive')
         result['after_ui_exit'] = [decode() for _ in range(2)]
     finally:
         if perf.poll() is None:
@@ -137,7 +157,7 @@ def ui_first(out):
         with open(os.path.join(out, 'brain_contention_ui_first.json'), 'w', encoding='utf-8', newline='\n') as f:
             json.dump(result, f, indent=1)
     print(json.dumps({k: v for k, v in result.items() if k != 'requests'}, indent=1))
-    print('tok_s', [round(r['tok_s'], 1) for r in result.get('requests', [])])
+    print('tok_s', [round(r['tok_s'], 1) for r in result.get('requests', [])] or result.get('skipped'))
 
 
 def main():
@@ -168,6 +188,12 @@ def main():
                                      '-Identity', 'lunar', '-Fps', fps, '-Quality', 'full', '-Layout', 'shell',
                                      '-Seconds', '100', '-OutDir', out, '-Tag', tag],
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            ok, head = wait_launch(perf)
+            if not ok:
+                perf.communicate(timeout=60)
+                result['runs'][fps] = {'skipped': 'window not launched', 'runner_head': head,
+                                       'gpu_advise': gpu_advise(out, tag)}
+                continue
             launched = time.time()
             time.sleep(30)
             reqs = []
@@ -198,7 +224,7 @@ def main():
             json.dump(result, f, indent=1)
     print(json.dumps({k: v for k, v in result.items() if k != 'runs'}, indent=1))
     for k, v in result['runs'].items():
-        print(k, [r['tok_s'] for r in v['requests']])
+        print(k, [r['tok_s'] for r in v['requests']] if 'requests' in v else v.get('skipped'))
 
 
 if __name__ == '__main__':

@@ -42,6 +42,14 @@ def col(rows, k):
     return out
 
 
+def advisory(d, tag):
+    """The P-GOV-1 verdict run_companion_perf.ps1 recorded for this run (None for runs made before it existed)."""
+    try:
+        return json.load(open(os.path.join(d, tag + '.gpu_advise.json'), encoding='utf-8-sig')).get('verdict')
+    except (OSError, ValueError):
+        return None
+
+
 def main(dirs):
     print('| run | display Hz | engine fps | companion fps | build p90 | raster p50 / p90 / p99 ms '
           '| frames > 16.7 ms | CPU % | own GPU 3D % | adapter 3D % | VRAM MB | RSS MB start→end '
@@ -50,8 +58,14 @@ def main(dirs):
     hidden = []
     for d in dirs:
         for jf in sorted(glob.glob(os.path.join(d, '*.json'))):
+            if jf.endswith('.gpu_advise.json'):
+                continue                      # the P-GOV-1 advisory record of a run, not a run
             tag = os.path.basename(jf)[:-5]
             j = json.load(open(jf, encoding='utf-8'))
+            adv = advisory(d, tag)
+            if adv not in (None, 'GO'):
+                # WILL_DEGRADE_BRAIN is what a contention run measures on purpose; the row says so.
+                tag = f"{tag} [gpu advisory {adv}]"
             o = j['overall']
             rows = rows_of(os.path.join(d, tag + '.samples.csv'))
             ps = j['per_second'][3:]  # skip start-up

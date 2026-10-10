@@ -880,3 +880,58 @@ def test_launcher_selftest_refuses_an_arbitrary_ui_root():
     assert out["negative_arbitrary_ui_root"]["refused"] is True
     assert "UI_ROOT_NOT_RUNTIME_CANDIDATE" in out["negative_arbitrary_ui_root"]["problems"]
     assert out["legacy_port_8000_contacted"] is False
+
+
+def _load(rel, name):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(name, REPO / rel)
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def test_contention_driver_measures_only_after_the_window_launched():
+    bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention")
+
+    class P:
+        def __init__(self, lines):
+            self.stdout = iter(l + "\n" for l in lines)
+    ok, head = bc.wait_launch(P(["GPU_ADVISE GO", "LAUNCHED pid=1 tag=t", "later"]))
+    assert ok is True and head[-1].startswith("LAUNCHED")
+    assert bc.wait_launch(P(["GPU_ADVISE WAIT_HEAVY", "RUN_SKIPPED gpu advisory WAIT_HEAVY"]))[0] is False
+    assert bc.wait_launch(P(["GPU_ADVISE ", "profile build missing"]))[0] is False      # runner ended
+
+
+def test_perf_summaries_skip_advisory_files_and_exclude_or_label_contaminated_runs(tmp_path):
+    run = {"overall": {"frames": 100, "t_ms": 1000, "build_p50": 1, "build_p99": 2, "raster_p50": 1, "raster_p90": 2,
+                       "raster_p99": 3, "raster_max": 4, "over_16ms": 0},
+           "rss_bytes": [{"rss": 2**20}, {"rss": 2**20}]}
+    csv_text = "cpu_pct,gpu3d_pct,adapter3d_pct,dedicated_mb\n1,1,1,100\n"
+    for tag, verdict in (("good", "GO"), ("bad", "WILL_DEGRADE_BRAIN"), ("old", None)):
+        (tmp_path / (tag + ".json")).write_text(json.dumps(run), encoding="utf-8")
+        (tmp_path / (tag + ".samples.csv")).write_text(csv_text, encoding="utf-8")
+        if verdict:
+            (tmp_path / (tag + ".gpu_advise.json")).write_text(json.dumps({"verdict": verdict}), encoding="utf-8-sig")
+    r = subprocess.run([sys.executable, str(REPO / "rnd/voice/summarize_perf.py"), str(tmp_path)],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    rows = [l for l in r.stdout.splitlines() if l.startswith("| ") and not l.startswith("| run")]
+    assert [l.split("|")[1].strip() for l in rows] == ["good", "old"]
+    assert "Excluded" in r.stdout and "bad (gpu advisory WILL_DEGRADE_BRAIN)" in r.stdout
+    cs = _load("rnd/companions/settings/summarize.py", "companion_summarize")
+    assert cs.advisory(str(tmp_path), "bad") == "WILL_DEGRADE_BRAIN" and cs.advisory(str(tmp_path), "old") is None
+
+
+def test_launcher_selftest_applies_the_candidate_rule_to_the_default_ui_root():
+    root = Path(r"C:\Users\cheta\Development\uri-ws-hard")
+    ui = Path(r"C:\Users\cheta\Development\uri-ws-hardening")
+    if not (root / "OI_MATERIALIZATION_RECEIPT.json").exists() or not ui.exists():
+        pytest.skip("default working-system pair not on this machine")
+    rc = json.loads((root / "OI_MATERIALIZATION_RECEIPT.json").read_text(encoding="utf-8-sig"))
+    head = subprocess.run(["git", "-C", str(ui), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                        str(REPO / "scripts" / "launch_uri_working_system.ps1"), "-SelfTest"],
+                       capture_output=True, text=True, timeout=300)
+    out = json.loads(r.stdout[r.stdout.index("{"):])
+    mismatch = (str(rc.get("candidate_source", "")).lower().rstrip("\\") != str(ui).lower() or rc.get("candidate_head") != head)
+    assert ("UI_ROOT_NOT_RUNTIME_CANDIDATE" in out["real_installation"]["problems"]) == mismatch
