@@ -1,0 +1,130 @@
+{
+ "tasks": {
+  "name_to_last_first_initial": {
+   "1_example": {
+    "programs": 180,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 322.0
+   },
+   "2_example": {
+    "programs": 120,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 261.4
+   }
+  },
+  "dmy_to_iso": {
+   "1_example": {
+    "programs": 120,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 624.2
+   },
+   "2_example": {
+    "programs": 120,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 668.3
+   }
+  },
+  "email_to_user": {
+   "1_example": {
+    "programs": 244,
+    "correct_on_heldout": true,
+    "ambiguous_top5": true,
+    "ms": 511.0
+   },
+   "2_example": {
+    "programs": 48,
+    "correct_on_heldout": true,
+    "ambiguous_top5": true,
+    "ms": 509.1
+   }
+  },
+  "upper_surname": {
+   "1_example": {
+    "programs": 124,
+    "correct_on_heldout": true,
+    "ambiguous_top5": true,
+    "ms": 24.0
+   },
+   "2_example": {
+    "programs": 8,
+    "correct_on_heldout": true,
+    "ambiguous_top5": true,
+    "ms": 24.8
+   }
+  },
+  "class_section_code": {
+   "1_example": {
+    "programs": 60,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 67.3
+   },
+   "2_example": {
+    "programs": 60,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 66.7
+   }
+  },
+  "initials": {
+   "1_example": {
+    "programs": 60,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 4.7
+   },
+   "2_example": {
+    "programs": 60,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 4.8
+   }
+  },
+  "phone_group": {
+   "1_example": {
+    "programs": 0,
+    "correct_on_heldout": false,
+    "ambiguous_top5": false,
+    "ms": 55.8
+   },
+   "2_example": {
+    "programs": 0,
+    "correct_on_heldout": false,
+    "ambiguous_top5": false,
+    "ms": 56.1
+   }
+  },
+  "roll_from_id": {
+   "1_example": {
+    "programs": 169,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 35.7
+   },
+   "2_example": {
+    "programs": 92,
+    "correct_on_heldout": true,
+    "ambiguous_top5": false,
+    "ms": 35.9
+   }
+  }
+ },
+ "summary_1_example": {
+  "solved": 7,
+  "of": 8,
+  "ambiguous": 2,
+  "ms_p50": 61.5,
+  "ms_max": 624.2
+ },
+ "summary_2_example": {
+  "solved": 7,
+  "of": 8,
+  "ambiguous": 2,
+  "ms_p50": 61.4,
+  "ms_max": 668.3
+ }
+}
