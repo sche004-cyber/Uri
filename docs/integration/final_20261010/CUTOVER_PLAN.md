@@ -35,13 +35,46 @@ The plan reuses the accepted runbook `docs/governance/consolidation/URI_RUNTIME_
 |---|---|---|---|---|
 | 2.1 | Back up legacy state | GREEN (read-only copy) | copy `uri-agent` state directories, `\URIServer` task XML (`Export-ScheduledTask`), both `URI.lnk`, to `D:\uri-backups\cutover-<date>\`; record SHA-256 of every file | hash manifest written; restore dry-run into a scratch folder |
 | 2.2 | Build the runtime | GREEN | the only qualified procedure, the one staged: a clean checkout of the accepted commit, then `python scripts\oi_materialize_test_runtime.py <NEW, non-existent root> --venv <qualified venv>` (it refuses an existing destination). The tool labels its output a development test runtime; using that output for daily use is part of the owner's cutover decision (CUT-1). No separate production build tool exists | `git rev-parse HEAD` = e8e3b65; receipt `candidate_head` = the accepted commit (the launcher self-test follows provisioning, step 2.3) |
-| 2.3 | Provision fresh state | GREEN | `ws_provision.py --name production --port <18300-18339>` in the new root, **run from PowerShell** (ENV-P1: the launcher runs under PowerShell and the frozen identity check hashes the `git` on PATH) | port ≠ 8000; no legacy data imported; launcher `-SelfTest` exit 0 |
+| 2.3 | Provision fresh state | GREEN | `ws_provision.py --name production` in the new root (port chosen in 18300-18339), **run from PowerShell** (exact command in 2a) (ENV-P1: the launcher runs under PowerShell and the frozen identity check hashes the `git` on PATH) | port ≠ 8000; no legacy data imported; launcher `-SelfTest` exit 0 |
 | 2.4 | Build the UI | GREEN | `flutter build windows --release` in the SAME clean checkout the materializer used (the launcher accepts a UI only from the receipt's `candidate_source` at `candidate_head`, with no tracked change) | executable hash recorded; launcher `-SelfTest` `real_installation.ok` |
 | 2.5 | Contain the legacy instance | **RED** | `scripts\uri_containment.ps1 -Apply` (disables `\URIServer`, moves shortcuts); record the printed backup folder | task disabled; shortcuts moved |
 | 2.6 | Stop the legacy server | **RED** | stop the process tree on port 8000 at a time the owner chooses | port 8000 free |
-| 2.7 | Start URI | **RED** | `Launch URI Working System.bat -RuntimeRoot <new root> -UiRoot <clean checkout>` (UI first, then Brain host) | integrated server identity proven; Brain host READY with calibration ≥ 60 tok/s; window open |
+| 2.7 | Start URI | **RED** | the start command in 2a, from `$Src`, with `-RuntimeRoot $Rt -UiRoot $Src` (UI first, then Brain host) | integrated server identity proven; Brain host READY with calibration ≥ 60 tok/s; window open |
 | 2.8 | New shortcut | **RED** | one shortcut to the launcher with the arguments above | opens the same installation; second launch reuses the window |
 | 2.9 | Observe | GREEN | 24 h: Brain host report, residency alerts, scheduler status (still disabled), no unexpected restarts | report reviewed with the owner |
+
+## 2a. Exact commands (PowerShell; the sequence used in staging, `STAGING_QUALIFICATION.md`)
+
+```powershell
+$Commit = '<accepted canonical commit>'
+$Src    = 'C:\URI\src-<commit>'        # clean checkout of $Commit: the materializer's candidate tree AND the UI root
+$Rt     = 'C:\URI\runtime-<commit>'    # must not exist yet
+$Venv   = 'C:\Users\cheta\Development\uri-ws-final\.venv'   # the venv the staging runtimes copied
+
+# 2.2 runtime (GREEN)
+git clone --no-checkout https://github.com/sche004-cyber/Uri.git $Src
+git -C $Src checkout --detach $Commit
+git -C $Src config core.autocrlf false
+Set-Location $Src
+python scripts\oi_materialize_test_runtime.py $Rt --venv $Venv
+
+# 2.3 provision, from PowerShell (ENV-P1) with the runtime's own interpreter (GREEN)
+Set-Location $Rt
+.\.venv\Scripts\python.exe scripts\ws_provision.py --name production
+
+# 2.4 UI in the same tree (GREEN)
+Set-Location "$Src\uri_ui"; flutter build windows --release
+
+# self-test of THIS installation (GREEN; must exit 0 with real_installation.ok = true)
+Set-Location $Src
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\launch_uri_working_system.ps1 -SelfTest -RuntimeRoot $Rt -UiRoot $Src
+
+# 2.7 start (RED, after 2.5 and 2.6)
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\launch_uri_working_system.ps1 -RuntimeRoot $Rt -UiRoot $Src
+```
+
+The new shortcut (2.8) runs the last command with the same arguments. `Launch URI Working System.bat` passes its
+arguments through to the same script, so it can be used from `$Src` with the same `-RuntimeRoot` and `-UiRoot`.
 
 ## 3. Still disabled after cutover (unchanged by this plan)
 
