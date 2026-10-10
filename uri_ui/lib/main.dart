@@ -10,6 +10,7 @@ import 'dart:async' show unawaited;
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app.dart';
 import 'services/app_state.dart';
@@ -26,6 +27,11 @@ import 'working_system_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // VRAM research (research/ui-vram-cache-20261010, not for integration as is): cap the engine's GPU resource cache.
+  const gpuCacheMb = int.fromEnvironment('URI_GPU_CACHE_MB');
+  if (gpuCacheMb > 0) {
+    await SystemChannels.skia.invokeMethod<void>('Skia.setResourceCacheMaxBytes', gpuCacheMb << 20);
+  }
   await ensurePlatformWindowManagerInitialized();
 
   // Prototype 2 (multi-client + runtime awareness): this install's own
