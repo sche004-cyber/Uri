@@ -53,6 +53,14 @@
 | 33 | Office backend (M39) | not on canonical (donor branches only) | git | CODE | out of M1 |
 | 34 | `requirements.txt` omits the Google client libraries | **DEFECT (low)** | cloud collection errors | RUN | S2 |
 | 35 | Local PC work after `54ad7be` (staging receipt, push record) | **UNKNOWN** | receipt §5 unfilled | DOC | re-check before S1 |
+| 36 | User-chosen folders, drives, output location, named workspaces, per-verb folder grants | MISSING | `M1_STORAGE_ACCESS_MANAGER.md` §1 | CODE-RV | S10, S12, S13 |
+| 37 | Default-deny for folders | Structurally true only (no tool takes a raw path) | grep of `uri_core/tools`, `capabilities` | CODE-RV | S10 (make explicit) |
+| 38 | Per-run harness workspace + verified, symlink-refusing copy-out | IMPL (Windows-tested per records) | `turn_runner.py:225-262`; `postconditions.py:100-104` | CODE-RV | reused by S16 |
+| 39 | FileStore containment (realpath + prefix), extension and size caps | IMPL+TESTED | `file_store.py:157-190`; `test_m21_file_store_isolation.py` | CODE-RV, RUN | reused by S10 |
+| 40 | Reparse-point, UNC, device-path, ADS guards for arbitrary roots | MISSING | — | CODE-RV | S10 |
+| 41 | Native folder picker | MISSING (single-file picker only; `file_picker ^12.2.0` present) | `platform_file_picker.dart:22`; `pubspec.yaml:43` | CODE-RV | S14 |
+| 42 | File-access audit log | MISSING (hash-chain pattern exists in scheduler) | `uri_scheduler/store.py:9,60` | CODE-RV | S10 |
+| 43 | Zip extraction has no decompressed-size bound | **Low-severity defect** | `linked_document_service.py:167-207` | CODE-RV | S16 |
 
 Every row is unchanged by this research: no code was modified. Rows that move during M1 must be updated with a
 correction record, never overwritten silently.

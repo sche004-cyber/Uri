@@ -269,6 +269,7 @@ integrated only by fast-forward under owner authorization.
 | D-6 | Job Object limits: change the frozen supervisor, or use a non-frozen wrapper |
 | D-7 | Client secure token storage (new Flutter dependency) |
 | D-8 | Whether non-owner users get harness access in M1, or only after S7 |
+| D-9 | Storage ownership: whether server-private and admin-published server folders are acceptable for M1 beside the Phase 1 rule "client owns content" (see `M1_STORAGE_ACCESS_MANAGER.md` §2) |
 
 ### S1. `uri_gateway`: authenticated boundary and fair Brain queue
 
@@ -418,6 +419,32 @@ integrated only by fast-forward under owner authorization.
 
 ---
 
+## 11. Storage and Access Manager (extension added 2026-10-10)
+
+The full design is in `M1_STORAGE_ACCESS_MANAGER.md`. It covers:
+- user-controlled folders, drives and cloud locations;
+- separate read, create, edit and delete permissions;
+- named workspaces and default output folders;
+- temporary per-task grants;
+- approval, revocation and recovery;
+- the client-local vs server-side access model;
+- path and reparse-point safety;
+- multi-user isolation;
+- slices S10-S17 with tests.
+
+Summary:
+- **One server-side `StorageBroker`.** It is a new non-frozen `uri_storage/` package, consulted from the *existing*
+  approval/resolver decision point; that integration is the frozen-touch slice S11. It becomes the single copy step for
+  user turns, harnesses (copy-in and copy-out around the existing per-run workspaces), hosted apps (S8 broker
+  `files.*`), the scheduler and future Office.
+- **Client folders.** These stay on the device: scoped transfer through the existing `/files` API. The server never
+  sees device paths.
+- **OS-level isolation** depends on S7.
+- **Owner decision D-9** is required (above).
+
+
+---
+
 ## Conclusion
 
 **Recommended smallest M1:** a new, non-frozen `uri_gateway` in front of the already multi-user, tested Line A Core.
@@ -452,6 +479,10 @@ Minimal M1 (S1+S2+S4+S5) is about 2-3 focused sessions plus one owner-present PC
 5. Machine stability (SAFE-1).
 6. Possible unpushed local work on the PC.
 7. Same-Windows-user trust until S7.
+
+**Storage extension:** the smallest useful storage slice set is S10 + S12 + S11 + S13 (Python side). It is
+Medium-Large, about 2-3 sessions. S10, S12 and the S13 Python side are cloud-testable and non-frozen. S11 needs the
+D-2 frozen authorization. S14 and S15 are PC-blocked.
 
 **Work that can proceed safely in the cloud now** (each needs separate authorization to implement):
 - S1 in full;

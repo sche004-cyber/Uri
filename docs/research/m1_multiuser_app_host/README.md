@@ -10,6 +10,7 @@ was offline.
 |---|---|
 | `M1_ARCHITECTURE_AUDIT_AND_PLAN.md` | Deliverables 1-9 and the conclusion: inventory, gap analysis, the recommended three-user architecture, harness terms, app host, threat model, slices, audit procedure, cloud vs PC-blocked work |
 | `M1_IMPLEMENTATION_STATUS_LEDGER.md` | Deliverable 10: one row per capability with a status, its evidence and the evidence grade |
+| `M1_STORAGE_ACCESS_MANAGER.md` | Extension (assignment item 8): Storage and Access Manager, with its own acceptance criteria and self-review (SS-1..SS-6) |
 | `evidence/CLOUD_TEST_EVIDENCE.md` | Commands and results of the tests run in this cloud session |
 
 ## Acceptance criteria (set before the audit)
