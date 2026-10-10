@@ -11,22 +11,26 @@ resolution, animation fidelity and responsiveness.
 
 ## 1. Answer
 
-**The 13-14 GB target is not achievable on this card without a material regression.** The frozen Brain alone asks for
-15.7 GB of device memory. Of the levers that keep the model and its quantization, only two free a gigabyte each, and
+Units: MiB as Windows and llama.cpp report them. The card's "16 GB" is 16,368 MiB, so the 13-14 GB target is read as
+13-14 GiB (13,312-14,336 MiB). Combined figures below are **estimates by addition** unless a row says measured.
+
+**The 13-14 GiB target is not reachable on this card without a material regression**, among the configurations
+examined. The frozen Brain alone requests 15,698 MiB (15.3 GiB) of device memory. Of the levers that keep the model and its quantization, only two free a gigabyte each, and
 both cost something the brief protects:
 
 | Lever | Device memory freed | Cost | Source |
 |---|---|---|---|
 | Vision encoder on the CPU (`--no-mmproj-offload`) | 1,106 MiB | image turns 1.8 s → about 5.0 s (2.7×); text decode unchanged | R1 (measured), this round's screening (4.94 s) |
 | No MTP draft | 1,135 MiB | decode about 117 → 104 tok/s (−11%) | R1 (measured) |
-| Both | 2,241 MiB → about 13.4 GB Brain + 0.35-0.4 GB Companion ≈ 13.8 GB | both costs | R1 (measured Brain) + this round (measured Companion); sum is arithmetic, not a measured combined load |
+| Both | 2,241 MiB → Brain about 13,457 MiB + Companion about 401 MiB ≈ **13,858 MiB (13.5 GiB), estimate** | both costs | baseline 15,698 (measured) − R1 savings (measured) + Companion (measured); the combined load itself was not measured |
 
 Everything else measured in this round frees too little or costs too much (section 3). The Companion window holds about
-350-400 MiB. Of that, no tunable part was found: the cache cap had no effect, and the larger rail orb added about
-5 MiB.
+350-400 MiB. In this round no tunable part of it was found: the cache cap had no measurable effect,
+and the larger rail orb added about 5 MiB in the Workspace.
 
-**Recommendation:** keep Runtime v1 as frozen. The cheapest real saving is **vision on CPU** (about 1.1 GB, decode
-kept, image turns about 3 s slower). It brings Brain + Companion to about 14.9 GB, which is still above the target.
+**Recommendation:** keep Runtime v1 as frozen. The cheapest real saving is **vision on CPU** (1,106 MiB, decode
+kept, image turns about 3 s slower). It brings Brain + Companion to about 14,993 MiB (14.6 GiB, estimate), which is
+still above the target. Reaching the target needs the MTP draft dropped as well (estimate 13.5 GiB, decode −11%).
 Whether that trade is worth it is an owner decision (OWNER DECISIONS). It would need the 221-case suite, a soak and a
 Codex review before any profile change (frozen-runtime rule). No code from this round is proposed for integration, so
 no Codex integration review is pending.
@@ -42,8 +46,10 @@ no Codex integration review is pending.
 | Companion window (integrated mode, 1384×861, n = 3 × 8 samples) | Companion view 401 MiB (359-420); Workspace 347-353 MiB |
 | Desktop (dwm, WebView, terminal etc.) | about 500 MiB (census) |
 
-Combined Brain + Companion today: about **16.1 GB requested** (15.7 + 0.4). The card has 16 GB, so roughly 0.9-1.1 GB of the
-Brain is placed in system memory by the driver, as R1/R2 explain. Decode stays fast while that demoted part is cold.
+Combined Brain + Companion today: about **16,099 MiB requested** (15,698 + 401; 15.7 GiB, estimate by addition) on a
+16,368 MiB card that the desktop also uses. In this baseline load the Brain ended with 1,149 MiB non-local against
+900 MiB requested host-visible, so about 249 MiB was demoted by the driver (R1/R2 measured 250-950 MiB on idle
+desktops). Decode stays fast while the demoted part is cold.
 
 ## 3. Candidates screened this round (one load each, n = 1, idle desktop, `research/vram_efficiency/screen_table.md`)
 
@@ -68,8 +74,9 @@ Companion side (measured, n = 3 runs × 8 samples per view, integrated mode, sam
 | `0215887` + engine resource-cache cap 48 MB (`Skia.setResourceCacheMaxBytes`) | 400.0 | 352.9 |
 | `0215887` control for the cap | 401.4 | 352.9 |
 
-The cap had no measurable effect; the engine ships Impeller and Skia, and the call has no effect on what this build
-uses. The window's memory is fixed renderer overhead at this size. Not proposed.
+The cap had no measurable effect (n = 3). Why is not established: the engine contains both Impeller and Skia, and
+which one this build uses was not determined. These samples do not show what the window's memory consists of. Not
+proposed.
 
 **Correction (recorded):** a first UI comparison without a client manifest measured 98-103 MiB. That run rendered the
 classic sign-in screen, not the Living Companion, so it is invalid for the orb question and is not used above

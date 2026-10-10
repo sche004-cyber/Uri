@@ -14,7 +14,11 @@ import statistics
 import sys
 from pathlib import Path
 
-EVID = Path(__file__).resolve().parents[1] / "adaptive_runtime" / "evidence"
+HERE = Path(__file__).resolve().parent
+# The report-local copies (vS_*.json here, server logs in server_logs/) are the evidence of record; the harness
+# writes to ../adaptive_runtime/evidence, which is used only when no local copy exists.
+EVID = HERE if list(HERE.glob("vS_*.json")) else HERE.parents[0] / "adaptive_runtime" / "evidence"
+LOGS = HERE / "server_logs" if (HERE / "server_logs").exists() else EVID
 BUF = re.compile(r"(?P<what>model buffer|KV buffer|compute buffer|RS buffer|output buffer)[^=]*?size\s*=\s*(?P<mib>[\d.]+) MiB")
 
 
@@ -72,7 +76,7 @@ def main():
     print("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     for f in sorted(glob.glob(str(EVID / (prefix + "*.json")))):
         d = json.loads(Path(f).read_text(encoding="utf-8"))
-        log = EVID / ("server_%s_%s.log" % (d["name"], d["stamp"]))
+        log = LOGS / ("server_%s_%s.log" % (d["name"], d["stamp"]))
         b = buffers(log)
         r = row(d)
         pre = r["pre"]
