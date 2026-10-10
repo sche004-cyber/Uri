@@ -54,9 +54,14 @@ shortcuts were not touched. Human microphone qualification: NOT VERIFIED (deferr
 
 After the fast-forward to `2419e0a`, a measurement run showed that the P-GOV-1 change to
 `docs/working_system/tools/capture_ws.ps1` resolved `docs\` as the repository root. The advisory module could not be
-imported and the tool refused every capture (`GPU_ADVISORY_UNREADABLE`). This failed safe (no window opened), but the
+imported and the tool refused every new-window capture (the `-Attach` path does not ask the advisory and was unaffected) (`GPU_ADVISORY_UNREADABLE`). This failed safe (no window opened), but the
 canonical capture tool was unusable. Neither the tests nor the eleven Codex rounds caught it, and the staging pass did
 not use the capture tool's own launch path (it attached to a running window). The earlier claim that the capture
 caller was "implemented" stands corrected: it was implemented with this defect. The repair is `b1c545b`: the root comes
 from `$PSScriptRoot`, a behavioural test evaluates the tool's line at its real location, and a real run of the tool got
-GO and captured. Gates at `b1c545b`: ws/oi/a2ui 597 passed / 22 skipped, frozen check ok (`evidence/gates_intf2.txt`).
+GO and captured (`evidence/intf2_capture_run.json`, `evidence/intf2_capture_after_fix.png`; demo mode, sign-in screen). Gates at `b1c545b`: ws/oi/a2ui 597 passed / 22 skipped, frozen check ok (`evidence/gates_intf2.txt`).
+
+Codex review of INT-F2: ACCEPT WITH FINDINGS (two LOW: this wording, repaired; and a pre-existing launcher self-test
+line that runs `python -m uri_operational_intelligence.gpu_lease status` without the runtime as working directory, so
+its informational `gpu_lease` field can read UNREADABLE when started elsewhere; it does not affect the self-test
+result. Carried as limitation LIM-ST1.)
