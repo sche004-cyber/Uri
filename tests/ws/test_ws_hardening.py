@@ -730,6 +730,13 @@ def advise(tmp_path, census_sample, **kw):
     return G.advise_window(directory=tmp_path, census_fn=lambda: census_sample, **kw)
 
 
+def named(c, names):
+    """Give census processes the names psutil would report for real pids."""
+    for p in c.get("processes", []):
+        p["name"] = names.get(p["pid"], p.get("name") or "proc%d.exe" % p["pid"])
+    return c
+
+
 def lease_files(d):
     # gpu.lock is byte-locked by a holder (unreadable); its presence is still compared by name.
     return {p.name: (None if p.name == "gpu.lock" else p.read_bytes()) for p in Path(d).glob("*")} if Path(d).exists() else {}
@@ -743,7 +750,7 @@ def test_advise_go_without_a_resident_brain(tmp_path):
 
 def test_advise_will_degrade_a_resident_brain_with_too_little_margin(tmp_path):
     # measured: frozen Runtime v1 leaves about 85 MiB free next to the desktop
-    brain = G.census(raw([(1580, 311, 9), (4242, 15900, 1149)], 16283), card=CARD)
+    brain = named(G.census(raw([(1580, 311, 9), (4242, 15900, 1149)], 16283), card=CARD), {4242: "llama-server.exe"})
     r = advise(tmp_path, brain)
     assert r["verdict"] == G.WILL_DEGRADE_BRAIN and G.ADVISE_EXIT[r["verdict"]] == 76
     assert r["brain"][0]["pid"] == 4242 and r["margin_mib"] < 0
@@ -784,6 +791,12 @@ def test_advise_fails_closed_when_unmeasurable(tmp_path):
     hidden_brain = G.census(raw([(1580, 311, 9)], 15900), card=CARD)
     r = advise(tmp_path, hidden_brain)
     assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "UNATTRIBUTED_GPU_MEMORY"
+    # partial list, a demoted Brain's entry missing: unattributed memory below Brain size still fails closed (r9)
+    partial_brain = named(G.census(raw([(1580, 311, 9), (3144, 84, 23)], 11900), card=CARD), {})
+    assert advise(tmp_path, partial_brain)["reason"] == "UNATTRIBUTED_GPU_MEMORY"
+    # a Brain-sized process whose name could not be read
+    unnamed = G.census(raw([(1580, 311, 9), (4242, 15000, 1149)], 15400), card=CARD)
+    assert advise(tmp_path, unnamed)["reason"] == "UNIDENTIFIED_LARGE_GPU_PROCESS"
     desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
     # The lock is held but the record names no live holder: an acquire() between taking the lock and publishing
     # lease.json (Codex P-GOV-1 r1 M1), or a corrupt record. Both fail closed.
@@ -843,7 +856,7 @@ def test_advise_cli_exit_codes(tmp_path, monkeypatch, capsys):
     # GO (0) and WILL_DEGRADE_BRAIN (76) through the same CLI entry point, with a fake census
     monkeypatch.setenv("URI_GPU_LEASE_DIR", str(tmp_path))
     desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
-    brain = G.census(raw([(1580, 311, 9), (4242, 15900, 1149)], 16283), card=CARD)
+    brain = named(G.census(raw([(1580, 311, 9), (4242, 15900, 1149)], 16283), card=CARD), {4242: "llama-server.exe"})
     for sample, code, verdict in ((desktop, 0, G.GO), (brain, 76, G.WILL_DEGRADE_BRAIN)):
         monkeypatch.setattr(G, "census", lambda s=sample: s)
         assert G.main(["advise", "--window"]) == code
@@ -1032,3 +1045,20 @@ try {
                        capture_output=True, text=True, timeout=120)
     out = json.loads(r.stdout.strip().splitlines()[-1])
     assert out == {"hidden": "PENDING", "ending": "EXITED", "shown": "SHOWN"}, r.stderr
+
+
+def test_advise_gives_no_brain_verdict_for_another_large_gpu_workload(tmp_path):
+    game = named(G.census(raw([(1580, 311, 9), (5555, 15000, 300)], 15400), card=CARD), {5555: "game.exe"})
+    r = advise(tmp_path, game)
+    assert r["verdict"] == G.GO and r["reason"] == "NO_RESIDENT_BRAIN" and r["other_large"][0]["name"] == "game.exe"
+    small_llama = named(G.census(raw([(1580, 311, 9), (18372, 1602, 349)], 1950), card=CARD), {18372: "llama-server.exe"})
+    assert advise(tmp_path, small_llama)["verdict"] == G.GO        # Ollama's runner is not a resident Brain
+
+
+def test_companion_runner_reports_launched_only_with_a_window():
+    src = (REPO / "rnd/companions/settings/run_companion_perf.ps1").read_text(encoding="utf-8")
+    start = src.index("Start-Process -FilePath $exe")
+    wait = src.index("MainWindowHandle -eq 0", start)
+    skip = src.index("RUN_SKIPPED no window", start)
+    launched = src.index('Write-Output "LAUNCHED', start)
+    assert start < wait < skip < launched

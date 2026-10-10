@@ -375,6 +375,9 @@ WINDOW_MIB = 480
 # A process at or above this is a resident Runtime v1 server: every measured Brain load holds 13.4-15.8 GB local
 # (Adaptive Runtime R1/R2, all four planner profiles); Ollama's runner and app windows stay below 2 GB.
 RESIDENT_BRAIN_MIN_MIB = 12000
+# Adapter memory no process accounts for, above which the census cannot rule out a hidden Brain (Codex P-GOV-1 r9).
+# Twice the Brain host's release threshold (512 MiB); a healthy desktop sample leaves tens of MiB unattributed.
+UNATTRIBUTED_MAX_MIB = 1024
 GO, WAIT_HEAVY, WILL_DEGRADE_BRAIN = "GO", "WAIT_HEAVY", "WILL_DEGRADE_BRAIN"
 ADVISE_EXIT = {GO: 0, WAIT_HEAVY: 75, WILL_DEGRADE_BRAIN: 76}
 HEAVY_PURPOSES = ("benchmark", "regression_chain")
@@ -459,12 +462,22 @@ def assess_window(lease: dict, c: dict, expected_mib=WINDOW_MIB, own_pids=()) ->
         # The desktop compositor always holds memory, so an empty list means the per-process counters are missing.
         return dict(out, verdict=WAIT_HEAVY, reason="PROCESS_COUNTERS_MISSING",
                     explain="Per-process GPU memory cannot be read; a test window should wait.")
-    if (c.get("unattributed_mib") or 0) >= RESIDENT_BRAIN_MIN_MIB:
-        # Brain-sized memory that no process accounts for (counters partly missing, or a server still releasing).
+    if (c.get("unattributed_mib") or 0) >= UNATTRIBUTED_MAX_MIB:
+        # Memory that no process accounts for (counters partly missing, or a server still releasing): a Brain could be
+        # hidden in it.
         return dict(out, verdict=WAIT_HEAVY, reason="UNATTRIBUTED_GPU_MEMORY",
                     explain="%.0f MB of GPU memory is not attributed to any process; a test window should wait."
                             % c["unattributed_mib"])
-    brains = [p for p in c["processes"] if p["dedicated_mib"] >= RESIDENT_BRAIN_MIN_MIB]
+    large = [p for p in c["processes"] if p["dedicated_mib"] >= RESIDENT_BRAIN_MIN_MIB]
+    if any(not p.get("name") for p in large):
+        # A Brain-sized process whose identity could not be read (e.g. it exited between the two samples).
+        return dict(out, verdict=WAIT_HEAVY, reason="UNIDENTIFIED_LARGE_GPU_PROCESS",
+                    explain="A large GPU process could not be identified; a test window should wait.")
+    # Only a llama-server holding Brain-sized memory is a resident Brain (Codex P-GOV-1 r9); another large GPU
+    # workload (a game) gets no Brain verdict.
+    brains = [p for p in large if p["name"].lower().startswith("llama-server")]
+    out["other_large"] = [{"pid": p["pid"], "name": p["name"], "dedicated_mib": p["dedicated_mib"]}
+                          for p in large if p not in brains]
     free = round(c["card_mib"] - c["adapter_dedicated_mib"], 1)
     margin = round(free - expected_mib, 1)
     out.update(free_mib=free, margin_mib=margin,

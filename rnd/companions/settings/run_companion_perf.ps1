@@ -55,7 +55,14 @@ $verdict = $null; try { $verdict = ($advise | ConvertFrom-Json).verdict } catch 
 Write-Output "GPU_ADVISE $verdict"
 if ($verdict -ne 'GO' -and $verdict -ne 'WILL_DEGRADE_BRAIN') { Write-Output "RUN_SKIPPED gpu advisory $verdict"; exit 3 }
 $p = Start-Process -FilePath $exe -WorkingDirectory $ui -PassThru
-Write-Output "LAUNCHED pid=$($p.Id) tag=$Tag $(Get-Date -Format o)"
+# LAUNCHED means the window exists (Codex P-GOV-1 r9): brain_contention.py starts its UI-first server only after it.
+$deadline = (Get-Date).AddSeconds(60)
+while ($p.MainWindowHandle -eq 0 -and -not $p.HasExited -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 300; $p.Refresh() }
+if ($p.MainWindowHandle -eq 0) {
+  if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+  Write-Output "RUN_SKIPPED no window after 60 s (pid $($p.Id))"; exit 3
+}
+Write-Output "LAUNCHED pid=$($p.Id) tag=$Tag window=$($p.MainWindowHandle) $(Get-Date -Format o)"
 if ($MinimizeAt -gt 0) {
   # Separate job: the sampler below blocks this script for the whole run.
   Start-Job -ArgumentList $p.Id, $MinimizeAt, $RestoreAt -ScriptBlock {
