@@ -9,17 +9,19 @@ Canonical before this session: `uri-repo/integration/git-sync-20261008` @ `54ad7
 
 | Capability | Highest level | Evidence | Not yet |
 |---|---|---|---|
-| Brain (Runtime v1, frozen) | INTEGRATED; staged by the TI session at 54ad7be (no committed staging receipt) | freeze record; TIWS receipt §2 live matrix 100/103 (reused) | ACTIVATED |
+| Brain (Runtime v1, frozen) | STAGED (this session, 145.9-156 tok/s) | `STAGING_QUALIFICATION.md` | ACTIVATED |
 | Brain host + GPU lease | INTEGRATED | WS hardening receipt (reused) | ACTIVATED |
-| P-GOV-1 window advisory + UI-first launcher | TESTED (this session) | `evidence/focused_suites_pgov1*.txt`; Codex r1 REJECT → repaired | INDEPENDENTLY ACCEPTED, INTEGRATED, STAGED |
-| Companion (orbs, themes, FPS caps) | INTEGRATED | companion-settings receipt; Flutter 502/5 at 0e2969c (reused; no Dart change since) | STAGED this session |
+| P-GOV-1 window advisory + UI-first launcher | INDEPENDENTLY ACCEPTED (Codex r11 AwF), STAGED (UI-first 145.9 tok/s live) | `P_GOV_1_AUDIT.md`, `STAGING_QUALIFICATION.md` | INTEGRATED on canonical (pending fast-forward) |
+| Companion (orbs, themes, FPS caps) | INTEGRATED; STAGED | companion-settings receipt; Flutter 511/5 at 08a9192 | FPS not re-measured (code unchanged) |
+| Workspace rail orb centred (owner request) | INDEPENDENTLY ACCEPTED (Codex r5), STAGED | commits 9fdefe3, 2cf3231 | — |
+| INT-F1 truthful A2UI handoff reply / companion state | INDEPENDENTLY ACCEPTED (Codex r5), STAGED (verified live) | e109c3d..08a9192 | — |
 | Live voice (PTT, STT, spoken replies) | INTEGRATED | live-voice receipt; voice tests 42+29 at 54ad7be (reused) | human-voice qualification (owner) |
 | Voice → TI (conversation + drafting, INT-3) | INTEGRATED, widget-tested | TIWS r12-r14 (reused) | live microphone run (owner) |
 | Text Intelligence (draft desk) | INTEGRATED | TIWS receipt | — |
 | TI → A2UI handoff (typed and transcript) | INTEGRATED, tested | `tests/ws/test_ti_desk_bridge.py` a2ui cases (in this session's 590-pass run) | — |
 | A2UI proposal / revision / approval | INTEGRATED | A2UI receipt (Codex r7 AwF) | — |
 | Scheduler (engine, review, calendar) | INTEGRATED | scheduler receipt; 71/71 this session | real-Claude execution (BLOCKED: login), Windows task, festival jobs: not activated |
-| Restart: stale/unauthorised action rejection | INTEGRATED, tested | `test_surfaces_survive_restart_and_still_enforce_digest`, scheduler restart tests (this session's runs) | staged restart check |
+| Restart: stale/unauthorised action rejection | STAGED | A2UI process check (STALE_SURFACE, DRAFT_CHANGED), worker forged-digest journey, UI restart reuse, Brain restart | — |
 | Production cutover | PLANNED | `CUTOVER_PLAN.md` | owner approval |
 | VRAM efficiency | RESEARCH in progress | `research/vram-efficiency-20261010` | — |
 
