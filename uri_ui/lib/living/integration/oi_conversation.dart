@@ -667,10 +667,12 @@ class OiConversation extends ChangeNotifier {
     }
     switch (type) {
       case 'companion.state':
-        companionState = data['state'] as String? ?? 'idle';
-        _waitingFrom = turnId;
-        if (companionState == 'waiting_user' && turnId != null && _handoffsWithoutProposal.contains(turnId)) {
-          companionState = 'idle'; // the hub already found nothing to decide for this turn (INT-F1)
+        final state = data['state'] as String? ?? 'idle';
+        // A "waiting for you" of a turn whose handoff produced nothing is ignored: there is nothing to decide, and
+        // it must not replace another turn's real wait (INT-F1).
+        if (!(state == 'waiting_user' && turnId != null && _handoffsWithoutProposal.contains(turnId))) {
+          companionState = state;
+          _waitingFrom = turnId;
         }
       case 'turn.routed':
         m?.route = data['route'] as String?;

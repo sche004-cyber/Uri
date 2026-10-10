@@ -221,6 +221,23 @@ void main() {
       expect(conv.companionState, 'waiting_user');
     });
 
+    test("a failed turn's late waiting event never replaces another turn's real wait", () async {
+      final rt = HardeningRuntime();
+      final conv = OiConversation(rt);
+      await conv.send('a');
+      rt.emit('w1-t1', 'turn.finished', {'status': 'ok'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      conv.handoffProducedNothing('w1-t1'); // turn A's handoff failed; its waiting event is still in flight
+      await conv.send('b');
+      rt.emit('w1-t2', 'companion.state', {'state': 'waiting_user'}); // turn B: a real proposal waits
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      rt.emit('w1-t1', 'companion.state', {'state': 'waiting_user'}); // A's late event
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(conv.companionState, 'waiting_user');
+      conv.handoffProducedNothing('w1-t1'); // a repeated failure report for A changes nothing for B
+      expect(conv.companionState, 'waiting_user');
+    });
+
     test('a waiting state from anything else is left alone', () {
       final conv = OiConversation(HardeningRuntime());
       conv.companionState = 'thinking';
