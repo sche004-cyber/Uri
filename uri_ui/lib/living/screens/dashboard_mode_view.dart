@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/app_state_scope.dart';
 import '../../theme/uri_theme.dart';
+import '../assist/assist_scope_line.dart' show AssistStatusSummary;
 import '../companion/companion_state.dart';
 import '../contracts/work_items.dart';
 import '../integration/oi_health_widgets.dart';
@@ -38,6 +39,9 @@ class _DashboardModeViewState extends State<DashboardModeView> {
       if (!s.hasLoadedCapabilities) s.loadCapabilities();
       if (s.activeBrain == null) s.loadActiveBrain();
       if (!s.hasLoadedDevices) s.loadDevices();
+      // Status only: no adapter is called and nothing is observed.
+      final assist = LivingScope.of(context).assist;
+      if (assist != null && !assist.loaded) assist.refresh();
     });
   }
 
@@ -427,6 +431,13 @@ class _DashboardModeViewState extends State<DashboardModeView> {
                                 ],
                               ),
                       ),
+                      if (services.assist != null)
+                        _Tile(
+                          title: 'Assist',
+                          source: 'worker assist_status (read-only)',
+                          simulated: false,
+                          child: AssistStatusSummary(assist: services.assist!),
+                        ),
                       _Tile(
                         title: 'Selected harness',
                         source: 'UI selection',

@@ -1,13 +1,15 @@
 import 'package:flutter/foundation.dart';
 
-/// The three forms of the one companion.
-enum UiPresentationMode { companion, workspace, dashboard }
+/// The forms of the one companion. Assist (docs/assist) is the fourth form:
+/// opening it observes nothing; it only offers to share one scope.
+enum UiPresentationMode { companion, workspace, dashboard, assist }
 
 extension UiPresentationModeLabel on UiPresentationMode {
   String get label => switch (this) {
     UiPresentationMode.companion => 'Companion',
     UiPresentationMode.workspace => 'Workspace',
     UiPresentationMode.dashboard => 'Dashboard',
+    UiPresentationMode.assist => 'Assist',
   };
 }
 
@@ -45,6 +47,7 @@ enum WorkspaceFocus { conversation, tasks, documents, intelligence, settings }
 ///
 ///     uri dashboard            -> ShowModeCommand(dashboard)
 ///     uri workspace            -> ShowModeCommand(workspace)
+///     uri assist               -> ShowModeCommand(assist)
 ///     uri companion | uri minimize | uri orb -> ShowModeCommand(companion)
 ///     uri tasks | uri documents | uri intelligence | uri settings
 ///                              -> ShowModeCommand(workspace, focus: ...)
@@ -60,6 +63,7 @@ UiCommand? parseLocalUiCommand(String text) {
     'overview' => const ShowModeCommand(UiPresentationMode.dashboard),
     'workspace' ||
     'work' => const ShowModeCommand(UiPresentationMode.workspace),
+    'assist' => const ShowModeCommand(UiPresentationMode.assist),
     'companion' ||
     'minimize' ||
     'orb' ||

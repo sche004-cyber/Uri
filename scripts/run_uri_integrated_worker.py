@@ -39,7 +39,10 @@ sys.modules["c1_bootstrap"] = c1_bootstrap
 c1_bootstrap.install(_C1_BOOT.parents[1])
 
 PHASE2_PACKAGES = ("uri_supervisor", "uri_supervisor_bridge")
-WS_PACKAGES = ("uri_operational_intelligence",)
+WS_PACKAGES = ("uri_operational_intelligence",
+               # Web Intelligence (W1) and URI Assist (A0), docs/assist/00_PLAN_AND_ACCEPTANCE_CRITERIA.md. uri_a2ui is
+               # read by uri_web.surface (research results render through the existing catalog).
+               "uri_web", "uri_assist", "uri_a2ui")
 WORKER_PROFILE = "ws-integrated"
 
 
@@ -201,6 +204,13 @@ def main():
                                     write_event=lambda ev: write({"event": ev}), memory=memory, defer_start=True,
                                     host_report=lambda: BH.read_host_report(oi_state),
                                     host_request=lambda action: BH.write_host_request(oi_state, action))
+            # W1 / A0 (additive): research and Assist commands. Both yield the single Brain slot to the user's turn.
+            from uri_web import bridge as WEB
+            from uri_web.local_brain import make_complete
+            from uri_assist import bridge as ASSIST
+            web = WEB.WebResearch(write_event=lambda ev: write({"event": ev}), brain_complete=make_complete(client),
+                                  brain_idle=lambda: not oi.busy)
+            assist = ASSIST.AssistCommands(brain_client=client, brain_idle=lambda: not oi.busy)
             EXECUTION = {"execution_begin": {"command", "turn_id", "approval_digest", "proposal_digest"},
                          "execution_status": {"command", "execution_id"}, "execution_cancel": {"command", "execution_id"},
                          "execution_list": {"command"}}
@@ -219,6 +229,13 @@ def main():
                             raise TurnError(exc.code) from None
                         write({"result": "OK", "value": result})
                         oi.release()          # the reply (with the turn id) is out before any event of that turn
+                        continue
+                    if kind in WEB.COMMANDS or kind in ASSIST.COMMANDS:
+                        try:
+                            result = (web if kind in WEB.COMMANDS else assist).handle(kind, command)
+                        except (WEB.Refused, ASSIST.Refused) as exc:
+                            raise TurnError(exc.code) from None
+                        write({"result": "OK", "value": result})
                         continue
                     required = {"identity": {"command", "nonce"}, "snapshot": {"command", "session_id", "queries"},
                                 "consent": {"command", "mutations"}, "commit": {"command", "mutations"},
@@ -250,7 +267,8 @@ def main():
                                   "production_cutover": False, "execution_lifecycle": sorted(EXECUTION),
                                   "mid_run_cancel": True, "execution_active": turns.execution_active,
                                   "oi_commands": sorted(WB.COMMANDS), "event_schema": "uri.oi.event.v1",
-                                  "oi_busy": oi.busy}
+                                  "oi_busy": oi.busy, "web_commands": sorted(WEB.COMMANDS),
+                                  "assist_commands": sorted(ASSIST.COMMANDS)}
                     elif kind == "snapshot":
                         result = persistence.snapshot(command["session_id"], [ReadQuery.model_validate(q) for q in command["queries"]]).model_dump()
                     elif kind in {"consent", "commit"}:
@@ -285,6 +303,8 @@ def main():
                     write({"result": "REFUSED", "code": str(getattr(error, "code", error))})
                 except Exception:
                     write({"result": "REFUSED", "code": "CLIENT_COMMAND_REFUSED"})
+            web.close()
+            assist.close()            # Assist grants never outlive the worker
             shutdown(oi, turns)       # stdin EOF (the UI is gone) or after close: same withdrawal, idempotent
             bridge.close()
             ledger.release_owner()
