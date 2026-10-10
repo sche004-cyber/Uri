@@ -283,6 +283,19 @@ void main() {
     expect(find.byKey(const ValueKey('assist-unavailable')), findsOneWidget);
   });
 
+  test('a replaced worker never shows the old grant', () async {
+    var rt = AssistRuntime();
+    final a = AssistController(runtime: () => rt);
+    await a.grant('browser_tab', 'tab-7', suggest: true);
+    expect(a.active, isTrue);
+    rt = AssistRuntime();                 // worker restarted: the new one starts OFF
+    await a.check();                      // any call notices the new worker first
+    expect(a.off, isTrue);
+    expect(a.lastError, 'PERMISSION_NOT_GRANTED_SUGGEST');
+    expect(a.findings, isEmpty);
+    a.dispose();
+  });
+
   test('assist frames never touch OI turn or stall state', () async {
     final rt = AssistRuntime();
     final conv = OiConversation(rt);
