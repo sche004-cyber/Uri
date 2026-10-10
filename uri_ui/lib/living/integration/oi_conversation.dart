@@ -668,6 +668,10 @@ class OiConversation extends ChangeNotifier {
     switch (type) {
       case 'companion.state':
         companionState = data['state'] as String? ?? 'idle';
+        _waitingFrom = turnId;
+        if (companionState == 'waiting_user' && turnId != null && turnId == _handoffWithoutProposal) {
+          companionState = 'idle'; // the hub already found nothing to decide for this turn (INT-F1)
+        }
       case 'turn.routed':
         m?.route = data['route'] as String?;
         m?.tier = ((data['tier'] as Map?)?['tier']) as String?;
@@ -727,7 +731,8 @@ class OiConversation extends ChangeNotifier {
         // Memory may have changed after an approved action: re-read it (deterministic).
         if (m?.coreCode == 'SETTLED_VERIFIED') unawaited(refreshMemory());
       case 'a2ui.handoff':
-        _a2uiHandoffs.add(Map<String, dynamic>.of(data));
+        // The turn travels with the handoff so a failed proposal can clear that turn's waiting state (INT-F1).
+        _a2uiHandoffs.add({...data, 'turn_id': turnId});
         // A handoff is a new request: the worker dropped any open draft question, so the panel stops showing it
         // (Codex TIWS r11).
         if (draftQuestion != null) {
@@ -740,6 +745,21 @@ class OiConversation extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// The A2UI hub could not turn the handoff of [turnId] into a proposal
+  /// (INT-F1): that turn's "waiting for you" does not hold, since there is
+  /// nothing to decide. Order-independent: the worker's `companion.state`
+  /// for that turn may arrive before or after the hub's failure.
+  void handoffProducedNothing(String? turnId) {
+    _handoffWithoutProposal = turnId;
+    if (companionState == 'waiting_user' && _waitingFrom == turnId) {
+      companionState = 'idle';
+      notifyListeners();
+    }
+  }
+
+  String? _handoffWithoutProposal;
+  String? _waitingFrom;
 
   @override
   void dispose() {

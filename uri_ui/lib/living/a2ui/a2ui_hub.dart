@@ -115,7 +115,11 @@ typedef A2uiAuthorityCall = Future<Map<String, dynamic>> Function(
 /// * Every action carries `surface_digest`, the version the user saw; the
 ///   authority refuses a stale one.
 class A2uiHub extends ChangeNotifier {
-  A2uiHub({this.scheduler, Stream<Map<String, dynamic>>? handoffs}) {
+  A2uiHub({
+    this.scheduler,
+    Stream<Map<String, dynamic>>? handoffs,
+    this.onHandoffFailed,
+  }) {
     final s = scheduler;
     if (s != null) {
       for (final name in a2uiActions.keys) {
@@ -130,6 +134,11 @@ class A2uiHub extends ChangeNotifier {
   }
 
   final SchedulerClient? scheduler;
+
+  /// Called when a handoff produced no proposal (no scheduler, refused,
+  /// unreachable), so whoever showed "waiting for you" can stop doing so:
+  /// there is nothing to decide (INT-F1).
+  final void Function(Map<String, dynamic> handoff)? onHandoffFailed;
   final Map<String, A2uiAuthorityCall> registry = {};
   StreamSubscription<Map<String, dynamic>>? _sub;
 
@@ -380,6 +389,7 @@ class A2uiHub extends ChangeNotifier {
         'The scheduler is not running, so the schedule could not be prepared. Start it and ask again.',
       );
       notifyListeners();
+      onHandoffFailed?.call(data);
       return;
     }
     final sw = Stopwatch()..start();
@@ -392,9 +402,11 @@ class A2uiHub extends ChangeNotifier {
     } on SchedulerApiError catch (e) {
       _notice('The scheduler refused the request: ${e.code}.');
       notifyListeners();
+      onHandoffFailed?.call(data);
     } catch (e) {
       _notice('The scheduler is not reachable ($e). Nothing was scheduled.');
       notifyListeners();
+      onHandoffFailed?.call(data);
     }
   }
 

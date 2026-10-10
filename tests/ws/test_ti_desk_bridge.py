@@ -474,6 +474,15 @@ def test_a2ui_handoff_still_precedes_the_desk_in_auto_mode(fake, tmp_path):
     assert fake.requests == [] and core.calls == [] and not frames.data("draft.updated")
 
 
+def test_a2ui_handoff_reply_does_not_claim_a_proposal_exists(fake, tmp_path):
+    # INT-F1 (final integration 2026-10-10): the scheduler builds the proposal after this reply, in the UI hub; with no
+    # scheduler the UI showed "I've prepared ..." next to "could not be prepared".
+    b, frames, _ = make(fake, tmp_path, FakeCore(REFUSE))
+    turn(b, FESTIVAL)
+    reply = "".join(d["text"] for d in frames.data("answer.delta"))
+    assert "prepared a" not in reply and "asked the scheduler" in reply and "Nothing runs until you confirm" in reply
+
+
 def test_a2ui_dictated_schedule_request_is_content_never_a_handoff(fake, tmp_path):
     core = FakeCore(REFUSE)
     b, frames, _ = make(fake, tmp_path, core)

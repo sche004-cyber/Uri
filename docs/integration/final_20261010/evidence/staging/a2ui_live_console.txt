@@ -1,0 +1,55 @@
+{
+ "verdict": "PASS",
+ "checks": {
+  "state_dir": "temporary, outside the evidence",
+  "fixture_artifact_ready_s": 7.1,
+  "service_killed_and_restarted": true,
+  "activated_schedule": {
+   "selection": [
+    "diwali",
+    "holi"
+   ],
+   "time": "08:30",
+   "offset_days": -2
+  },
+  "superseded_proposals_cancelled": 1,
+  "artifact_approved_occurrences": 1,
+  "calendar_correction": {
+   "festival_key": "karva_chauth",
+   "year": 2026,
+   "action": "dispute",
+   "note": "live check: disputed"
+  },
+  "hash_chain": {
+   "ok": true,
+   "checked": 27,
+   "head": "4faf7b18a14b3c8c9e710491f1af9f1b3edf4b7c230fd81544fbf93d4bbdb5dc"
+  },
+  "a2ui_actions_audited": [
+   [
+    "scheduler.confirm_proposal",
+    "DRAFT_CHANGED"
+   ],
+   [
+    "scheduler.revise_proposal",
+    "OK"
+   ],
+   [
+    "scheduler.review_artifact",
+    "OK"
+   ],
+   [
+    "calendar.correct_record",
+    "OK"
+   ],
+   [
+    "scheduler.confirm_proposal",
+    "STALE_SURFACE"
+   ],
+   [
+    "scheduler.confirm_proposal",
+    "OK"
+   ]
+  ]
+ }
+}

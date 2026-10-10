@@ -215,13 +215,15 @@ void main() {
     t,
   ) async {
     final handoffs = StreamController<Map<String, dynamic>>();
-    final hub = A2uiHub(handoffs: handoffs.stream);
+    final failed = <Map<String, dynamic>>[];
+    final hub = A2uiHub(handoffs: handoffs.stream, onHandoffFailed: failed.add);
     handoffs.add(fx['handoff'] as Map<String, dynamic>);
     await t.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
     expect(hub.surfaces, isEmpty);
     expect(hub.notices.single, contains('scheduler is not running'));
+    expect(failed, hasLength(1)); // INT-F1: whoever showed "waiting for you" is told
     await handoffs.close();
   });
 

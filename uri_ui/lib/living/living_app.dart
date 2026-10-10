@@ -144,7 +144,11 @@ class LivingApp extends StatefulWidget {
   /// worker's `a2ui.handoff` events ask it to propose. Without a scheduler
   /// the hub still shows an honest notice for a handoff.
   static A2uiHub _a2uiHub(OiConversation oi) {
-    final hub = A2uiHub(scheduler: SchedulerClient.fromEnvironment(), handoffs: oi.a2uiHandoffs);
+    final hub = A2uiHub(
+      scheduler: SchedulerClient.fromEnvironment(),
+      handoffs: oi.a2uiHandoffs,
+      onHandoffFailed: (h) => oi.handoffProducedNothing(h['turn_id'] as String?),
+    );
     hub.refresh();
     return hub;
   }

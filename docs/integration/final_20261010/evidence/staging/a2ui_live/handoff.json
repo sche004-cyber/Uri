@@ -1,0 +1,14 @@
+{
+ "domain": "scheduler",
+ "kind": "festival_gif_schedule",
+ "interpreter": "deterministic.schedule_intent.v1",
+ "request": {
+  "festivals": null,
+  "time": "09:00",
+  "offset_days": 2,
+  "assumptions": [
+   "You did not give a time; I used 09:00 Asia/Kolkata.",
+   "'Major festivals' means the 12 national festivals; add or remove any below."
+  ]
+ }
+}

@@ -323,7 +323,11 @@ class IntegratedTurns:
     def _a2ui_handoff(self, turn_id, session_id, text, handoff):
         sink = self._sink(turn_id)
         emit = lambda t, **d: sink.emit(turn_id, t, **d)   # noqa: E731
-        reply = "I've prepared a festival GIF schedule for you to review. Nothing runs until you confirm it."
+        # The scheduler (the domain authority) builds the proposal after this reply, in the UI's A2UI hub; the reply
+        # must not claim it exists yet (INT-F1, final integration 2026-10-10: with no scheduler the UI said both
+        # "prepared" and "could not be prepared").
+        reply = ("I've asked the scheduler to prepare a festival GIF schedule for you to review. "
+                 "Nothing runs until you confirm it.")
         emit("turn.started", text_chars=len(text), depth="auto")
         emit("turn.routed", route="a2ui", triage={"kind": "SCHEDULE_REQUEST", "interpreter": handoff["interpreter"]},
              tier={"tier": "NONE", "selected_by": "deterministic", "reason": "no model call"})

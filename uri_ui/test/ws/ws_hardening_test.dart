@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:uri_ui/living/a2ui/a2ui_hub.dart';
 import 'package:uri_ui/living/companion/companion_sources.dart';
 import 'package:uri_ui/living/companion/effects_settings.dart';
 import 'package:uri_ui/living/contracts/readiness_report.dart';
@@ -154,6 +155,54 @@ void main() {
       expect(find.textContaining('**'), findsNothing);
       expect(find.textContaining('##'), findsNothing);
       expect(find.textContaining('Step one', findRichText: true), findsOneWidget);
+    });
+  });
+
+  group('A2UI handoff without a proposal (INT-F1)', () {
+    test('a handoff the hub cannot turn into a proposal stops the waiting-for-you state', () async {
+      final rt = HardeningRuntime();
+      final conv = OiConversation(rt);
+      final hub = A2uiHub(
+        handoffs: conv.a2uiHandoffs,
+        onHandoffFailed: (h) => conv.handoffProducedNothing(h['turn_id'] as String?),
+      );
+      await conv.send('URI, schedule Claude to create a festival GIF two days before each major Indian festival');
+      // The worker's order: the handoff first, then "waiting for you".
+      rt.emit('w1-t1', 'a2ui.handoff', {
+        'domain': 'scheduler',
+        'request': {'template': 'festival_gif', 'offset_days': 2},
+      });
+      await Future<void>.delayed(const Duration(milliseconds: 20)); // the hub fails before the next event
+      rt.emit('w1-t1', 'companion.state', {'state': 'waiting_user'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      // No scheduler: an honest notice, nothing to decide, so no "needs you".
+      expect(hub.notices.single, contains('scheduler is not running'));
+      expect(conv.companionState, 'idle');
+      hub.dispose();
+    });
+
+    test('the reverse order clears it too, and a later turn may wait again', () async {
+      final rt = HardeningRuntime();
+      final conv = OiConversation(rt);
+      await conv.send('x');
+      rt.emit('w1-t1', 'companion.state', {'state': 'waiting_user'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(conv.companionState, 'waiting_user');
+      conv.handoffProducedNothing('w1-t1');
+      expect(conv.companionState, 'idle');
+      rt.emit('w1-t1', 'turn.finished', {'status': 'ok'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      await conv.send('y');
+      rt.emit('w1-t2', 'companion.state', {'state': 'waiting_user'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(conv.companionState, 'waiting_user');
+    });
+
+    test('a waiting state from anything else is left alone', () {
+      final conv = OiConversation(HardeningRuntime());
+      conv.companionState = 'thinking';
+      conv.handoffProducedNothing('w1-t9');
+      expect(conv.companionState, 'thinking');
     });
   });
 
