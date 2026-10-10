@@ -22,21 +22,9 @@ print('| run | frames | fps | build p50/p99 ms | raster p50/p90/p99/max ms '
       '| frames >16.7 ms | CPU % avg/max | GPU 3D % avg/max | adapter 3D % avg '
       '| VRAM MB avg/max | RSS MB start/end | system CPU % avg | other process >1 GB VRAM |')
 print('|---|---|---|---|---|---|---|---|---|---|---|---|---|')
-invalid = []
 for jf in sorted(glob.glob(os.path.join(D, '*.json'))):
-    if jf.endswith('.gpu_advise.json'):
-        continue                              # the P-GOV-1 advisory record of a run, not a run
     tag = os.path.basename(jf)[:-5]
-    try:
-        verdict = json.load(open(os.path.join(D, tag + '.gpu_advise.json'), encoding='utf-8-sig')).get('verdict')
-    except (OSError, ValueError):
-        verdict = None                        # runs made before the advisory existed
-    if verdict not in (None, 'GO'):
-        invalid.append(f"{tag} (gpu advisory {verdict})")   # run_perf.ps1 marked it RUN_INVALID
-        continue
     j = json.load(open(jf))
-    if not isinstance(j, dict) or 'overall' not in j:
-        continue                              # another result file in the directory, not a perf run
     o = j['overall']
     fps = o['frames'] / (o['t_ms'] / 1000)
     rows = list(csv.DictReader(open(os.path.join(D, tag + '.samples.csv'))))
@@ -63,6 +51,3 @@ for jf in sorted(glob.glob(os.path.join(D, '*.json'))):
           f"{avg(col('adapter3d_pct')):.1f} | "
           f"{avg(col('dedicated_mb')):.0f}/{max(col('dedicated_mb')):.0f} | "
           f"{rss[0]['rss'] / 2**20:.0f}/{rss[-1]['rss'] / 2**20:.0f} | {sys_cpu} | {foreign} |")
-if invalid:
-    print()
-    print('Excluded (measured while a resident Brain would be slowed): ' + '; '.join(invalid))

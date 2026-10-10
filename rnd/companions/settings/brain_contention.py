@@ -38,6 +38,9 @@ import urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 RUN = os.path.join(HERE, 'run_companion_perf.ps1')
+# The app the runner launches, in this checkout. Cleanup stops exactly this
+# executable, whichever checkout the script runs from.
+APP_EXE = os.path.join(ROOT, 'uri_ui', 'build', 'windows', 'x64', 'runner', 'Profile', 'uri_ui.exe')
 PORT = 18499
 EXE = r'D:\uri-model-lab\runtime\llama-b11425-bin-win-vulkan-x64\llama-server.exe'
 MODELS = r'D:\uri-model-lab\models\unsloth__Qwen3.6-35B-A3B-GGUF'
@@ -50,15 +53,6 @@ ARGV = [EXE, '-m', MODELS + r'\Qwen3.6-35B-A3B-UD-IQ3_S.gguf', '-c', '32768', '-
         '-md', 'D:/uri-model-lab/mtp/mtp-qwen36-35b-a3b-Q4_K_M.gguf', '--spec-type', 'draft-mtp',
         '--spec-draft-n-max', '2', '-otd', 'token_embd.weight=CPU']
 PROMPT = "Here is a numbered list of forty everyday household objects, one per line:\n1."
-
-
-def gpu_advise(out, tag):
-    """The P-GOV-1 advisory verdict the runner recorded before opening its window (None when it wrote none)."""
-    try:
-        with open(os.path.join(out, tag + '.gpu_advise.json'), encoding='utf-8-sig') as f:
-            return json.load(f).get('verdict')
-    except (OSError, ValueError):
-        return None
 
 
 def post(path, body, timeout=300):
@@ -84,93 +78,16 @@ def decode(n=256):
             'wall_s': round(time.time() - t0, 2)}
 
 
-class Runner:
-    """The one owner of a perf runner's output (a thread reads it to the end), so the launch wait keeps a real
-    deadline whatever the runner prints, and the final lines are never split with another reader."""
-
-    def __init__(self, proc):
-        self.proc, self.lines, self.done = proc, [], False
-        self._cv = threading.Condition()
-        self._t = threading.Thread(target=self._pump, daemon=True)
-        self._t.start()
-
-    def _pump(self):
-        for line in self.proc.stdout:
-            with self._cv:
-                self.lines.append(line.rstrip())
-                self._cv.notify_all()
-        with self._cv:
-            self.done = True
-            self._cv.notify_all()
-
-    def wait_launch(self, timeout=1900):
-        """True once the runner printed LAUNCHED (the window exists); False when it skipped the run (P-GOV-1 advisory
-        not GO / WILL_DEGRADE_BRAIN), ended, or missed the deadline (then it is killed and WAIT_LAUNCH_TIMEOUT is
-        recorded). Nothing is measured before this returns True."""
-        deadline = time.monotonic() + timeout
-        with self._cv:
-            while True:
-                if any(x.startswith('LAUNCHED') for x in self.lines):
-                    return True
-                if self.done or any(x.startswith('RUN_SKIPPED') for x in self.lines):
-                    return False
-                left = deadline - time.monotonic()
-                if left <= 0:
-                    self.lines.append('WAIT_LAUNCH_TIMEOUT')
-                    self.proc.kill()
-                    return False
-                self._cv.wait(left)
-
-    def finish(self, timeout):
-        """Wait for the runner to exit and its output to be read to the end; returns every line."""
-        self.proc.wait(timeout=timeout)
-        self._t.join(timeout=30)
-        with self._cv:
-            return list(self.lines)
-
-    @property
-    def ui_pid(self):
-        """The pid of the window THIS run launched (from the runner's LAUNCHED line), or None."""
-        with self._cv:
-            for x in self.lines:
-                if x.startswith('LAUNCHED pid='):
-                    try:
-                        return int(x.split('pid=', 1)[1].split()[0])
-                    except ValueError:
-                        return None
-        return None
-
-    def cleanup(self):
-        """Never leave the measured app behind if a step failed mid-run: stop only the window this run launched (by
-        pid, never by executable path, so an owner's own window of the same build is untouched; Codex P-GOV-1 r10),
-        then the runner."""
-        pid = self.ui_pid
-        if pid is not None:
-            subprocess.run(['powershell', '-NoProfile', '-Command',
-                            f"Stop-Process -Id {pid} -Force -ErrorAction SilentlyContinue"], check=False)
-        if self.proc.poll() is None:
-            self.proc.kill()
-
-
 def ui_first(out):
     log = open(os.path.join(out, 'llama_server_ui_first.log'), 'w', encoding='utf-8')
     perf = subprocess.Popen(['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', RUN,
                              '-Identity', 'lunar', '-Fps', 'adaptive', '-Quality', 'full', '-Layout', 'shell',
                              '-Seconds', '360', '-OutDir', out, '-Tag', 'brain-ui-first-lunar-adaptive'],
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    runner = Runner(perf)
+    launched = time.time()
     server = None
-    result = {'order': 'ui_first', 'started': time.strftime('%Y-%m-%dT%H:%M:%S')}
+    result = {'order': 'ui_first', 'started': time.strftime('%Y-%m-%dT%H:%M:%S'), 'perf_launched': round(launched, 2)}
     try:
-        ok = runner.wait_launch()
-        result['runner_head'] = list(runner.lines)
-        result['gpu_advise'] = gpu_advise(out, 'brain-ui-first-lunar-adaptive')
-        if not ok:
-            result['skipped'] = 'window not launched (see runner_head)'
-            result['runner_head'] = runner.finish(timeout=120)   # the runner exits by itself on a skip
-            return
-        launched = time.time()
-        result['perf_launched'] = round(launched, 2)
         time.sleep(10)
         server = subprocess.Popen(ARGV, stdout=log, stderr=subprocess.STDOUT)
         t0 = time.time()
@@ -189,11 +106,16 @@ def ui_first(out):
             reqs.append(decode())
         result['gen_end_s'] = round(time.time() - launched, 1)
         result['requests'] = reqs
-        result['runner'] = runner.finish(timeout=600)[-1:]
+        perf_out, _ = perf.communicate(timeout=600)
+        result['runner'] = perf_out.strip().splitlines()[-1:]
         result['after_ui_exit'] = [decode() for _ in range(2)]
     finally:
         if perf.poll() is None:
-            runner.cleanup()
+            subprocess.run(['powershell', '-NoProfile', '-Command',
+                            "Get-Process uri_ui -ErrorAction SilentlyContinue | "
+                            f"Where-Object {{ $_.Path -eq '{APP_EXE}' }} | Stop-Process -Force"],
+                           check=False)
+            perf.kill()
         if server is not None:
             server.terminate()
             try:
@@ -205,7 +127,7 @@ def ui_first(out):
         with open(os.path.join(out, 'brain_contention_ui_first.json'), 'w', encoding='utf-8', newline='\n') as f:
             json.dump(result, f, indent=1)
     print(json.dumps({k: v for k, v in result.items() if k != 'requests'}, indent=1))
-    print('tok_s', [round(r['tok_s'], 1) for r in result.get('requests', [])] or result.get('skipped'))
+    print('tok_s', [round(r['tok_s'], 1) for r in result.get('requests', [])])
 
 
 def main():
@@ -217,7 +139,7 @@ def main():
     os.makedirs(out, exist_ok=True)
     log = open(os.path.join(out, 'llama_server.log'), 'w', encoding='utf-8')
     server = subprocess.Popen(ARGV, stdout=log, stderr=subprocess.STDOUT)
-    perf = runner = None
+    perf = None
     result = {'argv_port': PORT, 'started': time.strftime('%Y-%m-%dT%H:%M:%S'), 'baseline': [], 'runs': {}}
     try:
         t0 = time.time()
@@ -236,26 +158,24 @@ def main():
                                      '-Identity', 'lunar', '-Fps', fps, '-Quality', 'full', '-Layout', 'shell',
                                      '-Seconds', '100', '-OutDir', out, '-Tag', tag],
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-            runner = Runner(perf)
-            if not runner.wait_launch():
-                result['runs'][fps] = {'skipped': 'window not launched', 'runner_head': runner.finish(timeout=60),
-                                       'gpu_advise': gpu_advise(out, tag)}
-                continue
             launched = time.time()
             time.sleep(30)
             reqs = []
             while time.time() - launched < 70:
                 reqs.append(decode())
-            runner_lines = runner.finish(timeout=300)
+            perf_out, _ = perf.communicate(timeout=300)
             result['runs'][fps] = {'perf_launched': round(launched, 2), 'requests': reqs,
-                                   'runner': runner_lines[-1:],
-                                   'gpu_advise': gpu_advise(out, tag)}
+                                   'runner': perf_out.strip().splitlines()[-1:]}
             time.sleep(5)
         result['after'] = [decode() for _ in range(2)]
     finally:
-        # Never leave the measured app behind if a step failed mid-run (only this run's window, by pid).
-        if runner is not None and perf.poll() is None:
-            runner.cleanup()
+        # Never leave the measured app behind if a step failed mid-run.
+        if perf is not None and perf.poll() is None:
+            subprocess.run(['powershell', '-NoProfile', '-Command',
+                            "Get-Process uri_ui -ErrorAction SilentlyContinue | "
+                            f"Where-Object {{ $_.Path -eq '{APP_EXE}' }} | Stop-Process -Force"],
+                           check=False)
+            perf.kill()
         server.terminate()
         try:
             server.wait(timeout=30)
@@ -267,7 +187,7 @@ def main():
             json.dump(result, f, indent=1)
     print(json.dumps({k: v for k, v in result.items() if k != 'runs'}, indent=1))
     for k, v in result['runs'].items():
-        print(k, [r['tok_s'] for r in v['requests']] if 'requests' in v else v.get('skipped'))
+        print(k, [r['tok_s'] for r in v['requests']])
 
 
 if __name__ == '__main__':

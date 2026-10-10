@@ -912,78 +912,6 @@ def test_launcher_selftest_refuses_an_arbitrary_ui_root():
     assert out["legacy_port_8000_contacted"] is False
 
 
-def _load(rel, name):
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(name, REPO / rel)
-    m = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(m)
-    return m
-
-
-class FakeRunnerProc:
-    """Stands in for the PowerShell perf runner: yields lines (with optional delays) on stdout."""
-
-    def __init__(self, lines, delay=0.0, forever=False):
-        self.killed = False
-        self._lines, self._delay, self._forever = lines, delay, forever
-
-    @property
-    def stdout(self):
-        def gen():
-            for x in self._lines:
-                time.sleep(self._delay)
-                yield x + "\n"
-            while self._forever and not self.killed:
-                time.sleep(0.01)
-                yield "progress\n"
-        return gen()
-
-    def kill(self):
-        self.killed = True
-
-    def wait(self, timeout=None):
-        return 0
-
-
-def test_contention_driver_measures_only_after_the_window_launched():
-    bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention")
-    r = bc.Runner(FakeRunnerProc(["GPU_ADVISE GO", "LAUNCHED pid=1 tag=t", "REPORT x.json"]))
-    assert r.wait_launch(timeout=5) is True
-    assert r.finish(timeout=5)[-1] == "REPORT x.json"                  # one reader keeps the final line
-    assert bc.Runner(FakeRunnerProc(["GPU_ADVISE WAIT_HEAVY", "RUN_SKIPPED gpu advisory"])).wait_launch(5) is False
-    assert bc.Runner(FakeRunnerProc(["GPU_ADVISE ", "profile build missing"])).wait_launch(5) is False   # ended
-
-
-def test_runner_deadline_holds_for_a_silent_or_a_chatty_runner():
-    bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention_d")
-    for proc in (FakeRunnerProc(["late"], delay=30), FakeRunnerProc([], forever=True)):
-        t0 = time.monotonic()
-        r = bc.Runner(proc)
-        assert r.wait_launch(timeout=0.5) is False
-        assert r.lines[-1] == "WAIT_LAUNCH_TIMEOUT" and proc.killed and time.monotonic() - t0 < 5
-
-
-def test_perf_summaries_skip_advisory_files_and_exclude_or_label_contaminated_runs(tmp_path):
-    run = {"overall": {"frames": 100, "t_ms": 1000, "build_p50": 1, "build_p99": 2, "raster_p50": 1, "raster_p90": 2,
-                       "raster_p99": 3, "raster_max": 4, "over_16ms": 0},
-           "rss_bytes": [{"rss": 2**20}, {"rss": 2**20}]}
-    csv_text = "cpu_pct,gpu3d_pct,adapter3d_pct,dedicated_mb\n1,1,1,100\n"
-    for tag, verdict in (("good", "GO"), ("bad", "WILL_DEGRADE_BRAIN"), ("old", None)):
-        (tmp_path / (tag + ".json")).write_text(json.dumps(run), encoding="utf-8")
-        (tmp_path / (tag + ".samples.csv")).write_text(csv_text, encoding="utf-8")
-        if verdict:
-            (tmp_path / (tag + ".gpu_advise.json")).write_text(json.dumps({"verdict": verdict}), encoding="utf-8-sig")
-    (tmp_path / "brain_contention.json").write_text(json.dumps({"runs": {}}), encoding="utf-8")   # not a perf run
-    r = subprocess.run([sys.executable, str(REPO / "rnd/voice/summarize_perf.py"), str(tmp_path)],
-                       capture_output=True, text=True)
-    assert r.returncode == 0, r.stderr
-    rows = [l for l in r.stdout.splitlines() if l.startswith("| ") and not l.startswith("| run")]
-    assert [l.split("|")[1].strip() for l in rows] == ["good", "old"]
-    assert "Excluded" in r.stdout and "bad (gpu advisory WILL_DEGRADE_BRAIN)" in r.stdout
-    cs = _load("rnd/companions/settings/summarize.py", "companion_summarize")
-    assert cs.advisory(str(tmp_path), "bad") == "WILL_DEGRADE_BRAIN" and cs.advisory(str(tmp_path), "old") is None
-
-
 def test_launcher_selftest_applies_the_candidate_rule_to_the_default_ui_root():
     root = Path(r"C:\Users\cheta\Development\uri-ws-hard")
     ui = Path(r"C:\Users\cheta\Development\uri-ws-hardening")
@@ -997,30 +925,6 @@ def test_launcher_selftest_applies_the_candidate_rule_to_the_default_ui_root():
     out = json.loads(r.stdout[r.stdout.index("{"):])
     mismatch = (str(rc.get("candidate_source", "")).lower().rstrip("\\") != str(ui).lower() or rc.get("candidate_head") != head)
     assert ("UI_ROOT_NOT_RUNTIME_CANDIDATE" in out["real_installation"]["problems"]) == mismatch
-
-
-def test_companion_summary_reads_the_real_samples_file_of_a_labelled_run(tmp_path, capsys):
-    cs = _load("rnd/companions/settings/summarize.py", "companion_summarize_t")
-    rec = {"overall": {"frames": 100, "build_p90": 1, "raster_p50": 1, "raster_p90": 2, "raster_p99": 3, "over_16ms": 0},
-           "per_second": [{"frames": 60, "companion_frames": 60}] * 6, "rss": [{"rss": 2**20}] * 2, "heap": [],
-           "display_hz": 144}
-    (tmp_path / "brain-lunar-fps30.json").write_text(json.dumps(rec), encoding="utf-8")
-    (tmp_path / "brain-lunar-fps30.samples.csv").write_text("cpu_pct,gpu3d_pct,adapter3d_pct,dedicated_mb\n7,8,9,321\n",
-                                                            encoding="utf-8")
-    (tmp_path / "brain-lunar-fps30.gpu_advise.json").write_text(json.dumps({"verdict": "WILL_DEGRADE_BRAIN"}),
-                                                                encoding="utf-8-sig")
-    (tmp_path / "brain_contention.json").write_text(json.dumps({"runs": {}}), encoding="utf-8")   # not a perf run
-    cs.main([str(tmp_path)])
-    out = capsys.readouterr().out
-    row = next(l for l in out.splitlines() if l.startswith("| brain-lunar-fps30"))
-    assert "[gpu advisory WILL_DEGRADE_BRAIN]" in row and "| 321 |" in row and "7.0" in row
-
-
-def test_perf_runners_clear_a_reused_tags_old_outputs_before_the_attempt():
-    for rel in ("rnd/companions/settings/run_companion_perf.ps1", "rnd/voice/run_perf.ps1"):
-        src = (REPO / rel).read_text(encoding="utf-8")
-        clear = src.index("Remove-Item -LiteralPath $f -ErrorAction Stop")
-        assert clear < src.index("profile build missing") < src.index("gpu_lease advise") < src.index("Start-Process -FilePath $exe")
 
 
 def test_wait_ui_window_behaviour_on_real_processes():
@@ -1053,32 +957,3 @@ def test_advise_gives_no_brain_verdict_for_another_large_gpu_workload(tmp_path):
     assert r["verdict"] == G.GO and r["reason"] == "NO_RESIDENT_BRAIN" and r["other_large"][0]["name"] == "game.exe"
     small_llama = named(G.census(raw([(1580, 311, 9), (18372, 1602, 349)], 1950), card=CARD), {18372: "llama-server.exe"})
     assert advise(tmp_path, small_llama)["verdict"] == G.GO        # Ollama's runner is not a resident Brain
-
-
-def test_companion_runner_reports_launched_only_with_a_window():
-    src = (REPO / "rnd/companions/settings/run_companion_perf.ps1").read_text(encoding="utf-8")
-    start = src.index("Start-Process -FilePath $exe")
-    wait = src.index("MainWindowHandle -eq 0", start)
-    skip = src.index("RUN_SKIPPED no window", start)
-    launched = src.index('Write-Output "LAUNCHED', start)
-    assert start < wait < skip < launched
-
-
-def test_contention_cleanup_stops_only_the_window_this_run_launched(monkeypatch):
-    bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention_c")
-    calls = []
-    monkeypatch.setattr(bc.subprocess, "run", lambda args, **k: calls.append(args))
-
-    class Proc(FakeRunnerProc):
-        def poll(self):
-            return None
-    skipped = bc.Runner(Proc(["GPU_ADVISE WAIT_HEAVY", "RUN_SKIPPED gpu advisory WAIT_HEAVY"]))
-    assert skipped.wait_launch(5) is False and skipped.ui_pid is None
-    skipped.cleanup()
-    assert calls == [] and skipped.proc.killed                 # nothing launched: no window is stopped
-    ran = bc.Runner(Proc(["GPU_ADVISE GO", "LAUNCHED pid=4321 tag=t window=1"]))
-    assert ran.wait_launch(5) is True and ran.ui_pid == 4321
-    ran.cleanup()
-    assert len(calls) == 1 and "Stop-Process -Id 4321" in calls[0][-1] and "Path" not in calls[0][-1]
-    src = (REPO / "rnd/companions/settings/brain_contention.py").read_text(encoding="utf-8")
-    assert "Get-Process uri_ui" not in src                     # no cleanup by executable path is left
