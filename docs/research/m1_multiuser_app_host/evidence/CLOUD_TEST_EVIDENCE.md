@@ -48,3 +48,33 @@ failures may have a different cause, such as SQLite version behaviour. No claim 
 direction. They must be run on the owner's Windows PC.
 
 After both runs, `git status --porcelain` in the test checkout showed 0 entries: the tests left no tracked-file changes.
+
+## Run 3: SSRF probe against `fetch_url` (2026-10-10)
+
+**Result: `COMPLETED_WITH_RESULT` — defect SSRF-1 confirmed.**
+
+**Method:** a throwaway script in the session scratchpad (not committed) did three things:
+1. Started a local HTTP server bound to `127.0.0.1`, which serves a page containing `INTERNAL_ONLY_MARKER`, plus a
+   `/redir` path that sends a 302 to that page.
+2. Called `FetchUrlTool().execute(request_text="please read http://127.0.0.1:<port>/<path>")` from the canonical
+   checkout, using the same virtualenv as Run 1.
+3. Checked whether the marker appeared in the tool's result.
+
+**Output:**
+```
+/internal success MARKER_LEAKED
+/redir success MARKER_LEAKED
+```
+
+**Meaning:**
+- `fetch_url` reads loopback services, and it follows redirects into them.
+- It is registered READ_ONLY (`uri_core/capabilities/registry.py:20`) and is in the active registry
+  (`uri_workspace/capabilities_registry.json`), so it needs no approval.
+- On the server, `127.0.0.1:18470` (Runtime v1 with no API key, OI-SEC-1) and other loopback and LAN services would be
+  reachable by any user whose request text contains such a URL.
+
+**Not tested:**
+- Private LAN ranges and the cloud metadata address. These were not reachable from the sandbox, and the code has no
+  address checks of any kind (`fetch_url.py:103-131`).
+
+After the run, `git status --porcelain` in the test checkout showed 0 entries.

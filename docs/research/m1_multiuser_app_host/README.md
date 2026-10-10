@@ -1,75 +1,101 @@
-# URI Milestone 1 research: three-user server and App Hosting Foundation
+# URI Milestone 1 research: multi-user server, storage, Web Intelligence and app hosting
 
-Status: **RESEARCH AND PLANNING ONLY.** Nothing here authorizes implementation, a merge, a deployment, a subscription
-change or a change to frozen systems. Drafted 2026-10-10 by Claude in a cloud session while the owner's development PC
-was offline.
+**Status: research and planning only.** Nothing here authorizes implementation, a merge, a deployment, a subscription
+change or a change to frozen systems.
+
+This package was prepared on 2026-10-10 by Claude in cloud sessions while the owner's development PC was offline. Start
+with `M1_RESEARCH_SUMMARY.md`.
 
 ## Contents
 
-| File | What it holds |
+| File | Purpose |
 |---|---|
-| `M1_ARCHITECTURE_AUDIT_AND_PLAN.md` | Deliverables 1-9 and the conclusion: inventory, gap analysis, the recommended three-user architecture, harness terms, app host, threat model, slices, audit procedure, cloud vs PC-blocked work |
-| `M1_IMPLEMENTATION_STATUS_LEDGER.md` | Deliverable 10: one row per capability with a status, its evidence and the evidence grade |
-| `M1_STORAGE_ACCESS_MANAGER.md` | Extension (assignment item 8): Storage and Access Manager, with its own acceptance criteria and self-review (SS-1..SS-6) |
-| `evidence/CLOUD_TEST_EVIDENCE.md` | Commands and results of the tests run in this cloud session |
+| `M1_RESEARCH_SUMMARY.md` | Findings, recommendation, risks, report map |
+| `M1_REPOSITORY_CAPABILITY_INVENTORY.md` | Baseline; Planned → Integrated ladder; defects found |
+| `M1_THREE_USER_SERVER_ARCHITECTURE.md` | Gateway-first topology, identity propagation, Brain sharing, network |
+| `M1_HARNESS_ACCESS_AND_LICENSING.md` | Provider terms; compliant access modes |
+| `M1_STORAGE_ACCESS_DESIGN.md` | Storage and Access Manager |
+| `M1_WEB_INTELLIGENCE_ARCHITECTURE.md` | `uri_web`, SafeFetcher, source records, scheduled watch |
+| `M1_SOCIAL_PLATFORM_RESEARCH.md` | Platform-by-platform access routes and video intelligence |
+| `M1_BROWSER_AUTOMATION_AND_SECURITY.md` | Playwright placement and controls; consolidated threat model |
+| `M1_REA_EVALUATION.md` | REA verdict |
+| `M1_APP_HOSTING_DESIGN.md` | Minimal app host and demo app |
+| `M1_IMPLEMENTATION_SLICES.md` | P0-P6 slices with acceptance criteria; old→new ID mapping |
+| `M1_OFFLINE_BLOCKERS_AND_STATUS.md` | Cloud-verified items, PC-deferred verification, decisions |
+| `evidence/CLOUD_TEST_EVIDENCE.md` | Runs 1-3 (commands and results) |
+| `M1_ARCHITECTURE_AUDIT_AND_PLAN.md`, `M1_IMPLEMENTATION_STATUS_LEDGER.md`, `M1_STORAGE_ACCESS_MANAGER.md` | Superseded or moved pointer stubs. Full text is in git history. |
 
-## Acceptance criteria (set before the audit)
+## Acceptance criteria (set before each drafting round)
 
-- **AC-1.** The canonical baseline is identified from git and governance records, not assumed, and distinguished from
-  experimental, donor and preserved lines.
-- **AC-2.** Every component the assignment names has a status taken from code (and from tests where they could run).
-  Those components are server, client, Brain, harness, scheduler, A2UI, auth, plugins and permissions. A design
-  document is never counted as an implementation.
-- **AC-3.** Every positive claim has a file path (and line where practical) or a commit. Every test claim names the run
-  and its result. Only `COMPLETED_WITH_RESULT` runs support a positive claim.
-- **AC-4.** Provider terms are cited from the provider's own pages where reachable. Anything from secondary sources is
-  labelled as such. What is technically possible is kept separate from what is permitted.
-- **AC-5.** The recommendation reuses existing capabilities before adding infrastructure. Every new component says why
-  no existing one fits.
-- **AC-6.** Frozen systems are identified, and every slice says whether it touches them.
-- **AC-7.** Every slice has testable acceptance criteria and is marked cloud-testable or PC-blocked.
-- **AC-8.** Nothing hardware-dependent, login-dependent or Windows-only is claimed as passed.
-- **AC-9.** Every unverified item is named, with its effect on the verdict.
-- **AC-10.** Defects found during research are reported, not left for the owner to discover.
+**Round 1** (`be55d19`):
+- **AC-1.** The canonical baseline is identified from git and governance records.
+- **AC-2.** Component status comes from code and tests, never from design documents.
+- **AC-3.** Positive claims cite a path, line or commit. Only `COMPLETED_WITH_RESULT` runs count.
+- **AC-4.** Provider terms are cited, primary vs secondary is labelled, and "possible" is kept apart from "permitted".
+- **AC-5.** Reuse comes before new infrastructure.
+- **AC-6.** Frozen systems are identified for every slice.
+- **AC-7.** Every slice has testable criteria and a cloud or PC label.
+- **AC-8.** No hardware, login or Windows claims.
+- **AC-9.** Unverified items are named, with their effect on the verdict.
+- **AC-10.** Defects are reported proactively.
+
+**Round 2** (`a6ef74f`, storage): SA-1..SA-6, listed in `M1_STORAGE_ACCESS_DESIGN.md` §0.
+
+**Round 3** (this revision):
+- **AC-11.** All twelve named deliverables exist, with no duplicated explanations. Each topic has one home, and other
+  reports link to it.
+- **AC-12.** Every capability is placed on the Planned → Prototyped → Implemented → Tested → Independently accepted →
+  Integrated ladder, with evidence.
+- **AC-13.** Web, social and browser research uses official or legitimate routes only. Anything that would evade
+  access controls is excluded explicitly.
+- **AC-14.** Existing browser, search and scraping tools are inspected before any new framework is proposed.
+- **AC-15.** The scheduler is reused, not duplicated.
+- **AC-16.** Consistency checks run before commit:
+  - every referenced report exists;
+  - every cited repository path exists at the baseline;
+  - slice IDs are consistent across reports.
 
 ## Method
 
-1. **Branches and history.** `git ls-remote` and `fetch` of `github.com/sche004-cyber/Uri` (45 branches) and
-   `github.com/sche004-cyber/uri-agent` (5 branches). Branch tips were ordered by commit date. Ancestry was checked
-   between the integration branches.
-2. **Governance.** Read `docs/governance/` and `docs/governance/consolidation/`, the integration receipts, and the
-   working-system status and limitation records.
-3. **Component audit.** Four parallel read-only audits covered auth/users/plugins, Brain/GPU/scheduler,
-   harness/A2UI/client, and governance/history. Each audit's decisive claims were re-checked against source by the
-   author before use. Those checks are listed in the ledger as "re-verified".
-4. **Cloud tests.** Ran the cloud-runnable tests on a separate detached checkout of the canonical commit, in a scratch
-   virtualenv (Linux, Python 3.13). This is first-hand evidence, recorded in `evidence/CLOUD_TEST_EVIDENCE.md`.
-5. **Provider terms.** Fetched Anthropic's pages live. OpenAI and Google pages were unreachable from this sandbox
-   (DNS), so search results are used for them and labelled as secondary.
+- **Git.** `git ls-remote` and `fetch` of both repositories. Remote tips re-checked at the start of round 3: no new
+  canonical commits.
+- **Code audit.** Four read-only audit subagents in round 1. Every decisive claim was re-verified by the author before
+  use. Rounds 2 and 3 were inspected by the author directly: `file_store`, `turn_runner`, `postconditions`,
+  `permission_binding`, `web_search`, `fetch_url`, the `yt_dlp` descriptor, `tool_schema`, the scheduler engine and
+  architecture, and the voice ASR references.
+- **Cloud runs** were made in a separate detached checkout: `evidence/CLOUD_TEST_EVIDENCE.md`.
+- **External sources.** Anthropic, GitHub (`morluto/rea` README, `playwright-python`) and Meta pages were fetched
+  live. Google, YouTube, OpenAI and Reddit pages could not be resolved from this sandbox (DNS), so their facts are
+  secondary search summaries and are marked EXT-S.
 
-## Self-review record (protocol steps 3-6)
+## Self-review and correction record
 
-The first draft was checked against AC-1..AC-10. Problems found and repaired before return:
+Rounds 1 and 2 (SR-1..SR-7, SS-1..SS-6) are kept in git history: `git show a6ef74f:<path>/README.md` and
+`M1_STORAGE_ACCESS_DESIGN.md` §11.
 
-| # | Flaw found in the draft | Repair |
+Round 3:
+
+| # | Flaw found in the round-3 draft | Repair |
 |---|---|---|
-| SR-1 | The draft called `integration/git-sync-20261008` "the canonical branch" outright. The formal decision document still says PROPOSED (`URI_CANONICAL_BRANCH_DECISION.md:3`). | Now worded as the *operative* canonical line: the owner authorized fast-forwarding it (`URI_UNIFIED_CONSOLIDATION_PLAN.md:96`), but promotion to `main` is still pending. |
-| SR-2 | The draft treated a subagent's finding R8 (approved actions lose the principal) as a defect. | Downgraded to UNVERIFIED hypothesis H-1. A cloud characterization test is planned (S3-T1). |
-| SR-3 | The draft said the Google "fewer than 100 users" exemption removes the 7-day token expiry. Google's own page describes the 7-day expiry for *Testing* status and a separate unverified *personal-use* path. | The two are now kept apart. The owner must choose the publishing status (D-5). Wording is marked secondary where the primary page was unreachable. |
-| SR-4 | The draft listed the Gemini CLI personal-login retirement as fact. | Marked as secondary-source and unverified. It does not affect the verdict, because no Gemini harness exists. |
-| SR-5 | The draft read the test failures under `tests/ws`, `tests/oi` and `tests/phase2a` as possible defects. | Root-cause counts show they are dominated by `ModuleNotFoundError: msvcrt` and `WINDOWS_REQUIRED`. They are now classified as platform-blocked, not passed, failed or defective. The few failures not individually root-caused are disclosed as such. |
-| SR-6 | The draft proposed a reverse proxy and did not account for the existing loopback-only consent check. | Added threat T-6: a same-host proxy makes every caller look loopback. The gateway now blocks those routes for remote callers itself (S1 AC-4). |
-| SR-7 | The draft did not account for `uri_core/` being a frozen prefix. | Every slice is now labelled FROZEN-TOUCH or NON-FROZEN. The plan is reordered so the safety boundary needs no frozen change. |
+| SR-8 | The first threat model (round 1) left out SSRF. Round 3 found that `fetch_url` has no address checks. | Confirmed by a run (Run 3) rather than assumed. Added as SSRF-1 / T-9. Interim grant revocation; repair is P1-5 T9; SafeFetcher P3-1. |
+| SR-9 | The draft proposed server-side authenticated browsing. That conflicts with the owner-authorized ownership principle, and a remote user cannot complete a login there. | Authenticated automation moved to the client device (`M1_BROWSER_AUTOMATION_AND_SECURITY.md` §3). The server keeps public browsing only. |
+| SR-10 | The draft listed `skill.yt_dlp` as a YouTube capability. | Corrected. It is pinned to Wikimedia Commons, and widening it to YouTube is advised against on terms grounds. |
+| SR-11 | The draft had the scheduler summarise with the Brain directly. That breaks the scheduler's accepted "runs without the Brain" rule (A-AC1). | Collection is now deterministic. The summary is a separate low-priority gateway turn made as the job's user. |
+| SR-12 | The draft offered "captions exposed through official embeds" as a transcript route. | Removed: it is unverified and edges toward scraping. Only the user's own videos, user-supplied transcripts or user-uploaded media remain. |
+| SR-13 | The slice IDs (S1-S17) clashed with the new P0-P6 priorities. | Unified renumbering, with a mapping table in `M1_IMPLEMENTATION_SLICES.md`. Old files are kept as stubs. |
+| SR-14 | The pre-commit consistency check (AC-16) found two wrong repository paths: `model_providers/base.py` (really `uri_core/core/model_providers/base.py`) and `scheduler/engine.py` (really `uri_scheduler/engine.py`). | Both fixed. The re-run found no missing reports and no undefined slice IDs. The remaining unmatched names are proposed files (`uri_apphost/*`, `app.json`) or runtime file names (`token.json`, `auth.json`, `robots.txt`), which is expected. Ten line citations were spot-checked against the source and all matched. |
 
-## Isolation receipt
+## Isolation record
 
-- **Pre-write check** (verified before any file was written):
-  - branch `research/m1-multiuser-app-host`
-  - worktree `/home/user/uri-m1-multiuser-research` (a genuine `git worktree` of the session clone of
-    `github.com/sche004-cyber/Uri`)
-  - base `54ad7be72847675ae662e2fd4f3b3b9d253e6d4e`
-  - working tree clean (0 entries in `git status --porcelain`)
-- The research branch did not previously exist, locally or on the remote.
-- All tests ran in a separate detached checkout (`/home/user/scratch-ti`, same commit), not in this worktree.
-- The commit SHA and push status are reported in the session hand-back. They are not written here, because this file is
-  inside that commit.
+- **Repository:** `github.com/sche004-cyber/Uri`.
+- **Branch:** `research/m1-multiuser-app-host`.
+- **Worktree:** `/home/user/uri-m1-multiuser-research`, a genuine `git worktree`.
+- **Base:** `54ad7be72847675ae662e2fd4f3b3b9d253e6d4e`.
+- **Verified before each round's writes** (branch, HEAD equal to the remote, clean tree):
+  - round 1: base `54ad7be`, clean;
+  - round 2: HEAD `be55d19`, clean;
+  - round 3: HEAD `a6ef74f`, clean.
+- **Tests and probes** ran only in a separate detached checkout of the same base (`/home/user/scratch-ti`). It was left
+  clean after every run.
+- The commit SHAs for this round are reported in the session hand-back. They are not written here, because this file is
+  part of that commit.
