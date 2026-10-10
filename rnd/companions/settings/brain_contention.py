@@ -91,14 +91,30 @@ def wait_launch(perf, timeout=1900):
     """Read the runner's output until it reports LAUNCHED (the window exists) or that it skipped the run (P-GOV-1
     advisory not GO / WILL_DEGRADE_BRAIN, or the runner ended). Returns (launched, lines read). Nothing is measured
     before this returns True, so a skipped window can never be reported as a contention or UI-first result."""
-    lines, t0 = [], time.time()
-    for line in perf.stdout:
+    import queue
+    q = queue.Queue()
+
+    def pump():                       # a reader thread, so the deadline holds even when the runner prints nothing
+        for line in perf.stdout:
+            q.put(line)
+        q.put(None)
+    threading.Thread(target=pump, daemon=True).start()
+    lines, deadline = [], time.time() + timeout
+    while True:
+        try:
+            line = q.get(timeout=max(0.0, deadline - time.time()))
+        except queue.Empty:
+            lines.append('WAIT_LAUNCH_TIMEOUT')
+            if hasattr(perf, 'kill'):
+                perf.kill()           # the runner never reported; it is ended and recorded as timed out
+            return False, lines
+        if line is None:
+            return False, lines       # the runner ended without launching
         lines.append(line.rstrip())
         if line.startswith('LAUNCHED'):
             return True, lines
-        if line.startswith('RUN_SKIPPED') or time.time() - t0 > timeout:
+        if line.startswith('RUN_SKIPPED'):
             return False, lines
-    return False, lines
 
 
 def ui_first(out):

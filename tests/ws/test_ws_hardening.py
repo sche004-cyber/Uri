@@ -912,6 +912,7 @@ def test_perf_summaries_skip_advisory_files_and_exclude_or_label_contaminated_ru
         (tmp_path / (tag + ".samples.csv")).write_text(csv_text, encoding="utf-8")
         if verdict:
             (tmp_path / (tag + ".gpu_advise.json")).write_text(json.dumps({"verdict": verdict}), encoding="utf-8-sig")
+    (tmp_path / "brain_contention.json").write_text(json.dumps({"runs": {}}), encoding="utf-8")   # not a perf run
     r = subprocess.run([sys.executable, str(REPO / "rnd/voice/summarize_perf.py"), str(tmp_path)],
                        capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
@@ -935,3 +936,40 @@ def test_launcher_selftest_applies_the_candidate_rule_to_the_default_ui_root():
     out = json.loads(r.stdout[r.stdout.index("{"):])
     mismatch = (str(rc.get("candidate_source", "")).lower().rstrip("\\") != str(ui).lower() or rc.get("candidate_head") != head)
     assert ("UI_ROOT_NOT_RUNTIME_CANDIDATE" in out["real_installation"]["problems"]) == mismatch
+
+
+def test_wait_launch_has_a_real_deadline_when_the_runner_prints_nothing():
+    bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention_t")
+
+    class Silent:
+        killed = False
+
+        @property
+        def stdout(self):
+            def gen():
+                time.sleep(30)
+                yield "LAUNCHED late\n"
+            return gen()
+
+        def kill(self):
+            Silent.killed = True
+    t0 = time.monotonic()
+    ok, head = bc.wait_launch(Silent(), timeout=0.5)
+    assert ok is False and head[-1] == "WAIT_LAUNCH_TIMEOUT" and Silent.killed and time.monotonic() - t0 < 5
+
+
+def test_companion_summary_reads_the_real_samples_file_of_a_labelled_run(tmp_path, capsys):
+    cs = _load("rnd/companions/settings/summarize.py", "companion_summarize_t")
+    rec = {"overall": {"frames": 100, "build_p90": 1, "raster_p50": 1, "raster_p90": 2, "raster_p99": 3, "over_16ms": 0},
+           "per_second": [{"frames": 60, "companion_frames": 60}] * 6, "rss": [{"rss": 2**20}] * 2, "heap": [],
+           "display_hz": 144}
+    (tmp_path / "brain-lunar-fps30.json").write_text(json.dumps(rec), encoding="utf-8")
+    (tmp_path / "brain-lunar-fps30.samples.csv").write_text("cpu_pct,gpu3d_pct,adapter3d_pct,dedicated_mb\n7,8,9,321\n",
+                                                            encoding="utf-8")
+    (tmp_path / "brain-lunar-fps30.gpu_advise.json").write_text(json.dumps({"verdict": "WILL_DEGRADE_BRAIN"}),
+                                                                encoding="utf-8-sig")
+    (tmp_path / "brain_contention.json").write_text(json.dumps({"runs": {}}), encoding="utf-8")   # not a perf run
+    cs.main([str(tmp_path)])
+    out = capsys.readouterr().out
+    row = next(l for l in out.splitlines() if l.startswith("| brain-lunar-fps30"))
+    assert "[gpu advisory WILL_DEGRADE_BRAIN]" in row and "| 321 |" in row and "7.0" in row

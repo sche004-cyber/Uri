@@ -35,6 +35,8 @@ for jf in sorted(glob.glob(os.path.join(D, '*.json'))):
         invalid.append(f"{tag} (gpu advisory {verdict})")   # run_perf.ps1 marked it RUN_INVALID
         continue
     j = json.load(open(jf))
+    if not isinstance(j, dict) or 'overall' not in j:
+        continue                              # another result file in the directory, not a perf run
     o = j['overall']
     fps = o['frames'] / (o['t_ms'] / 1000)
     rows = list(csv.DictReader(open(os.path.join(D, tag + '.samples.csv'))))

@@ -62,10 +62,12 @@ def main(dirs):
                 continue                      # the P-GOV-1 advisory record of a run, not a run
             tag = os.path.basename(jf)[:-5]
             j = json.load(open(jf, encoding='utf-8'))
+            if not isinstance(j, dict) or 'overall' not in j:
+                continue                      # another result file (e.g. brain_contention.json), not a perf run
             adv = advisory(d, tag)
-            if adv not in (None, 'GO'):
-                # WILL_DEGRADE_BRAIN is what a contention run measures on purpose; the row says so.
-                tag = f"{tag} [gpu advisory {adv}]"
+            # WILL_DEGRADE_BRAIN is what a contention run measures on purpose; the row says so. The file tag stays
+            # unchanged for the samples CSV.
+            label = tag if adv in (None, 'GO') else f"{tag} [gpu advisory {adv}]"
             o = j['overall']
             rows = rows_of(os.path.join(d, tag + '.samples.csv'))
             ps = j['per_second'][3:]  # skip start-up
@@ -75,7 +77,7 @@ def main(dirs):
             heap = j['heap']
             fv = col(rows, 'foreign_vram_gb')
             foreign = f"max {max(fv):.1f} GB ({sum(1 for v in fv if v > 0)}/{len(fv)})" if fv and max(fv) > 0 else 'none'
-            print(f"| {tag} | {j['display_hz']:.0f} | {eng:.1f} | {comp:.1f} | {o['build_p90']:.2f} | "
+            print(f"| {label} | {j['display_hz']:.0f} | {eng:.1f} | {comp:.1f} | {o['build_p90']:.2f} | "
                   f"{o['raster_p50']:.2f} / {o['raster_p90']:.2f} / {o['raster_p99']:.2f} | "
                   f"{o['over_16ms']} ({100 * o['over_16ms'] / max(1, o['frames']):.2f} %) | "
                   f"{avg(col(rows, 'cpu_pct')):.1f} | {avg(col(rows, 'gpu3d_pct')):.1f} | "
