@@ -29,7 +29,6 @@ param(
 $root = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 $ui = Join-Path $root 'uri_ui'
 $exe = Join-Path $ui 'build\windows\x64\runner\Profile\uri_ui.exe'
-if (-not (Test-Path $exe)) { throw "profile build missing: $exe" }
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 $OutDir = (Resolve-Path $OutDir).Path
 if (-not $Tag) { $Tag = "$Layout-$Identity-$Fps-$Quality$(if ($Cycle) { '-cycle' })" }
@@ -37,7 +36,8 @@ $json = Join-Path $OutDir "$Tag.json"
 $csv = Join-Path $OutDir "$Tag.samples.csv"
 # A tag reused in the same directory must not leave an earlier run's numbers next to this attempt's advisory
 # (Codex P-GOV-1 r4): the earlier outputs of this tag are removed before the attempt.
-Remove-Item -LiteralPath $json, $csv, (Join-Path $OutDir "$Tag.gpu_advise.json") -ErrorAction SilentlyContinue
+foreach ($f in @($json, $csv, (Join-Path $OutDir "$Tag.gpu_advise.json"))) { if (Test-Path -LiteralPath $f) { Remove-Item -LiteralPath $f -ErrorAction Stop } }
+if (-not (Test-Path $exe)) { throw "profile build missing: $exe" }
 $env:URI_CP_OUT = $json
 $env:URI_CP_SECONDS = "$Seconds"
 $env:URI_CP_IDENTITY = $Identity

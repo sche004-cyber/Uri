@@ -792,7 +792,11 @@ def test_advise_fails_closed_when_unmeasurable(tmp_path):
             os.lseek(fd, 0, 0)
             msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
             os.close(fd)
-    # without the lock the same corrupt record is simply a free lease
+    # without the lock an existing unreadable record still fails closed (A2); a readable released one is free
+    (tmp_path / "lease.json").write_text("{not json", encoding="utf-8")
+    r = advise(tmp_path, desktop)
+    assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "LEASE_UNREADABLE"
+    (tmp_path / "lease.json").write_text(json.dumps({"state": "released", "pid": 1}), encoding="utf-8")
     assert advise(tmp_path, desktop)["verdict"] == G.GO
 
 
@@ -865,6 +869,10 @@ def test_launcher_starts_the_window_before_the_brain_host_and_keeps_the_brain_fo
     assert not re.search(r"\bexit\s+\d", code)                     # a UI failure no longer skips the Brain step
     assert "UI_NOT_BUILT" in ui_step and body.rindex("exit 4") > brain
     assert "LEGACY_UI_REFUSED" in s and "UI_ROOT_NOT_RUNTIME_CANDIDATE" in s and "negative_arbitrary_ui_root" in s
+    # a UI that is alive without a window after the wait holds the Brain back (A5, Codex r5)
+    assert "$uiPending = $true" in ui_step
+    brain_step = body[body.index("# 3. Brain, after the window"):]
+    assert brain_step.index("elseif ($uiPending)") < brain_step.index("ws_brain_host.py")
 
 
 def test_launcher_selftest_refuses_an_arbitrary_ui_root():
@@ -989,5 +997,5 @@ def test_companion_summary_reads_the_real_samples_file_of_a_labelled_run(tmp_pat
 def test_perf_runners_clear_a_reused_tags_old_outputs_before_the_attempt():
     for rel in ("rnd/companions/settings/run_companion_perf.ps1", "rnd/voice/run_perf.ps1"):
         src = (REPO / rel).read_text(encoding="utf-8")
-        clear = src.index("Remove-Item -LiteralPath $json, $csv")
-        assert clear < src.index("gpu_lease advise") < src.index("Start-Process -FilePath $exe")
+        clear = src.index("Remove-Item -LiteralPath $f -ErrorAction Stop")
+        assert clear < src.index("profile build missing") < src.index("gpu_lease advise") < src.index("Start-Process -FilePath $exe")

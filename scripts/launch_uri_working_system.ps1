@@ -174,6 +174,7 @@ Write-Host "Integrated server: port $($srv.port), identity proven"
 # 2. UI, before the Brain (P-GOV-1): the window's GPU memory must exist when the Brain host measures the fit.
 #    A UI that cannot start is reported (exit 4 at the end) but no longer prevents the Brain step.
 $uiFailure = $null
+$uiPending = $false
 if (-not $NoUi) {
   $open = @(Get-Process uri_ui -ErrorAction SilentlyContinue | Where-Object { $_.Path -and ((Norm $_.Path) -eq (Norm $UiExe)) })
   if (-not (Test-Path $UiExe)) {
@@ -187,14 +188,20 @@ if (-not $NoUi) {
     try {
       $ui = Start-Process -FilePath $UiExe -WorkingDirectory (Split-Path $UiExe) -PassThru
       # Wait for the window (its swap chain is allocated with it), then settle briefly so the census sees it.
-      $deadline = (Get-Date).AddSeconds(30)
+      $deadline = (Get-Date).AddSeconds(90)
       while ($ui.MainWindowHandle -eq 0 -and -not $ui.HasExited -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 300; $ui.Refresh() }
       if ($ui.MainWindowHandle -ne 0) { Start-Sleep -Seconds 2; Write-Host "URI started (Living Companion, pid $($ui.Id))." }
       elseif ($ui.HasExited) { $uiFailure = "UI_EXITED_AT_START: code $($ui.ExitCode)" }
-      else { Write-Host "URI window not seen after 30 s (pid $($ui.Id)); the Brain host starts anyway." }
+      else {
+        # The UI is alive but has no window yet: a window that appears after the Brain loaded would slow the Brain
+        # until it restarts (P-GOV-1, Codex r5). The Brain is not started now; running the launcher again once the
+        # window is open reuses it and starts the Brain then.
+        $uiPending = $true
+        $uiFailure = "UI_WINDOW_NOT_SHOWN after 90 s (pid $($ui.Id)); the Brain was not started. Run the launcher again when the window is open."
+      }
     } catch { $uiFailure = "UI_START_FAILED: $($_.Exception.Message)" }
   }
-  if ($uiFailure) { Write-Host "UI problem: $uiFailure. The Brain step still runs." }
+  if ($uiFailure -and -not $uiPending) { Write-Host "UI problem: $uiFailure. The Brain step still runs." }
 }
 
 # 3. Brain, after the window. A live Brain host is reused (never duplicated). Something else answering on the
@@ -207,6 +214,8 @@ $liveHost = Get-LiveBrainHost $reportDir
 $brain = Test-Http 'http://127.0.0.1:18470/health'
 if ($liveHost) {
   Write-Host "Brain host: already running (pid $($liveHost.host_pid), $($liveHost.state)); reused"
+} elseif ($uiPending) {
+  Write-Host "Brain host: not started (the URI window is still opening)."
 } elseif ($brain -eq 0 -and -not $NoBrain) {
   $hostArgs = @((Join-Path $RuntimeRoot 'scripts\ws_brain_host.py'), '--report-dir', $reportDir, '--minutes', "$BrainMinutes")
   if ($OverrideGpu) { $hostArgs += '--override-contention'; Write-Host 'GPU override: owner-authorized start next to other GPU processes (recorded)' }

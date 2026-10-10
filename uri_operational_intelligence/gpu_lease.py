@@ -404,10 +404,13 @@ def peek(directory=None) -> dict:
     held = _lock_held(d)
     if held is None:
         return {"state": "UNREADABLE", "holder": None}
+    path = d / "lease.json"
+    rec = _read_json(path) if path.exists() else {}
+    if not isinstance(rec, dict):
+        return {"state": "UNREADABLE", "holder": None}   # an existing record that cannot be read (A2: fail closed)
     if not held:
         return {"state": "FREE", "holder": None}          # a "held" record without the lock is a dead holder's
-    rec = _read_json(d / "lease.json")
-    if isinstance(rec, dict) and rec.get("state") == "held" and holder_alive(rec):
+    if rec.get("state") == "held" and holder_alive(rec):
         return {"state": "HELD", "holder": rec}
     return {"state": "UNREADABLE", "holder": None}
 
