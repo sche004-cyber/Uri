@@ -20,6 +20,7 @@ import '../integration/oi_widgets.dart';
 import '../integration/ws_settings.dart';
 import '../living_app.dart';
 import '../living_scope.dart';
+import '../presentation/living_shell.dart';
 import '../presentation/presentation_controller.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/living_composer.dart';
@@ -65,13 +66,17 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
         return LayoutBuilder(
           builder: (context, constraints) {
             final w = constraints.maxWidth;
-            final railExpanded = w >= 1100;
+            final railExpanded = w >= OrbDock.railExpandAt;
             final contextDefault = w >= 1180;
             final showContext = _contextOverride ?? contextDefault;
             return Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _Rail(expanded: railExpanded, focus: focus),
+                _Rail(
+                  expanded: railExpanded,
+                  focus: focus,
+                  orbSpace: OrbDock.railOrbSpace(w),
+                ),
                 Expanded(
                   child: Column(
                     children: [
@@ -121,16 +126,24 @@ class _WorkspaceModeViewState extends State<WorkspaceModeView> {
 // ---------------------------------------------------------------------------
 
 class _Rail extends StatelessWidget {
-  const _Rail({required this.expanded, required this.focus});
+  const _Rail({
+    required this.expanded,
+    required this.focus,
+    required this.orbSpace,
+  });
   final bool expanded;
   final WorkspaceFocus focus;
+
+  /// Space reserved at the top for the orb the shell docks there
+  /// ([OrbDock.railOrbSpace]).
+  final double orbSpace;
 
   @override
   Widget build(BuildContext context) {
     final services = LivingScope.of(context);
     final c = UriColors.of(context);
     final glass = UriGlass.of(context);
-    final width = expanded ? 200.0 : 88.0;
+    final width = expanded ? 200.0 : 88.0; // = OrbDock.railWidth
     const items = [
       (
         WorkspaceFocus.conversation,
@@ -152,8 +165,8 @@ class _Rail extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Orb dock (the shell draws the orb here).
-          const SizedBox(height: 92),
+          // Orb dock (the shell draws the orb here, centred in the rail).
+          SizedBox(height: orbSpace),
           ListenableBuilder(
             listenable: services.companion,
             builder: (context, _) {
@@ -163,7 +176,7 @@ class _Rail extends StatelessWidget {
                 child: Text(
                   s.state.label,
                   key: const ValueKey('rail-state-label'),
-                  textAlign: expanded ? TextAlign.left : TextAlign.center,
+                  textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

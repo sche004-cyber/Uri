@@ -74,6 +74,25 @@ Future<(AppState, LivingServices)> pumpLiving(
 }
 
 void main() {
+  test('Workspace orb is the centred heart of the rail', () {
+    // Owner request 2026-10-10: the rail orb centred and prominent, not a
+    // corner logo. Expanded rail (>= 1100 px wide) and collapsed rail.
+    final wide = OrbDock.forMode(
+      UiPresentationMode.workspace,
+      const Size(1400, 900),
+    ).rect;
+    expect(wide.width, 132);
+    expect(wide.center.dx, OrbDock.railWidth(1400) / 2);
+    expect(wide.bottom + 12, OrbDock.railOrbSpace(1400));
+    final narrow = OrbDock.forMode(
+      UiPresentationMode.workspace,
+      const Size(900, 700),
+    ).rect;
+    expect(narrow.width, 64);
+    expect(narrow.center.dx, OrbDock.railWidth(900) / 2);
+    expect(narrow.left, greaterThanOrEqualTo(0));
+  });
+
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets(

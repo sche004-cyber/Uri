@@ -29,6 +29,23 @@ class OrbDock {
   final Rect rect;
   final Alignment lightAt;
 
+  /// Workspace rail geometry, shared with the rail so the orb and the space
+  /// the rail leaves for it always agree. The rail is expanded from this
+  /// shell width.
+  static const double railExpandAt = 1100;
+  static double railWidth(double shellWidth) =>
+      shellWidth >= railExpandAt ? 200.0 : 88.0;
+
+  /// In the Workspace the orb is the heart of the rail: centred in it and
+  /// large enough to read as the centre of URI, not as a corner logo.
+  static double railOrbSize(double shellWidth) =>
+      shellWidth >= railExpandAt ? 132.0 : 64.0;
+  static const double railOrbTop = 18;
+
+  /// Height the rail reserves above its status line for the docked orb.
+  static double railOrbSpace(double shellWidth) =>
+      railOrbTop + railOrbSize(shellWidth) + 12;
+
   static OrbDock forMode(UiPresentationMode mode, Size shell) {
     switch (mode) {
       case UiPresentationMode.companion:
@@ -44,10 +61,15 @@ class OrbDock {
           lightAt: const Alignment(0, -0.45),
         );
       case UiPresentationMode.workspace:
-        const size = 72.0;
-        return const OrbDock(
-          rect: Rect.fromLTWH(8, 10, size, size),
-          lightAt: Alignment(-0.95, -0.95),
+        final size = railOrbSize(shell.width);
+        return OrbDock(
+          rect: Rect.fromLTWH(
+            (railWidth(shell.width) - size) / 2,
+            railOrbTop,
+            size,
+            size,
+          ),
+          lightAt: const Alignment(-0.95, -0.95),
         );
       case UiPresentationMode.dashboard:
         const size = 128.0;
