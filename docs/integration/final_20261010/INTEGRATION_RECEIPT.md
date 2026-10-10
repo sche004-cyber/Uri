@@ -43,4 +43,9 @@ shortcuts were not touched. Human microphone qualification: NOT VERIFIED (deferr
 
 ## 5. Push record
 
-(Filled after the verified fast-forward.)
+| Item | Value |
+|---|---|
+| Pushed | 2026-10-10, `git push uri-repo cb7f3bd:refs/heads/integration/git-sync-20261008` → `54ad7be..cb7f3bd` (fast-forward) |
+| Integration branch | `integration/final-qualification-20261010` pushed to `uri-repo` |
+| Fresh-clone verification | the cutover GREEN dry run (`CUTOVER_PLAN.md` §2a with development paths) cloned `github.com/sche004-cyber/Uri`, checked ancestry, checked out `cb7f3bd` with a clean tracked tree, tree `cdf1b1b326454a4e112abb069f0455d7535300d4` (= local `cdf1b1b326454a4e112abb069f0455d7535300d4`); materialized, provisioned from PowerShell, built the UI and passed the launcher self-test with `real_installation.ok` (149 s; `evidence/cutover_dryrun_console.txt`). The dry-run trees `uri-cutover-dryrun-src-cb7f3bd` / `-rt-cb7f3bd` are development directories, not an installation in use |
+| This receipt's own commit | follows `cb7f3bd` on the integration branch (docs only); the canonical branch is fast-forwarded to it after this record |
