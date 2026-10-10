@@ -1,0 +1,114 @@
+=== 15:12:50Z vS_base
+[20:42:53] start vS_base; VRAM before 501.1 MiB; other GPU-ish owners: []
+[20:43:16] server healthy after 18.25 s (waited 4.1 s for VRAM release; VRAM at start 501.1 MiB; warm/cold not controlled)
+[20:43:22] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=470.406 pps=2123.6974018188544 ttft=0.5209 | repeat cache_n=995 ttft=0.1847 | newturn prompt_n=20 ttft=0.2053
+[20:43:27] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3456.202 pps=2301.6594516177 ttft=3.5936 | repeat cache_n=7951 ttft=0.2018 | newturn prompt_n=19 ttft=0.2493
+[20:43:46] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=16940.195 pps=1807.1810861681345 ttft=17.1651 | repeat cache_n=30610 ttft=0.3957 | newturn prompt_n=49 ttft=0.4187
+[20:43:49] decode 0: pred_n=256 tps=121.03537935335781 ttft=0.4916 draft=226/142 finish=length err=None
+[20:43:51] decode 1: pred_n=256 tps=116.35871154857932 ttft=0.1696 draft=235/136 finish=length err=None
+[20:43:53] decode 2: pred_n=256 tps=117.65780680311279 ttft=0.1717 draft=232/138 finish=length err=None
+[20:43:55] decision 0: prompt_n=1020 cache_n=0 ttft=0.5679 total=1.3286 pred_n=92 tps=119.6719673019363 err=None
+[20:43:56] decision 1: prompt_n=953 cache_n=61 ttft=0.5712 total=1.336 pred_n=102 tps=132.0708579767529 err=None
+[20:43:57] decision 2: prompt_n=957 cache_n=61 ttft=0.5348 total=1.3997 pred_n=106 tps=121.43318919406526 err=None
+[20:43:59] decision 3: prompt_n=953 cache_n=61 ttft=0.4946 total=1.2572 pred_n=100 tps=129.8619528089534 err=None
+[20:44:00] decision 4: prompt_n=955 cache_n=61 ttft=0.5829 total=1.5549 pred_n=127 tps=129.65457346217843 err=None
+[20:44:02] decision 5: prompt_n=957 cache_n=61 ttft=0.499 total=1.3655 pred_n=107 tps=122.36581607032572 err=None
+[20:44:04] vision 0: prompt_n=605 prompt_ms=1639.793 ttft=1.7787 total=1.9157 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+[20:44:06] vision 1: prompt_n=605 prompt_ms=1575.699 ttft=1.618 total=1.7722 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:44:16] wrote C:\Users\cheta\Development\uri-vram-research\research\adaptive_runtime\evidence\vS_base_20261010_204251.json
+=== 15:14:16Z vS_base rc=0
+=== 15:14:16Z vS_draftexp
+[20:44:19] start vS_draftexp; VRAM before 501.1 MiB; other GPU-ish owners: []
+[20:44:32] server healthy after 9.17 s (waited 4.1 s for VRAM release; VRAM at start 501.1 MiB; warm/cold not controlled)
+[20:44:39] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=499.349 pps=2000.604787433238 ttft=0.5516 | repeat cache_n=995 ttft=0.1235 | newturn prompt_n=20 ttft=0.2489
+[20:44:45] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=4352.005 pps=1827.8931205272054 ttft=4.5048 | repeat cache_n=7951 ttft=0.2468 | newturn prompt_n=19 ttft=0.2869
+[20:45:08] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=21317.468 pps=1436.0992590677279 ttft=21.5619 | repeat cache_n=30610 ttft=0.4134 | newturn prompt_n=49 ttft=0.5257
+[20:45:12] decode 0: pred_n=256 tps=98.60361809542664 ttft=0.5941 draft=226/142 finish=length err=None
+[20:45:15] decode 1: pred_n=256 tps=94.85566130205204 ttft=0.1938 draft=233/137 finish=length err=None
+[20:45:17] decode 2: pred_n=256 tps=97.52549144242496 ttft=0.1882 draft=228/140 finish=length err=None
+[20:45:19] decision 0: prompt_n=1020 cache_n=0 ttft=0.79 total=1.736 pred_n=92 tps=96.21850694253534 err=None
+[20:45:21] decision 1: prompt_n=953 cache_n=61 ttft=0.7223 total=1.6333 pred_n=102 tps=110.88750627173148 err=None
+[20:45:22] decision 2: prompt_n=957 cache_n=61 ttft=0.6412 total=1.7166 pred_n=106 tps=97.66397083102737 err=None
+[20:45:24] decision 3: prompt_n=953 cache_n=61 ttft=0.633 total=1.5768 pred_n=100 tps=104.92478800423514 err=None
+[20:45:26] decision 4: prompt_n=955 cache_n=61 ttft=0.7177 total=1.9226 pred_n=127 tps=104.58748951012382 err=None
+[20:45:28] decision 5: prompt_n=957 cache_n=61 ttft=0.6453 total=1.7294 pred_n=107 tps=97.79788682754727 err=None
+[20:45:29] vision 0: prompt_n=605 prompt_ms=603.91 ttft=0.7504 total=0.9109 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+[20:45:30] vision 1: prompt_n=605 prompt_ms=557.308 ttft=0.6102 total=0.8088 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:45:40] wrote C:\Users\cheta\Development\uri-vram-research\research\adaptive_runtime\evidence\vS_draftexp_20261010_204416.json
+=== 15:15:40Z vS_draftexp rc=0
+=== 15:15:40Z vS_draftexpout
+[20:45:43] start vS_draftexpout; VRAM before 501.1 MiB; other GPU-ish owners: []
+[20:45:56] server healthy after 9.81 s (waited 4.1 s for VRAM release; VRAM at start 501.1 MiB; warm/cold not controlled)
+[20:46:04] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=552.551 pps=1807.9779061118338 ttft=0.5975 | repeat cache_n=995 ttft=0.1504 | newturn prompt_n=20 ttft=0.2554
+[20:46:10] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3759.512 pps=2115.9661147510633 ttft=3.9285 | repeat cache_n=7951 ttft=0.2107 | newturn prompt_n=19 ttft=0.3035
+[20:46:32] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=18346.84 pps=1668.6252237442525 ttft=18.5605 | repeat cache_n=30610 ttft=0.4478 | newturn prompt_n=49 ttft=0.4994
+[20:46:38] decode 0: pred_n=256 tps=48.756974398381956 ttft=0.5361 draft=226/142 finish=length err=None
+[20:46:43] decode 1: pred_n=256 tps=48.00966067336656 ttft=0.1752 draft=231/138 finish=length err=None
+[20:46:49] decode 2: pred_n=256 tps=48.96563457350164 ttft=0.1837 draft=228/140 finish=length err=None
+[20:46:51] decision 0: prompt_n=1020 cache_n=0 ttft=0.6308 total=2.4621 pred_n=92 tps=49.70431395211016 err=None
+[20:46:54] decision 1: prompt_n=953 cache_n=61 ttft=0.6016 total=2.4843 pred_n=102 tps=53.65470910382293 err=None
+[20:46:56] decision 2: prompt_n=957 cache_n=61 ttft=0.5529 total=2.6886 pred_n=106 tps=49.17088521642214 err=None
+[20:46:59] decision 3: prompt_n=953 cache_n=61 ttft=0.5705 total=2.3805 pred_n=100 tps=54.7083135084773 err=None
+[20:47:02] decision 4: prompt_n=955 cache_n=61 ttft=0.5945 total=2.9168 pred_n=127 tps=54.264851234633035 err=None
+[20:47:04] decision 5: prompt_n=957 cache_n=61 ttft=0.5548 total=2.6683 pred_n=107 tps=50.1616530252209 err=None
+[20:47:06] vision 0: prompt_n=605 prompt_ms=584.952 ttft=0.697 total=1.0146 err=None text='Vendor: Northwind Supplies, Total: EUR 1,284.50'
+[20:47:07] vision 1: prompt_n=605 prompt_ms=551.378 ttft=0.609 total=0.9959 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:47:16] wrote C:\Users\cheta\Development\uri-vram-research\research\adaptive_runtime\evidence\vS_draftexpout_20261010_204540.json
+=== 15:17:16Z vS_draftexpout rc=0
+=== 15:17:16Z vS_ncmoe1_draftexp
+[20:47:19] start vS_ncmoe1_draftexp; VRAM before 501.1 MiB; other GPU-ish owners: []
+[20:47:32] server healthy after 9.0 s (waited 4.1 s for VRAM release; VRAM at start 501.1 MiB; warm/cold not controlled)
+[20:47:39] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=564.154 pps=1770.7930813217667 ttft=0.6093 | repeat cache_n=995 ttft=0.1497 | newturn prompt_n=20 ttft=0.2696
+[20:47:45] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3977.35 pps=2000.0754271059877 ttft=4.1136 | repeat cache_n=7951 ttft=0.2757 | newturn prompt_n=19 ttft=0.3195
+[20:48:07] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=18992.503 pps=1611.899179376199 ttft=19.2212 | repeat cache_n=30610 ttft=0.4599 | newturn prompt_n=49 ttft=0.5233
+[20:48:11] decode 0: pred_n=256 tps=73.38959485202211 ttft=0.5536 draft=227/141 finish=length err=None
+[20:48:15] decode 1: pred_n=256 tps=75.84734873361698 ttft=0.2086 draft=224/142 finish=length err=None
+[20:48:18] decode 2: pred_n=256 tps=74.56626557813564 ttft=0.1993 draft=229/140 finish=length err=None
+[20:48:20] decision 0: prompt_n=1020 cache_n=0 ttft=0.7135 total=1.8948 pred_n=92 tps=77.05628072195807 err=None
+[20:48:22] decision 1: prompt_n=953 cache_n=61 ttft=0.6269 total=1.8352 pred_n=95 tps=77.82210694247703 err=None
+[20:48:24] decision 2: prompt_n=957 cache_n=61 ttft=0.5703 total=2.0026 pred_n=106 tps=73.3295015758859 err=None
+[20:48:26] decision 3: prompt_n=953 cache_n=61 ttft=0.6028 total=1.9424 pred_n=108 tps=79.90351836847469 err=None
+[20:48:28] decision 4: prompt_n=955 cache_n=61 ttft=0.6428 total=1.6692 pred_n=88 tps=84.78705779163825 err=None
+[20:48:30] decision 5: prompt_n=957 cache_n=61 ttft=0.5739 total=1.8221 pred_n=102 tps=80.93811279567454 err=None
+[20:48:31] vision 0: prompt_n=605 prompt_ms=633.241 ttft=0.7891 total=1.0446 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:48:32] vision 1: prompt_n=605 prompt_ms=603.221 ttft=0.6673 total=0.9107 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:48:42] wrote C:\Users\cheta\Development\uri-vram-research\research\adaptive_runtime\evidence\vS_ncmoe1_draftexp_20261010_204717.json
+=== 15:18:42Z vS_ncmoe1_draftexp rc=0
+=== 15:18:42Z vS_visioncpu_draftexp
+[20:48:45] start vS_visioncpu_draftexp; VRAM before 498.9 MiB; other GPU-ish owners: []
+[20:48:59] server healthy after 9.86 s (waited 4.1 s for VRAM release; VRAM at start 498.9 MiB; warm/cold not controlled)
+[20:49:05] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=526.987 pps=1895.6824361891283 ttft=0.5876 | repeat cache_n=995 ttft=0.1535 | newturn prompt_n=20 ttft=0.2458
+[20:49:11] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3751.715 pps=2120.3636203709502 ttft=3.9504 | repeat cache_n=7951 ttft=0.2287 | newturn prompt_n=19 ttft=0.2961
+[20:49:32] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=18267.405 pps=1675.8811664820485 ttft=18.5165 | repeat cache_n=30610 ttft=0.4923 | newturn prompt_n=49 ttft=0.4827
+[20:49:35] decode 0: pred_n=256 tps=99.15812805008457 ttft=0.5565 draft=226/142 finish=length err=None
+[20:49:37] decode 1: pred_n=256 tps=97.85614456000424 ttft=0.1747 draft=233/137 finish=length err=None
+[20:49:40] decode 2: pred_n=256 tps=98.92693373059286 ttft=0.1885 draft=228/140 finish=length err=None
+[20:49:42] decision 0: prompt_n=1020 cache_n=0 ttft=0.6359 total=1.5248 pred_n=92 tps=102.3916898454448 err=None
+[20:49:43] decision 1: prompt_n=953 cache_n=61 ttft=0.5968 total=1.5438 pred_n=102 tps=106.6897651768832 err=None
+[20:49:45] decision 2: prompt_n=957 cache_n=61 ttft=0.5963 total=1.6437 pred_n=106 tps=100.27542316228575 err=None
+[20:49:46] decision 3: prompt_n=953 cache_n=61 ttft=0.5618 total=1.4749 pred_n=100 tps=108.4654548482415 err=None
+[20:49:48] decision 4: prompt_n=955 cache_n=61 ttft=0.5991 total=1.7588 pred_n=127 tps=108.66996586383137 err=None
+[20:49:50] decision 5: prompt_n=957 cache_n=61 ttft=0.5577 total=1.599 pred_n=107 tps=101.8261462646135 err=None
+[20:49:55] vision 0: prompt_n=605 prompt_ms=4672.378 ttft=4.7907 total=4.9718 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:50:00] vision 1: prompt_n=605 prompt_ms=4648.086 ttft=4.7161 total=4.9133 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:50:10] wrote C:\Users\cheta\Development\uri-vram-research\research\adaptive_runtime\evidence\vS_visioncpu_draftexp_20261010_204842.json
+=== 15:20:10Z vS_visioncpu_draftexp rc=0
+=== 15:20:10Z vS_kvq4_draftexp
+[20:50:13] start vS_kvq4_draftexp; VRAM before 498.9 MiB; other GPU-ish owners: []
+[20:50:27] server healthy after 10.53 s (waited 4.1 s for VRAM release; VRAM at start 498.9 MiB; warm/cold not controlled)
+[20:50:34] prefill 1000: fresh prompt_n=999 cache_n=0 prompt_ms=714.736 pps=1397.7188780192967 ttft=0.7477 | repeat cache_n=995 ttft=0.1183 | newturn prompt_n=20 ttft=0.2366
+[20:50:40] prefill 8000: fresh prompt_n=7955 cache_n=0 prompt_ms=3824.614 pps=2079.948460158332 ttft=3.9357 | repeat cache_n=7951 ttft=0.2193 | newturn prompt_n=19 ttft=0.2899
+[20:51:01] prefill 30000: fresh prompt_n=30614 cache_n=0 prompt_ms=19353.334 pps=1581.846311338398 ttft=19.5853 | repeat cache_n=30610 ttft=0.3697 | newturn prompt_n=52 ttft=0.4852
+[20:51:04] decode 0: pred_n=256 tps=98.71633918005048 ttft=0.5059 draft=224/143 finish=length err=None
+[20:51:07] decode 1: pred_n=256 tps=100.26927214731954 ttft=0.1831 draft=224/142 finish=length err=None
+[20:51:10] decode 2: pred_n=256 tps=98.3230711037748 ttft=0.2226 draft=232/139 finish=length err=None
+[20:51:11] decision 0: prompt_n=1020 cache_n=0 ttft=0.6423 total=1.7236 pred_n=119 tps=109.15142169726761 err=None
+[20:51:13] decision 1: prompt_n=953 cache_n=61 ttft=0.5793 total=1.4634 pred_n=93 tps=104.08370139743683 err=None
+[20:51:14] decision 2: prompt_n=957 cache_n=61 ttft=0.5919 total=1.5796 pred_n=104 tps=104.3110860404423 err=None
+[20:51:16] decision 3: prompt_n=953 cache_n=61 ttft=0.5523 total=1.5569 pred_n=101 tps=99.58195495310686 err=None
+[20:51:18] decision 4: prompt_n=955 cache_n=61 ttft=0.5638 total=1.5441 pred_n=103 tps=104.07834037902883 err=None
+[20:51:19] decision 5: prompt_n=957 cache_n=61 ttft=0.581 total=1.575 pred_n=108 tps=107.6964730914826 err=None
+[20:51:20] vision 0: prompt_n=605 prompt_ms=608.368 ttft=0.7234 total=0.9168 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:51:21] vision 1: prompt_n=605 prompt_ms=553.946 ttft=0.6087 total=0.7942 err=None text='The invoice total is EUR 1,284.50 and the vendor is Northwind Supplies.'
+[20:51:31] wrote C:\Users\cheta\Development\uri-vram-research\research\adaptive_runtime\evidence\vS_kvq4_draftexp_20261010_205010.json
+=== 15:21:31Z vS_kvq4_draftexp rc=0

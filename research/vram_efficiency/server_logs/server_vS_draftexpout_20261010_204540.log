@@ -1,0 +1,593 @@
+0.00.457.127 W DEPRECATED: argument '-otd' specified multiple times, use comma-separated values instead (only last value will be used)
+0.00.479.513 I srv  llama_server: initializing ...
+0.00.479.521 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.479.897 I srv  init_listene: The UI is disabled
+0.00.479.902 I srv  init_listene: Use --ui/--no-ui (or deprecated --webui/--no-webui) to enable/disable
+0.00.479.998 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.491.089 I srv    load_model: loading model 'C:\Users\cheta\Development\uri-adaptive-lab\models\Qwen3.6-35B-A3B-UD-IQ3_S.gguf'
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(899263424)
+ggml_vulkan memory: Vulkan0: +857.60 MiB device at 0000019E7F6751D0. Total device: 857.60 MiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(260149504)
+ggml_vulkan memory: Vulkan0: +248.10 MiB device at 0000019E7F674650. Total device: 1.08 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_free_buffer()
+ggml_vulkan memory: Vulkan0: -248.10 MiB device at 0000019E7F674650. Total device: 857.60 MiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_free_buffer()
+ggml_vulkan memory: Vulkan0: -857.60 MiB device at 0000019E7F6751D0. Total device: 0 B, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(993280)
+ggml_vulkan memory: ggml_vk_host_malloc(993312)
+ggml_vulkan memory: Vulkan0: +970.03 KiB host at 0000019E4AC9B270. Total device: 0 B, total host: 970.03 KiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(197591040)
+ggml_vulkan memory: Vulkan0: +188.44 MiB device at 0000019E4AC9B870. Total device: 188.44 MiB, total host: 970.03 KiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43450000)
+ggml_vulkan memory: Vulkan0: -970.03 KiB host at 0000019E4AC9B270. Total device: 188.44 MiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_free_buffer()
+ggml_vulkan memory: Vulkan0: -188.44 MiB device at 0000019E4AC9B870. Total device: 0 B, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(993280)
+ggml_vulkan memory: ggml_vk_host_malloc(993312)
+ggml_vulkan memory: Vulkan0: +970.03 KiB host at 0000019E50416D70. Total device: 0 B, total host: 970.03 KiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43450000)
+ggml_vulkan memory: Vulkan0: -970.03 KiB host at 0000019E50416D70. Total device: 0 B, total host: 0 B
+0.01.481.573 W common_fit_params: failed to fit params to free device memory: n_gpu_layers already set by user to 999, abort
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1071351296)
+ggml_vulkan memory: Vulkan0: +1021.72 MiB device at 0000019E4E0C3B70. Total device: 1021.72 MiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(971280640)
+ggml_vulkan memory: Vulkan0: +926.29 MiB device at 0000019E4E0C48F0. Total device: 1.90 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1070108160)
+ggml_vulkan memory: Vulkan0: +1020.53 MiB device at 0000019E4E0C42F0. Total device: 2.90 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1040748032)
+ggml_vulkan memory: Vulkan0: +992.53 MiB device at 0000019E4E0C4770. Total device: 3.87 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1073631488)
+ggml_vulkan memory: Vulkan0: +1023.89 MiB device at 0000019E4E0C4F70. Total device: 4.87 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(960579840)
+ggml_vulkan memory: Vulkan0: +916.08 MiB device at 0000019E4E0C4070. Total device: 5.76 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1070108160)
+ggml_vulkan memory: Vulkan0: +1020.53 MiB device at 0000019E4E0C4970. Total device: 6.76 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1040748032)
+ggml_vulkan memory: Vulkan0: +992.53 MiB device at 0000019E4E0C4470. Total device: 7.73 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1073631488)
+ggml_vulkan memory: Vulkan0: +1023.89 MiB device at 0000019E4E0C3A70. Total device: 8.73 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1070108160)
+ggml_vulkan memory: Vulkan0: +1020.53 MiB device at 0000019E4E0C4170. Total device: 9.73 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(987842816)
+ggml_vulkan memory: Vulkan0: +942.08 MiB device at 0000019E4E0C4BF0. Total device: 10.65 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(1040748032)
+ggml_vulkan memory: Vulkan0: +992.53 MiB device at 0000019E4E0C4D70. Total device: 11.61 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(777669376)
+ggml_vulkan memory: Vulkan0: +741.64 MiB device at 0000019E4E0C45F0. Total device: 12.34 GiB, total host: 0 B
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(417177600)
+ggml_vulkan memory: ggml_vk_host_malloc(417177632)
+ggml_vulkan memory: Vulkan0: +397.85 MiB host at 0000019E4E0C30F0. Total device: 12.34 GiB, total host: 397.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(1048576)
+ggml_vulkan memory: ggml_vk_host_malloc(1048608)
+ggml_vulkan memory: Vulkan0: +1.00 MiB host at 0000019E4E0C3270. Total device: 12.34 GiB, total host: 398.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(1048576)
+ggml_vulkan memory: ggml_vk_host_malloc(1048608)
+ggml_vulkan memory: Vulkan0: +1.00 MiB host at 0000019E4E0C3EF0. Total device: 12.34 GiB, total host: 399.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(1048576)
+ggml_vulkan memory: ggml_vk_host_malloc(1048608)
+ggml_vulkan memory: Vulkan0: +1.00 MiB host at 0000019E4E0C40F0. Total device: 12.34 GiB, total host: 400.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(1048576)
+ggml_vulkan memory: ggml_vk_host_malloc(1048608)
+ggml_vulkan memory: Vulkan0: +1.00 MiB host at 0000019E4E0C3CF0. Total device: 12.34 GiB, total host: 401.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43450000)
+ggml_vulkan memory: Vulkan0: -1.00 MiB host at 0000019E4E0C3270. Total device: 12.34 GiB, total host: 400.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43551000)
+ggml_vulkan memory: Vulkan0: -1.00 MiB host at 0000019E4E0C3EF0. Total device: 12.34 GiB, total host: 399.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43652000)
+ggml_vulkan memory: Vulkan0: -1.00 MiB host at 0000019E4E0C40F0. Total device: 12.34 GiB, total host: 398.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43753000)
+ggml_vulkan memory: Vulkan0: -1.00 MiB host at 0000019E4E0C3CF0. Total device: 12.34 GiB, total host: 397.85 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(993280)
+ggml_vulkan memory: ggml_vk_host_malloc(993312)
+ggml_vulkan memory: Vulkan0: +970.03 KiB host at 0000019E4E0C3470. Total device: 12.34 GiB, total host: 398.80 MiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(356515840)
+ggml_vulkan memory: Vulkan0: +340.00 MiB device at 0000019E4E0C35F0. Total device: 12.67 GiB, total host: 398.80 MiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(197591040)
+ggml_vulkan memory: Vulkan0: +188.44 MiB device at 0000019E4E0C3670. Total device: 12.85 GiB, total host: 398.80 MiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(226811920)
+ggml_vulkan memory: Vulkan0: +216.30 MiB device at 0000019E4E0C36F0. Total device: 13.07 GiB, total host: 398.80 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(100991104)
+ggml_vulkan memory: ggml_vk_host_malloc(100991136)
+ggml_vulkan memory: Vulkan0: +96.31 MiB host at 0000019E4E0C3E70. Total device: 13.07 GiB, total host: 495.11 MiB
+0.07.137.555 I cmn          init: llama threadpool init, n_threads = 12
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(add_partials_size: 0000000000000000)
+ggml_vulkan memory: Vulkan0: +1.00 KiB device at 0000019E4E0C44F0. Total device: 13.07 GiB, total host: 495.11 MiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 132096)
+ggml_vulkan memory: Vulkan0: +129.00 KiB device at 000001A1F48A2590. Total device: 13.07 GiB, total host: 495.11 MiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 9216)
+ggml_vulkan memory: Vulkan0: +9.00 KiB device at 000001A1EAF4CF10. Total device: 13.07 GiB, total host: 495.11 MiB
+0.07.180.793 I common_speculative_init_result: loading draft model 'C:\Users\cheta\Development\uri-adaptive-lab\models\mtp-qwen36-35b-a3b-Q4_K_M.gguf'
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(19802112)
+ggml_vulkan memory: Vulkan0: +18.88 MiB device at 000001A1EAF2F4A0. Total device: 13.08 GiB, total host: 495.11 MiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(928161792)
+ggml_vulkan memory: ggml_vk_host_malloc(928161824)
+ggml_vulkan memory: Vulkan0: +885.16 MiB host at 000001A1EAF2FA20. Total device: 13.08 GiB, total host: 1.35 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(301989888)
+ggml_vulkan memory: ggml_vk_host_malloc(301989920)
+ggml_vulkan memory: Vulkan0: +288.00 MiB host at 000001A1EAF308A0. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(1048576)
+ggml_vulkan memory: ggml_vk_host_malloc(1048608)
+ggml_vulkan memory: Vulkan0: +1.00 MiB host at 000001A1EAF2F720. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(1048576)
+ggml_vulkan memory: ggml_vk_host_malloc(1048608)
+ggml_vulkan memory: Vulkan0: +1.00 MiB host at 000001A1EAF307A0. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(1048576)
+ggml_vulkan memory: ggml_vk_host_malloc(1048608)
+ggml_vulkan memory: Vulkan0: +1.00 MiB host at 000001A1EAF30820. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(1048576)
+ggml_vulkan memory: ggml_vk_host_malloc(1048608)
+ggml_vulkan memory: Vulkan0: +1.00 MiB host at 000001A1EAF2FF20. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43987000)
+ggml_vulkan memory: Vulkan0: -1.00 MiB host at 000001A1EAF2F720. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43450000)
+ggml_vulkan memory: Vulkan0: -1.00 MiB host at 000001A1EAF307A0. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43551000)
+ggml_vulkan memory: Vulkan0: -1.00 MiB host at 000001A1EAF30820. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43652000)
+ggml_vulkan memory: Vulkan0: -1.00 MiB host at 000001A1EAF2FF20. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(993280)
+ggml_vulkan memory: ggml_vk_host_malloc(993312)
+ggml_vulkan memory: Vulkan0: +970.03 KiB host at 000001A1EAF314A0. Total device: 13.08 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(67108864)
+ggml_vulkan memory: Vulkan0: +64.00 MiB device at 000001A1EAF316A0. Total device: 13.15 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(325582848)
+ggml_vulkan memory: Vulkan0: +310.50 MiB device at 000001A1EAF32CA0. Total device: 13.45 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(83923008)
+ggml_vulkan memory: ggml_vk_host_malloc(83923040)
+ggml_vulkan memory: Vulkan0: +80.04 MiB host at 000001A1EAF31720. Total device: 13.45 GiB, total host: 1.71 GiB
+0.07.988.553 W load_hparams: Qwen-VL models require at minimum 1024 image tokens to function correctly on grounding tasks
+0.07.988.559 W load_hparams: if you encounter problems with accuracy, try adding --image-min-tokens 1024
+0.07.988.560 W load_hparams: more info: https://github.com/ggml-org/llama.cpp/issues/16842
+
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(899263424)
+ggml_vulkan memory: Vulkan0: +857.60 MiB device at 000001A1EAF312A0. Total device: 14.29 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(260149504)
+ggml_vulkan memory: Vulkan0: +248.10 MiB device at 000001A1EAF31B20. Total device: 14.53 GiB, total host: 1.71 GiB
+0.09.422.519 I srv    load_model: loaded multimodal model, 'C:\Users\cheta\Development\uri-adaptive-lab\models\mmproj-F16.gguf'
+0.09.423.064 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'
+ggml_vulkan memory: ggml_backend_vk_buffer_free_buffer()
+ggml_vulkan memory: Vulkan0: -310.50 MiB device at 000001A1EAF32CA0. Total device: 14.23 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(000001A38DCB0000)
+ggml_vulkan memory: Vulkan0: -80.04 MiB host at 000001A1EAF31720. Total device: 14.23 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(325582848)
+ggml_vulkan memory: Vulkan0: +310.50 MiB device at 000001A1EAF31C20. Total device: 14.53 GiB, total host: 1.63 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(83923008)
+ggml_vulkan memory: ggml_vk_host_malloc(83923040)
+ggml_vulkan memory: Vulkan0: +80.04 MiB host at 000001A1EAF31520. Total device: 14.53 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43987000)
+ggml_vulkan memory: Vulkan0: -970.03 KiB host at 000001A1EAF314A0. Total device: 14.53 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(3981316)
+ggml_vulkan memory: ggml_vk_host_malloc(3981348)
+ggml_vulkan memory: Vulkan0: +3.80 MiB host at 000001A1EAF322A0. Total device: 14.53 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(add_partials_size: 0000000000000000)
+ggml_vulkan memory: Vulkan0: +1.00 KiB device at 000001A1EAF318A0. Total device: 14.53 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 9216)
+ggml_vulkan memory: Vulkan0: +9.00 KiB device at 000001A1EAF315A0. Total device: 14.53 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 132096)
+ggml_vulkan memory: Vulkan0: +129.00 KiB device at 000001A1EAF327A0. Total device: 14.53 GiB, total host: 1.71 GiB
+0.09.612.560 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+0.09.613.064 I srv  llama_server: model loaded
+0.09.613.251 I srv  llama_server: listening on http://127.0.0.1:18497
+0.10.242.602 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = -1
+0.10.242.947 I slot launch_slot_: id  0 | task 0 | processing task, is_child = 0
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43894000)
+ggml_vulkan memory: Vulkan0: -970.03 KiB host at 0000019E4E0C3470. Total device: 14.53 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(17770496)
+ggml_vulkan memory: ggml_vk_host_malloc(17770528)
+ggml_vulkan memory: Vulkan0: +16.95 MiB host at 000001A1EAF30E20. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 20736)
+ggml_vulkan memory: Vulkan0: -9.00 KiB device at 000001A1EAF4CF10. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +20.25 KiB device at 000001A1EAF2FEA0. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 41472)
+ggml_vulkan memory: Vulkan0: -20.25 KiB device at 000001A1EAF2FEA0. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +40.50 KiB device at 000001A1EAF2FEA0. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 594432)
+ggml_vulkan memory: Vulkan0: -129.00 KiB device at 000001A1F48A2590. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +580.50 KiB device at 000001A1EAF30920. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 41472)
+ggml_vulkan memory: Vulkan0: -9.00 KiB device at 000001A1EAF315A0. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +40.50 KiB device at 000001A226352280. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 594432)
+ggml_vulkan memory: Vulkan0: -129.00 KiB device at 000001A1EAF327A0. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +580.50 KiB device at 000001A226352C00. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(98304)
+ggml_vulkan memory: Vulkan0: +96.00 KiB host at 000001A226352E00. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(2097152)
+ggml_vulkan memory: Vulkan0: -96.00 KiB host at 000001A226352E00. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +2.00 MiB host at 000001A226352D00. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_free_buffer()
+ggml_vulkan memory: ggml_vk_host_free(0000019E43894000)
+ggml_vulkan memory: Vulkan0: -16.95 MiB host at 000001A1EAF30E20. Total device: 14.53 GiB, total host: 1.71 GiB
+ggml_vulkan memory: ggml_backend_vk_host_buffer_type_alloc_buffer(19757056)
+ggml_vulkan memory: ggml_vk_host_malloc(19757088)
+ggml_vulkan memory: Vulkan0: +18.84 MiB host at 000001A1B9131200. Total device: 14.53 GiB, total host: 1.73 GiB
+0.10.507.455 I slot print_timing: id  0 | task 0 | prompt eval time =     186.71 ms /    13 tokens (   14.36 ms per token,    69.63 tokens per second)
+0.10.507.461 I slot print_timing: id  0 | task 0 |        eval time =      77.71 ms /     4 tokens (   25.90 ms per token,    38.60 tokens per second)
+0.10.507.462 I slot print_timing: id  0 | task 0 |       total time =     264.43 ms /    17 tokens
+0.10.507.463 I slot print_timing: id  0 | task 0 |    graphs reused =          0
+0.10.507.467 I slot print_timing: id  0 | task 0 | draft acceptance = 1.00000 (    2 accepted /     2 generated), mean len =  3.00
+0.10.507.498 I slot      release: id  0 | task 0 | stop processing: n_tokens = 16, truncated = 0
+0.14.705.718 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 10099093
+0.14.747.477 I slot launch_slot_: id  0 | task 4 | processing task, is_child = 0
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 2292480)
+ggml_vulkan memory: Vulkan0: -40.50 KiB device at 000001A1EAF2FEA0. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +2.19 MiB device at 0000019E4E10FCF0. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 4584960)
+ggml_vulkan memory: Vulkan0: -2.19 MiB device at 0000019E4E10FCF0. Total device: 14.53 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +4.37 MiB device at 0000019E4E110CF0. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 2097152)
+ggml_vulkan memory: Vulkan0: +2.00 MiB device at 0000019E4E110DF0. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 4584960)
+ggml_vulkan memory: Vulkan0: -40.50 KiB device at 000001A226352280. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +4.37 MiB device at 0000019E4E111470. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(1017888)
+ggml_vulkan memory: Vulkan0: +994.03 KiB host at 0000019E4E1103F0. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 1056768)
+ggml_vulkan memory: Vulkan0: -580.50 KiB device at 000001A1EAF30920. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +1.01 MiB device at 0000019E4E1114F0. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 1056768)
+ggml_vulkan memory: Vulkan0: -580.50 KiB device at 000001A226352C00. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +1.01 MiB device at 0000019E4E1113F0. Total device: 14.54 GiB, total host: 1.73 GiB
+0.15.872.627 I slot print_timing: id  0 | task 4 | prompt eval time =     552.55 ms /   999 tokens (    0.55 ms per token,  1807.98 tokens per second)
+0.15.872.633 I slot print_timing: id  0 | task 4 |        eval time =     572.52 ms /    32 tokens (   18.47 ms per token,    54.15 tokens per second)
+0.15.872.634 I slot print_timing: id  0 | task 4 |       total time =    1125.07 ms /  1031 tokens
+0.15.872.635 I slot print_timing: id  0 | task 4 |    graphs reused =         10
+0.15.872.639 I slot print_timing: id  0 | task 4 | draft acceptance = 0.79167 (   19 accepted /    24 generated), mean len =  2.58
+0.15.872.691 I slot      release: id  0 | task 4 | stop processing: n_tokens = 1030, truncated = 0
+0.15.898.378 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 15464286
+0.15.958.726 I slot launch_slot_: id  0 | task 19 | processing task, is_child = 0
+0.16.591.398 I slot print_timing: id  0 | task 19 | prompt eval time =      64.64 ms /     4 tokens (   16.16 ms per token,    61.88 tokens per second)
+0.16.591.403 I slot print_timing: id  0 | task 19 |        eval time =     567.96 ms /    32 tokens (   18.32 ms per token,    54.58 tokens per second)
+0.16.591.405 I slot print_timing: id  0 | task 19 |       total time =     632.60 ms /    36 tokens
+0.16.591.405 I slot print_timing: id  0 | task 19 |    graphs reused =         20
+0.16.591.409 I slot print_timing: id  0 | task 19 | draft acceptance = 0.79167 (   19 accepted /    24 generated), mean len =  2.58
+0.16.591.461 I slot      release: id  0 | task 19 | stop processing: n_tokens = 1030, truncated = 0
+0.16.608.658 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 16183057
+0.16.609.004 I slot launch_slot_: id  0 | task 33 | processing task, is_child = 0
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 2146560)
+ggml_vulkan memory: Vulkan0: -1.01 MiB device at 0000019E4E1114F0. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +2.05 MiB device at 000001A226353A00. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 2146560)
+ggml_vulkan memory: Vulkan0: -1.01 MiB device at 0000019E4E1113F0. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +2.05 MiB device at 000001A226353380. Total device: 14.54 GiB, total host: 1.73 GiB
+0.17.330.691 I slot print_timing: id  0 | task 33 | prompt eval time =     238.07 ms /    20 tokens (   11.90 ms per token,    84.01 tokens per second)
+0.17.330.697 I slot print_timing: id  0 | task 33 |        eval time =     483.54 ms /    24 tokens (   21.02 ms per token,    47.57 tokens per second)
+0.17.330.698 I slot print_timing: id  0 | task 33 |       total time =     721.62 ms /    44 tokens
+0.17.330.699 I slot print_timing: id  0 | task 33 |    graphs reused =         28
+0.17.330.703 I slot print_timing: id  0 | task 33 | draft acceptance = 0.68421 (   13 accepted /    19 generated), mean len =  2.30
+0.17.330.758 I slot      release: id  0 | task 33 | stop processing: n_tokens = 1073, truncated = 0
+0.17.382.876 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 16922353
+0.17.539.411 I slot launch_slot_: id  0 | task 47 | processing task, is_child = 0
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 4718592)
+ggml_vulkan memory: Vulkan0: -4.37 MiB device at 0000019E4E110CF0. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +4.50 MiB device at 000001A226352580. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 4194304)
+ggml_vulkan memory: Vulkan0: -2.00 MiB device at 0000019E4E110DF0. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +4.00 MiB device at 000001A226353300. Total device: 14.55 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 4718592)
+ggml_vulkan memory: Vulkan0: -4.37 MiB device at 0000019E4E111470. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +4.50 MiB device at 000001A226352B00. Total device: 14.55 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(1047584)
+ggml_vulkan memory: Vulkan0: -994.03 KiB host at 0000019E4E1103F0. Total device: 14.55 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +1023.03 KiB host at 000001A226353E80. Total device: 14.55 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 6291456)
+ggml_vulkan memory: Vulkan0: -4.00 MiB device at 000001A226353300. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +6.00 MiB device at 000001A226353900. Total device: 14.55 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 8388608)
+ggml_vulkan memory: Vulkan0: -6.00 MiB device at 000001A226353900. Total device: 14.54 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +8.00 MiB device at 000001A226352F80. Total device: 14.55 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_backend_vk_buffer_free_buffer()
+ggml_vulkan memory: Vulkan0: -310.50 MiB device at 000001A1EAF31C20. Total device: 14.25 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_backend_vk_buffer_type_alloc_buffer(342360064)
+ggml_vulkan memory: Vulkan0: +326.50 MiB device at 000001A226352780. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 10485760)
+ggml_vulkan memory: Vulkan0: -8.00 MiB device at 000001A226352F80. Total device: 14.56 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +10.00 MiB device at 000001A226352500. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 12582912)
+ggml_vulkan memory: Vulkan0: -10.00 MiB device at 000001A226352500. Total device: 14.56 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +12.00 MiB device at 000001A226352500. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 2405376)
+ggml_vulkan memory: Vulkan0: -2.05 MiB device at 000001A226353A00. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +2.29 MiB device at 000001A226353180. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 14680064)
+ggml_vulkan memory: Vulkan0: -12.00 MiB device at 000001A226352500. Total device: 14.56 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +14.00 MiB device at 000001A226352500. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 2405376)
+ggml_vulkan memory: Vulkan0: -2.05 MiB device at 000001A226353380. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +2.29 MiB device at 000001A226353D00. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(7093248)
+ggml_vulkan memory: Vulkan0: -2.00 MiB host at 000001A226352D00. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +6.76 MiB host at 000001A226353D80. Total device: 14.57 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 16777216)
+ggml_vulkan memory: Vulkan0: -14.00 MiB device at 000001A226352500. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +16.00 MiB device at 000001A226352500. Total device: 14.57 GiB, total host: 1.74 GiB
+0.21.237.730 I slot print_timing: id  0 | task 47 | prompt processing, n_tokens =   7951, progress = 1.00, t =   3.24 s / 2456.25 tokens per second
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(8141824)
+ggml_vulkan memory: Vulkan0: -6.76 MiB host at 000001A226353D80. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +7.76 MiB host at 000001A226354000. Total device: 14.57 GiB, total host: 1.74 GiB
+0.21.972.935 I slot print_timing: id  0 | task 47 | prompt eval time =    3759.51 ms /  7955 tokens (    0.47 ms per token,  2115.97 tokens per second)
+0.21.972.941 I slot print_timing: id  0 | task 47 |        eval time =     673.94 ms /    27 tokens (   25.92 ms per token,    38.58 tokens per second)
+0.21.972.942 I slot print_timing: id  0 | task 47 |       total time =    4433.45 ms /  7982 tokens
+0.21.972.942 I slot print_timing: id  0 | task 47 |    graphs reused =         41
+0.21.972.946 I slot print_timing: id  0 | task 47 | draft acceptance = 0.42857 (   12 accepted /    28 generated), mean len =  1.86
+0.21.973.112 I slot      release: id  0 | task 47 | stop processing: n_tokens = 7981, truncated = 0
+0.21.997.560 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 21564709
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(8172544)
+ggml_vulkan memory: Vulkan0: -7.76 MiB host at 000001A226354000. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +7.79 MiB host at 000001A226353300. Total device: 14.57 GiB, total host: 1.74 GiB
+0.22.118.548 I slot launch_slot_: id  0 | task 68 | processing task, is_child = 0
+0.22.828.259 I slot print_timing: id  0 | task 68 | prompt eval time =      65.50 ms /     4 tokens (   16.38 ms per token,    61.07 tokens per second)
+0.22.828.265 I slot print_timing: id  0 | task 68 |        eval time =     644.14 ms /    27 tokens (   24.77 ms per token,    40.36 tokens per second)
+0.22.828.266 I slot print_timing: id  0 | task 68 |       total time =     709.64 ms /    31 tokens
+0.22.828.267 I slot print_timing: id  0 | task 68 |    graphs reused =         54
+0.22.828.271 I slot print_timing: id  0 | task 68 | draft acceptance = 0.42857 (   12 accepted /    28 generated), mean len =  1.86
+0.22.828.438 I slot      release: id  0 | task 68 | stop processing: n_tokens = 7981, truncated = 0
+0.22.870.452 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 22420035
+0.22.871.413 I slot launch_slot_: id  0 | task 84 | processing task, is_child = 0
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(8174592)
+ggml_vulkan memory: Vulkan0: -7.79 MiB host at 000001A226353300. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +7.80 MiB host at 000001A226352D00. Total device: 14.57 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(8187904)
+ggml_vulkan memory: Vulkan0: -7.80 MiB host at 000001A226352D00. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +7.81 MiB host at 000001A226352D00. Total device: 14.57 GiB, total host: 1.74 GiB
+0.23.626.323 I slot print_timing: id  0 | task 84 | prompt eval time =     260.72 ms /    19 tokens (   13.72 ms per token,    72.88 tokens per second)
+0.23.626.328 I slot print_timing: id  0 | task 84 |        eval time =     494.17 ms /    24 tokens (   21.49 ms per token,    46.54 tokens per second)
+0.23.626.329 I slot print_timing: id  0 | task 84 |       total time =     754.89 ms /    43 tokens
+0.23.626.330 I slot print_timing: id  0 | task 84 |    graphs reused =         63
+0.23.626.334 I slot print_timing: id  0 | task 84 | draft acceptance = 0.60000 (   12 accepted /    20 generated), mean len =  2.20
+0.23.626.517 I slot      release: id  0 | task 84 | stop processing: n_tokens = 8023, truncated = 0
+0.23.728.152 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 23218116
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(8215552)
+ggml_vulkan memory: Vulkan0: -7.81 MiB host at 000001A226352D00. Total device: 14.57 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +7.83 MiB host at 000001A226352D00. Total device: 14.57 GiB, total host: 1.74 GiB
+0.23.907.130 I slot launch_slot_: id  0 | task 99 | processing task, is_child = 0
+0.27.666.947 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =   8192, progress = 0.27, t =   3.20 s / 2557.15 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 18874368)
+ggml_vulkan memory: Vulkan0: -16.00 MiB device at 000001A226352500. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +18.00 MiB device at 000001A226353D80. Total device: 14.58 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 20971520)
+ggml_vulkan memory: Vulkan0: -18.00 MiB device at 000001A226353D80. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +20.00 MiB device at 000001A226352380. Total device: 14.58 GiB, total host: 1.74 GiB
+0.28.732.676 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  10240, progress = 0.33, t =   4.26 s / 2402.19 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 23068672)
+ggml_vulkan memory: Vulkan0: -20.00 MiB device at 000001A226352380. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +22.00 MiB device at 000001A226353380. Total device: 14.58 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 25165824)
+ggml_vulkan memory: Vulkan0: -22.00 MiB device at 000001A226353380. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +24.00 MiB device at 000001A226353900. Total device: 14.58 GiB, total host: 1.74 GiB
+0.29.841.053 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  12288, progress = 0.40, t =   5.35 s / 2295.66 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 27262976)
+ggml_vulkan memory: Vulkan0: -24.00 MiB device at 000001A226353900. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +26.00 MiB device at 000001A226353D80. Total device: 14.58 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 29360128)
+ggml_vulkan memory: Vulkan0: -26.00 MiB device at 000001A226353D80. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +28.00 MiB device at 000001A226353900. Total device: 14.59 GiB, total host: 1.74 GiB
+0.31.016.893 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  14336, progress = 0.47, t =   6.49 s / 2210.17 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 31457280)
+ggml_vulkan memory: Vulkan0: -28.00 MiB device at 000001A226353900. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +30.00 MiB device at 000001A226352500. Total device: 14.59 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 33554432)
+ggml_vulkan memory: Vulkan0: -30.00 MiB device at 000001A226352500. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +32.00 MiB device at 000001A226353380. Total device: 14.59 GiB, total host: 1.74 GiB
+0.32.233.649 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  16384, progress = 0.54, t =   7.69 s / 2130.47 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 35651584)
+ggml_vulkan memory: Vulkan0: -32.00 MiB device at 000001A226353380. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +34.00 MiB device at 000001A226352380. Total device: 14.59 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 37748736)
+ggml_vulkan memory: Vulkan0: -34.00 MiB device at 000001A226352380. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +36.00 MiB device at 000001A226353900. Total device: 14.59 GiB, total host: 1.74 GiB
+0.33.507.644 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  18432, progress = 0.60, t =   8.93 s / 2065.10 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 39845888)
+ggml_vulkan memory: Vulkan0: -36.00 MiB device at 000001A226353900. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +38.00 MiB device at 000001A226352900. Total device: 14.60 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 41943040)
+ggml_vulkan memory: Vulkan0: -38.00 MiB device at 000001A226352900. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +40.00 MiB device at 000001A226353D80. Total device: 14.60 GiB, total host: 1.74 GiB
+0.34.832.766 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  20480, progress = 0.67, t =  10.23 s / 2002.32 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 44040192)
+ggml_vulkan memory: Vulkan0: -40.00 MiB device at 000001A226353D80. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +42.00 MiB device at 000001A226353480. Total device: 14.60 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 46137344)
+ggml_vulkan memory: Vulkan0: -42.00 MiB device at 000001A226353480. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +44.00 MiB device at 000001A226352380. Total device: 14.60 GiB, total host: 1.74 GiB
+0.36.212.713 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  22528, progress = 0.74, t =  11.58 s / 1946.12 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 48234496)
+ggml_vulkan memory: Vulkan0: -44.00 MiB device at 000001A226352380. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +46.00 MiB device at 000001A226353900. Total device: 14.60 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 50331648)
+ggml_vulkan memory: Vulkan0: -46.00 MiB device at 000001A226353900. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +48.00 MiB device at 000001A226353380. Total device: 14.61 GiB, total host: 1.74 GiB
+0.37.635.169 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  24576, progress = 0.80, t =  12.97 s / 1894.30 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 52428800)
+ggml_vulkan memory: Vulkan0: -48.00 MiB device at 000001A226353380. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +50.00 MiB device at 000001A226353900. Total device: 14.61 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 54525952)
+ggml_vulkan memory: Vulkan0: -50.00 MiB device at 000001A226353900. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +52.00 MiB device at 000001A226352E00. Total device: 14.61 GiB, total host: 1.74 GiB
+0.39.105.173 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  26624, progress = 0.87, t =  14.42 s / 1845.89 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 56623104)
+ggml_vulkan memory: Vulkan0: -52.00 MiB device at 000001A226352E00. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +54.00 MiB device at 000001A226353D80. Total device: 14.61 GiB, total host: 1.74 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 58720256)
+ggml_vulkan memory: Vulkan0: -54.00 MiB device at 000001A226353D80. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +56.00 MiB device at 000001A226352900. Total device: 14.61 GiB, total host: 1.74 GiB
+0.40.613.297 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  28672, progress = 0.94, t =  15.91 s / 1801.75 tokens per second
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 60817408)
+ggml_vulkan memory: Vulkan0: -56.00 MiB device at 000001A226352900. Total device: 14.56 GiB, total host: 1.74 GiB
+ggml_vulkan memory: Vulkan0: +58.00 MiB device at 000001A226353A00. Total device: 14.62 GiB, total host: 1.74 GiB
+0.41.326.233 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  29586, progress = 0.97, t =  16.76 s / 1765.02 tokens per second
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(30296064)
+ggml_vulkan memory: Vulkan0: -7.83 MiB host at 000001A226352D00. Total device: 14.62 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +28.89 MiB host at 000001A226353580. Total device: 14.62 GiB, total host: 1.76 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 62914560)
+ggml_vulkan memory: Vulkan0: -58.00 MiB device at 000001A226353A00. Total device: 14.56 GiB, total host: 1.76 GiB
+ggml_vulkan memory: Vulkan0: +60.00 MiB device at 000001A226353D80. Total device: 14.62 GiB, total host: 1.76 GiB
+0.42.168.822 I slot print_timing: id  0 | task 99 | prompt processing, n_tokens =  30610, progress = 1.00, t =  17.53 s / 1746.50 tokens per second
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(31344640)
+ggml_vulkan memory: Vulkan0: -28.89 MiB host at 000001A226353580. Total device: 14.62 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +29.89 MiB host at 000001A226354000. Total device: 14.62 GiB, total host: 1.76 GiB
+0.43.117.154 I slot print_timing: id  0 | task 99 | prompt eval time =   18346.84 ms / 30614 tokens (    0.60 ms per token,  1668.63 tokens per second)
+0.43.117.160 I slot print_timing: id  0 | task 99 |        eval time =     863.16 ms /    32 tokens (   27.84 ms per token,    35.91 tokens per second)
+0.43.117.161 I slot print_timing: id  0 | task 99 |       total time =   19210.00 ms / 30646 tokens
+0.43.117.162 I slot print_timing: id  0 | task 99 |    graphs reused =         78
+0.43.117.166 I slot print_timing: id  0 | task 99 | draft acceptance = 0.39394 (   13 accepted /    33 generated), mean len =  1.76
+0.43.117.690 I slot      release: id  0 | task 99 | stop processing: n_tokens = 30645, truncated = 0
+0.43.167.744 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 42709288
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(31380480)
+ggml_vulkan memory: Vulkan0: -29.89 MiB host at 000001A226354000. Total device: 14.62 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +29.93 MiB host at 000001A226352900. Total device: 14.62 GiB, total host: 1.76 GiB
+0.43.465.328 I slot launch_slot_: id  0 | task 135 | processing task, is_child = 0
+0.44.411.856 I slot print_timing: id  0 | task 135 | prompt eval time =     100.30 ms /     4 tokens (   25.07 ms per token,    39.88 tokens per second)
+0.44.411.862 I slot print_timing: id  0 | task 135 |        eval time =     846.20 ms /    32 tokens (   27.30 ms per token,    36.63 tokens per second)
+0.44.411.863 I slot print_timing: id  0 | task 135 |       total time =     946.50 ms /    36 tokens
+0.44.411.864 I slot print_timing: id  0 | task 135 |    graphs reused =         93
+0.44.411.868 I slot print_timing: id  0 | task 135 | draft acceptance = 0.39394 (   13 accepted /    33 generated), mean len =  1.76
+0.44.412.396 I slot      release: id  0 | task 135 | stop processing: n_tokens = 30645, truncated = 0
+0.44.482.156 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 44003993
+0.44.486.592 I slot launch_slot_: id  0 | task 155 | processing task, is_child = 0
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 2641920)
+ggml_vulkan memory: Vulkan0: -2.29 MiB device at 000001A226353180. Total device: 14.62 GiB, total host: 1.76 GiB
+ggml_vulkan memory: Vulkan0: +2.52 MiB device at 000001A226352880. Total device: 14.62 GiB, total host: 1.76 GiB
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 2641920)
+ggml_vulkan memory: Vulkan0: -2.29 MiB device at 000001A226353D00. Total device: 14.62 GiB, total host: 1.76 GiB
+ggml_vulkan memory: Vulkan0: +2.52 MiB device at 000001A226353D00. Total device: 14.62 GiB, total host: 1.76 GiB
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(31390720)
+ggml_vulkan memory: Vulkan0: -29.93 MiB host at 000001A226352900. Total device: 14.62 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +29.94 MiB host at 000001A226352500. Total device: 14.62 GiB, total host: 1.76 GiB
+0.45.378.912 I slot print_timing: id  0 | task 155 | prompt eval time =     425.34 ms /    49 tokens (    8.68 ms per token,   115.20 tokens per second)
+0.45.378.918 I slot print_timing: id  0 | task 155 |        eval time =     466.96 ms /    24 tokens (   20.30 ms per token,    49.26 tokens per second)
+0.45.378.919 I slot print_timing: id  0 | task 155 |       total time =     892.30 ms /    73 tokens
+0.45.378.920 I slot print_timing: id  0 | task 155 |    graphs reused =        101
+0.45.378.924 I slot print_timing: id  0 | task 155 | draft acceptance = 0.72222 (   13 accepted /    18 generated), mean len =  2.44
+0.45.379.449 I slot      release: id  0 | task 155 | stop processing: n_tokens = 30682, truncated = 0
+0.45.402.240 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 44971047
+0.45.404.669 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 125.843 MiB)
+0.45.412.640 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 335.454 MiB)
+0.45.432.686 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 552.908 MiB)
+ggml_vulkan memory: ggml_vk_ensure_sync_staging_buffer(31418368)
+ggml_vulkan memory: Vulkan0: -29.94 MiB host at 000001A226352500. Total device: 14.62 GiB, total host: 1.73 GiB
+ggml_vulkan memory: Vulkan0: +29.96 MiB host at 000001A226352600. Total device: 14.62 GiB, total host: 1.76 GiB
+0.45.714.194 I slot launch_slot_: id  0 | task 169 | processing task, is_child = 0
+0.48.924.387 I slot print_timing: id  0 | task 169 | n_gen =    143, tg =  47.20 t/s, tg_3s =  47.53 t/s
+0.51.145.702 I slot print_timing: id  0 | task 169 | prompt eval time =     201.42 ms /    33 tokens (    6.10 ms per token,   163.84 tokens per second)
+0.51.145.707 I slot print_timing: id  0 | task 169 |        eval time =    5230.02 ms /   256 tokens (   20.51 ms per token,    48.76 tokens per second)
+0.51.145.708 I slot print_timing: id  0 | task 169 |       total time =    5431.44 ms /   289 tokens
+0.51.145.709 I slot print_timing: id  0 | task 169 |    graphs reused =        212
+0.51.145.713 I slot print_timing: id  0 | task 169 | draft acceptance = 0.62832 (  142 accepted /   226 generated), mean len =  2.26
+0.51.145.744 I slot      release: id  0 | task 169 | stop processing: n_tokens = 288, truncated = 0
+0.51.161.691 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 50737339
+0.51.195.238 I slot launch_slot_: id  0 | task 285 | processing task, is_child = 0
+0.54.351.935 I slot print_timing: id  0 | task 285 | n_gen =    144, tg =  47.38 t/s, tg_3s =  47.71 t/s
+0.56.645.219 I slot print_timing: id  0 | task 285 | prompt eval time =     138.52 ms /    33 tokens (    4.20 ms per token,   238.23 tokens per second)
+0.56.645.225 I slot print_timing: id  0 | task 285 |        eval time =    5311.43 ms /   256 tokens (   20.83 ms per token,    48.01 tokens per second)
+0.56.645.226 I slot print_timing: id  0 | task 285 |       total time =    5449.95 ms /   289 tokens
+0.56.645.227 I slot print_timing: id  0 | task 285 |    graphs reused =        325
+0.56.645.230 I slot print_timing: id  0 | task 285 | draft acceptance = 0.59740 (  138 accepted /   231 generated), mean len =  2.19
+0.56.645.259 I slot      release: id  0 | task 285 | stop processing: n_tokens = 288, truncated = 0
+0.56.661.183 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 56236855
+0.56.691.191 I slot launch_slot_: id  0 | task 405 | processing task, is_child = 0
+0.59.875.072 I slot print_timing: id  0 | task 405 | n_gen =    143, tg =  46.62 t/s, tg_3s =  46.95 t/s
+1.02.036.931 I slot print_timing: id  0 | task 405 | prompt eval time =     137.98 ms /    33 tokens (    4.18 ms per token,   239.16 tokens per second)
+1.02.036.937 I slot print_timing: id  0 | task 405 |        eval time =    5207.73 ms /   256 tokens (   20.42 ms per token,    48.97 tokens per second)
+1.02.036.938 I slot print_timing: id  0 | task 405 |       total time =    5345.72 ms /   289 tokens
+1.02.036.939 I slot print_timing: id  0 | task 405 |    graphs reused =        437
+1.02.036.945 I slot print_timing: id  0 | task 405 | draft acceptance = 0.61404 (  140 accepted /   228 generated), mean len =  2.23
+1.02.036.973 I slot      release: id  0 | task 405 | stop processing: n_tokens = 288, truncated = 0
+1.02.041.785 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 61628568
+1.02.073.488 I slot launch_slot_: id  0 | task 523 | processing task, is_child = 0
+1.04.499.431 I slot print_timing: id  0 | task 523 | prompt eval time =     595.00 ms /  1020 tokens (    0.58 ms per token,  1714.30 tokens per second)
+1.04.499.444 I slot print_timing: id  0 | task 523 |        eval time =    1830.83 ms /    92 tokens (   20.12 ms per token,    49.70 tokens per second)
+1.04.499.446 I slot print_timing: id  0 | task 523 |       total time =    2425.82 ms /  1112 tokens
+1.04.499.448 I slot print_timing: id  0 | task 523 |    graphs reused =        474
+1.04.499.454 I slot print_timing: id  0 | task 523 | draft acceptance = 0.66667 (   52 accepted /    78 generated), mean len =  2.33
+1.04.499.573 I slot      release: id  0 | task 523 | stop processing: n_tokens = 1111, truncated = 0
+1.04.505.037 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 64091178
+1.04.505.336 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 686.616 MiB)
+1.04.601.987 I slot launch_slot_: id  0 | task 566 | processing task, is_child = 0
+1.06.984.258 I slot print_timing: id  0 | task 566 | prompt eval time =     499.76 ms /   953 tokens (    0.52 ms per token,  1906.90 tokens per second)
+1.06.984.267 I slot print_timing: id  0 | task 566 |        eval time =    1882.41 ms /   102 tokens (   18.64 ms per token,    53.65 tokens per second)
+1.06.984.268 I slot print_timing: id  0 | task 566 |       total time =    2382.17 ms /  1055 tokens
+1.06.984.269 I slot print_timing: id  0 | task 566 |    graphs reused =        513
+1.06.984.274 I slot print_timing: id  0 | task 566 | draft acceptance = 0.74390 (   61 accepted /    82 generated), mean len =  2.49
+1.06.984.361 I slot      release: id  0 | task 566 | stop processing: n_tokens = 1116, truncated = 0
+1.07.006.671 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 66575957
+1.07.047.564 I slot launch_slot_: id  0 | task 610 | processing task, is_child = 0
+1.09.673.078 I slot print_timing: id  0 | task 610 | prompt eval time =     490.00 ms /   957 tokens (    0.51 ms per token,  1953.06 tokens per second)
+1.09.673.090 I slot print_timing: id  0 | task 610 |        eval time =    2135.41 ms /   106 tokens (   20.34 ms per token,    49.17 tokens per second)
+1.09.673.091 I slot print_timing: id  0 | task 610 |       total time =    2625.41 ms /  1063 tokens
+1.09.673.092 I slot print_timing: id  0 | task 610 |    graphs reused =        556
+1.09.673.099 I slot print_timing: id  0 | task 610 | draft acceptance = 0.67778 (   61 accepted /    90 generated), mean len =  2.36
+1.09.673.197 I slot      release: id  0 | task 610 | stop processing: n_tokens = 1124, truncated = 0
+1.09.695.325 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 69264793
+1.09.748.970 I slot launch_slot_: id  0 | task 658 | processing task, is_child = 0
+1.12.053.765 I slot print_timing: id  0 | task 658 | prompt eval time =     495.07 ms /   953 tokens (    0.52 ms per token,  1924.97 tokens per second)
+1.12.053.776 I slot print_timing: id  0 | task 658 |        eval time =    1809.60 ms /   100 tokens (   18.28 ms per token,    54.71 tokens per second)
+1.12.053.777 I slot print_timing: id  0 | task 658 |       total time =    2304.67 ms /  1053 tokens
+1.12.053.780 I slot print_timing: id  0 | task 658 |    graphs reused =        594
+1.12.053.787 I slot print_timing: id  0 | task 658 | draft acceptance = 0.73750 (   59 accepted /    80 generated), mean len =  2.48
+1.12.053.893 I slot      release: id  0 | task 658 | stop processing: n_tokens = 1113, truncated = 0
+1.12.058.374 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 71645489
+1.12.058.638 W srv         alloc:  - making room for prompt cache entry, removing oldest entry (size = 933.824 MiB)
+1.12.159.689 I slot launch_slot_: id  0 | task 701 | processing task, is_child = 0
+1.14.970.757 I slot print_timing: id  0 | task 701 | prompt eval time =     489.03 ms /   955 tokens (    0.51 ms per token,  1952.85 tokens per second)
+1.14.970.768 I slot print_timing: id  0 | task 701 |        eval time =    2321.95 ms /   127 tokens (   18.43 ms per token,    54.26 tokens per second)
+1.14.970.769 I slot print_timing: id  0 | task 701 |       total time =    2810.97 ms /  1082 tokens
+1.14.970.769 I slot print_timing: id  0 | task 701 |    graphs reused =        642
+1.14.970.777 I slot print_timing: id  0 | task 701 | draft acceptance = 0.76000 (   76 accepted /   100 generated), mean len =  2.52
+1.14.970.879 I slot      release: id  0 | task 701 | stop processing: n_tokens = 1142, truncated = 0
+1.14.990.694 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 74562479
+1.15.035.797 I slot launch_slot_: id  0 | task 754 | processing task, is_child = 0
+1.17.639.377 I slot print_timing: id  0 | task 754 | prompt eval time =     490.34 ms /   957 tokens (    0.51 ms per token,  1951.70 tokens per second)
+1.17.639.383 I slot print_timing: id  0 | task 754 |        eval time =    2113.17 ms /   107 tokens (   19.94 ms per token,    50.16 tokens per second)
+1.17.639.384 I slot print_timing: id  0 | task 754 |       total time =    2603.51 ms /  1064 tokens
+1.17.639.385 I slot print_timing: id  0 | task 754 |    graphs reused =        686
+1.17.639.389 I slot print_timing: id  0 | task 754 | draft acceptance = 0.66304 (   61 accepted /    92 generated), mean len =  2.33
+1.17.639.443 I slot      release: id  0 | task 754 | stop processing: n_tokens = 1125, truncated = 0
+1.17.879.954 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 77231038
+1.17.930.510 I slot launch_slot_: id  0 | task 803 | processing task, is_child = 0
+ggml_vulkan memory: ggml_vk_preallocate_buffers(x_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(y_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(split_k_size: 0)
+ggml_vulkan memory: ggml_vk_preallocate_buffers(add_partials_size: 0000000000000000)
+ggml_vulkan memory: Vulkan0: +1.00 KiB device at 000001A1F48A0D10. Total device: 14.62 GiB, total host: 1.76 GiB
+1.18.146.211 W find_slot: non-consecutive token position 4 after 3 for sequence 0 with 576 new tokens
+1.18.146.544 W find_slot: non-consecutive token position 4 after 3 for sequence 0 with 576 new tokens
+1.18.161.471 W find_slot: non-consecutive token position 48 after 4 for sequence 0 with 21 new tokens
+1.18.161.527 W find_slot: non-consecutive token position 48 after 4 for sequence 0 with 21 new tokens
+1.18.832.867 I slot print_timing: id  0 | task 803 | prompt eval time =     584.95 ms /   605 tokens (    0.97 ms per token,  1034.27 tokens per second)
+1.18.832.873 I slot print_timing: id  0 | task 803 |        eval time =     317.33 ms /    19 tokens (   17.63 ms per token,    56.72 tokens per second)
+1.18.832.874 I slot print_timing: id  0 | task 803 |       total time =     902.28 ms /   624 tokens
+1.18.832.875 I slot print_timing: id  0 | task 803 |    graphs reused =        692
+1.18.832.879 I slot print_timing: id  0 | task 803 | draft acceptance = 0.85714 (   12 accepted /    14 generated), mean len =  2.71
+1.18.832.909 I slot      release: id  0 | task 803 | stop processing: n_tokens = 624, truncated = 0
+1.18.864.957 I slot get_availabl: id  0 | task -1 | selected slot by LRU, t_last = 78424504
+1.18.896.594 I slot launch_slot_: id  0 | task 814 | processing task, is_child = 0
+1.19.075.154 W find_slot: non-consecutive token position 4 after 3 for sequence 0 with 576 new tokens
+1.19.075.494 W find_slot: non-consecutive token position 4 after 3 for sequence 0 with 576 new tokens
+1.19.089.422 W find_slot: non-consecutive token position 48 after 4 for sequence 0 with 21 new tokens
+1.19.089.466 W find_slot: non-consecutive token position 48 after 4 for sequence 0 with 21 new tokens
+1.19.834.367 I slot print_timing: id  0 | task 814 | prompt eval time =     551.38 ms /   605 tokens (    0.91 ms per token,  1097.25 tokens per second)
+1.19.834.373 I slot print_timing: id  0 | task 814 |        eval time =     386.33 ms /    23 tokens (   17.56 ms per token,    56.95 tokens per second)
+1.19.834.374 I slot print_timing: id  0 | task 814 |       total time =     937.71 ms /   628 tokens
+1.19.834.375 I slot print_timing: id  0 | task 814 |    graphs reused =        699
+1.19.834.379 I slot print_timing: id  0 | task 814 | draft acceptance = 0.93750 (   15 accepted /    16 generated), mean len =  2.88
+1.19.834.413 I slot      release: id  0 | task 814 | stop processing: n_tokens = 628, truncated = 0
