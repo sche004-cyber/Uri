@@ -238,6 +238,20 @@ void main() {
       expect(conv.companionState, 'waiting_user');
     });
 
+    test("B waits, A's wait arrives, A's handoff fails: B's real wait stays (Codex r4)", () async {
+      final rt = HardeningRuntime();
+      final conv = OiConversation(rt);
+      await conv.send('a');
+      rt.emit('w1-t1', 'turn.finished', {'status': 'ok'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      await conv.send('b');
+      rt.emit('w1-t2', 'companion.state', {'state': 'waiting_user'}); // B: a real proposal waits
+      rt.emit('w1-t1', 'companion.state', {'state': 'waiting_user'}); // A's wait arrives later
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      conv.handoffProducedNothing('w1-t1'); // then A's handoff fails
+      expect(conv.companionState, 'waiting_user');
+    });
+
     test('a waiting state from anything else is left alone', () {
       final conv = OiConversation(HardeningRuntime());
       conv.companionState = 'thinking';

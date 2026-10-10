@@ -672,7 +672,17 @@ class OiConversation extends ChangeNotifier {
         // it must not replace another turn's real wait (INT-F1).
         if (!(state == 'waiting_user' && turnId != null && _handoffsWithoutProposal.contains(turnId))) {
           companionState = state;
-          _waitingFrom = turnId;
+          if (turnId != null) {
+            // Which turns wait for the user, so a failed handoff removes only its own wait (Codex INT-F1 r4).
+            if (state == 'waiting_user') {
+              _waitingTurns.add(turnId);
+              while (_waitingTurns.length > 16) {
+                _waitingTurns.remove(_waitingTurns.first);
+              }
+            } else {
+              _waitingTurns.remove(turnId);
+            }
+          }
         }
       case 'turn.routed':
         m?.route = data['route'] as String?;
@@ -758,14 +768,15 @@ class OiConversation extends ChangeNotifier {
     while (_handoffsWithoutProposal.length > 16) {
       _handoffsWithoutProposal.remove(_handoffsWithoutProposal.first);
     }
-    if (companionState == 'waiting_user' && _waitingFrom == turnId) {
-      companionState = 'idle';
+    if (_waitingTurns.remove(turnId) && companionState == 'waiting_user') {
+      // Another turn that still waits keeps "needs you"; otherwise nothing is left to decide.
+      if (_waitingTurns.isEmpty) companionState = 'idle';
       notifyListeners();
     }
   }
 
   final Set<String> _handoffsWithoutProposal = <String>{}; // insertion-ordered, bounded
-  String? _waitingFrom;
+  final Set<String> _waitingTurns = <String>{}; // insertion-ordered, bounded
 
   @override
   void dispose() {
