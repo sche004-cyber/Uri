@@ -38,9 +38,6 @@ import urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 RUN = os.path.join(HERE, 'run_companion_perf.ps1')
-# The app the runner launches, in this checkout. Cleanup stops exactly this
-# executable, whichever checkout the script runs from.
-APP_EXE = os.path.join(ROOT, 'uri_ui', 'build', 'windows', 'x64', 'runner', 'Profile', 'uri_ui.exe')
 PORT = 18499
 EXE = r'D:\uri-model-lab\runtime\llama-b11425-bin-win-vulkan-x64\llama-server.exe'
 MODELS = r'D:\uri-model-lab\models\unsloth__Qwen3.6-35B-A3B-GGUF'
@@ -131,6 +128,29 @@ class Runner:
         with self._cv:
             return list(self.lines)
 
+    @property
+    def ui_pid(self):
+        """The pid of the window THIS run launched (from the runner's LAUNCHED line), or None."""
+        with self._cv:
+            for x in self.lines:
+                if x.startswith('LAUNCHED pid='):
+                    try:
+                        return int(x.split('pid=', 1)[1].split()[0])
+                    except ValueError:
+                        return None
+        return None
+
+    def cleanup(self):
+        """Never leave the measured app behind if a step failed mid-run: stop only the window this run launched (by
+        pid, never by executable path, so an owner's own window of the same build is untouched; Codex P-GOV-1 r10),
+        then the runner."""
+        pid = self.ui_pid
+        if pid is not None:
+            subprocess.run(['powershell', '-NoProfile', '-Command',
+                            f"Stop-Process -Id {pid} -Force -ErrorAction SilentlyContinue"], check=False)
+        if self.proc.poll() is None:
+            self.proc.kill()
+
 
 def ui_first(out):
     log = open(os.path.join(out, 'llama_server_ui_first.log'), 'w', encoding='utf-8')
@@ -147,6 +167,7 @@ def ui_first(out):
         result['gpu_advise'] = gpu_advise(out, 'brain-ui-first-lunar-adaptive')
         if not ok:
             result['skipped'] = 'window not launched (see runner_head)'
+            result['runner_head'] = runner.finish(timeout=120)   # the runner exits by itself on a skip
             return
         launched = time.time()
         result['perf_launched'] = round(launched, 2)
@@ -172,11 +193,7 @@ def ui_first(out):
         result['after_ui_exit'] = [decode() for _ in range(2)]
     finally:
         if perf.poll() is None:
-            subprocess.run(['powershell', '-NoProfile', '-Command',
-                            "Get-Process uri_ui -ErrorAction SilentlyContinue | "
-                            f"Where-Object {{ $_.Path -eq '{APP_EXE}' }} | Stop-Process -Force"],
-                           check=False)
-            perf.kill()
+            runner.cleanup()
         if server is not None:
             server.terminate()
             try:
@@ -200,7 +217,7 @@ def main():
     os.makedirs(out, exist_ok=True)
     log = open(os.path.join(out, 'llama_server.log'), 'w', encoding='utf-8')
     server = subprocess.Popen(ARGV, stdout=log, stderr=subprocess.STDOUT)
-    perf = None
+    perf = runner = None
     result = {'argv_port': PORT, 'started': time.strftime('%Y-%m-%dT%H:%M:%S'), 'baseline': [], 'runs': {}}
     try:
         t0 = time.time()
@@ -236,13 +253,9 @@ def main():
             time.sleep(5)
         result['after'] = [decode() for _ in range(2)]
     finally:
-        # Never leave the measured app behind if a step failed mid-run.
-        if perf is not None and perf.poll() is None:
-            subprocess.run(['powershell', '-NoProfile', '-Command',
-                            "Get-Process uri_ui -ErrorAction SilentlyContinue | "
-                            f"Where-Object {{ $_.Path -eq '{APP_EXE}' }} | Stop-Process -Force"],
-                           check=False)
-            perf.kill()
+        # Never leave the measured app behind if a step failed mid-run (only this run's window, by pid).
+        if runner is not None and perf.poll() is None:
+            runner.cleanup()
         server.terminate()
         try:
             server.wait(timeout=30)

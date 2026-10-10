@@ -1062,3 +1062,23 @@ def test_companion_runner_reports_launched_only_with_a_window():
     skip = src.index("RUN_SKIPPED no window", start)
     launched = src.index('Write-Output "LAUNCHED', start)
     assert start < wait < skip < launched
+
+
+def test_contention_cleanup_stops_only_the_window_this_run_launched(monkeypatch):
+    bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention_c")
+    calls = []
+    monkeypatch.setattr(bc.subprocess, "run", lambda args, **k: calls.append(args))
+
+    class Proc(FakeRunnerProc):
+        def poll(self):
+            return None
+    skipped = bc.Runner(Proc(["GPU_ADVISE WAIT_HEAVY", "RUN_SKIPPED gpu advisory WAIT_HEAVY"]))
+    assert skipped.wait_launch(5) is False and skipped.ui_pid is None
+    skipped.cleanup()
+    assert calls == [] and skipped.proc.killed                 # nothing launched: no window is stopped
+    ran = bc.Runner(Proc(["GPU_ADVISE GO", "LAUNCHED pid=4321 tag=t window=1"]))
+    assert ran.wait_launch(5) is True and ran.ui_pid == 4321
+    ran.cleanup()
+    assert len(calls) == 1 and "Stop-Process -Id 4321" in calls[0][-1] and "Path" not in calls[0][-1]
+    src = (REPO / "rnd/companions/settings/brain_contention.py").read_text(encoding="utf-8")
+    assert "Get-Process uri_ui" not in src                     # no cleanup by executable path is left
