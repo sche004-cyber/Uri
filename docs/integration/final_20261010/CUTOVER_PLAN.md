@@ -46,33 +46,44 @@ The plan reuses the accepted runbook `docs/governance/consolidation/URI_RUNTIME_
 ## 2a. Exact commands (PowerShell; the sequence used in staging, `STAGING_QUALIFICATION.md`)
 
 ```powershell
-$Commit = '<accepted canonical commit>'
-$Src    = 'C:\URI\src-<commit>'        # clean checkout of $Commit: the materializer's candidate tree AND the UI root
-$Rt     = 'C:\URI\runtime-<commit>'    # must not exist yet
-$Venv   = 'C:\Users\cheta\Development\uri-ws-final\.venv'   # the venv the staging runtimes copied (a clean pip install is not separately qualified: runbook item R-3)
+$ErrorActionPreference = 'Stop'
+$Commit = '0000000000000000000000000000000000000000'   # REPLACE with the full 40-character accepted canonical commit
+if ($Commit -notmatch '^[0-9a-f]{40}$' -or $Commit -eq ('0' * 40)) { throw 'set $Commit to the accepted commit' }
+$Short = $Commit.Substring(0, 7)
+$Src   = "C:\URI\src-$Short"       # clean checkout: the materializer's candidate tree AND the UI root
+$Rt    = "C:\URI\runtime-$Short"   # must not exist yet
+$Venv  = 'C:\Users\cheta\Development\uri-ws-final\.venv'   # the venv the staging runtimes copied (a clean pip install is not separately qualified: runbook item R-3)
+function Invoke-Step([string]$What, [scriptblock]$Cmd) {
+  & $Cmd
+  if ($LASTEXITCODE -ne 0) { throw "STEP FAILED ($What): exit $LASTEXITCODE. Stop here; nothing RED has run yet." }
+}
+if (Test-Path $Src) { throw "$Src exists" }; if (Test-Path $Rt) { throw "$Rt exists" }
 
 # 2.2 runtime (GREEN)
-git clone --no-checkout https://github.com/sche004-cyber/Uri.git $Src
-git -C $Src fetch origin integration/git-sync-20261008
-git -C $Src merge-base --is-ancestor $Commit FETCH_HEAD; if ($LASTEXITCODE -ne 0) { throw 'commit not on the canonical branch' }
-git -C $Src checkout --detach $Commit
-git -C $Src config core.autocrlf false
+Invoke-Step 'clone'    { git clone --no-checkout https://github.com/sche004-cyber/Uri.git $Src }
+Invoke-Step 'fetch'    { git -C $Src fetch origin integration/git-sync-20261008 }
+Invoke-Step 'ancestry' { git -C $Src merge-base --is-ancestor $Commit FETCH_HEAD }
+Invoke-Step 'checkout' { git -C $Src checkout --detach $Commit }
+Invoke-Step 'autocrlf' { git -C $Src config core.autocrlf false }
 Set-Location $Src
-python scripts\oi_materialize_test_runtime.py $Rt --venv $Venv
+Invoke-Step 'materialize' { python scripts\oi_materialize_test_runtime.py $Rt --venv $Venv }
 
-# 2.3 provision, from PowerShell (ENV-P1) with the runtime's own interpreter (GREEN)
+# 2.3 provision, from PowerShell (ENV-P1), with the runtime's own interpreter (GREEN)
 Set-Location $Rt
-.\.venv\Scripts\python.exe scripts\ws_provision.py --name production
+Invoke-Step 'provision' { .\.venv\Scripts\python.exe scripts\ws_provision.py --name production }
 
 # 2.4 UI in the same tree (GREEN)
-Set-Location "$Src\uri_ui"; flutter build windows --release
+Set-Location "$Src\uri_ui"
+Invoke-Step 'ui build' { flutter build windows --release }
 
-# self-test of THIS installation (GREEN; must exit 0 with real_installation.ok = true)
+# Self-test of THIS installation (GREEN): exit 0 AND real_installation.ok, or stop.
 Set-Location $Src
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\launch_uri_working_system.ps1 -SelfTest -RuntimeRoot $Rt -UiRoot $Src
+$st = powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\launch_uri_working_system.ps1 -SelfTest -RuntimeRoot $Rt -UiRoot $Src | Out-String
+if ($LASTEXITCODE -ne 0 -or -not ($st | ConvertFrom-Json).real_installation.ok) { throw "SELF-TEST FAILED; do not continue:`n$st" }
+'GREEN steps complete. Continue with 2.5 and 2.6 (RED, owner present), then 2.7.'
 
-# 2.7 start (RED, after 2.5 and 2.6)
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\launch_uri_working_system.ps1 -RuntimeRoot $Rt -UiRoot $Src
+# 2.7 start (RED; only after 2.5 and 2.6, with the owner's approval)
+# powershell -NoProfile -ExecutionPolicy Bypass -File "$Src\scripts\launch_uri_working_system.ps1" -RuntimeRoot $Rt -UiRoot $Src
 ```
 
 The new shortcut (2.8) runs the last command with the same arguments. `Launch URI Working System.bat` passes its
