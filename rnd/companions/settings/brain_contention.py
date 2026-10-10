@@ -87,34 +87,49 @@ def decode(n=256):
             'wall_s': round(time.time() - t0, 2)}
 
 
-def wait_launch(perf, timeout=1900):
-    """Read the runner's output until it reports LAUNCHED (the window exists) or that it skipped the run (P-GOV-1
-    advisory not GO / WILL_DEGRADE_BRAIN, or the runner ended). Returns (launched, lines read). Nothing is measured
-    before this returns True, so a skipped window can never be reported as a contention or UI-first result."""
-    import queue
-    q = queue.Queue()
+class Runner:
+    """The one owner of a perf runner's output (a thread reads it to the end), so the launch wait keeps a real
+    deadline whatever the runner prints, and the final lines are never split with another reader."""
 
-    def pump():                       # a reader thread, so the deadline holds even when the runner prints nothing
-        for line in perf.stdout:
-            q.put(line)
-        q.put(None)
-    threading.Thread(target=pump, daemon=True).start()
-    lines, deadline = [], time.time() + timeout
-    while True:
-        try:
-            line = q.get(timeout=max(0.0, deadline - time.time()))
-        except queue.Empty:
-            lines.append('WAIT_LAUNCH_TIMEOUT')
-            if hasattr(perf, 'kill'):
-                perf.kill()           # the runner never reported; it is ended and recorded as timed out
-            return False, lines
-        if line is None:
-            return False, lines       # the runner ended without launching
-        lines.append(line.rstrip())
-        if line.startswith('LAUNCHED'):
-            return True, lines
-        if line.startswith('RUN_SKIPPED'):
-            return False, lines
+    def __init__(self, proc):
+        self.proc, self.lines, self.done = proc, [], False
+        self._cv = threading.Condition()
+        self._t = threading.Thread(target=self._pump, daemon=True)
+        self._t.start()
+
+    def _pump(self):
+        for line in self.proc.stdout:
+            with self._cv:
+                self.lines.append(line.rstrip())
+                self._cv.notify_all()
+        with self._cv:
+            self.done = True
+            self._cv.notify_all()
+
+    def wait_launch(self, timeout=1900):
+        """True once the runner printed LAUNCHED (the window exists); False when it skipped the run (P-GOV-1 advisory
+        not GO / WILL_DEGRADE_BRAIN), ended, or missed the deadline (then it is killed and WAIT_LAUNCH_TIMEOUT is
+        recorded). Nothing is measured before this returns True."""
+        deadline = time.monotonic() + timeout
+        with self._cv:
+            while True:
+                if any(x.startswith('LAUNCHED') for x in self.lines):
+                    return True
+                if self.done or any(x.startswith('RUN_SKIPPED') for x in self.lines):
+                    return False
+                left = deadline - time.monotonic()
+                if left <= 0:
+                    self.lines.append('WAIT_LAUNCH_TIMEOUT')
+                    self.proc.kill()
+                    return False
+                self._cv.wait(left)
+
+    def finish(self, timeout):
+        """Wait for the runner to exit and its output to be read to the end; returns every line."""
+        self.proc.wait(timeout=timeout)
+        self._t.join(timeout=30)
+        with self._cv:
+            return list(self.lines)
 
 
 def ui_first(out):
@@ -123,11 +138,12 @@ def ui_first(out):
                              '-Identity', 'lunar', '-Fps', 'adaptive', '-Quality', 'full', '-Layout', 'shell',
                              '-Seconds', '360', '-OutDir', out, '-Tag', 'brain-ui-first-lunar-adaptive'],
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    runner = Runner(perf)
     server = None
     result = {'order': 'ui_first', 'started': time.strftime('%Y-%m-%dT%H:%M:%S')}
     try:
-        ok, head = wait_launch(perf)
-        result['runner_head'] = head
+        ok = runner.wait_launch()
+        result['runner_head'] = list(runner.lines)
         result['gpu_advise'] = gpu_advise(out, 'brain-ui-first-lunar-adaptive')
         if not ok:
             result['skipped'] = 'window not launched (see runner_head)'
@@ -152,8 +168,7 @@ def ui_first(out):
             reqs.append(decode())
         result['gen_end_s'] = round(time.time() - launched, 1)
         result['requests'] = reqs
-        perf_out, _ = perf.communicate(timeout=600)
-        result['runner'] = perf_out.strip().splitlines()[-1:]
+        result['runner'] = runner.finish(timeout=600)[-1:]
         result['after_ui_exit'] = [decode() for _ in range(2)]
     finally:
         if perf.poll() is None:
@@ -204,10 +219,9 @@ def main():
                                      '-Identity', 'lunar', '-Fps', fps, '-Quality', 'full', '-Layout', 'shell',
                                      '-Seconds', '100', '-OutDir', out, '-Tag', tag],
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-            ok, head = wait_launch(perf)
-            if not ok:
-                perf.communicate(timeout=60)
-                result['runs'][fps] = {'skipped': 'window not launched', 'runner_head': head,
+            runner = Runner(perf)
+            if not runner.wait_launch():
+                result['runs'][fps] = {'skipped': 'window not launched', 'runner_head': runner.finish(timeout=60),
                                        'gpu_advise': gpu_advise(out, tag)}
                 continue
             launched = time.time()
@@ -215,9 +229,9 @@ def main():
             reqs = []
             while time.time() - launched < 70:
                 reqs.append(decode())
-            perf_out, _ = perf.communicate(timeout=300)
+            runner_lines = runner.finish(timeout=300)
             result['runs'][fps] = {'perf_launched': round(launched, 2), 'requests': reqs,
-                                   'runner': perf_out.strip().splitlines()[-1:],
+                                   'runner': runner_lines[-1:],
                                    'gpu_advise': gpu_advise(out, tag)}
             time.sleep(5)
         result['after'] = [decode() for _ in range(2)]

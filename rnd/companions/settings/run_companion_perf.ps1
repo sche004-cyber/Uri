@@ -35,6 +35,9 @@ $OutDir = (Resolve-Path $OutDir).Path
 if (-not $Tag) { $Tag = "$Layout-$Identity-$Fps-$Quality$(if ($Cycle) { '-cycle' })" }
 $json = Join-Path $OutDir "$Tag.json"
 $csv = Join-Path $OutDir "$Tag.samples.csv"
+# A tag reused in the same directory must not leave an earlier run's numbers next to this attempt's advisory
+# (Codex P-GOV-1 r4): the earlier outputs of this tag are removed before the attempt.
+Remove-Item -LiteralPath $json, $csv, (Join-Path $OutDir "$Tag.gpu_advise.json") -ErrorAction SilentlyContinue
 $env:URI_CP_OUT = $json
 $env:URI_CP_SECONDS = "$Seconds"
 $env:URI_CP_IDENTITY = $Identity

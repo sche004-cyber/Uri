@@ -24,6 +24,9 @@ $OutDir = (Resolve-Path $OutDir).Path
 if (-not $Tag) { $Tag = "$Scenario-$Identity-$Size" }
 $json = Join-Path $OutDir "$Tag.json"
 $csv = Join-Path $OutDir "$Tag.samples.csv"
+# A tag reused in the same directory must not leave an earlier run's numbers next to this attempt's advisory
+# (Codex P-GOV-1 r4): the earlier outputs of this tag are removed before the attempt.
+Remove-Item -LiteralPath $json, $csv, (Join-Path $OutDir "$Tag.gpu_advise.json") -ErrorAction SilentlyContinue
 # P-GOV-1: a performance run asks the GPU lease first (read-only; waits while a benchmark or live test holds the
 # GPU) and marks itself invalid when opening the window would slow a resident Brain.
 Push-Location $root

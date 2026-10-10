@@ -890,16 +890,47 @@ def _load(rel, name):
     return m
 
 
+class FakeRunnerProc:
+    """Stands in for the PowerShell perf runner: yields lines (with optional delays) on stdout."""
+
+    def __init__(self, lines, delay=0.0, forever=False):
+        self.killed = False
+        self._lines, self._delay, self._forever = lines, delay, forever
+
+    @property
+    def stdout(self):
+        def gen():
+            for x in self._lines:
+                time.sleep(self._delay)
+                yield x + "\n"
+            while self._forever and not self.killed:
+                time.sleep(0.01)
+                yield "progress\n"
+        return gen()
+
+    def kill(self):
+        self.killed = True
+
+    def wait(self, timeout=None):
+        return 0
+
+
 def test_contention_driver_measures_only_after_the_window_launched():
     bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention")
+    r = bc.Runner(FakeRunnerProc(["GPU_ADVISE GO", "LAUNCHED pid=1 tag=t", "REPORT x.json"]))
+    assert r.wait_launch(timeout=5) is True
+    assert r.finish(timeout=5)[-1] == "REPORT x.json"                  # one reader keeps the final line
+    assert bc.Runner(FakeRunnerProc(["GPU_ADVISE WAIT_HEAVY", "RUN_SKIPPED gpu advisory"])).wait_launch(5) is False
+    assert bc.Runner(FakeRunnerProc(["GPU_ADVISE ", "profile build missing"])).wait_launch(5) is False   # ended
 
-    class P:
-        def __init__(self, lines):
-            self.stdout = iter(l + "\n" for l in lines)
-    ok, head = bc.wait_launch(P(["GPU_ADVISE GO", "LAUNCHED pid=1 tag=t", "later"]))
-    assert ok is True and head[-1].startswith("LAUNCHED")
-    assert bc.wait_launch(P(["GPU_ADVISE WAIT_HEAVY", "RUN_SKIPPED gpu advisory WAIT_HEAVY"]))[0] is False
-    assert bc.wait_launch(P(["GPU_ADVISE ", "profile build missing"]))[0] is False      # runner ended
+
+def test_runner_deadline_holds_for_a_silent_or_a_chatty_runner():
+    bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention_d")
+    for proc in (FakeRunnerProc(["late"], delay=30), FakeRunnerProc([], forever=True)):
+        t0 = time.monotonic()
+        r = bc.Runner(proc)
+        assert r.wait_launch(timeout=0.5) is False
+        assert r.lines[-1] == "WAIT_LAUNCH_TIMEOUT" and proc.killed and time.monotonic() - t0 < 5
 
 
 def test_perf_summaries_skip_advisory_files_and_exclude_or_label_contaminated_runs(tmp_path):
@@ -938,26 +969,6 @@ def test_launcher_selftest_applies_the_candidate_rule_to_the_default_ui_root():
     assert ("UI_ROOT_NOT_RUNTIME_CANDIDATE" in out["real_installation"]["problems"]) == mismatch
 
 
-def test_wait_launch_has_a_real_deadline_when_the_runner_prints_nothing():
-    bc = _load("rnd/companions/settings/brain_contention.py", "brain_contention_t")
-
-    class Silent:
-        killed = False
-
-        @property
-        def stdout(self):
-            def gen():
-                time.sleep(30)
-                yield "LAUNCHED late\n"
-            return gen()
-
-        def kill(self):
-            Silent.killed = True
-    t0 = time.monotonic()
-    ok, head = bc.wait_launch(Silent(), timeout=0.5)
-    assert ok is False and head[-1] == "WAIT_LAUNCH_TIMEOUT" and Silent.killed and time.monotonic() - t0 < 5
-
-
 def test_companion_summary_reads_the_real_samples_file_of_a_labelled_run(tmp_path, capsys):
     cs = _load("rnd/companions/settings/summarize.py", "companion_summarize_t")
     rec = {"overall": {"frames": 100, "build_p90": 1, "raster_p50": 1, "raster_p90": 2, "raster_p99": 3, "over_16ms": 0},
@@ -973,3 +984,10 @@ def test_companion_summary_reads_the_real_samples_file_of_a_labelled_run(tmp_pat
     out = capsys.readouterr().out
     row = next(l for l in out.splitlines() if l.startswith("| brain-lunar-fps30"))
     assert "[gpu advisory WILL_DEGRADE_BRAIN]" in row and "| 321 |" in row and "7.0" in row
+
+
+def test_perf_runners_clear_a_reused_tags_old_outputs_before_the_attempt():
+    for rel in ("rnd/companions/settings/run_companion_perf.ps1", "rnd/voice/run_perf.ps1"):
+        src = (REPO / rel).read_text(encoding="utf-8")
+        clear = src.index("Remove-Item -LiteralPath $json, $csv")
+        assert clear < src.index("gpu_lease advise") < src.index("Start-Process -FilePath $exe")
