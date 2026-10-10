@@ -326,8 +326,8 @@ class IntegratedTurns:
         # The scheduler (the domain authority) builds the proposal after this reply, in the UI's A2UI hub; the reply
         # must not claim it exists yet (INT-F1, final integration 2026-10-10: with no scheduler the UI said both
         # "prepared" and "could not be prepared").
-        reply = ("I've asked the scheduler to prepare a festival GIF schedule for you to review. "
-                 "Nothing runs until you confirm it.")
+        reply = ("I'll try to prepare a festival GIF schedule for you to review; it appears here if the scheduler "
+                 "accepts the request. Nothing runs until you confirm it.")
         emit("turn.started", text_chars=len(text), depth="auto")
         emit("turn.routed", route="a2ui", triage={"kind": "SCHEDULE_REQUEST", "interpreter": handoff["interpreter"]},
              tier={"tier": "NONE", "selected_by": "deterministic", "reason": "no model call"})

@@ -198,6 +198,29 @@ void main() {
       expect(conv.companionState, 'waiting_user');
     });
 
+    test('interleaved failures of two turns each clear their own waiting state', () async {
+      final rt = HardeningRuntime();
+      final conv = OiConversation(rt);
+      conv.handoffProducedNothing('w1-t1'); // both failures arrive before either waiting_user
+      conv.handoffProducedNothing('w1-t2');
+      await conv.send('a');
+      rt.emit('w1-t1', 'companion.state', {'state': 'waiting_user'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(conv.companionState, 'idle');
+      rt.emit('w1-t1', 'turn.finished', {'status': 'ok'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      await conv.send('b');
+      rt.emit('w1-t2', 'companion.state', {'state': 'waiting_user'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(conv.companionState, 'idle');
+      rt.emit('w1-t2', 'turn.finished', {'status': 'ok'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      await conv.send('c'); // a real approval of another turn is never hidden
+      rt.emit('w1-t3', 'companion.state', {'state': 'waiting_user'});
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(conv.companionState, 'waiting_user');
+    });
+
     test('a waiting state from anything else is left alone', () {
       final conv = OiConversation(HardeningRuntime());
       conv.companionState = 'thinking';

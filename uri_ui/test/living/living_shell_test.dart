@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -91,6 +93,29 @@ void main() {
     expect(narrow.width, 64);
     expect(narrow.center.dx, OrbDock.railWidth(900) / 2);
     expect(narrow.left, greaterThanOrEqualTo(0));
+  });
+
+  testWidgets('at the rail threshold the orb stays centred in the rail while both animate', (tester) async {
+    // Codex review (2026-10-10): the rail, its reserved orb space and the orb must move together.
+    final src = File('lib/living/screens/workspace_mode_view.dart').readAsStringSync();
+    final rail = src.substring(src.indexOf('class _Rail extends'));
+    expect(RegExp(r'AnimatedContainer\(\s*duration: UriMotion\.mode,\s*// Same curve[^)]*?curve: UriMotion\.move', dotAll: true)
+        .hasMatch(rail), isTrue);
+    expect(RegExp(r'AnimatedContainer\(\s*duration: UriMotion\.mode,\s*curve: UriMotion\.move,\s*height: orbSpace')
+        .hasMatch(rail), isTrue);
+    // Lerped with the same curve value t, the orb's left edge stays (railWidth(t) - size(t)) / 2.
+    for (final t in [0.0, 0.25, 0.5, 0.75, 1.0]) {
+      double lerp(double a, double b) => a + (b - a) * t;
+      final w = lerp(OrbDock.railWidth(1099), OrbDock.railWidth(1100));
+      final size = lerp(OrbDock.railOrbSize(1099), OrbDock.railOrbSize(1100));
+      final left = lerp(
+        OrbDock.forMode(UiPresentationMode.workspace, const Size(1099, 800)).rect.left,
+        OrbDock.forMode(UiPresentationMode.workspace, const Size(1100, 800)).rect.left,
+      );
+      expect(left, closeTo((w - size) / 2, 1e-9));
+      final space = lerp(OrbDock.railOrbSpace(1099), OrbDock.railOrbSpace(1100));
+      expect(space, closeTo(OrbDock.railOrbTop + size + 12, 1e-9));
+    }
   });
 
   setUp(() => SharedPreferences.setMockInitialValues({}));

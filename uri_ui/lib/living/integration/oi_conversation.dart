@@ -669,7 +669,7 @@ class OiConversation extends ChangeNotifier {
       case 'companion.state':
         companionState = data['state'] as String? ?? 'idle';
         _waitingFrom = turnId;
-        if (companionState == 'waiting_user' && turnId != null && turnId == _handoffWithoutProposal) {
+        if (companionState == 'waiting_user' && turnId != null && _handoffsWithoutProposal.contains(turnId)) {
           companionState = 'idle'; // the hub already found nothing to decide for this turn (INT-F1)
         }
       case 'turn.routed':
@@ -751,14 +751,18 @@ class OiConversation extends ChangeNotifier {
   /// nothing to decide. Order-independent: the worker's `companion.state`
   /// for that turn may arrive before or after the hub's failure.
   void handoffProducedNothing(String? turnId) {
-    _handoffWithoutProposal = turnId;
+    if (turnId == null) return;
+    _handoffsWithoutProposal.add(turnId);
+    while (_handoffsWithoutProposal.length > 16) {
+      _handoffsWithoutProposal.remove(_handoffsWithoutProposal.first);
+    }
     if (companionState == 'waiting_user' && _waitingFrom == turnId) {
       companionState = 'idle';
       notifyListeners();
     }
   }
 
-  String? _handoffWithoutProposal;
+  final Set<String> _handoffsWithoutProposal = <String>{}; // insertion-ordered, bounded
   String? _waitingFrom;
 
   @override

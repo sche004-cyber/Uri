@@ -1,0 +1,11 @@
+# Gates for orb + INT-F1 Codex r1 repairs (working tree on e109c3d8bc0b989a148c0d8c3fa71ac5e8658b8e)
+2026-10-10T14:10:41Z
+$ pytest tests/ws tests/oi tests/a2ui
+596 passed, 22 skipped, 1 warning in 162.91s (0:02:42)
+$ pytest tests/scheduler (base)
+71 passed in 84.64s (0:01:24)
+$ flutter test (full)
+00:22 +508 ~5: All tests passed!
+$ ws_frozen_check
+ "ok": true
+}

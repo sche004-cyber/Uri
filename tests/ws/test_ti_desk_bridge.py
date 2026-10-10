@@ -480,7 +480,8 @@ def test_a2ui_handoff_reply_does_not_claim_a_proposal_exists(fake, tmp_path):
     b, frames, _ = make(fake, tmp_path, FakeCore(REFUSE))
     turn(b, FESTIVAL)
     reply = "".join(d["text"] for d in frames.data("answer.delta"))
-    assert "prepared a" not in reply and "asked the scheduler" in reply and "Nothing runs until you confirm" in reply
+    assert "prepared a" not in reply and "asked the scheduler" not in reply
+    assert "try to prepare" in reply and "if the scheduler accepts" in reply and "Nothing runs until you confirm" in reply
 
 
 def test_a2ui_dictated_schedule_request_is_content_never_a_handoff(fake, tmp_path):

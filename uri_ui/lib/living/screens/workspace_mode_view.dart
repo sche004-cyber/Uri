@@ -157,6 +157,9 @@ class _Rail extends StatelessWidget {
     ];
     return AnimatedContainer(
       duration: UriMotion.mode,
+      // Same curve as the shell's travelling orb, so at the expand threshold
+      // the rail, its reserved orb space and the orb move together.
+      curve: UriMotion.move,
       width: width,
       decoration: BoxDecoration(
         border: Border(right: BorderSide(color: glass.border)),
@@ -166,7 +169,11 @@ class _Rail extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Orb dock (the shell draws the orb here, centred in the rail).
-          SizedBox(height: orbSpace),
+          AnimatedContainer(
+            duration: UriMotion.mode,
+            curve: UriMotion.move,
+            height: orbSpace,
+          ),
           ListenableBuilder(
             listenable: services.companion,
             builder: (context, _) {
