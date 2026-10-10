@@ -24,6 +24,14 @@ $OutDir = (Resolve-Path $OutDir).Path
 if (-not $Tag) { $Tag = "$Scenario-$Identity-$Size" }
 $json = Join-Path $OutDir "$Tag.json"
 $csv = Join-Path $OutDir "$Tag.samples.csv"
+# P-GOV-1: a performance run asks the GPU lease first (read-only; waits while a benchmark or live test holds the
+# GPU) and marks itself invalid when opening the window would slow a resident Brain.
+Push-Location $root
+try { $advise = (& python -m uri_operational_intelligence.gpu_lease advise --window --wait 1800 | Out-String) } finally { Pop-Location }
+$advise | Set-Content -Encoding utf8 (Join-Path $OutDir "$Tag.gpu_advise.json")
+$verdict = ($advise | ConvertFrom-Json).verdict
+Write-Output "GPU_ADVISE $verdict"
+if ($verdict -ne 'GO') { Write-Output "RUN_INVALID gpu advisory $verdict (see $Tag.gpu_advise.json)" }
 $env:URI_VOICE_PERF = "$Seconds"
 $env:URI_VOICE_SCENARIO = $Scenario
 $env:URI_VOICE_IDENTITY = $Identity

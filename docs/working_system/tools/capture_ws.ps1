@@ -17,7 +17,9 @@ param(
   [int]$Height = 900,
   [switch]$KeepOpen,
   [switch]$Attach,     # drive an already running uri_ui.exe instead of starting one
-  [int]$AttachPid      # required with -Attach: the PID this tool's earlier -KeepOpen run printed
+  [int]$AttachPid,     # required with -Attach: the PID this tool's earlier -KeepOpen run printed
+  [string]$Python = 'python',   # runs the GPU window advisory (P-GOV-1) from this repository
+  [int]$AdviseWait = 1800
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -43,6 +45,13 @@ if ($Attach) {
   $p = Get-Process -Id $AttachPid
   if ((Resolve-Path $p.Path).Path -ne (Resolve-Path $Exe).Path) { throw "ATTACH_EXE_MISMATCH: $($p.Path)" }
 } else {
+# P-GOV-1: ask the GPU lease before opening a test window (read-only; waits while a benchmark or live test holds the
+# GPU). The verdict goes into the evidence; WILL_DEGRADE_BRAIN means a resident Brain will probably slow down.
+$repo = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSCommandPath))
+Push-Location $repo
+try { $advise = (& $Python -m uri_operational_intelligence.gpu_lease advise --window --wait $AdviseWait | Out-String) } finally { Pop-Location }
+$advise | Set-Content -Encoding utf8 (Join-Path $OutDir ("gpu_advise_{0}.json" -f (Get-Date -Format 'HHmmss')))
+Write-Host ("GPU advisory: " + (($advise | ConvertFrom-Json).verdict))
 $env:URI_CLIENT_MANIFEST = $Manifest
 $env:URI_LIVING_SKIP_ONBOARDING = '1'
 $p = Start-Process -FilePath $Exe -WorkingDirectory (Split-Path $Exe) -PassThru }

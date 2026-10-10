@@ -1,0 +1,18 @@
+..\uri-staging3\.venv\Lib\site-packages\starlette\testclient.py:53
+  C:\Users\cheta\Development\uri-staging3\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+590 passed, 22 skipped, 1 warning in 161.48s (0:02:41)
+.......................................................................  [100%]
+71 passed in 80.71s (0:01:20)
+ "tree": ".",
+ "phase1_frozen": {
+  "checked": 121,
+  "drift": []
+ },
+ "protected_changed_vs_baseline": [],
+ "ok": true
+}
+
+[exited with code 0]

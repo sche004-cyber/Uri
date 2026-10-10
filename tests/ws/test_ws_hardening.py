@@ -721,3 +721,100 @@ def test_host_waits_for_another_uri_lease_holder(tmp_path):
         assert p.poll() is None
     finally:
         kill_holder(p)
+
+
+# ---- P-GOV-1 window advisory and UI-first launch -----------------------------------------------------------------
+def advise(tmp_path, census_sample, **kw):
+    return G.advise_window(directory=tmp_path, census_fn=lambda: census_sample, **kw)
+
+
+def lease_files(d):
+    # gpu.lock is byte-locked by a holder (unreadable); its presence is still compared by name.
+    return {p.name: (None if p.name == "gpu.lock" else p.read_bytes()) for p in Path(d).glob("*")} if Path(d).exists() else {}
+
+
+def test_advise_go_without_a_resident_brain(tmp_path):
+    desktop = G.census(raw([(1580, 311, 9), (3144, 84, 23)], 470), card=CARD)
+    r = advise(tmp_path, desktop)
+    assert r["verdict"] == G.GO and r["reason"] == "NO_RESIDENT_BRAIN" and G.ADVISE_EXIT[r["verdict"]] == 0
+
+
+def test_advise_will_degrade_a_resident_brain_with_too_little_margin(tmp_path):
+    # measured: frozen Runtime v1 leaves about 85 MiB free next to the desktop
+    brain = G.census(raw([(1580, 311, 9), (4242, 15900, 1149)], 16283), card=CARD)
+    r = advise(tmp_path, brain)
+    assert r["verdict"] == G.WILL_DEGRADE_BRAIN and G.ADVISE_EXIT[r["verdict"]] == 76
+    assert r["brain"][0]["pid"] == 4242 and r["margin_mib"] < 0
+    assert "Restart Brain" in r["explain"] and "before the Brain starts" in r["explain"]
+    small = advise(tmp_path, brain, expected_mib=50)                  # a window that fits the margin
+    assert small["verdict"] == G.GO and small["reason"] == "MARGIN_OK"
+
+
+def test_advise_waits_for_a_heavy_holder_and_ignores_the_users_brain_host(tmp_path):
+    desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    p = child_holder(tmp_path)                                         # purpose benchmark
+    try:
+        r = advise(tmp_path, desktop)
+        assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "HEAVY_HOLDER" and G.ADVISE_EXIT[r["verdict"]] == 75
+        t0 = time.monotonic()
+        r2 = advise(tmp_path, desktop, wait_s=0.6, poll_s=0.2)          # waits like acquire, then gives up
+        assert r2["verdict"] == G.WAIT_HEAVY and 0.5 <= time.monotonic() - t0 < 5
+        assert p.poll() is None
+    finally:
+        kill_holder(p)
+    with G.acquire("runtime_v1_brain", label="WS Brain host", directory=tmp_path):
+        assert advise(tmp_path, desktop)["verdict"] == G.GO             # the everyday Brain host is not heavy
+    with G.acquire("runtime_v1_brain", label="TI live test", directory=tmp_path):
+        assert advise(tmp_path, desktop)["verdict"] == G.WAIT_HEAVY
+    with G.acquire("regression_chain", directory=tmp_path):
+        assert advise(tmp_path, desktop)["verdict"] == G.WAIT_HEAVY
+
+
+def test_advise_fails_closed_when_unmeasurable(tmp_path):
+    assert advise(tmp_path, {"ok": False, "error": "TimeoutExpired"})["verdict"] == G.WAIT_HEAVY
+    assert advise(tmp_path, G.census({"p": [], "a": []}, card=CARD))["verdict"] == G.WAIT_HEAVY
+    tmp_path.mkdir(exist_ok=True)
+    (tmp_path / "lease.json").write_text("{not json", encoding="utf-8")
+    desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    r = advise(tmp_path, desktop)
+    assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "LEASE_UNREADABLE"
+
+
+def test_advise_never_takes_the_lock_or_writes_lease_files(tmp_path, monkeypatch):
+    desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    with G.acquire("benchmark", label="bench", directory=tmp_path):
+        before = lease_files(tmp_path)
+        monkeypatch.setattr(G, "_try_lock", lambda *a, **k: (_ for _ in ()).throw(AssertionError("lock touched")))
+        monkeypatch.setattr(G, "_atomic_json", lambda *a, **k: (_ for _ in ()).throw(AssertionError("write")))
+        monkeypatch.setattr(G, "_history", lambda *a, **k: (_ for _ in ()).throw(AssertionError("history")))
+        assert advise(tmp_path, desktop)["verdict"] == G.WAIT_HEAVY
+        assert lease_files(tmp_path) == before
+        monkeypatch.undo()
+    # a dead holder's stale record reads as FREE without recovery being written
+    p = child_holder(tmp_path)
+    kill_holder(p)
+    before = lease_files(tmp_path)
+    assert advise(tmp_path, desktop)["verdict"] == G.GO
+    assert lease_files(tmp_path) == before
+
+
+def test_advise_cli_exit_codes(tmp_path):
+    env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
+    cmd = [sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "advise", "--window"]
+    with G.acquire("benchmark", label="bench", directory=tmp_path):
+        busy = subprocess.run(cmd, env=env, capture_output=True, text=True, cwd=REPO)
+    assert busy.returncode == 75 and json.loads(busy.stdout)["verdict"] == G.WAIT_HEAVY
+    assert G.status(tmp_path)["state"] == "FREE"
+
+
+def test_launcher_starts_the_window_before_the_brain_host_and_keeps_the_brain_for_a_reused_window():
+    s = (REPO / "scripts" / "launch_uri_working_system.ps1").read_text(encoding="utf-8")
+    body = s[s.index("$check = Test-Installation $RuntimeRoot"):]
+    ui = body.index("Start-Process -FilePath $UiExe")
+    wait = body.index("MainWindowHandle -eq 0")
+    brain = body.index("ws_brain_host.py")
+    server = body.index("run_uri_integrated_server.py")
+    assert server < ui < wait < brain
+    reuse = body[body.index("URI is already open"):brain]
+    assert "exit 0" not in reuse                                       # a reused window still gets its Brain
+    assert "LEGACY_UI_REFUSED" in s and "[string]$UiRoot" in s

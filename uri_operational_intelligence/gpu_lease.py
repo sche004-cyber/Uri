@@ -18,10 +18,14 @@ This module gives every URI GPU workload one lease, held through an OS byte lock
 Processes that do not use the lease (Ollama, games, other tools) are still seen: `census()` reads the Windows
 "GPU Process Memory" and "GPU Adapter Memory" counters and `assess_fit()` applies the measured budget rule.
 
+App windows are not lease clients (P-GOV-1). `advise_window()` is a read-only hint for a script that is about to open
+a URI window: it never takes the lock and never writes a lease file, and the user's own Companion is never blocked.
+
 CLI (for benchmarks in other sessions):
     python -m uri_operational_intelligence.gpu_lease status
     python -m uri_operational_intelligence.gpu_lease census
     python -m uri_operational_intelligence.gpu_lease run --purpose benchmark --label "my bench" -- <command ...>
+    python -m uri_operational_intelligence.gpu_lease advise --window [--mib 480] [--wait 1800]
 """
 from __future__ import annotations
 
@@ -365,6 +369,87 @@ def explain(fit: dict) -> str:
     return "The Brain fits in GPU memory (margin %.0f MB)." % fit["margin_mib"]
 
 
+# ---- window advisory (P-GOV-1) -----------------------------------------------------------------------------------
+# A Living window takes 126-480 MiB (P_GOV_1_HANDOFF.md, measured); the default asks for the top of that range.
+WINDOW_MIB = 480
+# A process at or above this is a resident Runtime v1 server: every measured Brain load holds 13.4-15.8 GB local
+# (Adaptive Runtime R1/R2, all four planner profiles); Ollama's runner and app windows stay below 2 GB.
+RESIDENT_BRAIN_MIN_MIB = 12000
+GO, WAIT_HEAVY, WILL_DEGRADE_BRAIN = "GO", "WAIT_HEAVY", "WILL_DEGRADE_BRAIN"
+ADVISE_EXIT = {GO: 0, WAIT_HEAVY: 75, WILL_DEGRADE_BRAIN: 76}
+HEAVY_PURPOSES = ("benchmark", "regression_chain")
+HEAVY_LABEL_WORDS = ("live", "bench")
+
+
+def peek(directory=None) -> dict:
+    """Who holds the lease, from lease.json and the holder's process only. Unlike status() it never touches the lock
+    file, so it cannot make a concurrent acquire() fail."""
+    path = Path(directory or lease_dir()) / "lease.json"
+    if not path.exists():
+        return {"state": "FREE", "holder": None}
+    rec = _read_json(path)
+    if not isinstance(rec, dict):
+        return {"state": "UNREADABLE", "holder": None}
+    if rec.get("state") == "held" and holder_alive(rec):
+        return {"state": "HELD", "holder": rec}
+    return {"state": "FREE", "holder": None}
+
+
+def _heavy(holder) -> bool:
+    purpose = (holder.get("purpose") or "").lower()
+    label = (holder.get("label") or "").lower()
+    if purpose in HEAVY_PURPOSES:
+        return True
+    return purpose == "runtime_v1_brain" and any(w in label for w in HEAVY_LABEL_WORDS)
+
+
+def assess_window(lease: dict, c: dict, expected_mib=WINDOW_MIB) -> dict:
+    """GO / WAIT_HEAVY / WILL_DEGRADE_BRAIN for opening one more window now. Unmeasurable state is WAIT_HEAVY (fail
+    closed for test windows; the user is never blocked because the app does not need to ask)."""
+    out = {"expected_mib": expected_mib, "lease": lease.get("state"),
+           "holder": {k: (lease.get("holder") or {}).get(k) for k in ("pid", "purpose", "label")}
+           if lease.get("holder") else None}
+    if lease.get("state") not in ("FREE", "HELD"):
+        return dict(out, verdict=WAIT_HEAVY, reason="LEASE_UNREADABLE",
+                    explain="The GPU lease record cannot be read; a test window should wait.")
+    if lease.get("state") == "HELD" and _heavy(lease["holder"]):
+        h = lease["holder"]
+        return dict(out, verdict=WAIT_HEAVY, reason="HEAVY_HOLDER",
+                    explain="%s (%s) holds the GPU; a test or capture window should wait." % (
+                        h.get("label") or h.get("purpose"), h.get("purpose")))
+    if not c.get("ok") or not c.get("card_mib"):
+        return dict(out, verdict=WAIT_HEAVY, reason=c.get("error") or "CARD_SIZE_UNKNOWN",
+                    explain="GPU memory cannot be measured; a test window should wait.")
+    brains = [p for p in c["processes"] if p["dedicated_mib"] >= RESIDENT_BRAIN_MIN_MIB]
+    free = round(c["card_mib"] - c["adapter_dedicated_mib"], 1)
+    margin = round(free - expected_mib, 1)
+    out.update(free_mib=free, margin_mib=margin,
+               brain=[{"pid": p["pid"], "name": p.get("name"), "dedicated_mib": p["dedicated_mib"]} for p in brains])
+    if not brains:
+        return dict(out, verdict=GO, reason="NO_RESIDENT_BRAIN", explain="No Brain is resident; the window can open.")
+    if margin < 0:
+        b = brains[0]
+        return dict(out, verdict=WILL_DEGRADE_BRAIN, reason="MARGIN_BELOW_WINDOW",
+                    explain="The Brain (%s, pid %d) is resident and only %.0f MB of GPU memory is free; a %d MB window "
+                            "will probably slow it until it restarts. Open windows before the Brain starts, or use "
+                            "Restart Brain afterwards." % (b.get("name") or "llama-server", b["pid"], max(0, free),
+                                                           expected_mib))
+    return dict(out, verdict=GO, reason="MARGIN_OK", explain="The window fits next to the Brain (margin %.0f MB)." % margin)
+
+
+def advise_window(expected_mib=WINDOW_MIB, *, wait_s=0.0, poll_s=5.0, directory=None, census_fn=None) -> dict:
+    """Read-only advisory for a script about to open a URI window. Waits (polling) only while the verdict is
+    WAIT_HEAVY. Takes no lock, writes no file, stops nothing."""
+    deadline = time.monotonic() + max(0.0, wait_s)
+    census_fn = census_fn or census
+    while True:
+        res = assess_window(peek(directory), census_fn(), expected_mib)
+        res["t"] = round(time.time(), 3)
+        if res["verdict"] != WAIT_HEAVY or time.monotonic() >= deadline:
+            return res
+        time.sleep(poll_s)
+
+
 # ---- CLI ---------------------------------------------------------------------------------------------------------
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="python -m uri_operational_intelligence.gpu_lease")
@@ -377,7 +462,15 @@ def main(argv=None):
     r.add_argument("--wait", type=float, default=0.0, help="seconds to wait for the lease")
     r.add_argument("--max-hold", type=float, default=None)
     r.add_argument("command", nargs=argparse.REMAINDER)
+    adv = sub.add_parser("advise")
+    adv.add_argument("--window", action="store_true", required=True)
+    adv.add_argument("--mib", type=int, default=WINDOW_MIB)
+    adv.add_argument("--wait", type=float, default=0.0, help="seconds to wait while the verdict is WAIT_HEAVY")
     a = ap.parse_args(argv)
+    if a.cmd == "advise":
+        res = advise_window(a.mib, wait_s=a.wait)
+        print(json.dumps(res, indent=1))
+        return ADVISE_EXIT[res["verdict"]]
     if a.cmd == "status":
         print(json.dumps(status(), indent=1))
         return 0
