@@ -775,6 +775,15 @@ def test_advise_waits_for_a_heavy_holder_and_ignores_the_users_brain_host(tmp_pa
 def test_advise_fails_closed_when_unmeasurable(tmp_path):
     assert advise(tmp_path, {"ok": False, "error": "TimeoutExpired"})["verdict"] == G.WAIT_HEAVY
     assert advise(tmp_path, G.census({"p": [], "a": []}, card=CARD))["verdict"] == G.WAIT_HEAVY
+    # adapter counter present, per-process counters missing: a Brain could be invisible (Codex r8)
+    partial = G.census({"p": [], "a": [{"i": LUID + "_phys_0", "v": int(16000 * MB)}]}, card=CARD)
+    assert partial["ok"] and partial["processes"] == []
+    r = advise(tmp_path, partial)
+    assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "PROCESS_COUNTERS_MISSING"
+    # some processes visible, but Brain-sized memory unattributed
+    hidden_brain = G.census(raw([(1580, 311, 9)], 15900), card=CARD)
+    r = advise(tmp_path, hidden_brain)
+    assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "UNATTRIBUTED_GPU_MEMORY"
     desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
     # The lock is held but the record names no live holder: an acquire() between taking the lock and publishing
     # lease.json (Codex P-GOV-1 r1 M1), or a corrupt record. Both fail closed.

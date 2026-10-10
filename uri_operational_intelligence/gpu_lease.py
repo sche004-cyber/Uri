@@ -454,6 +454,16 @@ def assess_window(lease: dict, c: dict, expected_mib=WINDOW_MIB, own_pids=()) ->
     if not c.get("ok") or not c.get("card_mib"):
         return dict(out, verdict=WAIT_HEAVY, reason=c.get("error") or "CARD_SIZE_UNKNOWN",
                     explain="GPU memory cannot be measured; a test window should wait.")
+    if not c.get("processes"):
+        # The adapter counter answered but no process did (Codex P-GOV-1 r8): a resident Brain could be invisible.
+        # The desktop compositor always holds memory, so an empty list means the per-process counters are missing.
+        return dict(out, verdict=WAIT_HEAVY, reason="PROCESS_COUNTERS_MISSING",
+                    explain="Per-process GPU memory cannot be read; a test window should wait.")
+    if (c.get("unattributed_mib") or 0) >= RESIDENT_BRAIN_MIN_MIB:
+        # Brain-sized memory that no process accounts for (counters partly missing, or a server still releasing).
+        return dict(out, verdict=WAIT_HEAVY, reason="UNATTRIBUTED_GPU_MEMORY",
+                    explain="%.0f MB of GPU memory is not attributed to any process; a test window should wait."
+                            % c["unattributed_mib"])
     brains = [p for p in c["processes"] if p["dedicated_mib"] >= RESIDENT_BRAIN_MIN_MIB]
     free = round(c["card_mib"] - c["adapter_dedicated_mib"], 1)
     margin = round(free - expected_mib, 1)
