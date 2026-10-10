@@ -724,6 +724,12 @@ def test_host_waits_for_another_uri_lease_holder(tmp_path):
 
 
 # ---- P-GOV-1 window advisory and UI-first launch -----------------------------------------------------------------
+LAUNCHER = REPO / "scripts" / "launch_uri_working_system.ps1"
+# The launcher lives in the source tree, not in a materialized runtime (oi_materialize_test_runtime.py copies the OI
+# paths only), so the launcher tests skip there.
+needs_launcher = pytest.mark.skipif(not LAUNCHER.exists(), reason="launcher not in this tree (materialized runtime)")
+
+
 def advise(tmp_path, census_sample, **kw):
     # In-process leases below stand for OTHER sessions' leases, so the caller's own pids are not exempted.
     kw.setdefault("own_pids", ())
@@ -875,6 +881,7 @@ def test_advise_does_not_wait_for_the_callers_own_lease(tmp_path):
     assert os.getpid() in G._ancestors()
 
 
+@needs_launcher
 def test_launcher_starts_the_window_before_the_brain_host_and_keeps_the_brain_for_a_reused_window():
     s = (REPO / "scripts" / "launch_uri_working_system.ps1").read_text(encoding="utf-8")
     body = s[s.index("$check = Test-Installation $RuntimeRoot"):]
@@ -897,6 +904,7 @@ def test_launcher_starts_the_window_before_the_brain_host_and_keeps_the_brain_fo
     assert brain_step.index("elseif ($uiPending)") < brain_step.index("ws_brain_host.py")
 
 
+@needs_launcher
 def test_launcher_selftest_refuses_an_arbitrary_ui_root():
     """Behavioural: the launcher's own self-test (no process started) refuses a UI root that is not the runtime's
     materialization candidate. Runs only where the default working-system runtime exists."""
@@ -912,6 +920,7 @@ def test_launcher_selftest_refuses_an_arbitrary_ui_root():
     assert out["legacy_port_8000_contacted"] is False
 
 
+@needs_launcher
 def test_launcher_selftest_applies_the_candidate_rule_to_the_default_ui_root():
     root = Path(r"C:\Users\cheta\Development\uri-ws-hard")
     ui = Path(r"C:\Users\cheta\Development\uri-ws-hardening")
@@ -927,6 +936,7 @@ def test_launcher_selftest_applies_the_candidate_rule_to_the_default_ui_root():
     assert ("UI_ROOT_NOT_RUNTIME_CANDIDATE" in out["real_installation"]["problems"]) == mismatch
 
 
+@needs_launcher
 def test_wait_ui_window_behaviour_on_real_processes():
     """The launcher's own Wait-UiWindow function, extracted from the script and run against real processes: a
     process without a window stays PENDING (the Brain is held back, for a new or a reused UI alike), an ending process
