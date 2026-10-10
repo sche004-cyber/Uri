@@ -2,8 +2,9 @@
 
 Date: 2026-10-10. From: the final integration session. Status: **HANDOFF, not implemented on the canonical branch.**
 
-`P_GOV_1_HANDOFF.md` item 3 names `rnd/voice/run_perf.ps1`, `rnd/companions/settings/run_companion_perf.ps1` and
-`rnd/companions/settings/brain_contention.py`, and says the companion-voice session owns them. This session
+`P_GOV_1_HANDOFF.md` item 3 names `rnd/voice/run_perf.ps1` and `rnd/companions/settings/brain_contention.py` and says
+the companion-voice session owns them. `rnd/companions/settings/run_companion_perf.ps1` is not named there; it is the
+runner `brain_contention.py` starts, in the same companion-voice tree, so it is handed over with it. This session
 implemented the advisory and the canonical caller (`docs/working_system/tools/capture_ws.ps1`). It does not change the
 companion-voice runners. A first attempt to change them (rounds 1-10 of the Codex P-GOV-1 review) was reverted, and
 the findings from those rounds are passed on here so the owner can adopt the advisory in one go.

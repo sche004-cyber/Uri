@@ -1,0 +1,26 @@
+# Focused gates with provenance
+HEAD before this evidence commit: 0a57c2b6f65c658368c3fcbbde04539f0005d0f0
+Date: 2026-10-10T13:23:23Z
+
+$ C:\Users\cheta\Development\uri-staging3\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider tests/ws tests/oi tests/a2ui
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+595 passed, 22 skipped, 1 warning in 158.58s (0:02:38)
+exit=0
+
+$ python -m pytest -q -p no:cacheprovider tests/scheduler   (base interpreter, SCH-ENV-1)
+.......................................................................  [100%]
+71 passed in 79.77s (0:01:19)
+exit=0
+
+$ ...python.exe scripts/ws_frozen_check.py .
+{
+ "tree": ".",
+ "phase1_frozen": {
+  "checked": 121,
+  "drift": []
+ },
+ "protected_changed_vs_baseline": [],
+ "ok": true
+}
+exit=0
