@@ -1,0 +1,17 @@
+Sat Oct 10 17:43:35 UTC 2026
+885483b145ecd4b7d1e71baa8b4511196468b342
+
+01:33 +510 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: confirm sends the bound proposal hash; a refusal is shown, not hidden
+01:33 +511 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: a definition with a forbidden part is refused whole and the owner is told
+01:33 +512 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: an unregistered action is never sent
+01:33 +513 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: a proposal reply that renders nothing reviewable is a failed handoff (INT-F1)
+01:33 +514 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: without a scheduler a handoff gives an honest notice
+01:33 +515 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: companion slot shows companion surfaces; workspace surfaces get one chip that opens the Workspace
+01:33 +516 ~5 -1: /home/user/Uri/uri_ui/test/m22_8_basic_provider_tier_test.dart: basic provider view never renders token or context window
+01:34 +517 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: calendar review: correct-date sends record, date, note and the literal correction
+01:34 +518 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: A2UI audit r1 F4: template inputs write list items in place; /bound stays read-only
+01:34 +519 ~5 -1: /home/user/Uri/uri_ui/test/a2ui/a2ui_hub_test.dart: A2UI audit r1 F1/F5: bound patches and deep nesting are refused by the renderer
+01:34 +520 ~5 -1: Some tests failed.
+
+Failing tests:
+  /home/user/Uri/uri_ui/test/reference_render_test.dart: render desktop dashboard

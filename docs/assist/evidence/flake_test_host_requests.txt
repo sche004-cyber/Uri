@@ -1,0 +1,9 @@
+tests/ws/test_ws_hardening.py::test_host_requests_are_explicit_fresh_and_used_once
+Appeared as the single "new" failure in the after-change gate run (74b24eb, Linux container).
+Isolation runs on the UNTOUCHED baseline ffdf534 (git worktree, same venv):
+  first batch: 2 failed of 3; second batch: 0 of 6; third batch: 1 failed of 25.
+Failure (baseline): AssertionError: assert (None == 'restart') at tests/ws/test_ws_hardening.py:637 (Host.take_request).
+The same assertion text is present in the original baseline run's error histogram.
+On 74b24eb in isolation: 3 of 3 passed.
+Conclusion: pre-existing, timing-dependent; not caused by W1/A0 (no file under scripts/ws_brain_host.py or
+uri_operational_intelligence/brain_health.py was changed). Not skipped, not modified.

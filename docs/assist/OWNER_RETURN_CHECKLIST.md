@@ -1,0 +1,20 @@
+# Owner-return checklist — Web Intelligence (W1) and URI Assist (A0)
+
+Nothing below was simulated or marked passed. Consent to screen capture, browser permissions, account logins and
+production changes was not simulated. Items are ordered by what unblocks the most.
+
+| # | What the owner does | Why it needs the owner | Class | Until done |
+|---|---|---|---|---|
+| 1 | Run the Codex audit of `ffdf534..<branch tip>` using `CODEX_AUDIT_PACKAGE.md`; return the verdict | Codex is the auditor of record and was not available in the cloud session | **ACCEPTANCE BLOCKER** (W1, A0) | W1/A0 stay TESTED, not accepted; nothing is integrated on canonical |
+| 2 | Decide the architecture point: Assist's permission authority lives in a new non-frozen module (`uri_assist.access`) inside the worker, because `uri_core/` is frozen | The brief asks for Core to be authoritative; the frozen boundary prevents that without reopening Core | **DECISION** (scope/architecture) | as built; consequential actions remain Core-only |
+| 3 | Decide whether to repair SSRF-1 in the frozen `uri_core/tools/fetch_url.py` (route it through `uri_web.safe_fetch`), or revoke `fetch_url` grants for non-admin users meanwhile | Frozen-file change needs owner authorisation (M1 D-2) | **SECURITY DECISION** (pre-existing defect, not introduced here) | the Brain's existing `fetch_url` tool can still reach loopback, e.g. the key-less Runtime v1 endpoint |
+| 4 | Provide or confirm search keys: `TAVILY_API_KEY` (existing), optionally `BRAVE_SEARCH_API_KEY`, or a self-hosted `URI_SEARXNG_URL` | Credentials are the owner's | ACTIVATION BLOCKER (search) | Research works on URLs you type; search reports UNAVAILABLE |
+| 5 | On the PC: materialize + provision the integrated runtime from the branch tip, start the Living app, open Assist; confirm the view shows OFF and the adapters' UNAVAILABLE reasons; run one Research with a typed URL | Worker runs only on Windows (DPAPI, named mutex); the hook lines are compiled and unit-guarded but not run live | ACTIVATION BLOCKER (A0 UI live) | worker hook NOT VERIFIED live |
+| 6 | With the Companion open, measure GPU memory before/after opening the Assist view (`gpu_lease advise --window`, residency sample) | Needs the GPU | NON-BLOCKING for code; input to activation | VRAM effect stated by design only |
+| 7 | Qualify on-demand vision through the application path: enable `vision_qualified` in a test profile, ask one question about a synthetic settings screenshot (as `prove_integration.py` does), record latency and decode speed before/after | Needs Runtime v1 and the GPU | ACTIVATION BLOCKER (screenshot questions) | screenshot option refuses with VISION_NOT_QUALIFIED |
+| 8 | Approve building the browser channel (native-messaging host or loopback pipe with a per-install token) for the MV3 extension, then load the unpacked extension and try it on a test form | Installs software and a browser permission on the owner's machine | ACTIVATION BLOCKER (browser tab scope) | tab scope UNAVAILABLE |
+| 9 | Approve building the Windows UI Automation adapter (pywinauto/comtypes) and test it against Notepad and a login dialog | Windows-only; new dependency | ACTIVATION BLOCKER (window scope) | window scope UNAVAILABLE |
+| 10 | Approve a screen-capture adapter (Windows.Graphics.Capture), only after 8 or 9 can locate private fields | OS permission prompt and privacy decision | ACTIVATION BLOCKER (screen scope) | screen scope UNAVAILABLE |
+| 11 | Review `A1_DESIGN.md` §4 (Insert grant) and §5 (workflow storage) | Write-capable controls need owner approval before they are connected | A1 ENTRY GATE | A1 not started |
+| 12 | Click through the prototype (`prototype/uri_assist_prototype.html`, also published privately) and say what to change | Preference | NON-BLOCKING | current layout kept |
+| 13 | Accept or reject the carried limitations in `W1_QUALIFICATION.md` §4 and `A0_QUALIFICATION.md` §4 | Owner judgement | NON-BLOCKING | as documented |
