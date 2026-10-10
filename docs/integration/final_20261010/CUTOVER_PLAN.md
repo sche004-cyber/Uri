@@ -60,11 +60,14 @@ function Invoke-Step([string]$What, [scriptblock]$Cmd) {
 if (Test-Path $Src) { throw "$Src exists" }; if (Test-Path $Rt) { throw "$Rt exists" }
 
 # 2.2 runtime (GREEN)
-Invoke-Step 'clone'    { git clone --no-checkout https://github.com/sche004-cyber/Uri.git $Src }
+# core.autocrlf=false BEFORE any checkout (this machine's system Git has autocrlf=true; CRLF files would make the
+# tree look modified and the launcher's candidate-tree check would refuse it).
+Invoke-Step 'clone'    { git -c core.autocrlf=false clone --no-checkout https://github.com/sche004-cyber/Uri.git $Src }
+Invoke-Step 'autocrlf' { git -C $Src config core.autocrlf false }
 Invoke-Step 'fetch'    { git -C $Src fetch origin integration/git-sync-20261008 }
 Invoke-Step 'ancestry' { git -C $Src merge-base --is-ancestor $Commit FETCH_HEAD }
 Invoke-Step 'checkout' { git -C $Src checkout --detach $Commit }
-Invoke-Step 'autocrlf' { git -C $Src config core.autocrlf false }
+if ((git -C $Src status --porcelain --untracked-files=no | Out-String).Trim()) { throw 'checkout shows tracked changes; stop' }
 Set-Location $Src
 Invoke-Step 'materialize' { python scripts\oi_materialize_test_runtime.py $Rt --venv $Venv }
 
