@@ -52,7 +52,7 @@ flowchart LR
   SF -- SourceRecord + body --> EX[extract / feeds]
   EX -- text (UNTRUSTED) + flags --> EV[evaluate\ndedup, near-dup, conflicts]
   EV --> SY[synthesize\nextractive or Brain over data blocks]
-  SY --> VF[verify citations\nnumbers, support, no instruction-like/link sentences]
+  SY --> VF[check citations lexically\none supporting sentence, numbers, polarity,\nno instruction-like/link sentences]
   VF --> SU[A2UI surface\nno URLs, no actions]
   SU -- research.finished --> UI
 ```
@@ -61,8 +61,11 @@ Rules on this path:
 - Pages fetched come only from the user's URLs and provider hits; links inside pages are never followed; feed items are
   reported, not fetched.
 - Instruction-like sentences are removed from the evidence before synthesis; flagged sources are labelled.
-- The Brain sees sources only inside delimited blocks the source cannot close; its output is verified; on failure the
-  extractive answer is used and the fallback is recorded.
+- The Brain sees sources only inside delimited blocks the source cannot close; every sentence of its output must be
+  supported by ONE sentence of a cited source with the same numbers and polarity (a lexical check, not proof of
+  meaning); otherwise it is dropped, and if nothing survives the extractive answer is used and the fallback recorded.
+- Assist answers run off the command thread and are cancelled by Stop, Pause, a new grant or a user turn; an answer
+  whose grant changed during generation is discarded.
 - Research never captures the screen and never uses an Assist grant.
 
 ## 4. Threats addressed (from the M1 threat list, re-scoped)
