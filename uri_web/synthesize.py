@@ -1,4 +1,8 @@
-"""Synthesize a citation-backed answer and verify every citation.
+"""Synthesize a citation-backed answer and check every citation LEXICALLY.
+
+The check is lexical, not semantic: it proves that a cited source contains a sentence that states the claim's
+words and numbers with the same polarity. It cannot prove that a paraphrase means the same thing; the UI therefore
+says "citations checked against the sources", never "verified true".
 
 Two synthesizers, one verifier:
   * `extractive(...)`: deterministic, CPU only. Picks query-relevant sentences from the sources; each sentence cites
@@ -19,6 +23,14 @@ from . import untrusted as U
 from .evaluate import content_words, numbers, sentences
 
 MIN_SUPPORT = 0.6
+# Polarity: a claim and its best supporting sentence must agree on negation (interim review F3).
+_NEG = re.compile(r"(?i)\b(not|no|never|none|neither|nor|without|cannot|isn't|wasn't|aren't|weren't|doesn't|didn't|"
+                  r"don't|won't|hasn't|haven't|hadn't|shouldn't|couldn't|wouldn't)\b|n't\b")
+_ANTONYMS = [("approved", "rejected"), ("approved", "denied"), ("safe", "unsafe"), ("effective", "ineffective"),
+             ("increase", "decrease"), ("increased", "decreased"), ("rise", "fall"), ("rose", "fell"),
+             ("legal", "illegal"), ("allowed", "banned"), ("allowed", "prohibited"), ("open", "closed"),
+             ("higher", "lower"), ("more", "less"), ("gain", "loss"), ("passed", "failed"), ("true", "false"),
+             ("accepted", "rejected"), ("valid", "invalid"), ("confirmed", "denied")]
 MAX_ANSWER_SENTENCES = 8
 NO_ANSWER = "NO_ANSWER"
 _CITE = re.compile(r"\[(\d{1,3})\]")
@@ -58,8 +70,7 @@ def verify(answer: str, source_texts: list) -> Verified:
         v.no_answer = True
         return v
     n = len(source_texts)
-    words_of = [content_words(t) for t in source_texts]
-    nums_of = [numbers(t) for t in source_texts]
+    sents_of = [[(s, content_words(s), numbers(s)) for s in sentences(t, limit=400)] for t in source_texts]
     for sent in _split_answer(answer)[: MAX_ANSWER_SENTENCES * 2]:
         cites = [int(c) for c in _CITE.findall(sent)]
         body = _CITE.sub("", sent).strip()
@@ -77,19 +88,36 @@ def verify(answer: str, source_texts: list) -> Verified:
             continue
         cited = sorted(set(cites))
         claim_nums = numbers(body)
-        avail_nums = set().union(*(nums_of[c - 1] for c in cited))
-        if not claim_nums <= avail_nums:
-            v.dropped.append({"text": sent, "reason": "NUMBER_NOT_IN_CITED_SOURCE"})
-            continue
         cw = content_words(body)
-        avail = set().union(*(words_of[c - 1] for c in cited))
-        support = len(cw & avail) / len(cw) if cw else 0.0
-        if support < MIN_SUPPORT:
+        # The claim must be supported by ONE sentence of a cited source (not by words scattered over the page).
+        best, best_s = None, 0.0
+        for c in cited:
+            for s, w, nums in sents_of[c - 1]:
+                sc = len(cw & w) / len(cw) if cw else 0.0
+                if sc > best_s:
+                    best, best_s = (s, w, nums), sc
+        if best is None or not claim_nums <= best[2]:
+            v.dropped.append({"text": sent, "reason": "NUMBER_NOT_IN_CITED_SOURCE" if claim_nums
+                              else "INSUFFICIENT_SUPPORT"})
+            continue
+        if best_s < MIN_SUPPORT:
             v.dropped.append({"text": sent, "reason": "INSUFFICIENT_SUPPORT"})
+            continue
+        if bool(_NEG.search(body)) != bool(_NEG.search(best[0])) or _antonym_flip(body, best[0]):
+            v.dropped.append({"text": sent, "reason": "POLARITY_MISMATCH"})
             continue
         if len(v.claims) < MAX_ANSWER_SENTENCES:
             v.claims.append(Claim(body, cited))
     return v
+
+
+def _antonym_flip(claim: str, source: str) -> bool:
+    c = set(re.findall(r"[a-z]+", claim.lower()))
+    s = set(re.findall(r"[a-z]+", source.lower()))
+    for a, b in _ANTONYMS:
+        if (a in c and b in s and a not in s) or (b in c and a in s and b not in s):
+            return True
+    return False
 
 
 def extractive(query: str, source_texts: list, *, max_sentences: int = 6, per_source: int = 2) -> Verified:

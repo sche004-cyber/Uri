@@ -19,6 +19,7 @@ MAX_URL_LENGTH = 2048
 _NAT64 = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
 _SIX_TO_FOUR = ipaddress.ip_network("2002::/16")
 _TEREDO = ipaddress.ip_network("2001::/32")
+_LDH = __import__("re").compile(r"^[a-z0-9.-]+$")
 # Explicit refusals on top of `is_global` (defence in depth; `is_global` semantics differ across Python versions).
 _V4_REFUSED = tuple(ipaddress.ip_network(n) for n in (
     "0.0.0.0/8", "10.0.0.0/8", "100.64.0.0/10", "127.0.0.0/8", "169.254.0.0/16", "172.16.0.0/12", "192.0.0.0/24",
@@ -122,6 +123,10 @@ def check_url(url: str, *, allowed_ports=ALLOWED_PORTS) -> Target:
             host = host.encode("idna").decode("ascii").lower()
         except UnicodeError:
             raise EgressRefused("HOST_INVALID") from None
+        # After IDNA only letters, digits, hyphens and dots may remain (no '%', '_' or anything a proxy might
+        # decode into a different host), labels 1-63 characters (interim review F6).
+        if not _LDH.match(host) or any(not 0 < len(lab) <= 63 for lab in host.split(".")):
+            raise EgressRefused("HOST_INVALID", "ldh")
         if host in ("localhost",) or host.endswith((".localhost", ".local", ".internal", ".lan", ".home.arpa")):
             raise EgressRefused("HOST_LOCAL_NAME")
     return Target(scheme=scheme, host=host.lower(), port=port, is_literal=literal)
