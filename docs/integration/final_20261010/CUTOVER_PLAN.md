@@ -49,10 +49,12 @@ The plan reuses the accepted runbook `docs/governance/consolidation/URI_RUNTIME_
 $Commit = '<accepted canonical commit>'
 $Src    = 'C:\URI\src-<commit>'        # clean checkout of $Commit: the materializer's candidate tree AND the UI root
 $Rt     = 'C:\URI\runtime-<commit>'    # must not exist yet
-$Venv   = 'C:\Users\cheta\Development\uri-ws-final\.venv'   # the venv the staging runtimes copied
+$Venv   = 'C:\Users\cheta\Development\uri-ws-final\.venv'   # the venv the staging runtimes copied (a clean pip install is not separately qualified: runbook item R-3)
 
 # 2.2 runtime (GREEN)
 git clone --no-checkout https://github.com/sche004-cyber/Uri.git $Src
+git -C $Src fetch origin integration/git-sync-20261008
+git -C $Src merge-base --is-ancestor $Commit FETCH_HEAD; if ($LASTEXITCODE -ne 0) { throw 'commit not on the canonical branch' }
 git -C $Src checkout --detach $Commit
 git -C $Src config core.autocrlf false
 Set-Location $Src
