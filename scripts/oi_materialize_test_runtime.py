@@ -37,8 +37,10 @@ OI_PATHS = ["uri_operational_intelligence", "tests/oi", "model_lab/integration",
             "scripts/scheduler_task_ctl.ps1",
             # URI A2UI (docs/a2ui/A2UI_ARCHITECTURE.md): new paths only. uri_scheduler/a2ui_host.py and
             # uri_operational_intelligence/schedule_intent.py arrive with their packages (listed above).
-            "uri_a2ui", "tests/a2ui", "scripts/a2ui_live_check.py"]
-TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler", "tests/a2ui")
+            "uri_a2ui", "tests/a2ui", "scripts/a2ui_live_check.py",
+            # Web Intelligence W1 and URI Assist A0 (docs/assist/00_PLAN_AND_ACCEPTANCE_CRITERIA.md): new paths only.
+            "uri_web", "tests/web", "uri_assist", "tests/assist"]
+TEST_PATHS = ("tests/oi", "tests/ws", "tests/scheduler", "tests/a2ui", "tests/web", "tests/assist")
 # Accepted files the owner authorized to extend (WS-D3: exact-path scope guards). They replace the overlay copy; the
 # receipt records both digests so the replacement is auditable.
 REPLACED_PATHS = ("tests/phase2a/test_frozen_core.py", "scripts/phase2close_chain.py")

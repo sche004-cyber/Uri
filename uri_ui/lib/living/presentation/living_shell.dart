@@ -12,6 +12,7 @@ import '../living_scope.dart';
 import '../voice/voice_stage.dart';
 import '../widgets/frame_stats_overlay.dart';
 import '../widgets/glass_panel.dart';
+import '../assist/assist_mode_view.dart';
 import '../screens/companion_mode_view.dart';
 import '../screens/dashboard_mode_view.dart';
 import '../screens/workspace_mode_view.dart';
@@ -46,6 +47,11 @@ class OrbDock {
   static double railOrbSpace(double shellWidth) =>
       railOrbTop + railOrbSize(shellWidth) + 12;
 
+  /// Assist geometry, shared with the Assist header so they always agree.
+  static const double assistOrbSize = 84;
+  static const double assistOrbLeft = 20;
+  static const double assistOrbTop = 16;
+
   static OrbDock forMode(UiPresentationMode mode, Size shell) {
     switch (mode) {
       case UiPresentationMode.companion:
@@ -77,6 +83,12 @@ class OrbDock {
           rect: Rect.fromLTWH(shell.width / 2 - size / 2, 18, size, size),
           lightAt: const Alignment(0, -1),
         );
+      case UiPresentationMode.assist:
+        // Top-left, beside the Assist header (AssistModeView.orbSpace).
+        return OrbDock(
+          rect: Rect.fromLTWH(assistOrbLeft, assistOrbTop, assistOrbSize, assistOrbSize),
+          lightAt: const Alignment(-0.8, -1),
+        );
     }
   }
 }
@@ -90,6 +102,8 @@ class OrbDock {
 ///   either, no stage at all rather than an overlap.
 /// * Workspace: a slim pill centred in the header row.
 /// * Dashboard: a slim pill beside the companion.
+/// * Assist: a slim pill centred at the bottom (the header holds the orb and
+///   the scope controls; the view keeps [assistBottomReserve] free).
 @immutable
 class VoiceDock {
   const VoiceDock({
@@ -112,6 +126,9 @@ class VoiceDock {
 
   /// Height of the status line and its detail under the companion.
   static const double companionStatus = 66;
+
+  /// Space the Assist view leaves free at its bottom for the voice pill.
+  static const double assistBottomReserve = VoiceStage.compactHeight + 20;
 
   static VoiceDock forMode(UiPresentationMode mode, Size shell, Rect orb) {
     switch (mode) {
@@ -171,6 +188,17 @@ class VoiceDock {
             left,
             orb.center.dy - VoiceStage.compactHeight / 2,
             room.clamp(200.0, 420.0),
+            VoiceStage.compactHeight,
+          ),
+          compact: true,
+        );
+      case UiPresentationMode.assist:
+        final w = (shell.width - 32).clamp(200.0, 440.0);
+        return VoiceDock(
+          rect: Rect.fromLTWH(
+            (shell.width - w) / 2,
+            shell.height - VoiceStage.compactHeight - 10,
+            w,
             VoiceStage.compactHeight,
           ),
           compact: true,
@@ -243,7 +271,7 @@ class _LivingShellState extends State<LivingShell> {
             final voiceDock = VoiceDock.forMode(mode, shellSize, dock.rect);
             final prefs = services.companionPrefs;
             return CallbackShortcuts(
-              // Keyboard: Esc -> Companion, Ctrl+1/2/3 -> the three forms.
+              // Keyboard: Esc -> Companion, Ctrl+1/2/3/4 -> the four forms.
               bindings: {
                 const SingleActivator(LogicalKeyboardKey.escape): () =>
                     services.presentation.setMode(UiPresentationMode.companion),
@@ -262,6 +290,11 @@ class _LivingShellState extends State<LivingShell> {
                   control: true,
                 ): () =>
                     services.presentation.setMode(UiPresentationMode.dashboard),
+                const SingleActivator(
+                  LogicalKeyboardKey.digit4,
+                  control: true,
+                ): () =>
+                    services.presentation.setMode(UiPresentationMode.assist),
               },
               child: Focus(
                 autofocus: true,
@@ -310,6 +343,9 @@ class _LivingShellState extends State<LivingShell> {
                                 attachmentOpener: widget.attachmentOpener,
                               ),
                               UiPresentationMode.dashboard => DashboardModeView(
+                                orbRect: dock.rect,
+                              ),
+                              UiPresentationMode.assist => AssistModeView(
                                 orbRect: dock.rect,
                               ),
                             },

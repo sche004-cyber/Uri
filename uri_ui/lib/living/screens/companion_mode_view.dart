@@ -5,6 +5,7 @@ import '../../theme/glass_theme.dart';
 import '../../theme/uri_theme.dart';
 import '../a2ui/a2ui_dock.dart';
 import '../companion/companion_state.dart';
+import '../assist/assist_scope_line.dart';
 import '../living_scope.dart';
 import '../presentation/presentation_controller.dart';
 import '../widgets/living_composer.dart';
@@ -149,8 +150,16 @@ class CompanionModeView extends StatelessWidget {
                         UiPresentationMode.dashboard,
                       ),
                     ),
+                    _ModeChip(
+                      icon: Icons.visibility_outlined,
+                      label: 'Assist',
+                      onTap: () => services.presentation.setMode(
+                        UiPresentationMode.assist,
+                      ),
+                    ),
                   ],
                 ),
+                if (services.assist != null) AssistScopeLine(assist: services.assist!),
                 SizedBox(height: narrow ? 14 : 22),
                 Text(
                   'Click the orb to ask; double-click opens the workspace',
