@@ -20,8 +20,10 @@ The plan reuses the accepted runbook `docs/governance/consolidation/URI_RUNTIME_
 
 1. The canonical commit to install is accepted by Codex and fast-forwarded on `uri-repo`
    `integration/git-sync-20261008`, with its integration receipt.
-2. A fresh staging installation of exactly that commit passed the staging qualification (`STAGING_QUALIFICATION.md`
-   in this folder), including restart and recovery.
+2. A fresh staging installation of the same production tree passed the staging qualification
+   (`STAGING_QUALIFICATION.md`). Staging ran at `0215887`; a later canonical commit qualifies only if
+   `git diff --stat 0215887 <commit> -- . ":!docs"` is empty (documentation and evidence only), otherwise staging is
+   repeated.
 3. The owner-only checks in `OWNER_RETURN_CHECKLIST.md` that gate activation are done, or the owner explicitly accepts
    cutover with them deferred.
 4. Host stability: incident INC-1 (unexpected resets 2026-10-09/10) is understood or accepted by the owner.
@@ -32,7 +34,7 @@ The plan reuses the accepted runbook `docs/governance/consolidation/URI_RUNTIME_
 | # | Step | Colour | Command / action | Verification |
 |---|---|---|---|---|
 | 2.1 | Back up legacy state | GREEN (read-only copy) | copy `uri-agent` state directories, `\URIServer` task XML (`Export-ScheduledTask`), both `URI.lnk`, to `D:\uri-backups\cutover-<date>\`; record SHA-256 of every file | hash manifest written; restore dry-run into a scratch folder |
-| 2.2 | Build the production runtime | GREEN | runbook §1 into a NEW root (e.g. `C:\URI\runtime-<commit>`), then `oi_materialize_test_runtime.py` overlay of the accepted commit, `.venv` from Python 3.13.15 | `git rev-parse HEAD` = e8e3b65; receipt names the accepted commit; `ws_frozen_check.py` ok |
+| 2.2 | Build the runtime | GREEN | the only qualified procedure, the one staged: a clean checkout of the accepted commit, then `python scripts\oi_materialize_test_runtime.py <NEW, non-existent root> --venv <qualified venv>` (it refuses an existing destination). The tool labels its output a development test runtime; using that output for daily use is part of the owner's cutover decision (CUT-1). No separate production build tool exists | `git rev-parse HEAD` = e8e3b65; receipt `candidate_head` = the accepted commit; launcher `-SelfTest` rc 0 |
 | 2.3 | Provision fresh state | GREEN | `ws_provision.py --name production --port <18300-18339>` in the new root | port ≠ 8000; no legacy data imported; launcher `-SelfTest` exit 0 |
 | 2.4 | Build the UI | GREEN | `flutter build windows` in a clean checkout of the accepted commit | executable hash recorded |
 | 2.5 | Contain the legacy instance | **RED** | `scripts\uri_containment.ps1 -Apply` (disables `\URIServer`, moves shortcuts); record the printed backup folder | task disabled; shortcuts moved |
