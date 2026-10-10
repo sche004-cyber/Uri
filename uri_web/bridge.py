@@ -73,7 +73,8 @@ def _str_list(v, limit, item_max=2048):
 class WebResearch:
     def __init__(self, *, write_event: Callable[[dict], None], fetcher_factory: Callable[[], SafeFetcher] = SafeFetcher,
                  providers_factory: Callable[[], list] = S.default_providers,
-                 brain_complete: Optional[Callable] = None, brain_idle: Optional[Callable[[], bool]] = None):
+                 brain_complete: Optional[Callable] = None, brain_idle: Optional[Callable[[], bool]] = None,
+                 defer_start: bool = False):
         """brain_complete(messages) -> (status, text): the resident Brain, or None. brain_idle() -> bool: True when
         no user turn holds the Brain; research never takes the single slot from the user."""
         self.emitter = Emitter(write_event)
@@ -83,6 +84,10 @@ class WebResearch:
         self._job = None             # (job, thread)
         self._results = {}           # job_id -> result dict (bounded)
         self._progress = {}
+        # defer_start: a started job waits for release(), which the worker calls right AFTER it wrote the reply
+        # carrying the job id, so no event of a job can precede that reply (interim review F1; same rule as OI).
+        self._defer = defer_start
+        self._go = None
 
     @property
     def busy(self):
@@ -140,9 +145,21 @@ class WebResearch:
             self.emitter.emit(job.job_id, "research.finished", status=result["status"],
                               sources=len(result["sources"]), answer_sentences=len(result["answer"]),
                               a2ui=messages, surface_digest=digest)
-        t = threading.Thread(target=run, name="web-research-" + job.job_id[:8], daemon=True)
+        go = threading.Event()
+        if not self._defer:
+            go.set()
+
+        def gated():
+            go.wait()
+            run()
+        t = threading.Thread(target=gated, name="web-research-" + job.job_id[:8], daemon=True)
         with self._lock:
             self._job = (job, t)
+            self._go = go
+            for old in [k for k in self._progress if k != job.job_id and k not in self._results][:-KEEP_RESULTS or None]:
+                self._progress.pop(old, None)
+            while len(self._progress) > 2 * KEEP_RESULTS:
+                self._progress.pop(next(iter(self._progress)))
         t.start()
         return {"job_id": job.job_id}
 
@@ -170,6 +187,12 @@ class WebResearch:
         job[0].cancel()
         return {"state": "CANCELLING"}
 
+    def release(self):
+        """Let a deferred job run (the worker calls this after writing the reply)."""
+        go = self._go
+        if go is not None:
+            go.set()
+
     def wait(self, timeout=None):
         job = self._job
         if job is not None:
@@ -179,4 +202,5 @@ class WebResearch:
         job = self._job
         if job is not None and job[1].is_alive():
             job[0].cancel()
+            self.release()
             job[1].join(5.0)

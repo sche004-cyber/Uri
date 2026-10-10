@@ -210,6 +210,17 @@ class AccessController:
                 self._refuse("OBSERVATION_STALE")
             return g
 
+    def check_unchanged(self, stamp: Stamp, permission: Permission) -> Grant:
+        """The grant that allowed `stamp` is still the active, unpaused one for the same target (no age limit).
+        Used after a Brain answer: Stop/Pause/new grant during generation discards the answer."""
+        with self._lock:
+            g = self.require(permission)
+            if stamp.grant_id != g.grant_id or stamp.generation != self.generation:
+                self._refuse("OBSERVATION_STALE")
+            if stamp.target_id != g.scope.target_id:
+                self._refuse("TARGET_CHANGED")
+            return g
+
     def snapshot(self) -> dict:
         with self._lock:
             self._expire_if_due()

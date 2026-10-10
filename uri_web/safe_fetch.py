@@ -96,7 +96,7 @@ class SafeFetcher:
                  egress: str = "direct", proxy: Optional[str] = None, connect_timeout: float = 5.0,
                  read_timeout: float = 10.0, total_timeout: float = 20.0, max_bytes: int = 3_000_000,
                  max_redirects: int = 5, honour_robots: bool = True, allowed_ports=NP.ALLOWED_PORTS,
-                 clock: Callable = time.monotonic):
+                 clock: Callable = time.monotonic, proxy_unresolved_ok=()):
         if egress not in ("direct", "proxy"):
             raise ValueError("EGRESS_MODE")
         if egress == "proxy" and not proxy and transport is None:
@@ -106,6 +106,9 @@ class SafeFetcher:
         self.timeout = httpx.Timeout(connect=connect_timeout, read=read_timeout, write=read_timeout, pool=connect_timeout)
         self.total_timeout, self.max_bytes, self.max_redirects = total_timeout, max_bytes, max_redirects
         self.honour_robots, self.allowed_ports, self.clock = honour_robots, frozenset(allowed_ports), clock
+        # Proxy mode only: public host names the operator allows even when they cannot be resolved locally (the
+        # proxy resolves them; rebinding protection then depends on the proxy). Empty by default.
+        self.proxy_unresolved_ok = frozenset(h.lower() for h in proxy_unresolved_ok)
         self._robots: dict = {}
         self.connections: list = []    # (host, address) per hop, for audit and tests
 
@@ -121,11 +124,13 @@ class SafeFetcher:
         """Return the pinned address (direct) or None (proxy). Raises EgressRefused."""
         if target.is_literal:
             return target.host
+        if self.egress == "proxy" and "." not in target.host:
+            raise NP.EgressRefused("HOST_SINGLE_LABEL")     # e.g. "internal-svc": only the proxy could resolve it
         try:
             addresses = list(self.resolver(target.host, target.port))
         except OSError:
-            if self.egress == "proxy":
-                return None          # the proxy resolves; URL-level checks already passed
+            if self.egress == "proxy" and target.host in self.proxy_unresolved_ok:
+                return None          # explicitly allow-listed: the proxy resolves it
             raise NP.EgressRefused("DNS_FAILED") from None
         if not addresses:
             raise NP.EgressRefused("DNS_EMPTY")
@@ -229,12 +234,17 @@ class SafeFetcher:
                     status = resp.status_code
                     if status in REDIRECT_CODES:
                         return status, resp.headers.get("location"), b"", None
+                    enc = (resp.headers.get("content-encoding") or "identity").strip().lower()
+                    if enc not in ("identity", ""):
+                        rec.http_status, rec.fetch_status = status, R.UNSUPPORTED_CONTENT_TYPE
+                        rec.refusal_code = "CONTENT_ENCODING_" + enc.upper()[:20]
+                        return None
                     declared = resp.headers.get("content-length")
                     if declared and declared.isdigit() and int(declared) > max_bytes:
                         rec.http_status, rec.fetch_status = status, R.TOO_LARGE
                         return None
                     buf = bytearray()
-                    for chunk in resp.iter_bytes():
+                    for chunk in _raw_chunks(resp):
                         if cancel is not None and cancel.cancelled:
                             rec.fetch_status = R.CANCELLED
                             return None
@@ -251,6 +261,15 @@ class SafeFetcher:
         except (httpx.HTTPError, OSError, ValueError):
             rec.fetch_status = R.UNREACHABLE
         return None
+
+
+def _raw_chunks(resp):
+    """Bytes as received (no decompression), so the byte cap counts what is on the wire. A response whose body is
+    already in memory (no stream) yields that body once."""
+    try:
+        yield from resp.iter_raw()
+    except httpx.StreamConsumed:
+        yield resp.content
 
 
 def _decode(body: bytes, ctype: Optional[str]) -> str:

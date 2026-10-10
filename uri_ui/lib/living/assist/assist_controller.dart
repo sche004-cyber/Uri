@@ -15,8 +15,13 @@ class AssistController extends ChangeNotifier {
   AssistController({
     required this.runtime,
     Stream<Map<String, dynamic>>? events,
+    Listenable? workerChanges,
+    this.pollEvery = const Duration(seconds: 2),
   }) {
     _sub = events?.listen(_onEvent);
+    // A restarted worker starts with Assist OFF: drop the old grant as soon as
+    // the runtime is replaced, not only at the next command (interim review).
+    _workerChanges = workerChanges?..addListener(_checkWorker);
     // Research results render through the existing A2UI renderer; its Dart
     // contract validates every message again. "Close" is presentation only.
     results.registry['surface.dismiss'] = (msg) async => {
@@ -34,6 +39,17 @@ class AssistController extends ChangeNotifier {
 
   /// The current worker (null when none is connected).
   final IntegratedRuntime? Function() runtime;
+  final Duration pollEvery;
+  Listenable? _workerChanges;
+  Timer? _poll;
+
+  /// Events whose job/ask id is not known yet (they can race the reply that
+  /// carries the id); bounded (interim review F1).
+  final Map<String, List<Map<String, dynamic>>> _early = {};
+
+  /// The running Ask URI request (answers arrive as `assist.answer`).
+  String? askId;
+  bool get asking => askId != null && answer == null;
   IntegratedRuntime? _lastRuntime;
   StreamSubscription<Map<String, dynamic>>? _sub;
 
@@ -80,14 +96,7 @@ class AssistController extends ChangeNotifier {
       notifyListeners();
       return null;
     }
-    if (_lastRuntime != null && !identical(rt, _lastRuntime)) {
-      // A restarted worker starts with Assist OFF; never show the old grant.
-      status = const {'state': 'OFF'};
-      findings = const [];
-      lastObservation = null;
-      answer = null;
-      researchJobId = null;
-    }
+    if (_lastRuntime != null && !identical(rt, _lastRuntime)) _resetForNewWorker();
     _lastRuntime = rt;
     busy = true;
     notifyListeners();
@@ -104,6 +113,26 @@ class AssistController extends ChangeNotifier {
       return null;
     } finally {
       busy = false;
+      notifyListeners();
+    }
+  }
+
+  void _resetForNewWorker() {
+    // A restarted worker starts with Assist OFF; never show the old grant.
+    status = const {'state': 'OFF'};
+    findings = const [];
+    lastObservation = null;
+    answer = null;
+    askId = null;
+    researchJobId = null;
+    _poll?.cancel();
+  }
+
+  void _checkWorker() {
+    final rt = runtime();
+    if (_lastRuntime != null && !identical(rt, _lastRuntime)) {
+      _resetForNewWorker();
+      _lastRuntime = rt;
       notifyListeners();
     }
   }
@@ -154,12 +183,16 @@ class AssistController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Starts an answer; it arrives as an `assist.answer` event (or by polling).
   Future<void> ask(String question, {bool useScreenshot = false}) async {
     answer = null;
+    askId = null;
     final v = await _call({'command': 'assist_ask', 'question': question, 'use_screenshot': useScreenshot});
     if (v == null) return;
-    answer = v['answer'] as String?;
+    askId = v['ask_id'] as String?;
     lastObservation = (v['observation'] as Map?)?.cast<String, dynamic>();
+    _drainEarly(askId);
+    _startPoll();
     notifyListeners();
   }
 
@@ -177,6 +210,8 @@ class AssistController extends ChangeNotifier {
     final v = await _call({'command': 'web_research', 'query': query, 'urls': urls, 'feeds': <String>[], 'use_brain': true});
     researchJobId = v?['job_id'] as String?;
     if (researchJobId != null) researchStage = 'queued';
+    _drainEarly(researchJobId);
+    _startPoll();
     notifyListeners();
   }
 
@@ -186,17 +221,89 @@ class AssistController extends ChangeNotifier {
     await _call({'command': 'web_research_cancel', 'job_id': id});
   }
 
+  void _drainEarly(String? id) {
+    if (id == null) return;
+    for (final ev in _early.remove(id) ?? const <Map<String, dynamic>>[]) {
+      _onEvent(ev);
+    }
+  }
+
+  /// Fallback when an event is lost: ask the worker for the job's state.
+  void _startPoll() {
+    _poll?.cancel();
+    _poll = Timer.periodic(pollEvery, (_) => _pollOnce());
+  }
+
+  Future<void> _pollOnce() async {
+    final rt = runtime();
+    if (rt == null || (!researching && !asking)) {
+      _poll?.cancel();
+      return;
+    }
+    try {
+      if (researching) {
+        final v = await rt.call({'command': 'web_research_status', 'job_id': researchJobId});
+        if (v['state'] == 'FINISHED') {
+          final r = (v['result'] as Map?)?.cast<String, dynamic>() ?? const {};
+          _finishResearch(r['status'] as String? ?? 'FAILED', v['a2ui'] as List?);
+        }
+      }
+      if (asking) {
+        final v = await rt.call({'command': 'assist_ask_status', 'ask_id': askId});
+        if (v['state'] == 'FINISHED') _finishAnswer(v);
+      }
+    } on IntegratedRuntimeException catch (_) {
+      // Unknown job (worker restarted): stop polling; the reset path shows OFF.
+      _poll?.cancel();
+    }
+  }
+
+  void _finishResearch(String status, List<dynamic>? a2ui) {
+    if (researchStatus != null) return;
+    researchStatus = status;
+    researchStage = 'finished';
+    researchA2ui = a2ui;
+    if (a2ui != null) results.apply(a2ui);
+    _stopPollIfIdle();
+    notifyListeners();
+  }
+
+  void _stopPollIfIdle() {
+    if (!researching && !asking) _poll?.cancel();
+  }
+
+  void _finishAnswer(Map<String, dynamic> data) {
+    if (answer != null) return;
+    final st = data['status'] as String? ?? 'FAILED';
+    answer = st == 'COMPLETE' ? (data['answer'] as String? ?? '') : '';
+    if (st != 'COMPLETE') lastError = st == 'CANCELLED' ? 'ANSWER_CANCELLED' : 'ANSWER_$st';
+    _stopPollIfIdle();
+    notifyListeners();
+  }
+
   void _onEvent(Map<String, dynamic> ev) {
-    if (ev['turn_id'] != researchJobId || researchJobId == null) return;
+    final id = ev['turn_id'] as String?;
+    if (id == null) return;
+    if (id != researchJobId && id != askId) {
+      // Possibly ahead of the reply that names it: keep a few, briefly.
+      final q = _early.putIfAbsent(id, () => []);
+      if (q.length < 200) q.add(ev);
+      while (_early.length > 8) {
+        _early.remove(_early.keys.first);
+      }
+      return;
+    }
     final data = (ev['data'] as Map?)?.cast<String, dynamic>() ?? const {};
+    if (ev['type'] == 'assist.answer') {
+      if (id == askId) _finishAnswer(data);
+      return;
+    }
     switch (ev['type']) {
       case 'research.progress':
         researchStage = data['stage'] as String?;
       case 'research.finished':
-        researchStatus = data['status'] as String? ?? 'FAILED';
-        researchStage = 'finished';
-        researchA2ui = data['a2ui'] as List?;
-        if (researchA2ui != null) results.apply(researchA2ui!);
+        _finishResearch(data['status'] as String? ?? 'FAILED', data['a2ui'] as List?);
+        return;
       default:
         return;
     }
@@ -206,6 +313,8 @@ class AssistController extends ChangeNotifier {
   @override
   void dispose() {
     _sub?.cancel();
+    _poll?.cancel();
+    _workerChanges?.removeListener(_checkWorker);
     results.dispose();
     super.dispose();
   }

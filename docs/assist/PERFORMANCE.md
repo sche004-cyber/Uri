@@ -39,9 +39,9 @@ Source: `evidence/a0_w1_cpu_bench.json` (script `evidence/a0_w1_cpu_bench.py`).
   by Runtime v1. The only new UI is a Flutter view inside the existing window (no new window, no new texture-heavy
   effect). Measuring the Assist view's GPU memory needs the PC (owner checklist item 6).
 - **Decode speed: unchanged when Assist is idle.** All W1/A0 work is CPU-side in the worker process.
-- **Contention:** the Brain has one slot. Research synthesis (≤ 700 tokens ≈ 6 s at 120 tok/s) and Ask URI
-  (≤ 600 tokens) yield at start if a user turn is running, but a user turn that starts *during* a research synthesis
-  queues behind it for up to its length. Vision adds ≈ 1.8 s per question. Mitigation options for the owner: make
+- **Contention:** the Brain has one slot. Ask URI (≤ 600 tokens) is streamed with a cancel token and is cancelled the
+  moment a user turn starts (interim review F4). Research synthesis (≤ 700 tokens ≈ 6 s at 120 tok/s) yields at start
+  if a user turn is running, but a user turn that starts *during* a synthesis queues behind it (L-W1-3). Vision adds ≈ 1.8 s per question. Mitigation options for the owner: make
   research synthesis extractive-only, or lower its token cap (limitation L-W1-3).
 - **Not measured here (no GPU, no Runtime v1, no Windows, no display):** Brain VRAM allocation with Assist, Flutter GPU
   overhead of the Assist view, vision latency through the application path, GPU contention under concurrent URI

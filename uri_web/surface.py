@@ -55,7 +55,8 @@ def build_surface(result: dict) -> Surface:
             add({"id": "h_status", "component": "Badge", "text": STATUS_LABEL.get(status, status),
                  "tone": STATUS_TONE.get(status, "neutral")}),
             text("h_meta", f"{len(result.get('sources') or [])} sources · synthesis: {result.get('synthesis_method')}"
-                           f" · {result.get('elapsed_s', 0)} s · web content is untrusted evidence", "caption")]
+                           f" · {result.get('elapsed_s', 0)} s · citations checked against the sources (wording, numbers, negation);"
+                           f" web content is untrusted evidence", "caption")]
     add({"id": "h_col", "component": "Column", "children": head, "gap": "small"})
     order.append(add({"id": "h_card", "component": "Card", "child": "h_col", "tone": "neutral"}))
 

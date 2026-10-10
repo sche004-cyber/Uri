@@ -11,7 +11,7 @@ it is not the audit of record and does not make anything INDEPENDENTLY ACCEPTED.
 | Repository | `github.com/sche004-cyber/Uri` |
 | Branch | `ccr-cab5ed06-9hwyc4` |
 | Base | `ffdf534` (canonical tip, 2026-10-10) |
-| Range | `git diff ffdf534..<branch tip>` — W1 commit `885483b`, A0 commit `74b24eb`, repairs and docs after them |
+| Range | `git diff ffdf534..<branch tip>`. Milestone commits (local branches, same content reachable from the session branch): W1 `885483b` + repair `db7c02c` (`milestone/w1-web-intelligence-20261010`); A0 `f140506`, `be5bc6c` + repair `1844b48` (`milestone/a0-assist-foundation-20261010`, stacked on W1); docs after them. REA research: `cea2a77` (`research/rea-discovery-20261010`, research only) |
 | Code under review | `uri_web/**`, `uri_assist/**` (incl. `browser_extension/`), `scripts/run_uri_integrated_worker.py` (dispatch lines), `scripts/oi_materialize_test_runtime.py`, `tests/phase2a/test_frozen_core.py` (ALLOWED_NEW lines only), `uri_ui/lib/living/{assist/**, integration/oi_conversation.dart, living_app.dart, living_scope.dart, presentation/**, screens/companion_mode_view.dart, screens/dashboard_mode_view.dart}` |
 | Tests | `tests/web/**`, `tests/assist/**`, `uri_ui/test/living/assist_mode_test.dart` |
 | Governing documents | `docs/assist/00_PLAN_AND_ACCEPTANCE_CRITERIA.md` (W1-AC1..16, A0-AC1..13), `A0_UI_INTERACTION_SPEC.md`, `03_PERMISSION_AND_DATA_FLOW.md` |
@@ -52,4 +52,6 @@ See `W1_QUALIFICATION.md` §3 and `A0_QUALIFICATION.md` §3 for exact counts, an
 
 ## 5. Interim independent review (Claude agent, not Codex)
 
-Recorded in `INTERIM_REVIEW.md` with each finding, the repair commit and the test that fails without it.
+Recorded in `INTERIM_REVIEW.md` with each finding, the repair commit and the test that fails without it. Verdict
+ACCEPT WITH FINDINGS (no HIGH); all MEDIUM findings repaired; two LOW items carried as limitations. Codex should
+re-examine F3 (lexical verification limits) and F5 (redaction rule completeness) in particular.

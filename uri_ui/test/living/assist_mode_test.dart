@@ -28,6 +28,10 @@ class AssistRuntime implements IntegratedRuntime {
   final _events = StreamController<Map<String, dynamic>>.broadcast();
   bool _closed = false;
   String state = 'OFF';
+  /// Hooks to emit events at awkward moments (before the reply, or never).
+  void Function()? beforeResearchReply;
+  bool loseFinishedEvent = false;
+  Map<String, dynamic>? finishedResult;
   Map<String, dynamic>? scope;
   Set<String> perms = {};
 
@@ -91,7 +95,15 @@ class AssistRuntime implements IntegratedRuntime {
           'changed_anything': false,
         };
       case 'web_research':
+        beforeResearchReply?.call();
         return {'job_id': 'job-1'};
+      case 'web_research_status':
+        if (finishedResult == null) return {'state': 'RUNNING'};
+        return {'state': 'FINISHED', 'result': finishedResult, 'a2ui': null};
+      case 'assist_ask':
+        return {'ask_id': 'ask-1', 'method': 'structured', 'observation': {'title': 'Fee form', 'fields': 4, 'sensitive_fields': 1}};
+      case 'assist_ask_status':
+        return {'state': 'FINISHED', 'ask_id': 'ask-1', 'status': 'COMPLETE', 'answer': 'polled answer'};
       default:
         return {'ok': true};
     }
@@ -293,6 +305,65 @@ void main() {
     expect(a.off, isTrue);
     expect(a.lastError, 'PERMISSION_NOT_GRANTED_SUGGEST');
     expect(a.findings, isEmpty);
+    a.dispose();
+  });
+
+  test('a research event that races ahead of the reply is not lost (F1)', () async {
+    final rt = AssistRuntime();
+    final a = AssistController(runtime: () => rt, events: rt.events, pollEvery: const Duration(hours: 1));
+    rt.beforeResearchReply = () => rt.emit({'schema': 'uri.assist.event.v1', 'turn_id': 'job-1',
+      'type': 'research.finished', 'data': {'status': 'PROVIDER_UNAVAILABLE', 'a2ui': null}});
+    await a.research('x');
+    await Future<void>.delayed(Duration.zero);
+    expect(a.researchStatus, 'PROVIDER_UNAVAILABLE');
+    expect(a.researching, isFalse);
+    a.dispose();
+  });
+
+  test('a lost finished event is recovered by polling the job status', () async {
+    final rt = AssistRuntime()..finishedResult = {'status': 'NO_RESULT'};
+    final a = AssistController(runtime: () => rt, events: rt.events, pollEvery: const Duration(milliseconds: 10));
+    await a.research('x');
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    expect(a.researchStatus, 'NO_RESULT');
+    a.dispose();
+  });
+
+  test('Ask URI is asynchronous: the answer arrives as an event (F4)', () async {
+    final rt = AssistRuntime();
+    final a = AssistController(runtime: () => rt, events: rt.events, pollEvery: const Duration(hours: 1));
+    await a.grant('browser_tab', 'tab-7', suggest: false);
+    await a.ask('What is this?');
+    expect(a.asking, isTrue);
+    rt.emit({'schema': 'uri.assist.event.v1', 'turn_id': 'ask-1', 'type': 'assist.answer',
+      'data': {'status': 'COMPLETE', 'answer': 'A fee form.'}});
+    await Future<void>.delayed(Duration.zero);
+    expect(a.answer, 'A fee form.');
+    expect(a.asking, isFalse);
+    a.dispose();
+  });
+
+  test('a cancelled answer is shown as cancelled, never as an answer', () async {
+    final rt = AssistRuntime();
+    final a = AssistController(runtime: () => rt, events: rt.events, pollEvery: const Duration(hours: 1));
+    await a.ask('q');
+    rt.emit({'schema': 'uri.assist.event.v1', 'turn_id': 'ask-1', 'type': 'assist.answer',
+      'data': {'status': 'CANCELLED', 'answer': ''}});
+    await Future<void>.delayed(Duration.zero);
+    expect(a.answer, '');
+    expect(a.lastError, 'ANSWER_CANCELLED');
+    a.dispose();
+  });
+
+  test('worker restart clears the shown grant immediately, without a command', () async {
+    var rt = AssistRuntime();
+    final changes = ValueNotifier<int>(0);
+    final a = AssistController(runtime: () => rt, workerChanges: changes);
+    await a.grant('browser_tab', 'tab-7', suggest: false);
+    expect(a.active, isTrue);
+    rt = AssistRuntime();
+    changes.value++;                      // OiConversation notifies on restart
+    expect(a.off, isTrue);
     a.dispose();
   });
 

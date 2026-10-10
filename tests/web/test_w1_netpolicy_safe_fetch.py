@@ -212,8 +212,10 @@ def test_proxy_mode_requires_explicit_proxy_and_is_recorded():
     with pytest.raises(ValueError):
         SafeFetcher(egress="proxy")
     f = SafeFetcher(egress="proxy", transport=httpx.MockTransport(lambda r: html("<p>p</p>")),
-                    resolver=lambda h, p: (_ for _ in ()).throw(OSError()))
+                    resolver=lambda h, p: (_ for _ in ()).throw(OSError()), proxy_unresolved_ok=("p.test",))
     r = f.fetch("https://p.test/", robots=False)
     assert r.ok and r.record.egress == "proxy" and r.record.connected_address is None
+    # Not allow-listed and not locally resolvable: refused, even in proxy mode (interim review F6).
+    assert f.fetch("https://other.test/", robots=False).record.refusal_code == "DNS_FAILED"
     # URL-level checks still apply in proxy mode.
     assert f.fetch("http://127.0.0.1/", robots=False).record.fetch_status == R.REFUSED

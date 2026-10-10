@@ -204,3 +204,36 @@ def default_providers(**kw) -> list:
     """Configured order: Tavily (existing URI provider), then Brave, then SearXNG. Unconfigured ones stay listed so
     their UNAVAILABLE status is visible."""
     return [TavilyProvider(**kw), BraveProvider(**kw), SearxngProvider(**kw)]
+
+
+def load_search_keys(path) -> dict:
+    """Read provider settings from a file the owner placed under the client's state root (interim review F2).
+
+    The integrated worker replaces its environment with a minimal one, so `TAVILY_API_KEY` etc. never reach it.
+    Format: {"tavily_api_key": "...", "brave_api_key": "...", "searxng_url": "..."} (all optional). Unknown keys
+    are ignored; values are never logged or returned to the UI. A missing or unreadable file means "no keys".
+    """
+    import json
+    from pathlib import Path
+    p = Path(path)
+    try:
+        if not p.is_file() or p.stat().st_size > 16_384:
+            return {}
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    out = {}
+    for k in ("tavily_api_key", "brave_api_key", "searxng_url"):
+        v = data.get(k)
+        if isinstance(v, str) and 0 < len(v.strip()) <= 512:
+            out[k] = v.strip()
+    return out
+
+
+def providers_from_keys(keys: dict, **kw) -> list:
+    """Providers configured ONLY from `keys` (never from the environment)."""
+    return [TavilyProvider(api_key=keys.get("tavily_api_key", ""), **kw),
+            BraveProvider(api_key=keys.get("brave_api_key", ""), **kw),
+            SearxngProvider(base_url=keys.get("searxng_url", ""), **kw)]

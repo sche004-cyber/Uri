@@ -102,8 +102,10 @@ class VisionGate:
                 "application": "ENABLED" if self.qualified else "NOT VERIFIED (disabled until PC qualification)",
                 "client": self.client is not None}
 
-    def ask(self, question: str, png: bytes, stamp: Stamp, *, sensitive_rects: list, unlocated_sensitive: bool,
-            context_text: str = "", timeout_s: float = 60.0) -> dict:
+    def build(self, question: str, png: bytes, stamp: Stamp, *, sensitive_rects: list, unlocated_sensitive: bool,
+              context_text: str = "") -> tuple:
+        """Every check, then the request body. Returns (body, image_bytes). Sending is the caller's job (a
+        cancellable job thread; interim review F4), and the caller re-checks freshness right before sending."""
         if not self.qualified:
             raise VisionRefused("VISION_NOT_QUALIFIED")
         if self.client is None:
@@ -119,7 +121,5 @@ class VisionGate:
             self._last = now
         image = prepare_image(png, sensitive_rects, unlocated_sensitive=unlocated_sensitive)
         body = build_request(question, image, context_text)
-        self.access.check_fresh(stamp, Permission.OBSERVE)       # revoked while preparing -> nothing is sent
-        res = self.client.complete_json(body, timeout_s=timeout_s)
-        return {"status": res.status, "text": res.text if res.status == "COMPLETE" else "",
-                "image_bytes": len(image), "interpretation_only": True}
+        self.access.check_fresh(stamp, Permission.OBSERVE)       # revoked while preparing -> nothing is built
+        return body, len(image)

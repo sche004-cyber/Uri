@@ -30,9 +30,15 @@ _VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "me
          "wbr"}
 _BLOCK = {"p", "li", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "td", "th", "dd", "dt", "figcaption",
           "div", "section", "article", "main", "tr", "caption", "address"}
-_HIDDEN_STYLE = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0(?![.\d]*[1-9])|"
-                           r"opacity\s*:\s*0(?:\.0+)?\s*(?:;|$)|(?:height|width)\s*:\s*0(?:px)?\s*;.*overflow\s*:\s*hidden",
-                           re.I)
+_HIDDEN_STYLE = re.compile(
+    r"display\s*:\s*none|visibility\s*:\s*(hidden|collapse)|font-size\s*:\s*(0(?![.\d]*[1-9])|0?\.\d+px|1px)|"
+    r"opacity\s*:\s*0(?:\.0+)?\s*(?:!important\s*)?(?:;|$)|(?:height|width)\s*:\s*0(?:px)?\s*(?:!important\s*)?;.*overflow\s*:\s*hidden|"
+    r"(?:left|top|right|text-indent|margin-left)\s*:\s*-\d{3,}(?:\.\d+)?(?:px|em|rem|%)|"
+    r"clip\s*:\s*rect\(\s*0|clip-path\s*:\s*inset\(\s*(?:50|100)%|transform\s*:\s*scale\(\s*0\s*\)",
+    re.I)
+# Common "visually hidden" utility classes (screen-reader-only text is still not visible to the user).
+_HIDDEN_CLASS = re.compile(r"(?:^|\s)(sr-only|visually-hidden|visuallyhidden|screen-reader-text|screen-reader-only|"
+                           r"hidden|d-none|is-hidden|invisible|offscreen|a11y-hidden)(?:\s|$)", re.I)
 _WS = re.compile(r"\s+")
 _FEED_TYPES = {"application/rss+xml", "application/atom+xml", "application/feed+json"}
 
@@ -140,7 +146,7 @@ class _Parser(HTMLParser):
                 self.cur.append(" ")
             return
         hidden = ("hidden" in a or a.get("aria-hidden", "").lower() == "true"
-                  or bool(_HIDDEN_STYLE.search(a.get("style", ""))))
+                  or bool(_HIDDEN_STYLE.search(a.get("style", ""))) or bool(_HIDDEN_CLASS.search(a.get("class", ""))))
         if hidden and not self._skipping():
             self.hidden_dropped += 1
         region = tag if tag in ("article", "main") else None
