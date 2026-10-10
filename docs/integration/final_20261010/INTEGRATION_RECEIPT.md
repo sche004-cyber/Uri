@@ -49,3 +49,14 @@ shortcuts were not touched. Human microphone qualification: NOT VERIFIED (deferr
 | Integration branch | `integration/final-qualification-20261010` pushed to `uri-repo` |
 | Fresh-clone verification | the cutover GREEN dry run (`CUTOVER_PLAN.md` §2a with development paths) cloned `github.com/sche004-cyber/Uri`, checked ancestry, checked out `cb7f3bd` with a clean tracked tree, tree `cdf1b1b326454a4e112abb069f0455d7535300d4` (= local `cdf1b1b326454a4e112abb069f0455d7535300d4`); materialized, provisioned from PowerShell, built the UI and passed the launcher self-test with `real_installation.ok` (149 s; `evidence/cutover_dryrun_console.txt`). The dry-run trees `uri-cutover-dryrun-src-cb7f3bd` / `-rt-cb7f3bd` are development directories, not an installation in use |
 | This receipt's own commit | follows `cb7f3bd` on the integration branch (docs only); the canonical branch is fast-forwarded to it after this record |
+
+## 6. Post-integration correction: INT-F2 (auditable history)
+
+After the fast-forward to `2419e0a`, a measurement run showed that the P-GOV-1 change to
+`docs/working_system/tools/capture_ws.ps1` resolved `docs\` as the repository root. The advisory module could not be
+imported and the tool refused every capture (`GPU_ADVISORY_UNREADABLE`). This failed safe (no window opened), but the
+canonical capture tool was unusable. Neither the tests nor the eleven Codex rounds caught it, and the staging pass did
+not use the capture tool's own launch path (it attached to a running window). The earlier claim that the capture
+caller was "implemented" stands corrected: it was implemented with this defect. The repair is `b1c545b`: the root comes
+from `$PSScriptRoot`, a behavioural test evaluates the tool's line at its real location, and a real run of the tool got
+GO and captured. Gates at `b1c545b`: ws/oi/a2ui 597 passed / 22 skipped, frozen check ok (`evidence/gates_intf2.txt`).
