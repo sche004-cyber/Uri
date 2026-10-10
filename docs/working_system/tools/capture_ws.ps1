@@ -47,7 +47,8 @@ if ($Attach) {
 } else {
 # P-GOV-1: ask the GPU lease before opening a test window (read-only; waits while a benchmark or live test holds the
 # GPU). The verdict goes into the evidence; WILL_DEGRADE_BRAIN means a resident Brain will probably slow down.
-$repo = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSCommandPath))
+# This file is docs/working_system/tools/capture_ws.ps1: the repository root is three directories above its folder.
+$repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
 Push-Location $repo
 try { $advise = (& $Python -m uri_operational_intelligence.gpu_lease advise --window --wait $AdviseWait | Out-String) } finally { Pop-Location }
 $advise | Set-Content -Encoding utf8 (Join-Path $OutDir ("gpu_advise_{0}.json" -f (Get-Date -Format 'HHmmss')))

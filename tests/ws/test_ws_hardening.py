@@ -967,3 +967,15 @@ def test_advise_gives_no_brain_verdict_for_another_large_gpu_workload(tmp_path):
     assert r["verdict"] == G.GO and r["reason"] == "NO_RESIDENT_BRAIN" and r["other_large"][0]["name"] == "game.exe"
     small_llama = named(G.census(raw([(1580, 311, 9), (18372, 1602, 349)], 1950), card=CARD), {18372: "llama-server.exe"})
     assert advise(tmp_path, small_llama)["verdict"] == G.GO        # Ollama's runner is not a resident Brain
+
+
+def test_capture_tool_runs_the_advisory_from_the_repository_root():
+    """Found in staging (final integration 2026-10-10): the capture tool computed docs/ as the repository root, so the
+    advisory module could not be imported and every capture was refused as UNREADABLE. The tool's own line, evaluated
+    by PowerShell at the tool's real location, must give the repository root."""
+    tool = REPO / "docs" / "working_system" / "tools" / "capture_ws.ps1"
+    line = next(x for x in tool.read_text(encoding="utf-8").splitlines() if x.startswith("$repo = "))
+    script = "$PSScriptRoot = '%s'; %s; $repo" % (str(tool.parent), line)
+    r = subprocess.run(["powershell", "-NoProfile", "-Command", script], capture_output=True, text=True, timeout=60)
+    assert Path(r.stdout.strip()).resolve() == REPO.resolve(), (r.stdout, r.stderr)
+    assert (Path(r.stdout.strip()) / "uri_operational_intelligence" / "gpu_lease.py").exists()
