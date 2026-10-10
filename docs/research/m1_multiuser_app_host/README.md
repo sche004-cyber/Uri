@@ -22,7 +22,9 @@ with `M1_RESEARCH_SUMMARY.md`.
 | `M1_APP_HOSTING_DESIGN.md` | Minimal app host and demo app |
 | `M1_IMPLEMENTATION_SLICES.md` | P0-P6 slices with acceptance criteria; old→new ID mapping |
 | `M1_OFFLINE_BLOCKERS_AND_STATUS.md` | Cloud-verified items, PC-deferred verification, decisions |
-| `evidence/CLOUD_TEST_EVIDENCE.md` | Runs 1-3 (commands and results) |
+| `M1_PLUGIN_PLATFORM_ARCHITECTURE.md` | Plugin-driven Web Intelligence and social connectors (round 4) |
+| `M1_USER_CLIENT_IDENTITY_MODEL.md` | User, client and session identity; DEF-H1; security tests (round 4) |
+| `evidence/CLOUD_TEST_EVIDENCE.md` | Runs 1-4 (commands and results) |
 | `M1_ARCHITECTURE_AUDIT_AND_PLAN.md`, `M1_IMPLEMENTATION_STATUS_LEDGER.md`, `M1_STORAGE_ACCESS_MANAGER.md` | Superseded or moved pointer stubs. Full text is in git history. |
 
 ## Acceptance criteria (set before each drafting round)
@@ -55,6 +57,10 @@ with `M1_RESEARCH_SUMMARY.md`.
   - every cited repository path exists at the baseline;
   - slice IDs are consistent across reports.
 
+**Round 4** (plugins and identity): PA-1..PA-7 (`M1_PLUGIN_PLATFORM_ARCHITECTURE.md` §0) and IA-1..IA-7
+(`M1_USER_CLIENT_IDENTITY_MODEL.md` §0). AC-16 consistency checks are re-run, now including the PL- and ID- slice
+families.
+
 ## Method
 
 - **Git.** `git ls-remote` and `fetch` of both repositories. Remote tips re-checked at the start of round 3: no new
@@ -85,6 +91,16 @@ Round 3:
 | SR-13 | The slice IDs (S1-S17) clashed with the new P0-P6 priorities. | Unified renumbering, with a mapping table in `M1_IMPLEMENTATION_SLICES.md`. Old files are kept as stubs. |
 | SR-14 | The pre-commit consistency check (AC-16) found two wrong repository paths: `model_providers/base.py` (really `uri_core/core/model_providers/base.py`) and `scheduler/engine.py` (really `uri_scheduler/engine.py`). | Both fixed. The re-run found no missing reports and no undefined slice IDs. The remaining unmatched names are proposed files (`uri_apphost/*`, `app.json`) or runtime file names (`token.json`, `auth.json`, `robots.txt`), which is expected. Ten line citations were spot-checked against the source and all matched. |
 
+Round 4:
+
+| # | Flaw found in the round-4 draft | Repair |
+|---|---|---|
+| SR-15 | **Correction of earlier conclusions R8/H-1.** Rounds 1-3 recorded "approved actions may run with the install-wide token" as an unverified hypothesis. Run 4 shows that, on the gate/store path, the action instead fails closed and never executes. | H-1 is replaced by DEF-H1. The earlier wording stays in git history (`b67e08c`). Inventory, slices (P0-2, P1-5 T1 = ID-5) and the threat model (T-20) are updated. |
+| SR-16 | The draft proposed a new plugin manifest format. | Replaced by extending the accepted M33 descriptor (`contract_version` 1.1) and lifecycle. The `stdio` transport is an owner decision (D-12) because the contract is frozen. |
+| SR-17 | The draft listed community MCP servers as candidate plugins. | Downgraded to reference-only: unvetted registry, credentials from env vars, injected tool descriptions. |
+| SR-18 | The draft called Line A's `device_id` a "client id". | Corrected. It is an unauthenticated label (`server.py:1136-1146`). Real client identity exists only in Line B pairing, which is now the reuse source. |
+| SR-19 | Library licences (PRAW, atproto, Mastodon.py, feedparser, google-api-python-client) were stated from memory. | Marked "from memory; verify" in the plugin report. Only XDK (MIT) was found in a search. |
+
 ## Isolation record
 
 - **Repository:** `github.com/sche004-cyber/Uri`.
@@ -94,7 +110,8 @@ Round 3:
 - **Verified before each round's writes** (branch, HEAD equal to the remote, clean tree):
   - round 1: base `54ad7be`, clean;
   - round 2: HEAD `be55d19`, clean;
-  - round 3: HEAD `a6ef74f`, clean.
+  - round 3: HEAD `a6ef74f`, clean;
+  - round 4: HEAD `b67e08c`, clean, matching the remote.
 - **Tests and probes** ran only in a separate detached checkout of the same base (`/home/user/scratch-ti`). It was left
   clean after every run.
 - The commit SHAs for this round are reported in the session hand-back. They are not written here, because this file is

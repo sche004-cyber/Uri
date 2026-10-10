@@ -10,6 +10,7 @@ and the status of each research deliverable.
 | Line A multi-user, auth and isolation suites + A2UI + harness boundary | 315 passed, 0 failed | `evidence/CLOUD_TEST_EVIDENCE.md` Run 1 |
 | `tests/scheduler` | 56 passed, 15 skipped | Run 2 |
 | SSRF probe against `fetch_url` | Loopback page fetched directly and through a redirect (defect SSRF-1) | Run 3 |
+| Approval probe with a principal (H-1) | Approved action fails closed and never executes (defect DEF-H1) | Run 4 |
 
 **Not claimed:**
 - `tests/ws`, `tests/oi` and `tests/phase2a` fail in the cloud mainly on `msvcrt` and `WINDOWS_REQUIRED`. That is
@@ -32,6 +33,10 @@ and the status of each research deliverable.
 | V-10 | Client-side Playwright browser worker on Windows | P4-2 |
 | V-11 | faster-whisper transcription throughput on CPU; GPU coexistence with the Brain | P3-5 |
 | V-12 | Windows path APIs (`GetFinalPathNameByHandleW`, reparse attributes) on the installed Python | P2-1 Windows path |
+| V-13 | DPAPI/keystore client secrets; Flutter client registration and lost-device flows; Line B paired regression | ID-3 |
+| V-14 | Harness OS-account binding (ID-T6, Windows half) | ID-7 |
+| V-15 | Install-user ↔ owner migration against real `uri_workspace` data, with a backup | ID-6 |
+| V-16 | Live provider OAuth redirect on the tailnet name (Google/YouTube first) | PL-4 |
 
 ## 3. External blockers (not PC-related)
 
@@ -57,11 +62,13 @@ and the status of each research deliverable.
 | D-9 | Server-side storage roots vs the "client owns content" rule |
 | D-10 | Enable X pay-per-use spend |
 | D-11 | Apply for Reddit API access |
+| D-12 | Connector `stdio` transport: frozen contract 1.1, or a host-internal wrapper |
+| D-13 | Whether the install (ambient) user is the owner's account, and should be linked |
 
 ## 5. Deliverable status
 
 | Deliverable | Status |
 |---|---|
-| The 12 required reports | Written; committed on `research/m1-multiuser-app-host` |
+| The 12 required reports + `M1_PLUGIN_PLATFORM_ARCHITECTURE.md` + `M1_USER_CLIENT_IDENTITY_MODEL.md` | Written; committed on `research/m1-multiuser-app-host` |
 | Implementation | **Not started.** Not authorized. |
 | Canonical branches | Untouched |

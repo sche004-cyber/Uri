@@ -21,7 +21,7 @@ slice needs its own owner authorization.
 | ID | Slice | Acceptance criteria | Where | Frozen? | Size |
 |---|---|---|---|---|---|
 | P0-1 | Re-check the canonical tip and any PC-local work | The tip SHA is recorded. The TIWS push record and staging receipt are reconciled. The frozen check passes on the PC. | PC (part) | No | S |
-| P0-2 | Characterization tests, as test files only | Tests that **fail on the base**, proving: R1 (anonymous request reaches owner state), R3 (multi-action Gmail uses the install token), SSRF-1 (`fetch_url` reaches loopback and follows redirects), H-1 (approved Gmail/Drive actions keep the principal; passes or fails honestly) | Cloud | No (root `test_*.py` are not protected) | S |
+| P0-2 | Characterization tests, as test files only | Tests that **fail on the base**, proving: R1 (anonymous request reaches owner state), R3 (multi-action Gmail uses the install token), SSRF-1 (`fetch_url` reaches loopback and follows redirects), DEF-H1 (an approved action proposed with a principal never executes; reproduces Run 4 end to end through `/ask` → `/approve`), and the identity tests in ID-1 | Cloud | No (root `test_*.py` are not protected) | S |
 | P0-3 | Dependency declaration | `requirements.txt` gains the Google client libraries (D-REQ-1). A clean cloud venv collects every Line A test. | Cloud | No | XS |
 
 ## P1: Three-user readiness
@@ -32,13 +32,29 @@ slice needs its own owner authorization.
 | P1-2 | Secret guard + loopback Core | The gateway refuses to start if the provider or external-credential secrets are the hard-coded defaults or shorter than 32 bytes. Core is bound to 127.0.0.1. | Cloud (logic) | No | S |
 | P1-3 | Brain bridge (configuration) + live fairness | Three users complete turns on Runtime v1 through the `lm_studio` `base_url`. Tool calls work or fail honestly. No Ollama is resident. Decode is ≥60 tok/s with the client open. The p95 wait is recorded. | PC | No | S |
 | P1-4 | Tailnet deployment | Only the gateway port is reachable from the tailnet. The TLS certificate is valid. A remote device logs in and runs a turn. Non-tailnet LAN hosts are refused. | PC | No | S |
-| P1-5 | Authorized frozen repair batch | <ul><li>T1: H-1 (fix only if P0-2 fails).</li><li>T2: per-user Gmail on multi-action and evidence paths (R3).</li><li>T3: per-user temp folders.</li><li>T4: per-user graphify index.</li><li>T5: the tier keeps the mode.</li><li>T6: Google tokens encrypted at rest.</li><li>T7: suspension honoured.</li><li>T8: signup-closed flag.</li><li>**T9: `fetch_url` goes through SafeFetcher (SSRF-1).**</li><li>T10: zip decompression bound (ZIP-1).</li></ul> The full cloud suite shows no new failures. The P0-2 tests now pass. | Cloud, then PC chain | **Yes (D-2)** | M |
+| P1-5 | Authorized frozen repair batch | <ul><li>T1: DEF-H1 repair (`principal_user_id` field, live principal re-injection, mismatch refusal = ID-5).</li><li>T2: per-user Gmail on multi-action and evidence paths (R3).</li><li>T3: per-user temp folders.</li><li>T4: per-user graphify index.</li><li>T5: the tier keeps the mode.</li><li>T6: Google tokens encrypted at rest.</li><li>T7: suspension honoured.</li><li>T8: signup-closed flag.</li><li>**T9: `fetch_url` goes through SafeFetcher (SSRF-1).**</li><li>T10: zip decompression bound (ZIP-1).</li></ul> The full cloud suite shows no new failures. The P0-2 tests now pass. | Cloud, then PC chain | **Yes (D-2)** | M |
 | P1-6 | Per-user execution identity for harnesses | <ul><li>One low-privilege Windows account per user.</li><li>CLI homes and workspaces ACL'd to that account.</li><li>The supervisor launches under that account.</li><li>User B's process gets ACCESS_DENIED on user A's home.</li><li>No shared login (ISO-1 extended).</li><li>Job limits applied.</li><li>`CLAUDE_CODE_OAUTH_TOKEN` forwarding resolved per D-4b.</li><li>Routing table `user → (account, home, mode)`; a missing entry is refused.</li></ul> | PC | **Yes** | L |
 | P1-7 | Per-user Google + Calendar | Three users get three mailboxes and calendars. Calendar starts read-only, with writes approval-gated. The publishing status follows D-5. Cross-user access is negative. | PC (consent) | **Yes** | M |
 | P1-8 | Client updates | Gateway base URL. Queue and `BRAIN_UNAVAILABLE` states. Secure token storage (D-7). | PC (Flutter) | No | M |
 
 **Interim protections** until P1-5 lands, using existing admin grants (`PUT /admin/users/{id}/grants`): revoke `Gmail`
 (the multi-action capability) and `fetch_url` from non-owner users.
+
+## P1 (identity): user, client and session separation
+
+The design is in `M1_USER_CLIENT_IDENTITY_MODEL.md`.
+
+| ID | Slice | Where | Frozen? | Size |
+|---|---|---|---|---|
+| ID-1 | Identity characterization tests (ID-T3, T5, T7, T8, T9), part of P0-2 | Cloud | No | S |
+| ID-2 | Gateway refuses unauthenticated requests; principal-keyed limits (part of P1-1) | Cloud | No | — |
+| ID-3 | Line A client registry: registration codes, client proof, lost-device state | Cloud, PC (Flutter) | **Yes** | M |
+| ID-4 | Scheduler owner = user UUID; per-user service token; owner-mismatch quarantine | Cloud | No | S |
+| ID-5 | DEF-H1 repair (= P1-5 T1) | Cloud | **Yes** | S |
+| ID-6 | Link the install user to the owner account (D-13) | Cloud logic, PC data | **Yes** | S |
+| ID-7 | Harness OS-account binding check (with P1-6) | **Windows** | Yes | S |
+
+Acceptance tests ID-T1..ID-T12 are listed in `M1_USER_CLIENT_IDENTITY_MODEL.md` §6.
 
 ## P2: User-controlled storage
 
@@ -70,6 +86,22 @@ The design is in `M1_WEB_INTELLIGENCE_ARCHITECTURE.md`.
 | P3-5 | YouTube Data API metadata + permitted transcripts | Per-user quota budget. `metadata_only` labels. Transcripts only through the permitted routes. No yt-dlp for YouTube. | Cloud (fake API), PC (key) | No | M |
 | P3-6 | Reddit, after approval | Only after Reddit grants access | Blocked externally | No | S |
 | P3-7 | `web_watch.v1` scheduler template | <ul><li>Per-user instance.</li><li>Proposal-hash activation.</li><li>Change detection and dedup.</li><li>Partial-failure briefings.</li><li>Backoff.</li><li>The summary turn goes through the gateway as the job's user, on the local Brain.</li><li>Delivery or pending.</li><li>No external actions.</li></ul> | Cloud (fake time and fetch), PC | No (`uri_scheduler/` is not protected) | M |
+
+## P3 (plugins): connector platform
+
+The design is in `M1_PLUGIN_PLATFORM_ARCHITECTURE.md`.
+
+| ID | Slice | Where | Frozen? | Size |
+|---|---|---|---|---|
+| PL-1 | ConnectorHost, operation taxonomy, manifest 1.1 | Cloud | Part (D-12) | M |
+| PL-2 | RSS connector + `web_watch.v1` source | Cloud | No | S |
+| PL-3 | YouTube connector (public via owner key; account read-only via user OAuth) | Cloud (fake), PC/live key | No | M |
+| PL-4 | Per-user OAuth connect/revoke through the gateway | Cloud (fake), live on PC | No | M |
+| PL-5 | A2UI `plugins.settings` + lifecycle routes | Cloud (Python), PC (Flutter) | **Yes** (routes) | M |
+| PL-6 | Approval-bound publish/message (Bluesky first); needs ID-5 | Cloud (fake), live on PC | via ID-5 | M |
+
+Acceptance tests PL-T1..PL-T5 and per-slice tests are in that report's §9. P3-5 (YouTube) is delivered as PL-3, and
+P6-1 (Bluesky) reuses PL-1.
 
 ## P4: Authorized browser automation
 
@@ -103,7 +135,9 @@ The design is in `M1_APP_HOSTING_DESIGN.md`.
 
 ## Smallest first release (recommended)
 
-**P0-2 → P0-3 → P1-1 → P1-2 → P1-3 → P1-4**, with the interim grant revocations.
+**P0-2 (with ID-1) → P0-3 → P1-1 (with ID-2) → P1-2 → P1-3 → P1-4**, with the interim grant revocations.
+
+Because of DEF-H1, approval-gated actions (Gmail draft, Drive upload) do not work for logged-in users until ID-5. That is acceptable for the first release (fail closed). ID-5 is first in the P1-5 batch.
 
 - That gives three users chat, memory, files, per-user single-action Gmail and Drive, and `web_search`, over a private
   network, with fairness on the Brain.

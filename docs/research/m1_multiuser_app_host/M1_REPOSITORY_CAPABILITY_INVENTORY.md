@@ -52,6 +52,7 @@ There are two server lines:
 | | Per-user fair Brain queue | **Missing** | `worker_bridge.py:176` refuses with `TURN_IN_PROGRESS`; Line A `/ask` is uncapped |
 | | Edge / second brain | **Prototyped**: contracts and settings exist, routing is unwired and the inventory is empty | `uri_core/core/edge/routing_policy.py:44`; `runtime_inventory.py:56` |
 | **Harnesses** | Claude Code and Codex adapters: bypass flags refused, environment allow-list, API keys never forwarded | **Integrated** (Phase 1/2). **Tested (Win).** | `uri_harness_adapters/__init__.py`; `uri_core/client_runtime/harness.py:33,37` |
+| | Device identity. Line A `device_id` is client self-reported and unauthenticated. Line B `client_id` is registered and bound to one principal. | Line A: **Independently accepted** (M22.2), label only. Line B: **Integrated**. | `server.py:1136-1153`; `client_pairing.py:85-130`; see `M1_USER_CLIENT_IDENTITY_MODEL.md` |
 | | Per-client native CLI homes. A shared login is a stop condition. | **Independently accepted** (Phase 2 closure ISO-1). Its live test needs a login. | `uri_supervisor_bridge/qualification.py:377-390` |
 | | Supervisor: admission pools, Job Objects with kill-on-close, no CPU or memory limits | **Integrated**, **Tested (Win)** | `uri_supervisor/admission.py`; `winproc.py:267` |
 | | Antigravity | Refused stub | `uri_harness_adapters/__init__.py:87-90` |
@@ -90,7 +91,7 @@ All of these were re-verified in source by the author unless marked otherwise.
 | R2 | The anonymous path skips capability grants. | High | `approval_gate.py:119-125` |
 | R3 | Multi-action Gmail and the evidence, linked-document and draft-context services use the install-wide `token.json`. | High | `server.py:542,600`; `capability.py:28`; `google_auth_common.py:32` |
 | **SSRF-1** | `fetch_url` fetched a loopback-only page, both directly and through a 302 redirect. On the server this exposes `127.0.0.1:18470`, the Brain with no API key (OI-SEC-1), along with other loopback services and the LAN. | High once other users or untrusted text drive it | RUN: `evidence/CLOUD_TEST_EVIDENCE.md` Run 3 |
-| H-1 | An approved action might lose its principal after the `asdict` round-trip. | **Unverified** | `approval_store.py:432`; `dispatcher.py:81` |
+| **DEF-H1** (was H-1 / suspected R8) | An approved action proposed with a principal **fails closed and never executes**: the persisted principal becomes a dict and the fingerprint mismatches. The suspected leak to the install token does not occur on this path. Logged-in users cannot complete approval-gated actions. | High (functional; blocks every consequential M1 feature) | RUN: `evidence/CLOUD_TEST_EVIDENCE.md` Run 4; `approval_gate.py:280-301`; `dispatcher.py:80-81`. Correction record in `M1_USER_CLIENT_IDENTITY_MODEL.md` §2. |
 | R4-R7 | Shared temporary folders, shared registries, an owner-graphify index leak, open signup, and a hard-coded default secret for key encryption. | Medium | `server.py:37`; `route_classification.py:82`; subagent audit |
 | BUG-1 | Setting the experience tier resets the user's mode. | Low | `user_accounts.py:258-267` (subagent; not re-verified) |
 | D-REQ-1 | The Google client libraries are imported but not declared in `requirements.txt`. | Low | RUN: 11 collection errors before installing them |

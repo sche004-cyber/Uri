@@ -1,6 +1,6 @@
 # M1 Web Intelligence architecture
 
-Proposal. Platform-specific access rules are in `M1_SOCIAL_PLATFORM_RESEARCH.md`. Browser automation is in
+Proposal. Platform-specific access rules are in `M1_SOCIAL_PLATFORM_RESEARCH.md`. Platform connectors are plugins, specified in `M1_PLUGIN_PLATFORM_ARCHITECTURE.md`. Browser automation is in
 `M1_BROWSER_AUTOMATION_AND_SECURITY.md`.
 
 ## 1. What exists today

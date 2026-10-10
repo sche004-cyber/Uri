@@ -51,6 +51,32 @@ implemented, merged or deployed.
 11. **The scheduler can be reused** with one instance per user (its lock is per state directory), plus a deterministic
     `web_watch.v1` template.
 
+12. **Approved actions are broken for logged-in users (DEF-H1, confirmed by a run).**
+    - When the orchestrator includes the principal, the approval store serializes it to a dict.
+    - The fingerprint then mismatches, so approval returns an error and nothing executes.
+    - The suspected R8 leak to the install token does not occur on this path. It is a fail-closed defect that blocks
+      every consequential feature until it is repaired (ID-5).
+13. **Plugins.** URI already has most of a plugin platform in the accepted M33 external-capability system:
+    - descriptor contract with effect, approval and risk;
+    - closed transports;
+    - orthogonal per-user lifecycle;
+    - per-user Fernet credential store;
+    - fail-closed permission binding;
+    - catalog-only natural-language lifecycle.
+    Missing pieces:
+    - an out-of-process ConnectorHost;
+    - the operation taxonomy;
+    - per-user OAuth for non-Google providers;
+    - A2UI and HTTP lifecycle routes.
+    Community MCP servers are reference material only. See `M1_PLUGIN_PLATFORM_ARCHITECTURE.md`.
+14. **Identity.**
+    - User IDs, sessions, the ADMIN role and per-user device revocation exist on Line A.
+    - Real Client IDs bound to one principal (with spoof rejection) exist only in Line B pairing.
+    - Line A `device_id` is an unauthenticated label, any device can log in, and no-login requests map to the install
+      (owner) data.
+    - The scheduler's default owner is the string `"owner"`.
+    See `M1_USER_CLIENT_IDENTITY_MODEL.md` for the model, migration and tests ID-T1..T12.
+
 ## Reuse, don't rebuild
 
 - Line A accounts, stores, grants and approvals.
@@ -58,7 +84,8 @@ implemented, merged or deployed.
 - The supervisor and harness adapters.
 - A2UI.
 - The scheduler.
-- The external-capability contract and fail-closed binding.
+- The external-capability contract, lifecycle, credential store and fail-closed binding (the plugin platform base).
+- Line B client pairing semantics (the client identity model).
 - FileStore and the verified copy-out pattern.
 - `web_search`, `file_extraction` and the usage meter.
 - faster-whisper.
@@ -101,7 +128,7 @@ implemented, merged or deployed.
 
 ## Recommendation for the first implementation slice
 
-**Start with P0-2 + P0-3, then P1-1 (`uri_gateway`).**
+**Start with P0-2 (including the ID-1 identity tests and the DEF-H1 reproduction) + P0-3, then P1-1 (`uri_gateway`, including ID-2).**
 - All three are non-frozen and fully cloud-testable.
 - P0-2 captures R1, R3, SSRF-1 and H-1 as failing tests on the base.
 - P1-1 closes the critical anonymous-access path and adds the fair Brain queue without touching frozen code.
@@ -125,6 +152,8 @@ implemented, merged or deployed.
 | 10 | `M1_IMPLEMENTATION_SLICES.md` |
 | 11 | `M1_OFFLINE_BLOCKERS_AND_STATUS.md` |
 | 12 | This file |
+| 13 | `M1_PLUGIN_PLATFORM_ARCHITECTURE.md` (added in round 4) |
+| 14 | `M1_USER_CLIENT_IDENTITY_MODEL.md` (added in round 4) |
 
 Supporting material: `README.md` (acceptance criteria, self-review, isolation record) and
 `evidence/CLOUD_TEST_EVIDENCE.md`.

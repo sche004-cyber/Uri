@@ -78,3 +78,38 @@ After both runs, `git status --porcelain` in the test checkout showed 0 entries:
   address checks of any kind (`fetch_url.py:103-131`).
 
 After the run, `git status --porcelain` in the test checkout showed 0 entries.
+
+## Run 4: approved action with a principal (H-1 / suspected R8), 2026-10-10
+
+**Result: `COMPLETED_WITH_RESULT` — defect DEF-H1 confirmed. Approved actions proposed with a principal fail closed and
+never execute.**
+
+**Method:** a throwaway scratchpad script (not committed), run in the canonical checkout with the Run 1 virtualenv. It
+used the real `ApprovalGate`, `ApprovalStore` (on a temporary file), `CapabilityRegistry` and `PrincipalContext`. Only
+the dispatcher was a stand-in, which recorded what would have executed. The tool was `gmail_create_draft`
+(approval-required).
+
+The three cases:
+1. `execute_tool(..., request_text=...)` with **no** principal, then `decide(approved=True)` on the same gate.
+2. The same call with `principal=PrincipalContext(user_id=<uuid>, role="USER", ...)`. This is what
+   `orchestrator.py:2641-2642` passes for logged-in users. Then `decide` on the same gate.
+3. As case 2, but `decide` on a fresh gate and store object reading the same file.
+
+**Output:**
+```
+propose: awaiting_approval dispatched_before_approval= 0
+persisted principal type: dict
+decide: error Action <id>'s approved arguments do not match the arguments requested for execution.
+no principal, same gate: decide=success executed=True principal_after=NoneType user_id_after=None
+principal, same gate: decide=error executed=False principal_after=NoneType user_id_after=None
+principal, fresh gate: decide=error executed=False principal_after=NoneType user_id_after=None
+```
+
+**Meaning:**
+- The suspected leak to the install-wide token (R8) does **not** happen on this path.
+- Instead, every approval-gated action proposed by a logged-in user fails closed.
+- The analysis is in `M1_USER_CLIENT_IDENTITY_MODEL.md` §2.
+
+**Not verified:** the end-to-end HTTP `/ask` → `/approve` flow.
+
+After the run, `git status --porcelain` in the test checkout showed 0 entries.

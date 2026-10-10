@@ -128,3 +128,6 @@ The table is maintained in `uri_web` and enforced by SafeFetcher and the browser
 | T-15 | Subscription-terms breach | `M1_HARNESS_ACCESS_AND_LICENSING.md` §4 | P1-6 |
 | T-16 | Missing audit trail | Per-user hash-chained AccessEvent (storage); harness and app run ledgers; gateway content-free log | P1-1, P2-1, P5 |
 | T-17 | Admin over-reach through URI | Admin routes exclude private content; physical OS access disclosed | Three-user architecture §5 |
+| T-18 | A plugin reads another user's credentials or files, or calls undeclared hosts | Per-(user, connector) process; credential per call; api_hosts allow-list; broker-only files | `M1_PLUGIN_PLATFORM_ARCHITECTURE.md` §5; PL-1 |
+| T-19 | Client or session spoofing; unregistered or lost devices | Client registry with proof; session ⊂ client ⊂ user check | `M1_USER_CLIENT_IDENTITY_MODEL.md`; ID-3 |
+| T-20 | Consequential action executes under the wrong or no identity after approval (DEF-H1) | `principal_user_id` binding + live re-injection | ID-5 |

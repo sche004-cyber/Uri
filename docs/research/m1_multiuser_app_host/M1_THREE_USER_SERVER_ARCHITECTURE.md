@@ -45,11 +45,13 @@ storage design.
 
 ## 3. Identity propagation (the invariant every tool keeps)
 
+The full user, client and session model, migration plan and security tests are in `M1_USER_CLIENT_IDENTITY_MODEL.md`. This section is the summary.
+
 | Hop | Identity carried | Existing or proposed |
 |---|---|---|
 | Device → gateway | Bearer token from `/auth/login` with a device id. Optionally the gateway also checks the tailnet identity against an owner-maintained map. | Existing token; mapping is proposed |
 | Gateway → Core | The same bearer. Core resolves the `user_id` principal. Requests without a header are refused at the gateway (closes R1/R2). | Proposed boundary; resolution exists (`server.py:680-708`) |
-| Core → tool | The `principal` and `user_id` passed to `dispatcher` | Existing (`dispatcher.py:80-81`). H-1 must be verified for approved actions. |
+| Core → tool | The `principal` and `user_id` passed to `dispatcher` | Existing (`dispatcher.py:80-81`). **DEF-H1:** approved actions fail closed (Run 4); repair is ID-5. |
 | Tool → StorageBroker, web service, app broker | A broker call carries `{user_id, requester_kind, requester_id, task_id}`. The broker never accepts an identity from the model. | Proposed |
 | Core → supervisor → harness | `ExecutionTicket`, signed by Core and bound to the user and the approval digest | Existing (`uri_supervisor_bridge/authority.py`); per-user OS account is proposed |
 | Scheduler → Core | That user's scheduler instance calls the gateway with its own principal token. It never uses the owner's. | Proposed (uses the existing one-principal-per-instance rule, `SCHEDULER_ARCHITECTURE.md:77`) |
