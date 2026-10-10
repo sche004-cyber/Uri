@@ -302,7 +302,7 @@ class _AssistModeViewState extends State<AssistModeView> {
           alignment: Alignment.centerLeft,
           child: FilledButton(
             key: const ValueKey('assist-ask'),
-            onPressed: a.active && !a.busy
+            onPressed: a.active && !a.busy && !a.asking
                 ? () {
                     final q = _question.text.trim();
                     if (q.isNotEmpty) a.ask(q, useScreenshot: _screenshot);
@@ -311,6 +311,12 @@ class _AssistModeViewState extends State<AssistModeView> {
             child: const Text('Ask'),
           ),
         ),
+        if (a.asking)
+          Padding(
+            padding: const EdgeInsets.only(top: UriSpace.sm),
+            child: Text('URI is reading what you shared… Stop cancels it.', key: const ValueKey('assist-asking'),
+                style: TextStyle(color: c.inkSoft, fontSize: 12)),
+          ),
         if (a.answer != null)
           Padding(
             padding: const EdgeInsets.only(top: UriSpace.sm),
@@ -403,6 +409,9 @@ String _errorText(String code) => switch (code) {
   'SENSITIVE_FIELDS_UNLOCATED' => 'This screen has private fields URI can\'t hide, so no screenshot was used.',
   'WORKER_NOT_CONNECTED' => 'The URI worker is not connected.',
   'RESEARCH_IN_PROGRESS' => 'A research task is already running.',
+  'ANSWER_CANCELLED' => 'The answer was cancelled (you stopped sharing, paused, or started a conversation).',
+  'ASK_IN_PROGRESS' => 'URI is still answering your last question.',
+  'TARGET_UNBOUND' => 'URI could not confirm which tab or window it read; nothing was used.',
   _ => 'URI refused: $code',
 };
 

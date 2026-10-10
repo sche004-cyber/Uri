@@ -1,0 +1,20 @@
+<!doctype html><html><head><title>Account security</title></head><body>
+<h1>Verify your sign-in</h1>
+<p>Support ticket link: https://help.example/t?token=abcdef123456&lang=en</p>
+<p>Debug key tvly-ABCDEFGH12345678 and hash 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</p>
+<p>Aadhaar on file: 2345 6789 0123</p>
+<form>
+  <label for="a">Authenticator</label><input id="a" name="totp" value="123456">
+  <label for="b">SMS</label><input id="b" name="smsOtp" value="654321">
+  <label for="c">User</label><input id="c" name="userPin" value="9876">
+  <label for="d">Verification code</label><input id="d" name="vc" value="246810">
+  <label for="e">2FA code</label><input id="e" name="second" value="135790">
+  <label for="f">Password</label><input id="f" name="pw" value="Tr0ub4dor&3">
+  <label for="g">CVN</label><input id="g" name="cvn" value="737">
+  <label for="h">Card</label><input id="h" name="cardnum" value="4111.1111.1111.1111">
+  <label for="i">Notes</label><div id="i" contenteditable="">secret note eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJlLXZhbHVl</div>
+  <label for="j">Plain</label><div id="j" contenteditable="plaintext-only">card 4111 1111 1111 1111</div>
+  <label for="k">Postal PIN code</label><input id="k" name="pincode" value="411001">
+  <label for="l">Spinner speed</label><input id="l" name="spinner" value="12">
+  <input type="hidden" name="csrf" value="tok_abcdefabcdef">
+</form></body></html>

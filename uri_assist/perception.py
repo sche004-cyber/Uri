@@ -2,6 +2,8 @@
 
 Snapshot schemas an adapter must produce (all content UNTRUSTED):
 
+  Adapters return the snapshot with `target_id` set to the target they captured (required).
+
   uri.assist.dom.v1  {schema, url, title, lang?, selection, headings[], text, fields[{id, tag, type, name, label,
                       autocomplete, placeholder, required, readonly, value, rect?}], sensitive_rects?}
                       produced by the browser extension (`browser_extension/snapshot.js`) with `activeTab`.
@@ -53,6 +55,13 @@ class Observation:
     sensitive_rects: list = field(default_factory=list)
     trust: str = "UNTRUSTED_CONTENT"
 
+    @property
+    def unlocated_sensitive(self) -> bool:
+        """A private field that is on screen but has no rectangle cannot be blacked out. Hidden inputs and fields
+        the adapter reports as not visible are not on screen (interim review LOW: CSRF hidden inputs)."""
+        return any(f.get("sensitive") and not f.get("rect") and f.get("visible", True) and f.get("type") != "hidden"
+                   for f in self.fields)
+
     def summary(self) -> dict:
         """What the UI and diagnostics may show (no page text)."""
         return {"source": self.source, "title": self.title[:200], "location": self.location, "fields": len(self.fields),
@@ -81,7 +90,8 @@ def normalise(snapshot: dict, stamp: Stamp) -> Observation:
             if not isinstance(f, dict):
                 continue
             base = {k: _s(f.get(k)) for k in ("id", "tag", "type", "name", "label", "autocomplete", "placeholder")}
-            base.update(required=bool(f.get("required")), readonly=bool(f.get("readonly")), value=_s(f.get("value"), 2000))
+            base.update(required=bool(f.get("required")), readonly=bool(f.get("readonly")), value=_s(f.get("value"), 2000),
+                        visible=f.get("visible") is not False)
             r = _rect(f.get("rect"))
             if r:
                 base["rect"] = r
@@ -99,7 +109,7 @@ def normalise(snapshot: dict, stamp: Stamp) -> Observation:
             base = {"role": _s(e.get("role")), "name": _s(e.get("name")), "label": _s(e.get("name")),
                     "automation_id": _s(e.get("automation_id")), "is_password": e.get("is_password") is True,
                     "required": bool(e.get("required")), "readonly": bool(e.get("readonly")),
-                    "value": _s(e.get("value"), 2000)}
+                    "value": _s(e.get("value"), 2000), "visible": e.get("offscreen") is not True}
             r = _rect(e.get("rect"))
             if r:
                 base["rect"] = r
@@ -199,7 +209,11 @@ class Perceiver:
             raise PerceptionRefused("ADAPTER_UNAVAILABLE")
         stamp = self.access.stamp("uia" if grant.scope.kind == ScopeKind.DESKTOP_WINDOW else "dom")
         snap = adapter.capture(grant.scope.target_id)
-        if isinstance(snap, dict) and snap.get("target_id") not in (None, grant.scope.target_id):
+        # The adapter must say which target it captured (the page script cannot know URI's id; the adapter's channel
+        # attaches it). Missing or different -> refused (interim review LOW: the check was vacuous when absent).
+        if not isinstance(snap, dict) or snap.get("target_id") is None:
+            raise PerceptionRefused("TARGET_UNBOUND")
+        if snap.get("target_id") != grant.scope.target_id:
             raise PerceptionRefused("TARGET_CHANGED")
         obs = normalise(snap, stamp)
         self.access.check_fresh(stamp, Permission.OBSERVE)     # revoked/paused during the capture -> discarded

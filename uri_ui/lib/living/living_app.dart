@@ -172,6 +172,7 @@ class LivingApp extends StatefulWidget {
       assist: AssistController(
         runtime: () => oi.workerExited ? null : oi.runtime,
         events: oi.assistEvents,
+        workerChanges: oi,
       ),
     );
   }

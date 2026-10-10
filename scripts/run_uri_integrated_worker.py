@@ -205,12 +205,27 @@ def main():
                                     host_report=lambda: BH.read_host_report(oi_state),
                                     host_request=lambda action: BH.write_host_request(oi_state, action))
             # W1 / A0 (additive): research and Assist commands. Both yield the single Brain slot to the user's turn.
-            from uri_web import bridge as WEB
-            from uri_web.local_brain import make_complete
-            from uri_assist import bridge as ASSIST
-            web = WEB.WebResearch(write_event=lambda ev: write({"event": ev}), brain_complete=make_complete(client),
-                                  brain_idle=lambda: not oi.busy)
-            assist = ASSIST.AssistCommands(brain_client=client, brain_idle=lambda: not oi.busy)
+            # A failure to load them never takes the OI worker down: their commands are then refused (COMMAND_SCHEMA).
+            web = assist = None
+            WEB_COMMANDS = ASSIST_COMMANDS = frozenset()
+            try:
+                from uri_web import bridge as WEB
+                from uri_web import search as WEB_SEARCH
+                from uri_web.local_brain import loopback_client, make_complete
+                from uri_assist import bridge as ASSIST
+                # Loopback-only client that ignores proxy settings (Codex-pending interim review F7).
+                assist_brain = loopback_client(R.base_url(cfg))
+                # Search keys: an owner-placed file under the client state root (the environment is cleared, F2).
+                web_keys = WEB_SEARCH.load_search_keys(root / "control" / "web" / "search_keys.json")
+                web = WEB.WebResearch(write_event=lambda ev: write({"event": ev}),
+                                      brain_complete=make_complete(assist_brain), brain_idle=lambda: not oi.busy,
+                                      providers_factory=lambda: WEB_SEARCH.providers_from_keys(web_keys),
+                                      defer_start=True)
+                assist = ASSIST.AssistCommands(brain_client=assist_brain, brain_idle=lambda: not oi.busy,
+                                               write_event=lambda ev: write({"event": ev}), defer_start=True)
+                WEB_COMMANDS, ASSIST_COMMANDS = frozenset(WEB.COMMANDS), frozenset(ASSIST.COMMANDS)
+            except Exception:
+                web = assist = None
             EXECUTION = {"execution_begin": {"command", "turn_id", "approval_digest", "proposal_digest"},
                          "execution_status": {"command", "execution_id"}, "execution_cancel": {"command", "execution_id"},
                          "execution_list": {"command"}}
@@ -223,6 +238,8 @@ def main():
                     if kind in WB.COMMANDS:
                         if kind not in WB.OPEN_WHILE_BUSY and turns.execution_active is not None:
                             raise TurnError("EXECUTION_IN_PROGRESS")
+                        if kind == "oi_turn" and assist is not None:
+                            assist.cancel_brain_work("user_turn")   # the user's turn gets the single Brain slot
                         try:
                             result = oi.handle(kind, command)
                         except WB.BridgeRefused as exc:
@@ -230,12 +247,14 @@ def main():
                         write({"result": "OK", "value": result})
                         oi.release()          # the reply (with the turn id) is out before any event of that turn
                         continue
-                    if kind in WEB.COMMANDS or kind in ASSIST.COMMANDS:
+                    if kind in WEB_COMMANDS or kind in ASSIST_COMMANDS:
+                        handler = web if kind in WEB_COMMANDS else assist
                         try:
-                            result = (web if kind in WEB.COMMANDS else assist).handle(kind, command)
+                            result = handler.handle(kind, command)
                         except (WEB.Refused, ASSIST.Refused) as exc:
                             raise TurnError(exc.code) from None
                         write({"result": "OK", "value": result})
+                        handler.release()     # the reply (with the job / ask id) is out before any of its events
                         continue
                     required = {"identity": {"command", "nonce"}, "snapshot": {"command", "session_id", "queries"},
                                 "consent": {"command", "mutations"}, "commit": {"command", "mutations"},
@@ -267,8 +286,8 @@ def main():
                                   "production_cutover": False, "execution_lifecycle": sorted(EXECUTION),
                                   "mid_run_cancel": True, "execution_active": turns.execution_active,
                                   "oi_commands": sorted(WB.COMMANDS), "event_schema": "uri.oi.event.v1",
-                                  "oi_busy": oi.busy, "web_commands": sorted(WEB.COMMANDS),
-                                  "assist_commands": sorted(ASSIST.COMMANDS)}
+                                  "oi_busy": oi.busy, "web_commands": sorted(WEB_COMMANDS),
+                                  "assist_commands": sorted(ASSIST_COMMANDS)}
                     elif kind == "snapshot":
                         result = persistence.snapshot(command["session_id"], [ReadQuery.model_validate(q) for q in command["queries"]]).model_dump()
                     elif kind in {"consent", "commit"}:
@@ -303,8 +322,10 @@ def main():
                     write({"result": "REFUSED", "code": str(getattr(error, "code", error))})
                 except Exception:
                     write({"result": "REFUSED", "code": "CLIENT_COMMAND_REFUSED"})
-            web.close()
-            assist.close()            # Assist grants never outlive the worker
+            if web is not None:
+                web.close()
+            if assist is not None:
+                assist.close()        # Assist grants never outlive the worker
             shutdown(oi, turns)       # stdin EOF (the UI is gone) or after close: same withdrawal, idempotent
             bridge.close()
             ledger.release_owner()
