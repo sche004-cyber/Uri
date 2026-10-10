@@ -102,19 +102,15 @@ function Get-LiveBrainHost([string]$reportDir) {
 }
 
 # BEGIN Wait-UiWindow (P-GOV-1; extracted and exercised by tests/ws/test_ws_hardening.py)
-function Get-ProcessGpuMib([int]$id) {
-  try { return [double](((Get-Counter "\GPU Process Memory(pid_$($id)_*)\Dedicated Usage" -ErrorAction Stop).CounterSamples |
-                          Measure-Object CookedValue -Sum).Sum / 1MB) } catch { return 0.0 }
-}
-function Wait-UiWindow($proc, [int]$seconds, [double]$minGpuMib = 64) {
-  # SHOWN when the process has a window or already holds GPU memory (its swap chain: what the Brain's fit check must
-  # count); EXITED when it ended; PENDING when it is alive without either after $seconds. Used for a NEW and for a
-  # REUSED UI process alike (Codex P-GOV-1 r6).
+function Wait-UiWindow($proc, [int]$seconds) {
+  # SHOWN only when the process has a window (Codex P-GOV-1 r7: GPU memory without a window is not enough), then a
+  # short settle so the window's GPU memory exists when the Brain host measures the fit; EXITED when it ended; PENDING
+  # when it is alive without a window after $seconds. Used for a NEW and for a REUSED UI process alike.
   $deadline = (Get-Date).AddSeconds($seconds)
   while ($true) {
     $proc.Refresh()
     if ($proc.HasExited) { return 'EXITED' }
-    if ($proc.MainWindowHandle -ne 0 -or (Get-ProcessGpuMib $proc.Id) -ge $minGpuMib) { return 'SHOWN' }
+    if ($proc.MainWindowHandle -ne 0) { Start-Sleep -Seconds 2; return 'SHOWN' }
     if ((Get-Date) -ge $deadline) { return 'PENDING' }
     Start-Sleep -Milliseconds 500
   }
@@ -214,7 +210,7 @@ if (-not $NoUi) {
       $ui = Start-Process -FilePath $UiExe -WorkingDirectory (Split-Path $UiExe) -PassThru
       # Wait for the window (its swap chain is allocated with it), then settle briefly so the census sees it.
       $w = Wait-UiWindow $ui 90
-      if ($w -eq 'SHOWN') { Start-Sleep -Seconds 2; Write-Host "URI started (Living Companion, pid $($ui.Id))." }
+      if ($w -eq 'SHOWN') { Write-Host "URI started (Living Companion, pid $($ui.Id))." }
       elseif ($w -eq 'EXITED') { $uiFailure = "UI_EXITED_AT_START: code $($ui.ExitCode)" }
       else {
         # The UI is alive but has no window yet: a window that appears after the Brain loaded would slow the Brain

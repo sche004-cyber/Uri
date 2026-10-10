@@ -1004,11 +1004,12 @@ def test_perf_runners_clear_a_reused_tags_old_outputs_before_the_attempt():
 def test_wait_ui_window_behaviour_on_real_processes():
     """The launcher's own Wait-UiWindow function, extracted from the script and run against real processes: a
     process without a window stays PENDING (the Brain is held back, for a new or a reused UI alike), an ending process
-    is EXITED, a windowed process is SHOWN."""
+    is EXITED, a windowed process is SHOWN. SHOWN needs a window: the function reads no other signal."""
     src = (REPO / "scripts" / "launch_uri_working_system.ps1").read_text(encoding="utf-8")
     fn = src[src.index("# BEGIN Wait-UiWindow"):src.index("# END Wait-UiWindow")]
     body = src[src.index("$check = Test-Installation $RuntimeRoot"):]
     assert body.count("Wait-UiWindow $") == 2                          # both the reused and the new UI path use it
+    assert "Get-Counter" not in fn and "MainWindowHandle -ne 0" in fn
     script = fn + r'''
 $hidden = Start-Process powershell -ArgumentList '-NoProfile','-Command','Start-Sleep 30' -WindowStyle Hidden -PassThru
 $ending = Start-Process cmd -ArgumentList '/c','exit 0' -WindowStyle Hidden -PassThru
