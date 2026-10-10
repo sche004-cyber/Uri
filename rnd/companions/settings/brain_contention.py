@@ -55,6 +55,15 @@ ARGV = [EXE, '-m', MODELS + r'\Qwen3.6-35B-A3B-UD-IQ3_S.gguf', '-c', '32768', '-
 PROMPT = "Here is a numbered list of forty everyday household objects, one per line:\n1."
 
 
+def gpu_advise(out, tag):
+    """The P-GOV-1 advisory verdict the runner recorded before opening its window (None when it wrote none)."""
+    try:
+        with open(os.path.join(out, tag + '.gpu_advise.json'), encoding='utf-8-sig') as f:
+            return json.load(f).get('verdict')
+    except (OSError, ValueError):
+        return None
+
+
 def post(path, body, timeout=300):
     req = urllib.request.Request(f'http://127.0.0.1:{PORT}{path}', data=json.dumps(body).encode(),
                                  headers={'Content-Type': 'application/json'})
@@ -108,6 +117,7 @@ def ui_first(out):
         result['requests'] = reqs
         perf_out, _ = perf.communicate(timeout=600)
         result['runner'] = perf_out.strip().splitlines()[-1:]
+        result['gpu_advise'] = gpu_advise(out, 'brain-ui-first-lunar-adaptive')
         result['after_ui_exit'] = [decode() for _ in range(2)]
     finally:
         if perf.poll() is None:
@@ -165,7 +175,8 @@ def main():
                 reqs.append(decode())
             perf_out, _ = perf.communicate(timeout=300)
             result['runs'][fps] = {'perf_launched': round(launched, 2), 'requests': reqs,
-                                   'runner': perf_out.strip().splitlines()[-1:]}
+                                   'runner': perf_out.strip().splitlines()[-1:],
+                                   'gpu_advise': gpu_advise(out, tag)}
             time.sleep(5)
         result['after'] = [decode() for _ in range(2)]
     finally:

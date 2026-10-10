@@ -35,11 +35,14 @@ param(
   [switch]$OverrideGpu,
   [switch]$NoUi,
   [switch]$SelfTest,
-  # The integration worktree the UI build must come from (a staging source tree is passed here explicitly).
-  [string]$UiRoot = 'C:\Users\cheta\Development\uri-ws-hardening'
+  # The tree the UI build comes from. Only the integration worktree below, or the exact candidate tree the runtime was
+  # materialized from (its receipt's candidate_source at candidate_head, clean), is accepted.
+  [string]$UiRoot = ''
 )
 $ErrorActionPreference = 'Stop'
 $Base = 'e8e3b65259c45fc823addc3ef8969425a265bd1b'
+$DefaultUiRoot = 'C:\Users\cheta\Development\uri-ws-hardening'
+if (-not $UiRoot) { $UiRoot = $DefaultUiRoot }
 $LegacyRoots = @('C:\Users\cheta\Development\uri-agent', 'C:\Users\cheta\Development\uri-m37-m39-integration')
 $LegacyPorts = @(8000, 8018, 8021)
 if (-not $UiExe) { $UiExe = Join-Path $UiRoot 'uri_ui\build\windows\x64\runner\Release\uri_ui.exe' }
@@ -70,6 +73,18 @@ function Test-Installation([string]$root, [string]$uiExe) {
     $u = Norm $uiExe
     if (-not $u.StartsWith((Norm $UiRoot) + '\')) { $problems += 'UI_OUTSIDE_INTEGRATION_WORKTREE' }
     foreach ($l in $LegacyRoots) { $n = Norm $l; if ($u.StartsWith($n + '\')) { $problems += "LEGACY_UI_REFUSED:$l" } }
+    if ((Norm $UiRoot) -ne (Norm $DefaultUiRoot)) {
+      # A non-default UI tree must be the candidate this runtime was materialized from, at the same commit, clean.
+      $okRoot = $false
+      try {
+        $rc = Get-Content -Raw -Encoding UTF8 (Join-Path $root 'OI_MATERIALIZATION_RECEIPT.json') | ConvertFrom-Json
+        $uh = (& git -C $UiRoot rev-parse HEAD 2>$null)
+        $dirty = (& git -C $UiRoot status --porcelain --untracked-files=no 2>$null | Out-String).Trim()
+        $okRoot = ($rc.candidate_source -and ((Norm $rc.candidate_source) -eq (Norm $UiRoot)) -and $rc.candidate_head -and
+                   ($uh -eq $rc.candidate_head) -and -not $dirty)
+      } catch { $okRoot = $false }
+      if (-not $okRoot) { $problems += 'UI_ROOT_NOT_RUNTIME_CANDIDATE' }
+    }
   }
   return [pscustomobject]@{ ok = ($problems.Count -eq 0); problems = $problems; installation = $cur }
 }
@@ -105,6 +120,10 @@ if ($SelfTest) {
   (@{ source_root = $tmp; client_root = $tmp } | ConvertTo-Json) | Set-Content -Encoding ascii $cm
   (@{ server_manifest = $sm; client_manifest = $cm; port = 8000 } | ConvertTo-Json) | Set-Content -Encoding ascii (Join-Path $tmp 'work\c1\ws-current.json')
   $negPort = Test-Installation $tmp $null
+  # An arbitrary (non-legacy) UI root that is not the runtime's materialization candidate: must be refused.
+  $savedUiRoot = $UiRoot; $UiRoot = $tmp
+  $negArbitrary = Test-Installation $RuntimeRoot (Join-Path $tmp 'uri_ui\build\uri_ui.exe')
+  $UiRoot = $savedUiRoot
   Remove-Item -Recurse -Force $tmp
   # Listener identity: the real manifest must prove; the same live proof checked against another valid key must fail.
   $idOk = $null; $idForeign = $null
@@ -121,6 +140,7 @@ if ($SelfTest) {
     real_installation = @{ ok = $real.ok; problems = $real.problems; port = $real.installation.port }
     negative_legacy_root = @{ refused = (-not $negLegacy.ok); problems = $negLegacy.problems }
     negative_foreign_ui = @{ refused = (-not $negUi.ok); problems = $negUi.problems }
+    negative_arbitrary_ui_root = @{ refused = (@($negArbitrary.problems | Where-Object { $_ -eq 'UI_ROOT_NOT_RUNTIME_CANDIDATE' }).Count -gt 0); problems = $negArbitrary.problems }
     negative_legacy_port = @{ refused = (@($negPort.problems | Where-Object { $_ -like 'LEGACY_PORT_REFUSED*' }).Count -gt 0); problems = $negPort.problems }
     listener_identity_proven = $idOk
     wrong_key_proof_refused = $idForeign
@@ -128,7 +148,7 @@ if ($SelfTest) {
     gpu_lease = $(try { (& (Join-Path $RuntimeRoot '.venv\Scripts\python.exe') -m uri_operational_intelligence.gpu_lease status 2>$null | Out-String | ConvertFrom-Json).state } catch { 'UNREADABLE' })
   }
   $out | ConvertTo-Json -Depth 5
-  if ($real.ok -and -not $negLegacy.ok -and -not $negUi.ok -and $out.negative_legacy_port.refused -and ($idOk -ne $false) -and ($idForeign -ne $false)) { exit 0 } else { exit 1 }
+  if ($real.ok -and -not $negLegacy.ok -and -not $negUi.ok -and $out.negative_legacy_port.refused -and $out.negative_arbitrary_ui_root.refused -and ($idOk -ne $false) -and ($idForeign -ne $false)) { exit 0 } else { exit 1 }
 }
 
 $check = Test-Installation $RuntimeRoot ($(if ($NoUi) { $null } else { $UiExe }))
@@ -153,22 +173,29 @@ if ((Test-Http $health) -ne 0) {
 Write-Host "Integrated server: port $($srv.port), identity proven"
 
 # 2. UI, before the Brain (P-GOV-1): the window's GPU memory must exist when the Brain host measures the fit.
+#    A UI that cannot start is reported (exit 4 at the end) but no longer prevents the Brain step.
+$uiFailure = $null
 if (-not $NoUi) {
-  if (-not (Test-Path $UiExe)) { Write-Error "UI_NOT_BUILT: $UiExe (flutter build windows in $UiRoot\uri_ui)"; exit 4 }
   $open = @(Get-Process uri_ui -ErrorAction SilentlyContinue | Where-Object { $_.Path -and ((Norm $_.Path) -eq (Norm $UiExe)) })
-  if ($open.Count -gt 0) {
+  if (-not (Test-Path $UiExe)) {
+    $uiFailure = "UI_NOT_BUILT: $UiExe (flutter build windows in $UiRoot\uri_ui)"
+  } elseif ($open.Count -gt 0) {
     # One worker per installation (L-MUTEX): a second window would only fail to start its worker. The Brain step
     # below still runs, so a reused window still gets a Brain.
     Write-Host "URI is already open (pid $($open[0].Id)); not starting a second window."
   } else {
     $env:URI_CLIENT_MANIFEST = $cur.client_manifest
-    $ui = Start-Process -FilePath $UiExe -WorkingDirectory (Split-Path $UiExe) -PassThru
-    # Wait for the window (its swap chain is allocated with it), then settle briefly so the census sees it.
-    $deadline = (Get-Date).AddSeconds(30)
-    while ($ui.MainWindowHandle -eq 0 -and -not $ui.HasExited -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 300; $ui.Refresh() }
-    if ($ui.MainWindowHandle -ne 0) { Start-Sleep -Seconds 2; Write-Host "URI started (Living Companion, pid $($ui.Id))." }
-    else { Write-Host "URI window not seen after 30 s (pid $($ui.Id)); the Brain host starts anyway." }
+    try {
+      $ui = Start-Process -FilePath $UiExe -WorkingDirectory (Split-Path $UiExe) -PassThru
+      # Wait for the window (its swap chain is allocated with it), then settle briefly so the census sees it.
+      $deadline = (Get-Date).AddSeconds(30)
+      while ($ui.MainWindowHandle -eq 0 -and -not $ui.HasExited -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 300; $ui.Refresh() }
+      if ($ui.MainWindowHandle -ne 0) { Start-Sleep -Seconds 2; Write-Host "URI started (Living Companion, pid $($ui.Id))." }
+      elseif ($ui.HasExited) { $uiFailure = "UI_EXITED_AT_START: code $($ui.ExitCode)" }
+      else { Write-Host "URI window not seen after 30 s (pid $($ui.Id)); the Brain host starts anyway." }
+    } catch { $uiFailure = "UI_START_FAILED: $($_.Exception.Message)" }
   }
+  if ($uiFailure) { Write-Host "UI problem: $uiFailure. The Brain step still runs." }
 }
 
 # 3. Brain, after the window. A live Brain host is reused (never duplicated). Something else answering on the
@@ -187,3 +214,4 @@ if ($liveHost) {
   Start-Process -FilePath $py -ArgumentList $hostArgs -WorkingDirectory $RuntimeRoot -WindowStyle Hidden | Out-Null
   Write-Host "Brain host: starting (GPU check, load and speed check run in the background; URI shows the state)"
 } else { Write-Host "Runtime v1: health $brain (attach; identity verified by the worker)" }
+if ($uiFailure) { [Console]::Error.WriteLine($uiFailure); exit 4 }

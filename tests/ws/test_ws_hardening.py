@@ -725,6 +725,8 @@ def test_host_waits_for_another_uri_lease_holder(tmp_path):
 
 # ---- P-GOV-1 window advisory and UI-first launch -----------------------------------------------------------------
 def advise(tmp_path, census_sample, **kw):
+    # In-process leases below stand for OTHER sessions' leases, so the caller's own pids are not exempted.
+    kw.setdefault("own_pids", ())
     return G.advise_window(directory=tmp_path, census_fn=lambda: census_sample, **kw)
 
 
@@ -773,11 +775,25 @@ def test_advise_waits_for_a_heavy_holder_and_ignores_the_users_brain_host(tmp_pa
 def test_advise_fails_closed_when_unmeasurable(tmp_path):
     assert advise(tmp_path, {"ok": False, "error": "TimeoutExpired"})["verdict"] == G.WAIT_HEAVY
     assert advise(tmp_path, G.census({"p": [], "a": []}, card=CARD))["verdict"] == G.WAIT_HEAVY
-    tmp_path.mkdir(exist_ok=True)
-    (tmp_path / "lease.json").write_text("{not json", encoding="utf-8")
     desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
-    r = advise(tmp_path, desktop)
-    assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "LEASE_UNREADABLE"
+    # The lock is held but the record names no live holder: an acquire() between taking the lock and publishing
+    # lease.json (Codex P-GOV-1 r1 M1), or a corrupt record. Both fail closed.
+    import msvcrt
+    for record in (None, "{not json", json.dumps({"state": "released", "pid": 1})):
+        if record is None:
+            (tmp_path / "lease.json").unlink(missing_ok=True)
+        else:
+            (tmp_path / "lease.json").write_text(record, encoding="utf-8")
+        fd = G._try_lock(tmp_path)
+        try:
+            r = advise(tmp_path, desktop)
+            assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "LEASE_UNREADABLE", record
+        finally:
+            os.lseek(fd, 0, 0)
+            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            os.close(fd)
+    # without the lock the same corrupt record is simply a free lease
+    assert advise(tmp_path, desktop)["verdict"] == G.GO
 
 
 def test_advise_never_takes_the_lock_or_writes_lease_files(tmp_path, monkeypatch):
@@ -798,13 +814,39 @@ def test_advise_never_takes_the_lock_or_writes_lease_files(tmp_path, monkeypatch
     assert lease_files(tmp_path) == before
 
 
-def test_advise_cli_exit_codes(tmp_path):
+def test_advise_cli_exit_codes(tmp_path, monkeypatch, capsys):
     env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
     cmd = [sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "advise", "--window"]
-    with G.acquire("benchmark", label="bench", directory=tmp_path):
+    p = child_holder(tmp_path)                       # another session's benchmark (not an ancestor of the CLI)
+    try:
         busy = subprocess.run(cmd, env=env, capture_output=True, text=True, cwd=REPO)
-    assert busy.returncode == 75 and json.loads(busy.stdout)["verdict"] == G.WAIT_HEAVY
-    assert G.status(tmp_path)["state"] == "FREE"
+        assert busy.returncode == 75 and json.loads(busy.stdout)["verdict"] == G.WAIT_HEAVY
+        assert p.poll() is None
+    finally:
+        kill_holder(p)
+    with G.acquire("benchmark", label="own bench", directory=tmp_path):
+        own = subprocess.run(cmd, env=env, capture_output=True, text=True, cwd=REPO)   # inside its own lease
+    assert json.loads(own.stdout)["own_lease"] is True and own.returncode != 75
+    # GO (0) and WILL_DEGRADE_BRAIN (76) through the same CLI entry point, with a fake census
+    monkeypatch.setenv("URI_GPU_LEASE_DIR", str(tmp_path))
+    desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    brain = G.census(raw([(1580, 311, 9), (4242, 15900, 1149)], 16283), card=CARD)
+    for sample, code, verdict in ((desktop, 0, G.GO), (brain, 76, G.WILL_DEGRADE_BRAIN)):
+        monkeypatch.setattr(G, "census", lambda s=sample: s)
+        assert G.main(["advise", "--window"]) == code
+        assert json.loads(capsys.readouterr().out)["verdict"] == verdict
+
+
+def test_advise_does_not_wait_for_the_callers_own_lease(tmp_path):
+    desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+    p = child_holder(tmp_path)                                         # benchmark lease held by "our" runner
+    try:
+        r = advise(tmp_path, desktop, own_pids={p.holder_pid})
+        assert r["verdict"] == G.GO and r["own_lease"] is True
+        assert advise(tmp_path, desktop)["verdict"] == G.WAIT_HEAVY      # anyone else still waits
+    finally:
+        kill_holder(p)
+    assert os.getpid() in G._ancestors()
 
 
 def test_launcher_starts_the_window_before_the_brain_host_and_keeps_the_brain_for_a_reused_window():
@@ -817,4 +859,24 @@ def test_launcher_starts_the_window_before_the_brain_host_and_keeps_the_brain_fo
     assert server < ui < wait < brain
     reuse = body[body.index("URI is already open"):brain]
     assert "exit 0" not in reuse                                       # a reused window still gets its Brain
-    assert "LEGACY_UI_REFUSED" in s and "[string]$UiRoot" in s
+    ui_step = body[body.index("# 2. UI, before the Brain"):brain]
+    import re
+    code = "\n".join(x for x in ui_step.splitlines() if not x.lstrip().startswith("#"))
+    assert not re.search(r"\bexit\s+\d", code)                     # a UI failure no longer skips the Brain step
+    assert "UI_NOT_BUILT" in ui_step and body.rindex("exit 4") > brain
+    assert "LEGACY_UI_REFUSED" in s and "UI_ROOT_NOT_RUNTIME_CANDIDATE" in s and "negative_arbitrary_ui_root" in s
+
+
+def test_launcher_selftest_refuses_an_arbitrary_ui_root():
+    """Behavioural: the launcher's own self-test (no process started) refuses a UI root that is not the runtime's
+    materialization candidate. Runs only where the default working-system runtime exists."""
+    root = Path(r"C:\Users\cheta\Development\uri-ws-hard")
+    if not (root / "OI_MATERIALIZATION_RECEIPT.json").exists():
+        pytest.skip("working-system runtime not on this machine")
+    r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+                        str(REPO / "scripts" / "launch_uri_working_system.ps1"), "-SelfTest"],
+                       capture_output=True, text=True, timeout=300)
+    out = json.loads(r.stdout[r.stdout.index("{"):])
+    assert out["negative_arbitrary_ui_root"]["refused"] is True
+    assert "UI_ROOT_NOT_RUNTIME_CANDIDATE" in out["negative_arbitrary_ui_root"]["problems"]
+    assert out["legacy_port_8000_contacted"] is False

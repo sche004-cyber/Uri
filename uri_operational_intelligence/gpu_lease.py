@@ -381,18 +381,46 @@ HEAVY_PURPOSES = ("benchmark", "regression_chain")
 HEAVY_LABEL_WORDS = ("live", "bench")
 
 
+def _lock_held(directory: Path):
+    """True when another handle holds the lease byte lock, False when not, None when it cannot be told. It only
+    READS the lock file: a read of a byte-locked range fails on Windows (ERROR_LOCK_VIOLATION), so no lock is ever
+    taken and a concurrent acquire() cannot fail because of this probe (unlike status())."""
+    try:
+        with open(directory / "gpu.lock", "rb") as f:
+            f.read(1)
+        return False
+    except FileNotFoundError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return None
+
+
 def peek(directory=None) -> dict:
-    """Who holds the lease, from lease.json and the holder's process only. Unlike status() it never touches the lock
-    file, so it cannot make a concurrent acquire() fail."""
-    path = Path(directory or lease_dir()) / "lease.json"
-    if not path.exists():
-        return {"state": "FREE", "holder": None}
-    rec = _read_json(path)
-    if not isinstance(rec, dict):
+    """Who holds the lease, without taking the lock or writing anything. A held lock whose record does not (yet) name a
+    live holder, e.g. an acquire() between taking the lock and publishing lease.json, is UNREADABLE (fail closed)."""
+    d = Path(directory or lease_dir())
+    held = _lock_held(d)
+    if held is None:
         return {"state": "UNREADABLE", "holder": None}
-    if rec.get("state") == "held" and holder_alive(rec):
+    if not held:
+        return {"state": "FREE", "holder": None}          # a "held" record without the lock is a dead holder's
+    rec = _read_json(d / "lease.json")
+    if isinstance(rec, dict) and rec.get("state") == "held" and holder_alive(rec):
         return {"state": "HELD", "holder": rec}
-    return {"state": "FREE", "holder": None}
+    return {"state": "UNREADABLE", "holder": None}
+
+
+def _ancestors(pid=None):
+    """This process and its parents: a script that runs inside its own `gpu_lease run` lease is not waiting for
+    itself."""
+    try:
+        import psutil
+        p = psutil.Process(pid or os.getpid())
+        return {p.pid} | {a.pid for a in p.parents()}
+    except Exception:
+        return {pid or os.getpid()}
 
 
 def _heavy(holder) -> bool:
@@ -403,16 +431,19 @@ def _heavy(holder) -> bool:
     return purpose == "runtime_v1_brain" and any(w in label for w in HEAVY_LABEL_WORDS)
 
 
-def assess_window(lease: dict, c: dict, expected_mib=WINDOW_MIB) -> dict:
+def assess_window(lease: dict, c: dict, expected_mib=WINDOW_MIB, own_pids=()) -> dict:
     """GO / WAIT_HEAVY / WILL_DEGRADE_BRAIN for opening one more window now. Unmeasurable state is WAIT_HEAVY (fail
-    closed for test windows; the user is never blocked because the app does not need to ask)."""
+    closed for test windows; the user is never blocked because the app does not need to ask). A lease held by one of
+    `own_pids` (the caller's own `gpu_lease run`) is not a reason to wait."""
     out = {"expected_mib": expected_mib, "lease": lease.get("state"),
            "holder": {k: (lease.get("holder") or {}).get(k) for k in ("pid", "purpose", "label")}
            if lease.get("holder") else None}
     if lease.get("state") not in ("FREE", "HELD"):
         return dict(out, verdict=WAIT_HEAVY, reason="LEASE_UNREADABLE",
-                    explain="The GPU lease record cannot be read; a test window should wait.")
-    if lease.get("state") == "HELD" and _heavy(lease["holder"]):
+                    explain="The GPU lease state cannot be read; a test window should wait.")
+    own = lease.get("state") == "HELD" and lease["holder"].get("pid") in set(own_pids)
+    out["own_lease"] = own
+    if lease.get("state") == "HELD" and not own and _heavy(lease["holder"]):
         h = lease["holder"]
         return dict(out, verdict=WAIT_HEAVY, reason="HEAVY_HOLDER",
                     explain="%s (%s) holds the GPU; a test or capture window should wait." % (
@@ -437,13 +468,15 @@ def assess_window(lease: dict, c: dict, expected_mib=WINDOW_MIB) -> dict:
     return dict(out, verdict=GO, reason="MARGIN_OK", explain="The window fits next to the Brain (margin %.0f MB)." % margin)
 
 
-def advise_window(expected_mib=WINDOW_MIB, *, wait_s=0.0, poll_s=5.0, directory=None, census_fn=None) -> dict:
+def advise_window(expected_mib=WINDOW_MIB, *, wait_s=0.0, poll_s=5.0, directory=None, census_fn=None,
+                  own_pids=None) -> dict:
     """Read-only advisory for a script about to open a URI window. Waits (polling) only while the verdict is
     WAIT_HEAVY. Takes no lock, writes no file, stops nothing."""
     deadline = time.monotonic() + max(0.0, wait_s)
     census_fn = census_fn or census
+    own = _ancestors() if own_pids is None else set(own_pids)
     while True:
-        res = assess_window(peek(directory), census_fn(), expected_mib)
+        res = assess_window(peek(directory), census_fn(), expected_mib, own_pids=own)
         res["t"] = round(time.time(), 3)
         if res["verdict"] != WAIT_HEAVY or time.monotonic() >= deadline:
             return res

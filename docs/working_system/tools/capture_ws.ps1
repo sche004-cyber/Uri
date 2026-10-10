@@ -51,7 +51,10 @@ $repo = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSCommandPat
 Push-Location $repo
 try { $advise = (& $Python -m uri_operational_intelligence.gpu_lease advise --window --wait $AdviseWait | Out-String) } finally { Pop-Location }
 $advise | Set-Content -Encoding utf8 (Join-Path $OutDir ("gpu_advise_{0}.json" -f (Get-Date -Format 'HHmmss')))
-Write-Host ("GPU advisory: " + (($advise | ConvertFrom-Json).verdict))
+$verdict = $null; try { $verdict = ($advise | ConvertFrom-Json).verdict } catch {}
+Write-Host ("GPU advisory: " + $verdict)
+# A heavy holder still present after the wait (or an unreadable advisory): do not open the window.
+if ($verdict -ne 'GO' -and $verdict -ne 'WILL_DEGRADE_BRAIN') { throw "GPU_ADVISORY_$(if ($verdict) { $verdict } else { 'UNREADABLE' }): window not opened" }
 $env:URI_CLIENT_MANIFEST = $Manifest
 $env:URI_LIVING_SKIP_ONBOARDING = '1'
 $p = Start-Process -FilePath $Exe -WorkingDirectory (Split-Path $Exe) -PassThru }

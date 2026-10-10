@@ -29,9 +29,13 @@ $csv = Join-Path $OutDir "$Tag.samples.csv"
 Push-Location $root
 try { $advise = (& python -m uri_operational_intelligence.gpu_lease advise --window --wait 1800 | Out-String) } finally { Pop-Location }
 $advise | Set-Content -Encoding utf8 (Join-Path $OutDir "$Tag.gpu_advise.json")
-$verdict = ($advise | ConvertFrom-Json).verdict
+$verdict = $null; try { $verdict = ($advise | ConvertFrom-Json).verdict } catch {}
 Write-Output "GPU_ADVISE $verdict"
-if ($verdict -ne 'GO') { Write-Output "RUN_INVALID gpu advisory $verdict (see $Tag.gpu_advise.json)" }
+if ($verdict -ne 'GO' -and $verdict -ne 'WILL_DEGRADE_BRAIN') {
+  # A heavy holder is still present after the wait (or the advisory is unreadable): no window, no measurement.
+  Write-Output "RUN_SKIPPED gpu advisory $verdict (see $Tag.gpu_advise.json)"; exit 3
+}
+if ($verdict -eq 'WILL_DEGRADE_BRAIN') { Write-Output "RUN_INVALID gpu advisory $verdict (see $Tag.gpu_advise.json)" }
 $env:URI_VOICE_PERF = "$Seconds"
 $env:URI_VOICE_SCENARIO = $Scenario
 $env:URI_VOICE_IDENTITY = $Identity
