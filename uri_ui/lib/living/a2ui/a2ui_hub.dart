@@ -398,7 +398,14 @@ class A2uiHub extends ChangeNotifier {
         (data['request'] as Map).cast<String, dynamic>(),
       );
       _time('handoff->surface', sw);
-      apply((r['messages'] as List?) ?? const []);
+      final changed = apply((r['messages'] as List?) ?? const []);
+      // A normal reply that renders nothing reviewable (empty, or refused by validation) is a failed handoff too:
+      // there is nothing to decide (INT-F1, Codex r3).
+      if (!changed.any((id) => _surfaces[id]?.ready ?? false)) {
+        _notice('The scheduler sent nothing to review. Nothing was scheduled.');
+        notifyListeners();
+        onHandoffFailed?.call(data);
+      }
     } on SchedulerApiError catch (e) {
       _notice('The scheduler refused the request: ${e.code}.');
       notifyListeners();

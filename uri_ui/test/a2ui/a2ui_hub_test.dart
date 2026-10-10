@@ -211,6 +211,36 @@ void main() {
     expect(hub.errors[sid], contains('not available'));
   });
 
+  testWidgets('a proposal reply that renders nothing reviewable is a failed handoff (INT-F1)', (t) async {
+    for (final body in <Object>[
+      {'messages': <Object>[]},
+      {'messages': [{'not': 'a valid message'}]},
+    ]) {
+      final failed = <Map<String, dynamic>>[];
+      final hub = A2uiHub(
+        scheduler: SchedulerClient(
+          baseUrl: 'http://127.0.0.1:1',
+          token: 't',
+          principal: 'owner',
+          client: MockClient((req) async => req.url.path == '/a2ui/propose'
+              ? _json(body)
+              : http.Response('{"error":"NOT_FOUND"}', 404)),
+        ),
+        onHandoffFailed: failed.add,
+      );
+      await t.runAsync(() => hub.handoff(fx['handoff'] as Map<String, dynamic>));
+      expect(hub.surfaces, isEmpty);
+      expect(failed, hasLength(1));
+      expect(hub.notices.last, contains('nothing to review'));
+    }
+    // A real proposal is not reported as a failure.
+    final failed = <Map<String, dynamic>>[];
+    final ok = A2uiHub(scheduler: client(), onHandoffFailed: failed.add);
+    await t.runAsync(() => ok.handoff(fx['handoff'] as Map<String, dynamic>));
+    expect(ok.surfaces, isNotEmpty);
+    expect(failed, isEmpty);
+  });
+
   testWidgets('without a scheduler a handoff gives an honest notice', (
     t,
   ) async {
