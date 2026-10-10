@@ -101,6 +101,26 @@ function Get-LiveBrainHost([string]$reportDir) {
   return $r
 }
 
+# BEGIN Wait-UiWindow (P-GOV-1; extracted and exercised by tests/ws/test_ws_hardening.py)
+function Get-ProcessGpuMib([int]$id) {
+  try { return [double](((Get-Counter "\GPU Process Memory(pid_$($id)_*)\Dedicated Usage" -ErrorAction Stop).CounterSamples |
+                          Measure-Object CookedValue -Sum).Sum / 1MB) } catch { return 0.0 }
+}
+function Wait-UiWindow($proc, [int]$seconds, [double]$minGpuMib = 64) {
+  # SHOWN when the process has a window or already holds GPU memory (its swap chain: what the Brain's fit check must
+  # count); EXITED when it ended; PENDING when it is alive without either after $seconds. Used for a NEW and for a
+  # REUSED UI process alike (Codex P-GOV-1 r6).
+  $deadline = (Get-Date).AddSeconds($seconds)
+  while ($true) {
+    $proc.Refresh()
+    if ($proc.HasExited) { return 'EXITED' }
+    if ($proc.MainWindowHandle -ne 0 -or (Get-ProcessGpuMib $proc.Id) -ge $minGpuMib) { return 'SHOWN' }
+    if ((Get-Date) -ge $deadline) { return 'PENDING' }
+    Start-Sleep -Milliseconds 500
+  }
+}
+# END Wait-UiWindow
+
 function Test-Http([string]$url) {
   try { $r = Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 $url; return [int]$r.StatusCode } catch {
     if ($_.Exception.Response) { return [int]$_.Exception.Response.StatusCode } ; return 0 }
@@ -180,18 +200,22 @@ if (-not $NoUi) {
   if (-not (Test-Path $UiExe)) {
     $uiFailure = "UI_NOT_BUILT: $UiExe (flutter build windows in $UiRoot\uri_ui)"
   } elseif ($open.Count -gt 0) {
-    # One worker per installation (L-MUTEX): a second window would only fail to start its worker. The Brain step
-    # below still runs, so a reused window still gets a Brain.
+    # One worker per installation (L-MUTEX): a second window would only fail to start its worker. A reused process
+    # gets the same window check as a new one before the Brain step.
     Write-Host "URI is already open (pid $($open[0].Id)); not starting a second window."
+    $w = Wait-UiWindow $open[0] 90
+    if ($w -eq 'PENDING') {
+      $uiPending = $true
+      $uiFailure = "UI_WINDOW_NOT_SHOWN after 90 s (pid $($open[0].Id)); the Brain was not started. Run the launcher again when the window is open."
+    } elseif ($w -eq 'EXITED') { $uiFailure = "UI_EXITED: pid $($open[0].Id)" }
   } else {
     $env:URI_CLIENT_MANIFEST = $cur.client_manifest
     try {
       $ui = Start-Process -FilePath $UiExe -WorkingDirectory (Split-Path $UiExe) -PassThru
       # Wait for the window (its swap chain is allocated with it), then settle briefly so the census sees it.
-      $deadline = (Get-Date).AddSeconds(90)
-      while ($ui.MainWindowHandle -eq 0 -and -not $ui.HasExited -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 300; $ui.Refresh() }
-      if ($ui.MainWindowHandle -ne 0) { Start-Sleep -Seconds 2; Write-Host "URI started (Living Companion, pid $($ui.Id))." }
-      elseif ($ui.HasExited) { $uiFailure = "UI_EXITED_AT_START: code $($ui.ExitCode)" }
+      $w = Wait-UiWindow $ui 90
+      if ($w -eq 'SHOWN') { Start-Sleep -Seconds 2; Write-Host "URI started (Living Companion, pid $($ui.Id))." }
+      elseif ($w -eq 'EXITED') { $uiFailure = "UI_EXITED_AT_START: code $($ui.ExitCode)" }
       else {
         # The UI is alive but has no window yet: a window that appears after the Brain loaded would slow the Brain
         # until it restarts (P-GOV-1, Codex r5). The Brain is not started now; running the launcher again once the

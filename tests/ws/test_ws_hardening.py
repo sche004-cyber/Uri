@@ -857,7 +857,7 @@ def test_launcher_starts_the_window_before_the_brain_host_and_keeps_the_brain_fo
     s = (REPO / "scripts" / "launch_uri_working_system.ps1").read_text(encoding="utf-8")
     body = s[s.index("$check = Test-Installation $RuntimeRoot"):]
     ui = body.index("Start-Process -FilePath $UiExe")
-    wait = body.index("MainWindowHandle -eq 0")
+    wait = body.index("Wait-UiWindow $ui 90")
     brain = body.index("ws_brain_host.py")
     server = body.index("run_uri_integrated_server.py")
     assert server < ui < wait < brain
@@ -999,3 +999,26 @@ def test_perf_runners_clear_a_reused_tags_old_outputs_before_the_attempt():
         src = (REPO / rel).read_text(encoding="utf-8")
         clear = src.index("Remove-Item -LiteralPath $f -ErrorAction Stop")
         assert clear < src.index("profile build missing") < src.index("gpu_lease advise") < src.index("Start-Process -FilePath $exe")
+
+
+def test_wait_ui_window_behaviour_on_real_processes():
+    """The launcher's own Wait-UiWindow function, extracted from the script and run against real processes: a
+    process without a window stays PENDING (the Brain is held back, for a new or a reused UI alike), an ending process
+    is EXITED, a windowed process is SHOWN."""
+    src = (REPO / "scripts" / "launch_uri_working_system.ps1").read_text(encoding="utf-8")
+    fn = src[src.index("# BEGIN Wait-UiWindow"):src.index("# END Wait-UiWindow")]
+    body = src[src.index("$check = Test-Installation $RuntimeRoot"):]
+    assert body.count("Wait-UiWindow $") == 2                          # both the reused and the new UI path use it
+    script = fn + r'''
+$hidden = Start-Process powershell -ArgumentList '-NoProfile','-Command','Start-Sleep 30' -WindowStyle Hidden -PassThru
+$ending = Start-Process cmd -ArgumentList '/c','exit 0' -WindowStyle Hidden -PassThru
+$shown = Start-Process powershell -WindowStyle Minimized -PassThru -ArgumentList '-NoProfile','-Command','Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.Form; $f.Text = ''uri-test''; [void]$f.ShowDialog()'
+try {
+  $r = [ordered]@{ hidden = (Wait-UiWindow $hidden 3); ending = (Wait-UiWindow $ending 10); shown = (Wait-UiWindow $shown 20) }
+  $r | ConvertTo-Json -Compress
+} finally { foreach ($p in @($hidden, $shown)) { if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force } } }
+'''
+    r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script],
+                       capture_output=True, text=True, timeout=120)
+    out = json.loads(r.stdout.strip().splitlines()[-1])
+    assert out == {"hidden": "PENDING", "ending": "EXITED", "shown": "SHOWN"}, r.stderr
