@@ -1,0 +1,256 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R8",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R8-01"
+ ],
+ "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T11:28:24Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "impl_head": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "ddf3633d8c9043c32926c1abdc282cd55dced551e5163e295d42f87fbee58727",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "impl_head": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "ddf3633d8c9043c32926c1abdc282cd55dced551e5163e295d42f87fbee58727",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "/tmp/uri_review_R8/p3.py, built like test_r7_01_reviewer_links_end_to_end: for link in ['refunds-portal\\ua78fcom/claim', 'refunds-portal \\ua78f com', 'refunds-portal\\u1427com/claim', 'refunds-portal . c om/claim', 'refunds-portal . c o m'], U.has_link_or_contact(src) is False, SY.verify and SY.extractive keep the claim with 'refunds-portal\ua78fcom/claim' etc. verbatim, and build_surface + require_valid output contains 'portal'. _is_mark/_is_dotlike only consider P*/S* categories, so a Lo/Lm dot (renders identically to U+00B7, which D13 covers) becomes part of the host label. _SPLIT_TLD (R7-01) handles a split TLD only after a tight dot ('refunds-portal.c om' is detected), not after the spaced dot D13 allows ('refunds-portal . c om' is not). Related, not filed separately: U+A4F8, U+02D1 and U+0660 as separators, and 'refunds-portal -.- com' (dash-wrapped dot), also pass.",
+    "files": [
+     "uri_web/untrusted.py:129",
+     "uri_web/untrusted.py:133",
+     "uri_web/untrusted.py:186",
+     "uri_web/untrusted.py:192",
+     "uri_web/synthesize.py",
+     "uri_web/surface.py"
+    ],
+    "id": "R8-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Treat as dot-like any code point whose Unicode name contains DOT/MIDDLE DOT/FULL STOP regardless of category (excluding 'WITH DOT' letters), including Lo/Lm, both as a separator inside a label run and spaced; apply the split-top-level-label rule after every _DOT separator, not just tight ones; add the forms above to the end-to-end regression test.",
+    "title": "R1-01 link class still open: letter-category middle-dot look-alikes (U+A78F LATIN LETTER SINOLOGICAL DOT, U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT) and a spaced dot before a split top-level label ('refunds-portal . c om/claim', 'refunds-portal . c o m') pass has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, D13 'middle dots', 'mask any dot-joined word')"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist",
+    "result": "3188 passed in 89.64s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p1.py; p2.py (link detector probes)",
+    "result": "R7-01 listed forms detected; new misses: U+A78F, U+1427, U+A4F8, U+02D1, U+0660 separators, 'refunds-portal . c o m', dash-wrapped dot",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p3.py (end-to-end verify/extractive/surface/A2UI)",
+    "result": "5/5 bypass forms reach the validated surface unmasked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p4.py (R7-02 sibling probes)",
+    "result": "all determiner/negation variants quoted verbatim or dropped",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --name-only ffdf534..474adb8 | grep protected paths",
+    "result": "no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter widget tests (uri_ui) not run this round",
+   "SSRF/safe_fetch, vision gating, access/bridge permissions, integrated worker dispatch and snapshot.js not re-probed adversarially this round (unchanged since R7; covered by passing test suite only)",
+   "R1-03/R1-04/R1-05 status rests on earlier rounds and the passing suite, not new adversarial probes",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)",
+   "Windows/GPU live verification not possible"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 8,
+ "started_at": "2026-10-11T11:24:57Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "8375af4b-8468-4e67-ba85-0cfe741090e8",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 74
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7439714999999999,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R8",
+  "ended_at": "2026-10-11T11:28:23Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 12,
+  "pid": 346,
+  "prompt_sha256": "ccb4b78851c1a11b483cb1050e8133a1144a18464b39a52622b809ba39ca1261",
+  "provider": "claude_cli",
+  "result_text_sha256": "21c88eb56674321b3b4b59cb77a6538b6477228a47deee69db167043c9996a82",
+  "role": "reviewer",
+  "session_id": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+  "session_id_requested": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+  "started_at": "2026-10-11T11:24:57Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "ceaa506bd0f0bf29fa2cc6e0382a62137b6d012bd6794e645ccae4ab0434759c"
+ }
+}

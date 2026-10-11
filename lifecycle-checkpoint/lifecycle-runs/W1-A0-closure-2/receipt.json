@@ -1,15 +1,15 @@
 {
  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
  "blocker": {
-  "at": "2026-10-11T10:27:04Z",
+  "at": "2026-10-11T11:28:24Z",
   "kind": "RETRY_LIMIT",
   "needs": "owner or a more capable implementer",
-  "reason": "still failing after 3 repairs (diagnosed: R3-01: the candidate regex _BARE (uri_web/untrusted.py:64, unchanged since f370064) only accepts a top-level label of 2-24 letters ([^\\W\\d_]{2,24}) and forbids a hyphen or word character after it ((?![\\w-])). A punycode/ACE TLD such as 'xn--p1ai' (digits and hyphens) never produces a match, so _is_d): R1-01",
+  "reason": "still failing after 3 repairs (diagnosed: The link detector in uri_web/untrusted.py is still a list of known separator shapes, not a rule. _BARE (untrusted.py:78) matches a bare domain only when the labels are joined by _DOT (untrusted.py:76), and _DOT accepts only the 14 characters in _DOTCH (untrusted.py:75), certain bracket pairs and a s): R1-01",
   "stage": "AUDITING"
  },
- "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+ "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
  "config_sha256": "fd330b42861dfd46915162a16371833bc651d5cea268e8f2d2fda060230ae1e6",
- "events": 36,
+ "events": 59,
  "evidence_ok_for_candidate": false,
  "gates": {},
  "integration": null,
@@ -17,15 +17,9 @@
  "open_findings": [
   {
    "blocking": true,
-   "id": "R5-01",
+   "id": "R8-01",
    "severity": "HIGH",
-   "title": "R1-01 class still open: a link next to an underscore or hyphen ('_refunds-portal.com_', 'refunds-portal.com_', '-refunds-portal.com') passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator"
-  },
-  {
-   "blocking": true,
-   "id": "R5-02",
-   "severity": "MEDIUM",
-   "title": "D7 bypass at the sentence edge: _excerpt lets a claim drop a leading qualifier ('Less than', 'Fewer than', 'Well short of') before an undetected quantity word (plurality, quintet, quorum), so a changed quantity is shown unquoted in the Brain's words"
+   "title": "R1-01 link class still open: letter-category middle-dot look-alikes (U+A78F LATIN LETTER SINOLOGICAL DOT, U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT) and a spaced dot before a split top-level label ('refunds-portal . c om/claim', 'refunds-portal . c o m') pass has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, D13 'middle dots', 'mask any dot-joined word')"
   }
  ],
  "repairs": [
@@ -72,6 +66,26 @@
    "commit": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
    "reason": null,
    "repair": 4,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R6-01",
+    "R6-02"
+   ],
+   "commit": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "reason": null,
+   "repair": 5,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R7-01",
+    "R7-02"
+   ],
+   "commit": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "reason": null,
+   "repair": 6,
    "status": "COMMITTED"
   }
  ],
@@ -145,11 +159,53 @@
    "session_id": "6f65a79d-136c-41cb-9cce-3a488617959e",
    "status": "COMPLETED_WITH_RESULT",
    "verdict": "REJECT"
+  },
+  {
+   "candidate": "29771992f57ff470035f044c55e2c6689e9d3d6d",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 6,
+   "session_id": "40727e7b-2c06-4695-abd1-c53c5b1f749f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 7,
+   "session_id": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 8,
+   "session_id": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
   }
  ],
- "rounds": 5,
+ "rounds": 8,
  "schema": "uri-dev-lifecycle/1",
  "stage": "BLOCKED",
  "verify_errors": [],
- "written_at": "2026-10-11T10:27:04Z"
+ "written_at": "2026-10-11T11:28:24Z"
 }

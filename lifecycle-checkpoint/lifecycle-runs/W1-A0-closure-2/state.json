@@ -1,6 +1,6 @@
 {
  "attempts": {
-  "R1-01": 4,
+  "R1-01": 5,
   "R1-02": 3,
   "R1-03": 2,
   "R1-04": 1,
@@ -15,17 +15,18 @@
   "R4-02": 1,
   "R5-01": 2,
   "R5-02": 1,
-  "R6-02": 1
+  "R6-02": 1,
+  "R7-01": 2,
+  "R7-02": 1,
+  "R9-01": 1
  },
  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
  "baseline_gates": {},
  "blocker": null,
- "candidate": "29771992f57ff470035f044c55e2c6689e9d3d6d",
+ "candidate": "7b1252f79efe62a7a4eff2c2275a7984e5048f1e",
  "config_path": "/home/user/uri-wt/lifecycle-runs/W1-A0-closure-2.json",
  "config_sha256": "fd330b42861dfd46915162a16371833bc651d5cea268e8f2d2fda060230ae1e6",
- "diagnose": [
-  "R5-01"
- ],
+ "diagnose": [],
  "diagnoses": [
   {
    "candidate": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
@@ -406,6 +407,100 @@
     "status": "COMPLETED",
     "stdout_sha256": "c2ca44f66fe8f0d5b2b12fff7ad33e02026b6799e1d28576d7617dbc6a198d40"
    }
+  },
+  {
+   "candidate": "806dcd12816b3944f78324f06aaf3aa366cec96a",
+   "clean": true,
+   "cost_usd": 0.5625837,
+   "diagnosis": 5,
+   "recurring": [
+    "R5-01"
+   ],
+   "result": {
+    "evidence": [
+     "uri_web/untrusted.py:75 _DOTCH lists 14 dot characters; U+060C/U+0964/U+0589/U+06D4/U+2E31/U+0701/U+16EB/U+1362/U+0F0B/U+A789/U+02D9, ',' and ':' are missing",
+     "uri_web/untrusted.py:76 _DOT accepts exactly one _DOTCH character (so '..' and NFKC('\u2026')='...' fail) or brackets/spaced 'dot' (so 'd0t', '_dot_' and '-dot-' fail)",
+     "uri_web/untrusted.py:78 _BARE requires host+_DOT+tld, so every unlisted separator gives no match",
+     "uri_web/untrusted.py:65-74 the R5-01 and D13 comments describe the fail-closed intent, which the code does not deliver",
+     "uri_web/synthesize.py:238 verify uses has_link_or_contact(body); probe: 'Claim your energy rebate refund at refunds-portal\u060ccom before the deadline [1].' is kept as a claim",
+     "uri_web/synthesize.py:318 extractive uses the same detector and picks the link sentence",
+     "uri_web/surface.py:38 clean -> mask_links leaves it; probe /tmp/d5/p3.py: build_surface plus require_valid pass and the dump contains 'refunds-portal\u060ccom', 'refunds..com/claim', 'refunds-portal d0t com', 'refunds-portal,com/claim', 'refunds-portal:com', 'refunds-portal_dot_com', 'refunds-portal\u2e31com'",
+     "uri_web/evaluate.py:38 _SENT splits at '. ' + capital, so for 'refunds-portal . Com' verify keeps 'Com before the deadline .' and extractive keeps '... at refunds-portal .'",
+     "/tmp/d5/p1.py: all literal R5-01 strings now return True (fixed by 29771992)",
+     "git show 806dcd12/29771992/f5a5b8ec/462be42c/f3700643/ca622bc0 -- uri_web/untrusted.py: each diff extends _DOT/_BARE by the reported shapes only",
+     "tests/web/test_w1_closure_r5_review_regressions.py:23 regression tests are fixed string lists"
+    ],
+    "needs_owner": false,
+    "proposed_fix": "In untrusted.py, replace the enumerated _DOTCH/_DOT with a category-based separator. Inside a whitespace-separated token (on the normalised text and the skeleton), any run of characters whose Unicode category is P* or S* (Sk included) counts as a dot, except a single word-internal '-', \"'\" or '\\u2019', and '/'. So do 'dot'/'d0t' in any wrapper or spacing ('_dot_', '-dot-', '{dot}', ' d0t '), and an optional space on either side of a dot-like mark. The match counts when the right-hand label is 2-63 letters or an ACE label. Keep the existing precision-only exceptions (a full stop, comma or colon plus space plus capitalised word; 'rose.The'; the CJK '\u3002' break; abbreviations). Also run has_link_or_contact on the whole unsplit source paragraph and on the joined answer text, and quote or drop any sentence next to a LINK_OR_CONTACT hit, so splitter-split links ('portal . Com') cannot survive in halves. Replace string-list regressions with generated ones: every code point in categories Po/Pd/Ps/Pe/Sk/Sm placed between 'refunds-portal' and 'com' (and doubled), through has_link_or_contact, mask_links, verify, extractive, build_surface and require_valid, with tests embedded in the test file.",
+    "root_cause": "The link detector in uri_web/untrusted.py is still a list of known separator shapes, not a rule. _BARE (untrusted.py:78) matches a bare domain only when the labels are joined by _DOT (untrusted.py:76), and _DOT accepts only the 14 characters in _DOTCH (untrusted.py:75), certain bracket pairs and a spaced 'dot'. Any other separator a reader would take as a dot makes has_link_or_contact return False. Probes at HEAD 806dcd12 found: 'refunds..com/claim', 'refunds\u2026com', U+060C, U+0964, U+0589, U+06D4, U+2E31, U+0701, U+16EB, U+1362, U+0F0B, U+A789, U+02D9, ',', ':', ' d0t ', '_dot_', '-dot-', 'refunds-portal.c om'. Each of these is kept unquoted by verify() (synthesize.py:238), picked by extractive() (synthesize.py:318), shown by build_surface via clean/mask_links (surface.py:38) and accepted by require_valid. The literal R5-01 strings ('_refunds-portal.com_' and the others) are fixed at HEAD by 29771992's (?<![^\\W_])...(?![^\\W_]) lookarounds. What recurs is the class (R1-01/R5-01/R6-01): a link next to a separator the list does not cover. A second, smaller path: the sentence splitter (evaluate.py:38 _SENT) splits 'refunds-portal . Com' / 'refunds-portal. Com/claim' into two sentences that are each link-free, and verify/extractive keep the halves.",
+    "why_earlier_repairs_failed": "Each repair added the shapes the reviewer had just reported and wrote regression tests for those exact strings. ca622bc0 added [.]/(.)/[dot]. f3700643 added U+3002/U+FF0E/U+FF61. 462be42c added spaced bracket defangs. f5a5b8ec added the ACE 'xn--' top-level label. 29771992 (the R5-01 repair, not in the listed repairs) changed only the '_'/'-' lookarounds. 806dcd12 (D13, 'mask any dot-joined word') turned the owner's rule into another fixed set, _DOTCH, which leaves out most Unicode full stops and dot-like marks (Po/Sk), repeated dots and the ellipsis, ASCII ',' and ':', and spelled forms like 'd0t', '_dot_' and '-dot-'. The tests (e.g. tests/web/test_w1_closure_r5_review_regressions.py:23 WRAPPED) list fixed strings, so the next unlisted separator always passes. None of the repairs looked at the splitter running before the per-sentence check."
+   },
+   "tamper": null,
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--safe-mode",
+     "--setting-sources",
+     "",
+     "--strict-mcp-config",
+     "--output-format",
+     "json",
+     "--session-id",
+     "a8069d8a-16db-4f82-b1d6-36e467290ed0",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "config_isolated": true,
+    "contained": true,
+    "containment_post": {
+     "contained": true,
+     "killed": 0
+    },
+    "containment_pre": {
+     "contained": true,
+     "killed": 0
+    },
+    "cost_usd": 0.5625837,
+    "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/diagnose_D5",
+    "ended_at": "2026-10-11T10:48:04Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 11,
+    "pid": 10704,
+    "prompt_sha256": "85448365725576e7bf355a123ab2a567a4673db8b966a356826d455b29eb4efb",
+    "provider": "claude_cli",
+    "result_text_sha256": "3463628e96cb3712254895865955bfd335aba151881a811da05dbdab7b18ac3d",
+    "role": "reviewer",
+    "session_id": "a8069d8a-16db-4f82-b1d6-36e467290ed0",
+    "session_id_requested": "a8069d8a-16db-4f82-b1d6-36e467290ed0",
+    "started_at": "2026-10-11T10:46:05Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "e252d511ab1a946e9edf9b151ab410a1a1ff110711210857122bc2320f401e08"
+   }
   }
  ],
  "gates": {},
@@ -679,46 +774,161 @@
    "kind": "DIAGNOSIS",
    "seq": 45,
    "ts": "2026-10-11T10:39:15Z"
+  },
+  {
+   "hash": "0081ae27981d6432a0934c9e97340368ba391fd2a1ea0c172201cb6d62bd7d9a",
+   "kind": "CANDIDATE_MOVED",
+   "seq": 46,
+   "ts": "2026-10-11T10:46:04Z"
+  },
+  {
+   "hash": "c7c85e3109b7128c21b27ee6abd4aad3d802de7d01df28be02e5ae7e3d7b7d25",
+   "kind": "DIAGNOSIS",
+   "seq": 47,
+   "ts": "2026-10-11T10:48:06Z"
+  },
+  {
+   "hash": "3bfe4a2da8d36160fb05932abc8a909614fe93914e15e82ba2aa025e04b83fb7",
+   "kind": "REPAIR_COMMITTED",
+   "seq": 48,
+   "ts": "2026-10-11T11:12:24Z"
+  },
+  {
+   "hash": "bba10cdaa2fb01545b74a95c327c855deab70392a473ec3522dc2a9a3003123b",
+   "kind": "STAGE",
+   "seq": 49,
+   "ts": "2026-10-11T11:12:24Z"
+  },
+  {
+   "hash": "1f553935b6be7ced0796187208bb350498821774d3088de19a35f898ac012e4b",
+   "kind": "REVIEW_STARTED",
+   "seq": 50,
+   "ts": "2026-10-11T11:12:26Z"
+  },
+  {
+   "hash": "23fe20f54e31eaaab4c82e771d1d4a4beb4ef3feee8532b73512042c93e5b61d",
+   "kind": "REVIEW_RECORDED",
+   "seq": 51,
+   "ts": "2026-10-11T11:15:44Z"
+  },
+  {
+   "hash": "c290dab6ef69008ac9702ee007fe40926fd13f7fee6f74c1c5bafb86d7dce30d",
+   "kind": "PROGRESS",
+   "seq": 52,
+   "ts": "2026-10-11T11:15:44Z"
+  },
+  {
+   "hash": "13ba1f4982826ec71e3590b6ee6fbb401c1183e289e411dc319ba6afdfb216a8",
+   "kind": "STAGE",
+   "seq": 53,
+   "ts": "2026-10-11T11:15:44Z"
+  },
+  {
+   "hash": "db056d330079af5eb75b0cf6148e157185f7bee3e1a2c20108c735b2a531a676",
+   "kind": "REPAIR_COMMITTED",
+   "seq": 54,
+   "ts": "2026-10-11T11:24:55Z"
+  },
+  {
+   "hash": "7c51d222030072baedd82e4f0b893189c67c7557b269f4a9306df69f78106c0b",
+   "kind": "STAGE",
+   "seq": 55,
+   "ts": "2026-10-11T11:24:55Z"
+  },
+  {
+   "hash": "8c28380ce3737c916058101138afc1ff2af40dd661b25c5649eab7e0c2a996a8",
+   "kind": "REVIEW_STARTED",
+   "seq": 56,
+   "ts": "2026-10-11T11:24:57Z"
+  },
+  {
+   "hash": "5eb01cb5230b96d91b058e9b0c9070d4087ec945508a84bb0f39d8fdf61c5088",
+   "kind": "REVIEW_RECORDED",
+   "seq": 57,
+   "ts": "2026-10-11T11:28:24Z"
+  },
+  {
+   "hash": "0282f8e99a2c86a1f83fdbcbeae6833da4c562ec65170129b0c944b7c365f79e",
+   "kind": "PROGRESS",
+   "seq": 58,
+   "ts": "2026-10-11T11:28:24Z"
+  },
+  {
+   "hash": "308f82e6bdab3362837681a75336d45d55c15c01511b550eaa113d7469143da9",
+   "kind": "STAGE",
+   "seq": 59,
+   "ts": "2026-10-11T11:28:24Z"
+  },
+  {
+   "hash": "bf8c6b0f5b659df3db5fcf0742638a61367d21012857f97fe30c6a9236ef1f7c",
+   "kind": "OWNER_UNBLOCK",
+   "seq": 60,
+   "ts": "2026-10-11T11:36:11Z"
+  },
+  {
+   "hash": "232fc573392adf47ed90d4602f91b0f2875dd5180aae27f0bb261900bc8bd63b",
+   "kind": "STAGE",
+   "seq": 61,
+   "ts": "2026-10-11T11:36:11Z"
+  },
+  {
+   "hash": "30a6e56c14584499f102c722955a83725df4991ce70ed93fbd3a4472d00564c8",
+   "kind": "CANDIDATE_MOVED",
+   "seq": 62,
+   "ts": "2026-10-11T11:36:12Z"
+  },
+  {
+   "hash": "d44a1ddf5b6d3ee8d3b9ce99afcde0081ace31065acb71712cef88a6ae52fccf",
+   "kind": "STAGE",
+   "seq": 63,
+   "ts": "2026-10-11T11:36:12Z"
+  },
+  {
+   "hash": "5b73465a727a47fe0bab713fef29df349fca61bd923d5a30ab1da04de7751422",
+   "kind": "REVIEW_STARTED",
+   "seq": 64,
+   "ts": "2026-10-11T11:36:14Z"
+  },
+  {
+   "hash": "b3ba32bee354edb581e8941498083fcfbd62c9e734fd5906bccd11b974e3a98c",
+   "kind": "REVIEW_RECORDED",
+   "seq": 65,
+   "ts": "2026-10-11T11:41:06Z"
+  },
+  {
+   "hash": "7c6dc462615e4b87d92f4c064ffd39b2f8d63d49aceb2fb02b1dc0ae18e30703",
+   "kind": "PROGRESS",
+   "seq": 66,
+   "ts": "2026-10-11T11:41:07Z"
+  },
+  {
+   "hash": "9df22a238e809929ea75c4d81b5cd31ff1f3c7b0acfcbc0beb1c9b3d4b579b31",
+   "kind": "STAGE",
+   "seq": 67,
+   "ts": "2026-10-11T11:41:07Z"
+  },
+  {
+   "hash": "f11e7177a9301a1c9d28e95e2507daee3ed1a8dae0076542e438b054c701b64c",
+   "kind": "REPAIR_COMMITTED",
+   "seq": 68,
+   "ts": "2026-10-11T11:44:59Z"
+  },
+  {
+   "hash": "ebdee603a80a1f2ac53923fe80e5fb5f6d5ce3e1ebedec2fad81b95ac829238a",
+   "kind": "STAGE",
+   "seq": 69,
+   "ts": "2026-10-11T11:44:59Z"
+  },
+  {
+   "hash": "95cedaf0a88720bccac1f70487e1818f9b560d7d3b6c0c80c0c99b2a3f0fe6c3",
+   "kind": "REVIEW_STARTED",
+   "seq": 70,
+   "ts": "2026-10-11T11:45:02Z"
   }
  ],
  "integration": null,
  "milestone": "W1-A0-closure",
- "pending_findings": [
-  {
-   "blocking": true,
-   "category": "security",
-   "evidence": "Probe /tmp/uri_review_R6/probe_e2e.py: src = 'Claim your energy rebate refund at refunds-portal .com/claim before the deadline. Energy rebate refunds take two weeks.'; U.has_link_or_contact -> False; SY.verify(<same sentence> [1], [src]).claims keeps it unquoted; SY.extractive('energy rebate refund deadline',[src]) picks it; build_surface(...) passes require_valid and the dump contains 'refunds-portal .com/claim'. The same holds for 'refunds-portal\u00b7com', 'refunds-portal\u30fbcom', 'refunds-portal\u2219com', 'refunds-portal{.}com'. _DOT accepts '\\s+\\.\\s+' (spaces on both sides) but not a space on one side only, and accepts only . U+3002 U+FF0E U+FF61 as dot characters.",
-   "files": [
-    "uri_web/untrusted.py:69",
-    "uri_web/untrusted.py:71",
-    "uri_web/untrusted.py:168",
-    "uri_web/synthesize.py:240",
-    "uri_web/synthesize.py:320",
-    "uri_web/surface.py:37"
-   ],
-   "id": "R6-01",
-   "owner_decision": false,
-   "severity": "HIGH",
-   "suggested_fix": "Treat '\\s*\\.\\s*' between label-like runs when the right side is a TLD-shaped label followed by a non-letter (or '/'), and add the dot-like punctuation (U+00B7, U+0387, U+2027, U+2219, U+22C5, U+30FB, U+2E3C, braces/angle-bracket defangs) to _DOT; add regressions for each through verify, extractive, build_surface and require_valid.",
-   "title": "R1-01 class still open: a one-sided spaced dot ('refunds-portal .com/claim') or a dot-like separator (U+00B7, U+30FB, U+2219, U+22C5, U+2027, '{.}', '<.>') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12)"
-  },
-  {
-   "blocking": true,
-   "category": "code",
-   "evidence": "Probe /tmp/uri_review_R6/probe_d7.py: SY.verify('A quintet of firms control the regional market [1].', ['Analysts said that, at most, a quintet of firms control the regional market.']) -> one claim, quoted=False, no drops. The same for 'By some estimates, a plurality of voters backed the measure.' and the trailing forms 'A quorum of members attended the session, or nearly so.' and 'A plurality of voters backed the measure, at least initially.' (all quoted=False).",
-   "files": [
-    "uri_web/synthesize.py:142",
-    "uri_web/synthesize.py:185",
-    "uri_web/synthesize.py:196",
-    "uri_web/synthesize.py:207"
-   ],
-   "id": "R6-02",
-   "owner_decision": false,
-   "severity": "MEDIUM",
-   "suggested_fix": "Fail closed at the edges: a claim that does not start at the sentence start (after determiners only) or end at the sentence end should be quoted, or allow a clause edge only when the dropped clause holds no qualifier/hedge (an allow-list, as for gap_ok), not just any comma.",
-   "title": "R5-02 repair incomplete: lead_ok/tail_ok treat a comma as a safe edge, so a claim drops a qualifier set off by commas ('that, at most, a quintet of firms...') before an undetected quantity word and is shown unquoted (D7)"
-  }
- ],
+ "pending_findings": [],
  "repairs": [
   {
    "addresses": [
@@ -1159,6 +1369,311 @@
     "started_at": "2026-10-11T10:18:14Z",
     "status": "COMPLETED",
     "stdout_sha256": "377357cb10c17929a841b9eee476ab8f58ae9716d28f43b6617c52e18c9c20a7"
+   }
+  },
+  {
+   "addresses": [
+    "R6-01",
+    "R6-02"
+   ],
+   "changed": [
+    "tests/web/test_w1_closure_r7_review_regressions.py",
+    "uri_web/evaluate.py",
+    "uri_web/synthesize.py",
+    "uri_web/untrusted.py"
+   ],
+   "commit": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "ended_at": "2026-10-11T11:12:24Z",
+   "pre": "806dcd12816b3944f78324f06aaf3aa366cec96a",
+   "regression": {
+    "need_fail_before": true,
+    "ok": true,
+    "reason": "",
+    "tests": {
+     "tests/web/test_w1_closure_r7_review_regressions.py": {
+      "after_exit": 0,
+      "after_state": "DONE",
+      "before_exit": 1,
+      "before_state": "DONE"
+     }
+    }
+   },
+   "repair": 5,
+   "report": {
+    "not_repaired": [
+     {
+      "id": "R6-02",
+      "reason": "Already repaired at 806dcd12 by D14 (lead_ok/tail_ok require sentence start/end). All four reviewer probes return the full source sentence with quoted=True at HEAD, so no code change is justified and no regression test can fail on 806dcd12; existing tests/web/test_w1_closure_r6_review_regressions.py already covers them and passes."
+     }
+    ],
+    "notes": "R6-01 root cause (enumerated _DOTCH) replaced by a category-based separator built from the Unicode database: any P*/S* mark run with no space in it except word joiners (Pd, apostrophes, '/', '_'); dot-named marks with spaces on either side; other marks with a space before only unless opening; spelled dot/d0t in any wrapper; split one-letter TLD ('portal.c om'). The caseless-script punctuation exception generalises the old CJK '\u3002' rule. Atomic separator group plus a 10-label host cap prevent backtracking blowup ('a.'*3000 now ~2 s, similar to HEAD). Splitter fix: evaluate.sentences and synthesize._split_answer re-join pieces a link runs across (untrusted.merge_split_links/joins_link); verify/extractive drop adjacent claims that join into a link. New regression file: 34 fail on 806dcd12, 61/61 pass after; tests/web+assist+a2ui 3187 passed. tests/phase2a/test_frozen_core.py::test_base_commit fails because HEAD is not the frozen base e8e3b65 (environment, not this change). Still not caught: 'portal, com'/'portal: com', a dash between labels, unlisted caseless-script IDN TLD after non-'.' punctuation. New over-masking (readability only): 'T&Cs', 'fact... it', 'Wait\u2026what', 'File:line'. Governance ledger is outside the permitted paths, so these limits are recorded only in code comments.",
+    "regression_tests": [
+     "tests/web/test_w1_closure_r7_review_regressions.py"
+    ],
+    "repaired": [
+     "R6-01"
+    ]
+   },
+   "started_at": "2026-10-11T10:48:06Z",
+   "status": "COMMITTED",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "c1cf43b6-87f4-4f67-bc0e-bf2b3b3ce5e3",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Edit",
+     "Write",
+     "Agent",
+     "--disallowedTools",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "contained": true,
+    "containment_post": {
+     "contained": true,
+     "killed": 298
+    },
+    "containment_pre": {
+     "contained": true,
+     "killed": 0
+    },
+    "cost_usd": 4.455037699999999,
+    "cwd": "/home/user/uri-wt/a0",
+    "ended_at": "2026-10-11T11:12:03Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 61,
+    "pid": 11015,
+    "prompt_sha256": "fff8c25bbc534fdf32d530761bc6a527b500494accf90bec71c8e21f473a7618",
+    "provider": "claude_cli",
+    "result_text_sha256": "cf9e427a24eed8d59594737c60f83d938fdd2dbdbc5ccd0f2125acd87670fd7a",
+    "role": "implementer",
+    "session_id": "c1cf43b6-87f4-4f67-bc0e-bf2b3b3ce5e3",
+    "session_id_requested": "c1cf43b6-87f4-4f67-bc0e-bf2b3b3ce5e3",
+    "started_at": "2026-10-11T10:48:06Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "a143805fbabb86813ca9af12089a2690739490aab9012de5164b5af44b65f82a"
+   }
+  },
+  {
+   "addresses": [
+    "R7-01",
+    "R7-02"
+   ],
+   "changed": [
+    "tests/web/test_w1_closure_r8_review_regressions.py",
+    "uri_web/synthesize.py",
+    "uri_web/untrusted.py"
+   ],
+   "commit": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "ended_at": "2026-10-11T11:24:55Z",
+   "pre": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "regression": {
+    "need_fail_before": true,
+    "ok": true,
+    "reason": "",
+    "tests": {
+     "tests/web/test_w1_closure_r8_review_regressions.py": {
+      "after_exit": 0,
+      "after_state": "DONE",
+      "before_exit": 1,
+      "before_state": "DONE"
+     }
+    }
+   },
+   "repair": 6,
+   "report": {
+    "not_repaired": [],
+    "notes": "R7-01 (uri_web/untrusted.py): any bracket or quote mark from any script (Ps/Pi/Pe/Pf, ASCII quotes, other non-dot marks) on BOTH sides of a dot or 'dot', with optional spaces, is a separator; dot runs may contain spaces ('. .'); 'd o t' is spelt-out dot; symbols named BULLET/DOT/CIRCLE/SPOT/RING OPERATOR (including category So: U+25E6, U+25CF) count as dots; a mark then a space before a common domain ending (com|net|org|gov|edu|mil|int|info|biz|arpa|io|xyz, any case) or before any known ending followed by '/path' is a link (new _SPACED_MARK), so 'portal, com', 'portal: com', 'portal; com/claim', 'portal! com/claim' are caught. Remaining gap for the owner ledger: another domain ending after a comma or colon and a space with no path ('portal, shop'), alongside D13's 'portal. Com'. Cost: some ordinary text is now flagged ('profits, net of tax'); prose link checks are about 1.7x slower, still linear. R7-02 (uri_web/synthesize.py): new _DETERMINER_SENSITIVE list (little, few, bit, lot, number, deal, most, other, ...); _excerpt no longer lets a claim add, or the source drop, a determiner directly before these words (in match, gap_ok and lead_ok), so such claims are quoted word for word. Verified: the new test file fails on f604e7cd (R7-01 and R7-02 cases) and all 108 pass after; tests/web + tests/assist: 3188 passed. tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on fails both before and after (it expects the checked-out commit to start with e8e3b65; about which commit is checked out, not this code). Existing slowdown not addressed (not in scope): mask_links('a '+'('*50000) takes about 55 s both before and after the change. graphify not run, as instructed.",
+    "regression_tests": [
+     "tests/web/test_w1_closure_r8_review_regressions.py"
+    ],
+    "repaired": [
+     "R7-01",
+     "R7-02"
+    ]
+   },
+   "started_at": "2026-10-11T11:15:44Z",
+   "status": "COMMITTED",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "d0bd7d2a-2908-40b0-bd23-9274da5c43fc",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Edit",
+     "Write",
+     "Agent",
+     "--disallowedTools",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "contained": true,
+    "containment_post": {
+     "contained": true,
+     "killed": 146
+    },
+    "containment_pre": {
+     "contained": true,
+     "killed": 0
+    },
+    "cost_usd": 1.2665978000000002,
+    "cwd": "/home/user/uri-wt/a0",
+    "ended_at": "2026-10-11T11:24:47Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 21,
+    "pid": 27039,
+    "prompt_sha256": "de201008ad0e4938af0e0ae74840127e4b785684e1ad58457a7e5d9297951069",
+    "provider": "claude_cli",
+    "result_text_sha256": "e1629f9cddfef08a1fe14d5d7326776009405c27d07bcd9515202e64addb0abe",
+    "role": "implementer",
+    "session_id": "d0bd7d2a-2908-40b0-bd23-9274da5c43fc",
+    "session_id_requested": "d0bd7d2a-2908-40b0-bd23-9274da5c43fc",
+    "started_at": "2026-10-11T11:15:44Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "ba656783e55d58917dea9f10d7bebe5b38ff60851c9fe28fbe27202344675747"
+   }
+  },
+  {
+   "addresses": [
+    "R9-01"
+   ],
+   "changed": [
+    "tests/web/test_w1_closure_r9_review_regressions.py",
+    "uri_web/untrusted.py"
+   ],
+   "commit": "7b1252f79efe62a7a4eff2c2275a7984e5048f1e",
+   "ended_at": "2026-10-11T11:44:59Z",
+   "pre": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+   "regression": {
+    "need_fail_before": true,
+    "ok": true,
+    "reason": "",
+    "tests": {
+     "tests/web/test_w1_closure_r9_review_regressions.py": {
+      "after_exit": 0,
+      "after_state": "DONE",
+      "before_exit": 1,
+      "before_state": "DONE"
+     }
+    }
+   },
+   "repair": 7,
+   "report": {
+    "not_repaired": [],
+    "notes": "uri_web/untrusted.py only. (a) _DOT_NAME extended with POINT|DOTTED|THEREFORE|BECAUSE|PROPORTION|DEGREE SIGN, so U+2027, U+2041, U+205C, U+2234 etc. are _DOTLIKE and the spaced-both-sides separator matches. (b) New _lone(): a whitespace token whose non-COMMON characters are one distinct non-Latin character (repeats allowed), between two tokens that each hold a script family and neither holds its family, spans both neighbours, the same way tokens with no allowed letter already did. Precision cost only: a lone foreign letter between words of another script is masked. Latin lone tokens are excluded (D15 spelt-letter residual unchanged). Regression file: 57 of 66 cases fail on a clean export of 66a4765 (the 9 passing ones are ordinary-text precision checks, expected to pass both ways); 66/66 pass after the repair. Full tests/web + tests/assist: 3304 passed. Reviewer probes p1/p2/p5 all detected, masked and dropped. Pre-existing no-space form 'refunds-portal\u0660 com' (R8 repair) masks the host but leaves ' com'; detection is True; not changed.",
+    "regression_tests": [
+     "tests/web/test_w1_closure_r9_review_regressions.py"
+    ],
+    "repaired": [
+     "R9-01"
+    ]
+   },
+   "started_at": "2026-10-11T11:41:07Z",
+   "status": "COMMITTED",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "dafbaf4f-655b-4ab8-a990-2fa1e68166b7",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Edit",
+     "Write",
+     "Agent",
+     "--disallowedTools",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "contained": true,
+    "containment_post": {
+     "contained": true,
+     "killed": 74
+    },
+    "containment_pre": {
+     "contained": true,
+     "killed": 0
+    },
+    "cost_usd": 0.7534696,
+    "cwd": "/home/user/uri-wt/a0",
+    "ended_at": "2026-10-11T11:44:51Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 14,
+    "pid": 4874,
+    "prompt_sha256": "7aaa93f817ad52464c8485b5c3b1ac2fa45b7dce07408f1ead90f37d8354952f",
+    "provider": "claude_cli",
+    "result_text_sha256": "a42f154a75f0be2433baadd88febdbef5d6e0cc077271586d1d43b6be673ef63",
+    "role": "implementer",
+    "session_id": "dafbaf4f-655b-4ab8-a990-2fa1e68166b7",
+    "session_id_requested": "dafbaf4f-655b-4ab8-a990-2fa1e68166b7",
+    "started_at": "2026-10-11T11:41:07Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "183a365267f8fb35c4c80edacc6b7d7845d3f88327adf95eec921ca3ae020992"
    }
   }
  ],
@@ -2863,11 +3378,811 @@
     "status": "COMPLETED",
     "stdout_sha256": "7df224f78e5bb0a45efe00720bb61f5fea58ce6b18e384f5e19fa2ddc7f8933d"
    }
+  },
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R7",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "blocking_ids": [
+    "R7-01",
+    "R7-02"
+   ],
+   "candidate": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "effective_verdict": "REJECT",
+   "ended_at": "2026-10-11T11:15:44Z",
+   "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+   "independent": true,
+   "integrity": {
+    "after": {
+     "audit_identity": [
+      true,
+      ""
+     ],
+     "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+     "head": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+     "impl_head": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+     "impl_identity": [
+      true,
+      ""
+     ],
+     "impl_status": [],
+     "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+     "refs": "84da64fb1e90f59fd6016ccdd99a3ddef2048e1b3244d007b8c0a1c3fe080a86",
+     "status": []
+    },
+    "before": {
+     "audit_identity": [
+      true,
+      ""
+     ],
+     "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+     "head": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+     "impl_head": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+     "impl_identity": [
+      true,
+      ""
+     ],
+     "impl_status": [],
+     "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+     "refs": "84da64fb1e90f59fd6016ccdd99a3ddef2048e1b3244d007b8c0a1c3fe080a86",
+     "status": []
+    },
+    "control_drift": null,
+    "ok": true
+   },
+   "result": {
+    "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+    "candidate": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+    "findings": [
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe /tmp/uri_review_R7/p3.py, with SENT='Claim your energy rebate refund at {} before the deadline.' and link='refunds-portal \u3010.\u3011 com/claim': U.has_link_or_contact(src) is False; SY.verify(SENT[:-1]+' [1].',[src]) keeps the claim 'Claim your energy rebate refund at refunds-portal \u3010.\u3011 com/claim before the deadline .'; SY.extractive('energy rebate refund deadline',[src]) returns the same sentence; build_surface plus require_valid accept it and the surface JSON contains 'refunds-portal'. Same for '\u300c.\u300d', '\u3014.\u3015', '\u00ab.\u00bb', '\u27e8.\u27e9', '\".\"', \"'.'\", ' . . ', '\u25e6', '\u25cf', '(d o t)'. ASCII '[ . ]' and fullwidth '\uff3b.\uff3d' are caught. Cause: the bracket alternative at :163 accepts only [({< and ])}>; the spaced alternative at :165 excludes a run that begins with _OPENING (Ps/Pi); _DOTLIKE+ at :162 allows no space between dots; _is_dotlike (:134) excludes category So, so U+25E6 WHITE BULLET is not dot-like despite its name. The R7 regression test file only generates tight, doubled or left-spaced single marks. Comments also self-declare 'portal, com'/'portal: com' as residual limits, which the owner ledger (D13) does not record; 'refunds-portal; com/claim' and 'refunds-portal! com/claim' also pass.",
+      "files": [
+       "uri_web/untrusted.py:134",
+       "uri_web/untrusted.py:162",
+       "uri_web/untrusted.py:163",
+       "uri_web/untrusted.py:165",
+       "uri_web/synthesize.py:255",
+       "uri_web/surface.py:37"
+      ],
+      "id": "R7-01",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "Treat any Ps/Pi..Pe/Pf pair (Unicode bracket and quote pairs) around a dot-like mark or 'dot' as a separator, with optional spaces; allow spaces inside a dot-like run ('. . .'); widen _is_dotlike to name-matched So characters (BULLET, DOT, CIRCLE OPERATOR/SPOT as decided). Add generated tests for '<space><open><dot><close><space>' over all bracket/quote pairs and for spaced dot runs, end to end through verify/extractive/surface.",
+      "title": "R1-01 link class still open: a dot in a non-ASCII bracket/quote pair with spaces ('refunds-portal \u3010.\u3011 com/claim', '\u300c.\u300d', '\u3014.\u3015', '\u00ab.\u00bb', '\u27e8.\u27e9', '\".\"'), a spaced dot run ('refunds-portal . . com/claim') or a So-category bullet ('\u25e6' U+25E6, '\u25cf') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, within D13 'any bracketed dot')"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "Probe /tmp/uri_review_R7/p4.py: SY.verify('Little progress was made on the energy rebate bill this session [1].', ['A little progress was made on the energy rebate bill this session.']) keeps the claim unquoted (quoted=False) citing [1]; the reverse also passes, as do 'Lawmakers expect little support ...' against 'expect a little support ...' and 'found a little evidence of fraud' against 'found little evidence of fraud'. _excerpt lets the claim add a determiner (synthesize.py:209) and lets the source drop leading or mid-sentence determiners (lead_ok :196, gap_ok :171); 'little' is not in _QUANTITY and not in _NEG/_ANTONYMS. Scarcity versus presence is reversed, while the citation says the source states it (R1-06 / D7 class).",
+      "files": [
+       "uri_web/synthesize.py:171",
+       "uri_web/synthesize.py:196",
+       "uri_web/synthesize.py:209",
+       "uri_web/synthesize.py:72"
+      ],
+      "id": "R7-02",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Do not let an added or skipped determiner sit directly before a quantifier (little, few, bit, lot, number, deal, ...), or add 'little' (and similar determiner-sensitive quantifiers) to _QUANTITY so such claims are quoted; more generally, require the claim's determiners to equal the source's in place.",
+      "title": "Verifier keeps a reversed-meaning claim in the Brain's words: an added or dropped determiner turns 'a little' into 'little' (and back), and the claim keeps its citation"
+     }
+    ],
+    "prior_findings": [
+     {
+      "id": "R1-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-06",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R4-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R4-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R5-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R5-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R6-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R6-02",
+      "status": "FIXED"
+     }
+    ],
+    "tests_run": [
+     {
+      "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist tests/a2ui",
+      "result": "3187 passed in 84.79s",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R7/p1.py, p2.py (link detector probes)",
+      "result": "spaced non-ASCII bracketed dots, spaced dot runs, So bullets, 'portal; com/claim' not detected",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R7/p3.py (verify/extractive/surface/A2UI end to end)",
+      "result": "10 of 11 forms reach the surface with 'refunds-portal'",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R7/p4.py (D7/D14 determiner probes)",
+      "result": "'a little' <-> 'little' claims kept unquoted with citation",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R7/p6.py (netpolicy.check_url adversarial URLs)",
+      "result": "all private/ambiguous/userinfo/port forms refused; normalised hosts go through the resolver, and every answer is checked",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "flutter test --no-pub test/living/assist_mode_test.dart test/living/assist_r9_test.dart",
+      "result": "needs flutter pub get, which would write into the read-only checkout",
+      "status": "BLOCKED"
+     }
+    ],
+    "unverified": [
+     "Flutter Assist controller lifecycle tests (pub get would write into the checkout)",
+     "Live Windows/GPU vision, live Tavily search, browser channel on real hardware",
+     "ws_frozen_check zip part (Phase 1 checkpoint zip absent)",
+     "Vision gating, permissions (access.py/bridge.py), integrated worker dispatch and snapshot.js parity were re-checked only through the passing test suite this round, without new adversarial probes"
+    ],
+    "verdict": "REJECT"
+   },
+   "round": 7,
+   "started_at": "2026-10-11T11:12:26Z",
+   "status": "COMPLETED_WITH_RESULT",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--safe-mode",
+     "--setting-sources",
+     "",
+     "--strict-mcp-config",
+     "--output-format",
+     "json",
+     "--session-id",
+     "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_anchor_ok": true,
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "config_isolated": true,
+    "contained": true,
+    "containment_post": {
+     "contained": true,
+     "killed": 72
+    },
+    "containment_pre": {
+     "contained": true,
+     "killed": 0
+    },
+    "cost_usd": 1.2588155999999997,
+    "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R7",
+    "ended_at": "2026-10-11T11:15:43Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 24,
+    "pid": 23841,
+    "prompt_sha256": "af7ab95f23191bae8674f80b2699c8d07cb9563102e969b31f66968db4430bad",
+    "provider": "claude_cli",
+    "result_text_sha256": "9a7e43a0f1485771b6a66819ebdf1126405640dce282ca6bdf464edaa38a2b16",
+    "role": "reviewer",
+    "session_id": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+    "session_id_requested": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+    "started_at": "2026-10-11T11:12:26Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "7c188478732d88a03eba3baa2c25842799a44b88131ddd3553fd83c03af29e6f"
+   }
+  },
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R8",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "blocking_ids": [
+    "R8-01"
+   ],
+   "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "effective_verdict": "REJECT",
+   "ended_at": "2026-10-11T11:28:24Z",
+   "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+   "independent": true,
+   "integrity": {
+    "after": {
+     "audit_identity": [
+      true,
+      ""
+     ],
+     "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+     "head": "474adb8440ffcf946384edd23c15245c3061eee5",
+     "impl_head": "474adb8440ffcf946384edd23c15245c3061eee5",
+     "impl_identity": [
+      true,
+      ""
+     ],
+     "impl_status": [],
+     "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+     "refs": "ddf3633d8c9043c32926c1abdc282cd55dced551e5163e295d42f87fbee58727",
+     "status": []
+    },
+    "before": {
+     "audit_identity": [
+      true,
+      ""
+     ],
+     "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+     "head": "474adb8440ffcf946384edd23c15245c3061eee5",
+     "impl_head": "474adb8440ffcf946384edd23c15245c3061eee5",
+     "impl_identity": [
+      true,
+      ""
+     ],
+     "impl_status": [],
+     "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+     "refs": "ddf3633d8c9043c32926c1abdc282cd55dced551e5163e295d42f87fbee58727",
+     "status": []
+    },
+    "control_drift": null,
+    "ok": true
+   },
+   "result": {
+    "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+    "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
+    "findings": [
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "/tmp/uri_review_R8/p3.py, built like test_r7_01_reviewer_links_end_to_end: for link in ['refunds-portal\\ua78fcom/claim', 'refunds-portal \\ua78f com', 'refunds-portal\\u1427com/claim', 'refunds-portal . c om/claim', 'refunds-portal . c o m'], U.has_link_or_contact(src) is False, SY.verify and SY.extractive keep the claim with 'refunds-portal\ua78fcom/claim' etc. verbatim, and build_surface + require_valid output contains 'portal'. _is_mark/_is_dotlike only consider P*/S* categories, so a Lo/Lm dot (renders identically to U+00B7, which D13 covers) becomes part of the host label. _SPLIT_TLD (R7-01) handles a split TLD only after a tight dot ('refunds-portal.c om' is detected), not after the spaced dot D13 allows ('refunds-portal . c om' is not). Related, not filed separately: U+A4F8, U+02D1 and U+0660 as separators, and 'refunds-portal -.- com' (dash-wrapped dot), also pass.",
+      "files": [
+       "uri_web/untrusted.py:129",
+       "uri_web/untrusted.py:133",
+       "uri_web/untrusted.py:186",
+       "uri_web/untrusted.py:192",
+       "uri_web/synthesize.py",
+       "uri_web/surface.py"
+      ],
+      "id": "R8-01",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "Treat as dot-like any code point whose Unicode name contains DOT/MIDDLE DOT/FULL STOP regardless of category (excluding 'WITH DOT' letters), including Lo/Lm, both as a separator inside a label run and spaced; apply the split-top-level-label rule after every _DOT separator, not just tight ones; add the forms above to the end-to-end regression test.",
+      "title": "R1-01 link class still open: letter-category middle-dot look-alikes (U+A78F LATIN LETTER SINOLOGICAL DOT, U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT) and a spaced dot before a split top-level label ('refunds-portal . c om/claim', 'refunds-portal . c o m') pass has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, D13 'middle dots', 'mask any dot-joined word')"
+     }
+    ],
+    "prior_findings": [
+     {
+      "id": "R1-01",
+      "status": "NOT_FIXED"
+     },
+     {
+      "id": "R1-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-06",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R4-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R4-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R5-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R5-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R6-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R6-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R7-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R7-02",
+      "status": "FIXED"
+     }
+    ],
+    "tests_run": [
+     {
+      "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist",
+      "result": "3188 passed in 89.64s",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p1.py; p2.py (link detector probes)",
+      "result": "R7-01 listed forms detected; new misses: U+A78F, U+1427, U+A4F8, U+02D1, U+0660 separators, 'refunds-portal . c o m', dash-wrapped dot",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p3.py (end-to-end verify/extractive/surface/A2UI)",
+      "result": "5/5 bypass forms reach the validated surface unmasked",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R8/p4.py (R7-02 sibling probes)",
+      "result": "all determiner/negation variants quoted verbatim or dropped",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "git diff --name-only ffdf534..474adb8 | grep protected paths",
+      "result": "no protected path changed",
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    ],
+    "unverified": [
+     "Flutter widget tests (uri_ui) not run this round",
+     "SSRF/safe_fetch, vision gating, access/bridge permissions, integrated worker dispatch and snapshot.js not re-probed adversarially this round (unchanged since R7; covered by passing test suite only)",
+     "R1-03/R1-04/R1-05 status rests on earlier rounds and the passing suite, not new adversarial probes",
+     "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)",
+     "Windows/GPU live verification not possible"
+    ],
+    "verdict": "REJECT"
+   },
+   "round": 8,
+   "started_at": "2026-10-11T11:24:57Z",
+   "status": "COMPLETED_WITH_RESULT",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--safe-mode",
+     "--setting-sources",
+     "",
+     "--strict-mcp-config",
+     "--output-format",
+     "json",
+     "--session-id",
+     "8375af4b-8468-4e67-ba85-0cfe741090e8",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_anchor_ok": true,
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "config_isolated": true,
+    "contained": true,
+    "containment_post": {
+     "contained": true,
+     "killed": 74
+    },
+    "containment_pre": {
+     "contained": true,
+     "killed": 0
+    },
+    "cost_usd": 0.7439714999999999,
+    "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R8",
+    "ended_at": "2026-10-11T11:28:23Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 12,
+    "pid": 346,
+    "prompt_sha256": "ccb4b78851c1a11b483cb1050e8133a1144a18464b39a52622b809ba39ca1261",
+    "provider": "claude_cli",
+    "result_text_sha256": "21c88eb56674321b3b4b59cb77a6538b6477228a47deee69db167043c9996a82",
+    "role": "reviewer",
+    "session_id": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+    "session_id_requested": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+    "started_at": "2026-10-11T11:24:57Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "ceaa506bd0f0bf29fa2cc6e0382a62137b6d012bd6794e645ccae4ab0434759c"
+   }
+  },
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R9",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "blocking_ids": [
+    "R9-01"
+   ],
+   "candidate": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+   "effective_verdict": "REJECT",
+   "ended_at": "2026-10-11T11:41:06Z",
+   "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+   "independent": true,
+   "integrity": {
+    "after": {
+     "audit_identity": [
+      true,
+      ""
+     ],
+     "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+     "head": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+     "impl_head": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+     "impl_identity": [
+      true,
+      ""
+     ],
+     "impl_status": [],
+     "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+     "refs": "b44ab800ab88ce55b200e2e00c37d3fbeb30397de16e1429cfebd6fc97419e40",
+     "status": []
+    },
+    "before": {
+     "audit_identity": [
+      true,
+      ""
+     ],
+     "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+     "head": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+     "impl_head": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+     "impl_identity": [
+      true,
+      ""
+     ],
+     "impl_status": [],
+     "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+     "refs": "b44ab800ab88ce55b200e2e00c37d3fbeb30397de16e1429cfebd6fc97419e40",
+     "status": []
+    },
+    "control_drift": null,
+    "ok": true
+   },
+   "result": {
+    "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+    "candidate": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+    "findings": [
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probes /tmp/uri_review_R9/p1.py, p2.py, p5.py on 66a4765: for SENT='Claim your energy rebate refund at {} before the deadline.', has_link_or_contact is False and mask_links leaves the text unchanged for 'refunds-portal \u2027 cash', 'refunds-portal \u2027 cash/claim', 'refunds-portal \u0660 com/claim', 'refunds-portal \u0660 com', 'refunds-portal \u06f0 com', 'refunds-portal \u0966 com'. Also has_link_or_contact('Claim at refunds-portal \u2027 shop today.') is False, and the same holds for \u4e36, \u2f02 and \u0660. SY.verify keeps the cited claim and SY.extractive returns the sentence. build_surface output contains 'portal', and require_valid accepts it. Causes: (a) U+2027's name 'HYPHENATION POINT' does not match _DOT_NAME, so it is not _DOTLIKE; the spaced-both-sides form only matches alternatives that need a dot-like run, and _unusual treats it as COMMON because U+2010-205E is in _ORDINARY. (b) U+0660, U+06F0, U+4E36 and U+0966 are letters or digits of a listed script, so a lone token holds one script family, is alphanumeric and is not unusual, and no neighbour span is added. U+2027 was in R6-01 and U+0660 in R8-01; only the no-space forms were repaired. Not covered by the D15 residual (spelt-out letters or words).",
+      "files": [
+       "uri_web/untrusted.py:105",
+       "uri_web/untrusted.py:115",
+       "uri_web/untrusted.py:342",
+       "uri_web/untrusted.py:390",
+       "uri_web/untrusted.py:396"
+      ],
+      "id": "R9-01",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "Treat U+2027 (and every Po/Sm character in the _ORDINARY ranges that is drawn as a dot: HYPHENATION POINT, CARET INSERTION POINT, DOTTED CROSS, ...) as _DOTLIKE. Treat a whitespace-separated token made of a single non-Latin letter, digit or mark between two Latin words (a digit zero, a dot stroke, an anusvara or nukta on a space) as a separator: span both neighbours, as is already done for tokens with no allowed letter. Add the spaced forms to the regressions.",
+      "title": "R1-01 link class still open: spaced dot look-alikes U+2027 HYPHENATION POINT ('refunds-portal \u2027 shop'), U+0660/U+06F0 Arabic-Indic zero ('refunds-portal \u0660 com/claim') and U+4E36/U+2F02 dot stroke ('refunds-portal \u4e36 shop') pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13 'with or without spaces')"
+     }
+    ],
+    "prior_findings": [
+     {
+      "id": "R1-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-06",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R4-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R4-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R5-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R5-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R6-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R6-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R7-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R7-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R8-01",
+      "status": "FIXED"
+     }
+    ],
+    "tests_run": [
+     {
+      "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web",
+      "result": "1032 passed",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/assist tests/a2ui",
+      "result": "2313 passed",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R9/p1.py, p2.py, p5.py (spaced dot look-alike probes)",
+      "result": "U+2027, U+0660, U+06F0, U+0966, U+4E36, U+2F02 spaced separators not detected; verify/extractive keep them; surface shows them and validates",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R9/p3.py, p4.py (Unicode name scan, spaced and tight)",
+      "result": "spaced misses enumerated; tight forms caught except combining dots on letters and Latin click letters",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R9/p6.py (R8-01 strings)",
+      "result": "U+A78F and U+1427, tight and spaced, now detected",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "git diff --stat ffdf534..66a4765 -- <protected paths>",
+      "result": "no changes",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "ws_frozen_check zip part",
+      "result": "Phase 1 checkpoint zip not present",
+      "status": "BLOCKED"
+     }
+    ],
+    "unverified": [
+     "Flutter uri_ui tests not run this round",
+     "SSRF (safe_fetch/netpolicy), vision gating, access/bridge permissions, snapshot.js redaction parity and integrated worker dispatch not re-probed adversarially this round; relied on passing regression suites",
+     "R1-R7 FIXED statuses rest mainly on their passing regression tests and spot probes, not exhaustive re-attack",
+     "ws_frozen_check zip part BLOCKED (checkpoint zip absent)"
+    ],
+    "verdict": "REJECT"
+   },
+   "round": 9,
+   "started_at": "2026-10-11T11:36:14Z",
+   "status": "COMPLETED_WITH_RESULT",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--safe-mode",
+     "--setting-sources",
+     "",
+     "--strict-mcp-config",
+     "--output-format",
+     "json",
+     "--session-id",
+     "fedecee9-bc48-4b89-ad28-364dc5a28cdb",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_anchor_ok": true,
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "config_isolated": true,
+    "contained": true,
+    "containment_post": {
+     "contained": true,
+     "killed": 72
+    },
+    "containment_pre": {
+     "contained": true,
+     "killed": 0
+    },
+    "cost_usd": 1.1123277,
+    "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R9",
+    "ended_at": "2026-10-11T11:41:05Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 12,
+    "pid": 7731,
+    "prompt_sha256": "1b2ce59c67b5d4c8adc117ed91a4d06768414afd7594e8281e2b8686e709be59",
+    "provider": "claude_cli",
+    "result_text_sha256": "31f95277247196c3a83ad083398c3245ff93b1626b58621fd6a19bc9d18d3c1a",
+    "role": "reviewer",
+    "session_id": "fedecee9-bc48-4b89-ad28-364dc5a28cdb",
+    "session_id_requested": "fedecee9-bc48-4b89-ad28-364dc5a28cdb",
+    "started_at": "2026-10-11T11:36:14Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "160a39a82b9d32ce06d5ac0b919c7a7aad66c3f929290eb03422c29ba1d4a3b2"
+   }
+  },
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R10",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "candidate": "7b1252f79efe62a7a4eff2c2275a7984e5048f1e",
+   "round": 10,
+   "started_at": "2026-10-11T11:45:02Z"
   }
  ],
  "schema": "uri-dev-lifecycle/1",
- "spent_usd": 27.7953,
- "stage": "FIXING",
+ "spent_usd": 38.3766,
+ "stage": "AUDITING",
  "stall_rounds": 0,
  "started_at": "2026-10-11T09:02:05Z"
 }

@@ -1,0 +1,94 @@
+{
+ "candidate": "806dcd12816b3944f78324f06aaf3aa366cec96a",
+ "clean": true,
+ "cost_usd": 0.5625837,
+ "diagnosis": 5,
+ "recurring": [
+  "R5-01"
+ ],
+ "result": {
+  "evidence": [
+   "uri_web/untrusted.py:75 _DOTCH lists 14 dot characters; U+060C/U+0964/U+0589/U+06D4/U+2E31/U+0701/U+16EB/U+1362/U+0F0B/U+A789/U+02D9, ',' and ':' are missing",
+   "uri_web/untrusted.py:76 _DOT accepts exactly one _DOTCH character (so '..' and NFKC('\u2026')='...' fail) or brackets/spaced 'dot' (so 'd0t', '_dot_' and '-dot-' fail)",
+   "uri_web/untrusted.py:78 _BARE requires host+_DOT+tld, so every unlisted separator gives no match",
+   "uri_web/untrusted.py:65-74 the R5-01 and D13 comments describe the fail-closed intent, which the code does not deliver",
+   "uri_web/synthesize.py:238 verify uses has_link_or_contact(body); probe: 'Claim your energy rebate refund at refunds-portal\u060ccom before the deadline [1].' is kept as a claim",
+   "uri_web/synthesize.py:318 extractive uses the same detector and picks the link sentence",
+   "uri_web/surface.py:38 clean -> mask_links leaves it; probe /tmp/d5/p3.py: build_surface plus require_valid pass and the dump contains 'refunds-portal\u060ccom', 'refunds..com/claim', 'refunds-portal d0t com', 'refunds-portal,com/claim', 'refunds-portal:com', 'refunds-portal_dot_com', 'refunds-portal\u2e31com'",
+   "uri_web/evaluate.py:38 _SENT splits at '. ' + capital, so for 'refunds-portal . Com' verify keeps 'Com before the deadline .' and extractive keeps '... at refunds-portal .'",
+   "/tmp/d5/p1.py: all literal R5-01 strings now return True (fixed by 29771992)",
+   "git show 806dcd12/29771992/f5a5b8ec/462be42c/f3700643/ca622bc0 -- uri_web/untrusted.py: each diff extends _DOT/_BARE by the reported shapes only",
+   "tests/web/test_w1_closure_r5_review_regressions.py:23 regression tests are fixed string lists"
+  ],
+  "needs_owner": false,
+  "proposed_fix": "In untrusted.py, replace the enumerated _DOTCH/_DOT with a category-based separator. Inside a whitespace-separated token (on the normalised text and the skeleton), any run of characters whose Unicode category is P* or S* (Sk included) counts as a dot, except a single word-internal '-', \"'\" or '\\u2019', and '/'. So do 'dot'/'d0t' in any wrapper or spacing ('_dot_', '-dot-', '{dot}', ' d0t '), and an optional space on either side of a dot-like mark. The match counts when the right-hand label is 2-63 letters or an ACE label. Keep the existing precision-only exceptions (a full stop, comma or colon plus space plus capitalised word; 'rose.The'; the CJK '\u3002' break; abbreviations). Also run has_link_or_contact on the whole unsplit source paragraph and on the joined answer text, and quote or drop any sentence next to a LINK_OR_CONTACT hit, so splitter-split links ('portal . Com') cannot survive in halves. Replace string-list regressions with generated ones: every code point in categories Po/Pd/Ps/Pe/Sk/Sm placed between 'refunds-portal' and 'com' (and doubled), through has_link_or_contact, mask_links, verify, extractive, build_surface and require_valid, with tests embedded in the test file.",
+  "root_cause": "The link detector in uri_web/untrusted.py is still a list of known separator shapes, not a rule. _BARE (untrusted.py:78) matches a bare domain only when the labels are joined by _DOT (untrusted.py:76), and _DOT accepts only the 14 characters in _DOTCH (untrusted.py:75), certain bracket pairs and a spaced 'dot'. Any other separator a reader would take as a dot makes has_link_or_contact return False. Probes at HEAD 806dcd12 found: 'refunds..com/claim', 'refunds\u2026com', U+060C, U+0964, U+0589, U+06D4, U+2E31, U+0701, U+16EB, U+1362, U+0F0B, U+A789, U+02D9, ',', ':', ' d0t ', '_dot_', '-dot-', 'refunds-portal.c om'. Each of these is kept unquoted by verify() (synthesize.py:238), picked by extractive() (synthesize.py:318), shown by build_surface via clean/mask_links (surface.py:38) and accepted by require_valid. The literal R5-01 strings ('_refunds-portal.com_' and the others) are fixed at HEAD by 29771992's (?<![^\\W_])...(?![^\\W_]) lookarounds. What recurs is the class (R1-01/R5-01/R6-01): a link next to a separator the list does not cover. A second, smaller path: the sentence splitter (evaluate.py:38 _SENT) splits 'refunds-portal . Com' / 'refunds-portal. Com/claim' into two sentences that are each link-free, and verify/extractive keep the halves.",
+  "why_earlier_repairs_failed": "Each repair added the shapes the reviewer had just reported and wrote regression tests for those exact strings. ca622bc0 added [.]/(.)/[dot]. f3700643 added U+3002/U+FF0E/U+FF61. 462be42c added spaced bracket defangs. f5a5b8ec added the ACE 'xn--' top-level label. 29771992 (the R5-01 repair, not in the listed repairs) changed only the '_'/'-' lookarounds. 806dcd12 (D13, 'mask any dot-joined word') turned the owner's rule into another fixed set, _DOTCH, which leaves out most Unicode full stops and dot-like marks (Po/Sk), repeated dots and the ellipsis, ASCII ',' and ':', and spelled forms like 'd0t', '_dot_' and '-dot-'. The tests (e.g. tests/web/test_w1_closure_r5_review_regressions.py:23 WRAPPED) list fixed strings, so the next unlisted separator always passes. None of the repairs looked at the splitter running before the per-sentence check."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "a8069d8a-16db-4f82-b1d6-36e467290ed0",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5625837,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/diagnose_D5",
+  "ended_at": "2026-10-11T10:48:04Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 11,
+  "pid": 10704,
+  "prompt_sha256": "85448365725576e7bf355a123ab2a567a4673db8b966a356826d455b29eb4efb",
+  "provider": "claude_cli",
+  "result_text_sha256": "3463628e96cb3712254895865955bfd335aba151881a811da05dbdab7b18ac3d",
+  "role": "reviewer",
+  "session_id": "a8069d8a-16db-4f82-b1d6-36e467290ed0",
+  "session_id_requested": "a8069d8a-16db-4f82-b1d6-36e467290ed0",
+  "started_at": "2026-10-11T10:46:05Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "e252d511ab1a946e9edf9b151ab410a1a1ff110711210857122bc2320f401e08"
+ }
+}

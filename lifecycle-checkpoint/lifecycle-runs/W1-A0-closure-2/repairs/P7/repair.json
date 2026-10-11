@@ -1,0 +1,98 @@
+{
+ "addresses": [
+  "R9-01"
+ ],
+ "changed": [
+  "tests/web/test_w1_closure_r9_review_regressions.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "7b1252f79efe62a7a4eff2c2275a7984e5048f1e",
+ "ended_at": "2026-10-11T11:44:59Z",
+ "pre": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_closure_r9_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 7,
+ "report": {
+  "not_repaired": [],
+  "notes": "uri_web/untrusted.py only. (a) _DOT_NAME extended with POINT|DOTTED|THEREFORE|BECAUSE|PROPORTION|DEGREE SIGN, so U+2027, U+2041, U+205C, U+2234 etc. are _DOTLIKE and the spaced-both-sides separator matches. (b) New _lone(): a whitespace token whose non-COMMON characters are one distinct non-Latin character (repeats allowed), between two tokens that each hold a script family and neither holds its family, spans both neighbours, the same way tokens with no allowed letter already did. Precision cost only: a lone foreign letter between words of another script is masked. Latin lone tokens are excluded (D15 spelt-letter residual unchanged). Regression file: 57 of 66 cases fail on a clean export of 66a4765 (the 9 passing ones are ordinary-text precision checks, expected to pass both ways); 66/66 pass after the repair. Full tests/web + tests/assist: 3304 passed. Reviewer probes p1/p2/p5 all detected, masked and dropped. Pre-existing no-space form 'refunds-portal\u0660 com' (R8 repair) masks the host but leaves ' com'; detection is True; not changed.",
+  "regression_tests": [
+   "tests/web/test_w1_closure_r9_review_regressions.py"
+  ],
+  "repaired": [
+   "R9-01"
+  ]
+ },
+ "started_at": "2026-10-11T11:41:07Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "dafbaf4f-655b-4ab8-a990-2fa1e68166b7",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 74
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7534696,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T11:44:51Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 4874,
+  "prompt_sha256": "7aaa93f817ad52464c8485b5c3b1ac2fa45b7dce07408f1ead90f37d8354952f",
+  "provider": "claude_cli",
+  "result_text_sha256": "a42f154a75f0be2433baadd88febdbef5d6e0cc077271586d1d43b6be673ef63",
+  "role": "implementer",
+  "session_id": "dafbaf4f-655b-4ab8-a990-2fa1e68166b7",
+  "session_id_requested": "dafbaf4f-655b-4ab8-a990-2fa1e68166b7",
+  "started_at": "2026-10-11T11:41:07Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "183a365267f8fb35c4c80edacc6b7d7845d3f88327adf95eec921ca3ae020992"
+ }
+}

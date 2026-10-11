@@ -223,6 +223,46 @@
    "severity": "MEDIUM",
    "status": "open",
    "title": "D7 bypass at the sentence edge: _excerpt lets a claim drop a leading qualifier ('Less than', 'Fewer than', 'Well short of') before an undetected quantity word (plurality, quintet, quorum), so a changed quantity is shown unquoted in the Brain's words"
+  },
+  {
+   "blocking": true,
+   "id": "R6-01",
+   "round": "R6",
+   "severity": "HIGH",
+   "status": "repaired f604e7c",
+   "title": "R1-01 class still open: a one-sided spaced dot ('refunds-portal .com/claim') or a dot-like separator (U+00B7, U+30FB, U+2219, U+22C5, U+2027, '{.}', '<.>') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12)"
+  },
+  {
+   "blocking": true,
+   "id": "R6-02",
+   "round": "R6",
+   "severity": "MEDIUM",
+   "status": "repaired f604e7c",
+   "title": "R5-02 repair incomplete: lead_ok/tail_ok treat a comma as a safe edge, so a claim drops a qualifier set off by commas ('that, at most, a quintet of firms...') before an undetected quantity word and is shown unquoted (D7)"
+  },
+  {
+   "blocking": true,
+   "id": "R7-01",
+   "round": "R7",
+   "severity": "HIGH",
+   "status": "repaired 474adb8",
+   "title": "R1-01 link class still open: a dot in a non-ASCII bracket/quote pair with spaces ('refunds-portal \u3010.\u3011 com/claim', '\u300c.\u300d', '\u3014.\u3015', '\u00ab.\u00bb', '\u27e8.\u27e9', '\".\"'), a spaced dot run ('refunds-portal . . com/claim') or a So-category bullet ('\u25e6' U+25E6, '\u25cf') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, within D13 'any bracketed dot')"
+  },
+  {
+   "blocking": true,
+   "id": "R7-02",
+   "round": "R7",
+   "severity": "MEDIUM",
+   "status": "repaired 474adb8",
+   "title": "Verifier keeps a reversed-meaning claim in the Brain's words: an added or dropped determiner turns 'a little' into 'little' (and back), and the claim keeps its citation"
+  },
+  {
+   "blocking": true,
+   "id": "R8-01",
+   "round": "R8",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 link class still open: letter-category middle-dot look-alikes (U+A78F LATIN LETTER SINOLOGICAL DOT, U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT) and a spaced dot before a split top-level label ('refunds-portal . c om/claim', 'refunds-portal . c o m') pass has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, D13 'middle dots', 'mask any dot-joined word')"
   }
  ],
  "gates": [],
@@ -230,7 +270,7 @@
   {
    "kind": "RETRY_LIMIT",
    "needs": "owner or a more capable implementer",
-   "reason": "still failing after 3 repairs (diagnosed: R3-01: the candidate regex _BARE (uri_web/untrusted.py:64, unchanged since f370064) only accepts a top-level label of 2-24 letters ([^\\W\\d_]{2,24}) and forbids a hyphen or word character after it ((?![\\w-])). A punycode/ACE TLD such as 'xn--p1ai' (digits and hyphens) never produces a match, so _is_d): R1-01"
+   "reason": "still failing after 3 repairs (diagnosed: The link detector in uri_web/untrusted.py is still a list of known separator shapes, not a rule. _BARE (untrusted.py:78) matches a bare domain only when the labels are joined by _DOT (untrusted.py:76), and _DOT accepts only the 14 characters in _DOTCH (untrusted.py:75), certain bracket pairs and a s): R1-01"
   }
  ],
  "repairs": [
@@ -260,6 +300,20 @@
    "commit": "f5a5b8ecbb5c",
    "reason": "",
    "repair": "P4",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R6-01, R6-02",
+   "commit": "f604e7cd73ba",
+   "reason": "",
+   "repair": "P5",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R7-01, R7-02",
+   "commit": "474adb8440ff",
+   "reason": "",
+   "repair": "P6",
    "status": "COMMITTED"
   }
  ],
@@ -323,22 +377,58 @@
    "session": "6f65a79d-136c-41cb-9cce-3a488617959e",
    "status": "COMPLETED_WITH_RESULT",
    "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "29771992f57f",
+   "findings": 2,
+   "finished": "2026-10-11T10:37:57Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R6",
+   "session": "40727e7b-2c06-4695-abd1-c53c5b1f749f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "f604e7cd73ba",
+   "findings": 2,
+   "finished": "2026-10-11T11:15:44Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R7",
+   "session": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "474adb8440ff",
+   "findings": 1,
+   "finished": "2026-10-11T11:28:24Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R8",
+   "session": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
   }
  ],
  "summary": {
   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
-  "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+  "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
   "evidence_ok": false,
-  "findings_repaired": 13,
-  "findings_total": 28,
+  "findings_repaired": 17,
+  "findings_total": 33,
   "integration": "none",
   "milestone": "W1-A0-closure",
-  "open_blocking": 2,
+  "open_blocking": 1,
   "owner_actions": 1,
   "receipt_chain_ok": true,
-  "repairs_committed": 4,
-  "rounds": 5,
+  "repairs_committed": 6,
+  "rounds": 8,
   "stage": "BLOCKED",
-  "written_at": "2026-10-11T10:27:04Z"
+  "written_at": "2026-10-11T11:28:24Z"
  }
 }

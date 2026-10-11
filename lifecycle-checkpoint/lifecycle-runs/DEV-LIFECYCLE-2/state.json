@@ -1,0 +1,64 @@
+{
+ "attempts": {},
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "baseline_gates": {},
+ "blocker": null,
+ "candidate": "f3706e03402f496ae91a08a69db515df4bf89245",
+ "config_path": "/home/user/uri-wt/lifecycle-runs/DEV-LIFECYCLE-2.json",
+ "config_sha256": "b7a91f066fac78d5e6378d25502391dd69c8ee1c33e81955f82d72e3c2a0ee43",
+ "gates": {},
+ "history": [
+  {
+   "hash": "831223a52f4c86d484edf4dd2250749ef8e8d9db573dc6cc70f0bed683165019",
+   "kind": "PLAN",
+   "seq": 1,
+   "ts": "2026-10-11T11:51:29Z"
+  },
+  {
+   "hash": "2e4bede578a8cf80b70734119c7689dbef64a326b612fd899403849ecf65476a",
+   "kind": "STAGE",
+   "seq": 2,
+   "ts": "2026-10-11T11:51:29Z"
+  },
+  {
+   "hash": "9ee4786aaa76cada2234a2a139dfd8fd130612541abe423fd804040dc09e4cb5",
+   "kind": "STAGE",
+   "seq": 3,
+   "ts": "2026-10-11T11:51:29Z"
+  },
+  {
+   "hash": "8eefe0b5a90a8d4856caa4bdf1fa153027b4bba7eef8c37d52e1ebe01a4cfc52",
+   "kind": "IMPLEMENTATION_RECORDED",
+   "seq": 4,
+   "ts": "2026-10-11T11:51:30Z"
+  },
+  {
+   "hash": "fb05e3e7648c7c0c6eb2d0f07248519490df847b9b5f11b155018bd9296d761f",
+   "kind": "STAGE",
+   "seq": 5,
+   "ts": "2026-10-11T11:51:30Z"
+  },
+  {
+   "hash": "9523bb0524759acebfee5c17e5fa283ce7eb8fe22428daa4dd20a279b1ff4326",
+   "kind": "REVIEW_STARTED",
+   "seq": 6,
+   "ts": "2026-10-11T11:51:32Z"
+  }
+ ],
+ "integration": null,
+ "milestone": "DEV-LIFECYCLE-2",
+ "repairs": [],
+ "rounds": [
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-2/audit_R1",
+   "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+   "candidate": "f3706e03402f496ae91a08a69db515df4bf89245",
+   "round": 1,
+   "started_at": "2026-10-11T11:51:32Z"
+  }
+ ],
+ "schema": "uri-dev-lifecycle/1",
+ "spent_usd": 0,
+ "stage": "AUDITING",
+ "started_at": "2026-10-11T11:51:29Z"
+}

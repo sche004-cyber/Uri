@@ -1,6 +1,6 @@
 # Lifecycle receipt — W1-A0-closure
 
-Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · candidate `f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b` · events 36 · chain OK
+Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · candidate `474adb8440ffcf946384edd23c15245c3061eee5` · events 59 · chain OK
 
 ## Review rounds
 
@@ -11,6 +11,9 @@ Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · can
 | R3 | claude_cli | `c9556679-5432-4d0c-9e5d-806fdc2bba47` | `f370064354ba` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
 | R4 | claude_cli | `7fb002ae-d084-4e18-b13d-6cbc18118a09` | `462be42c992c` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
 | R5 | claude_cli | `6f65a79d-136c-41cb-9cce-3a488617959e` | `f5a5b8ecbb5c` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
+| R6 | claude_cli | `40727e7b-2c06-4695-abd1-c53c5b1f749f` | `29771992f57f` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
+| R7 | claude_cli | `8996df3a-61f6-4227-beac-1c5fd562e6e5` | `f604e7cd73ba` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
+| R8 | claude_cli | `8375af4b-8468-4e67-ba85-0cfe741090e8` | `474adb8440ff` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
 
 ## Repairs
 
@@ -20,14 +23,15 @@ Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · can
 | P2 | COMMITTED | `f370064354ba678ec5fed956a709cd0e7626c269` | R2-01, R2-02, R2-03 |  |
 | P3 | COMMITTED | `462be42c992c273155e83801b32dc01580a897ef` | R3-01, R3-02 |  |
 | P4 | COMMITTED | `f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b` | R4-01, R4-02 |  |
+| P5 | COMMITTED | `f604e7cd73ba15a567b31e9b4360e2a4ef7de892` | R6-01, R6-02 |  |
+| P6 | COMMITTED | `474adb8440ffcf946384edd23c15245c3061eee5` | R7-01, R7-02 |  |
 
 ## Qualification
 
 
 ## Open findings (latest round)
 
-- R5-01 HIGH blocking=True: R1-01 class still open: a link next to an underscore or hyphen ('_refunds-portal.com_', 'refunds-portal.com_', '-refunds-portal.com') passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator
-- R5-02 MEDIUM blocking=True: D7 bypass at the sentence edge: _excerpt lets a claim drop a leading qualifier ('Less than', 'Fewer than', 'Well short of') before an undetected quantity word (plurality, quintet, quorum), so a changed quantity is shown unquoted in the Brain's words
+- R8-01 HIGH blocking=True: R1-01 link class still open: letter-category middle-dot look-alikes (U+A78F LATIN LETTER SINOLOGICAL DOT, U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT) and a spaced dot before a split top-level label ('refunds-portal . c om/claim', 'refunds-portal . c o m') pass has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12, D13 'middle dots', 'mask any dot-joined word')
 
 ## Integration
 
@@ -39,10 +43,10 @@ null
 
 ```
 {
- "at": "2026-10-11T10:27:04Z",
+ "at": "2026-10-11T11:28:24Z",
  "kind": "RETRY_LIMIT",
  "needs": "owner or a more capable implementer",
- "reason": "still failing after 3 repairs (diagnosed: R3-01: the candidate regex _BARE (uri_web/untrusted.py:64, unchanged since f370064) only accepts a top-level label of 2-24 letters ([^\\W\\d_]{2,24}) and forbids a hyphen or word character after it ((?![\\w-])). A punycode/ACE TLD such as 'xn--p1ai' (digits and hyphens) never produces a match, so _is_d): R1-01",
+ "reason": "still failing after 3 repairs (diagnosed: The link detector in uri_web/untrusted.py is still a list of known separator shapes, not a rule. _BARE (untrusted.py:78) matches a bare domain only when the labels are joined by _DOT (untrusted.py:76), and _DOT accepts only the 14 characters in _DOTCH (untrusted.py:75), certain bracket pairs and a s): R1-01",
  "stage": "AUDITING"
 }
 ```

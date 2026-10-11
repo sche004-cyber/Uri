@@ -1,0 +1,32 @@
+I repaired R6-01 by replacing the dot list with a rule, as the diagnosis asked. R6-02 needed no change: it was already fixed at 806dcd12. Nothing is committed.
+
+**R6-01 (links next to an unlisted separator).** The reviewer's literal strings were already fixed at HEAD, but the class was still open: probes at HEAD confirmed Arabic comma, `..`, `…`, `,`, `:`, ` d0t `, `_dot_`, `-dot-`, U+2E31, danda, U+02D9 and `refunds-portal.c om` all got through.
+
+- **Separator rule** (`uri_web/untrusted.py`): instead of the typed list of 14 dot characters, the allowed separators are now built from the Unicode database when the module loads.
+  - Any punctuation or symbol counts as a dot when there is no space around it. The exceptions are dashes, `'`, `’`, `/` and `_`, which join parts of one word ('Paris–London', 'and/or', "don't", 'snake_case').
+  - Marks whose Unicode name says they are a dot or full stop may have spaces on either side.
+  - Other marks count with a space before and none after (`portal ,com`), except opening marks such as brackets, quotes, `#`, `@` and currency.
+  - `dot`/`d0t` counts in any case or wrapper.
+  - `portal.c om` (top-level label split by a space) is also caught.
+- **Prose exceptions:** two existing exceptions are kept and generalised. A full stop plus space is still a sentence break (D13). The old Chinese/Japanese `。` exception now covers any script without letter case, so normal Chinese, Japanese, Arabic and Hindi punctuation (`東京、大阪`, ` । `) is not masked.
+- **Speed:** each separator match is atomic, and a host is matched over at most 10 labels at a time. Without that, `'a.'*3000` took over 2 minutes; it now takes about 2 s, comparable to HEAD.
+- **Splitter** (`evaluate.sentences`, `synthesize._split_answer`): pieces that a link runs across are joined back together, so `refunds-portal . Com/claim` is checked whole. This also covers conflict statements.
+- **Adjacent answers:** `verify()` and `extractive()` now drop any two neighbouring answer sentences that together form a link.
+
+**R6-02 (comma-edge qualifiers).** All four reviewer probes already return the full source sentence quoted at HEAD (D14 is in 806dcd12). There is nothing to fix, so no test can fail on that commit.
+
+**Tests.**
+- `tests/web/test_w1_closure_r7_review_regressions.py` (61 tests, self-contained) is generated from every punctuation and symbol code point, with its own expectation independent of the module. It covers single, doubled, in-sentence and space-before forms. It runs them through `has_link_or_contact`, `mask_links`, `verify`, `extractive`, `build_surface` and `require_valid`, plus the reported strings, the splitter cases and ordinary-text controls.
+- On an exported copy of 806dcd12 it gives 34 failed / 27 passed; after the change, 61 passed.
+- tests/web, tests/assist and tests/a2ui: 3187 passed.
+- `tests/phase2a/test_frozen_core.py::test_base_commit…` fails because HEAD is not the frozen base e8e3b65. That is about the checkout, not this change.
+
+**Still not caught, and new over-masking.**
+- Not caught: a comma or colon followed by a space (`portal, com`, `portal: com`), joining the existing gap for D13's `portal. Com`. A dash between labels is also not treated as a dot.
+- Not caught: an unlisted top-level domain in a script without letter case, written after punctuation other than `.` (the old `。` gap, now wider).
+- Masked now but not at HEAD, which only costs readability: `T&Cs`, `fact... it`, `Wait…what`, and code-like text such as `File:line`.
+- The governance ledger is outside the permitted paths, so these limits are recorded only in code comments.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R6-01"], "not_repaired": [{"id": "R6-02", "reason": "Already repaired at 806dcd12 by D14 (lead_ok/tail_ok require sentence start/end). All four reviewer probes return the full source sentence with quoted=True at HEAD, so no code change is justified and no regression test can fail on 806dcd12; existing tests/web/test_w1_closure_r6_review_regressions.py already covers them and passes."}], "regression_tests": ["tests/web/test_w1_closure_r7_review_regressions.py"], "notes": "R6-01 root cause (enumerated _DOTCH) replaced by a category-based separator built from the Unicode database: any P*/S* mark run with no space in it except word joiners (Pd, apostrophes, '/', '_'); dot-named marks with spaces on either side; other marks with a space before only unless opening; spelled dot/d0t in any wrapper; split one-letter TLD ('portal.c om'). The caseless-script punctuation exception generalises the old CJK '。' rule. Atomic separator group plus a 10-label host cap prevent backtracking blowup ('a.'*3000 now ~2 s, similar to HEAD). Splitter fix: evaluate.sentences and synthesize._split_answer re-join pieces a link runs across (untrusted.merge_split_links/joins_link); verify/extractive drop adjacent claims that join into a link. New regression file: 34 fail on 806dcd12, 61/61 pass after; tests/web+assist+a2ui 3187 passed. tests/phase2a/test_frozen_core.py::test_base_commit fails because HEAD is not the frozen base e8e3b65 (environment, not this change). Still not caught: 'portal, com'/'portal: com', a dash between labels, unlisted caseless-script IDN TLD after non-'.' punctuation. New over-masking (readability only): 'T&Cs', 'fact... it', 'Wait…what', 'File:line'. Governance ledger is outside the permitted paths, so these limits are recorded only in code comments."}
+REPAIR_RESULT_END
