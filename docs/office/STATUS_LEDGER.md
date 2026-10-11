@@ -38,7 +38,7 @@ independent review has run. Every entry states its evidence.
 | Release builds | App and security probe build with `/W4 /WX` | `flutter build windows --release` |
 | Real-WebView2 security tests | **COMPLETED_WITH_RESULT**; final run: 0 escapes in 48 attempts + 9 navigations | `evidence/webview2_security_probe_run4_final.json` |
 | Defects found by the probe, fixed | WebSocket bypassed the request filter (P2 proxy); WebRTC/STUN UDP escaped (constructors removed in every frame) | runs 1 and 2 kept as history |
-| Bundle hash (current) | `34372d193326853cf5bdb2d61784a162a150c62a4eabb9a89c6bcc0661aa738c` (review R2 repair R2-01: shared-formula fill/insert-function cells are sent as formulas, never as clears; two clean Linux builds agree, and the same procedure reproduces the superseded `faf22fb3…` from 2b917cf). Earlier: `faf22fb3…` (review R1 repair: function guard after every load, structural edits refused), `0720ed8e…` (3599db6) | `uri_ui/office_web/BUNDLE_SHA256`, Dart constant |
+| Bundle hash (current) | `b379fff2350c3b86fb51d4d85b4525d5ac03b6d9fda0fbdaa103182ca567c02c` (review R3 repair R3-03: multi-line or partly styled grid text is sent as its plain text, never as a clear; two clean Linux builds agree). Earlier: `34372d19…` (review R2 repair R2-01: shared-formula fill/insert-function cells are sent as formulas, never as clears; two clean Linux builds agree, and the same procedure reproduces the superseded `faf22fb3…` from 2b917cf). Earlier: `faf22fb3…` (review R1 repair: function guard after every load, structural edits refused), `0720ed8e…` (3599db6) | `uri_ui/office_web/BUNDLE_SHA256`, Dart constant |
 | Real-WebView2 probe on the current bundle | **NOT VERIFIED.** The runs above used the superseded bundle `0720ed8e…`; the probe (now also checking that no network formula function is registered after a workbook loads) must be re-run on Windows | `tests/office/test_page.py::test_page_blocks_every_network_attempt_in_edge`, `uri_ui/lib/office_security_probe.dart` |
 | Tests (Windows) | `tests/office` 136 passed; `tests/ws tests/oi tests/a2ui` 597 passed / 22 skipped (baseline); scheduler 71/71; `flutter test` 519 passed / 5 skipped (not Office); `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok | this session |
 | Live panel with a real workbook and the Brain | **NOT VERIFIED.** Needs the launcher to start the Office service and an owner at the PC; not simulated. | — |
@@ -63,3 +63,16 @@ The reviewer's findings disproved these earlier claims. The claims are kept abov
 | R1-11 | — | Structural grid edits in the page were never reported. They are now refused in the page (commands and mutations) and the owner is told why | `guard.test.mjs`, `guard.univer.test.mjs` |
 
 Not verified in this repair: the Windows-only Edge/WebView2 probes on the new bundle (see the row above).
+
+## 2026-10-11, independent review R3 (at 4743860): corrections and repairs
+
+The reviewer's findings disproved these earlier claims. The claims are kept above as history and corrected here.
+
+| Finding | Earlier claim | Correction / repair | Regression test |
+|---|---|---|---|
+| R3-01 | R1-02: network formulas are refused | **False at 4743860.** Strings were stripped with a regex that ignored quoted sheet names, so `='q"'!A1&WEBSERVICE(..)&'q"'!A1` was accepted and saved. `check_formula` now tokenises left to right (single-quoted sheet names and double-quoted strings, each with doubled-quote escapes), scans only the code, and refuses unterminated quotes | `tests/office/test_review_r3_repairs.py` (incl. end-to-end on a sheet named `q"`) |
+| R3-02 | R1-06: the card shows the full value | A value containing a URL made `propose_save` fail with an uncaught A2UI `URL_REFUSED`. Such a value is shown as a JSON string with `:` written as `\u003a` (decodes to the exact value); anything else a card cannot show is refused as `CHANGE_CANNOT_BE_SHOWN` | same |
+| R3-03 | R2-01: grid edits are never sent as clears | Multi-line or partly styled text (`{p, v: null}`) was sent as a clear. Its plain text is now read from `p.body.dataStream`; rich text with no plain-text form (cell image, table) is reported as `RICH_TEXT_NOT_READ` | `convert.test.mjs`, `edits.univer.test.mjs` (real `SetRangeValuesCommand` with the editor's rich-text shape; the DOM editor itself is not run in node) |
+| R3-04 | R1-03: array formula cells are refused | Data-table formulas (`t="dataTable"`) were not locked; saving the anchor dropped the table. Every cell in a data table's `ref` is now locked and refused at save time | `tests/office/test_review_r3_repairs.py` |
+
+Not verified in this repair: the Windows-only Edge/WebView2 probes on the new bundle `b379fff2…`.

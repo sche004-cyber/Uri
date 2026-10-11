@@ -8,6 +8,7 @@
 //               {type: "marks", marks}                     refresh marks after a decision
 // Page -> host: {type: "ready"} | {type: "edit", sheet, cell, value|formula} | {type: "error", code}
 //               (code FORMULA_NOT_RESOLVED: a shared-formula cell whose formula could not be read; nothing is sent)
+//               (code RICH_TEXT_NOT_READ: rich text with no plain-text form, e.g. an embedded object; nothing is sent)
 //               (code STRUCTURE_CHANGE_NOT_SUPPORTED: a structural grid change was refused in the page, see guard.js)
 import './no-network.js';        // must stay the first import: runs before any Univer code (AC15)
 import { createUniver, LocaleType, mergeLocales } from '@univerjs/presets';

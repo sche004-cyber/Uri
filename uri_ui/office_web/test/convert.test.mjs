@@ -56,3 +56,21 @@ test('shared-formula cells (si only, f and v null) are sent as their resolved fo
   assert.deepEqual(editsFromMutation({ subUnitId: 's0', cellValue: { 1: { 1: { si: 'x1', f: null, v: null } } } },
     { s0: 'Sales' }), [{ sheet: 'Sales', cell: 'B2', error: 'FORMULA_NOT_RESOLVED' }]);
 });
+
+test('rich text (multi-line or partly styled) is sent as its plain text, never as a clear (R3-03)', () => {
+  const cellValue = {
+    0: { 0: { p: { body: { dataStream: 'line1\rline2\r\n', paragraphs: [{ startIndex: 5 }, { startIndex: 11 }] } },
+      v: null, f: null, si: null } },
+    1: { 0: { p: { body: { dataStream: 'bold and plain\r\n', textRuns: [{ st: 0, ed: 4, ts: { bl: 1 } }] } }, v: null } },
+    2: { 0: { p: { body: { dataStream: 'see \x1Fsite\x1E now\r\n', customRanges: [{}] } }, v: null } },
+    3: { 0: { p: { body: { dataStream: '\b\r\n', customBlocks: [{}] } }, v: '', f: null, si: null } },  // cell image
+    4: { 0: { p: {}, v: null } },
+  };
+  assert.deepEqual(editsFromMutation({ subUnitId: 's0', cellValue }, { s0: 'Sales' }), [
+    { sheet: 'Sales', cell: 'A1', value: 'line1\nline2' },
+    { sheet: 'Sales', cell: 'A2', value: 'bold and plain' },
+    { sheet: 'Sales', cell: 'A3', value: 'see site now' },
+    { sheet: 'Sales', cell: 'A4', error: 'RICH_TEXT_NOT_READ' },
+    { sheet: 'Sales', cell: 'A5', error: 'RICH_TEXT_NOT_READ' },
+  ]);
+});

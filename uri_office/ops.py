@@ -24,14 +24,15 @@ MAX_CELLS_PER_OP = 5000
 MAX_TEXT = 32767
 # Functions that reach the network, other programs, external data or cloud services. They are refused as bare tokens,
 # not only when followed by "(": a function can be passed by name (=MAP(A1,WEBSERVICE), =LET(f,IMAGE,f(x))).
-# Double-quoted string literals are removed first: text cannot be called as a function in Excel or Google Sheets.
+# Only formula code is scanned: _code() drops double-quoted string literals (text cannot be called as a function in
+# Excel or Google Sheets) and single-quoted sheet names, tokenising left to right so a quote of one kind inside the
+# other (='q"'!A1) cannot hide a call.
 _NETWORK_FN = re.compile(
     r"(?<![A-Za-z0-9_])(IMPORT[A-Z]*|WEBSERVICE|FILTERXML|ENCODEURL|HYPERLINK|IMAGE|RTD|CALL|REGISTER(?:\.ID)?|EXEC|"
     r"STOCKHISTORY|STOCKSERIES|TRANSLATE|DETECTLANGUAGE|COPILOT|CUBE[A-Z]*|SQL\.REQUEST|GOOGLEFINANCE|"
     r"GOOGLETRANSLATE)(?![A-Za-z0-9_])", re.IGNORECASE)
 # Short names that are also column letters (AI, PY) are refused only as calls, so =SUM(AI:AI) stays valid.
 _NETWORK_CALL = re.compile(r"(?<![A-Za-z0-9_])(AI|PY)\s*\(", re.IGNORECASE)
-_STRING_LITERAL = re.compile(r'"(?:[^"]|"")*"')
 _SHEET_NAME = re.compile(r"^[^\[\]:*?/\\]{1,31}$")
 
 # Strict JSON schema for one Brain answer (every property required; unused ones are null).
@@ -52,10 +53,35 @@ BRAIN_SCHEMA = {
                 "name": {"type": ["string", "null"]}}}}}}
 
 
+def _code(f: str) -> str:
+    """The formula with every "string" and 'sheet name' replaced by an empty pair of its quotes. Inside either, a
+    doubled quote of the same kind is an escape. An unterminated quote is refused."""
+    out, i, n = [], 0, len(f)
+    while i < n:
+        q = f[i]
+        if q not in "\"'":
+            out.append(q)
+            i += 1
+            continue
+        i += 1
+        while True:
+            if i >= n:
+                raise OfficeError("BAD_FORMULA", "unterminated quote")
+            if f[i] == q:
+                if i + 1 < n and f[i + 1] == q:
+                    i += 2
+                    continue
+                i += 1
+                break
+            i += 1
+        out.append(q + q)
+    return "".join(out)
+
+
 def check_formula(f) -> str:
     if not isinstance(f, str) or not f.startswith("=") or len(f) < 2 or len(f) > 8192:
         raise OfficeError("BAD_FORMULA", "a formula must start with '='")
-    code = _STRING_LITERAL.sub('""', f)
+    code = _code(f)
     if _NETWORK_FN.search(code) or _NETWORK_CALL.search(code) or "|" in f or "[" in f:
         raise OfficeError("FORMULA_REFUSED", "formulas that reach the network, other programs or other files are not allowed")
     return f

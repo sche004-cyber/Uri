@@ -7,7 +7,7 @@ import { test } from 'node:test';
 
 import { ICommandService, LocaleType, Univer, UniverInstanceType } from '@univerjs/core';
 import { FormulaDataModel, UniverFormulaEnginePlugin } from '@univerjs/engine-formula';
-import { SheetsSelectionsService, UniverSheetsPlugin } from '@univerjs/sheets';
+import { SetRangeValuesCommand, SheetsSelectionsService, UniverSheetsPlugin } from '@univerjs/sheets';
 import { InsertFunctionCommand } from '@univerjs/sheets-formula';
 import sheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
 
@@ -84,5 +84,19 @@ test('a shared-formula id the engine cannot resolve is an error, never an empty 
   cs.syncExecuteCommand('sheet.mutation.set-range-values', { unitId: 'w', subUnitId: 's0', cellValue: {
     6: { 1: { si: 'nosuch', f: null, v: null } } } });
   assert.deepEqual(edits, [{ sheet: 'Sales', cell: 'B7', error: 'FORMULA_NOT_RESOLVED' }]);
+  univer.dispose();
+});
+
+test('rich text from the cell editor reaches the service as its text, not as a clear (R3-03)', async () => {
+  const { univer, injector, cs, edits } = start();
+  await tick();
+  // EditingRenderController submits getCellDataByInput's result for rich text: {p: snapshot, v: null, f: null, si: null}.
+  const range = { startRow: 0, endRow: 0, startColumn: 2, endColumn: 2 };
+  injector.get(SheetsSelectionsService).setSelections([{ range, primary: null, style: null }]);
+  const p = { id: 'd', documentStyle: {}, body: { dataStream: 'line1\rline2\r\n',
+    paragraphs: [{ startIndex: 5 }, { startIndex: 11 }], textRuns: [] } };
+  assert.notEqual(await cs.executeCommand(SetRangeValuesCommand.id, { unitId: 'w', subUnitId: 's0', range,
+    value: { p, v: null, f: null, si: null } }), false);
+  assert.deepEqual(edits, [{ sheet: 'Sales', cell: 'C1', value: 'line1\nline2' }]);
   univer.dispose();
 });

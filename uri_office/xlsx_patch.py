@@ -9,8 +9,9 @@ Rules
   * Any edit sets `calcPr fullCalcOnLoad="1"` so dependent formulas are recalculated when the file is opened.
   * When a formula cell is created or replaced, `xl/calcChain.xml` is removed together with its content-type override
     and workbook relationship (Excel rebuilds it).
-  * Refused: cells inside a merged range other than its anchor, shared/array formula cells, Excel table header
-    and totals rows, unknown sheets, bad refs. Every cell inside an array formula's range is refused, not only its anchor.
+  * Refused: cells inside a merged range other than its anchor, shared/array/data-table formula cells, Excel table
+    header and totals rows, unknown sheets, bad refs. Every cell inside an array or data-table formula's range is
+    refused, not only its anchor (saving the anchor would drop the data table).
   * The result is written to a new, exclusively created temp file next to the destination (random name, never a
     planted file or symlink) and moved into place (atomic on the same volume); the file's permission bits are kept.
 """
@@ -32,6 +33,7 @@ NS_MAIN = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 NS_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 M = "{%s}" % NS_MAIN
 XML_SPACE = "{http://www.w3.org/XML/1998/namespace}space"
+LOCKED_FORMULA_TYPES = ("shared", "array", "dataTable")
 _PARSER = etree.XMLParser(remove_blank_text=False, resolve_entities=False, no_network=True, huge_tree=False)
 
 
@@ -93,8 +95,8 @@ def _get_cell(sheet_data, ref):
 def _set_cell(c, edit) -> bool:
     """Rewrite one cell, keeping its style. True if a formula was created or removed."""
     old_f = c.find(M + "f")
-    if old_f is not None and old_f.get("t") in ("shared", "array"):
-        raise OfficeError("CELL_NOT_EDITABLE", f"{c.get('r')}: shared or array formula")
+    if old_f is not None and old_f.get("t") in LOCKED_FORMULA_TYPES:
+        raise OfficeError("CELL_NOT_EDITABLE", f"{c.get('r')}: shared, array or data-table formula")
     had_formula = old_f is not None
     style = c.get("s")
     for child in list(c):
@@ -167,12 +169,12 @@ def _table_locks(parts: dict, sheet_part: str) -> set:
 
 
 def _array_ranges(root) -> list:
-    """(c1, r1, c2, r2) of every array formula: the whole spill range (`ref`) belongs to it, not only the anchor cell
-    that carries the <f>, so no cell inside it may be edited."""
+    """(c1, r1, c2, r2) of every array or data-table formula: the whole range (`ref`) belongs to it, not only the
+    anchor cell that carries the <f>, so no cell inside it may be edited."""
     out = []
     for c in root.iter(M + "c"):
         f = c.find(M + "f")
-        if f is not None and f.get("t") == "array":
+        if f is not None and f.get("t") in ("array", "dataTable"):
             out.append(refs.parse_range(f.get("ref") or c.get("r")))
     return out
 
@@ -185,7 +187,7 @@ def _locks(parts: dict, sheet_part: str, root) -> set:
     locked = set()
     for c in root.iter(M + "c"):
         f = c.find(M + "f")
-        if f is not None and f.get("t") in ("shared", "array"):
+        if f is not None and f.get("t") in LOCKED_FORMULA_TYPES:
             locked.add(c.get("r"))
     for c1, r1, c2, r2 in _array_ranges(root):
         if (c2 - c1 + 1) * (r2 - r1 + 1) <= 10_000:       # larger ones are still refused at save time
@@ -238,7 +240,7 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
             if _in_merged_non_anchor(root, col, row):
                 raise OfficeError("CELL_NOT_EDITABLE", f"{e['cell']}: inside a merged range")
             if _in_array_formula(root, col, row):
-                raise OfficeError("CELL_NOT_EDITABLE", f"{e['cell']}: part of an array formula")
+                raise OfficeError("CELL_NOT_EDITABLE", f"{e['cell']}: part of an array or data-table formula")
             if e["cell"] in tables:
                 raise OfficeError("CELL_NOT_EDITABLE", f"{e['cell']}: table header or totals row")
             formulas |= _set_cell(_get_cell(sd, e["cell"]), e)

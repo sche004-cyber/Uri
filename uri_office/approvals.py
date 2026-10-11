@@ -9,13 +9,16 @@ body, computes `change_sha256 = sha256(canonical(body))`, binds it into an `offi
     the shown "before" (file hash for local files, cell values for Google);
   * closes the surface in both cases, so the same approval can never be replayed;
   * the card shows the whole change set the hash binds (full values, every line, the full destination); a set too
-    large for one card is refused, never shortened;
+    large for one card is refused, never shortened. A shown value that A2UI would refuse as a link (https://...,
+    data:...) is shown as a JSON string with its colons written as \\u003a, which reads back to the exact value;
+    anything the card still cannot show is refused as an OfficeError;
   * audits every outcome, refusals included, in a hash chain (`verify_chain`).
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
 import threading
 import time
@@ -24,11 +27,14 @@ from pathlib import Path
 
 from uri_a2ui import catalog as C
 from uri_a2ui.surface import ActionRefused, Surface, canonical, check_action
-from uri_a2ui.validate import u16
+from uri_a2ui.validate import A2uiInvalid, u16
 
 from .errors import OfficeError
 
 GENESIS = "0" * 64
+# What A2UI refuses as a link in text (uri_a2ui.validate._URLISH), without its word-boundary anchors, so it also
+# catches a link that a split between card texts would expose.
+_LINKISH = re.compile(r"(?i)(?:https?|ftp|file)://|(?:javascript|vbscript|data):\S")
 FIXED_COMPONENTS = 6          # root, title, target, apply, reject, buttons; the rest of the catalog limit is for lines
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS surface(
@@ -45,6 +51,13 @@ def jdump(obj) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
 
 
+def _quoted(s: str) -> str:
+    """`s` as a JSON string. If it holds something A2UI refuses as a link, every ':' is written as the JSON escape
+    \\u003a: the card cannot carry a link, and the shown text still decodes (json.loads) to exactly `s`."""
+    q = json.dumps(s, ensure_ascii=False)
+    return q.replace(":", "\\u003a") if _LINKISH.search(q) else q
+
+
 def _shown(v) -> str:
     """The whole value, never shortened: the card shows everything the hash binds. Text is quoted (JSON), so a value
     with line breaks or ' -> ' in it cannot pass for another line of the card."""
@@ -52,11 +65,11 @@ def _shown(v) -> str:
         return "(empty)"
     if v.get("f"):
         f = v["f"]
-        return f if f.isprintable() else json.dumps(f, ensure_ascii=False)
+        return f if f.isprintable() and not _LINKISH.search(f) else _quoted(f)
     x = v.get("v")
     if x is None or x == "":
         return "(empty)"
-    return json.dumps(x, ensure_ascii=False) if isinstance(x, str) else str(x)
+    return _quoted(x) if isinstance(x, str) else str(x)
 
 
 CONTINUED = "... (continued) "
@@ -117,7 +130,11 @@ class Approvals:
         body = {"workbook_id": workbook_id, "target": target, "edits": pending["edits"],
                 "struct_ops": pending["struct_ops"]}
         sha = hashlib.sha256(canonical(body)).hexdigest()
-        surface = self._surface(f"office.{workbook_id}.{uuid.uuid4().hex[:8]}", target, body, sha)
+        try:
+            surface = self._surface(f"office.{workbook_id}.{uuid.uuid4().hex[:8]}", target, body, sha)
+        except A2uiInvalid:
+            raise OfficeError("CHANGE_CANNOT_BE_SHOWN", "this change set cannot be shown on an approval card", 422) \
+                from None
         with self.lock:
             # One open approval per workbook: a newer one supersedes (closes) the older.
             for r in self.db.execute("SELECT surface_id FROM surface WHERE workbook_id=? AND state='OPEN'", (workbook_id,)):

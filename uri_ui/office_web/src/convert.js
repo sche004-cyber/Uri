@@ -76,6 +76,18 @@ export function toUniver(wb, id = 'uri-office') {
 // v: null}. Those cells are formulas, not clears: resolveFormula(row, col) reads the formula Univer derives for them
 // (the page passes FormulaDataModel.getFormulaStringByCell). If it cannot, the cell is reported as an error and never
 // sent as an empty value.
+// Multi-line (Alt+Enter) or partly styled text is written as rich text {p: document, v: null}: its plain text is read
+// from p.body.dataStream. Rich text that cannot be read as plain text (a cell image is {p, v: ''}) is reported as an
+// error, never as a clear.
+export function richTextPlain(p) {
+  const ds = p && p.body && p.body.dataStream;
+  if (typeof ds !== 'string') return null;
+  // Embedded objects (\b) and tables (\x1A-\x1D, \x0E, \x0F) have no plain-text form.
+  if (/[\b\x0E\x0F\x1A-\x1D]/.test(ds)) return null;
+  return ds.replace(/\r\n$/, '').replace(/\r\n?/g, '\n')
+    .replace(/[\x00-\x08\x0B-\x1F]/g, ''); // custom-range markers (links), column/page breaks
+}
+
 export function editsFromMutation(params, sheetNameById, resolveFormula = () => null) {
   const sheet = sheetNameById[params.subUnitId];
   if (!sheet || !params.cellValue) return [];
@@ -89,6 +101,10 @@ export function editsFromMutation(params, sheetNameById, resolveFormula = () => 
         const f = resolveFormula(Number(r), Number(c));
         if (typeof f === 'string' && f.startsWith('=')) out.push({ sheet, cell: ref, formula: f });
         else out.push({ sheet, cell: ref, error: 'FORMULA_NOT_RESOLVED' });
+      } else if (cell.p != null && (cell.v == null || cell.v === '')) {
+        const text = richTextPlain(cell.p);
+        if (text == null) out.push({ sheet, cell: ref, error: 'RICH_TEXT_NOT_READ' });
+        else out.push({ sheet, cell: ref, value: text === '' ? null : text });
       } else if ('v' in cell || 'p' in cell) out.push({ sheet, cell: ref, value: cell.v ?? null });
     }
   }

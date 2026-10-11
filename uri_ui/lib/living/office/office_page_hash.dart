@@ -8,7 +8,7 @@ import 'dart:typed_data';
 
 import '../a2ui/sha256.dart';
 
-const String kOfficeBundleSha256 = '34372d193326853cf5bdb2d61784a162a150c62a4eabb9a89c6bcc0661aa738c';
+const String kOfficeBundleSha256 = 'b379fff2350c3b86fb51d4d85b4525d5ac03b6d9fda0fbdaa103182ca567c02c';
 
 /// Same algorithm as `uri_office.page_build.bundle_hash`: SHA-256 over the compact JSON list of
 /// [relative posix path, SHA-256 of file] for every file, sorted by path.
