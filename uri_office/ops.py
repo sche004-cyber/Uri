@@ -22,6 +22,9 @@ CELL_OPS = ("set_values", "set_formula")
 STRUCT_OPS = ("insert_rows", "delete_rows", "add_sheet", "rename_sheet")
 MAX_CELLS_PER_OP = 5000
 MAX_TEXT = 32767
+# Characters XML 1.0 cannot carry (C0 controls other than tab/LF/CR, U+FFFE/U+FFFF, lone surrogates). A cell holding one
+# cannot be written to an .xlsx, so it is refused when proposed rather than failing the approved save later.
+_XML_INVALID = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff\ufffe\uffff]")
 # Functions that reach the network, other programs, external data or cloud services. They are refused as bare tokens,
 # not only when followed by "(": a function can be passed by name (=MAP(A1,WEBSERVICE), =LET(f,IMAGE,f(x))).
 # Only formula code is scanned: _code() drops double-quoted string literals (text cannot be called as a function in
@@ -81,6 +84,8 @@ def _code(f: str) -> str:
 def check_formula(f) -> str:
     if not isinstance(f, str) or not f.startswith("=") or len(f) < 2 or len(f) > 8192:
         raise OfficeError("BAD_FORMULA", "a formula must start with '='")
+    if _XML_INVALID.search(f):
+        raise OfficeError("BAD_FORMULA", "the formula contains a control character a workbook cannot store")
     code = _code(f)
     if _NETWORK_FN.search(code) or _NETWORK_CALL.search(code) or "|" in f or "[" in f:
         raise OfficeError("FORMULA_REFUSED", "formulas that reach the network, other programs or other files are not allowed")
@@ -99,6 +104,8 @@ def check_value(v):
             raise OfficeError("BAD_VALUE", "text longer than a cell can hold")
         if v.startswith("="):
             raise OfficeError("BAD_VALUE", "use set_formula for formulas")
+        if _XML_INVALID.search(v):
+            raise OfficeError("BAD_VALUE", "the text contains a control character a workbook cannot store")
         return v
     raise OfficeError("BAD_VALUE", type(v).__name__)
 

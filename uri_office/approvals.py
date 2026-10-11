@@ -243,7 +243,13 @@ class Approvals:
                     self._close(sid)
                     self.audit("office.approval_declined", {"surface_id": sid, "change_sha256": r["change_sha256"]})
                     return {"status": "declined", "workbook_id": r["workbook_id"]}
-                result = apply_fn(body)
+                try:
+                    result = apply_fn(body)
+                except OfficeError:
+                    raise
+                except Exception as exc:  # noqa: BLE001 - an unexpected failure is audited and closes the approval
+                    self._close(sid)
+                    raise OfficeError("APPLY_FAILED", "the change could not be saved; propose it again", 500) from exc
                 self._close(sid)
                 self.audit("office.change_applied", {"surface_id": sid, "change_sha256": r["change_sha256"],
                                                      "cells": len(body["edits"]), "struct_ops": len(body["struct_ops"])})
