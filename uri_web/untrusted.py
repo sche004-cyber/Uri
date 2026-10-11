@@ -420,16 +420,106 @@ def _unusual_spans(norm: str) -> list:
     return out
 
 
+# D16 (owner, 2026-10-11, after R10-01: look-alike dots from listed scripts, 'portal \u0660 \u0660 com', 'portal 丶 丶
+# shop'): "the separator does not matter". Instead of recognising every way to write the dot, a NAME, then anything
+# at all, then a real top-level domain from the complete list (uri_web/tld_list.py) is a link. Letters spelt out with
+# spaces are joined first ('c o m', 'c om' -> 'com'). Checked offline: source text never triggers a search or a fetch
+# (W1-AC12). Precision: when what lies between is only ordinary prose (see _PROSE_GAP: spaces, everyday punctuation,
+# digits and numbers, quotes, dashes, breadcrumbs), only the core generic domains that are not also English words
+# (_CORE) count, so 'Gangtok, in Sikkim', 'Fees: Rs 5,000', 'The Ltd. Co.' and 'Home > News' stay readable. Any other
+# character between the two words ('٠', '丶', '~', '*') makes every top-level domain count; dot-joined forms of every
+# domain stay covered by D13. Recorded residual: a non-core domain after ordinary prose punctuation ('portal, shop',
+# 'portal_shop'; 'portal. Cash' when D13 does not apply) and top-level domains created after the list snapshot.
+from .tld_list import TOP_LEVEL_DOMAINS as _ALL_TLDS   # noqa: E402  (generated data module, no dependency)
+
+_CORE = frozenset("com org gov edu mil biz io xyz".split())   # 'net', 'info', 'int' are also ordinary words
+# Ordinary prose between two words: spaces, everyday ASCII punctuation (. , ; : ! ? ' " ( ) [ ] { } - & % $ / | > _),
+# digits, typographic quotes and dashes, ellipsis, currency signs and breadcrumb marks (» ›). Odd symbols (~ * ^ \\ =
+# + < # @ `) and every other non-ASCII character are not prose.
+_PROSE_GAP = re.compile(r"[\s.,;:!?'\"()\[\]{}&%$/|>_0-9\u2018\u2019\u201c\u201d\u2013\u2014\u2026\u00bb\u203a"
+                        r"\u20a0-\u20c0\u00a3\u00a5-]*")
+_MAX_GAP = 12
+_MAX_FOREIGN = 2
+
+
+def _letter(ch: str) -> bool:
+    return unicodedata.category(ch)[0] in "LM"
+
+
+def _words(norm: str) -> list:
+    """(start, end, text, script family) for every run of letters (combining marks included)."""
+    out, i, n = [], 0, len(norm)
+    while i < n:
+        if not _letter(norm[i]):
+            i += 1
+            continue
+        j = i
+        while j < n and _letter(norm[j]):
+            j += 1
+        out.append((i, j, norm[i:j], _char_script(norm[i]) or "OTHER"))
+        i = j
+    return out
+
+
+def _endings(words: list, norm: str):
+    """(index of the first word, index of the last word, top-level domain) for each word that is a top-level
+    domain, and for each run of single letters separated only by spaces ('c o m'), or one single letter and the next
+    word ('c om'; not 'a'/'I', ordinary English words: 'a co founder'), that spells one."""
+    for b, w in enumerate(words):
+        if w[2].casefold() in _ALL_TLDS:
+            yield b, b, w[2].casefold()
+        if w[1] - w[0] != 1:
+            continue
+        text, e = w[2], b
+        while e + 1 < len(words) and not norm[words[e][1]:words[e + 1][0]].strip() and words[e + 1][3] == w[3]:
+            nxt = words[e + 1]
+            if nxt[1] - nxt[0] > 1 and (e > b or w[2].casefold() in ("a", "i")):
+                break
+            e += 1
+            text += nxt[2]
+            if text.casefold() in _ALL_TLDS:
+                yield b, e, text.casefold()
+            if nxt[1] - nxt[0] > 1:
+                break
+
+
+def _ending_spans(norm: str) -> list:
+    words = _words(norm)
+    spans = []
+    for b, e, tld in _endings(words, norm):
+        foreign, a = 0, b - 1                 # the name: the nearest earlier word of the same script family
+        while a >= 0 and words[a][3] != words[b][3]:
+            foreign += words[a][1] - words[a][0]
+            a -= 1
+        if a < 0 or foreign > _MAX_FOREIGN:
+            continue
+        gap = norm[words[a][1]:words[b][0]]
+        if not gap or len(gap) > _MAX_GAP:
+            continue
+        spelt = e > b
+        if not foreign and _PROSE_GAP.fullmatch(gap):
+            if not gap.strip() and not spelt:
+                continue                      # 'the shop': two words
+            if not spelt and tld not in _CORE:
+                continue                      # 'Gangtok, in', 'Fees: Rs', 'The Ltd. Co.'
+            if "." in gap and len(words[a][2]) == 1:
+                continue                      # an abbreviation: 'U.S. ...'
+        spans.append((words[a][0], words[e][1]))
+    return spans
+
+
 def has_link_or_contact(text: str) -> bool:
     norm = normalise(text)
-    return _links(norm) or _links(_skeleton(text)) or bool(_unusual_spans(norm))
+    return (_links(norm) or _links(_skeleton(text)) or bool(_unusual_spans(norm))
+            or bool(_ending_spans(norm)))
 
 
 def _all_spans(norm: str) -> list:
     """Link spans in canonical text `norm`, from the text and from its skeleton (mapped back to `norm`), and the
     unusual tokens (D15; checked on the canonical text only: the skeleton maps look-alikes across scripts)."""
     skel, idx = _skeleton_map(norm)
-    return (_spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a] + _unusual_spans(norm))
+    return (_spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a] + _unusual_spans(norm)
+            + _ending_spans(norm))
 
 
 def joins_link(a: str, b: str) -> bool:

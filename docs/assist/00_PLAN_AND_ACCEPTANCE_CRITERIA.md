@@ -81,10 +81,14 @@ separate commit ranges on that branch; nothing is merged into the canonical bran
 with an allow-list of characters (D15): a token holding a character outside the listed scripts and ordinary
 punctuation, a letter named as a dot, colon or separator, or letters of two script families is treated as a link (the
 sentence is never shown or used as support; the token is masked). Any two words joined by a dot-like mark, with or
-without spaces, brackets or dashes around it, are a link (D13). **Out of scope, accepted by the owner as residual
-risk:** an address only a person can reassemble from ordinary characters - letters spelt out with spaces ('c o m',
-'portal . c om'), or words for letters or punctuation ('see oh em', 'portal period com') - and the limits recorded in
-D13 ('portal. Com', 'x. com'). A finding in that class is not blocking for this milestone.
+without spaces, brackets or dashes around it, are a link (D13). **D16 (owner, 2026-10-11): the separator does not matter.** A name, then anything at all, then a real top-level
+domain from the complete list (`uri_web/tld_list.py`, the Public Suffix List's ICANN section, 1,441 endings) is a
+link; letters spelt out with spaces are joined first ('c o m', 'c om'). When only ordinary prose lies between the two
+words (spaces, everyday punctuation, digits and numbers, quotes, dashes, breadcrumbs), only the core generic domains
+that are not English words (com, org, gov, edu, mil, biz, io, xyz) count. **Out of scope, accepted by the owner as
+residual risk:** a non-core domain after ordinary prose punctuation ('portal, shop', 'portal_shop'; 'portal. Cash'
+where D13 does not apply), words for letters or punctuation ('see oh em', 'portal period com'), top-level domains
+created after the list snapshot, and D13's 'x. com'. A finding in that class is not blocking for this milestone.
 
 ### A0
 
