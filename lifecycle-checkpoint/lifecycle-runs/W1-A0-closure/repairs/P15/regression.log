@@ -1,0 +1,545 @@
+=== tests/assist/test_a0_access_perception.py BEFORE (fcfb465ad34fd450107908b18ef2d9d3af15ec82) DONE
+.............F............F....                                          [100%]
+=================================== FAILURES ===================================
+___________________ test_normalise_redacts_twice_and_bounds ____________________
+
+    def test_normalise_redacts_twice_and_bounds():
+        obs = PE.normalise(dom_snapshot(), stamp())
+        blob = json.dumps(vars(obs), default=str)
+        for secret in ("Hunter2!", "123456", "4111111111111111", "abcdef123456"):
+            assert secret not in blob
+        pw = [f for f in obs.fields if f.get("id") == "pw"][0]
+        assert pw["sensitive"] and pw["has_value"] and "value" not in pw
+        assert obs.sensitive_rects == [{"x": 1, "y": 2, "w": 3, "h": 4}]
+        assert obs.location == "https://portal.example/pay?token=[redacted]&step=2"
+        # D8: the ordinary e-mail field's value is withheld too (not_shared); password and OTP are sensitive.
+        assert obs.summary()["sensitive_fields"] == 3 and "text" not in obs.summary()
+        assert [f.get("withheld") for f in obs.fields] == ["sensitive", "sensitive", "not_shared"]
+        big = PE.normalise(dom_snapshot(text="x" * 100_000, fields=[{"name": f"f{i}"} for i in range(500)]), stamp())
+        assert big.text == "" and len(big.fields) == PE.MAX_FIELDS      # D10: no screenshot -> no page text
+        # D10: pixel-checked text is bounded the same way.
+        units = [{"n": i, "a": 0, "b": 1000, "r": [[0, 18 * i, 1000, 17]], "c": 1, "k": 1000, "l": 1000} for i in range(50)]
+        rows = [{"t": "x" * 1000, "u": [i], "g": i} for i in range(50)]
+        snap = dom_snapshot(pieces={"text": rows}, units=units, viewport={"w": 1000, "h": 900}, device_pixel_ratio=1)
+>       big = PE.normalise(snap, stamp(), probe=drawn_probe(snap))
+                                                ^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_access_perception.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/assist/test_a0_access_perception.py:178: in drawn_probe
+    return probe(snap, hidden)
+           ^^^^^^^^^^^^^^^^^^^
+tests/assist/test_a0_r13_differential_render.py:344: in drawn_probe
+    units, groups = snap["units"], _plan(snap["units"])
+                                   ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+units = [{'n': 0, 'a': 0, 'b': 1000, 'r': [[0, 0, 1000, 17]], ...}, {'n': 1, 'a': 0, 'b': 1000, 'r': [[0, 18, 1000, 17]], ...}... 4, 'a': 0, 'b': 1000, 'r': [[0, 72, 1000, 17]], ...}, {'n': 5, 'a': 0, 'b': 1000, 'r': [[0, 90, 1000, 17]], ...}, ...]
+
+    def _plan(units):
+        """Greedy probe plan, as probe.js makes it: touching units in other groups, near units in other colours."""
+        from uri_assist import onscreen as OS
+        groups = []
+        for i, u in enumerate(units):
+>           if not u["k"] or not OS._rects(u["r"]):
+                                 ^^^^^^^^^
+E           AttributeError: module 'uri_assist.onscreen' has no attribute '_rects'
+
+tests/assist/test_a0_r13_differential_render.py:323: AttributeError
+_ test_bridge_ask_structured_keeps_content_in_untrusted_block_and_is_local_only _
+
+    def test_bridge_ask_structured_keeps_content_in_untrusted_block_and_is_local_only():
+        client = FakeClient(text="This page asks for the fee payment.")
+>       br, _ = mk(snap=INJECTED, probe=drawn_probe(INJECTED), client=client)  # D10: the text is drawn on screen
+                                        ^^^^^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_access_perception.py:450: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/assist/test_a0_access_perception.py:178: in drawn_probe
+    return probe(snap, hidden)
+           ^^^^^^^^^^^^^^^^^^^
+tests/assist/test_a0_r13_differential_render.py:344: in drawn_probe
+    units, groups = snap["units"], _plan(snap["units"])
+                                   ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+units = [{'n': 0, 'a': 0, 'b': 82, 'r': [[10, 10, 900, 18]], ...}, {'n': 1, 'a': 0, 'b': 11, 'r': [[10, 30, 900, 18]], ...}]
+
+    def _plan(units):
+        """Greedy probe plan, as probe.js makes it: touching units in other groups, near units in other colours."""
+        from uri_assist import onscreen as OS
+        groups = []
+        for i, u in enumerate(units):
+>           if not u["k"] or not OS._rects(u["r"]):
+                                 ^^^^^^^^^
+E           AttributeError: module 'uri_assist.onscreen' has no attribute '_rects'
+
+tests/assist/test_a0_r13_differential_render.py:323: AttributeError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_access_perception.py::test_normalise_redacts_twice_and_bounds
+FAILED tests/assist/test_a0_access_perception.py::test_bridge_ask_structured_keeps_content_in_untrusted_block_and_is_local_only
+2 failed, 29 passed in 2.88s
+
+=== tests/assist/test_a0_access_perception.py AFTER (5629c04db93cbb9c2fd397771f3f2fccd09dc05a) DONE
+...............................                                          [100%]
+31 passed in 7.52s
+
+=== tests/assist/test_a0_d10_pixel_checked_text.py BEFORE (fcfb465ad34fd450107908b18ef2d9d3af15ec82) DONE
+^^^^^^^^
+E           AttributeError: module 'uri_assist.onscreen' has no attribute '_rects'
+
+tests/assist/test_a0_r13_differential_render.py:323: AttributeError
+______________ test_onscreen_few_glyphs_cannot_carry_a_long_piece ______________
+
+    def test_onscreen_few_glyphs_cannot_carry_a_long_piece():
+        units = [_unit(0, 10, k=33, w=300), _unit(1, 60, k=3, w=40)]
+        snap = _snap(units)
+>       probe = drawn_probe({**snap, "units": [{**units[0], "r": [[10, 10, 40, 18]]}, units[1]]})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_d10_pixel_checked_text.py:344: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/assist/test_a0_r13_differential_render.py:344: in drawn_probe
+    units, groups = snap["units"], _plan(snap["units"])
+                                   ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+units = [{'n': 0, 'a': 0, 'b': 33, 'r': [[10, 10, 40, 18]], ...}, {'n': 1, 'a': 0, 'b': 3, 'r': [[10, 60, 40, 18]], ...}]
+
+    def _plan(units):
+        """Greedy probe plan, as probe.js makes it: touching units in other groups, near units in other colours."""
+        from uri_assist import onscreen as OS
+        groups = []
+        for i, u in enumerate(units):
+>           if not u["k"] or not OS._rects(u["r"]):
+                                 ^^^^^^^^^
+E           AttributeError: module 'uri_assist.onscreen' has no attribute '_rects'
+
+tests/assist/test_a0_r13_differential_render.py:323: AttributeError
+_______________ test_onscreen_flat_band_and_gradient_are_not_ink _______________
+
+    def test_onscreen_flat_band_and_gradient_are_not_ink():
+        # Ink that stays the same in every shot (a selection band, a gradient, decoy text) is not the unit's own glyphs.
+        from PIL import Image, ImageDraw
+        units = [_unit(0, 10), _unit(1, 100, w=900)]
+        snap = _snap(units)
+>       probe = drawn_probe(snap, hidden={0, 1})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_d10_pixel_checked_text.py:355: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/assist/test_a0_r13_differential_render.py:344: in drawn_probe
+    units, groups = snap["units"], _plan(snap["units"])
+                                   ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+units = [{'n': 0, 'a': 0, 'b': 20, 'r': [[10, 10, 600, 18]], ...}, {'n': 1, 'a': 0, 'b': 20, 'r': [[10, 100, 900, 18]], ...}]
+
+    def _plan(units):
+        """Greedy probe plan, as probe.js makes it: touching units in other groups, near units in other colours."""
+        from uri_assist import onscreen as OS
+        groups = []
+        for i, u in enumerate(units):
+>           if not u["k"] or not OS._rects(u["r"]):
+                                 ^^^^^^^^^
+E           AttributeError: module 'uri_assist.onscreen' has no attribute '_rects'
+
+tests/assist/test_a0_r13_differential_render.py:323: AttributeError
+________________ test_onscreen_device_pixel_ratio_scales_rects _________________
+
+    def test_onscreen_device_pixel_ratio_scales_rects():
+        units = [_unit(0, 10), _unit(1, 300)]
+        snap = _snap(units, dpr=2)
+        c = Counter()
+>       kept = OS.keep(_pieces(units), OS.load(drawn_probe(snap, hidden={1}), snap), c, 5)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_d10_pixel_checked_text.py:376: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/assist/test_a0_r13_differential_render.py:344: in drawn_probe
+    units, groups = snap["units"], _plan(snap["units"])
+                                   ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+units = [{'n': 0, 'a': 0, 'b': 20, 'r': [[10, 10, 600, 18]], ...}, {'n': 1, 'a': 0, 'b': 20, 'r': [[10, 300, 600, 18]], ...}]
+
+    def _plan(units):
+        """Greedy probe plan, as probe.js makes it: touching units in other groups, near units in other colours."""
+        from uri_assist import onscreen as OS
+        groups = []
+        for i, u in enumerate(units):
+>           if not u["k"] or not OS._rects(u["r"]):
+                                 ^^^^^^^^^
+E           AttributeError: module 'uri_assist.onscreen' has no attribute '_rects'
+
+tests/assist/test_a0_r13_differential_render.py:323: AttributeError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_d10_bridge_with_screenshot_sends_only_drawn_pieces_never_the_legacy_strings
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_d10_live_check_takes_no_screenshot
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_d10_withheld_selection_vetting_still_sees_undrawn_pieces
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_onscreen_inked_rect_kept_blank_rect_dropped
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_onscreen_off_viewport_and_partly_off_viewport_dropped
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_onscreen_missing_or_wrong_screenshot_keeps_nothing
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_onscreen_few_glyphs_cannot_carry_a_long_piece
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_onscreen_flat_band_and_gradient_are_not_ink
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_onscreen_device_pixel_ratio_scales_rects
+ERROR tests/assist/test_a0_d10_pixel_checked_text.py::test_d10_real_chromium_hidden_payloads_never_reach_the_brain[no_selection]
+ERROR tests/assist/test_a0_d10_pixel_checked_text.py::test_d10_real_chromium_hidden_payloads_never_reach_the_brain[ctrl_a]
+ERROR tests/assist/test_a0_d10_pixel_checked_text.py::test_d10_real_chromium_without_screenshot_sends_no_page_text
+9 failed, 6 passed, 3 errors in 1.02s
+
+=== tests/assist/test_a0_d10_pixel_checked_text.py AFTER (5629c04db93cbb9c2fd397771f3f2fccd09dc05a) DONE
+..................                                                       [100%]
+18 passed in 5.41s
+
+=== tests/assist/test_a0_r10_review_regressions.py BEFORE (fcfb465ad34fd450107908b18ef2d9d3af15ec82) DONE
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_r10_01_selection_never_copies_hidden_or_script_text ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-421/test_r10_01_selection_never_co0')
+
+    def test_r10_01_selection_never_copies_hidden_or_script_text(tmp_path):
+>       runs = _runs(tmp_path)
+               ^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r10_review_regressions.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-421/test_r10_01_selection_never_co0')
+
+    def _runs(tmp_path):
+        node = shutil.which("node")
+        if node is None:
+            pytest.skip("BLOCKED: node not installed")
+        page, runner = tmp_path / "hidden.html", tmp_path / "run_hidden_selection.cjs"
+        page.write_text(HIDDEN_PAGE)
+        runner.write_text(RUNNER)
+        env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
+        p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page),
+                            str(ROOT / "uri_assist/browser_extension/probe.js")],
+                           capture_output=True, text=True, env=env, timeout=120)
+        if p.returncode != 0 and "Cannot find module" in p.stderr:
+            pytest.skip("BLOCKED: playwright not installed")
+>       assert p.returncode == 0, p.stderr[-500:]
+E       AssertionError: Error: ENOENT: no such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/opt/node22/bin/node', '/tmp/pytest-of-root/pytest-421/test_r10_01_selection_never_co0/run_hid...o such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'").returncode
+
+tests/assist/test_a0_r10_review_regressions.py:87: AssertionError
+________ test_r10_01_real_snapshot_to_brain_body_has_no_hidden_payload _________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-421/test_r10_01_real_snapshot_to_b0')
+
+    def test_r10_01_real_snapshot_to_brain_body_has_no_hidden_payload(tmp_path):
+>       run = _runs(tmp_path)["ctrl_a"]
+              ^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r10_review_regressions.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-421/test_r10_01_real_snapshot_to_b0')
+
+    def _runs(tmp_path):
+        node = shutil.which("node")
+        if node is None:
+            pytest.skip("BLOCKED: node not installed")
+        page, runner = tmp_path / "hidden.html", tmp_path / "run_hidden_selection.cjs"
+        page.write_text(HIDDEN_PAGE)
+        runner.write_text(RUNNER)
+        env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
+        p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page),
+                            str(ROOT / "uri_assist/browser_extension/probe.js")],
+                           capture_output=True, text=True, env=env, timeout=120)
+        if p.returncode != 0 and "Cannot find module" in p.stderr:
+            pytest.skip("BLOCKED: playwright not installed")
+>       assert p.returncode == 0, p.stderr[-500:]
+E       AssertionError: Error: ENOENT: no such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/opt/node22/bin/node', '/tmp/pytest-of-root/pytest-421/test_r10_01_real_snapshot_to_b0/run_hid...o such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'").returncode
+
+tests/assist/test_a0_r10_review_regressions.py:87: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r10_review_regressions.py::test_r10_01_selection_never_copies_hidden_or_script_text
+FAILED tests/assist/test_a0_r10_review_regressions.py::test_r10_01_real_snapshot_to_brain_body_has_no_hidden_payload
+2 failed in 0.99s
+
+=== tests/assist/test_a0_r10_review_regressions.py AFTER (5629c04db93cbb9c2fd397771f3f2fccd09dc05a) DONE
+..                                                                       [100%]
+2 passed in 4.42s
+
+=== tests/assist/test_a0_r11_review_regressions.py BEFORE (fcfb465ad34fd450107908b18ef2d9d3af15ec82) DONE
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_r11_01_clipped_indented_and_covered_text_never_leaves_the_page ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-423/test_r11_01_clipped_indented_a0')
+
+    def test_r11_01_clipped_indented_and_covered_text_never_leaves_the_page(tmp_path):
+>       runs = _runs(tmp_path)
+               ^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r11_review_regressions.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-423/test_r11_01_clipped_indented_a0')
+
+    def _runs(tmp_path):
+        node = shutil.which("node")
+        assert node is not None, "BLOCKED: node not installed"
+        page, runner = tmp_path / "hidden_r11.html", tmp_path / "run_hidden_r11.cjs"
+        page.write_text(HIDDEN_PAGE)
+        runner.write_text(RUNNER)
+        env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
+        p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page),
+                            str(ROOT / "uri_assist/browser_extension/probe.js")],
+                           capture_output=True, text=True, env=env, timeout=120)
+>       assert p.returncode == 0, p.stderr[-500:]
+E       AssertionError: Error: ENOENT: no such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/opt/node22/bin/node', '/tmp/pytest-of-root/pytest-423/test_r11_01_clipped_indented_a0/run_hid...o such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'").returncode
+
+tests/assist/test_a0_r11_review_regressions.py:80: AssertionError
+________ test_r11_01_real_snapshot_to_brain_body_has_no_clipped_payload ________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-423/test_r11_01_real_snapshot_to_b0')
+
+    def test_r11_01_real_snapshot_to_brain_body_has_no_clipped_payload(tmp_path):
+>       run = _runs(tmp_path)["ctrl_a"]
+              ^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r11_review_regressions.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-423/test_r11_01_real_snapshot_to_b0')
+
+    def _runs(tmp_path):
+        node = shutil.which("node")
+        assert node is not None, "BLOCKED: node not installed"
+        page, runner = tmp_path / "hidden_r11.html", tmp_path / "run_hidden_r11.cjs"
+        page.write_text(HIDDEN_PAGE)
+        runner.write_text(RUNNER)
+        env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
+        p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page),
+                            str(ROOT / "uri_assist/browser_extension/probe.js")],
+                           capture_output=True, text=True, env=env, timeout=120)
+>       assert p.returncode == 0, p.stderr[-500:]
+E       AssertionError: Error: ENOENT: no such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/opt/node22/bin/node', '/tmp/pytest-of-root/pytest-423/test_r11_01_real_snapshot_to_b0/run_hid...o such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'").returncode
+
+tests/assist/test_a0_r11_review_regressions.py:80: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r11_review_regressions.py::test_r11_01_clipped_indented_and_covered_text_never_leaves_the_page
+FAILED tests/assist/test_a0_r11_review_regressions.py::test_r11_01_real_snapshot_to_brain_body_has_no_clipped_payload
+2 failed in 0.88s
+
+=== tests/assist/test_a0_r11_review_regressions.py AFTER (5629c04db93cbb9c2fd397771f3f2fccd09dc05a) DONE
+..                                                                       [100%]
+2 passed in 2.76s
+
+=== tests/assist/test_a0_r12_review_regressions.py BEFORE (fcfb465ad34fd450107908b18ef2d9d3af15ec82) DONE
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____________ test_r12_01_paint_hidden_text_never_leaves_the_page ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-425/test_r12_01_paint_hidden_text_0')
+
+    def test_r12_01_paint_hidden_text_never_leaves_the_page(tmp_path):
+>       runs = _runs(tmp_path)
+               ^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r12_review_regressions.py:100: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-425/test_r12_01_paint_hidden_text_0')
+
+    def _runs(tmp_path):
+        node = shutil.which("node")
+        assert node is not None, "BLOCKED: node not installed"
+        page, runner = tmp_path / "hidden_r12.html", tmp_path / "run_hidden_r12.cjs"
+        page.write_text(HIDDEN_PAGE)
+        runner.write_text(RUNNER)
+        env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
+        p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page),
+                            str(ROOT / "uri_assist/browser_extension/probe.js")],
+                           capture_output=True, text=True, env=env, timeout=120)
+>       assert p.returncode == 0, p.stderr[-500:]
+E       AssertionError: Error: ENOENT: no such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/opt/node22/bin/node', '/tmp/pytest-of-root/pytest-425/test_r12_01_paint_hidden_text_0/run_hid...o such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'").returncode
+
+tests/assist/test_a0_r12_review_regressions.py:95: AssertionError
+_____ test_r12_01_real_snapshot_to_brain_body_has_no_paint_hidden_payload ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-425/test_r12_01_real_snapshot_to_b0')
+
+    def test_r12_01_real_snapshot_to_brain_body_has_no_paint_hidden_payload(tmp_path):
+>       run = _runs(tmp_path)["ctrl_a"]
+              ^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r12_review_regressions.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-425/test_r12_01_real_snapshot_to_b0')
+
+    def _runs(tmp_path):
+        node = shutil.which("node")
+        assert node is not None, "BLOCKED: node not installed"
+        page, runner = tmp_path / "hidden_r12.html", tmp_path / "run_hidden_r12.cjs"
+        page.write_text(HIDDEN_PAGE)
+        runner.write_text(RUNNER)
+        env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
+        p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page),
+                            str(ROOT / "uri_assist/browser_extension/probe.js")],
+                           capture_output=True, text=True, env=env, timeout=120)
+>       assert p.returncode == 0, p.stderr[-500:]
+E       AssertionError: Error: ENOENT: no such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/opt/node22/bin/node', '/tmp/pytest-of-root/pytest-425/test_r12_01_real_snapshot_to_b0/run_hid...o such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_assist/browser_extension/probe.js'").returncode
+
+tests/assist/test_a0_r12_review_regressions.py:95: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r12_review_regressions.py::test_r12_01_paint_hidden_text_never_leaves_the_page
+FAILED tests/assist/test_a0_r12_review_regressions.py::test_r12_01_real_snapshot_to_brain_body_has_no_paint_hidden_payload
+2 failed in 1.07s
+
+=== tests/assist/test_a0_r12_review_regressions.py AFTER (5629c04db93cbb9c2fd397771f3f2fccd09dc05a) DONE
+..                                                                       [100%]
+2 passed in 4.06s
+
+=== tests/assist/test_a0_r13_differential_render.py BEFORE (fcfb465ad34fd450107908b18ef2d9d3af15ec82) DONE
+ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+snap = {'units': [{'n': 0, 'a': 0, 'b': 20, 'r': [[10, 10, 160, 18]], ...}, {'n': 1, 'a': 0, 'b': 20, 'r': [[10, 30, 160, 18]], ...}], 'viewport': {'w': 400, 'h': 200}, 'device_pixel_ratio': 1}
+probe = {'schema': 'uri.assist.probe.v1', 'palette': [[230, 0, 0], [0, 200, 0], [0, 0, 230], [210, 0, 210]], 'palette2': [[230...x04\x0b\xc8\x10, C\xb0\x80\x0c\xc1\x022\x04\x0b\xc8\x10, \xe3\x03\xcb\x10\x0ce-RUd\x00\x00\x00\x00IEND\xaeB`\x82", ...}
+n = None
+
+    def _kept(snap, probe, n=None):
+        from uri_assist import onscreen as OS
+        pieces = [{"t": "x" * u["k"], "u": [i], "g": i} for i, u in enumerate(snap["units"])]
+        c = Counter()
+>       kept = OS.keep(pieces, OS.load(probe, snap), c, 100)
+                               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: load() missing 1 required positional argument: 'dpr'
+
+tests/assist/test_a0_r13_differential_render.py:383: TypeError
+__________ test_render_check_page_changed_between_snapshot_and_probe ___________
+
+    def test_render_check_page_changed_between_snapshot_and_probe():
+        snap, probe = synthetic(TWO)
+        probe["units"][1] = {**probe["units"][1], "l": 7}                                   # other text in that node
+>       assert _kept(snap, probe) == ([0], Counter({"offscreen_or_unverified": 1}))
+               ^^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r13_differential_render.py:454: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+snap = {'units': [{'n': 0, 'a': 0, 'b': 20, 'r': [[10, 10, 160, 18]], ...}, {'n': 1, 'a': 0, 'b': 20, 'r': [[10, 60, 160, 18]], ...}], 'viewport': {'w': 400, 'h': 200}, 'device_pixel_ratio': 1}
+probe = {'schema': 'uri.assist.probe.v1', 'palette': [[230, 0, 0], [0, 200, 0], [0, 0, 230], [210, 0, 210]], 'palette2': [[230...X@\x86`\x01\x19\x82\x05d\x08\x16\x90!X@\x86`\x01\x19\x17\xb1\x90\x0ce\xc3\x01Y\x0e\x00\x00\x00\x00IEND\xaeB`\x82', ...}
+n = None
+
+    def _kept(snap, probe, n=None):
+        from uri_assist import onscreen as OS
+        pieces = [{"t": "x" * u["k"], "u": [i], "g": i} for i, u in enumerate(snap["units"])]
+        c = Counter()
+>       kept = OS.keep(pieces, OS.load(probe, snap), c, 100)
+                               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: load() missing 1 required positional argument: 'dpr'
+
+tests/assist/test_a0_r13_differential_render.py:383: TypeError
+_______________ test_render_check_unit_must_cover_the_piece_text _______________
+
+    def test_render_check_unit_must_cover_the_piece_text():
+        from uri_assist import onscreen as OS
+        snap, probe = synthetic(TWO)
+>       pr = OS.load(probe, snap)
+             ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: load() missing 1 required positional argument: 'dpr'
+
+tests/assist/test_a0_r13_differential_render.py:463: TypeError
+________________ test_render_check_off_viewport_unit_is_dropped ________________
+
+    def test_render_check_off_viewport_unit_is_dropped():
+>       kept, c = _kept(*synthetic([((10, 10, 160, 18), 20), ((300, 190, 160, 18), 20)]))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r13_differential_render.py:470: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+snap = {'units': [{'n': 0, 'a': 0, 'b': 20, 'r': [[10, 10, 160, 18]], ...}, {'n': 1, 'a': 0, 'b': 20, 'r': [[300, 190, 160, 18]], ...}], 'viewport': {'w': 400, 'h': 200}, 'device_pixel_ratio': 1}
+probe = {'schema': 'uri.assist.probe.v1', 'palette': [[230, 0, 0], [0, 200, 0], [0, 0, 230], [210, 0, 210]], 'palette2': [[230...10, C\xb0\x80\x0c\xc1\x022\x04\x0b\xc8\x10, \xe3\x02\xb1\xb0\t\x0f\x92\x90\xb3\xf0\x00\x00\x00\x00IEND\xaeB`\x82', ...}
+n = None
+
+    def _kept(snap, probe, n=None):
+        from uri_assist import onscreen as OS
+        pieces = [{"t": "x" * u["k"], "u": [i], "g": i} for i, u in enumerate(snap["units"])]
+        c = Counter()
+>       kept = OS.keep(pieces, OS.load(probe, snap), c, 100)
+                               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: load() missing 1 required positional argument: 'dpr'
+
+tests/assist/test_a0_r13_differential_render.py:383: TypeError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r13_differential_render.py::test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain[no_selection]
+FAILED tests/assist/test_a0_r13_differential_render.py::test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain[ctrl_a]
+FAILED tests/assist/test_a0_r13_differential_render.py::test_r13_01_probe_screenshots_are_never_sent
+FAILED tests/assist/test_a0_r13_differential_render.py::test_r13_01_without_a_probe_no_page_text_is_sent
+FAILED tests/assist/test_a0_r13_differential_render.py::test_drawn_probe_helper_keeps_drawn_and_drops_hidden_units
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_keeps_own_glyphs
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_decoy_ink_under_a_hidden_unit_does_not_count
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_own_colour_equal_to_background_is_dropped
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_wrong_or_inconsistent_tint_is_dropped
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_partly_drawn_unit_is_dropped
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_unstable_pixels_are_not_trusted
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_bad_plans_and_palettes_keep_nothing
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_page_changed_between_snapshot_and_probe
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_unit_must_cover_the_piece_text
+FAILED tests/assist/test_a0_r13_differential_render.py::test_render_check_off_viewport_unit_is_dropped
+15 failed, 1 passed in 1.74s
+
+=== tests/assist/test_a0_r13_differential_render.py AFTER (5629c04db93cbb9c2fd397771f3f2fccd09dc05a) DONE
+................                                                         [100%]
+16 passed in 5.61s
+
+=== tests/assist/test_a0_r9_review_regressions.py BEFORE (fcfb465ad34fd450107908b18ef2d9d3af15ec82) DONE
+....F........                                                            [100%]
+=================================== FAILURES ===================================
+________________ test_r9_01_page_text_selection_is_still_shared ________________
+
+    def test_r9_01_page_text_selection_is_still_shared():
+        # D10: shared only when drawn on screen (pieces with rectangles checked against a screenshot).
+        snap = on_screen(dom_snapshot(selection="Fee payment due", selection_source="page_text"))
+>       obs = PE.normalise(snap, stamp(), probe=drawn_probe(snap))
+                                                ^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r9_review_regressions.py:94: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/assist/test_a0_access_perception.py:178: in drawn_probe
+    return probe(snap, hidden)
+           ^^^^^^^^^^^^^^^^^^^
+tests/assist/test_a0_r13_differential_render.py:344: in drawn_probe
+    units, groups = snap["units"], _plan(snap["units"])
+                                   ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+units = [{'n': 0, 'a': 0, 'b': 29, 'r': [[10, 10, 900, 18]], ...}, {'n': 1, 'a': 0, 'b': 15, 'r': [[10, 30, 900, 18]], ...}, {'n': 2, 'a': 0, 'b': 11, 'r': [[10, 50, 900, 18]], ...}]
+
+    def _plan(units):
+        """Greedy probe plan, as probe.js makes it: touching units in other groups, near units in other colours."""
+        from uri_assist import onscreen as OS
+        groups = []
+        for i, u in enumerate(units):
+>           if not u["k"] or not OS._rects(u["r"]):
+                                 ^^^^^^^^^
+E           AttributeError: module 'uri_assist.onscreen' has no attribute '_rects'
+
+tests/assist/test_a0_r13_differential_render.py:323: AttributeError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_01_page_text_selection_is_still_shared
+1 failed, 12 passed in 3.13s
+
+=== tests/assist/test_a0_r9_review_regressions.py AFTER (5629c04db93cbb9c2fd397771f3f2fccd09dc05a) DONE
+.............                                                            [100%]
+13 passed in 3.57s
+

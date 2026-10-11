@@ -1,0 +1,146 @@
+{
+ "addresses": [
+  "R13-01"
+ ],
+ "changed": [
+  "docs/assist/03_PERMISSION_AND_DATA_FLOW.md",
+  "docs/assist/A0_QUALIFICATION.md",
+  "tests/assist/test_a0_access_perception.py",
+  "tests/assist/test_a0_d10_pixel_checked_text.py",
+  "tests/assist/test_a0_r10_review_regressions.py",
+  "tests/assist/test_a0_r11_review_regressions.py",
+  "tests/assist/test_a0_r12_review_regressions.py",
+  "tests/assist/test_a0_r13_differential_render.py",
+  "tests/assist/test_a0_r9_review_regressions.py",
+  "uri_assist/bridge.py",
+  "uri_assist/browser_extension/probe.js",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/onscreen.py",
+  "uri_assist/perception.py"
+ ],
+ "commit": "5629c04db93cbb9c2fd397771f3f2fccd09dc05a",
+ "ended_at": "2026-10-11T08:12:15Z",
+ "pre": "fcfb465ad34fd450107908b18ef2d9d3af15ec82",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_access_perception.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/assist/test_a0_d10_pixel_checked_text.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/assist/test_a0_r10_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/assist/test_a0_r11_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/assist/test_a0_r12_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/assist/test_a0_r13_differential_render.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/assist/test_a0_r9_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 15,
+ "report": {
+  "not_repaired": [],
+  "notes": "Root cause addressed as diagnosed: the D10 'ink inside the rectangle' check is replaced by a differential render that binds each text unit to its own glyph pixels. New page script uri_assist/browser_extension/probe.js (CSS Custom Highlight; base, per-group clear/tint/tint2, base2; selection removed and restored; DOM unchanged). onscreen.py rewritten: dual random-palette tint consistency, own colour vs clear, per-char and per-cell ink, base/base2 stability, plan/palette/rect/node-length validation, fail closed. perception.normalise(probe=...) and Perceiver use adapter.probe(). snapshot.js emits units (n, a, b, rects, count, non-space chars, node length; no content hash) and pieces reference units. Regression file: 15 of 16 fail on fcfb465 (the leak test shows ZNEG, SVGNONE, MASKBOX, PEN, STRIPE and more in FakeClient.bodies with and without Ctrl+A); the 16th (page and selection unchanged) holds trivially there. Passes 6/6 repeated runs after the repair. tests/assist + tests/web: 2667 passed. Existing tests adapted to the probe contract without weakening assertions: R10/R11/R12/D10 Chromium runners now run the probe (shared PROBE_DRIVER_JS imported from the new file), mk()/FakeAdapter accept probe, D10 synthetic edge-check tests rewritten for the new check with the same intent, unused striped_png and base64 imports removed. Behaviour change: visible SVG <text> is not repainted by the highlight and is never kept (D10 KEPT SVGOK-OK-9 moved to NOT_VERIFIABLE). Documented residuals: page scripts that detect the probe can change what is drawn during it (pausing scripts via CDP Emulation.setScriptExecutionDisabled was tested and permanently stopped the page's own rAF loop, so that is an owner decision); the extension must inject probe rules with user-origin insertCSS and run probe.js in its isolated world (NOT IMPLEMENTED, no channel in A0; tests use an adopted style sheet the page could read); glyphs drawn more than 3 line heights outside their box could be credited to a same-colour unit of the same group. NOT VERIFIED: Windows rendering, device pixel ratios other than 1. Cost: 2+3G screenshots per ask (G=2 on dense text), about 1.4 s to check a full dense viewport. Docs 03 and A0_QUALIFICATION updated, with correction notes for the earlier 'overlaps other ink' residual. graphify not run, per instructions.",
+  "regression_tests": [
+   "tests/assist/test_a0_r13_differential_render.py"
+  ],
+  "repaired": [
+   "R13-01"
+  ]
+ },
+ "started_at": "2026-10-11T07:40:20Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "868f620a-6957-4566-9351-1e1e48cba02e",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 447
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 7.728817899999999,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T08:11:20Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 79,
+  "pid": 31791,
+  "prompt_sha256": "2bd14031220a35193a6581ea1c0e8d5a69505313ecac9e5a892b6fd543c8df33",
+  "provider": "claude_cli",
+  "result_text_sha256": "9dfec1e344b40839cc2a848ded3a27778f70e654c8730e1b721d2c83619d4c79",
+  "role": "implementer",
+  "session_id": "868f620a-6957-4566-9351-1e1e48cba02e",
+  "session_id_requested": "868f620a-6957-4566-9351-1e1e48cba02e",
+  "started_at": "2026-10-11T07:40:20Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "4f7374888655070b3b1f61c2957c5f5a1c2159dedfb02ff0dbec910edf086210"
+ }
+}

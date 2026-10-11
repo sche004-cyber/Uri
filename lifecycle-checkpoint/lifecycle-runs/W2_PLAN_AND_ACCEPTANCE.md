@@ -187,6 +187,71 @@ Acceptance:
 - A personal-data document is never cached.
 - Clearing the cache keeps answers working.
 
+## 4b. Named collections and the "current rules" view (owner approval, 2026-10-11)
+
+These were added after the owner asked what URI would do with "maintain a database of rules and regulations
+concerning NIT Sikkim".
+
+### Named collections
+
+- **What a collection is:** a named, topic-filtered set of documents within an approved scope, for example
+  "NIT Sikkim — Rules & Regulations". It is defined by:
+  - name;
+  - scope (domain and path prefixes);
+  - topic criteria (document kinds such as regulation, ordinance, statute, handbook, policy, circular amending a rule,
+    and keywords);
+  - owner (the user who created it).
+- **Stored as:** a `collections` table (id, name, scope, criteria, created_by, created_at) and `collection_members`
+  (collection_id, doc_id, `membership` = matched | candidate | added_by_user | excluded_by_user, `evidence` = the
+  title, heading or sentence that matched, decided_at).
+- **Membership rules:**
+  - Documents outside the topic (event notices, tenders, results) stay out.
+  - Uncertain matches are `candidate` and are shown as such.
+  - The user can add or exclude a document, and that decision is kept across refreshes.
+- **Operations:** create from a request, list, browse (by kind, date or department), search within, refresh,
+  export (CSV or Markdown with links and page citations; no document bodies beyond the cited sentences), delete.
+  Deleting a collection removes the collection rows only; the shared document index stays.
+- **Graphify and ARN:**
+  - A collection gets a Graphify pointer (name, scope, member count, no content).
+  - Searches within a collection run through ARN with the collection as the candidate set.
+- **Privacy:** personal-data-flagged documents can be members only as `candidate`. Their passages follow §5
+  (targeted questions only), and they never appear in exports.
+
+### Current-rules view
+
+- **What it shows:** for each rule document in a collection, its status, computed only from **confirmed**
+  relationships (§3 evidence rule):
+
+| Status | Meaning |
+|---|---|
+| IN FORCE (no confirmed amendment) | No confirmed change found |
+| AMENDED | Confirmed amendment(s) listed in date order, each with its evidence quote, link and page |
+| SUPERSEDED / CANCELLED | The confirmed replacing or cancelling document is linked |
+| STATUS UNCONFIRMED | Only candidate relations exist, e.g. a newer document with the same reference number or subject; shown as "may be affected by …", never as superseded |
+
+- **Amendment chain:** the original document, then each confirmed corrigendum or amendment, then the latest. The
+  "current text" of a clause is never merged or reconstructed. URI shows the original clause and the amending
+  sentence(s) side by side, each quoted verbatim with citations (D7 applies to numbers).
+- **When a document changes:** a new version of a rule document (hash change) marks the view "changed since last
+  refresh", with the changed pages listed.
+- **Disclaimer:** answers built from the view say what the documents state. They are not legal interpretation.
+
+Acceptance:
+- **W2-AC19 Collections:**
+  - A collection is created from a request; topic filtering puts regulation documents in, keeps event notices and
+    tenders out, and marks uncertain ones `candidate` (fixture site).
+  - User add and exclude decisions survive refresh.
+  - Export carries links and page citations and no personal-data passages.
+  - Deleting the collection keeps the index.
+  - Search within a collection is limited to its members and recorded in ARN.
+  - The collection pointer appears in the Graphify hint, without content.
+- **W2-AC20 Current rules:**
+  - The status is computed only from confirmed relationships. Negative tests: a later date alone, or a shared
+    reference number alone, gives STATUS UNCONFIRMED, never SUPERSEDED or AMENDED.
+  - The amendment chain is ordered and every link carries an evidence quote, link and page.
+  - Clause text is shown verbatim, never merged.
+  - A changed rule document is flagged with its changed pages.
+
 ## 5. Privacy and knowledge separation
 
 - **Where W2 writes:** only the W2 index and the W2 graph store. It never calls `MemoryStore`, `user_memory`,
