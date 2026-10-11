@@ -185,6 +185,41 @@ class Draft:
         self._redo.clear()
         self.version += 1
 
+    def rebase(self, workbook: dict, struct_ops: list) -> int:
+        """After a committed save that changed the layout (Google structural ops): the re-read workbook becomes the
+        base. Still-proposed changes follow sheet renames; proposed cell changes on a sheet whose rows moved are
+        dropped (their coordinates no longer name the cell URI planned against). Returns how many were dropped."""
+        renames: dict = {}                               # name as the draft knew it -> name now
+        moved: set = set()                               # names as the draft knew them
+        for op in struct_ops:
+            orig = next((o for o, n in renames.items() if n == op.get("sheet")), op.get("sheet"))
+            if op["op"] == "rename_sheet":
+                renames[orig] = op["name"]
+            elif op["op"] in ("insert_rows", "delete_rows"):
+                moved.add(orig)
+        self.base = {s["name"]: {ref: {k: c.get(k) for k in ("v", "f") if k in c} for ref, c in s["cells"].items()}
+                     for s in workbook["sheets"]}
+        self.locked = {s["name"]: set(s.get("locked", ())) for s in workbook["sheets"]}
+        kept, dropped = [], 0
+        for c in self.changes:
+            if c["kind"] == "cell" and c["sheet"] in moved:
+                dropped += 1
+                continue
+            if c["sheet"] in renames:
+                c["sheet"] = renames[c["sheet"]]
+                if c["kind"] == "struct":
+                    c["op"] = {**c["op"], "sheet": c["sheet"]}
+            if c["kind"] == "cell" and c["sheet"] not in self.base:
+                dropped += 1
+                continue
+            kept.append(c)
+        self.changes = kept
+        for c in self.changes:
+            if c["kind"] == "cell":
+                c["before"] = self.before(c["sheet"], c["cell"])
+        self.version += 1
+        return dropped
+
 
 def patch_edits(pending: dict) -> list:
     """Draft pending edits -> xlsx_patch edits."""

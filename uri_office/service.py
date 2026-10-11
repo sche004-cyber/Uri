@@ -57,6 +57,7 @@ class Session:
     path: Path | None = None        # local, as opened
     open_sha: str | None = None     # local, file hash at open / last save
     file_id: str | None = None      # google
+    stale_ops: list = field(default_factory=list)   # google: applied structural ops not yet re-read
     lock: threading.RLock = field(default_factory=threading.RLock)
 
 
@@ -103,6 +104,7 @@ class Office:
             if s.engine == "google":
                 out["open_url"] = G.open_url(s.file_id)
                 out["writable"] = self.google.writable(s.file_id)
+                out["reload_required"] = bool(s.stale_ops)
             return out
 
     def open_local(self, raw_path) -> dict:
@@ -176,15 +178,40 @@ class Office:
 
     def _committed(self, s, pending):
         """After a save to the session's own target: the draft and the session's workbook snapshot both take the saved
-        values, so the panel reloads what the file now holds."""
+        values, so the panel reloads what the file now holds. Structural ops (Google: rename/add sheets, insert/delete
+        rows) change the layout itself, so the sheet is re-read and the snapshot and draft base rebuilt from it."""
         s.draft.committed(pending)
         s.workbook = {**s.workbook, "sheets": self._overlay(
             s.workbook["sheets"], [(e["sheet"], e["cell"], e["after"]) for e in pending["edits"]])}
+        if pending["struct_ops"]:
+            s.stale_ops = list(s.stale_ops) + list(pending["struct_ops"])
+            try:
+                return {"layout_reloaded": True, "proposals_dropped": self._refresh(s)}
+            except OfficeError:                          # the save itself succeeded; the next call retries the re-read
+                return {"layout_reloaded": False}
+        return {}
+
+    def _refresh(self, s) -> int:
+        """Re-read a Google sheet whose layout an applied save changed. Until that succeeds the session refuses edits,
+        Brain turns, decisions and saves: its sheet names and row positions no longer match the sheet. Returns how many
+        proposed changes were dropped because their rows moved."""
+        if not s.stale_ops:
+            return 0
+        try:
+            wb = self.google.read(s.file_id)
+        except Exception:  # noqa: BLE001 - a failed re-read must not be reported as a failed save
+            raise OfficeError("RELOAD_REQUIRED", "the sheet's layout changed with the last save and could not be "
+                                                 "read again; try again", 503) from None
+        dropped = s.draft.rebase(wb, s.stale_ops)
+        s.workbook = wb
+        s.stale_ops = []
+        return dropped
 
     def edit(self, wid, body) -> dict:
         from . import ops as O
         s = self._session(wid)
         with s.lock:
+            self._refresh(s)
             op = ({"op": "set_formula", "sheet": body.get("sheet"), "cell": body.get("cell"), "formula": body["formula"]}
                   if "formula" in body else
                   {"op": "set_values", "sheet": body.get("sheet"), "range": body.get("cell"), "values": [[body.get("value")]]})
@@ -197,6 +224,7 @@ class Office:
     def decide(self, wid, body) -> dict:
         s = self._session(wid)
         with s.lock:
+            self._refresh(s)
             events = s.draft.decide(body.get("change_id"), body.get("decision"), body.get("change_sha256"))
             for ev in events:
                 self.history.record(s.key, s.draft.version, ev, body.get("reason", ""))
@@ -205,6 +233,7 @@ class Office:
     def undo(self, wid, redo=False) -> dict:
         s = self._session(wid)
         with s.lock:
+            self._refresh(s)
             (s.draft.redo if redo else s.draft.undo)()
             return {"draft": s.draft.snapshot()}
 
@@ -213,6 +242,7 @@ class Office:
             raise OfficeError("BRAIN_UNAVAILABLE", "the Brain is not configured for this service", 503)
         s = self._session(wid)
         with s.lock:                                     # the draft is locked for the whole turn; user edits queue
+            self._refresh(s)
             res = self.brain.plan(body.get("text"), sheets=self._current_sheets(s), active=body.get("active_sheet"),
                                   engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key))
             new = s.draft.propose(res["edits"]) if res["edits"] else []
@@ -223,6 +253,7 @@ class Office:
     def propose_save(self, wid, body) -> dict:
         s = self._session(wid)
         with s.lock:
+            self._refresh(s)
             pending = s.draft.pending()
             if s.engine == "local":
                 dest = None
@@ -267,8 +298,7 @@ class Office:
             pending = {"edits": body["edits"], "struct_ops": body["struct_ops"]}
             if t["kind"] == "google":
                 r = self.google.apply(t["file_id"], body)
-                self._committed(s, pending)
-                return r
+                return {**r, **self._committed(s, pending)}
             src = s.path
             if xlsx_model.file_sha256(src) != t["source_sha256"] or s.open_sha != t["source_sha256"]:
                 raise OfficeError("TARGET_CHANGED", "the file changed on disk since it was opened; reload it or save "
