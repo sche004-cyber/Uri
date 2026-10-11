@@ -1,0 +1,113 @@
+{
+ "addresses": [
+  "W-1",
+  "W-2",
+  "W-3"
+ ],
+ "changed": [
+  "docs/dev_workflow/LIFECYCLE_QUALIFICATION.md",
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/lifecycle.py",
+  "scripts/dev_workflow/lifecycle_providers.py",
+  "tests/dev_workflow/conftest.py",
+  "tests/dev_workflow/test_lifecycle.py",
+  "tests/dev_workflow/test_lifecycle_dl2_repairs.py"
+ ],
+ "commit": "fcc0ebdde656ff4a4db2f4cb82d9b50faf9a07ef",
+ "ended_at": "2026-10-11T12:46:01Z",
+ "pre": "f3706e03402f496ae91a08a69db515df4bf89245",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 0,
+    "before_state": "DONE"
+   },
+   "tests/dev_workflow/test_lifecycle_dl2_repairs.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {
+  "not_repaired": [],
+  "notes": "All 8 tests in test_lifecycle_dl2_repairs.py fail on f3706e0 (run in a clean archive of that commit with only this file copied in) and pass after the repair. Linux tests/dev_workflow: 220 passed, 5 PLATFORM-GATED (windows_only); it was 212 passed, 5 skipped before, and no existing test was removed or weakened. W-1: _test_file uses as_posix(). W-2: resolve_shim() turns an npm .cmd/.ps1 shim into the one existing .exe it names. reviewer_executable binds that exe (path, realpath, sha256) plus shim {path, sha256}, so a replaced claude.exe is drift/TAMPER. run_worker launches the exe directly and refuses (REFUSED, nothing spawned) a shim it cannot resolve; binary_is_default resolves the default the same way; the driver blocks REVIEWER_EXEC on an unresolvable shim. Ambiguity is computed on the resolved executables. Linux anchors are unchanged (no 'shim' key), so Linux runs in flight see no drift. A Windows run already bound to the shim will see TAMPER once and needs an owner unblock to re-bind. W-3 (test-only, tests/dev_workflow): fake CLIs are real .exe files on Windows (pip distlib t64 launcher + #!python + zipped __main__.py); gitconfig paths escaped (_gq); r1_06 uses a Python child instead of sh; r2_03 rewrites .git with r+ (cause of the Windows PermissionError assumed to be Git for Windows hiding .git, not confirmed); r1r2_01[False] uses an out-of-tree writer when fork() is missing; r1r2_01[True], r8_01 x2 and r10_01 x3 are marked linux_only, which conftest now reports by name as PLATFORM-GATED. Nothing on Windows was run here: the W-3 Windows outcome (17 failures expected to clear) and the W-2 Windows launch path are NOT VERIFIED until the owner-PC re-runs the gate on the new candidate SHA. Docs updated: URI_DEVELOPMENT_LIFECYCLE.md, LIFECYCLE_QUALIFICATION.md.",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle_dl2_repairs.py"
+  ],
+  "repaired": [
+   "W-1",
+   "W-2",
+   "W-3"
+  ]
+ },
+ "started_at": "2026-10-11T12:25:00Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "399e1c5e-efd4-4f05-a11a-3fca5de3bd45",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 312
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 2.4864087999999995,
+  "cwd": "/home/user/uri-wt/dl2",
+  "ended_at": "2026-10-11T12:39:58Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 38,
+  "pid": 17528,
+  "prompt_sha256": "b3256cc0b3827bf4637934f3051b802ade1c9f0982b760903b82247196a65096",
+  "provider": "claude_cli",
+  "result_text_sha256": "ec004441d1d5fce809e32aa6653605edb1d86cfa19af69dc66a7200cb7fe7bf4",
+  "role": "implementer",
+  "session_id": "399e1c5e-efd4-4f05-a11a-3fca5de3bd45",
+  "session_id_requested": "399e1c5e-efd4-4f05-a11a-3fca5de3bd45",
+  "started_at": "2026-10-11T12:25:00Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "af703fa27f5dfb581a27dbceb6fdbcd959b375b2d4d23c4452c510a5637b78c4"
+ }
+}

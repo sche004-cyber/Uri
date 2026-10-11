@@ -1,0 +1,34 @@
+I repaired all three findings and tested them on Linux. **None of the Windows behaviour has been run on Windows.** That needs the owner-PC re-run on the new candidate SHA, and W-3 isn't confirmed until then. Nothing is committed and graphify wasn't touched.
+
+**Test results (Linux):**
+- `tests/dev_workflow` at f3706e0: 212 passed, 5 skipped.
+- After the repair: 220 passed (the same 212 plus 8 new), with no existing test removed or weakened. The 5 skipped are the Windows-only tests, now listed by name as PLATFORM-GATED.
+- I copied the new test file alone into a clean f3706e0 checkout: all 8 tests fail there and all 8 pass now.
+
+**What each fix does:**
+- **W-1:** `_test_file` now returns paths with `/` on every OS (`lifecycle.py:758`). The test fakes Windows path building, so it proves the fix on Linux.
+- **W-2:** a new `resolve_shim()` in `lifecycle_providers.py` reads an npm `claude.cmd`/`.ps1` shim and finds the one `.exe` it runs.
+  - The reviewer binding now records that `.exe` (path and SHA-256), plus the shim's own path and hash, so a `claude.exe` swapped in behind the shim shows up as TAMPER.
+  - `run_worker` starts the `.exe` directly, never through cmd.exe. This covers the implementer as well as the reviewer.
+  - A shim it can't pin to a single `.exe` is refused before anything runs, and the driver stops with REVIEWER_EXEC for the owner. That covers several targets, `node` running `cli.js`, or a missing file.
+  - The tests use fixture shims, including one that checks the `--settings` JSON reaches the program as a single argument.
+- **W-3:**
+  - The fake `claude` CLIs become real `.exe` files on Windows, built with pip's own launcher.
+  - Windows paths written into gitconfig are escaped, which fixes the "bad config line" errors.
+  - `sh -c sleep` is replaced with a Python child.
+  - The `.git` rewrite opens the existing file instead of recreating it. My guess is the PermissionError came from Git for Windows marking `.git` hidden; I haven't confirmed that.
+  - In `r1r2_01`, the uncontained case no longer needs `fork()` on Windows: the escaped writer is started from outside the worker.
+  - The six "Linux-only" skips now use a new `linux_only` marker, which reports each one by name as PLATFORM-GATED like the Windows-only tests. A static test guards against new silent platform skips.
+
+**Before the Windows re-run:**
+- Earlier I wondered whether the pip launcher behaves inside the driver's Windows job object. I believe it does but haven't run it.
+- A Windows milestone already planned on the old binding (the shim) will hit TAMPER at the next step, because the bound executable is now the `.exe`. The owner clears it with `unblock --note`, which re-binds.
+- Older JavaScript-based CLI installs, where `node` runs `cli.js`, are now refused rather than launched.
+
+I also updated `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md` and `LIFECYCLE_QUALIFICATION.md` to match.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["W-1", "W-2", "W-3"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle_dl2_repairs.py"],
+ "notes": "All 8 tests in test_lifecycle_dl2_repairs.py fail on f3706e0 (run in a clean archive of that commit with only this file copied in) and pass after the repair. Linux tests/dev_workflow: 220 passed, 5 PLATFORM-GATED (windows_only); it was 212 passed, 5 skipped before, and no existing test was removed or weakened. W-1: _test_file uses as_posix(). W-2: resolve_shim() turns an npm .cmd/.ps1 shim into the one existing .exe it names. reviewer_executable binds that exe (path, realpath, sha256) plus shim {path, sha256}, so a replaced claude.exe is drift/TAMPER. run_worker launches the exe directly and refuses (REFUSED, nothing spawned) a shim it cannot resolve; binary_is_default resolves the default the same way; the driver blocks REVIEWER_EXEC on an unresolvable shim. Ambiguity is computed on the resolved executables. Linux anchors are unchanged (no 'shim' key), so Linux runs in flight see no drift. A Windows run already bound to the shim will see TAMPER once and needs an owner unblock to re-bind. W-3 (test-only, tests/dev_workflow): fake CLIs are real .exe files on Windows (pip distlib t64 launcher + #!python + zipped __main__.py); gitconfig paths escaped (_gq); r1_06 uses a Python child instead of sh; r2_03 rewrites .git with r+ (cause of the Windows PermissionError assumed to be Git for Windows hiding .git, not confirmed); r1r2_01[False] uses an out-of-tree writer when fork() is missing; r1r2_01[True], r8_01 x2 and r10_01 x3 are marked linux_only, which conftest now reports by name as PLATFORM-GATED. Nothing on Windows was run here: the W-3 Windows outcome (17 failures expected to clear) and the W-2 Windows launch path are NOT VERIFIED until the owner-PC re-runs the gate on the new candidate SHA. Docs updated: URI_DEVELOPMENT_LIFECYCLE.md, LIFECYCLE_QUALIFICATION.md."}
+REPAIR_RESULT_END

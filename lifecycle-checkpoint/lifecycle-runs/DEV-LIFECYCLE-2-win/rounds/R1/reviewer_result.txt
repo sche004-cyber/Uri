@@ -1,0 +1,32 @@
+Relayed review: Windows gate findings at f3706e03 from the owner-PC coordinator (session_01VZdW1uqhFxisoeUn8jhaUf,
+messages queued 2026-10-11T12:12:16Z and 12:15:44Z). Transcribed by the cloud coordinator. Owner instruction to import
+it: "Yes import" (2026-10-11). Relayed data: not independent, and it can only make the outcome stricter.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "f3706e03402f496ae91a08a69db515df4bf89245", "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "verdict": "REJECT",
+ "findings": [
+  {"id": "W-1", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "_test_file builds gate test file paths with OS separators (backslashes on Windows)",
+   "files": ["scripts/dev_workflow/lifecycle.py:749", "scripts/dev_workflow/lifecycle.py:1630"],
+   "evidence": "lifecycle.py:749 _test_file returns str(Path(base) / c), which gives backslashes on Windows. test_r1r2_03_gate_test_ids_resolve_to_files fails on Windows: 'uri_ui\\\\test\\\\widget_test.dart' != 'uri_ui/test/widget_test.dart'. Callers (lifecycle.py:1630) compare against git's '/' paths, so regression proof for gates with a cwd breaks on Windows.",
+   "suggested_fix": "Use .as_posix(). A cross-platform regression test is possible with PureWindowsPath or monkeypatch."},
+  {"id": "W-2", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Windows: the reviewer CLI binding hashes the npm claude.cmd shim, not the executable it runs; .cmd launch goes through cmd.exe parsing",
+   "files": ["scripts/dev_workflow/lifecycle_providers.py"],
+   "evidence": "On Windows shutil.which('claude') resolves to the npm shim %APPDATA%\\\\npm\\\\claude.cmd, a batch file that runs %~dp0\\\\node_modules\\\\@anthropic-ai\\\\claude-code\\\\bin\\\\claude.exe %*. reviewer_executable() hashes only the shim (interpreter=null), so a replaced claude.exe behind it is NOT detected as TAMPER (DEV-LIFECYCLE-1 R6-01 guarantee). Launching a .cmd also sends every argv item (including the --settings JSON deny rules, with quotes) through cmd.exe parsing, which subprocess list2cmdline does not quote for.",
+   "suggested_fix": "Resolve an npm .cmd/.ps1 shim to its target executable, bind that executable's path and hash, and launch it directly (never via cmd.exe). If a shim cannot be resolved unambiguously, refuse. The parsing logic can be tested on Linux with a fixture shim file."},
+  {"id": "W-3", "severity": "MEDIUM", "blocking": true, "category": "test", "owner_decision": false,
+   "title": "tests/dev_workflow fixtures are not portable to Windows (17 failures) and 6 older tests skip with 'Linux-only' reasons instead of named platform-gated reporting",
+   "files": ["tests/dev_workflow/"],
+   "evidence": "Windows 11, Python 3.13.15, pytest tests/dev_workflow at f3706e03: 17 failed, 194 passed, 6 skipped (at ce1a90c: 72 failed, 114 passed, 6 skipped; 0 new failures). Causes: fake `claude` shell scripts with no .exe/.cmd (WAITING_FOR_MODEL instead of the expected state: r6_01 x4, r7_01 managed_policy); `sh -c sleep` children (r1_06, r1r2_01[False]); Windows paths written unescaped into gitconfig ('bad config line 2': r4_01 x2, r5_01); writing `.git` in a worktree (PermissionError: r2_03); seen.json / reviewer_r* files never produced because the fake CLI could not run (r7_01 x4, r8_01). Skipped with 'Linux-only' reasons instead of DL2 platform-gated reporting: r1r2_01[True], r8_01 x2, r10_01 x3. Against DL2-AC 'never silently skipped'.",
+   "suggested_fix": "Make the fixtures portable (Python fake CLIs launched via sys.executable, gitconfig paths as_posix) where the guarantee applies on Windows. Where it truly does not (setsid), mark the test windows_only/linux_only so the conftest reports it by name. Windows confirmation is done by the owner-PC coordinator re-running the Windows gate on each new candidate SHA."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "pytest tests/dev_workflow (Windows 11, Python 3.13.15) at f3706e03", "result": "17 failed, 194 passed, 6 skipped (relayed, not run here)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/dev_workflow (Windows 11, Python 3.13.15) at ce1a90c", "result": "72 failed, 114 passed, 6 skipped (relayed, not run here)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/dev_workflow/test_lifecycle_platform.py tests/dev_workflow/test_lifecycle_remote.py (Windows) at f3706e03", "result": "25 passed, 0 skipped (relayed, not run here)", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["All Windows results are relayed from the owner PC and were not run in this Linux container."]}
+AUDIT_RESULT_END
