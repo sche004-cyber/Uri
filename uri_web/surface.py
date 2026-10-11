@@ -3,7 +3,8 @@
 No catalog change, no new action: the surface uses Column / Card / Text / Badge / Divider / Button and the existing
 presentation action `surface.dismiss`. The catalog refuses URLs anywhere, so a citation shows the source as
 `host/path` text with its retrieval and publication dates; nothing in the surface is a link. All text is cleaned of
-URL and script schemes before it enters the surface.
+URL and script schemes before it enters the surface; in web-derived text, links, e-mail and IP addresses are masked
+whole and an instruction-like title or conflict statement is not shown (R6-03).
 """
 from __future__ import annotations
 
@@ -13,10 +14,17 @@ from urllib.parse import urlsplit
 from uri_a2ui.surface import Surface
 
 from . import pipeline as P
+from . import untrusted as U
 
 KIND = "web.research_result"
 _SCHEME = re.compile(r"(?i)\b(?:https?|ftp|file)://")
 _SCRIPTISH = re.compile(r"(?i)\b(javascript|vbscript|data):")
+# Links, e-mail addresses and IP addresses in web-derived text are masked whole (R6-03): the surface carries no
+# address a user could follow or contact, whichever field the text arrived in.
+_LINK = re.compile(r"(?i)\b(?:https?|ftp|file)://\S*|\bwww\.\S+|[\w.+-]+@[\w-]+\.[\w.-]+|\b\d{1,3}(?:\.\d{1,3}){3}\b|"
+                   r"\b(?:javascript|vbscript):\S*|\bdata:[a-z]+/\S*")
+LINK_MASK = "[link removed]"
+HIDDEN_TITLE = "(title hidden: instruction-like text)"
 MAX_TEXT = 1200
 STATUS_TONE = {P.COMPLETED_WITH_RESULT: "success", P.NO_RESULT: "warning", P.PROVIDER_UNAVAILABLE: "warning",
                P.CANCELLED: "neutral", P.TIMED_OUT: "warning", P.FAILED: "danger"}
@@ -25,8 +33,14 @@ STATUS_LABEL = {P.COMPLETED_WITH_RESULT: "Answer with sources", P.NO_RESULT: "No
                 P.FAILED: "Failed"}
 
 
-def clean(s, limit=MAX_TEXT) -> str:
-    s = _SCHEME.sub("", str(s or ""))
+def _mask_link(m) -> str:
+    tail = re.search(r"[.,;:!?)\]'\"]+$", m.group(0))
+    return LINK_MASK + (tail.group(0) if tail else "")
+
+
+def clean(s, limit=MAX_TEXT, links=True) -> str:
+    s = _LINK.sub(_mask_link, str(s or "")) if links else str(s or "")
+    s = _SCHEME.sub("", s)
     s = _SCRIPTISH.sub(lambda m: m.group(1) + " :", s)
     s = "".join(ch for ch in s if ch in "\n\t" or (ord(ch) >= 32 and not 0xD800 <= ord(ch) <= 0xDFFF))
     return s[:limit]
@@ -35,7 +49,7 @@ def clean(s, limit=MAX_TEXT) -> str:
 def cite_label(url: str) -> str:
     try:
         p = urlsplit(url)
-        return clean((p.hostname or "") + (p.path if p.path not in ("", "/") else ""), 120)
+        return clean((p.hostname or "") + (p.path if p.path not in ("", "/") else ""), 120, links=False)
     except ValueError:
         return "source"
 
@@ -47,8 +61,8 @@ def build_surface(result: dict) -> Surface:
         comps.append(c)
         return c["id"]
 
-    def text(cid, value, variant="body"):
-        return add({"id": cid, "component": "Text", "text": clean(value), "variant": variant})
+    def text(cid, value, variant="body", links=True):
+        return add({"id": cid, "component": "Text", "text": clean(value, links=links), "variant": variant})
 
     status = result.get("status", P.FAILED)
     head = [text("h_title", "Research: " + (result.get("query") or "(no query)"), "title"),
@@ -67,7 +81,9 @@ def build_surface(result: dict) -> Surface:
         add({"id": "a_col", "component": "Column", "children": [text("a_t", "Answer", "label"), *ids], "gap": "small"})
         order.append(add({"id": "a_card", "component": "Card", "child": "a_col", "tone": "accent"}))
 
-    conflicts = result.get("conflicts") or []
+    # Defence in depth: a pair whose statement is instruction-like is not shown (evaluate already skips them).
+    conflicts = [c for c in result.get("conflicts") or []
+                 if not U.flags(c.get("statement_a")) and not U.flags(c.get("statement_b"))]
     if conflicts:
         ids = []
         for i, c in enumerate(conflicts[:3]):
@@ -83,17 +99,20 @@ def build_surface(result: dict) -> Surface:
         ids = []
         for s in sources[:10]:
             rec = s.get("record") or {}
-            bits = [f"[{s['number']}] {s.get('title') or ''}", cite_label(s.get("url") or ""),
-                    "retrieved " + (rec.get("retrieved_at") or "?")]
+            title = s.get("title") or ""
+            # Each web-derived part is masked here; the line is joined with the host/path label, which is kept.
+            bits = [f"[{s['number']}] " + clean(HIDDEN_TITLE if U.flags(title) else title, 300),
+                    cite_label(s.get("url") or ""), "retrieved " + clean(rec.get("retrieved_at") or "?", 80)]
             if rec.get("published_at"):
-                bits.append("published " + rec["published_at"])
+                bits.append("published " + clean(rec["published_at"], 80))
             if s.get("analysed_scope") != "full_text":
                 bits.append(s.get("analysed_scope"))
             if s.get("near_duplicate_of"):
                 bits.append(f"near-duplicate of [{s['near_duplicate_of']}]")
             if s.get("injection_flags"):
                 bits.append("contains instruction-like text (ignored)")
-            ids.append(text(f"s{s['number']}", " · ".join(b for b in bits if b), "caption"))
+            ids.append(text(f"s{s['number']}", " · ".join(clean(b, links=False) for b in bits if b), "caption",
+                            links=False))
         add({"id": "s_col", "component": "Column", "children": [text("s_t", "Sources", "label"), *ids], "gap": "small"})
         order.append(add({"id": "s_card", "component": "Card", "child": "s_col", "tone": "neutral"}))
 

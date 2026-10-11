@@ -7,13 +7,13 @@
   const SENSITIVE_AC = new Set(["current-password", "new-password", "one-time-code", "cc-number", "cc-csc", "cc-exp",
     "cc-exp-month", "cc-exp-year", "cc-name", "cc-type"]);
   // Same rules as uri_assist/redact.py (kept in sync; tests/assist checks both on one fixture).
-  const SENSITIVE_WORDS = /\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|password|passwd|passcode|passphrase|apikey|aadhar|aadhaar|tan|mtan|smstan|otc|2 ?sv)\b|\bapi ?key\b|\btwo ?step\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|\bprivate ?key\b/;
+  const SENSITIVE_WORDS = /\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|cvd|csv|cid|cav ?2|ssn|pan|iban|secret|token|cookie|session|auth|password|passwd|passcode|passphrase|apikey|aadhar|aadhaar|tan|mtan|smstan|otc|2 ?sv)\b|\bapi ?key\b|\btwo ?step\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|\bprivate ?key\b/;
   // Run-together lowercase names (see _RUN_TOGETHER in redact.py; same pattern).
   const RUN_TOGETHER = /password|passwd|passcode|passphrase|pwd|cvv|cvc|ccv|\b(mpin|tpin)|(mpin|tpin)\b|\botp|otp\b|otp(code|value|val|number|num|no|input|field|digit|box|text|entry|pin|token)|(upi|atm|card|security|secure|login|user|txn|transaction|account|acct|debit|credit|bank|access|mobile|wallet|new|old|confirm|current|verify|secret)pin(number|num|no)?\b|\bpin(number|num|no|entry|input|field|value)\b|(user|login|admin|account|acct|new|old|confirm|current|root|wifi|txn|master|secret|db)pass\b|(verify|verif|sms|email|access|activation|confirmation|confirm|login|signin)code\b/;
   // Secret stems inside each word (after readable words are cut out), secret phrases on the joined name, and short
   // single-token codes in fields whose name ends in code / pin / key (see _STEMS, _READABLE, _PHRASES, _CODE_END and
   // _CODE_EXCLUDE in redact.py; same patterns).
-  const STEMS = /otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|twostep|verification|authenticat|authoriz|cvv|cvc|ccv|token|secret(?!ar)|password|passwd|passcode|passphrase|pwd|key|credential|recovery|mnemonic|seedphrase|aadhaa?r|\bssn|ssn\b|passport|iban|jwt|csrf|xsrf|bearer|cookie|session|pat\b|psk\b|maiden/;
+  const STEMS = /otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|twostep|verification|authenticat|authoriz|cvv|cvc|ccv|cvd|cav2|token|secret(?!ar)|password|passwd|passcode|passphrase|pwd|key|credential|recovery|mnemonic|seedphrase|aadhaa?r|\bssn|ssn\b|passport|iban|jwt|csrf|xsrf|bearer|cookie|session|pat\b|psk\b|maiden/;
   const READABLE = /keyboard|keyword|keynote|keystone|keyframe|monkey|donkey|turkey|hockey|jockey|whiskey|possession|obsession|expat/g;
   const PHRASES = /backupcode|resetcode|unlockcode|recoverycode|seedphrase|secretphrase|socialsecurity|cardnumber|cardnum|ccnumber|ccnum|accountnumber|accountnum|acctnumber|acctnum|sessionid|privatekey|apikey|securitycode|securityanswer|authcode|nationalid|taxid|routingnumber|bankaccount|sessid|nonce/;
   const CODE_END = /(code|pin|key)(number|num|no)?$/, CODE_EXCLUDE = /postal|zip|postcode|pincode|country|area|promo|coupon|voucher|referral|barcode|sortcode|ifsc|swift|currency|language|locale/;
@@ -24,7 +24,7 @@
   const secretName = (v) => SENSITIVE_WORDS.test(words(v)) || RUN_TOGETHER.test(words(v)) ||
     tokens(v).split(" ").some((t) => STEMS.test(t.replace(READABLE, ""))) || PHRASES.test(joined(v));
   const words = (v) => String(v).replace(/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=\d)|(?<=\d)(?=[A-Za-z])/g, " ").replace(/[_\-.:/]+/g, " ").toLowerCase();
-  const SHORT_CODE = /^\s*[A-Za-z0-9_-]{3,32}\s*$/, CODE_LABEL = /\bcode\b/, POSTAL = /postal|zip|post ?code|pin ?code/i;
+  const SHORT_CODE = /^\s*(?=(?:\s?[A-Za-z0-9_-]){3,32}\s*$)[A-Za-z0-9_-]+(?: [A-Za-z0-9_-]+){0,3}\s*$/, CODE_LABEL = /\bcode\b/, POSTAL = /postal|zip|post ?code|pin ?code/i;
   const counts = {};
   const bump = (k) => { counts[k] = (counts[k] || 0) + 1; };
   const luhn = (d) => { let t = 0, alt = false; for (let i = d.length - 1; i >= 0; i--) { let n = +d[i];

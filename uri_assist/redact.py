@@ -4,9 +4,10 @@ Field rules (value removed, field marked `sensitive`):
   * input type password / hidden;
   * autocomplete tokens for passwords, one-time codes and payment cards;
   * name / id / label / automation id that names a secret (password, token, OTP, TAN / mTAN, 2SV / two-step code,
-    PIN, CVV, any *key, credential, authorization, recovery / backup code, session, card, account number, national IDs
-    such as SSN, Aadhaar, PAN, passport);
-  * a short single-token value in a field whose name or label ends in code / pin / key;
+    PIN, card security codes (CVV, CVC, CVD, CSV, CAV2, CID), any *key, credential, authorization, recovery / backup
+    code, session, card, account number, national IDs such as SSN, Aadhaar, PAN, passport);
+  * a short code value (one token, or up to four space-separated groups such as "482 913", 3-32 characters) in a
+    field whose name or label ends in code / pin / key;
   * UI Automation elements flagged IsPassword.
 Text rules (masked in any text: page text, selection, field values, labels): JWTs, bearer tokens, HTTP Basic
 credentials, API keys with known prefixes (OpenAI/Anthropic sk-, Stripe sk_/rk_/pk_ live/test, GitHub ghp_ /
@@ -26,7 +27,7 @@ SENSITIVE_AUTOCOMPLETE = {"current-password", "new-password", "one-time-code", "
 # "user_pin" -> "user pin") so short tokens such as otp / pin / pw match only as whole words ("hotpot", "spinner",
 # "pincode" do not). An all-caps run ending in otp ("SMSOTP" -> "smsotp") is still a one-time code.
 _SENSITIVE_WORDS = re.compile(
-    r"\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|"
+    r"\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|cvd|csv|cid|cav ?2|ssn|pan|iban|secret|token|cookie|session|auth|"
     r"password|passwd|passcode|passphrase|apikey|aadhar|aadhaar|tan|mtan|smstan|otc|2 ?sv)\b|"
     r"\bapi ?key\b|\btwo ?step\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|"
     r"\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|"
@@ -51,7 +52,7 @@ _RUN_TOGETHER = re.compile(
 # a/h/l/o ("footpath", "hotpot", "hotplate"); tfa only at the start of a word ("nightfall"); secret not in
 # "secretary".
 _STEMS = re.compile(
-    r"otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|twostep|verification|authenticat|authoriz|cvv|cvc|ccv|token|secret(?!ar)|"
+    r"otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|twostep|verification|authenticat|authoriz|cvv|cvc|ccv|cvd|cav2|token|secret(?!ar)|"
     r"password|passwd|passcode|passphrase|pwd|key|credential|recovery|mnemonic|seedphrase|aadhaa?r|\bssn|ssn\b|"
     r"passport|iban|jwt|csrf|xsrf|bearer|cookie|session|pat\b|psk\b|maiden")
 _READABLE = re.compile(r"keyboard|keyword|keynote|keystone|keyframe|monkey|donkey|turkey|hockey|jockey|whiskey|"
@@ -62,9 +63,9 @@ _PHRASES = re.compile(r"backupcode|resetcode|unlockcode|recoverycode|seedphrase|
                       r"cardnumber|cardnum|ccnumber|ccnum|accountnumber|accountnum|acctnumber|acctnum|sessionid|"
                       r"privatekey|apikey|securitycode|securityanswer|authcode|nationalid|taxid|routingnumber|bankaccount|sessid|"
                       r"nonce")
-# A short single-token value (3-32 letters, digits, _ or -) is a code / PIN / key when a name, label or placeholder
-# ENDS with code, pin or key ("cardcode", "smspin", "Enter code:"; "7f3a9-2c1d8" as well as "482913", R4-01),
-# checked on the name with everything but letters and digits removed; postal, country, area, promo, coupon,
+# A short code value (3-32 letters, digits, _ or -, in one token or in up to four groups split by single spaces such
+# as "482 913", R6-02) is a code / PIN / key when a name, label or placeholder ENDS with code, pin or key
+# ("cardcode", "smspin", "Enter code:"; "7f3a9-2c1d8" as well as "482913", R4-01), checked on the name with everything but letters and digits removed; postal, country, area, promo, coupon,
 # voucher, referral, bar, sort, IFSC, SWIFT, currency, language and locale codes stay readable.
 _CODE_END = re.compile(r"(code|pin|key)(number|num|no)?$")
 _CODE_EXCLUDE = re.compile(r"postal|zip|postcode|pincode|country|area|promo|coupon|voucher|referral|barcode|sortcode|"
@@ -98,7 +99,7 @@ _TEXT_RULES = (
     ("aadhaar", re.compile(r"(?<!\d)(?<!\d[ -])[2-9]\d{3}[ -]?\d{4}[ -]?\d{4}(?![ -]?\d)")),
 )
 _CARD = re.compile(r"\b(?:\d[ .\u00a0\u2007\u202f-]?){12,18}\d\b")
-_SHORT_CODE = re.compile(r"^\s*[A-Za-z0-9_-]{3,32}\s*$")
+_SHORT_CODE = re.compile(r"^\s*(?=(?:\s?[A-Za-z0-9_-]){3,32}\s*$)[A-Za-z0-9_-]+(?: [A-Za-z0-9_-]+){0,3}\s*$")
 _CODE_LABEL = re.compile(r"(?i)\bcode\b")
 _POSTAL = re.compile(r"(?i)postal|zip|post ?code|pin ?code")
 

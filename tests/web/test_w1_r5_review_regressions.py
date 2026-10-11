@@ -53,7 +53,7 @@ def test_r5_01_same_amount_is_not_a_conflict(a, b):
 @pytest.mark.parametrize("text, expected", [
     ("Rs 5,00,000", {"500000"}), ("Rs 5,00,00,000", {"50000000"}), ("1 000 000 euros", {"1000000"}),
     ("-3.2%", {"-3.2%"}), ("−3.2%", {"-3.2%"}), ("minus 12 degrees", {"-12"}),
-    ("COVID-19 cases in 2019-2020", {"19", "2019", "2020"}), ("In 2020 100 people came.", {"2020", "100"}),
+    ("COVID-19 cases in 2019-2020", {"19", "2019", "2020", "2019-2020"}), ("In 2020 100 people came.", {"2020", "100"}),
     ("Dated 11.10.2026.", {"11.10.2026"}),
 ])
 def test_r5_01_numerals_are_read_whole_with_their_sign(text, expected):

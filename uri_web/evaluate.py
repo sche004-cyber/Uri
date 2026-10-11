@@ -91,24 +91,122 @@ def unreadable(nums) -> bool:
     return any(n.startswith(UNREADABLE) for n in nums)
 
 
+def _values(m, signed: bool = True, suf: str = None) -> list:
+    """The values of one _NUMBER match. `signed=False` when its "-" is a separator ("5%-10%"); `suf` lends the unit or
+    scale of a range's upper end to its bare lower end ("$5-10 million", "10-20%")."""
+    out = []
+    vals = _read(m.group("num"))
+    neg = signed and bool(m.group("sign") or m.group("minus"))
+    raw = ((m.group("suf") if suf is None else suf) or "").strip().lower()
+    unit = raw[:-1] if len(raw) > 3 and raw.endswith("s") and raw[:-1] in _SCALE.keys() | _UNIT.keys() else raw
+    for i, n in enumerate(vals):
+        last = i == len(vals) - 1          # a sign belongs to the first value, a unit to the last
+        sign = "-" if neg and i == 0 else ""
+        if n.startswith(UNREADABLE):
+            out.append(UNREADABLE + sign + n[1:])
+        elif not last or unit in ("", *_ORDINAL):
+            out.append(sign + n)
+        elif unit in _SCALE and n.count(".") <= 1:
+            out.append(sign + _fmt(Decimal(n).scaleb(_SCALE[unit])))
+        else:
+            out.append(sign + n + _UNIT.get(unit, unit))
+    return out
+
+
+# Compound numerals (R6-01). A value written as several digit groups is ONE ordered value, never a set of fragments:
+# "2026-11-10" and "2026-10-11", "11/10/2026" and "10/11/2026", "3:1" and "1:3", "10-20" and "20-10", "from 100 to
+# 200" and "from 200 to 100" are different values. Groups joined by "-", "/", ":" or a dash with no space, or by
+# " - ", an en/em dash or " to " (a range), form one token in written order; the separator is normalised, never sorted.
+_TIGHT = re.compile(r"[-‐‑–—/:]")
+_RANGE_GAP = re.compile(r"(?:\s*[–—]\s*|\s+-\s+|\s+to\s+|-)[$€£₹¥]?", re.I)   # also "$5 to $10", "$5-$10"
+_MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+           "November", "December")
+_MON = (r"(?P<mon>January|February|March|April|May|June|July|August|September|October|November|December|"
+        r"Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec)\b\.?")
+_DMY_WORDS = re.compile(r"(?<![\w.,])(?P<d>\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?" + _MON +
+                        r"(?:,?\s+(?P<y>\d{4})(?![\d,.]\d))?")
+_MDY_WORDS = re.compile(r"(?<!\w)" + _MON + r"\s+(?:(?P<d>\d{1,2})(?:st|nd|rd|th)?(?![\d,.]?\d)"
+                        r"(?:,?\s+(?P<y>\d{4})(?![\d,.]\d))?|(?P<y2>\d{4})(?![\d,.]\d))")
+
+
+def _month(name: str) -> int:
+    return next(i for i, full in enumerate(_MONTHS, 1) if full.startswith(name[:3]))
+
+
+def _date_tokens(y, mo, d) -> list:
+    """A calendar date as canonical tokens: the full date, its month-day and its year (so "in 2026" and "on 10
+    November" are supported by "10 November 2026"), never the bare day or month number."""
+    if d is not None and not 1 <= int(d) <= 31 or not 1 <= mo <= 12:
+        return []
+    if d is None:
+        return [f"{y}-{mo:02d}", y]
+    md = f"--{mo:02d}-{int(d):02d}"
+    return [f"{y}-{md[2:]}", md, y] if y else [md]
+
+
+def _named_dates(s: str):
+    out = []
+
+    def sub(m):
+        d, y = m.group("d"), m.group("y") or (m.groupdict().get("y2"))
+        toks = _date_tokens(y, _month(m.group("mon")), d)
+        if not toks:
+            return m.group(0)
+        out.extend(toks)
+        return " " * len(m.group(0))
+    s = _DMY_WORDS.sub(sub, s)
+    return out, _MDY_WORDS.sub(sub, s)
+
+
+def _compound(parts: list, seps: list) -> list:
+    """One token for a chain of whole values in written order (plus a calendar date's year and month-day, and a
+    two-value range's endpoints, which the chain does state)."""
+    if any(p.startswith(UNREADABLE) for p in parts):
+        return [UNREADABLE + "".join(p.lstrip(UNREADABLE) + s for p, s in zip(parts, seps + [""]))]
+    if len(parts) == 3 and seps[0] == seps[1] and seps[0] in "-/" and all(p.isdigit() for p in parts):
+        a, b, c = parts
+        if len(a) == 4 and len(b) <= 2 and len(c) <= 2:                      # ISO / Y-M-D
+            toks = _date_tokens(a, int(b), c)
+            if toks:
+                return toks
+        if len(a) <= 2 and len(b) <= 2 and len(c) in (2, 4):                  # D/M/Y or M/D/Y: written order kept
+            return [f"{int(a):02d}/{int(b):02d}/{c}"] + ([c] if len(c) == 4 else [])
+    token = "".join(p + s for p, s in zip(parts, seps + [""]))
+    return [token] + (parts if len(parts) == 2 and seps[0] == "-" else [])
+
+
 def numbers(s: str) -> set:
-    out = set()
-    for m in _NUMBER.finditer(s):
-        vals = _read(m.group("num"))
-        neg = bool(m.group("sign") or m.group("minus"))
-        raw = (m.group("suf") or "").strip().lower()
-        unit = raw[:-1] if len(raw) > 3 and raw.endswith("s") and raw[:-1] in _SCALE.keys() | _UNIT.keys() else raw
-        for i, n in enumerate(vals):
-            last = i == len(vals) - 1          # a sign belongs to the first value, a unit to the last
-            sign = "-" if neg and i == 0 else ""
-            if n.startswith(UNREADABLE):
-                out.add(UNREADABLE + sign + n[1:])
-            elif not last or unit in ("", *_ORDINAL):
-                out.add(sign + n)
-            elif unit in _SCALE and n.count(".") <= 1:
-                out.add(sign + _fmt(Decimal(n).scaleb(_SCALE[unit])))
+    out, s = _named_dates(s)
+    out = set(out)
+    ms = list(_NUMBER.finditer(s))
+    i = 0
+    while i < len(ms):
+        chain, seps, signed, j = [ms[i]], [], [True], i
+        while j + 1 < len(ms):
+            gap, nxt = s[ms[j].end():ms[j + 1].start()], ms[j + 1]
+            sep_sign = gap == "" and bool(nxt.group("sign"))   # "5%-10%": the "-" was read as a sign
+            if sep_sign:
+                seps.append("-")
+            elif _TIGHT.fullmatch(gap):
+                seps.append({"/": "/", ":": ":"}.get(gap, "-"))
+            elif _RANGE_GAP.fullmatch(gap):
+                seps.append("-")
             else:
-                out.add(sign + n + _UNIT.get(unit, unit))
+                break
+            signed.append(not sep_sign)
+            chain.append(nxt)
+            j += 1
+        if len(chain) == 1:
+            out.update(_values(ms[i]))
+        else:
+            vals = [_values(m, signed=sg) for m, sg in zip(chain, signed)]
+            if all(len(v) == 1 for v in vals):
+                if len(chain) == 2 and seps[0] == "-" and not chain[0].group("suf") and chain[1].group("suf"):
+                    vals[0] = _values(chain[0], suf=chain[1].group("suf"))
+                out.update(_compound([v[0] for v in vals], seps))
+            else:                                         # "2020 100-200": read each numeral on its own
+                out.update(v for vs in vals for v in vs)
+        i = j + 1
     return out
 
 
@@ -182,7 +280,11 @@ def evaluate(sources: list, query: str) -> Evaluation:
 
 
 def find_conflicts(sources: list, indices: list, max_conflicts: int = 20) -> list:
-    sents = {i: [(s, content_words(s), numbers(s)) for s in sentences(sources[i].get("text") or "")] for i in indices}
+    # A conflict statement is shown verbatim on the research surface, so it obeys the answer's rules (R6-03): an
+    # instruction-like sentence or one carrying a link / e-mail / IP is never a statement.
+    from .untrusted import flags, has_link_or_contact   # local import: untrusted imports this module
+    sents = {i: [(s, content_words(s), numbers(s)) for s in sentences(sources[i].get("text") or "")
+                 if not flags(s) and not has_link_or_contact(s)] for i in indices}
     found, seen = [], set()
     for x, a in enumerate(indices):
         for b in indices[x + 1:]:
