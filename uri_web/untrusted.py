@@ -12,6 +12,7 @@ Retrieved text is DATA. These helpers make that structural:
 """
 from __future__ import annotations
 
+import functools
 import re
 import sys
 import unicodedata
@@ -495,6 +496,35 @@ def _bare(text: str) -> str:
     return "".join(out)
 
 
+_LATIN_NAME = re.compile(r"LATIN (?:SMALL |CAPITAL )?LETTER (?:(?:SMALL CAPITAL|SCRIPT|TURNED|REVERSED|DOTLESS|CLOSED|"
+                         r"OPEN|BARRED|INVERTED|SIDEWAYS|MIDDLE-TILDE|LONG|BROKEN|STRETCHED|INSULAR|BLACKLETTER) )*"
+                         r"([A-Z])(?: WITH .*)?$")
+
+
+@functools.lru_cache(maxsize=4096)
+def _latin_base(ch: str) -> str:
+    """R27-01: the plain ASCII letter a Latin letter is drawn from, read from its Unicode name ('\u0261' LATIN SMALL
+    LETTER SCRIPT G -> 'g', '\u1d04' LATIN LETTER SMALL CAPITAL C -> 'c', '\u00f8' O WITH STROKE -> 'o', '\u0127' H WITH
+    STROKE -> 'h'); '' when it has none. Covers the whole Latin range by rule, not by a hand-made list."""
+    if ch.isascii():
+        return ch.lower() if ch.isalpha() else ""
+    m = _LATIN_NAME.match(unicodedata.name(ch, ""))
+    return m.group(1).lower() if m else ""
+
+
+def _latin_fold(text: str) -> str:
+    """`text` with every letter replaced by its plain ASCII letter and marks dropped; '' if a letter has none."""
+    out = []
+    for ch in unicodedata.normalize("NFD", text):
+        if unicodedata.category(ch)[0] == "M":
+            continue
+        b = _latin_base(ch)
+        if not b:
+            return ""
+        out.append(b)
+    return "".join(out)
+
+
 def _tld_match(text: str, fam: str) -> str:
     """The top-level domain `text` spells, '' if none. Combining marks are ignored ('c\u0323om'). R19-02/R20-02: in a
     script other than Latin, a look-alike spelling ('\u0441\u043e\u043c') matches through its skeleton and is returned
@@ -511,6 +541,10 @@ def _tld_match(text: str, fam: str) -> str:
                                                  if unicodedata.category(ch) not in ("Mn", "Me")))
     if plain != bare and plain in _ALL_TLDS:
         return plain
+    if fam == "LATIN":
+        fold = _latin_fold(text)              # R27-01: 'ɡov', 'ᴄᴏᴍ', 'cøm', 'ȼom', 'ƈom', 'sħop'
+        if fold and fold != bare and fold in _ALL_TLDS:
+            return fold
     if fam != "LATIN":
         look = _skeleton(text).casefold()
         if look.isascii() and look in _ALL_TLDS:
