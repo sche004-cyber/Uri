@@ -482,6 +482,13 @@ def _endings(words: list, norm: str):
     for b, w in enumerate(words):
         if w[2].casefold() in _ALL_TLDS:
             yield b, b, w[2].casefold()
+        elif w[3] != "LATIN":
+            # R19-02: an ending written in look-alike letters of another script ('\u0441\u043e\u043c' for 'com',
+            # '\u0456\u043e' for 'io'); it counts only after a name in a different script (_ending_spans), so
+            # ordinary text in that script ('\u0440\u044b\u0431\u0430 \u0441\u043e\u043c') stays readable.
+            look = _skeleton(w[2]).casefold()
+            if look.isascii() and look in _ALL_TLDS:
+                yield b, b, "~" + look
         if b + 1 < n and not norm[w[1]:words[b + 1][0]].strip() and words[b + 1][3] == w[3]:
             nxt = words[b + 1]
             two = (w[2] + nxt[2]).casefold()
@@ -551,8 +558,8 @@ def _separator_word(norm: str, w, fam: str) -> bool:
     - a short word of another script (at most _MAX_FOREIGN distinct letters: '\u4e36\u4e3f', '\u4e2d\u56fd'), unless it
       stands alone in brackets as a gloss ('Tokyo (\u6771\u4eac) in Japan'). Recorded residual: a bracketed one
       ('portal (\u4e36\u4e3f) shop'). Precision cost: 'Tokyo \u6771\u4eac is big' (unbracketed) is masked."""
-    if _single(w):
-        return True
+    if _single(w) or all(unicodedata.category(ch)[0] == "M" for ch in w[2]):
+        return True                        # R19-01: marks with no base letter ('\u0323\u0307\u0308'), any length
     if set(w[2]) <= _STROKES:
         return not _bracketed(norm, w)     # D19: any length ('\u4e36\u318d\u11a2', '\u4e28\u4e36\u4e3f')
     if w[3] == fam:
@@ -570,12 +577,13 @@ def _ending_spans(norm: str) -> list:
     words = _words(norm)
     spans = []
     for b, e, tld in _endings(words, norm):
-        fam = words[b][3]
+        fam, look = words[b][3], tld.startswith("~")
+        tld = tld.lstrip("~")
         a, ascii_only = b - 1, True
         while a >= 0 and _separator_word(norm, words[a], fam):
             ascii_only = ascii_only and words[a][2].isascii() and _single(words[a])
             a -= 1
-        if a < 0:
+        if a < 0 or (look and words[a][3] == fam):
             continue
         gap = norm[words[a][1]:words[b][0]]
         spelt = e > b
