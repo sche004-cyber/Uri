@@ -584,9 +584,22 @@ def _odd(text: str) -> bool:
 
 
 def _bracketed(norm: str, w) -> bool:
-    """D17: the word stands alone in brackets, as a gloss: 'Tokyo (\u6771\u4eac) in Japan'."""
-    left, right = norm[:w[0]].rstrip()[-1:], norm[w[1]:].lstrip()[:1]
-    return bool(left) and bool(right) and left in _OPEN and right in _CLOSE
+    """D17: the word stands in brackets as a gloss: 'Tokyo (\u6771\u4eac) in Japan'. R23-01: also when the brackets
+    hold a phrase of the word's own script, its syllable marks and spaces ('Sikkim (\u0f66\u0f72\u0f0b\u0f40\u0f72\u0f58\u0f0d)
+    in India'), but no letter of another script."""
+    fam = _char_script(w[2][0])
+
+    def inside(ch):
+        f = _char_script(ch)
+        return ch.isspace() or f == fam or f == "COMMON" and not ch.isalnum() and ch not in _OPEN + _CLOSE
+
+    i = w[0] - 1
+    while i >= 0 and inside(norm[i]):
+        i -= 1
+    j = w[1]
+    while j < len(norm) and inside(norm[j]):
+        j += 1
+    return i >= 0 and j < len(norm) and norm[i] in _OPEN and norm[j] in _CLOSE
 
 
 def _separator_word(norm: str, w, fam: str) -> bool:
@@ -600,7 +613,8 @@ def _separator_word(norm: str, w, fam: str) -> bool:
     # them are dropped whatever their name, script signs too ('\u093c\u0901\u0902', '\u0f39\u0f37\u0f35'): _words
     # makes a word of them, but they are not letters.
     base = _bare(w[2])
-    if not base or (len(base) == 1 and base.casefold() not in ("a", "i")):
+    letters = "".join(ch for ch in base if unicodedata.category(ch)[0] != "M")   # R23-01: marks are not letters
+    if not letters or (len(letters) == 1 and letters.casefold() not in ("a", "i")):
         return True                        # R19-01: marks with no base letter ('\u0323\u0307\u0308'), any length
     if set(base) <= _STROKES:
         return not _bracketed(norm, w)     # D19: any length ('\u4e36\u318d\u11a2', '\u4e28\u4e36\u4e3f')
@@ -608,7 +622,7 @@ def _separator_word(norm: str, w, fam: str) -> bool:
         return _odd(base)
     # D17 (owner): loosened, then tightened back the same day: any short word of another script (at most
     # _MAX_FOREIGN distinct letters) is a separator unless it stands alone in brackets as a gloss.
-    return len(set(base.casefold())) <= _MAX_FOREIGN and not _bracketed(norm, w)
+    return len(set(letters.casefold())) <= _MAX_FOREIGN and not _bracketed(norm, w)
 
 
 def _ending_spans(norm: str) -> list:
