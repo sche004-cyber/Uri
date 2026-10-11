@@ -1,0 +1,57 @@
+{
+ "stage": "WorkflowState.WAITING_FOR_MODEL",
+ "candidate": "bfe2d294e5066435157dfa6a754c2c8e5cda4adc",
+ "baseline": "56c5a0722568128b333bcaae3b4b0c9b124c436f",
+ "accepted_review": false,
+ "verify_errors": [],
+ "blocker": null,
+ "rounds": [
+  {
+   "round": 1,
+   "candidate": "bfe2d294e5066435157dfa6a754c2c8e5cda4adc",
+   "verdict": null,
+   "reviewer_label": null,
+   "independent": false,
+   "independent_reason": null,
+   "worker": {
+    "provider": "claude_cli",
+    "status": "FAILED",
+    "session_id": "98d6062c-90db-410b-9d28-cb28578f540e",
+    "binary_realpath": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe",
+    "binary_launch": [
+     "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe"
+    ],
+    "binary_is_default": true,
+    "binary_anchor_ok": true,
+    "config_isolated": true,
+    "contained": true,
+    "containment_pre": {
+     "contained": true,
+     "killed": 0
+    },
+    "containment_post": {
+     "active_processes": 0,
+     "contained": true,
+     "killed": "job terminated"
+    },
+    "exit_code": 1,
+    "detail": "Failed to authenticate: OAuth session expired and could not be refreshed"
+   }
+  }
+ ],
+ "reviewer_exec": {
+  "interpreter": null,
+  "launch": [
+   "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe"
+  ],
+  "launcher": {
+   "realpath": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\claude.cmd",
+   "sha256": "7999fba95dbffe167d9e0a043f29057979a0518ebe89b60c4fcfc6401ea8c424"
+  },
+  "name": "claude",
+  "path": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\claude.cmd",
+  "realpath": "C:\\Users\\cheta\\AppData\\Roaming\\npm\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe",
+  "sha256": "6d5be51f0edfe3429cd1a9885950db31c1e59eb9a2c9a30a47e64179d2ff98b4"
+ },
+ "state_dir": "C:\\Users\\cheta\\AppData\\Local\\Temp\\claude\\C--Users-cheta-Development-Uri--V1\\a90478b8-2280-42c1-9e7e-79ed3b6443ca\\scratchpad\\dl2\\pcq\\dl2-pcq-c0n1z1hm\\state"
+}

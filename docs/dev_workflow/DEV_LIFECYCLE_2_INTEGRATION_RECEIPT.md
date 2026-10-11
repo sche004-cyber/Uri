@@ -70,6 +70,16 @@ Frozen-file check (`scripts/ws_frozen_check.py`) on `cbdf3f2c`: `ok: true`, no p
 - **Windows qualification still NOT VERIFIED end to end:** no real lifecycle milestone run (DEVTEST round with a live
   `claude_cli` reviewer, `contained: true`, `is_independent` true) has run on the PC yet. The unit and integration
   tests above passed.
+- **PC end-to-end attempt (2026-10-11, after integration), BLOCKED on the owner's CLI login:** a real lifecycle run
+  (milestone `W9-PC-QUALIFY-20261011`, not DEVTEST; throwaway repository; canonical `cbdf3f2c` driver; live
+  `claude_cli` reviewer) stopped at WAITING_FOR_MODEL. The reviewer process exited 1 with `Failed to authenticate:
+  OAuth session expired and could not be refreshed`; `claude auth status` on the PC reports `loggedIn: false`.
+  Everything before the model call worked and is recorded in the run state: the plan bound `claude.exe` behind
+  `claude.cmd` (launcher hash bound too), the driver launched `claude.exe` directly (`binary_anchor_ok: true`,
+  `binary_is_default: true`), the reviewer ran on a driver-made config dir (`config_isolated: true`), and Windows
+  containment was confirmed before and after the worker (`contained: true`, job terminated, `active_processes: 0`);
+  `verify` returned no errors. No review verdict exists, so this is NOT a qualification: Windows end to end stays
+  NOT VERIFIED until the owner logs the Claude CLI in on the PC and the run is repeated.
 - **L2:** the precedence note in the older `uri-development` skill is local and untracked on the PC (by design).
 - **Merge order:** W1/A0 targeted `ce1a90c`; it must now be brought onto `cbdf3f2c` and re-reviewed before it can
   integrate.
