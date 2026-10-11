@@ -104,8 +104,10 @@ def test_r1_06_unrelated_cited_source_is_not_kept():
 
 
 def test_r1_06_both_sources_kept_when_both_state_it():
-    a = "The district board approved the new hostel rules after consultation with students."
-    b = "On Monday the district board approved the new hostel rules after consultation."
+    # R5-02 (closure round 5): a claim may leave out source words at its edges only up to clause punctuation, so the
+    # sources separate their extra words with a comma ("..., with students", "On Monday, ...").
+    a = "The district board approved the new hostel rules after consultation, with students."
+    b = "On Monday, the district board approved the new hostel rules after consultation."
     v = SY.verify("The district board approved the new hostel rules after consultation [1][2].", [a, b])
     assert [c.citations for c in v.claims] == [[1, 2]]
 

@@ -162,7 +162,9 @@ def _excerpt(claim: str, source: str) -> bool:
     cycle", "a [near] unanimous decision"; R4-02: R3-02 let any two non-function words go here), a preposition ("are
     [about] doubling"), a clause boundary - means the source sentence is quoted instead, which only costs fluency
     (D7). This does not depend on recognising the quantity word. states_quantity() on the skipped text is kept as an
-    extra check only."""
+    extra check only. R5-02: the same holds at both ends of the claim (lead_ok, tail_ok): only gaps between matched
+    words were checked, so a claim could be any trailing run of the sentence and drop a leading qualifier ("[Less
+    than] a plurality of voters backed the measure")."""
     c = [w.lower() for w in _TOKEN.findall(claim or "")]
     toks = [(m.group(0).lower(), m.start(), m.end()) for m in _TOKEN.finditer(source or "")]
     if not any(w not in _FUNCTION_WORDS for w in c):
@@ -180,11 +182,24 @@ def _excerpt(claim: str, source: str) -> bool:
         return (skipped[0] in _DETERMINERS and len(skipped) - 1 <= MAX_GAP_WORDS
                 and all(w in _PLAIN_MODIFIERS for w in skipped[1:]))
 
+    def lead_ok(j: int) -> bool:
+        """R5-02: the source words left out before the claim's first matched word. Only determiners may go, back to
+        the sentence start or to clause punctuation (_CLAUSE_MARK). A clause WORD is no boundary here: "Fewer than [a
+        quintet of firms]" would otherwise drop "Fewer than"."""
+        k = j
+        while k > 0 and toks[k - 1][0] in _DETERMINERS and not _CLAUSE_MARK.search(source[toks[k - 1][2]:toks[k][1]]):
+            k -= 1
+        return k == 0 or bool(_CLAUSE_MARK.search(source[toks[k - 1][2]:toks[k][1]]))
+
+    def tail_ok(j: int) -> bool:
+        """R5-02: the claim's last matched word ends the sentence or stands right before clause punctuation."""
+        return j == len(toks) - 1 or bool(_CLAUSE_MARK.search(source[toks[j][2]:toks[j + 1][1]]))
+
     seen = set()                                     # (ci, prev) already shown not to match: no exponential retry
 
     def match(ci: int, prev: int) -> bool:
         if ci == len(c):
-            return True
+            return prev >= 0 and tail_ok(prev)
         if (ci, prev) in seen:
             return False
         seen.add((ci, prev))
@@ -193,7 +208,7 @@ def _excerpt(claim: str, source: str) -> bool:
         for j in range(prev + 1, len(toks)):
             if prev >= 0 and not gap_ok(prev, j):
                 return False                         # a longer gap cannot become allowed again
-            if toks[j][0] == c[ci] and match(ci + 1, j):
+            if toks[j][0] == c[ci] and (prev >= 0 or lead_ok(j)) and match(ci + 1, j):
                 return True
         return False
     return match(0, -1)

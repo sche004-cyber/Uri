@@ -62,9 +62,13 @@ def flags(text: str) -> list:
 # R4-01: the top-level label was letters only, so an ASCII-compatible (punycode) top-level domain ('refunds.xn--p1ai',
 # the ASCII form of '.рф') never reached _is_domain at all. A top-level label is now letters OR any label with '--' in
 # positions 3-4 (the reserved ACE form: 'xn--', and any future prefix), and such a label is always a link.
+# R5-01: the lookarounds around a bare domain were '[\w-]', and '_' is a word character, so a link wrapped in
+# underscores or hyphens ('_refunds-portal.com_', markdown emphasis; '-refunds-portal.com', 'refunds.com-') was never
+# matched. Only a letter or a digit directly before the host or after the top-level label now stops a match; any
+# other neighbour, '_' and '-' included, does not. This costs precision only ('file_name.py' is masked), never safety.
 _DOT = (r"(?:[.\u3002\uff0e\uff61]|\s*\[\s*\.\s*\]\s*|\s*\(\s*\.\s*\)\s*|\s*\[\s*(?i:dot)\s*\]\s*|\s*\(\s*(?i:dot)\s*\)\s*"
         r"|\s+(?i:dot)\s+|\s+\.\s+)")
-_BARE = re.compile(r"(?<![\w-])(?P<host>(?:[^\W_][\w-]{0,62}" + _DOT + r")+)(?P<tld>(?i:[a-z0-9]{2}--[\w-]{1,59})|[^\W\d_]{2,63})(?![\w-])(?P<path>/\S*)?")
+_BARE = re.compile(r"(?<![^\W_])(?P<host>(?:[^\W_][\w-]{0,62}" + _DOT + r")+)(?P<tld>(?i:[a-z0-9]{2}--[\w-]{1,59})|[^\W\d_]{2,63})(?![^\W_])(?P<path>/\S*)?")
 _OTHER = re.compile(r"\S*(?::|\[:\])//\S*|(?i:\bwww)" + _DOT + r"\S+|[\w.+-]+@[\w-]+(?:" + _DOT + r"[\w-]+)+|"
                     r"\b\d{1,3}(?:" + _DOT + r"\d{1,3}){3}\b|(?i:\b(?:javascript|vbscript):)\S*|(?i:\bdata:[a-z]+/)\S*")
 _PHONE = re.compile(r"(?<![\w+])\+?\(?\d[\d \t().\-]{6,}\d(?![\w])")

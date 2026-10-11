@@ -138,8 +138,13 @@ def test_r2_02_more_quantity_forms(text):
 
 
 def test_r2_02_excerpts_and_modifier_drops_are_still_the_brains_words():
-    src = "On Monday the district board approved the new hostel rules after a long public consultation."
-    for claim in ("The district board approved the new hostel rules [1].",
-                  "The district board approved the new hostel rules after consultation [1]."):
+    # R5-02 (closure round 5): source words may be left out at a claim's edges only up to clause punctuation, so the
+    # leading "On Monday" is set off by a comma here, and dropping the trailing "after a long public consultation"
+    # now quotes the source sentence instead (fail closed, as for a gap).
+    src = "On Monday, the district board approved the new hostel rules after a long public consultation."
+    for claim in ("The district board approved the new hostel rules after consultation [1].",
+                  "The district board approved the new hostel rules after a long public consultation [1]."):
         v = SY.verify(claim, [src])
         assert len(v.claims) == 1 and v.claims[0].quoted is False, claim
+    v = SY.verify("The district board approved the new hostel rules [1].", [src])
+    assert len(v.claims) == 1 and v.claims[0].quoted is True and v.claims[0].text == src
