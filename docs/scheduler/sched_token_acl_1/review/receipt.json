@@ -1,0 +1,96 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": null,
+ "candidate": "33fc419ab1d9f7f286a313ebd794fd1c0248cb4f",
+ "config_sha256": "12330ce1eac3acec642722a4b348fc2ce1d35beab38e1a94dd8da8db3e23ea69",
+ "events": 18,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "33fc419ab1d9": {
+   "blocked": null,
+   "new_failures": {
+    "python-scheduler": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T13:49:39Z",
+  "candidate": "33fc419ab1d9f7f286a313ebd794fd1c0248cb4f",
+  "mode": "none",
+  "status": "NOT_INTEGRATED_BY_POLICY"
+ },
+ "milestone": "SCHED-TOKEN-ACL-1",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "severity": "LOW",
+   "title": "Windows: icacls /inheritance:r /grant:r leaves pre-existing explicit ACEs of other principals on the folder and on files already inside, so S1 'exactly one entry' and S2 are not guaranteed"
+  },
+  {
+   "blocking": false,
+   "id": "R2-02",
+   "severity": "LOW",
+   "title": "S2 test asserts nothing on POSIX"
+  },
+  {
+   "blocking": false,
+   "id": "R2-03",
+   "severity": "LOW",
+   "title": "service.py committed with CRLF line endings (whole-file churn)"
+  },
+  {
+   "blocking": false,
+   "id": "R2-04",
+   "severity": "LOW",
+   "title": "EVIDENCE.md test counts are stale after the R1 repair"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01"
+   ],
+   "commit": "33fc419ab1d9f7f286a313ebd794fd1c0248cb4f",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "1465e164729c24f214f059d77f9cea565516968a",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "aa433228-260c-4e22-a339-3ad10a439ca3",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "33fc419ab1d9f7f286a313ebd794fd1c0248cb4f",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 2,
+   "session_id": "f3ac8b9f-6dd5-4b17-a91e-5886ffdd4f33",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 2,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "VERIFIED",
+ "verify_errors": [],
+ "written_at": "2026-10-11T13:49:39Z"
+}
