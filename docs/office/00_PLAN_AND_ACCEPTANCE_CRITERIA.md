@@ -198,3 +198,14 @@ The WebView2/Brain-speed measurement and its mitigation are written to `docs/off
 ## 14. Out of scope (M1)
 
 Docs/Slides; editing charts or pivots; local row/sheet structure ops; multi-user collaboration; macros; Graphify/ARN wiring (OFF-O3); `spreadsheets` scope (OFF-O1); canonical merge without OFF-O4/OFF-O5.
+
+## 15. Owner decisions recorded 2026-10-11 (owner agreed to the coordinator's recommendations in chat)
+
+| Id | Decision |
+|---|---|
+| OFF-O1 | **Not granted for now.** The Google Sheets write permission is not requested; "Edit a copy", reading, export and "Share via Google" are enough. Revisit only on real need. |
+| OFF-O2 | **Package shared, policy not.** RW1 may start from the vendored `webview_flutter_windows` package, but needs its own network policy and its own security qualification. The Office host settings must not be reused or loosened for browsing. |
+| OFF-O3 | **Correction history allowed.** Off by default, turned on per workbook by the owner, and stores only what changed and why, never cell values (as built, AC12). Graphify/ARN wiring is out of scope for M1 and is a later frozen-file decision. |
+| OFF-O4 | **Merge order:** W1/A0 → URI-OFFICE-M1 → SSRF-1 → GRAPHIFY-LEAK-1 → W2a → W2b → RW1. |
+| OFF-O5 | **Conditional.** Integration may go ahead only when all of these hold: the independent review gives ACCEPT with no blocking findings; the branch is rebased on canonical after W1/A0 and every gate passes again; the owner has done one live check (open a non-sensitive workbook, ask URI for one change, accept it, save). Until then canonical stays at ce1a90c. |
+| Outside M1 | The scheduler token-file ACL is fixed soon as its own small milestone (SCHED-TOKEN-ACL-1). Linux stays "not verified", non-blocking. |
