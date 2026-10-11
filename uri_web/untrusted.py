@@ -13,6 +13,7 @@ Retrieved text is DATA. These helpers make that structural:
 from __future__ import annotations
 
 import functools
+import itertools
 import re
 import sys
 import unicodedata
@@ -790,31 +791,38 @@ _RUN = re.compile(r"[A-Za-z0-9|]+")
 
 
 def _ascii_variant(norm: str) -> str:
-    """`norm` with ASCII look-alikes read as the letter they pass for, inside runs that hold at least two letters
-    ('c0m' -> 'com', 'g0v' -> 'gov', 'mi1' -> 'mil', 'miI' -> 'mil'); 'I' only in a run that also has lower-case letters
-    ('MIT' stays), and never as the first letter ('In 2020'); a one-letter run only when it then spells a listed
-    domain (R32-01: 'i0' -> 'io'). Same length as `norm`, so spans found in it are spans of `norm`. Version numbers ('v1.0') and codes
-    ('A1', 'B12') keep their digits (fewer than two letters in the run)."""
+    """`norm` with ASCII look-alikes read as the letter they pass for (R31-01..R34-01). Same length as `norm`, so spans
+    found in it are spans of `norm`.
+    1. Ending reading: every reading of a run is tried, each '0'/'1' read as 'o'/'l' and each 'I'/'|' either kept or
+       read as 'l' (case-insensitive); if a reading spells a listed top-level domain and the run as it stands does
+       not, that reading is used ('c0m', 'i0', 'Iy', 'IIVE', 'MII', 'PI'). A changed first 'I' is not used when the
+       word starts a sentence ('It is', 'In 2020').
+    2. Otherwise, in a run of at least two letters, '0', '1' and '|' are read as letters, and 'I' only when the run has
+       lower-case letters and it is not the first letter ('miI'); 'MIT', 'v1.0', 'A1', 'B12' keep their meaning."""
     def fold(m):
         run = m.group(0)
-        if run[0] == "I" and len(run) > 1:
-            # R33-01: a leading 'I' read as 'l' when the word then spells a listed domain and does not start a
-            # sentence ('refunds-portal ~ Iy' -> 'ly'); 'It is', 'In 2020', 'I like' keep their meaning.
+        if run.lower() not in _ALL_TLDS and any(ch.isalpha() for ch in run):   # numbers ('000') never
             before = norm[:m.start()].rstrip()
-            lead = "l" + run[1:]
-            if before and before[-1] not in ".!?:\"'\u201c\u2018(" and lead.lower() in _ALL_TLDS \
-                    and run.lower() not in _ALL_TLDS:
-                run = lead
+            starts = not before or before[-1] in ".!?:\"'\u201c\u2018("
+            choices = []
+            for i, ch in enumerate(run):
+                if ch in ("I", "|"):
+                    choices.append((ch, "l") if not (i == 0 and starts and ch == "I") else (ch,))
+                elif ch in _ASCII_ONE:
+                    choices.append((_ASCII_ONE[ch],))
+                else:
+                    choices.append((ch,))
+            if sum(len(c) > 1 for c in choices) <= 6:
+                for reading in itertools.product(*choices):
+                    r = "".join(reading)
+                    if r != run and r.lower() in _ALL_TLDS:
+                        return r
         letters = sum(ch.isalpha() for ch in run)
+        if letters < 2:
+            return run
         lower = any(ch.islower() for ch in run)
-        # 'I' first in a word is a capital ('In 2020', 'It is'), not a look-alike of 'l'.
-        out = "".join(_ASCII_ONE[ch] if ch in _ASCII_ONE and (ch != "I" or (lower and i > 0)) else ch
-                      for i, ch in enumerate(run))
-        if letters >= 2:
-            return out
-        # R32-01: a run with one letter ('i0', 'c0', '1y') is read only when it then spells a listed top-level domain
-        # ('io', 'co', 'ly'); other codes ('A1', 'v1', 'B12') keep their digits.
-        return out if letters == 1 and out.lower() in _ALL_TLDS and run.lower() not in _ALL_TLDS else run
+        return "".join(_ASCII_ONE[ch] if ch in _ASCII_ONE and (ch != "I" or (lower and i > 0)) else ch
+                       for i, ch in enumerate(run))
     return _RUN.sub(fold, norm)
 
 
