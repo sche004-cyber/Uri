@@ -12,7 +12,6 @@ rotateX(90deg), white on white, opacity 0, below the fold), with and without a C
 pixel check on synthetic screenshots; fail closed without a screenshot.
 Self-contained: the page and the Playwright runner are embedded here and written to tmp_path at run time.
 """
-import base64
 import io
 import json
 import os
@@ -27,6 +26,7 @@ from uri_assist import access as AC
 from uri_assist import perception as PE
 
 from .test_a0_access_perception import FakeAdapter, FakeClient, ask_and_wait, dom_snapshot, grant, mk, stamp
+from .test_a0_r13_differential_render import PROBE_DRIVER_JS, decode_probe, drawn_probe
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -111,25 +111,28 @@ PAYLOADS = R13 + EXTRA + R11 + R12
 PIXEL_ONLY = ("ZNEG-PAYLOAD", "ZNEGBLOCK-PAYLOAD", "SVGFILL-PAYLOAD", "SVGFO-PAYLOAD", "SVGNONE-PAYLOAD",
               "MASKBOX-PAYLOAD", "BLUR-PAYLOAD", "PEN-PAYLOAD", "BELOWFOLD-PAYLOAD")
 # INSET-OK-2 (clip-path inset(10%) on a 984 px wide box cuts away the first 98 px, where most of it is) is only partly
-# drawn; under D10 a piece is all or nothing, so it is dropped.
-KEPT = ("Welcome back", "VIS-OK-1", "SVGOK-OK-9", "STRETCHED-OK-1", "ESCAPE-OK-2", "SUMMARY-OK-6", "HALF-OK-1",
+# drawn; under D10 a piece is all or nothing, so it is dropped. SVGOK-OK-9 is drawn, but SVG text is not repainted by
+# the render probe's highlight (R13-01), so it cannot be bound to its pixels and is dropped (fail closed).
+NOT_VERIFIABLE = ("INSET-OK-2", "SVGOK-OK-9")
+KEPT = ("Welcome back", "VIS-OK-1", "STRETCHED-OK-1", "ESCAPE-OK-2", "SUMMARY-OK-6", "HALF-OK-1",
         "OPEN-OK-3", "MASKOK-OK-4", "FILL-OK-5", "DIM-OK-8", "GREY-OK-10", "SMALL-OK-11",
         "You have 3 new messages.")
 
-RUNNER = r"""
+RUNNER = PROBE_DRIVER_JS + r"""
 const { chromium } = require("playwright");
 const { readFileSync } = require("node:fs");
 (async () => {
-  const [, , scriptPath, pagePath, w, h] = process.argv;
-  const script = readFileSync(scriptPath, "utf8"), html = readFileSync(pagePath, "utf8");
+  const [, , scriptPath, pagePath, w, h, probePath] = process.argv;
+  const script = readFileSync(scriptPath, "utf8"), html = readFileSync(pagePath, "utf8"), probeSrc = readFileSync(probePath, "utf8");
   const browser = await chromium.launch();
   const page = await browser.newPage({ deviceScaleFactor: 1, viewport: { width: +w, height: +h } });
   const out = {};
   const run = async (name, act) => {
     await page.setContent(html);
     await act();
-    const snap = await page.evaluate(script);                     // the DOM snapshot, then the screenshot (as URI)
-    out[name] = { snap, shot: (await page.screenshot()).toString("base64"), html: await page.content() };
+    const snap = await page.evaluate(script);                     // the DOM snapshot, then the probe (as URI)
+    const shot = (await page.screenshot()).toString("base64"), probe = await probeTab(page, snap, probeSrc);
+    out[name] = { snap, shot, probe, html: await page.content() };
   };
   await run("no_selection", async () => {});
   await run("ctrl_a", async () => { await page.mouse.click(990, 1490); await page.keyboard.press("Control+A"); });
@@ -147,7 +150,7 @@ def _runs(tmp_path):
     runner.write_text(RUNNER)
     env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
     p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page),
-                        str(VW), str(VH)], capture_output=True, text=True, env=env, timeout=180)
+                        str(VW), str(VH), str(ROOT / "uri_assist/browser_extension/probe.js")], capture_output=True, text=True, env=env, timeout=180)
     assert p.returncode == 0, p.stderr[-500:]
     return json.loads(p.stdout)
 
@@ -157,9 +160,9 @@ def runs(tmp_path_factory):
     return _runs(tmp_path_factory.mktemp("d10"))
 
 
-def _ask(snap, png_bytes):
+def _ask(snap, probe):
     client = FakeClient(text="You have three new messages.")
-    br, ad = mk(snap=snap, png_bytes=png_bytes, client=client)
+    br, ad = mk(snap=snap, probe=probe, client=client)
     grant(br, perms=("observe",))
     out = ask_and_wait(br, "What does this page say?")
     assert out["status"] == "COMPLETE"
@@ -170,8 +173,8 @@ def _ask(snap, png_bytes):
 def test_d10_real_chromium_hidden_payloads_never_reach_the_brain(runs, name):
     run = runs[name]
     snap = run["snap"]
-    body, user, observation = _ask(snap, base64.b64decode(run["shot"]))
-    for v in PAYLOADS:
+    body, user, observation = _ask(snap, decode_probe(run["probe"]))
+    for v in PAYLOADS + NOT_VERIFIABLE:
         assert v not in body, (name, v)
     for v in KEPT:                                     # visible text still reaches the Brain
         assert v in body, (name, v)
@@ -191,8 +194,8 @@ def test_d10_real_chromium_hidden_payloads_never_reach_the_brain(runs, name):
     red = observation["redactions"]
     assert red.get("no_ink", 0) >= 9 and red.get("offscreen_or_unverified", 0) >= 1, red
     assert run["html"] == runs["no_selection"]["html"]  # the snapshot changed nothing on the page
-    # The verification screenshot itself is never part of a structured request.
-    assert "image_url" not in body and run["shot"][:200] not in body
+    # The verification screenshots themselves are never part of a structured request.
+    assert "image_url" not in body and run["probe"]["base"][100:300] not in body
 
 
 def test_d10_real_chromium_without_screenshot_sends_no_page_text(runs):
@@ -207,52 +210,43 @@ def test_d10_real_chromium_without_screenshot_sends_no_page_text(runs):
 
 # ---- fail closed in the bridge ----------------------------------------------------------------------------------------
 
-def _drawn(text, y=10, w=600):
-    return {"t": text, "r": [[10, y, w, 18]], "c": 1, "g": 0}
-
-
-def _ink_png(rects, size=(VW, 900), text_rects=True, scale=1):
-    """A white screenshot with real glyphs (Pillow's default font) drawn in each rectangle."""
-    from PIL import Image, ImageDraw
-    img = Image.new("RGB", (size[0] * scale, size[1] * scale), (255, 255, 255))
-    d = ImageDraw.Draw(img)
-    for x, y, w, h in rects:
-        if text_rects:
-            for k in range(0, int(w * scale), 40):
-                d.text((x * scale + k, y * scale + 2), "Wmh", fill=(0, 0, 0))
-                if scale > 1:
-                    d.text((x * scale + k, y * scale + 2 + 10), "Wmh", fill=(0, 0, 0))
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
+def _unit(i, y, k=20, w=600):
+    return {"n": i, "a": 0, "b": k, "r": [[10, y, w, 18]], "c": 1, "k": k, "l": k + 1}
 
 
 def _pieced_snapshot(**over):
+    units = [_unit(0, 10, 24), _unit(1, 40, 9), _unit(2, 70, 10)]
     snap = dom_snapshot(text="Pay now LEGACY-TEXT", selection="LEGACY-SEL", selection_source="page_text",
-                        headings=["LEGACY-HEAD"], viewport={"w": VW, "h": 900}, device_pixel_ratio=1,
-                        pieces={"text": [_drawn("Fee payment due DRAWN-TEXT", 10)],
-                                "selection": [_drawn("DRAWN-SEL", 40)], "headings": [[_drawn("DRAWN-HEAD", 70)]]})
+                        headings=["LEGACY-HEAD"], viewport={"w": VW, "h": 900}, device_pixel_ratio=1, units=units,
+                        pieces={"text": [{"t": "Fee payment due DRAWN-TEXT", "u": [0], "g": 0}],
+                                "selection": [{"t": "DRAWN-SEL", "u": [1], "g": 0}],
+                                "headings": [[{"t": "DRAWN-HEAD", "u": [2], "g": 0}]]})
     snap.update(over)
     return snap
 
 
 class _NoShot(FakeAdapter):
-    def __init__(self, snap, png=None, raises=False):
-        super().__init__("browser_tab", snap, targets=[{"target_id": "t", "label": "Fee payment"}], png=png)
+    def __init__(self, snap, probe=None, raises=False):
+        super().__init__("browser_tab", snap, targets=[{"target_id": "t", "label": "Fee payment"}], probe=probe)
         self.raises, self.shots = raises, 0
 
     def screenshot(self, target_id):
         self.shots += 1
+        return None
+
+    def probe(self, target_id):
+        self.shots += 1
         if self.raises:
             raise RuntimeError("capture failed")
-        return self.png
+        return self._probe
 
 
-@pytest.mark.parametrize("png_bytes,raises", [(None, False), (b"", False), (b"not a png", False), (None, True)])
-def test_d10_bridge_without_a_usable_screenshot_sends_no_page_text(png_bytes, raises):
+@pytest.mark.parametrize("probe,raises", [(None, False), (b"", False), ({"schema": "uri.assist.probe.v1"}, False),
+                                          ("not a probe", False), (None, True)])
+def test_d10_bridge_without_a_usable_screenshot_sends_no_page_text(probe, raises):
     from uri_assist import bridge as B
     client = FakeClient()
-    ad = _NoShot(_pieced_snapshot(), png=png_bytes, raises=raises)
+    ad = _NoShot(_pieced_snapshot(), probe=probe, raises=raises)
     br = B.AssistCommands(adapters={AC.ScopeKind.BROWSER_TAB: ad}, brain_client=client)
     grant(br, perms=("observe",))
     out = ask_and_wait(br, "What does it say?")
@@ -266,8 +260,8 @@ def test_d10_bridge_without_a_usable_screenshot_sends_no_page_text(png_bytes, ra
 
 def test_d10_bridge_with_screenshot_sends_only_drawn_pieces_never_the_legacy_strings():
     client = FakeClient()
-    png_bytes = _ink_png([[10, 10, 600, 18], [10, 40, 600, 18], [10, 70, 600, 18]])
-    br, _ = mk(snap=_pieced_snapshot(), png_bytes=png_bytes, client=client)
+    snap = _pieced_snapshot()
+    br, _ = mk(snap=snap, probe=drawn_probe(snap), client=client)
     grant(br, perms=("observe",))
     ask_and_wait(br, "q")
     user = client.bodies[0]["messages"][1]["content"]
@@ -280,7 +274,8 @@ def test_d10_bridge_with_screenshot_sends_only_drawn_pieces_never_the_legacy_str
 
 def test_d10_live_check_takes_no_screenshot():
     from uri_assist import bridge as B
-    ad = _NoShot(_pieced_snapshot(), png=_ink_png([[10, 10, 600, 18]]))
+    snap = _pieced_snapshot()
+    ad = _NoShot(snap, probe=drawn_probe(snap))
     br = B.AssistCommands(adapters={AC.ScopeKind.BROWSER_TAB: ad})
     grant(br)
     out = br.handle("assist_check", {"command": "assist_check"})
@@ -291,82 +286,98 @@ def test_d10_withheld_selection_vetting_still_sees_undrawn_pieces():
     # A selection piece that contains a withheld field value refuses the whole selection even if that piece is not drawn.
     fields = [{"id": "cvv", "type": "text", "name": "cvv", "autocomplete": "cc-csc", "label": "Security code (CVV)",
                "value": "417", "rect": {"x": 1, "y": 1, "w": 2, "h": 2}}]
-    snap = _pieced_snapshot(fields=fields, pieces={"selection": [_drawn("DRAWN-SEL", 40), _drawn("code 417", 800)]})
-    obs = PE.normalise(snap, stamp(), screenshot=_ink_png([[10, 40, 600, 18]]))
+    snap = _pieced_snapshot(fields=fields, units=[_unit(0, 40, 9), _unit(1, 800, 7)],
+                            pieces={"selection": [{"t": "DRAWN-SEL", "u": [0], "g": 0},
+                                                  {"t": "code 417", "u": [1], "g": 0}]})
+    obs = PE.normalise(snap, stamp(), probe=drawn_probe(snap, hidden={1}))
     assert obs.selection == "" and obs.selection_withheld is True
 
 
-# ---- the pixel check on synthetic screenshots --------------------------------------------------------------------------
+# ---- the render check on synthetic probes ------------------------------------------------------------------------------
 
-def _screen(png_bytes, w=VW, h=900, dpr=1):
-    return OS.load(png_bytes, {"w": w, "h": h}, dpr)
+def _snap(units, w=VW, h=900, dpr=1):
+    return {"units": units, "viewport": {"w": w, "h": h}, "device_pixel_ratio": dpr}
+
+
+def _pieces(units):
+    return [{"t": "x" * u["k"], "u": [i], "g": i} for i, u in enumerate(units)]
 
 
 def test_onscreen_inked_rect_kept_blank_rect_dropped():
-    sc = _screen(_ink_png([[10, 10, 600, 18]]))
+    units = [_unit(0, 10), _unit(1, 100)]
+    snap = _snap(units)
     c = Counter()
-    kept = OS.keep([_drawn("drawn words here", 10), _drawn("blank words here", 100)], sc, c, 10)
-    assert [p["t"] for p in kept] == ["drawn words here"] and c == {"no_ink": 1}
+    kept = OS.keep(_pieces(units), OS.load(drawn_probe(snap, hidden={1}), snap), c, 10)
+    assert [p["g"] for p in kept] == [0] and c == {"no_ink": 1}
 
 
 def test_onscreen_off_viewport_and_partly_off_viewport_dropped():
-    sc = _screen(_ink_png([[10, 10, 600, 18], [10, 880, 600, 18]]))
+    units = [_unit(0, 950), _unit(1, 890), {**_unit(2, 10), "r": [[-400, 10, 300, 18]]}, {**_unit(3, 200), "r": []},
+             {**_unit(4, 300), "c": 9}, {**_unit(5, 400), "r": [[10, "x", 1, 1]]}, _unit(6, 500)]
+    snap = _snap(units)
+    pieces = _pieces(units) + [{"t": "no units", "u": [], "g": 7}, {"t": "bad unit", "u": [99], "g": 8}]
     c = Counter()
-    pieces = [{"t": "below", "r": [[10, 950, 300, 18]], "c": 1, "g": 0},
-              {"t": "straddles", "r": [[10, 890, 300, 18]], "c": 1, "g": 1},
-              {"t": "left of it", "r": [[-400, 10, 300, 18]], "c": 1, "g": 2},
-              {"t": "no rects", "r": [], "c": 0, "g": 3},
-              {"t": "truncated", "r": [[10, 10, 600, 18]], "c": 9, "g": 4},
-              {"t": "bad rect", "r": [[10, "x", 1, 1]], "c": 1, "g": 5},
-              {"t": "inside", "r": [[10, 10, 600, 18]], "c": 1, "g": 6}]
-    assert [p["t"] for p in OS.keep(pieces, sc, c, 20)] == ["inside"]
-    assert c == {"offscreen_or_unverified": 6}
+    assert [p["g"] for p in OS.keep(pieces, OS.load(drawn_probe(snap), snap), c, 20)] == [6]
+    assert c == {"offscreen_or_unverified": 8}
 
 
 def test_onscreen_missing_or_wrong_screenshot_keeps_nothing():
-    pieces = [_drawn("drawn words here", 10)]
-    good = _ink_png([[10, 10, 600, 18]])
-    for sc in (None, _screen(None), _screen(b""), _screen(b"\x89PNG broken"), _screen(good, w=800),
-               _screen(good, dpr=2), _screen(good, w=0), _screen(good, dpr=True)):
+    units = [_unit(0, 10)]
+    snap = _snap(units)
+    good = drawn_probe(snap)
+    small = drawn_probe(_snap(units, w=800))
+    for probe in (None, {}, b"png", {**good, "schema": "other"}, {**good, "viewport": {"w": 800, "h": 900}},
+                  {**good, "device_pixel_ratio": 2}, {**good, "base": small["base"]}, {**good, "base2": None},
+                  {**good, "groups": [{**good["groups"][0], "tint2": b"\x89PNG broken"}]},
+                  {**good, "units": []}, {**good, "palette": good["palette"][:1]}):
         c = Counter()
-        assert OS.keep(pieces, sc, c, 10) == [] and c == {"offscreen_or_unverified": 1}
-    obs = PE.normalise(_pieced_snapshot(), stamp(), screenshot=None)
+        assert OS.keep(_pieces(units), OS.load(probe, snap), c, 10) == [] and c == {"offscreen_or_unverified": 1}
+    assert OS.load(good, {**snap, "viewport": {"w": 0, "h": 900}}) is None
+    obs = PE.normalise(_pieced_snapshot(), stamp(), probe=None)
     assert obs.text == "" and obs.selection == "" and obs.headings == []
     assert obs.redactions["pixel_check_unavailable"] == 1
 
 
 def test_onscreen_few_glyphs_cannot_carry_a_long_piece():
-    sc = _screen(_ink_png([[10, 10, 40, 18]]))         # one short word drawn at the start of a long rectangle
+    units = [_unit(0, 10, k=33, w=300), _unit(1, 60, k=3, w=40)]
+    snap = _snap(units)
+    probe = drawn_probe({**snap, "units": [{**units[0], "r": [[10, 10, 40, 18]]}, units[1]]})
+    probe["units"] = [{"r": u["r"], "c": 1, "l": u["l"]} for u in units]   # only the first 40 px of unit 0 drew
     c = Counter()
-    assert OS.keep([{"t": "Hi " + "x" * 30, "r": [[10, 10, 40, 18]], "c": 1, "g": 0}], sc, c, 1) == [] \
-        and c == {"no_ink": 1}
-    assert OS.keep([{"t": "Wmh", "r": [[10, 10, 40, 18]], "c": 1, "g": 0}], sc, Counter(), 1)
+    assert [p["g"] for p in OS.keep(_pieces(units), OS.load(probe, snap), c, 5)] == [1] and c == {"no_ink": 1}
 
 
 def test_onscreen_flat_band_and_gradient_are_not_ink():
+    # Ink that stays the same in every shot (a selection band, a gradient, decoy text) is not the unit's own glyphs.
     from PIL import Image, ImageDraw
-    img = Image.new("RGB", (VW, 900), (255, 255, 255))
-    d = ImageDraw.Draw(img)
-    d.rectangle([10, 12, 609, 25], fill=(51, 103, 214))          # a selection band that misses the rect's edges
-    for x in range(1000):                                         # a smooth gradient
-        d.line([(x, 100), (x, 118)], fill=(x // 4, x // 4, x // 4))
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    sc = _screen(buf.getvalue())
+    units = [_unit(0, 10), _unit(1, 100, w=900)]
+    snap = _snap(units)
+    probe = drawn_probe(snap, hidden={0, 1})
+
+    def paint(png):
+        img = Image.open(io.BytesIO(png)).convert("RGB")
+        d = ImageDraw.Draw(img)
+        d.rectangle([10, 12, 609, 25], fill=(51, 103, 214))
+        for x in range(1000):
+            d.line([(x, 100), (x, 118)], fill=(x // 4, x // 4, x // 4))
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        return buf.getvalue()
+    probe = {**probe, "base": paint(probe["base"]), "base2": paint(probe["base2"]),
+             "groups": [{**g, **{k: paint(g[k]) for k in ("clear", "tint", "tint2")}} for g in probe["groups"]]}
     c = Counter()
-    assert OS.keep([_drawn("band text here", 10), _drawn("gradient text here", 100, 900)], sc, c, 5) == []
-    assert c == {"no_ink": 2}
+    assert OS.keep(_pieces(units), OS.load(probe, snap), c, 5) == [] and c == {"no_ink": 2}
 
 
 def test_onscreen_device_pixel_ratio_scales_rects():
-    png2 = _ink_png([[10, 10, 600, 18]], scale=2)
-    sc = _screen(png2, dpr=2)
-    assert OS.keep([_drawn("drawn words here", 10)], sc, Counter(), 1)
-    assert not OS.keep([_drawn("blank words here", 300)], sc, Counter(), 1)
+    units = [_unit(0, 10), _unit(1, 300)]
+    snap = _snap(units, dpr=2)
+    c = Counter()
+    kept = OS.keep(_pieces(units), OS.load(drawn_probe(snap, hidden={1}), snap), c, 5)
+    assert [p["g"] for p in kept] == [0] and c == {"no_ink": 1}
 
 
 def test_onscreen_join_groups():
-    pieces = [{"t": "Hello ", "g": 0, "r": [], "c": 0}, {"t": "world", "g": 0, "r": [], "c": 0},
-              {"t": "Next", "g": 1, "r": [], "c": 0}]
+    pieces = [{"t": "Hello ", "g": 0, "u": []}, {"t": "world", "g": 0, "u": []}, {"t": "Next", "g": 1, "u": []}]
     assert OS.join(pieces, "\n") == "Hello world\nNext" and OS.join(pieces, "") == "Hello worldNext"
     assert OS.join(pieces, " ") == "Hello world Next"

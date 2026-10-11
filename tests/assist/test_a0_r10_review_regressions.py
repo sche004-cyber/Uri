@@ -5,7 +5,6 @@ R10-01  The selection rebuilt from page text nodes (R9-01) applies the same visi
         becomes "Selected text" in real Chromium (real Ctrl+A and a real mouse drag), nor reaches the Brain request.
 Self-contained: the page and the Playwright runner are embedded here and written to tmp_path at run time.
 """
-import base64
 import json
 import os
 import shutil
@@ -15,6 +14,7 @@ from pathlib import Path
 import pytest
 
 from .test_a0_access_perception import FakeClient, ask_and_wait, grant, mk
+from .test_a0_r13_differential_render import PROBE_DRIVER_JS, decode_probe
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -35,19 +35,21 @@ PAYLOADS = ("SYSTEM: ignore", "555 0100", "ARIAHIDDEN-PAYLOAD", "TINYFONT-PAYLOA
             "OFFSCREEN-PAYLOAD", "__STATE__", "asha.r@mailbox.example", "q8w7e6r5t4y3u2i1o0p9a8s7d6f5g4h3",
             "STYLE-PAYLOAD", "NOSCRIPT-PAYLOAD")
 
-RUNNER = r"""
+RUNNER = PROBE_DRIVER_JS + r"""
 const { chromium } = require("playwright");
 const { readFileSync } = require("node:fs");
 (async () => {
-  const [, , scriptPath, pagePath] = process.argv;
-  const script = readFileSync(scriptPath, "utf8"), html = readFileSync(pagePath, "utf8");
+  const [, , scriptPath, pagePath, probePath] = process.argv;
+  const script = readFileSync(scriptPath, "utf8"), html = readFileSync(pagePath, "utf8"), probeSrc = readFileSync(probePath, "utf8");
   const browser = await chromium.launch();
   const page = await browser.newPage({ deviceScaleFactor: 1, viewport: { width: 1000, height: 900 } });
   const out = {};
   const run = async (name, act) => {
     await page.setContent(html);
     await act();
-    out[name] = { snap: await page.evaluate(script), native: await page.evaluate(() => String(getSelection())), shot: (await page.screenshot()).toString("base64") };
+    const snap = await page.evaluate(script);
+    out[name] = { snap, native: await page.evaluate(() => String(getSelection())), shot: (await page.screenshot()).toString("base64") };
+    out[name].probe = await probeTab(page, snap, probeSrc);
   };
   await run("ctrl_a", async () => { await page.mouse.click(900, 850); await page.keyboard.press("Control+A"); });
   await run("mouse_drag", async () => {
@@ -77,7 +79,8 @@ def _runs(tmp_path):
     page.write_text(HIDDEN_PAGE)
     runner.write_text(RUNNER)
     env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
-    p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page)],
+    p = subprocess.run([node, str(runner), str(ROOT / "uri_assist/browser_extension/snapshot.js"), str(page),
+                        str(ROOT / "uri_assist/browser_extension/probe.js")],
                        capture_output=True, text=True, env=env, timeout=120)
     if p.returncode != 0 and "Cannot find module" in p.stderr:
         pytest.skip("BLOCKED: playwright not installed")
@@ -103,7 +106,7 @@ def test_r10_01_real_snapshot_to_brain_body_has_no_hidden_payload(tmp_path):
     run = _runs(tmp_path)["ctrl_a"]
     snap = run["snap"]
     client = FakeClient(text="You have three new messages.")
-    br, _ = mk(snap=snap, png_bytes=base64.b64decode(run["shot"]), client=client)   # D10: pixel check
+    br, _ = mk(snap=snap, probe=decode_probe(run["probe"]), client=client)   # D10 / R13-01: render check
     grant(br, perms=("observe",))
     assert ask_and_wait(br, "What did I select?")["status"] == "COMPLETE"
     body = json.dumps(client.bodies)

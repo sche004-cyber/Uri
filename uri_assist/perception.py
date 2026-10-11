@@ -12,11 +12,13 @@ Snapshot schemas an adapter must produce (all content UNTRUSTED):
                       is_password, required?, readonly?, rect?}]}
                       produced by a Windows UI Automation adapter (NOT IMPLEMENTED in this build; see adapters).
 
-  Page text, selection and headings (owner decision D10, pixel check): the strings `text`, `selection` and
-  `headings` are NOT used. Only `pieces` {text: [piece], selection: [piece], headings: [[piece]]} are, where a piece
-  is {t: text, r: [[x, y, w, h] viewport CSS px], c: rect count, g: group}, together with `viewport` {w, h} and
-  `device_pixel_ratio`. A piece is kept only if `onscreen.py` finds it drawn in a screenshot of the same viewport
-  taken at observation time under the same grant; without a usable screenshot no page text is kept (fail closed).
+  Page text, selection and headings (owner decision D10; R13-01 render check): the strings `text`, `selection`
+  and `headings` are NOT used. Only `pieces` {text: [piece], selection: [piece], headings: [[piece]]} are, where a
+  piece is {t: text, u: [unit index], g: group}, with `units` [{n, a, b, r: [[x, y, w, h] viewport CSS px],
+  c: rect count, k: non-space characters, h: text hash}], `viewport` {w, h} and `device_pixel_ratio`. A piece is
+  kept only if `onscreen.py` finds every one of its units drawn, in its own colour and in its own box, by the
+  adapter's differential render (`probe`, uri.assist.probe.v1, browser_extension/probe.js) taken at observation
+  time under the same grant; without a usable probe no page text is kept (fail closed).
 
 `normalise()` validates the schema, bounds every size, applies `redact` and returns an Observation stamped by the
 access controller. A selection is accepted only when the adapter marks it `selection_source: "page_text"` (built from
@@ -94,13 +96,14 @@ def _rect(r):
     return None
 
 
-def normalise(snapshot: dict, stamp: Stamp, screenshot: Optional[bytes] = None) -> Observation:
-    """`screenshot`: PNG of the viewport taken at observation time (D10). None -> no page text is kept."""
+def normalise(snapshot: dict, stamp: Stamp, probe: Optional[dict] = None) -> Observation:
+    """`probe`: the adapter's differential render of this snapshot, taken at observation time (D10, R13-01).
+    None -> no page text is kept."""
     if not isinstance(snapshot, dict) or snapshot.get("schema") not in (DOM, UIA):
         raise PerceptionRefused("SNAPSHOT_SCHEMA")
     counts = Counter()
     pieces = snapshot.get("pieces") if isinstance(snapshot.get("pieces"), dict) else {}
-    screen = OS.load(screenshot, snapshot.get("viewport"), snapshot.get("device_pixel_ratio"))
+    screen = OS.load(probe, snapshot)
     if screen is None and (pieces or snapshot.get("text")):
         counts["pixel_check_unavailable"] += 1
     withheld_values = []            # raw values this layer withheld (never kept; used only to vet the selection)
@@ -211,6 +214,9 @@ class Adapter(Protocol):
 
     def screenshot(self, target_id: str) -> Optional[bytes]: ...   # PNG bytes or None
 
+    # Optional (D10, R13-01): the differential render (uri.assist.probe.v1) of the snapshot just captured, or None.
+    def probe(self, target_id: str) -> Optional[dict]: ...
+
 
 class UnavailableAdapter:
     """An honest placeholder: reports why it cannot run and refuses every call."""
@@ -228,6 +234,9 @@ class UnavailableAdapter:
         raise PerceptionRefused("ADAPTER_UNAVAILABLE")
 
     def screenshot(self, target_id):
+        raise PerceptionRefused("ADAPTER_UNAVAILABLE")
+
+    def probe(self, target_id):
         raise PerceptionRefused("ADAPTER_UNAVAILABLE")
 
 
@@ -270,8 +279,9 @@ class Perceiver:
         return out
 
     def observe(self, pixel_check: bool = False) -> Observation:
-        """`pixel_check` (an ask the user started, D10): also take an in-memory screenshot of the target under the
-        same grant, used only to decide which page text is drawn on screen. Without one no page text is kept."""
+        """`pixel_check` (an ask the user started, D10): also have the adapter render-probe the target under the
+        same grant (in-memory screenshots, R13-01), used only to decide which page text is drawn on screen. Without
+        a usable probe no page text is kept."""
         grant = self.access.require(Permission.OBSERVE)
         adapter = self.adapter_for(grant.scope.kind)
         if adapter is None:
@@ -284,14 +294,14 @@ class Perceiver:
             raise PerceptionRefused("TARGET_UNBOUND")
         if snap.get("target_id") != grant.scope.target_id:
             raise PerceptionRefused("TARGET_CHANGED")
-        png, shot_stamp = None, None
+        probe, shot_stamp = None, None
         if pixel_check:
             shot_stamp = self.access.stamp("screenshot")
             try:
-                png = adapter.screenshot(grant.scope.target_id)
+                probe = adapter.probe(grant.scope.target_id) if callable(getattr(adapter, "probe", None)) else None
             except Exception:
-                png = None                                       # no screenshot -> no page text (fail closed)
-        obs = normalise(snap, stamp, screenshot=png)
+                probe = None                                     # no probe -> no page text (fail closed)
+        obs = normalise(snap, stamp, probe=probe)
         self.access.check_fresh(stamp, Permission.OBSERVE)     # revoked/paused during the capture -> discarded
         if shot_stamp is not None:
             self.access.check_fresh(shot_stamp, Permission.OBSERVE)

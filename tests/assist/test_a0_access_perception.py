@@ -157,27 +157,25 @@ def stamp():
     return AC.Stamp("g", 1, "t", "dom", 0.0)
 
 
-def striped_png(w=1000, h=900):
-    """A viewport screenshot with ink everywhere (alternating columns): every on-screen piece passes the D10 check."""
-    from PIL import Image, ImageDraw
-    img = Image.new("RGB", (w, h), (255, 255, 255))
-    d = ImageDraw.Draw(img)
-    for x in range(0, w, 2):
-        d.line([(x, 0), (x, h)], fill=(0, 0, 0))
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
-
-
 def on_screen(snap):
-    """D10: the snapshot's text, selection and headings as pieces with on-screen rectangles (one line each), for use
-    with striped_png()."""
-    line = iter(range(10, 900, 20))
-    piece = lambda t, g=0: {"t": t, "r": [[10, next(line), 900, 18]], "c": 1, "g": g}
-    return {**snap, "viewport": {"w": 1000, "h": 900}, "device_pixel_ratio": 1,
-            "pieces": {"text": [piece(t, i) for i, t in enumerate(snap.get("text", "").split("\n")) if t],
-                       "selection": [piece(snap["selection"])] if snap.get("selection") else [],
-                       "headings": [[piece(h)] for h in snap.get("headings", [])]}}
+    """D10 / R13-01: the snapshot's text, selection and headings as pieces, each built from one text unit with an
+    on-screen rectangle (one line each), for use with drawn_probe()."""
+    line, units = iter(range(10, 900, 20)), []
+
+    def piece(t, g=0):
+        units.append({"n": len(units), "a": 0, "b": len(t), "r": [[10, next(line), 900, 18]], "c": 1,
+                      "k": sum(1 for ch in t if not ch.isspace()), "l": len(t)})
+        return {"t": t, "u": [len(units) - 1], "g": g}
+    pieces = {"text": [piece(t, i) for i, t in enumerate(snap.get("text", "").split("\n")) if t],
+              "selection": [piece(snap["selection"])] if snap.get("selection") else [],
+              "headings": [[piece(h)] for h in snap.get("headings", [])]}
+    return {**snap, "viewport": {"w": 1000, "h": 900}, "device_pixel_ratio": 1, "pieces": pieces, "units": units}
+
+
+def drawn_probe(snap, hidden=()):
+    """R13-01: a render probe in which every text unit of `snap` (except those in `hidden`) draws its own glyphs."""
+    from .test_a0_r13_differential_render import drawn_probe as probe
+    return probe(snap, hidden)
 
 
 def test_normalise_redacts_twice_and_bounds():
@@ -195,9 +193,10 @@ def test_normalise_redacts_twice_and_bounds():
     big = PE.normalise(dom_snapshot(text="x" * 100_000, fields=[{"name": f"f{i}"} for i in range(500)]), stamp())
     assert big.text == "" and len(big.fields) == PE.MAX_FIELDS      # D10: no screenshot -> no page text
     # D10: pixel-checked text is bounded the same way.
-    rows = [{"t": "x" * 1000, "r": [[0, i, 1000, 1]], "c": 1, "g": i} for i in range(50)]
-    big = PE.normalise(dom_snapshot(pieces={"text": rows}, viewport={"w": 1000, "h": 900}, device_pixel_ratio=1),
-                       stamp(), screenshot=striped_png())
+    units = [{"n": i, "a": 0, "b": 1000, "r": [[0, 18 * i, 1000, 17]], "c": 1, "k": 1000, "l": 1000} for i in range(50)]
+    rows = [{"t": "x" * 1000, "u": [i], "g": i} for i in range(50)]
+    snap = dom_snapshot(pieces={"text": rows}, units=units, viewport={"w": 1000, "h": 900}, device_pixel_ratio=1)
+    big = PE.normalise(snap, stamp(), probe=drawn_probe(snap))
     assert len(big.text) == PE.MAX_TEXT
     with pytest.raises(PE.PerceptionRefused):
         PE.normalise({"schema": "other"}, stamp())
@@ -215,8 +214,8 @@ def test_uia_snapshot_password_element():
 
 
 class FakeAdapter:
-    def __init__(self, kind, snap, targets=None, png=None):
-        self.kind, self.name, self.snap, self.png = AC.ScopeKind(kind), "fake", snap, png
+    def __init__(self, kind, snap, targets=None, png=None, probe=None):
+        self.kind, self.name, self.snap, self.png, self._probe = AC.ScopeKind(kind), "fake", snap, png, probe
         self._targets = targets or [{"target_id": "t", "label": "Fee payment"}]
         self.captures = 0
 
@@ -233,6 +232,9 @@ class FakeAdapter:
 
     def screenshot(self, target_id):
         return self.png
+
+    def probe(self, target_id):
+        return self._probe
 
 
 def test_default_adapters_are_honestly_unavailable():
@@ -383,9 +385,10 @@ def test_vision_request_shape_debounce_and_interpretation_only():
 
 # ---- bridge ----------------------------------------------------------------------------------------------------------
 
-def mk(snap=None, png_bytes=None, client=None, idle=True, qualified=False):
+def mk(snap=None, png_bytes=None, client=None, idle=True, qualified=False, probe=None):
     ad = FakeAdapter("browser_tab", snap or dom_snapshot(), targets=[{"target_id": "t", "label": "Fee payment",
-                                                                       "origin": "https://portal.example"}], png=png_bytes)
+                                                                       "origin": "https://portal.example"}], png=png_bytes,
+                     probe=probe)
     return B.AssistCommands(adapters={AC.ScopeKind.BROWSER_TAB: ad}, brain_client=client, brain_idle=lambda: idle,
                             vision_qualified=qualified), ad
 
@@ -444,7 +447,7 @@ def ask_and_wait(br, q, screenshot=False):
 
 def test_bridge_ask_structured_keeps_content_in_untrusted_block_and_is_local_only():
     client = FakeClient(text="This page asks for the fee payment.")
-    br, _ = mk(snap=INJECTED, png_bytes=striped_png(), client=client)     # D10: the text is drawn on screen
+    br, _ = mk(snap=INJECTED, probe=drawn_probe(INJECTED), client=client)  # D10: the text is drawn on screen
     grant(br, perms=("observe",))
     out = ask_and_wait(br, "What is this page?")
     assert out["method"] == "structured" and out["answer"] and out["status"] == "COMPLETE"

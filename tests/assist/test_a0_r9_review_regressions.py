@@ -18,8 +18,8 @@ from uri_assist import bridge as B
 from uri_assist import checks as CK
 from uri_assist import perception as PE
 
-from .test_a0_access_perception import (FakeClient, ask_and_wait, dom_snapshot, grant, mk, on_screen, png, stamp,
-                                       striped_png)
+from .test_a0_access_perception import (FakeClient, ask_and_wait, dom_snapshot, drawn_probe, grant, mk, on_screen, png,
+                                       stamp)
 from .test_a0_r1_review_regressions import FIX, ROOT, _chromium
 
 FIELD_VALUES = ("482913", "417", "ashaR", "mailbox", "12 Lake Road", "Gatecode7781")
@@ -90,8 +90,8 @@ def test_r9_01_python_layer_refuses_a_selection_that_is_not_page_text(snap_over)
 
 def test_r9_01_page_text_selection_is_still_shared():
     # D10: shared only when drawn on screen (pieces with rectangles checked against a screenshot).
-    obs = PE.normalise(on_screen(dom_snapshot(selection="Fee payment due", selection_source="page_text")), stamp(),
-                       screenshot=striped_png())
+    snap = on_screen(dom_snapshot(selection="Fee payment due", selection_source="page_text"))
+    obs = PE.normalise(snap, stamp(), probe=drawn_probe(snap))
     assert obs.selection == "Fee payment due" and obs.selection_withheld is False
 
 

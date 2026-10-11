@@ -278,25 +278,39 @@
     }
     return false;
   };
-  // Owner decision D10 (pixel check): every text piece that leaves the page also carries its viewport client rects
-  // (CSS px, [x, y, w, h], at most MAX_RECTS per piece; `c` is how many rects the piece really has). URI keeps a
-  // piece only if an in-memory screenshot of the tab shows ink inside those rects (uri_assist/onscreen.py); a piece
-  // whose rects are truncated, off-screen or missing is dropped there. The visibility rules above stay as a cheap
-  // first filter; they are no longer the security boundary. A text node is cut into segments of at most SEG
-  // characters at whitespace so a piece is roughly one line. Piece text is masked with the same rules, without
-  // counting twice; when masking a segment alone differs from masking the whole (a secret across a cut), the whole
-  // is sent as one piece.
-  const MAX_RECTS = 8, SEG = 200, MAX_TEXT_PIECES = 4000, MAX_SEL_PIECES = 1000, MAX_HEAD_PIECES = 40;
+  // Owner decision D10 / R13-01 (render check): every text piece that leaves the page names the text units it was
+  // built from (`u`). A unit is one range of one text node: {n: the node's number in document order over the whole
+  // document, a, b: offsets, r: its viewport client rects (CSS px, [x, y, w, h], at most MAX_RECTS; `c` is how many
+  // it really has), k: its non-space characters, l: the length of the whole text node (no text content leaves the
+  // page this way)}. After this script the adapter runs probe.js,
+  // which repaints exactly these ranges (transparent, then in probe colours) between screenshots; URI keeps a piece
+  // only if every one of its units drew its own glyphs, visibly, in its own box (uri_assist/onscreen.py). The
+  // visibility rules above stay as a cheap first filter; they are not the security boundary. A text node is cut into
+  // segments of at most SEG characters at whitespace so a piece is roughly one line. Piece text is masked with the
+  // same rules, without counting twice; when masking a segment alone differs from masking the whole (a secret across
+  // a cut), the whole is sent as one piece.
+  const MAX_RECTS = 8, SEG = 200, MAX_TEXT_PIECES = 4000, MAX_SEL_PIECES = 1000, MAX_HEAD_PIECES = 40, MAX_UNITS = 6000;
   const maskQuiet = (s) => { const saved = { ...counts }, out = maskText(s);
     for (const k of Object.keys(counts)) delete counts[k]; Object.assign(counts, saved); return out; };
   const squash = (s) => s.replace(/\s+/g, " ");
-  const rectsOf = (n, a, b) => {
+  let nodeIndex = null;
+  const units = [], unitIds = new Map();
+  const unitOf = (n, a, b) => {
+    if (!nodeIndex) { nodeIndex = new Map(); const w = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_TEXT);
+      for (let x = w.nextNode(), i = 0; x; x = w.nextNode(), i++) nodeIndex.set(x, i); }
+    const key = `${nodeIndex.get(n)}:${a}:${b}`;
+    if (unitIds.has(key)) return unitIds.get(key);
+    if (units.length >= MAX_UNITS) return -1;                        // not sent as a unit: the piece cannot be checked
     const rg = document.createRange(); rg.setStart(n, a); rg.setEnd(n, b);
     const all = [...rg.getClientRects()].filter((q) => q.width > 0 && q.height > 0)
       .map((q) => { const x = Math.floor(q.left), y = Math.floor(q.top);
         return [x, y, Math.ceil(q.right) - x, Math.ceil(q.bottom) - y]; });
-    return { r: all.slice(0, MAX_RECTS), c: all.length };
+    const s = n.nodeValue.slice(a, b);
+    units.push({ n: nodeIndex.get(n), a, b, r: all.slice(0, MAX_RECTS), c: all.length, k: s.replace(/\s+/g, "").length, l: n.nodeValue.length });
+    unitIds.set(key, units.length - 1);
+    return units.length - 1;
   };
+  const unitsOf = (n, a, b) => ({ u: [unitOf(n, a, b)] });
   const cuts = (s, a, b) => { const out = []; let i = a;
     while (i < b) {
       let j = Math.min(b, i + SEG);
@@ -306,21 +320,20 @@
     return out; };
   // Pieces of one text node between offsets a and b, in group g.
   const nodePieces = (n, a, b, g) => {
-    const s = n.nodeValue, segs = cuts(s, a, b).map(([i, j]) => ({ g, raw: squash(s.slice(i, j)), ...rectsOf(n, i, j) }));
+    const s = n.nodeValue, segs = cuts(s, a, b).map(([i, j]) => ({ g, raw: squash(s.slice(i, j)), ...unitsOf(n, i, j) }));
     if (segs.length > 1 && maskQuiet(squash(s.slice(a, b))) !== segs.map((p) => maskQuiet(p.raw)).join("")) {
-      return [{ g, raw: squash(s.slice(a, b)), ...rectsOf(n, a, b) }];
+      return [{ g, raw: squash(s.slice(a, b)), ...unitsOf(n, a, b) }];
     }
     return segs;
   };
   // Mask a list of pieces whose texts are joined with `sep` between groups (a secret across pieces -> one piece).
   const joinG = (xs, gs, sep) => xs.map((x, k) => (k && gs[k - 1] !== gs[k] ? sep : "") + x).join("");
   const finish = (ps, sep) => {
-    const out = ps.map((p) => ({ g: p.g, t: maskQuiet(p.raw), r: p.r, c: p.c }));
+    const out = ps.map((p) => ({ g: p.g, t: maskQuiet(p.raw), u: p.u }));
     if (ps.length > 1) {
       const gs = ps.map((p) => p.g), plain = joinG(ps.map((p) => p.raw), gs, sep);
       if (maskQuiet(plain) !== joinG(out.map((p) => p.t), gs, sep)) {
-        const r = ps.flatMap((p) => p.r);
-        return [{ g: ps[0].g, t: maskQuiet(plain), r: r.slice(0, MAX_RECTS), c: Math.max(r.length, ps.reduce((t, p) => t + p.c, 0)) }];
+        return [{ g: ps[0].g, t: maskQuiet(plain), u: ps.flatMap((p) => p.u) }];
       }
     }
     return out;
@@ -478,8 +491,8 @@
     schema: "uri.assist.dom.v1", url, title: maskText(document.title.slice(0, 500)), lang: document.documentElement.lang || "",
     selection: sel, selection_source: "page_text", selection_withheld: selected.withheld, headings, text: chunks.join("\n").slice(0, MAX_TEXT), fields, sensitive_rects: sensitiveRects,
     redactions: counts, device_pixel_ratio: dpr,
-    // D10: what URI may send as page text, selection and headings, each piece with its viewport rects.
-    pieces: { text: textPieces, selection: selected.pieces, headings: headPieces },
+    // D10 / R13-01: what URI may send as page text, selection and headings, each piece naming its text units.
+    pieces: { text: textPieces, selection: selected.pieces, headings: headPieces }, units,
     viewport: { w: innerWidth, h: innerHeight },
   };
 })();

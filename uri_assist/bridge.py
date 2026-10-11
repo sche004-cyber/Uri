@@ -200,8 +200,9 @@ class AssistCommands:
             require_loopback(getattr(self.brain_client, "base_url", ""))
         except NotLocal:
             raise Refused("BRAIN_ENDPOINT_NOT_LOOPBACK") from None
-        # D10: page text, selection and headings are sent only where an in-memory screenshot taken now, under the
-        # same OBSERVE grant, shows them drawn. That screenshot is never sent; the vision path below takes its own.
+        # D10 / R13-01: page text, selection and headings are sent only where the adapter's render probe, taken now
+        # under the same OBSERVE grant, shows their own glyphs drawn. Its screenshots are never sent; the vision path
+        # below takes its own.
         obs = self.perceiver.observe(pixel_check=True)
         if c["use_screenshot"]:
             grant = self.access.require(Permission.OBSERVE)
