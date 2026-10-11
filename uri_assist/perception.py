@@ -12,6 +12,12 @@ Snapshot schemas an adapter must produce (all content UNTRUSTED):
                       is_password, required?, readonly?, rect?}]}
                       produced by a Windows UI Automation adapter (NOT IMPLEMENTED in this build; see adapters).
 
+  Page text, selection and headings (owner decision D10, pixel check): the strings `text`, `selection` and
+  `headings` are NOT used. Only `pieces` {text: [piece], selection: [piece], headings: [[piece]]} are, where a piece
+  is {t: text, r: [[x, y, w, h] viewport CSS px], c: rect count, g: group}, together with `viewport` {w, h} and
+  `device_pixel_ratio`. A piece is kept only if `onscreen.py` finds it drawn in a screenshot of the same viewport
+  taken at observation time under the same grant; without a usable screenshot no page text is kept (fail closed).
+
 `normalise()` validates the schema, bounds every size, applies `redact` and returns an Observation stamped by the
 access controller. A selection is accepted only when the adapter marks it `selection_source: "page_text"` (built from
 the page's own text, never from inside a field; R9-01). A field the adapter withheld stays withheld, and its
@@ -27,6 +33,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional, Protocol
 
+from . import onscreen as OS
 from . import redact as RD
 from .access import AccessController, Permission, ScopeKind, Stamp
 
@@ -34,6 +41,7 @@ MAX_TEXT = 40_000
 MAX_FIELDS = 200
 MAX_HEADINGS = 60
 MAX_STR = 500
+MAX_TEXT_PIECES, MAX_SEL_PIECES, MAX_HEAD_PIECES = 4000, 1000, 40
 DOM, UIA = "uri.assist.dom.v1", "uri.assist.uia.v1"
 
 
@@ -86,10 +94,15 @@ def _rect(r):
     return None
 
 
-def normalise(snapshot: dict, stamp: Stamp) -> Observation:
+def normalise(snapshot: dict, stamp: Stamp, screenshot: Optional[bytes] = None) -> Observation:
+    """`screenshot`: PNG of the viewport taken at observation time (D10). None -> no page text is kept."""
     if not isinstance(snapshot, dict) or snapshot.get("schema") not in (DOM, UIA):
         raise PerceptionRefused("SNAPSHOT_SCHEMA")
     counts = Counter()
+    pieces = snapshot.get("pieces") if isinstance(snapshot.get("pieces"), dict) else {}
+    screen = OS.load(screenshot, snapshot.get("viewport"), snapshot.get("device_pixel_ratio"))
+    if screen is None and (pieces or snapshot.get("text")):
+        counts["pixel_check_unavailable"] += 1
     withheld_values = []            # raw values this layer withheld (never kept; used only to vet the selection)
     if snapshot["schema"] == DOM:
         raw_fields = snapshot.get("fields") or []
@@ -109,8 +122,12 @@ def normalise(snapshot: dict, stamp: Stamp) -> Observation:
             if out.get("sensitive"):
                 withheld_values.append(base["value"])
         title, location = _s(snapshot.get("title")), RD.redact_text(_s(snapshot.get("url"), 2048), counts)
-        headings = [RD.redact_text(_s(h, 300), counts) for h in (snapshot.get("headings") or [])[:MAX_HEADINGS]
-                    if isinstance(h, str)]
+        headings = []
+        raw_heads = pieces.get("headings") if isinstance(pieces.get("headings"), list) else []
+        for hp in raw_heads[:MAX_HEADINGS]:
+            h = OS.join(OS.keep(hp, screen, counts, MAX_HEAD_PIECES), " ")
+            if h:
+                headings.append(RD.redact_text(h[:300], counts))
         source = "dom"
     else:
         win = snapshot.get("window") or {}
@@ -133,15 +150,24 @@ def normalise(snapshot: dict, stamp: Stamp) -> Observation:
         source = "uia"
     # R9-01: text selected inside a field is that field's value. Only a selection the adapter built from page text is
     # accepted, and never one that contains a value withheld above; otherwise only the fact of a selection is kept.
-    raw_sel = _s(snapshot.get("selection"), 4000)
+    # The vetting looks at everything the adapter reported as selected (the legacy string and every piece, drawn or
+    # not); what is kept is only the pieces drawn on screen (D10).
+    sel_pieces = pieces.get("selection") if isinstance(pieces.get("selection"), list) else []
+    all_sel = [q for q in (OS._piece(p) for p in sel_pieces[:MAX_SEL_PIECES]) if q]
+    raw_sel = _s(snapshot.get("selection"), 4000) + " " + OS.join(all_sel, "")[:4000]
     selection_withheld = snapshot.get("selection_withheld") is True
-    if raw_sel and (snapshot.get("selection_source") != "page_text"
-                    or any(v.strip() and v.strip() in raw_sel for v in withheld_values)):
-        raw_sel, selection_withheld = "", True
+    keep_sel = True
+    if raw_sel.strip() and (snapshot.get("selection_source") != "page_text"
+                            or any(v.strip() and v.strip() in raw_sel for v in withheld_values)):
+        keep_sel, selection_withheld = False, True
     if selection_withheld:
         counts["selection_withheld"] += 1
-    selection = RD.redact_text(raw_sel, counts)
-    text = RD.redact_text(_s(snapshot.get("text"), MAX_TEXT), counts)
+    sel = OS.join(OS.keep(sel_pieces, screen, counts, MAX_SEL_PIECES), "")[:4000] if keep_sel else ""
+    selection = RD.redact_text(sel, counts)
+    text_pieces = pieces.get("text") if isinstance(pieces.get("text"), list) else []
+    if not text_pieces and isinstance(snapshot.get("text"), str) and snapshot["text"].strip():
+        counts[OS.UNVERIFIED] += 1                     # page text without rectangles cannot be checked
+    text = RD.redact_text(OS.join(OS.keep(text_pieces, screen, counts, MAX_TEXT_PIECES), "\n")[:MAX_TEXT], counts)
     title = RD.redact_text(title, counts)
     rects = [r for r in (_rect(x) for x in (snapshot.get("sensitive_rects") or [])) if r]
     rects += [f["rect"] for f in fields if f.get("sensitive") and f.get("rect")]
@@ -243,7 +269,9 @@ class Perceiver:
                             "origin": _s(t.get("origin"), 200) or None})
         return out
 
-    def observe(self) -> Observation:
+    def observe(self, pixel_check: bool = False) -> Observation:
+        """`pixel_check` (an ask the user started, D10): also take an in-memory screenshot of the target under the
+        same grant, used only to decide which page text is drawn on screen. Without one no page text is kept."""
         grant = self.access.require(Permission.OBSERVE)
         adapter = self.adapter_for(grant.scope.kind)
         if adapter is None:
@@ -256,7 +284,16 @@ class Perceiver:
             raise PerceptionRefused("TARGET_UNBOUND")
         if snap.get("target_id") != grant.scope.target_id:
             raise PerceptionRefused("TARGET_CHANGED")
-        obs = normalise(snap, stamp)
+        png, shot_stamp = None, None
+        if pixel_check:
+            shot_stamp = self.access.stamp("screenshot")
+            try:
+                png = adapter.screenshot(grant.scope.target_id)
+            except Exception:
+                png = None                                       # no screenshot -> no page text (fail closed)
+        obs = normalise(snap, stamp, screenshot=png)
         self.access.check_fresh(stamp, Permission.OBSERVE)     # revoked/paused during the capture -> discarded
+        if shot_stamp is not None:
+            self.access.check_fresh(shot_stamp, Permission.OBSERVE)
         self.last_observation_at = stamp.captured_at
         return obs

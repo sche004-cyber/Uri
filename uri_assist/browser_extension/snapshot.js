@@ -68,10 +68,8 @@
   // (ancestor overflow boxes on its containing-block chain, the legacy clip property, clip-path inset), stay inside
   // the document (text-indent / negative offsets) and, where the rect is in the viewport, not sit under an opaque
   // element painted above it (elementFromPoint at the rect centre). Paint effects are below (R12-01).
-  // Not covered (documented in docs/assist/03): low-contrast colour (white on white, filter brightness/contrast,
-  // blend modes), fonts of 2px and above, transforms that leave glyphs at least 2px tall, gradient masks that are
-  // inked somewhere but transparent over the text, occlusion of text outside the viewport, and overlays with
-  // pointer-events:none.
+  // These rules are a cheap first filter only. Since owner decision D10 the boundary is the pixel check in URI
+  // (uri_assist/onscreen.py, see the pieces below); its residual limits are documented in docs/assist/03.
   // R12-01: subtree-wide paint effects are decided in the same ancestor walk, and anything that cannot be evaluated
   // counts as hidden (fail closed): effective opacity = product of opacity and filter:opacity() over every ancestor
   // (below MIN_ALPHA is hidden; an SVG url() filter is hidden); the text fill colour (-webkit-text-fill-color, which
@@ -227,6 +225,35 @@
     for (let a = e; a && !a.contains(p); a = a.parentElement) if (opaque(a)) return true;
     return false;
   };
+  // D10: while text is selected the browser repaints it in its own highlight colours, so a screenshot cannot tell
+  // whether its own colour would have shown it. For text inside the current selection only, text painted in (almost)
+  // the colour of the nearest opaque background behind its element is hidden (white on white). A background image,
+  // a partly transparent background or an unreadable colour leaves the decision to the pixel check.
+  const MIN_CONTRAST = 24;
+  const selRanges = (() => { const s = window.getSelection ? window.getSelection() : null, out = [];
+    for (let i = 0; s && i < s.rangeCount; i++) if (!s.getRangeAt(i).collapsed) out.push(s.getRangeAt(i));
+    return out; })();
+  const rgb = (c) => { const m = /^rgba?\(([^)]*)\)$/.exec(String(c || "").trim()); if (!m) return null;
+    const v = m[1].split(/[\s,/]+/).filter(Boolean).map(num); return v.length >= 3 && v.every(Number.isFinite) ? v : null; };
+  const contrastCache = new Map();
+  const sameAsBackground = (p) => {
+    if (contrastCache.has(p)) return contrastCache.get(p);
+    let out = false; const fg = p instanceof SVGElement ? null : rgb(getComputedStyle(p).webkitTextFillColor || getComputedStyle(p).color);
+    if (fg) {
+      let bg = [255, 255, 255, 1], known = true;                    // the default canvas is white
+      for (let el = p; el; el = el.parentElement) {
+        const cs = getComputedStyle(el);
+        if (cs.backgroundImage !== "none") { known = false; break; }
+        const b = rgb(cs.backgroundColor);
+        if (!b) { known = false; break; }
+        const a = b.length > 3 ? b[3] : 1;
+        if (a > 0) { if (a < 0.99) known = false; else bg = b; break; }
+      }
+      if (known) { const a = (fg.length > 3 ? fg[3] : 1) * (opacityCache.get(p) ?? 1);
+        out = Math.max(...[0, 1, 2].map((i) => Math.abs(fg[i] * a + bg[i] * (1 - a) - bg[i]))) < MIN_CONTRAST; }
+    }
+    contrastCache.set(p, out); return out;
+  };
   const textCache = new Map();
   const textVisible = (n) => {
     const p = n.parentElement;
@@ -239,6 +266,7 @@
     if (!textCache.has(p)) { const cs = getComputedStyle(p);       // R12-01: the fill colour is what is painted
       textCache.set(p, alpha(cs.webkitTextFillColor || cs.color) * opacityCache.get(p) >= MIN_ALPHA); }
     if (!textCache.get(p)) return false;
+    if (selRanges.some((r) => r.intersectsNode(n)) && sameAsBackground(p)) return false;
     const range = document.createRange(); range.selectNodeContents(n);
     const docW = Math.max(document.documentElement.scrollWidth, innerWidth);
     for (const cr of range.getClientRects()) {
@@ -249,6 +277,53 @@
       return true;
     }
     return false;
+  };
+  // Owner decision D10 (pixel check): every text piece that leaves the page also carries its viewport client rects
+  // (CSS px, [x, y, w, h], at most MAX_RECTS per piece; `c` is how many rects the piece really has). URI keeps a
+  // piece only if an in-memory screenshot of the tab shows ink inside those rects (uri_assist/onscreen.py); a piece
+  // whose rects are truncated, off-screen or missing is dropped there. The visibility rules above stay as a cheap
+  // first filter; they are no longer the security boundary. A text node is cut into segments of at most SEG
+  // characters at whitespace so a piece is roughly one line. Piece text is masked with the same rules, without
+  // counting twice; when masking a segment alone differs from masking the whole (a secret across a cut), the whole
+  // is sent as one piece.
+  const MAX_RECTS = 8, SEG = 200, MAX_TEXT_PIECES = 4000, MAX_SEL_PIECES = 1000, MAX_HEAD_PIECES = 40;
+  const maskQuiet = (s) => { const saved = { ...counts }, out = maskText(s);
+    for (const k of Object.keys(counts)) delete counts[k]; Object.assign(counts, saved); return out; };
+  const squash = (s) => s.replace(/\s+/g, " ");
+  const rectsOf = (n, a, b) => {
+    const rg = document.createRange(); rg.setStart(n, a); rg.setEnd(n, b);
+    const all = [...rg.getClientRects()].filter((q) => q.width > 0 && q.height > 0)
+      .map((q) => { const x = Math.floor(q.left), y = Math.floor(q.top);
+        return [x, y, Math.ceil(q.right) - x, Math.ceil(q.bottom) - y]; });
+    return { r: all.slice(0, MAX_RECTS), c: all.length };
+  };
+  const cuts = (s, a, b) => { const out = []; let i = a;
+    while (i < b) {
+      let j = Math.min(b, i + SEG);
+      if (j < b) { const m = /\s+\S*$/.exec(s.slice(i, j)); if (m && m.index > 0) j = i + m.index + /^\s+/.exec(m[0])[0].length; }
+      out.push([i, j]); i = j;
+    }
+    return out; };
+  // Pieces of one text node between offsets a and b, in group g.
+  const nodePieces = (n, a, b, g) => {
+    const s = n.nodeValue, segs = cuts(s, a, b).map(([i, j]) => ({ g, raw: squash(s.slice(i, j)), ...rectsOf(n, i, j) }));
+    if (segs.length > 1 && maskQuiet(squash(s.slice(a, b))) !== segs.map((p) => maskQuiet(p.raw)).join("")) {
+      return [{ g, raw: squash(s.slice(a, b)), ...rectsOf(n, a, b) }];
+    }
+    return segs;
+  };
+  // Mask a list of pieces whose texts are joined with `sep` between groups (a secret across pieces -> one piece).
+  const joinG = (xs, gs, sep) => xs.map((x, k) => (k && gs[k - 1] !== gs[k] ? sep : "") + x).join("");
+  const finish = (ps, sep) => {
+    const out = ps.map((p) => ({ g: p.g, t: maskQuiet(p.raw), r: p.r, c: p.c }));
+    if (ps.length > 1) {
+      const gs = ps.map((p) => p.g), plain = joinG(ps.map((p) => p.raw), gs, sep);
+      if (maskQuiet(plain) !== joinG(out.map((p) => p.t), gs, sep)) {
+        const r = ps.flatMap((p) => p.r);
+        return [{ g: ps[0].g, t: maskQuiet(plain), r: r.slice(0, MAX_RECTS), c: Math.max(r.length, ps.reduce((t, p) => t + p.c, 0)) }];
+      }
+    }
+    return out;
   };
   const rectOf = (el) => {
     const r = el.getBoundingClientRect();
@@ -320,7 +395,7 @@
   }
 
   // Visible text only: hidden, aria-hidden, zero-size, transparent, off-screen, clipped and covered text is skipped.
-  const chunks = []; let total = 0;
+  const chunks = [], textPieces = []; let total = 0, textGroup = 0;
   const walker = document.createTreeWalker(document.body || document.documentElement, NodeFilter.SHOW_TEXT);
   const cache = new Map();
   for (let n = walker.nextNode(); n && total < MAX_TEXT; n = walker.nextNode()) {
@@ -330,13 +405,23 @@
     if (!p || p.closest("input,textarea,select,[contenteditable]:not([contenteditable='false'])")) continue;
     if (!textVisible(n)) { bump("hidden_text"); continue; }
     chunks.push(maskText(t)); total += t.length + 1;
+    if (textPieces.length < MAX_TEXT_PIECES) {
+      for (const q of finish(nodePieces(n, 0, n.nodeValue.length, textGroup++), "\n")) {
+        if (textPieces.length < MAX_TEXT_PIECES) textPieces.push(q);
+      }
+    }
   }
   // Headings are rebuilt from their own visible text nodes (R11-01), not from innerText.
-  const visibleTextOf = (el) => { const parts = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim() && textVisible(n)) parts.push(n.nodeValue);
+  const visibleTextOf = (el, ps) => { const parts = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim() && textVisible(n)) {
+      parts.push(n.nodeValue); ps.push(...nodePieces(n, 0, n.nodeValue.length, ps.length ? ps[ps.length - 1].g + 1 : 0));
+    }
     return parts.join(" ").replace(/\s+/g, " ").trim(); };
+  const headPieces = [];
   const headings = [...document.querySelectorAll("h1,h2,h3")].filter(visible)
-    .map((h) => maskText(visibleTextOf(h))).filter(Boolean).slice(0, MAX_HEADINGS);
+    .map((h) => { const ps = [], t = maskText(visibleTextOf(h, ps)); if (t) headPieces.push(finish(ps, " ").slice(0, MAX_HEAD_PIECES)); return t; })
+    .filter(Boolean).slice(0, MAX_HEADINGS);
+  headPieces.splice(MAX_HEADINGS);
   // R9-01: the selection is rebuilt from the page's own text nodes inside the selected ranges. Text selected inside a
   // field (an input's or textarea's value, a select, a contenteditable) is that field's value and is never copied;
   // only the fact that such a selection exists is reported (selection_withheld).
@@ -353,8 +438,8 @@
   };
   const selectionOf = () => {
     const s = window.getSelection ? window.getSelection() : null;
-    if (!s) return { text: "", withheld: false };
-    let withheld = false; const parts = [];
+    if (!s) return { text: "", withheld: false, pieces: [] };
+    let withheld = false; const parts = [], ps = [];
     for (let i = 0; i < s.rangeCount; i++) {
       const r = s.getRangeAt(i);
       if (r.collapsed) continue;
@@ -375,12 +460,13 @@
       for (const n of nodes) {
         const a = n === r.startContainer ? r.startOffset : 0, b = n === r.endContainer ? r.endOffset : n.nodeValue.length;
         parts.push(n.nodeValue.slice(a, b));
+        if (b > a && ps.length < MAX_SEL_PIECES) ps.push(...nodePieces(n, a, b, ps.length ? ps[ps.length - 1].g + 1 : 0));
       }
     }
     const text = parts.join("").replace(/\s+/g, " ").trim();
     // Anything the browser reports as selected that is not page text (a field's inner editor) is withheld.
     if (!text && String(s).trim()) withheld = true;
-    return { text, withheld };
+    return { text, withheld, pieces: text ? finish(ps.slice(0, MAX_SEL_PIECES), "") : [] };
   };
   const selected = selectionOf();
   const sel = maskText(selected.text.slice(0, 4000));
@@ -392,5 +478,8 @@
     schema: "uri.assist.dom.v1", url, title: maskText(document.title.slice(0, 500)), lang: document.documentElement.lang || "",
     selection: sel, selection_source: "page_text", selection_withheld: selected.withheld, headings, text: chunks.join("\n").slice(0, MAX_TEXT), fields, sensitive_rects: sensitiveRects,
     redactions: counts, device_pixel_ratio: dpr,
+    // D10: what URI may send as page text, selection and headings, each piece with its viewport rects.
+    pieces: { text: textPieces, selection: selected.pieces, headings: headPieces },
+    viewport: { w: innerWidth, h: innerHeight },
   };
 })();

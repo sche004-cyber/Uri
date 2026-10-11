@@ -9,6 +9,7 @@ R12-01  Paint effects that apply to a whole subtree are decided for every text n
         text is kept.
 Self-contained: the page and the Playwright runner are embedded here and written to tmp_path at run time.
 """
+import base64
 import json
 import os
 import shutil
@@ -66,7 +67,7 @@ const { readFileSync } = require("node:fs");
   const run = async (name, act) => {
     await page.setContent(html);
     await act();
-    out[name] = { snap: await page.evaluate(script) };
+    out[name] = { snap: await page.evaluate(script), shot: (await page.screenshot()).toString("base64") };
   };
   await run("ctrl_a", async () => { await page.mouse.click(990, 890); await page.keyboard.press("Control+A"); });
   await run("range_all", () => page.evaluate(() => {
@@ -109,13 +110,14 @@ def test_r12_01_paint_hidden_text_never_leaves_the_page(tmp_path):
 
 
 def test_r12_01_real_snapshot_to_brain_body_has_no_paint_hidden_payload(tmp_path):
-    snap = _runs(tmp_path)["ctrl_a"]["snap"]
+    run = _runs(tmp_path)["ctrl_a"]
+    snap = run["snap"]
     client = FakeClient(text="You have three new messages.")
-    br, _ = mk(snap=snap, client=client)
+    br, _ = mk(snap=snap, png_bytes=base64.b64decode(run["shot"]), client=client)   # D10: pixel check
     grant(br, perms=("observe",))
     assert ask_and_wait(br, "What did I select?")["status"] == "COMPLETE"
     body = json.dumps(client.bodies)
-    assert "Selected text: Welcome back" in body
+    assert "Selected text (pixel-checked): Welcome back" in body
     assert "HALF-OK-1" in body
     for v in PAYLOADS:
         assert v not in body, v

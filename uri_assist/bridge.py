@@ -58,12 +58,13 @@ def _context_block(obs) -> str:
         for f in obs.fields[:60])
     body = "\n".join(x for x in (
         ("Location: " + obs.location) if obs.location else "",
-        ("Selected text: " + obs.selection) if obs.selection else "",
+        ("Selected text (pixel-checked): " + obs.selection) if obs.selection else "",
         "The user has selected text inside a form field; it is private and not shared."
         if obs.selection_withheld and not obs.selection else "",
-        ("Headings: " + " | ".join(obs.headings[:20])) if obs.headings else "",
+        ("Headings (pixel-checked): " + " | ".join(obs.headings[:20])) if obs.headings else "",
         ("Form fields:\n" + fields) if fields else "",
-        "Visible text:\n" + obs.text[:12000]) if x)
+        ("On-screen text (pixel-checked):\n" + obs.text[:12000]) if obs.text else
+        "On-screen text: none could be pixel-checked, so no page text is shared.") if x)
     return data_block(1, obs.title, body)
 
 
@@ -199,7 +200,9 @@ class AssistCommands:
             require_loopback(getattr(self.brain_client, "base_url", ""))
         except NotLocal:
             raise Refused("BRAIN_ENDPOINT_NOT_LOOPBACK") from None
-        obs = self.perceiver.observe()
+        # D10: page text, selection and headings are sent only where an in-memory screenshot taken now, under the
+        # same OBSERVE grant, shows them drawn. That screenshot is never sent; the vision path below takes its own.
+        obs = self.perceiver.observe(pixel_check=True)
         if c["use_screenshot"]:
             grant = self.access.require(Permission.OBSERVE)
             adapter = self.perceiver.adapter_for(grant.scope.kind)
