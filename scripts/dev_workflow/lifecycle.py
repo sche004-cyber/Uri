@@ -755,7 +755,7 @@ def _test_file(test_id: str, wt: Path, cwd: str = ".") -> str:
     cands = [head] + ["/".join(parts[:i]) + ".py" for i in range(len(parts), 0, -1)]
     for base in ([cwd] if cwd not in ("", ".") else []) + ["."]:
         for c in cands:
-            p = str(Path(base) / c) if base != "." else c
+            p = (Path(base) / c).as_posix() if base != "." else c  # "/" as git writes paths, on every OS (W-1)
             if (wt / p).is_file():
                 return p
     return head
@@ -1022,7 +1022,7 @@ def regression_proof(cfg, pre_sha: str, post_sha: str, tests: list[str], log_dir
             shutil.copy2(post / t, pre / t)
         for t, r in runnable:
             cwd = r.get("cwd", ".")
-            rel = str(Path(t).relative_to(cwd)) if cwd != "." else t
+            rel = Path(t).relative_to(cwd).as_posix() if cwd != "." else t  # same "/" form on every OS (W-1)
             tmo = r.get("timeout_s", 1800)
             bc, bo, be, bs = run_cmd(_expand(r["cmd"], cfg, pre) + [rel], pre / cwd, tmo)
             ac, ao, ae, as_ = run_cmd(_expand(r["cmd"], cfg, post) + [rel], post / cwd, tmo)
@@ -1507,6 +1507,11 @@ def run(cfg, max_steps: int = 50) -> S:
                 st.block("REVIEWER_EXEC", "several different reviewer executables named "
                          f"'{exe.get('name')}' on PATH: {', '.join(exe['ambiguous'])}",
                          "owner: leave exactly the installed CLI on PATH, then `unblock --note` (re-binds it)")
+                continue
+            if exe.get("unlaunchable"):  # a launcher that cannot be bound to the program it runs (W-2): never run it
+                st.block("REVIEWER_EXEC", f"reviewer CLI '{exe.get('name')}' cannot be bound to the program it runs: "
+                         + "; ".join(exe["unlaunchable"]),
+                         "owner: install the CLI as a plain executable or a standard launcher, then `unblock --note`")
                 continue
             rec = do_review(cfg, st, sha)
             drift = control_drift(cfg, st)

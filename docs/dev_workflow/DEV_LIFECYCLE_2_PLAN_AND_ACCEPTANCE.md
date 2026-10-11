@@ -15,6 +15,21 @@ plan, separate candidate worktree, independent `claude_cli` reviewer in a fresh 
 | L2 | LOW | The older `uri-development` skill overlaps; add one line saying `uri-development-lifecycle` wins for milestones (do not delete it). |
 | L3 | LOW | `CAPABILITY_LEDGER.md` is stale (the skill is in canonical `ce1a90c`); platform status must be honest. |
 
+### Added after the first Windows gate on the owner's PC (candidate `f3706e03`, 2026-10-11)
+
+`tests/dev_workflow` on Windows 11 / Python 3.13.15: `ce1a90c` 72 failed, 114 passed, 6 skipped; `f3706e03` 17 failed,
+194 passed, 6 skipped (55 baseline failures fixed, no new failure). The 17 and the 6 skips gave:
+
+| Id | Severity | Finding |
+|---|---|---|
+| W-1 | MEDIUM | `_test_file` and the regression runner build test paths with `str(Path(...))`, so on Windows they contain `\`; callers compare them with git's `/` paths, which breaks regression proof for gates that run in a sub-folder (`test_r1r2_03_gate_test_ids_resolve_to_files`). |
+| W-2 | HIGH | On Windows `shutil.which("claude")` is npm's `claude.cmd` launcher. `reviewer_executable()` fingerprinted only the launcher (`_interpreter()` reads `#!` lines only), so a replaced `claude.exe` behind an unchanged launcher was not TAMPER (the R6-01 guarantee), and launching the `.cmd` sent every argument, including the `--settings` JSON, through cmd.exe parsing. |
+| W-3 | MEDIUM | Tests assumed POSIX (shell-script fake CLIs, `sh -c sleep`, Windows paths written unescaped into git config or into Python source, `open('.git', 'w')` on a hidden file, HOME without USERPROFILE), and 6 tests were skipped as "Linux-only" without the platform-gated report (DL2-AC10). The `.git`-redirect guard (R2-03) failed on Windows because Git for Windows marks `.git` hidden and a hidden file refuses mode `'w'`; an attacker can still rewrite it with `'r+'`, so the guard is needed and is now tested on Windows. |
+
+Checked and not a finding: Git for Windows 2.55 does not read `%PROGRAMDATA%\Git\config` (probed with a redirected
+`PROGRAMDATA`); its system config under `Program Files` needs administrator rights and is already bound by
+`git config --system --list`.
+
 ## Design
 
 **One process-containment module** (`scripts/dev_workflow/containment.py`) used by every worker and gate:
@@ -35,6 +50,17 @@ the one remote that points at it; zero or several matches is BLOCKED. A baseline
 read with `ls-remote`; an empty answer is BLOCKED, never "no baseline". Integration uses the resolved remote, and a
 configured `integration.remote` that differs is BLOCKED. An empty target-tip lookup at integration is BLOCKED.
 
+**Reviewer CLI identity is the program that runs (W-2).** `resolve_cli()` maps the file a PATH lookup finds to what
+actually executes. POSIX: the file itself (and a `#!` interpreter, as before). Windows: a `.exe` is itself; a
+`.cmd`/`.bat` launcher is read for its quoted paths with `%~dp0` replaced by its folder (other variables are not
+evaluated); exactly one executable and at most one script may remain, and the launcher must pass `%*` on. A script
+without a named executable (npm's `"%_prog%"`) is run by `node.exe` beside the launcher or on PATH. The identity bound
+at PLAN is then the program (`realpath`, `sha256`), its interpreter, the launch argv prefix and the launcher's own path
+and hash; the driver starts that argv prefix directly, never the `.cmd`. Candidates for the "several executables"
+check are every PATHEXT variant the driver could launch (`.exe`, `.com`, `.bat`, `.cmd`) in every PATH folder; `.ps1`
+and bare POSIX scripts are never launched and are not candidates. A launcher that cannot be bound stops the run as
+BLOCKED (REVIEWER_EXEC) and is never run.
+
 ## Acceptance criteria
 
 | # | Criterion | Evidence |
@@ -51,6 +77,9 @@ configured `integration.remote` that differs is BLOCKED. An empty target-tip loo
 | DL2-AC10 | Windows-only tests are marked platform-gated and reported by name on other platforms, never silently skipped; all existing `tests/dev_workflow` tests still pass on Linux. | Linux run output |
 | DL2-AC11 | Each new test fails on the baseline `ce1a90c` and passes on the candidate (Windows-only tests: on the PC). | driver regression proof; manual pre-repair run |
 | DL2-AC12 | No frozen path, `.gitignore` or new third-party dependency touched. | driver scope/protected-path checks |
+| DL2-AC13 | Test ids and regression-test paths are repository-relative with `/` on every OS (W-1). | `test_lifecycle_windows_cli.py::test_w1_*` (any OS, fails on `ce1a90c`) |
+| DL2-AC14 | Windows reviewer identity is the program behind a `.cmd`/`.bat` launcher (plus its interpreter and the launcher), launched directly; replacing the program behind an unchanged launcher is TAMPER / REFUSED; an unbindable launcher is BLOCKED (REVIEWER_EXEC); a `.exe` beside the launcher is ambiguous; `.ps1` alone is not a reviewer CLI (W-2). | `test_lifecycle_windows_cli.py::test_w2_*` (any OS, all fail on `ce1a90c`); `test_r6_01_*` on the PC with real `.cmd` launchers; real install resolved on the PC |
+| DL2-AC15 | `tests/dev_workflow` runs on Windows with 0 failures; every test that cannot run on a platform is reported by name (`windows_only` / `linux_only`), never silently skipped; the R2-03 `.git` redirect guard is exercised on Windows (W-3). | PC gate run vs the `ce1a90c` baseline run |
 
 ## Disclosed limitations (not covered by containment)
 
@@ -65,6 +94,15 @@ configured `integration.remote` that differs is BLOCKED. An empty target-tip loo
   SHA. Windows results are NOT VERIFIED until the owner's PC runs `tests/dev_workflow` and one real DEVTEST round.
 - **L2:** the older `uri-development` skill is not in any branch of `sche004-cyber/Uri` or `sche004-cyber/uri-agent`
   visible to the cloud session (it is presumably local to the owner's PC), so its one-line note is applied on the PC.
+  Done 2026-10-11: the precedence note was added to `uri-agent/.claude/skills/uri-development/SKILL.md` and
+  `uri-agent/.agents/skills/uri-development/SKILL.md`; both are untracked (`.claude/` is ignored there), so no commit
+  carries it.
+- **Windows reviewer launchers (W-2):** only `.exe` and `.cmd`/`.bat` launchers whose quoted paths name one program
+  are bound; anything else is refused. A launcher's other batch logic is not evaluated: a launcher written to run a
+  different program through variables it computes itself would be refused (no single named program) or bound to the
+  program it names, and its own hash is part of the identity, so changing it is TAMPER. A launcher that is already
+  deceptive when the plan binds it (e.g. naming one program in a `REM` line and running another) is not detected:
+  the installed CLI is trusted at PLAN, as on Linux.
 
 ## Integration
 

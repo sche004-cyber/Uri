@@ -221,19 +221,115 @@ def reviewer_executable(spec: dict) -> dict | None:
         found = [spec["binary"]] if (Path(spec["binary"]).is_file() or shutil.which(spec["binary"])) else []
         found = [shutil.which(f) or f for f in found]
     else:
-        found = []
-        for d in os.environ.get("PATH", "").split(os.pathsep):
-            c = shutil.which(name, path=d or ".")
-            if c and os.path.realpath(c) not in {os.path.realpath(x) for x in found}:
-                found.append(c)
+        found = _path_candidates(name)
     if not found:
         return {"name": name, "error": "not found"}
     path = os.path.abspath(found[0])
-    real = os.path.realpath(path)
-    ident = {"name": name, "path": path, "realpath": real, "sha256": _file_sha256(real),
-             "interpreter": _interpreter(real)}
-    if len(found) > 1:
-        ident["ambiguous"] = sorted(os.path.realpath(f) for f in found)
+    ident = {"name": name, "path": path, **resolve_cli(path)}
+    # Several different programs on PATH (W-2: every PATHEXT variant of every folder on Windows) are ambiguous.
+    targets, bad = {}, []
+    for f in found:
+        r = resolve_cli(f)
+        if "error" in r:
+            bad.append(f"{os.path.abspath(f)}: {r['error']}")
+        else:
+            targets.setdefault(tuple(os.path.realpath(x) for x in r["launch"]), os.path.abspath(f))
+    if bad:
+        ident["unlaunchable"] = bad
+    if len(targets) > 1:
+        ident["ambiguous"] = sorted(" ".join(t) for t in targets)
+    return ident
+
+
+def _path_candidates(name: str) -> list[str]:
+    """Every file on PATH that a lookup of ``name`` could run, in lookup order. On Windows that is each PATHEXT
+    variant in each folder (``claude.exe`` planted beside ``claude.cmd`` wins the lookup); a variant this driver never
+    launches (``.ps1``, a bare POSIX script) is not a candidate."""
+    found, seen = [], set()
+    for d in os.environ.get("PATH", "").split(os.pathsep):
+        if WINDOWS:
+            exts = [e.lower() for e in os.environ.get("PATHEXT", ".COM;.EXE;.BAT;.CMD").split(";") if e]
+            cands = [os.path.join(d or ".", name + e) for e in exts if e in _WIN_LAUNCHABLE]
+            cands = [c for c in cands if os.path.isfile(c)]
+        else:
+            c = shutil.which(name, path=d or ".")
+            cands = [c] if c else []
+        for c in cands:
+            key = os.path.normcase(os.path.realpath(c))
+            if key not in seen:
+                seen.add(key)
+                found.append(c)
+    return found
+
+
+WINDOWS = sys.platform == "win32"
+_WIN_LAUNCHABLE = (".exe", ".com", ".cmd", ".bat")
+_DP0 = re.compile(r"%~?dp0%?", re.IGNORECASE)
+
+
+def _win_launcher_target(shim: str) -> dict:
+    """W-2: the program a ``.cmd``/``.bat`` launcher (npm shim) runs, so that program is what is bound and launched
+    directly. Never cmd.exe: it would re-parse every argument. The quoted paths of the launcher are read with
+    ``%~dp0`` replaced by its folder; other variables are not evaluated. Exactly one program and at most one script
+    must remain, otherwise the launcher is refused (fail closed)."""
+    d = os.path.dirname(os.path.abspath(shim))
+    try:
+        text = Path(shim).read_text(encoding="utf-8", errors="replace")
+    except OSError as e:
+        return {"error": f"launcher not readable: {e}"}
+    exes, scripts = [], []
+    for tok in re.findall(r'"([^"]+)"', text):
+        t = _DP0.sub(lambda m: d + os.sep, tok)
+        if "%" in t:
+            continue  # e.g. npm's "%_prog%": resolved below from the script type
+        t = os.path.normpath(t)
+        if not os.path.isfile(t) or t in exes or t in scripts:
+            continue
+        (exes if t.lower().endswith((".exe", ".com")) else scripts).append(t)
+    if len(scripts) > 1 or len(exes) > 1:
+        return {"error": f"launcher names several programs ({', '.join(exes + scripts)})"}
+    if scripts and not exes and scripts[0].lower().endswith((".js", ".mjs", ".cjs")):
+        node = shutil.which("node")  # npm: "%_prog%" is node.exe beside the launcher (found above) or on PATH
+        if node and os.path.splitext(node)[1].lower() in (".exe", ".com"):
+            exes = [os.path.abspath(node)]
+    if len(exes) != 1:
+        return {"error": "launcher does not name one executable it runs"}
+    if not text.count("%*"):
+        return {"error": "launcher does not pass its arguments on (%*)"}
+    return {"launch": exes + scripts}
+
+
+def resolve_cli(path: str) -> dict:
+    """What actually runs when the reviewer CLI at ``path`` is launched (W-2), as the identity that is bound at PLAN
+    and checked before every round: ``realpath``/``sha256`` of the program (the script, when an interpreter runs
+    one), ``interpreter`` (the program that runs it), ``launch`` (the argv prefix the driver starts directly) and on
+    Windows ``launcher`` (the shim's own path and hash). ``{"error": ...}`` when it cannot be bound."""
+    ap = os.path.abspath(path)
+    real = os.path.realpath(ap)
+    launcher = None
+    if WINDOWS:
+        ext = os.path.splitext(real)[1].lower()
+        if ext in (".exe", ".com"):
+            launch = [real]
+        elif ext in (".cmd", ".bat"):
+            t = _win_launcher_target(real)
+            if "error" in t:
+                return t
+            launch = t["launch"]
+            launcher = {"realpath": real, "sha256": _file_sha256(real)}
+        else:
+            return {"error": "not a .exe, or a .cmd/.bat launcher that names one"}
+    else:
+        launch = [ap]
+    prog = os.path.realpath(launch[-1])
+    if len(launch) == 2:
+        ireal = os.path.realpath(launch[0])
+        interp = {"realpath": ireal, "sha256": _file_sha256(ireal)}
+    else:
+        interp = None if WINDOWS else _interpreter(prog)
+    ident = {"realpath": prog, "sha256": _file_sha256(prog), "interpreter": interp, "launch": launch}
+    if launcher:
+        ident["launcher"] = launcher
     return ident
 
 
@@ -252,7 +348,8 @@ def build_argv(spec: dict, role: str, worktree: Path, protected: list[str], sess
     p = spec["provider"]
     tools = ROLE_TOOLS[role]
     if p == "claude_cli":
-        argv = [spec.get("binary") or shutil.which("claude") or "claude", "-p", "--output-format", "json",
+        head = cli_launch(spec, "claude")  # the bound program itself, never a .cmd launcher (W-2)
+        argv = [*head, "-p", "--output-format", "json",
                 "--session-id", session_id, "--permission-mode", "dontAsk",
                 "--allowedTools", *tools["allowed"], "--disallowedTools", *tools["disallowed"],
                 "--settings", json.dumps(claude_settings(role, worktree, protected))]
@@ -262,7 +359,7 @@ def build_argv(spec: dict, role: str, worktree: Path, protected: list[str], sess
             # (R6-02). --safe-mode drops CLAUDE.md and all customizations; --settings and the tool flags still apply.
             # No setting source at all: user settings are as worker-writable as the checkout (R7-01); run_worker also
             # points CLAUDE_CONFIG_DIR at a driver-made directory, since ~/.claude.json "env" loads regardless.
-            argv[2:2] = ["--safe-mode", "--setting-sources", "", "--strict-mcp-config"]
+            argv[len(head) + 1:len(head) + 1] = ["--safe-mode", "--setting-sources", "", "--strict-mcp-config"]
         if spec.get("model"):
             argv += ["--model", spec["model"]]
         if spec.get("max_turns"):
@@ -270,15 +367,29 @@ def build_argv(spec: dict, role: str, worktree: Path, protected: list[str], sess
         return argv
     if p == "codex_cli":
         sandbox = "read-only" if role == "reviewer" else "workspace-write"
-        argv = [spec.get("binary") or shutil.which("codex") or "codex", "exec", "--sandbox", sandbox, "-"]
+        head = cli_launch(spec, "codex")
+        k = len(head) + 1  # after "exec"
+        argv = [*head, "exec", "--sandbox", sandbox, "-"]
         if role == "reviewer":  # no candidate AGENTS.md as project instructions (R6-02)
-            argv[2:2] = ["-c", "project_doc_max_bytes=0"]
+            argv[k:k] = ["-c", "project_doc_max_bytes=0"]
         if spec.get("model"):
-            argv[2:2] = ["--model", spec["model"]]
+            argv[k:k] = ["--model", spec["model"]]
         return argv
     if p == "command":
         return list(spec["argv"])
     raise ValueError(f"unknown provider {p!r}")
+
+
+def cli_launch(spec: dict, name: str) -> list[str]:
+    """The argv prefix that starts the reviewer/implementer CLI: the program ``resolve_cli`` binds (W-2), so a Windows
+    ``.cmd`` launcher is never run through cmd.exe. A CLI that cannot be resolved is passed as found; run_worker then
+    refuses it as a reviewer (no anchor match) and provider_available reports it."""
+    b = spec.get("binary") or shutil.which(name) or name
+    f = b if Path(b).is_file() else shutil.which(b)
+    r = resolve_cli(f) if f else {}
+    if "launch" in r:
+        return list(r["launch"])
+    return [f or b]
 
 
 # The only parts of the user's Claude config a reviewer gets: credentials (they authenticate, they cannot redirect).
@@ -411,16 +522,27 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
     argv = build_argv(spec, role, worktree, list(protected), session_id)
     if rec["provider"] in ("claude_cli", "codex_cli"):
         name = "claude" if rec["provider"] == "claude_cli" else "codex"
-        real = os.path.realpath(shutil.which(argv[0]) or argv[0])
+        # The program that actually runs (W-2: behind a Windows .cmd launcher), not the file found on PATH.
+        src = spec.get("binary") or shutil.which(name) or argv[0]
+        cur = resolve_cli(src if Path(src).is_file() else (shutil.which(src) or src))
+        head = argv[:len(cur.get("launch") or [argv[0]])]
+        real = cur.get("realpath") or os.path.realpath(shutil.which(argv[0]) or argv[0])
         default = shutil.which(name)
         rec["binary_realpath"] = real
-        rec["binary_is_default"] = bool(default) and real == os.path.realpath(default)
-        rec["binary_sha256"] = _file_sha256(real)
+        rec["binary_launch"] = head
+        rec["binary_is_default"] = bool(default) and real == resolve_cli(default).get("realpath")
+        rec["binary_sha256"] = cur.get("sha256") or _file_sha256(real)
         anchor = spec.get("_anchor")  # the PLAN-bound identity (R6-01); the launched file must still match it
+
+        def same(a, b):
+            return [os.path.normcase(os.path.realpath(x)) for x in a] == [os.path.normcase(os.path.realpath(x)) for x in b]
         if anchor is not None:
             rec["binary_anchor_ok"] = bool(anchor.get("sha256")) and not anchor.get("ambiguous") and \
+                not anchor.get("unlaunchable") and "error" not in cur and \
                 real == anchor.get("realpath") and rec["binary_sha256"] == anchor.get("sha256") and \
-                _interpreter(real) == anchor.get("interpreter")
+                cur.get("interpreter") == anchor.get("interpreter") and \
+                cur.get("launcher") == anchor.get("launcher") and same(head, cur["launch"]) and \
+                ("launch" not in anchor or same(head, anchor["launch"]))
             if not rec["binary_anchor_ok"]:
                 rec.update(status="REFUSED", detail="reviewer executable differs from the one bound at the plan",
                            ended_at=_now())

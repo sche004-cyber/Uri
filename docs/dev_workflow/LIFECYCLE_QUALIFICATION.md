@@ -157,6 +157,19 @@ Recorded by the driver in the milestone's state directory; summarised here after
 
 ### Windows (owner's PC)
 
-NOT VERIFIED. To be recorded here: `python -m pytest tests/dev_workflow` counts on the PC (the `windows_only` tests
-must run, not be platform-gated), then one real DEVTEST lifecycle round showing a contained review is recognised
-(`contained: true`, `is_independent` true). A failure is recorded as NOT VERIFIED, never as a pass.
+First gate on the PC (Windows 11, Python 3.13.15, 2026-10-11), `python -m pytest tests/dev_workflow`:
+
+| Commit | Failed | Passed | Skipped |
+|---|---|---|---|
+| `ce1a90c` (canonical baseline) | 72 | 114 | 6 |
+| `f3706e03` (F1-F3, L1-L3) | 17 | 194 | 6 |
+
+No new failure; 55 baseline failures fixed; all 25 new DL2 tests passed, including the 5 real Job Object tests. The
+remaining 17 failures and 6 silent "Linux-only" skips became findings W-1..W-3 (plan, "Added after the first Windows
+gate"), repaired on the PC in the commit after `f3706e03`: 10 new tests in `test_lifecycle_windows_cli.py` (all fail
+on `ce1a90c` for their own reason), portable fixtures, a `linux_only` marker reported by name. The test of a reviewer
+that leaves a detached forger behind (`test_r1r2_01_*[True]`) now runs on Windows against real Job Objects.
+
+The gate counts on the exact candidate SHA after that repair, the independent review and the real DEVTEST round are
+recorded in the milestone receipt; until they are, Windows stays NOT VERIFIED. A failure is recorded as NOT VERIFIED,
+never as a pass.
