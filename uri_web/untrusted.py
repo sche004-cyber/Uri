@@ -89,8 +89,10 @@ def flags(text: str) -> list:
 #     something (_OPENING: brackets, opening quotes, '#', '@', '*', currency, ...: 'the firm (founded', '#summer').
 #   * 'dot' or 'd0t', in any case, with any spaces, marks or dashes on both sides ('_dot_', '-dot-', '{dot}', ' d0t ').
 # What is left out is ordinary prose and costs no safety: a mark followed by a space with none before ('red, blue',
-# 'Note: the') is not a dot, except a dot-like mark, which follows D13 (see _is_domain). Residual limits, recorded:
-# 'portal, com' and 'portal: com' (a comma or colon then a space), like D13's 'portal. Com'; a dash between labels.
+# 'Note: the') is not a dot, except a dot-like mark, which follows D13 (see _is_domain), and except before a generic
+# top-level domain or a top-level domain with a path (_SPACED_MARK: 'portal, com', 'portal; com/claim'). Residual
+# limits: another top-level label after a mark and a space ('portal, shop'), like D13's 'portal. Com'; a dash between
+# labels.
 # Two precision-only exceptions remain in _is_domain: D13's full stop and space, and a punctuation mark other than
 # '.' between two runs of a script without letter case (Chinese, Japanese, Arabic, Devanagari, ...), which is that
 # script's comma or sentence break ('東京、大阪', a Hindi danda between two words) unless the second run is a known
@@ -120,7 +122,7 @@ def _char_classes(**preds) -> dict:
 
 _JOIN_CHARS = "'\u2019/_"
 _DOT_NAME = re.compile(r"\b(?:FULL STOP|DOT|DOTS|BULLET|DANDA|TSHEG|LEADER|ELLIPSIS|PERIOD|ANO TELEIA|"
-                       r"WORD SEPARATOR|WORDSPACE)\b")
+                       r"WORD SEPARATOR|WORDSPACE|CIRCLE|SPOT|RING OPERATOR)\b")
 _FULL_STOP_NAME = re.compile(r"\b(?:FULL STOP|DANDA|ELLIPSIS)\b")
 
 
@@ -131,7 +133,7 @@ def _is_mark(ch: str, cat: str) -> bool:
 def _is_dotlike(ch: str, cat: str) -> bool:
     if ch == ".":
         return True
-    if cat not in ("Po", "Sk", "Sm") or ch in _JOIN_CHARS:
+    if cat not in ("Po", "Sk", "Sm", "So") or ch in _JOIN_CHARS:     # R7-01 (round 8): 'So' too ('\u25e6', '\u25cf')
         return False
     name = unicodedata.name(ch, "")
     return bool(_DOT_NAME.search(name)) and " WITH " not in name
@@ -142,10 +144,15 @@ _C = _char_classes(
     join=lambda ch, cat: cat == "Pd" or ch in _JOIN_CHARS,
     comb=lambda ch, cat: cat in ("Mn", "Mc", "Me"),
     dotlike=_is_dotlike,
+    wrap=lambda ch, cat: (_is_mark(ch, cat) or ch in _JOIN_CHARS) and not _is_dotlike(ch, cat),
     full_stop=lambda ch, cat: _is_dotlike(ch, cat) and (ch == "." or bool(_FULL_STOP_NAME.search(unicodedata.name(ch, "")))),
     opening=lambda ch, cat: cat in ("Ps", "Pi", "Sc", "So") or ch in "\"`#@*&+~<=\u00a7\u00b6\u00bf\u00a1")
-_MARK, _JOIN, _COMB, _DOTLIKE, _FULL_STOP, _OPENING = (
-    _C["mark"], _C["join"], _C["comb"], _C["dotlike"], _C["full_stop"], _C["opening"])
+_MARK, _JOIN, _COMB, _DOTLIKE, _FULL_STOP, _OPENING, _WRAP = (
+    _C["mark"], _C["join"], _C["comb"], _C["dotlike"], _C["full_stop"], _C["opening"], _C["wrap"])
+# R7-01 (round 8): a dot-like run may have spaces inside it ('portal . . com'), and 'dot' may be spelt out with spaces
+# ('d o t').
+_DOTRUN = _DOTLIKE + r"(?:\s*" + _DOTLIKE + r")*"
+_DOTWORD = r"(?i:d\s*[o0]\s*t)"
 _RUN = r"(?:" + _JOIN + r"*(?:" + _MARK + _COMB + r"*|\s" + _COMB + r"+))+"   # a mark run, no plain space in it
 try:
     re.compile("(?>a)")
@@ -158,9 +165,13 @@ def _dot(follow: str) -> str:
     """The separator rule above as a regex. Every alternative must end where `follow` holds; the group is atomic, so a
     separator that several alternatives match is matched once, not once per alternative (no exponential backtracking
     on 'a.a.a.a...': each alternative ends at the same place, the next label, so trying only the first loses nothing)."""
-    alts = (r"(?:\s|" + _JOIN + r"|" + _MARK + r")+(?i:d[o0]t)(?:\s|" + _JOIN + r"|" + _MARK + r")+",  # '_dot_', ' d0t '
-            r"\s*" + _DOTLIKE + r"+\s*",                                       # 'portal . com', 'portal .com', '..'
-            r"\s*[\[({<]\s*(?:" + _DOTLIKE + r"+|(?i:d[o0]t))\s*[\])}>]\s*",     # 'portal [.] com', 'portal ( dot ) com'
+    alts = (r"(?:\s|" + _JOIN + r"|" + _MARK + r")+" + _DOTWORD + r"(?:\s|" + _JOIN + r"|" + _MARK + r")+",  # '_dot_', ' d0t '
+            r"\s*" + _DOTRUN + r"\s*",                                        # 'portal . com', 'portal .com', '. .'
+            # R7-01 (round 8): ANY marks (brackets and quotes of every script: Ps/Pi/Pe/Pf, '"', "'", ...) on BOTH
+            # sides of a dot-like run or 'dot', with optional spaces: 'portal [.] com', 'portal \u3010.\u3011 com',
+            # 'portal "." com', 'portal (d o t) com'. Both sides are required, so a sentence that ends inside a
+            # quote or a bracket ('he said "stop." Then') is not a separator.
+            r"\s*(?:" + _WRAP + r"\s*)+(?:" + _DOTRUN + r"|" + _DOTWORD + r")(?:\s*" + _WRAP + r")+\s*",
             _RUN,                                                               # 'portal,com', 'portal{.}com'
             r"\s+(?!" + _OPENING + r")" + _RUN)                                # 'portal ,com'
     return _ATOMIC + "|".join(a + follow for a in alts) + ")"
@@ -168,7 +179,8 @@ def _dot(follow: str) -> str:
 
 _DOT = _dot(r"(?=[^\W_])")
 # The IP-address form keeps the narrower separator: '1,000,000,000' is a number, not an address.
-_DOT_IP = (r"(?:\s*" + _DOTLIKE + r"\s*|\s*[\[({<]\s*(?:" + _DOTLIKE + r"|(?i:dot))\s*[\])}>]\s*|\s+(?i:dot)\s+)")
+_DOT_IP = (r"(?:\s*" + _DOTLIKE + r"\s*|\s*" + _WRAP + r"\s*(?:" + _DOTLIKE + r"|(?i:dot))\s*" + _WRAP + r"\s*|"
+           r"\s+(?i:dot)\s+)")
 _LABEL_CH = r"[\w\-" + _COMB[1:-1] + r"]"
 _TLD_CH = r"(?:[^\W\d_]|" + _COMB + r")"
 _BARE = re.compile(r"(?<![^\W_])(?P<host>(?:[^\W_]" + _LABEL_CH + r"{0,62}" + _DOT + r"){1,10})"
@@ -178,6 +190,11 @@ _BARE = re.compile(r"(?<![^\W_])(?P<host>(?:[^\W_]" + _LABEL_CH + r"{0,62}" + _D
 # more characters and the one letter lower case, so abbreviations ('U.S citizens', 'e.g the', 'Ph.D students') are not
 # matched.
 _SPLIT_TLD = re.compile(r"(?<![^\W_])[^\W_][\w-]{1,62}(?:" + _DOTLIKE + r"+|" + _RUN + r")(?P<one>[^\W\d_])\s[^\W\d_]{1,62}(?![^\W_])")
+# R7-01 (round 8): 'portal, com', 'portal; com/claim', 'portal! com': a mark run with a space after it is ordinary prose
+# ('red, blue'), so it is a separator only before a label no prose uses as a word after a mark: one of the
+# long-standing generic top-level domains below, in any case, or any known top-level domain directly followed by a
+# path ('portal, shop/claim'). An unlisted top-level label after ', ' remains a residual limit, like D13's 'portal. Com'.
+_CORE_TLDS = "com|net|org|gov|edu|mil|int|info|biz|arpa|io|xyz"
 _OTHER = re.compile(r"\S*(?::|\[:\])//\S*|(?i:\bwww)" + _DOT + r"\S+|[\w.+-]+@[\w-]+(?:" + _DOT + r"[\w-]+)+|"
                     r"\b\d{1,3}(?:" + _DOT_IP + r"\d{1,3}){3}\b|(?i:\b(?:javascript|vbscript):)\S*|(?i:\bdata:[a-z]+/)\S*")
 _PHONE = re.compile(r"(?<![\w+])\+?\(?\d[\d \t().\-]{6,}\d(?![\w])")
@@ -208,6 +225,8 @@ no np nr nu nz om pa pe pf pg ph pk pl pm pn pr ps pt pw py qa re ro rs ru rw sa
 ss st su sv sx sy sz tc td tf tg th tj tk tl tm tn to tr tt tv tw tz ua ug uk us uy uz va vc ve vg vi vn vu wf ws ye yt
 za zm zw
 """.split())
+_SPACED_MARK = re.compile(r"(?<![^\W_])[^\W_][\w-]{0,62}\s*" + _RUN + r"\s+(?:(?i:" + _CORE_TLDS + r")(?![^\W_])|(?:"
+                          + "|".join(sorted(_TLDS, key=len, reverse=True)) + r")/\S)")
 _IDN_TLDS = frozenset("""
 рф срб укр бел қаз мкд мон рус онлайн сайт орг ком дети москва католик 中国 中國 公司 网络 网址 网店 网站 在线 商城 商店 香港
 台灣 台湾 新加坡 澳門 澳门 中文网 世界 移动 手机 集团 我爱你 한국 닷컴 닷넷 みんな コム セール 通販 ストア クラウド 닷컴 भारत भारतम्
@@ -252,7 +271,7 @@ def _is_domain(m) -> bool:
         return True                                  # R4-01: an ACE ('xn--') label is never ordinary text
     lm = _LAST.search(host)
     last, sep = (lm.group(1), lm.group(2)) if lm else ("", host)
-    if re.fullmatch(_FULL_STOP + r"+\s+", sep):
+    if re.fullmatch(_FULL_STOP + r"(?:\s*" + _FULL_STOP + r")*\s+", sep):   # R7-01 (round 8): '. . ' too
         # D13: 'word. Next' is a full stop and a space: a sentence break, unless the next word is lower case and not
         # a known non-domain word ('portal. com' is masked; 'No. of', 'approved. The' are not). Residual limit,
         # recorded in the decision: a capitalised or all-capital top-level label after '. ' ('portal. Com') reads as
@@ -276,6 +295,7 @@ def _spans(text: str) -> list:
     """(start, end) of every link, e-mail, IP address and phone number in `text`."""
     out = [m.span() for m in _OTHER.finditer(text)] + [m.span() for m in _BARE.finditer(text) if _is_domain(m)]
     out += [m.span() for m in _SPLIT_TLD.finditer(text) if m.group("one").islower()]
+    out += [m.span() for m in _SPACED_MARK.finditer(text)]
     out += [m.span() for m in _PHONE.finditer(text)
             if sum(ch.isdigit() for ch in m.group(0)) >= 8 and not _NOT_PHONE.fullmatch(m.group(0).strip("()+ "))]
     return out

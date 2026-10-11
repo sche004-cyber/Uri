@@ -151,6 +151,14 @@ _DETERMINERS = frozenset("a an the this that these those its their his her our y
 # degree, hedge, polarity or truth value.
 _PLAIN_MODIFIERS = frozenset("long lengthy public formal official detailed".split())
 MAX_GAP_WORDS = 2
+# R7-02 (closure round 8): a determiner changes the meaning of the quantifier after it: 'a little progress' (some) is
+# not 'little progress' (almost none), 'a few' is not 'few', 'the most' is not 'most'. Before these words the claim
+# may neither add a determiner nor leave out one the source has: the determiners must match in place, or the source
+# sentence is quoted (D7: over-quoting costs fluency, never safety).
+_DETERMINER_SENSITIVE = frozenset("""
+little less least few fewer fewest bit bits lot lots number numbers deal great good whole while couple handful
+many much more most other others same several half
+""".split())
 
 
 def _excerpt(claim: str, source: str) -> bool:
@@ -178,6 +186,8 @@ def _excerpt(claim: str, source: str) -> bool:
         text = source[toks[a][2]:toks[b][1]]
         if any(w in _CLAUSE_WORDS for w in skipped) or _CLAUSE_MARK.search(text) or states_quantity(text):
             return False
+        if toks[b][0] in _DETERMINER_SENSITIVE and any(w in _DETERMINERS for w in skipped):
+            return False                             # R7-02: '[a] little progress' read as 'little progress'
         if all(w in _DETERMINERS for w in skipped):
             return True
         # R4-02: modifiers only from the closed allow-list; any other word (a qualifier, an unknown word) fails closed.
@@ -188,6 +198,8 @@ def _excerpt(claim: str, source: str) -> bool:
         """D14 (owner, 2026-10-11, after R6-02: a comma edge still let 'that, at most,' go): a claim in the Brain's
         words starts at the sentence start. Only determiners may be left out before its first matched word; any
         other leading word or clause, punctuation or not, means the source sentence is quoted (D7)."""
+        if j and toks[j][0] in _DETERMINER_SENSITIVE:
+            return False                             # R7-02: '[A] little progress was made' read as 'Little ...'
         return all(w in _DETERMINERS for w, _s, _e in toks[:j])
 
     def tail_ok(j: int) -> bool:
@@ -202,7 +214,8 @@ def _excerpt(claim: str, source: str) -> bool:
         if (ci, prev) in seen:
             return False
         seen.add((ci, prev))
-        if c[ci] in _DETERMINERS and match(ci + 1, prev):
+        if (c[ci] in _DETERMINERS and not (ci + 1 < len(c) and c[ci + 1] in _DETERMINER_SENSITIVE)
+                and match(ci + 1, prev)):
             return True                              # a determiner the source does not have
         for j in range(prev + 1, len(toks)):
             if prev >= 0 and not gap_ok(prev, j):
