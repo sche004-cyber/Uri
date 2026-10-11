@@ -433,11 +433,13 @@ def _unusual_spans(norm: str) -> list:
 from .tld_list import TOP_LEVEL_DOMAINS as _ALL_TLDS   # noqa: E402  (generated data module, no dependency)
 
 _CORE = frozenset("com org gov edu mil biz io xyz".split())   # 'net', 'info', 'int' are also ordinary words
-# Ordinary prose between two words: spaces, everyday ASCII punctuation (. , ; : ! ? ' " ( ) [ ] { } - & % $ / | > _),
+# Ordinary prose between two words (R12-01: the name may be in another script, so native sentence punctuation that
+# does not look like a dot counts too: danda, Tibetan shad, Arabic and CJK commas, Ethiopic and Myanmar marks): spaces, everyday ASCII punctuation (. , ; : ! ? ' " ( ) [ ] { } - & % $ / | > _),
 # digits, typographic quotes and dashes, ellipsis, currency signs and breadcrumb marks (» ›). Odd symbols (~ * ^ \\ =
 # + < # @ `) and every other non-ASCII character are not prose.
 _PROSE_GAP = re.compile(r"[\s.,;:!?'\"()\[\]{}&%$/|>_0-9\u2018\u2019\u201c\u201d\u2013\u2014\u2026\u00bb\u203a"
-                        r"\u20a0-\u20c0\u00a3\u00a5-]*")
+                        r"\u20a0-\u20c0\u00a3\u00a5\u0964\u0965\u0f0d\u0f0e\uff0c\u3001\u060c\u061b\u061f\u1361-\u1364"
+                        r"\u104a\u104b\u17d4\u17d5-]*")
 _MAX_FOREIGN = 2       # distinct letters that may stand between the name and the ending (R11-01: repeats count once)
 # R11-01: two common two-letter English words that never start a split domain ('to day', 'be st', 'on e').
 _COMMON2 = frozenset("an as at be by do go he if in is it me my no of on or so to up us we".split())
@@ -521,6 +523,12 @@ def _ending_spans(norm: str) -> list:
         fam = words[b][3]
         seen, a, ascii_only = set(), b - 1, True
         while a >= 0 and (words[a][3] != fam or _single(words[a])):
+            # R12-01: a word of another script is the NAME ('\u043f\u0440\u0438\u043c\u0435\u0440 com',
+            # 'refunds-portal ~ \u0440\u0444') unless it is a single letter or adds no more than _MAX_FOREIGN distinct
+            # letters to what stands between ('portal \u4e36 \u4e36 shop'): then it is part of the separator.
+            if not _single(words[a]) and (len(set(words[a][2].casefold())) > 1
+                                          or len(seen | set(words[a][2].casefold())) > _MAX_FOREIGN):
+                break                         # a real word ('\u6771\u4eac', '\u043f\u0440\u0438\u043c\u0435\u0440'): the name
             seen.update(words[a][2].casefold())
             ascii_only = ascii_only and words[a][3] == "LATIN" and words[a][2].isascii() and _single(words[a])
             if len(seen) > _MAX_FOREIGN:
