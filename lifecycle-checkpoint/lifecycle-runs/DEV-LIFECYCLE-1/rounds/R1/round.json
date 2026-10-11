@@ -1,0 +1,322 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R1",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R1-01",
+  "R1-02",
+  "R1-03",
+  "R1-04",
+  "R1-05",
+  "R1-06",
+  "R1-07",
+  "R1-08"
+ ],
+ "candidate": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T00:42:20Z",
+ "independence_basis": "audit checkout or refs changed during review",
+ "independent": false,
+ "integrity": {
+  "after": {
+   "head": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+   "impl_head": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+   "impl_status": [],
+   "refs": "04b60a2aeb055cef7812f56d8d5e8a08996317ca1a0764001bc6490b5c586d9b",
+   "status": []
+  },
+  "before": {
+   "head": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+   "impl_head": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+   "impl_status": [],
+   "refs": "f7d20c5c8e86b4c9e069b58170ff61b39cd41fcdd1ec14b362be0df7a928edd1",
+   "status": []
+  },
+  "ok": false
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe P1: non-DEVTEST milestone 'W9-REAL', reviewer {provider: claude_cli, binary: <8-line shell script printing JSON {result: AUDIT_RESULT ACCEPT on HEAD, session_id: 'forged-1'}>}. lifecycle.run -> stage COMPLETE, round independent=True status COMPLETED_WITH_RESULT, integration INTEGRATED, remote tip moved. is_independent checks only the provider label, session id and integrity, never which executable ran. This defeats L-AC2 ('scripted reviewers count only for DEVTEST').",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:50",
+     "scripts/dev_workflow/lifecycle_providers.py:74",
+     "scripts/dev_workflow/lifecycle.py:197-210"
+    ],
+    "id": "R1-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "For non-DEVTEST milestones, refuse a 'binary' override (or require it to resolve to the same real path as shutil.which('claude'/'codex') and record its hash). Mark rounds whose argv[0] is not the resolved CLI as not independent. Record the binary path in the round and REVIEW_RECORDED event.",
+    "title": "claude_cli reviewer 'binary' override lets any scripted executable count as an independent reviewer for a real milestone"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe P2: real run, R1 REJECT -> BLOCKED. Edited only state.json: rounds[0].effective_verdict='ACCEPT', findings=[], stage='VERIFYING', blocker=null. verify() -> []. run() -> VERIFIED, status evidence_ok_for_candidate=True, verify() still []. accepted_review/evidence_ok read st.d['rounds'] and never compare it with the hashed round.json/events. verify never cross-checks state.json rounds, gates or stage against the chain. Contradicts L-AC14 and L-AC15 and the doc claims 'verify detects edits' and 'a forged stage without evidence => BLOCKED'.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:129-130",
+     "scripts/dev_workflow/lifecycle.py:493-509",
+     "scripts/dev_workflow/lifecycle.py:995-1023"
+    ],
+    "id": "R1-02",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Derive rounds, verdicts, gate results and stage from the verified event chain plus hashed round.json files (or hash state.json into each event). Run verify() at the start of run() and in evidence_ok, and BLOCK on any mismatch. Make verify compare every state.json round/repair/gate entry with its event.",
+    "title": "Evidence is trusted from state.json; an edited verdict reaches VERIFIED and verify() reports no error"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe P3: the implementer (command provider, the same capability as claude_cli Bash, running as root) wrote <git-common-dir>/hooks/pre-commit that creates OUT_OF_SCOPE.txt, patches core/frozen.py and git-adds both. Driver: repair P1 status COMMITTED. `git show --name-only HEAD` lists OUT_OF_SCOPE.txt, core/frozen.py, pkg/calc.py, tests/test_zero.py. The protected file was only caught later at qualification. permitted_paths is never re-checked after commit, so an out-of-scope-only payload goes through. Post-worker checks cover only the candidate worktree status/HEAD, not .git (hooks/config) or the main checkout.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:685-690",
+     "scripts/dev_workflow/lifecycle.py:652-665"
+    ],
+    "id": "R1-03",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Commit with `git -c core.hooksPath=/dev/null commit --no-verify`. After commit, re-check `git diff --name-only pre..commit` against protected/permitted lists and the proven file set, and reset if it differs. Snapshot and verify .git/hooks, .git/config and the main checkout status before/after every worker (reviewer and implementer). Re-check permitted_paths for baseline..candidate in qualify.",
+    "title": "Driver's repair commit runs worker-planted git hooks: out-of-scope and protected files are committed after the scope check and regression proof"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probe P4: candidate adds tests/conftest.py raising ImportError. Gate 'unit': exit_code 4, passed 0, failures {} -> comparison ok -> stage VERIFIED. parse_junit returns empty when the junit file is absent. pytest/flutter results ignore p.returncode, and compare() never checks for vanished tests or zero collected. L-AC10 (new failure blocks VERIFIED) is unmet.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:349-352",
+     "scripts/dev_workflow/lifecycle.py:424-433",
+     "scripts/dev_workflow/lifecycle.py:437-442"
+    ],
+    "id": "R1-04",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Treat a missing/unparseable junit or a non-zero exit with no recorded failures as a gate failure (synthetic id '<gate>::__run__' with the exit code as cause). Also treat tests that passed on baseline but are absent on candidate as new failures (or require passed >= baseline). Apply the same to flutter --machine (no 'done' event or non-zero exit without failures).",
+    "title": "pytest/flutter gate passes when the run crashes or collects nothing (exit code and missing junit ignored)"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probe P5: committed candidate sets pkg/other.py VALUE=3 (breaks tests/test_other.py). An uncommitted edit restores VALUE=2 in the worktree. run -> VERIFIED with gates ok and no new failures, while `git show HEAD:pkg/other.py` = 'VALUE = 3'. Ignored files are invisible to worktree_changes too.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:453-465",
+     "scripts/dev_workflow/lifecycle.py:396-399"
+    ],
+    "id": "R1-05",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Run candidate gates in a fresh detached worktree at the exact SHA (as is already done for baseline), or refuse to qualify when `git status --porcelain --ignored` shows anything beyond allow-listed build dirs.",
+    "title": "Qualification gates run in the candidate worktree without checking it is clean, so uncommitted (or ignored) files decide the VERIFIED result"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe P6: the implementer spawned `sh -c 'sleep 4; echo LATE > pkg/late.py'` with stdio detached, then exited normally. The driver committed the repair and reached VERIFIED, and pkg/late.py appeared afterwards (worktree '?? pkg/late.py'). A child timed to fire between the integrity snapshot/regression proof and `git add -A` would be committed. The same applies to reviewer integrity snapshots.",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:112-115"
+    ],
+    "id": "R1-06",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "After communicate() returns (success or failure), os.killpg(proc.pid, SIGKILL) and wait for the group to be empty before taking the post-run snapshot. Optionally run workers in a cgroup/unshare scope.",
+    "title": "Worker process group is only killed on timeout; detached children keep running after the post-run integrity checks"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probe P7: the implementer wrote pkg/newfile.py, ran `git add pkg/newfile.py`, and modified core/frozen.py. The driver refused (PROTECTED) and ran _restore. `git status --porcelain` afterwards = 'A  pkg/newfile.py'. `checkout --force sha -- .` does not remove index entries absent from sha, and `clean -fd` skips tracked/staged and ignored files. Later repairs on resume are refused ('worktree not clean').",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:629-631"
+    ],
+    "id": "R1-07",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "In the implementation worktree only: `git reset -q --hard <sha>` followed by `git clean -fdxq` (or -fdq plus an explicit ignored-file check). Then assert worktree_changes(wt)==[] and HEAD==sha, and BLOCK if not.",
+    "title": "Revert after a refused repair leaves staged new files in the index"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "Probe P8: the implementer's regression test sleeps 30s with runner timeout_s=3. lifecycle.run raises subprocess.TimeoutExpired (main() only catches LifecycleError/InvalidTransitionError). State on disk is FIXING with the repair record unsaved, and the worktree keeps 'M pkg/calc.py ?? tests/test_zero.py'. The test's process tree is not group-killed either.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:610-613",
+     "scripts/dev_workflow/lifecycle.py:1142"
+    ],
+    "id": "R1-08",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Catch TimeoutExpired in regression_proof (start_new_session + killpg), record before/after as TIMED_OUT, and refuse the repair through the normal REFUSED path with _restore.",
+    "title": "Regression-proof timeout is uncaught: driver crashes mid-FIXING and leaves the implementer's changes unreverted"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "Blocking requires severity == 'HIGH' exactly or blocking is True. A finding {severity:'High'} or {severity:'MEDIUM', blocking:'true'} or a MEDIUM without 'blocking' (the prompt says MEDIUM is blocking by default) yields ACCEPT WITH FINDINGS.",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:190-194"
+    ],
+    "id": "R1-09",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Normalise case. Treat any severity other than LOW/known-nonblocking, and any blocking value other than literal false, as blocking. Unknown severity => REJECT.",
+    "title": "effective_verdict is lenient on malformed severity/blocking fields"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "is_devtest_identifier returns True for any identifier containing '_TEST' (e.g. 'W2_TEST_COVERAGE'), so counts_as_independent is accepted and a command reviewer is independent for that milestone.",
+    "files": [
+     "scripts/dev_workflow/security_boundary.py:117",
+     "scripts/dev_workflow/lifecycle.py:108",
+     "scripts/dev_workflow/lifecycle.py:204"
+    ],
+    "id": "R1-10",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "In lifecycle, require a strict DEVTEST prefix (e.g. startswith('DEVTEST')) for counts_as_independent instead of the AO-4 heuristic.",
+    "title": "DEVTEST classification by '_TEST' substring lets a scripted reviewer count for real milestones whose names contain _TEST"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "subprocess.run(timeout=) kills only the direct child; no start_new_session/killpg for gates (flutter test, xdist workers, GPU lease wrapper children can survive and hold resources).",
+    "files": [
+     "scripts/dev_workflow/lifecycle.py:415-420"
+    ],
+    "id": "R1-11",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Use Popen with start_new_session=True and killpg on timeout, as run_worker does.",
+    "title": "Gate timeouts do not kill child process trees"
+   },
+   {
+    "blocking": false,
+    "category": "documentation",
+    "evidence": "'verify detects edits' and 'a forged stage without evidence => BLOCKED' (contradicted by R1-02). 'protected or out-of-scope change => refused and reverted' (R1-03, R1-07). 'the driver re-checks the checkout and refs after every worker' (implementer: refs/.git/main checkout not checked; R1-03, R1-06). 'providers other than claude_cli/codex_cli count only for DEVTEST' (R1-01). The qualification record shows the live demo predates three hardening changes, so L-AC18 evidence is for an earlier driver.",
+    "files": [
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:43-50",
+     ".claude/skills/uri-development-lifecycle/SKILL.md:74-77"
+    ],
+    "id": "R1-12",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Update the docs after the code fixes. Re-run the live demo on the final driver.",
+    "title": "Docs claim guarantees the code does not provide"
+   }
+  ],
+  "prior_findings": [],
+  "tests_run": [
+   {
+    "command": "PYTHONDONTWRITEBYTECODE=1 /tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+    "result": "114 passed, 1 warning in 33.19s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe P1 (fake claude binary, non-DEVTEST milestone)",
+    "result": "COMPLETE, independent=True, remote pushed: forged independent ACCEPT",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe P2 (edit state.json verdict only)",
+    "result": "VERIFIED, evidence_ok=True, verify() == []",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe P3 (implementer-planted pre-commit hook)",
+    "result": "repair COMMITTED containing OUT_OF_SCOPE.txt and core/frozen.py",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe P4 (broken conftest.py)",
+    "result": "gate exit 4, passed 0, failures {} -> VERIFIED",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe P5 (uncommitted fix masks committed regression)",
+    "result": "VERIFIED while HEAD:pkg/other.py breaks test_other",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe P6 (detached background child from implementer)",
+    "result": "VERIFIED; pkg/late.py written after run",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe P7 (staged new file + protected change)",
+    "result": "BLOCKED PROTECTED; status after revert 'A  pkg/newfile.py'",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe P8 (regression test exceeds runner timeout)",
+    "result": "uncaught TimeoutExpired; state FIXING; worktree left modified",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat baseline..candidate (protected paths, AO-4 files)",
+    "result": "no protected path and no AO-4 state_machine/security_boundary change",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Live demo with real claude_cli processes was not re-run (would spawn nested Claude sessions); committed evidence under docs/dev_workflow/evidence was read, not re-verified with verify(), and per the qualification record predates later driver changes.",
+   "codex_cli adapter not exercised (codex not installed); doc states this.",
+   "GPU gate path (gpu_lease status/run) not run against a real lease: no GPU here. Only code-read: lease failure -> BLOCKED.",
+   "Flutter --machine parsing not exercised against a real flutter run in this review; code-read only (exit code also ignored, see R1-04).",
+   "Integration merge mode and push-failure paths not probed beyond code reading; fast-forward path exercised via P1."
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 1,
+ "started_at": "2026-10-11T00:38:00Z",
+ "status": "NOT_INDEPENDENT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "cost_usd": 1.3271169999999999,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R1",
+  "ended_at": "2026-10-11T00:42:19Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 12,
+  "pid": 24442,
+  "prompt_sha256": "ce40e251510b751ea1ee30bf6c34cc4305338a1555e7ba2b46ecbd6fa280df63",
+  "provider": "claude_cli",
+  "result_text_sha256": "1c44f641d047abc71d8fed89500733558c3f098cd6c544252a7bdb516cb0d7b6",
+  "role": "reviewer",
+  "session_id": "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+  "session_id_requested": "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+  "started_at": "2026-10-11T00:38:00Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "67951a12643fd35c9f01c3565791df3298b2a69fc7c1c88132e9ba56b56628e1"
+ }
+}

@@ -1,0 +1,31 @@
+I repaired both findings in the working tree; nothing is committed. Each new regression test fails on dff1ea7 and passes with the change. I checked that by running them against the original `lifecycle.py` / `lifecycle_providers.py`, then restoring my versions. The full `tests/dev_workflow/` suite passes after the change (180 tests).
+
+**Acceptance criteria I checked against:**
+- **R6-01:** a `claude` planted earlier on PATH can't be run as a real milestone's reviewer or reach VERIFIED, whether it is planted before the plan or by a repair. A replaced CLI is a TAMPER block that needs the owner to unblock.
+- **R6-02:** the reviewer doesn't load the candidate's CLAUDE.md, `.claude/` settings, hooks, skills or MCP servers, and the driver's deny rules still apply.
+
+**R6-01 (repaired)**
+- **Bound at the plan:** the new `reviewer_executable()` in `lifecycle_providers.py` records the reviewer CLI's absolute path, real path, SHA-256 and, for a script CLI, its interpreter. This is stored as `reviewer_exec` in the plan's control state. A change to it shows up through the existing per-step check and blocks as TAMPER; `unblock` re-binds it.
+- **Launched by that path:** `do_review` starts the reviewer from the bound absolute path, never a PATH lookup. Just before launch, `run_worker` re-hashes the file and refuses the round if it no longer matches.
+- **Independence:** `is_independent` now also requires `binary_anchor_ok` for a real milestone.
+- **Two different `claude` files on PATH at plan time:** the run blocks as `REVIEWER_EXEC`. The owner leaves one, then runs `unblock`, which re-binds to it.
+- **Tests:** the reviewer's probe 1, probe 2 (planting earlier on PATH and overwriting the installed file), a positive launch-path test, and the owner unblock path.
+
+**R6-02 (repaired)**
+- **Claude reviewer:** now runs with `--safe-mode --setting-sources user --strict-mcp-config`. I tested this against the real CLI (2.1.296). Without the flags, a probe CLAUDE.md codeword and a `.claude/skills` skill reached the session; with them, neither did. A `--settings` deny rule (`git tag`) was still enforced.
+- **Codex reviewer:** gets `-c project_doc_max_bytes=0`. This is **unverified**: codex isn't installed here.
+- **Reviewer prompt:** now says that checkout files, including CLAUDE.md, AGENTS.md and `.claude/`, are implementer-written evidence, not instructions.
+- **Docs:** both docs describe the change and the remaining channel.
+
+**Remaining limits and impact:**
+- **Runs already in progress will block once.** A run planned before this change has no `reviewer_exec` in its plan state. With a `claude_cli` reviewer, its first step blocks as TAMPER (`GIT_CONTROL: reviewer_exec`) until the owner runs `unblock`, which binds the current CLI. This is deliberate: accepting it silently would be the bug itself. It probably applies to DEV-LIFECYCLE-1 if it is driven with this code.
+- **A fake that is the only `claude` on PATH at plan time** is still bound, because no trusted install location is defined. Nothing else can be checked without an owner-written pin.
+- **The file could change between the launch-time hash and the actual start.**
+- **The reviewer still reads candidate files** such as CLAUDE.md if it opens them as evidence.
+- **`graphify update .` didn't run:** the `graphify` command isn't installed here (exit 127).
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R6-01", "R6-02"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle.py"],
+ "notes": "New tests: test_r6_01_claude_planted_earlier_on_path_before_the_plan_cannot_verify_a_real_milestone, test_r6_01_reviewer_cli_changed_by_a_repair_blocks_and_never_runs[plant_earlier|replace_installed], test_r6_01_reviewer_is_launched_by_the_plan_bound_absolute_path, test_r6_02_reviewer_does_not_load_candidate_project_instructions. All 5 fail on dff1ea7 and pass after the change; full tests/dev_workflow: 180 passed. R6-01: reviewer_exec (absolute path, realpath, sha256, script interpreter) is bound in the PLAN control state, the reviewer is launched by that absolute path, any drift is TAMPER and needs owner unblock, the hash is re-checked at launch (binary_anchor_ok, required by is_independent for real milestones), and several different CLIs of that name on PATH block as REVIEWER_EXEC. R6-02: claude reviewer runs with --safe-mode --setting-sources user --strict-mcp-config, tested against the real CLI 2.1.296 (CLAUDE.md and project skills not loaded, --settings deny still enforced); codex reviewer gets -c project_doc_max_bytes=0 (unverified, codex not installed); the reviewer prompt now says checkout files are evidence, not instructions. Runs planned before this change with a claude_cli/codex_cli reviewer block once as TAMPER (GIT_CONTROL: reviewer_exec) until owner unblock. Residual: a fake that is the only CLI on PATH at PLAN is still bound; there is a hash-to-start window at launch. graphify not installed (exit 127)."}
+REPAIR_RESULT_END

@@ -1,0 +1,91 @@
+{
+ "addresses": [
+  "R8-01"
+ ],
+ "changed": [
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/lifecycle.py",
+  "scripts/dev_workflow/lifecycle_providers.py",
+  "tests/dev_workflow/test_lifecycle.py"
+ ],
+ "commit": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+ "ended_at": "2026-10-11T04:47:33Z",
+ "pre": "e029675cc9f229596af26365277f2ae536be232b",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 7,
+ "report": {
+  "not_repaired": [],
+  "notes": "Fix: (1) Linux child-subreaper containment: the driver becomes PR_SET_CHILD_SUBREAPER, and sweep_orphans() SIGKILLs and reaps every adopted orphan (direct children outside the driver's session) until none is left. It runs before each worker, after each worker (after _killpg), after each run_cmd gate/test command and at run() start. Worker records gain containment_pre/containment_post/contained. (2) ConfigWatch polls the reviewer config dir every 10 ms for the whole run; env/apiKeyHelper or a settings file seen at any moment sets config_isolated=false (previously only the end state was checked). (3) is_independent requires contained is True for real milestones (reason cites R8-01). New tests: test_r8_01_setsid_child_of_a_worker_cannot_inject_env_into_the_reviewer_config, test_r8_01_env_injected_and_removed_during_the_run_is_not_isolated, test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed. All three fail on e029675 with the new tests and pass after the change (5 repeat runs passed). Existing test test_r1r2_01_lingering_child_cannot_turn_reject_into_accept relied on a surviving setsid forger, which containment now kills. It is parametrized: contained=False monkeypatches the sweep off and keeps the original detection assertions unchanged; contained=True asserts the forgery never happens. Nothing was weakened or removed. Full tests/dev_workflow: 189 passed. Live re-run with real claude 2.1.296 and the local scripted server, ANTHROPIC_BASE_URL and CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST unset: an injector left by an earlier worker was killed (killed=1), the server got 0 hits, config_isolated and contained were true. An injector started outside the driver's tree (the reviewer's probe, HOLD 0.8 and 1.5) still redirects the CLI to the scripted ACCEPT but is recorded as config_isolated=false, so the round is not independent. Residual limits, documented in section 6: processes started outside the driver's tree (systemd-run, at/cron, orphans of a killed driver) are detected by the 10 ms watch, not prevented, and a sub-poll-interval injection read by the CLI in that window is not excluded. Windows/macOS have no subreaper: contained=false, so real-milestone reviews there do not count (fail-closed) until Job Object containment exists. That code is not written or tested here and is an owner decision. graphify update was unavailable here.",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle.py"
+  ],
+  "repaired": [
+   "R8-01"
+  ]
+ },
+ "started_at": "2026-10-11T04:29:36Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "05cd0c74-4c8a-4b30-850e-41c4679a1141",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.9178842,
+  "cwd": "/home/user/uri-wt/lifecycle",
+  "ended_at": "2026-10-11T04:42:20Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 29,
+  "pid": 12219,
+  "prompt_sha256": "eef1713572638aa90aff3eaaaed59fefca9cc55958e312e88906896dfa9ac1c4",
+  "provider": "claude_cli",
+  "result_text_sha256": "bb63c40d415caa98b44e485d8d71b8c0957b839898b839280eb0a5c0395393d2",
+  "role": "implementer",
+  "session_id": "05cd0c74-4c8a-4b30-850e-41c4679a1141",
+  "session_id_requested": "05cd0c74-4c8a-4b30-850e-41c4679a1141",
+  "started_at": "2026-10-11T04:29:36Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "24646fbdadf42602dbb2965865d9ff4909e209d5552cfafb661c89bb97aecf99"
+ }
+}

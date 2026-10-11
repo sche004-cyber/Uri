@@ -1,0 +1,19 @@
+I repaired R3-01. A worker that adds a fetch refspec is now stopped as TAMPER, and the integration fetch no longer writes any local ref. The full `tests/dev_workflow` suite passes (165 tests), and both new tests fail on 39ed499.
+
+**The problem:** at 39ed499, the list of "routine" git config keys ignored by the tamper check was too wide. It skipped `remote.<r>.fetch`, so a worker could map the target branch onto another session's branch without being caught. The integration step's `git fetch` then force-moved that branch.
+
+**The fix** (`scripts/dev_workflow/lifecycle.py`), in two parts:
+- **Tamper check:** only `branch.*`, `remote.<r>.prune` and `remote.<r>.skipdefaultupdate` are still ignored. Changes to fetch refspecs, `mirror`, `tagopt` and `pruneTags` count as TAMPER again.
+- **Integration fetch:** a new `integration_fetch()` runs `git fetch -q --refmap= --no-tags --no-prune --no-write-fetch-head <remote> refs/heads/<target>`. It downloads the target's commits without updating any local ref, even if the config is hostile. `integrate()` still reads the target tip with `ls-remote`, so nothing else changes.
+
+**Regression tests** (in `tests/dev_workflow/test_lifecycle.py`):
+- `test_r3_01_worker_written_fetch_refspec_is_tamper_and_moves_no_branch` replays the reviewer's probe end to end. At 39ed499 the run ends COMPLETE; now it ends BLOCKED with TAMPER, and both the other session's branch and the remote are unchanged.
+- `test_r3_01_integration_fetch_moves_no_local_ref_even_with_hostile_refspec` sets a hostile fetch refspec plus prune and pruneTags. It checks that the integration fetch leaves every local ref and tag as it was. At 39ed499 it fails because `integration_fetch` doesn't exist yet. To show the test checks something real, I ran the old fetch command against the same setup: it moved `session-b`, and the new command didn't.
+
+**Docs:** I added a correction note to `docs/dev_workflow/LIFECYCLE_QUALIFICATION.md` below the R2-01 entry, keeping the history.
+
+The existing `test_r2_01` test is unchanged and still passes. `remote.origin.prune` is still ignored by the check, and it can't do harm because the integration fetch always passes `--no-prune`. `graphify update .` didn't run because `graphify` isn't installed here (exit 127); its output is outside the paths I'm allowed to change anyway. Nothing is committed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R3-01"], "not_repaired": [], "regression_tests": ["tests/dev_workflow/test_lifecycle.py"], "notes": "_ROUTINE_CONFIG narrowed to branch.* and remote.<r>.(prune|skipdefaultupdate); fetch/mirror/tagopt/prunetags changes are TAMPER again. integrate() now calls new integration_fetch(): git fetch -q --refmap= --no-tags --no-prune --no-write-fetch-head <remote> refs/heads/<target>, which writes no local ref. New tests test_r3_01_worker_written_fetch_refspec_is_tamper_and_moves_no_branch (39ed499: run()==COMPLETE, fails) and test_r3_01_integration_fetch_moves_no_local_ref_even_with_hostile_refspec (39ed499: AttributeError; the old fetch command was separately shown to move session-b). Full tests/dev_workflow: 165 passed. Doc correction added to docs/dev_workflow/LIFECYCLE_QUALIFICATION.md. graphify CLI not installed (exit 127), so the graph was not updated."}
+REPAIR_RESULT_END

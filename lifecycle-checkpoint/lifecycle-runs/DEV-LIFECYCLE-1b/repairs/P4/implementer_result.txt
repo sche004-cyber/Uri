@@ -1,0 +1,24 @@
+R5-01 is repaired. In merge mode the driver now checks git control state again after the combined gates run and before the push. If anything changed, it refuses the push and blocks as TAMPER. It checks once more after the push, so a change during the push can't count as integrated.
+
+**What changed**
+- **`scripts/dev_workflow/lifecycle.py` (in `integrate()`)**:
+  - **Before the push (merge mode only):** after the gates run on the merge result, the driver re-runs `control_drift`. That check covers the user-level `~/.gitconfig` and other config files, the repo's hooks, config and info files, and `refs/replace`. On any drift it records the integration status as `REFUSED_TAMPER` and blocks as `TAMPER`, without pushing.
+  - **After the push (every mode):** `control_drift` runs again after the push and its `ls-remote` check. If anything changed, the status becomes `UNVERIFIED_TAMPER` and the run blocks as `TAMPER` instead of reaching COMPLETE.
+- **`tests/dev_workflow/test_lifecycle.py`**:
+  - **New test:** `test_r5_01_combined_gate_writing_global_insteadof_cannot_fake_a_merge_integration` reproduces the reviewer's probe. The candidate's `tests/conftest.py` adds an `insteadOf` line to `$HOME/.gitconfig`, but only when running in the `integration` worktree. The test expects BLOCKED with `REFUSED_TAMPER`, and checks that neither the real nor the fake remote moved from the base commit.
+  - **Fixture fix:** the `user_home` fixture now also points `HOME` at the throwaway directory for gate commands. Gate commands get their environment from `NOBYTECODE`, a copy of `os.environ` taken at import, so before this fix a gate test could write to the real `~/.gitconfig`.
+
+**Verification**
+- **Original code:** with the original `lifecycle.py` swapped in, the new test fails. The run reaches COMPLETE and pushes to the fake remote.
+- **With the fix:** the new test passes.
+- **Full suite:** `tests/dev_workflow` gives 175 passed, 1 warning.
+
+**Real `~/.gitconfig` left with stray entries.** The first runs of my new test, before the fixture fix, added two inert `[url …] insteadOf` entries to the real `/root/.gitconfig` (lines 23–26). They point at temporary pytest paths that no longer exist. My attempt to remove them was denied, so I did not work around it. Lines 21–22 are a similar entry from an earlier run (`pytest-174/test_merge_combined_gates_redi0`). That run was not the R5-01 test I wrote here, and I left it alone. Someone with permission should delete lines 21–26.
+
+**Not done**
+- `graphify update .` could not run because `graphify` is not installed.
+- I chose not to push to an explicitly resolved URL or set `GIT_CONFIG_GLOBAL=/dev/null` for the push. Doing that would drop global credential helpers that real pushes may rely on. Without that change, the check before the push is what stops a redirected push.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R5-01"], "not_repaired": [], "regression_tests": ["tests/dev_workflow/test_lifecycle.py"], "notes": "integrate(): in merge mode, control_drift is re-run after the combined-gate qualify and before the push; drift gives status REFUSED_TAMPER plus a TAMPER block, with no push. control_drift also runs after the push and ls-remote in every mode; drift gives UNVERIFIED_TAMPER plus a TAMPER block, never COMPLETE. New test test_r5_01_combined_gate_writing_global_insteadof_cannot_fake_a_merge_integration fails on 6784424 (reaches COMPLETE and pushes to the fake remote) and passes after the change; tests/dev_workflow: 175 passed. The user_home fixture now also sets HOME in L.NOBYTECODE, because gate commands use that import-time copy of os.environ; without it the test wrote to the real ~/.gitconfig. My early runs left two inert insteadOf entries in /root/.gitconfig (lines 23-26, temporary pytest paths); removing them was denied, so they still need manual deletion. Lines 21-22 are an older similar entry from a test_merge_combined_gates_redi0 run (pytest-174), not the R5-01 test written here; left untouched. graphify is not installed, so the graph was not updated. Not adopted: pushing with GIT_CONFIG_GLOBAL=/dev/null, which would drop credential helpers real pushes may need; the drift check before the push is the guard instead."}
+REPAIR_RESULT_END

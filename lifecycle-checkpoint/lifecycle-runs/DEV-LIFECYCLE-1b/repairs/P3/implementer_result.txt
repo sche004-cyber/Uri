@@ -1,0 +1,25 @@
+I've repaired R4-01. The driver's tamper check now also covers git settings outside the repository, so a worker that edits `~/.gitconfig` or similar files gets the run blocked as TAMPER. The new tests fail on 475533a and pass after the change, and the full `tests/dev_workflow` suite passes (174 tests). Nothing is committed.
+
+**What changed** (`scripts/dev_workflow/lifecycle.py`): a new `_user_git_control(repo)` feeds into `git_control_digest`. That digest is already compared to the value recorded at PLAN before every step, after each review and around each repair. It now also records:
+- **Git's effective user-level and system-level settings**, including any files they pull in via `include` (`git config --system/--global --includes --list -z`).
+- **The contents of these files:** `~/.gitconfig`, `$XDG_CONFIG_HOME/git/{config,attributes,ignore}`, `/etc/gitconfig` and `/etc/gitattributes`. It also covers the paths `git var` reports for `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_SYSTEM`/`GIT_ATTR_GLOBAL`/`GIT_ATTR_SYSTEM`, and wherever the effective `core.attributesFile` and `core.excludesFile` point.
+
+So a planted `insteadOf` (push redirect) or smudge/clean filter now blocks the run before any reviewer or gate checkout and before any push. The global ignore file is covered too, because it could hide untracked files from `worktree_changes`.
+
+**Regression tests** (`tests/dev_workflow/test_lifecycle.py`, all using a throwaway HOME so the real `~/.gitconfig` is never touched):
+- **One-line edits (6 cases):** adding an `insteadOf`, a smudge filter or an `include` to `~/.gitconfig`, an `insteadOf` to the XDG config, a filter rule to the XDG attributes file, or a pattern to the XDG ignore file each change the digest.
+- **Indirect files:** editing only an included config file, or a custom `core.attributesFile`, changes the digest.
+- **End-to-end, push redirect:** the repair worker appends `insteadOf` to `$HOME/.gitconfig` with a plain file write (not `git config`). The run ends BLOCKED with TAMPER, and neither the real remote nor the fake one receives a push.
+- **End-to-end, smudge filter:** the repair worker adds a global smudge filter and a `.gitattributes`. The run ends BLOCKED with TAMPER and the remote is unchanged.
+
+On 475533a all 9 new tests fail. A tenth test matched my `-k r4_01` filter and passed there, but it is an older one from a previous round (`test_r4_01_relaxed_ws_frozen_check_list_blocks_as_config_change`).
+
+**Limits:**
+- **Detection, not isolation:** user-level config that was already hostile when the plan was recorded is accepted as the starting state, the same as the repository config.
+- **Not implemented:** I did not add the reviewer's optional extra check of pushes against the remote URL recorded at PLAN. The digest already blocks before the push step.
+- **Runs already in progress:** a run whose plan was recorded under the old digest will show one GIT_CONTROL mismatch under the new driver. An owner `unblock` re-records the starting state.
+- **Graph not updated:** `graphify update .` was not run, because it writes `graphify-out/`, which is outside the paths I'm allowed to change.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R4-01"], "not_repaired": [], "regression_tests": ["tests/dev_workflow/test_lifecycle.py"], "notes": "git_control_digest now includes _user_git_control(): effective system/global git config entries (includes followed) plus the bytes of ~/.gitconfig, XDG git config/attributes/ignore, /etc/gitconfig, /etc/gitattributes, git-var-reported GIT_CONFIG_*/GIT_ATTR_* paths, and the effective core.attributesFile/core.excludesFile. It is checked by the existing control_drift before every step and around repairs, so a worker-written insteadOf or smudge filter blocks as TAMPER before checkouts or the push. New tests: test_r4_01_user_level_git_control_files_are_bound (6 params), test_r4_01_included_global_config_and_custom_attributes_file_are_bound, test_r4_01_worker_written_global_insteadof_blocks_and_push_is_not_redirected, test_r4_01_worker_written_global_smudge_filter_blocks_before_checkouts_differ. All 9 fail on 475533a and pass after the change. The pre-existing test_r4_01_relaxed_ws_frozen_check_list_blocks_as_config_change also matches -k r4_01 and passes on both. Full tests/dev_workflow: 174 passed. Detection, not isolation: hostile user config already present at PLAN is accepted as the starting state, as with repo config. Push verification against a PLAN-recorded remote URL was not added. Runs planned with the old digest will see one GIT_CONTROL mismatch that needs an owner unblock. graphify update not run (graphify-out/ is outside permitted paths)."}
+REPAIR_RESULT_END

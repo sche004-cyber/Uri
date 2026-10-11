@@ -1,0 +1,12 @@
+........................................................................ [ 44%]
+........................................................................ [ 88%]
+...................                                                      [100%]
+=============================== warnings summary ===============================
+scripts/dev_workflow/auditor.py:41
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/qualify/scripts/dev_workflow/auditor.py:41: PytestCollectionWarning: cannot collect test class 'TestExecutionResult' because it has a __init__ constructor (from: tests/dev_workflow/test_workflow.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+163 passed, 1 warning in 124.83s (0:02:04)
+
+--- stderr ---

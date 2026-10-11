@@ -1,0 +1,31 @@
+I repaired all four findings in this working tree; nothing is committed. Each fix has a regression test that fails on `fbac437` and passes now.
+
+**Test evidence:**
+- **New tests:** 9 added to `tests/dev_workflow/test_lifecycle.py` (all named `test_r1r2_*`). Run against the `fbac437` code: 9 fail. Run now: 9 pass.
+- **Full suite:** 161 passed (the 152 existing plus the 9 new). No existing test was weakened, skipped or deleted.
+- **How I ran the "before" check:** `git worktree add` was declined, so I extracted the `fbac437` code with `git archive` into my scratchpad and ran the new tests there.
+- **Timing-dependent test:** the R1-01 test uses a real lingering child process. It passed 5 of 5 runs after the fix. On the old code it reproduced the reviewer's attack 3 of 3 times: a genuine REJECT became ACCEPT.
+
+**What changed, per finding:**
+- **R1-01 (forged verdict file):** the verdict is now read from the reviewer's result as returned in memory, never from `reviewer_result.txt`. `verify()` now rebuilds each round's result from the hashed raw output and also checks `reviewer_result.txt` against its recorded hash. A child process that rewrites the file afterwards can no longer change the verdict, and `verify()` reports the change. The docs (§6) wrongly said such writes were caught by the clean-worktree checks; that is corrected, and the correction is recorded in `LIFECYCLE_QUALIFICATION.md` rather than overwritten.
+- **R1-02 (malformed findings):** if `findings` (or `prior_findings`) is not a list of objects, the whole result is treated as unparseable. The round becomes NO_RESULT and the run waits for the model; it is never ACCEPT. This applies to imported reviews too.
+- **R1-03 (gate tests dropped from the proof):** class-based pytest ids now map to their test file, and Flutter ids resolve against the gate's working directory. If a gate test named by a gate finding can't be found, or has no configured regression runner, the repair is refused instead of the proof being quietly relaxed.
+- **R1-04 (git hooks/config not anchored):** the hooks, config and `info/` state, plus replace refs, are now recorded when the plan is made. Any drift from that is BLOCKED as tamper for the owner, never a wait that resumes on its own. It is checked:
+  - before every step (so before every worker);
+  - right after every review;
+  - in the evidence check.
+
+  Only `unblock` of that particular block re-records the current state. The diagnosis worker now gets the same before/after integrity check, and the driver's git commands run with `core.fsmonitor=false`. Older runs without a recorded state get one recorded on their next `run`.
+
+**Limits:**
+- **Required test ids:** findings without an `id` are still accepted. An existing test (`test_r1_09`) uses findings with no id, and a finding missing its severity is already treated as blocking, so this can't produce a false ACCEPT.
+- **Milestone refs not anchored:** the candidate, baseline and integration-target refs move legitimately during a run, so they are still checked per step rather than pinned to the plan.
+- **Residual exposure:** a filter driver planted in git config plus attributes during a review could still run during the driver's post-review `git status`, before the drift check fires. It is now caught right after, but not prevented. I did not verify this path.
+- **Graph not updated:** I did not run `graphify update .` because `graphify-out/` is outside the permitted paths.
+- **Other R5 finding:** the R5 "non-deterministic baseline key" finding was not in this list and is not addressed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R1-01", "R1-02", "R1-03", "R1-04"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle.py"],
+ "notes": "9 new tests (test_r1r2_*) in tests/dev_workflow/test_lifecycle.py: all 9 fail on fbac437 (checked via git archive copy, since git worktree add was declined) and pass after; full tests/dev_workflow suite 161 passed. R1-01: verdict parsed from in-memory result_text (result_sha256 = its hash); round.json hash taken from the written bytes; verify() re-derives each round's result from the hashed stdout (claude_cli JSON 'result' extraction mirrored) and checks reviewer_result.txt against result_sha256; §6 limitation text corrected and the correction recorded in LIFECYCLE_QUALIFICATION.md. R1-02: result_problem() makes a non-list or non-dict findings/prior_findings result unparseable (NO_RESULT -> WAITING_FOR_MODEL; effective_verdict returns None), also for import-review. Missing finding id is not required, because the existing test_r1_09 uses id-less findings and missing severity is already blocking. R1-03: _test_file maps junit classnames (strips trailing class components) and resolves paths against the gate cwd then the repo root; _commit_and_prove refuses a gate repair whose named test is not a file with a configured runner; regression_proof reports must_fail tests that were not run; __run__ gate findings carry no file. R1-04: control_state (hooks/config/info digest + refs/replace set) is bound in the PLAN event (CONTROL_ANCHORED for legacy runs) and checked before every step, after every review and in evidence_ok; any drift -> BLOCKED TAMPER with GIT_CONTROL marker, and only unblock of that block re-anchors; the diagnosis worker gets a before/after snapshot (refs, control, impl worktree) and tamper -> BLOCKED TAMPER; GIT adds -c core.fsmonitor=false. Not done: milestone refs are not anchored to PLAN because they move legitimately (still checked per step); a filter driver planted via config+attributes could still run during the post-review git status before drift is detected (detected right after, not prevented; not verified); graphify update not run because graphify-out/ is outside the permitted paths."}
+REPAIR_RESULT_END

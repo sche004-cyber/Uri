@@ -1,0 +1,96 @@
+{
+ "addresses": [
+  "R3-01",
+  "R3-02",
+  "R3-03",
+  "R3-04"
+ ],
+ "changed": [
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/lifecycle.py",
+  "tests/dev_workflow/test_lifecycle.py"
+ ],
+ "commit": "43467152d92ec7b630bfa5dc3b8587577af96443",
+ "ended_at": "2026-10-11T01:21:53Z",
+ "pre": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 2,
+ "report": {
+  "not_repaired": [],
+  "notes": "New tests: test_r3_01_redirected_head_does_not_move_another_branch_on_restore[other|canon], test_r3_01_reviewer_redirecting_impl_head_is_not_independent, test_r3_02_transient_baseline_gate_failure_is_not_cached, test_r3_03_candidate_moved_after_verified_is_reaudited, test_r3_04_changed_config_blocks_until_owner_acknowledges, test_r3_04_config_binding_is_read_from_the_chain_not_state_json. All 7 fail with c1ba808's lifecycle.py and pass after; the full tests/dev_workflow suite passes (141). R3-01: the repair checks which branch HEAD names before and after; restore re-points HEAD at the candidate branch before reset --hard; that branch is in the review integrity snapshot. R3-02: only COMPLETED_WITH_RESULT baseline results are cached. R3-03: a block resumes at AUDITING when the current candidate has no independent ACCEPT. R3-04: the policy is recorded in PLAN; the config hash is read from the event chain; a CONFIG_CHANGED stops as BLOCKED(CONFIG) until the owner unblocks with that config. The config file stays agent-writable and the owner acknowledgement is the control (documented). graphify was not run: not installed, no graphify-out/.",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle.py"
+  ],
+  "repaired": [
+   "R3-01",
+   "R3-02",
+   "R3-03",
+   "R3-04"
+  ]
+ },
+ "started_at": "2026-10-11T01:12:34Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "551fcfbf-0afb-4f07-9a15-7d8a0b5376b9",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.8970506000000003,
+  "cwd": "/home/user/uri-wt/lifecycle",
+  "ended_at": "2026-10-11T01:19:32Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 36,
+  "pid": 16942,
+  "prompt_sha256": "59988b5d789ce0df4da2f68df79dcd9a8465f3aefbb473f64ce20515536157f5",
+  "provider": "claude_cli",
+  "result_text_sha256": "cbf1f80490b08b47677bba77c7faaf3ed1d0119ed76e7dd723a7f6db76bae5f5",
+  "role": "implementer",
+  "session_id": "551fcfbf-0afb-4f07-9a15-7d8a0b5376b9",
+  "session_id_requested": "551fcfbf-0afb-4f07-9a15-7d8a0b5376b9",
+  "started_at": "2026-10-11T01:12:34Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "98971cdfeefcd33e0d644cfc5a388e42d2f95523bc05133a4914a7fa955dfc6e"
+ }
+}

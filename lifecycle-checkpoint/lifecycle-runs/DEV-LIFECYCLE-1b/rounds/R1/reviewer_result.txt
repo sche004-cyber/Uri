@@ -1,0 +1,85 @@
+I'm rejecting candidate `fbac437`. A real reviewer's REJECT can be swapped for a forged ACCEPT, and the run then integrates with `verify()` reporting nothing wrong. I reproduced this end to end.
+
+Both SHAs check out: HEAD is `fbac43727f89…` and the baseline `ffdf5343…` exists. The checkout is still clean, and the diff touches no protected path. There were no earlier blocking findings to re-check. The `tests/dev_workflow` suite passes (152 tests).
+
+**Blocking findings:**
+- **R1-01 (HIGH) – the verdict comes from a file anyone can overwrite.**
+  - **Cause:** `do_review` throws away the reviewer text it holds in memory. It then reads the verdict from `rounds/R<n>/reviewer_result.txt`, and nothing checks that file's hash; `verify()` only checks the raw stdout file.
+  - **Repro:** My probe used a DEVTEST fixture where the reviewer always rejects. The implementer left behind a detached child process that rewrote that file in round 2 with a forged ACCEPT. The run reached COMPLETE and pushed to the fixture's local bare remote; `verify()` returned no errors.
+  - **Docs:** This also disproves the stated limit that a detached child's writes are "caught by the clean-worktree checks". Those checks never look at the state directory.
+- **R1-02 (MEDIUM) – malformed reviewer output can still pass.** If `findings` is a dict or a list of strings, the driver silently drops the items and returns ACCEPT. That breaks the "no false ACCEPT" criteria (L-AC3, L-AC4).
+- **R1-03 (MEDIUM) – round R5's finding is still not fixed.** When a gate fails in a class-based pytest test or a Flutter test, the driver can't map it to a test file. That test is then never run, so it is not shown to fail before the repair, which is what the docs say happens.
+- **R1-04 (MEDIUM) – git hook/config tampering is only caught the first time.** The "before" check is taken fresh each round. A change caught in one round (marked NOT_INDEPENDENT, which resumes automatically) becomes the accepted state for the next round. The diagnosis worker's changes to refs, hooks or config are never checked at all. This finding rests on the code alone; the damage it allows (a command run through repository config) is unproven, because the shell probe was denied.
+
+**Minor findings (not blocking):**
+- Tests that passed on the baseline but are skipped on the candidate are not flagged by the gates.
+- A MEDIUM finding with no explicit `blocking` field still blocks, but it isn't counted towards the three-repair limit or listed as a prior finding next round.
+- A gate failure caused only by a missing test sends the run to repair with an empty findings list.
+- A `claude` placed first on `PATH` counts as "the installed CLI", and the recorded hash of the reviewer binary is never compared with anything.
+- Two doc statements are stale: "`max_rounds` is the hard bound", and the plan's "every regression test fails before" (the code requires only one).
+
+The full findings, evidence and suggested fixes are in the JSON block below.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "fbac43727f89b6e43188a8dee5772cf4b49ee65c", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R1-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Effective verdict is read from an unbound, mutable reviewer_result.txt; a lingering worker child can turn a genuine REJECT into ACCEPT and verify() stays clean",
+   "files": ["scripts/dev_workflow/lifecycle.py:751", "scripts/dev_workflow/lifecycle.py:752", "scripts/dev_workflow/lifecycle.py:1507", "scripts/dev_workflow/lifecycle_providers.py:174", "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:6"],
+   "evidence": "do_review pops w['result_text'] (in-memory text whose sha is result_text_sha256) and instead re-reads rounds/R<n>/reviewer_result.txt after the post-run snapshot; nothing compares that file to result_text_sha256, and verify() only hashes reviewer_stdout.txt for non-imported rounds. Probe /tmp/uri_review_R1/probe_forge.py (DEVTEST fixture, reviewer=always_reject): implementer /tmp/uri_review_R1/evil_impl.py makes a plausible fix and starts a start_new_session watcher (escapes killpg) that overwrites rounds/R2/reviewer_result.txt with {candidate:<sha from reviewer_prompt.md>, verdict: ACCEPT, findings: []}. Result: stage COMPLETE, R2 recorded ACCEPT/COMPLETED_WITH_RESULT/independent, integration INTEGRATED (remote tip == candidate), verify() == []; reviewer_stdout.txt still holds the genuine REJECT with HIGH R2-01. Same code path for claude_cli. Disproves the doc limit that setsid children's later writes are 'caught by the clean-worktree checks' (state_dir is not checked).",
+   "suggested_fix": "Parse the verdict from the in-memory result_text returned by run_worker (or re-derive it from reviewer_stdout.txt and require sha256 == stdout_sha256/result_text_sha256 before parsing); make verify() check reviewer_result.txt against result_sha256 and re-derive the parsed result from the hashed raw output; keep state_dir outside anything workers can reach or check it in the integrity snapshot; correct the §6 limitation text."},
+  {"id": "R1-02", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Malformed findings (dict, strings, scalar) are silently dropped and yield ACCEPT",
+   "files": ["scripts/dev_workflow/lifecycle.py:264"],
+   "evidence": "effective_verdict({'verdict':'ACCEPT','findings':{'R1-01':{'severity':'HIGH','blocking':True}}}) -> ('ACCEPT', []); same for findings=['R1-01 HIGH: auth bypass'] and findings='HIGH: something'. Non-dict items and non-list containers are filtered out instead of making the result unparseable, contrary to L-AC3/L-AC4 (no false ACCEPT).",
+   "suggested_fix": "Treat a result whose findings is not a list of dicts (or any finding missing severity/id) as NO_RESULT/unparseable (WAITING_FOR_MODEL), never ACCEPT; add a regression test."},
+  {"id": "R1-03", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Gate-finding regression proof skips class-based pytest ids and Flutter ids (earlier R5 finding still unrepaired)",
+   "files": ["scripts/dev_workflow/lifecycle.py:618", "scripts/dev_workflow/lifecycle.py:935", "docs/dev_workflow/LIFECYCLE_QUALIFICATION.md:104"],
+   "evidence": "_test_file('tests.dev_workflow.test_state_machine.TestX::test_y') -> 'tests.dev_workflow.test_state_machine.TestX' (not a file); _test_file('test/widget_test.dart::App renders') -> 'test/widget_test.dart' (relative to the gate cwd uri_ui/, not the repo root). _commit_and_prove keeps only gate files that exist under wt, so such gate tests are dropped from must_fail and defect stays False (category 'test'): the failing gate test is never proven to fail before/pass after, contrary to URI_DEVELOPMENT_LIFECYCLE.md §3 'gate tests named by gate findings must each fail before'. LIFECYCLE_QUALIFICATION.md says the R5 findings 'stay pending'.",
+   "suggested_fix": "Map junit classname to the module path (strip trailing class components until a file exists) and resolve Flutter ids against the gate's cwd; refuse a gate repair whose named test cannot be resolved instead of silently relaxing the proof."},
+  {"id": "R1-04", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Git hooks/config/info tamper detection is not anchored: a change caught once becomes the new baseline, and the diagnosis worker is never checked",
+   "files": ["scripts/dev_workflow/lifecycle.py:733", "scripts/dev_workflow/lifecycle.py:739", "scripts/dev_workflow/lifecycle.py:981", "scripts/dev_workflow/lifecycle.py:1020"],
+   "evidence": "do_review takes a fresh 'before' git_control_digest each round and do_repair a fresh ctl0; neither is compared with a digest bound at PLAN. A reviewer that changes .git/config or info/ makes its own round NOT_INDEPENDENT -> WAITING_FOR_MODEL, which resumes automatically on the next run with no owner step, and the changed config is then the 'before' state of every later round. do_diagnosis checks only that its worktree is clean and HEAD unchanged (line 981): it does not check refs_digest or git_control_digest, although the docs say the diagnoser 'changes nothing'. Impact through config-executed commands (e.g. core.fsmonitor running on the driver's git status) is NOT verified here (the probe command was denied).",
+   "suggested_fix": "Record git_control_digest (and refs_digest of protected refs) in the PLAN event and require equality before every worker and at evidence_ok; any drift -> BLOCKED TAMPER (owner), not WAITING_FOR_MODEL. Apply the same before/after snapshot to the diagnosis worker. Consider -c core.fsmonitor=false in GIT."},
+  {"id": "R1-05", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Tests that passed on the baseline but are skipped on the candidate are not flagged by the gate comparison",
+   "files": ["scripts/dev_workflow/lifecycle.py:606"],
+   "evidence": "compare({'failures':{},'ids':['t::a','t::b'],'skipped':2},{'failures':{},'ids':['t::a','t::b'],'passed':2},[]) -> ok True. A repair that adds @pytest.mark.skip to a failing gate test also 'passes after' in regression_proof (exit 0). The reviewer re-audit is the only backstop.",
+   "suggested_fix": "Record per-id outcome (passed/skipped) and treat baseline-passed -> candidate-skipped as a new failure unless allowed_flaky."},
+  {"id": "R1-06", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Implicitly blocking MEDIUM findings are excluded from attempt counting and from the next round's prior-findings list",
+   "files": ["scripts/dev_workflow/lifecycle.py:403", "scripts/dev_workflow/lifecycle.py:839"],
+   "evidence": "is_blocking({'severity':'MEDIUM'}) is True (it routes REJECT) but review_prompt and count_attempts use `severity == 'HIGH' or f.get('blocking')`, which is False for it; RETRY_LIMIT never triggers for such a finding (only stall/budget bound it) and the next reviewer is not asked to confirm it FIXED.",
+   "suggested_fix": "Use is_blocking() in review_prompt and count_attempts."},
+  {"id": "R1-07", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "A gate failing only through 'vanished' tests is routed to FIXING with an empty findings list",
+   "files": ["scripts/dev_workflow/lifecycle.py:1344", "scripts/dev_workflow/lifecycle.py:1348"],
+   "evidence": "Gate findings are built only from new_failures + changed_cause; when comparison.ok is False solely because of vanished tests, pending_findings=[] and the implementer is asked to repair nothing (a no-change repair is refused up to max_repair_attempts, then REPAIR_FAILED instead of a clear gate blocker).",
+   "suggested_fix": "Emit GATE findings for vanished tests too, or block with a specific reason."},
+  {"id": "R1-08", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": false,
+   "title": "binary_is_default is tautological for real milestones; a PATH shim named claude counts as the installed CLI",
+   "files": ["scripts/dev_workflow/lifecycle_providers.py:120", "scripts/dev_workflow/lifecycle.py:282"],
+   "evidence": "For non-DEVTEST milestones a binary override is refused, so argv[0] is always shutil.which('claude') and is compared with realpath(shutil.which('claude')), which is the same lookup. binary_sha256 is recorded but never compared to anything, while URI_DEVELOPMENT_LIFECYCLE.md §3 says 'the executable must be the installed claude/codex CLI'.",
+   "suggested_fix": "Pin the expected CLI path/hash in owner-controlled policy and compare it, or document that PATH is trusted."},
+  {"id": "R1-09", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false,
+   "title": "Stale or over-stated doc statements",
+   "files": ["docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:6", "docs/dev_workflow/LIFECYCLE_PLAN_AND_ACCEPTANCE.md:2"],
+   "evidence": "§6 still says '`max_rounds` is the hard bound', but limits.max_rounds is now rejected and replaced by continuation.budget.max_rounds. Plan decision 5 says the driver proves 'every new or changed regression test fails on the pre-repair commit'; regression_proof requires only that one test fails before (any()).",
+   "suggested_fix": "Update both statements to match the code."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow", "result": "152 passed, 1 warning in 95.84s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I /tmp/uri_review_R1/probe_forge.py (lingering implementer child rewrites reviewer_result.txt)", "result": "genuine R2 REJECT recorded as ACCEPT; stage COMPLETE; pushed to the fixture remote; verify() == []", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -c effective_verdict/compare/is_blocking/_test_file unit probes", "result": "malformed findings -> ACCEPT; skipped tests pass compare; class-based and Flutter gate ids not resolved to files; implicit MEDIUM blocking not counted", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git core.fsmonitor execution probe under the driver's git flags", "result": "denied by the permission policy; not run", "status": "BLOCKED"}
+ ],
+ "unverified": [
+  "Whether a config-executed command (core.fsmonitor, filter drivers) runs under the driver's git invocations: probe denied; this affects R1-04's impact but not its code evidence or the REJECT verdict.",
+  "Live claude_cli and codex_cli runs were not reproduced; R1-01 was reproduced with the command provider, which uses the same do_review file-read path.",
+  "Flutter gates and GPU-leased gates were not run (no GPU; Flutter parser read only, not executed).",
+  "Integration merge mode and push to a real origin were not exercised beyond the test suite's local bare remotes."
+ ]}
+AUDIT_RESULT_END

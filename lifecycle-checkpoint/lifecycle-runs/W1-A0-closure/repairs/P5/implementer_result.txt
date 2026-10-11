@@ -1,0 +1,47 @@
+I fixed both findings. Nothing is committed: four source files are changed and two test files are new.
+
+**Acceptance criteria I used:**
+- Every numeral is read whole or flagged as unreadable, never split into pieces.
+- Different amounts are dropped by `verify` and flagged by `find_conflicts`, in both directions.
+- The same amount written differently is still kept.
+- The new tests fail on 52e852d and pass on the change.
+- No existing test is weakened.
+
+### R5-01: number parsing (blocking)
+The earlier repairs failed because the number pattern only knew `1,234,567` grouping and plain digit runs. Any other numeral was cut into pieces. The two checks then compared sets of those pieces with a subset test, so they let it through.
+
+- **Rewritten parser** in `uri_web/evaluate.py`. It now reads the whole run of digits and checks it against accepted forms:
+  - western grouping (1,234,567)
+  - Indian lakh/crore grouping (5,00,00,000)
+  - thousands grouped with a space, non-breaking space or thin space (1 000 000)
+  - plain decimals
+  - dotted dates and versions (11.10.2026), kept exactly as written
+- **Signs are kept**: `-`, `−` and `minus` all count. Hyphens inside words or ranges (`COVID-19`, `2019-2020`) are not read as minus signs.
+- **Unreadable numerals**: any other comma run (`1,2,3`, `12,34`, `1.000,50`) is marked unreadable instead of being split.
+- **The verifier** (`uri_web/synthesize.py`) now drops any claim containing an unreadable numeral, with reason `NUMBER_NOT_IN_CITED_SOURCE`.
+- **The conflict detector** no longer rules out a conflict by the subset test when either side has an unreadable numeral.
+
+On the reviewer's examples, 5 lakh vs 5 crore, `1 000 000` vs `1 500 000` and `-3.2%` vs `3.2%` are now dropped and flagged as conflicts.
+
+**Tests:** `tests/web/test_w1_r5_review_regressions.py` has 80 cases. 62 fail on 52e852d and all 80 pass now. The other 18 pass both ways; they guard cases that already worked. All 284 web tests pass.
+
+One part of the diagnosis's fix I did not do: `1,000.5` and `1,000.50` still count as different numbers, so such a claim is dropped rather than kept. Making them equal would change the expected value in an existing R1-01 test, which I was told not to touch. This errs on the safe side and is not part of the reviewer's finding.
+
+### R5-02: redaction gaps (non-blocking)
+I made the same changes in `uri_assist/redact.py` and in the in-page script `uri_assist/browser_extension/snapshot.js`:
+- **API keys** now masked: Stripe `sk_`/`rk_`/`pk_` live and test keys, `github_pat_`, `glpat-`, `npm_`, `hf_` and SendGrid `SG.` keys.
+- **HTTP Basic credentials** (`Basic <base64>`) are now masked. A digit, `+`, `/` or `=` is required, so "Basic information" is left alone.
+- **Sensitive field names** now include authorization, TAN, mTAN, SMS-TAN, OTC, 2SV and two-step.
+- **Docstring**: the redaction module's docstring now lists the key formats it actually masks.
+
+**Tests:** `tests/assist/test_a0_r5_review_regressions.py` checks Python, real Chromium and the Brain request body. 19 tests fail on 52e852d and all 31 pass now. All 2,087 assist tests pass, and the Chromium test ran rather than being skipped.
+
+**Not done:**
+- `graphify update .` could not run because `graphify` is not installed here.
+- `docs/assist/A0_QUALIFICATION.md` (limitation L-A0-2) is unchanged. Redaction is still rule-based.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R5-01", "R5-02"], "not_repaired": [],
+ "regression_tests": ["tests/web/test_w1_r5_review_regressions.py", "tests/assist/test_a0_r5_review_regressions.py"],
+ "notes": "R5-01 root cause addressed per diagnosis: evaluate._NUMBER now captures the full numeral run (digits joined by , . or a space/NBSP/thin/narrow-NBSP before a 3-digit group) plus sign (-, U+2212, 'minus'); _read() accepts only western, Indian lakh/crore, space-grouped or plain forms, keeps multi-dot literals (dates/versions) exactly, splits space-joined runs that are not valid grouping (e.g. '2020 100'), and otherwise returns an UNREADABLE sentinel ('?'+span), never fragments. synthesize.verify drops any claim with an unreadable numeral (NUMBER_NOT_IN_CITED_SOURCE); find_conflicts skips subset suppression when either side is unreadable. Verified: 62 of 80 new web cases fail at 52e852d, all 80 pass after; the 18 that pass both ways are guards. tests/web 284 passed. Not done: numeric equality of 1,000.5 vs 1,000.50 (diagnosis extra), because the existing R1-01 test expects numbers('Rs.1,250.50') == {'1250.50'}; such a claim is dropped (fail-closed). R5-02: api_key rule extended in both layers (Stripe sk_/rk_/pk_ live|test, github_pat_, glpat-, npm_, hf_, SG.), new basic_auth text rule (needs a digit or + / = in a token of 12+ characters), field stems authoriz/twostep, whole-word tan/mtan/smstan/otc/2sv and 'two step'; redact.py docstring updated. 19 of 31 new assist tests fail at 52e852d, all 31 pass after, including the real-Chromium in-page test and the Brain-request test; tests/assist 2087 passed. docs/assist/A0_QUALIFICATION.md L-A0-2 left unchanged (redaction is still rule-based). graphify update not run: graphify command not installed in this environment."}
+REPAIR_RESULT_END

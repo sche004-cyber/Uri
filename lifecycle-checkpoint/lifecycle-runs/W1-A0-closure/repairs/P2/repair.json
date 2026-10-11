@@ -1,0 +1,91 @@
+{
+ "addresses": [
+  "R2-01"
+ ],
+ "changed": [
+  "tests/assist/fixtures/tricky_fields.html",
+  "tests/assist/test_a0_r1_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/redact.py"
+ ],
+ "commit": "627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede",
+ "ended_at": "2026-10-11T03:57:53Z",
+ "pre": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r1_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 2,
+ "report": {
+  "not_repaired": [],
+  "notes": "Added _RUN_TOGETHER (redact.py) and an identical RUN_TOGETHER (snapshot.js), applied next to _SENSITIVE_WORDS. Long stems (password|passwd|passcode|passphrase|pwd|cvv|cvc|ccv) match anywhere in a word; mpin/tpin and otp only at the start or end of a word or before a known ending; pin/pass/code only after a known prefix. tricky_fields.html gains 20 sensitive inputs (r1-r20) and 10 ordinary ones (q1-q10). New tests: Python sensitivity for all 20 reviewer names, 15 ordinary names stay readable, values absent from the data passed on for the Brain request (checked through PE.normalise, not the full assist_ask path the reviewer probed), JS pattern identical to the Python one, and a real-Chromium check that the values are removed in the page and JS and Python agree. With the fix: tests/assist + tests/web give 301 passed, 0 skipped. Base check: checking out the base files was denied, so uri_assist and tests/assist were extracted from 16f75d8 into a scratch copy with the new tests and fixture; all new must-fail tests fail there and the readable-name tests pass. 8 other tests failed in that copy only because uri_web and uri_operational_intelligence were not copied (ModuleNotFoundError). Limits: the name lists are a deny-list, so a run-together name with an unlisted prefix (e.g. foopin) is not caught, and userpincode is deliberately left readable as a postal PIN code. graphify update was not run (graphify not installed, exit 127).",
+  "regression_tests": [
+   "tests/assist/test_a0_r1_review_regressions.py"
+  ],
+  "repaired": [
+   "R2-01"
+  ]
+ },
+ "started_at": "2026-10-11T03:55:37Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "02cf452e-d8aa-48d2-97bf-d984e05f7bce",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 0.6407651,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T03:57:46Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 12,
+  "pid": 1763,
+  "prompt_sha256": "64fd487dfcb706bb93540a11f0b601bdcfb0025d2cc74bf864775246328e62b0",
+  "provider": "claude_cli",
+  "result_text_sha256": "c046f700d4b0b5b76cec5a55c369f39e6edc0bb29a22ea240f6be603b0010480",
+  "role": "implementer",
+  "session_id": "02cf452e-d8aa-48d2-97bf-d984e05f7bce",
+  "session_id_requested": "02cf452e-d8aa-48d2-97bf-d984e05f7bce",
+  "started_at": "2026-10-11T03:55:37Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "bb802051167ded54a75c45f3a718530606bf9bd514a5b7f97b32679028c7e194"
+ }
+}

@@ -1,0 +1,197 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R7",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R7-01"
+ ],
+ "candidate": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T03:58:46Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+   "impl_head": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "13056476776d3f1132bc7ee6af5cf4a3fe4bad39f7ed891af3a5935705ef7ce8",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+   "impl_head": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/dev-lifecycle-20261011",
+   "refs": "13056476776d3f1132bc7ee6af5cf4a3fe4bad39f7ed891af3a5935705ef7ce8",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "The R6-02 fix adds `--safe-mode --setting-sources user --strict-mcp-config`, so the user settings source stays loaded. run_worker passes the driver's environment (same HOME) to every worker. control_state() binds only the git control files, replace refs and the reviewer binary identity; nothing under ~/.claude is bound. Repro: with HOME=/tmp/uri_review_R7/home containing .claude/settings.json = {\"env\":{\"ANTHROPIC_BASE_URL\":\"http://127.0.0.1:18777\",\"ANTHROPIC_API_KEY\":\"sk-ant-fake\"}} and a local fake Messages API server, I ran the exact argv from candidate build_argv(role='reviewer') against /opt/node22/bin/claude (the binary that would be anchored at the plan). The process environment also set ANTHROPIC_BASE_URL=http://127.0.0.1:1. Result: rc=0, is_error=false, session_id equal to the fresh --session-id, and result = the scripted 'AUDIT_RESULT_BEGIN {... \"verdict\":\"ACCEPT\" ...}'. The fake server received the full prompt, so it can echo the candidate SHA. In the driver, binary_anchor_ok and binary_is_default are true, the checkout, refs and git control are unchanged so integrity.ok is true, and the session is fresh, so is_independent() returns True and the milestone can reach VERIFIED/COMPLETE. An implementer gets this with Bash alone (it shares HOME), plus a setsid daemon, which run_worker's own comment says escapes the process-group kill. Same class as R6-01: a scripted reviewer through the installed CLI.",
+    "files": [
+     "scripts/dev_workflow/lifecycle_providers.py:162",
+     "scripts/dev_workflow/lifecycle_providers.py:211",
+     "scripts/dev_workflow/lifecycle.py:404",
+     "scripts/dev_workflow/lifecycle.py:342",
+     "scripts/dev_workflow/lifecycle.py:312",
+     "docs/dev_workflow/LIFECYCLE_PLAN_AND_ACCEPTANCE.md:34",
+     "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"
+    ],
+    "id": "R7-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Launch the reviewer with a driver-controlled settings environment instead of the shared user one. For example, use a fresh CLAUDE_CONFIG_DIR/HOME prepared by the driver that holds only the credentials, plus `--setting-sources` with no user source. Alternatively, bind ~/.claude/settings.json, ~/.claude/settings.local.json, ~/.claude.json and the credentials file in control_state, so any change is TAMPER. Scrub or pin ANTHROPIC_*/CLAUDE_* variables in the reviewer env. Add a regression test in which a worker writes user settings env.ANTHROPIC_BASE_URL and a real milestone cannot reach VERIFIED. Update the 'Reviewer independence' docs.",
+    "title": "Reviewer still loads worker-writable user-level Claude settings (~/.claude/settings.json); an implementer-written env.ANTHROPIC_BASE_URL routes the genuine, PLAN-anchored claude binary to a scripted endpoint whose ACCEPT counts as an independent review of a real milestone"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow -x",
+    "result": "180 passed, 1 warning in 138.92s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe: reviewer_executable() before/after planting /tmp/uri_review_R7/plant/claude first on PATH",
+    "result": "anchor /opt/node22/bin/claude; after plant path=planted, ambiguous=[real, planted], drift=True (R6-01 vector caught)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "probe: exact candidate reviewer argv (build_argv role=reviewer) run in a dir whose CLAUDE.md holds MARKER-XYZ, HOME with ~/.claude/settings.json env.ANTHROPIC_BASE_URL -> local fake API",
+    "result": "rc=0, is_error=false, fresh session id, result = scripted ACCEPT block; settings base URL overrode the process env; MARKER-XYZ absent from the ~80 KB request (CLAUDE.md not loaded)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git rev-parse HEAD; git cat-file -t ffdf534; git diff --name-only ffdf534..HEAD filtered by protected paths; git status --short",
+    "result": "HEAD=aba8ac05..., baseline is a commit, no protected path changed, checkout clean after review",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "I did not test empirically whether the driver's --settings permission deny rules still apply under --safe-mode; the CLI help says permissions work normally. This does not affect the verdict.",
+   "The codex `-c project_doc_max_bytes=0` flag is unverified because codex is not installed. This does not affect the verdict.",
+   "R1-01..R5-01 are marked FIXED from code inspection of the repair sites and the passing regression suite (180 tests), not from fresh adversarial probes in this round. This does not change the verdict, which R7-01 already decides.",
+   "The full end-to-end driver run of the R7-01 attack (a real implementer writing /root/.claude/settings.json, then do_review, then VERIFIED) was not executed, to avoid changing the shared user settings. The chain is shown by the CLI-level repro plus the code path (is_independent, control_state coverage).",
+   "Flutter and GPU gates were not exercised this round; the Phase 1 checkpoint zip is absent (BLOCKED)."
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 7,
+ "started_at": "2026-10-11T03:53:29Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "cb93b41e-7a1e-40d0-a291-55930d06f282",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.0876868,
+  "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1b/audit_R7",
+  "ended_at": "2026-10-11T03:58:45Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 20,
+  "pid": 977,
+  "prompt_sha256": "c87cc99b550dcfdfe4bd495e34dadeb9adaa029d5ed0c5aac9c86fff9131ecbf",
+  "provider": "claude_cli",
+  "result_text_sha256": "b2e82d03a8ab6f52e8986d58edf585d0ed954b4b711c4ea8e68e536235a8517d",
+  "role": "reviewer",
+  "session_id": "cb93b41e-7a1e-40d0-a291-55930d06f282",
+  "session_id_requested": "cb93b41e-7a1e-40d0-a291-55930d06f282",
+  "started_at": "2026-10-11T03:53:29Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "e7822b3c99830defe1f822055400be8f2820fc02381c8e19ccde62c176d5b540"
+ }
+}

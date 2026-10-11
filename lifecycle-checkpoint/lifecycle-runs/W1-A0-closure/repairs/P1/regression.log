@@ -1,0 +1,340 @@
+=== tests/assist/test_a0_r1_review_regressions.py BEFORE (8019d41b77bae91598fa45b5ea827ab54d1cf64c) DONE
+lds = [{"type": "text", "name": n, "label": "x", "value": f"7{i:05d}", "rect": {"x": 1, "y": 1, "w": 2, "h": 2}}
+                  for i, n in enumerate(("OTPCode", "cvv2", "MPIN", "acctNumber"))]
+        obs = PE.normalise(dom_snapshot(fields=fields), AC.Stamp("g", 1, "t", "dom", 0.0))
+        raw = json.dumps([f for f in obs.fields])
+        for i in range(4):
+>           assert f"7{i:05d}" not in raw
+E           assert '700000' not in '[{"id": "",...: "700003"}]'
+E             
+E             '700000' is contained here:
+E               "value": "700000"}, {"id": "", "tag": "", "type": "text", "name": "cvv2", "label": "x", "autocomplete": "", "placeholder": "", "required": false, "readonly": false, "visible": true, "rect": {"x": 1, "y": 1, "w": 2, "h": 2}, "sensitive": false, "value": "700001"}, {"id": "", "tag": "", "type": "text", "name": "MPIN", "label": "x", "autocomplete": "", "placeholder": "", "required": false, "readonly": false, "visible": true, "rect": {"x": 1, "y": 1, "w": 2, "h": 2}, "sensitive": false, "value": "700002"}, {"id": "", "tag": "", "type": "text", "name": "acctNumber",...
+E             
+E             ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests/assist/test_a0_r1_review_regressions.py:43: AssertionError
+_________ test_r1_02_in_page_layer_hides_new_names_and_matches_python __________
+
+    def test_r1_02_in_page_layer_hides_new_names_and_matches_python():
+        s = _chromium("tricky_fields.html")["snapshot"]
+        raw = json.dumps(s)
+        for secret in ("710001", "710002", "713", "714", "715", "7106", "7107", "71000008", "71000009", "07/31",
+                       "pc71011", "pw71012"):
+            assert f'"{secret}"' not in raw, secret
+        js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f["sensitive"]}
+>       assert {f"m{i}" for i in range(1, 13)} <= js_sensitive
+E       AssertionError: assert {'m1', 'm10',...2', 'm3', ...} <= {'a', 'b', 'c...'d', 'e', ...}
+E         
+E         Extra items in the left set:
+E         'm5'
+E         'm12'
+E         'm9'
+E         'm4'
+E         'm11'...
+E         
+E         ...Full output truncated (7 lines hidden), use '-vv' to show
+
+tests/assist/test_a0_r1_review_regressions.py:69: AssertionError
+_______________ test_r1_04_every_text_leaving_the_page_is_masked _______________
+
+    def test_r1_04_every_text_leaving_the_page_is_masked():
+        url = ("https://portal.example/reset/eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJlLXZhbHVl"
+               "/ghp_abcdefghijklmnopqrstuvwxyz1234?token=abcdef123456&lang=en")
+>       s = _chromium("text_surfaces.html", url=url)["snapshot"]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r1_review_regressions.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+page = 'text_surfaces.html'
+url = 'https://portal.example/reset/eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJlLXZhbHVl/ghp_abcdefghijklmnopqrstuvwxyz1234?token=abcdef123456&lang=en'
+
+    def _chromium(page, url=None):
+        node = shutil.which("node")
+        if node is None:
+            pytest.skip("BLOCKED: node not installed")
+        env = dict(os.environ, NODE_PATH=os.environ.get("NODE_PATH", "/opt/node22/lib/node_modules"))
+        if url:
+            env["SNAPSHOT_URL"] = url
+        p = subprocess.run([node, str(FIX / "run_snapshot.cjs"), str(ROOT / "uri_assist/browser_extension/snapshot.js"),
+                            str(FIX / page)], capture_output=True, text=True, env=env, timeout=120)
+        if p.returncode != 0 and "Cannot find module" in p.stderr:
+            pytest.skip("BLOCKED: playwright not installed")
+>       assert p.returncode == 0, p.stderr[-500:]
+E       AssertionError: Error: ENOENT: no such file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/tests/assist/fixtures/text_surfaces.html'
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/opt/node22/bin/node', '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/tests/assist/fixtures/r...uch file or directory, open '/tmp/claude-0/lc-work/W1-A0-closure/pre_repair/tests/assist/fixtures/text_surfaces.html'").returncode
+
+tests/assist/test_a0_r1_review_regressions.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[OTPCode]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[SMSOTP]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[smsOTPCode]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[cvv2]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[CVV2]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[cvc2]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[ccv]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[mpin]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[MPIN]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[tpin]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[acctNumber]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[acct_no]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[cardExpiry]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[passcode2]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_sensitive_names[pwd1]
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_values_never_reach_the_brain_request
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_02_in_page_layer_hides_new_names_and_matches_python
+FAILED tests/assist/test_a0_r1_review_regressions.py::test_r1_04_every_text_leaving_the_page_is_masked
+18 failed, 15 passed in 1.28s
+
+=== tests/assist/test_a0_r1_review_regressions.py AFTER (16f75d8e2e5f537749b32b1d754c347cbebdfc36) DONE
+.................................                                        [100%]
+33 passed in 1.53s
+
+=== tests/web/test_w1_r1_review_regressions.py BEFORE (8019d41b77bae91598fa45b5ea827ab54d1cf64c) DONE
+w.", {"1250.50"}), ("Pi is 3.14 and 2.5% more.", {"3.14", "2.5%"}),
+    ])
+    def test_r1_01_numbers_after_letters_or_dots_are_extracted(text, expected):
+>       assert EV.numbers(text) == expected
+E       AssertionError: assert set() == {'5'}
+E         
+E         Extra items in the right set:
+E         '5'
+E         Use -v to get more diff
+
+tests/web/test_w1_r1_review_regressions.py:13: AssertionError
+_ test_r1_01_numbers_after_letters_or_dots_are_extracted[Fees are Rs.1,250.50 now.-expected3] _
+
+text = 'Fees are Rs.1,250.50 now.', expected = {'1250.50'}
+
+    @pytest.mark.parametrize("text, expected", [
+        ("Onions cost Rs.500 per kilogram.", {"500"}), ("It took approx.900 days.", {"900"}), ("See No.5 below.", {"5"}),
+        ("Fees are Rs.1,250.50 now.", {"1250.50"}), ("Pi is 3.14 and 2.5% more.", {"3.14", "2.5%"}),
+    ])
+    def test_r1_01_numbers_after_letters_or_dots_are_extracted(text, expected):
+>       assert EV.numbers(text) == expected
+E       AssertionError: assert {'250.50'} == {'1250.50'}
+E         
+E         Extra items in the left set:
+E         '250.50'
+E         Extra items in the right set:
+E         '1250.50'
+E         Use -v to get more diff
+
+tests/web/test_w1_r1_review_regressions.py:13: AssertionError
+___________ test_r1_01_unsupported_number_is_dropped[Rs.900-Rs.500] ____________
+
+claim_num = 'Rs.900', source_num = 'Rs.500'
+
+    @pytest.mark.parametrize("claim_num, source_num", [("Rs.900", "Rs.500"), ("approx.900", "approx.100"), ("No.5", "No.6")])
+    def test_r1_01_unsupported_number_is_dropped(claim_num, source_num):
+        claim = f"Prices in the city market rose sharply and onions now cost {claim_num} per kilogram this week [1]."
+        source = f"Prices in the city market rose sharply and onions now cost {source_num} per kilogram this week."
+        v = SY.verify(claim, [source])
+>       assert v.claims == []
+E       AssertionError: assert [Claim(text='...itations=[1])] == []
+E         
+E         Left contains one more item: Claim(text='Prices in the city market rose sharply and onions now cost Rs.900 per kilogram this week .', citations=[1])
+E         Use -v to get more diff
+
+tests/web/test_w1_r1_review_regressions.py:21: AssertionError
+_______ test_r1_01_unsupported_number_is_dropped[approx.900-approx.100] ________
+
+claim_num = 'approx.900', source_num = 'approx.100'
+
+    @pytest.mark.parametrize("claim_num, source_num", [("Rs.900", "Rs.500"), ("approx.900", "approx.100"), ("No.5", "No.6")])
+    def test_r1_01_unsupported_number_is_dropped(claim_num, source_num):
+        claim = f"Prices in the city market rose sharply and onions now cost {claim_num} per kilogram this week [1]."
+        source = f"Prices in the city market rose sharply and onions now cost {source_num} per kilogram this week."
+        v = SY.verify(claim, [source])
+>       assert v.claims == []
+E       AssertionError: assert [Claim(text='...itations=[1])] == []
+E         
+E         Left contains one more item: Claim(text='Prices in the city market rose sharply and onions now cost approx.900 per kilogram this week .', citations=[1])
+E         Use -v to get more diff
+
+tests/web/test_w1_r1_review_regressions.py:21: AssertionError
+_____________ test_r1_01_unsupported_number_is_dropped[No.5-No.6] ______________
+
+claim_num = 'No.5', source_num = 'No.6'
+
+    @pytest.mark.parametrize("claim_num, source_num", [("Rs.900", "Rs.500"), ("approx.900", "approx.100"), ("No.5", "No.6")])
+    def test_r1_01_unsupported_number_is_dropped(claim_num, source_num):
+        claim = f"Prices in the city market rose sharply and onions now cost {claim_num} per kilogram this week [1]."
+        source = f"Prices in the city market rose sharply and onions now cost {source_num} per kilogram this week."
+        v = SY.verify(claim, [source])
+>       assert v.claims == []
+E       AssertionError: assert [Claim(text='...itations=[1])] == []
+E         
+E         Left contains one more item: Claim(text='Prices in the city market rose sharply and onions now cost No.5 per kilogram this week .', citations=[1])
+E         Use -v to get more diff
+
+tests/web/test_w1_r1_review_regressions.py:21: AssertionError
+_____________ test_r1_01_differing_prefixed_numbers_are_a_conflict _____________
+
+    def test_r1_01_differing_prefixed_numbers_are_a_conflict():
+        pages = [{"url": "https://a.example/x", "text": "Onions in the city market now cost Rs.500 per kilogram this week."},
+                 {"url": "https://b.example/y", "text": "Onions in the city market now cost Rs.900 per kilogram this week."}]
+        ev = EV.evaluate(pages, "onion price city market")
+>       assert len(ev.conflicts) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+E        +    where [] = Evaluation(kept=[0, 1], duplicates={}, near_duplicates={}, conflicts=[], relevance={0: 0.5, 1: 0.5}).conflicts
+
+tests/web/test_w1_r1_review_regressions.py:35: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_w1_r1_review_regressions.py::test_r1_01_numbers_after_letters_or_dots_are_extracted[Onions cost Rs.500 per kilogram.-expected0]
+FAILED tests/web/test_w1_r1_review_regressions.py::test_r1_01_numbers_after_letters_or_dots_are_extracted[It took approx.900 days.-expected1]
+FAILED tests/web/test_w1_r1_review_regressions.py::test_r1_01_numbers_after_letters_or_dots_are_extracted[See No.5 below.-expected2]
+FAILED tests/web/test_w1_r1_review_regressions.py::test_r1_01_numbers_after_letters_or_dots_are_extracted[Fees are Rs.1,250.50 now.-expected3]
+FAILED tests/web/test_w1_r1_review_regressions.py::test_r1_01_unsupported_number_is_dropped[Rs.900-Rs.500]
+FAILED tests/web/test_w1_r1_review_regressions.py::test_r1_01_unsupported_number_is_dropped[approx.900-approx.100]
+FAILED tests/web/test_w1_r1_review_regressions.py::test_r1_01_unsupported_number_is_dropped[No.5-No.6]
+FAILED tests/web/test_w1_r1_review_regressions.py::test_r1_01_differing_prefixed_numbers_are_a_conflict
+8 failed, 2 passed in 0.11s
+
+=== tests/web/test_w1_r1_review_regressions.py AFTER (16f75d8e2e5f537749b32b1d754c347cbebdfc36) DONE
+..........                                                               [100%]
+10 passed in 0.07s
+
+=== uri_ui/test/living/assist_mode_test.dart BEFORE (8019d41b77bae91598fa45b5ea827ab54d1cf64c) DONE
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.1 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.1.3 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.0.0 available)
+  file_picker_web 3.1.0 (4.1.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_mode_test.dart
+00:00 +0: Assist is a fourth form with its own command and label
+00:00 +1: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:02 +2: Ctrl+4 opens Assist
+00:02 +3: grant a tab with Observe only, then Suggest stays off; Stop revokes in one tap
+00:03 +4: Suggest is a separate opt-in; Live Assist shows findings and changes nothing
+00:03 +5: entire screen needs a second explicit confirmation
+00:04 +6: Companion shows the active scope with Stop
+00:04 +7: research result renders through the A2UI renderer; Teach and Smart Fill are not available
+00:04 +8: without a worker the Assist view says so and observes nothing
+00:04 +9: a replaced worker never shows the old grant
+00:04 +10: a research event that races ahead of the reply is not lost (F1)
+00:04 +11: a lost finished event is recovered by polling the job status
+00:04 +12: Ask URI is asynchronous: the answer arrives as an event (F4)
+00:04 +13: after an answer, Stop then a new grant lets the user ask again (R1-03)
+00:04 +13 -1: after an answer, Stop then a new grant lets the user ask again (R1-03) [E]
+  Expected: false
+    Actual: <true>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/living/assist_mode_test.dart 355:5             main.<fn>
+  
+00:04 +13 -1: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _KeyWidgetFinder:<Found 1 widget with key [<'assist-asking'>]: [
+            Text-[<'assist-asking'>]("URI is reading what you shared… Stop cancels it.", inherit:
+true, color: Color(alpha: 1.0000, red: 0.7255, green: 0.6549, blue: 0.5882, colorSpace:
+ColorSpace.sRGB), size: 12.0, dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_mode_test.dart:385:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_mode_test.dart line 385
+The test description was:
+  ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:06 +13 -2: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03) [E]
+  Test failed. See exception logs above.
+  The test description was: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+  
+00:06 +13 -2: a cancelled answer is shown as cancelled, never as an answer
+00:06 +14 -2: worker restart clears the shown grant immediately, without a command
+00:06 +15 -2: assist frames never touch OI turn or stall state
+00:06 +16 -2: Some tests failed.
+
+Failing tests:
+  /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_mode_test.dart: after an answer, Stop then a new grant lets the user ask again (R1-03)
+  /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_mode_test.dart: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+   Woah! You appear to be trying to run flutter as root.
+   We strongly recommend running the flutter tool without superuser privileges.
+  /
+📎
+
+=== uri_ui/test/living/assist_mode_test.dart AFTER (16f75d8e2e5f537749b32b1d754c347cbebdfc36) DONE
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.1 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.1.3 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.0.0 available)
+  file_picker_web 3.1.0 (4.1.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /tmp/claude-0/lc-work/W1-A0-closure/post_repair/uri_ui/test/living/assist_mode_test.dart
+00:00 +0: Assist is a fourth form with its own command and label
+00:00 +1: Companion offers Workspace | Dashboard | Assist; opening Assist observes nothing
+00:01 +2: Ctrl+4 opens Assist
+00:02 +3: grant a tab with Observe only, then Suggest stays off; Stop revokes in one tap
+00:02 +4: Suggest is a separate opt-in; Live Assist shows findings and changes nothing
+00:03 +5: entire screen needs a second explicit confirmation
+00:03 +6: Companion shows the active scope with Stop
+00:03 +7: research result renders through the A2UI renderer; Teach and Smart Fill are not available
+00:04 +8: without a worker the Assist view says so and observes nothing
+00:04 +9: a replaced worker never shows the old grant
+00:04 +10: a research event that races ahead of the reply is not lost (F1)
+00:04 +11: a lost finished event is recovered by polling the job status
+00:04 +12: Ask URI is asynchronous: the answer arrives as an event (F4)
+00:04 +13: after an answer, Stop then a new grant lets the user ask again (R1-03)
+00:04 +14: ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)
+00:05 +15: a cancelled answer is shown as cancelled, never as an answer
+00:05 +16: worker restart clears the shown grant immediately, without a command
+00:05 +17: assist frames never touch OI turn or stall state
+00:05 +18: All tests passed!
+   Woah! You appear to be trying to run flutter as root.
+   We strongly recommend running the flutter tool without superuser privileges.
+  /
+📎
+

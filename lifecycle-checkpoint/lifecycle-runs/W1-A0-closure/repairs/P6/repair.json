@@ -1,0 +1,113 @@
+{
+ "addresses": [
+  "R6-01",
+  "R6-02",
+  "R6-03"
+ ],
+ "changed": [
+  "docs/assist/A0_QUALIFICATION.md",
+  "docs/assist/W1_QUALIFICATION.md",
+  "tests/assist/test_a0_r6_review_regressions.py",
+  "tests/web/test_w1_r5_review_regressions.py",
+  "tests/web/test_w1_r6_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/redact.py",
+  "uri_web/evaluate.py",
+  "uri_web/surface.py"
+ ],
+ "commit": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+ "ended_at": "2026-10-11T05:18:51Z",
+ "pre": "08a4569908d7b9db2e22366cada632e5ebe40639",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r6_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/web/test_w1_r5_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/web/test_w1_r6_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 6,
+ "report": {
+  "not_repaired": [],
+  "notes": "R6-01: root cause (flat unordered numeral sets) replaced: numerals chained by -, /, :, en/em dash, ' - ' or ' to ' become one ordered compound token (ISO/D-M-Y dates canonicalised, written D/M order kept, month-name dates one value; dates also yield year and month-day, two-value ranges also their endpoints); class-level swap regressions for verify and find_conflicts over every separator. Existing exact-set test tests/web/test_w1_r5_review_regressions.py ('COVID-19 cases in 2019-2020') updated to include the new ordered token '2019-2020' (still exact equality). Number-to-referent binding not fixed; documented as L-W1-6. R6-03: find_conflicts skips instruction-like and link/contact sentences; surface.clean masks links/e-mail/IP in web-derived text (host/path citation label kept); instruction-like titles and conflict pairs hidden. R6-02: short-code value accepts up to 4 space-separated groups (3-32 chars total); cvd/csv/cid/cav2 added in Python and snapshot.js (patterns string-identical); single-digit 'Digit n' OTP boxes remain a documented residual (L-A0-2). Docs: recorded corrections for W1-AC10/AC11/AC15 and A0-AC7. Gates: tests/web + tests/assist 2556 passed; baseline 08a4569 export with new tests: 135 failed / 50 passed (the passing ones are controls). tests/phase2a/test_frozen_core.py base-commit check fails the same way on the 08a4569 export (not caused here). graphify update not run (graphify-out outside permitted paths).",
+  "regression_tests": [
+   "tests/web/test_w1_r6_review_regressions.py",
+   "tests/assist/test_a0_r6_review_regressions.py"
+  ],
+  "repaired": [
+   "R6-01",
+   "R6-02",
+   "R6-03"
+  ]
+ },
+ "started_at": "2026-10-11T05:09:15Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "ba928583-dc24-4c1e-a434-1b1f154e0c25",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 2.6250233000000005,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T05:18:42Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 44,
+  "pid": 25231,
+  "prompt_sha256": "3112a66e7f62ff37c9f0bdf95097f5d6f9b1256f96e8ff19d7513694994be6ee",
+  "provider": "claude_cli",
+  "result_text_sha256": "197febf66fb78e4ea3eb4228c1b25beacf70a96653a70839b402785fe28c2aef",
+  "role": "implementer",
+  "session_id": "ba928583-dc24-4c1e-a434-1b1f154e0c25",
+  "session_id_requested": "ba928583-dc24-4c1e-a434-1b1f154e0c25",
+  "started_at": "2026-10-11T05:09:15Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "3aa129aaf4faf8fb83931e1f99fd42acc476eb73e643e5a5c9116e5a3098ad93"
+ }
+}

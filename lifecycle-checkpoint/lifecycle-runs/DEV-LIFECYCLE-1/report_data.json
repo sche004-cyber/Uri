@@ -1,0 +1,360 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "claude_cli reviewer 'binary' override lets any scripted executable count as an independent reviewer for a real milestone"
+  },
+  {
+   "blocking": true,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "Evidence is trusted from state.json; an edited verdict reaches VERIFIED and verify() reports no error"
+  },
+  {
+   "blocking": true,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "Driver's repair commit runs worker-planted git hooks: out-of-scope and protected files are committed after the scope check and regression proof"
+  },
+  {
+   "blocking": true,
+   "id": "R1-04",
+   "round": "R1",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "pytest/flutter gate passes when the run crashes or collects nothing (exit code and missing junit ignored)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-05",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Qualification gates run in the candidate worktree without checking it is clean, so uncommitted (or ignored) files decide the VERIFIED result"
+  },
+  {
+   "blocking": true,
+   "id": "R1-06",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Worker process group is only killed on timeout; detached children keep running after the post-run integrity checks"
+  },
+  {
+   "blocking": true,
+   "id": "R1-07",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Revert after a refused repair leaves staged new files in the index"
+  },
+  {
+   "blocking": true,
+   "id": "R1-08",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Regression-proof timeout is uncaught: driver crashes mid-FIXING and leaves the implementer's changes unreverted"
+  },
+  {
+   "blocking": false,
+   "id": "R1-09",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "effective_verdict is lenient on malformed severity/blocking fields"
+  },
+  {
+   "blocking": false,
+   "id": "R1-10",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "DEVTEST classification by '_TEST' substring lets a scripted reviewer count for real milestones whose names contain _TEST"
+  },
+  {
+   "blocking": false,
+   "id": "R1-11",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Gate timeouts do not kill child process trees"
+  },
+  {
+   "blocking": false,
+   "id": "R1-12",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Docs claim guarantees the code does not provide"
+  },
+  {
+   "blocking": true,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "HIGH",
+   "status": "repaired c1ba808",
+   "title": "Forged duplicate round record plus edited resume_to brings a real milestone to VERIFIED; verify() reports no error"
+  },
+  {
+   "blocking": true,
+   "id": "R2-02",
+   "round": "R2",
+   "severity": "HIGH",
+   "status": "repaired c1ba808",
+   "title": "Worker-created git replace refs hide a protected-path change from every driver check; it is committed and pushed to canonical"
+  },
+  {
+   "blocking": true,
+   "id": "R2-03",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "repaired c1ba808",
+   "title": "Revert after a refused repair is not limited to the implementation worktree: a rewritten .git gitfile makes reset --hard move the main checkout's branch"
+  },
+  {
+   "blocking": true,
+   "id": "R2-04",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "repaired c1ba808",
+   "title": "Repair that deletes a test file crashes regression_proof; the unproven repair commit stays and is adopted as the candidate"
+  },
+  {
+   "blocking": true,
+   "id": "R2-05",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "repaired c1ba808",
+   "title": "GPU lease busy (gpu_lease run exit 75) is classified as a gate failure and routed to repair, not BLOCKED (RESOURCE)"
+  },
+  {
+   "blocking": false,
+   "id": "R2-06",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A baseline-passing test that is skipped on the candidate is not detected by the gate comparison"
+  },
+  {
+   "blocking": false,
+   "id": "R2-07",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Unknown integration mode is not rejected and pushes the candidate without the fast-forward check"
+  },
+  {
+   "blocking": false,
+   "id": "R2-08",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Integration merge/merge-base/push bypass the hooks-disabled git wrapper"
+  },
+  {
+   "blocking": true,
+   "id": "R3-01",
+   "round": "R3",
+   "severity": "MEDIUM",
+   "status": "repaired 4346715",
+   "title": "Revert after a refused repair resets whatever branch the implementation worktree's HEAD names: a redirected HEAD makes the driver move another branch (incl. the main checkout's) to the candidate SHA"
+  },
+  {
+   "blocking": true,
+   "id": "R3-02",
+   "round": "R3",
+   "severity": "MEDIUM",
+   "status": "repaired 4346715",
+   "title": "A non-COMPLETED baseline gate result (TIMED_OUT, GPU lease busy, BLOCKED) is cached by SHA+cmd and permanently blocks qualification"
+  },
+  {
+   "blocking": true,
+   "id": "R3-03",
+   "round": "R3",
+   "severity": "MEDIUM",
+   "status": "repaired 4346715",
+   "title": "Candidate moved during VERIFYING/VERIFIED blocks with resume_to=VERIFYING, so every resume re-blocks and the new commit is never re-audited"
+  },
+  {
+   "blocking": true,
+   "id": "R3-04",
+   "round": "R3",
+   "severity": "MEDIUM",
+   "status": "repaired 4346715",
+   "title": "Milestone policy (protected-path authorisation, gates, integration authorisation, reviewer) is re-read every run; a changed config is only logged, so any writer can relax policy mid-milestone"
+  },
+  {
+   "blocking": false,
+   "id": "R3-05",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Docs understate state-forging: an append-only forge suffices, and setsid-escaped worker writes outside the worktree are not caught"
+  },
+  {
+   "blocking": true,
+   "id": "R4-01",
+   "round": "R4",
+   "severity": "MEDIUM",
+   "status": "repaired 6bcfd1d",
+   "title": "Policy binding covers only the config file hash: the default protected list (ws_frozen_check) is re-read every run from the main checkout's working tree and a relaxed list reaches VERIFIED with no CONFIG_CHANGED and verify() clean"
+  },
+  {
+   "blocking": false,
+   "id": "R4-02",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A baseline-passing test newly skipped in the candidate is not a gate regression (and satisfies a gate-finding regression proof)"
+  },
+  {
+   "blocking": false,
+   "id": "R4-03",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "LIFECYCLE_QUALIFICATION.md ends at R1: refers to 'R2 below' that does not exist and still states 114 passed"
+  },
+  {
+   "blocking": true,
+   "id": "R5-01",
+   "round": "R5",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Gate-finding repairs skip the fail-before proof for class-based pytest tests and every Flutter test: a repair that weakens the failing test is committed and integrated"
+  },
+  {
+   "blocking": true,
+   "id": "R5-02",
+   "round": "R5",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Baseline comparison keys are non-deterministic: plain-assert causes include run-specific values and Flutter load-failure ids include the absolute worktree path, so historical failures count as new"
+  }
+ ],
+ "gates": [],
+ "owner": [
+  {
+   "kind": "TAMPER",
+   "needs": "owner: investigate; start a fresh state_dir (evidence cannot be trusted)",
+   "reason": "receipt verification failed: resume_to in state.json differs from the last wait/block event"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": "R2-01, R2-02, R2-03, R2-04, R2-05",
+   "commit": "c1ba808e07ad",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R3-01, R3-02, R3-03, R3-04",
+   "commit": "43467152d92e",
+   "reason": "",
+   "repair": "P2",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R4-01",
+   "commit": "6bcfd1d854c1",
+   "reason": "",
+   "repair": "P3",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R5-01, R5-02",
+   "commit": "",
+   "reason": "REGRESSION: tests/dev_workflow/lifecycle_fixture/worker.py does not pass after the repair (DONE, exit 2)",
+   "repair": "P4",
+   "status": "REFUSED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 8,
+   "candidate": "12ac37ab72dd",
+   "findings": 12,
+   "finished": "2026-10-11T00:42:20Z",
+   "independent": false,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+   "status": "NOT_INDEPENDENT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 5,
+   "candidate": "d5fccdf9119a",
+   "findings": 8,
+   "finished": "2026-10-11T00:56:50Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "1d6fc831-f799-429b-a496-c8b5591fff47",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 4,
+   "candidate": "c1ba808e07ad",
+   "findings": 5,
+   "finished": "2026-10-11T01:12:34Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R3",
+   "session": "8f1c0300-05ca-41f6-9b52-4e5748134ff8",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "43467152d92e",
+   "findings": 3,
+   "finished": "2026-10-11T01:26:05Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R4",
+   "session": "8f87c9e2-a2f8-4085-aaa0-a8bffb994769",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "6bcfd1d854c1",
+   "findings": 2,
+   "finished": "2026-10-11T01:46:59Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R5",
+   "session": "51ef5349-f656-4f35-a98e-4ae98913c801",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  }
+ ],
+ "summary": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+  "evidence_ok": false,
+  "findings_repaired": 10,
+  "findings_total": 30,
+  "integration": "none",
+  "milestone": "DEV-LIFECYCLE-1",
+  "open_blocking": 2,
+  "owner_actions": 1,
+  "receipt_chain_ok": true,
+  "repairs_committed": 3,
+  "rounds": 5,
+  "stage": "BLOCKED",
+  "written_at": "2026-10-11T02:13:18Z"
+ }
+}

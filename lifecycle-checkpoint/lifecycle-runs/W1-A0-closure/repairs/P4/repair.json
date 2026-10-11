@@ -1,0 +1,106 @@
+{
+ "addresses": [
+  "R4-01",
+  "R4-02",
+  "R4-03"
+ ],
+ "changed": [
+  "docs/assist/A0_QUALIFICATION.md",
+  "docs/assist/W1_QUALIFICATION.md",
+  "tests/assist/test_a0_r4_review_regressions.py",
+  "tests/web/test_w1_r4_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/redact.py",
+  "uri_web/evaluate.py",
+  "uri_web/safe_fetch.py"
+ ],
+ "commit": "52e852dcce592e15fc2098bc1e169a7e009eb26a",
+ "ended_at": "2026-10-11T04:45:47Z",
+ "pre": "16155129b72685f25eca48a65252f6cd51fa47e4",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r4_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/web/test_w1_r4_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 4,
+ "report": {
+  "not_repaired": [],
+  "notes": "R4-01: class-based stems per word (with readable-word strip), joined-name phrases, and an alphanumeric 3-32 char value fallback for names or labels ending in code/pin/key, identical in redact.py and snapshot.js. The corpus is independent of the rule list and is checked in Python, real Chromium and the assist_ask Brain body. AC7 in A0_QUALIFICATION is restated as pattern-based with residual risk L-A0-2 and a recorded correction; unknown fields still fail open (fail-closed not adopted, owner may decide). R4-02: magnitudes multiplied out, units kept and normalised in evaluate.numbers, so verify and conflicts are both fixed; the existing R1 expectation '1250.50' is preserved. R4-03: per-hop watchdog shuts sockets down via a wrapped httpcore network backend at the deadline or on cancel, and connect is capped at the remaining budget; reviewer probes now stop at 1.0 s (were 67.3 s and 12.1 s). On a copy of the repo at 1615512 with only the new tests added, 209 new test cases fail and only the controls pass. tests/assist plus tests/web: 2260 passed with the fix. graphify was not available, so the graph was not updated.",
+  "regression_tests": [
+   "tests/assist/test_a0_r4_review_regressions.py",
+   "tests/web/test_w1_r4_review_regressions.py"
+  ],
+  "repaired": [
+   "R4-01",
+   "R4-02",
+   "R4-03"
+  ]
+ },
+ "started_at": "2026-10-11T04:25:20Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "294d1b48-6bb6-4447-ad55-f2ddfe736d48",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 2.5597296000000003,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T04:39:24Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 41,
+  "pid": 9474,
+  "prompt_sha256": "bb3da057d1d022ed3604264e0bfb5210f0987ce11e62a836b015e537082768de",
+  "provider": "claude_cli",
+  "result_text_sha256": "fe95f4959fe9b8f1f637b69e719e9dc162d761b3d47327a2798f15e1b2bb035c",
+  "role": "implementer",
+  "session_id": "294d1b48-6bb6-4447-ad55-f2ddfe736d48",
+  "session_id_requested": "294d1b48-6bb6-4447-ad55-f2ddfe736d48",
+  "started_at": "2026-10-11T04:25:20Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "093e86529c5b66f715cef096d428cbada7875baf781a959cb84d7d51551fa8dd"
+ }
+}

@@ -1,0 +1,44 @@
+You are the INDEPENDENT REVIEWER for URI milestone W1-A0-closure, round R3.
+You did not write this code and you will not repair it. Your verdict is recorded verbatim.
+
+Rules: read-only. Do not edit, create or delete files in this checkout; do not commit, push, change branches or
+refs. Put throwaway probes under /tmp/uri_review_R3/. Running tests and adversarial probes is expected.
+
+Baseline: ffdf534386a3d40cf9e1646ef1080bee28dd3aa9
+Candidate (this checkout, detached HEAD): 627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede
+Review range: `git diff ffdf534386a3d40cf9e1646ef1080bee28dd3aa9..627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede` (fetch history if needed). Verify both SHAs yourself.
+Governing acceptance criteria: `docs/assist/00_PLAN_AND_ACCEPTANCE_CRITERIA.md` in the checkout (read it in full).
+Protected paths (must not change without owner authorisation): uri_core/, uri_supervisor/, uri_supervisor_bridge/, uri_harness_adapters/, model_lab/integration/, scripts/run_uri_supervised_worker.py, scripts/run_uri_phase2_server.py, scripts/run_uri_client_worker.py, scripts/run_uri_isolated_server.py, scripts/c1_bootstrap.py, uri_ui/lib/services/paired_runtime.dart, uri_ui/lib/services/supervised_runtime.dart, uri_ui/lib/screens/settings/paired_runtime_screen.dart, uri_ui/lib/screens/settings/settings_shell.dart, uri_ui/lib/screens/tasks/supervised_execution_screen.dart, .gitignore
+Review focus:
+1. Security / SSRF in uri_web (safe_fetch, netpolicy): any URL, redirect, DNS answer sequence or proxy setting that connects to a non-public address or to an address other than the validated one.
+2. Prompt injection and citation integrity in uri_web (untrusted, synthesize, evaluate, extract, search, local_brain).
+3. Browser connectivity: browser_extension/snapshot.js redaction, hidden-text handling and Python/JS parity; the browser channel itself is not built (owner checklist #8) - confirm nothing claims otherwise.
+4. Multimodal vision: uri_assist/vision.py gating (OBSERVE, freshness, busy slot, loopback-only endpoint, size bounds, debounce, never automatic).
+5. Permissions: uri_assist/access.py and bridge.py - observe/suggest without a current grant, stale observations, permission implication, entire-screen confirmation, restart, Insert/Act paths, derived data after revoke.
+6. Integration: scripts/run_uri_integrated_worker.py dispatch, uri_ui Assist controller lifecycle (timers, ask state after stop/re-grant), OiConversation diversion.
+7. Verify the R1 findings (docs/assist/closure/R1_reviewer_result.txt) and the repairs made since.
+8. The frozen uri_core/tools/fetch_url.py SSRF-1 is a known pre-existing defect outside this milestone and must NOT be repaired here (owner decision).
+Blocking findings from earlier rounds (verify each is fixed; state FIXED or NOT_FIXED): [{"id": "R1-01", "severity": "MEDIUM", "title": "Citation verifier and conflict detector ignore numbers preceded by a letter or dot (e.g. 'Rs.500'), so an unsupported number survives verify", "files": ["uri_web/evaluate.py:14", "uri_web/synthesize.py:163", "uri_web/synthesize.py:172"]}, {"id": "R1-02", "severity": "MEDIUM", "title": "Redaction name matching still misses common OTP/CVV/PIN/password field names (F5 repair incomplete), in both Python and in-page JS", "files": ["uri_assist/redact.py:32", "uri_assist/redact.py:98", "uri_assist/browser_extension/snapshot.js:11"]}, {"id": "R2-01", "severity": "MEDIUM", "title": "Redaction still misses lowercase run-together OTP/CVV/PIN/password field names (R1-02 class not closed), in both Python and in-page JS", "files": ["uri_assist/redact.py:26", "uri_assist/redact.py:34", "uri_assist/browser_extension/snapshot.js:10", "uri_assist/browser_extension/snapshot.js:11"]}]
+Repair commits since then: [{"commit": "16f75d8e2e5f537749b32b1d754c347cbebdfc36", "addresses": ["R1-01", "R1-02", "R1-03", "R1-04"]}, {"commit": "627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede", "addresses": ["R2-01"]}]
+
+Severity: HIGH = exploitable or criterion clearly unmet; MEDIUM = real defect on a realistic path (blocking: true
+unless it is only a documented limitation); LOW = minor. Report only findings with a concrete reproduction or exact
+code evidence. Set "owner_decision": true when the only fix needs a protected path, a new dependency, credentials
+or an owner policy decision. Set "category": "documentation" for doc-only findings.
+Verdict: REJECT if any HIGH or blocking finding.
+
+Environment notes:
+- Python with pytest and the repo requirements: /tmp/claude-0/venv/bin/python (use it for tests; do not pip install)
+- Flutter SDK: /tmp/claude-0/flutter/bin/flutter (Flutter tests run from uri_ui/)
+- Real Chromium for Playwright tests is preinstalled (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers)
+- No GPU, no Windows; the Phase 1 checkpoint zip is not present (ws_frozen_check zip part BLOCKED)
+
+Your final message must end with exactly one block of valid JSON:
+AUDIT_RESULT_BEGIN
+{"candidate": "<sha you verified>", "baseline": "<sha>", "verdict": "ACCEPT | ACCEPT WITH FINDINGS | REJECT",
+ "findings": [{"id": "R3-01", "severity": "HIGH|MEDIUM|LOW", "blocking": true, "category": "code|security|test|documentation",
+   "owner_decision": false, "title": "...", "files": ["path:line"], "evidence": "...", "suggested_fix": "..."}],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED|NOT_FIXED"}],
+ "tests_run": [{"command": "...", "result": "...", "status": "COMPLETED_WITH_RESULT|FAILED|BLOCKED"}],
+ "unverified": ["..."]}
+AUDIT_RESULT_END

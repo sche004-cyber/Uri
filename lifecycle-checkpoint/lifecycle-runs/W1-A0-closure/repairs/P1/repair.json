@@ -1,0 +1,119 @@
+{
+ "addresses": [
+  "R1-01",
+  "R1-02",
+  "R1-03",
+  "R1-04"
+ ],
+ "changed": [
+  "docs/assist/A0_QUALIFICATION.md",
+  "tests/assist/fixtures/run_snapshot.cjs",
+  "tests/assist/fixtures/text_surfaces.html",
+  "tests/assist/fixtures/tricky_fields.html",
+  "tests/assist/test_a0_r1_review_regressions.py",
+  "tests/web/test_w1_r1_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/redact.py",
+  "uri_ui/lib/living/assist/assist_controller.dart",
+  "uri_ui/test/living/assist_mode_test.dart",
+  "uri_web/evaluate.py"
+ ],
+ "commit": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+ "ended_at": "2026-10-11T03:46:26Z",
+ "pre": "8019d41b77bae91598fa45b5ea827ab54d1cf64c",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r1_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/web/test_w1_r1_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "uri_ui/test/living/assist_mode_test.dart": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {
+  "not_repaired": [],
+  "notes": "R1-01: _NUMBER lookbehind is now (?<!\\d). R1-02: _words/words split acronym->Word and letter<->digit in both layers; added [a-z]*otp, 2 ?fa, mpin, tpin, ccv, acct ?(number|num|no), card ?(expiry|exp|expiration); tricky_fields.html has 12 new fields. R1-03: revoke() and grant() clear askId (and answer). R1-04: snapshot.js applies maskText to title, headings, label, placeholder, id, name and the full URL; the URL key= replacement skips values already masked; run_snapshot.cjs takes an optional SNAPSHOT_URL (served locally via page.route); new fixture text_surfaces.html; A0_QUALIFICATION.md AC7 row records the correction. Verified: the R1 tests fail on a git-archive export of 8019d41 (except two control tests that pass on both) and pass here; tests/assist + tests/web 263 passed, 0 skipped (real Chromium ran); Flutter test/living 248 passed; flutter analyze lib/living/assist clean. Unrelated: tests/phase2a/test_frozen_core.py base-commit check fails because HEAD 8019d41 != e8e3b65. graphify CLI not installed, so the graph was not updated.",
+  "regression_tests": [
+   "tests/web/test_w1_r1_review_regressions.py",
+   "tests/assist/test_a0_r1_review_regressions.py",
+   "tests/assist/test_a0_interim_review_regressions.py::test_f5_in_page_layer_matches_python_on_hostile_fields (extended via fixtures/tricky_fields.html)",
+   "uri_ui/test/living/assist_mode_test.dart"
+  ],
+  "repaired": [
+   "R1-01",
+   "R1-02",
+   "R1-03",
+   "R1-04"
+  ]
+ },
+ "started_at": "2026-10-11T03:39:58Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "99662960-f5c5-4ed1-b299-539c37e497da",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.6189663999999997,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T03:45:35Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 38,
+  "pid": 26459,
+  "prompt_sha256": "ab9fb7b805ebeabebc968d63ef9fc62daa666f449657fcb308ec03a3f151c14d",
+  "provider": "claude_cli",
+  "result_text_sha256": "05b9b72e74fa02fbbe3f85b7ce79762f3bcd2cbf6cbb02fddb45b29a4260bb7c",
+  "role": "implementer",
+  "session_id": "99662960-f5c5-4ed1-b299-539c37e497da",
+  "session_id_requested": "99662960-f5c5-4ed1-b299-539c37e497da",
+  "started_at": "2026-10-11T03:39:58Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "9d5cef28be23f9e5ee4ff554161ff56b8d3859d6ae81ec3747877a4352213f04"
+ }
+}

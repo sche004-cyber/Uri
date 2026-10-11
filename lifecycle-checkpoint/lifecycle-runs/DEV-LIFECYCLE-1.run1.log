@@ -1,0 +1,105 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "DEV-LIFECYCLE-1",
+ "stage": "WAITING_FOR_MODEL",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "candidate": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+ "rounds": 1,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "claude_cli",
+   "session_id": "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": false,
+   "status": "NOT_INDEPENDENT"
+  }
+ ],
+ "repairs": [],
+ "open_findings": [
+  {
+   "id": "R1-01",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "claude_cli reviewer 'binary' override lets any scripted executable count as an independent reviewer for a real milestone"
+  },
+  {
+   "id": "R1-02",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "Evidence is trusted from state.json; an edited verdict reaches VERIFIED and verify() reports no error"
+  },
+  {
+   "id": "R1-03",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "Driver's repair commit runs worker-planted git hooks: out-of-scope and protected files are committed after the scope check and regression proof"
+  },
+  {
+   "id": "R1-04",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "pytest/flutter gate passes when the run crashes or collects nothing (exit code and missing junit ignored)"
+  },
+  {
+   "id": "R1-05",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "Qualification gates run in the candidate worktree without checking it is clean, so uncommitted (or ignored) files decide the VERIFIED result"
+  },
+  {
+   "id": "R1-06",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "Worker process group is only killed on timeout; detached children keep running after the post-run integrity checks"
+  },
+  {
+   "id": "R1-07",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "Revert after a refused repair leaves staged new files in the index"
+  },
+  {
+   "id": "R1-08",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "Regression-proof timeout is uncaught: driver crashes mid-FIXING and leaves the implementer's changes unreverted"
+  },
+  {
+   "id": "R1-09",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "effective_verdict is lenient on malformed severity/blocking fields"
+  },
+  {
+   "id": "R1-10",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "DEVTEST classification by '_TEST' substring lets a scripted reviewer count for real milestones whose names contain _TEST"
+  },
+  {
+   "id": "R1-11",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Gate timeouts do not kill child process trees"
+  },
+  {
+   "id": "R1-12",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Docs claim guarantees the code does not provide"
+  }
+ ],
+ "gates": {},
+ "integration": null,
+ "blocker": null,
+ "events": 8,
+ "evidence_ok_for_candidate": false
+}
+exit 5

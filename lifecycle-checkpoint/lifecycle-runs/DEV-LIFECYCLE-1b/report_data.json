@@ -1,0 +1,456 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "HIGH",
+   "status": "repaired 1f720ed",
+   "title": "Effective verdict is read from an unbound, mutable reviewer_result.txt; a lingering worker child can turn a genuine REJECT into ACCEPT and verify() stays clean"
+  },
+  {
+   "blocking": true,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 1f720ed",
+   "title": "Malformed findings (dict, strings, scalar) are silently dropped and yield ACCEPT"
+  },
+  {
+   "blocking": true,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 1f720ed",
+   "title": "Gate-finding regression proof skips class-based pytest ids and Flutter ids (earlier R5 finding still unrepaired)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-04",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 1f720ed",
+   "title": "Git hooks/config/info tamper detection is not anchored: a change caught once becomes the new baseline, and the diagnosis worker is never checked"
+  },
+  {
+   "blocking": false,
+   "id": "R1-05",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Tests that passed on the baseline but are skipped on the candidate are not flagged by the gate comparison"
+  },
+  {
+   "blocking": false,
+   "id": "R1-06",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Implicitly blocking MEDIUM findings are excluded from attempt counting and from the next round's prior-findings list"
+  },
+  {
+   "blocking": false,
+   "id": "R1-07",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A gate failing only through 'vanished' tests is routed to FIXING with an empty findings list"
+  },
+  {
+   "blocking": false,
+   "id": "R1-08",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "binary_is_default is tautological for real milestones; a PATH shim named claude counts as the installed CLI"
+  },
+  {
+   "blocking": false,
+   "id": "R1-09",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Stale or over-stated doc statements"
+  },
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "non-blocking",
+   "title": "PLAN-anchored GIT_CONTROL digest hashes the whole shared .git/config, so routine branch/tracking writes by other sessions block the milestone as TAMPER"
+  },
+  {
+   "blocking": false,
+   "id": "R2-02",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Hashes compare text-mode writes with bytes read back: on Windows every round fails verify (fails closed)"
+  },
+  {
+   "blocking": true,
+   "id": "R3-01",
+   "round": "R3",
+   "severity": "MEDIUM",
+   "status": "repaired 475533a",
+   "title": "Config allowlist added in 39ed499 hides worker-written remote.*.fetch refspecs, which the driver's integration fetch then uses to force-overwrite other local branches of the main repository"
+  },
+  {
+   "blocking": false,
+   "id": "R3-02",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "URI_DEVELOPMENT_LIFECYCLE.md still states that any hooks/config/info change is tamper, but 39ed499 ignores branch.* and remote fetch/prune/mirror keys"
+  },
+  {
+   "blocking": true,
+   "id": "R4-01",
+   "round": "R4",
+   "severity": "MEDIUM",
+   "status": "repaired 6784424",
+   "title": "Git control-state tamper check covers only the repository config; worker-written user-level git config (~/.gitconfig) silently redirects the driver's push and its push verification, and smudge filters make reviewer/gate checkouts differ from the candidate commit"
+  },
+  {
+   "blocking": false,
+   "id": "R4-02",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A REJECT result with a non-string finding title crashes the driver (uncaught AttributeError) instead of routing to repair"
+  },
+  {
+   "blocking": false,
+   "id": "R4-03",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Limits section still calls max_rounds the hard bound although L-AC22 replaced it"
+  },
+  {
+   "blocking": true,
+   "id": "R5-01",
+   "round": "R5",
+   "severity": "MEDIUM",
+   "status": "repaired dff1ea7",
+   "title": "Merge-mode integration runs candidate gate code after the last control-drift check; a test that writes ~/.gitconfig insteadOf redirects the push and its ls-remote verification, yielding a false COMPLETE"
+  },
+  {
+   "blocking": false,
+   "id": "R5-02",
+   "round": "R5",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Contents of files included from the repository config (include.path / includeIf) are not bound by git_control_digest"
+  },
+  {
+   "blocking": false,
+   "id": "R5-03",
+   "round": "R5",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "URI_DEVELOPMENT_LIFECYCLE.md \u00a76 still names `max_rounds` as the hard bound"
+  },
+  {
+   "blocking": true,
+   "id": "R6-01",
+   "round": "R6",
+   "severity": "HIGH",
+   "status": "repaired aba8ac0",
+   "title": "Reviewer executable identity is not anchored: any 'claude' earlier on PATH (e.g. planted in ~/.local/bin by an implementer or gate test) counts as the installed CLI and its scripted ACCEPT makes a real milestone VERIFIED"
+  },
+  {
+   "blocking": true,
+   "id": "R6-02",
+   "round": "R6",
+   "severity": "MEDIUM",
+   "status": "repaired aba8ac0",
+   "title": "The independent reviewer starts in the candidate checkout and loads the candidate's CLAUDE.md, .claude settings and skills as authoritative project instructions, so implementer-authored text reaches the reviewer outside the driver-built prompt"
+  },
+  {
+   "blocking": false,
+   "id": "R6-03",
+   "round": "R6",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Docs claim every external command has a timeout and that max_rounds is the hard bound; driver git network commands have no timeout and limits.max_rounds is now refused"
+  },
+  {
+   "blocking": true,
+   "id": "R7-01",
+   "round": "R7",
+   "severity": "HIGH",
+   "status": "repaired e029675",
+   "title": "Reviewer still loads worker-writable user-level Claude settings (~/.claude/settings.json); an implementer-written env.ANTHROPIC_BASE_URL routes the genuine, PLAN-anchored claude binary to a scripted endpoint whose ACCEPT counts as an independent review of a real milestone"
+  },
+  {
+   "blocking": true,
+   "id": "R8-01",
+   "round": "R8",
+   "severity": "HIGH",
+   "status": "repaired 2d419f6",
+   "title": "R7-01 config isolation is a post-run end-state check: a lingering setsid worker child injects env.ANTHROPIC_BASE_URL into the fresh reviewer CLAUDE_CONFIG_DIR, removes it after CLI startup, and the scripted ACCEPT is recorded with config_isolated=true"
+  },
+  {
+   "blocking": true,
+   "id": "R10-01",
+   "round": "R10",
+   "severity": "MEDIUM",
+   "status": "repaired 1f4aedd",
+   "title": "Timeout path calls communicate() without a timeout before the R8-01 orphan sweep: a setsid descendant holding stdout hangs the driver indefinitely and the sweep is never reached"
+  },
+  {
+   "blocking": false,
+   "id": "R10-02",
+   "round": "R10",
+   "severity": "MEDIUM",
+   "status": "repaired 1f4aedd",
+   "title": "contained=true is recorded although workers or orphans of an earlier, killed driver process are still running (outside the subreaper tree); documented limitation, but realistic and reachable through R10-01"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "1f720ed6a1b7",
+   "failed": 0,
+   "gate": "dev_workflow",
+   "new": 0,
+   "ok": true,
+   "passed": 161,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "39ed499bd6a6",
+   "failed": 0,
+   "gate": "dev_workflow",
+   "new": 0,
+   "ok": true,
+   "passed": 163,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "1f4aeddf50d4",
+   "failed": 0,
+   "gate": "dev_workflow",
+   "new": 0,
+   "ok": true,
+   "passed": 192,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [],
+ "repairs": [
+  {
+   "addresses": "R1-01, R1-02, R1-03, R1-04",
+   "commit": "1f720ed6a1b7",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R3-01",
+   "commit": "475533a28021",
+   "reason": "",
+   "repair": "P2",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R4-01",
+   "commit": "6784424d48df",
+   "reason": "",
+   "repair": "P3",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R5-01",
+   "commit": "dff1ea78527a",
+   "reason": "",
+   "repair": "P4",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R6-01, R6-02",
+   "commit": "aba8ac05a07f",
+   "reason": "",
+   "repair": "P5",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R7-01",
+   "commit": "e029675cc9f2",
+   "reason": "",
+   "repair": "P6",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R8-01",
+   "commit": "2d419f692238",
+   "reason": "",
+   "repair": "P7",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R10-01, R10-02",
+   "commit": "1f4aeddf50d4",
+   "reason": "",
+   "repair": "P8",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 4,
+   "candidate": "fbac43727f89",
+   "findings": 9,
+   "finished": "2026-10-11T02:19:10Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "91871433-89e7-479f-80e2-e1e97327c314",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "1f720ed6a1b7",
+   "findings": 2,
+   "finished": "2026-10-11T02:40:48Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "8900cfe1-e72c-4080-8460-a93c7f0eaa3e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  },
+  {
+   "blocking": 1,
+   "candidate": "39ed499bd6a6",
+   "findings": 2,
+   "finished": "2026-10-11T02:55:56Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R3",
+   "session": "07c44e72-6eb8-4c64-b60e-dd7741883221",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "475533a28021",
+   "findings": 3,
+   "finished": "2026-10-11T03:07:16Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R4",
+   "session": "acebab39-06a1-44bd-9db1-3f00f293c0aa",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "6784424d48df",
+   "findings": 3,
+   "finished": "2026-10-11T03:25:02Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R5",
+   "session": "56f26871-716a-4121-8138-92882bed920d",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "dff1ea78527a",
+   "findings": 3,
+   "finished": "2026-10-11T03:39:03Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R6",
+   "session": "6cad1c6b-941b-42f2-87b7-42334a912238",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "aba8ac05a07f",
+   "findings": 1,
+   "finished": "2026-10-11T03:58:46Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R7",
+   "session": "cb93b41e-7a1e-40d0-a291-55930d06f282",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "e029675cc9f2",
+   "findings": 1,
+   "finished": "2026-10-11T04:29:36Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R8",
+   "session": "a3eea134-06ef-4035-b61d-22d55d5e6b6f",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "2d419f692238",
+   "findings": 0,
+   "finished": null,
+   "independent": null,
+   "reviewer": null,
+   "round": "R9",
+   "session": null,
+   "status": "running",
+   "verdict": "running"
+  },
+  {
+   "blocking": 1,
+   "candidate": "2d419f692238",
+   "findings": 2,
+   "finished": "2026-10-11T04:56:16Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R10",
+   "session": "1b59ac4d-2fd7-42fa-b892-143d4f8998ad",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "1f4aeddf50d4",
+   "findings": 0,
+   "finished": "2026-10-11T05:25:51Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R11",
+   "session": "a6552425-5678-48c3-a5b4-d48be22f98ae",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT"
+  }
+ ],
+ "summary": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "1f4aeddf50d4eb2d024af7132b443b5dc57591df",
+  "evidence_ok": true,
+  "findings_repaired": 13,
+  "findings_total": 26,
+  "integration": "INTEGRATED",
+  "milestone": "DEV-LIFECYCLE-1",
+  "open_blocking": 0,
+  "owner_actions": 0,
+  "receipt_chain_ok": true,
+  "repairs_committed": 8,
+  "rounds": 11,
+  "stage": "COMPLETE",
+  "written_at": "2026-10-11T05:31:38Z"
+ }
+}

@@ -1,0 +1,90 @@
+{
+ "addresses": [
+  "R4-01"
+ ],
+ "changed": [
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/lifecycle.py",
+  "tests/dev_workflow/test_lifecycle.py"
+ ],
+ "commit": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+ "ended_at": "2026-10-11T01:40:21Z",
+ "pre": "43467152d92ec7b630bfa5dc3b8587577af96443",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 3,
+ "report": {
+  "not_repaired": [],
+  "notes": "The resolved policy is now bound in the event chain together with the config file hash. policy_sha256(cfg) = chash(policy(cfg)) is computed live on each run, so it includes the ws_frozen_check protected list re-read from the main checkout. PLAN, CONFIG_CHANGED and OWNER_UNBLOCK events record policy_sha256. config_binding() returns the bound pair (config_sha256, chash(recorded policy)) read from the chain only. run() records CONFIG_CHANGED and blocks with CONFIG if either hash differs; the block clears only after an OWNER_UNBLOCK with the same pair. A first version stored the hash at load time; it broke 15 existing tests that edit cfg in memory after loading, so the hash is computed live instead. New test test_r4_01_relaxed_ws_frozen_check_list_blocks_as_config_change fails on 43467152 (second run returns VERIFIED instead of BLOCKED) and passes after the fix. Full tests/dev_workflow suite: 142 passed. Updated the Policy binding row in docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md.",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle.py"
+  ],
+  "repaired": [
+   "R4-01"
+  ]
+ },
+ "started_at": "2026-10-11T01:26:05Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "a9d68db8-58d4-428c-8738-d439091608ec",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 0.8272556,
+  "cwd": "/home/user/uri-wt/lifecycle",
+  "ended_at": "2026-10-11T01:37:49Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 22,
+  "pid": 32523,
+  "prompt_sha256": "b19c3b0e1b756444a8fd14b07f1fdf7628d5eb6de0f6ebf2c80d184fddad4e78",
+  "provider": "claude_cli",
+  "result_text_sha256": "2184cc0e3af5865302d6e0d18a1c80b70b3a0deae1285af76d5a884c0f130600",
+  "role": "implementer",
+  "session_id": "a9d68db8-58d4-428c-8738-d439091608ec",
+  "session_id_requested": "a9d68db8-58d4-428c-8738-d439091608ec",
+  "started_at": "2026-10-11T01:26:05Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "b1c043ce6c96efed3572ad4d4924feaba76cb20fce00faa0712a438e77e487a0"
+ }
+}

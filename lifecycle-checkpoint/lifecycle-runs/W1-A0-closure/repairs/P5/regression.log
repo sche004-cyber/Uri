@@ -1,0 +1,127 @@
+=== tests/assist/test_a0_r5_review_regressions.py BEFORE (52e852dcce592e15fc2098bc1e169a7e009eb26a) DONE
+_____
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-271/test_r5_02_in_page_layer_hides0')
+
+    def test_r5_02_in_page_layer_hides_keys_and_fields(tmp_path):
+        page = tmp_path / "r5.html"
+        page.write_text("<!doctype html><html><body><p>" + " ".join(html.escape(s) for s in SECRETS) + "</p><form>" +
+                        "".join(f'<label for="f{i}">{html.escape(lb)}</label><input id="f{i}" name="{html.escape(n)}" '
+                                f'value="{html.escape(v)}">' for i, (n, lb, v) in enumerate(FIELDS)) +
+                        "</form></body></html>")
+        s = _chromium(str(page))["snapshot"]
+        raw = json.dumps(s)
+        for secret in SECRETS:
+>           assert secret.split()[-1] not in raw, secret
+E           AssertionError: sk_live_4eC39HqLyjWDarjtT1zdp7dc
+E           assert 'sk_live_4eC...arjtT1zdp7dc' not in '{"schema": ...l_ratio": 1}'
+E             
+E             'sk_live_4eC39HqLyjWDarjtT1zdp7dc' is contained here:
+E                "text": "sk_live_4eC39HqLyjWDarjtT1zdp7dc rk_live_51HxYzAbCdEfGhIjKlMnOp pk_test_TYooMQauvdEDq54NiTphI7jx github_pat_11ABCDEFG0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP glpat-xYz12AbCdEf34GhIjKlMn npm_abcdefghijklmnopqrstuvwxyz0123456789 hf_AbCdEfGhIjKlMnOpQrStUvWxYz012345 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 Basic dXNlcjpwYXNzd29yZA==\nAuthorization\nSMS-TAN\nmTAN\nTAN\nOne-time code\n2SV code\nTwo-step code\nAuthorization header", "fields": [{"id": "f0", "tag": "input",...
+E             
+E             ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests/assist/test_a0_r5_review_regressions.py:74: AssertionError
+_______________ test_r5_02_values_never_reach_the_brain_request ________________
+
+    def test_r5_02_values_never_reach_the_brain_request():
+        fields = [{"id": f"f{i}", "type": "text", "name": n, "label": lb, "value": v,
+                   "rect": {"x": 1, "y": 1, "w": 2, "h": 2}} for i, (n, lb, v) in enumerate(FIELDS)]
+        client = FakeClient(text="This page asks for credentials.")
+        br, _ = mk(snap=dom_snapshot(fields=fields, text="Keys: " + " ".join(SECRETS)), client=client)
+        grant(br, perms=("observe",))
+        out = ask_and_wait(br, "What does this page need?")
+        assert out["status"] == "COMPLETE" and client.bodies
+        body = json.dumps(client.bodies)
+        for secret in SECRETS:
+>           assert secret.split()[-1] not in body, secret
+E           AssertionError: sk_live_4eC39HqLyjWDarjtT1zdp7dc
+E           assert 'sk_live_4eC...arjtT1zdp7dc' not in '[{"model": ...g": false}}]'
+E             
+E             'sk_live_4eC39HqLyjWDarjtT1zdp7dc' is contained here:
+E             ?           ^^^^^^^^^^^
+E               t:\nKeys: sk_live_4eC39HqLyjWDarjtT1zdp7dc rk_live_51HxYzAbCdEfGhIjKlMnOp pk_test_TYooMQauvdEDq54NiTphI7jx github_pat_11ABCDEFG0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP glpat-xYz12AbCdEf34GhIjKlMn npm_abcdefghijklmnopqrstuvwxyz0123456789 hf_AbCdEfGhIjKlMnOpQrStUvWxYz012345 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 Basic dXNlcjpwYXNzd29yZA==\n<<<END SOURCE 1>>>"}], "temperature": 0.0, "max_tokens": 600, "chat_template_kwargs": {"enable_thinking": false}}]
+E             ?           ^^^^^^^^^^^^^ ++++++++++++++++++++++++++++++
+
+tests/assist/test_a0_r5_review_regressions.py:90: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[sk_live_4eC39HqLyjWDarjtT1zdp7dc]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[rk_live_51HxYzAbCdEfGhIjKlMnOp]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[pk_test_TYooMQauvdEDq54NiTphI7jx]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[github_pat_11ABCDEFG0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[glpat-xYz12AbCdEf34GhIjKlMn]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[npm_abcdefghijklmnopqrstuvwxyz0123456789]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[hf_AbCdEfGhIjKlMnOpQrStUvWxYz012345]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[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]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_api_key_formats_are_masked[Basic dXNlcjpwYXNzd29yZA==]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_authorization_and_tan_fields_are_sensitive[authorization-Authorization-Basic dXNlcjpwYXNzd29yZA==]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_authorization_and_tan_fields_are_sensitive[smsTan-SMS-TAN-482913]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_authorization_and_tan_fields_are_sensitive[mTAN-mTAN-482913]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_authorization_and_tan_fields_are_sensitive[tan-TAN-482913]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_authorization_and_tan_fields_are_sensitive[otc-One-time code-482913]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_authorization_and_tan_fields_are_sensitive[2sv-2SV code-482913]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_authorization_and_tan_fields_are_sensitive[twoStep-Two-step code-482913]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_authorization_and_tan_fields_are_sensitive[auth_header-Authorization header-Zx9kq7Lm]
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_in_page_layer_hides_keys_and_fields
+FAILED tests/assist/test_a0_r5_review_regressions.py::test_r5_02_values_never_reach_the_brain_request
+19 failed, 12 passed in 0.95s
+
+=== tests/assist/test_a0_r5_review_regressions.py AFTER (08a4569908d7b9db2e22366cada632e5ebe40639) DONE
+...............................                                          [100%]
+31 passed in 1.02s
+
+=== tests/web/test_w1_r5_review_regressions.py BEFORE (52e852dcce592e15fc2098bc1e169a7e009eb26a) DONE
+ 5,00,000-Rs 5 lakh]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_verify_keeps_the_same_amount_written_differently[1 000 000 euros-1,000,000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_verify_keeps_the_same_amount_written_differently[1\u2009000\u2009000 euros-1000000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_verify_keeps_the_same_amount_written_differently[Rs 500,000-Rs 5,00,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_verify_keeps_the_same_amount_written_differently[Rs 5 lakh-Rs 5,00,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_verify_keeps_the_same_amount_written_differently[1,000,000 euros-1 000 000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_verify_keeps_the_same_amount_written_differently[1000000 euros-1\u2009000\u2009000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[Rs 5,00,000-Rs 5,00,00,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[\u20b95,00,000-\u20b95,00,00,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[1 000 000 euros-1 500 000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[1\xa0000\xa0000 euros-1\xa0500\xa0000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[1\u202f000 euros-1\u202f000\u202f000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[-3.2%-3.2%]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[\u22123.2%-3.2%]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[minus 12 degrees-12 degrees]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[-12 degrees-12 degrees]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[Rs 5,00,00,000-Rs 5,00,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[\u20b95,00,00,000-\u20b95,00,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[1 500 000 euros-1 000 000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[1\xa0500\xa0000 euros-1\xa0000\xa0000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[1\u202f000\u202f000 euros-1\u202f000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[3.2%--3.2%]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[3.2%-\u22123.2%]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[12 degrees-minus 12 degrees]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_conflict_detector_sees_the_different_amount[12 degrees--12 degrees]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_same_amount_is_not_a_conflict[Rs 5,00,000-Rs 500,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_same_amount_is_not_a_conflict[Rs 5,00,000-Rs 5 lakh]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_same_amount_is_not_a_conflict[1 000 000 euros-1,000,000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_same_amount_is_not_a_conflict[1\u2009000\u2009000 euros-1000000 euros]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_numerals_are_read_whole_with_their_sign[Rs 5,00,000-expected0]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_numerals_are_read_whole_with_their_sign[Rs 5,00,00,000-expected1]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_numerals_are_read_whole_with_their_sign[1 000 000 euros-expected2]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_numerals_are_read_whole_with_their_sign[-3.2%-expected3]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_numerals_are_read_whole_with_their_sign[\u22123.2%-expected4]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_numerals_are_read_whole_with_their_sign[minus 12 degrees-expected5]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_numerals_are_read_whole_with_their_sign[Dated 11.10.2026.-expected8]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_no_value_is_a_fragment_of_a_grouped_numeral[5,00,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_no_value_is_a_fragment_of_a_grouped_numeral[5,00,00,000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_no_value_is_a_fragment_of_a_grouped_numeral[12,34,56,789]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_no_value_is_a_fragment_of_a_grouped_numeral[1 000 000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_no_value_is_a_fragment_of_a_grouped_numeral[1\xa0234\xa0567]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_no_value_is_a_fragment_of_a_grouped_numeral[10,00,000.75]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_unreadable_numeral_never_supports_a_claim[1,2,3]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_unreadable_numeral_never_supports_a_claim[12,34]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_unreadable_numeral_never_supports_a_claim[1,0000]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_unreadable_numeral_never_supports_a_claim[1.000,50]
+FAILED tests/web/test_w1_r5_review_regressions.py::test_r5_01_unreadable_numeral_does_not_suppress_a_conflict
+62 failed, 18 passed in 0.31s
+
+=== tests/web/test_w1_r5_review_regressions.py AFTER (08a4569908d7b9db2e22366cada632e5ebe40639) DONE
+........................................................................ [ 90%]
+........                                                                 [100%]
+80 passed in 0.15s
+

@@ -1,0 +1,26 @@
+I fixed R10-01: a timed-out gate, test or worker can no longer hang the driver. I did not fix R10-02; it is non-blocking and needs a design choice, explained below. Nothing is committed.
+
+**What I checked**
+- **Before the fix:** on 2d419f6 (I put the original two `scripts/dev_workflow` files back temporarily), all 3 new tests fail. Without the time limit they would have hung.
+- **After the fix:** the 3 new tests pass, and the whole `tests/dev_workflow` suite passes (192 passed, 0 failed, 172.8 s).
+- `graphify update .` ran.
+
+**R10-01 — repaired**
+- **The cause:** after a timeout, `run_cmd` (`scripts/dev_workflow/lifecycle.py:663`) and `_run` (`scripts/dev_workflow/lifecycle_providers.py:452`) waited on stdout with no time limit. The orphan sweep that would kill the child holding it open only ran after that wait, so it was never reached.
+- **The fix:** both now call one new helper, `drain_after_timeout(proc, grace=5.0)` in `lifecycle_providers.py`. In order, it:
+  1. kills the process group;
+  2. reaps the direct child, with a time limit (the sweep counts any child outside the driver's session as an orphan);
+  3. runs `sweep_orphans()`, which kills the adopted setsid child;
+  4. reads the remaining output for at most 5 s. If something outside the driver's process tree still holds the pipe, it closes the pipes and returns whatever was read.
+- **Regression tests** (`tests/dev_workflow/test_lifecycle.py`, "R10" section): each one runs the call in a thread with a time limit, so on the old code it fails instead of hanging the suite.
+  - `run_cmd` with a setsid child holding stdout returns `TIMED_OUT`, and the child is dead.
+  - `run_worker` in the same situation returns `TIMED_OUT` with `contained: True`, and the child is dead.
+  - With the sweep turned off (standing in for a pipe holder outside the driver's tree), `run_cmd` still returns within its time limit.
+
+**R10-02 — not repaired**
+- **Why I left it:** the reviewer marked it non-blocking. The suggested fix would record session ids in state and kill matching processes at run start. Because pids get reused, that could kill an unrelated process, so it is a design decision rather than a minimal repair.
+- **What changed instead:** the stated-limits section of `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md` now says that the workers and commands of a killed driver also survive, not just their orphans, and that a resumed run still records `contained: true`. The main way to reach this was R10-01 forcing the driver to be killed, and that is now closed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R10-01"], "not_repaired": [{"id": "R10-02", "reason": "Non-blocking. The suggested fix (record session ids in state and kill processes in those sessions at run start) carries a pid/sid-reuse risk of killing unrelated processes, so it needs a design decision rather than a minimal repair. Its main trigger (R10-01 forcing the driver to be killed) is fixed, and the remaining limit is now stated in docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md section 6."}], "regression_tests": ["tests/dev_workflow/test_lifecycle.py"], "notes": "New helper lifecycle_providers.drain_after_timeout is used by run_cmd and _run: kill the group, reap the child with a time limit, sweep_orphans, then communicate with a 5 s limit, closing the pipes if a holder outside the tree remains. Tests: test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept, test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept, test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver. All 3 fail on 2d419f6 (thread time limit exceeded) and pass after the change; full tests/dev_workflow: 192 passed."}
+REPAIR_RESULT_END

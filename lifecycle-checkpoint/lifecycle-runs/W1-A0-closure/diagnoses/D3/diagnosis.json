@@ -1,0 +1,81 @@
+{
+ "candidate": "52e852dcce592e15fc2098bc1e169a7e009eb26a",
+ "clean": true,
+ "cost_usd": 0.402744,
+ "diagnosis": 3,
+ "recurring": [
+  "R1-01"
+ ],
+ "result": {
+  "evidence": [
+   "uri_web/evaluate.py:19 _NUMBER alternatives: \\d{1,3}(?:,\\d{3})+(?:\\.\\d+)? | \\d+(?:\\.\\d+)?, lookbehind (?<!\\d) only, no sign capture",
+   "uri_web/evaluate.py:72 n = m.group(1).replace(',', '') emits raw string fragments, no numeric canonicalisation",
+   "uri_web/synthesize.py:99 `not claim_nums <= best[2]` subset test lets fragment subsets pass",
+   "uri_web/evaluate.py:162 `na <= nb or nb <= na` -> continue suppresses conflicts for fragment subsets",
+   "probe /tmp/d3probe/p.py at 52e852d: numbers('Rs 5,00,000')={'00000','5'}, numbers('Rs 5,00,00,000')={'00','00000','5'} -> verify KEPT, conflicts 0; same for '\u20b95,00,000' vs '\u20b95,00,00,000'",
+   "probe: '1 000 000 euros'={'000','1'} vs '1 500 000 euros'={'000','1','500'} -> KEPT, 0 conflicts",
+   "probe: '-3.2%', '\u22123.2%' -> {'3.2%'}; '-12 degrees' -> {'12'}; each vs unsigned -> KEPT, 0 conflicts",
+   "probe (additional, unreported): '1,000.5' vs '1,000.50' -> NUMBER_NOT_IN_CITED_SOURCE (string not numeric equality); '10,00,000 lakh' -> {'0','10'}",
+   "git show 16f75d8 -- uri_web/evaluate.py: one-line lookbehind change only",
+   "git show 52e852d -- uri_web/evaluate.py: adds _SCALE/_UNIT/_fmt suffix handling, grouping/sign/comparators unchanged",
+   "pytest tests/web/test_w1_r1_review_regressions.py tests/web/test_w1_r4_review_regressions.py -k 'r1_01 or r4_02' -> 36 passed at HEAD despite reproduction",
+   "uri_web/surface.py:58 still claims 'citations checked against the sources (wording, numbers, negation)'"
+  ],
+  "needs_owner": false,
+  "proposed_fix": "Replace the regex-plus-string approach in evaluate.numbers with a numeral tokenizer that has an explicit invariant: each numeral is either parsed whole into one canonical value or reported as unparseable. Accept optional sign (-, \u2212, U+2212, 'minus'); integer part as western grouping \\d{1,3}(,\\d{3})+, Indian grouping \\d{1,2}(,\\d{2})*,\\d{3}, space/NBSP/thin-space/narrow-NBSP grouping \\d{1,3}([ \\u00a0\\u2009\\u202f]\\d{3})+, or a bare digit run; optional .fraction. Strip separators, parse to Decimal, apply sign and existing _SCALE/_UNIT, and emit a normalised canonical string (so 1000.5 == 1000.50). Return a sentinel for numerals that cannot be read cleanly: verify should drop the claim (NUMBER_NOT_IN_CITED_SOURCE / unverifiable) and find_conflicts should not use subset suppression to rule out a conflict for that pair. Add property-style regressions in tests/web covering each grouping style, sign variant and decimal-normalisation case in both verify and find_conflicts, in both directions (5,00,000 vs 5,00,00,000; 1 000 000 vs 1 500 000; -3.2% vs 3.2%; \u22123.2% vs 3.2%; 1,000.5 vs 1,000.50 kept), plus an invariant test that numbers() never yields a value that is a digit-substring fragment of a longer grouped numeral.",
+  "root_cause": "uri_web/evaluate.py:19 _NUMBER is a single ad-hoc regex that only knows western 3-digit comma grouping (\\d{1,3}(,\\d{3})+) or bare digit runs, and captures no sign. Any other numeral (Indian lakh/crore grouping 5,00,000, space/NBSP-grouped thousands 1 000 000, leading -/\u2212 sign) is silently split into fragments ('5','00000' / '5','00','00000') or loses its sign, and numbers() (evaluate.py:69-80) returns those fragments as if they were values, compared as raw strings. Both consumers then use set-subset comparisons \u2014 verify keeps a claim when claim_nums <= source_nums (synthesize.py:99), and find_conflicts skips any pair where one set is a subset of the other (evaluate.py:162) \u2014 so a fragmented smaller amount is usually a subset of the larger amount's fragments and the check fails open (5 lakh vs 5 crore KEPT, 0 conflicts). The tokenizer has no 'whole numeral or unparseable' invariant, and the comparators trust its output.",
+  "why_earlier_repairs_failed": "Each repair patched only the literal example strings of the latest finding. Repair 1 (16f75d8) changed only the lookbehind (?<![\\w.]) -> (?<!\\d) and tested exactly Rs.500/approx.900/No.5 (tests/web/test_w1_r1_review_regressions.py). Repair 4 (52e852d) bolted unit/scale suffix handling (_SCALE/_UNIT/_fmt) onto group 2 for R4-02, leaving the integer-grouping alternative, sign handling and the subset-based comparators unchanged, and tested only the reviewer's magnitude-word pairs ($5bn vs $5m, 2 crore vs 2 lakh). Repairs 2 and 3 (627f6b9, 1615512) did not touch uri_web. No repair added a test that every numeral is extracted whole, or covered fragmentation against the subset rules, so the 36 existing R1-01/R4-02 regressions pass at HEAD while R5-01 reproduces."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "020f33f8-137d-4620-9000-ae78ecc2df43",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 0.402744,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure/diagnose_D3",
+  "ended_at": "2026-10-11T04:55:40Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 8,
+  "pid": 17680,
+  "prompt_sha256": "2647c77cf704daec34a964df49fd9b623f14de204133e5baa7caa755ed50ca17",
+  "provider": "claude_cli",
+  "result_text_sha256": "1c17a995d6253715ed6dd934fd8316545cf0387e07d89af70cda79ae38db1304",
+  "role": "reviewer",
+  "session_id": "020f33f8-137d-4620-9000-ae78ecc2df43",
+  "session_id_requested": "020f33f8-137d-4620-9000-ae78ecc2df43",
+  "started_at": "2026-10-11T04:54:38Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "31bcd471a0a6ddb17aba75b39b98d0079ededf758735d92630a4e1ad00c0292a"
+ }
+}

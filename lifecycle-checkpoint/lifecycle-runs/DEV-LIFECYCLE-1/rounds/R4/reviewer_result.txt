@@ -1,0 +1,67 @@
+## Verdict: REJECT
+
+One blocking MEDIUM finding (R4-01) is left. It is what remains of R3-04, so I've marked R3-04 NOT_FIXED. The other 20 earlier blocking findings are fixed.
+
+**What I checked**
+- Both SHAs are as stated. The checkout matches the candidate exactly, and no protected path changed in the review range.
+- `pytest tests/dev_workflow`: 141 passed.
+- I wrote my own probes for the R3 repairs and they behaved correctly:
+  - **R3-01:** a worker pointed the implementation worktree's HEAD at the main checkout's branch. The driver stopped with TAMPER and moved neither branch; HEAD was put back on `feature` and both checkouts were left clean.
+  - **R3-03:** a new commit added after VERIFIED made the driver block, resume to AUDITING after `unblock`, and run a fresh review round on the new commit. `verify()` reported nothing wrong.
+  - **R3-02:** confirmed by reading the code plus its regression test; no probe of my own.
+
+**R4-01 (MEDIUM, blocking): protected paths can be relaxed without any config change being detected**
+- With the template default `"protected_paths": "ws_frozen_check"`, the protected list is re-read on every run from `scripts/ws_frozen_check.py` in the main checkout's working tree.
+- The R3-04 repair only checks the hash of the config file. The policy recorded in the PLAN event is never compared with the live one.
+- So anything that changes that file relaxes the policy silently. That could be a branch switch or pull in the main checkout, another session, or an implementer worker (it runs as root, and the docs say the main checkout isn't integrity-checked).
+- My probe `/tmp/uri_review_R4/probe_policy.py` reproduces it:
+  1. Run 1 recorded `["core/", ...]` as protected and stopped in WAITING_FOR_MODEL.
+  2. I edited that file in the main checkout; the config file was unchanged.
+  3. Run 2 reached **VERIFIED** with a candidate that changes `core/frozen.py`. There was no CONFIG_CHANGED event, `verify()` returned no errors, and `evidence_ok` returned `(True, [])`.
+- This defeats L-AC11 (an unauthorised protected-path change must block qualification).
+- Suggested fix: store a hash of the full resolved policy (including the resolved protected list) in the chain and check it each run. Alternatively, resolve the protected list once at plan time and read it back from the chain.
+
+**Non-blocking**
+- **R4-02 (LOW):** a test that passed on the baseline and is newly skipped in the candidate still passes the gate. Probe `probe_skip.py`: the candidate breaks `pkg/other.py`, marks its test skipped, and `qualify` returns ok. A repair for a failing-gate finding could do the same, and its regression proof would still pass. Only the independent re-review stands in the way.
+- **R4-03 (LOW, documentation):** `LIFECYCLE_QUALIFICATION.md` stops at R1. It says "re-reviewed by a fresh reviewer process (R2 below)", but there is no R2 or R3 section, and it still states 114 tests passed.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "43467152d92ec7b630bfa5dc3b8587577af96443", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R4-01", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Policy binding covers only the config file hash: the default protected list (ws_frozen_check) is re-read every run from the main checkout's working tree and a relaxed list reaches VERIFIED with no CONFIG_CHANGED and verify() clean",
+   "files": ["scripts/dev_workflow/lifecycle.py:117-118", "scripts/dev_workflow/lifecycle.py:143-146", "scripts/dev_workflow/lifecycle.py:1031-1071", "scripts/dev_workflow/lifecycle.py:1027", "docs/dev_workflow/lifecycle/TEMPLATE.json:8", "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"],
+   "evidence": "/tmp/uri_review_R4/probe_policy.py: DEVTEST fixture, config protected_paths='ws_frozen_check', repo/scripts/ws_frozen_check.py PROTECTED=('core/',...), candidate changes core/frozen.py. Run 1 (reviewer script absent) -> WAITING_FOR_MODEL, PLAN event protected=['core/','scripts/ws_frozen_check.py']. Then only the main checkout's working-tree scripts/ws_frozen_check.py was edited to PROTECTED=('nothing/',) (config file byte-identical) and the reviewer script created. Run 2 -> VERIFIED; events contain no CONFIG_CHANGED; changed_paths(base,candidate) includes core/frozen.py; L.verify(cfg) == []; evidence_ok == (True, []). policy(cfg) is recorded in PLAN/CONFIG_CHANGED but never compared; config_binding() compares only _config_sha256. The main checkout is excluded from integrity checks (doc §6), so a worker, another session, or a branch switch/pull in the main checkout silently relaxes L-AC11.",
+   "suggested_fix": "Bind and compare the resolved policy, not just the file hash: e.g. compute chash(policy(cfg)) (with the resolved protected list) into PLAN/CONFIG_CHANGED and have config_binding/run block CONFIG when it differs; or resolve 'ws_frozen_check' once at PLAN time (or from the baseline commit via git show <baseline>:scripts/ws_frozen_check.py) and read the protected list from the chain thereafter. Add a regression test that edits ws_frozen_check.py between runs."},
+  {"id": "R4-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "A baseline-passing test newly skipped in the candidate is not a gate regression (and satisfies a gate-finding regression proof)",
+   "files": ["scripts/dev_workflow/lifecycle.py:582-591", "scripts/dev_workflow/lifecycle.py:461-471"],
+   "evidence": "/tmp/uri_review_R4/probe_skip.py: candidate sets VALUE=3 in pkg/other.py and adds @pytest.mark.skip to tests/test_other.py::test_value; qualify() -> ok True, comparison {new_failures:[], vanished:[], ok:True}, skipped 1. compare() treats skipped ids as present. For a GATE finding, the skipped test file exits 0 after and failed before, so regression_proof passes; only the independent re-review stands in the way.",
+   "suggested_fix": "Record skipped ids per gate and treat 'passed on baseline, skipped on candidate' like vanished (unless allowed_flaky); in regression_proof require the gate test to have run (not all-skipped) after the repair."},
+  {"id": "R4-03", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false,
+   "title": "LIFECYCLE_QUALIFICATION.md ends at R1: refers to 'R2 below' that does not exist and still states 114 passed",
+   "files": ["docs/dev_workflow/LIFECYCLE_QUALIFICATION.md:7", "docs/dev_workflow/LIFECYCLE_QUALIFICATION.md:76-81"],
+   "evidence": "File ends with 'The repaired commit is re-reviewed by a fresh reviewer process (R2 below).' with no R2/R3 sections; current suite is 141 passed.",
+   "suggested_fix": "Append R2/R3/R4 rounds and the current test count, keeping history append-only."}
+ ],
+ "prior_findings": [
+  {"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"},
+  {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R1-07", "status": "FIXED"}, {"id": "R1-08", "status": "FIXED"},
+  {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R2-04", "status": "FIXED"},
+  {"id": "R2-05", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R3-03", "status": "FIXED"},
+  {"id": "R3-04", "status": "NOT_FIXED"}
+ ],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow", "result": "141 passed, 1 warning in 67.33s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R4/probe_policy.py", "result": "protected list relaxed via main-checkout ws_frozen_check.py; run2 VERIFIED with core/ change; no CONFIG_CHANGED; verify() []", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R4/probe_r3.py", "result": "R3-01: BLOCKED TAMPER, canon and feature unmoved, impl HEAD restored to refs/heads/feature, both checkouts clean. R3-03: post-VERIFIED commit -> BLOCKED EVIDENCE resume_to AUDITING; after unblock a fresh round R2 on the new SHA; verify() []", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python /tmp/uri_review_R4/probe_skip.py", "result": "newly skipped baseline-passing test with broken code: qualify ok True", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git rev-parse HEAD; git diff --stat ffdf534..HEAD (protected paths)", "result": "HEAD=43467152...; no protected path in diff", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": [
+  "R1-01..R2-05 FIXED status is based on code inspection plus the passing named regression tests (test_r1_*/test_r2_*), not fresh independent probes for each; does not affect the verdict (REJECT stands on R4-01).",
+  "Live claude_cli reviewer/implementer paths and the lifecycle_demo were not re-run (would spawn nested Claude processes); codex_cli untested (not installed).",
+  "Flutter gate and --machine parsing were checked only by code reading and the existing unit test, not against a live flutter run.",
+  "GPU lease paths not exercised live (no GPU)."
+ ]}
+AUDIT_RESULT_END

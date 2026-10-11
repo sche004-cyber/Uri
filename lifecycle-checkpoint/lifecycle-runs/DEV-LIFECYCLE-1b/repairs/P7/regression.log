@@ -1,0 +1,99 @@
+=== tests/dev_workflow/test_lifecycle.py BEFORE (e029675cc9f229596af26365277f2ae536be232b) DONE
+            pass
+            time.sleep(0.002)
+        os._exit(0)
+    f = {{'id': 'R1-01', 'severity': 'HIGH', 'blocking': True, 'category': 'code', 'title': 'safe_div divides by zero',
+          'files': ['pkg/calc.py:2']}}
+    print('AUDIT_RESULT_BEGIN'); print(json.dumps({{'candidate': h, 'verdict': 'REJECT', 'findings': [f]}})); print('AUDIT_RESULT_END')
+    """)
+        L.run(cfg)
+        s = L.status(cfg)
+        assert s["reviewers"][0]["verdict"] == "REJECT" and s["reviewers"][0]["reviewer_label"] == "REJECT"
+        assert s["stage"] != "COMPLETE" and remote_tip(remote) == base and not s["evidence_ok_for_candidate"]
+        if contained:  # the setsid() watcher was adopted and killed before the result file was written: prevented
+            assert s["reviewers"][0].get("verdict") == "REJECT"
+>           assert not _wait_for(lambda: (state / "rounds/R1/reviewer_result.txt.forged").exists(), 2)
+E           assert not True
+E            +  where True = _wait_for(<function test_r1r2_01_lingering_child_cannot_turn_reject_into_accept.<locals>.<lambda> at 0x7fb6cfc7fe20>, 2)
+
+tests/dev_workflow/test_lifecycle.py:1053: AssertionError
+_ test_r8_01_setsid_child_of_a_worker_cannot_inject_env_into_the_reviewer_config _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_setsid_child_of_a_w0')
+r8_env = (PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_setsid_child_of_a_w0/tmp'), PosixPath('/tmp/pytest-of-root/pytes..._of_a_w0/reviewer_runs.jsonl'), PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_setsid_child_of_a_w0/bin/claude'))
+
+    @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="child-subreaper containment is Linux-only")
+    def test_r8_01_setsid_child_of_a_worker_cannot_inject_env_into_the_reviewer_config(tmp_path, r8_env):
+        """R8-01: an implementer leaves a setsid() daemon that writes ``env`` into the next reviewer's fresh config dir and
+        removes it after the CLI started. The daemon must be dead before the reviewer starts."""
+        from scripts.dev_workflow.lifecycle_providers import run_worker
+        tdir, inj, log, fake = r8_env
+        pidfile = tmp_path / "injector.pid"
+        impl = {"provider": "command", "argv": [PY, str(inj), str(tdir), str(pidfile), "0.5", "detach"]}
+        pid = None
+        try:
+            w = run_worker(impl, "implementer", "p", tmp_path, tmp_path / "logs_impl")
+            pid = _wait_pid(pidfile)
+>           assert w["contained"] is True and w["containment_post"]["killed"] >= 1
+                   ^^^^^^^^^^^^^^
+E           KeyError: 'contained'
+
+tests/dev_workflow/test_lifecycle.py:1755: KeyError
+______ test_r8_01_env_injected_and_removed_during_the_run_is_not_isolated ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_env_injected_and_re0')
+r8_env = (PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_env_injected_and_re0/tmp'), PosixPath('/tmp/pytest-of-root/pytes..._and_re0/reviewer_runs.jsonl'), PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_env_injected_and_re0/bin/claude'))
+
+    def test_r8_01_env_injected_and_removed_during_the_run_is_not_isolated(tmp_path, r8_env):
+        """A process outside the swept tree (here: one the sweep does not reach) injects ``env`` and removes it before the
+        run ends. The config dir is watched for the whole run, not only its end state."""
+        import subprocess
+        from scripts.dev_workflow.lifecycle_providers import run_worker
+        tdir, inj, log, fake = r8_env
+        pidfile = tmp_path / "injector.pid"
+        p = subprocess.Popen([PY, str(inj), str(tdir), str(pidfile), "0.5", "stay"])
+        try:
+            _wait_pid(pidfile)
+            r = run_worker({"provider": "claude_cli", "binary": str(fake)}, "reviewer", "p", tmp_path, tmp_path / "logs_r")
+        finally:
+            p.kill()
+            p.wait()
+        assert [json.loads(x)["scripted"] for x in log.read_text().splitlines()] == [True]  # the redirect worked
+>       assert r["status"] == "COMPLETED" and r["config_isolated"] is False
+E       AssertionError: assert ('COMPLETED' == 'COMPLETED'
+E         
+E           COMPLETED and True is False)
+
+tests/dev_workflow/test_lifecycle.py:1787: AssertionError
+_________ test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed __________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_setsid_child_of_a_g0')
+r8_env = (PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_setsid_child_of_a_g0/tmp'), PosixPath('/tmp/pytest-of-root/pytes..._of_a_g0/reviewer_runs.jsonl'), PosixPath('/tmp/pytest-of-root/pytest-251/test_r8_01_setsid_child_of_a_g0/bin/claude'))
+
+    @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="child-subreaper containment is Linux-only")
+    def test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed(tmp_path, r8_env):
+        tdir, inj, log, fake = r8_env
+        pidfile = tmp_path / "injector.pid"
+        pid = None
+        try:
+            rc, out, err, state = L.run_cmd([PY, str(inj), str(tdir), str(pidfile), "0.5", "detach"], tmp_path, 30)
+            pid = _wait_pid(pidfile)
+            assert state == "DONE" and rc == 0
+>           assert not _alive(pid)
+E           assert not True
+E            +  where True = _alive(31482)
+
+tests/dev_workflow/test_lifecycle.py:1803: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_01_lingering_child_cannot_turn_reject_into_accept[False]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r1r2_01_lingering_child_cannot_turn_reject_into_accept[True]
+FAILED tests/dev_workflow/test_lifecycle.py::test_r8_01_setsid_child_of_a_worker_cannot_inject_env_into_the_reviewer_config
+FAILED tests/dev_workflow/test_lifecycle.py::test_r8_01_env_injected_and_removed_during_the_run_is_not_isolated
+FAILED tests/dev_workflow/test_lifecycle.py::test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed
+5 failed, 94 passed in 147.34s (0:02:27)
+
+=== tests/dev_workflow/test_lifecycle.py AFTER (2d419f6922380f16cf1486c7380f4c8619d66b00) DONE
+........................................................................ [ 72%]
+...........................                                              [100%]
+99 passed in 159.67s (0:02:39)
+

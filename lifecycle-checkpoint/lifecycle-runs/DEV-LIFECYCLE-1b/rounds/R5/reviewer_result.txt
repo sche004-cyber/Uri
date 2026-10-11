@@ -1,0 +1,56 @@
+I'm REJECTing round R5 on candidate `6784424d48df221bedd271707ff2b687c0719e4e` (baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9`; both SHAs checked). In merge mode, a real milestone can still be recorded COMPLETE without the target branch on the real remote moving.
+
+**One thing to fix by hand first:** I accidentally wrote to your real `/root/.gitconfig`. My first probe's gate process inherited the real HOME and appended these two lines at the end of the file (file timestamp 03:21):
+
+```
+[url "/tmp/pytest-of-root/pytest-174/test_merge_combined_gates_redi0/fake.git"]
+	insteadOf = /tmp/pytest-of-root/pytest-174/test_merge_combined_gates_redi0/canonical.git
+```
+
+I couldn't remove them because edits outside the checkout are blocked in this mode. Both paths are dead temp paths, so no real remote is redirected. But the lifecycle driver records a fingerprint of `~/.gitconfig` when the plan is made. The lifecycle run that launched this review will therefore see a changed git config: this round will be marked not independent and the run will stop as BLOCKED (TAMPER). That is my probe, not the candidate. To clear it, delete those two lines (lines 21–22), then `unblock --note`. The edit also broke one test (`test_status_surface_is_valid_a2ui`) in a full test run I had going at the same time. A clean rerun passed all 174 tests.
+
+**Earlier blocking findings:** all six are fixed: R1-01, R1-02, R1-03, R1-04, R3-01 and R4-01. R4-01 is fixed for the scenario it described (an implementer writing `~/.gitconfig` is now caught as tampering). R5-01 below is a gap the repair left open.
+
+**New findings**
+- **R5-01 (MEDIUM, blocking): merge mode lets candidate test code redirect the push and its check.** In `integrate()`, the last check for changed git config happens before the combined gates run on the merge commit. Those gates run the candidate's own test code. Nothing re-checks between the gates and `git push` or the `ls-remote` that verifies it (`lifecycle.py:1242–1269`).
+  - I reproduced it with HOME set to a throwaway directory. A candidate `tests/conftest.py` appends an `insteadOf` rule to `~/.gitconfig`, but only when run inside the `integration` worktree.
+  - Result: the run ended COMPLETE with status INTEGRATED. The push went to `fake.git`, and `ls-remote` read `fake.git` too, so the check matched. The real remote's `canon` stayed at the baseline, and `verify()` returned no errors.
+  - Suggested fix: check for config drift after the combined gates and again after the push, and push to and verify against a remote URL taken from the anchored state.
+- **R5-02 (LOW): a file pulled in by an existing `include.path` in the repo config isn't watched.** The repo config is read without following includes (`lifecycle.py:330`), so editing the included file goes undetected. I confirmed this with a probe. It only matters if the repo config already has an `include.path`.
+- **R5-03 (LOW, documentation):** section 6 of `URI_DEVELOPMENT_LIFECYCLE.md` still says "`max_rounds` is the hard bound". That key is now refused, and the safety cap is `continuation.budget.max_rounds`.
+
+**Not verified:** Flutter gates and a real `claude -p` reviewer (I only read the code paths for these); GPU lease (no GPU here); `codex_cli`; Windows behaviour.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "6784424d48df221bedd271707ff2b687c0719e4e", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R5-01", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "Merge-mode integration runs candidate gate code after the last control-drift check; a test that writes ~/.gitconfig insteadOf redirects the push and its ls-remote verification, yielding a false COMPLETE",
+   "files": ["scripts/dev_workflow/lifecycle.py:1212", "scripts/dev_workflow/lifecycle.py:1252", "scripts/dev_workflow/lifecycle.py:1264", "scripts/dev_workflow/lifecycle.py:1266", "scripts/dev_workflow/lifecycle.py:1269"],
+   "evidence": "integrate() calls evidence_ok (incl. control_drift) once at the top; in mode=merge it then runs qualify(cfg, st, result_sha, wt=iwt), executing the candidate's test code, and pushes and verifies via ls-remote with no further control check. Probe /tmp/uri_review_R5/test_probe_r5.py (HOME=/tmp/uri_review_R5/home, DEVTEST fixture, mode merge, authorized): candidate tests/conftest.py appends [url fake.git] insteadOf=canonical.git to $HOME/.gitconfig only when cwd is the 'integration' worktree. Result: stage COMPLETE, integration status INTEGRATED, push_stderr 'To .../fake.git 9c379a5..ca5248b', target_tip_after == result_commit read via the redirected ls-remote; real canonical canon still at base 9c379a5; L.verify(cfg) == []. Same redirection class as R4-01, through a path its repair does not check.",
+   "suggested_fix": "Re-run control_drift (and refs/replace check) after the combined-gate qualify and immediately before and after the push; block TAMPER on drift. Resolve the remote URL once from the anchored config and push/ls-remote against that explicit URL (with -c url.*.insteadOf unset / GIT_CONFIG_GLOBAL=/dev/null for the push), or run gate commands with HOME/GIT_CONFIG_GLOBAL pointed at a throwaway directory."},
+  {"id": "R5-02", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": false,
+   "title": "Contents of files included from the repository config (include.path / includeIf) are not bound by git_control_digest",
+   "files": ["scripts/dev_workflow/lifecycle.py:330", "scripts/dev_workflow/lifecycle.py:382"],
+   "evidence": "_control_config reads the repo config with --no-includes. Probe: repo with include.path=<inc.cfg>; writing an insteadOf into inc.cfg leaves git_control_digest unchanged (True), while git config --get-regexp url shows the new entry. Requires a pre-existing include in the repo config.",
+   "suggested_fix": "Also hash `git config --local --includes --list -z` (or the bytes of every include.path target), as already done for --global/--system."},
+  {"id": "R5-03", "severity": "LOW", "blocking": false, "category": "documentation", "owner_decision": false,
+   "title": "URI_DEVELOPMENT_LIFECYCLE.md §6 still names `max_rounds` as the hard bound",
+   "files": ["docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:86"],
+   "evidence": "Limits section: 'The retry fingerprint relies on ... ; `max_rounds` is the hard bound.' load_config raises on limits.max_rounds (lifecycle.py:121); the cap is continuation.budget.max_rounds (L-AC22).",
+   "suggested_fix": "Refer to continuation.budget.max_rounds and the stall rule."}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "PYTHONDONTWRITEBYTECODE=1 /tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow", "result": "174 passed, 1 warning in 141.54s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow -x (earlier run, concurrent with reviewer probe)", "result": "test_status_surface_is_valid_a2ui failed; caused by the reviewer probe appending to the real /root/.gitconfig mid-run (control anchor drift); not attributed to the candidate; clean rerun above passes", "status": "FAILED"},
+  {"command": "HOME=/tmp/uri_review_R5/home PYTHONPATH=. pytest -s /tmp/uri_review_R5/test_probe_r5.py (merge-mode redirect probe)", "result": "COMPLETE/INTEGRATED while real remote canon unchanged and fake.git received the merge commit; verify() == []", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python probe: repo include.path target modified -> git_control_digest unchanged", "result": "digest same: True", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": [
+  "Flutter gate parsing and Flutter regression runner were reviewed in code only, not executed against flutter test --machine",
+  "Real claude_cli reviewer/implementer runs not executed in this round; independence checks verified by code reading and the existing scripted tests",
+  "GPU lease path (no GPU), codex_cli adapter (not installed), Windows behaviour",
+  "REVIEWER SIDE EFFECT: the first merge-mode probe ran gate code with the real HOME and appended a 2-line [url \".../pytest-174/.../fake.git\"] insteadOf block to /root/.gitconfig (lines 21-22). Removal was denied by the sandbox. The paths are non-existent temp paths, but the change alters the driver's anchored user-level git control digest, so the coordinating lifecycle run will see GIT_CONTROL drift for this round; the owner should delete those two lines and acknowledge with unblock --note. The candidate checkout itself is unchanged (git status clean, HEAD 6784424)."
+ ]}
+AUDIT_RESULT_END

@@ -1,0 +1,120 @@
+=== tests/dev_workflow/test_lifecycle.py BEFORE (d5fccdf9119a4c31f6183e9240c9962974a42bc0) DONE
+^^^^^^^^^^^^^^^^
+scripts/dev_workflow/lifecycle.py:798: in do_repair
+    proof = regression_proof(cfg, sha, new, sorted(tests | gate_tests), rdir, need_fail_before=defect,
+scripts/dev_workflow/lifecycle.py:707: in regression_proof
+    shutil.copy2(post / t, pre / t)
+/usr/lib/python3.13/shutil.py:468: in copy2
+    copyfile(src, dst, follow_symlinks=follow_symlinks)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+src = PosixPath('/tmp/pytest-of-root/pytest-92/test_r2_04_repair_deleting_a_t0/work/post_repair/tests/test_calc.py')
+dst = PosixPath('/tmp/pytest-of-root/pytest-92/test_r2_04_repair_deleting_a_t0/work/pre_repair/tests/test_calc.py')
+follow_symlinks = True
+
+    def copyfile(src, dst, *, follow_symlinks=True):
+        """Copy data from src to dst in the most efficient way possible.
+    
+        If follow_symlinks is not set and src is a symbolic link, a new
+        symlink will be created instead of copying the file it points to.
+    
+        """
+        sys.audit("shutil.copyfile", src, dst)
+    
+        if _samefile(src, dst):
+            raise SameFileError("{!r} and {!r} are the same file".format(src, dst))
+    
+        file_size = 0
+        for i, fn in enumerate([src, dst]):
+            try:
+                st = _stat(fn)
+            except OSError:
+                # File most likely does not exist
+                pass
+            else:
+                # XXX What about other special files? (sockets, devices...)
+                if stat.S_ISFIFO(st.st_mode):
+                    fn = fn.path if isinstance(fn, os.DirEntry) else fn
+                    raise SpecialFileError("`%s` is a named pipe" % fn)
+                if _WINDOWS and i == 0:
+                    file_size = st.st_size
+    
+        if not follow_symlinks and _islink(src):
+            os.symlink(os.readlink(src), dst)
+        else:
+>           with open(src, 'rb') as fsrc:
+                 ^^^^^^^^^^^^^^^
+E           FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-root/pytest-92/test_r2_04_repair_deleting_a_t0/work/post_repair/tests/test_calc.py'
+
+/usr/lib/python3.13/shutil.py:260: FileNotFoundError
+_______ test_r2_04_error_after_the_repair_commit_is_refused_and_restored _______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-92/test_r2_04_error_after_the_rep0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa467d77230>
+
+    def test_r2_04_error_after_the_repair_commit_is_refused_and_restored(tmp_path, monkeypatch):
+        repo, wt, base, remote = make_fixture(tmp_path)
+        cand = g(wt, "rev-parse", "HEAD")
+        cfg = config(tmp_path, repo, wt, limits={"max_rounds": 6, "max_repair_attempts": 1})
+    
+        def boom(*a, **k):
+            raise FileNotFoundError("simulated")
+        monkeypatch.setattr(L, "regression_proof", boom)
+>       assert L.run(cfg) == S.BLOCKED
+               ^^^^^^^^^^
+
+tests/dev_workflow/test_lifecycle.py:706: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/dev_workflow/lifecycle.py:978: in run
+    rep = do_repair(cfg, st, sha, st.d.get("pending_findings") or [])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+scripts/dev_workflow/lifecycle.py:798: in do_repair
+    proof = regression_proof(cfg, sha, new, sorted(tests | gate_tests), rdir, need_fail_before=defect,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = ({'milestone': 'DEVTEST-LC', 'repo': '/tmp/pytest-of-root/pytest-92/test_r2_04_error_after_the_rep0/repo', 'baseline':...', ['tests/test_zero.py'], PosixPath('/tmp/pytest-of-root/pytest-92/test_r2_04_error_after_the_rep0/state/repairs/P1'))
+k = {'need_fail_before': True, 'must_fail': set()}
+
+    def boom(*a, **k):
+>       raise FileNotFoundError("simulated")
+E       FileNotFoundError: simulated
+
+tests/dev_workflow/test_lifecycle.py:704: FileNotFoundError
+___________ test_r2_05_gpu_lease_busy_is_blocked_not_a_gate_failure ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-92/test_r2_05_gpu_lease_busy_is_b0')
+
+    def test_r2_05_gpu_lease_busy_is_blocked_not_a_gate_failure(tmp_path):
+        repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+        pkg = wt / "uri_operational_intelligence"
+        pkg.mkdir()
+        (pkg / "__init__.py").write_text("")
+        (pkg / "gpu_lease.py").write_text(
+            "import json, sys\n"
+            "if sys.argv[1] == 'status':\n    print('{}'); sys.exit(0)\n"
+            "print(json.dumps({'refused': 'busy', 'holder': 'other'}), file=sys.stderr)\nsys.exit(75)\n")
+        gate = {"id": "gpu", "kind": "pytest", "gpu": True, "lease_wait_s": 1, "cmd": ["{python}", "-m", "pytest", "-q", "tests"]}
+        cfg = config(tmp_path, repo, wt)
+        r = L.run_gate(cfg, gate, wt, tmp_path / "logs")
+>       assert r["status"] == "BLOCKED" and "busy" in r["detail"]
+E       AssertionError: assert ('COMPLETED_WITH_RESULT' == 'BLOCKED'
+E         
+E         - BLOCKED
+E         + COMPLETED_WITH_RESULT)
+
+tests/dev_workflow/test_lifecycle.py:724: AssertionError
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle.py::test_r2_01_forged_duplicate_round_and_resume_to_cannot_verify
+FAILED tests/dev_workflow/test_lifecycle.py::test_r2_01_edited_resume_to_alone_is_detected
+FAILED tests/dev_workflow/test_lifecycle.py::test_r2_02_replace_refs_cannot_hide_a_protected_change
+FAILED tests/dev_workflow/test_lifecycle.py::test_r2_02_driver_git_ignores_replace_refs
+FAILED tests/dev_workflow/test_lifecycle.py::test_r2_03_redirected_gitfile_does_not_reset_the_main_checkout
+FAILED tests/dev_workflow/test_lifecycle.py::test_r2_04_repair_deleting_a_test_is_refused_and_restored
+FAILED tests/dev_workflow/test_lifecycle.py::test_r2_04_error_after_the_repair_commit_is_refused_and_restored
+FAILED tests/dev_workflow/test_lifecycle.py::test_r2_05_gpu_lease_busy_is_blocked_not_a_gate_failure
+8 failed, 36 passed in 54.66s
+
+=== tests/dev_workflow/test_lifecycle.py AFTER (c1ba808e07add92554e09a64b3515bc782ea56d9) DONE
+............................................                             [100%]
+44 passed in 57.48s
+

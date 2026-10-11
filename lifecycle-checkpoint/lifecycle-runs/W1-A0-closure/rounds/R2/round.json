@@ -1,0 +1,264 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure/audit_R2",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R2-01"
+ ],
+ "candidate": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T03:55:37Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+   "impl_head": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "f9126eb21d4c286f0083eae4bb56618f241bdb6223e8b466b91fbab6797659ad",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "093874b6aa03cd6488149d7236a4b9d8c693d3ae0eee36a89ce75ad011efb546",
+   "head": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+   "impl_head": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "f9126eb21d4c286f0083eae4bb56618f241bdb6223e8b466b91fbab6797659ad",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_words() splits only on case changes, letter/digit changes and _-.:/, and _SENSITIVE_WORDS requires \\b around otp/cvv/pin/password, so a lowercase run-together name never matches (only [a-z]*otp at the END of a word is handled). field_is_sensitive({'type':'text','name':n,'value':'482913'}) is False for otpcode, smsotpcode, otpvalue, otpnumber, cvvcode, cvvnumber, cardcvv, cardcvc, userpassword, newpassword, confirmpassword, loginpassword, txnpassword, upipin, atmpin, cardpin, securitypin, loginpwd, userpass, verifycode. Real Chromium (run_snapshot.cjs + snapshot.js) on <input name=otpcode value=482913>, <input name=cvvcode value=123>, <input name=newpassword type=text value=Hunter2Secret!>, <input name=upipin value=4321> returned sensitive:false with all four values. AssistCommands.assist_ask with a fake browser adapter put all four values into the stream_chat body (probe /tmp/uri_review_R2/probe_brain.py). popup.html promises one-time codes are removed in the page; A0_QUALIFICATION marks A0-AC7 MET.",
+    "files": [
+     "uri_assist/redact.py:26",
+     "uri_assist/redact.py:34",
+     "uri_assist/browser_extension/snapshot.js:10",
+     "uri_assist/browser_extension/snapshot.js:11"
+    ],
+    "id": "R2-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "In both layers also match sensitive stems as substrings of a run-together token, with an explicit list of harmless words to skip (e.g. (otp|cvv|cvc|ccv|password|passwd|passcode|pwd|mpin|tpin|upipin|atmpin) anywhere, 'pin' only as a suffix of a known prefix), keeping pincode/spinner/hotpot readable; add these names to tricky_fields.html and the Python/JS parity test.",
+    "title": "Redaction still misses lowercase run-together OTP/CVV/PIN/password field names (R1-02 class not closed), in both Python and in-page JS"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "numbers('Rs 2 000 000') == numbers('Rs 2 000') == {'2','000'} (also with U+202F grouping). verify('...onions now cost Rs 2 000 000 per kilogram this week [1].', ['...onions now cost Rs 2 000.']) keeps the claim; find_conflicts reports 0 conflicts for the pair. Number words ('five hundred' vs 'nine hundred') are also unchecked.",
+    "files": [
+     "uri_web/evaluate.py:15"
+    ],
+    "id": "R2-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Collapse digit groups joined by a space, NBSP or U+202F (\\d{1,3}(?:[ \\u00a0\\u202f]\\d{3})+) before extraction and add regression cases; document that number words are outside the lexical check.",
+    "title": "Space-grouped thousands defeat the number check: claim '2 000 000' is supported by source '2 000'"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "_assist_ask calls adapter.screenshot(target_id) (bridge.py:190) before VisionGate.build checks qualified (False by default), debounce and brain_idle, so a screen capture happens even when vision is disabled, debounced or the slot is busy, and is then thrown away. Latent: no adapter exists in this build.",
+    "files": [
+     "uri_assist/bridge.py:186",
+     "uri_assist/bridge.py:190",
+     "uri_assist/vision.py:109"
+    ],
+    "id": "R2-03",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Add a VisionGate.precheck() (qualified, client, loopback, debounce, brain_idle) and call it before adapter.screenshot().",
+    "title": "assist_ask captures the screenshot before the vision gate's qualified/debounce/Brain-busy checks"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "revoke() clears lastObservation synchronously, but ask()'s continuation then sets lastObservation (and askId) from the ask reply, which the serialized worker sends before the revoke reply. grant() clears only askId/answer, not lastObservation/findings, so after Share the Live tab shows 'Read \"<old title>\" ...' from the revoked grant. Stop is enabled while busy (assist_scope_line.dart:52), so the path is reachable. Found by reading the code; no Flutter test was run for it.",
+    "files": [
+     "uri_ui/lib/living/assist/assist_controller.dart:156",
+     "uri_ui/lib/living/assist/assist_controller.dart:197"
+    ],
+    "id": "R2-04",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Clear lastObservation and findings in grant(), and ignore an ask reply that arrives after a revoke (generation counter in the controller).",
+    "title": "Stop while an Ask is in flight leaves the revoked scope's observation summary, which shows again after the next Share"
+   },
+   {
+    "blocking": false,
+    "category": "documentation",
+    "evidence": "A0_QUALIFICATION and the regression test docstring say 'review R1 of 8019d41', but R1 reviewed 223e528 (R1_reviewer_result.txt, AUDIT_TRAIL.md). The search.py docstring names BRAVE_SEARCH_API_KEY / URI_SEARXNG_URL, while load_env_keys reads BRAVE_API_KEY / SEARXNG_URL. A0-AC7 is still marked MET despite R2-01.",
+    "files": [
+     "docs/assist/A0_QUALIFICATION.md:19",
+     "tests/assist/test_a0_r1_review_regressions.py:1",
+     "uri_web/search.py:4",
+     "uri_web/search.py:235"
+    ],
+    "id": "R2-05",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Correct the commit reference, list both name conventions, and qualify A0-AC7 until R2-01 is fixed.",
+    "title": "Records misstate the R1 candidate and provider env names"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python -m pytest tests/web tests/assist -q -rs",
+    "result": "263 passed, 0 skipped",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -m pytest -c scripts/phase2d_pytest.ini tests/ws tests/oi tests/a2ui tests/web tests/assist",
+    "result": "38 failed, 820 passed, 24 skipped, 161 errors; failure IDs equal the recorded candidate-gate set except test_requests_are_marked_done_with_the_state_they_left, which AUDIT_TRAIL.md records as the known flake in the baseline failure set",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python scripts/ws_frozen_check.py",
+    "result": "protected_changed_vs_baseline []; phase1 zip part blocked (zip not present)",
+    "status": "BLOCKED"
+   },
+   {
+    "command": "git diff --name-only ffdf534..16f75d8 filtered by the protected path list",
+    "result": "no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test test/living/assist_mode_test.dart",
+    "result": "18 passed, including both R1-03 regressions",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test (full uri_ui)",
+    "result": "528 passed, 5 skipped, 1 failed: reference_render_test render desktop dashboard (the existing failure)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter analyze lib",
+    "result": "1 info (deprecated_member_use in providers_screen.dart, outside this diff)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R2/probe_ssrf.py",
+    "result": "35-URL corpus: the 3 allowed URLs are public (1.1.1.1, 2606:4700:4700::1111) or a name with no address (xn--localhost-); mixed-answer, 6to4 and scoped-v6 redirects refused at the hop; pinned connect keeps Host and SNI",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R2/probe_cite.py",
+    "result": "R1-01 cases dropped; Rs.500/Rs.900 conflict found; space-grouped and number-word gaps reproduced (R2-02)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R2/probe_redact.py + run_snapshot.cjs leak.html + probe_brain.py",
+    "result": "all 14 R1-02 cited names caught; 20 lowercase run-together names missed in Python; 4 values leaked in real Chromium and in the Brain request (R2-01); R1-07 hidden-text forms still present (LOW, not repaired)",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Phase 1 checkpoint zip byte check: BLOCKED (zip not present); protected-path part of ws_frozen_check passed. Does not change the verdict.",
+   "Real perception adapters, browser channel, UIA, screen capture and the vision application path: not built or need Windows/GPU; vision gating checked only by reading the code and the unit tests.",
+   "Integrated worker dispatch and the D3 .env loading were not run end-to-end in a materialized runtime; checked by reading the code and tests/web/test_w1_env_keys.py.",
+   "Live search providers, social APIs and proxy egress mode under live DNS: not run (no keys or network target).",
+   "R2-04 found by reading the code only; no Flutter probe was run.",
+   "R1-05..R1-10 (LOW, non-blocking) were not claimed as repaired: R1-07 was re-confirmed present; R1-05, R1-09 and R1-10 code is unchanged; R1-06 and R1-08 were not re-probed.",
+   "The previous run's failure list came from the coordinator's evidence file gates_candidate_6d60bee.txt; my own run reproduced the same set apart from the documented flake."
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 2,
+ "started_at": "2026-10-11T03:46:28Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "12b38140-caae-4bc9-af6f-f280844a5a0e",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 2.9291037000000006,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure/audit_R2",
+  "ended_at": "2026-10-11T03:55:36Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 53,
+  "pid": 31029,
+  "prompt_sha256": "7129e1f2c95c5779565da3ad5a2385d6fd30830076a2623d69fdf6858b1340fe",
+  "provider": "claude_cli",
+  "result_text_sha256": "17ac05561536f8c9830c4899c7ac57b6ae8121f8397a130c3212c0e27b348f9a",
+  "role": "reviewer",
+  "session_id": "12b38140-caae-4bc9-af6f-f280844a5a0e",
+  "session_id_requested": "12b38140-caae-4bc9-af6f-f280844a5a0e",
+  "started_at": "2026-10-11T03:46:28Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "a9cbb219ab568ece9becb0b0ed3ab116bed48633a0751360ad5136c852e49fab"
+ }
+}

@@ -1,0 +1,38 @@
+I repaired all four findings in this working tree; nothing is committed. Each fix has a regression test that I ran on 8019d41 (it fails there) and on the repaired tree (it passes).
+
+**R1-01 — numbers after a letter or dot were ignored** (`uri_web/evaluate.py:15`)
+- Number matching was blocked whenever the number followed a letter or a dot. Now only a preceding digit blocks it, so `Rs.500`, `approx.900`, `No.5` and `Rs.1,250.50` all yield their numbers.
+- As a result, a sentence citing `Rs.900` against a source that says `Rs.500` is dropped as `NUMBER_NOT_IN_CITED_SOURCE`, and two pages saying `Rs.500` and `Rs.900` are reported as a conflict. A correctly cited `Rs.500` is still kept.
+- Tests: `tests/web/test_w1_r1_review_regressions.py`.
+
+**R1-02 — OTP, card-check and PIN field names were missed** (`uri_assist/redact.py` and `uri_assist/browser_extension/snapshot.js`, same change in both)
+- Field names are now also split at an acronym followed by a word (`OTPCode` → `otp code`) and between letters and digits (`cvv2` → `cvv 2`).
+- New names covered: any word ending in `otp` (so `SMSOTP`), `2 fa`, `mpin`, `tpin`, `ccv`, `acct number/num/no`, and `card expiry/exp/expiration`.
+- I extended `tricky_fields.html` with 12 such fields. The existing in-page vs Python parity test now covers them, and a new real-Chromium test checks that none of their values leave the page.
+- Names that should stay readable still do: `pincode`, `spinner`, `hotpot`, `address2`, `zip5`, `cardholderName` and `account`.
+- Tests: `tests/assist/test_a0_r1_review_regressions.py`.
+
+**R1-03 — Ask stayed disabled after Stop and a new share** (`uri_ui/lib/living/assist/assist_controller.dart`)
+- `revoke()` now clears the running question as well as the answer. `grant()` clears both too, because the worker discards answers that belong to an earlier grant.
+- I added two tests to `uri_ui/test/living/assist_mode_test.dart`: a controller test, and a widget test that asks, gets an answer, stops, shares again, then checks that Ask is enabled and no "reading" message shows.
+
+**R1-04 — the in-page snapshot didn't mask several texts** (`snapshot.js`)
+- The masking already applied to page text now also covers the title, headings, field labels, placeholders, field ids and names, and the whole URL. Already-masked `key=` values in the URL are not counted twice.
+- `run_snapshot.cjs` takes an optional `SNAPSHOT_URL` so the URL can be tested. The page is served locally, with no network.
+- A new real-Chromium test uses a new fixture, `text_surfaces.html`. It checks that none of the reviewer's secrets appear, and that Python's second masking pass changes nothing in what the page sent.
+- `docs/assist/A0_QUALIFICATION.md` (A0-AC7) keeps the old claim visible and adds a correction: it was false at 8019d41, and the row now says MET only after this repair.
+
+**Test results**
+- After the fix: `tests/assist` and `tests/web` give 263 passed and 0 skipped, so the real-Chromium tests ran. All 248 Flutter tests under `test/living` pass, and `flutter analyze lib/living/assist` finds no issues.
+- On 8019d41: I couldn't check out the old files here (that command was refused), so I ran the new tests against an export of 8019d41 in my scratchpad. Every new R1-01, R1-02 and R1-04 test failed except two control tests meant to pass on both: `3.14`/`2.5%` and the kept `Rs.500` claim. Both new Flutter tests failed. The extended F5 parity test also failed there, as intended.
+- Some older tests fail in that export only because it leaves out `uri_core` and other modules. They pass in the real tree.
+
+**Not done**
+- `tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on` fails because HEAD `8019d41` is not the frozen base `e8e3b65`. That has nothing to do with this change, and the test is outside the paths I may edit.
+- The `graphify` command isn't installed here, so `graphify update .` wasn't run.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R1-01", "R1-02", "R1-03", "R1-04"], "not_repaired": [],
+ "regression_tests": ["tests/web/test_w1_r1_review_regressions.py", "tests/assist/test_a0_r1_review_regressions.py", "tests/assist/test_a0_interim_review_regressions.py::test_f5_in_page_layer_matches_python_on_hostile_fields (extended via fixtures/tricky_fields.html)", "uri_ui/test/living/assist_mode_test.dart"],
+ "notes": "R1-01: _NUMBER lookbehind is now (?<!\\d). R1-02: _words/words split acronym->Word and letter<->digit in both layers; added [a-z]*otp, 2 ?fa, mpin, tpin, ccv, acct ?(number|num|no), card ?(expiry|exp|expiration); tricky_fields.html has 12 new fields. R1-03: revoke() and grant() clear askId (and answer). R1-04: snapshot.js applies maskText to title, headings, label, placeholder, id, name and the full URL; the URL key= replacement skips values already masked; run_snapshot.cjs takes an optional SNAPSHOT_URL (served locally via page.route); new fixture text_surfaces.html; A0_QUALIFICATION.md AC7 row records the correction. Verified: the R1 tests fail on a git-archive export of 8019d41 (except two control tests that pass on both) and pass here; tests/assist + tests/web 263 passed, 0 skipped (real Chromium ran); Flutter test/living 248 passed; flutter analyze lib/living/assist clean. Unrelated: tests/phase2a/test_frozen_core.py base-commit check fails because HEAD 8019d41 != e8e3b65. graphify CLI not installed, so the graph was not updated."}
+REPAIR_RESULT_END

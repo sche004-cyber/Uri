@@ -1,0 +1,554 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 16f75d8",
+   "title": "Citation verifier and conflict detector ignore numbers preceded by a letter or dot (e.g. 'Rs.500'), so an unsupported number survives verify"
+  },
+  {
+   "blocking": true,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 16f75d8",
+   "title": "Redaction name matching still misses common OTP/CVV/PIN/password field names (F5 repair incomplete), in both Python and in-page JS"
+  },
+  {
+   "blocking": false,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 16f75d8",
+   "title": "After an answered question, Stop then a new grant leaves Ask permanently disabled (introduced by the F4 UI repair)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-04",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired 16f75d8",
+   "title": "In-page snapshot layer does not mask title, headings, labels, placeholders or URL path; docs claim AC7 'MET in both layers'"
+  },
+  {
+   "blocking": false,
+   "id": "R1-05",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Derived answers stay retrievable after Stop (revoke)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-06",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Bare domain names from untrusted sources survive verify and the extractive path and are rendered"
+  },
+  {
+   "blocking": false,
+   "id": "R1-07",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "In-page visible() keeps some visually hidden text forms"
+  },
+  {
+   "blocking": false,
+   "id": "R1-08",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Research time budget is not checked during the search and feed phases"
+  },
+  {
+   "blocking": false,
+   "id": "R1-09",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "UI keeps showing an expired grant as ACTIVE"
+  },
+  {
+   "blocking": false,
+   "id": "R1-10",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Screenshot capture is not bound to the granted target (only capture() is)"
+  },
+  {
+   "blocking": true,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "repaired 627f6b9",
+   "title": "Redaction still misses lowercase run-together OTP/CVV/PIN/password field names (R1-02 class not closed), in both Python and in-page JS"
+  },
+  {
+   "blocking": false,
+   "id": "R2-02",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Space-grouped thousands defeat the number check: claim '2 000 000' is supported by source '2 000'"
+  },
+  {
+   "blocking": false,
+   "id": "R2-03",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "assist_ask captures the screenshot before the vision gate's qualified/debounce/Brain-busy checks"
+  },
+  {
+   "blocking": false,
+   "id": "R2-04",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Stop while an Ask is in flight leaves the revoked scope's observation summary, which shows again after the next Share"
+  },
+  {
+   "blocking": false,
+   "id": "R2-05",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Records misstate the R1 candidate and provider env names"
+  },
+  {
+   "blocking": true,
+   "id": "R3-01",
+   "round": "R3",
+   "severity": "MEDIUM",
+   "status": "repaired 1615512",
+   "title": "Redaction still misses run-together OTP/CVV/PIN and token/secret field names (R2-01 class not closed), in both Python and the in-page JS; values reach the Brain request"
+  },
+  {
+   "blocking": false,
+   "id": "R3-02",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "The NAT64 local-use prefix 64:ff9b:1::/48 is assumed to embed IPv4 in the last 32 bits, and its early return skips the is_global check"
+  },
+  {
+   "blocking": false,
+   "id": "R3-03",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Web research Brain synthesis does not yield to a user turn that starts during it; the worker cancels only Assist"
+  },
+  {
+   "blocking": false,
+   "id": "R3-04",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "The frozen-core ALLOWED_NEW list was not extended for files added by the repair commits"
+  },
+  {
+   "blocking": true,
+   "id": "R4-01",
+   "round": "R4",
+   "severity": "MEDIUM",
+   "status": "repaired 52e852d",
+   "title": "Redaction still misses run-together API-key names and alphanumeric 2FA recovery codes in both Python and the in-page JS (R3-01 token/secret class not closed); values reach the Brain request"
+  },
+  {
+   "blocking": true,
+   "id": "R4-02",
+   "round": "R4",
+   "severity": "MEDIUM",
+   "status": "repaired 52e852d",
+   "title": "Citation verifier and conflict detector ignore magnitude suffixes (m/bn/k/M, lakh/crore, trillion), so a claim with a different magnitude survives verify"
+  },
+  {
+   "blocking": true,
+   "id": "R4-03",
+   "round": "R4",
+   "severity": "MEDIUM",
+   "status": "repaired 52e852d",
+   "title": "SafeFetcher total timeout and cancellation are not enforced while response headers or chunk framing arrive; a hostile server can hold a fetch (and the single research job) far beyond the budget"
+  },
+  {
+   "blocking": false,
+   "id": "R4-04",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Local-use NAT64 64:ff9b:1::/48 decoded as /96, so addresses embedding a private IPv4 at the /48 position are accepted"
+  },
+  {
+   "blocking": false,
+   "id": "R4-05",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "R1-05 still present: derived answers remain retrievable after Stop; a revoke that races the end of an answer still emits it"
+  },
+  {
+   "blocking": false,
+   "id": "R4-06",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Screenshot and DOM capture run before the vision and Brain-busy gates; vision context text is not wrapped as an untrusted data block"
+  },
+  {
+   "blocking": false,
+   "id": "R4-07",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Only oi_turn cancels Assist Brain work; oi_confirm/oi_decide and in-flight web_research Brain calls do not yield the single slot"
+  },
+  {
+   "blocking": false,
+   "id": "R4-08",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Remaining R1 LOW findings (R1-05..R1-10) are neither repaired nor recorded as carried limitations; the audit trail has no R2/R3 entries"
+  },
+  {
+   "blocking": true,
+   "id": "R5-01",
+   "round": "R5",
+   "severity": "MEDIUM",
+   "status": "repaired 08a4569",
+   "title": "Citation verifier and conflict detector mis-parse Indian lakh/crore digit grouping, space-grouped thousands and minus signs, so a claim with a different amount survives verify (R1-01/R4-02 class not closed)"
+  },
+  {
+   "blocking": false,
+   "id": "R5-02",
+   "round": "R5",
+   "severity": "MEDIUM",
+   "status": "repaired 08a4569",
+   "title": "Redaction misses common API-key formats (Stripe sk_live_/rk_live_, GitHub github_pat_, GitLab glpat-, npm_, hf_, SendGrid SG.) and Authorization/TAN fields in both layers; values reach the Brain request (documented residual risk L-A0-2)"
+  },
+  {
+   "blocking": false,
+   "id": "R5-03",
+   "round": "R5",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Derived answers remain retrievable after Stop (R1-05 not repaired)"
+  },
+  {
+   "blocking": false,
+   "id": "R5-04",
+   "round": "R5",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "DNS resolution is outside the SafeFetcher total deadline and cancel check"
+  },
+  {
+   "blocking": false,
+   "id": "R5-05",
+   "round": "R5",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Bare domain names and phone numbers from untrusted sources survive verify (R1-06 not repaired)"
+  },
+  {
+   "blocking": false,
+   "id": "R5-06",
+   "round": "R5",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "In-page snapshot keeps height:0/overflow:hidden and color:transparent text, though its comment says transparent text is skipped (R1-07 not repaired)"
+  },
+  {
+   "blocking": true,
+   "id": "R6-01",
+   "round": "R6",
+   "severity": "MEDIUM",
+   "status": "repaired 87720d6",
+   "title": "Citation verifier and conflict detector treat ISO/slash dates as unordered number sets, so a claim with a swapped date survives verify and two sources with different dates are not a conflict"
+  },
+  {
+   "blocking": true,
+   "id": "R6-02",
+   "round": "R6",
+   "severity": "MEDIUM",
+   "status": "repaired 87720d6",
+   "title": "Redaction still misses OTP values with a space and card-security-code fields named CVD/CSV, in Python and the in-page JS; the values reach the Brain request (R1-02..R4-01 class not closed)"
+  },
+  {
+   "blocking": true,
+   "id": "R6-03",
+   "round": "R6",
+   "severity": "MEDIUM",
+   "status": "repaired 87720d6",
+   "title": "Conflict statements and source titles are rendered from raw page text, bypassing the instruction-like and link/contact filters, so www. links, e-mail addresses and injected instructions reach the research surface"
+  },
+  {
+   "blocking": false,
+   "id": "R6-04",
+   "round": "R6",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "HTML extraction keeps several hidden-text forms (W1-AC6)"
+  },
+  {
+   "blocking": false,
+   "id": "R6-05",
+   "round": "R6",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Instruction flags and data-block delimiters can be defeated with zero-width or lookalike characters, and title newlines inject lines"
+  },
+  {
+   "blocking": false,
+   "id": "R6-06",
+   "round": "R6",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Bare domains in untrusted text survive verify and the extractive path (R1-06 not repaired); a supported sentence can carry an appended domain"
+  },
+  {
+   "blocking": false,
+   "id": "R6-07",
+   "round": "R6",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "UI keeps showing an expired (or target-lost) grant as ACTIVE even after the worker refuses with SCOPE_NOT_ACTIVE (R1-09 not repaired)"
+  },
+  {
+   "blocking": false,
+   "id": "R6-08",
+   "round": "R6",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "After a worker replacement the Assist picker shows every adapter as unavailable until the app restarts (latent: all adapters are UNAVAILABLE in this build)"
+  },
+  {
+   "blocking": false,
+   "id": "R6-09",
+   "round": "R6",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Derived answers stay retrievable after Stop (R1-05 not repaired)"
+  },
+  {
+   "blocking": false,
+   "id": "R6-10",
+   "round": "R6",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "check_url runs its literal and numeric-host checks before IDNA mapping, so full-width digit hosts pass the URL policy (refused only at resolution)"
+  },
+  {
+   "blocking": true,
+   "id": "R8-01",
+   "round": "R8",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Redaction misses the 'CV2' card security code field name (UK/Visa term) in Python and the in-page JS; the value reaches the Brain request (R6-02 class not closed)"
+  },
+  {
+   "blocking": true,
+   "id": "R8-02",
+   "round": "R8",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Citation verifier and conflict detector ignore numbers written as words, so a claim with a different spelled-out number survives verify (R1-01 class)"
+  },
+  {
+   "blocking": true,
+   "id": "R8-03",
+   "round": "R8",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "Citation verifier and conflict detector ignore the currency, so '$500' is 'supported' by 'Rs 500' and two sources with different currencies are not a conflict"
+  },
+  {
+   "blocking": false,
+   "id": "R8-04",
+   "round": "R8",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Derived answers stay retrievable after Stop (R1-05 still present)"
+  },
+  {
+   "blocking": false,
+   "id": "R8-05",
+   "round": "R8",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "L-W1-4 still states the total fetch deadline can overrun by the read timeout, which the R4-03 watchdog removed"
+  }
+ ],
+ "gates": [],
+ "owner": [
+  {
+   "kind": "TAMPER",
+   "needs": "owner: inspect the repository's git hooks/config/info and refs; restore them, or accept the current state with `unblock --note`",
+   "reason": "GIT_CONTROL: git_control, reviewer_exec changed since the plan (git hooks/config/info, user/system git config/attributes/ignore, replace refs, the reviewer CLI or managed CLI policy)"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": "R1-01, R1-02, R1-03, R1-04",
+   "commit": "16f75d8e2e5f",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R2-01",
+   "commit": "627f6b93d3f3",
+   "reason": "",
+   "repair": "P2",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R3-01",
+   "commit": "16155129b726",
+   "reason": "",
+   "repair": "P3",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R4-01, R4-02, R4-03",
+   "commit": "52e852dcce59",
+   "reason": "",
+   "repair": "P4",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R5-01, R5-02",
+   "commit": "08a4569908d7",
+   "reason": "",
+   "repair": "P5",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R6-01, R6-02, R6-03",
+   "commit": "87720d6dcd76",
+   "reason": "",
+   "repair": "P6",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 2,
+   "candidate": "8019d41b77ba",
+   "findings": 10,
+   "finished": "2026-10-11T03:39:53Z",
+   "independent": false,
+   "reviewer": "ccr_session",
+   "round": "R1",
+   "session": "session_017GFBkin32NjEb6jYwvN6vS",
+   "status": "IMPORTED",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "16f75d8e2e5f",
+   "findings": 5,
+   "finished": "2026-10-11T03:55:37Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "12b38140-caae-4bc9-af6f-f280844a5a0e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "627f6b93d3f3",
+   "findings": 4,
+   "finished": "2026-10-11T04:05:49Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R3",
+   "session": "dc854df5-6539-4d67-a07b-d78745165ebc",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 3,
+   "candidate": "16155129b726",
+   "findings": 8,
+   "finished": "2026-10-11T04:23:42Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R4",
+   "session": "5874814d-5471-4904-911b-6b967b71f305",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "52e852dcce59",
+   "findings": 6,
+   "finished": "2026-10-11T04:54:36Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R5",
+   "session": "789f4eaf-8aee-442f-a567-e36ebb0a4464",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 3,
+   "candidate": "08a4569908d7",
+   "findings": 10,
+   "finished": "2026-10-11T05:07:41Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R6",
+   "session": "79002ead-1ff3-4b60-857c-38e2cf67ca44",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "87720d6dcd76",
+   "findings": 0,
+   "finished": null,
+   "independent": null,
+   "reviewer": null,
+   "round": "R7",
+   "session": null,
+   "status": "running",
+   "verdict": "running"
+  },
+  {
+   "blocking": 3,
+   "candidate": "87720d6dcd76",
+   "findings": 5,
+   "finished": "2026-10-11T05:25:12Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R8",
+   "session": "ea66c95f-0132-47b0-b8ec-ad4326276010",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  }
+ ],
+ "summary": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+  "evidence_ok": false,
+  "findings_repaired": 14,
+  "findings_total": 48,
+  "integration": "none",
+  "milestone": "W1-A0-closure",
+  "open_blocking": 3,
+  "owner_actions": 1,
+  "receipt_chain_ok": true,
+  "repairs_committed": 6,
+  "rounds": 8,
+  "stage": "BLOCKED",
+  "written_at": "2026-10-11T05:37:32Z"
+ }
+}

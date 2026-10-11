@@ -1,0 +1,89 @@
+{
+ "addresses": [
+  "R4-01"
+ ],
+ "changed": [
+  "scripts/dev_workflow/lifecycle.py",
+  "tests/dev_workflow/test_lifecycle.py"
+ ],
+ "commit": "6784424d48df221bedd271707ff2b687c0719e4e",
+ "ended_at": "2026-10-11T03:18:48Z",
+ "pre": "475533a28021ca7795f2cb495fb131c9c45e20c7",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 3,
+ "report": {
+  "not_repaired": [],
+  "notes": "git_control_digest now includes _user_git_control(): effective system/global git config entries (includes followed) plus the bytes of ~/.gitconfig, XDG git config/attributes/ignore, /etc/gitconfig, /etc/gitattributes, git-var-reported GIT_CONFIG_*/GIT_ATTR_* paths, and the effective core.attributesFile/core.excludesFile. It is checked by the existing control_drift before every step and around repairs, so a worker-written insteadOf or smudge filter blocks as TAMPER before checkouts or the push. New tests: test_r4_01_user_level_git_control_files_are_bound (6 params), test_r4_01_included_global_config_and_custom_attributes_file_are_bound, test_r4_01_worker_written_global_insteadof_blocks_and_push_is_not_redirected, test_r4_01_worker_written_global_smudge_filter_blocks_before_checkouts_differ. All 9 fail on 475533a and pass after the change. The pre-existing test_r4_01_relaxed_ws_frozen_check_list_blocks_as_config_change also matches -k r4_01 and passes on both. Full tests/dev_workflow: 174 passed. Detection, not isolation: hostile user config already present at PLAN is accepted as the starting state, as with repo config. Push verification against a PLAN-recorded remote URL was not added. Runs planned with the old digest will see one GIT_CONTROL mismatch that needs an owner unblock. graphify update not run (graphify-out/ is outside permitted paths).",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle.py"
+  ],
+  "repaired": [
+   "R4-01"
+  ]
+ },
+ "started_at": "2026-10-11T03:07:16Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "1e5ee125-1b01-4c41-b6e9-ac8899c9eb69",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 0.8671401,
+  "cwd": "/home/user/uri-wt/lifecycle",
+  "ended_at": "2026-10-11T03:14:27Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 20,
+  "pid": 11004,
+  "prompt_sha256": "6a9a2969ecb84f0b5461860b4525a11320d12ffa2381e2f141ba879443d9b758",
+  "provider": "claude_cli",
+  "result_text_sha256": "4b0622ffe22745e856406cb3bed29cba8d6db0d8a691620d8ba3c258e8d047b9",
+  "role": "implementer",
+  "session_id": "1e5ee125-1b01-4c41-b6e9-ac8899c9eb69",
+  "session_id_requested": "1e5ee125-1b01-4c41-b6e9-ac8899c9eb69",
+  "started_at": "2026-10-11T03:07:16Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "84c7454316a97751e674f9b1a05b2a999ed9f28bf14703d649bc2ce124ad0a18"
+ }
+}

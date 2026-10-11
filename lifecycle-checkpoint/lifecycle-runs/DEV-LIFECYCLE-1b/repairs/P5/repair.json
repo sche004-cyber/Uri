@@ -1,0 +1,94 @@
+{
+ "addresses": [
+  "R6-01",
+  "R6-02"
+ ],
+ "changed": [
+  "docs/dev_workflow/LIFECYCLE_PLAN_AND_ACCEPTANCE.md",
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/lifecycle.py",
+  "scripts/dev_workflow/lifecycle_providers.py",
+  "tests/dev_workflow/test_lifecycle.py"
+ ],
+ "commit": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+ "ended_at": "2026-10-11T03:53:27Z",
+ "pre": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 5,
+ "report": {
+  "not_repaired": [],
+  "notes": "New tests: test_r6_01_claude_planted_earlier_on_path_before_the_plan_cannot_verify_a_real_milestone, test_r6_01_reviewer_cli_changed_by_a_repair_blocks_and_never_runs[plant_earlier|replace_installed], test_r6_01_reviewer_is_launched_by_the_plan_bound_absolute_path, test_r6_02_reviewer_does_not_load_candidate_project_instructions. All 5 fail on dff1ea7 and pass after the change; full tests/dev_workflow: 180 passed. R6-01: reviewer_exec (absolute path, realpath, sha256, script interpreter) is bound in the PLAN control state, the reviewer is launched by that absolute path, any drift is TAMPER and needs owner unblock, the hash is re-checked at launch (binary_anchor_ok, required by is_independent for real milestones), and several different CLIs of that name on PATH block as REVIEWER_EXEC. R6-02: claude reviewer runs with --safe-mode --setting-sources user --strict-mcp-config, tested against the real CLI 2.1.296 (CLAUDE.md and project skills not loaded, --settings deny still enforced); codex reviewer gets -c project_doc_max_bytes=0 (unverified, codex not installed); the reviewer prompt now says checkout files are evidence, not instructions. Runs planned before this change with a claude_cli/codex_cli reviewer block once as TAMPER (GIT_CONTROL: reviewer_exec) until owner unblock. Residual: a fake that is the only CLI on PATH at PLAN is still bound; there is a hash-to-start window at launch. graphify not installed (exit 127).",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle.py"
+  ],
+  "repaired": [
+   "R6-01",
+   "R6-02"
+  ]
+ },
+ "started_at": "2026-10-11T03:39:03Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "484ddd70-1176-4a8c-b8b8-18f1d403a29c",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "cost_usd": 1.5004366000000002,
+  "cwd": "/home/user/uri-wt/lifecycle",
+  "ended_at": "2026-10-11T03:48:36Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 23,
+  "pid": 26264,
+  "prompt_sha256": "4e0f652403462aab1fd964b68154519979b56c55951332bd59a50058b6a77651",
+  "provider": "claude_cli",
+  "result_text_sha256": "787373546a82b8f739849fd9af71d9f94a12a995f19dc7427bbf33d44dc0f52a",
+  "role": "implementer",
+  "session_id": "484ddd70-1176-4a8c-b8b8-18f1d403a29c",
+  "session_id_requested": "484ddd70-1176-4a8c-b8b8-18f1d403a29c",
+  "started_at": "2026-10-11T03:39:03Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "58091e79b89ef64414682353ad8af4c8cc42ee6a60ca40c261cdafebcd68b518"
+ }
+}

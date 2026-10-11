@@ -1,0 +1,31 @@
+I've repaired R8-01 on Linux, and a reviewer config that gets tampered with during a run now stops the round from counting. Two gaps remain, listed under "What is still open"; one of them affects your Windows PC. Nothing is committed, and only permitted paths changed.
+
+**What changed**
+1. **Leftover processes are killed (Linux).** The driver now makes itself the "child subreaper", so a process that a worker, gate or test detached with `setsid()` comes back to the driver instead of to init. The new `sweep_orphans()` kills all such processes until none is left. It runs before every worker starts, after every worker, after every gate or test command (`run_cmd`), and at the start of `run()`. Each worker record now shows the result as `containment_pre`, `containment_post` and `contained`.
+2. **The reviewer's config dir is watched for the whole run.** The new `ConfigWatch` checks the directory every 10 ms from before launch until after the sweep. If `env`, `apiKeyHelper` or a settings file is ever present, even briefly, `config_isolated` becomes false. Before, only the end state was checked.
+3. **A real milestone's review needs both.** `is_independent` now also requires `contained` to be true, not just `config_isolated`.
+4. **Docs.** Sections 3 and 6 of `URI_DEVELOPMENT_LIFECYCLE.md` replace "detected, not prevented" with what is now prevented, what is only detected, and the remaining limits.
+
+**Tests**
+- I added three regression tests:
+  - an injector left by an earlier worker is killed, and the reviewer never sees the injected `env`;
+  - an injector the sweep can't reach injects and then removes `env` mid-run, and the run gets `config_isolated` false;
+  - a detached child of a gate command is killed.
+- All three fail on e029675 (old code with the new tests) and pass now. Five repeat runs all passed.
+- One existing test, `test_r1r2_01_lingering_child_cannot_turn_reject_into_accept`, failed after the change. It depended on a detached forger surviving the run, and that forger is now killed first. I parametrized it:
+  - with containment switched off, its original detection checks run unchanged;
+  - with containment on, it checks that the forger never writes its forged result.
+- The full `tests/dev_workflow` suite passes: 189 tests.
+
+**Re-run of your probe with the real `claude` 2.1.296 and the local scripted server**
+- **Injector left by an earlier worker (hold 0.8 s):** it was killed (`killed: 1`). The server got no requests, the reviewer ran genuinely, and the record shows `contained` and `config_isolated` true.
+- **Injector started outside the driver's tree, as in your probe (hold 0.8 s and 1.5 s):** it still redirects the CLI to the scripted ACCEPT (4 requests to the server), but now with `config_isolated: false`, so the round doesn't count.
+
+**What is still open**
+- **Your Windows PC:** without the subreaper there is no containment, so `contained` is false and real-milestone reviews there go to WAITING_FOR_MODEL. That is safe, but it means the lifecycle can't finish a real milestone on Windows until a Job Object version exists. I didn't write one because I couldn't test it here. Whether to accept that, or ask for Job Object support, is your call.
+- **Processes outside the driver's tree are detected, not prevented:** for example ones started via `systemd-run --user`, at or cron, or orphans of a driver that was itself killed. Only the 10 ms watch catches them, so an injection shorter than one poll that the CLI still reads in that window can't be ruled out. Closing that fully would need cgroups, namespaces or a read-only mount.
+- `graphify update .` failed or isn't available here, so the knowledge graph wasn't refreshed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R8-01"], "not_repaired": [], "regression_tests": ["tests/dev_workflow/test_lifecycle.py"], "notes": "Fix: (1) Linux child-subreaper containment: the driver becomes PR_SET_CHILD_SUBREAPER, and sweep_orphans() SIGKILLs and reaps every adopted orphan (direct children outside the driver's session) until none is left. It runs before each worker, after each worker (after _killpg), after each run_cmd gate/test command and at run() start. Worker records gain containment_pre/containment_post/contained. (2) ConfigWatch polls the reviewer config dir every 10 ms for the whole run; env/apiKeyHelper or a settings file seen at any moment sets config_isolated=false (previously only the end state was checked). (3) is_independent requires contained is True for real milestones (reason cites R8-01). New tests: test_r8_01_setsid_child_of_a_worker_cannot_inject_env_into_the_reviewer_config, test_r8_01_env_injected_and_removed_during_the_run_is_not_isolated, test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed. All three fail on e029675 with the new tests and pass after the change (5 repeat runs passed). Existing test test_r1r2_01_lingering_child_cannot_turn_reject_into_accept relied on a surviving setsid forger, which containment now kills. It is parametrized: contained=False monkeypatches the sweep off and keeps the original detection assertions unchanged; contained=True asserts the forgery never happens. Nothing was weakened or removed. Full tests/dev_workflow: 189 passed. Live re-run with real claude 2.1.296 and the local scripted server, ANTHROPIC_BASE_URL and CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST unset: an injector left by an earlier worker was killed (killed=1), the server got 0 hits, config_isolated and contained were true. An injector started outside the driver's tree (the reviewer's probe, HOLD 0.8 and 1.5) still redirects the CLI to the scripted ACCEPT but is recorded as config_isolated=false, so the round is not independent. Residual limits, documented in section 6: processes started outside the driver's tree (systemd-run, at/cron, orphans of a killed driver) are detected by the 10 ms watch, not prevented, and a sub-poll-interval injection read by the CLI in that window is not excluded. Windows/macOS have no subreaper: contained=false, so real-milestone reviews there do not count (fail-closed) until Job Object containment exists. That code is not written or tested here and is an owner decision. graphify update was unavailable here."}
+REPAIR_RESULT_END

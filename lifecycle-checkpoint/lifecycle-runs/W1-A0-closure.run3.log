@@ -1,0 +1,223 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "W1-A0-closure",
+ "stage": "BLOCKED",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "candidate": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+ "rounds": 8,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "ccr_session",
+   "session_id": "session_017GFBkin32NjEb6jYwvN6vS",
+   "models": null,
+   "candidate": "8019d41b77bae91598fa45b5ea827ab54d1cf64c",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": false,
+   "status": "IMPORTED"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "12b38140-caae-4bc9-af6f-f280844a5a0e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 3,
+   "provider": "claude_cli",
+   "session_id": "dc854df5-6539-4d67-a07b-d78745165ebc",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 4,
+   "provider": "claude_cli",
+   "session_id": "5874814d-5471-4904-911b-6b967b71f305",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "16155129b72685f25eca48a65252f6cd51fa47e4",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 5,
+   "provider": "claude_cli",
+   "session_id": "789f4eaf-8aee-442f-a567-e36ebb0a4464",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "52e852dcce592e15fc2098bc1e169a7e009eb26a",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 6,
+   "provider": "claude_cli",
+   "session_id": "79002ead-1ff3-4b60-857c-38e2cf67ca44",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "08a4569908d7b9db2e22366cada632e5ebe40639",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 7,
+   "provider": null,
+   "session_id": null,
+   "models": null,
+   "candidate": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+   "verdict": null,
+   "reviewer_label": null,
+   "independent": null,
+   "status": null
+  },
+  {
+   "round": 8,
+   "provider": "claude_cli",
+   "session_id": "ea66c95f-0132-47b0-b8ec-ad4326276010",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "COMMITTED",
+   "commit": "16f75d8e2e5f537749b32b1d754c347cbebdfc36",
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 2,
+   "status": "COMMITTED",
+   "commit": "627f6b93d3f3a3de0ba60b1d0c58b9fe5729fede",
+   "addresses": [
+    "R2-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 3,
+   "status": "COMMITTED",
+   "commit": "16155129b72685f25eca48a65252f6cd51fa47e4",
+   "addresses": [
+    "R3-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 4,
+   "status": "COMMITTED",
+   "commit": "52e852dcce592e15fc2098bc1e169a7e009eb26a",
+   "addresses": [
+    "R4-01",
+    "R4-02",
+    "R4-03"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 5,
+   "status": "COMMITTED",
+   "commit": "08a4569908d7b9db2e22366cada632e5ebe40639",
+   "addresses": [
+    "R5-01",
+    "R5-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 6,
+   "status": "COMMITTED",
+   "commit": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+   "addresses": [
+    "R6-01",
+    "R6-02",
+    "R6-03"
+   ],
+   "reason": null
+  }
+ ],
+ "open_findings": [
+  {
+   "id": "R8-01",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "Redaction misses the 'CV2' card security code field name (UK/Visa term) in Python and the in-page JS; the value reaches the Brain request (R6-02 class not closed)"
+  },
+  {
+   "id": "R8-02",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "Citation verifier and conflict detector ignore numbers written as words, so a claim with a different spelled-out number survives verify (R1-01 class)"
+  },
+  {
+   "id": "R8-03",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "Citation verifier and conflict detector ignore the currency, so '$500' is 'supported' by 'Rs 500' and two sources with different currencies are not a conflict"
+  },
+  {
+   "id": "R8-04",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "Derived answers stay retrievable after Stop (R1-05 still present)"
+  },
+  {
+   "id": "R8-05",
+   "severity": "LOW",
+   "blocking": false,
+   "title": "L-W1-4 still states the total fetch deadline can overrun by the read timeout, which the R4-03 watchdog removed"
+  }
+ ],
+ "gates": {},
+ "integration": null,
+ "blocker": {
+  "at": "2026-10-11T05:37:32Z",
+  "kind": "TAMPER",
+  "needs": "owner: inspect the repository's git hooks/config/info and refs; restore them, or accept the current state with `unblock --note`",
+  "reason": "GIT_CONTROL: git_control, reviewer_exec changed since the plan (git hooks/config/info, user/system git config/attributes/ignore, replace refs, the reviewer CLI or managed CLI policy)",
+  "stage": "READY_TO_RESUME"
+ },
+ "events": 56,
+ "evidence_ok_for_candidate": false
+}

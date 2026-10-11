@@ -1,0 +1,291 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "DEV-LIFECYCLE-1",
+ "stage": "COMPLETE",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "candidate": "1f4aeddf50d4eb2d024af7132b443b5dc57591df",
+ "rounds": 11,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "claude_cli",
+   "session_id": "91871433-89e7-479f-80e2-e1e97327c314",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "fbac43727f89b6e43188a8dee5772cf4b49ee65c",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "8900cfe1-e72c-4080-8460-a93c7f0eaa3e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "1f720ed6a1b7540fdeb181de4455a835265c2afa",
+   "verdict": "ACCEPT WITH FINDINGS",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 3,
+   "provider": "claude_cli",
+   "session_id": "07c44e72-6eb8-4c64-b60e-dd7741883221",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "39ed499bd6a6b836a317ac422ad2a180330e67f1",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 4,
+   "provider": "claude_cli",
+   "session_id": "acebab39-06a1-44bd-9db1-3f00f293c0aa",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "475533a28021ca7795f2cb495fb131c9c45e20c7",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 5,
+   "provider": "claude_cli",
+   "session_id": "56f26871-716a-4121-8138-92882bed920d",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "6784424d48df221bedd271707ff2b687c0719e4e",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 6,
+   "provider": "claude_cli",
+   "session_id": "6cad1c6b-941b-42f2-87b7-42334a912238",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 7,
+   "provider": "claude_cli",
+   "session_id": "cb93b41e-7a1e-40d0-a291-55930d06f282",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 8,
+   "provider": "claude_cli",
+   "session_id": "a3eea134-06ef-4035-b61d-22d55d5e6b6f",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "e029675cc9f229596af26365277f2ae536be232b",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 9,
+   "provider": null,
+   "session_id": null,
+   "models": null,
+   "candidate": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+   "verdict": null,
+   "reviewer_label": null,
+   "independent": null,
+   "status": null
+  },
+  {
+   "round": 10,
+   "provider": "claude_cli",
+   "session_id": "1b59ac4d-2fd7-42fa-b892-143d4f8998ad",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 11,
+   "provider": "claude_cli",
+   "session_id": "a6552425-5678-48c3-a5b4-d48be22f98ae",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "1f4aeddf50d4eb2d024af7132b443b5dc57591df",
+   "verdict": "ACCEPT",
+   "reviewer_label": "ACCEPT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "COMMITTED",
+   "commit": "1f720ed6a1b7540fdeb181de4455a835265c2afa",
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 2,
+   "status": "COMMITTED",
+   "commit": "475533a28021ca7795f2cb495fb131c9c45e20c7",
+   "addresses": [
+    "R3-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 3,
+   "status": "COMMITTED",
+   "commit": "6784424d48df221bedd271707ff2b687c0719e4e",
+   "addresses": [
+    "R4-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 4,
+   "status": "COMMITTED",
+   "commit": "dff1ea78527a639ee6b13f47b1f89a2f13e7b865",
+   "addresses": [
+    "R5-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 5,
+   "status": "COMMITTED",
+   "commit": "aba8ac05a07fe636a7f2fc2c68c49baa06c1a1db",
+   "addresses": [
+    "R6-01",
+    "R6-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 6,
+   "status": "COMMITTED",
+   "commit": "e029675cc9f229596af26365277f2ae536be232b",
+   "addresses": [
+    "R7-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 7,
+   "status": "COMMITTED",
+   "commit": "2d419f6922380f16cf1486c7380f4c8619d66b00",
+   "addresses": [
+    "R8-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 8,
+   "status": "COMMITTED",
+   "commit": "1f4aeddf50d4eb2d024af7132b443b5dc57591df",
+   "addresses": [
+    "R10-01",
+    "R10-02"
+   ],
+   "reason": null
+  }
+ ],
+ "open_findings": [],
+ "gates": {
+  "1f4aeddf50d4": {
+   "ok": true,
+   "blocked": null,
+   "new_failures": {
+    "dev_workflow": []
+   }
+  },
+  "1f720ed6a1b7": {
+   "ok": true,
+   "blocked": null,
+   "new_failures": {
+    "dev_workflow": []
+   }
+  },
+  "39ed499bd6a6": {
+   "ok": true,
+   "blocked": null,
+   "new_failures": {
+    "dev_workflow": []
+   }
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T05:28:44Z",
+  "candidate": "1f4aeddf50d4eb2d024af7132b443b5dc57591df",
+  "combined_gates": {
+   "dev_workflow": {
+    "changed_cause": [],
+    "fixed": [],
+    "historical_failures": [],
+    "new_failures": [],
+    "ok": true,
+    "vanished": []
+   }
+  },
+  "command": "git push origin ce1a90c046d2e9566a86d8dccf25df0e2bc98c80:refs/heads/integration/git-sync-20261008",
+  "mode": "merge",
+  "push_exit": 0,
+  "push_stderr": "To https://github.com/sche004-cyber/Uri\n   ffdf534..ce1a90c  ce1a90c046d2e9566a86d8dccf25df0e2bc98c80 -> integration/git-sync-20261008\n",
+  "remote": "origin",
+  "result_commit": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+  "status": "INTEGRATED",
+  "target_ref": "integration/git-sync-20261008",
+  "target_tip_after": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+  "target_tip_before": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9"
+ },
+ "blocker": null,
+ "events": 80,
+ "evidence_ok_for_candidate": true
+}

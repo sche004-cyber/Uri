@@ -1,0 +1,26 @@
+I've repaired R2-01. Lowercase run-together names like `otpcode`, `cardcvv`, `newpassword`, `upipin`, `loginpwd`, `userpass` and `verifycode` are now treated as sensitive. This works both in Python (`uri_assist/redact.py`) and in the in-page script (`uri_assist/browser_extension/snapshot.js`). Nothing is committed.
+
+**The fix:** both layers now run one shared extra check on each word of a field's name, id, label, placeholder or aria-label (`_RUN_TOGETHER` / `RUN_TOGETHER`):
+- **Long stems match anywhere in a word:** `password`, `passwd`, `passcode`, `passphrase`, `pwd`, `cvv`, `cvc`, `ccv`.
+- **`otp`** matches only at the start or end of a word, or before a known ending (`code`, `value`, `number`, `pin`, …). So `footpath`, `hotpot` and `hotplate` stay readable.
+- **`pin`, `pass` and `code`** match only after a known prefix (e.g. `upi`/`atm`/`card`/`security` + `pin`; `user`/`login`/`new` + `pass`; `verify`/`sms` + `code`). So `pincode`, `zipcode`, `spinner`, `camping`, `passenger`, `compass` and `bypass` stay readable.
+
+**Regression tests** (added to `tests/assist/test_a0_r1_review_regressions.py`, plus 20 sensitive and 10 ordinary inputs added to `tests/assist/fixtures/tricky_fields.html`):
+- all 20 names the reviewer listed are sensitive in Python;
+- 15 ordinary names stay readable;
+- none of the 20 values reaches the data passed on for the Brain request (checked through `PE.normalise`, not the full `assist_ask` path the reviewer probed);
+- the JS pattern is identical to the Python one;
+- in real Chromium, every new value is removed in the page, the ordinary fields stay readable, and the JS and Python results match.
+
+**Results:**
+- **With the fix:** `tests/assist` and `tests/web` give 301 passed, 0 skipped, so the Chromium tests really ran.
+- **Base code:** I wasn't allowed to check out the base files, so I extracted `uri_assist` and `tests/assist` from 16f75d8 into a scratch copy and added the new tests and fixture. All the new must-fail tests fail there, and the readable-name tests pass, as they should on both versions. Eight other tests also fail in that copy, but only because modules outside those folders (`uri_web`, `uri_operational_intelligence`) weren't copied. Those failures have nothing to do with redaction.
+
+**Limitations:**
+- The name lists are a deny-list, so a run-together name with a prefix that isn't listed (say `foopin`) still isn't caught.
+- `userpincode` is deliberately left readable because it looks like a postal PIN code.
+- `graphify update .` didn't run because `graphify` isn't installed here (exit code 127).
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R2-01"], "not_repaired": [], "regression_tests": ["tests/assist/test_a0_r1_review_regressions.py"], "notes": "Added _RUN_TOGETHER (redact.py) and an identical RUN_TOGETHER (snapshot.js), applied next to _SENSITIVE_WORDS. Long stems (password|passwd|passcode|passphrase|pwd|cvv|cvc|ccv) match anywhere in a word; mpin/tpin and otp only at the start or end of a word or before a known ending; pin/pass/code only after a known prefix. tricky_fields.html gains 20 sensitive inputs (r1-r20) and 10 ordinary ones (q1-q10). New tests: Python sensitivity for all 20 reviewer names, 15 ordinary names stay readable, values absent from the data passed on for the Brain request (checked through PE.normalise, not the full assist_ask path the reviewer probed), JS pattern identical to the Python one, and a real-Chromium check that the values are removed in the page and JS and Python agree. With the fix: tests/assist + tests/web give 301 passed, 0 skipped. Base check: checking out the base files was denied, so uri_assist and tests/assist were extracted from 16f75d8 into a scratch copy with the new tests and fixture; all new must-fail tests fail there and the readable-name tests pass. 8 other tests failed in that copy only because uri_web and uri_operational_intelligence were not copied (ModuleNotFoundError). Limits: the name lists are a deny-list, so a run-together name with an unlisted prefix (e.g. foopin) is not caught, and userpincode is deliberately left readable as a postal PIN code. graphify update was not run (graphify not installed, exit 127)."}
+REPAIR_RESULT_END

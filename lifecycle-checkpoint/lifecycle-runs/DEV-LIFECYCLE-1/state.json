@@ -1,0 +1,1992 @@
+{
+ "attempts": {
+  "R1-02": 1,
+  "R1-07": 1,
+  "R2-01": 1,
+  "R2-02": 1,
+  "R2-03": 1,
+  "R2-04": 1,
+  "R2-05": 1,
+  "R3-01": 1,
+  "R3-02": 1,
+  "R3-03": 1,
+  "R3-04": 2,
+  "R4-01": 1,
+  "R5-01": 1,
+  "R5-02": 1
+ },
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "baseline_gates": {},
+ "blocker": {
+  "at": "2026-10-11T02:13:18Z",
+  "kind": "TAMPER",
+  "needs": "owner: investigate; start a fresh state_dir (evidence cannot be trusted)",
+  "reason": "receipt verification failed: resume_to in state.json differs from the last wait/block event",
+  "stage": "FIXING"
+ },
+ "candidate": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+ "config_path": "/home/user/uri-wt/lifecycle-runs/DEV-LIFECYCLE-1.json",
+ "config_sha256": "c941afd8c3704dd6b08e410e34c47def10c2650799d626cd311fac6902ee02a4",
+ "gates": {},
+ "history": [
+  {
+   "hash": "e992f6156b1bea11621f0f6c3f1f4d1eef82ff74293c2c1c97548923c3e5f20b",
+   "kind": "PLAN",
+   "seq": 1,
+   "ts": "2026-10-11T00:37:58Z"
+  },
+  {
+   "hash": "9b5e911082e061b4ba60bb3c25843326d5c8b36fbda9738663fd637d90822096",
+   "kind": "STAGE",
+   "seq": 2,
+   "ts": "2026-10-11T00:37:58Z"
+  },
+  {
+   "hash": "1bbdaadae354a896e99bf9460172d2fc815ae4ef997d4fe998ada11810d0e450",
+   "kind": "STAGE",
+   "seq": 3,
+   "ts": "2026-10-11T00:37:58Z"
+  },
+  {
+   "hash": "a643eefababaf18532b89e88797694e50b8769176d580b1c4aefc0c98d6d57fb",
+   "kind": "IMPLEMENTATION_RECORDED",
+   "seq": 4,
+   "ts": "2026-10-11T00:37:59Z"
+  },
+  {
+   "hash": "526486373cdc7bb15de5cf2dcebcbb398609d606fd53aef71af533b6dba2aa5f",
+   "kind": "STAGE",
+   "seq": 5,
+   "ts": "2026-10-11T00:37:59Z"
+  },
+  {
+   "hash": "013155ee0ab6fac7fec7632cf61f8fd8f1c07b5b837c17e0656d7ed500284498",
+   "kind": "REVIEW_STARTED",
+   "seq": 6,
+   "ts": "2026-10-11T00:38:00Z"
+  },
+  {
+   "hash": "1ed8f6217214146d83cd7629b562bf37c3aab12a85624e054afe1da41587a35e",
+   "kind": "REVIEW_RECORDED",
+   "seq": 7,
+   "ts": "2026-10-11T00:42:20Z"
+  },
+  {
+   "hash": "e0b11e333a711db953d3fc0678efb6819df1bb8479dcd1f1e82a751cc46ead14",
+   "kind": "STAGE",
+   "seq": 8,
+   "ts": "2026-10-11T00:42:20Z"
+  },
+  {
+   "hash": "16564c71096e6ae868a1b6830b298bf7a9f0ea83dceddce2e897813913b3e71f",
+   "kind": "CANDIDATE_MOVED",
+   "seq": 9,
+   "ts": "2026-10-11T00:51:48Z"
+  },
+  {
+   "hash": "2a994f8cd70f4d2e071456867602f25324bc592c49192a2af37958d056c9295b",
+   "kind": "STAGE",
+   "seq": 10,
+   "ts": "2026-10-11T00:51:48Z"
+  },
+  {
+   "hash": "94415700f7d8bfa562464b9b4faca853860c90aca8204414b07e7567b5c7b768",
+   "kind": "STAGE",
+   "seq": 11,
+   "ts": "2026-10-11T00:51:48Z"
+  },
+  {
+   "hash": "2bf864e76ac84a8140ca769f3a2c9e205a4643cf36598224e8316b8a96e37dee",
+   "kind": "REVIEW_STARTED",
+   "seq": 12,
+   "ts": "2026-10-11T00:51:49Z"
+  },
+  {
+   "hash": "0de512e4febdede89a62b0e3936c325a27f188387408eec36ad997c3af585a44",
+   "kind": "REVIEW_RECORDED",
+   "seq": 13,
+   "ts": "2026-10-11T00:56:50Z"
+  },
+  {
+   "hash": "a40f4ff66909e482f53687708b56626c948b7c56da12b8acf6eb805e01bf072e",
+   "kind": "STAGE",
+   "seq": 14,
+   "ts": "2026-10-11T00:56:50Z"
+  },
+  {
+   "hash": "aad2b7f98dbf2f25f10801dee1575da450c0922cfc8c064b1bd650cc7b218e42",
+   "kind": "REPAIR_COMMITTED",
+   "seq": 15,
+   "ts": "2026-10-11T01:06:18Z"
+  },
+  {
+   "hash": "987adc38b859c1b82c3b0e474706d1856f4e79d8e2ec60bbb8dd8f54f1e738e4",
+   "kind": "STAGE",
+   "seq": 16,
+   "ts": "2026-10-11T01:06:18Z"
+  },
+  {
+   "hash": "cc4d6a2ce129371ad1f10a2c566e668be5ea35cd1241722b43da561d5d81eae8",
+   "kind": "REVIEW_STARTED",
+   "seq": 17,
+   "ts": "2026-10-11T01:06:20Z"
+  },
+  {
+   "hash": "4911403dfaa67c625f8c6233a40326c918ceb2e377435b0c7a89560defabce73",
+   "kind": "REVIEW_RECORDED",
+   "seq": 18,
+   "ts": "2026-10-11T01:12:34Z"
+  },
+  {
+   "hash": "40c3e4254f4f97b0a51fc25d945f6718d3f7c70f191d00b8f01ce79331104854",
+   "kind": "STAGE",
+   "seq": 19,
+   "ts": "2026-10-11T01:12:34Z"
+  },
+  {
+   "hash": "9fcf18669bcae0a496ea8e40c15a6e694a3a64519e5510be70bdafd98990e71d",
+   "kind": "REPAIR_COMMITTED",
+   "seq": 20,
+   "ts": "2026-10-11T01:21:53Z"
+  },
+  {
+   "hash": "7ff4caf5d127721bea3b5e5e68558041efb40664eb409cdf4da0bc898073c986",
+   "kind": "STAGE",
+   "seq": 21,
+   "ts": "2026-10-11T01:21:53Z"
+  },
+  {
+   "hash": "cfb0eeaea56c7d855052f83c11a233bb14607e2ecf16d100b91fca774b7dfd28",
+   "kind": "REVIEW_STARTED",
+   "seq": 22,
+   "ts": "2026-10-11T01:21:55Z"
+  },
+  {
+   "hash": "9ae36c83195852ca9734f222c3cc901c63c36cca235c7f111e98410284e6adf1",
+   "kind": "REVIEW_RECORDED",
+   "seq": 23,
+   "ts": "2026-10-11T01:26:05Z"
+  },
+  {
+   "hash": "2eda7c08b8728b4dcfc506b06654977e66a737cded55ee556990e3bdf051a1a3",
+   "kind": "STAGE",
+   "seq": 24,
+   "ts": "2026-10-11T01:26:05Z"
+  },
+  {
+   "hash": "735ea77a7370c6486c4e5d27b6f477410ccf06d5e9347d6154cc7c0834fa52e9",
+   "kind": "REPAIR_COMMITTED",
+   "seq": 25,
+   "ts": "2026-10-11T01:40:21Z"
+  },
+  {
+   "hash": "b625841707d58b60ebc439fbf6c73ed0addfc65bf450620b413493439710523e",
+   "kind": "STAGE",
+   "seq": 26,
+   "ts": "2026-10-11T01:40:21Z"
+  },
+  {
+   "hash": "7f042c391137d24f698c1719a881f2d9e28015564eb736daa9a75b2a17c015cf",
+   "kind": "REVIEW_STARTED",
+   "seq": 27,
+   "ts": "2026-10-11T01:40:23Z"
+  },
+  {
+   "hash": "6d4a606d82d368b0608043bab47f693f3d190bb400cd2dc54e5673f64cb141bc",
+   "kind": "REVIEW_RECORDED",
+   "seq": 28,
+   "ts": "2026-10-11T01:46:59Z"
+  },
+  {
+   "hash": "a1cfc688e37b1b152011a1606bf894e6c45aab29dbef7b4b5f278ea7ea31eee5",
+   "kind": "STAGE",
+   "seq": 29,
+   "ts": "2026-10-11T01:46:59Z"
+  },
+  {
+   "hash": "d1d310a7009db4c7a0c81a8a6357a41033eec22ac11a4063078ea74ad256b7c8",
+   "kind": "REPAIR_REFUSED",
+   "seq": 30,
+   "ts": "2026-10-11T01:55:30Z"
+  },
+  {
+   "hash": "a04a3de882bab9a67649eaf70f60cacca36e310a62f7ad386931ae7258b62242",
+   "kind": "REPAIR_RETRY",
+   "seq": 31,
+   "ts": "2026-10-11T01:55:30Z"
+  },
+  {
+   "hash": "98b1a88265a1ee4c12511740473e09b658b840d546ac80af31d77b48b077c9aa",
+   "kind": "STAGE",
+   "seq": 32,
+   "ts": "2026-10-11T02:13:18Z"
+  },
+  {
+   "hash": "bf1a1c99649183e9deb832ec22aa9ed673a283778bd3e14b2fd2284afc9a9df1",
+   "kind": "CONFIG_CHANGED",
+   "seq": 33,
+   "ts": "2026-10-11T02:13:18Z"
+  }
+ ],
+ "integration": null,
+ "milestone": "DEV-LIFECYCLE-1",
+ "pending_findings": [
+  {
+   "blocking": true,
+   "category": "code",
+   "evidence": "_test_file maps a junit id to head.replace('.', '/') + '.py' relative to the repo root. A class-based id 'tests.pkg.test_k.TestK::test_a' becomes 'tests/pkg/test_k/TestK.py', which does not exist. A Flutter id 'test/x_test.dart::x' is relative to the gate cwd uri_ui, not the root (probe: is_file False for both). _commit_and_prove keeps only gate tests where (wt/path).is_file(), so gate_tests is empty. GATE findings have category 'test', so defect=False, need_fail_before=False and must_fail is empty: the repair only has to pass afterwards. End-to-end probe (/tmp/uri_review_R5/p1/probe_weaken.py) uses the fixture with a broken pkg/other.py and an implementer that changes 'assert VALUE == 2' to 'assert VALUE in (2, 3)'. With a function test the repair is REFUSED 3x ('gate test tests/test_other.py did not fail before'). With the same test inside a class: COMMITTED, stage COMPLETE, remote canon == candidate, and the repair commit touches only tests/test_other.py. The docs claim 'gate tests named by gate findings must each fail before'.",
+   "files": [
+    "scripts/dev_workflow/lifecycle.py:601-606",
+    "scripts/dev_workflow/lifecycle.py:867-873",
+    "scripts/dev_workflow/lifecycle.py:1192-1194",
+    "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"
+   ],
+   "id": "R5-01",
+   "owner_decision": false,
+   "severity": "MEDIUM",
+   "suggested_fix": "Resolve gate tests from the gate's own report: junit 'file' attribute, or strip trailing class segments until a .py file exists, and use the gate cwd for Flutter ids. If a GATE finding's test file cannot be resolved, refuse the repair rather than treating it as coverage-only. Also refuse repairs that modify (not just delete) a test named by a gate finding unless the modified test still fails on the pre-repair commit.",
+   "title": "Gate-finding repairs skip the fail-before proof for class-based pytest tests and every Flutter test: a repair that weakens the failing test is committed and integrated"
+  },
+  {
+   "blocking": true,
+   "category": "code",
+   "evidence": "pytest junit messages for bare asserts carry no exception type ('assert 21013 == 1', 'assert <object object at 0x7f0eb3781760> is None'), so _cause returns the assertion text including pids and addresses, and compare() reports changed_cause, i.e. a new failure. Real 'flutter test --machine' runs of the same broken test file in two directories gave failures {'::loading /tmp/uri_review_R5/fl/A/test/broken_test.dart'} vs {'::loading /tmp/uri_review_R5/fl/B/test/broken_test.dart'}. compare() => new_failures=[A id], ok=False. Candidate (work_dir/qualify) and baseline (work_dir/baseline) always run in different worktrees, so a historical load failure always blocks qualification and is routed to FIXING until RETRY_LIMIT. The plan's decision 6 specifies cause = exception type.",
+   "files": [
+    "scripts/dev_workflow/lifecycle.py:453-456",
+    "scripts/dev_workflow/lifecycle.py:491-497",
+    "scripts/dev_workflow/lifecycle.py:589-598"
+   ],
+   "id": "R5-02",
+   "owner_decision": false,
+   "severity": "MEDIUM",
+   "suggested_fix": "Normalise causes (AssertionError for bare asserts, or strip numbers, hex addresses and paths). For Flutter, derive the id from the test's url or the suite path made relative to the worktree, and strip the worktree prefix from 'loading <path>' names and error text. Add tests with two different worktree paths.",
+   "title": "Baseline comparison keys are non-deterministic: plain-assert causes include run-specific values and Flutter load-failure ids include the absolute worktree path, so historical failures count as new"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02",
+    "R2-03",
+    "R2-04",
+    "R2-05"
+   ],
+   "changed": [
+    "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+    "scripts/dev_workflow/lifecycle.py",
+    "scripts/dev_workflow/lifecycle_providers.py",
+    "tests/dev_workflow/test_lifecycle.py"
+   ],
+   "commit": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "ended_at": "2026-10-11T01:06:18Z",
+   "pre": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+   "regression": {
+    "need_fail_before": true,
+    "ok": true,
+    "reason": "",
+    "tests": {
+     "tests/dev_workflow/test_lifecycle.py": {
+      "after_exit": 0,
+      "after_state": "DONE",
+      "before_exit": 1,
+      "before_state": "DONE"
+     }
+    }
+   },
+   "repair": 1,
+   "report": {
+    "not_repaired": [],
+    "notes": "New tests (all fail on d5fccdf, all pass now): test_r2_01_forged_duplicate_round_and_resume_to_cannot_verify, test_r2_01_edited_resume_to_alone_is_detected, test_r2_02_replace_refs_cannot_hide_a_protected_change, test_r2_02_driver_git_ignores_replace_refs, test_r2_03_redirected_gitfile_does_not_reset_the_main_checkout, test_r2_04_repair_deleting_a_test_is_refused_and_restored, test_r2_04_error_after_the_repair_commit_is_refused_and_restored, test_r2_05_gpu_lease_busy_is_blocked_not_a_gate_failure. Full tests/dev_workflow: 134 passed. R2-05 tested with a fake gpu_lease module (no GPU). A renamed test file now counts as a deleted test and is refused. Older event logs lack resume_to/blocker in stage events, so verify would flag an archived run that ended BLOCKED or waiting; archived evidence was not re-verified. graphify is not installed, so the graph was not updated. Also: info/ files in the git control digest, --no-renames in changed_paths, git replace added to GIT_WRITE_DENY.",
+    "regression_tests": [
+     "tests/dev_workflow/test_lifecycle.py"
+    ],
+    "repaired": [
+     "R2-01",
+     "R2-02",
+     "R2-03",
+     "R2-04",
+     "R2-05"
+    ]
+   },
+   "started_at": "2026-10-11T00:56:50Z",
+   "status": "COMMITTED",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "ee5990e4-0093-4bee-ad02-b707b86f727e",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Edit",
+     "Write",
+     "Agent",
+     "--disallowedTools",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "cost_usd": 2.3820336,
+    "cwd": "/home/user/uri-wt/lifecycle",
+    "ended_at": "2026-10-11T01:04:20Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 43,
+    "pid": 17816,
+    "prompt_sha256": "d5594f5a1e55f00248e02b8b6e8a970a0184f6ddc4e51c0f63dbb44f31962ecb",
+    "provider": "claude_cli",
+    "result_text_sha256": "5a4ea1013d0c5a33913320c5b54b47e44a9054b6bf60a849d5106d7631ea09f3",
+    "role": "implementer",
+    "session_id": "ee5990e4-0093-4bee-ad02-b707b86f727e",
+    "session_id_requested": "ee5990e4-0093-4bee-ad02-b707b86f727e",
+    "started_at": "2026-10-11T00:56:50Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "0177f04e3370a81c25e6a9214e5c6d7a728e548630505f958f4213c7e24ba632"
+   }
+  },
+  {
+   "addresses": [
+    "R3-01",
+    "R3-02",
+    "R3-03",
+    "R3-04"
+   ],
+   "changed": [
+    "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+    "scripts/dev_workflow/lifecycle.py",
+    "tests/dev_workflow/test_lifecycle.py"
+   ],
+   "commit": "43467152d92ec7b630bfa5dc3b8587577af96443",
+   "ended_at": "2026-10-11T01:21:53Z",
+   "pre": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "regression": {
+    "need_fail_before": true,
+    "ok": true,
+    "reason": "",
+    "tests": {
+     "tests/dev_workflow/test_lifecycle.py": {
+      "after_exit": 0,
+      "after_state": "DONE",
+      "before_exit": 1,
+      "before_state": "DONE"
+     }
+    }
+   },
+   "repair": 2,
+   "report": {
+    "not_repaired": [],
+    "notes": "New tests: test_r3_01_redirected_head_does_not_move_another_branch_on_restore[other|canon], test_r3_01_reviewer_redirecting_impl_head_is_not_independent, test_r3_02_transient_baseline_gate_failure_is_not_cached, test_r3_03_candidate_moved_after_verified_is_reaudited, test_r3_04_changed_config_blocks_until_owner_acknowledges, test_r3_04_config_binding_is_read_from_the_chain_not_state_json. All 7 fail with c1ba808's lifecycle.py and pass after; the full tests/dev_workflow suite passes (141). R3-01: the repair checks which branch HEAD names before and after; restore re-points HEAD at the candidate branch before reset --hard; that branch is in the review integrity snapshot. R3-02: only COMPLETED_WITH_RESULT baseline results are cached. R3-03: a block resumes at AUDITING when the current candidate has no independent ACCEPT. R3-04: the policy is recorded in PLAN; the config hash is read from the event chain; a CONFIG_CHANGED stops as BLOCKED(CONFIG) until the owner unblocks with that config. The config file stays agent-writable and the owner acknowledgement is the control (documented). graphify was not run: not installed, no graphify-out/.",
+    "regression_tests": [
+     "tests/dev_workflow/test_lifecycle.py"
+    ],
+    "repaired": [
+     "R3-01",
+     "R3-02",
+     "R3-03",
+     "R3-04"
+    ]
+   },
+   "started_at": "2026-10-11T01:12:34Z",
+   "status": "COMMITTED",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "551fcfbf-0afb-4f07-9a15-7d8a0b5376b9",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Edit",
+     "Write",
+     "Agent",
+     "--disallowedTools",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "cost_usd": 1.8970506000000003,
+    "cwd": "/home/user/uri-wt/lifecycle",
+    "ended_at": "2026-10-11T01:19:32Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 36,
+    "pid": 16942,
+    "prompt_sha256": "59988b5d789ce0df4da2f68df79dcd9a8465f3aefbb473f64ce20515536157f5",
+    "provider": "claude_cli",
+    "result_text_sha256": "cbf1f80490b08b47677bba77c7faaf3ed1d0119ed76e7dd723a7f6db76bae5f5",
+    "role": "implementer",
+    "session_id": "551fcfbf-0afb-4f07-9a15-7d8a0b5376b9",
+    "session_id_requested": "551fcfbf-0afb-4f07-9a15-7d8a0b5376b9",
+    "started_at": "2026-10-11T01:12:34Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "98971cdfeefcd33e0d644cfc5a388e42d2f95523bc05133a4914a7fa955dfc6e"
+   }
+  },
+  {
+   "addresses": [
+    "R4-01"
+   ],
+   "changed": [
+    "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+    "scripts/dev_workflow/lifecycle.py",
+    "tests/dev_workflow/test_lifecycle.py"
+   ],
+   "commit": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+   "ended_at": "2026-10-11T01:40:21Z",
+   "pre": "43467152d92ec7b630bfa5dc3b8587577af96443",
+   "regression": {
+    "need_fail_before": true,
+    "ok": true,
+    "reason": "",
+    "tests": {
+     "tests/dev_workflow/test_lifecycle.py": {
+      "after_exit": 0,
+      "after_state": "DONE",
+      "before_exit": 1,
+      "before_state": "DONE"
+     }
+    }
+   },
+   "repair": 3,
+   "report": {
+    "not_repaired": [],
+    "notes": "The resolved policy is now bound in the event chain together with the config file hash. policy_sha256(cfg) = chash(policy(cfg)) is computed live on each run, so it includes the ws_frozen_check protected list re-read from the main checkout. PLAN, CONFIG_CHANGED and OWNER_UNBLOCK events record policy_sha256. config_binding() returns the bound pair (config_sha256, chash(recorded policy)) read from the chain only. run() records CONFIG_CHANGED and blocks with CONFIG if either hash differs; the block clears only after an OWNER_UNBLOCK with the same pair. A first version stored the hash at load time; it broke 15 existing tests that edit cfg in memory after loading, so the hash is computed live instead. New test test_r4_01_relaxed_ws_frozen_check_list_blocks_as_config_change fails on 43467152 (second run returns VERIFIED instead of BLOCKED) and passes after the fix. Full tests/dev_workflow suite: 142 passed. Updated the Policy binding row in docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md.",
+    "regression_tests": [
+     "tests/dev_workflow/test_lifecycle.py"
+    ],
+    "repaired": [
+     "R4-01"
+    ]
+   },
+   "started_at": "2026-10-11T01:26:05Z",
+   "status": "COMMITTED",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "a9d68db8-58d4-428c-8738-d439091608ec",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Edit",
+     "Write",
+     "Agent",
+     "--disallowedTools",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "cost_usd": 0.8272556,
+    "cwd": "/home/user/uri-wt/lifecycle",
+    "ended_at": "2026-10-11T01:37:49Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 22,
+    "pid": 32523,
+    "prompt_sha256": "b19c3b0e1b756444a8fd14b07f1fdf7628d5eb6de0f6ebf2c80d184fddad4e78",
+    "provider": "claude_cli",
+    "result_text_sha256": "2184cc0e3af5865302d6e0d18a1c80b70b3a0deae1285af76d5a884c0f130600",
+    "role": "implementer",
+    "session_id": "a9d68db8-58d4-428c-8738-d439091608ec",
+    "session_id_requested": "a9d68db8-58d4-428c-8738-d439091608ec",
+    "started_at": "2026-10-11T01:26:05Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "b1c043ce6c96efed3572ad4d4924feaba76cb20fce00faa0712a438e77e487a0"
+   }
+  },
+  {
+   "addresses": [
+    "R5-01",
+    "R5-02"
+   ],
+   "changed": [
+    "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+    "scripts/dev_workflow/lifecycle.py",
+    "tests/dev_workflow/lifecycle_fixture/worker.py",
+    "tests/dev_workflow/test_lifecycle.py"
+   ],
+   "ended_at": "2026-10-11T01:55:30Z",
+   "pre": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+   "reason": "REGRESSION: tests/dev_workflow/lifecycle_fixture/worker.py does not pass after the repair (DONE, exit 2)",
+   "regression": {
+    "need_fail_before": true,
+    "ok": false,
+    "reason": "tests/dev_workflow/lifecycle_fixture/worker.py does not pass after the repair (DONE, exit 2)",
+    "tests": {
+     "tests/dev_workflow/lifecycle_fixture/worker.py": {
+      "after_exit": 2,
+      "after_state": "DONE",
+      "before_exit": 2,
+      "before_state": "DONE"
+     },
+     "tests/dev_workflow/test_lifecycle.py": {
+      "after_exit": 0,
+      "after_state": "DONE",
+      "before_exit": 1,
+      "before_state": "DONE"
+     }
+    }
+   },
+   "repair": 4,
+   "report": {
+    "not_repaired": [],
+    "notes": "R5-01: _test_file strips trailing class segments until a .py exists and resolves Flutter ids against the gate cwd (returns None if unresolved); gate findings carry test_id/gate_test; _commit_and_prove refuses a repair whose GATE finding test file cannot be resolved (except <gate>::__run__ whole-gate failures, unchanged), so resolved gate tests go through must_fail, and the post-repair test copied onto the pre-repair commit must fail, which refuses weakening. R5-02: _cause returns AssertionError for bare asserts and otherwise masks paths (to last component), hex addresses and digits; parse_flutter_machine uses suite paths for url-less tests and relativises 'loading <path>' names. New tests fail on 6bcfd1d (verified with git archive export; the plain-function weaken case is a control that passed before too) and pass now; full tests/dev_workflow: 149 passed. Docs updated. graphify CLI is not installed, so 'graphify update .' was not run.",
+    "regression_tests": [
+     "tests/dev_workflow/test_lifecycle.py",
+     "tests/dev_workflow/lifecycle_fixture/worker.py"
+    ],
+    "repaired": [
+     "R5-01",
+     "R5-02"
+    ]
+   },
+   "restored": true,
+   "started_at": "2026-10-11T01:46:59Z",
+   "status": "REFUSED",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "4c171739-b1ab-4276-aa1a-ff0104314ada",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Edit",
+     "Write",
+     "Agent",
+     "--disallowedTools",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "cost_usd": 0.959624,
+    "cwd": "/home/user/uri-wt/lifecycle",
+    "ended_at": "2026-10-11T01:52:36Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 18,
+    "pid": 22157,
+    "prompt_sha256": "cdc8cc7b68569f85c7d0686f05a0a3cd35c4af81f350b4469603eee382395d97",
+    "provider": "claude_cli",
+    "result_text_sha256": "85dcb0ae778998742804df292d69f64f2cc57910457053829234f8eaad8918a7",
+    "role": "implementer",
+    "session_id": "4c171739-b1ab-4276-aa1a-ff0104314ada",
+    "session_id_requested": "4c171739-b1ab-4276-aa1a-ff0104314ada",
+    "started_at": "2026-10-11T01:46:59Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "762c15060ad09c2af46f0d86b29081339e15c3c1c1089d8f57b2fd966304d77f"
+   }
+  }
+ ],
+ "resume_to": "FIXING",
+ "rounds": [
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R1",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "blocking_ids": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04",
+    "R1-05",
+    "R1-06",
+    "R1-07",
+    "R1-08"
+   ],
+   "candidate": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+   "effective_verdict": "REJECT",
+   "ended_at": "2026-10-11T00:42:20Z",
+   "independence_basis": "audit checkout or refs changed during review",
+   "independent": false,
+   "integrity": {
+    "after": {
+     "head": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+     "impl_head": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+     "impl_status": [],
+     "refs": "04b60a2aeb055cef7812f56d8d5e8a08996317ca1a0764001bc6490b5c586d9b",
+     "status": []
+    },
+    "before": {
+     "head": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+     "impl_head": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+     "impl_status": [],
+     "refs": "f7d20c5c8e86b4c9e069b58170ff61b39cd41fcdd1ec14b362be0df7a928edd1",
+     "status": []
+    },
+    "ok": false
+   },
+   "result": {
+    "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+    "candidate": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+    "findings": [
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe P1: non-DEVTEST milestone 'W9-REAL', reviewer {provider: claude_cli, binary: <8-line shell script printing JSON {result: AUDIT_RESULT ACCEPT on HEAD, session_id: 'forged-1'}>}. lifecycle.run -> stage COMPLETE, round independent=True status COMPLETED_WITH_RESULT, integration INTEGRATED, remote tip moved. is_independent checks only the provider label, session id and integrity, never which executable ran. This defeats L-AC2 ('scripted reviewers count only for DEVTEST').",
+      "files": [
+       "scripts/dev_workflow/lifecycle_providers.py:50",
+       "scripts/dev_workflow/lifecycle_providers.py:74",
+       "scripts/dev_workflow/lifecycle.py:197-210"
+      ],
+      "id": "R1-01",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "For non-DEVTEST milestones, refuse a 'binary' override (or require it to resolve to the same real path as shutil.which('claude'/'codex') and record its hash). Mark rounds whose argv[0] is not the resolved CLI as not independent. Record the binary path in the round and REVIEW_RECORDED event.",
+      "title": "claude_cli reviewer 'binary' override lets any scripted executable count as an independent reviewer for a real milestone"
+     },
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe P2: real run, R1 REJECT -> BLOCKED. Edited only state.json: rounds[0].effective_verdict='ACCEPT', findings=[], stage='VERIFYING', blocker=null. verify() -> []. run() -> VERIFIED, status evidence_ok_for_candidate=True, verify() still []. accepted_review/evidence_ok read st.d['rounds'] and never compare it with the hashed round.json/events. verify never cross-checks state.json rounds, gates or stage against the chain. Contradicts L-AC14 and L-AC15 and the doc claims 'verify detects edits' and 'a forged stage without evidence => BLOCKED'.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:129-130",
+       "scripts/dev_workflow/lifecycle.py:493-509",
+       "scripts/dev_workflow/lifecycle.py:995-1023"
+      ],
+      "id": "R1-02",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "Derive rounds, verdicts, gate results and stage from the verified event chain plus hashed round.json files (or hash state.json into each event). Run verify() at the start of run() and in evidence_ok, and BLOCK on any mismatch. Make verify compare every state.json round/repair/gate entry with its event.",
+      "title": "Evidence is trusted from state.json; an edited verdict reaches VERIFIED and verify() reports no error"
+     },
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe P3: the implementer (command provider, the same capability as claude_cli Bash, running as root) wrote <git-common-dir>/hooks/pre-commit that creates OUT_OF_SCOPE.txt, patches core/frozen.py and git-adds both. Driver: repair P1 status COMMITTED. `git show --name-only HEAD` lists OUT_OF_SCOPE.txt, core/frozen.py, pkg/calc.py, tests/test_zero.py. The protected file was only caught later at qualification. permitted_paths is never re-checked after commit, so an out-of-scope-only payload goes through. Post-worker checks cover only the candidate worktree status/HEAD, not .git (hooks/config) or the main checkout.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:685-690",
+       "scripts/dev_workflow/lifecycle.py:652-665"
+      ],
+      "id": "R1-03",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "Commit with `git -c core.hooksPath=/dev/null commit --no-verify`. After commit, re-check `git diff --name-only pre..commit` against protected/permitted lists and the proven file set, and reset if it differs. Snapshot and verify .git/hooks, .git/config and the main checkout status before/after every worker (reviewer and implementer). Re-check permitted_paths for baseline..candidate in qualify.",
+      "title": "Driver's repair commit runs worker-planted git hooks: out-of-scope and protected files are committed after the scope check and regression proof"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "Probe P4: candidate adds tests/conftest.py raising ImportError. Gate 'unit': exit_code 4, passed 0, failures {} -> comparison ok -> stage VERIFIED. parse_junit returns empty when the junit file is absent. pytest/flutter results ignore p.returncode, and compare() never checks for vanished tests or zero collected. L-AC10 (new failure blocks VERIFIED) is unmet.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:349-352",
+       "scripts/dev_workflow/lifecycle.py:424-433",
+       "scripts/dev_workflow/lifecycle.py:437-442"
+      ],
+      "id": "R1-04",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "Treat a missing/unparseable junit or a non-zero exit with no recorded failures as a gate failure (synthetic id '<gate>::__run__' with the exit code as cause). Also treat tests that passed on baseline but are absent on candidate as new failures (or require passed >= baseline). Apply the same to flutter --machine (no 'done' event or non-zero exit without failures).",
+      "title": "pytest/flutter gate passes when the run crashes or collects nothing (exit code and missing junit ignored)"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "Probe P5: committed candidate sets pkg/other.py VALUE=3 (breaks tests/test_other.py). An uncommitted edit restores VALUE=2 in the worktree. run -> VERIFIED with gates ok and no new failures, while `git show HEAD:pkg/other.py` = 'VALUE = 3'. Ignored files are invisible to worktree_changes too.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:453-465",
+       "scripts/dev_workflow/lifecycle.py:396-399"
+      ],
+      "id": "R1-05",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Run candidate gates in a fresh detached worktree at the exact SHA (as is already done for baseline), or refuse to qualify when `git status --porcelain --ignored` shows anything beyond allow-listed build dirs.",
+      "title": "Qualification gates run in the candidate worktree without checking it is clean, so uncommitted (or ignored) files decide the VERIFIED result"
+     },
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe P6: the implementer spawned `sh -c 'sleep 4; echo LATE > pkg/late.py'` with stdio detached, then exited normally. The driver committed the repair and reached VERIFIED, and pkg/late.py appeared afterwards (worktree '?? pkg/late.py'). A child timed to fire between the integrity snapshot/regression proof and `git add -A` would be committed. The same applies to reviewer integrity snapshots.",
+      "files": [
+       "scripts/dev_workflow/lifecycle_providers.py:112-115"
+      ],
+      "id": "R1-06",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "After communicate() returns (success or failure), os.killpg(proc.pid, SIGKILL) and wait for the group to be empty before taking the post-run snapshot. Optionally run workers in a cgroup/unshare scope.",
+      "title": "Worker process group is only killed on timeout; detached children keep running after the post-run integrity checks"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "Probe P7: the implementer wrote pkg/newfile.py, ran `git add pkg/newfile.py`, and modified core/frozen.py. The driver refused (PROTECTED) and ran _restore. `git status --porcelain` afterwards = 'A  pkg/newfile.py'. `checkout --force sha -- .` does not remove index entries absent from sha, and `clean -fd` skips tracked/staged and ignored files. Later repairs on resume are refused ('worktree not clean').",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:629-631"
+      ],
+      "id": "R1-07",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "In the implementation worktree only: `git reset -q --hard <sha>` followed by `git clean -fdxq` (or -fdq plus an explicit ignored-file check). Then assert worktree_changes(wt)==[] and HEAD==sha, and BLOCK if not.",
+      "title": "Revert after a refused repair leaves staged new files in the index"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "Probe P8: the implementer's regression test sleeps 30s with runner timeout_s=3. lifecycle.run raises subprocess.TimeoutExpired (main() only catches LifecycleError/InvalidTransitionError). State on disk is FIXING with the repair record unsaved, and the worktree keeps 'M pkg/calc.py ?? tests/test_zero.py'. The test's process tree is not group-killed either.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:610-613",
+       "scripts/dev_workflow/lifecycle.py:1142"
+      ],
+      "id": "R1-08",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Catch TimeoutExpired in regression_proof (start_new_session + killpg), record before/after as TIMED_OUT, and refuse the repair through the normal REFUSED path with _restore.",
+      "title": "Regression-proof timeout is uncaught: driver crashes mid-FIXING and leaves the implementer's changes unreverted"
+     },
+     {
+      "blocking": false,
+      "category": "code",
+      "evidence": "Blocking requires severity == 'HIGH' exactly or blocking is True. A finding {severity:'High'} or {severity:'MEDIUM', blocking:'true'} or a MEDIUM without 'blocking' (the prompt says MEDIUM is blocking by default) yields ACCEPT WITH FINDINGS.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:190-194"
+      ],
+      "id": "R1-09",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "Normalise case. Treat any severity other than LOW/known-nonblocking, and any blocking value other than literal false, as blocking. Unknown severity => REJECT.",
+      "title": "effective_verdict is lenient on malformed severity/blocking fields"
+     },
+     {
+      "blocking": false,
+      "category": "security",
+      "evidence": "is_devtest_identifier returns True for any identifier containing '_TEST' (e.g. 'W2_TEST_COVERAGE'), so counts_as_independent is accepted and a command reviewer is independent for that milestone.",
+      "files": [
+       "scripts/dev_workflow/security_boundary.py:117",
+       "scripts/dev_workflow/lifecycle.py:108",
+       "scripts/dev_workflow/lifecycle.py:204"
+      ],
+      "id": "R1-10",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "In lifecycle, require a strict DEVTEST prefix (e.g. startswith('DEVTEST')) for counts_as_independent instead of the AO-4 heuristic.",
+      "title": "DEVTEST classification by '_TEST' substring lets a scripted reviewer count for real milestones whose names contain _TEST"
+     },
+     {
+      "blocking": false,
+      "category": "code",
+      "evidence": "subprocess.run(timeout=) kills only the direct child; no start_new_session/killpg for gates (flutter test, xdist workers, GPU lease wrapper children can survive and hold resources).",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:415-420"
+      ],
+      "id": "R1-11",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "Use Popen with start_new_session=True and killpg on timeout, as run_worker does.",
+      "title": "Gate timeouts do not kill child process trees"
+     },
+     {
+      "blocking": false,
+      "category": "documentation",
+      "evidence": "'verify detects edits' and 'a forged stage without evidence => BLOCKED' (contradicted by R1-02). 'protected or out-of-scope change => refused and reverted' (R1-03, R1-07). 'the driver re-checks the checkout and refs after every worker' (implementer: refs/.git/main checkout not checked; R1-03, R1-06). 'providers other than claude_cli/codex_cli count only for DEVTEST' (R1-01). The qualification record shows the live demo predates three hardening changes, so L-AC18 evidence is for an earlier driver.",
+      "files": [
+       "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:43-50",
+       ".claude/skills/uri-development-lifecycle/SKILL.md:74-77"
+      ],
+      "id": "R1-12",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "Update the docs after the code fixes. Re-run the live demo on the final driver.",
+      "title": "Docs claim guarantees the code does not provide"
+     }
+    ],
+    "prior_findings": [],
+    "tests_run": [
+     {
+      "command": "PYTHONDONTWRITEBYTECODE=1 /tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+      "result": "114 passed, 1 warning in 33.19s",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "probe P1 (fake claude binary, non-DEVTEST milestone)",
+      "result": "COMPLETE, independent=True, remote pushed: forged independent ACCEPT",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "probe P2 (edit state.json verdict only)",
+      "result": "VERIFIED, evidence_ok=True, verify() == []",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "probe P3 (implementer-planted pre-commit hook)",
+      "result": "repair COMMITTED containing OUT_OF_SCOPE.txt and core/frozen.py",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "probe P4 (broken conftest.py)",
+      "result": "gate exit 4, passed 0, failures {} -> VERIFIED",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "probe P5 (uncommitted fix masks committed regression)",
+      "result": "VERIFIED while HEAD:pkg/other.py breaks test_other",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "probe P6 (detached background child from implementer)",
+      "result": "VERIFIED; pkg/late.py written after run",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "probe P7 (staged new file + protected change)",
+      "result": "BLOCKED PROTECTED; status after revert 'A  pkg/newfile.py'",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "probe P8 (regression test exceeds runner timeout)",
+      "result": "uncaught TimeoutExpired; state FIXING; worktree left modified",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "git diff --stat baseline..candidate (protected paths, AO-4 files)",
+      "result": "no protected path and no AO-4 state_machine/security_boundary change",
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    ],
+    "unverified": [
+     "Live demo with real claude_cli processes was not re-run (would spawn nested Claude sessions); committed evidence under docs/dev_workflow/evidence was read, not re-verified with verify(), and per the qualification record predates later driver changes.",
+     "codex_cli adapter not exercised (codex not installed); doc states this.",
+     "GPU gate path (gpu_lease status/run) not run against a real lease: no GPU here. Only code-read: lease failure -> BLOCKED.",
+     "Flutter --machine parsing not exercised against a real flutter run in this review; code-read only (exit code also ignored, see R1-04).",
+     "Integration merge mode and push-failure paths not probed beyond code reading; fast-forward path exercised via P1."
+    ],
+    "verdict": "REJECT"
+   },
+   "round": 1,
+   "started_at": "2026-10-11T00:38:00Z",
+   "status": "NOT_INDEPENDENT",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "cost_usd": 1.3271169999999999,
+    "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R1",
+    "ended_at": "2026-10-11T00:42:19Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 12,
+    "pid": 24442,
+    "prompt_sha256": "ce40e251510b751ea1ee30bf6c34cc4305338a1555e7ba2b46ecbd6fa280df63",
+    "provider": "claude_cli",
+    "result_text_sha256": "1c44f641d047abc71d8fed89500733558c3f098cd6c544252a7bdb516cb0d7b6",
+    "role": "reviewer",
+    "session_id": "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+    "session_id_requested": "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+    "started_at": "2026-10-11T00:38:00Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "67951a12643fd35c9f01c3565791df3298b2a69fc7c1c88132e9ba56b56628e1"
+   }
+  },
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R2",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "blocking_ids": [
+    "R2-01",
+    "R2-02",
+    "R2-03",
+    "R2-04",
+    "R2-05"
+   ],
+   "candidate": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+   "effective_verdict": "REJECT",
+   "ended_at": "2026-10-11T00:56:50Z",
+   "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+   "independent": true,
+   "integrity": {
+    "after": {
+     "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+     "head": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+     "impl_head": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+     "impl_status": [],
+     "refs": "90f97a70f48f5d6c7246f52ba407350a49939d65858054c49afcaee68518c511",
+     "status": []
+    },
+    "before": {
+     "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+     "head": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+     "impl_head": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+     "impl_status": [],
+     "refs": "90f97a70f48f5d6c7246f52ba407350a49939d65858054c49afcaee68518c511",
+     "status": []
+    },
+    "ok": true
+   },
+   "result": {
+    "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+    "candidate": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+    "findings": [
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe /tmp/uri_review_R2/forge.py: milestone 'W1-REAL', command reviewer printing ACCEPT -> R1 NOT_INDEPENDENT -> WAITING_FOR_MODEL. In state.json, inserted a copy of round 1 with independent=true/effective_verdict=ACCEPT/status=COMPLETED_WITH_RESULT BEFORE the genuine record and set resume_to='VERIFYING'. verify() -> []. run() -> READY_TO_RESUME -> VERIFYING -> VERIFIED, evidence_ok_for_candidate=True, verify() still []. verify builds rounds={r['round']: r}, so the last (genuine) duplicate is compared and the forged one is never checked; accepted_review iterates every list entry. resume_to and blocker are not covered by verify at all. The docs say verify checks every state.json round.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:1135",
+       "scripts/dev_workflow/lifecycle.py:1174-1176",
+       "scripts/dev_workflow/lifecycle.py:589-593",
+       "scripts/dev_workflow/lifecycle.py:936-940",
+       "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"
+      ],
+      "id": "R2-01",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "Have verify reject duplicate or unsequenced round/repair numbers (the list must equal exactly the recorded REVIEW_RECORDED/REPAIR_* events, in order). Derive accepted_review and resume targets from round.json files and events whose hashes check out, not from state.json fields. Record resume_to in the BLOCK/WAITING stage event and check it.",
+      "title": "Forged duplicate round record plus edited resume_to brings a real milestone to VERIFIED; verify() reports no error"
+     },
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe /tmp/uri_review_R2/replace_probe.py + evil_impl.py (DEVTEST fixture, protected 'core/'): the implementer edits and stages core/frozen.py, builds commits with that tree and the original parents, and runs `git replace` for HEAD and origin/canon, then fixes pkg/calc.py and adds a test. Result: repair COMMITTED, run COMPLETE, verify []. `git --git-dir canonical.git show canon:core/frozen.py` -> 'PATCHED_BY_WORKER = True'. worktree_changes, changed_paths and qualify's protected check all resolve the substituted trees. refs_digest and git_control_digest do not cover refs/replace, and git replace is not in GIT_WRITE_DENY.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:71",
+       "scripts/dev_workflow/lifecycle.py:245-265",
+       "scripts/dev_workflow/lifecycle.py:762-790",
+       "scripts/dev_workflow/lifecycle.py:547"
+      ],
+      "id": "R2-02",
+      "owner_decision": false,
+      "severity": "HIGH",
+      "suggested_fix": "Run every driver git command with GIT_NO_REPLACE_OBJECTS=1 (and --no-replace-objects). Include refs/replace/* (or all non-branch refs) in the integrity snapshot and treat any change as TAMPER. Compute scope and protected checks from explicit tree objects (ls-tree/diff-tree of the commit's real tree).",
+      "title": "Worker-created git replace refs hide a protected-path change from every driver check; it is committed and pushed to canonical"
+     },
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe /tmp/uri_review_R2/gitfile_probe.py + evil_impl2.py: the implementer rewrites impl/.git to 'gitdir: <common dir>'. The driver reports 'TAMPER: implementer moved HEAD...', but _restore then runs `git -C impl reset --hard <candidate>` against the MAIN gitdir. The main repo's refs/heads/canon moved 5f427cc -> a0ec99a (the candidate) and its index was reset; `git status` in main shows 'D pkg/feature.py'. The run blocks TAMPER after the damage is done.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:729-733",
+       "scripts/dev_workflow/lifecycle.py:762-769",
+       "scripts/dev_workflow/lifecycle.py:806"
+      ],
+      "id": "R2-03",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Before any git command in the implementation worktree, check that `git -C wt rev-parse --git-dir` equals the recorded worktree gitdir and --show-toplevel equals wt. Otherwise refuse with TAMPER and do not reset. Alternatively pass explicit --git-dir/--work-tree.",
+      "title": "Revert after a refused repair is not limited to the implementation worktree: a rewritten .git gitfile makes reset --hard move the main checkout's branch"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "Probe /tmp/uri_review_R2/del_probe.py: the implementer deletes tests/test_calc.py and edits pkg/calc.py. tests = committed paths matching test_globs, which includes the deleted file. shutil.copy2(post/t, pre/t) raises FileNotFoundError, which propagates out of run(). The impl worktree keeps commit c7bf80a 'fix(DEVTEST-LC): repair R1-01 (lifecycle P1)', which has no regression proof; state.json has repairs=[] (record lost). The next run() logs CANDIDATE_MOVED and sets candidate=c7bf80a. R1-08 (timeout) is fixed, but the general uncaught-exception path is not.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:705-707",
+       "scripts/dev_workflow/lifecycle.py:791",
+       "scripts/dev_workflow/lifecycle.py:914-917"
+      ],
+      "id": "R2-04",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Exclude deleted paths from regression tests (refuse a repair that deletes an existing test), and wrap the post-commit section of do_repair in try/except that records REFUSED and restores the worktree to the pre-repair SHA.",
+      "title": "Repair that deletes a test file crashes regression_proof; the unproven repair commit stays and is adopted as the candidate"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "gpu_lease `status` always returns 0, so the pre-check passes even when the GPU is held. `gpu_lease run --wait N` returns 75 on GpuBusy. run_gate treats that rc as a normal result: a command gate gets failure 'exit 75'; a pytest gate has no junit, so 'no test report'. qualify reports a new failure, and run() creates GATE-* findings and moves to FIXING, asking the implementer to fix a contention event. This contradicts L-AC17 (lease unavailable => BLOCKED RESOURCE). Code evidence only; not executed (no GPU).",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:488-495",
+       "scripts/dev_workflow/lifecycle.py:499-516",
+       "uri_operational_intelligence/gpu_lease.py:533-548"
+      ],
+      "id": "R2-05",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "For gpu gates, map exit 75 (and the {'refused': ...} stderr) to status BLOCKED with the lease detail. Add a unit test with a fake lease module returning 75.",
+      "title": "GPU lease busy (gpu_lease run exit 75) is classified as a gate failure and routed to repair, not BLOCKED (RESOURCE)"
+     },
+     {
+      "blocking": false,
+      "category": "code",
+      "evidence": "parse_junit adds skipped tests to ids; compare's 'vanished' is base_passed - cand_ids, so a test turned to pytest.mark.skip counts as present and passes the gate. Only the re-audit would catch it.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:405-415",
+       "scripts/dev_workflow/lifecycle.py:525-530"
+      ],
+      "id": "R2-06",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "Record skipped ids separately and treat baseline-passed -> candidate-skipped as vanished unless listed in allowed_flaky.",
+      "title": "A baseline-passing test that is skipped on the candidate is not detected by the gate comparison"
+     },
+     {
+      "blocking": false,
+      "category": "code",
+      "evidence": "With mode e.g. 'rebase' the is-ancestor check (mode == 'fast-forward') and the merge branch are both skipped, and the push of sha:refs/heads/target runs. The remote's non-fast-forward rejection is the only guard.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:812-863"
+      ],
+      "id": "R2-07",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "Validate integration.mode in load_config against {none, fast-forward, merge}.",
+      "title": "Unknown integration mode is not rejected and pushes the candidate without the fast-forward check"
+     },
+     {
+      "blocking": false,
+      "category": "security",
+      "evidence": "These subprocess.run calls use plain 'git', so pre-merge-commit/commit-msg/pre-push hooks in the shared repo run during integration, unlike every other driver git command (GIT = core.hooksPath=/dev/null).",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:827",
+       "scripts/dev_workflow/lifecycle.py:845",
+       "scripts/dev_workflow/lifecycle.py:863"
+      ],
+      "id": "R2-08",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "Use the GIT prefix for these calls too.",
+      "title": "Integration merge/merge-base/push bypass the hooks-disabled git wrapper"
+     }
+    ],
+    "prior_findings": [
+     {
+      "id": "R1-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-02",
+      "status": "NOT_FIXED"
+     },
+     {
+      "id": "R1-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-06",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-07",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-08",
+      "status": "FIXED"
+     }
+    ],
+    "tests_run": [
+     {
+      "command": "PYTHONDONTWRITEBYTECODE=1 /tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+      "result": "126 passed, 1 warning",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R2/forge.py",
+      "result": "non-DEVTEST milestone reached VERIFIED with forged duplicate round; verify() []",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R2/replace_probe.py",
+      "result": "COMPLETE; canonical canon:core/frozen.py = PATCHED_BY_WORKER",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R2/gitfile_probe.py",
+      "result": "main repo refs/heads/canon moved to candidate SHA by _restore; run BLOCKED TAMPER",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R2/del_probe.py",
+      "result": "FileNotFoundError crash in regression_proof; unproven repair commit adopted as candidate on rerun",
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    ],
+    "unverified": [
+     "Live claude_cli reviewer/implementer runs were not executed in this review; independence checks were verified from code and scripted-provider probes only",
+     "Flutter --machine gate parsing was not executed against a real flutter test run (code review only)",
+     "GPU lease behaviour (R2-05) is from code; no GPU or lease holder available",
+     "codex_cli provider not installed; not exercised",
+     "The committed demo evidence (docs/dev_workflow/evidence/lifecycle_demo_*) was not re-verified with verify()"
+    ],
+    "verdict": "REJECT"
+   },
+   "round": 2,
+   "started_at": "2026-10-11T00:51:49Z",
+   "status": "COMPLETED_WITH_RESULT",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "1d6fc831-f799-429b-a496-c8b5591fff47",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "cost_usd": 1.4238988,
+    "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R2",
+    "ended_at": "2026-10-11T00:56:49Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 18,
+    "pid": 12912,
+    "prompt_sha256": "bc652d4eaebd543b7f49ef11d45605633c9660aafb3ad1a8b790044de65e44cd",
+    "provider": "claude_cli",
+    "result_text_sha256": "bcd8dea1ee64dac69412c0bbd7c62a2bf5bd581de31e0cdd0b1b17f97bd0d5fa",
+    "role": "reviewer",
+    "session_id": "1d6fc831-f799-429b-a496-c8b5591fff47",
+    "session_id_requested": "1d6fc831-f799-429b-a496-c8b5591fff47",
+    "started_at": "2026-10-11T00:51:49Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "fa7e8ee40b7dce3458c8ebb84ba97b81dff8c679fa1557efd6270972298e1938"
+   }
+  },
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R3",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "blocking_ids": [
+    "R3-01",
+    "R3-02",
+    "R3-03",
+    "R3-04"
+   ],
+   "candidate": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "effective_verdict": "REJECT",
+   "ended_at": "2026-10-11T01:12:34Z",
+   "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+   "independent": true,
+   "integrity": {
+    "after": {
+     "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+     "head": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+     "impl_head": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+     "impl_status": [],
+     "refs": "2da5ee409b1283b14efc34aeff481bf78405386c067c45f74e7fa232f3db9403",
+     "status": []
+    },
+    "before": {
+     "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+     "head": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+     "impl_head": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+     "impl_status": [],
+     "refs": "2da5ee409b1283b14efc34aeff481bf78405386c067c45f74e7fa232f3db9403",
+     "status": []
+    },
+    "ok": true
+   },
+   "result": {
+    "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+    "candidate": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+    "findings": [
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe /tmp/uri_review_R3/probe_restore.py: implementer writes 'ref: refs/heads/other' (then 'ref: refs/heads/canon', the main checkout's branch) into its own worktree git dir HEAD and edits a file. worktree_identity() still passes (gitfile untouched). do_repair: head != sha -> TAMPER reason -> _restore() -> `git reset --hard <sha>` updates the symbolic ref. Result: branch 'other' moved 1077e67 -> b097513 (candidate), its commit dropped; second run: 'canon' (checked out in main repo) moved a839efc -> c097ed5 and the main checkout shows 'D pkg/feature.py'. repair.json records restored=True while impl HEAD is refs/heads/other|canon, not the candidate branch. R2-03's class (revert not limited to the implementation worktree) persists via this sibling vector.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:800-807",
+       "scripts/dev_workflow/lifecycle.py:880-881",
+       "scripts/dev_workflow/lifecycle.py:899",
+       "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:45"
+      ],
+      "id": "R3-01",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Before resetting, require `git symbolic-ref HEAD` == refs/heads/<candidate.branch> (else TAMPER, no reset); restore with `update-ref refs/heads/<branch> <sha> <expected-old>` + `symbolic-ref HEAD refs/heads/<branch>` + `reset --hard` / `clean -fd`, and include the HEAD symref in the restored check and in the review integrity snapshot.",
+      "title": "Revert after a refused repair resets whatever branch the implementation worktree's HEAD names: a redirected HEAD makes the driver move another branch (incl. the main checkout's) to the candidate SHA"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "Probe /tmp/uri_review_R3/probe_cache.py (A): baseline-only transient hang -> run1 BLOCKED 'baseline gate slow: TIMED_OUT'; cause removed, owner unblock, run2 BLOCKED with the identical reason; state baseline_gates.slow.result.status == 'TIMED_OUT'. The cache is reused whenever key matches regardless of status; editing state.json to clear it is TAMPER. Same path for exit-75 GPU lease busy on the baseline (R2-05), contradicting 'provide the resource and re-run'.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:604-614",
+       "scripts/dev_workflow/lifecycle.py:1103-1105"
+      ],
+      "id": "R3-02",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Cache baseline results only when status == COMPLETED_WITH_RESULT (or re-run when the cached status is not), recording each attempt as a BASELINE_GATE event.",
+      "title": "A non-COMPLETED baseline gate result (TIMED_OUT, GPU lease busy, BLOCKED) is cached by SHA+cmd and permanently blocks qualification"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "Probe probe_cache.py (B): run to VERIFIED (BLOCKED OWNER_AUTHORIZATION), commit to the candidate branch outside the driver, then unblock+run three times: each run goes READY_TO_RESUME -> VERIFYING -> gates -> evidence_ok fails -> BLOCKED 'no independent ACCEPT on this exact commit' with resume_to VERIFYING again; rounds stays 1, verify() == []. The 'needs: re-audit' remedy is unreachable (L-AC14 liveness).",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:186-191",
+       "scripts/dev_workflow/lifecycle.py:1017-1022",
+       "scripts/dev_workflow/lifecycle.py:1130-1133"
+      ],
+      "id": "R3-03",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "When the candidate changed or the blocker is EVIDENCE (no accepted review for the current SHA), set resume_to=AUDITING; generally resume to AUDITING whenever accepted_review(current sha) is None.",
+      "title": "Candidate moved during VERIFYING/VERIFIED blocks with resume_to=VERIFYING, so every resume re-blocks and the new commit is never re-audited"
+     },
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "Probe /tmp/uri_review_R3/probe_config.py: candidate changes protected core/frozen.py; run1 -> WAITING_FOR_MODEL (reviewer unavailable). Config file edited between runs (authorized_protected_changes ['core/**'], gates []) - the file sits outside every integrity check, writable by implementer/reviewer/escaped child or coordinator. run2 -> COMPLETE, protected change pushed to the bare canonical remote; only a CONFIG_CHANGED event; verify() == []. Under the original config this stops BLOCKED (OWNER_DECISION) (L-AC11/L-AC12).",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:1003-1005",
+       "scripts/dev_workflow/lifecycle.py:100-125",
+       "scripts/dev_workflow/lifecycle.py:929"
+      ],
+      "id": "R3-04",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Bind the config hash in the PLAN event; on a changed config block (OWNER_DECISION/CONFIG) until `unblock --note` acknowledges it, and record the policy-relevant fields in the chain; consider keeping authorisation flags out of the agent-written config.",
+      "title": "Milestone policy (protected-path authorisation, gates, integration authorisation, reviewer) is re-read every run; a changed config is only logged, so any writer can relax policy mid-milestone"
+     },
+     {
+      "blocking": false,
+      "category": "documentation",
+      "evidence": "Unkeyed SHA-256 chain: appending a REVIEW_RECORDED event (independent true, ACCEPT, matching round_sha256) plus STAGE VERIFYING, with the same history/rounds entries in state.json and a rounds/R<n>/round.json, satisfies accepted_review() and verify() (code-read; no rewrite of existing events needed). Doc says 'whoever can rewrite the whole state directory', and \u00a76 says setsid children's 'later writes are caught by the clean-worktree checks', which is false for state_dir and config writes. Nothing anchors the chain on resume.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:632-662",
+       "scripts/dev_workflow/lifecycle.py:1226-1227",
+       "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44",
+       "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:75"
+      ],
+      "id": "R3-05",
+      "owner_decision": true,
+      "severity": "LOW",
+      "suggested_fix": "State precisely that any process able to write state_dir can append a forged independent ACCEPT; owner decision on an external anchor (e.g. committed chain head checked on resume, or key/isolation outside the worker/coordinator's reach).",
+      "title": "Docs understate state-forging: an append-only forge suffices, and setsid-escaped worker writes outside the worktree are not caught"
+     }
+    ],
+    "prior_findings": [
+     {
+      "id": "R1-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-06",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-07",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-08",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-03",
+      "status": "NOT_FIXED"
+     },
+     {
+      "id": "R2-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-05",
+      "status": "FIXED"
+     }
+    ],
+    "tests_run": [
+     {
+      "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+      "result": "134 passed, 1 warning in 58.75s",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python -B /tmp/uri_review_R3/probe_restore.py (HEAD -> other, then -> canon)",
+      "result": "repair REFUSED TAMPER, restored=True; branch 'other' and main checkout branch 'canon' moved to candidate SHA by driver reset",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python -B /tmp/uri_review_R3/probe_cache.py",
+      "result": "A: baseline TIMED_OUT cached, still BLOCKED after cause removed + unblock; B: moved candidate loops VERIFYING->BLOCKED, rounds stays 1",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python -B /tmp/uri_review_R3/probe_config.py",
+      "result": "config relaxed between runs -> protected-path change reaches COMPLETE and is pushed; only CONFIG_CHANGED logged; verify() []",
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    ],
+    "unverified": [
+     "Live claude_cli reviewer/implementer runs and their permission enforcement (prefix deny rules vs respelled commands such as git push to a remote, which the local ref check would not see) - not exercised",
+     "codex_cli provider - not installed",
+     "Flutter --machine gate parsing against a real flutter test run - code-read only",
+     "Real GPU lease behaviour (no GPU); exit-75 path code-read against gpu_lease.py:546-548",
+     "Append-only chain forge (R3-05) established by code reading, not executed"
+    ],
+    "verdict": "REJECT"
+   },
+   "round": 3,
+   "started_at": "2026-10-11T01:06:20Z",
+   "status": "COMPLETED_WITH_RESULT",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "8f1c0300-05ca-41f6-9b52-4e5748134ff8",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "cost_usd": 1.7921469000000003,
+    "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R3",
+    "ended_at": "2026-10-11T01:12:33Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 19,
+    "pid": 9411,
+    "prompt_sha256": "78287c422fbe44fc3bc037b8dd0c7e82077d4cd2af69313bb56cc5654d826d53",
+    "provider": "claude_cli",
+    "result_text_sha256": "74d93449666d8abe65c7a5e4bb68a048b338ed366f22cb885a913c2d41fb213b",
+    "role": "reviewer",
+    "session_id": "8f1c0300-05ca-41f6-9b52-4e5748134ff8",
+    "session_id_requested": "8f1c0300-05ca-41f6-9b52-4e5748134ff8",
+    "started_at": "2026-10-11T01:06:20Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "6f907847a2862706bcace417dd31cc24e5f4f62f47eb966a6055ee49ea37f8eb"
+   }
+  },
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R4",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "blocking_ids": [
+    "R4-01"
+   ],
+   "candidate": "43467152d92ec7b630bfa5dc3b8587577af96443",
+   "effective_verdict": "REJECT",
+   "ended_at": "2026-10-11T01:26:05Z",
+   "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+   "independent": true,
+   "integrity": {
+    "after": {
+     "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+     "head": "43467152d92ec7b630bfa5dc3b8587577af96443",
+     "impl_head": "43467152d92ec7b630bfa5dc3b8587577af96443",
+     "impl_status": [],
+     "refs": "3775cc2527a48a3d66dc9f653d67641b97e7bb7665d5e1bb56750a7d355a7de1",
+     "status": []
+    },
+    "before": {
+     "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+     "head": "43467152d92ec7b630bfa5dc3b8587577af96443",
+     "impl_head": "43467152d92ec7b630bfa5dc3b8587577af96443",
+     "impl_status": [],
+     "refs": "3775cc2527a48a3d66dc9f653d67641b97e7bb7665d5e1bb56750a7d355a7de1",
+     "status": []
+    },
+    "ok": true
+   },
+   "result": {
+    "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+    "candidate": "43467152d92ec7b630bfa5dc3b8587577af96443",
+    "findings": [
+     {
+      "blocking": true,
+      "category": "security",
+      "evidence": "/tmp/uri_review_R4/probe_policy.py: DEVTEST fixture, config protected_paths='ws_frozen_check', repo/scripts/ws_frozen_check.py PROTECTED=('core/',...), candidate changes core/frozen.py. Run 1 (reviewer script absent) -> WAITING_FOR_MODEL, PLAN event protected=['core/','scripts/ws_frozen_check.py']. Then only the main checkout's working-tree scripts/ws_frozen_check.py was edited to PROTECTED=('nothing/',) (config file byte-identical) and the reviewer script created. Run 2 -> VERIFIED; events contain no CONFIG_CHANGED; changed_paths(base,candidate) includes core/frozen.py; L.verify(cfg) == []; evidence_ok == (True, []). policy(cfg) is recorded in PLAN/CONFIG_CHANGED but never compared; config_binding() compares only _config_sha256. The main checkout is excluded from integrity checks (doc \u00a76), so a worker, another session, or a branch switch/pull in the main checkout silently relaxes L-AC11.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:117-118",
+       "scripts/dev_workflow/lifecycle.py:143-146",
+       "scripts/dev_workflow/lifecycle.py:1031-1071",
+       "scripts/dev_workflow/lifecycle.py:1027",
+       "docs/dev_workflow/lifecycle/TEMPLATE.json:8",
+       "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"
+      ],
+      "id": "R4-01",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Bind and compare the resolved policy, not just the file hash: e.g. compute chash(policy(cfg)) (with the resolved protected list) into PLAN/CONFIG_CHANGED and have config_binding/run block CONFIG when it differs; or resolve 'ws_frozen_check' once at PLAN time (or from the baseline commit via git show <baseline>:scripts/ws_frozen_check.py) and read the protected list from the chain thereafter. Add a regression test that edits ws_frozen_check.py between runs.",
+      "title": "Policy binding covers only the config file hash: the default protected list (ws_frozen_check) is re-read every run from the main checkout's working tree and a relaxed list reaches VERIFIED with no CONFIG_CHANGED and verify() clean"
+     },
+     {
+      "blocking": false,
+      "category": "code",
+      "evidence": "/tmp/uri_review_R4/probe_skip.py: candidate sets VALUE=3 in pkg/other.py and adds @pytest.mark.skip to tests/test_other.py::test_value; qualify() -> ok True, comparison {new_failures:[], vanished:[], ok:True}, skipped 1. compare() treats skipped ids as present. For a GATE finding, the skipped test file exits 0 after and failed before, so regression_proof passes; only the independent re-review stands in the way.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:582-591",
+       "scripts/dev_workflow/lifecycle.py:461-471"
+      ],
+      "id": "R4-02",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "Record skipped ids per gate and treat 'passed on baseline, skipped on candidate' like vanished (unless allowed_flaky); in regression_proof require the gate test to have run (not all-skipped) after the repair.",
+      "title": "A baseline-passing test newly skipped in the candidate is not a gate regression (and satisfies a gate-finding regression proof)"
+     },
+     {
+      "blocking": false,
+      "category": "documentation",
+      "evidence": "File ends with 'The repaired commit is re-reviewed by a fresh reviewer process (R2 below).' with no R2/R3 sections; current suite is 141 passed.",
+      "files": [
+       "docs/dev_workflow/LIFECYCLE_QUALIFICATION.md:7",
+       "docs/dev_workflow/LIFECYCLE_QUALIFICATION.md:76-81"
+      ],
+      "id": "R4-03",
+      "owner_decision": false,
+      "severity": "LOW",
+      "suggested_fix": "Append R2/R3/R4 rounds and the current test count, keeping history append-only.",
+      "title": "LIFECYCLE_QUALIFICATION.md ends at R1: refers to 'R2 below' that does not exist and still states 114 passed"
+     }
+    ],
+    "prior_findings": [
+     {
+      "id": "R1-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-06",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-07",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-08",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-04",
+      "status": "NOT_FIXED"
+     }
+    ],
+    "tests_run": [
+     {
+      "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/dev_workflow",
+      "result": "141 passed, 1 warning in 67.33s",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R4/probe_policy.py",
+      "result": "protected list relaxed via main-checkout ws_frozen_check.py; run2 VERIFIED with core/ change; no CONFIG_CHANGED; verify() []",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R4/probe_r3.py",
+      "result": "R3-01: BLOCKED TAMPER, canon and feature unmoved, impl HEAD restored to refs/heads/feature, both checkouts clean. R3-03: post-VERIFIED commit -> BLOCKED EVIDENCE resume_to AUDITING; after unblock a fresh round R2 on the new SHA; verify() []",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python /tmp/uri_review_R4/probe_skip.py",
+      "result": "newly skipped baseline-passing test with broken code: qualify ok True",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "git rev-parse HEAD; git diff --stat ffdf534..HEAD (protected paths)",
+      "result": "HEAD=43467152...; no protected path in diff",
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    ],
+    "unverified": [
+     "R1-01..R2-05 FIXED status is based on code inspection plus the passing named regression tests (test_r1_*/test_r2_*), not fresh independent probes for each; does not affect the verdict (REJECT stands on R4-01).",
+     "Live claude_cli reviewer/implementer paths and the lifecycle_demo were not re-run (would spawn nested Claude processes); codex_cli untested (not installed).",
+     "Flutter gate and --machine parsing were checked only by code reading and the existing unit test, not against a live flutter run.",
+     "GPU lease paths not exercised live (no GPU)."
+    ],
+    "verdict": "REJECT"
+   },
+   "round": 4,
+   "started_at": "2026-10-11T01:21:55Z",
+   "status": "COMPLETED_WITH_RESULT",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "8f87c9e2-a2f8-4085-aaa0-a8bffb994769",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "cost_usd": 1.5472866,
+    "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R4",
+    "ended_at": "2026-10-11T01:26:04Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 18,
+    "pid": 24104,
+    "prompt_sha256": "a77220f41f5ee24a4fea6aac24a634c63eeb124593ca08cdc631f3a6a573be61",
+    "provider": "claude_cli",
+    "result_text_sha256": "f92ab6f06e282c1b3db7227aedd8e58de7c5c18d443e252c8dd15c5c4da6ced2",
+    "role": "reviewer",
+    "session_id": "8f87c9e2-a2f8-4085-aaa0-a8bffb994769",
+    "session_id_requested": "8f87c9e2-a2f8-4085-aaa0-a8bffb994769",
+    "started_at": "2026-10-11T01:21:55Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "a4dc6782010fa90702dc10082264577de29d5cd2ee9677f9521e0f6a452ce433"
+   }
+  },
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R5",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "blocking_ids": [
+    "R5-01",
+    "R5-02"
+   ],
+   "candidate": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+   "effective_verdict": "REJECT",
+   "ended_at": "2026-10-11T01:46:59Z",
+   "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+   "independent": true,
+   "integrity": {
+    "after": {
+     "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+     "head": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+     "impl_head": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+     "impl_status": [],
+     "refs": "47fc8dd0bb288fec154a29dc6e0fe98f0548d983586de10aed39dd5948e07c3d",
+     "status": []
+    },
+    "before": {
+     "git_control": "75a7b13b9db05394a9232e51930c88bd9761160ce1583e306cbfec610c9ea8dc",
+     "head": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+     "impl_head": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+     "impl_status": [],
+     "refs": "47fc8dd0bb288fec154a29dc6e0fe98f0548d983586de10aed39dd5948e07c3d",
+     "status": []
+    },
+    "ok": true
+   },
+   "result": {
+    "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+    "candidate": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+    "findings": [
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "_test_file maps a junit id to head.replace('.', '/') + '.py' relative to the repo root. A class-based id 'tests.pkg.test_k.TestK::test_a' becomes 'tests/pkg/test_k/TestK.py', which does not exist. A Flutter id 'test/x_test.dart::x' is relative to the gate cwd uri_ui, not the root (probe: is_file False for both). _commit_and_prove keeps only gate tests where (wt/path).is_file(), so gate_tests is empty. GATE findings have category 'test', so defect=False, need_fail_before=False and must_fail is empty: the repair only has to pass afterwards. End-to-end probe (/tmp/uri_review_R5/p1/probe_weaken.py) uses the fixture with a broken pkg/other.py and an implementer that changes 'assert VALUE == 2' to 'assert VALUE in (2, 3)'. With a function test the repair is REFUSED 3x ('gate test tests/test_other.py did not fail before'). With the same test inside a class: COMMITTED, stage COMPLETE, remote canon == candidate, and the repair commit touches only tests/test_other.py. The docs claim 'gate tests named by gate findings must each fail before'.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:601-606",
+       "scripts/dev_workflow/lifecycle.py:867-873",
+       "scripts/dev_workflow/lifecycle.py:1192-1194",
+       "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"
+      ],
+      "id": "R5-01",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Resolve gate tests from the gate's own report: junit 'file' attribute, or strip trailing class segments until a .py file exists, and use the gate cwd for Flutter ids. If a GATE finding's test file cannot be resolved, refuse the repair rather than treating it as coverage-only. Also refuse repairs that modify (not just delete) a test named by a gate finding unless the modified test still fails on the pre-repair commit.",
+      "title": "Gate-finding repairs skip the fail-before proof for class-based pytest tests and every Flutter test: a repair that weakens the failing test is committed and integrated"
+     },
+     {
+      "blocking": true,
+      "category": "code",
+      "evidence": "pytest junit messages for bare asserts carry no exception type ('assert 21013 == 1', 'assert <object object at 0x7f0eb3781760> is None'), so _cause returns the assertion text including pids and addresses, and compare() reports changed_cause, i.e. a new failure. Real 'flutter test --machine' runs of the same broken test file in two directories gave failures {'::loading /tmp/uri_review_R5/fl/A/test/broken_test.dart'} vs {'::loading /tmp/uri_review_R5/fl/B/test/broken_test.dart'}. compare() => new_failures=[A id], ok=False. Candidate (work_dir/qualify) and baseline (work_dir/baseline) always run in different worktrees, so a historical load failure always blocks qualification and is routed to FIXING until RETRY_LIMIT. The plan's decision 6 specifies cause = exception type.",
+      "files": [
+       "scripts/dev_workflow/lifecycle.py:453-456",
+       "scripts/dev_workflow/lifecycle.py:491-497",
+       "scripts/dev_workflow/lifecycle.py:589-598"
+      ],
+      "id": "R5-02",
+      "owner_decision": false,
+      "severity": "MEDIUM",
+      "suggested_fix": "Normalise causes (AssertionError for bare asserts, or strip numbers, hex addresses and paths). For Flutter, derive the id from the test's url or the suite path made relative to the worktree, and strip the worktree prefix from 'loading <path>' names and error text. Add tests with two different worktree paths.",
+      "title": "Baseline comparison keys are non-deterministic: plain-assert causes include run-specific values and Flutter load-failure ids include the absolute worktree path, so historical failures count as new"
+     }
+    ],
+    "prior_findings": [
+     {
+      "id": "R1-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-06",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-07",
+      "status": "FIXED"
+     },
+     {
+      "id": "R1-08",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R2-05",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-01",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-02",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-03",
+      "status": "FIXED"
+     },
+     {
+      "id": "R3-04",
+      "status": "FIXED"
+     },
+     {
+      "id": "R4-01",
+      "status": "FIXED"
+     }
+    ],
+    "tests_run": [
+     {
+      "command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider",
+      "result": "142 passed, 1 warning in 71s",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "python -I /tmp/uri_review_R5/p1/probe_weaken.py (end-to-end gate-repair test weakening, function vs class test)",
+      "result": "function: 3x REFUSED, BLOCKED; class-based: COMMITTED, COMPLETE, weakened test pushed to fixture remote",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "pytest --junitxml on assert/raise probes + lifecycle.parse_junit",
+      "result": "causes 'assert 21013 == 1', 'assert <object ... at 0x...> is None', 'ValueError'",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "flutter test --machine in two copies of uri_ui with a non-compiling test + parse_flutter_machine/compare",
+      "result": "ids differ by absolute path; compare ok=False with the historical failure as new",
+      "status": "COMPLETED_WITH_RESULT"
+     },
+     {
+      "command": "_test_file probe on class-based junit id and Flutter id",
+      "result": "both unresolved (is_file False)",
+      "status": "COMPLETED_WITH_RESULT"
+     }
+    ],
+    "unverified": [
+     "No live claude_cli/codex_cli reviewer or implementer run was exercised in this round; independence checks were verified by code reading and the scripted-process tests only.",
+     "Real gpu_lease contention and a real remote push/permission failure were not exercised (no GPU; fixture bare remote only).",
+     "ws_frozen_check zip part is BLOCKED (Phase 1 checkpoint zip absent); protected-path list was read from source only.",
+     "Root-in-container containment (e.g. an implementer replacing the installed claude binary; binary_sha256 is recorded but never compared) is a documented limitation and was not counted as a finding."
+    ],
+    "verdict": "REJECT"
+   },
+   "round": 5,
+   "started_at": "2026-10-11T01:40:23Z",
+   "status": "COMPLETED_WITH_RESULT",
+   "worker": {
+    "argv": [
+     "/opt/node22/bin/claude",
+     "-p",
+     "--output-format",
+     "json",
+     "--session-id",
+     "51ef5349-f656-4f35-a98e-4ae98913c801",
+     "--permission-mode",
+     "dontAsk",
+     "--allowedTools",
+     "Read",
+     "Grep",
+     "Glob",
+     "Bash",
+     "Agent",
+     "--disallowedTools",
+     "Edit",
+     "Write",
+     "NotebookEdit",
+     "WebFetch",
+     "WebSearch",
+     "--settings",
+     "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+     "--model",
+     "claude-opus-5-5"
+    ],
+    "binary_is_default": true,
+    "binary_realpath": "/opt/claude-code/bin/claude",
+    "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+    "cost_usd": 1.5952485000000003,
+    "cwd": "/tmp/claude-0/lc-work/DEV-LIFECYCLE-1/audit_R5",
+    "ended_at": "2026-10-11T01:46:58Z",
+    "exit_code": 0,
+    "model_requested": "claude-opus-5-5",
+    "models_used": [
+     "claude-haiku-5-5",
+     "claude-opus-5-5"
+    ],
+    "num_turns": 18,
+    "pid": 12798,
+    "prompt_sha256": "4b98efd7dad8a72cc950f618d5285392f8489cf05698a33669dfe2e8080f4337",
+    "provider": "claude_cli",
+    "result_text_sha256": "b1454956f3882bbd9c99eca89a35ac746b6eb3810fbdde9187dc403359bee759",
+    "role": "reviewer",
+    "session_id": "51ef5349-f656-4f35-a98e-4ae98913c801",
+    "session_id_requested": "51ef5349-f656-4f35-a98e-4ae98913c801",
+    "started_at": "2026-10-11T01:40:23Z",
+    "status": "COMPLETED",
+    "stdout_sha256": "077a327c0be30ca500dc5b6d7e01b81bf79d4d68722047e46735184e79675819"
+   }
+  }
+ ],
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "BLOCKED",
+ "started_at": "2026-10-11T00:37:58Z"
+}

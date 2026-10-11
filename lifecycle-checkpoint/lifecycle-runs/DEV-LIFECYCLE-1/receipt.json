@@ -1,0 +1,154 @@
+{
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocker": {
+  "at": "2026-10-11T02:13:18Z",
+  "kind": "TAMPER",
+  "needs": "owner: investigate; start a fresh state_dir (evidence cannot be trusted)",
+  "reason": "receipt verification failed: resume_to in state.json differs from the last wait/block event",
+  "stage": "FIXING"
+ },
+ "candidate": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+ "config_sha256": "52d493a89b81e4e338badf8088cfac894570c5d859e9f2d1d3b2bc6636c99cb4",
+ "events": 33,
+ "evidence_ok_for_candidate": false,
+ "gates": {},
+ "integration": null,
+ "milestone": "DEV-LIFECYCLE-1",
+ "open_findings": [
+  {
+   "blocking": true,
+   "id": "R5-01",
+   "severity": "MEDIUM",
+   "title": "Gate-finding repairs skip the fail-before proof for class-based pytest tests and every Flutter test: a repair that weakens the failing test is committed and integrated"
+  },
+  {
+   "blocking": true,
+   "id": "R5-02",
+   "severity": "MEDIUM",
+   "title": "Baseline comparison keys are non-deterministic: plain-assert causes include run-specific values and Flutter load-failure ids include the absolute worktree path, so historical failures count as new"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02",
+    "R2-03",
+    "R2-04",
+    "R2-05"
+   ],
+   "commit": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R3-01",
+    "R3-02",
+    "R3-03",
+    "R3-04"
+   ],
+   "commit": "43467152d92ec7b630bfa5dc3b8587577af96443",
+   "reason": null,
+   "repair": 2,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R4-01"
+   ],
+   "commit": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+   "reason": null,
+   "repair": 3,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R5-01",
+    "R5-02"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: tests/dev_workflow/lifecycle_fixture/worker.py does not pass after the repair (DONE, exit 2)",
+   "repair": 4,
+   "status": "REFUSED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "12ac37ab72ddc0e923908c45c20016de69a644e0",
+   "independent": false,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "5cc2696e-28a7-46c2-af07-53e9acf39f25",
+   "status": "NOT_INDEPENDENT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "d5fccdf9119a4c31f6183e9240c9962974a42bc0",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 2,
+   "session_id": "1d6fc831-f799-429b-a496-c8b5591fff47",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "c1ba808e07add92554e09a64b3515bc782ea56d9",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 3,
+   "session_id": "8f1c0300-05ca-41f6-9b52-4e5748134ff8",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "43467152d92ec7b630bfa5dc3b8587577af96443",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 4,
+   "session_id": "8f87c9e2-a2f8-4085-aaa0-a8bffb994769",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "6bcfd1d854c1d477bda4d2e5c955c0c475a24bc3",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 5,
+   "session_id": "51ef5349-f656-4f35-a98e-4ae98913c801",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  }
+ ],
+ "rounds": 5,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "BLOCKED",
+ "verify_errors": [],
+ "written_at": "2026-10-11T02:13:18Z"
+}
