@@ -41,3 +41,4 @@ All answered 2026-10-11: O1, O3, O4, O5 stay as they are; O2 (Hebrew points) wil
 | 2026-10-11 | D25: the scam-list check is added security, never a blocker. A1 (URLhaus key) is now optional; LINK-REP-1 runs without it. |
 | 2026-10-11 | D26: a Security tab in settings for the key (frozen exception: settings_shell.dart tab entry only). A1 now means pasting the key there. |
 | 2026-10-11 | D27: Tavily key slot added to the planned Security tab. Nothing new for you to do: your current `.env` Tavily key keeps working. |
+| 2026-10-11 | D28: all settings move into the app (SETTINGS-1); `.env` can be deleted after its one-time import. Nothing to do yet. |

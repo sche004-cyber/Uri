@@ -64,3 +64,6 @@ Run through the lifecycle skill (independent review, then D1).
 |---|---|
 | LR-AC9 | Both slots save, test and remove; neither key is ever displayed (not even partly), logged, or included in reports, events or A2UI output. |
 | LR-AC10 | With no tab key, W1 still reads TAVILY_API_KEY from `.env` exactly as before (existing D3 tests pass unchanged). |
+
+## Note (D28)
+The Security tab, key storage and `.env` import are built in SETTINGS-1, which runs first. LINK-REP-1 only wires the URLhaus slot to the check.
