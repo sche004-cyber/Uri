@@ -512,13 +512,18 @@ def _endings(words: list, norm: str):
                 yield b, e, text.casefold()
 
 
-# D19 (owner, 2026-10-11, after R16-01): stroke and dot-shaped letters. A word made only of them is a separator
-# whatever its length ('\u4e36\u318d\u11a2'). Kept in canonical form, as the checked text is (NFKC maps the Kangxi
-# radicals '\u2f00'-'\u2f05' to the unified ones); non-letters (CJK strokes U+31C0-31E3, '\u30fb') are gap already.
-_STROKES = frozenset(c for c in (normalise(ch) for ch in
-                                 "\u4e00\u4e28\u4e36\u4e3f\u4e59\u4e85\u4e40\u4e41\u4e5a\u4e5b\u4e8c\u4ea0"
-                                 "\u318d\u119e\u11a2\u3006" + "".join(chr(c) for c in range(0x2F00, 0x2F06)))
-                     if len(c) == 1 and _letter(c))
+# D19 (owner, 2026-10-11, after R16-01; widened after R17-01): stroke and dot-shaped letters. A word made only of them
+# is a separator whatever its length ('\u4e36\u318d\u11a2', '\u4e36\u318d\u3161'). Built from whole Unicode groups, not
+# picked one by one: the Kangxi radicals of one and two strokes (U+2F00-2F1C) and the CJK radical supplement (as
+# their canonical ideographs), the numerals '\u4e00\u4e8c\u4e09\u3007', all Hangul jamo (conjoining and compatibility),
+# Bopomofo, and the katakana stroke and iteration marks. Kept in canonical form, as the checked text is (NFKC);
+# non-letters are gap already.
+_STROKE_SOURCE = ("".join(chr(c) for c in range(0x2F00, 0x2F1D)) + "".join(chr(c) for c in range(0x2E80, 0x2EF4))
+                  + "\u4e00\u4e28\u4e36\u4e3f\u4e59\u4e85\u4e40\u4e41\u4e5a\u4e5b\u4e8c\u4ea0\u4e09\u4e37\u3007\u3006"
+                  + "".join(chr(c) for c in range(0x1100, 0x1200)) + "".join(chr(c) for c in range(0x3131, 0x318F))
+                  + "".join(chr(c) for c in range(0x3105, 0x3130)) + "".join(chr(c) for c in range(0x31A0, 0x31C0))
+                  + "\u30ce\u30fd\u30fe\u309d\u309e\u30fc\u3005" + "".join(chr(c) for c in range(0x31F0, 0x3200)))
+_STROKES = frozenset(c for c in (normalise(ch) for ch in _STROKE_SOURCE) if len(c) == 1 and _letter(c))
 _OPEN, _CLOSE = "([{\uff08\u3010\u300c\u300e\u3014", ")]}\uff09\u3011\u300d\u300f\u3015"
 
 
