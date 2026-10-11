@@ -30,7 +30,12 @@ work while am away from pc". This file is the standing plan; every check-in foll
    `integration/git-sync-20261008` (expected tip `ce1a90c`) with a receipt.
 2. **SSRF-1** (D2). Plan: `lifecycle-runs/SSRF-1_PLAN_DRAFT.md`. The branch is cut from the canonical tip after step 1,
    and `authorized_protected_changes` is `uri_core/tools/fetch_url.py` only.
-3. **W2**: plan and acceptance criteria in `lifecycle-runs/W2_PLAN_AND_ACCEPTANCE.md`, from the owner's "W2 Web &
+3. **GRAPHIFY-LEAK-1 fix** (owner decision D12, 2026-10-11: "fix before W2"). A small milestone, with its branch cut
+   from the canonical tip after SSRF-1. Each user's Graphify view rebuilds its memory pointers from that user's own
+   memory store. `authorized_protected_changes` is `uri_core/app/server.py`, plus `uri_core/core/graphify_index.py`
+   only if needed (named explicitly). The regression test is the confirmed reproduction in
+   `lifecycle-runs/findings/GRAPHIFY-LEAK-1/`, made self-contained. Independent review, then D1.
+4. **W2**: plan and acceptance criteria in `lifecycle-runs/W2_PLAN_AND_ACCEPTANCE.md`, from the owner's "W2 Web &
    Document Intelligence: Implementation Instructions" (2026-10-11, recorded as D9) reconciled with the earlier brief.
    The plan supersedes the brief where they differ (approved scopes only, manual refresh, OCR over vision). Starts only
    after SSRF-1 is accepted and integrated. Owner-gated but not blocking: the approved domain list. Earlier owner
@@ -51,7 +56,7 @@ work while am away from pc". This file is the standing plan; every check-in foll
      - personal data in public documents (for example names in results lists) is indexed for search only and never
        written to user memory or learning (D5);
      - no permanent copies of PDFs are kept.
-4. **RW1** is NOT started unattended. Its benchmark needs Windows and WebView2 on the owner's PC.
+5. **RW1** is NOT started unattended. Its benchmark needs Windows and WebView2 on the owner's PC.
 
 ## Code graph (graphify)
 
@@ -112,3 +117,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 07:10 | W1/A0 rounds 11-13: everything before is confirmed fixed, but the hidden-text blocklist was bypassed again (R11-01 class, diagnosis D6, OWNER_DECISION). Owner chose **D10: pixel-checked page text** (fail closed). Coordinator-directed implementation by a separate agent in progress, following the D7/D8 precedent; independent review follows. Spend $49.90. |
 | 2026-10-11 07:15 | graphify installed (cloud developer tool) and the canonical `ce1a90c` graph built outside the repo (23,413 nodes, 49,620 edges, 54 s; query checked). W2 plan: bounded cache for frequently needed documents added (owner direction, W2-AC15). |
 | 2026-10-11 07:40 | Owner D11: W2 runs on ARN (no frozen change), plus a narrow frozen exception adding a `document` pointer kind to the runtime Graphify index. W2 plan updated (W2-AC16..18). GRAPHIFY-LEAK-1 **confirmed** by reproduction on canonical: the primary user's memory pointers (ID/category/consent, no content) reach other users' Brain hints. Pre-existing, frozen; fix awaits owner decision. |
+| 2026-10-11 07:45 | Owner D12: fix GRAPHIFY-LEAK-1 as its own milestone after SSRF-1 and before W2 (frozen exception: server.py, plus graphify_index.py only if needed). Queue: W1/A0 → SSRF-1 → GRAPHIFY-LEAK-1 → W2. |
