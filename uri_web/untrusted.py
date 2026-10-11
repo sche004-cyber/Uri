@@ -512,29 +512,50 @@ def _endings(words: list, norm: str):
                 yield b, e, text.casefold()
 
 
+_OPEN, _CLOSE = "([{\uff08\u3010\u300c\u300e\u3014", ")]}\uff09\u3011\u300d\u300f\u3015"
+
+
+def _odd(text: str) -> bool:
+    """D17: every letter is a Latin letter that is not an ordinary alphabet letter: an IPA or click letter
+    ('\u0298', '\u01c3'), a letter without case or a modifier letter. A word of them stands between two words like a dot."""
+    return all(not ch.isascii() and (0x0250 <= ord(ch) <= 0x02AF or 0x01C0 <= ord(ch) <= 0x01C3
+                                     or unicodedata.category(ch) in ("Lo", "Lm")) for ch in text)
+
+
+def _bracketed(norm: str, w) -> bool:
+    """D17: the word stands alone in brackets, as a gloss: 'Tokyo (\u6771\u4eac) in Japan'."""
+    left, right = norm[:w[0]].rstrip()[-1:], norm[w[1]:].lstrip()[:1]
+    return bool(left) and bool(right) and left in _OPEN and right in _CLOSE
+
+
+def _separator_word(norm: str, w, fam: str) -> bool:
+    """D17 (owner, 2026-10-11, after R13-01): a word that stands between the name and the ending like a dot.
+    - a single letter (not 'a'/'I');
+    - a word of the ending's script made only of odd letters ('\u0298\u0298');
+    - a short word of another script (at most _MAX_FOREIGN distinct letters: '\u4e36\u4e3f', '\u318d\u11a2'), unless it
+      stands alone in brackets as a gloss ('Tokyo (\u6771\u4eac) in Japan'). Recorded residual: a bracketed one
+      ('portal (\u4e36\u4e3f) shop')."""
+    if _single(w):
+        return True
+    if w[3] == fam:
+        return _odd(w[2])
+    return len(set(w[2].casefold())) <= _MAX_FOREIGN and not _bracketed(norm, w)
+
+
 def _ending_spans(norm: str) -> list:
-    """D16 + R11-01. No cap on the length of the gap: any run of non-letters between the name and the ending
-    ('portal \u0660 \u0660 ... com', 'portal ~ ~ ~ ... cash') is a separator, however long. Between them may also stand
-    words of another script and single letters ('portal \u4e36 \u4e36 shop', 'portal \u0298 com', 'portal o com'),
-    as long as they hold at most _MAX_FOREIGN distinct letters; a repeated letter counts once."""
+    """D16 + R11-01 + R12-01 + D17. No cap on the length of the gap: any run of non-letters between the name and the
+    ending ('portal \u0660 \u0660 ... com', 'portal ~ ~ ~ ... cash') is a separator, however long, and so are the
+    separator words of _separator_word. The name is the nearest earlier word that is not one, in any listed script
+    ('\u043f\u0440\u0438\u043c\u0435\u0440 com', 'refunds-portal ~ \u0440\u0444')."""
     words = _words(norm)
     spans = []
     for b, e, tld in _endings(words, norm):
         fam = words[b][3]
-        seen, a, ascii_only = set(), b - 1, True
-        while a >= 0 and (words[a][3] != fam or _single(words[a])):
-            # R12-01: a word of another script is the NAME ('\u043f\u0440\u0438\u043c\u0435\u0440 com',
-            # 'refunds-portal ~ \u0440\u0444') unless it is a single letter or adds no more than _MAX_FOREIGN distinct
-            # letters to what stands between ('portal \u4e36 \u4e36 shop'): then it is part of the separator.
-            if not _single(words[a]) and (len(set(words[a][2].casefold())) > 1
-                                          or len(seen | set(words[a][2].casefold())) > _MAX_FOREIGN):
-                break                         # a real word ('\u6771\u4eac', '\u043f\u0440\u0438\u043c\u0435\u0440'): the name
-            seen.update(words[a][2].casefold())
-            ascii_only = ascii_only and words[a][3] == "LATIN" and words[a][2].isascii() and _single(words[a])
-            if len(seen) > _MAX_FOREIGN:
-                break
+        a, ascii_only = b - 1, True
+        while a >= 0 and _separator_word(norm, words[a], fam):
+            ascii_only = ascii_only and words[a][2].isascii() and _single(words[a])
             a -= 1
-        if a < 0 or len(seen) > _MAX_FOREIGN:
+        if a < 0:
             continue
         gap = norm[words[a][1]:words[b][0]]
         spelt = e > b
