@@ -119,3 +119,10 @@ CLAUDE PLANS → CLAUDE PRE-AUDITS → USER ACCEPTS → ANTIGRAVITY INITIATES TA
 - Update the tracker and project memory when a milestone changes state; link
   to governing documents instead of copying architecture into them.
 
+## Development lifecycle skill (2026-10-11)
+
+Development milestones are driven by `uri-development-lifecycle` (`.claude/skills/uri-development-lifecycle/SKILL.md`,
+engine `scripts/dev_workflow/lifecycle.py`, reference `docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md`). It extends
+AO-4: independent review by a separate Claude (or, when available, Codex) process; Codex is optional, never required.
+It is a development skill only and is not part of the runtime skill registry.
+

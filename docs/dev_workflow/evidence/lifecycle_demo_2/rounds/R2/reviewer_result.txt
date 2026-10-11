@@ -1,0 +1,29 @@
+**Verdict: ACCEPT.** The candidate meets all four acceptance criteria and fixes all three R1 findings. All 4 tests pass, the new tests fail when the old code is restored, and nothing under `core/` changed.
+
+**SHAs:** HEAD is `7e7079cc46f728e92ccafbfee75469d28cee2020` and the baseline `b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d` exists. The range holds two commits, a67c0b7 and 7e7079c, and touches 4 files: `pkg/calc.py`, `pkg/feature.py`, `tests/test_calc.py` and `tests/test_feature.py`. `git diff --stat` on `core/` is empty.
+
+**1. Correctness of `pkg/calc.py`:** the `if b == 0: return None` guard handles every zero-like divisor I tried without raising: `0`, `0.0`, `-0.0`, `False`, `0j`, `Fraction(0)`, `Decimal(0)`, numpy `float64(0)` and `int64(0)`. Non-zero divisors still return `a / b`.
+
+**2. Test coverage:**
+- `test_div` checks the normal division path.
+- `test_div_by_zero_returns_none` checks that `safe_div(1, 0)` and `safe_div(0, 0)` both return `None`.
+- `test_feature` checks that `feature()` returns 1.
+
+**Mutation check:** in a copy under `/tmp`, I put back the baseline `calc.py` and changed `feature()` to return 2. Both new tests failed: one with `ZeroDivisionError`, the other with `assert 2 == 1`.
+
+**Prior findings:** R1-01, R1-02 and R1-03 are all FIXED.
+
+pytest wasn't installed on the system Python, so I installed it into a throwaway venv under `/tmp/uri_review_R2`. The checkout is unchanged: `git status` is clean.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020", "baseline": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d", "verdict": "ACCEPT",
+ "findings": [],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/uri_review_R2/venv/bin/python -m pytest -q -p no:cacheprovider", "result": "4 passed in 0.01s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --stat b12e845c..HEAD -- core/", "result": "empty (core/ unchanged)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I /tmp/uri_review_R2/probe.py (safe_div with zero divisors 0, 0.0, -0.0, False, 0j, Fraction(0), Decimal(0), np.float64(0), np.int64(0))", "result": "all returned None, none raised", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "mutation: baseline pkg/calc.py + feature() returning 2, in a /tmp/uri_review_R2/mut copy, then pytest", "result": "2 failed (test_div_by_zero_returns_none ZeroDivisionError, test_feature assert 2 == 1), 2 passed: the tests detect both regressions", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["The repo does not pin a pytest version; tests ran with the latest pytest from PyPI in a throwaway venv"]}
+AUDIT_RESULT_END

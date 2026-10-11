@@ -308,5 +308,11 @@ Spend precision during coding.
 
 Spend scrutiny after coding.\*\*
 
+\---
 
+\## Automation
+
+Review → Repair → Validate is automated by the `uri-development-lifecycle` skill
+(`.claude/skills/uri-development-lifecycle/SKILL.md`): independent reviewer process, automatic repair handoff,
+re-audit, baseline-aware gates, policy-bound integration and receipts.
 

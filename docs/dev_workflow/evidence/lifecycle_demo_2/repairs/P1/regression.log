@@ -1,0 +1,36 @@
+=== tests/test_calc.py BEFORE (a67c0b74e4ba508eee59dc8a6234ef48b2629c1c)
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+________________________ test_div_by_zero_returns_none _________________________
+
+    def test_div_by_zero_returns_none():
+>       assert safe_div(1, 0) is None
+               ^^^^^^^^^^^^^^
+
+tests/test_calc.py:9: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = 1, b = 0
+
+    def safe_div(a, b):
+>       return a / b
+               ^^^^^
+E       ZeroDivisionError: division by zero
+
+pkg/calc.py:2: ZeroDivisionError
+=========================== short test summary info ============================
+FAILED tests/test_calc.py::test_div_by_zero_returns_none - ZeroDivisionError:...
+1 failed, 1 passed in 0.02s
+
+=== tests/test_calc.py AFTER
+..                                                                       [100%]
+2 passed in 0.01s
+
+=== tests/test_feature.py BEFORE (a67c0b74e4ba508eee59dc8a6234ef48b2629c1c)
+.                                                                        [100%]
+1 passed in 0.01s
+
+=== tests/test_feature.py AFTER
+.                                                                        [100%]
+1 passed in 0.01s
+
