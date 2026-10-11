@@ -72,6 +72,10 @@ def test_token_file_is_new_each_launch_and_user_only(tmp_path):          # S3
     assert aces[0][:-len(":(F)")] in _me(), aces
 
 
+def _chmod_denied(*a, **k):
+    raise PermissionError(1, "Operation not permitted")
+
+
 class _Fail:
     returncode = 1
     stdout = stderr = ""
@@ -79,7 +83,7 @@ class _Fail:
 
 def test_token_acl_failure_leaves_no_token(tmp_path, monkeypatch):       # S4 (token step)
     if not WIN:
-        monkeypatch.setattr(S.os, "chmod", lambda *a, **k: (_ for _ in ()).throw(S.StateAclError("chmod failed")))
+        monkeypatch.setattr(S.os, "chmod", _chmod_denied)                 # the real OS failure, not a StateAclError
     else:
         monkeypatch.setattr(S.subprocess, "run", lambda *a, **k: _Fail())
     tok = tmp_path / "api-token"
@@ -90,7 +94,7 @@ def test_token_acl_failure_leaves_no_token(tmp_path, monkeypatch):       # S4 (t
 
 def test_service_refuses_to_start_when_folder_acl_fails(tmp_path, monkeypatch, capsys):   # S4 (folder step)
     if not WIN:
-        monkeypatch.setattr(S, "restrict_to_user", lambda *a, **k: (_ for _ in ()).throw(S.StateAclError("x")))
+        monkeypatch.setattr(S.os, "chmod", _chmod_denied)                 # through the real restrict_to_user
     else:
         monkeypatch.setattr(S.subprocess, "run", lambda *a, **k: _Fail())
     built = []
@@ -99,6 +103,53 @@ def test_service_refuses_to_start_when_folder_acl_fails(tmp_path, monkeypatch, c
     assert rc == 4
     assert "STATE_ACL_FAILED" in capsys.readouterr().out
     assert built == []                                                    # nothing was opened
+    assert not (tmp_path / "state" / "api-token").exists()
+
+
+def test_posix_chmod_oserror_becomes_state_acl_error(tmp_path, monkeypatch):   # R1-01
+    if WIN:
+        pytest.skip("POSIX branch: os.chmod")
+    monkeypatch.setattr(S.os, "chmod", _chmod_denied)
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(tmp_path, folder=True)
+
+
+def test_token_write_oserror_becomes_state_acl_error(tmp_path, monkeypatch):   # R1-01 (unlink/write_bytes)
+    tok = tmp_path / "api-token"
+    real = Path.write_bytes
+
+    def denied(self, data):
+        real(self, data)                                                  # a file appears, then the OS refuses
+        raise PermissionError(13, "Permission denied")
+    monkeypatch.setattr(Path, "write_bytes", denied)
+    with pytest.raises(S.StateAclError):
+        S.write_token_file(tok, "secret")
+    assert not tok.exists()
+
+
+def test_service_exits_4_when_token_acl_raises_oserror(tmp_path, monkeypatch, capsys):   # R1-01 (token step in main)
+    closed = []
+
+    class _Sched:
+        startup = {}
+
+        def start(self):
+            return self
+
+        def close(self):
+            closed.append(True)
+    monkeypatch.setattr(S, "build", lambda a: _Sched())
+    real_restrict = S.restrict_to_user
+
+    def restrict(path, *, folder=False):
+        if folder:
+            return real_restrict(path, folder=True)
+        raise PermissionError(1, "Operation not permitted")          # an unwrapped OS error on the token file
+    monkeypatch.setattr(S, "restrict_to_user", restrict)
+    rc = S.main(["run", "--state", str(tmp_path / "state"), "--mode", "fixture"])
+    assert rc == 4
+    assert "STATE_ACL_FAILED" in capsys.readouterr().out
+    assert closed == [True]
     assert not (tmp_path / "state" / "api-token").exists()
 
 

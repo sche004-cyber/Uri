@@ -235,7 +235,10 @@ def restrict_to_user(path: Path, *, folder=False):
     state folder the entry is inheritable, so the token, the database and artifacts inside cannot be read, deleted or
     replaced by other local principals (files already inside are re-inherited from it). POSIX: 0700 / 0600."""
     if os.name != "nt":
-        os.chmod(path, 0o700 if folder else 0o600)
+        try:
+            os.chmod(path, 0o700 if folder else 0o600)
+        except OSError as exc:
+            raise StateAclError(f"chmod failed: {type(exc).__name__}") from None
         return
     user = os.environ.get("USERNAME")
     if not user:
@@ -252,16 +255,21 @@ def restrict_to_user(path: Path, *, folder=False):
 
 def write_token_file(path: Path, token: str):
     """A new token file on every launch: created empty, restricted to the current user, then written. On failure no
-    token is left on disk."""
-    if path.exists():
-        path.unlink()
-    path.write_bytes(b"")
+    token is left on disk. OS failures surface as StateAclError so the service exits 4 instead of crashing."""
     try:
+        if path.exists():
+            path.unlink()
+        path.write_bytes(b"")
         restrict_to_user(path)
-    except StateAclError:
-        path.unlink()
-        raise
-    path.write_text(token, encoding="utf-8")
+        path.write_text(token, encoding="utf-8")
+    except (OSError, StateAclError) as exc:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        if isinstance(exc, StateAclError):
+            raise
+        raise StateAclError(f"token file failed: {type(exc).__name__}") from None
 
 
 def build(args) -> Scheduler:
@@ -306,7 +314,7 @@ def main(argv=None):
         state = Path(a.state)
         state.mkdir(parents=True, exist_ok=True)
         restrict_to_user(state, folder=True)        # before the database or the token exists (SCHED-TOKEN-ACL-1)
-    except StateAclError as exc:
+    except (OSError, StateAclError) as exc:
         print(json.dumps({"error": "STATE_ACL_FAILED", "detail": str(exc)}))
         return 4
     try:
