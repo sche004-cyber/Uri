@@ -4,16 +4,19 @@ Snapshot schemas an adapter must produce (all content UNTRUSTED):
 
   Adapters return the snapshot with `target_id` set to the target they captured (required).
 
-  uri.assist.dom.v1  {schema, url, title, lang?, selection, headings[], text, fields[{id, tag, type, name, label,
-                      autocomplete, placeholder, required, readonly, value, rect?}], sensitive_rects?}
+  uri.assist.dom.v1  {schema, url, title, lang?, selection, selection_source?, selection_withheld?, headings[], text,
+                      fields[{id, tag, type, name, label, autocomplete, placeholder, required, readonly, value,
+                      has_value?, sensitive?, withheld?, rect?}], sensitive_rects?}
                       produced by the browser extension (`browser_extension/snapshot.js`) with `activeTab`.
   uri.assist.uia.v1  {schema, window{title, process, pid}, text?, elements[{role, name, automation_id, value,
                       is_password, required?, readonly?, rect?}]}
                       produced by a Windows UI Automation adapter (NOT IMPLEMENTED in this build; see adapters).
 
 `normalise()` validates the schema, bounds every size, applies `redact` and returns an Observation stamped by the
-access controller. Adapters never decide permissions; they are asked for one capture and must return a snapshot
-for the target the grant names (a mismatched target id is refused).
+access controller. A selection is accepted only when the adapter marks it `selection_source: "page_text"` (built from
+the page's own text, never from inside a field; R9-01). A field the adapter withheld stays withheld, and its
+`has_value` is kept (the adapter sends the value empty; R9-03). Adapters never decide permissions; they are asked for
+one capture and must return a snapshot for the target the grant names (a mismatched target id is refused).
 """
 from __future__ import annotations
 
@@ -53,14 +56,16 @@ class Observation:
     redactions: dict
     digest: str
     sensitive_rects: list = field(default_factory=list)
+    selection_withheld: bool = False   # the user selected something that was not page text (e.g. inside a field)
     trust: str = "UNTRUSTED_CONTENT"
 
     @property
     def unlocated_sensitive(self) -> bool:
         """A private field that is on screen but has no rectangle cannot be blacked out. Hidden inputs and fields
         the adapter reports as not visible are not on screen (interim review LOW: CSRF hidden inputs)."""
-        # An empty field shows nothing; a withheld (D8) or sensitive field with a value must be locatable.
-        return any(f.get("sensitive") and f.get("has_value", True) and not f.get("rect") and f.get("visible", True)
+        # An empty field shows nothing; a withheld (D8) or sensitive field with a value, or whose emptiness is not
+        # known, must be locatable (R9-03).
+        return any(f.get("sensitive") and f.get("has_value") is not False and not f.get("rect") and f.get("visible", True)
                    and f.get("type") != "hidden"
                    for f in self.fields)
 
@@ -85,6 +90,7 @@ def normalise(snapshot: dict, stamp: Stamp) -> Observation:
     if not isinstance(snapshot, dict) or snapshot.get("schema") not in (DOM, UIA):
         raise PerceptionRefused("SNAPSHOT_SCHEMA")
     counts = Counter()
+    withheld_values = []            # raw values this layer withheld (never kept; used only to vet the selection)
     if snapshot["schema"] == DOM:
         raw_fields = snapshot.get("fields") or []
         fields = []
@@ -97,7 +103,11 @@ def normalise(snapshot: dict, stamp: Stamp) -> Observation:
             r = _rect(f.get("rect"))
             if r:
                 base["rect"] = r
-            fields.append(RD.redact_field(base, counts))
+            out = RD.redact_field(base, counts)
+            _keep_adapter_withholding(out, f)
+            fields.append(out)
+            if out.get("sensitive"):
+                withheld_values.append(base["value"])
         title, location = _s(snapshot.get("title")), RD.redact_text(_s(snapshot.get("url"), 2048), counts)
         headings = [RD.redact_text(_s(h, 300), counts) for h in (snapshot.get("headings") or [])[:MAX_HEADINGS]
                     if isinstance(h, str)]
@@ -115,10 +125,22 @@ def normalise(snapshot: dict, stamp: Stamp) -> Observation:
             r = _rect(e.get("rect"))
             if r:
                 base["rect"] = r
-            fields.append(RD.redact_field(base, counts))
+            out = RD.redact_field(base, counts)
+            fields.append(out)
+            if out.get("sensitive"):
+                withheld_values.append(base["value"])
         title, location, headings = _s(win.get("title")), _s(win.get("process"), 200), []
         source = "uia"
-    selection = RD.redact_text(_s(snapshot.get("selection"), 4000), counts)
+    # R9-01: text selected inside a field is that field's value. Only a selection the adapter built from page text is
+    # accepted, and never one that contains a value withheld above; otherwise only the fact of a selection is kept.
+    raw_sel = _s(snapshot.get("selection"), 4000)
+    selection_withheld = snapshot.get("selection_withheld") is True
+    if raw_sel and (snapshot.get("selection_source") != "page_text"
+                    or any(v.strip() and v.strip() in raw_sel for v in withheld_values)):
+        raw_sel, selection_withheld = "", True
+    if selection_withheld:
+        counts["selection_withheld"] += 1
+    selection = RD.redact_text(raw_sel, counts)
     text = RD.redact_text(_s(snapshot.get("text"), MAX_TEXT), counts)
     title = RD.redact_text(title, counts)
     rects = [r for r in (_rect(x) for x in (snapshot.get("sensitive_rects") or [])) if r]
@@ -126,7 +148,24 @@ def normalise(snapshot: dict, stamp: Stamp) -> Observation:
     body = {"title": title, "location": location, "selection": selection, "headings": headings, "text": text,
             "fields": fields}
     digest = hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
-    return Observation(stamp, source, title, location, selection, headings, text, fields, dict(counts), digest, rects)
+    return Observation(stamp, source, title, location, selection, headings, text, fields, dict(counts), digest, rects,
+                       selection_withheld=selection_withheld)
+
+
+def _keep_adapter_withholding(out: dict, raw: dict) -> None:
+    """The in-page layer may withhold a field this layer would share (its value is sent empty, so a value-based rule
+    such as a short code cannot fire here). Its decision and its `has_value` are kept (R9-03)."""
+    adapter_withheld = raw.get("sensitive") is True or raw.get("withheld") in ("sensitive", "not_shared")
+    if adapter_withheld and not out.get("sensitive"):
+        out.pop("value", None)
+        out["sensitive"] = True
+        out["withheld"] = "sensitive" if raw.get("withheld") != "not_shared" else "not_shared"
+        out["has_value"] = bool(raw.get("value")) or None
+    if out.get("sensitive"):
+        if raw.get("has_value") is True:
+            out["has_value"] = True
+        elif not out.get("has_value") and adapter_withheld and raw.get("has_value") is not False:
+            out["has_value"] = None      # the adapter withheld it without saying whether it is filled: unknown
 
 
 # ---- adapters ------------------------------------------------------------------------------------------------------

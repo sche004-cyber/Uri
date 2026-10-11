@@ -59,7 +59,7 @@ def findings(obs: Observation) -> list:
         if f.get("readonly"):
             continue
         if f.get("sensitive"):
-            if f.get("required") and not f.get("has_value"):
+            if f.get("required") and f.get("has_value") is False:     # unknown (None) is not "empty" (R9-03)
                 add("REQUIRED_EMPTY", f, "This required field is empty.")
             continue
         v = (f.get("value") or "").strip()

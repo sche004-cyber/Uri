@@ -16,6 +16,7 @@ If verification leaves nothing, the extractive answer is used and the fallback i
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
@@ -79,8 +80,42 @@ _QUANTITY = re.compile(
     r"daily|weekly|monthly|yearly|majority|minority|most|all|none|every|several|few|many)\b", re.I)
 
 
+# R9-02: a word list alone always misses the next form ("eleventh", "hundredth", "¾", "Chapter XI"). Any Unicode
+# number character (vulgar fractions, Roman numeral letters, superscripts: categories Nd/Nl/No), any currency symbol
+# (Sc), any ordinal built from a number stem ("eleventh", "twenty-third", "hundredth", "thousandth") and upper-case
+# Roman numerals are quantities too. A plain -th/-st/-nd/-rd suffix rule is not used: it matches "and", "board",
+# "most", "with" and would quote almost every sentence. The structural rule below (_novel_words) is the backstop for
+# everything a list misses.
+_ORDINAL = re.compile(r"(?i)\b\w*(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|"
+                      r"twelfth|teenth|tieth|hundredth|thousandth|millionth|billionth|trillionth|lakhth|croreth|zeroth|"
+                      r"umpteenth|nth)s?\b")
+_ROMAN = re.compile(r"\b(?=[MDCLXVI]{2,}\b)M{0,4}(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\b")
+
+
 def states_quantity(text: str) -> bool:
-    return bool(_QUANTITY.search(text or ""))
+    text = text or ""
+    return bool(_QUANTITY.search(text) or _ORDINAL.search(text) or _ROMAN.search(text)
+                or any(unicodedata.category(ch) in ("Nd", "Nl", "No", "Sc") for ch in text))
+
+
+# R9-02: a sentence in the Brain's own words is shown only if every word it adds to its supporting source sentence is
+# one of these function words. Any other new word (a value, a name, an ordinal, a qualifier) means the source
+# sentence is quoted instead, word for word, or the claim is dropped - not decided by a list of quantity forms.
+_FUNCTION_WORDS = frozenset("""
+a an the of in on at to for from by with as and or but that this these those it its they their them he she his her
+him we our us you your i is are was were be been being has have had do does did will would shall should can could
+which who whom whose what when where how there here than then so also about into onto over under after before
+between during while if because although though such per via said says according reported reports
+""".split())
+_TOKEN = re.compile(r"[^\W_]+")
+
+
+def _words_of(text: str) -> set:
+    return {w.lower() for w in _TOKEN.findall(text or "")}
+
+
+def _novel_words(claim: str, source: str) -> set:
+    return _words_of(claim) - _words_of(source) - _FUNCTION_WORDS
 
 
 def verify(answer: str, source_texts: list) -> Verified:
@@ -107,7 +142,8 @@ def verify(answer: str, source_texts: list) -> Verified:
             v.dropped.append({"text": sent, "reason": "CITATION_OUT_OF_RANGE"})
             continue
         cited = sorted(set(cites))
-        if states_quantity(body):
+
+        def quote_instead():
             q = _quote(body, cited, sents_of)
             if q is None:
                 v.dropped.append({"text": sent, "reason": "NO_SOURCE_SENTENCE_TO_QUOTE"})
@@ -115,6 +151,8 @@ def verify(answer: str, source_texts: list) -> Verified:
                 pass                                 # the same source sentence is shown once
             elif len(v.claims) < MAX_ANSWER_SENTENCES:
                 v.claims.append(Claim(q[0], [q[1]], quoted=True))
+        if states_quantity(body):
+            quote_instead()
             continue
         claim_nums = numbers(body)
         cw = content_words(body)
@@ -135,6 +173,9 @@ def verify(answer: str, source_texts: list) -> Verified:
             continue
         if bool(_NEG.search(body)) != bool(_NEG.search(best[0])) or _antonym_flip(body, best[0]):
             v.dropped.append({"text": sent, "reason": "POLARITY_MISMATCH"})
+            continue
+        if _novel_words(body, best[0]):
+            quote_instead()                          # R9-02: a word the source sentence does not have
             continue
         if len(v.claims) < MAX_ANSWER_SENTENCES:
             v.claims.append(Claim(body, cited))

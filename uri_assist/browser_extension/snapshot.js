@@ -149,14 +149,50 @@
   }
   const headings = [...document.querySelectorAll("h1,h2,h3")].filter(visible)
     .map((h) => maskText(h.innerText.replace(/\s+/g, " ").trim())).filter(Boolean).slice(0, MAX_HEADINGS);
-  const sel = maskText(String(window.getSelection ? window.getSelection() : "").slice(0, 4000));
+  // R9-01: the selection is rebuilt from the page's own text nodes inside the selected ranges. Text selected inside a
+  // field (an input's or textarea's value, a select, a contenteditable) is that field's value and is never copied;
+  // only the fact that such a selection exists is reported (selection_withheld).
+  const FIELD = "input,textarea,select,[contenteditable]:not([contenteditable='false'])";
+  const inField = (n) => { const e = n && (n.nodeType === 1 ? n : n.parentElement); return !!(e && e.closest(FIELD)); };
+  const selectionOf = () => {
+    const s = window.getSelection ? window.getSelection() : null;
+    if (!s) return { text: "", withheld: false };
+    let withheld = false; const parts = [];
+    for (let i = 0; i < s.rangeCount; i++) {
+      const r = s.getRangeAt(i);
+      if (r.collapsed) continue;
+      const root = r.commonAncestorContainer;
+      if (inField(root)) { withheld = true; continue; }
+      const nodes = [];
+      if (root.nodeType === 3) nodes.push(root);
+      else {
+        const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+        for (let n = w.nextNode(); n; n = w.nextNode()) {
+          if (!r.intersectsNode(n)) continue;
+          if (n.nodeType === 1) { if (n.matches(FIELD)) withheld = true; continue; }
+          if (inField(n)) { withheld = true; continue; }
+          nodes.push(n);
+        }
+      }
+      for (const n of nodes) {
+        const a = n === r.startContainer ? r.startOffset : 0, b = n === r.endContainer ? r.endOffset : n.nodeValue.length;
+        parts.push(n.nodeValue.slice(a, b));
+      }
+    }
+    const text = parts.join("").replace(/\s+/g, " ").trim();
+    // Anything the browser reports as selected that is not page text (a field's inner editor) is withheld.
+    if (!text && String(s).trim()) withheld = true;
+    return { text, withheld };
+  };
+  const selected = selectionOf();
+  const sel = maskText(selected.text.slice(0, 4000));
   // Every text that leaves the page passes maskText (title, headings, labels, placeholders and the whole URL too).
   const url = maskText(location.href).replace(/([?&](?:access_?token|token|api_?key|key|secret|password|pwd|sig|signature|code)=)(?!\[redacted\])[^&#]*/gi,
     (m, k) => { bump("query_secret"); return k + "[redacted]"; });
 
   return {
     schema: "uri.assist.dom.v1", url, title: maskText(document.title.slice(0, 500)), lang: document.documentElement.lang || "",
-    selection: sel, headings, text: chunks.join("\n").slice(0, MAX_TEXT), fields, sensitive_rects: sensitiveRects,
+    selection: sel, selection_source: "page_text", selection_withheld: selected.withheld, headings, text: chunks.join("\n").slice(0, MAX_TEXT), fields, sensitive_rects: sensitiveRects,
     redactions: counts, device_pixel_ratio: dpr,
   };
 })();

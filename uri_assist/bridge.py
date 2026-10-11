@@ -59,6 +59,8 @@ def _context_block(obs) -> str:
     body = "\n".join(x for x in (
         ("Location: " + obs.location) if obs.location else "",
         ("Selected text: " + obs.selection) if obs.selection else "",
+        "The user has selected text inside a form field; it is private and not shared."
+        if obs.selection_withheld and not obs.selection else "",
         ("Headings: " + " | ".join(obs.headings[:20])) if obs.headings else "",
         ("Form fields:\n" + fields) if fields else "",
         "Visible text:\n" + obs.text[:12000]) if x)
@@ -79,7 +81,7 @@ class AssistCommands:
         self.last_error: Optional[str] = None
         self._lock = threading.Lock()
         self._job = None             # (ask_id, thread, cancel token)
-        self._answers = {}           # ask_id -> result (bounded)
+        self._answers = {}           # ask_id -> (stamp, result) (bounded); blanked by grant, pause and revoke
         self._defer, self._go = defer_start, None
 
     def handle(self, kind, command):
@@ -104,6 +106,18 @@ class AssistCommands:
         if job is not None and job[1].is_alive():
             job[2].cancel(reason)
             self.release()
+
+    @staticmethod
+    def _blank(result, reason="grant_ended"):
+        # Only the fact that the ask ended survives; the answer and the observation summary are dropped.
+        return {"ask_id": result["ask_id"], "status": "CANCELLED", "answer": "", "method": result["method"],
+                "observation": None, "cancel_reason": result.get("cancel_reason") or reason}
+
+    def _forget_answers(self):
+        # Answers are derived from observed content: they end with the grant generation they came from (R9-04).
+        with self._lock:
+            for aid, (st, res) in list(self._answers.items()):
+                self._answers[aid] = (st, self._blank(res))
 
     def release(self):
         go = self._go
@@ -143,6 +157,7 @@ class AssistCommands:
         if t is None:
             raise Refused("TARGET_UNKNOWN")
         self.cancel_brain_work("new_grant")
+        self._forget_answers()
         self.access.grant_scope(kind, t["target_id"], t["label"], c["permissions"], confirm_screen=c["confirm_screen"],
                                 origin=t.get("origin"))
         return self._assist_status(c)
@@ -150,6 +165,7 @@ class AssistCommands:
     def _assist_pause(self, c):
         self.access.pause()
         self.cancel_brain_work("paused")
+        self._forget_answers()
         return self._assist_status(c)
 
     def _assist_resume(self, c):
@@ -159,6 +175,7 @@ class AssistCommands:
     def _assist_revoke(self, c):
         self.access.revoke("user")                 # revocation first: nothing can be checked fresh after this
         self.cancel_brain_work("revoked")
+        self._forget_answers()
         return self._assist_status(c)
 
     # ---- Live Assist ---------------------------------------------------------------------------
@@ -234,7 +251,7 @@ class AssistCommands:
             result = {"ask_id": ask_id, "status": status, "answer": text, "method": method, "observation": summary,
                       "cancel_reason": token.reason if token.cancelled else None}
             with self._lock:
-                self._answers[ask_id] = result
+                self._answers[ask_id] = (stamp, result)
                 while len(self._answers) > KEEP_ANSWERS:
                     self._answers.pop(next(iter(self._answers)))
             self.emitter.emit(ask_id, "assist.answer", **result)
@@ -251,7 +268,14 @@ class AssistCommands:
             done = self._answers.get(aid)
             running = self._job is not None and self._job[0] == aid and self._job[1].is_alive()
         if done is not None:
-            return {"state": "FINISHED", **done}
+            # Content only while the grant that produced it is unchanged (Stop, pause, expiry or a new grant ->
+            # the result is reported cancelled with nothing derived from the page).
+            st, res = done
+            try:
+                self.access.check_unchanged(st, Permission.OBSERVE)
+            except AccessRefused:
+                res = self._blank(res)
+            return {"state": "FINISHED", **res}
         if running:
             return {"state": "RUNNING", "ask_id": aid}
         raise Refused("ASK_UNKNOWN")

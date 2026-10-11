@@ -2,7 +2,8 @@
 
 Per hop (the first request and every redirect):
   1. `netpolicy.check_url` (scheme, userinfo, port, local names, numeric-ambiguous hosts, literal addresses);
-  2. resolve the host ONCE and refuse the hop if ANY answer is not a public unicast address;
+  2. resolve the host ONCE and refuse the hop if ANY answer is not a public unicast address (the lookup runs under the
+     same total deadline and cancel flag, R9-06);
   3. connect to the validated address (pinned): the request goes to that IP with the original Host header and TLS
      SNI/certificate name, so a second DNS answer (rebinding) is never used.
 Redirects are handled here (never by the HTTP library), at most `max_redirects`. Bodies are streamed with a byte cap,
@@ -159,6 +160,12 @@ class _Watchdog:
                 return
 
 
+class _Stop(Exception):
+    def __init__(self, status):
+        super().__init__(status)
+        self.status = status
+
+
 class CancelFlag:
     def __init__(self):
         self.cancelled = False
@@ -235,6 +242,37 @@ class SafeFetcher:
             NP.check_address(a)
         return addresses[0] if self.egress == "direct" else None
 
+    def _resolve_bounded(self, target: NP.Target, deadline: float, cancel) -> Optional[str]:
+        """`_resolve_checked` under the fetch's budget and cancel flag (R9-06). A resolver (system DNS or a hostile
+        authoritative server) can block far longer than the budget; it runs on a helper thread that is waited for at
+        most min(remaining budget, connect timeout) while cancel is polled. Raises _Stop(TIMED_OUT | CANCELLED)."""
+        if target.is_literal or (self.egress == "proxy" and "." not in target.host):
+            return self._resolve_checked(target)              # nothing to look up
+        remaining = deadline - self.clock()
+        if remaining <= 0:
+            raise _Stop(R.TIMED_OUT)                           # e.g. robots.txt used the whole budget
+        box = {}
+
+        def run():
+            try:
+                box["address"] = self._resolve_checked(target)
+            except BaseException as exc:                      # re-raised on the caller's thread
+                box["error"] = exc
+        t = threading.Thread(target=run, name="safe-fetch-dns", daemon=True)
+        t.start()
+        limit = time.monotonic() + min(remaining, self.timeout.connect)
+        while True:
+            t.join(_Watchdog.POLL)
+            if not t.is_alive():
+                break
+            if cancel is not None and cancel.cancelled:
+                raise _Stop(R.CANCELLED)
+            if time.monotonic() > limit or self.clock() > deadline:
+                raise _Stop(R.TIMED_OUT)                       # the lookup thread is abandoned (daemon)
+        if "error" in box:
+            raise box["error"]
+        return box.get("address")
+
     # ---- robots --------------------------------------------------------------------------------
     def _robots_allows(self, url: str, deadline: float, cancel) -> str:
         parts = urlsplit(url)
@@ -280,10 +318,13 @@ class SafeFetcher:
                 return FetchResult(rec)
             try:
                 target = NP.check_url(current, allowed_ports=self.allowed_ports)
-                address = self._resolve_checked(target)
+                address = self._resolve_bounded(target, deadline, cancel)
             except NP.EgressRefused as exc:
                 rec.fetch_status, rec.refusal_code = R.REFUSED, exc.code
                 rec.redirect_chain = chain
+                return FetchResult(rec)
+            except _Stop as stop:
+                rec.fetch_status, rec.redirect_chain = stop.status, chain
                 return FetchResult(rec)
             inner, backend = self._inner()
             transport = _Pinned(inner, address, target.host) if address is not None else inner

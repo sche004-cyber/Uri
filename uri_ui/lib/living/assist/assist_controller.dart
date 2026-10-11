@@ -69,6 +69,19 @@ class AssistController extends ChangeNotifier {
   Map<String, dynamic>? lastObservation;
   String? answer;
 
+  /// Bumped by every grant, pause, resume, Stop and worker change: a reply to
+  /// a check or ask sent before one of those is dropped, never shown (R9-05).
+  int _epoch = 0;
+
+  /// Everything derived from an observation is discarded together.
+  void _discardDerived() {
+    _epoch++;
+    findings = const [];
+    lastObservation = null;
+    answer = null;
+    askId = null;
+  }
+
   /// Research (W1) through the same worker.
   String? researchJobId;
   String? researchStage;
@@ -120,10 +133,7 @@ class AssistController extends ChangeNotifier {
   void _resetForNewWorker() {
     // A restarted worker starts with Assist OFF; never show the old grant.
     status = const {'state': 'OFF'};
-    findings = const [];
-    lastObservation = null;
-    answer = null;
-    askId = null;
+    _discardDerived();
     researchJobId = null;
     _poll?.cancel();
   }
@@ -154,9 +164,8 @@ class AssistController extends ChangeNotifier {
   }
 
   Future<void> grant(String kind, String targetId, {required bool suggest, bool confirmScreen = false}) async {
-    // A new grant discards any earlier ask (the worker drops answers from another grant).
-    askId = null;
-    answer = null;
+    // A new grant discards any earlier ask, findings and observation (the worker drops answers from another grant).
+    _discardDerived();
     await _call({
       'command': 'assist_grant',
       'kind': kind,
@@ -167,21 +176,27 @@ class AssistController extends ChangeNotifier {
     if (lastError == null) cancelChoosing();
   }
 
-  Future<void> pause() => _call({'command': 'assist_pause'}, updatesStatus: true);
-  Future<void> resume() => _call({'command': 'assist_resume'}, updatesStatus: true);
+  // Pause and resume end the observation generation on the worker: nothing derived before survives (R9-05).
+  Future<void> pause() {
+    _discardDerived();
+    return _call({'command': 'assist_pause'}, updatesStatus: true);
+  }
+
+  Future<void> resume() {
+    _discardDerived();
+    return _call({'command': 'assist_resume'}, updatesStatus: true);
+  }
 
   /// Stop: one tap, no confirmation; everything derived is discarded.
   Future<void> revoke() async {
-    findings = const [];
-    lastObservation = null;
-    answer = null;
-    askId = null;               // Stop cancels the ask; otherwise `asking` stays true and Ask stays disabled (R1-03)
+    _discardDerived();          // Stop cancels the ask; otherwise `asking` stays true and Ask stays disabled (R1-03)
     await _call({'command': 'assist_revoke'}, updatesStatus: true);
   }
 
   Future<void> check() async {
+    final epoch = _epoch;
     final v = await _call({'command': 'assist_check'});
-    if (v == null) return;
+    if (v == null || epoch != _epoch) return;   // Stop, pause or a new grant meanwhile: drop the reply
     findings = [for (final f in (v['findings'] as List? ?? const [])) (f as Map).cast<String, dynamic>()];
     lastObservation = (v['observation'] as Map?)?.cast<String, dynamic>();
     notifyListeners();
@@ -191,8 +206,9 @@ class AssistController extends ChangeNotifier {
   Future<void> ask(String question, {bool useScreenshot = false}) async {
     answer = null;
     askId = null;
+    final epoch = _epoch;
     final v = await _call({'command': 'assist_ask', 'question': question, 'use_screenshot': useScreenshot});
-    if (v == null) return;
+    if (v == null || epoch != _epoch) return;   // Stop, pause or a new grant meanwhile: drop the reply
     askId = v['ask_id'] as String?;
     lastObservation = (v['observation'] as Map?)?.cast<String, dynamic>();
     _drainEarly(askId);
