@@ -1,6 +1,6 @@
 # Lifecycle receipt — W1-A0-closure
 
-Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · candidate `87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0` · events 56 · chain OK
+Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · candidate `20a646fd3fe8c48367bdc1cc995df5d09c3e7dab` · events 80 · chain OK
 
 ## Review rounds
 
@@ -14,6 +14,8 @@ Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · can
 | R6 | claude_cli | `79002ead-1ff3-4b60-857c-38e2cf67ca44` | `08a4569908d7` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
 | R7 | None | `None` | `87720d6dcd76` | None | None | None | None |
 | R8 | claude_cli | `ea66c95f-0132-47b0-b8ec-ad4326276010` | `87720d6dcd76` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
+| R9 | claude_cli | `ce6ea834-ed6e-4ef5-91f8-9fdc31f027f8` | `3dd9cde91818` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
+| R10 | claude_cli | `4f8c44cf-8eb5-407d-bf7a-6b574b4d1502` | `20a646fd3fe8` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
 
 ## Repairs
 
@@ -25,17 +27,18 @@ Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · can
 | P4 | COMMITTED | `52e852dcce592e15fc2098bc1e169a7e009eb26a` | R4-01, R4-02, R4-03 |  |
 | P5 | COMMITTED | `08a4569908d7b9db2e22366cada632e5ebe40639` | R5-01, R5-02 |  |
 | P6 | COMMITTED | `87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0` | R6-01, R6-02, R6-03 |  |
+| P7 | COMMITTED | `20a646fd3fe8c48367bdc1cc995df5d09c3e7dab` | R9-01, R9-02, R9-03, R9-04, R9-05, R9-06, R9-07, R9-08 |  |
+| P8 | REFUSED | `-` | R10-01 | REGRESSION: no regression test fails on the pre-repair commit |
+| P9 | REFUSED | `-` | R10-01 | REGRESSION: no regression test fails on the pre-repair commit |
+| P10 | REFUSED | `-` | R10-01 | REGRESSION: no regression test fails on the pre-repair commit |
 
 ## Qualification
 
 
 ## Open findings (latest round)
 
-- R8-01 MEDIUM blocking=True: Redaction misses the 'CV2' card security code field name (UK/Visa term) in Python and the in-page JS; the value reaches the Brain request (R6-02 class not closed)
-- R8-02 MEDIUM blocking=True: Citation verifier and conflict detector ignore numbers written as words, so a claim with a different spelled-out number survives verify (R1-01 class)
-- R8-03 MEDIUM blocking=True: Citation verifier and conflict detector ignore the currency, so '$500' is 'supported' by 'Rs 500' and two sources with different currencies are not a conflict
-- R8-04 LOW blocking=False: Derived answers stay retrievable after Stop (R1-05 still present)
-- R8-05 LOW blocking=False: L-W1-4 still states the total fetch deadline can overrun by the read timeout, which the R4-03 watchdog removed
+- R10-01 MEDIUM blocking=True: R9-01 repair regression: the rebuilt selection copies hidden text (display:none, aria-hidden, tiny/transparent/off-screen) and <script>/<style> source into 'Selected text', bypassing the hidden-text filter; injected instructions and page-state secrets reach the Brain request
+- R10-02 LOW blocking=False: Assist UI poll path has no epoch or ask-id check: an assist_ask_status reply in flight when the user presses Stop (or Stop, re-grant and a new ask) can still show the old answer (R9-05 class on the polling path)
 
 ## Integration
 
@@ -47,10 +50,10 @@ null
 
 ```
 {
- "at": "2026-10-11T05:37:32Z",
- "kind": "TAMPER",
- "needs": "owner: inspect the repository's git hooks/config/info and refs; restore them, or accept the current state with `unblock --note`",
- "reason": "GIT_CONTROL: git_control, reviewer_exec changed since the plan (git hooks/config/info, user/system git config/attributes/ignore, replace refs, the reviewer CLI or managed CLI policy)",
+ "at": "2026-10-11T06:42:00Z",
+ "kind": "CONFIG",
+ "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
+ "reason": "milestone config or resolved policy changed since the plan (now config e9f199344cb0, policy 60c95fb8b36f)",
  "stage": "READY_TO_RESUME"
 }
 ```

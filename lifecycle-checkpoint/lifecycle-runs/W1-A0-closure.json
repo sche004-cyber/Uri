@@ -122,7 +122,8 @@
   "Python with pytest and the repo requirements: /tmp/claude-0/venv/bin/python (use it for tests; do not pip install)",
   "Flutter SDK: /tmp/claude-0/flutter/bin/flutter (Flutter tests run from uri_ui/)",
   "Real Chromium for Playwright tests is preinstalled (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers)",
-  "No GPU, no Windows; the Phase 1 checkpoint zip is not present (ws_frozen_check zip part BLOCKED)"
+  "No GPU, no Windows; the Phase 1 checkpoint zip is not present (ws_frozen_check zip part BLOCKED)",
+  "Regression proof: the driver copies ONLY the files you list in regression_tests into a clean checkout of the pre-repair commit and runs them there; new fixture/helper files are NOT copied. Make each regression test self-contained (embed fixture HTML/JS in the test file and write it to tmp_path at run time). A test that is skipped on the pre-repair commit counts as NOT failing, so it must not skip for a missing fixture."
  ],
  "continuation": {
   "stall_rounds": 2,

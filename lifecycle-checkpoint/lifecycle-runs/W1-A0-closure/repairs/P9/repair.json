@@ -1,0 +1,101 @@
+{
+ "addresses": [
+  "R10-01"
+ ],
+ "changed": [
+  "tests/assist/fixtures/hidden_selection_page.html",
+  "tests/assist/fixtures/run_hidden_selection.cjs",
+  "tests/assist/test_a0_r10_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js"
+ ],
+ "ended_at": "2026-10-11T06:38:46Z",
+ "pre": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+ "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+ "regression": {
+  "need_fail_before": true,
+  "ok": false,
+  "reason": "no regression test fails on the pre-repair commit",
+  "tests": {
+   "tests/assist/test_a0_r10_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 0,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 9,
+ "report": {
+  "not_repaired": [],
+  "notes": "snapshot.js selectionOf() now drops selected text nodes whose parentElement fails the page walker's visible() check (shared cache), which covers display:none, [hidden], aria-hidden, tiny-font, opacity:0, off-screen and script/style/noscript/template; it counts them under redactions.hidden_selection_text (separate from hidden_text so the page walker's count is not doubled). New real-Chromium fixtures tests/assist/fixtures/hidden_selection_page.html and run_hidden_selection.cjs (real Ctrl+A, real mouse drag h1->p, body range). The test checks the snapshot selection and the FakeClient Brain body. Verified 4 failed on 20a646f snapshot.js and 4 passed with the fix; tests/assist + tests/web: 2631 passed. graphify CLI not installed (exit 127), so the graph was not updated. Flutter not run (no uri_ui change). Unchanged by design: a selection made only of hidden text that the browser still reports as selected (e.g. aria-hidden-only) is reported as selection_withheld (fail closed) rather than empty.",
+  "regression_tests": [
+   "tests/assist/test_a0_r10_review_regressions.py"
+  ],
+  "repaired": [
+   "R10-01"
+  ]
+ },
+ "restored": true,
+ "started_at": "2026-10-11T06:36:43Z",
+ "status": "REFUSED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "9be8babf-c458-43e2-a13d-04126dae6d7b",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5031753999999999,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T06:38:37Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 15,
+  "pid": 10378,
+  "prompt_sha256": "ce061596d4215cc48e24922e058d3b7c743b3c9095f1caaf8d0bd8cc3f074537",
+  "provider": "claude_cli",
+  "result_text_sha256": "56dee05b8a700656da1583f68daac52fb0143abfdad7e195ea7d541bfd819f55",
+  "role": "implementer",
+  "session_id": "9be8babf-c458-43e2-a13d-04126dae6d7b",
+  "session_id_requested": "9be8babf-c458-43e2-a13d-04126dae6d7b",
+  "started_at": "2026-10-11T06:36:43Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "4eab26308e30a3364dd05dbde9dd99b72872266ba74c1ef4b89f7a9ce6859a68"
+ }
+}

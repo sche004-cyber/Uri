@@ -1,15 +1,15 @@
 {
  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
  "blocker": {
-  "at": "2026-10-11T05:37:32Z",
-  "kind": "TAMPER",
-  "needs": "owner: inspect the repository's git hooks/config/info and refs; restore them, or accept the current state with `unblock --note`",
-  "reason": "GIT_CONTROL: git_control, reviewer_exec changed since the plan (git hooks/config/info, user/system git config/attributes/ignore, replace refs, the reviewer CLI or managed CLI policy)",
+  "at": "2026-10-11T06:42:00Z",
+  "kind": "CONFIG",
+  "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
+  "reason": "milestone config or resolved policy changed since the plan (now config e9f199344cb0, policy 60c95fb8b36f)",
   "stage": "READY_TO_RESUME"
  },
- "candidate": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
- "config_sha256": "a371fc4a8fc1f870fb6e5b8cb22ea65f44b35ee0dda2fe73f8a38ee757b8a201",
- "events": 56,
+ "candidate": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+ "config_sha256": "e9f199344cb01d05216b4034313d66bfd5007f3cb4b4eeccfb1d780c6687d9cc",
+ "events": 80,
  "evidence_ok_for_candidate": false,
  "gates": {},
  "integration": null,
@@ -17,33 +17,15 @@
  "open_findings": [
   {
    "blocking": true,
-   "id": "R8-01",
+   "id": "R10-01",
    "severity": "MEDIUM",
-   "title": "Redaction misses the 'CV2' card security code field name (UK/Visa term) in Python and the in-page JS; the value reaches the Brain request (R6-02 class not closed)"
-  },
-  {
-   "blocking": true,
-   "id": "R8-02",
-   "severity": "MEDIUM",
-   "title": "Citation verifier and conflict detector ignore numbers written as words, so a claim with a different spelled-out number survives verify (R1-01 class)"
-  },
-  {
-   "blocking": true,
-   "id": "R8-03",
-   "severity": "MEDIUM",
-   "title": "Citation verifier and conflict detector ignore the currency, so '$500' is 'supported' by 'Rs 500' and two sources with different currencies are not a conflict"
+   "title": "R9-01 repair regression: the rebuilt selection copies hidden text (display:none, aria-hidden, tiny/transparent/off-screen) and <script>/<style> source into 'Selected text', bypassing the hidden-text filter; injected instructions and page-state secrets reach the Brain request"
   },
   {
    "blocking": false,
-   "id": "R8-04",
+   "id": "R10-02",
    "severity": "LOW",
-   "title": "Derived answers stay retrievable after Stop (R1-05 still present)"
-  },
-  {
-   "blocking": false,
-   "id": "R8-05",
-   "severity": "LOW",
-   "title": "L-W1-4 still states the total fetch deadline can overrun by the read timeout, which the R4-03 watchdog removed"
+   "title": "Assist UI poll path has no epoch or ask-id check: an assist_ask_status reply in flight when the user presses Stop (or Stop, re-grant and a new ask) can still show the old answer (R9-05 class on the polling path)"
   }
  ],
  "repairs": [
@@ -108,6 +90,49 @@
    "reason": null,
    "repair": 6,
    "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R9-01",
+    "R9-02",
+    "R9-03",
+    "R9-04",
+    "R9-05",
+    "R9-06",
+    "R9-07",
+    "R9-08"
+   ],
+   "commit": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+   "reason": null,
+   "repair": 7,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R10-01"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": 8,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R10-01"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": 9,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R10-01"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": 10,
+   "status": "REFUSED"
   }
  ],
  "reviewers": [
@@ -216,11 +241,39 @@
    "session_id": "ea66c95f-0132-47b0-b8ec-ad4326276010",
    "status": "COMPLETED_WITH_RESULT",
    "verdict": "REJECT"
+  },
+  {
+   "candidate": "3dd9cde91818cfcf2db48067e8d4b56a1bda62f4",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 9,
+   "session_id": "ce6ea834-ed6e-4ef5-91f8-9fdc31f027f8",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 10,
+   "session_id": "4f8c44cf-8eb5-407d-bf7a-6b574b4d1502",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
   }
  ],
- "rounds": 8,
+ "rounds": 10,
  "schema": "uri-dev-lifecycle/1",
  "stage": "BLOCKED",
  "verify_errors": [],
- "written_at": "2026-10-11T05:37:32Z"
+ "written_at": "2026-10-11T06:42:01Z"
 }

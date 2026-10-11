@@ -1,0 +1,147 @@
+{
+ "addresses": [
+  "R9-01",
+  "R9-02",
+  "R9-03",
+  "R9-04",
+  "R9-05",
+  "R9-06",
+  "R9-07",
+  "R9-08"
+ ],
+ "changed": [
+  "docs/assist/A0_QUALIFICATION.md",
+  "docs/assist/W1_QUALIFICATION.md",
+  "tests/assist/fixtures/run_selection.cjs",
+  "tests/assist/fixtures/selection_page.html",
+  "tests/assist/test_a0_r9_review_regressions.py",
+  "tests/web/test_w1_r9_review_regressions.py",
+  "uri_assist/bridge.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/checks.py",
+  "uri_assist/perception.py",
+  "uri_ui/lib/living/assist/assist_controller.dart",
+  "uri_ui/test/living/assist_r9_test.dart",
+  "uri_web/safe_fetch.py",
+  "uri_web/synthesize.py"
+ ],
+ "commit": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+ "ended_at": "2026-10-11T06:24:44Z",
+ "pre": "3dd9cde91818cfcf2db48067e8d4b56a1bda62f4",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r9_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/web/test_w1_r9_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "uri_ui/test/living/assist_r9_test.dart": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 7,
+ "report": {
+  "not_repaired": [
+   {
+    "id": "R9-07",
+    "reason": "Non-blocking. The fail-closed fix (refuse a screenshot when text was redacted, or when iframes or shadow roots were not walked) would change behaviour that an existing test asserts: test_a0_access_perception.py::test_bridge_ask_screenshot_path expects a vision ask to complete on a page whose text contains a redacted card number. Changing that test is not allowed. The alternative (rectangles for redacted text, walking open shadow roots) is a design change. Vision is disabled by default and the browser channel is not built."
+   },
+   {
+    "id": "R9-08",
+    "reason": "Owner decision (owner_decision=true): whether W1-AC11 is narrowed to heuristic candidates. W1_QUALIFICATION already records it as a known miss; D7 quoting keeps wrong values out of the answer."
+   }
+  ],
+  "notes": "On 3dd9cde: 30 of 36 new Python tests fail; the 6 that pass are controls (ordinary sentences not quantities, normal fast-DNS fetch, 'twenty-third' and a digit amount the old list already caught). All 5 Dart tests fail on base. After the change: tests/assist + tests/web 2627 passed; flutter test test/living 253 passed; flutter analyze clean. tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on fails because HEAD is not the frozen Phase 2A base; not caused by this change. R9-04 blanks rather than deletes stored answers (status CANCELLED, no answer, no summary) because existing f4 tests expect a CANCELLED status after revoke or pause. R9-02 does not use the plain -th/-st/-nd/-rd suffix rule: it matches 'and', 'board', 'most', quoted almost every sentence and broke two existing tests; number-stem ordinals plus the 'no added content words' rule are used instead. R9-06: a blocked system DNS lookup thread is left running in the background (daemon), not killed. Docs: correction notes added to A0_QUALIFICATION (AC4, AC5, AC7) and W1_QUALIFICATION (AC4, AC10). graphify update not run: graphify-out/ is outside the permitted paths.",
+  "regression_tests": [
+   "tests/assist/test_a0_r9_review_regressions.py",
+   "tests/web/test_w1_r9_review_regressions.py",
+   "uri_ui/test/living/assist_r9_test.dart",
+   "tests/assist/fixtures/run_selection.cjs",
+   "tests/assist/fixtures/selection_page.html"
+  ],
+  "repaired": [
+   "R9-01",
+   "R9-02",
+   "R9-03",
+   "R9-04",
+   "R9-05",
+   "R9-06"
+  ]
+ },
+ "started_at": "2026-10-11T06:12:57Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "dc792f5f-a98d-4a43-8c14-72465177b91b",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 209
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 3.3872423,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T06:23:44Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 52,
+  "pid": 20912,
+  "prompt_sha256": "4004cb406c22a9d2307d687e736384a76009d38f5ab5ca5b853166ac3972ba67",
+  "provider": "claude_cli",
+  "result_text_sha256": "e2de9bd66e8c647997b13b40cfde03da9453fa8517f40f7543df5887e566ffd5",
+  "role": "implementer",
+  "session_id": "dc792f5f-a98d-4a43-8c14-72465177b91b",
+  "session_id_requested": "dc792f5f-a98d-4a43-8c14-72465177b91b",
+  "started_at": "2026-10-11T06:12:57Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "28a458e952d659c98664d51a401e40986488bf35498d90ea2790cdbc630ae5ab"
+ }
+}

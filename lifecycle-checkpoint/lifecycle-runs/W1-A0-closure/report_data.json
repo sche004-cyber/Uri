@@ -383,14 +383,134 @@
    "severity": "LOW",
    "status": "non-blocking",
    "title": "L-W1-4 still states the total fetch deadline can overrun by the read timeout, which the R4-03 watchdog removed"
+  },
+  {
+   "blocking": true,
+   "id": "R9-01",
+   "round": "R9",
+   "severity": "MEDIUM",
+   "status": "repaired 20a646f",
+   "title": "Text selected inside a withheld or sensitive field (OTP, CVV, any form field) is copied into the snapshot 'selection' and sent to the Brain as 'Selected text', bypassing D8 field withholding in both layers"
+  },
+  {
+   "blocking": true,
+   "id": "R9-02",
+   "round": "R9",
+   "severity": "MEDIUM",
+   "status": "repaired 20a646f",
+   "title": "D7 quantity detection is a word list: ordinals beyond 'tenth', -th forms of scale words, Unicode vulgar fractions and Roman numerals are not detected, so a Brain sentence with a changed value is shown in the Brain's words (R1-01 class not closed under D7)"
+  },
+  {
+   "blocking": true,
+   "id": "R9-03",
+   "round": "R9",
+   "severity": "MEDIUM",
+   "status": "repaired 20a646f",
+   "title": "HEAD regression: normalise() drops the adapter's has_value, so every withheld DOM field gets has_value=False; unlocated_sensitive no longer refuses screenshots for visible withheld fields without a usable rect, and filled required fields are reported REQUIRED_EMPTY"
+  },
+  {
+   "blocking": true,
+   "id": "R9-04",
+   "round": "R9",
+   "severity": "MEDIUM",
+   "status": "repaired 20a646f",
+   "title": "Brain answers derived from observed content survive revoke and re-grant: assist_ask_status returns them with no grant check and _answers is never cleared (A0-AC4 derived data after revoke)"
+  },
+  {
+   "blocking": true,
+   "id": "R9-05",
+   "round": "R9",
+   "severity": "MEDIUM",
+   "status": "repaired 20a646f",
+   "title": "Assist UI controller keeps findings and lastObservation through pause/resume and a new grant, and an ask() reply arriving after Stop restores the old observation"
+  },
+  {
+   "blocking": true,
+   "id": "R9-06",
+   "round": "R9",
+   "severity": "MEDIUM",
+   "status": "repaired 20a646f",
+   "title": "SafeFetcher DNS resolution runs outside the total timeout watchdog and cancel (R4-03 class): a slow or hostile authoritative DNS server holds a fetch beyond its budget, twice with robots"
+  },
+  {
+   "blocking": false,
+   "id": "R9-07",
+   "round": "R9",
+   "severity": "MEDIUM",
+   "status": "repaired 20a646f",
+   "title": "Screenshot masking covers only fields that snapshot.js sees (no shadow DOM, no iframes) and never masks text-redacted secrets, so a vision ask can send a visible IBAN, card number or API key"
+  },
+  {
+   "blocking": false,
+   "id": "R9-08",
+   "round": "R9",
+   "severity": "MEDIUM",
+   "status": "repaired 20a646f",
+   "title": "Conflict detector still misses differences written as number words or currency only (R8-02/R8-03 conflict half); documented in HEAD as an owner-decision (D7) limitation"
+  },
+  {
+   "blocking": false,
+   "id": "R9-09",
+   "round": "R9",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Stop racing the end of an ask can still emit a COMPLETE answer (final check and emit are not under the revoke lock)"
+  },
+  {
+   "blocking": false,
+   "id": "R9-10",
+   "round": "R9",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Browser-tab grant is not bound to its origin and target_lost() has no caller: a granted tab that navigates to another site is still observed"
+  },
+  {
+   "blocking": false,
+   "id": "R9-11",
+   "round": "R9",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "NAT64 local-use prefix 64:ff9b:1::/48 is judged only by its low 32 bits, so a private IPv4 embedded in a shorter RFC 6052 layout is allowed"
+  },
+  {
+   "blocking": false,
+   "id": "R9-12",
+   "round": "R9",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "IDN and trailing-dot hosts always fail with PIN_HOST_MISMATCH (fails closed, availability only); fullwidth numeric hosts pass the numeric guard before IDNA"
+  },
+  {
+   "blocking": false,
+   "id": "R9-13",
+   "round": "R9",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Search provider HTTP calls have no total deadline, byte cap or cancel"
+  },
+  {
+   "blocking": true,
+   "id": "R10-01",
+   "round": "R10",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "R9-01 repair regression: the rebuilt selection copies hidden text (display:none, aria-hidden, tiny/transparent/off-screen) and <script>/<style> source into 'Selected text', bypassing the hidden-text filter; injected instructions and page-state secrets reach the Brain request"
+  },
+  {
+   "blocking": false,
+   "id": "R10-02",
+   "round": "R10",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Assist UI poll path has no epoch or ask-id check: an assist_ask_status reply in flight when the user presses Stop (or Stop, re-grant and a new ask) can still show the old answer (R9-05 class on the polling path)"
   }
  ],
  "gates": [],
  "owner": [
   {
-   "kind": "TAMPER",
-   "needs": "owner: inspect the repository's git hooks/config/info and refs; restore them, or accept the current state with `unblock --note`",
-   "reason": "GIT_CONTROL: git_control, reviewer_exec changed since the plan (git hooks/config/info, user/system git config/attributes/ignore, replace refs, the reviewer CLI or managed CLI policy)"
+   "kind": "CONFIG",
+   "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
+   "reason": "milestone config or resolved policy changed since the plan (now config e9f199344cb0, policy 60c95fb8b36f)"
   }
  ],
  "repairs": [
@@ -435,6 +555,34 @@
    "reason": "",
    "repair": "P6",
    "status": "COMMITTED"
+  },
+  {
+   "addresses": "R9-01, R9-02, R9-03, R9-04, R9-05, R9-06, R9-07, R9-08",
+   "commit": "20a646fd3fe8",
+   "reason": "",
+   "repair": "P7",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R10-01",
+   "commit": "",
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": "P8",
+   "status": "REFUSED"
+  },
+  {
+   "addresses": "R10-01",
+   "commit": "",
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": "P9",
+   "status": "REFUSED"
+  },
+  {
+   "addresses": "R10-01",
+   "commit": "",
+   "reason": "REGRESSION: no regression test fails on the pre-repair commit",
+   "repair": "P10",
+   "status": "REFUSED"
   }
  ],
  "rounds": [
@@ -533,22 +681,46 @@
    "session": "ea66c95f-0132-47b0-b8ec-ad4326276010",
    "status": "COMPLETED_WITH_RESULT",
    "verdict": "REJECT"
+  },
+  {
+   "blocking": 6,
+   "candidate": "3dd9cde91818",
+   "findings": 13,
+   "finished": "2026-10-11T06:12:57Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R9",
+   "session": "ce6ea834-ed6e-4ef5-91f8-9fdc31f027f8",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "20a646fd3fe8",
+   "findings": 2,
+   "finished": "2026-10-11T06:34:39Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R10",
+   "session": "4f8c44cf-8eb5-407d-bf7a-6b574b4d1502",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
   }
  ],
  "summary": {
   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
-  "candidate": "87720d6dcd765e7e08ae3f44b4e141aa6c2b3bf0",
+  "candidate": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
   "evidence_ok": false,
-  "findings_repaired": 14,
-  "findings_total": 48,
+  "findings_repaired": 22,
+  "findings_total": 63,
   "integration": "none",
   "milestone": "W1-A0-closure",
-  "open_blocking": 3,
+  "open_blocking": 1,
   "owner_actions": 1,
   "receipt_chain_ok": true,
-  "repairs_committed": 6,
-  "rounds": 8,
+  "repairs_committed": 7,
+  "rounds": 10,
   "stage": "BLOCKED",
-  "written_at": "2026-10-11T05:37:32Z"
+  "written_at": "2026-10-11T06:42:01Z"
  }
 }

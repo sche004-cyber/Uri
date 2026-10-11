@@ -1,0 +1,339 @@
+=== tests/assist/test_a0_r9_review_regressions.py BEFORE (3dd9cde91818cfcf2db48067e8d4b56a1bda62f4) DONE
+=("observe",))
+        else:
+            br.handle("assist_pause", {"command": "assist_pause"})
+            br.handle("assist_resume", {"command": "assist_resume"})
+>       _assert_blank(br.handle("assist_ask_status", {"command": "assist_ask_status", "ask_id": aid}), aid)
+
+tests/assist/test_a0_r9_review_regressions.py:167: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+res = {'state': 'FINISHED', 'ask_id': '0d1ee448-163e-4545-8c8b-d41ab8f5e47c', 'status': 'COMPLETE', 'answer': 'SECRET-DERIVED ANSWER about the page', ...}
+aid = '0d1ee448-163e-4545-8c8b-d41ab8f5e47c'
+
+    def _assert_blank(res, aid):
+>       assert res["state"] == "FINISHED" and res["ask_id"] == aid and res["status"] == "CANCELLED"
+E       AssertionError: assert ('FINISHED' == 'FINISHED'
+E         
+E           FINISHED and '0d1ee448-163...-d41ab8f5e47c' == '0d1ee448-163...-d41ab8f5e47c'
+E         
+E           0d1ee448-163e-4545-8c8b-d41ab8f5e47c and 'COMPLETE' == 'CANCELLED'
+E         
+E         - CANCELLED
+E         + COMPLETE)
+
+tests/assist/test_a0_r9_review_regressions.py:144: AssertionError
+__ test_r9_04_answers_do_not_survive_stop_pause_or_a_new_grant[pause_resume] ___
+
+step = 'pause_resume'
+
+    @pytest.mark.parametrize("step", ["revoke", "pause", "regrant", "pause_resume"])
+    def test_r9_04_answers_do_not_survive_stop_pause_or_a_new_grant(step):
+        client = FakeClient(text="SECRET-DERIVED ANSWER about the page")
+        br, _ = mk(client=client)
+        grant(br, perms=("observe",))
+        out = ask_and_wait(br, "What is this?")
+        assert out["status"] == "COMPLETE" and out["answer"].startswith("SECRET")
+        aid = out["ask_id"]
+        if step == "revoke":
+            br.handle("assist_revoke", {"command": "assist_revoke"})
+        elif step == "pause":
+            br.handle("assist_pause", {"command": "assist_pause"})
+        elif step == "regrant":
+            br.handle("assist_revoke", {"command": "assist_revoke"})
+            grant(br, perms=("observe",))
+        else:
+            br.handle("assist_pause", {"command": "assist_pause"})
+            br.handle("assist_resume", {"command": "assist_resume"})
+>       _assert_blank(br.handle("assist_ask_status", {"command": "assist_ask_status", "ask_id": aid}), aid)
+
+tests/assist/test_a0_r9_review_regressions.py:167: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+res = {'state': 'FINISHED', 'ask_id': '4ef65c76-d233-4e9e-817f-c1cb801fb98b', 'status': 'COMPLETE', 'answer': 'SECRET-DERIVED ANSWER about the page', ...}
+aid = '4ef65c76-d233-4e9e-817f-c1cb801fb98b'
+
+    def _assert_blank(res, aid):
+>       assert res["state"] == "FINISHED" and res["ask_id"] == aid and res["status"] == "CANCELLED"
+E       AssertionError: assert ('FINISHED' == 'FINISHED'
+E         
+E           FINISHED and '4ef65c76-d23...-c1cb801fb98b' == '4ef65c76-d23...-c1cb801fb98b'
+E         
+E           4ef65c76-d233-4e9e-817f-c1cb801fb98b and 'COMPLETE' == 'CANCELLED'
+E         
+E         - CANCELLED
+E         + COMPLETE)
+
+tests/assist/test_a0_r9_review_regressions.py:144: AssertionError
+__________ test_r9_04_answer_is_blank_once_the_grant_ends_by_any_path __________
+
+    def test_r9_04_answer_is_blank_once_the_grant_ends_by_any_path():
+        client = FakeClient(text="SECRET-DERIVED ANSWER")
+        br, _ = mk(client=client)
+        grant(br, perms=("observe",))
+        out = ask_and_wait(br, "q")
+        assert out["answer"].startswith("SECRET")
+        br.access.revoke("expired")         # the grant ends without a bridge command (expiry, target lost)
+>       _assert_blank(br.handle("assist_ask_status", {"command": "assist_ask_status", "ask_id": out["ask_id"]}),
+                      out["ask_id"])
+
+tests/assist/test_a0_r9_review_regressions.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+res = {'state': 'FINISHED', 'ask_id': '519e9ddb-0187-4387-aefd-5b30b5b366b3', 'status': 'COMPLETE', 'answer': 'SECRET-DERIVED ANSWER', ...}
+aid = '519e9ddb-0187-4387-aefd-5b30b5b366b3'
+
+    def _assert_blank(res, aid):
+>       assert res["state"] == "FINISHED" and res["ask_id"] == aid and res["status"] == "CANCELLED"
+E       AssertionError: assert ('FINISHED' == 'FINISHED'
+E         
+E           FINISHED and '519e9ddb-018...-5b30b5b366b3' == '519e9ddb-018...-5b30b5b366b3'
+E         
+E           519e9ddb-0187-4387-aefd-5b30b5b366b3 and 'COMPLETE' == 'CANCELLED'
+E         
+E         - CANCELLED
+E         + COMPLETE)
+
+tests/assist/test_a0_r9_review_regressions.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_01_python_layer_refuses_a_selection_that_is_not_page_text[snap_over0]
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_01_python_layer_refuses_a_selection_that_is_not_page_text[snap_over1]
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_01_page_text_selection_is_still_shared
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_03_real_snapshot_keeps_has_value_through_normalise
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_03_screenshot_ask_refused_for_unlocated_filled_withheld_field
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_03_adapter_withholding_is_kept_and_empty_stays_empty
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_04_answers_do_not_survive_stop_pause_or_a_new_grant[revoke]
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_04_answers_do_not_survive_stop_pause_or_a_new_grant[pause]
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_04_answers_do_not_survive_stop_pause_or_a_new_grant[regrant]
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_04_answers_do_not_survive_stop_pause_or_a_new_grant[pause_resume]
+FAILED tests/assist/test_a0_r9_review_regressions.py::test_r9_04_answer_is_blank_once_the_grant_ends_by_any_path
+11 failed, 2 skipped in 1.21s
+
+=== tests/assist/test_a0_r9_review_regressions.py AFTER (20a646fd3fe8c48367bdc1cc995df5d09c3e7dab) DONE
+.............                                                            [100%]
+13 passed in 3.04s
+
+=== tests/web/test_w1_r9_review_regressions.py BEFORE (3dd9cde91818cfcf2db48067e8d4b56a1bda62f4) DONE
+_r9_review_regressions.py:44: AssertionError
+_________ test_r9_02_any_added_content_word_means_the_source_is_quoted _________
+
+    def test_r9_02_any_added_content_word_means_the_source_is_quoted():
+        src = "The bridge reopened to traffic after repairs were completed by the city."
+        v = SY.verify("The bridge reopened to heavy traffic after repairs were completed by the city [1].", [src])
+>       assert [(c.text, c.quoted) for c in v.claims] == [(src, True)]
+E       AssertionError: assert [('The bridge...ty .', False)] == [('The bridge...city.', True)]
+E         
+E         At index 0 diff: ('The bridge reopened to heavy traffic after repairs were completed by the city .', False) != ('The bridge reopened to traffic after repairs were completed by the city.', True)
+E         Use -v to get more diff
+
+tests/web/test_w1_r9_review_regressions.py:56: AssertionError
+__________ test_r9_06_slow_dns_is_bounded_by_the_total_timeout[False] __________
+
+robots = False
+
+    @pytest.mark.parametrize("robots", [False, True])
+    def test_r9_06_slow_dns_is_bounded_by_the_total_timeout(robots):
+        calls = []
+        f = _fetcher(_slow_resolver(3.0, calls), total_timeout=1.0, honour_robots=robots)
+        t0 = time.monotonic()
+        res = f.fetch("https://slow-dns.example/page")
+        elapsed = time.monotonic() - t0
+>       assert res.record.fetch_status == "TIMED_OUT" and elapsed < 1.6, elapsed
+E       AssertionError: 3.0016146289999597
+E       assert ('TIMED_OUT' == 'TIMED_OUT'
+E         
+E           TIMED_OUT and 3.0016146289999597 < 1.6)
+
+tests/web/test_w1_r9_review_regressions.py:84: AssertionError
+__________ test_r9_06_slow_dns_is_bounded_by_the_total_timeout[True] ___________
+
+robots = True
+
+    @pytest.mark.parametrize("robots", [False, True])
+    def test_r9_06_slow_dns_is_bounded_by_the_total_timeout(robots):
+        calls = []
+        f = _fetcher(_slow_resolver(3.0, calls), total_timeout=1.0, honour_robots=robots)
+        t0 = time.monotonic()
+        res = f.fetch("https://slow-dns.example/page")
+        elapsed = time.monotonic() - t0
+>       assert res.record.fetch_status == "TIMED_OUT" and elapsed < 1.6, elapsed
+E       AssertionError: 6.001226909000252
+E       assert ('TIMED_OUT' == 'TIMED_OUT'
+E         
+E           TIMED_OUT and 6.001226909000252 < 1.6)
+
+tests/web/test_w1_r9_review_regressions.py:84: AssertionError
+____________ test_r9_06_slow_dns_is_bounded_by_the_connect_timeout _____________
+
+    def test_r9_06_slow_dns_is_bounded_by_the_connect_timeout():
+        f = _fetcher(_slow_resolver(3.0, []), total_timeout=20.0, connect_timeout=0.5, honour_robots=False)
+        t0 = time.monotonic()
+        res = f.fetch("https://slow-dns.example/page")
+>       assert res.record.fetch_status == "TIMED_OUT" and time.monotonic() - t0 < 1.2
+E       AssertionError: assert ('OK' == 'TIMED_OUT'
+E         
+E         - TIMED_OUT
+E         + OK)
+
+tests/web/test_w1_r9_review_regressions.py:92: AssertionError
+_____________________ test_r9_06_cancel_cuts_a_slow_lookup _____________________
+
+    def test_r9_06_cancel_cuts_a_slow_lookup():
+        flag = SF.CancelFlag()
+        f = _fetcher(_slow_resolver(3.0, []), total_timeout=20.0, connect_timeout=10.0, honour_robots=False)
+        threading.Timer(0.3, flag.cancel).start()
+        t0 = time.monotonic()
+        res = f.fetch("https://slow-dns.example/page", cancel=flag)
+>       assert res.record.fetch_status == "CANCELLED" and time.monotonic() - t0 < 1.0
+E       AssertionError: assert ('CANCELLED' == 'CANCELLED'
+E         
+E           CANCELLED and (23535.612464067 - 23532.610437343) < 1.0)
+E        +  where 23535.612464067 = <built-in function monotonic>()
+E        +    where <built-in function monotonic> = time.monotonic
+
+tests/web/test_w1_r9_review_regressions.py:101: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_changed_value_is_never_shown_in_the_brains_words[The runner finished twelfth in the final race of the season [1].]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_changed_value_is_never_shown_in_the_brains_words[The museum celebrated its thousandth anniversary with a public exhibition [1].]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_changed_value_is_never_shown_in_the_brains_words[Regulators said the levy rose by \xbe after the review [1].]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_changed_value_is_never_shown_in_the_brains_words[Officials said the company filed for Chapter XI protection [1].]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_number_forms_are_quantities[finished eleventh]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_number_forms_are_quantities[its hundredth year]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_number_forms_are_quantities[a thousandth of it]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_number_forms_are_quantities[rose by \xbe]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_number_forms_are_quantities[Chapter XI]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_number_forms_are_quantities[Louis XIV]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_number_forms_are_quantities[\u2167 items]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_number_forms_are_quantities[x\xb2 more]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_02_any_added_content_word_means_the_source_is_quoted
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_06_slow_dns_is_bounded_by_the_total_timeout[False]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_06_slow_dns_is_bounded_by_the_total_timeout[True]
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_06_slow_dns_is_bounded_by_the_connect_timeout
+FAILED tests/web/test_w1_r9_review_regressions.py::test_r9_06_cancel_cuts_a_slow_lookup
+17 failed, 6 passed in 15.25s
+
+=== tests/web/test_w1_r9_review_regressions.py AFTER (20a646fd3fe8c48367bdc1cc995df5d09c3e7dab) DONE
+.......................                                                  [100%]
+23 passed in 2.99s
+
+=== uri_ui/test/living/assist_r9_test.dart BEFORE (3dd9cde91818cfcf2db48067e8d4b56a1bda62f4) DONE
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.1 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.1.3 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.0.0 available)
+  file_picker_web 3.1.0 (4.1.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_r9_test.dart
+00:00 +0: R9-05: pause discards findings, the observation and the answer
+00:00 +0 -1: R9-05: pause discards findings, the observation and the answer [E]
+  Expected: empty
+    Actual: [{'code': 'EMAIL_FORMAT', 'field': 'E-mail', 'message': 'x'}]
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/living/assist_r9_test.dart 87:7                main.<fn>
+  
+00:00 +0 -1: R9-05: resume discards findings, the observation and the answer
+00:00 +0 -2: R9-05: resume discards findings, the observation and the answer [E]
+  Expected: empty
+    Actual: [{'code': 'X'}]
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/living/assist_r9_test.dart 87:7                main.<fn>
+  
+00:00 +0 -2: R9-05: grant discards findings, the observation and the answer
+00:00 +0 -3: R9-05: grant discards findings, the observation and the answer [E]
+  Expected: empty
+    Actual: [{'code': 'EMAIL_FORMAT', 'field': 'E-mail', 'message': 'x'}]
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/living/assist_r9_test.dart 87:7                main.<fn>
+  
+00:00 +0 -3: R9-05: an ask reply arriving after Stop does not restore the old observation
+00:00 +0 -4: R9-05: an ask reply arriving after Stop does not restore the old observation [E]
+  Expected: null
+    Actual: 'ask-1'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/living/assist_r9_test.dart 106:5               main.<fn>
+  
+00:00 +0 -4: R9-05: a check reply arriving after a new grant is dropped
+00:00 +0 -5: R9-05: a check reply arriving after a new grant is dropped [E]
+  Expected: empty
+    Actual: [{'code': 'EMAIL_FORMAT', 'field': 'E-mail', 'message': 'x'}]
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/living/assist_r9_test.dart 122:5               main.<fn>
+  
+00:00 +0 -5: Some tests failed.
+
+Failing tests:
+  /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_r9_test.dart: R9-05: a check reply arriving after a new grant is dropped
+  /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_r9_test.dart: R9-05: an ask reply arriving after Stop does not restore the old observation
+  /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_r9_test.dart: R9-05: grant discards findings, the observation and the answer
+  /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_r9_test.dart: R9-05: pause discards findings, the observation and the answer
+  /tmp/claude-0/lc-work/W1-A0-closure/pre_repair/uri_ui/test/living/assist_r9_test.dart: R9-05: resume discards findings, the observation and the answer
+   Woah! You appear to be trying to run flutter as root.
+   We strongly recommend running the flutter tool without superuser privileges.
+  /
+📎
+
+=== uri_ui/test/living/assist_r9_test.dart AFTER (20a646fd3fe8c48367bdc1cc995df5d09c3e7dab) DONE
+Resolving dependencies...
+Downloading packages...
+  android_file_picker 1.1.1 (2.0.1 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_picker 12.2.0 (13.1.0 available)
+  file_picker_darwin 1.1.0 (2.1.3 available)
+  file_picker_linux 1.1.0 (2.0.2 available)
+  file_picker_platform_interface 3.3.0 (4.0.0 available)
+  file_picker_web 3.1.0 (4.1.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  screen_retriever 0.2.2 (0.3.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher 6.3.2 (6.3.3 available)
+  vector_math 2.4.0 (2.4.3 available)
+  windows_file_picker 1.2.0 (2.0.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+19 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /tmp/claude-0/lc-work/W1-A0-closure/post_repair/uri_ui/test/living/assist_r9_test.dart
+00:00 +0: R9-05: pause discards findings, the observation and the answer
+00:00 +1: R9-05: resume discards findings, the observation and the answer
+00:00 +2: R9-05: grant discards findings, the observation and the answer
+00:00 +3: R9-05: an ask reply arriving after Stop does not restore the old observation
+00:00 +4: R9-05: a check reply arriving after a new grant is dropped
+00:00 +5: All tests passed!
+   Woah! You appear to be trying to run flutter as root.
+   We strongly recommend running the flutter tool without superuser privileges.
+  /
+📎
+
