@@ -81,6 +81,8 @@ class OfficeController extends ChangeNotifier {
         'BRAIN_UNAVAILABLE' => 'The local Brain is not running. Nothing was changed.',
         'CELL_NOT_EDITABLE' => 'That cell is part of a table header, shared formula or merged range and cannot be edited here.',
         'STALE_CHANGE' || 'STALE_SURFACE' || 'CHANGE_MISMATCH' => 'This changed since it was shown. Please review it again.',
+        'RELOAD_REQUIRED' =>
+          'The sheet\'s rows or sheets changed with the last save. The sheet was reloaded; nothing was changed by that edit.',
         _ => 'Refused: $code${detail == null || detail.isEmpty ? '' : ' ($detail)'}',
       };
 
@@ -101,7 +103,8 @@ class OfficeController extends ChangeNotifier {
       // After a save the service returns the workbook as the file now holds it; reload the grid from that, not from
       // the values as opened.
       final w = r['workbook'];
-      view = {...view!, 'draft': d, if (w is Map) 'workbook': w};
+      final lv = r['layout_version'];
+      view = {...view!, 'draft': d, if (w is Map) 'workbook': w, if (lv != null) 'layout_version': lv};
       if (pageReady) await surface.post({'type': 'load', 'workbook': view!['workbook'], 'marks': marks()});
     }
   }
@@ -116,7 +119,10 @@ class OfficeController extends ChangeNotifier {
       case 'edit':
         final wid = workbookId;
         if (wid == null) return;
-        final body = {'sheet': m['sheet'], 'cell': m['cell'], if (m.containsKey('formula')) 'formula': m['formula'] else 'value': m['value']};
+        // The grid's layout version goes with the edit: the service refuses coordinates from a grid whose rows moved.
+        final lv = view?['layout_version'];
+        final body = {'sheet': m['sheet'], 'cell': m['cell'], if (m.containsKey('formula')) 'formula': m['formula'] else 'value': m['value'],
+          if (lv != null) 'layout_version': lv};
         _pageEdits.add((wid, body));
         await _sendPageEdits();
       case 'error':
@@ -136,6 +142,7 @@ class OfficeController extends ChangeNotifier {
     _sendingEdits = true;
     Map<String, dynamic>? last;
     var refused = false;
+    var reload = false;
     try {
       while (_pageEdits.isNotEmpty) {
         final (wid, body) = _pageEdits.removeAt(0);
@@ -144,6 +151,7 @@ class OfficeController extends ChangeNotifier {
           last = await client.edit(wid, body);
         } on SchedulerApiError catch (e) {
           refused = true;
+          if (e.code == 'RELOAD_REQUIRED') reload = true;
           notice = _human(e.code, e.detail);
         } catch (e) {
           refused = true;
@@ -153,12 +161,31 @@ class OfficeController extends ChangeNotifier {
     } finally {
       _sendingEdits = false;
     }
-    if (last != null) {
+    if (reload) {
+      await _reloadView();               // the grid's layout is stale: load the sheet as it is now
+    } else if (last != null) {
       await _refreshDraft(last);
     } else if (refused) {
       await _sendLoad();                 // refused: show the service's truth again
     }
     notifyListeners();
+  }
+
+  /// Fetches the workbook again from the service (which re-reads a Google sheet whose layout a save changed) and
+  /// reloads the grid. Until that succeeds the service refuses edits from the old grid.
+  Future<void> _reloadView() async {
+    final wid = workbookId;
+    if (wid == null) return;
+    try {
+      final v = await client.view(wid);
+      if (wid == workbookId) await _apply(v);
+      if (v['reload_required'] == true) {
+        notice = 'The save was applied, but the sheet could not be read again. Edits are paused until it reloads; '
+            'reopen it or try again.';
+      }
+    } catch (_) {
+      notice = 'The save was applied, but the sheet could not be read again. Reopen it before editing.';
+    }
   }
 
   // ---- owner actions -----------------------------------------------------------------------------------------
@@ -209,6 +236,9 @@ class OfficeController extends ChangeNotifier {
     notice = result['status'] == 'applied'
         ? (result['saved_to'] != null ? 'Saved to ${result['saved_to']}.' : 'Applied.')
         : 'Nothing was changed.';
+    if (result['layout_reloaded'] == false || result['reload_required'] == true) {
+      await _reloadView();               // the grid still shows the old rows: never let the owner edit it as is
+    }
     notifyListeners();
     return r;
   }

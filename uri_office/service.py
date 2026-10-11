@@ -58,6 +58,7 @@ class Session:
     open_sha: str | None = None     # local, file hash at open / last save
     file_id: str | None = None      # google
     stale_ops: list = field(default_factory=list)   # google: applied structural ops not yet re-read
+    layout_version: int = 0         # google: bumped by every re-read after a layout change; grids carry it
     lock: threading.RLock = field(default_factory=threading.RLock)
 
 
@@ -99,12 +100,17 @@ class Office:
     def view(self, wid) -> dict:
         s = self._session(wid)
         with s.lock:
+            try:
+                self._refresh(s)                         # a panel reloading after a failed re-read gets the new layout
+            except OfficeError:
+                pass                                     # reported as reload_required below
             out = {"workbook_id": s.workbook_id, "engine": s.engine, "label": s.label, "workbook": s.workbook,
                    "draft": s.draft.snapshot(), "history_on": self.history.consented(s.key)}
             if s.engine == "google":
                 out["open_url"] = G.open_url(s.file_id)
                 out["writable"] = self.google.writable(s.file_id)
                 out["reload_required"] = bool(s.stale_ops)
+                out["layout_version"] = s.layout_version
             return out
 
     def open_local(self, raw_path) -> dict:
@@ -186,32 +192,50 @@ class Office:
         if pending["struct_ops"]:
             s.stale_ops = list(s.stale_ops) + list(pending["struct_ops"])
             try:
-                return {"layout_reloaded": True, "proposals_dropped": self._refresh(s)}
+                return {"layout_reloaded": True, "proposals_dropped": self._refresh(s)[0]}
             except OfficeError:                          # the save itself succeeded; the next call retries the re-read
                 return {"layout_reloaded": False}
         return {}
 
-    def _refresh(self, s) -> int:
+    def _refresh(self, s):
         """Re-read a Google sheet whose layout an applied save changed. Until that succeeds the session refuses edits,
-        Brain turns, decisions and saves: its sheet names and row positions no longer match the sheet. Returns how many
-        proposed changes were dropped because their rows moved."""
+        Brain turns, decisions and saves: its sheet names and row positions no longer match the sheet. Returns (how many
+        proposed changes were dropped because their rows moved, the sheets whose rows moved by their names now), or
+        None when there was nothing to re-read."""
         if not s.stale_ops:
-            return 0
+            return None
         try:
             wb = self.google.read(s.file_id)
         except Exception:  # noqa: BLE001 - a failed re-read must not be reported as a failed save
             raise OfficeError("RELOAD_REQUIRED", "the sheet's layout changed with the last save and could not be "
                                                  "read again; try again", 503) from None
+        renames, moved = D.layout_moves(s.stale_ops)
         dropped = s.draft.rebase(wb, s.stale_ops)
         s.workbook = wb
         s.stale_ops = []
-        return dropped
+        s.layout_version += 1
+        return dropped, {renames.get(m, m) for m in moved}
+
+    @staticmethod
+    def _reloaded(s, refreshed) -> dict:
+        """Response fields after a call that may have re-read the sheet: the layout version, and the new workbook when
+        this call re-read it, so the panel reloads its grid before the owner edits it by row and column."""
+        if s.engine != "google":
+            return {}
+        return {"layout_version": s.layout_version, **({"workbook": s.workbook} if refreshed is not None else {})}
 
     def edit(self, wid, body) -> dict:
         from . import ops as O
         s = self._session(wid)
         with s.lock:
-            self._refresh(s)
+            refreshed = self._refresh(s)
+            # The sheet and cell come from the panel's grid. If that grid predates a layout change (rows moved by a
+            # Google save) they name a different cell now: refuse rather than write the owner's value there.
+            stale_grid = (body.get("layout_version") is not None and body.get("layout_version") != s.layout_version) \
+                or (refreshed is not None and str(body.get("sheet")) in refreshed[1])
+            if s.engine == "google" and stale_grid:
+                raise OfficeError("RELOAD_REQUIRED", "the sheet's rows moved since this grid was loaded; reload it "
+                                                     "and edit again", 409)
             op = ({"op": "set_formula", "sheet": body.get("sheet"), "cell": body.get("cell"), "formula": body["formula"]}
                   if "formula" in body else
                   {"op": "set_values", "sheet": body.get("sheet"), "range": body.get("cell"), "values": [[body.get("value")]]})
@@ -219,35 +243,35 @@ class Office:
             events = s.draft.user_edit(edits[0])
             for ev in events:
                 self.history.record(s.key, s.draft.version, ev)
-            return {"draft": s.draft.snapshot()}
+            return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
 
     def decide(self, wid, body) -> dict:
         s = self._session(wid)
         with s.lock:
-            self._refresh(s)
+            refreshed = self._refresh(s)
             events = s.draft.decide(body.get("change_id"), body.get("decision"), body.get("change_sha256"))
             for ev in events:
                 self.history.record(s.key, s.draft.version, ev, body.get("reason", ""))
-            return {"draft": s.draft.snapshot()}
+            return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
 
     def undo(self, wid, redo=False) -> dict:
         s = self._session(wid)
         with s.lock:
-            self._refresh(s)
+            refreshed = self._refresh(s)
             (s.draft.redo if redo else s.draft.undo)()
-            return {"draft": s.draft.snapshot()}
+            return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
 
     def instruct(self, wid, body) -> dict:
         if self.brain is None:
             raise OfficeError("BRAIN_UNAVAILABLE", "the Brain is not configured for this service", 503)
         s = self._session(wid)
         with s.lock:                                     # the draft is locked for the whole turn; user edits queue
-            self._refresh(s)
+            refreshed = self._refresh(s)
             res = self.brain.plan(body.get("text"), sheets=self._current_sheets(s), active=body.get("active_sheet"),
                                   engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key))
             new = s.draft.propose(res["edits"]) if res["edits"] else []
             return {"message": res["message"], "proposed": [c["cid"] for c in new], "refused": res["refused"],
-                    "metrics": res["metrics"], "draft": s.draft.snapshot()}
+                    "metrics": res["metrics"], "draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
 
     # ---- approvals -----------------------------------------------------------------------------------------------
     def propose_save(self, wid, body) -> dict:
@@ -338,6 +362,9 @@ class Office:
             s = self.sessions[r["workbook_id"]]
             r["draft"] = s.draft.snapshot()
             r["workbook"] = s.workbook
+            if s.engine == "google":
+                r["layout_version"] = s.layout_version
+                r["reload_required"] = bool(s.stale_ops)
         return r
 
     # ---- google extras -------------------------------------------------------------------------------------------
