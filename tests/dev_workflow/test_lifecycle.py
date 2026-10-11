@@ -1804,3 +1804,67 @@ def test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed(tmp_path, r8_env
     finally:
         if pid:
             _kill(pid)
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1 R10 regressions
+
+_HOLDER = """
+import os, subprocess, sys, time
+pidfile = sys.argv[1]
+# a setsid() descendant that inherits stdout/stderr and keeps them open long after the timeout
+p = subprocess.Popen(["setsid", sys.executable, "-c",
+                      "import os, sys, time; open(sys.argv[1], 'w').write(str(os.getpid())); time.sleep(120)",
+                      pidfile])
+print("started", flush=True)
+time.sleep(120)
+"""
+
+
+def _bounded(fn, limit):
+    """Run fn in a thread; a call that blocks on a held pipe fails the test instead of hanging the suite."""
+    import threading
+    box = {}
+    t = threading.Thread(target=lambda: box.setdefault("r", fn()), daemon=True)
+    t.start()
+    t.join(limit)
+    assert not t.is_alive(), f"did not return within {limit}s of a timeout (R10-01)"
+    return box["r"]
+
+
+@pytest.fixture
+def holder(tmp_path):
+    script = tmp_path / "holder.py"
+    script.write_text(_HOLDER)
+    pidfile = tmp_path / "holder.pid"
+    yield [PY, str(script), str(pidfile)], pidfile
+    if pidfile.is_file() and pidfile.read_text().strip():
+        _kill(int(pidfile.read_text()))
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="setsid/child-subreaper are Linux-only")
+def test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept(tmp_path, holder):
+    argv, pidfile = holder
+    L.sweep_orphans()  # the driver becomes the child subreaper at startup (run()), before any command
+    rc, out, err, state = _bounded(lambda: L.run_cmd(argv, tmp_path, 2), 20)
+    assert state == "TIMED_OUT" and rc is None and "started" in out
+    assert not _alive(_wait_pid(pidfile))  # adopted by the driver and killed by the sweep, not left holding the pipe
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="setsid/child-subreaper are Linux-only")
+def test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept(tmp_path, holder):
+    from scripts.dev_workflow.lifecycle_providers import run_worker
+    argv, pidfile = holder
+    w = _bounded(lambda: run_worker({"provider": "command", "argv": argv}, "implementer", "p", tmp_path,
+                                    tmp_path / "logs", timeout_s=2), 20)
+    assert w["status"] == "TIMED_OUT" and w["exit_code"] is None and w["contained"] is True
+    assert not _alive(_wait_pid(pidfile))
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="setsid is Linux-only here")
+def test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver(tmp_path, holder, monkeypatch):
+    """Without a working sweep (a holder outside the driver's tree), the read after the timeout is still bounded."""
+    from scripts.dev_workflow import lifecycle_providers as P
+    monkeypatch.setattr(P, "sweep_orphans", lambda *a, **k: {"contained": False, "killed": 0, "reason": "test"})
+    argv, pidfile = holder
+    rc, out, err, state = _bounded(lambda: L.run_cmd(argv, tmp_path, 2), 25)
+    assert state == "TIMED_OUT" and rc is None

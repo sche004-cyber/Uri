@@ -33,7 +33,7 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from scripts.dev_workflow.lifecycle_providers import (INDEPENDENT_PROVIDERS, managed_policy_state,
+from scripts.dev_workflow.lifecycle_providers import (INDEPENDENT_PROVIDERS, drain_after_timeout, managed_policy_state,
                                                       reviewer_executable, run_worker, sweep_orphans)
 from scripts.dev_workflow.security_boundary import is_devtest_identifier
 from scripts.dev_workflow.state_machine import VALID_TRANSITIONS, InvalidTransitionError, WorkflowState as S
@@ -663,8 +663,7 @@ def run_cmd(cmd, cwd, timeout) -> tuple:
         out, err = p.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
         state = "TIMED_OUT"
-        _killpg(p.pid)
-        out, err = p.communicate()
+        out, err = drain_after_timeout(p)
     _killpg(p.pid)
     sweep_orphans()  # a setsid() child of a gate or test is adopted by the driver and killed here (R8-01)
     return (p.returncode if state == "DONE" else None), out, err, state

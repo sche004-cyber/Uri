@@ -127,6 +127,30 @@ def sweep_orphans(max_passes: int = 500) -> dict:
     return {"contained": False, "killed": killed, "reason": "orphans kept respawning"}
 
 
+def drain_after_timeout(proc, grace: float = 5.0) -> tuple:
+    """End a timed-out worker or command without blocking on its pipes (R10-01): kill its group, reap it, sweep the
+    orphans that may still hold stdout/stderr (a setsid() child is outside the group), then read what is left for at
+    most ``grace`` seconds. A holder outside the driver's tree cannot block the driver either: the pipes are closed."""
+    _killpg(proc.pid)
+    try:
+        proc.wait(timeout=grace)  # reaped before the sweep, which treats every child outside our session as an orphan
+    except subprocess.TimeoutExpired:
+        pass
+    sweep_orphans()
+    try:
+        return proc.communicate(timeout=grace)
+    except subprocess.TimeoutExpired as e:
+        def text(b):
+            return b.decode("utf-8", "replace") if isinstance(b, bytes) else (b or "")
+        for f in (proc.stdout, proc.stderr):
+            try:
+                if f:
+                    f.close()
+            except OSError:
+                pass
+        return text(e.output), text(e.stderr)
+
+
 def provider_available(spec: dict) -> tuple[bool, str]:
     p = spec.get("provider")
     if p in ("claude_cli", "codex_cli"):
@@ -426,8 +450,7 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
         out, err = proc.communicate(prompt, timeout=timeout_s)
         rec["exit_code"] = proc.returncode
     except subprocess.TimeoutExpired:
-        _killpg(proc.pid)
-        out, err = proc.communicate()
+        out, err = drain_after_timeout(proc)
         rec["exit_code"] = None
         rec.update(status="TIMED_OUT")
     except OSError as e:

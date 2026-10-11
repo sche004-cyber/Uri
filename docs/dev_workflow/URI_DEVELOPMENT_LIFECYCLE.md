@@ -79,8 +79,9 @@ parsed result, `round.json` with worker identity and integrity check), `repairs/
 - A worker child that calls `setsid()` itself leaves the killed process group. On Linux it is still in the driver's
   process tree (child subreaper) and is killed by the sweep after its worker or command, before anything is checked
   and before the next worker starts (R8-01). Not contained: a process started outside the driver's tree (e.g. through
-  `systemd-run --user`, `at`/cron or another service) and the orphans of a driver that was itself killed (they go to
-  init). Such a process can write into `state_dir` and the checkouts (caught by the clean-worktree checks and `verify`,
+  `systemd-run --user`, `at`/cron or another service) and the workers, commands and orphans of a driver that was itself
+  killed (they go to init; a resumed run's sweep does not see them and still records `contained: true`, R10-02). A
+  timed-out worker or command no longer blocks the driver on a pipe held by such a child (R10-01). Such a process can write into `state_dir` and the checkouts (caught by the clean-worktree checks and `verify`,
   ⇒ BLOCKED (TAMPER)), and into a reviewer's config dir (caught by the whole-run watch, which polls every 10 ms: an
   injection shorter than one poll interval that the CLI still reads in that window is not excluded). No
   cgroup/namespace isolation is used; on Windows/macOS there is no containment and real reviews do not count.
