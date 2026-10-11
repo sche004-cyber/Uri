@@ -217,6 +217,17 @@ def main():
                 assist_brain = loopback_client(R.base_url(cfg))
                 # Search keys: an owner-placed file under the client state root (the environment is cleared, F2).
                 web_keys = WEB_SEARCH.load_search_keys(root / "control" / "web" / "search_keys.json")
+                # Owner decision D3: the Tavily key in the URI development folder's .env (the source checkout the
+                # runtime was materialized from, recorded in its receipt), then the runtime source root's .env.
+                env_files = [Path(m["source_root"]) / ".env"]
+                try:
+                    import json as _json
+                    rcpt = _json.loads((Path(m["source_root"]) / "OI_MATERIALIZATION_RECEIPT.json").read_text(encoding="utf-8"))
+                    if rcpt.get("candidate_source"):
+                        env_files.insert(0, Path(rcpt["candidate_source"]) / ".env")
+                except (OSError, ValueError, AttributeError):
+                    pass
+                web_keys = WEB_SEARCH.merge_keys(web_keys, WEB_SEARCH.load_env_keys(env_files))
                 web = WEB.WebResearch(write_event=lambda ev: write({"event": ev}),
                                       brain_complete=make_complete(assist_brain), brain_idle=lambda: not oi.busy,
                                       providers_factory=lambda: WEB_SEARCH.providers_from_keys(web_keys),

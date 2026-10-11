@@ -232,6 +232,47 @@ def load_search_keys(path) -> dict:
     return out
 
 
+_ENV_NAMES = {"TAVILY_API_KEY": "tavily_api_key", "BRAVE_API_KEY": "brave_api_key", "SEARXNG_URL": "searxng_url"}
+
+
+def load_env_keys(paths) -> dict:
+    """Read search provider settings from ``.env`` files (owner decision D3, 2026-10-11).
+
+    Same KEY=VALUE convention as ``uri_core/tools/web_search.py`` (``TAVILY_API_KEY``); only the three provider
+    names above are read, nothing else from the file is kept, and the process environment is never modified.
+    Earlier paths win. A missing, oversized or unreadable file is skipped. Values are never logged or returned
+    to the UI.
+    """
+    from pathlib import Path
+    out = {}
+    for path in paths or []:
+        try:
+            p = Path(path)
+            if not p.is_file() or p.stat().st_size > 65_536:
+                continue
+            text = p.read_text(encoding="utf-8-sig")
+        except (OSError, ValueError):
+            continue
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            name, _, value = line.partition("=")
+            name = name.strip()
+            if name.startswith("export "):
+                name = name[7:].strip()
+            key = _ENV_NAMES.get(name)
+            value = value.strip().strip('"').strip("'").strip()
+            if key and key not in out and 0 < len(value) <= 512:
+                out[key] = value
+    return out
+
+
+def merge_keys(primary: dict, fallback: dict) -> dict:
+    """``search_keys.json`` (primary) wins over ``.env`` values per provider."""
+    return {**fallback, **primary}
+
+
 def providers_from_keys(keys: dict, **kw) -> list:
     """Providers configured ONLY from `keys` (never from the environment)."""
     return [TavilyProvider(api_key=keys.get("tavily_api_key", ""), **kw),

@@ -49,3 +49,13 @@ through `import-review` (a relayed review may route findings to repair but never
 directive: Codex may be used when available but is never a mandatory dependency; a separate-process Claude reviewer
 is the independent reviewer. Integration into canonical still requires the owner's authorisation for the push
 (this session has no push right to `integration/*`).
+
+### Owner decisions D1-D6 (2026-10-11)
+
+Recorded in `docs/governance/OWNER_DECISIONS_20261011.md`. Applied here: D3 — W1 now also reads `TAVILY_API_KEY`
+(and `BRAVE_API_KEY`, `SEARXNG_URL`) from the development folder's `.env` (located through the runtime's
+materialization receipt `candidate_source`, then the runtime source root), `search_keys.json` taking precedence;
+nothing else in the file is kept, the process environment is not modified, values are never logged
+(`uri_web/search.py` `load_env_keys`, worker hook, `tests/web/test_w1_env_keys.py`). Live search: NOT VERIFIED in
+the cloud container (no `.env` here; the key lives on the owner's PC). This change is part of the W1/A0 candidate
+reviewed from R2 on.
