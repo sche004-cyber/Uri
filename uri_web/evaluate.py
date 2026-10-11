@@ -60,9 +60,12 @@ def normalise_url(url: str) -> str:
 
 
 def sentences(text: str, limit: int = 400) -> list:
+    # R7-01: a split never cuts a link in two ('at refunds-portal . Com/claim'): pieces a link runs across are joined
+    # again, so the link checks downstream see the whole link, not two link-free halves.
+    from .untrusted import merge_split_links   # local import: untrusted imports this module
     out = []
     for block in (text or "").split("\n"):
-        for s in _SENT.split(block.strip()):
+        for s in merge_split_links([p.strip() for p in _SENT.split(block.strip())]):
             s = s.strip()
             if 20 <= len(s) <= 600:
                 out.append(s)

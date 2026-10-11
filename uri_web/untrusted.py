@@ -13,6 +13,7 @@ Retrieved text is DATA. These helpers make that structural:
 from __future__ import annotations
 
 import re
+import sys
 import unicodedata
 
 _PATTERNS = (
@@ -72,12 +73,113 @@ def flags(text: str) -> list:
 # spaces on either side, or any bracket pair around a dot-like mark or 'dot', or a spaced 'dot'. The one ordinary
 # punctuation shape, a full stop with a space after it and none before ('approved. The'), is a sentence break unless
 # the next word is lower case and not a known non-domain word (_AFTER_STOP_WORDS); see _is_domain.
-_DOTCH = "[.\u3002\uff0e\uff61\u00b7\u0387\u2022\u2024\u2027\u2219\u22c5\u2e3c\u30fb\uff65\ufe52]"
-_DOT = (r"(?:\s*" + _DOTCH + r"\s*|\s*[\[({<]\s*(?:" + _DOTCH + r"|(?i:dot))\s*[\])}>]\s*|\s+(?i:dot)\s+)")
-_STOP_SPACE = re.compile(r"[.\u3002\uff0e\uff61]\s+\Z")
-_BARE = re.compile(r"(?<![^\W_])(?P<host>(?:[^\W_][\w-]{0,62}" + _DOT + r")+)(?P<tld>(?i:[a-z0-9]{2}--[\w-]{1,59})|[^\W\d_]{2,63})(?![^\W_])(?P<path>/\S*)?")
+# R7-01 (after R6-01 reopened the R1-01 class a seventh time: 'refunds-portal\u060ccom', 'refunds..com', 'refunds\u2026com',
+# 'portal,com', 'portal:com', 'portal d0t com', 'portal_dot_com', 'portal\u2e31com'): D13 was carried out as one more
+# list of dot characters (_DOTCH), so every mark it left out was a way past it. The separator is now a rule over
+# Unicode categories, built below from the Unicode database rather than typed in:
+#   * _MARK: every punctuation (P*) or symbol (S*) character except the few that join the parts of ONE word (_JOIN):
+#     dashes (Pd: compounds and ranges, 'Paris\u2013London', 'the market\u2014which'), the apostrophes "'" and U+2019
+#     ("don't"), '/' ('and/or') and '_' ('snake_case'). A run of marks with no space in it is a dot ('portal,com',
+#     'portal{.}com', 'refunds..com', 'portal:com', 'portal^com'); a joining character may lead a mark ("portal'.com").
+#   * a space followed by combining marks (NFKC turns '\u00a8' and '\u02d9' into one) is a mark too.
+#   * _DOTLIKE: the marks whose Unicode name says they are a dot or a full stop (FULL STOP, DOT, BULLET, DANDA,
+#     ELLIPSIS, LEADER, TSHEG, WORD SEPARATOR, ...). A run of them may have spaces on either side ('portal . com',
+#     'portal .com', 'portal ..com'), as D13 decided for the dots it listed.
+#   * any other mark run with a space before it and none after ('portal ,com', 'portal :com'), unless the run opens
+#     something (_OPENING: brackets, opening quotes, '#', '@', '*', currency, ...: 'the firm (founded', '#summer').
+#   * 'dot' or 'd0t', in any case, with any spaces, marks or dashes on both sides ('_dot_', '-dot-', '{dot}', ' d0t ').
+# What is left out is ordinary prose and costs no safety: a mark followed by a space with none before ('red, blue',
+# 'Note: the') is not a dot, except a dot-like mark, which follows D13 (see _is_domain). Residual limits, recorded:
+# 'portal, com' and 'portal: com' (a comma or colon then a space), like D13's 'portal. Com'; a dash between labels.
+# Two precision-only exceptions remain in _is_domain: D13's full stop and space, and a punctuation mark other than
+# '.' between two runs of a script without letter case (Chinese, Japanese, Arabic, Devanagari, ...), which is that
+# script's comma or sentence break ('東京、大阪', a Hindi danda between two words) unless the second run is a known
+# internationalised top-level domain (the R3-01 '。' rule, widened from Han and kana to every caseless script).
+# A host is matched over at most ten labels at a time: a longer one is still found (its last ten labels), and a long
+# run of 'a.a.a...' that is no link costs bounded work per start position.
+
+
+def _char_classes(**preds) -> dict:
+    """{name: regex character class of every code point for which preds[name](ch, category) holds}, as ranges."""
+    runs = {k: [] for k in preds}
+    for cp in range(sys.maxunicode + 1):
+        ch = chr(cp)
+        cat = unicodedata.category(ch)
+        if cat == "Cn":
+            continue                                 # unassigned: never in a class (and skipping it is faster)
+        for k, pred in preds.items():
+            if pred(ch, cat):
+                r = runs[k]
+                if r and r[-1][1] == cp - 1:
+                    r[-1][1] = cp
+                else:
+                    r.append([cp, cp])
+    return {k: "[" + "".join(re.escape(chr(a)) + ("-" + re.escape(chr(b)) if b > a else "") for a, b in r) + "]"
+            for k, r in runs.items()}
+
+
+_JOIN_CHARS = "'\u2019/_"
+_DOT_NAME = re.compile(r"\b(?:FULL STOP|DOT|DOTS|BULLET|DANDA|TSHEG|LEADER|ELLIPSIS|PERIOD|ANO TELEIA|"
+                       r"WORD SEPARATOR|WORDSPACE)\b")
+_FULL_STOP_NAME = re.compile(r"\b(?:FULL STOP|DANDA|ELLIPSIS)\b")
+
+
+def _is_mark(ch: str, cat: str) -> bool:
+    return cat[0] in "PS" and cat != "Pd" and ch not in _JOIN_CHARS
+
+
+def _is_dotlike(ch: str, cat: str) -> bool:
+    if ch == ".":
+        return True
+    if cat not in ("Po", "Sk", "Sm") or ch in _JOIN_CHARS:
+        return False
+    name = unicodedata.name(ch, "")
+    return bool(_DOT_NAME.search(name)) and " WITH " not in name
+
+
+_C = _char_classes(
+    mark=_is_mark,
+    join=lambda ch, cat: cat == "Pd" or ch in _JOIN_CHARS,
+    comb=lambda ch, cat: cat in ("Mn", "Mc", "Me"),
+    dotlike=_is_dotlike,
+    full_stop=lambda ch, cat: _is_dotlike(ch, cat) and (ch == "." or bool(_FULL_STOP_NAME.search(unicodedata.name(ch, "")))),
+    opening=lambda ch, cat: cat in ("Ps", "Pi", "Sc", "So") or ch in "\"`#@*&+~<=\u00a7\u00b6\u00bf\u00a1")
+_MARK, _JOIN, _COMB, _DOTLIKE, _FULL_STOP, _OPENING = (
+    _C["mark"], _C["join"], _C["comb"], _C["dotlike"], _C["full_stop"], _C["opening"])
+_RUN = r"(?:" + _JOIN + r"*(?:" + _MARK + _COMB + r"*|\s" + _COMB + r"+))+"   # a mark run, no plain space in it
+try:
+    re.compile("(?>a)")
+    _ATOMIC = "(?>"
+except re.error:                                     # Python < 3.11: no atomic groups (slower on hostile input only)
+    _ATOMIC = "(?:"
+
+
+def _dot(follow: str) -> str:
+    """The separator rule above as a regex. Every alternative must end where `follow` holds; the group is atomic, so a
+    separator that several alternatives match is matched once, not once per alternative (no exponential backtracking
+    on 'a.a.a.a...': each alternative ends at the same place, the next label, so trying only the first loses nothing)."""
+    alts = (r"(?:\s|" + _JOIN + r"|" + _MARK + r")+(?i:d[o0]t)(?:\s|" + _JOIN + r"|" + _MARK + r")+",  # '_dot_', ' d0t '
+            r"\s*" + _DOTLIKE + r"+\s*",                                       # 'portal . com', 'portal .com', '..'
+            r"\s*[\[({<]\s*(?:" + _DOTLIKE + r"+|(?i:d[o0]t))\s*[\])}>]\s*",     # 'portal [.] com', 'portal ( dot ) com'
+            _RUN,                                                               # 'portal,com', 'portal{.}com'
+            r"\s+(?!" + _OPENING + r")" + _RUN)                                # 'portal ,com'
+    return _ATOMIC + "|".join(a + follow for a in alts) + ")"
+
+
+_DOT = _dot(r"(?=[^\W_])")
+# The IP-address form keeps the narrower separator: '1,000,000,000' is a number, not an address.
+_DOT_IP = (r"(?:\s*" + _DOTLIKE + r"\s*|\s*[\[({<]\s*(?:" + _DOTLIKE + r"|(?i:dot))\s*[\])}>]\s*|\s+(?i:dot)\s+)")
+_LABEL_CH = r"[\w\-" + _COMB[1:-1] + r"]"
+_TLD_CH = r"(?:[^\W\d_]|" + _COMB + r")"
+_BARE = re.compile(r"(?<![^\W_])(?P<host>(?:[^\W_]" + _LABEL_CH + r"{0,62}" + _DOT + r"){1,10})"
+                   r"(?P<tld>(?i:[a-z0-9]{2}--[\w-]{1,59})|[^\W\d_]" + _TLD_CH + r"{1,62})(?![^\W_]|" + _COMB + r")"
+                   r"(?P<path>/\S*)?")
+# R7-01: a top-level label split by one space after a tight dot ('refunds-portal.c om'). The host label must be two or
+# more characters and the one letter lower case, so abbreviations ('U.S citizens', 'e.g the', 'Ph.D students') are not
+# matched.
+_SPLIT_TLD = re.compile(r"(?<![^\W_])[^\W_][\w-]{1,62}(?:" + _DOTLIKE + r"+|" + _RUN + r")(?P<one>[^\W\d_])\s[^\W\d_]{1,62}(?![^\W_])")
 _OTHER = re.compile(r"\S*(?::|\[:\])//\S*|(?i:\bwww)" + _DOT + r"\S+|[\w.+-]+@[\w-]+(?:" + _DOT + r"[\w-]+)+|"
-                    r"\b\d{1,3}(?:" + _DOT + r"\d{1,3}){3}\b|(?i:\b(?:javascript|vbscript):)\S*|(?i:\bdata:[a-z]+/)\S*")
+                    r"\b\d{1,3}(?:" + _DOT_IP + r"\d{1,3}){3}\b|(?i:\b(?:javascript|vbscript):)\S*|(?i:\bdata:[a-z]+/)\S*")
 _PHONE = re.compile(r"(?<![\w+])\+?\(?\d[\d \t().\-]{6,}\d(?![\w])")
 _NOT_PHONE = re.compile(r"\d{1,4}[./-]\d{1,2}[./-]\d{1,4}|(?:1[89]|20)\d\d\s*[-/]\s*(?:1[89]|20)\d\d")
 # Words that often follow a full stop typed without a space. None is a delegated top-level domain to the
@@ -134,11 +236,13 @@ def _skeleton(text: str) -> str:
     return "".join(ch for ch in text if unicodedata.category(ch) not in ("Mn", "Me")).translate(_CONFUSABLE)
 
 
-def _cjk(text: str) -> bool:
-    return any("\u3040" <= ch <= "\u30ff" or "\u3400" <= ch <= "\u9fff" or "\uf900" <= ch <= "\ufaff" for ch in text)
+def _caseless(text: str) -> bool:
+    """A run of a script without letter case (Han, kana, Arabic, Devanagari, ...): no letter in it is upper or lower."""
+    return bool(text) and not any(ch.isupper() or ch.islower() for ch in text)
 
 
 _ACE = re.compile(r"(?i)(?<![\w-])[a-z0-9]{2}--")
+_LAST = re.compile(r"([^\W_]" + _LABEL_CH + r"*)(" + _dot(r"\Z") + r")")
 
 
 def _is_domain(m) -> bool:
@@ -146,27 +250,32 @@ def _is_domain(m) -> bool:
     host, tld = m.group("host"), m.group("tld")
     if m.group("path") or _ACE.search(host + tld):
         return True                                  # R4-01: an ACE ('xn--') label is never ordinary text
-    if _STOP_SPACE.search(host) and not re.search(r"\s" + _DOTCH, host[-6:]):
+    lm = _LAST.search(host)
+    last, sep = (lm.group(1), lm.group(2)) if lm else ("", host)
+    if re.fullmatch(_FULL_STOP + r"+\s+", sep):
         # D13: 'word. Next' is a full stop and a space: a sentence break, unless the next word is lower case and not
         # a known non-domain word ('portal. com' is masked; 'No. of', 'approved. The' are not). Residual limit,
         # recorded in the decision: a capitalised or all-capital top-level label after '. ' ('portal. Com') reads as
         # a new sentence and is not masked. An abbreviation ends in a one-letter label ('U.S. rate', 'a.m. today',
         # 'e.g. the'), so that shape is ordinary text too; residual limit: a one-letter label then '. ' ('x. com').
-        last_label = re.split(_DOT, host)[-2] if host else ""
-        return tld.islower() and tld not in _AFTER_STOP_WORDS and len(last_label) > 1
+        # R7-01: any full stop (a name with FULL STOP, DANDA or ELLIPSIS; '...') counts, and a space before it does
+        # not ('portal .com' is a link).
+        return tld.islower() and tld not in _AFTER_STOP_WORDS and len(last) > 1
     one = re.fullmatch(r"([^\W\d_]+)(\s*\.\s*)", host)
     if (one and tld[:1].isupper() and (len(tld) == 1 or tld[1:].islower())
             and tld.casefold() in _SENTENCE_WORDS):
         return False                                 # 'rose.The': a missing space, and '.the' is no domain
-    last = re.split(_DOT, host)[-2] if host else ""
-    if host.endswith("\u3002") and _cjk(tld) and _cjk(last) and tld not in _IDN_TLDS:
-        return False                                 # '東京は大きい。次は': the ideographic full stop ends a sentence
+    marks = [ch for ch in sep if not ch.isspace()]
+    if (marks and "." not in marks and all(unicodedata.category(ch) == "Po" for ch in marks)
+            and _caseless(last) and _caseless(tld) and tld not in _IDN_TLDS):
+        return False                                 # '東京は大きい。次は', '東京、大阪': a caseless script's punctuation
     return True
 
 
 def _spans(text: str) -> list:
     """(start, end) of every link, e-mail, IP address and phone number in `text`."""
     out = [m.span() for m in _OTHER.finditer(text)] + [m.span() for m in _BARE.finditer(text) if _is_domain(m)]
+    out += [m.span() for m in _SPLIT_TLD.finditer(text) if m.group("one").islower()]
     out += [m.span() for m in _PHONE.finditer(text)
             if sum(ch.isdigit() for ch in m.group(0)) >= 8 and not _NOT_PHONE.fullmatch(m.group(0).strip("()+ "))]
     return out
@@ -191,6 +300,34 @@ def has_link_or_contact(text: str) -> bool:
     return _links(normalise(text)) or _links(_skeleton(text))
 
 
+def _all_spans(norm: str) -> list:
+    """Link spans in canonical text `norm`, from the text and from its skeleton (mapped back to `norm`)."""
+    skel, idx = _skeleton_map(norm)
+    return _spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a]
+
+
+def joins_link(a: str, b: str) -> bool:
+    """R7-01: 'a b' holds a link that runs across the space between them ('refunds-portal .' + 'Com/claim'). A
+    sentence splitter cuts at '. ' + capital, so each half can be link-free while the text it came from, and the two
+    halves shown one after the other, are not."""
+    if not (a or "").strip() or not (b or "").strip():
+        return False
+    cut = len(normalise(a))
+    return any(x < cut and y > cut + 1 for x, y in _all_spans(normalise(a + " " + b)))
+
+
+def merge_split_links(parts: list) -> list:
+    """`parts` (consecutive pieces of one text) with every two neighbours that a link runs across joined into one
+    piece, so the link is whole again and every per-piece check sees it."""
+    out = []
+    for p in parts:
+        if out and joins_link(out[-1], p):
+            out[-1] = out[-1] + " " + p
+        else:
+            out.append(p)
+    return out
+
+
 _EDGE = re.compile(r"^([(\[{<\"'\u201c\u2018]*)(.*?)([.,;:!?)\]}>\"'\u201d\u2019]*)$", re.S)
 
 
@@ -199,8 +336,7 @@ def mask_links(text: str, mask: str) -> str:
     phone number replaced by `mask` (its surrounding brackets and punctuation kept). R3-01: a spaced form
     ('portal [.] com', '1800 555 0199') spans several tokens; the tokens it covers become ONE mask."""
     norm = normalise(text)
-    skel, idx = _skeleton_map(norm)
-    spans = _spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a]
+    spans = _all_spans(norm)
     toks = [m for m in re.finditer(r"\S+", norm)]
     hit = [any(a < t.end() and t.start() < b for a, b in spans) or has_link_or_contact(t.group(0)) for t in toks]
     out, pos, i = [], 0, 0

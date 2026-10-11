@@ -62,7 +62,8 @@ class Synthesis:
 def _split_answer(text: str) -> list:
     text = (text or "").strip()
     parts = re.split(r"(?<=[.!?\]])\s+(?=[A-Z0-9\"'(])", text)
-    return [p.strip() for p in parts if p.strip()]
+    # R7-01: a link cut in two by the split ('Visit refunds-portal . Com/claim') is joined again, so it is checked whole.
+    return U.merge_split_links([p.strip() for p in parts if p.strip()])
 
 
 # Owner decision D7 (2026-10-11): an answer sentence that states a quantity - digits, a number word, a fraction,
@@ -284,7 +285,22 @@ def verify(answer: str, source_texts: list) -> Verified:
         kept = [c for c in cited if any(_supported_by(body, cw, claim_nums, x) for x in sents_of[c - 1])]
         if len(v.claims) < MAX_ANSWER_SENTENCES:
             v.claims.append(Claim(body, kept))
+    _drop_joined_links(v)
     return v
+
+
+def _drop_joined_links(v: Verified) -> None:
+    """R7-01: claims are shown one after the other, so two neighbours that together hold a link ('... at
+    refunds-portal .' then 'Com/claim ...') are both dropped, whichever path produced them."""
+    i = 0
+    while i + 1 < len(v.claims):
+        a, b = v.claims[i], v.claims[i + 1]
+        if U.joins_link(a.text, b.text):
+            v.dropped += [{"text": a.text, "reason": "LINK_OR_CONTACT"}, {"text": b.text, "reason": "LINK_OR_CONTACT"}]
+            del v.claims[i:i + 2]
+            i = max(i - 1, 0)
+        else:
+            i += 1
 
 
 def _quote(body: str, cited: list, sents_of: list):
@@ -330,6 +346,8 @@ def extractive(query: str, source_texts: list, *, max_sentences: int = 6, per_so
         if len(picked) >= max_sentences:
             break
     v = Verified(claims=picked)
+    _drop_joined_links(v)
+    picked = v.claims
     if not picked:
         v.no_answer = True
     return v
