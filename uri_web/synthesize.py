@@ -162,9 +162,10 @@ def _excerpt(claim: str, source: str) -> bool:
     cycle", "a [near] unanimous decision"; R4-02: R3-02 let any two non-function words go here), a preposition ("are
     [about] doubling"), a clause boundary - means the source sentence is quoted instead, which only costs fluency
     (D7). This does not depend on recognising the quantity word. states_quantity() on the skipped text is kept as an
-    extra check only. R5-02: the same holds at both ends of the claim (lead_ok, tail_ok): only gaps between matched
+    extra check only. R5-02/D14: the same holds at both ends of the claim (lead_ok, tail_ok): only gaps between matched
     words were checked, so a claim could be any trailing run of the sentence and drop a leading qualifier ("[Less
-    than] a plurality of voters backed the measure")."""
+    than] a plurality of voters backed the measure"). Under D14 the claim runs from the sentence start (determiners
+    aside) to its end; a clause edge is not enough ("Analysts said that, at most, [a quintet ...]")."""
     c = [w.lower() for w in _TOKEN.findall(claim or "")]
     toks = [(m.group(0).lower(), m.start(), m.end()) for m in _TOKEN.finditer(source or "")]
     if not any(w not in _FUNCTION_WORDS for w in c):
@@ -183,17 +184,14 @@ def _excerpt(claim: str, source: str) -> bool:
                 and all(w in _PLAIN_MODIFIERS for w in skipped[1:]))
 
     def lead_ok(j: int) -> bool:
-        """R5-02: the source words left out before the claim's first matched word. Only determiners may go, back to
-        the sentence start or to clause punctuation (_CLAUSE_MARK). A clause WORD is no boundary here: "Fewer than [a
-        quintet of firms]" would otherwise drop "Fewer than"."""
-        k = j
-        while k > 0 and toks[k - 1][0] in _DETERMINERS and not _CLAUSE_MARK.search(source[toks[k - 1][2]:toks[k][1]]):
-            k -= 1
-        return k == 0 or bool(_CLAUSE_MARK.search(source[toks[k - 1][2]:toks[k][1]]))
+        """D14 (owner, 2026-10-11, after R6-02: a comma edge still let 'that, at most,' go): a claim in the Brain's
+        words starts at the sentence start. Only determiners may be left out before its first matched word; any
+        other leading word or clause, punctuation or not, means the source sentence is quoted (D7)."""
+        return all(w in _DETERMINERS for w, _s, _e in toks[:j])
 
     def tail_ok(j: int) -> bool:
-        """R5-02: the claim's last matched word ends the sentence or stands right before clause punctuation."""
-        return j == len(toks) - 1 or bool(_CLAUSE_MARK.search(source[toks[j][2]:toks[j + 1][1]]))
+        """D14: the claim's last matched word is the sentence's last word (trailing punctuation aside)."""
+        return j == len(toks) - 1
 
     seen = set()                                     # (ci, prev) already shown not to match: no exponential retry
 

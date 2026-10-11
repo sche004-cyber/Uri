@@ -66,8 +66,15 @@ def flags(text: str) -> list:
 # underscores or hyphens ('_refunds-portal.com_', markdown emphasis; '-refunds-portal.com', 'refunds.com-') was never
 # matched. Only a letter or a digit directly before the host or after the top-level label now stops a match; any
 # other neighbour, '_' and '-' included, does not. This costs precision only ('file_name.py' is masked), never safety.
-_DOT = (r"(?:[.\u3002\uff0e\uff61]|\s*\[\s*\.\s*\]\s*|\s*\(\s*\.\s*\)\s*|\s*\[\s*(?i:dot)\s*\]\s*|\s*\(\s*(?i:dot)\s*\)\s*"
-        r"|\s+(?i:dot)\s+|\s+\.\s+)")
+# D13 (owner, 2026-10-11, after R6-01 reopened the R1-01 class a sixth time: 'refunds-portal .com', 'portal·com',
+# 'portal{.}com'): "mask any dot-joined word". A list of dot forms is never complete, so a separator is now ANY
+# dot-like mark (full stops, middle dots, bullets, katakana and ideographic dots, one-dot leaders) with optional
+# spaces on either side, or any bracket pair around a dot-like mark or 'dot', or a spaced 'dot'. The one ordinary
+# punctuation shape, a full stop with a space after it and none before ('approved. The'), is a sentence break unless
+# the next word is lower case and not a known non-domain word (_AFTER_STOP_WORDS); see _is_domain.
+_DOTCH = "[.\u3002\uff0e\uff61\u00b7\u0387\u2022\u2024\u2027\u2219\u22c5\u2e3c\u30fb\uff65\ufe52]"
+_DOT = (r"(?:\s*" + _DOTCH + r"\s*|\s*[\[({<]\s*(?:" + _DOTCH + r"|(?i:dot))\s*[\])}>]\s*|\s+(?i:dot)\s+)")
+_STOP_SPACE = re.compile(r"[.\u3002\uff0e\uff61]\s+\Z")
 _BARE = re.compile(r"(?<![^\W_])(?P<host>(?:[^\W_][\w-]{0,62}" + _DOT + r")+)(?P<tld>(?i:[a-z0-9]{2}--[\w-]{1,59})|[^\W\d_]{2,63})(?![^\W_])(?P<path>/\S*)?")
 _OTHER = re.compile(r"\S*(?::|\[:\])//\S*|(?i:\bwww)" + _DOT + r"\S+|[\w.+-]+@[\w-]+(?:" + _DOT + r"[\w-]+)+|"
                     r"\b\d{1,3}(?:" + _DOT + r"\d{1,3}){3}\b|(?i:\b(?:javascript|vbscript):)\S*|(?i:\bdata:[a-z]+/)\S*")
@@ -77,6 +84,13 @@ _NOT_PHONE = re.compile(r"\d{1,4}[./-]\d{1,2}[./-]\d{1,4}|(?:1[89]|20)\d\d\s*[-/
 # implementer's knowledge (the IANA root zone list could not be fetched to re-check). Keep this list short: a word on
 # it that is, or becomes, a top-level domain would be a miss.
 _SENTENCE_WORDS = frozenset("the then this that these those they été ete".split())
+# D13: lower-case words that often follow an abbreviation's full stop and a space ('No. of posts', 'e.g. the',
+# 'etc. and'). None is a delegated top-level domain to the implementer's knowledge; two-letter words that ARE country
+# codes ('in', 'to', 'is', 'at', 'by', 'no') are deliberately left out, so 'etc. in' is masked (costs precision).
+_AFTER_STOP_WORDS = frozenset("""
+the of and for with from or than then this that these those per under over upon into onto between among against
+were was are has have had his her its their our your they them which who whom whose when where while what
+""".split())
 _TLDS = frozenset("""
 com net org info biz gov edu mil int arpa io co app dev xyz online site website shop store top club live tech blog news
 link click web page cloud email digital world today life space pro name mobi asia tel travel jobs museum aero coop cat
@@ -132,6 +146,14 @@ def _is_domain(m) -> bool:
     host, tld = m.group("host"), m.group("tld")
     if m.group("path") or _ACE.search(host + tld):
         return True                                  # R4-01: an ACE ('xn--') label is never ordinary text
+    if _STOP_SPACE.search(host) and not re.search(r"\s" + _DOTCH, host[-6:]):
+        # D13: 'word. Next' is a full stop and a space: a sentence break, unless the next word is lower case and not
+        # a known non-domain word ('portal. com' is masked; 'No. of', 'approved. The' are not). Residual limit,
+        # recorded in the decision: a capitalised or all-capital top-level label after '. ' ('portal. Com') reads as
+        # a new sentence and is not masked. An abbreviation ends in a one-letter label ('U.S. rate', 'a.m. today',
+        # 'e.g. the'), so that shape is ordinary text too; residual limit: a one-letter label then '. ' ('x. com').
+        last_label = re.split(_DOT, host)[-2] if host else ""
+        return tld.islower() and tld not in _AFTER_STOP_WORDS and len(last_label) > 1
     one = re.fullmatch(r"([^\W\d_]+)(\s*\.\s*)", host)
     if (one and tld[:1].isupper() and (len(tld) == 1 or tld[1:].islower())
             and tld.casefold() in _SENTENCE_WORDS):

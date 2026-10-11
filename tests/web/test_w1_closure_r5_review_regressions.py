@@ -69,6 +69,11 @@ EDGE = (("A plurality of voters backed the measure [1].", "Less than a plurality
         ("A quorum of members attended the vote [1].", "Well short of a quorum of members attended the vote."),
         ("A quintet of firms control the national market [1].",
          "Fewer than a quintet of firms control the national market."),
+        # D14: a clause edge is no longer enough (formerly in the "still the Brain's words" list below)
+        ("The district board approved the new hostel rules [1].",
+         "On Monday, the district board approved the new hostel rules."),
+        ("The district board approved the new hostel rules [1].",
+         "The district board approved the new hostel rules; students welcomed them."),
         # beyond the reviewer's strings: trailing qualifiers, and a clause word is no clause boundary
         ("The council approved the budget [1].", "The council approved the budget only in part."),
         ("The board backed the plan [1].", "The board backed the plan by a whisker."),
@@ -86,10 +91,6 @@ def test_r5_02_edge_qualifier_forces_a_quote(claim, src):
 @pytest.mark.parametrize("claim,src", (
         ("The district board approved the new hostel rules [1].",
          "The district board approved the new hostel rules."),
-        ("The district board approved the new hostel rules [1].",
-         "On Monday, the district board approved the new hostel rules."),
-        ("The district board approved the new hostel rules [1].",
-         "The district board approved the new hostel rules; students welcomed them."),
         ("District board approved the new hostel rules [1].",
          "The district board approved the new hostel rules.")))
 def test_r5_02_whole_clauses_are_still_the_brains_words(claim, src):

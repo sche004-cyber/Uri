@@ -104,10 +104,10 @@ def test_r1_06_unrelated_cited_source_is_not_kept():
 
 
 def test_r1_06_both_sources_kept_when_both_state_it():
-    # R5-02 (closure round 5): a claim may leave out source words at its edges only up to clause punctuation, so the
-    # sources separate their extra words with a comma ("..., with students", "On Monday, ...").
-    a = "The district board approved the new hostel rules after consultation, with students."
-    b = "On Monday, the district board approved the new hostel rules after consultation."
+    # R5-02 / D14 (closure rounds 5-6): a claim in the Brain's words runs from the sentence start (determiners aside)
+    # to its end, so both sources state exactly the claim; b lacks the leading determiner.
+    a = "The district board approved the new hostel rules after consultation."
+    b = "District board approved the new hostel rules after consultation."
     v = SY.verify("The district board approved the new hostel rules after consultation [1][2].", [a, b])
     assert [c.citations for c in v.claims] == [[1, 2]]
 
