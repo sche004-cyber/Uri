@@ -70,7 +70,7 @@ def _split_answer(text: str) -> list:
 # sentence that supports it best, word for word, or dropped. Over-detection only means more quoting, so the word
 # list is deliberately broad.
 _QUANTITY = re.compile(
-    r"\d|[$€£₹¥%]|\b(?:rs|inr|usd|eur|gbp|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
+    r"\d|[$€£₹¥%\u2030\u2031]|\b(?:rs|inr|usd|eur|gbp|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
     r"thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|"
     r"ninety|hundreds?|thousands?|millions?|billions?|trillions?|lakhs?|lacs?|crores?|dozens?|half|halves|halved|"
     r"thirds?|quarters?|fifths?|tenths?|percent|per\s*cent|twice|thrice|double[ds]?|triple[ds]?|quadrupled?|"
@@ -87,7 +87,10 @@ _QUANTITY = re.compile(
     r"per\s+annum|annum|p\.a|basis\s+points?|bps|orders?\s+of\s+magnitude|magnitudes?|handful|nil|nought|naught|"
     r"(?:twent|thirt|fort|fift|sixt|sevent|eight|ninet)ies|(?:hundred|thousand|million|billion)th|"
     r"last|next|ago|previous|recent(?:ly)?|tonight|overnight|weekends?|spring|summer|autumn|winter|seasons?|"
-    r"years?|months?|weeks?|days?|hours?|minutes?|centenar(?:y|ies)|anniversar(?:y|ies))\b",
+    r"years?|months?|weeks?|days?|hours?|minutes?|centenar(?:y|ies)|anniversar(?:y|ies)|"
+    # R3-02: multiplicatives as verbs and rates ("doubling", "quintupled", "biweekly", "ppm"). Still a second check.
+    r"doubling|halving|tripling|quadrupling|\w*tupl(?:e[ds]?|ing)|multipl(?:y|ies|ied|ying)|bi-?weekly|"
+    r"bi-?monthly|semi-?annual(?:ly)?|tri-?ennial(?:ly)?|quadrennial(?:ly)?|ppm|ppb|pct)\b",
     re.I)
 
 
@@ -135,29 +138,36 @@ and or but nor yet so while whilst whereas although though because since unless 
 respectively which who whom whose where when then after before whereby compared against instead rather
 """.split())
 _CLAUSE_MARK = re.compile(r"[,;:()\[\]{}\u2013\u2014!?\"\u201c\u201d]|\s-\s|\.\s")
+# R3-02: the only words that open a noun phrase. Words between one of them and the next kept word are that noun
+# phrase's modifiers ("after [a long public] consultation").
+_DETERMINERS = frozenset("a an the this that these those its their his her our your my".split())
 MAX_GAP_WORDS = 2
 
 
 def _excerpt(claim: str, source: str) -> bool:
-    """R2-02: the claim is the source sentence's own run of words. Its words (function words aside) are matched in
-    order, and between two matched words the source may only leave out at most MAX_GAP_WORDS content words, never a
-    clause boundary (a joining word, a comma, a semicolon, a dash, a bracket) and never a quantity. An in-order test
-    with unlimited gaps (R1-02) let a claim join the subject of one clause to the quantity of another ("The tax in
-    Texas was cut by [... while the levy in Ohio was cut by] an order of magnitude"); D7 then rested on recognising
-    the quantity word. Leaving out a modifier ("after [a long public] consultation") is still allowed."""
-    # The claim's own joining words are matched too: they can only be the source's.
-    c = [w for w in (w.lower() for w in _TOKEN.findall(claim or "")) if w not in _FUNCTION_WORDS or w in _CLAUSE_WORDS]
+    """R3-02: the claim is the source sentence's own run of words, and the rule fails closed. EVERY claim word,
+    function words included, is matched to the source in order; the claim may add only a determiner ("the"). Between
+    two matched words the source may leave out only (a) determiners, or (b) one determiner followed by at most
+    MAX_GAP_WORDS words that are not function words: the modifiers of a noun phrase ("after [a long public]
+    consultation"). Anything else left out - a qualifier before a verb or a quantity ("are [nearly] doubling",
+    "[barely] rose", "is [rarely] waived"), a preposition ("are [about] doubling"), a clause boundary - means the
+    source sentence is quoted instead. This no longer depends on recognising the quantity word (R2-02 let any two
+    unrecognised words be skipped). states_quantity() on the skipped text is kept as an extra check only."""
+    c = [w.lower() for w in _TOKEN.findall(claim or "")]
     toks = [(m.group(0).lower(), m.start(), m.end()) for m in _TOKEN.finditer(source or "")]
-    if not c:
+    if not any(w not in _FUNCTION_WORDS for w in c):
         return False
 
     def gap_ok(a: int, b: int) -> bool:
         """The source tokens strictly between matched tokens a and b may be left out."""
         skipped = [w for w, _s, _e in toks[a + 1:b]]
         text = source[toks[a][2]:toks[b][1]]
-        return (sum(1 for w in skipped if w not in _FUNCTION_WORDS) <= MAX_GAP_WORDS
-                and not any(w in _CLAUSE_WORDS for w in skipped) and not _CLAUSE_MARK.search(text)
-                and not states_quantity(text))
+        if any(w in _CLAUSE_WORDS for w in skipped) or _CLAUSE_MARK.search(text) or states_quantity(text):
+            return False
+        if all(w in _DETERMINERS for w in skipped):
+            return True
+        return (skipped[0] in _DETERMINERS and len(skipped) - 1 <= MAX_GAP_WORDS
+                and not any(w in _FUNCTION_WORDS for w in skipped[1:]))
 
     seen = set()                                     # (ci, prev) already shown not to match: no exponential retry
 
@@ -167,11 +177,13 @@ def _excerpt(claim: str, source: str) -> bool:
         if (ci, prev) in seen:
             return False
         seen.add((ci, prev))
+        if c[ci] in _DETERMINERS and match(ci + 1, prev):
+            return True                              # a determiner the source does not have
         for j in range(prev + 1, len(toks)):
-            if toks[j][0] == c[ci] and (prev < 0 or gap_ok(prev, j)) and match(ci + 1, j):
-                return True
             if prev >= 0 and not gap_ok(prev, j):
                 return False                         # a longer gap cannot become allowed again
+            if toks[j][0] == c[ci] and match(ci + 1, j):
+                return True
         return False
     return match(0, -1)
 

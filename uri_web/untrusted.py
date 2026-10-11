@@ -48,10 +48,28 @@ def flags(text: str) -> list:
 # ('portal.Net'), any label followed by '/' ('portal.Xyz/claim'), an ASCII label when the host has a hyphen or a digit
 # ('refunds-portal.Biz'), or a known internationalised top-level domain. A second pass checks a skeleton of the text
 # (accents and other combining marks removed, Cyrillic and Greek look-alikes mapped to Latin: 'refunds-portal.сom').
-_DOT = r"(?:[.\u3002\uff0e\uff61]|\[\.\]|\(\.\)|\[dot\]|\(dot\))"
+# R3-01: an allow-list of top-level domains always misses the next real one ('Refundsportal.Cash', '.Lol', '.CaSh'),
+# so the detector now fails closed: ANY 'label<dot>label' whose last label is two or more letters is a link, in any
+# case. One exception is a list of things that are NOT links, so a gap in it costs precision, never safety: a missing
+# space after a full stop before a word that is not a top-level domain ('rose.The', 'so.Then', 'rose.Été', see
+# _SENTENCE_WORDS). The other is the ideographic full stop between two runs of Chinese or Japanese text
+# ('東京は大きい。次は大阪です。'), the ordinary sentence break in those languages: it is a link only when the second run is
+# a known internationalised top-level domain (_IDN_TLDS). That one still depends on a list (an unlisted Han or kana
+# top-level domain after a Han or kana host and '。' is missed); it is kept because failing closed there would mask
+# every multi-sentence Chinese or Japanese text. Spaced defangs
+# ('portal [.] com', 'portal ( . ) com', 'portal dot com', 'portal . com') are dots, and a phone number (eight or more
+# digits in one run of digits, spaces, dots, dashes and brackets, dates and year ranges aside) is a contact.
+_DOT = (r"(?:[.\u3002\uff0e\uff61]|\s*\[\s*\.\s*\]\s*|\s*\(\s*\.\s*\)\s*|\s*\[\s*(?i:dot)\s*\]\s*|\s*\(\s*(?i:dot)\s*\)\s*"
+        r"|\s+(?i:dot)\s+|\s+\.\s+)")
 _BARE = re.compile(r"(?<![\w-])(?P<host>(?:[^\W_][\w-]{0,62}" + _DOT + r")+)(?P<tld>[^\W\d_]{2,24})(?![\w-])(?P<path>/\S*)?")
 _OTHER = re.compile(r"\S*(?::|\[:\])//\S*|(?i:\bwww)" + _DOT + r"\S+|[\w.+-]+@[\w-]+(?:" + _DOT + r"[\w-]+)+|"
                     r"\b\d{1,3}(?:" + _DOT + r"\d{1,3}){3}\b|(?i:\b(?:javascript|vbscript):)\S*|(?i:\bdata:[a-z]+/)\S*")
+_PHONE = re.compile(r"(?<![\w+])\+?\(?\d[\d \t().\-]{6,}\d(?![\w])")
+_NOT_PHONE = re.compile(r"\d{1,4}[./-]\d{1,2}[./-]\d{1,4}|(?:1[89]|20)\d\d\s*[-/]\s*(?:1[89]|20)\d\d")
+# Words that often follow a full stop typed without a space. None is a delegated top-level domain to the
+# implementer's knowledge (the IANA root zone list could not be fetched to re-check). Keep this list short: a word on
+# it that is, or becomes, a top-level domain would be a miss.
+_SENTENCE_WORDS = frozenset("the then this that these those they été ete".split())
 _TLDS = frozenset("""
 com net org info biz gov edu mil int arpa io co app dev xyz online site website shop store top club live tech blog news
 link click web page cloud email digital world today life space pro name mobi asia tel travel jobs museum aero coop cat
@@ -95,17 +113,46 @@ def _skeleton(text: str) -> str:
     return "".join(ch for ch in text if unicodedata.category(ch) not in ("Mn", "Me")).translate(_CONFUSABLE)
 
 
+def _cjk(text: str) -> bool:
+    return any("\u3040" <= ch <= "\u30ff" or "\u3400" <= ch <= "\u9fff" or "\uf900" <= ch <= "\ufaff" for ch in text)
+
+
 def _is_domain(m) -> bool:
+    """R3-01: fails closed. Every 'label<dot>label' is a link except the two certainly-not-a-link forms above."""
     host, tld = m.group("host"), m.group("tld")
-    if tld.isascii():
-        return (tld.islower() or tld.isupper() or tld.lower() in _TLDS or bool(m.group("path"))
-                or bool(re.search(r"[-\d]", host)))
-    return tld in _IDN_TLDS or bool(m.group("path")) or bool(re.fullmatch(r"[A-Za-z0-9.-]*[-\d][A-Za-z0-9.-]*", re.sub(
-        _DOT, ".", host)))
+    if m.group("path"):
+        return True
+    one = re.fullmatch(r"([^\W\d_]+)(\s*\.\s*)", host)
+    if (one and tld[:1].isupper() and (len(tld) == 1 or tld[1:].islower())
+            and tld.casefold() in _SENTENCE_WORDS):
+        return False                                 # 'rose.The': a missing space, and '.the' is no domain
+    last = re.split(_DOT, host)[-2] if host else ""
+    if host.endswith("\u3002") and _cjk(tld) and _cjk(last) and tld not in _IDN_TLDS:
+        return False                                 # '東京は大きい。次は': the ideographic full stop ends a sentence
+    return True
+
+
+def _spans(text: str) -> list:
+    """(start, end) of every link, e-mail, IP address and phone number in `text`."""
+    out = [m.span() for m in _OTHER.finditer(text)] + [m.span() for m in _BARE.finditer(text) if _is_domain(m)]
+    out += [m.span() for m in _PHONE.finditer(text)
+            if sum(ch.isdigit() for ch in m.group(0)) >= 8 and not _NOT_PHONE.fullmatch(m.group(0).strip("()+ "))]
+    return out
 
 
 def _links(text: str) -> bool:
-    return bool(_OTHER.search(text)) or any(_is_domain(m) for m in _BARE.finditer(text))
+    return bool(_spans(text))
+
+
+def _skeleton_map(norm: str):
+    """The skeleton of canonical text `norm`, and for each skeleton character the index of its source character."""
+    chars, idx = [], []
+    for i, ch in enumerate(norm):
+        for d in unicodedata.normalize("NFD", ch):
+            if unicodedata.category(d) not in ("Mn", "Me"):
+                chars.append(d.translate(_CONFUSABLE))
+                idx.append(i)
+    return "".join(chars), idx
 
 
 def has_link_or_contact(text: str) -> bool:
@@ -116,15 +163,32 @@ _EDGE = re.compile(r"^([(\[{<\"'\u201c\u2018]*)(.*?)([.,;:!?)\]}>\"'\u201d\u2019
 
 
 def mask_links(text: str, mask: str) -> str:
-    """The canonical text with every whitespace-separated token that holds a link, e-mail or IP address replaced by
-    `mask` (its surrounding brackets and punctuation kept). Every form the detector knows is inside one token."""
-    def one(m):
-        tok = m.group(0)
-        if not has_link_or_contact(tok):
-            return tok
-        lead, _core, tail = _EDGE.match(tok).groups()
-        return lead + mask + tail
-    return re.sub(r"\S+", one, normalise(text))
+    """The canonical text with every whitespace-separated token that holds or touches a link, e-mail, IP address or
+    phone number replaced by `mask` (its surrounding brackets and punctuation kept). R3-01: a spaced form
+    ('portal [.] com', '1800 555 0199') spans several tokens; the tokens it covers become ONE mask."""
+    norm = normalise(text)
+    skel, idx = _skeleton_map(norm)
+    spans = _spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a]
+    toks = [m for m in re.finditer(r"\S+", norm)]
+    hit = [any(a < t.end() and t.start() < b for a, b in spans) or has_link_or_contact(t.group(0)) for t in toks]
+    out, pos, i = [], 0, 0
+    while i < len(toks):
+        t = toks[i]
+        out.append(norm[pos:t.start()])
+        if not hit[i]:
+            out.append(t.group(0))
+            pos, i = t.end(), i + 1
+            continue
+        j = i
+        while (j + 1 < len(toks) and hit[j + 1]
+               and any(a < toks[j + 1].start() and toks[j].end() <= b for a, b in spans)):
+            j += 1                                   # the next token is part of the same spaced link
+        lead = _EDGE.match(t.group(0)).group(1)
+        tail = _EDGE.match(toks[j].group(0)).group(3)
+        out.append(lead + mask + tail)
+        pos, i = toks[j].end(), j + 1
+    out.append(norm[pos:])
+    return "".join(out)
 
 
 def evidence_text(text: str) -> str:
