@@ -469,11 +469,30 @@ def _single(w) -> bool:
     return w[1] - w[0] == 1 and w[2].casefold() not in ("a", "i")
 
 
+# R22-01: filler letters that carry marks but are not letters of a word: Arabic tatweel, Hangul fillers.
+_FILLERS = frozenset("\u0640\u115f\u1160\u3164\uffa0")
+
+
 def _bare(text: str) -> str:
-    """`text` without generic combining marks (named 'COMBINING ...': accents, dots below). Vowel signs and other
-    marks that belong to a script ('\u0f72' in '\u0f66\u0f72') are kept: they are part of the letter."""
-    return "".join(ch for ch in text if not (unicodedata.category(ch)[0] == "M"
-                                             and unicodedata.name(ch, "").startswith("COMBINING")))
+    """`text` reduced to its real letters (R20-01/R21-01/R22-01). A mark is kept only when it sits on a letter of
+    its own script (a vowel sign: '\u0f72' in '\u0f66\u0f72'). Dropped: generic combining marks (named 'COMBINING
+    ...'), marks with no letter before them, marks of another script than their letter ('x\u093c', '\u0298\u0e31'),
+    and filler letters with whatever marks they carry ('\u0640\u0650\u065c\u0655')."""
+    out, base = [], None
+    for ch in text:
+        if ch in _FILLERS:
+            base = None
+            continue
+        if unicodedata.category(ch)[0] != "M":
+            out.append(ch)
+            base = _char_script(ch)
+            continue
+        name = unicodedata.name(ch, "")
+        if base is None or name.startswith("COMBINING") or _FAMILY.get(name.split(" ", 1)[0],
+                                                                         name.split(" ", 1)[0]) != base:
+            continue
+        out.append(ch)
+    return "".join(out)
 
 
 def _tld_match(text: str, fam: str) -> str:
@@ -580,7 +599,7 @@ def _separator_word(norm: str, w, fam: str) -> bool:
     # R20-01: classified without its combining marks ('\u4e36\u4e3f\u0323'). R21-01: marks with no base letter before
     # them are dropped whatever their name, script signs too ('\u093c\u0901\u0902', '\u0f39\u0f37\u0f35'): _words
     # makes a word of them, but they are not letters.
-    base = _bare(w[2].lstrip("".join(ch for ch in w[2] if unicodedata.category(ch)[0] == "M")))
+    base = _bare(w[2])
     if not base or (len(base) == 1 and base.casefold() not in ("a", "i")):
         return True                        # R19-01: marks with no base letter ('\u0323\u0307\u0308'), any length
     if set(base) <= _STROKES:
