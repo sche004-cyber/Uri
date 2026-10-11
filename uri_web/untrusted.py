@@ -499,6 +499,7 @@ def _bare(text: str) -> str:
 # R29-01: TURNED, REVERSED, INVERTED and SIDEWAYS letters are not read as their base letter ('\u028d' TURNED W looks like
 # 'm', not 'w'); they are unknown letters (see _ascii_fold).
 from .confusables_ascii import CONFUSABLE_ASCII as _CONFUSABLE_ASCII   # noqa: E402  (generated data module)
+from .confusables_ascii import CONFUSABLE_LATIN as _CONFUSABLE_LATIN   # noqa: E402
 
 # Checked text is NFKC; a confusable whose NFKC form differs ('\u03f2' -> '\u03c2') is also found by that form.
 _NFKC_SOURCES: dict = {}
@@ -564,6 +565,12 @@ def _ascii_options(ch: str) -> tuple:
                 opts.add(_CONFUSABLE_ASCII[k])
     for k in _NFKC_SOURCES.get(ch, ()):
         opts.add(_CONFUSABLE_ASCII[k])
+    # R30-01: a character drawn like a non-ASCII Latin letter ('\u045b' ~ 'ħ', '\u04ab' ~ 'ç', '\u04e9' ~ 'ɵ') is read
+    # through that letter.
+    for c in (ch, ch.lower(), ch.upper(), unicodedata.normalize("NFKC", ch)):
+        proto = _CONFUSABLE_LATIN.get(c)
+        if proto:
+            opts.update(f for f in _ascii_folds(proto) if f)
     if _char_script(ch) == "LATIN" and _latin_base(ch):
         opts.add(_latin_base(ch))
     sk = _skeleton(ch).casefold()
