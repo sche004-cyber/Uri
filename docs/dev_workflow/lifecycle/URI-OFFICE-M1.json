@@ -39,6 +39,8 @@
  ],
  "regression_runner": ["{python}", "-m", "pytest", "-q", "-p", "no:cacheprovider"],
  "regression_runners": [],
+ "test_setup": [{"cmd": ["npm", "ci", "--no-audit", "--no-fund"], "cwd": "uri_ui/office_web", "timeout_s": 1800}],
+ "_test_setup_note": "Owner approval 2026-10-11: fresh test worktrees (regression proof, qualify, baseline) install the page's npm dependencies first; without them the real-engine tests in tests/office/test_page.py skip and no repair can show fail-before (run 1, P2-P4). The driver change (scripts/dev_workflow/lifecycle.py test_setup) is tooling, not part of the office milestone.",
  "repair_nonblocking_severities": [],
  "reviewer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 5400},
  "implementer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 5400},
