@@ -34,7 +34,7 @@ from urllib.parse import parse_qs, urlparse
 
 from . import draft as D
 from . import google as G
-from . import xlsx_model, xlsx_patch
+from . import refs, xlsx_model, xlsx_patch
 from .approvals import Approvals
 from .errors import OfficeError
 from .grants import Grants
@@ -143,6 +143,44 @@ class Office:
     def _locked(self, s):
         return {sh["name"]: set(sh.get("locked", ())) for sh in s.workbook["sheets"]}
 
+    @staticmethod
+    def _overlay(sheets: list, edits) -> list:
+        """A copy of `sheets` with each edit's `after` (value or formula) written over the cell."""
+        out = []
+        by_sheet: dict = {}
+        for sheet, cell, after in edits:
+            by_sheet.setdefault(sheet, []).append((cell, after))
+        for sh in sheets:
+            if sh["name"] not in by_sheet:
+                out.append(sh)
+                continue
+            cells = dict(sh["cells"])
+            max_row, max_col = sh.get("max_row") or 0, sh.get("max_col") or 0
+            for cell, after in by_sheet[sh["name"]]:
+                c = {k: v for k, v in cells.get(cell, {}).items() if k not in ("v", "f", "t")}
+                c.update({"f": after["f"]} if after.get("f") else {"v": after.get("v")})
+                cells[cell] = c
+                col, row = refs.parse_cell(cell)
+                max_row, max_col = max(max_row, row), max(max_col, col)
+            out.append({**sh, "cells": cells, "max_row": max_row, "max_col": max_col})
+        return out
+
+    def _current_sheets(self, s) -> list:
+        """The workbook as the draft holds it now (saved values plus accepted and user changes): what the Brain plans
+        from, so it never works from values the owner already changed."""
+        latest = {}
+        for ch in s.draft.changes:
+            if ch["kind"] == "cell" and ch["state"] in ("accepted", "user"):
+                latest[(ch["sheet"], ch["cell"])] = ch["after"]
+        return self._overlay(s.workbook["sheets"], [(sh, c, a) for (sh, c), a in latest.items()])
+
+    def _committed(self, s, pending):
+        """After a save to the session's own target: the draft and the session's workbook snapshot both take the saved
+        values, so the panel reloads what the file now holds."""
+        s.draft.committed(pending)
+        s.workbook = {**s.workbook, "sheets": self._overlay(
+            s.workbook["sheets"], [(e["sheet"], e["cell"], e["after"]) for e in pending["edits"]])}
+
     def edit(self, wid, body) -> dict:
         from . import ops as O
         s = self._session(wid)
@@ -175,7 +213,7 @@ class Office:
             raise OfficeError("BRAIN_UNAVAILABLE", "the Brain is not configured for this service", 503)
         s = self._session(wid)
         with s.lock:                                     # the draft is locked for the whole turn; user edits queue
-            res = self.brain.plan(body.get("text"), sheets=s.workbook["sheets"], active=body.get("active_sheet"),
+            res = self.brain.plan(body.get("text"), sheets=self._current_sheets(s), active=body.get("active_sheet"),
                                   engine=s.engine, locked=self._locked(s), history_rows=self.history.recent(s.key))
             new = s.draft.propose(res["edits"]) if res["edits"] else []
             return {"message": res["message"], "proposed": [c["cid"] for c in new], "refused": res["refused"],
@@ -229,7 +267,7 @@ class Office:
             pending = {"edits": body["edits"], "struct_ops": body["struct_ops"]}
             if t["kind"] == "google":
                 r = self.google.apply(t["file_id"], body)
-                s.draft.committed(pending)
+                self._committed(s, pending)
                 return r
             src = s.path
             if xlsx_model.file_sha256(src) != t["source_sha256"] or s.open_sha != t["source_sha256"]:
@@ -248,8 +286,10 @@ class Office:
             if not t["save_as"]:
                 shutil.copy2(src, backup / f"{int(time.time())}-{src.name}")
             res = xlsx_patch.patch(src, dest, D.patch_edits(pending))
-            s.draft.committed(pending)
+            # A Save As writes a new file but the session keeps editing the original: the draft stays relative to the
+            # original (its edits remain pending for it, and for any later Save As), so nothing is committed here.
             if not t["save_as"]:
+                self._committed(s, pending)
                 s.open_sha = xlsx_model.file_sha256(dest)
             return {"changed_parts": res["changed_parts"], "saved_to": dest.name}
 
@@ -265,7 +305,9 @@ class Office:
             with s.lock:
                 r = self.approvals.action(msg, self._apply)
         if r.get("workbook_id") in self.sessions:
-            r["draft"] = self.sessions[r["workbook_id"]].draft.snapshot()
+            s = self.sessions[r["workbook_id"]]
+            r["draft"] = s.draft.snapshot()
+            r["workbook"] = s.workbook
         return r
 
     # ---- google extras -------------------------------------------------------------------------------------------

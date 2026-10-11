@@ -272,4 +272,37 @@ void main() {
       ]);
     });
   });
+
+  // R5-02: after an approved save the grid was reloaded from the workbook as opened, so saved edits vanished from it.
+  test('after an approved save the grid reloads the workbook the service returns', () async {
+    final surface = FakeSurface();
+    final saved = {
+      ..._workbook,
+      'sheets': [
+        {...(_workbook['sheets'] as List).first as Map<String, dynamic>,
+          'cells': {'A1': {'v': 'Region'}, 'B2': {'v': 99}}},
+      ],
+    };
+    final mock = MockClient((req) async {
+      switch (req.url.path) {
+        case '/open/local':
+          return http.Response(jsonEncode({'workbook_id': 'w1', 'engine': 'local', 'label': 'book.xlsx',
+            'workbook': _workbook, 'draft': _draft([]), 'history_on': false}), 200);
+        case '/a2ui/action':
+          return http.Response(jsonEncode({'status': 'applied', 'workbook_id': 'w1', 'saved_to': 'book.xlsx',
+            'changed_parts': [], 'draft': _draft([]), 'workbook': saved}), 200);
+      }
+      return http.Response(jsonEncode({'error': 'NOT_FOUND'}), 404);
+    });
+    final c = OfficeController(
+        client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:18530'), 'tok', mock), surface: surface);
+    await c.openLocal(r'C:\Users\me\book.xlsx');
+    surface.ctl.add({'type': 'ready'});
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    await c.hub.registry['office.apply_change']!({'name': 'office.apply_change', 'surfaceId': 's1', 'context': {}});
+    final load = surface.posted.lastWhere((m) => m['type'] == 'load');
+    expect(((load['workbook'] as Map)['sheets'] as List).first['cells']['B2'], {'v': 99});
+    expect(c.view!['workbook'], saved);
+    expect(c.notice, 'Saved to book.xlsx.');
+  });
 }

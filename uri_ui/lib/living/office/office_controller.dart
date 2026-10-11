@@ -98,7 +98,10 @@ class OfficeController extends ChangeNotifier {
   Future<void> _refreshDraft(Map<String, dynamic> r) async {
     final d = r['draft'];
     if (d is Map && view != null) {
-      view = {...view!, 'draft': d};
+      // After a save the service returns the workbook as the file now holds it; reload the grid from that, not from
+      // the values as opened.
+      final w = r['workbook'];
+      view = {...view!, 'draft': d, if (w is Map) 'workbook': w};
       if (pageReady) await surface.post({'type': 'load', 'workbook': view!['workbook'], 'marks': marks()});
     }
   }
