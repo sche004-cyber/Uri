@@ -1,0 +1,19 @@
+........................................................................ [ 31%]
+...........................................sssss........................ [ 62%]
+........................................................................ [ 93%]
+...............                                                          [100%]
+=============================== warnings summary ===============================
+scripts/dev_workflow/auditor.py:41
+  /tmp/claude-0/lc-work/DEV-LIFECYCLE-2-r2/qualify/scripts/dev_workflow/auditor.py:41: PytestCollectionWarning: cannot collect test class 'TestExecutionResult' because it has a __init__ constructor (from: tests/dev_workflow/test_workflow.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============== PLATFORM-GATED: 5 test(s) NOT VERIFIED on linux ================
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_kill_tree_on_exited_pid_and_on_a_live_tree
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_grandchild_is_gone_after_the_sweep
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_active_processes_rule_on_a_real_job
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_job_creation_failure_is_not_contained
+226 passed, 5 skipped, 1 warning in 208.49s (0:03:28)
+
+--- stderr ---

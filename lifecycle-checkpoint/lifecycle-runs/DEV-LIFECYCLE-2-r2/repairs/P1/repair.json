@@ -1,0 +1,100 @@
+{
+ "addresses": [
+  "R1-01"
+ ],
+ "changed": [
+  "docs/dev_workflow/DEV_LIFECYCLE_2_PLAN_AND_ACCEPTANCE.md",
+  "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md",
+  "scripts/dev_workflow/containment.py",
+  "tests/dev_workflow/test_lifecycle_platform.py"
+ ],
+ "commit": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+ "ended_at": "2026-10-11T13:07:10Z",
+ "pre": "73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/dev_workflow/test_lifecycle_platform.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {
+  "not_repaired": [],
+  "notes": "containment.finish() records any spawn without a job in a sticky module-level _TAINTED list that makes every later precheck() contained=False for the rest of the driver run, and adds the job to _OPEN_JOBS before terminate/empty-check so a failed TerminateJobObject or QueryInformationJobObject leaves the job for precheck() to re-check (fail closed until confirmed empty). Four new fake-kernel32 test cases (create_fails, assign_fails, terminate raising, active raising, each followed by precheck) fail on 73bdbef (checked with a git archive export because worktree creation was denied) and pass now; full tests/dev_workflow: 226 passed, 5 skipped (Windows-only, PLATFORM-GATED). Docs updated. Limit, unchanged by this repair: _TAINTED and _OPEN_JOBS live in the driver process's memory only, so a no-job process that outlives the driver process is not seen by a later driver process. Real Windows job objects not exercised here.",
+  "regression_tests": [
+   "tests/dev_workflow/test_lifecycle_platform.py"
+  ],
+  "repaired": [
+   "R1-01"
+  ]
+ },
+ "started_at": "2026-10-11T13:02:29Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "8b03fde2-6cf7-4af7-b81a-2396a3e41148",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 155
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7831695000000003,
+  "cwd": "/home/user/uri-wt/dl2",
+  "ended_at": "2026-10-11T13:07:04Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 22,
+  "pid": 14109,
+  "prompt_sha256": "b19059f97d07809970f728eb53e12a49400dd7d45083d6b0cacbb3f5cb36dd40",
+  "provider": "claude_cli",
+  "result_text_sha256": "559054501100b7a1c5d286919539ccc2815eaff46b7ac0cf4fd5ced6404ae870",
+  "role": "implementer",
+  "session_id": "8b03fde2-6cf7-4af7-b81a-2396a3e41148",
+  "session_id_requested": "8b03fde2-6cf7-4af7-b81a-2396a3e41148",
+  "started_at": "2026-10-11T13:02:29Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "5f8ddc0edd5c6af589843616b49dd7aab587603011340a63aa6d1b501d02dea7"
+ }
+}

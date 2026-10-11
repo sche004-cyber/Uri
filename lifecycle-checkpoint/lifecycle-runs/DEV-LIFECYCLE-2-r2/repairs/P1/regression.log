@@ -1,0 +1,92 @@
+=== tests/dev_workflow/test_lifecycle_platform.py BEFORE (73bdbef1e34e0b0a9456ee13e8b7b3f9c0e51f47) DONE
+.......FFFF..sssss                                                       [100%]
+=================================== FAILURES ===================================
+_ test_r1_01_precheck_after_a_worker_without_a_job_is_not_contained[create_fails] _
+
+fake_windows = <function fake_windows.<locals>.install at 0x7f46ebf32160>
+failure = 'create_fails'
+
+    @pytest.mark.parametrize("failure", ["create_fails", "assign_fails"])
+    def test_r1_01_precheck_after_a_worker_without_a_job_is_not_contained(fake_windows, failure):
+        """R1-01: a worker or gate that ran outside any job may have left processes nobody can verify; every later
+        precheck() must fail closed, also after a later worker that was contained."""
+        api = fake_windows(**{failure: True})
+        assert C.finish(C.spawn(["gate"]))["contained"] is False
+        r = C.precheck(wait_s=0.1)
+>       assert r["contained"] is False and "outside a job" in r["reason"]
+E       assert (True is False)
+
+tests/dev_workflow/test_lifecycle_platform.py:149: AssertionError
+_ test_r1_01_precheck_after_a_worker_without_a_job_is_not_contained[assign_fails] _
+
+fake_windows = <function fake_windows.<locals>.install at 0x7f46ebf337e0>
+failure = 'assign_fails'
+
+    @pytest.mark.parametrize("failure", ["create_fails", "assign_fails"])
+    def test_r1_01_precheck_after_a_worker_without_a_job_is_not_contained(fake_windows, failure):
+        """R1-01: a worker or gate that ran outside any job may have left processes nobody can verify; every later
+        precheck() must fail closed, also after a later worker that was contained."""
+        api = fake_windows(**{failure: True})
+        assert C.finish(C.spawn(["gate"]))["contained"] is False
+        r = C.precheck(wait_s=0.1)
+>       assert r["contained"] is False and "outside a job" in r["reason"]
+E       assert (True is False)
+
+tests/dev_workflow/test_lifecycle_platform.py:149: AssertionError
+_______ test_r1_01_precheck_after_a_failed_termination_is_not_contained ________
+
+fake_windows = <function fake_windows.<locals>.install at 0x7f46ebf32fc0>
+
+    def test_r1_01_precheck_after_a_failed_termination_is_not_contained(fake_windows):
+        """R1-01: TerminateJobObject failing in finish() keeps the job; precheck() re-checks it and fails closed while it
+        still cannot be emptied, and is contained once a later termination has emptied it."""
+        api = fake_windows(terminate_fails=True)
+        r = C.finish(C.spawn(["gate"]), wait_s=0.1)
+        assert r["contained"] is False and "not verified" in r["reason"]
+>       assert C._OPEN_JOBS == [1]
+E       assert [] == [1]
+E         
+E         Right contains one more item: 1
+E         Use -v to get more diff
+
+tests/dev_workflow/test_lifecycle_platform.py:161: AssertionError
+_______ test_r1_01_precheck_after_a_failed_empty_check_is_not_contained ________
+
+fake_windows = <function fake_windows.<locals>.install at 0x7f46ebf33420>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f46ebf2cd70>
+
+    def test_r1_01_precheck_after_a_failed_empty_check_is_not_contained(fake_windows, monkeypatch):
+        """R1-01: QueryInformationJobObject failing in finish() keeps the job for precheck()."""
+        api = fake_windows()
+        real_active = api.active
+        def broken(job):
+            raise OSError(5, "QueryInformationJobObject failed")
+        monkeypatch.setattr(api, "active", broken)
+        assert C.finish(C.spawn(["gate"]), wait_s=0.1)["contained"] is False
+>       assert C.precheck(wait_s=0.1)["contained"] is False
+E       assert True is False
+
+tests/dev_workflow/test_lifecycle_platform.py:177: AssertionError
+=============== PLATFORM-GATED: 5 test(s) NOT VERIFIED on linux ================
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_kill_tree_on_exited_pid_and_on_a_live_tree
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_grandchild_is_gone_after_the_sweep
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_active_processes_rule_on_a_real_job
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_job_creation_failure_is_not_contained
+=========================== short test summary info ============================
+FAILED tests/dev_workflow/test_lifecycle_platform.py::test_r1_01_precheck_after_a_worker_without_a_job_is_not_contained[create_fails]
+FAILED tests/dev_workflow/test_lifecycle_platform.py::test_r1_01_precheck_after_a_worker_without_a_job_is_not_contained[assign_fails]
+FAILED tests/dev_workflow/test_lifecycle_platform.py::test_r1_01_precheck_after_a_failed_termination_is_not_contained
+FAILED tests/dev_workflow/test_lifecycle_platform.py::test_r1_01_precheck_after_a_failed_empty_check_is_not_contained
+4 failed, 9 passed, 5 skipped in 0.49s
+
+=== tests/dev_workflow/test_lifecycle_platform.py AFTER (0ee6885a68ec14eabec7645b4501f87d17bde6f0) DONE
+.............sssss                                                       [100%]
+=============== PLATFORM-GATED: 5 test(s) NOT VERIFIED on linux ================
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_kill_tree_on_exited_pid_and_on_a_live_tree
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_grandchild_is_gone_after_the_sweep
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_breakaway_is_refused
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_active_processes_rule_on_a_real_job
+PLATFORM-GATED (Windows only) tests/dev_workflow/test_lifecycle_platform.py::test_win_job_creation_failure_is_not_contained
+13 passed, 5 skipped in 0.39s
+
