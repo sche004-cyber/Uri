@@ -123,6 +123,17 @@ def check_url(url: str, *, allowed_ports=ALLOWED_PORTS) -> Target:
             host = host.encode("idna").decode("ascii").lower()
         except UnicodeError:
             raise EgressRefused("HOST_INVALID") from None
+        # R11-02: IDNA maps full-width digits and dots to ASCII ('\uff10x5d.184.215.14' -> '0x5d.184.215.14'), so the
+        # numeric checks run again on the ASCII host; a host that becomes an IP literal is checked as one.
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise EgressRefused("HOST_NUMERIC_AMBIGUOUS", "idna-literal")
+        if all(ch in "0123456789abcdefx." for ch in host) and any(ch.isdigit() for ch in host):
+            if all(lab.isdigit() or lab.startswith("0x") for lab in host.split(".") if lab):
+                raise EgressRefused("HOST_NUMERIC_AMBIGUOUS")
         # After IDNA only letters, digits, hyphens and dots may remain (no '%', '_' or anything a proxy might
         # decode into a different host), labels 1-63 characters (interim review F6).
         if not _LDH.match(host) or any(not 0 < len(lab) <= 63 for lab in host.split(".")):

@@ -438,8 +438,10 @@ _CORE = frozenset("com org gov edu mil biz io xyz".split())   # 'net', 'info', '
 # + < # @ `) and every other non-ASCII character are not prose.
 _PROSE_GAP = re.compile(r"[\s.,;:!?'\"()\[\]{}&%$/|>_0-9\u2018\u2019\u201c\u201d\u2013\u2014\u2026\u00bb\u203a"
                         r"\u20a0-\u20c0\u00a3\u00a5-]*")
-_MAX_GAP = 12
-_MAX_FOREIGN = 2
+_MAX_FOREIGN = 2       # distinct letters that may stand between the name and the ending (R11-01: repeats count once)
+# R11-01: two common two-letter English words that never start a split domain ('to day', 'be st', 'on e').
+_COMMON2 = frozenset("an as at be by do go he if in is it me my no of on or so to up us we".split())
+_ACE = re.compile(r"(?i)(?<![a-z0-9-])xn--[a-z0-9-]+")
 
 
 def _letter(ch: str) -> bool:
@@ -461,17 +463,33 @@ def _words(norm: str) -> list:
     return out
 
 
+def _single(w) -> bool:
+    return w[1] - w[0] == 1 and w[2].casefold() not in ("a", "i")
+
+
 def _endings(words: list, norm: str):
     """(index of the first word, index of the last word, top-level domain) for each word that is a top-level
-    domain, and for each run of single letters separated only by spaces ('c o m'), or one single letter and the next
-    word ('c om'; not 'a'/'I', ordinary English words: 'a co founder'), that spells one."""
+    domain, and for each run that spells one:
+    - single letters separated only by spaces ('c o m'), or one single letter and the next word ('c om'; not
+      'a'/'I', ordinary English words: 'a co founder');
+    - R11-01: a word and one single letter ('co m'), or two short pieces where the first is not a common two-letter
+      word ('sh op'; not 'to day', 'be st');
+    - R11-01: single letters joined by one or two non-letter, non-space characters ('c-o-m', 'c.o.m'), only for the
+      core domains (_CORE), so 'U.S.' does not spell 'us'."""
+    n = len(words)
     for b, w in enumerate(words):
         if w[2].casefold() in _ALL_TLDS:
             yield b, b, w[2].casefold()
+        if b + 1 < n and not norm[w[1]:words[b + 1][0]].strip() and words[b + 1][3] == w[3]:
+            nxt = words[b + 1]
+            two = (w[2] + nxt[2]).casefold()
+            if (w[1] - w[0] > 1 and two in _ALL_TLDS and (_single(nxt) or (
+                    w[1] - w[0] <= 3 and w[2].casefold() not in _COMMON2 and nxt[2].casefold() not in _COMMON2))):
+                yield b, b + 1, two
         if w[1] - w[0] != 1:
             continue
         text, e = w[2], b
-        while e + 1 < len(words) and not norm[words[e][1]:words[e + 1][0]].strip() and words[e + 1][3] == w[3]:
+        while e + 1 < n and not norm[words[e][1]:words[e + 1][0]].strip() and words[e + 1][3] == w[3]:
             nxt = words[e + 1]
             if nxt[1] - nxt[0] > 1 and (e > b or w[2].casefold() in ("a", "i")):
                 break
@@ -481,30 +499,51 @@ def _endings(words: list, norm: str):
                 yield b, e, text.casefold()
             if nxt[1] - nxt[0] > 1:
                 break
+        text, e = w[2], b
+        while e + 1 < n and words[e + 1][1] - words[e + 1][0] == 1 and words[e + 1][3] == w[3]:
+            sep = norm[words[e][1]:words[e + 1][0]]
+            if not 0 < len(sep) <= 2 or not sep.strip() or sep != sep.strip():
+                break
+            e += 1
+            text += words[e][2]
+            if text.casefold() in _CORE:
+                yield b, e, text.casefold()
 
 
 def _ending_spans(norm: str) -> list:
+    """D16 + R11-01. No cap on the length of the gap: any run of non-letters between the name and the ending
+    ('portal \u0660 \u0660 ... com', 'portal ~ ~ ~ ... cash') is a separator, however long. Between them may also stand
+    words of another script and single letters ('portal \u4e36 \u4e36 shop', 'portal \u0298 com', 'portal o com'),
+    as long as they hold at most _MAX_FOREIGN distinct letters; a repeated letter counts once."""
     words = _words(norm)
     spans = []
     for b, e, tld in _endings(words, norm):
-        foreign, a = 0, b - 1                 # the name: the nearest earlier word of the same script family
-        while a >= 0 and words[a][3] != words[b][3]:
-            foreign += words[a][1] - words[a][0]
+        fam = words[b][3]
+        seen, a, ascii_only = set(), b - 1, True
+        while a >= 0 and (words[a][3] != fam or _single(words[a])):
+            seen.update(words[a][2].casefold())
+            ascii_only = ascii_only and words[a][3] == "LATIN" and words[a][2].isascii() and _single(words[a])
+            if len(seen) > _MAX_FOREIGN:
+                break
             a -= 1
-        if a < 0 or foreign > _MAX_FOREIGN:
+        if a < 0 or len(seen) > _MAX_FOREIGN:
             continue
         gap = norm[words[a][1]:words[b][0]]
-        if not gap or len(gap) > _MAX_GAP:
-            continue
         spelt = e > b
-        if not foreign and _PROSE_GAP.fullmatch(gap):
-            if not gap.strip() and not spelt:
-                continue                      # 'the shop': two words
+        letters_between = a < b - 1
+        if (not letters_between or ascii_only) and _PROSE_GAP.fullmatch(
+                "".join(ch for ch in gap if not _letter(ch))):
             if not spelt and tld not in _CORE:
-                continue                      # 'Gangtok, in', 'Fees: Rs', 'The Ltd. Co.'
-            if "." in gap and len(words[a][2]) == 1:
-                continue                      # an abbreviation: 'U.S. ...'
+                continue                      # 'the shop', 'Gangtok, in', 'Fees: Rs', 'The Ltd. Co.'
+            if letters_between and b - 1 - a >= 2 and all(norm[words[k][1]:words[k][1] + 1] == "."
+                                                           for k in range(a + 1, b)):
+                continue                      # an abbreviation: 'the U.S. gov'
+            if not letters_between and not spelt and "." in gap and len(words[a][2]) == 1:
+                continue                      # an abbreviation: 'U.S. Org...'
         spans.append((words[a][0], words[e][1]))
+    for m in _ACE.finditer(norm):             # R11-01: a punycode label ('portal xn--p1ai') is a domain by itself
+        a = max((w[0] for w in words if w[1] <= m.start()), default=m.start())
+        spans.append((a, m.end()))
     return spans
 
 

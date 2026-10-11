@@ -408,7 +408,9 @@ class SafeFetcher:
                     return status, None, bytes(buf), resp.headers.get("content-type")
         except httpx.TimeoutException:
             rec.fetch_status = R.TIMED_OUT
-        except (httpx.HTTPError, OSError, ValueError):
+        except (httpx.HTTPError, httpx.InvalidURL, OSError, ValueError):
+            # R11-02: InvalidURL (a host that netpolicy accepts but httpx does not, '\u2603.com') is not an HTTPError;
+            # uncaught, it ended the whole research job as INTERNAL_ERROR. It fails this one source only.
             rec.fetch_status = R.UNREACHABLE
         return None
 
