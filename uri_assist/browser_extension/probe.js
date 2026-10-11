@@ -8,8 +8,16 @@
 // highlight) is removed for the probe and put back by "end". In the extension the adapter injects the probe rules
 // with chrome.scripting.insertCSS (user origin, unreadable by the page) and runs this script in its isolated world.
 // Called as (probe)({op, key, ...}); state between calls lives under window[key] (the adapter's random key).
+// R2-03: a highlight cannot remove the originating element's text-decoration; Chromium repaints it in the highlight
+// colour, so a line-through bar over the glyphs took the tints like glyph pixels. The probe shots ("clear", "tint",
+// "tint2") are therefore taken with every decoration off (NODECO), and one more shot ("plain", op "plain") shows the
+// page as it is with only the decorations off: URI counts a glyph pixel only where it shows in "plain" and "base"
+// paints nothing over it. A unit whose decoration survives NODECO (the page's own !important rule) is reported (d).
 (arg) => {
   const MAX_RECTS = 8, MAX_GROUPS = 8;
+  // Not ::first-letter or ::first-line: a rule for those splits text runs and moves the glyphs (a page decoration on
+  // them is reported as d instead).
+  const NODECO = "*,*::before,*::after{text-decoration-line:none !important}";
   const st = window[arg.key];
   if (arg.op === "begin") {
     if (st || typeof CSS === "undefined" || !CSS.highlights || typeof Highlight !== "function") return { ok: false };
@@ -22,10 +30,10 @@
       // R14-02: glyphs drawn as discs or squares (-webkit-text-security) are reported; URI drops such units.
       const cs = node.parentElement ? getComputedStyle(node.parentElement) : null;
       const s = cs && (cs.webkitTextSecurity || cs.getPropertyValue("-webkit-text-security") || "none") !== "none" ? 1 : 0;
-      const range = document.createRange(); range.setStart(node, a); range.setEnd(node, b);
+      const range = document.createRange(); range.setStart(node, a); range.setEnd(node, b); range.n = node;
       const all = [...range.getClientRects()].filter((q) => q.width > 0 && q.height > 0)
         .map((q) => { const x = Math.floor(q.left), y = Math.floor(q.top); return [x, y, Math.ceil(q.right) - x, Math.ceil(q.bottom) - y]; });
-      return { range, r: all.slice(0, MAX_RECTS), c: all.length, l: node.nodeValue.length, s };
+      return { range, r: all.slice(0, MAX_RECTS), c: all.length, l: node.nodeValue.length, s, d: 0 };
     });
     // Groups: units whose rects, grown by a quarter of their height, touch go to different groups (so a clear shot
     // removes no other ink inside a unit's own box). Colours: inside a group, units closer than three line heights
@@ -51,7 +59,27 @@
     window[arg.key] = { units, groups, saved, sheet, sheets: document.adoptedStyleSheets, names: [] };
     sel.removeAllRanges();
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-    return { ok: true, units: units.map(({ r, c, l, s }) => ({ r, c, l, s })), groups,
+    // R2-03: with NODECO on, any decoration still computed on the unit's element or an ancestor (or their first line
+    // or letter) is one the probe cannot take away; the same for a range of one of the page's own highlights.
+    sheet.replaceSync(NODECO);
+    const up = (n) => n.assignedSlot || n.parentElement || (n.parentNode instanceof ShadowRoot ? n.parentNode.host : null);
+    const deco = (e, p) => (getComputedStyle(e, p).textDecorationLine || "none") !== "none";
+    const pageRanges = [];
+    let pageAll = false;                                      // a page highlight range URI cannot read: all units
+    for (const [, h] of CSS.highlights) for (const r of h) {
+      if (r instanceof Range) { pageRanges.push(r); continue; }
+      try { const q = document.createRange(); q.setStart(r.startContainer, r.startOffset);
+        q.setEnd(r.endContainer, r.endOffset); pageRanges.push(q); } catch (e) { pageAll = true; }
+    }
+    units.forEach((u) => {
+      if (!u.range) return;
+      for (let e = up(u.range.n); e && !u.d; e = up(e))       // flat tree: slots and shadow hosts included
+        u.d = deco(e) || deco(e, "::first-line") || deco(e, "::first-letter") ? 1 : 0;
+      if (!u.d && (pageAll || pageRanges.some((r) => r.compareBoundaryPoints(Range.END_TO_START, u.range) < 0 &&
+          r.compareBoundaryPoints(Range.START_TO_END, u.range) > 0))) u.d = 1;
+    });
+    sheet.replaceSync("");
+    return { ok: true, units: units.map(({ r, c, l, s, d }) => ({ r, c, l, s, d })), groups,
       viewport: { w: innerWidth, h: innerHeight }, device_pixel_ratio: window.devicePixelRatio || 1 };
   }
   if (!st) return { ok: false };
@@ -68,9 +96,10 @@
       rules.push(`::highlight(${name}){color:${col} !important;-webkit-text-fill-color:${col} !important;` +
         "text-shadow:none !important;text-decoration:none !important;background-color:transparent !important}");
     }
-    st.sheet.replaceSync(rules.join("\n"));
+    st.sheet.replaceSync([NODECO, ...rules].join("\n"));
     return { ok: true };
   }
+  if (arg.op === "plain") { st.sheet.replaceSync(NODECO); return { ok: true }; }   // R2-03: decorations off only
   if (arg.op === "base") { st.sheet.replaceSync(""); return { ok: true }; }
   // "end": restore everything.
   document.adoptedStyleSheets = st.sheets;

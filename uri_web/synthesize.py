@@ -80,7 +80,14 @@ _QUANTITY = re.compile(
     r"daily|weekly|monthly|yearly|majority|minority|most|all|none|every|several|few|many|"
     # R1-02: multiplicative and grouping words ("tenfold", "percentage points", "a decade", "a couple of").
     r"\w+fold|percentages?|decades?|centur(?:y|ies)|millenni(?:um|a)|couples?|pairs?|dual|both|"
-    r"(?:phase|part|class|grade|stage|tier|level|chapter|section|schedule|article|book|volume|act|title)\s+[ivxlcdm])\b",
+    r"(?:phase|part|class|grade|stage|tier|level|chapter|section|schedule|article|book|volume|act|title)\s+[ivxlcdm]|"
+    # R2-02: rates, periods, magnitudes and relative dates ("hourly", "per annum", "an order of magnitude", "basis
+    # points", "in the nineties", "last year"). The list is a second check only: D7 rests on _excerpt below.
+    r"hourly|nightly|quarterly|bi-?annual(?:ly)?|bi-?ennial(?:ly)?|fortnight(?:ly|s)?|semesters?|trimesters?|"
+    r"per\s+annum|annum|p\.a|basis\s+points?|bps|orders?\s+of\s+magnitude|magnitudes?|handful|nil|nought|naught|"
+    r"(?:twent|thirt|fort|fift|sixt|sevent|eight|ninet)ies|(?:hundred|thousand|million|billion)th|"
+    r"last|next|ago|previous|recent(?:ly)?|tonight|overnight|weekends?|spring|summer|autumn|winter|seasons?|"
+    r"years?|months?|weeks?|days?|hours?|minutes?|centenar(?:y|ies)|anniversar(?:y|ies))\b",
     re.I)
 
 
@@ -122,21 +129,60 @@ def _novel_words(claim: str, source: str) -> set:
     return _words_of(claim) - _words_of(source) - _FUNCTION_WORDS
 
 
-def _in_order(claim: str, source: str) -> bool:
-    """R1-02: the claim's words (function words aside) occur in the source sentence in the same order. Words that are
-    all present but recombined ("rents ... rose" + "wages rose tenfold") are not the source's statement."""
-    src = iter(w.lower() for w in _TOKEN.findall(source or ""))
-    return all(any(w == s for s in src) for w in (w.lower() for w in _TOKEN.findall(claim or ""))
-               if w not in _FUNCTION_WORDS)
+# R2-02: words that join or contrast clauses, and the punctuation between clauses. A claim may skip neither.
+_CLAUSE_WORDS = frozenset("""
+and or but nor yet so while whilst whereas although though because since unless until unlike than versus vs
+respectively which who whom whose where when then after before whereby compared against instead rather
+""".split())
+_CLAUSE_MARK = re.compile(r"[,;:()\[\]{}\u2013\u2014!?\"\u201c\u201d]|\s-\s|\.\s")
+MAX_GAP_WORDS = 2
+
+
+def _excerpt(claim: str, source: str) -> bool:
+    """R2-02: the claim is the source sentence's own run of words. Its words (function words aside) are matched in
+    order, and between two matched words the source may only leave out at most MAX_GAP_WORDS content words, never a
+    clause boundary (a joining word, a comma, a semicolon, a dash, a bracket) and never a quantity. An in-order test
+    with unlimited gaps (R1-02) let a claim join the subject of one clause to the quantity of another ("The tax in
+    Texas was cut by [... while the levy in Ohio was cut by] an order of magnitude"); D7 then rested on recognising
+    the quantity word. Leaving out a modifier ("after [a long public] consultation") is still allowed."""
+    # The claim's own joining words are matched too: they can only be the source's.
+    c = [w for w in (w.lower() for w in _TOKEN.findall(claim or "")) if w not in _FUNCTION_WORDS or w in _CLAUSE_WORDS]
+    toks = [(m.group(0).lower(), m.start(), m.end()) for m in _TOKEN.finditer(source or "")]
+    if not c:
+        return False
+
+    def gap_ok(a: int, b: int) -> bool:
+        """The source tokens strictly between matched tokens a and b may be left out."""
+        skipped = [w for w, _s, _e in toks[a + 1:b]]
+        text = source[toks[a][2]:toks[b][1]]
+        return (sum(1 for w in skipped if w not in _FUNCTION_WORDS) <= MAX_GAP_WORDS
+                and not any(w in _CLAUSE_WORDS for w in skipped) and not _CLAUSE_MARK.search(text)
+                and not states_quantity(text))
+
+    seen = set()                                     # (ci, prev) already shown not to match: no exponential retry
+
+    def match(ci: int, prev: int) -> bool:
+        if ci == len(c):
+            return True
+        if (ci, prev) in seen:
+            return False
+        seen.add((ci, prev))
+        for j in range(prev + 1, len(toks)):
+            if toks[j][0] == c[ci] and (prev < 0 or gap_ok(prev, j)) and match(ci + 1, j):
+                return True
+            if prev >= 0 and not gap_ok(prev, j):
+                return False                         # a longer gap cannot become allowed again
+        return False
+    return match(0, -1)
 
 
 def _supported_by(body: str, cw: set, claim_nums: set, sentence) -> bool:
     """One source sentence states the claim in the claim's own words: enough shared content words, every number,
-    the same polarity, no new word and the same word order."""
+    the same polarity, no new word, and the claim is a contiguous run of the sentence's words."""
     s, w, nums = sentence
     return (bool(cw) and len(cw & w) / len(cw) >= MIN_SUPPORT and claim_nums <= nums
             and bool(_NEG.search(body)) == bool(_NEG.search(s)) and not _antonym_flip(body, s)
-            and not _novel_words(body, s) and _in_order(body, s))
+            and not _novel_words(body, s) and _excerpt(body, s))
 
 
 def verify(answer: str, source_texts: list) -> Verified:
@@ -195,8 +241,8 @@ def verify(answer: str, source_texts: list) -> Verified:
         if bool(_NEG.search(body)) != bool(_NEG.search(best[0])) or _antonym_flip(body, best[0]):
             v.dropped.append({"text": sent, "reason": "POLARITY_MISMATCH"})
             continue
-        if _novel_words(body, best[0]) or not _in_order(body, best[0]):
-            quote_instead()                          # R9-02 / R1-02: a word or word order the source does not have
+        if _novel_words(body, best[0]) or not _excerpt(body, best[0]):
+            quote_instead()                          # R9-02 / R2-02: not a contiguous run of the source's words
             continue
         # R1-06: only the cited sources that themselves state the claim stay cited.
         kept = [c for c in cited if any(_supported_by(body, cw, claim_nums, x) for x in sents_of[c - 1])]

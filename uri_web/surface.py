@@ -21,9 +21,9 @@ _SCHEME = re.compile(r"(?i)(?:https?|ftp|file)?://")
 _SCRIPTISH = re.compile(r"(?i)\b(javascript|vbscript|data):")
 # Links, e-mail addresses and IP addresses in web-derived text are masked whole (R6-03): the surface carries no
 # address a user could follow or contact, whichever field the text arrived in.
-# R1-01: the same pattern as the verifier's (untrusted.LINK_PATTERN), matched after NFKC normalisation: bare domains,
-# defanged and fullwidth forms and any '://' are masked too.
-_LINK = re.compile(U.LINK_PATTERN)
+# R1-01 / R2-01: the verifier's own detector (untrusted.has_link_or_contact) on the verifier's canonical text
+# (untrusted.normalise: NFKC, invisible characters deleted), so what is checked is what is shown: bare domains, IDN,
+# title-case, defanged and fullwidth forms and any '://' are masked, a whole token at a time.
 LINK_MASK = "[link removed]"
 HIDDEN_TITLE = "(title hidden: instruction-like text)"
 MAX_TEXT = 1200
@@ -34,14 +34,8 @@ STATUS_LABEL = {P.COMPLETED_WITH_RESULT: "Answer with sources", P.NO_RESULT: "No
                 P.FAILED: "Failed"}
 
 
-def _mask_link(m) -> str:
-    tail = re.search(r"[.,;:!?)\]'\"]+$", m.group(0))
-    return LINK_MASK + (tail.group(0) if tail else "")
-
-
 def clean(s, limit=MAX_TEXT, links=True) -> str:
-    s = U.normalise(str(s or ""))
-    s = _LINK.sub(_mask_link, s) if links else s
+    s = U.mask_links(str(s or ""), LINK_MASK) if links else U.normalise(str(s or ""))
     s = _SCHEME.sub("", s)
     s = _SCRIPTISH.sub(lambda m: m.group(1) + " :", s)
     s = "".join(ch for ch in s if ch in "\n\t" or (ord(ch) >= 32 and not 0xD800 <= ord(ch) <= 0xDFFF))

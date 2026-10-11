@@ -16,8 +16,16 @@ probe), for each probe group k `clear` (only group k's ranges repainted transpar
              away, transparent through opacity, or not repainted by the highlight (SVG text) do not, and nothing else
              on the page (decoy text, borders, patterns, images, animations) changes in that way between those shots
              for two colours the page does not know.
-  * inked:   tinted and base differs from clear by at least OWN_DELTA: the unit's own colour is visible against what
-             is behind it (white on white, near-background colours and transparent fills are not).
+  * inked:   tinted, plain differs from clear by at least OWN_DELTA (the unit's own colour is visible against what
+             is behind it: white on white, near-background colours and transparent fills are not) and base equals
+             plain within OWN_DELTA (no decoration paints over it; R2-03 below).
+R2-03: a CSS highlight cannot take away the element's own text-decoration (Chromium repaints it in the highlight
+colour), so a line-through bar drawn over white text took both tints exactly where the glyphs are. The probe shots
+are taken with every decoration off, and one more shot, `plain` (the page as it is with only the decorations off),
+is required. A tinted pixel is inked only where `plain` differs from `clear` by OWN_DELTA (the glyph shows without
+decorations) and `base` equals `plain` within OWN_DELTA (no decoration paints over it). A unit whose decorations
+cover more than MAX_DECORATED of its box, or whose decoration the probe could not switch off (`d`: the page's own
+!important rule, or one of the page's own highlights over it), is dropped (`decorated`).
 A unit is kept only when
   * its inked pixels reach MIN_INK_PER_CHAR x (non-space characters) x (mean line height) (CSS px, x dpr^2),
   * at least MIN_OWN_FRACTION of its tinted pixels are inked, and
@@ -55,6 +63,7 @@ PROBE = "uri.assist.probe.v1"
 MIN_ALPHA, MAX_ALPHA = 0.3, 1.2   # glyph coverage x opacity a tinted pixel must show
 MAX_ALPHA_GAP = 0.2               # the two tints must agree on it
 MAX_UNSTABLE = 0.1                # share of a unit's pixels that may change between base and base2
+MAX_DECORATED = 0.25              # R2-03: share of a unit's pixels its decorations (base vs plain) may cover
 MAX_RESIDUAL = 28                 # per channel, how far a tinted pixel may be from alpha x (probe - clear)
 MIN_PROBE_CONTRAST = 64           # |probe - clear| a pixel needs for its tint to be measurable
 OWN_DELTA = 24                    # base vs clear, some channel: the unit's own colour shows
@@ -71,6 +80,7 @@ MAX_UNITS = 6000
 MAX_PIXELS = 40_000_000           # decompression bomb guard (same as vision.py)
 
 UNVERIFIED, NO_INK, MASKED_GLYPHS = "offscreen_or_unverified", "no_ink", "masked_glyphs"
+DECORATED = "decorated"
 
 
 def _num(v):
@@ -100,7 +110,7 @@ def _unit(u) -> Optional[dict]:
     if r is None or not _int(u.get("c"), 0, 10_000) or not _int(u.get("l"), 0, 10_000_000):
         return None
     return {"r": r, "c": u["c"], "l": u["l"], "k": u["k"] if _int(u.get("k"), 0, 100_000) else None,
-            "s": u.get("s") not in (None, 0, False)}
+            "s": u.get("s") not in (None, 0, False), "d": u.get("d") not in (None, 0, False)}
 
 
 def _image(png, w, h, dpr):
@@ -149,14 +159,15 @@ def _plan_ok(groups, units) -> bool:
 class Probe:
     """A validated differential render of one snapshot. Built only by load()."""
 
-    def __init__(self, base, base2, groups, palettes, units, where, vw, vh, dpr):
-        self.base, self.base2, self.groups, self.palettes = base, base2, groups, palettes
+    def __init__(self, base, base2, plain, groups, palettes, units, where, vw, vh, dpr):
+        self.base, self.base2, self.plain, self.groups, self.palettes = base, base2, plain, groups, palettes
         self.units, self.where = units, where
         self.vw, self.vh, self.dpr = vw, vh, dpr
         self._cache = {}
 
     def _counts(self, gk, ci, rect):
-        """(tinted, inked, unstable, inked per cell) inside one rectangle (CSS px), for group gk and colour ci."""
+        """(tinted, inked, unstable, inked per cell, decorated) inside one rectangle (CSS px), for group gk and colour
+        ci."""
         g, d = self.groups[gk], self.dpr
         x, y, w, h = rect
         l, t = max(0.0, x), max(0.0, y)
@@ -165,19 +176,21 @@ class Probe:
                min(self.base.width, math.ceil(r * d)), min(self.base.height, math.ceil(b * d)))
         bw, bh = box[2] - box[0], box[3] - box[1]
         if bw <= 0 or bh <= 0:
-            return 0, 0, 0, [0]
+            return 0, 0, 0, [0], 0
         from PIL import ImageChops
         cells = max(1, int(bw // max(4 * d, bh)))
         per = [0] * cells
         tinted = inked = 0
-        crops = [im.crop(box) for im in (self.base, self.base2, g["clear"], g["tint"], g["tint2"])]
-        n_px, _, c_px, a_px, b_px = (im.tobytes() for im in crops)
+        crops = [im.crop(box) for im in (self.base, self.base2, g["clear"], g["tint"], g["tint2"], self.plain)]
+        n_px, _, c_px, a_px, b_px, p_px = (im.tobytes() for im in crops)
 
         def changed(p, q, at):                           # 255 where some channel differs by `at` or more
             r_, g_, b_ = ImageChops.difference(p, q).split()
             return ImageChops.lighter(ImageChops.lighter(r_, g_), b_).point(lambda v: 255 if v >= at else 0)
         moved = changed(crops[0], crops[1], OWN_DELTA)
         unstable = moved.histogram()[255]
+        # R2-03: where the page differs from itself with decorations off, a decoration is drawn.
+        decorated = ImageChops.subtract(changed(crops[0], crops[5], OWN_DELTA), moved).histogram()[255]
         # Only pixels the first tint changed and that stayed put between base and base2 can be tinted glyph pixels.
         cand = ImageChops.subtract(changed(crops[3], crops[2], math.ceil(MIN_PROBE_CONTRAST * MIN_ALPHA / 2)), moved)
         tints = [(a_px, pal[ci], [pal[c] for c in g["used"] if c != ci]) for a_px, pal in
@@ -207,10 +220,12 @@ class Probe:
             if len(alphas) != 2 or abs(alphas[0] - alphas[1]) > MAX_ALPHA_GAP:
                 continue
             tinted += 1
-            if max(abs(n_px[k] - c0), abs(n_px[k + 1] - c1), abs(n_px[k + 2] - c2)) >= OWN_DELTA:
+            # R2-03: the glyph shows with decorations off (plain vs clear) and nothing paints over it (base = plain).
+            if max(abs(p_px[k] - c0), abs(p_px[k + 1] - c1), abs(p_px[k + 2] - c2)) >= OWN_DELTA and max(
+                    abs(n_px[k] - p_px[k]), abs(n_px[k + 1] - p_px[k + 1]), abs(n_px[k + 2] - p_px[k + 2])) < OWN_DELTA:
                 inked += 1
                 per[min(cells - 1, ((k // 3) % bw) * cells // bw)] += 1
-        return tinted, inked, unstable, [p / (bh * bh) for p in per]
+        return tinted, inked, unstable, [p / (bh * bh) for p in per], decorated
 
     def verify(self, i: int) -> Optional[str]:
         """None when unit i drew its own glyphs visibly in its own box, else the reason it is dropped."""
@@ -227,9 +242,11 @@ class Probe:
             return None                                  # whitespace carries nothing to verify
         if u.get("s"):
             return MASKED_GLYPHS                         # R14-02: -webkit-text-security shows dots, not the text
+        if u.get("d"):
+            return DECORATED                             # R2-03: a decoration the probe could not switch off
         if u["k"] is None or not u["r"] or u["c"] > len(u["r"]) or i not in self.where:
             return UNVERIFIED
-        tinted = inked = unstable = area = 0
+        tinted = inked = unstable = area = decorated = 0
         empty_cell = False
         for x, y, w, h in u["r"]:
             if w <= 0 or h <= 0:
@@ -237,11 +254,14 @@ class Probe:
             if x < -EDGE_TOLERANCE or y < -EDGE_TOLERANCE or x + w > self.vw + EDGE_TOLERANCE \
                     or y + h > self.vh + EDGE_TOLERANCE:
                 return UNVERIFIED                        # (partly) outside the viewport: cannot be checked
-            t, k, n, cells = self._counts(*self.where[i], [x, y, w, h])
+            t, k, n, cells, dk = self._counts(*self.where[i], [x, y, w, h])
             tinted, inked, unstable, area = tinted + t, inked + k, unstable + n, area + w * h * self.dpr ** 2
+            decorated += dk
             empty_cell = empty_cell or (w >= 4 and min(cells) < MIN_CELL_INK)
         if unstable > MAX_UNSTABLE * area:
             return UNVERIFIED                            # the page changed under this unit during the probe
+        if decorated > MAX_DECORATED * area:
+            return DECORATED                             # R2-03: its decorations cover the glyphs
         if empty_cell:
             return NO_INK                                # part of a box shows none of the unit's own glyphs
         height = sum(r[3] for r in u["r"]) / len(u["r"])
@@ -282,13 +302,16 @@ def load(probe, snapshot) -> Optional[Probe]:
             units.append({"r": [], "c": 0, "l": 0, "k": None if a is None else a["k"]})
         elif a["s"] or b["s"]:
             units.append({"r": [], "c": 0, "l": 0, "k": a["k"], "s": True})   # R14-02: drawn as discs/squares
+        elif b["d"]:
+            units.append({"r": [], "c": 0, "l": 0, "k": a["k"], "d": True})   # R2-03: decoration not switched off
         elif (a["r"], a["c"], a["l"]) != (b["r"], b["c"], b["l"]):
             units.append({"r": [], "c": 0, "l": 0, "k": None})     # the page changed between snapshot and probe
         else:
             units.append({**b, "k": a["k"]})
     base, base2 = _image(probe.get("base"), vw, vh, dpr), _image(probe.get("base2"), vw, vh, dpr)
+    plain = _image(probe.get("plain"), vw, vh, dpr)     # R2-03: required; without it no page text is kept
     raw_groups = probe.get("groups")
-    if base is None or base2 is None or not isinstance(raw_groups, list) or len(raw_groups) > MAX_GROUPS:
+    if base is None or base2 is None or plain is None or not isinstance(raw_groups, list) or len(raw_groups) > MAX_GROUPS:
         return None
     groups, where = [], {}
     for gk, g in enumerate(raw_groups):
@@ -309,7 +332,7 @@ def load(probe, snapshot) -> Optional[Probe]:
             where[i] = (gk, c)
     if not _plan_ok(groups, units):
         return None
-    return Probe(base, base2, groups, ([tuple(c) for c in palette], [tuple(c) for c in palette2]), units, where,
+    return Probe(base, base2, plain, groups, ([tuple(c) for c in palette], [tuple(c) for c in palette2]), units, where,
                  float(vw), float(vh), float(dpr))
 
 

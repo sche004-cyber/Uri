@@ -127,6 +127,7 @@ async function probeTab(page, snap, probeSrc) {
   if (!plan || !plan.ok) return null;
   try {
     const base = await shot(), groups = [];
+    await call({ op: "plain", key }); const plain = await shot();     // R2-03: the page with decorations off
     for (let k = 0; k < plan.groups.length; k++) {
       await call({ op: "show", key, group: k, mode: "clear", palette, nonce: hex() }); const clear = await shot();
       await call({ op: "show", key, group: k, mode: "tint", palette, nonce: hex() }); const tint = await shot();
@@ -134,7 +135,7 @@ async function probeTab(page, snap, probeSrc) {
       groups.push({ ...plan.groups[k], clear, tint, tint2 });
     }
     await call({ op: "base", key }); const base2 = await shot();
-    return { schema: "uri.assist.probe.v1", palette, palette2, units: plan.units, groups, base, base2,
+    return { schema: "uri.assist.probe.v1", palette, palette2, units: plan.units, groups, base, base2, plain,
              viewport: plan.viewport, device_pixel_ratio: plan.device_pixel_ratio };
   } finally { await call({ op: "end", key }); }
 }
@@ -185,7 +186,7 @@ def decode_probe(p):
     """The driver's probe with its base64 screenshots decoded to PNG bytes (what an adapter returns)."""
     if not p:
         return None
-    out = {**p, "base": base64.b64decode(p["base"]), "base2": base64.b64decode(p["base2"])}
+    out = {**p, **{k: base64.b64decode(p[k]) for k in ("base", "base2", "plain") if p.get(k)}}
     out["groups"] = [{**g, **{k: base64.b64decode(g[k]) for k in ("clear", "tint", "tint2")}} for g in p["groups"]]
     return out
 
@@ -305,7 +306,7 @@ def synthetic(units, base_ink=None, clear_ink=None, tint=None, tint2=None, base2
                 base2_ink(d)
         return _png(draw)
     probe = {"schema": "uri.assist.probe.v1", "palette": PAL, "palette2": PAL2, "base": shot("base"),
-             "base2": shot("base2"), "viewport": {"w": SW, "h": SH}, "device_pixel_ratio": 1,
+             "base2": shot("base2"), "plain": shot("base"), "viewport": {"w": SW, "h": SH}, "device_pixel_ratio": 1,
              "units": [{"r": u["r"], "c": 1, "l": u["l"]} for u in s_units],
              "groups": [{**g, "clear": shot("clear", k), "tint": shot("tint", k), "tint2": shot("tint2", k)}
                         for k, g in enumerate(groups)]}
@@ -360,7 +361,7 @@ def drawn_probe(snap, hidden=()):
         img.save(buf, format="PNG")
         return buf.getvalue()
     return {"schema": "uri.assist.probe.v1", "palette": PAL, "palette2": PAL2, "base": shot("base"),
-            "base2": shot("base"), "viewport": snap["viewport"], "device_pixel_ratio": snap["device_pixel_ratio"],
+            "base2": shot("base"), "plain": shot("base"), "viewport": snap["viewport"], "device_pixel_ratio": snap["device_pixel_ratio"],
             "units": [{"r": u["r"], "c": u["c"], "l": u["l"]} for u in units],
             "groups": [{**g, "clear": shot("clear", k), "tint": shot("tint", k, PAL), "tint2": shot("tint", k, PAL2)}
                        for k, g in enumerate(groups)]}

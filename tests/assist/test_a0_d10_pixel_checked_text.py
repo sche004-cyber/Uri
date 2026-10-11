@@ -328,6 +328,7 @@ def test_onscreen_missing_or_wrong_screenshot_keeps_nothing():
     small = drawn_probe(_snap(units, w=800))
     for probe in (None, {}, b"png", {**good, "schema": "other"}, {**good, "viewport": {"w": 800, "h": 900}},
                   {**good, "device_pixel_ratio": 2}, {**good, "base": small["base"]}, {**good, "base2": None},
+                  {**good, "plain": None},
                   {**good, "groups": [{**good["groups"][0], "tint2": b"\x89PNG broken"}]},
                   {**good, "units": []}, {**good, "palette": good["palette"][:1]}):
         c = Counter()
@@ -363,7 +364,7 @@ def test_onscreen_flat_band_and_gradient_are_not_ink():
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         return buf.getvalue()
-    probe = {**probe, "base": paint(probe["base"]), "base2": paint(probe["base2"]),
+    probe = {**probe, "base": paint(probe["base"]), "base2": paint(probe["base2"]), "plain": paint(probe["plain"]),
              "groups": [{**g, **{k: paint(g[k]) for k in ("clear", "tint", "tint2")}} for g in probe["groups"]]}
     c = Counter()
     assert OS.keep(_pieces(units), OS.load(probe, snap), c, 5) == [] and c == {"no_ink": 2}
