@@ -68,6 +68,74 @@ def provider_available(spec: dict) -> tuple[bool, str]:
     return False, f"unknown provider {p!r}"
 
 
+_HASH_CACHE: dict = {}
+
+
+def _file_sha256(path: str) -> str | None:
+    try:
+        st = os.stat(path)
+        key = (path, st.st_ino, st.st_size, st.st_mtime_ns, st.st_ctime_ns)
+        if key not in _HASH_CACHE:
+            h = hashlib.sha256()
+            with open(path, "rb") as fh:
+                for chunk in iter(lambda: fh.read(1 << 20), b""):
+                    h.update(chunk)
+            _HASH_CACHE[key] = h.hexdigest()
+        return _HASH_CACHE[key]
+    except OSError:
+        return None
+
+
+def _interpreter(real: str) -> dict | None:
+    """A script CLI (``#!/usr/bin/env node``) runs whatever interpreter PATH resolves: it is part of the identity."""
+    try:
+        with open(real, "rb") as fh:
+            head = fh.readline(512)
+    except OSError:
+        return None
+    if not head.startswith(b"#!"):
+        return None
+    parts = head[2:].decode("utf-8", "replace").split()
+    if not parts:
+        return None
+    exe = parts[0]
+    if os.path.basename(exe) == "env":
+        names = [a for a in parts[1:] if not a.startswith("-") and "=" not in a]
+        exe = (shutil.which(names[0]) if names else None) or (names[0] if names else exe)
+    ireal = os.path.realpath(exe)
+    return {"realpath": ireal, "sha256": _file_sha256(ireal)}
+
+
+def reviewer_executable(spec: dict) -> dict | None:
+    """Identity of the reviewer CLI: absolute path, realpath, SHA-256 (and a script's interpreter). It is bound at
+    PLAN in the control state, launched by that absolute path and re-checked before every step and every round, so a
+    ``claude`` planted earlier on PATH after the plan is never run and a replaced CLI is TAMPER (DEV-LIFECYCLE-1
+    R6-01). Several different ``claude`` executables on PATH at once are ``ambiguous``: the driver refuses to review
+    until the owner leaves one. ``None`` for providers that are not an installed CLI."""
+    p = spec.get("provider")
+    if p not in INDEPENDENT_PROVIDERS:
+        return None
+    name = "claude" if p == "claude_cli" else "codex"
+    if spec.get("binary"):  # DEVTEST only (load_config refuses it for a real milestone)
+        found = [spec["binary"]] if (Path(spec["binary"]).is_file() or shutil.which(spec["binary"])) else []
+        found = [shutil.which(f) or f for f in found]
+    else:
+        found = []
+        for d in os.environ.get("PATH", "").split(os.pathsep):
+            c = shutil.which(name, path=d or ".")
+            if c and os.path.realpath(c) not in {os.path.realpath(x) for x in found}:
+                found.append(c)
+    if not found:
+        return {"name": name, "error": "not found"}
+    path = os.path.abspath(found[0])
+    real = os.path.realpath(path)
+    ident = {"name": name, "path": path, "realpath": real, "sha256": _file_sha256(real),
+             "interpreter": _interpreter(real)}
+    if len(found) > 1:
+        ident["ambiguous"] = sorted(os.path.realpath(f) for f in found)
+    return ident
+
+
 def claude_settings(role: str, worktree: Path, protected: list[str]) -> dict:
     deny = list(GIT_WRITE_DENY)
     if role == "reviewer":
@@ -87,6 +155,11 @@ def build_argv(spec: dict, role: str, worktree: Path, protected: list[str], sess
                 "--session-id", session_id, "--permission-mode", "dontAsk",
                 "--allowedTools", *tools["allowed"], "--disallowedTools", *tools["disallowed"],
                 "--settings", json.dumps(claude_settings(role, worktree, protected))]
+        if role == "reviewer":
+            # The reviewer runs in the candidate checkout: its CLAUDE.md, .claude/ settings, hooks, skills, agents and
+            # MCP servers are implementer-authored and must not reach the reviewer outside the driver-built prompt
+            # (R6-02). --safe-mode drops CLAUDE.md and all customizations; --settings and the tool flags still apply.
+            argv[2:2] = ["--safe-mode", "--setting-sources", "user", "--strict-mcp-config"]
         if spec.get("model"):
             argv += ["--model", spec["model"]]
         if spec.get("max_turns"):
@@ -95,6 +168,8 @@ def build_argv(spec: dict, role: str, worktree: Path, protected: list[str], sess
     if p == "codex_cli":
         sandbox = "read-only" if role == "reviewer" else "workspace-write"
         argv = [spec.get("binary") or shutil.which("codex") or "codex", "exec", "--sandbox", sandbox, "-"]
+        if role == "reviewer":  # no candidate AGENTS.md as project instructions (R6-02)
+            argv[2:2] = ["-c", "project_doc_max_bytes=0"]
         if spec.get("model"):
             argv[2:2] = ["--model", spec["model"]]
         return argv
@@ -123,11 +198,16 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
         default = shutil.which(name)
         rec["binary_realpath"] = real
         rec["binary_is_default"] = bool(default) and real == os.path.realpath(default)
-        try:
-            with open(real, "rb") as fh:
-                rec["binary_sha256"] = hashlib.sha256(fh.read()).hexdigest()
-        except OSError:
-            rec["binary_sha256"] = None
+        rec["binary_sha256"] = _file_sha256(real)
+        anchor = spec.get("_anchor")  # the PLAN-bound identity (R6-01); the launched file must still match it
+        if anchor is not None:
+            rec["binary_anchor_ok"] = bool(anchor.get("sha256")) and not anchor.get("ambiguous") and \
+                real == anchor.get("realpath") and rec["binary_sha256"] == anchor.get("sha256") and \
+                _interpreter(real) == anchor.get("interpreter")
+            if not rec["binary_anchor_ok"]:
+                rec.update(status="REFUSED", detail="reviewer executable differs from the one bound at the plan",
+                           ended_at=_now())
+                return rec
     env = {k: v for k, v in os.environ.items() if not k.startswith("URI_LIFECYCLE_")}
     env.update({"URI_LIFECYCLE_ROLE": role, "PYTHONDONTWRITEBYTECODE": "1"}, **(env_extra or {}))
     rec["argv"] = [a if len(a) < 400 else a[:60] + "…" for a in argv]

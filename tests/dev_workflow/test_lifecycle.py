@@ -1369,3 +1369,120 @@ def test_r5_01_combined_gate_writing_global_insteadof_cannot_fake_a_merge_integr
     assert st["blocker"]["kind"] == "TAMPER"
     assert remote_tip(remote) == base
     assert g(fake, "rev-parse", "refs/heads/canon") == base  # nothing was pushed anywhere
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1 R6 regressions
+
+def _fake_claude(path: Path, verdict: str, log: Path):
+    """A ``claude`` stand-in printing Claude Code's JSON output with a scripted verdict; it logs each run's argv."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    findings = [] if verdict == "ACCEPT" else [{"id": "R1-01", "severity": "HIGH", "blocking": True, "category": "code",
+                                                "title": "safe_div divides by zero", "files": ["pkg/calc.py:2"]}]
+    path.write_text(f"""#!{PY}
+import json, subprocess, sys, uuid
+sys.stdin.read()
+head = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+open({str(log)!r}, "a").write(json.dumps({{"exe": {str(path)!r}, "argv": sys.argv[1:]}}) + "\\n")
+res = {{"candidate": head, "baseline": "x", "verdict": {verdict!r}, "findings": {findings!r},
+       "prior_findings": [], "tests_run": [], "unverified": []}}
+print(json.dumps({{"result": "AUDIT_RESULT_BEGIN\\n" + json.dumps(res) + "\\nAUDIT_RESULT_END",
+                  "session_id": str(uuid.uuid4()), "is_error": False, "modelUsage": {{}}}}))
+""")
+    path.chmod(0o755)
+    return path
+
+
+@pytest.fixture
+def clean_path(tmp_path, monkeypatch):
+    """PATH = <planted dir> : <cli dir> : the system dirs without any real claude/codex."""
+    import os
+    import shutil as sh
+    planted, cli = tmp_path / "bin_early", tmp_path / "bin_cli"
+    planted.mkdir()
+    cli.mkdir()
+    rest = [d for d in os.environ["PATH"].split(os.pathsep)
+            if d and not sh.which("claude", path=d) and not sh.which("codex", path=d)]
+    monkeypatch.setenv("PATH", os.pathsep.join([str(planted), str(cli), *rest]))
+    return planted, cli
+
+
+def _runs(log: Path) -> list:
+    return [json.loads(x) for x in log.read_text().splitlines()] if log.is_file() else []
+
+
+def test_r6_01_claude_planted_earlier_on_path_before_the_plan_cannot_verify_a_real_milestone(tmp_path, clean_path):
+    planted, cli = clean_path
+    log = tmp_path / "claude_runs.jsonl"
+    _fake_claude(cli / "claude", "REJECT", log)        # the installed CLI's position
+    _fake_claude(planted / "claude", "ACCEPT", log)    # first match on PATH
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = config(tmp_path, repo, wt, milestone="W9-REAL-MILESTONE", independent=False, implementer="noop",
+                 integration={"mode": "none"}, limits={"max_repair_attempts": 1})
+    cfg["reviewer"] = {"provider": "claude_cli"}
+    stage = L.run(cfg)
+    assert stage not in (S.VERIFIED, S.COMPLETE)
+    st = L.State(cfg)
+    assert not L.accepted_review(cfg, st, st.d["candidate"])
+    assert stage == S.BLOCKED and st.d["blocker"]["kind"] == "REVIEWER_EXEC"
+    assert not any(r["exe"] == str(planted / "claude") for r in _runs(log))
+    # the owner removes the extra executable and unblocks: the plan re-binds to the remaining CLI, which reviews
+    (planted / "claude").unlink()
+    L.unblock(cfg, "removed the stray claude")
+    L.run(cfg)
+    assert [r["exe"] for r in _runs(log)][:1] == [str(cli / "claude")]
+    assert remote_tip(remote) == base
+
+
+@pytest.mark.parametrize("attack", ["plant_earlier", "replace_installed"])
+def test_r6_01_reviewer_cli_changed_by_a_repair_blocks_and_never_runs(tmp_path, clean_path, attack):
+    planted, cli = clean_path
+    log = tmp_path / "claude_runs.jsonl"
+    _fake_claude(cli / "claude", "REJECT", log)
+    accept = _fake_claude(tmp_path / "accept_src" / "claude", "ACCEPT", log)
+    target = planted / "claude" if attack == "plant_earlier" else cli / "claude"
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, milestone="W9-REAL-MILESTONE", independent=False,
+                 integration={"mode": "none"}, limits={"max_repair_attempts": 1})
+    cfg["reviewer"] = {"provider": "claude_cli"}
+    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "planter.py", f"""
+import shutil
+open('pkg/calc.py','w').write('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+open('tests/test_zero.py','w').write('from pkg.calc import safe_div\\n\\n\\ndef test_z():\\n    assert safe_div(1, 0) is None\\n')
+shutil.copy({str(accept)!r}, {str(target)!r})
+os.chmod({str(target)!r}, 0o755)
+print('REPAIR_RESULT_BEGIN')
+print(json.dumps({{"repaired": ["R1-01"], "not_repaired": [], "regression_tests": ["tests/test_zero.py"], "notes": ""}}))
+print('REPAIR_RESULT_END')
+""")}
+    assert L.run(cfg) == S.BLOCKED
+    st = L.State(cfg)
+    assert st.d["blocker"]["kind"] == "TAMPER" and "reviewer_exec" in st.d["blocker"]["reason"]
+    assert not L.accepted_review(cfg, st, st.d["candidate"])
+    assert len(_runs(log)) == 1  # only R1, by the CLI bound at the plan
+    assert remote_tip(remote) == base
+
+
+def test_r6_01_reviewer_is_launched_by_the_plan_bound_absolute_path(tmp_path, clean_path):
+    planted, cli = clean_path
+    log = tmp_path / "claude_runs.jsonl"
+    _fake_claude(cli / "claude", "ACCEPT", log)
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = config(tmp_path, repo, wt, milestone="W9-REAL-MILESTONE", independent=False,
+                 integration={"mode": "none"})
+    cfg["reviewer"] = {"provider": "claude_cli"}
+    assert L.run(cfg) == S.VERIFIED
+    st = L.State(cfg)
+    rnd = st.d["rounds"][0]
+    assert rnd["independent"] is True and rnd["worker"]["binary_anchor_ok"] is True
+    assert [r["exe"] for r in _runs(log)] == [str(cli / "claude")]
+
+
+def test_r6_02_reviewer_does_not_load_candidate_project_instructions(tmp_path):
+    from scripts.dev_workflow.lifecycle_providers import build_argv
+    argv = build_argv({"provider": "claude_cli", "binary": "/x/claude"}, "reviewer", tmp_path, [], "sid")
+    assert "--safe-mode" in argv and argv[argv.index("--setting-sources") + 1] == "user"
+    assert "--strict-mcp-config" in argv
+    impl = build_argv({"provider": "claude_cli", "binary": "/x/claude"}, "implementer", tmp_path, [], "sid")
+    assert "--safe-mode" not in impl  # the implementer keeps the project's instructions
+    codex = build_argv({"provider": "codex_cli", "binary": "/x/codex"}, "reviewer", tmp_path, [], "sid")
+    assert codex[codex.index("-c") + 1] == "project_doc_max_bytes=0" and codex[1] == "exec"

@@ -31,7 +31,16 @@ Date: 2026-10-11. Author: Claude (coordinator session). Written before implement
 3. **Independence by construction.** The reviewer is a separate `claude -p` (or `codex exec`) OS process with a fresh
    session id, launched by the driver in a fresh detached worktree at the exact candidate commit, with edit tools
    denied and git commit/push denied. Its prompt is built only from the config (criteria, scope, focus) and earlier
-   findings — never from implementer transcripts. After the run, the driver verifies the audit checkout is unchanged
+   findings — never from implementer transcripts. The candidate checkout's own project instructions are not loaded:
+   a `claude` reviewer runs with `--safe-mode --setting-sources user --strict-mcp-config` (no CLAUDE.md, `.claude/`
+   settings, hooks, skills, agents or MCP servers from the candidate; the driver's `--settings` deny rules and tool
+   flags still apply), a `codex` reviewer with `-c project_doc_max_bytes=0` (no AGENTS.md) (R6-02). Residual channel:
+   the reviewer still reads candidate files as evidence, including CLAUDE.md/AGENTS.md text if it opens them; the
+   prompt states that every checkout file is implementer-written evidence, never instructions, and the `codex` flag is not verified here (no codex installed).
+   The reviewer CLI is resolved once at PLAN to an absolute path, realpath and SHA-256 (plus a script's interpreter),
+   bound in the PLAN control state, launched by that absolute path and re-checked before every step and every round;
+   a changed or newly shadowing CLI is TAMPER, several different `claude`/`codex` executables on PATH are
+   BLOCKED (REVIEWER_EXEC) until the owner leaves one and unblocks (R6-01). After the run, the driver verifies the audit checkout is unchanged
    and all refs are unchanged; otherwise the review is INVALID. Raw output is stored with its SHA-256 in a hash-chained
    event log, so a later rewrite of a verdict is detectable (`verify`).
 4. **Deterministic verdict.** The driver recomputes the effective verdict from the findings: any HIGH or blocking
