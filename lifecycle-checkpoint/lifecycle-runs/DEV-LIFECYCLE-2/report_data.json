@@ -1,0 +1,87 @@
+{
+ "findings": [
+  {
+   "blocking": false,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Windows: a job whose termination/accounting query fails (or a command that ran without a job) is never re-checked by precheck(), so the next worker can be reported contained"
+  },
+  {
+   "blocking": false,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "canonical_remote() checks only the fetch URL; the integration push uses pushurl/pushInsteadOf, which may point at another repository"
+  },
+  {
+   "blocking": false,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "_norm_url treats a bare relative path 'github.com/owner/Uri' as the canonical URL, and resolves a relative canonical_url against the driver's working directory"
+  },
+  {
+   "blocking": false,
+   "id": "R1-04",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "The old baseline.ref form '<remote>/<branch>' is still accepted for real milestones and resolved by remote name, not checked against canonical_url"
+  }
+ ],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "f3706e03402f",
+   "failed": 0,
+   "gate": "dev_workflow",
+   "new": 0,
+   "ok": true,
+   "passed": 212,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
+ "owner": [
+  {
+   "kind": "OWNER_AUTHORIZATION",
+   "needs": "git push origin f3706e03402f496ae91a08a69db515df4bf89245:refs/heads/integration/git-sync-20261008",
+   "reason": "integration into integration/git-sync-20261008 needs owner authorisation"
+  }
+ ],
+ "repairs": [],
+ "rounds": [
+  {
+   "blocking": 0,
+   "candidate": "f3706e03402f",
+   "findings": 4,
+   "finished": "2026-10-11T12:18:33Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "05f0e696-6862-478c-831a-08e4c1e1c323",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "summary": {
+  "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+  "candidate": "f3706e03402f496ae91a08a69db515df4bf89245",
+  "evidence_ok": true,
+  "findings_repaired": 0,
+  "findings_total": 4,
+  "integration": "AWAITING_OWNER_AUTHORIZATION",
+  "milestone": "DEV-LIFECYCLE-2",
+  "open_blocking": 0,
+  "owner_actions": 1,
+  "receipt_chain_ok": true,
+  "repairs_committed": 0,
+  "rounds": 1,
+  "stage": "BLOCKED",
+  "written_at": "2026-10-11T12:24:37Z"
+ }
+}
