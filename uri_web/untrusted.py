@@ -501,24 +501,48 @@ _LATIN_NAME = re.compile(r"LATIN (?:SMALL |CAPITAL )?LETTER (?:(?:SMALL CAPITAL|
                          r"([A-Z])(?: WITH .*)?$")
 
 
+# R28-01: Latin letters whose name holds no plain letter, by the letter they are drawn like ('\u0251' LATIN SMALL LETTER
+# ALPHA -> 'a', '\u0269' IOTA -> 'i', '\u0185' TONE SIX -> 'b'). Looked up word by word in the name, after the R27-01 rule.
+_LATIN_WORD = {"ALPHA": "a", "BETA": "b", "GAMMA": "y", "DELTA": "d", "EPSILON": "e", "IOTA": "i", "UPSILON": "u",
+               "OMEGA": "w", "CHI": "x", "SCHWA": "e", "ETH": "d", "THORN": "p", "WYNN": "p", "ENG": "n", "KRA": "k",
+               "YR": "r", "HENG": "h", "SIX": "b", "SHARP": "ss"}
+_LATIN_REST = re.compile(r"LATIN (?:[A-Z]+ )*?(?:LETTER|LIGATURE) (.*?)(?: WITH .*)?$")
+
+
 @functools.lru_cache(maxsize=4096)
 def _latin_base(ch: str) -> str:
     """R27-01: the plain ASCII letter a Latin letter is drawn from, read from its Unicode name ('\u0261' LATIN SMALL
     LETTER SCRIPT G -> 'g', '\u1d04' LATIN LETTER SMALL CAPITAL C -> 'c', '\u00f8' O WITH STROKE -> 'o', '\u0127' H WITH
-    STROKE -> 'h'); '' when it has none. Covers the whole Latin range by rule, not by a hand-made list."""
+    STROKE -> 'h'); '' when it has none. Covers the whole Latin range by rule, not by a hand-made list.
+    R28-01: otherwise the first word of the name after LETTER/LIGATURE that is one or two plain letters ('\u00e6' AE,
+    '\u1d7a' TH WITH STRIKETHROUGH, '\u2c76' HALF H, '\ua75b' R ROTUNDA) or a letter named in _LATIN_WORD."""
     if ch.isascii():
         return ch.lower() if ch.isalpha() else ""
-    m = _LATIN_NAME.match(unicodedata.name(ch, ""))
-    return m.group(1).lower() if m else ""
+    name = unicodedata.name(ch, "")
+    m = _LATIN_NAME.match(name)
+    if m:
+        return m.group(1).lower()
+    m = _LATIN_REST.match(name)
+    if m:
+        for w in m.group(1).split():
+            if len(w) <= 2 and w.isalpha() and w.isascii():
+                return w.lower()
+            if w in _LATIN_WORD:
+                return _LATIN_WORD[w]
+    return ""
 
 
 def _latin_fold(text: str) -> str:
-    """`text` with every letter replaced by its plain ASCII letter and marks dropped; '' if a letter has none."""
+    """`text` with every letter replaced by its plain ASCII letter and marks dropped; '' if a letter has none.
+    R28-01: a letter with no plain letter by name is read through the confusables skeleton ('\u03b1' -> 'a')."""
     out = []
     for ch in unicodedata.normalize("NFD", text):
         if unicodedata.category(ch)[0] == "M":
             continue
         b = _latin_base(ch)
+        if not b:
+            b = _skeleton(ch).casefold()
+            b = b if b.isascii() and b.isalpha() else ""
         if not b:
             return ""
         out.append(b)
