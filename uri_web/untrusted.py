@@ -577,7 +577,10 @@ def _separator_word(norm: str, w, fam: str) -> bool:
     - a short word of another script (at most _MAX_FOREIGN distinct letters: '\u4e36\u4e3f', '\u4e2d\u56fd'), unless it
       stands alone in brackets as a gloss ('Tokyo (\u6771\u4eac) in Japan'). Recorded residual: a bracketed one
       ('portal (\u4e36\u4e3f) shop'). Precision cost: 'Tokyo \u6771\u4eac is big' (unbracketed) is masked."""
-    base = _bare(w[2])                     # R20-01: classified without its combining marks ('\u4e36\u4e3f\u0323')
+    # R20-01: classified without its combining marks ('\u4e36\u4e3f\u0323'). R21-01: marks with no base letter before
+    # them are dropped whatever their name, script signs too ('\u093c\u0901\u0902', '\u0f39\u0f37\u0f35'): _words
+    # makes a word of them, but they are not letters.
+    base = _bare(w[2].lstrip("".join(ch for ch in w[2] if unicodedata.category(ch)[0] == "M")))
     if not base or (len(base) == 1 and base.casefold() not in ("a", "i")):
         return True                        # R19-01: marks with no base letter ('\u0323\u0307\u0308'), any length
     if set(base) <= _STROKES:
