@@ -25,25 +25,17 @@ here the same day, and removed only when it is done, with the date. Newest chang
 
 | # | Question | Current default | Blocks |
 |---|---|---|---|
-| Q1 | Approved website list for W2 document search. | Proposal list only. | Not blocking |
-| Q2 | W2: refresh documents on a schedule? | No, manual only. | Not blocking |
-| Q3 | W2: names and personal data found in public documents. | Searchable only, never saved to memory or learning. | Not blocking |
-| Q4 | W2: keep permanent copies of PDFs? | No. | Not blocking |
-| Q5 | Office thread: OFF-O1 to OFF-O5. | Not approved. | Office milestones |
+| Q5 | Office thread: OFF-O1 to OFF-O5 (ask the Office thread to list them for you). | Not approved. | Office milestones |
 
 ## 4. Optional: ordinary text that is hidden by mistake
 
-These are readability costs of the link check. Say if any matters to you and I'll narrow it.
+All answered 2026-10-11: O1, O3, O4, O5 stay as they are; O2 (Hebrew points) will be fixed in IDN-1. Nothing waiting.
 
 | # | Example | Hidden because |
 |---|---|---|
-| O1 | Portuguese "café com leite" | "com" after a space counts as a domain. |
-| O2 | Hebrew with vowel points ("שָׁלוֹם") | A point named "SHIN DOT" counts as a dot. |
-| O3 | "Tokyo 東京 is big" (no brackets) | A short foreign word before a domain-like word (D17). |
-| O4 | "the org chart" | "org" after a space counts as a domain. |
-| O5 | "Profit, net" | An older comma rule. |
 
 ## Log
 | Date | Change |
 |---|---|
 | 2026-10-11 | File created from the away-mode log, plans and decisions D1-D22. |
+| 2026-10-11 | Answered: Q1 proposed site list; Q2 refresh only when you ask for the same data again; Q3 search only; Q4 no PDF copies (D24). O1 keep (confirmed after a clearer question), O2 allow Hebrew points (in IDN-1), O3/O4/O5 keep. Delegated to a PC thread (paste box given): A2, W1, W2, W3, W4. |

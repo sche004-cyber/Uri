@@ -23,3 +23,6 @@ Branch cut from the canonical tip after SSRF-1. Run through the lifecycle skill 
 ## Known cost
 Genuine sites whose address uses non-English letters (e.g. `.भारत`, `.中国`) cannot be opened by URI; most also have an
 English-letter address. Supersedes R11-06 (IDN hosts could not be fetched anyway: the pin compared the wrong form).
+
+## Added scope (owner, 2026-10-11, O2)
+Hebrew points on Hebrew letters (e.g. 'שָׁלוֹם', HEBREW POINT SHIN DOT / SIN DOT) are not treated as dot-like by the D15 allow-list; a point standing alone, or on a letter of another script, is still caught. Test: pointed Hebrew reads normally; 'portal \u05c1 com' and 'portal c\u05c1om' stay links.
