@@ -40,13 +40,27 @@ Run through the lifecycle skill (independent review, then D1).
   No other frozen file changes; set `authorized_protected_changes` to that one path.
 - **Key handling:** sent once to the local URI server over the existing authenticated local connection and stored
   in the local secrets file readable only by the current user (same place as `URLHAUS_AUTH_KEY`). Never shown again
-  (only "Key saved" and the last 4 characters), never logged, never sent anywhere but URLhaus. Buttons: Save,
+  (only "Key saved"; see D27), never logged, never sent anywhere but URLhaus. Buttons: Save,
   Remove, Test (one lookup of a known-safe address, plain result).
 - Status line in plain words: "Scam check: on" / "Scam check: off (no key) - URI still works, sites are not
   scam-checked" / "Scam check: service unavailable".
 
 | # | Criterion |
 |---|---|
-| LR-AC6 | The Security tab saves, tests and removes the key; the key is never displayed in full, logged, or included in reports, events or A2UI output. |
+| LR-AC6 | The Security tab saves, tests and removes the key; the key is never displayed (D27), logged, or included in reports, events or A2UI output. |
 | LR-AC7 | Only `settings_shell.dart`'s tab entry changes among frozen files (driver protected-path check). |
-| LR-AC8 | Flutter tests cover the tab: empty state, saved state (last 4 only), remove, test result, and the off/unavailable status lines. |
+| LR-AC8 | Flutter tests cover the tab: empty state, saved state (no characters shown), remove, test result, and the off/unavailable status lines. |
+
+## Added scope (owner, 2026-10-11, D27): Tavily key slot
+- The Security tab also has a **Tavily search key** slot (W1 web search, today read from `.env` per D3).
+- Same handling for both keys, tightened for the standing rule "never expose the Tavily key value": after saving,
+  the tab shows only "Key saved" (no characters at all), for both keys. Save, Remove, Test (one small search for
+  Tavily; one known-safe lookup for URLhaus), plain results.
+- Precedence: a key saved in the tab is used; otherwise the existing `.env` value (D3) keeps working unchanged.
+  Removing a key in the tab never edits `.env`.
+- Status line for search: "Web search: on" / "Web search: off (no key)".
+
+| # | Criterion |
+|---|---|
+| LR-AC9 | Both slots save, test and remove; neither key is ever displayed (not even partly), logged, or included in reports, events or A2UI output. |
+| LR-AC10 | With no tab key, W1 still reads TAVILY_API_KEY from `.env` exactly as before (existing D3 tests pass unchanged). |
