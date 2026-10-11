@@ -37,3 +37,4 @@ All answered 2026-10-11: O1, O3, O4, O5 stay as they are; O2 (Hebrew points) wil
 |---|---|
 | 2026-10-11 | File created from the away-mode log, plans and decisions D1-D22. |
 | 2026-10-11 | Answered: Q1 proposed site list; Q2 refresh only when you ask for the same data again; Q3 search only; Q4 no PDF copies (D24). O1 keep (confirmed after a clearer question), O2 allow Hebrew points (in IDN-1), O3/O4/O5 keep. Delegated to a PC thread (paste box given): A2, W1, W2, W3, W4. |
+| 2026-10-11 | Q2 corrected by the owner: refresh whenever you visit the data again (ask for it or open it), not only when asking again. |

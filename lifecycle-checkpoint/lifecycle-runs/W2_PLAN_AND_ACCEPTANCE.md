@@ -25,7 +25,7 @@ No live retrieval happens before step 2. W2 runs under the `uri-development-life
 | PDF text and OCR | PyMuPDF (`requirements.txt` `pymupdf>=1.24`), `pytesseract`; `uri_core/services/pdf_reader.py` | **PDFReader frozen** | Same libraries, run in a W2 worker process with limits (§4). PDFReader itself has no page cap, OCR timeout or isolation and cannot be changed. Its Tesseract path setting is reused |
 | Office documents | `uri_core/services/file_extraction.py` (DOCX/XLSX/CSV) | frozen | Called unchanged, inside the same limited worker |
 | Relationships | `uri_core/core/graph_store.py` M23 `GraphStore(storage_path=...)`: nodes/edges with provenance, confidence, status | frozen | A **separate** store file `uri_workspace/web_documents/graph.sqlite3`, never the user's `users/<id>/graph.sqlite3` |
-| Scheduled refresh | `uri_scheduler/engine.py` | no | Not used. **Owner, 2026-10-11 (D24):** no scheduled refresh; a saved document is re-checked when the user asks for the same data again (changed pages replace the cached copy) |
+| Scheduled refresh | `uri_scheduler/engine.py` | no | Not used. **Owner, 2026-10-11 (D24):** no scheduled refresh; a saved document or collection is re-checked whenever the user visits it again, by asking for the same data or opening it (changed pages replace the cached copy) |
 | Privacy rules | D5 (no sensitive-data learning), D8 (fail-closed values) | — | §5 |
 
 New code lives in a new package, `uri_web/docs/`, plus tests in `tests/web/w2_*`. No frozen file changes and no new
@@ -612,6 +612,6 @@ tested against the code fact it states (OB-AC1).
 
 ## Owner answers, 2026-10-11 (D24)
 - Sites: start with the proposed approved list; the owner may add or remove sites later.
-- Refresh: on demand only, when the user asks for the same data again. No background schedule.
+- Refresh: whenever the user visits the data again (asks for it or opens it). No background schedule. (Corrected by the owner the same day: "refresh when visit again".)
 - Personal data in public documents: searchable only; never saved to memory or used for learning (D5).
 - PDFs: not kept. Read, store text and details, then delete the file.
