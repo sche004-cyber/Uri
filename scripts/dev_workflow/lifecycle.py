@@ -135,6 +135,13 @@ def policy(cfg) -> dict:
     return {k: cfg.get(k) for k in POLICY_KEYS}
 
 
+def policy_sha256(cfg) -> str:
+    """Hash of the resolved, in-effect policy. It is bound alongside the config file hash because 'ws_frozen_check'
+    is re-read from the main checkout every run: a relaxed PROTECTED list there changes policy while the config file
+    stays byte-identical (R4-01)."""
+    return chash(policy(cfg))
+
+
 def is_devtest(milestone: str) -> bool:
     """Strict DEVTEST namespace for the lifecycle (AO-4's heuristic also matches any name containing _TEST)."""
     return is_devtest_identifier(milestone) and str(milestone).upper().startswith(("DEVTEST", "TOOLING_TEST"))
@@ -1021,6 +1028,7 @@ def init(cfg, st: State) -> None:
     st.d.update(baseline=base, candidate=git(wt, "rev-parse", "HEAD"), started_at=now(),
                 config_sha256=cfg["_config_sha256"], config_path=cfg["_config_path"])
     st.event("PLAN", baseline=base, candidate=st.d["candidate"], config_sha256=cfg["_config_sha256"],
+             policy_sha256=policy_sha256(cfg),
              acceptance_criteria_file=cfg.get("acceptance_criteria_file"), protected=cfg["protected_paths"],
              permitted=cfg["permitted_paths"], gates=[g["id"] for g in cfg["gates"]],
              reviewer=cfg["reviewer"].get("provider"), integration=cfg["integration"].get("mode"),
@@ -1028,18 +1036,19 @@ def init(cfg, st: State) -> None:
     st.to(S.ACCEPTED, "plan recorded from config")
 
 
-def config_binding(st: State) -> tuple[str | None, bool]:
-    """(config hash bound in the event chain, acknowledged?). The plan binds the config; a later CONFIG_CHANGED
-    binds the new one, unacknowledged until an OWNER_UNBLOCK recorded with that same config (R3-04). Read from the
-    chain, never from state.json."""
-    bound, acked = None, True
+def config_binding(st: State) -> tuple[tuple[str | None, str | None], bool]:
+    """((config hash, resolved-policy hash) bound in the event chain, acknowledged?). The plan binds the config and
+    the resolved policy; a later CONFIG_CHANGED binds the new pair, unacknowledged until an OWNER_UNBLOCK recorded
+    with that same pair (R3-04, R4-01). Read from the chain, never from state.json."""
+    bound, acked = (None, None), True
     for ev in _chained_events(st):
         d = ev["data"]
         if ev["kind"] == "PLAN":
-            bound, acked = d.get("config_sha256"), True
+            bound, acked = (d.get("config_sha256"), chash(d.get("policy"))), True
         elif ev["kind"] == "CONFIG_CHANGED":
-            bound, acked = d.get("to"), False
-        elif ev["kind"] == "OWNER_UNBLOCK" and not acked and d.get("config_sha256") == bound and \
+            bound, acked = (d.get("to"), chash(d.get("policy"))), False
+        elif ev["kind"] == "OWNER_UNBLOCK" and not acked and \
+                (d.get("config_sha256"), d.get("policy_sha256")) == bound and \
                 (d.get("blocker") or {}).get("kind") == "CONFIG":
             acked = True
     return bound, acked
@@ -1059,13 +1068,15 @@ def run(cfg, max_steps: int = 50) -> S:
     # A changed config can relax policy (protected paths, gates, integration authorisation, reviewer): it is bound
     # to the chain and stops the run until the owner acknowledges it with `unblock --note` (R3-04).
     bound, acked = config_binding(st)
-    if bound != cfg["_config_sha256"]:
-        st.event("CONFIG_CHANGED", frm=bound, to=cfg["_config_sha256"], policy=policy(cfg))
+    if bound != (cfg["_config_sha256"], policy_sha256(cfg)):
+        st.event("CONFIG_CHANGED", frm=bound[0], to=cfg["_config_sha256"], frm_policy=bound[1],
+                 policy_sha256=policy_sha256(cfg), policy=policy(cfg))
         st.d["config_sha256"] = cfg["_config_sha256"]
         acked = False
     if not acked:
         if st.stage not in (S.BLOCKED, S.COMPLETE):  # an existing block (e.g. TAMPER) is kept; CONFIG follows it
-            st.block("CONFIG", f"milestone config changed since the plan (now {cfg['_config_sha256'][:12]})",
+            st.block("CONFIG", f"milestone config or resolved policy changed since the plan (now config "
+                               f"{cfg['_config_sha256'][:12]}, policy {policy_sha256(cfg)[:12]})",
                      "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`")
         write_receipt(cfg, st)
         return st.stage
@@ -1276,7 +1287,8 @@ def unblock(cfg, note: str) -> S:
     st = State(cfg)
     if st.stage != S.BLOCKED:
         raise LifecycleError(f"stage is {st.d['stage']}, not BLOCKED")
-    st.event("OWNER_UNBLOCK", note=note, blocker=st.d["blocker"], config_sha256=cfg["_config_sha256"])
+    st.event("OWNER_UNBLOCK", note=note, blocker=st.d["blocker"], config_sha256=cfg["_config_sha256"],
+             policy_sha256=policy_sha256(cfg))
     st.d["blocker"] = None
     st.to(S.READY_TO_RESUME, "owner: " + note)
     return st.stage

@@ -834,6 +834,45 @@ def test_r3_04_changed_config_blocks_until_owner_acknowledges(tmp_path):
     assert L.run(cfg) == S.COMPLETE and remote_tip(remote) == g(wt, "rev-parse", "HEAD") and L.verify(cfg) == []
 
 
+def test_r4_01_relaxed_ws_frozen_check_list_blocks_as_config_change(tmp_path):
+    """The default protected list is re-read from the main checkout's scripts/ws_frozen_check.py every run; relaxing
+    it with a byte-identical config file must still be a bound policy change (R4-01)."""
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    (repo / "scripts").mkdir()
+    (repo / "scripts/ws_frozen_check.py").write_text('PROTECTED = ("core/", "scripts/ws_frozen_check.py")\n')
+    (wt / "core/frozen.py").write_text("FROZEN = False\n")
+    g(wt, "commit", "-qam", "touch protected core")
+    rev = tmp_path / "rev.py"
+    rev.write_text("print('no result')\n")
+    raw = {"milestone": "DEVTEST-POLICY", "repo": str(repo), "baseline": {"ref": "origin/canon"},
+           "candidate": {"branch": "feature", "worktree": str(wt)},
+           "state_dir": str(tmp_path / "state"), "work_dir": str(tmp_path / "work"),
+           "acceptance_criteria": ["x"], "protected_paths": "ws_frozen_check", "permitted_paths": ["**"],
+           "reviewer": {"provider": "command", "argv": [PY, str(rev)], "counts_as_independent": True},
+           "implementer": {"provider": "command", "argv": [PY, str(WORKER), "implementer", "fix"]},
+           "gates": [{"id": "unit", "kind": "pytest", "cmd": ["{python}", "-m", "pytest", "-q", "tests"]}],
+           "integration": {"mode": "none"}}
+    p = tmp_path / "cfg.json"
+    p.write_text(json.dumps(raw))
+    cfg = L.load_config(p)
+    assert cfg["protected_paths"] == ["core/", "scripts/ws_frozen_check.py"]
+    assert L.run(cfg) == S.WAITING_FOR_MODEL
+    before = p.read_bytes()
+    # Only the main checkout's working-tree list is relaxed; the config file is byte-identical.
+    (repo / "scripts/ws_frozen_check.py").write_text('PROTECTED = ("nothing/",)\n')
+    rev.write_text(f"import os, sys\nos.execv({PY!r}, [{PY!r}, {str(WORKER)!r}, 'reviewer', 'check'])\n")
+    cfg = L.load_config(p)
+    assert p.read_bytes() == before and cfg["protected_paths"] == ["nothing/"]
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "CONFIG" and len(s["reviewers"]) == 1
+    ev = [e for e in L._chained_events(L.State(cfg)) if e["kind"] == "CONFIG_CHANGED"][-1]
+    assert ev["data"]["to"] == ev["data"]["frm"] and ev["data"]["policy"]["protected_paths"] == ["nothing/"]
+    assert L.run(cfg) == S.BLOCKED  # re-running does not acknowledge it
+    L.unblock(cfg, "owner: relaxed protected list reviewed")
+    assert L.run(cfg) == S.VERIFIED and L.verify(cfg) == []
+
+
 def test_r3_04_config_binding_is_read_from_the_chain_not_state_json(tmp_path):
     repo, wt, base, remote, cfg = _protected_candidate_with_silent_reviewer(tmp_path)
     sp = tmp_path / "state/state.json"
