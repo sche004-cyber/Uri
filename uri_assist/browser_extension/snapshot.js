@@ -154,6 +154,17 @@
   // only the fact that such a selection exists is reported (selection_withheld).
   const FIELD = "input,textarea,select,[contenteditable]:not([contenteditable='false'])";
   const inField = (n) => { const e = n && (n.nodeType === 1 ? n : n.parentElement); return !!(e && e.closest(FIELD)); };
+  // R10-01: the same visibility rule as the page text above (hidden, aria-hidden, tiny, transparent, off-screen,
+  // script/style/noscript/template text is never copied into the selection).
+  const shownText = (n) => {
+    if (!n.nodeValue.trim()) return true;
+    const p = n.parentElement;
+    if (!p) return false;
+    let ok = cache.get(p);
+    if (ok === undefined) { ok = visible(p); cache.set(p, ok); }
+    if (!ok) bump("hidden_text");
+    return ok;
+  };
   const selectionOf = () => {
     const s = window.getSelection ? window.getSelection() : null;
     if (!s) return { text: "", withheld: false };
@@ -164,13 +175,14 @@
       const root = r.commonAncestorContainer;
       if (inField(root)) { withheld = true; continue; }
       const nodes = [];
-      if (root.nodeType === 3) nodes.push(root);
+      if (root.nodeType === 3) { if (shownText(root)) nodes.push(root); }
       else {
         const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
         for (let n = w.nextNode(); n; n = w.nextNode()) {
           if (!r.intersectsNode(n)) continue;
           if (n.nodeType === 1) { if (n.matches(FIELD)) withheld = true; continue; }
           if (inField(n)) { withheld = true; continue; }
+          if (!shownText(n)) continue;
           nodes.push(n);
         }
       }
