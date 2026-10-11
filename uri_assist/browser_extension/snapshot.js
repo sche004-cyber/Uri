@@ -64,6 +64,80 @@
     if (r.right < 0 || r.bottom < 0 || r.left > Math.max(document.documentElement.scrollWidth, innerWidth) + 1) return false;
     return true;
   };
+  // R11-01: visibility is decided per text node. Its own client rects must survive every clip that applies to it
+  // (ancestor overflow boxes on its containing-block chain, the legacy clip property, clip-path inset), stay inside
+  // the document (text-indent / negative offsets) and, where the rect is in the viewport, not sit under an opaque
+  // element painted above it (elementFromPoint at the rect centre). Fully transparent text colour is hidden too.
+  // Not covered (documented in docs/assist/03): low-contrast colour (white on white), fonts of 2px and above,
+  // occlusion of text outside the viewport, and overlays with pointer-events:none.
+  const alpha = (c) => { const m = /rgba?\(([^)]*)\)/.exec(c || ""); if (!m) return c === "transparent" ? 0 : 1;
+    const v = m[1].split(/[\s,/]+/).filter(Boolean); return v.length > 3 ? parseFloat(v[3]) : 1; };
+  const meet = (a, b) => ({ l: Math.max(a.l, b.l), t: Math.max(a.t, b.t), r: Math.min(a.r, b.r), b: Math.min(a.b, b.b) });
+  const INF = { l: -Infinity, t: -Infinity, r: Infinity, b: Infinity };
+  const clipCache = new Map();
+  // The box every text node directly inside `p` is clipped to (viewport coordinates), or null when nothing can show.
+  const clipBoxOf = (p) => {
+    if (clipCache.has(p)) return clipCache.get(p);
+    let box = INF, mode = "normal";
+    for (let el = p; el && el !== document.documentElement; el = el.parentElement) {
+      const cs = getComputedStyle(el), r = el.getBoundingClientRect();
+      const containing = el === p || mode === "normal" ||
+        (mode === "abs" && (cs.position !== "static" || cs.transform !== "none")) ||
+        (mode === "fixed" && cs.transform !== "none");
+      if (cs.clipPath && cs.clipPath !== "none" && /inset\(\s*(50%|100%)/.test(cs.clipPath)) { box = null; break; }
+      if (cs.clip && cs.clip !== "auto" && (cs.position === "absolute" || cs.position === "fixed")) {
+        const v = /rect\(([^)]*)\)/.exec(cs.clip);
+        if (v) {
+          const [ct, cr, cb, cl] = v[1].split(/[\s,]+/).filter(Boolean);
+          const n = (x, d) => (x === "auto" ? d : parseFloat(x));
+          box = meet(box, { l: r.left + n(cl, 0), t: r.top + n(ct, 0), r: r.left + n(cr, r.width), b: r.top + n(cb, r.height) });
+        }
+      }
+      if (containing && el !== document.body && cs.display !== "inline" && cs.display !== "contents") {
+        const ox = cs.overflowX !== "visible", oy = cs.overflowY !== "visible";
+        if (ox || oy) {
+          const l = r.left + el.clientLeft, t = r.top + el.clientTop;
+          box = meet(box, { l: ox ? l : -Infinity, t: oy ? t : -Infinity,
+            r: ox ? l + el.clientWidth : Infinity, b: oy ? t + el.clientHeight : Infinity });
+        }
+      }
+      if (containing) mode = cs.position === "fixed" ? "fixed" : cs.position === "absolute" ? "abs" : "normal";
+      if (box.r - box.l < 2 || box.b - box.t < 2) { box = null; break; }
+    }
+    clipCache.set(p, box);
+    return box;
+  };
+  const opaque = (e) => { const cs = getComputedStyle(e);
+    return alpha(cs.backgroundColor) >= 1 || cs.backgroundImage !== "none" || /^(IMG|VIDEO|CANVAS|IFRAME|svg|OBJECT|EMBED)$/.test(e.tagName); };
+  const covered = (p, x, y) => {
+    if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return false;   // outside the viewport: cannot tell
+    const e = document.elementFromPoint(x, y);
+    if (!e || e === p || p.contains(e) || e.contains(p)) return false;
+    for (let a = e; a && !a.contains(p); a = a.parentElement) if (opaque(a)) return true;
+    return false;
+  };
+  const textCache = new Map();
+  const textVisible = (n) => {
+    const p = n.parentElement;
+    if (!p) return false;
+    let ok = cache.get(p);
+    if (ok === undefined) { ok = visible(p); cache.set(p, ok); }
+    if (!ok) return false;
+    if (!textCache.has(p)) textCache.set(p, alpha(getComputedStyle(p).color) > 0);
+    if (!textCache.get(p)) return false;
+    const box = clipBoxOf(p);
+    if (!box) return false;
+    const range = document.createRange(); range.selectNodeContents(n);
+    const docW = Math.max(document.documentElement.scrollWidth, innerWidth);
+    for (const cr of range.getClientRects()) {
+      const v = meet({ l: cr.left, t: cr.top, r: cr.right, b: cr.bottom }, box);
+      if (v.r - v.l < 2 || v.b - v.t < 2) continue;
+      if (v.r + scrollX <= 0 || v.b + scrollY <= 0 || v.l + scrollX >= docW + 1) continue;
+      if (covered(p, (v.l + v.r) / 2, (v.t + v.b) / 2)) continue;
+      return true;
+    }
+    return false;
+  };
   const rectOf = (el) => {
     const r = el.getBoundingClientRect();
     return { x: Math.round(r.left * dpr), y: Math.round(r.top * dpr), w: Math.round(r.width * dpr), h: Math.round(r.height * dpr) };
@@ -133,7 +207,7 @@
     fields.push(f);
   }
 
-  // Visible text only: hidden, aria-hidden, zero-size, transparent and off-screen text is skipped.
+  // Visible text only: hidden, aria-hidden, zero-size, transparent, off-screen, clipped and covered text is skipped.
   const chunks = []; let total = 0;
   const walker = document.createTreeWalker(document.body || document.documentElement, NodeFilter.SHOW_TEXT);
   const cache = new Map();
@@ -142,26 +216,26 @@
     if (!t) continue;
     const p = n.parentElement;
     if (!p || p.closest("input,textarea,select,[contenteditable]:not([contenteditable='false'])")) continue;
-    let ok = cache.get(p);
-    if (ok === undefined) { ok = visible(p); cache.set(p, ok); }
-    if (!ok) { bump("hidden_text"); continue; }
+    if (!textVisible(n)) { bump("hidden_text"); continue; }
     chunks.push(maskText(t)); total += t.length + 1;
   }
+  // Headings are rebuilt from their own visible text nodes (R11-01), not from innerText.
+  const visibleTextOf = (el) => { const parts = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim() && textVisible(n)) parts.push(n.nodeValue);
+    return parts.join(" ").replace(/\s+/g, " ").trim(); };
   const headings = [...document.querySelectorAll("h1,h2,h3")].filter(visible)
-    .map((h) => maskText(h.innerText.replace(/\s+/g, " ").trim())).filter(Boolean).slice(0, MAX_HEADINGS);
+    .map((h) => maskText(visibleTextOf(h))).filter(Boolean).slice(0, MAX_HEADINGS);
   // R9-01: the selection is rebuilt from the page's own text nodes inside the selected ranges. Text selected inside a
   // field (an input's or textarea's value, a select, a contenteditable) is that field's value and is never copied;
   // only the fact that such a selection exists is reported (selection_withheld).
   const FIELD = "input,textarea,select,[contenteditable]:not([contenteditable='false'])";
   const inField = (n) => { const e = n && (n.nodeType === 1 ? n : n.parentElement); return !!(e && e.closest(FIELD)); };
-  // R10-01: the same visibility rule as the page text above (hidden, aria-hidden, tiny, transparent, off-screen,
-  // script/style/noscript/template text is never copied into the selection).
+  // R10-01 / R11-01: the same per-text-node visibility rule as the page text above (hidden, aria-hidden, tiny,
+  // transparent, off-screen, clipped, indented-away, covered and script/style/noscript/template text is never copied
+  // into the selection).
   const shownText = (n) => {
     if (!n.nodeValue.trim()) return true;
-    const p = n.parentElement;
-    if (!p) return false;
-    let ok = cache.get(p);
-    if (ok === undefined) { ok = visible(p); cache.set(p, ok); }
+    const ok = textVisible(n);
     if (!ok) bump("hidden_text");
     return ok;
   };
