@@ -210,6 +210,10 @@ class AccessController:
                 self._refuse("OBSERVATION_STALE")
             return g
 
+    def held(self):
+        """The access lock (re-entrant): no grant, pause, resume or revoke can happen while it is held."""
+        return self._lock
+
     def check_unchanged(self, stamp: Stamp, permission: Permission) -> Grant:
         """The grant that allowed `stamp` is still the active, unpaused one for the same target (no age limit).
         Used after a Brain answer: Stop/Pause/new grant during generation discards the answer."""

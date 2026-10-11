@@ -38,6 +38,16 @@
     ["aadhaar", /(?<!\d)(?<!\d[ -])[2-9]\d{3}[ -]?\d{4}[ -]?\d{4}(?![ -]?\d)/g],
   ];
   const QUERY_SECRET = /\b((?:access_?token|token|api_?key|key|secret|password|pwd|sig|signature|code)=)[^&\s"'<>]{6,}/gi;
+  const secretKey = (k) => { let d = k; try { d = decodeURIComponent(k); } catch (e) { /* keep as is */ }
+    const j = joined(d);
+    return secretName(d) || (CODE_END.test(j.replace(READABLE, "")) && !CODE_EXCLUDE.test(j)) || /^(sig|signature|sid)$/.test(j); };
+  // One whitespace-free token of text (a URL, part of one, or a bare key=value): same rule as _url_parts in redact.py.
+  const urlParts = (tok) => {
+    let out = tok.replace(/\b([a-z][a-z0-9+.-]*:\/\/)[^\/?#@\s"'<>]*@/gi, (m, sch) => { bump("url_userinfo"); return sch; });
+    const at = Math.max(out.search(/[?#]/), 0);
+    return out.slice(0, at) + out.slice(at).replace(/(^|[?#&;])([^=&#;?\s]*)=([^&#;\s]*)/g, (m, p, k, v) =>
+      v && v !== "[redacted]" && secretKey(k) ? (bump("query_secret"), `${p}${k}=[redacted]`) : m);
+  };
   const maskText = (s) => {
     if (!s) return s;
     let out = s.replace(/\b(?:\d[ .\u00a0\u2007\u202f-]?){12,18}\d\b/g, (m) => {
@@ -47,7 +57,9 @@
     });
     for (const [k, rx] of TEXT_RULES) out = out.replace(rx, () => { bump(k); return "[redacted]"; });
     out = out.replace(QUERY_SECRET, (m, k) => { bump("query_secret"); return k + "[redacted]"; });
-    return out;
+    // R41-03: a URL written in text (page text, a heading, a label, a field value) gets the Location rule: its
+    // userinfo is removed and every secret-naming query or fragment value is masked at any length (urlParts above).
+    return out.replace(/[^\s"'<>]+/g, (tok) => urlParts(tok));
   };
   const dpr = window.devicePixelRatio || 1;
 
@@ -465,8 +477,9 @@
     }
   }
   // Headings are rebuilt from their own visible text nodes (R11-01), not from innerText.
+  // R41-02: text inside a field (a contenteditable inside the heading) is that field's value, never heading text.
   const visibleTextOf = (el, ps) => { const parts = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim() && textVisible(n)) {
+    for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim() && !inField(n) && textVisible(n)) {
       parts.push(n.nodeValue); ps.push(...nodePieces(n, 0, n.nodeValue.length, ps.length ? ps[ps.length - 1].g + 1 : 0));
     }
     return parts.join(" ").replace(/\s+/g, " ").trim(); };
@@ -525,9 +538,6 @@
   // R1-04: the userinfo (user:password@) is removed and the value of every query or fragment key that names a secret
   // (the field-name rules above, a key ending in code / pin / key, sig / signature / sid) is masked whatever its
   // length (same rule as redact_url in redact.py).
-  const secretKey = (k) => { let d = k; try { d = decodeURIComponent(k); } catch (e) { /* keep as is */ }
-    const j = joined(d);
-    return secretName(d) || (CODE_END.test(j.replace(READABLE, "")) && !CODE_EXCLUDE.test(j)) || /^(sig|signature|sid)$/.test(j); };
   const maskUrl = (href) => {
     let out = maskText(String(href)).replace(/^([a-z][a-z0-9+.-]*:\/\/)[^\/?#@\s]*@/i, (m, sch) => { bump("url_userinfo"); return sch; });
     const at = out.search(/[?#]/);

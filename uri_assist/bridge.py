@@ -275,11 +275,20 @@ class AssistCommands:
                 status, text = "CANCELLED", ""
             result = {"ask_id": ask_id, "status": status, "answer": text, "method": method, "observation": summary,
                       "cancel_reason": token.reason if token.cancelled else None}
-            with self._lock:
-                self._answers[ask_id] = (stamp, result)
-                while len(self._answers) > KEEP_ANSWERS:
-                    self._answers.pop(next(iter(self._answers)))
-            self.emitter.emit(ask_id, "assist.answer", **result)
+            # Re-checked while holding the access lock, so a Stop, pause or new grant cannot land between the
+            # check and the store/emit: content leaves only while its grant is still the active one (R41-01).
+            with self.access.held():
+                try:
+                    self.access.check_unchanged(stamp, Permission.OBSERVE)
+                except AccessRefused as exc:
+                    if status == "COMPLETE":
+                        self.last_error = exc.code
+                    result = self._blank(result)
+                with self._lock:
+                    self._answers[ask_id] = (stamp, result)
+                    while len(self._answers) > KEEP_ANSWERS:
+                        self._answers.pop(next(iter(self._answers)))
+                self.emitter.emit(ask_id, "assist.answer", **result)
 
         t = threading.Thread(target=run, name="assist-ask-" + ask_id[:8], daemon=True)
         with self._lock:

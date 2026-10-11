@@ -134,7 +134,9 @@ def redact_text(text, counts: Counter) -> str:
             counts[kind] += 1
             return (m.group(1) + MASK) if kind == "query_secret" else MASK
         out = rx.sub(sub, out)
-    return out
+    # R41-03: a URL written in text (page text, a heading, a label, a field value) gets the Location rule: its userinfo
+    # is removed and every secret-naming query or fragment value is masked at any length (same rule in snapshot.js).
+    return _TOKEN.sub(lambda m: _url_parts(m.group(0), counts), out)
 
 
 # R1-04: in a URL, the userinfo (user:password@) is removed, and the value of every query or fragment key that names a
@@ -150,6 +152,27 @@ def _secret_key(k: str) -> bool:
     j = _joined(k)
     return bool(_secret_name(k) or (_CODE_END.search(_READABLE.sub("", j)) and not _CODE_EXCLUDE.search(j))
                 or j in ("sig", "signature", "sid"))
+
+
+_TOKEN = re.compile(r"[^\s\"'<>]+")
+_TEXT_USERINFO = re.compile(r"(?i)\b([a-z][a-z0-9+.-]*://)[^/?#@\s\"'<>]*@")
+_TEXT_PAIR = re.compile(r"(^|[?#&;])([^=&#;?\s]*)=([^&#;\s]*)")
+
+
+def _url_parts(tok: str, counts: Counter) -> str:
+    """One whitespace-free token of text (a URL, part of one, or a bare key=value such as 'client_secret=...')."""
+    def userinfo(m):
+        counts["url_userinfo"] += 1
+        return m.group(1)
+
+    def pair(m):
+        if not m.group(3) or m.group(3) == MASK or not _secret_key(m.group(2)):
+            return m.group(0)
+        counts["query_secret"] += 1
+        return f"{m.group(1)}{m.group(2)}={MASK}"
+    out = _TEXT_USERINFO.sub(userinfo, tok)
+    at = min((i for i in (out.find("?"), out.find("#")) if i >= 0), default=0)
+    return out[:at] + _TEXT_PAIR.sub(pair, out[at:])
 
 
 def redact_url(url, counts: Counter) -> str:

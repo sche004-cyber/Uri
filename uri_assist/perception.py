@@ -132,8 +132,14 @@ def normalise(snapshot: dict, stamp: Stamp, probe: Optional[dict] = None) -> Obs
         title, location = _s(snapshot.get("title")), RD.redact_url(_s(snapshot.get("url"), 2048), counts)
         headings = []
         raw_heads = pieces.get("headings") if isinstance(pieces.get("headings"), list) else []
+        boxes = [f["rect"] for f in fields if f.get("sensitive") and f.get("rect")]
         for hp in raw_heads[:MAX_HEADINGS]:
+            hp = _outside_fields(hp, snapshot, boxes, counts)
             h = OS.join(OS.keep(hp, screen, counts, MAX_HEAD_PIECES), " ")
+            # R41-02: a heading that carries the text of a field withheld above is not sent.
+            if h and any(v.strip() and v.strip() in h for v in withheld_values):
+                counts["field_text_in_heading"] += 1
+                continue
             if h:
                 headings.append(RD.redact_text(h[:300], counts))
         source = "dom"
@@ -184,6 +190,33 @@ def normalise(snapshot: dict, stamp: Stamp, probe: Optional[dict] = None) -> Obs
     digest = hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
     return Observation(stamp, source, title, location, selection, headings, text, fields, dict(counts), digest, rects,
                        selection_withheld=selection_withheld)
+
+
+def _outside_fields(hp, snapshot: dict, boxes: list, counts: Counter):
+    """R41-02: heading pieces drawn inside the box of a withheld field (a contenteditable inside the heading) are that
+    field's text, not heading text, and are dropped, whatever the in-page layer decided. A piece whose units cannot be
+    located is left to the render check."""
+    if not boxes or not isinstance(hp, list):
+        return hp
+    units = snapshot.get("units") if isinstance(snapshot.get("units"), list) else []
+    dpr = snapshot.get("device_pixel_ratio")
+    dpr = float(dpr) if isinstance(dpr, (int, float)) and not isinstance(dpr, bool) and 0.25 <= dpr <= 8 else 1.0
+
+    def inside(p):
+        ids = p.get("u") if isinstance(p, dict) and isinstance(p.get("u"), list) else []
+        for i in ids:
+            u = units[i] if isinstance(i, int) and not isinstance(i, bool) and 0 <= i < len(units) else None
+            for r in (u.get("r") if isinstance(u, dict) and isinstance(u.get("r"), list) else []):
+                if not (isinstance(r, list) and len(r) == 4 and all(isinstance(v, (int, float)) for v in r)):
+                    continue
+                cx, cy = (r[0] + r[2] / 2) * dpr, (r[1] + r[3] / 2) * dpr
+                if any(b["x"] <= cx <= b["x"] + b["w"] and b["y"] <= cy <= b["y"] + b["h"] for b in boxes):
+                    return True
+        return False
+    out = [p for p in hp if not inside(p)]
+    if len(out) != len(hp):
+        counts["field_text_in_heading"] += 1
+    return out
 
 
 def _shown_label(raw: dict, screen) -> str:

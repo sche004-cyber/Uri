@@ -195,7 +195,7 @@ class ResearchJob:
             for it in feed.items[:20]:
                 res.feed_items.append({"feed": feed.title, "title": it.title, "url": it.url,
                                        "published_at": it.published_at, "summary": it.summary[:400],
-                                       "injection_flags": U.flags(it.summary)})
+                                       "injection_flags": _flags(it.title, it.summary)})
         if not leads and not res.feed_items:
             if self.req.use_search and res.query and not any_provider_ok:
                 res.status, res.error_code = PROVIDER_UNAVAILABLE, "NO_PROVIDER_AVAILABLE"
@@ -229,6 +229,7 @@ class ResearchJob:
                 sn = snippets.get(key)
                 if sn and sn[1]:
                     rec.analysed_scope = R.SNIPPET_ONLY
+                    rec.injection_flags = _flags(sn[0], sn[1])
                     raw.append({"title": sn[0] or sn[3], "url": sn[3], "text": sn[1], "record": rec,
                                 "sha256": None})
                 continue
@@ -240,7 +241,7 @@ class ResearchJob:
             text = ex.text
             if not text.strip():
                 rec.analysed_scope = R.METADATA_ONLY
-            rec.injection_flags = U.flags(text)
+            rec.injection_flags = _flags(ex.title or title, text)
             raw.append({"title": ex.title or title or _host(url), "url": rec.final_url or url, "text": text,
                         "record": rec, "sha256": rec.sha256})
         if res.status in (CANCELLED,):
@@ -289,6 +290,16 @@ class ResearchJob:
             res.status = COMPLETED_WITH_RESULT
         else:
             res.status = NO_RESULT
+
+
+def _flags(*parts) -> list:
+    """R41-04: instruction-like text is flagged wherever a source carries it: its title as well as its text."""
+    out = []
+    for p in parts:
+        for f in U.flags(p or ""):
+            if f not in out:
+                out.append(f)
+    return out
 
 
 class _Either:

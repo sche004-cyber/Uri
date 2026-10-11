@@ -261,16 +261,20 @@ class AssistController extends ChangeNotifier {
       return;
     }
     try {
+      // A reply is applied only to the job it was asked about and only if no grant, pause, resume, Stop or
+      // worker change happened while it was in flight (R41-01, R9-05).
       if (researching) {
-        final v = await rt.call({'command': 'web_research_status', 'job_id': researchJobId});
-        if (v['state'] == 'FINISHED') {
+        final id = researchJobId, epoch = _epoch;
+        final v = await rt.call({'command': 'web_research_status', 'job_id': id});
+        if (v['state'] == 'FINISHED' && id == researchJobId && epoch == _epoch) {
           final r = (v['result'] as Map?)?.cast<String, dynamic>() ?? const {};
           _finishResearch(r['status'] as String? ?? 'FAILED', v['a2ui'] as List?);
         }
       }
       if (asking) {
-        final v = await rt.call({'command': 'assist_ask_status', 'ask_id': askId});
-        if (v['state'] == 'FINISHED') _finishAnswer(v);
+        final id = askId, epoch = _epoch;
+        final v = await rt.call({'command': 'assist_ask_status', 'ask_id': id});
+        if (v['state'] == 'FINISHED' && id == askId && epoch == _epoch) _finishAnswer(v);
       }
     } on IntegratedRuntimeException catch (_) {
       // Unknown job (worker restarted): stop polling; the reset path shows OFF.

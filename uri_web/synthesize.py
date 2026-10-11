@@ -366,9 +366,14 @@ def extractive(query: str, source_texts: list, *, max_sentences: int = 6, per_so
     return v
 
 
+HIDDEN_TITLE = "(title hidden: instruction-like text)"
+
+
 def brain_messages(query: str, sources: list) -> list:
     """`sources`: list of (title, text). Query goes in the user turn; sources only inside data blocks."""
-    blocks = "\n\n".join(U.data_block(i + 1, t, x[:6000]) for i, (t, x) in enumerate(sources))
+    # R41-04: an instruction-like title is sent as a neutral placeholder (its sentences never reach the Brain).
+    blocks = "\n\n".join(U.data_block(i + 1, HIDDEN_TITLE if U.flags(t or "") else t, x[:6000])
+                         for i, (t, x) in enumerate(sources))
     rules = U.SYSTEM_RULES + f" If the sources do not answer the question, reply exactly {NO_ANSWER}."
     return [{"role": "system", "content": rules},
             {"role": "user", "content": "QUESTION: " + U.neutralise(query)[:400] + "\n\nSOURCES:\n" + blocks}]
@@ -389,8 +394,14 @@ def synthesize(query: str, sources: list, *, complete: Optional[Callable] = None
     if status != "COMPLETE":
         return Synthesis("extractive_fallback", extractive(query, texts), brain_status=status)
     v = verify(text, texts)
-    if v.no_answer or v.claims:
+    if v.claims:
         return Synthesis("brain", v, brain_status=status)
     fb = extractive(query, texts)
+    if v.no_answer:
+        # R41-04: the Brain's NO_ANSWER can come from a source telling it to say so; it never hides sentences the
+        # extractive path finds in the sources (those are shown instead, as when the Brain is off).
+        if not fb.claims:
+            return Synthesis("brain", v, brain_status=status)
+        return Synthesis("extractive_fallback", fb, brain_status="NO_ANSWER")
     fb.dropped = v.dropped
     return Synthesis("extractive_fallback", fb, brain_status="ALL_CLAIMS_DROPPED")
