@@ -33,7 +33,8 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from scripts.dev_workflow.lifecycle_providers import INDEPENDENT_PROVIDERS, reviewer_executable, run_worker
+from scripts.dev_workflow.lifecycle_providers import (INDEPENDENT_PROVIDERS, managed_policy_state,
+                                                      reviewer_executable, run_worker)
 from scripts.dev_workflow.security_boundary import is_devtest_identifier
 from scripts.dev_workflow.state_machine import VALID_TRANSITIONS, InvalidTransitionError, WorkflowState as S
 
@@ -311,6 +312,8 @@ def is_independent(cfg, round_rec: dict, impl_sids=frozenset()) -> tuple[bool, s
         return False, f"provider {w.get('provider')} is not an independent reviewer"
     if not is_devtest(cfg["milestone"]) and not (w.get("binary_is_default") and w.get("binary_anchor_ok") is True):
         return False, f"reviewer executable {w.get('binary_realpath')} is not the installed CLI bound at the plan"
+    if not is_devtest(cfg["milestone"]) and w.get("config_isolated") is not True:
+        return False, "reviewer did not run on a driver-made CLI config (user settings/env are worker-writable, R7-01)"
     sid = w.get("session_id")
     if not sid or sid == cfg.get("coordinator_session_id") or sid in impl_sids:
         return False, "reviewer session id missing or shared with coordinator/implementer"
@@ -402,13 +405,14 @@ def refs_digest(cfg) -> str:
 
 
 def control_state(cfg) -> dict:
-    """Repository state that must not change at all during a milestone: hooks/config/info, replace refs and the
-    reviewer CLI's identity (R6-01). The milestone's own refs move legitimately (repair commits, the integration
-    target) and are checked per step."""
+    """Repository state that must not change at all during a milestone: hooks/config/info, replace refs, the
+    reviewer CLI's identity (R6-01) and the system-wide managed CLI policy (R7-01). The milestone's own refs move
+    legitimately (repair commits, the integration target) and are checked per step."""
     return {"git_control": git_control_digest(cfg["repo"]),
             "replace_refs": sha256(git(cfg["repo"], "for-each-ref", "--format=%(refname) %(objectname)", "refs/replace/",
                                        check=False)),
-            "reviewer_exec": reviewer_executable(cfg["reviewer"])}
+            "reviewer_exec": reviewer_executable(cfg["reviewer"]),
+            "reviewer_policy": sha256("\n".join(managed_policy_state()))}
 
 
 def control_anchor(st: State) -> dict | None:
@@ -427,7 +431,7 @@ def control_drift(cfg, st: State) -> str | None:
         return "no git control state bound in the event chain"
     bad = [k for k in cur if cur[k] != anchor.get(k)]
     return ("GIT_CONTROL: " + ", ".join(bad) + " changed since the plan (git hooks/config/info, user/system git "
-            "config/attributes/ignore, replace refs or the reviewer CLI)") if bad else None
+            "config/attributes/ignore, replace refs, the reviewer CLI or managed CLI policy)") if bad else None
 
 
 def worktree_identity(cfg, wt) -> tuple[bool, str]:
@@ -1367,8 +1371,11 @@ def run(cfg, max_steps: int = 50) -> S:
                      "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`")
         write_receipt(cfg, st)
         return st.stage
-    if control_anchor(st) is None:  # a run planned before the control state was bound: bind it now
+    anchor = control_anchor(st)
+    if anchor is None:  # a run planned before the control state was bound: bind it now
         st.event("CONTROL_ANCHORED", control=control_state(cfg))
+    elif "reviewer_policy" not in anchor:  # planned before R7-01: bind only the new key, the others stay as bound
+        st.event("CONTROL_ANCHORED", control={**anchor, "reviewer_policy": control_state(cfg)["reviewer_policy"]})
     wt = Path(cfg["candidate"]["worktree"])
     for _ in range(max_steps):
         stage = st.stage

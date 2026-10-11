@@ -32,9 +32,11 @@ Date: 2026-10-11. Author: Claude (coordinator session). Written before implement
    session id, launched by the driver in a fresh detached worktree at the exact candidate commit, with edit tools
    denied and git commit/push denied. Its prompt is built only from the config (criteria, scope, focus) and earlier
    findings — never from implementer transcripts. The candidate checkout's own project instructions are not loaded:
-   a `claude` reviewer runs with `--safe-mode --setting-sources user --strict-mcp-config` (no CLAUDE.md, `.claude/`
+   a `claude` reviewer runs with `--safe-mode --setting-sources "" --strict-mcp-config` (no CLAUDE.md, `.claude/`
    settings, hooks, skills, agents or MCP servers from the candidate; the driver's `--settings` deny rules and tool
-   flags still apply), a `codex` reviewer with `-c project_doc_max_bytes=0` (no AGENTS.md) (R6-02). Residual channel:
+   flags still apply), a `codex` reviewer with `-c project_doc_max_bytes=0` (no AGENTS.md) (R6-02). The user-level CLI config is
+   worker-writable (shared HOME), so the reviewer gets a fresh driver-made `CLAUDE_CONFIG_DIR` (`CODEX_HOME` for codex) with credentials
+   only, and the managed policy directories are bound in the PLAN control state (R7-01). Residual channel:
    the reviewer still reads candidate files as evidence, including CLAUDE.md/AGENTS.md text if it opens them; the
    prompt states that every checkout file is implementer-written evidence, never instructions, and the `codex` flag is not verified here (no codex installed).
    The reviewer CLI is resolved once at PLAN to an absolute path, realpath and SHA-256 (plus a script's interpreter),

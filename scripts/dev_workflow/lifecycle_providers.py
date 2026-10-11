@@ -21,6 +21,7 @@ import re
 import shutil
 import signal
 import subprocess
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -159,7 +160,9 @@ def build_argv(spec: dict, role: str, worktree: Path, protected: list[str], sess
             # The reviewer runs in the candidate checkout: its CLAUDE.md, .claude/ settings, hooks, skills, agents and
             # MCP servers are implementer-authored and must not reach the reviewer outside the driver-built prompt
             # (R6-02). --safe-mode drops CLAUDE.md and all customizations; --settings and the tool flags still apply.
-            argv[2:2] = ["--safe-mode", "--setting-sources", "user", "--strict-mcp-config"]
+            # No setting source at all: user settings are as worker-writable as the checkout (R7-01); run_worker also
+            # points CLAUDE_CONFIG_DIR at a driver-made directory, since ~/.claude.json "env" loads regardless.
+            argv[2:2] = ["--safe-mode", "--setting-sources", "", "--strict-mcp-config"]
         if spec.get("model"):
             argv += ["--model", spec["model"]]
         if spec.get("max_turns"):
@@ -176,6 +179,80 @@ def build_argv(spec: dict, role: str, worktree: Path, protected: list[str], sess
     if p == "command":
         return list(spec["argv"])
     raise ValueError(f"unknown provider {p!r}")
+
+
+# The only parts of the user's Claude config a reviewer gets: credentials (they authenticate, they cannot redirect).
+_CREDENTIAL_FILES = (".credentials.json",)
+_GLOBAL_CONFIG_KEYS = ("primaryApiKey", "oauthAccount", "customApiKeyResponses", "userID", "hasCompletedOnboarding")
+
+
+def user_config_dir() -> Path:
+    return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
+
+
+# System-wide managed policy: the CLIs load it whatever --setting-sources says, and a worker with root can write it.
+MANAGED_POLICY_DIRS = ("/etc/claude-code", "/Library/Application Support/ClaudeCode", r"C:\Program Files\ClaudeCode",
+                       r"C:\ProgramData\ClaudeCode", "/etc/codex")
+
+
+def managed_policy_state() -> list[str]:
+    """Path and SHA-256 of every file under the managed-policy directories ("-" for an absent directory), bound in the
+    PLAN control state: a worker-written managed ``env`` would redirect the reviewer like user settings (R7-01)."""
+    parts = []
+    for d in MANAGED_POLICY_DIRS:
+        root = Path(d)
+        if not root.is_dir():
+            parts.append(f"{d}:-")
+            continue
+        for f in sorted(root.rglob("*"), key=str):
+            if f.is_file() or f.is_symlink():
+                parts.append(f"{f}:{_file_sha256(str(f)) or '-'}")
+    return parts
+
+
+def reviewer_config_dir() -> Path:
+    """A fresh, driver-made CLAUDE_CONFIG_DIR for a ``claude`` reviewer. Workers share the driver's HOME, so
+    ~/.claude/settings*.json and ~/.claude.json are worker-writable; their ``env`` (ANTHROPIC_BASE_URL, ...) would route
+    the genuine CLI to a scripted endpoint (DEV-LIFECYCLE-1 R7-01). Only credentials are copied in: the credentials
+    file and an allowlist of ~/.claude.json account keys; settings, env, hooks, plugins, agents and MCP config are not."""
+    src = user_config_dir()
+    d = Path(tempfile.mkdtemp(prefix="uri-reviewer-claude-"))
+    for name in _CREDENTIAL_FILES:
+        f = src / name
+        if f.is_file():
+            shutil.copyfile(f, d / name)
+            os.chmod(d / name, 0o600)
+    gsrc = src / ".claude.json" if os.environ.get("CLAUDE_CONFIG_DIR") else Path.home() / ".claude.json"
+    try:
+        g = json.loads(gsrc.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        g = {}
+    keep = {k: g[k] for k in _GLOBAL_CONFIG_KEYS if isinstance(g, dict) and k in g}
+    (d / ".claude.json").write_bytes(json.dumps(keep).encode("utf-8"))
+    return d
+
+
+def reviewer_codex_home() -> Path:
+    """The same for a ``codex`` reviewer: ~/.codex/config.toml can redefine the model provider's base URL. Only
+    ``auth.json`` is copied into a fresh CODEX_HOME (not verified against a real codex here: none is installed)."""
+    src = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
+    d = Path(tempfile.mkdtemp(prefix="uri-reviewer-codex-"))
+    if (src / "auth.json").is_file():
+        shutil.copyfile(src / "auth.json", d / "auth.json")
+        os.chmod(d / "auth.json", 0o600)
+    return d
+
+
+def config_dir_clean(d: Path) -> bool:
+    """After the run: no settings file appeared and the global config carries no ``env`` (a lingering worker could
+    write into the fresh directory; the empty ``--setting-sources`` ignores settings files anyway)."""
+    if any((d / n).exists() for n in ("settings.json", "settings.local.json", "config.toml")):
+        return False
+    try:
+        g = json.loads((d / ".claude.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return True  # absent or rewritten mid-write by the CLI itself: nothing it loads from there
+    return not (isinstance(g, dict) and ("env" in g or "apiKeyHelper" in g))
 
 
 def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path, *,
@@ -210,6 +287,21 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
                 return rec
     env = {k: v for k, v in os.environ.items() if not k.startswith("URI_LIFECYCLE_")}
     env.update({"URI_LIFECYCLE_ROLE": role, "PYTHONDONTWRITEBYTECODE": "1"}, **(env_extra or {}))
+    cfg_dir = None
+    if role == "reviewer" and rec["provider"] == "claude_cli":  # driver-made config, never the shared one (R7-01)
+        cfg_dir = reviewer_config_dir()
+        env["CLAUDE_CONFIG_DIR"] = str(cfg_dir)
+    elif role == "reviewer" and rec["provider"] == "codex_cli":
+        cfg_dir = reviewer_codex_home()
+        env["CODEX_HOME"] = str(cfg_dir)
+    try:
+        return _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir)
+    finally:
+        if cfg_dir is not None:
+            shutil.rmtree(cfg_dir, ignore_errors=True)
+
+
+def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) -> dict:
     rec["argv"] = [a if len(a) < 400 else a[:60] + "…" for a in argv]
     try:
         proc = subprocess.Popen(argv, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -230,6 +322,8 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
     # escapes the group; the driver's later checks (clean worktree before the next step) still catch its writes.
     _killpg(proc.pid)
     rec["ended_at"] = _now()
+    if cfg_dir is not None:
+        rec["config_isolated"] = config_dir_clean(cfg_dir)
     # Hashed files are written as exact bytes: no newline translation on Windows (R2-02).
     (log_dir / f"{role}_stdout.txt").write_bytes((out or "").encode("utf-8"))
     (log_dir / f"{role}_stderr.txt").write_bytes((err or "").encode("utf-8"))
@@ -250,7 +344,7 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
             rec.setdefault("status", "FAILED")
             rec["detail"] = "claude output is not JSON"
     else:
-        rec["session_id"] = f"{rec['provider']}-{session_id}"
+        rec["session_id"] = f"{rec['provider']}-{rec['session_id_requested']}"
     rec["result_text_sha256"] = hashlib.sha256(text.encode()).hexdigest()
     (log_dir / f"{role}_result.txt").write_bytes(text.encode("utf-8"))
     if "status" not in rec:
