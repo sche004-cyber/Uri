@@ -30,12 +30,23 @@ work while am away from pc". This file is the standing plan; every check-in foll
    `integration/git-sync-20261008` (expected tip `ce1a90c`) with a receipt.
 2. **SSRF-1** (D2). Plan: `lifecycle-runs/SSRF-1_PLAN_DRAFT.md`. The branch is cut from the canonical tip after step 1,
    and `authorized_protected_changes` is `uri_core/tools/fetch_url.py` only.
-3. **W2** (brief `docs/plans/W2_SITE_DOCUMENT_SEARCH_BRIEF.md`). The three owner decisions it needs get conservative
-   defaults until the owner decides:
-   - no new library, so no PDF-to-image conversion;
-   - scanned documents are reported as not readable;
-   - no scheduled refresh is enabled;
-   - the benchmark site list is a proposal only, and live runs are NOT VERIFIED where egress blocks them.
+3. **W2** (brief `docs/plans/W2_SITE_DOCUMENT_SEARCH_BRIEF.md`). Owner direction, 2026-10-11:
+   - Downloaded documents are temporary. Each is read, then deleted when the work is done, including on failure or
+     cancel; leftovers are swept at the next start.
+   - What stays is a memory record: source URL, site, the menu path where the document was found, the linking page,
+     title, date, reference number, per-page text, content hash and retrieval time.
+   - Relations go in the existing M23 `GraphStore`: notice → attachment, corrigendum → original, same reference number,
+     same department, supersedes.
+   - Answers cite URL and page, and quote numbers from the stored text (D7).
+   - Correction to the earlier "PDF-to-image library needs an owner decision": URI already ships PyMuPDF and
+     pytesseract (`requirements.txt`, `uri_core/services/pdf_reader.py`). Scanned PDFs therefore use the existing
+     `PDFReader` OCR, with no new dependency. OCR needs Tesseract installed on the PC: NOT VERIFIED in the cloud.
+   - Still open, with conservative defaults until the owner decides:
+     - no scheduled refresh;
+     - the benchmark site list is a proposal only;
+     - personal data in public documents (for example names in results lists) is indexed for search only and never
+       written to user memory or learning (D5);
+     - no permanent copies of PDFs are kept.
 4. **RW1** is NOT started unattended. Its benchmark needs Windows and WebView2 on the owner's PC.
 
 ## Allowed unattended (already authorised)
@@ -73,3 +84,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 06:20 | Checkpoint created. W1/A0 round 9 review of `3dd9cde` running (driver PID 15820). Spend so far $32.94. |
 | 2026-10-11 06:25 | R9 REJECT (6 blocking MEDIUM: R9-01..06), driver repairing. Allow rules added and routine created with owner approval. |
 | 2026-10-11 06:30 | Owner switched back to Auto. Allow-rule test in auto mode: `lc-launch.sh` with a nonexistent config ran and refused (exit 2) - launches are permitted unattended. |
+| 2026-10-11 06:40 | Owner direction for W2 documents recorded: temporary download, memory record and relations, then delete. PDF-library decision corrected: PyMuPDF and Tesseract OCR already exist. |
