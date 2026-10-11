@@ -136,7 +136,7 @@ def redact_text(text, counts: Counter) -> str:
         out = rx.sub(sub, out)
     # R41-03: a URL written in text (page text, a heading, a label, a field value) gets the Location rule: its userinfo
     # is removed and every secret-naming query or fragment value is masked at any length (same rule in snapshot.js).
-    return _TOKEN.sub(lambda m: _url_parts(m.group(0), counts), out)
+    return _split_url_parts(_TOKEN.sub(lambda m: _url_parts(m.group(0), counts), out), counts)
 
 
 # R1-04: in a URL, the userinfo (user:password@) is removed, and the value of every query or fragment key that names a
@@ -173,6 +173,61 @@ def _url_parts(tok: str, counts: Counter) -> str:
     out = _TEXT_USERINFO.sub(userinfo, tok)
     at = min((i for i in (out.find("?"), out.find("#")) if i >= 0), default=0)
     return out[:at] + _TEXT_PAIR.sub(pair, out[at:])
+
+
+_KEY_EMPTY = re.compile(r"(?:^|[?#&;])([^=&#;?\s]+)=$")
+_KEY_BARE = re.compile(r"(?:^|[?#&;])([^=&#;?\s]+)$")
+_VALUE_HEAD = re.compile(r"^[^&#;\s]+")
+_SPLIT_USER = re.compile(r"(?i)\b([a-z][a-z0-9+.-]*://)[^/?#@\s\"'<>]*:$")
+
+
+def _split_url_parts(text: str, counts: Counter) -> str:
+    """R42-01: a URL cut by whitespace (text nodes of inline elements joined with a separator, or a gap the user typed)
+    fails closed: a secret-naming key with an empty value ('client_secret=' or 'client_secret' '=') masks the value in
+    the next token, and 'scheme://user:' followed within two tokens by '...@' loses that userinfo (same rule as
+    splitUrlParts in snapshot.js)."""
+    toks = [[m.start(), m.group(0), m.group(0)] for m in _TOKEN.finditer(text)]
+
+    def mask_head(k, pre):
+        if k >= len(toks):
+            return
+        body = toks[k][1][len(pre):]
+        v = _VALUE_HEAD.match(body)
+        if not v or body.startswith(MASK):
+            return
+        counts["query_secret"] += 1
+        toks[k][1] = pre + MASK + body[v.end():]
+    for i in range(len(toks)):
+        t, nx = toks[i][1], toks[i + 1][1] if i + 1 < len(toks) else ""
+        m = _KEY_EMPTY.search(t)
+        if m and _secret_key(m.group(1)):
+            mask_head(i + 1, "")
+        elif nx.startswith("="):
+            m = _KEY_BARE.search(t)
+            if m and _secret_key(m.group(1)):
+                if nx == "=":
+                    mask_head(i + 2, "")
+                else:
+                    mask_head(i + 1, "=")
+        u = _SPLIT_USER.search(toks[i][1])
+        for k in (i + 1, i + 2) if u else ():
+            if k >= len(toks):
+                break
+            q = toks[k][1]
+            at, stop = q.find("@"), re.search(r"[/?#]", q)
+            if at < 0 or (stop and stop.start() < at):
+                continue
+            counts["url_userinfo"] += 1
+            toks[i][1] = toks[i][1][:u.start()] + u.group(1)
+            for j in range(i + 1, k):
+                toks[j][1] = ""
+            toks[k][1] = q[at + 1:]
+            break
+    out, end = [], 0
+    for start, new, old in toks:
+        out.append(text[end:start] + new)
+        end = start + len(old)
+    return "".join(out) + text[end:]
 
 
 def redact_url(url, counts: Counter) -> str:

@@ -48,6 +48,37 @@
     return out.slice(0, at) + out.slice(at).replace(/(^|[?#&;])([^=&#;?\s]*)=([^&#;\s]*)/g, (m, p, k, v) =>
       v && v !== "[redacted]" && secretKey(k) ? (bump("query_secret"), `${p}${k}=[redacted]`) : m);
   };
+  // R42-01: a URL cut by whitespace (text nodes of inline elements joined with a separator, or a gap the user typed)
+  // fails closed: a secret-naming key with an empty value ('client_secret=' or 'client_secret' '=') masks the value in
+  // the next token, and 'scheme://user:' followed within two tokens by '...@' loses that userinfo (same rule as
+  // _split_url_parts in redact.py).
+  const splitUrlParts = (s) => {
+    const toks = [...s.matchAll(/[^\s"'<>]+/g)].map((m) => ({ i: m.index, t: m[0], o: m[0] }));
+    const maskHead = (k, pre) => { const q = toks[k]; if (!q) return;
+      const body = q.t.slice(pre.length), v = /^[^&#;\s]+/.exec(body);
+      if (!v || body.startsWith("[redacted]")) return;
+      bump("query_secret"); q.t = pre + "[redacted]" + body.slice(v[0].length); };
+    for (let i = 0; i < toks.length; i++) {
+      const t = toks[i].t, nx = toks[i + 1] ? toks[i + 1].t : "";
+      let m = /(?:^|[?#&;])([^=&#;?\s]+)=$/.exec(t);
+      if (m && secretKey(m[1])) maskHead(i + 1, "");
+      else if (nx.startsWith("=") && (m = /(?:^|[?#&;])([^=&#;?\s]+)$/.exec(t)) && secretKey(m[1])) {
+        if (nx === "=") maskHead(i + 2, ""); else maskHead(i + 1, "=");
+      }
+      const u = /\b([a-z][a-z0-9+.-]*:\/\/)[^\/?#@\s"'<>]*:$/i.exec(toks[i].t);
+      if (u) for (const k of [i + 1, i + 2]) {
+        const q = toks[k]; if (!q) break;
+        const at = q.t.indexOf("@"), stop = q.t.search(/[\/?#]/);
+        if (at < 0 || (stop >= 0 && stop < at)) continue;
+        bump("url_userinfo"); toks[i].t = toks[i].t.slice(0, u.index) + u[1];
+        for (let j = i + 1; j < k; j++) toks[j].t = "";
+        q.t = q.t.slice(at + 1); break;
+      }
+    }
+    let out = "", end = 0;
+    for (const q of toks) { out += s.slice(end, q.i) + q.t; end = q.i + q.o.length; }
+    return out + s.slice(end);
+  };
   const maskText = (s) => {
     if (!s) return s;
     let out = s.replace(/\b(?:\d[ .\u00a0\u2007\u202f-]?){12,18}\d\b/g, (m) => {
@@ -59,7 +90,7 @@
     out = out.replace(QUERY_SECRET, (m, k) => { bump("query_secret"); return k + "[redacted]"; });
     // R41-03: a URL written in text (page text, a heading, a label, a field value) gets the Location rule: its
     // userinfo is removed and every secret-naming query or fragment value is masked at any length (urlParts above).
-    return out.replace(/[^\s"'<>]+/g, (tok) => urlParts(tok));
+    return splitUrlParts(out.replace(/[^\s"'<>]+/g, (tok) => urlParts(tok)));
   };
   const dpr = window.devicePixelRatio || 1;
 
@@ -310,6 +341,26 @@
   const maskQuiet = (s) => { const saved = { ...counts }, out = maskText(s);
     for (const k of Object.keys(counts)) delete counts[k]; Object.assign(counts, saved); return out; };
   const squash = (s) => s.replace(/\s+/g, " ");
+  // R42-01: text nodes of inline elements drawn next to each other in one block ('?client_secret=<b>VALUE</b>',
+  // 'https://alice:<em>PW</em>@host') are one run of text: one group, joined without a separator and masked as a
+  // whole, like the selection. A new run starts at another block, a <br>, a rendered non-inline element or a
+  // whitespace-only text node between the two nodes.
+  const inlineCache = new Map();
+  const isInline = (e) => { let v = inlineCache.get(e);
+    if (v === undefined) { const d = getComputedStyle(e).display; v = d === "inline" || d === "contents"; inlineCache.set(e, v); }
+    return v; };
+  const blockOf = (n) => { let e = n.parentElement; while (e && e !== document.body && isInline(e)) e = e.parentElement; return e; };
+  const newRun = (prev, n) => {
+    if (!prev || blockOf(prev) !== blockOf(n)) return true;
+    const w = document.createTreeWalker(document.body || document.documentElement, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+    w.currentNode = prev;
+    for (let x = w.nextNode(); x; x = w.nextNode()) {
+      if (x === n) return false;
+      if (x.nodeType === 3) { if (x.nodeValue && !x.nodeValue.trim()) return true; continue; }
+      if (x.tagName === "BR" || (x.getClientRects().length && !isInline(x))) return true;
+    }
+    return true;
+  };
   let nodeIndex = null;
   const units = [], unitIds = new Map();
   const unitOf = (n, a, b) => {
@@ -383,12 +434,13 @@
     if (wrap) srcs.push(wrap);
     const lb = el.getAttribute("aria-labelledby");
     if (lb) for (const id of lb.split(/\s+/)) { const n = id && document.getElementById(id); if (n) srcs.push(n); }
-    const ps = [], seen = new Set();
+    const ps = [], seen = new Set(); let g = -1;
     for (const src of srcs) {
-      const w = document.createTreeWalker(src, NodeFilter.SHOW_TEXT);
+      const w = document.createTreeWalker(src, NodeFilter.SHOW_TEXT); let prev = null;
       for (let n = w.nextNode(); n && ps.length < MAX_LABEL_PIECES; n = w.nextNode()) {
         if (seen.has(n) || !n.nodeValue.trim() || inField(n) || !textVisible(n)) continue;
-        seen.add(n); ps.push(...nodePieces(n, 0, n.nodeValue.length, ps.length ? ps[ps.length - 1].g + 1 : 0));
+        if (newRun(prev, n)) g++;
+        seen.add(n); prev = n; ps.push(...nodePieces(n, 0, n.nodeValue.length, g));
       }
     }
     return ps.length ? finish(ps.slice(0, MAX_LABEL_PIECES), " ") : [];
@@ -399,10 +451,11 @@
   // (fail closed); `value` stays here only for D8 and the Live Assist checks.
   const MAX_VALUE_PIECES = 40;
   const valuePieces = (el) => {
-    const ps = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const ps = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let prev = null, g = -1;
     for (let n = w.nextNode(); n && ps.length < MAX_VALUE_PIECES; n = w.nextNode()) {
       if (!n.nodeValue.trim() || !n.parentElement || n.parentElement.closest(FIELD) !== el || !textVisible(n)) continue;
-      ps.push(...nodePieces(n, 0, n.nodeValue.length, ps.length ? ps[ps.length - 1].g + 1 : 0));
+      if (newRun(prev, n)) g++;
+      prev = n; ps.push(...nodePieces(n, 0, n.nodeValue.length, g));
     }
     return ps.length ? finish(ps.slice(0, MAX_VALUE_PIECES), " ") : [];
   };
@@ -461,7 +514,14 @@
   }
 
   // Visible text only: hidden, aria-hidden, zero-size, transparent, off-screen, clipped and covered text is skipped.
-  const chunks = [], textPieces = []; let total = 0, textGroup = 0;
+  // R42-01: one chunk and one group per run of inline-adjacent text nodes (newRun above), masked as a whole.
+  const chunks = [], textPieces = []; let total = 0, textGroup = 0, run = [], runText = "", prev = null;
+  const flush = () => {
+    const t = runText.trim();
+    if (t) chunks.push(maskText(t));
+    for (const q of finish(run, "\n")) if (textPieces.length < MAX_TEXT_PIECES) textPieces.push(q);
+    run = []; runText = ""; textGroup++;
+  };
   const walker = document.createTreeWalker(document.body || document.documentElement, NodeFilter.SHOW_TEXT);
   for (let n = walker.nextNode(); n && total < MAX_TEXT; n = walker.nextNode()) {
     const t = n.nodeValue.replace(/\s+/g, " ").trim();
@@ -469,20 +529,20 @@
     const p = n.parentElement;
     if (!p || p.closest("input,textarea,select,[contenteditable]:not([contenteditable='false'])")) continue;
     if (!textVisible(n)) { bump("hidden_text"); continue; }
-    chunks.push(maskText(t)); total += t.length + 1;
-    if (textPieces.length < MAX_TEXT_PIECES) {
-      for (const q of finish(nodePieces(n, 0, n.nodeValue.length, textGroup++), "\n")) {
-        if (textPieces.length < MAX_TEXT_PIECES) textPieces.push(q);
-      }
-    }
+    if (prev && newRun(prev, n)) flush();
+    prev = n; runText += squash(n.nodeValue); total += t.length + 1;
+    if (textPieces.length + run.length < MAX_TEXT_PIECES) run.push(...nodePieces(n, 0, n.nodeValue.length, textGroup));
   }
+  flush();
   // Headings are rebuilt from their own visible text nodes (R11-01), not from innerText.
   // R41-02: text inside a field (a contenteditable inside the heading) is that field's value, never heading text.
-  const visibleTextOf = (el, ps) => { const parts = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  // R42-01: inline-adjacent nodes are one run (one group, joined without a separator), as in the page text.
+  const visibleTextOf = (el, ps) => { let text = "", prev = null, g = -1; const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim() && !inField(n) && textVisible(n)) {
-      parts.push(n.nodeValue); ps.push(...nodePieces(n, 0, n.nodeValue.length, ps.length ? ps[ps.length - 1].g + 1 : 0));
+      if (newRun(prev, n)) { g++; text += " "; }
+      prev = n; text += n.nodeValue; ps.push(...nodePieces(n, 0, n.nodeValue.length, g));
     }
-    return parts.join(" ").replace(/\s+/g, " ").trim(); };
+    return text.replace(/\s+/g, " ").trim(); };
   const headPieces = [];
   const headings = [...document.querySelectorAll("h1,h2,h3")].filter(visible)
     .map((h) => { const ps = [], t = maskText(visibleTextOf(h, ps)); if (t) headPieces.push(finish(ps, " ").slice(0, MAX_HEAD_PIECES)); return t; })
