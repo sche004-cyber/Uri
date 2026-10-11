@@ -15,6 +15,15 @@ work while am away from pc". This file is the standing plan; every check-in foll
 - Between check-ins the lifecycle driver runs as a detached process, with independent reviewers and repair workers as
   separate `claude -p` processes, exactly as in an attended run.
 
+- Routine `trig_015qjUTUMbs595nDBNdzpYBW` ("URI away-mode lifecycle check-in"), cron `16 */4 * * *` UTC, fires into
+  session `session_01P2p3uVP5b87uL5UMyWApaJ`.
+- Driver launches go through `lc-launch.sh <config>` (copy kept here; installed at `/tmp/claude-0/lc-launch.sh`), which
+  accepts only configs under `/home/user/uri-wt/lifecycle-runs/`.
+- Owner-approved narrow allow rules (2026-10-11) in the container's `~/.claude/settings.json`: that launcher,
+  `create_trigger` and `send_later`. **Known limit:** a container reset loses these rules. A check-in after a reset can
+  still restore, verify and push the checkpoint, but auto mode may refuse driver launches. That refusal is recorded as
+  BLOCKED until the owner is back; it is never worked around.
+
 ## Queue (in order)
 
 1. **W1/A0 closure** (running). Independent ACCEPT on the exact commit, then the gates, then the D1 merge into
@@ -62,3 +71,4 @@ runnable, the Routine is paused and the reason is written here.
 | UTC | What happened |
 |---|---|
 | 2026-10-11 06:20 | Checkpoint created. W1/A0 round 9 review of `3dd9cde` running (driver PID 15820). Spend so far $32.94. |
+| 2026-10-11 06:25 | R9 REJECT (6 blocking MEDIUM: R9-01..06), driver repairing. Allow rules added and routine created with owner approval. |
