@@ -3,12 +3,14 @@
 Field rules (value removed, field marked `sensitive`):
   * input type password / hidden;
   * autocomplete tokens for passwords, one-time codes and payment cards;
-  * name / id / label / automation id that names a secret (password, token, OTP, PIN, CVV, any *key, credential,
-    recovery / backup code, session, card, account number, national IDs such as SSN, Aadhaar, PAN, passport);
+  * name / id / label / automation id that names a secret (password, token, OTP, TAN / mTAN, 2SV / two-step code,
+    PIN, CVV, any *key, credential, authorization, recovery / backup code, session, card, account number, national IDs
+    such as SSN, Aadhaar, PAN, passport);
   * a short single-token value in a field whose name or label ends in code / pin / key;
   * UI Automation elements flagged IsPassword.
-Text rules (masked in any text: page text, selection, field values, labels): JWTs, bearer tokens, common API-key
-prefixes, long hex/base64 secrets, Luhn-valid card numbers, 12-digit Aadhaar-shaped numbers, `key=value` query
+Text rules (masked in any text: page text, selection, field values, labels): JWTs, bearer tokens, HTTP Basic
+credentials, API keys with known prefixes (OpenAI/Anthropic sk-, Stripe sk_/rk_/pk_ live/test, GitHub ghp_ /
+github_pat_, GitLab glpat-, npm_, Hugging Face hf_, SendGrid SG., AWS AKIA, Slack xox, Google AIza, Tavily tvly-), long hex/base64 secrets, Luhn-valid card numbers, 12-digit Aadhaar-shaped numbers, `key=value` query
 secrets. Each redaction is counted by kind; the counts (never the values) are reported.
 """
 from __future__ import annotations
@@ -25,8 +27,8 @@ SENSITIVE_AUTOCOMPLETE = {"current-password", "new-password", "one-time-code", "
 # "pincode" do not). An all-caps run ending in otp ("SMSOTP" -> "smsotp") is still a one-time code.
 _SENSITIVE_WORDS = re.compile(
     r"\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|"
-    r"password|passwd|passcode|passphrase|apikey|aadhar|aadhaar)\b|"
-    r"\bapi ?key\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|"
+    r"password|passwd|passcode|passphrase|apikey|aadhar|aadhaar|tan|mtan|smstan|otc|2 ?sv)\b|"
+    r"\bapi ?key\b|\btwo ?step\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|"
     r"\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|"
     r"\bprivate ?key\b")
 # Run-together lowercase names ("otpcode", "cardcvv", "newpassword", "upipin", "loginpwd", "userpass", "verifycode"):
@@ -49,7 +51,7 @@ _RUN_TOGETHER = re.compile(
 # a/h/l/o ("footpath", "hotpot", "hotplate"); tfa only at the start of a word ("nightfall"); secret not in
 # "secretary".
 _STEMS = re.compile(
-    r"otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|verification|authenticat|cvv|cvc|ccv|token|secret(?!ar)|"
+    r"otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|twostep|verification|authenticat|authoriz|cvv|cvc|ccv|token|secret(?!ar)|"
     r"password|passwd|passcode|passphrase|pwd|key|credential|recovery|mnemonic|seedphrase|aadhaa?r|\bssn|ssn\b|"
     r"passport|iban|jwt|csrf|xsrf|bearer|cookie|session|pat\b|psk\b|maiden")
 _READABLE = re.compile(r"keyboard|keyword|keynote|keystone|keyframe|monkey|donkey|turkey|hockey|jockey|whiskey|"
@@ -85,7 +87,10 @@ def _joined(v: str) -> str:
 _TEXT_RULES = (
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")),
     ("bearer", re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{16,}")),
-    ("api_key", re.compile(r"\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}\b|\bgh[pousr]_[A-Za-z0-9]{20,}\b|\bAKIA[0-9A-Z]{16}\b|"
+    ("basic_auth", re.compile(r"(?i)\bbasic\s+(?=[A-Za-z0-9+/]*[0-9+/=])[A-Za-z0-9+/]{12,}={0,2}")),
+    ("api_key", re.compile(r"\b(?:sk|pk|rk)-[A-Za-z0-9_-]{16,}\b|\b(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9]{16,}\b|"
+                           r"\bgithub_pat_[A-Za-z0-9_]{40,}|\bglpat-[A-Za-z0-9_-]{20,}|\bnpm_[A-Za-z0-9]{36}\b|"
+                           r"\bhf_[A-Za-z0-9]{30,}\b|\bSG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}|\bgh[pousr]_[A-Za-z0-9]{20,}\b|\bAKIA[0-9A-Z]{16}\b|"
                            r"\bxox[abpr]-[A-Za-z0-9-]{10,}\b|\btvly-[A-Za-z0-9_-]{8,}\b|\bAIza[0-9A-Za-z_-]{30,}\b")),
     ("query_secret", re.compile(r"(?i)\b((?:access_?token|token|api_?key|key|secret|password|pwd|sig|signature|code)=)[^&\s\"'<>]{6,}")),
     ("long_secret", re.compile(r"\b(?=[A-Fa-f0-9]*[A-Fa-f])(?=[A-Fa-f0-9]*\d)[A-Fa-f0-9]{32,}\b|"

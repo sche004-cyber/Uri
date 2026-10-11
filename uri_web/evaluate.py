@@ -16,10 +16,19 @@ _WORD = re.compile(r"[A-Za-z][A-Za-z'-]{2,}")
 # A magnitude or unit is part of the number (R4-02): letters written against it ("$5m", "$5bn", "5k", "5km") and a
 # scale or unit word after one space ("5 million", "2 lakh", "500 crore", "5 miles"). Scales are multiplied out, so
 # "$5m", "$5 million" and "$5,000,000" are one number and "$5m" vs "$5bn" are two.
-_NUMBER = re.compile(r"(?<!\d)(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)"
-                     r"(\s?%|[A-Za-z]+\b|\s(?:percent|thousands?|millions?|billions?|trillions?|lakhs?|lacs?|crores?|"
+# Every numeral is read WHOLE or not at all (R5-01): the match takes the full run of digits joined by "," or "." (and
+# by a space / NBSP / thin space before a 3-digit group), with its sign ("-", U+2212 or "minus"). _read() accepts
+# western (1,234,567), Indian (5,00,00,000) and space (1 000 000) grouping; any other comma run is UNREADABLE and is
+# never split into fragments that could pass a subset test.
+_NUMBER = re.compile(r"(?:(?<![\w.,\-\u2212])(?P<sign>[-\u2212])|(?<![\w-])(?P<minus>minus)\s+)?"
+                     r"(?<!\d)(?P<num>\d+(?:(?:[,.]|[ \u00a0\u2009\u202f](?=\d{3}(?!\d)))\d+)*)"
+                     r"(?P<suf>\s?%|[A-Za-z]+\b|\s(?:percent|thousands?|millions?|billions?|trillions?|lakhs?|lacs?|crores?|"
                      r"mn|bn|tn|cr|km|kms|kilomet(?:re|er)s?|miles?|mi|kgs?|kilograms?|grams?|tonnes?|tons?|lbs?|"
                      r"pounds?|feet|ft|metres?|meters?|cm|mm|acres?|hectares?|litres?|liters?|gallons?|mph)\b)?", re.I)
+_GROUPED = re.compile(r"(?:\d{1,3}(?:,\d{3})+|\d{1,2}(?:,\d{2})*,\d{3})(?:\.\d+)?")   # western | Indian
+_SPACED = re.compile(r"\d{1,3}(?:[ \u00a0\u2009\u202f]\d{3})+(?:\.\d+)?")
+_PLAIN = re.compile(r"\d+(?:\.\d+)?")
+UNREADABLE = "?"   # prefix of a numeral that could not be read whole; such a value never supports a claim
 _SCALE = {"k": 3, "thousand": 3, "m": 6, "mn": 6, "mio": 6, "million": 6, "b": 9, "bn": 9, "billion": 9,
           "t": 12, "tn": 12, "trillion": 12, "lakh": 5, "lac": 5, "crore": 7, "cr": 7}
 _UNIT = {"percent": "%", "kms": "km", "kgs": "kg", "lbs": "lb", "kilometre": "km", "kilometer": "km", "mile": "mi", "kg": "kg",
@@ -66,18 +75,40 @@ def content_words(s: str) -> set:
     return {w.lower() for w in _WORD.findall(s) if w.lower() not in STOP}
 
 
+def _read(span: str) -> list:
+    """Whole values in one numeral span: a canonical digit string (separators removed), a dotted literal such as a
+    date or version ("11.10.2026", kept exactly), or UNREADABLE + span. Never a fragment of a grouped numeral."""
+    if _PLAIN.fullmatch(span) or _GROUPED.fullmatch(span) or _SPACED.fullmatch(span):
+        return [re.sub(r"[, \u00a0\u2009\u202f]", "", span)]
+    if re.fullmatch(r"\d+(?:\.\d+)+", span):
+        return [span]
+    if re.search(r"[ \u00a0\u2009\u202f]", span):   # "2020 100": a space joined two separate numbers
+        return [v for part in re.split(r"[ \u00a0\u2009\u202f]", span) for v in _read(part)]
+    return [UNREADABLE + span]
+
+
+def unreadable(nums) -> bool:
+    return any(n.startswith(UNREADABLE) for n in nums)
+
+
 def numbers(s: str) -> set:
     out = set()
     for m in _NUMBER.finditer(s):
-        n = m.group(1).replace(",", "")
-        raw = (m.group(2) or "").strip().lower()
+        vals = _read(m.group("num"))
+        neg = bool(m.group("sign") or m.group("minus"))
+        raw = (m.group("suf") or "").strip().lower()
         unit = raw[:-1] if len(raw) > 3 and raw.endswith("s") and raw[:-1] in _SCALE.keys() | _UNIT.keys() else raw
-        if unit in ("", *_ORDINAL):
-            out.add(n)
-        elif unit in _SCALE:
-            out.add(_fmt(Decimal(n).scaleb(_SCALE[unit])))
-        else:
-            out.add(n + _UNIT.get(unit, unit))
+        for i, n in enumerate(vals):
+            last = i == len(vals) - 1          # a sign belongs to the first value, a unit to the last
+            sign = "-" if neg and i == 0 else ""
+            if n.startswith(UNREADABLE):
+                out.add(UNREADABLE + sign + n[1:])
+            elif not last or unit in ("", *_ORDINAL):
+                out.add(sign + n)
+            elif unit in _SCALE and n.count(".") <= 1:
+                out.add(sign + _fmt(Decimal(n).scaleb(_SCALE[unit])))
+            else:
+                out.add(sign + n + _UNIT.get(unit, unit))
     return out
 
 
@@ -159,7 +190,8 @@ def find_conflicts(sources: list, indices: list, max_conflicts: int = 20) -> lis
                 if not na:
                     continue
                 for sb, wb, nb in sents[b]:
-                    if not nb or na == nb or na <= nb or nb <= na:
+                    # Subset suppression only between numbers read whole: an UNREADABLE numeral rules nothing out.
+                    if not nb or na == nb or (not unreadable(na | nb) and (na <= nb or nb <= na)):
                         continue
                     ov = jaccard(wa, wb)
                     if ov >= CONFLICT_OVERLAP:

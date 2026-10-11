@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from . import untrusted as U
-from .evaluate import content_words, numbers, sentences
+from .evaluate import content_words, numbers, sentences, unreadable
 
 MIN_SUPPORT = 0.6
 # Polarity: a claim and its best supporting sentence must agree on negation (interim review F3).
@@ -96,7 +96,8 @@ def verify(answer: str, source_texts: list) -> Verified:
                 sc = len(cw & w) / len(cw) if cw else 0.0
                 if sc > best_s:
                     best, best_s = (s, w, nums), sc
-        if best is None or not claim_nums <= best[2]:
+        # A numeral that cannot be read whole (R5-01) is unverifiable: the claim is dropped, never matched by text.
+        if best is None or unreadable(claim_nums) or not claim_nums <= best[2]:
             v.dropped.append({"text": sent, "reason": "NUMBER_NOT_IN_CITED_SOURCE" if claim_nums
                               else "INSUFFICIENT_SUPPORT"})
             continue
