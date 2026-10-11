@@ -10,13 +10,16 @@ Rules
   * When a formula cell is created or replaced, `xl/calcChain.xml` is removed together with its content-type override
     and workbook relationship (Excel rebuilds it).
   * Refused: cells inside a merged range other than its anchor, shared/array formula cells, Excel table header
-    and totals rows, unknown sheets, bad refs.
-  * The result is written to a temp file next to the destination and moved into place (atomic on the same volume).
+    and totals rows, unknown sheets, bad refs. Every cell inside an array formula's range is refused, not only its anchor.
+  * The result is written to a new, exclusively created temp file next to the destination (random name, never a
+    planted file or symlink) and moved into place (atomic on the same volume); the file's permission bits are kept.
 """
 from __future__ import annotations
 
 import os
 import posixpath
+import shutil
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -163,12 +166,30 @@ def _table_locks(parts: dict, sheet_part: str) -> set:
     return locked
 
 
+def _array_ranges(root) -> list:
+    """(c1, r1, c2, r2) of every array formula: the whole spill range (`ref`) belongs to it, not only the anchor cell
+    that carries the <f>, so no cell inside it may be edited."""
+    out = []
+    for c in root.iter(M + "c"):
+        f = c.find(M + "f")
+        if f is not None and f.get("t") == "array":
+            out.append(refs.parse_range(f.get("ref") or c.get("r")))
+    return out
+
+
+def _in_array_formula(root, col, row) -> bool:
+    return any(c1 <= col <= c2 and r1 <= row <= r2 for c1, r1, c2, r2 in _array_ranges(root))
+
+
 def _locks(parts: dict, sheet_part: str, root) -> set:
     locked = set()
     for c in root.iter(M + "c"):
         f = c.find(M + "f")
         if f is not None and f.get("t") in ("shared", "array"):
             locked.add(c.get("r"))
+    for c1, r1, c2, r2 in _array_ranges(root):
+        if (c2 - c1 + 1) * (r2 - r1 + 1) <= 10_000:       # larger ones are still refused at save time
+            locked |= {refs.cell_ref(c, r) for c in range(c1, c2 + 1) for r in range(r1, r2 + 1)}
     for mc in root.iter(M + "mergeCell"):
         c1, r1, c2, r2 = refs.parse_range(mc.get("ref"))
         if (c2 - c1 + 1) * (r2 - r1 + 1) > 10_000:
@@ -205,7 +226,7 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
     for e in edits:
         if e.get("sheet") not in by_sheet:
             raise OfficeError("UNKNOWN_SHEET", str(e.get("sheet"))[:64])
-        grouped.setdefault(by_sheet[e["sheet"]], []).append(e)
+        grouped.setdefault(by_sheet[e["sheet"]], []).append({**e, "cell": refs.canonical_cell(e.get("cell"))})
     formulas = False
     changed = set()
     for part, es in grouped.items():
@@ -216,6 +237,8 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
             col, row = refs.parse_cell(e["cell"])
             if _in_merged_non_anchor(root, col, row):
                 raise OfficeError("CELL_NOT_EDITABLE", f"{e['cell']}: inside a merged range")
+            if _in_array_formula(root, col, row):
+                raise OfficeError("CELL_NOT_EDITABLE", f"{e['cell']}: part of an array formula")
             if e["cell"] in tables:
                 raise OfficeError("CELL_NOT_EDITABLE", f"{e['cell']}: table header or totals row")
             formulas |= _set_cell(_get_cell(sd, e["cell"]), e)
@@ -243,14 +266,32 @@ def patch(src: Path, dst: Path, edits: list) -> dict:
                 rels.remove(r)
         parts["xl/_rels/workbook.xml.rels"] = _ser(rels)
         changed |= {"xl/calcChain.xml", "[Content_Types].xml", "xl/_rels/workbook.xml.rels"}
-    tmp = dst.with_name(dst.name + ".uri-office.tmp")
-    try:
-        with zipfile.ZipFile(tmp, "w") as z:
+
+    def write(fh):
+        with zipfile.ZipFile(fh, "w") as z:
             for info in order:
                 if info.filename in parts:
                     z.writestr(info, parts[info.filename], compress_type=info.compress_type)
+    atomic_write(Path(dst), write, mode_from=Path(src))
+    return {"changed_parts": sorted(changed)}
+
+
+def atomic_write(dst: Path, write, mode_from: Path | None = None):
+    """Write through `write(fileobj)` into a new temp file next to `dst` and move it into place. The temp file is
+    created exclusively with a random name (mkstemp: O_EXCL, so a planted file or symlink is never followed), synced,
+    given the permission bits of the file it replaces (or of `mode_from` for a new file), then renamed over `dst`.
+    On Windows only the read-only bit is carried over; the folder's inherited ACL applies to the new file."""
+    fd, name = tempfile.mkstemp(dir=dst.parent, prefix="." + dst.name + ".", suffix=".uri-office.tmp")
+    tmp = Path(name)
+    try:
+        with os.fdopen(fd, "wb") as fh:
+            write(fh)
+            fh.flush()
+            os.fsync(fh.fileno())
+        ref = dst if dst.exists() else mode_from
+        if ref is not None and ref.exists():
+            shutil.copymode(ref, tmp)
         os.replace(tmp, dst)
     finally:
-        if tmp.exists():
+        if os.path.lexists(tmp):
             tmp.unlink()
-    return {"changed_parts": sorted(changed)}

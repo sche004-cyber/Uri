@@ -8,6 +8,8 @@ body, computes `change_sha256 = sha256(canonical(body))`, binds it into an `offi
   * `office.apply_change` calls `apply_fn(body)`, which must re-read the target and refuse if its state differs from
     the shown "before" (file hash for local files, cell values for Google);
   * closes the surface in both cases, so the same approval can never be replayed;
+  * the card shows the whole change set the hash binds (full values, every line, the full destination); a set too
+    large for one card is refused, never shortened;
   * audits every outcome, refusals included, in a hash chain (`verify_chain`).
 """
 from __future__ import annotations
@@ -20,12 +22,14 @@ import time
 import uuid
 from pathlib import Path
 
+from uri_a2ui import catalog as C
 from uri_a2ui.surface import ActionRefused, Surface, canonical, check_action
+from uri_a2ui.validate import u16
 
 from .errors import OfficeError
 
 GENESIS = "0" * 64
-MAX_LINES = 30
+FIXED_COMPONENTS = 6          # root, title, target, apply, reject, buttons; the rest of the catalog limit is for lines
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS surface(
   surface_id TEXT PRIMARY KEY, owner TEXT NOT NULL, workbook_id TEXT NOT NULL,
@@ -42,13 +46,40 @@ def jdump(obj) -> str:
 
 
 def _shown(v) -> str:
+    """The whole value, never shortened: the card shows everything the hash binds. Text is quoted (JSON), so a value
+    with line breaks or ' -> ' in it cannot pass for another line of the card."""
     if not v:
         return "(empty)"
     if v.get("f"):
-        return v["f"]
+        f = v["f"]
+        return f if f.isprintable() else json.dumps(f, ensure_ascii=False)
     x = v.get("v")
-    s = "(empty)" if x is None or x == "" else str(x)
-    return s if len(s) <= 60 else s[:57] + "..."
+    if x is None or x == "":
+        return "(empty)"
+    return json.dumps(x, ensure_ascii=False) if isinstance(x, str) else str(x)
+
+
+CONTINUED = "... (continued) "
+
+
+def _chunks(lines: list, limit: int) -> list:
+    """Pack lines into texts of at most `limit` UTF-16 units (the unit the A2UI catalog counts), splitting a longer
+    line between whole code points. Nothing is dropped. A text that continues a split line starts with CONTINUED, so
+    the rest of a value can never pass for a line of its own."""
+    out, cur, n = [], [], 0
+    for line in lines:
+        mid = False                                     # some of this line is already in a text
+        for ch in line + "\n":
+            w = 2 if ord(ch) > 0xFFFF else 1
+            if n + w > limit:
+                out.append("".join(cur))
+                cur, n = ([CONTINUED], len(CONTINUED)) if mid else ([], 0)
+            cur.append(ch)
+            n += w
+            mid = True
+    if cur:
+        out.append("".join(cur).rstrip("\n"))
+    return [t for t in out if t]
 
 
 class Approvals:
@@ -86,12 +117,12 @@ class Approvals:
         body = {"workbook_id": workbook_id, "target": target, "edits": pending["edits"],
                 "struct_ops": pending["struct_ops"]}
         sha = hashlib.sha256(canonical(body)).hexdigest()
+        surface = self._surface(f"office.{workbook_id}.{uuid.uuid4().hex[:8]}", target, body, sha)
         with self.lock:
             # One open approval per workbook: a newer one supersedes (closes) the older.
             for r in self.db.execute("SELECT surface_id FROM surface WHERE workbook_id=? AND state='OPEN'", (workbook_id,)):
                 self._close(r["surface_id"])
                 self.audit("office.approval_superseded", {"surface_id": r["surface_id"]})
-            surface = self._surface(f"office.{workbook_id}.{uuid.uuid4().hex[:8]}", target, body, sha)
             now = time.time()
             self.db.execute("INSERT INTO surface VALUES (?,?,?,?,?,?,?,?,?)",
                             (surface.surface_id, self.owner, workbook_id, "OPEN", jdump(surface.to_record()),
@@ -103,26 +134,31 @@ class Approvals:
     def _surface(self, sid, target, body, sha) -> Surface:
         google = target.get("kind") == "google"
         upload = target.get("kind") == "google_upload"
-        lines = []
-        for e in body["edits"][:MAX_LINES]:
-            lines.append(f"{e['sheet']}!{e['cell']}: {_shown(e['before'])} -> {_shown(e['after'])}")
-        for op in body["struct_ops"][:MAX_LINES]:
-            lines.append(" ".join(f"{k}={op[k]}" for k in sorted(op)))
-        more = len(body["edits"]) + len(body["struct_ops"]) - len(lines)
+        # The card shows the whole change set the hash binds (every edit with its full before/after, every structural
+        # op, the full destination). A set too large for one card is refused, never shortened.
+        lines = [f"{e['sheet']}!{e['cell']}: {_shown(e['before'])} -> {_shown(e['after'])}" for e in body["edits"]]
+        lines += [" ".join(f"{k}={json.dumps(op[k], ensure_ascii=False)}" for k in sorted(op))
+                  for op in body["struct_ops"]]
+        if upload:
+            lines = ["The saved file as it is on disk now (unsaved draft changes are not included) will be copied to "
+                     "Google Drive. Only you can see it until you share it in Google."]
+        label = str(target.get("label", ""))
+        if u16(label) > C.MAX_STRING:
+            raise OfficeError("CHANGE_TOO_LARGE_TO_SHOW", "the destination path is too long to show")
+        texts = _chunks(lines, C.MAX_STRING)
+        if len(texts) > C.MAX_COMPONENTS - FIXED_COMPONENTS:
+            raise OfficeError("CHANGE_TOO_LARGE_TO_SHOW", "this change set is too large to show in full on one approval; "
+                                                          "save in smaller steps", 413)
         comps = [
             {"id": "title", "component": "Text", "variant": "title",
              "text": ("Upload a copy of this file to your Google Drive as a Google Sheet?" if upload else
                       "Apply these changes to the Google Sheet?" if google else "Save these changes to the file?")},
-            {"id": "target", "component": "Text", "variant": "caption", "text": str(target.get("label", ""))[:300]},
-            {"id": "lines", "component": "Text", "variant": "body", "text": "\n".join(lines)[:3900]},
+            {"id": "target", "component": "Text", "variant": "caption", "text": label},
         ]
-        if upload:
-            comps[2]["text"] = ("The saved file as it is on disk now (unsaved draft changes are not included) will be "
-                                "copied to Google Drive. Only you can see it until you share it in Google.")
-        kids = ["title", "target", "lines"]
-        if more > 0:
-            comps.append({"id": "more", "component": "Text", "variant": "caption", "text": f"... and {more} more"})
-            kids.append("more")
+        kids = ["title", "target"]
+        for i, text in enumerate(texts):
+            comps.append({"id": f"lines{i}", "component": "Text", "variant": "body", "text": text})
+            kids.append(f"lines{i}")
         bind = {"change_sha256": {"path": "/bound/change_sha256"}}
         comps += [
             {"id": "apply", "component": "Button", "variant": "primary",
@@ -151,6 +187,15 @@ class Approvals:
         for r in self.db.execute(q + " ORDER BY created_at", args):
             out += Surface.from_record(json.loads(r["record_json"])).messages()
         return out
+
+    def workbook_of(self, surface_id):
+        """The workbook an approval belongs to (None if unknown), so the caller can take that workbook's lock before
+        `action` takes this one: the lock order is always workbook lock, then approvals lock."""
+        if not isinstance(surface_id, str):
+            return None
+        with self.lock:                                  # held briefly and released; never while taking another lock
+            r = self.db.execute("SELECT workbook_id FROM surface WHERE surface_id=?", (surface_id,)).fetchone()
+        return r["workbook_id"] if r else None
 
     def close_workbook(self, workbook_id):
         with self.lock:
@@ -189,6 +234,6 @@ class Approvals:
             except OfficeError as exc:
                 self.audit("office.action_refused", {"surface_id": sid if isinstance(sid, str) else None,
                                                      "code": exc.code})
-                if exc.code in ("TARGET_CHANGED",) and r is not None:
+                if exc.code in ("TARGET_CHANGED", "STALE_CHANGE") and r is not None:
                     self._close(sid)
                 raise

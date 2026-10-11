@@ -18,6 +18,7 @@ import uuid
 
 from uri_a2ui.surface import canonical
 
+from . import refs
 from .errors import OfficeError
 
 MAX_VERSIONS = 50
@@ -90,11 +91,14 @@ class Draft:
     def _after(edit) -> dict:
         return {"f": edit["formula"]} if "formula" in edit else {"v": edit.get("value")}
 
-    def _check_cell(self, sheet, cell):
+    def _check_cell(self, sheet, cell) -> str:
+        """Returns the canonical ref; locks and changes are keyed by it, never by the raw input."""
         if sheet not in self.base:
             raise OfficeError("UNKNOWN_SHEET", str(sheet)[:64])
+        cell = refs.canonical_cell(cell)
         if cell in self.locked.get(sheet, ()):
             raise OfficeError("CELL_NOT_EDITABLE", f"{sheet}!{cell}")
+        return cell
 
     def propose(self, edits: list) -> list:
         """URI's validated edits (from `ops.to_cell_edits`) become proposed, marked changes. Returns the new changes."""
@@ -104,26 +108,26 @@ class Draft:
             if "op" in e:
                 ch = self._new("uri", "struct", "proposed", op=e, sheet=e.get("sheet"))
             else:
-                self._check_cell(e["sheet"], e["cell"])
-                ch = self._new("uri", "cell", "proposed", sheet=e["sheet"], cell=e["cell"],
-                               before=self.before(e["sheet"], e["cell"]), after=self._after(e))
+                cell = self._check_cell(e["sheet"], e["cell"])
+                ch = self._new("uri", "cell", "proposed", sheet=e["sheet"], cell=cell,
+                               before=self.before(e["sheet"], cell), after=self._after(e))
             self.changes.append(ch)
             new.append(ch)
         return new
 
     def user_edit(self, edit: dict) -> list:
         """The owner typed in the panel. Returns correction events (for the consented history)."""
-        self._check_cell(edit["sheet"], edit["cell"])
+        cell = self._check_cell(edit["sheet"], edit["cell"])
         self._push()
         events = []
         for ch in self.changes:
             if ch["kind"] == "cell" and ch["state"] == "proposed" and ch["sheet"] == edit["sheet"] \
-                    and ch["cell"] == edit["cell"]:
+                    and ch["cell"] == cell:
                 ch["state"] = "edited_by_user"
                 events.append({"kind": "uri_change_edited_by_user", "change_id": ch["cid"], "sheet": ch["sheet"],
                                "cell": ch["cell"]})
-        self.changes.append(self._new("user", "cell", "user", sheet=edit["sheet"], cell=edit["cell"],
-                                      before=self.before(edit["sheet"], edit["cell"]), after=self._after(edit)))
+        self.changes.append(self._new("user", "cell", "user", sheet=edit["sheet"], cell=cell,
+                                      before=self.before(edit["sheet"], cell), after=self._after(edit)))
         return events
 
     def decide(self, cid: str, decision: str, sha: str) -> list:

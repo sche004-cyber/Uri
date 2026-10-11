@@ -116,6 +116,8 @@ async function run(variant, path) {
       host_messages: window.__sent.map((m) => m.type),
       only_ready_sent: window.__sent.length === 1 && window.__sent[0].type === 'ready',
       canvas: !!document.querySelector('canvas'),
+      // after the test workbook loaded: network formula functions must not be registered (AC15, R1-01)
+      blocked_functions_present: window.uriOfficeGuard ? window.uriOfficeGuard.blockedFunctionsPresent() : 'missing',
       patched: (await fetch('http://127.0.0.1:1/').then(() => 'SENT', (e) => e.name)) === 'NetworkDisabledError',
       data_url_fetch: await fetch('data:,ok').then((r) => r.text(), (e) => 'refused: ' + e.name) }))()`) : 'n/a';
   const results = {};

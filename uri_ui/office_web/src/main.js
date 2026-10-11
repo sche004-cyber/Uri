@@ -7,17 +7,17 @@
 //               (marks: [{sheet, cell, state: proposed|accepted|user, after}])
 //               {type: "marks", marks}                     refresh marks after a decision
 // Page -> host: {type: "ready"} | {type: "edit", sheet, cell, value|formula} | {type: "error", code}
+//               (code STRUCTURE_CHANGE_NOT_SUPPORTED: a structural grid change was refused in the page, see guard.js)
 import './no-network.js';        // must stay the first import: runs before any Univer code (AC15)
 import { createUniver, LocaleType, mergeLocales } from '@univerjs/presets';
 import { UniverSheetsCorePreset } from '@univerjs/preset-sheets-core';
 import sheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
+import { CanceledError, ICommandService } from '@univerjs/core';
 import { IFunctionService } from '@univerjs/engine-formula';
 import '@univerjs/preset-sheets-core/lib/index.css';
 import { editsFromMutation, parseCell, toUniver } from './convert.js';
+import { blockFunctions, guardStructure } from './guard.js';
 
-// Formula functions that can reach the network or other programs (AC15). WEBSERVICE is listed by Univer 1.0.3 but
-// not implemented; it is removed too in case a later version adds it.
-const BLOCKED_FUNCTIONS = ['IMAGE', 'HYPERLINK', 'WEBSERVICE', 'FILTERXML', 'ENCODEURL'];
 // user: owner's own edits are applied without a mark.
 const MARK_BG = { proposed: '#FFF2B3', accepted: '#D9F2D9', user: null };
 
@@ -30,9 +30,17 @@ const { univer, univerAPI } = createUniver({
   presets: [UniverSheetsCorePreset({ container: 'app', header: true, footer: true })],
 });
 
-const functions = univer.__getInjector().get(IFunctionService);
-functions.unregisterExecutors(...BLOCKED_FUNCTIONS);
-functions.unregisterDescriptions(...BLOCKED_FUNCTIONS);
+// Network-capable formula functions are filtered out of registration (Univer registers its functions when the first
+// workbook loads) and re-checked after every load; a workbook is never shown while one of them is present (AC15).
+const injector = univer.__getInjector();
+const functionGuard = blockFunctions(injector.get(IFunctionService));
+// Structural grid edits are refused in the page (see guard.js); the owner is told why.
+guardStructure(injector.get(ICommandService), CanceledError,
+  () => send({ type: 'error', code: 'STRUCTURE_CHANGE_NOT_SUPPORTED' }));
+// Read-only diagnostics for the Edge/WebView2 probe: which blocked functions the engine still has (must be none).
+Object.defineProperty(window, 'uriOfficeGuard', {
+  value: Object.freeze({ blockedFunctionsPresent: () => functionGuard.present() }),
+});
 
 let workbook = null;
 let sheetNameById = {};
@@ -46,6 +54,13 @@ function load(wb) {
     const data = toUniver(wb);
     sheetNameById = Object.fromEntries(Object.values(data.sheets).map((s) => [s.id, s.name]));
     workbook = univerAPI.createWorkbook(data);
+    functionGuard.remove();
+    const left = functionGuard.present();
+    if (left.length) {
+      univerAPI.disposeUnit(workbook.getId());
+      workbook = null;
+      throw new Error('blocked formula functions present: ' + left.join(','));
+    }
   } finally {
     applying--;
   }

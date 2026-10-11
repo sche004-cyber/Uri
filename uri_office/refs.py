@@ -5,7 +5,7 @@ from .errors import OfficeError
 
 MAX_COL = 16384
 MAX_ROW = 1048576
-_CELL = re.compile(r"^([A-Z]{1,3})([1-9][0-9]{0,6})$")
+_CELL = re.compile(r"([A-Z]{1,3})([1-9][0-9]{0,6})")
 
 
 def col_index(letters: str) -> int:
@@ -25,7 +25,7 @@ def col_letters(n: int) -> str:
 
 def parse_cell(ref) -> tuple:
     """'B3' -> (col=2, row=3). Refuses anything outside Excel's grid."""
-    m = _CELL.match(ref) if isinstance(ref, str) else None
+    m = _CELL.fullmatch(ref) if isinstance(ref, str) else None
     if not m:
         raise OfficeError("BAD_CELL_REF", str(ref)[:32])
     col, row = col_index(m.group(1)), int(m.group(2))
@@ -36,6 +36,11 @@ def parse_cell(ref) -> tuple:
 
 def cell_ref(col: int, row: int) -> str:
     return f"{col_letters(col)}{row}"
+
+
+def canonical_cell(ref) -> str:
+    """The one spelling of a valid ref; every entry point keys cells by this, never by the raw input."""
+    return cell_ref(*parse_cell(ref))
 
 
 def parse_range(ref) -> tuple:

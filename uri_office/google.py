@@ -23,6 +23,7 @@ from pathlib import Path
 
 from . import refs
 from .errors import OfficeError
+from .xlsx_patch import atomic_write
 
 SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets"
 SHEET_MIME = "application/vnd.google-apps.spreadsheet"
@@ -137,13 +138,16 @@ class GoogleSheets:
         return SHEETS_SCOPE in scopes or file_id in self._owned()
 
     def apply(self, file_id, body: dict) -> dict:
-        """Re-read every edited cell; refuse if any differs from the shown `before`; then write."""
+        """Re-read every edited cell and the sheet list; refuse if anything differs from what was shown; only then
+        write everything in one spreadsheets.batchUpdate (all-or-nothing on Google's side), so a refusal or a failed
+        request never leaves the sheet half written."""
         if not self.writable(file_id):
             raise OfficeError("PERMISSION_NOT_GRANTED",
                               "editing this existing sheet needs the Google Sheets permission the owner has not "
                               "granted yet; use 'Edit a copy' instead", 403)
         sheets_api, _, _ = self._connect()
         edits = body["edits"]
+        # ---- every check first; nothing is written until all of them passed ----
         if edits:
             ranges = [f"{_a1_sheet(e['sheet'])}!{e['cell']}" for e in edits]
             now_v = sheets_api.spreadsheets().values().batchGet(
@@ -162,35 +166,27 @@ class GoogleSheets:
                 if cur != want:
                     raise OfficeError("TARGET_CHANGED", f"{e['sheet']}!{e['cell']} changed in Google Sheets since it "
                                                         "was shown; review again", 409)
-            raw = [{"range": f"{_a1_sheet(e['sheet'])}!{e['cell']}", "values": [[e["after"].get("v")]]}
-                   for e in edits if not e["after"].get("f")]
-            fml = [{"range": f"{_a1_sheet(e['sheet'])}!{e['cell']}", "values": [[e["after"]["f"]]]}
-                   for e in edits if e["after"].get("f")]
-            if raw:
-                sheets_api.spreadsheets().values().batchUpdate(
-                    spreadsheetId=file_id, body={"valueInputOption": "RAW", "data": raw}).execute()
-            if fml:
-                sheets_api.spreadsheets().values().batchUpdate(
-                    spreadsheetId=file_id, body={"valueInputOption": "USER_ENTERED", "data": fml}).execute()
-        if body["struct_ops"]:
-            ids = {sh["properties"]["title"]: sh["properties"]["sheetId"] for sh in sheets_api.spreadsheets().get(
-                spreadsheetId=file_id, fields="sheets(properties(sheetId,title))").execute().get("sheets", [])}
-            reqs = []
-            for op in body["struct_ops"]:
-                if op["op"] in ("insert_rows", "delete_rows"):
-                    if op["sheet"] not in ids:
-                        raise OfficeError("TARGET_CHANGED", "a sheet was renamed or removed since it was shown", 409)
-                    rng = {"sheetId": ids[op["sheet"]], "dimension": "ROWS", "startIndex": op["at"] - 1,
-                           "endIndex": op["at"] - 1 + op["count"]}
-                    reqs.append({"insertDimension": {"range": rng, "inheritFromBefore": op["at"] > 1}}
-                                if op["op"] == "insert_rows" else {"deleteDimension": {"range": rng}})
-                elif op["op"] == "add_sheet":
-                    reqs.append({"addSheet": {"properties": {"title": op["name"]}}})
-                elif op["op"] == "rename_sheet":
-                    if op["sheet"] not in ids:
-                        raise OfficeError("TARGET_CHANGED", "a sheet was renamed or removed since it was shown", 409)
-                    reqs.append({"updateSheetProperties": {"properties": {"sheetId": ids[op["sheet"]], "title": op["name"]},
-                                                           "fields": "title"}})
+        ids = {sh["properties"]["title"]: sh["properties"]["sheetId"] for sh in sheets_api.spreadsheets().get(
+            spreadsheetId=file_id, fields="sheets(properties(sheetId,title))").execute().get("sheets", [])}
+        needed = {e["sheet"] for e in edits} | {op["sheet"] for op in body["struct_ops"] if op.get("sheet")}
+        if needed - set(ids):
+            raise OfficeError("TARGET_CHANGED", "a sheet was renamed or removed since it was shown", 409)
+        # ---- one request: cells as shown (before any row moves), then the structural ops in order ----
+        reqs = [_update_cell(ids[e["sheet"]], e["cell"], e["after"]) for e in edits]
+        for op in body["struct_ops"]:
+            if op["op"] in ("insert_rows", "delete_rows"):
+                rng = {"sheetId": ids[op["sheet"]], "dimension": "ROWS", "startIndex": op["at"] - 1,
+                       "endIndex": op["at"] - 1 + op["count"]}
+                reqs.append({"insertDimension": {"range": rng, "inheritFromBefore": op["at"] > 1}}
+                            if op["op"] == "insert_rows" else {"deleteDimension": {"range": rng}})
+            elif op["op"] == "add_sheet":
+                reqs.append({"addSheet": {"properties": {"title": op["name"]}}})
+            elif op["op"] == "rename_sheet":
+                reqs.append({"updateSheetProperties": {"properties": {"sheetId": ids[op["sheet"]], "title": op["name"]},
+                                                       "fields": "title"}})
+            else:
+                raise OfficeError("UNKNOWN_OP", str(op["op"])[:32])
+        if reqs:
             sheets_api.spreadsheets().batchUpdate(spreadsheetId=file_id, body={"requests": reqs}).execute()
         return {"cells": len(edits), "struct_ops": len(body["struct_ops"])}
 
@@ -214,10 +210,23 @@ class GoogleSheets:
     def export_xlsx(self, file_id, dest: Path) -> dict:
         _, drive, _ = self._connect()
         data = drive.files().export(fileId=file_id, mimeType=XLSX_MIME).execute()
-        tmp = dest.with_name(dest.name + ".uri-office.tmp")
-        tmp.write_bytes(data)
-        os.replace(tmp, dest)
+        atomic_write(Path(dest), lambda fh: fh.write(data))
         return {"bytes": len(data)}
+
+
+def _update_cell(sheet_id: int, cell: str, after: dict) -> dict:
+    """One cell as an updateCells request. Values are stored as typed (like valueInputOption RAW: text is never parsed
+    as a formula or number); formulas as formulas. An empty value clears the cell's content."""
+    col, row = refs.parse_cell(cell)
+    if after.get("f"):
+        uev = {"formulaValue": after["f"]}
+    else:
+        v = after.get("v")
+        uev = (None if v is None or v == "" else {"boolValue": v} if isinstance(v, bool) else
+               {"numberValue": v} if isinstance(v, (int, float)) else {"stringValue": str(v)})
+    return {"updateCells": {"start": {"sheetId": sheet_id, "rowIndex": row - 1, "columnIndex": col - 1},
+                            "rows": [{"values": [{"userEnteredValue": uev} if uev else {}]}],
+                            "fields": "userEnteredValue"}}
 
 
 def open_url(file_id: str) -> str:

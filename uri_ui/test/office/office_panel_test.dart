@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:uri_ui/living/office/office_bridge.dart';
 import 'package:uri_ui/living/office/office_client.dart';
+import 'package:uri_ui/living/office/office_controller.dart';
 import 'package:uri_ui/living/office/office_page_hash.dart';
 import 'package:uri_ui/living/office/office_panel.dart';
 import 'package:uri_ui/theme/uri_theme.dart';
@@ -196,6 +197,79 @@ void main() {
       await tester.pumpAndSettle();
       expect(calls['/workbook/w1/decide'], {'change_id': 'c1', 'decision': 'accept', 'change_sha256': 'a' * 64});
       expect(find.byKey(const ValueKey('office-change-c1')), findsNothing);
+    });
+  });
+
+  // R1-10: page edits were dropped while the controller was busy (the first cell of a paste made it busy, so the other
+  // cells were discarded; typing during a Brain turn was discarded too).
+  group('page edits are queued, never dropped', () {
+    Future<void> until(bool Function() done) async {
+      for (var i = 0; i < 500 && !done(); i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 2));
+      }
+    }
+
+    late List<Map<String, dynamic>> edits;
+    late Completer<void> brainGate;
+
+    OfficeController make(FakeSurface surface) {
+      edits = [];
+      brainGate = Completer<void>()..complete();
+      final mock = MockClient((req) async {
+        final body = req.body.isEmpty ? <String, dynamic>{} : jsonDecode(req.body) as Map<String, dynamic>;
+        switch (req.url.path) {
+          case '/open/local':
+            return http.Response(jsonEncode({'workbook_id': 'w1', 'engine': 'local', 'label': 'book.xlsx',
+              'workbook': _workbook, 'draft': _draft([]), 'history_on': false}), 200);
+          case '/workbook/w1/edit':
+            await Future<void>.delayed(const Duration(milliseconds: 5));   // a real round trip
+            edits.add(body);
+            return http.Response(jsonEncode({'draft': _draft([])}), 200);
+          case '/workbook/w1/instruct':
+            await brainGate.future;
+            return http.Response(jsonEncode({'message': 'ok', 'proposed': [], 'refused': [], 'metrics': {},
+              'draft': _draft([])}), 200);
+        }
+        return http.Response(jsonEncode({'error': 'NOT_FOUND'}), 404);
+      });
+      return OfficeController(
+          client: OfficeClient.forTest(Uri.parse('http://127.0.0.1:18530'), 'tok', mock), surface: surface);
+    }
+
+    test('a multi-cell paste sends every cell, in order', () async {
+      final surface = FakeSurface();
+      final c = make(surface);
+      await c.openLocal(r'C:\Users\me\book.xlsx');
+      surface.ctl.add({'type': 'ready'});
+      for (final cell in ['A2', 'A3', 'A4', 'A5']) {
+        surface.ctl.add({'type': 'edit', 'sheet': 'Sales', 'cell': cell, 'value': cell.toLowerCase()});
+      }
+      await until(() => edits.length == 4 && !c.busy);
+      expect([for (final e in edits) e['cell']], ['A2', 'A3', 'A4', 'A5']);
+      expect(c.notice, isNull);
+      // The page is reloaded from the service once, after the last cell was accepted.
+      await until(() => surface.posted.where((m) => m['type'] == 'load').length >= 2);
+      expect(surface.posted.last['type'], 'load');
+    });
+
+    test('typing during a Brain turn is sent, not discarded', () async {
+      final surface = FakeSurface();
+      final c = make(surface);
+      await c.openLocal(r'C:\Users\me\book.xlsx');
+      surface.ctl.add({'type': 'ready'});
+      brainGate = Completer<void>();
+      final turn = c.instruct('fill the totals');
+      await until(() => c.busy);
+      expect(c.busy, isTrue);
+      surface.ctl.add({'type': 'edit', 'sheet': 'Sales', 'cell': 'B2', 'value': 11});
+      surface.ctl.add({'type': 'edit', 'sheet': 'Sales', 'cell': 'B3', 'formula': '=B2*2'});
+      await until(() => edits.length == 2);
+      brainGate.complete();
+      await turn;
+      expect(edits, [
+        {'sheet': 'Sales', 'cell': 'B2', 'value': 11},
+        {'sheet': 'Sales', 'cell': 'B3', 'formula': '=B2*2'},
+      ]);
     });
   });
 }

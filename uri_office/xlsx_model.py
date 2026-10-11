@@ -127,7 +127,7 @@ def read(path: Path) -> dict:
             if truncated:
                 break
         widths = {k: round(float(d.width), 2) for k, d in ws.column_dimensions.items()
-                  if d.width and refs._CELL.match(k + "1")}
+                  if d.width and refs._CELL.fullmatch(k + "1")}
         heights = {str(k): round(float(d.height), 2) for k, d in ws.row_dimensions.items() if d.height}
         sheets.append({"name": ws.title, "index": idx, "max_row": ws.max_row, "max_col": ws.max_column,
                        "truncated": truncated, "cells": cells, "locked": locked.get(ws.title, []),

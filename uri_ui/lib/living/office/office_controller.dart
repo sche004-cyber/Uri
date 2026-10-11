@@ -28,6 +28,11 @@ class OfficeController extends ChangeNotifier {
   String? notice;                  // last message for the owner (never cell values from the service)
   String? brainMessage;
 
+  // The owner's typing from the page, sent to the service one at a time and in order. Never dropped: a paste sends
+  // one message per cell, and the owner may type while a Brain turn or another action is running.
+  final List<(String, Map<String, dynamic>)> _pageEdits = [];
+  bool _sendingEdits = false;
+
   String? get workbookId => view?['workbook_id'] as String?;
   Map<String, dynamic> get draft => (view?['draft'] as Map?)?.cast<String, dynamic>() ?? const {};
   List<Map<String, dynamic>> get changes =>
@@ -109,12 +114,48 @@ class OfficeController extends ChangeNotifier {
         final wid = workbookId;
         if (wid == null) return;
         final body = {'sheet': m['sheet'], 'cell': m['cell'], if (m.containsKey('formula')) 'formula': m['formula'] else 'value': m['value']};
-        await _guard(() async => _refreshDraft(await client.edit(wid, body)));
-        if (notice != null) await _sendLoad();   // refused: show the service's truth again
+        _pageEdits.add((wid, body));
+        await _sendPageEdits();
       case 'error':
-        notice = 'The sheet view reported a problem (${m['code']}).';
+        notice = m['code'] == 'STRUCTURE_CHANGE_NOT_SUPPORTED'
+            ? 'Inserting, deleting or moving rows and columns, sorting, and adding or renaming sheets are not '
+                'available in this panel yet. Nothing was changed.'
+            : 'The sheet view reported a problem (${m['code']}).';
         notifyListeners();
     }
+  }
+
+  /// Sends queued page edits in order, independent of [busy] (the service serialises them with the draft lock, also
+  /// during a Brain turn). The page is reloaded from the service once the queue is empty, so it shows every edit the
+  /// service kept and none it refused.
+  Future<void> _sendPageEdits() async {
+    if (_sendingEdits) return;           // the running loop picks up edits added meanwhile
+    _sendingEdits = true;
+    Map<String, dynamic>? last;
+    var refused = false;
+    try {
+      while (_pageEdits.isNotEmpty) {
+        final (wid, body) = _pageEdits.removeAt(0);
+        if (wid != workbookId) continue;   // that workbook was closed or replaced
+        try {
+          last = await client.edit(wid, body);
+        } on SchedulerApiError catch (e) {
+          refused = true;
+          notice = _human(e.code, e.detail);
+        } catch (e) {
+          refused = true;
+          notice = 'URI Office could not complete that: $e';
+        }
+      }
+    } finally {
+      _sendingEdits = false;
+    }
+    if (last != null) {
+      await _refreshDraft(last);
+    } else if (refused) {
+      await _sendLoad();                 // refused: show the service's truth again
+    }
+    notifyListeners();
   }
 
   // ---- owner actions -----------------------------------------------------------------------------------------

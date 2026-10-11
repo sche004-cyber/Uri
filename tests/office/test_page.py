@@ -114,6 +114,24 @@ def test_page_unit_tests_pass():
     assert "# fail 0" in r.stdout or "fail 0" in r.stdout
 
 
+def test_page_guard_unit_tests_pass():
+    """Network formula functions stay blocked after workbooks load (R1-01); structural grid edits are refused (R1-11)."""
+    node = shutil.which("node")
+    assert node, "node is required to test the Office page"
+    r = subprocess.run([node, "--test", "test/guard.test.mjs"], cwd=WEB, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
+    assert "# fail 0" in r.stdout
+
+
+@pytest.mark.skipif(not (WEB / "node_modules" / "@univerjs" / "sheets").is_dir(),
+                    reason="needs `npm ci` in uri_ui/office_web (staging build); runs against the real Univer engine")
+def test_page_guards_hold_in_the_real_univer_engine():
+    r = subprocess.run([shutil.which("node"), "--test", "test/guard.univer.test.mjs"], cwd=WEB, capture_output=True,
+                       text=True, timeout=180)
+    assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
+    assert "# fail 0" in r.stdout
+
+
 # ---- AC15 page layers in a real Chromium engine (Windows-qualified: needs Microsoft Edge) -------------------------
 @pytest.mark.skipif(os.name != "nt", reason="Windows-qualified only: needs Microsoft Edge (the panel runs on Windows)")
 def test_page_blocks_every_network_attempt_in_edge(tmp_path):
@@ -126,6 +144,7 @@ def test_page_blocks_every_network_attempt_in_edge(tmp_path):
     rep = json.loads(out.read_text())
     ready = json.loads(rep["full"]["page_loaded_and_patched"])
     assert ready["canvas"] and ready["patched"] and ready["only_ready_sent"], ready
+    assert ready["blocked_functions_present"] == [], ready
     for variant in ("full", "csp_only"):
         res = rep[variant]["results"]
         leaked = [k for k, v in res.items() if k != "navigation" and not v["blocked"]]

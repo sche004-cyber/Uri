@@ -193,11 +193,11 @@ class Office:
                     if g.path.exists():
                         raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409)
                     dest = g
-                target = {"kind": "local", "label": f"{(dest.path if dest else s.path).name}",
+                target = {"kind": "local", "label": str(dest.path if dest else s.path),
                           "grant_id": dest.grant_id if dest else s.grant_id, "save_as": bool(dest),
-                          "source_sha256": s.open_sha}
+                          "source_sha256": s.open_sha, "draft_version": s.draft.version}
             else:
-                target = {"kind": "google", "label": s.label, "file_id": s.file_id}
+                target = {"kind": "google", "label": s.label, "file_id": s.file_id, "draft_version": s.draft.version}
             surface = self.approvals.propose(wid, target, pending)
             return {"messages": surface.messages(), "surface_id": surface.surface_id}
 
@@ -207,7 +207,7 @@ class Office:
         if s.engine != "local":
             raise OfficeError("NOT_LOCAL")
         with s.lock:
-            target = {"kind": "google_upload", "label": s.path.name, "grant_id": s.grant_id, "source_sha256": s.open_sha}
+            target = {"kind": "google_upload", "label": str(s.path), "grant_id": s.grant_id, "source_sha256": s.open_sha}
             surface = self.approvals.propose(wid, target, {"edits": [], "struct_ops": []})
             return {"messages": surface.messages(), "surface_id": surface.surface_id}
 
@@ -221,6 +221,11 @@ class Office:
                     raise OfficeError("TARGET_CHANGED", "the file changed on disk since this was shown", 409)
                 r = self.google.upload_convert(src, src.stem)
                 return {"google_file_id": r["id"], "open_url": G.open_url(r["id"])}
+            # The approval is bound to the draft version it was made from: any later edit, decision or undo means the
+            # card no longer shows what the draft holds, so applying it would silently drop or skip changes.
+            if s.draft.version != t.get("draft_version"):
+                raise OfficeError("STALE_CHANGE", "the draft changed after this approval was shown; review the save "
+                                                  "again", 409)
             pending = {"edits": body["edits"], "struct_ops": body["struct_ops"]}
             if t["kind"] == "google":
                 r = self.google.apply(t["file_id"], body)
@@ -249,7 +254,16 @@ class Office:
             return {"changed_parts": res["changed_parts"], "saved_to": dest.name}
 
     def action(self, msg) -> dict:
-        r = self.approvals.action(msg, self._apply)
+        # Lock order everywhere: workbook lock, then approvals lock (propose_save/propose_share take them that way).
+        # Taking the approvals lock first and the workbook lock inside `_apply` could deadlock against a concurrent
+        # propose on the same workbook.
+        wid = self.approvals.workbook_of(msg.get("surfaceId") if isinstance(msg, dict) else None)
+        s = self.sessions.get(wid) if wid else None
+        if s is None:
+            r = self.approvals.action(msg, self._apply)
+        else:
+            with s.lock:
+                r = self.approvals.action(msg, self._apply)
         if r.get("workbook_id") in self.sessions:
             r["draft"] = self.sessions[r["workbook_id"]].draft.snapshot()
         return r

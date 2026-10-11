@@ -7,8 +7,9 @@
   add_sheet    {"op", "name": "Summary"}                                     Google only
   rename_sheet {"op", "sheet": "Old", "name": "New"}                         Google only
 
-Formulas that reach the network or other programs (IMPORTXML, WEBSERVICE, HYPERLINK, IMAGE, DDE `|`, external
-workbook links `[..]`) are refused: a sheet must never become a way to send its contents somewhere.
+Formulas that reach the network or other programs (IMPORTXML, WEBSERVICE, HYPERLINK, IMAGE, STOCKHISTORY, CUBE*, ...,
+even when only named; DDE `|`; external workbook links `[..]`) are refused: a sheet must never become a way to send its
+contents somewhere.
 """
 from __future__ import annotations
 
@@ -21,8 +22,16 @@ CELL_OPS = ("set_values", "set_formula")
 STRUCT_OPS = ("insert_rows", "delete_rows", "add_sheet", "rename_sheet")
 MAX_CELLS_PER_OP = 5000
 MAX_TEXT = 32767
-_NETWORK_FN = re.compile(r"\b(IMPORT[A-Z]*|WEBSERVICE|FILTERXML|HYPERLINK|IMAGE|RTD|CALL|REGISTER(?:\.ID)?|EXEC)\s*\(",
-                         re.IGNORECASE)
+# Functions that reach the network, other programs, external data or cloud services. They are refused as bare tokens,
+# not only when followed by "(": a function can be passed by name (=MAP(A1,WEBSERVICE), =LET(f,IMAGE,f(x))).
+# Double-quoted string literals are removed first: text cannot be called as a function in Excel or Google Sheets.
+_NETWORK_FN = re.compile(
+    r"(?<![A-Za-z0-9_])(IMPORT[A-Z]*|WEBSERVICE|FILTERXML|ENCODEURL|HYPERLINK|IMAGE|RTD|CALL|REGISTER(?:\.ID)?|EXEC|"
+    r"STOCKHISTORY|STOCKSERIES|TRANSLATE|DETECTLANGUAGE|COPILOT|CUBE[A-Z]*|SQL\.REQUEST|GOOGLEFINANCE|"
+    r"GOOGLETRANSLATE)(?![A-Za-z0-9_])", re.IGNORECASE)
+# Short names that are also column letters (AI, PY) are refused only as calls, so =SUM(AI:AI) stays valid.
+_NETWORK_CALL = re.compile(r"(?<![A-Za-z0-9_])(AI|PY)\s*\(", re.IGNORECASE)
+_STRING_LITERAL = re.compile(r'"(?:[^"]|"")*"')
 _SHEET_NAME = re.compile(r"^[^\[\]:*?/\\]{1,31}$")
 
 # Strict JSON schema for one Brain answer (every property required; unused ones are null).
@@ -46,7 +55,8 @@ BRAIN_SCHEMA = {
 def check_formula(f) -> str:
     if not isinstance(f, str) or not f.startswith("=") or len(f) < 2 or len(f) > 8192:
         raise OfficeError("BAD_FORMULA", "a formula must start with '='")
-    if _NETWORK_FN.search(f) or "|" in f or "[" in f:
+    code = _STRING_LITERAL.sub('""', f)
+    if _NETWORK_FN.search(code) or _NETWORK_CALL.search(code) or "|" in f or "[" in f:
         raise OfficeError("FORMULA_REFUSED", "formulas that reach the network, other programs or other files are not allowed")
     return f
 
@@ -98,8 +108,8 @@ def to_cell_edits(op, *, engine, sheets, locked=None) -> list:
                 out.append({"sheet": sheet, "cell": refs.cell_ref(c1 + dc, r1 + dr), "value": check_value(v)})
     elif kind == "set_formula":
         sheet = _sheet(op, sheets)
-        refs.parse_cell(op.get("cell"))
-        out.append({"sheet": sheet, "cell": op["cell"], "formula": check_formula(op.get("formula"))})
+        out.append({"sheet": sheet, "cell": refs.canonical_cell(op.get("cell")),
+                    "formula": check_formula(op.get("formula"))})
     elif kind in ("insert_rows", "delete_rows"):
         _sheet(op, sheets)
         at, count = op.get("at"), op.get("count")
