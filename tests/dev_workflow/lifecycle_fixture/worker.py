@@ -32,6 +32,23 @@ def finding(sev="HIGH", **kw):
     return f
 
 
+if "DIAGNOSING a recurring defect" in prompt:  # any worker can be asked for a diagnosis
+    print("DIAGNOSIS_BEGIN")
+    print(json.dumps({"root_cause": "missing zero check in safe_div", "why_earlier_repairs_failed": "marker files only",
+                      "evidence": ["pkg/calc.py:2"], "proposed_fix": "return None when b == 0", "needs_owner": False}))
+    print("DIAGNOSIS_END")
+    sys.exit(0)
+if mode == "quota_once":  # out of quota once (flag next to the worktree), then repairs like "fix"
+    flag = Path("..") / "quota_used"
+    if not flag.exists():
+        flag.write_text("x")
+        mode = "quota"
+    else:
+        mode = "fix"
+if mode == "quota":
+    sys.stderr.write("API Error: 429 rate limit exceeded, retry later\n")
+    sys.exit(1)
+
 if role == "reviewer":
     src = Path("pkg/calc.py").read_text()
     if mode == "check":
@@ -40,6 +57,17 @@ if role == "reviewer":
         review("ACCEPT", [finding()])
     elif mode == "always_reject":
         review("REJECT", [finding()])
+    elif mode == "new_until_8":  # a genuinely new defect each round, earlier ones confirmed fixed, then accept
+        n = int(rnd)
+        if n < 8:
+            print("AUDIT_RESULT_BEGIN")
+            print(json.dumps({"candidate": head, "verdict": "REJECT",
+                              "findings": [{"id": f"R{n}-01", "severity": "MEDIUM", "blocking": True, "category": "code",
+                                            "title": f"distinct defect number {n} in module m{n}", "files": [f"pkg/m{n}.py:1"]}],
+                              "prior_findings": [{"id": f"R{k}-01", "status": "FIXED"} for k in range(1, n)]}))
+            print("AUDIT_RESULT_END")
+        else:
+            review("ACCEPT", [])
     elif mode == "owner":
         review("REJECT", [finding(owner_decision=True, title="fix needs the frozen core module")])
     sys.exit(0)
@@ -51,6 +79,12 @@ elif mode == "fix":
     Path("pkg/calc.py").write_text("def safe_div(a, b):\n    if b == 0:\n        return None\n    return a / b\n")
     Path("tests/test_zero.py").write_text("from pkg.calc import safe_div\n\n\ndef test_zero():\n"
                                           "    assert safe_div(1, 0) is None\n")
+elif mode == "helper_fix":  # a helper module under tests/ plus the real test that uses it
+    Path("pkg/calc.py").write_text("def safe_div(a, b):\n    if b == 0:\n        return None\n    return a / b\n")
+    Path("tests/helpers.py").write_text("ZERO = 0\n")
+    Path("tests/test_zero.py").write_text("import os\nimport sys\nsys.path.insert(0, os.path.dirname(__file__))\n"
+                                          "from helpers import ZERO  # noqa: E402\nfrom pkg.calc import safe_div  # noqa: E402\n\n\n"
+                                          "def test_z():\n    assert safe_div(1, ZERO) is None\n")
 elif mode == "protected":
     Path("core/frozen.py").write_text("PATCHED = True\n")
 elif mode == "notest":

@@ -21,7 +21,8 @@
  "repair_nonblocking_severities": [],
  "reviewer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 5400},
  "implementer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 5400},
- "limits": {"max_rounds": 6, "max_repair_attempts": 3},
+ "limits": {"max_repair_attempts": 3},
+ "continuation": {"stall_rounds": 2, "diagnose_after": 2, "budget": {"max_rounds": 30, "max_cost_usd": 200, "max_hours": 24}},
  "integration": {"mode": "fast-forward", "remote": "origin", "target_ref": "integration/git-sync-20261008", "authorized": false},
  "commit_trailers": []
 }

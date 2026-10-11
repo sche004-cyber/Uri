@@ -61,7 +61,7 @@ def make_fixture(tmp: Path, defect=True, break_other=False):
 
 
 def config(tmp, repo, wt, *, milestone="DEVTEST-LC", reviewer="check", implementer="fix", independent=True,
-           integration=None, gates=None, limits=None):
+           integration=None, gates=None, limits=None, continuation=None):
     cfg = {
         "milestone": milestone, "repo": str(repo),
         "baseline": {"ref": "origin/canon"},
@@ -79,6 +79,8 @@ def config(tmp, repo, wt, *, milestone="DEVTEST-LC", reviewer="check", implement
     }
     if limits:
         cfg["limits"] = limits
+    if continuation:
+        cfg["continuation"] = continuation
     p = tmp / "cfg.json"
     p.write_text(json.dumps(cfg))
     return L.load_config(p)
@@ -134,20 +136,20 @@ def test_scripted_reviewer_never_verifies_a_real_milestone(tmp_path):
 
 def test_missing_reviewer_cannot_accept_and_rounds_are_bounded(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path, defect=False)
-    cfg = config(tmp_path, repo, wt, limits={"max_rounds": 2, "max_repair_attempts": 3})
+    cfg = config(tmp_path, repo, wt, continuation={"budget": {"max_rounds": 2}})
     cfg["reviewer"] = {"provider": "claude_cli", "binary": str(tmp_path / "no-such-claude")}
     assert L.run(cfg) == S.WAITING_FOR_MODEL
     assert L.run(cfg) == S.WAITING_FOR_MODEL
     assert L.run(cfg) == S.BLOCKED
     s = L.status(cfg)
-    assert s["blocker"]["kind"] == "ROUND_LIMIT" and all(r["verdict"] is None for r in s["reviewers"])
+    assert s["blocker"]["kind"] == "BUDGET" and all(r["verdict"] is None for r in s["reviewers"])
     assert remote_tip(remote) == base and not s["evidence_ok_for_candidate"]
 
 
 def test_reviewer_label_accept_with_high_finding_is_reject(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path, defect=False)
     cfg = config(tmp_path, repo, wt, reviewer="accept_with_high", implementer="noop",
-                 limits={"max_rounds": 6, "max_repair_attempts": 1})
+                 limits={"max_repair_attempts": 1})
     assert L.run(cfg) == S.BLOCKED
     s = L.status(cfg)
     assert s["reviewers"][0]["reviewer_label"] == "ACCEPT" and s["reviewers"][0]["verdict"] == "REJECT"
@@ -202,10 +204,11 @@ def test_repair_without_regression_test_is_not_committed(tmp_path):
 
 def test_same_finding_after_three_repairs_stops(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path)
-    cfg = config(tmp_path, repo, wt, reviewer="always_reject", implementer="marker")
+    cfg = config(tmp_path, repo, wt, reviewer="always_reject", implementer="marker",
+                 continuation={"stall_rounds": 99})
     assert L.run(cfg) == S.BLOCKED
     s = L.status(cfg)
-    assert s["blocker"]["kind"] == "RETRY_LIMIT"
+    assert s["blocker"]["kind"] == "RETRY_LIMIT" and "diagnosed: missing zero check" in s["blocker"]["reason"]
     assert [r["status"] for r in s["repairs"]] == ["COMMITTED"] * 3 and len(s["reviewers"]) == 4
     assert remote_tip(remote) == base
 
@@ -443,7 +446,7 @@ def test_r1_01_forged_reviewer_binary_is_not_independent(tmp_path):
 def test_r1_02_edited_state_verdict_is_detected_and_blocks(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path)
     cfg = config(tmp_path, repo, wt, reviewer="always_reject", implementer="noop",
-                 limits={"max_rounds": 6, "max_repair_attempts": 1})
+                 limits={"max_repair_attempts": 1})
     assert L.run(cfg) == S.BLOCKED
     sp = tmp_path / "state/state.json"
     d = json.loads(sp.read_text())
@@ -491,7 +494,7 @@ def test_r1_04_crashed_or_empty_test_run_is_a_failure(tmp_path):
     (wt / "tests/conftest.py").write_text("raise ImportError('boom')\n")
     g(wt, "add", "-A")
     g(wt, "commit", "-qm", "broken conftest")
-    cfg = config(tmp_path, repo, wt, implementer="noop", limits={"max_rounds": 6, "max_repair_attempts": 1})
+    cfg = config(tmp_path, repo, wt, implementer="noop", limits={"max_repair_attempts": 1})
     assert L.run(cfg) == S.BLOCKED
     gate = list(L.status(cfg)["gates"].values())[0]
     assert gate["ok"] is False and "unit::__run__" in gate["new_failures"]["unit"]
@@ -681,7 +684,7 @@ Path('pkg/calc.py').write_text('x = 1\\n')
 def test_r2_04_repair_deleting_a_test_is_refused_and_restored(tmp_path):
     repo, wt, base, remote = make_fixture(tmp_path)
     cand = g(wt, "rev-parse", "HEAD")
-    cfg = config(tmp_path, repo, wt, limits={"max_rounds": 6, "max_repair_attempts": 1})
+    cfg = config(tmp_path, repo, wt, limits={"max_repair_attempts": 1})
     cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "deleter.py", """
 from pathlib import Path
 Path('tests/test_calc.py').unlink()
@@ -698,7 +701,7 @@ Path('tests/test_zero.py').write_text('from pkg.calc import safe_div\\n\\n\\ndef
 def test_r2_04_error_after_the_repair_commit_is_refused_and_restored(tmp_path, monkeypatch):
     repo, wt, base, remote = make_fixture(tmp_path)
     cand = g(wt, "rev-parse", "HEAD")
-    cfg = config(tmp_path, repo, wt, limits={"max_rounds": 6, "max_repair_attempts": 1})
+    cfg = config(tmp_path, repo, wt, limits={"max_repair_attempts": 1})
 
     def boom(*a, **k):
         raise FileNotFoundError("simulated")
@@ -917,3 +920,79 @@ def test_report_escapes_reviewer_text(tmp_path):
           "repairs": [], "gates": {}, "blocker": None}
     page = render_html(report_data(st, {"milestone": "M<1>", "stage": "FIXING"}))
     assert "<img" not in page and "&lt;img" in page and "M&lt;1&gt;" in page
+
+
+# ---------------------------------------------------------------- evidence-based continuation (owner directive 2026-10-11)
+
+def test_limits_max_rounds_is_rejected_not_silently_kept(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = json.loads((config(tmp_path, repo, wt) and (tmp_path / "cfg.json")).read_text())
+    cfg["limits"] = {"max_rounds": 6, "max_repair_attempts": 3}
+    p = tmp_path / "old.json"
+    p.write_text(json.dumps(cfg))
+    with pytest.raises(L.LifecycleError, match="continuation"):
+        L.load_config(p)
+
+
+def test_new_defects_continue_past_six_rounds_while_progress_is_shown(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, reviewer="new_until_8", implementer="marker")
+    assert L.run(cfg, max_steps=200) == S.COMPLETE
+    s = L.status(cfg)
+    assert len(s["reviewers"]) == 8 and [r["verdict"] for r in s["reviewers"]][-1] == "ACCEPT"
+    progress = [json.loads(l) for l in (tmp_path / "state/events.jsonl").read_text().splitlines()]
+    progress = [e["data"] for e in progress if e["kind"] == "PROGRESS"]
+    assert all(p["new"] and not p["repeats"] for p in progress) and progress[-1]["fixed_confirmed"]
+
+
+def test_recurring_defect_gets_a_diagnosis_then_stall_stops(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, reviewer="always_reject", implementer="marker")
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "STALLED"
+    st = json.loads((tmp_path / "state/state.json").read_text())
+    assert st["diagnoses"] and st["diagnoses"][0]["result"]["root_cause"] == "missing zero check in safe_div"
+    prompt = (tmp_path / "state/repairs/P2/implementer_prompt.md").read_text()
+    assert "RECUR" in prompt and "missing zero check" in prompt
+    assert not L.verify(cfg) and remote_tip(remote) == base
+
+
+def test_quota_exhaustion_is_a_resumable_checkpoint_not_a_failed_repair(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    # the same implementer (no policy change): out of quota on the first call, available on the next
+    cfg = config(tmp_path, repo, wt, implementer="quota_once")
+    assert L.run(cfg) == S.WAITING_FOR_MODEL
+    st = json.loads((tmp_path / "state/state.json").read_text())
+    assert st["resume_to"] == "FIXING" and st["repairs"][0]["retryable"] is True
+    assert L.run(cfg) == S.COMPLETE
+    kinds = [json.loads(l)["kind"] for l in (tmp_path / "state/events.jsonl").read_text().splitlines()]
+    assert "CHECKPOINT" in kinds and not L.verify(cfg)
+
+
+def test_reviewer_quota_checkpoints_with_reason(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, reviewer="quota")
+    assert L.run(cfg) == S.WAITING_FOR_MODEL
+    ev = [json.loads(l)["data"] for l in (tmp_path / "state/events.jsonl").read_text().splitlines()
+          if json.loads(l)["kind"] == "CHECKPOINT"]
+    assert ev and ev[0]["reason"] == "QUOTA"
+
+
+def test_budget_caps_cost_and_rounds(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, continuation={"budget": {"max_cost_usd": 5}})
+    st = L.State(cfg)
+    st.d["rounds"] = [{"worker": {"cost_usd": 3.0}}]
+    st.d["repairs"] = [{"worker": {"cost_usd": 2.5}}]
+    assert "cost" in L.budget_exceeded(cfg, st)
+    cfg["continuation"]["budget"]["max_cost_usd"] = 50
+    assert L.budget_exceeded(cfg, st) is None
+
+
+def test_c2_helper_files_under_tests_are_not_regression_proofs(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, implementer="helper_fix")
+    assert L.run(cfg) == S.COMPLETE
+    proof = json.loads((tmp_path / "state/repairs/P1/repair.json").read_text())["regression"]
+    assert list(proof["tests"]) == ["tests/test_zero.py"]

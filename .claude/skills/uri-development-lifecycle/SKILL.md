@@ -49,8 +49,8 @@ Run it in the background; it can take hours. It will, without you:
 - recompute the verdict from the findings (any HIGH/blocking ⇒ REJECT);
 - send blocking findings to a **separate implementer process**, refuse protected/out-of-scope changes, demand a
   regression test that fails before and passes after, commit the repair itself;
-- re-audit the new SHA with another fresh reviewer; stop after `max_repair_attempts` on the same defect or
-  `max_rounds`;
+- re-audit the new SHA with another fresh reviewer, continuing while there is evidence of progress (see the
+  continuation policy below);
 - run the gates on the candidate and the baseline and compare failures by test id and cause;
 - integrate only per policy and only with owner authorisation; write `receipt.json` + `RECEIPT.md`.
 
@@ -69,6 +69,26 @@ ACCEPT). Re-running `run` resumes from `state.json`; it cannot skip a stage (evi
   `authorized_protected_changes` on your own.
 - A review made by another channel (e.g. a separate cloud session) may be recorded with `import-review`; it can
   route findings to repair but never counts as an ACCEPT.
+
+## Continuation policy (owner directive 2026-10-11)
+
+There is no fixed round limit. Review → repair → re-audit continues while findings are actionable and progress is
+shown, inside every existing safety, resource and permission boundary:
+- **Progress** is judged from evidence each round (`PROGRESS` event): earlier blocking findings the reviewer confirms
+  FIXED, and blocking findings that are NEW (not a repeat). A round with nothing fixed and nothing new is a stall;
+  `continuation.stall_rounds` (default 2) consecutive stalls stop the run (BLOCKED, STALLED).
+- **Recurrence**: a finding the reviewer says is NOT_FIXED, or that matches an earlier one's files and title, is a
+  REPEAT, not a new defect. From its second occurrence (`diagnose_after`) a separate read-only diagnosis worker
+  names the root cause before the next repair, and the repair prompt carries that diagnosis — no blind retries.
+  After `limits.max_repair_attempts` (3) repairs of the same defect the run stops (RETRY_LIMIT) with the diagnosis.
+- **Budget**: `continuation.budget` (`max_rounds` safety cap, `max_cost_usd`, `max_hours`) stops the run as BLOCKED
+  (BUDGET); the owner raises it by a config change (which itself stops until acknowledged).
+- **Checkpoints**: quota exhaustion, an unavailable reviewer/implementer/diagnoser or a timeout records a
+  `CHECKPOINT` and parks the run in WAITING_FOR_MODEL at the stage it was in (not counted as a failed attempt).
+  Schedule a resume (e.g. a one-off check-in) and run `run` again; environmental blockers (GPU lease, missing tool)
+  stop as BLOCKED (RESOURCE) and resume after `unblock`.
+- Never: weaker gates, suppressed findings, a self-certified ACCEPT, or crossing frozen-file / owner boundaries to
+  keep a loop going.
 
 ## Visual report after every milestone (owner directive 2026-10-11)
 

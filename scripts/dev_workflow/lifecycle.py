@@ -43,7 +43,12 @@ VERDICTS = ("ACCEPT", "ACCEPT WITH FINDINGS", "REJECT")
 BLOCK_RE = re.compile(r"AUDIT_RESULT_BEGIN\s*(\{.*\})\s*AUDIT_RESULT_END", re.S)
 REPAIR_RE = re.compile(r"REPAIR_RESULT_BEGIN\s*(\{.*\})\s*REPAIR_RESULT_END", re.S)
 DEFAULTS = {
-    "limits": {"max_rounds": 6, "max_repair_attempts": 3},
+    "limits": {"max_repair_attempts": 3},
+    # Evidence-based continuation (owner directive 2026-10-11): review/repair continues while findings are actionable
+    # and progress is shown; a recurring defect gets a diagnosis before it is retried; the budget is a safety cap.
+    "continuation": {"stall_rounds": 2, "diagnose_after": 2,
+                     "budget": {"max_rounds": 30, "max_cost_usd": None, "max_hours": None}},
+    "regression_test_patterns": ["test_*.py", "*_test.py", "*_test.dart"],
     "test_globs": ["tests/**", "**/test_*.py", "**/*_test.py", "**/test/**"],
     "permitted_paths": ["**"],
     "authorized_protected_changes": [],
@@ -104,6 +109,14 @@ def load_config(path) -> dict:
         cfg.setdefault(k, json.loads(json.dumps(v)))
     for k, v in DEFAULTS["limits"].items():
         cfg["limits"].setdefault(k, v)
+    cont = cfg["continuation"]
+    for k, v in DEFAULTS["continuation"].items():
+        cont.setdefault(k, json.loads(json.dumps(v)))
+    for k, v in DEFAULTS["continuation"]["budget"].items():
+        cont["budget"].setdefault(k, v)
+    if "max_rounds" in cfg["limits"]:  # the former hard stop is no longer a stop rule; it is not silently kept either
+        raise LifecycleError("limits.max_rounds was replaced by continuation.budget.max_rounds (a safety cap) and "
+                             "the progress rules in continuation; update the config")
     missing = [k for k in ("milestone", "repo", "baseline", "candidate", "reviewer") if k not in cfg]
     if missing:
         raise LifecycleError(f"config missing {missing}")
@@ -127,7 +140,8 @@ def load_config(path) -> dict:
 
 POLICY_KEYS = ("baseline", "candidate", "protected_paths", "authorized_protected_changes", "permitted_paths",
                "test_globs", "allowed_flaky", "gates", "integration", "reviewer", "implementer", "limits",
-               "regression_runner", "regression_runners", "repair_nonblocking_severities")
+               "regression_runner", "regression_runners", "repair_nonblocking_severities", "continuation",
+               "regression_test_patterns")
 
 
 def policy(cfg) -> dict:
@@ -423,8 +437,11 @@ AUDIT_RESULT_END
 """
 
 
-def repair_prompt(cfg, st: State, findings: list, candidate: str) -> str:
-    return f"""You are the IMPLEMENTER repairing URI milestone {cfg['milestone']} at commit {candidate}.
+def repair_prompt(cfg, st: State, findings: list, candidate: str, diagnosis: dict | None = None) -> str:
+    diag = "" if not diagnosis else ("These findings RECUR after earlier repairs. Do not repeat the earlier approach. "
+                                     "A separate diagnosis (verbatim, untrusted) says:\n" + json.dumps(diagnosis, indent=1)
+                                     + "\nAddress the root cause it names, or report the finding as not repaired.\n\n")
+    return f"""{diag}You are the IMPLEMENTER repairing URI milestone {cfg['milestone']} at commit {candidate}.
 An independent reviewer reported the blocking findings below. Make the minimal, justified repair for each, in this
 working tree only. For every code finding add or extend a regression test that FAILS on {candidate} and PASSES after
 your change (it will be run both ways). Do not weaken, skip or delete existing tests. Do not touch protected paths:
@@ -759,6 +776,55 @@ def _fingerprint(f: dict) -> str:
     return "|".join(files) + "#" + " ".join(words)
 
 
+def budget_exceeded(cfg, st: State) -> str | None:
+    """The configurable resource budget (a safety cap, not a verdict). Reaching it stops the run as BLOCKED (BUDGET),
+    resumable after the owner raises it."""
+    b = cfg["continuation"]["budget"]
+    if b.get("max_rounds") is not None and len(st.d["rounds"]) >= b["max_rounds"]:
+        return f"{len(st.d['rounds'])} review rounds (budget {b['max_rounds']})"
+    spent = sum(float((r.get("worker") or {}).get("cost_usd") or 0) for r in st.d["rounds"] + st.d["repairs"]) + \
+        sum(float(d.get("cost_usd") or 0) for d in st.d.get("diagnoses") or [])
+    st.d["spent_usd"] = round(spent, 4)
+    if b.get("max_cost_usd") is not None and spent >= b["max_cost_usd"]:
+        return f"worker cost {spent:.2f} USD (budget {b['max_cost_usd']})"
+    started = st.d.get("started_at")
+    if b.get("max_hours") is not None and started:
+        t0 = datetime.datetime.strptime(started, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+        hours = (datetime.datetime.now(datetime.timezone.utc) - t0).total_seconds() / 3600
+        if hours >= b["max_hours"]:
+            return f"{hours:.1f} h elapsed (budget {b['max_hours']} h)"
+    return None
+
+
+def assess_progress(cfg, st: State, rec: dict) -> dict:
+    """Is the review/repair loop making progress? Classifies this round's blocking findings as REPEAT (the reviewer
+    says an earlier one is NOT_FIXED, or it matches an earlier finding's files and title) or NEW, and counts earlier
+    blocking findings the reviewer confirms FIXED. A round that fixes nothing and finds nothing new is a stall."""
+    res = rec.get("result") or {}
+    earlier = {}
+    for r in st.d["rounds"][:-1]:
+        for f in (r.get("result") or {}).get("findings") or []:
+            if is_blocking(f):
+                earlier.setdefault(_fingerprint(f), f.get("id"))
+    earlier_ids = set(earlier.values())
+    prior = {p.get("id"): p.get("status") for p in res.get("prior_findings") or [] if p.get("id") in earlier_ids}
+    fixed = sorted(i for i, v in prior.items() if v == "FIXED")
+    repeats, new = [], []
+    for f in res.get("findings") or []:
+        if not is_blocking(f):
+            continue
+        origin = earlier.get(_fingerprint(f))
+        (repeats if origin else new).append({"id": f.get("id"), "origin": origin})
+    repeats += [{"id": i, "origin": i} for i, v in prior.items() if v == "NOT_FIXED"
+                and i not in {x["origin"] for x in repeats}]
+    stall = st.d.get("stall_rounds", 0) + 1 if not fixed and not new else 0
+    st.d["stall_rounds"] = stall
+    out = {"round": rec["round"], "fixed_confirmed": fixed, "repeats": repeats, "new": [x["id"] for x in new],
+           "stall_rounds": stall}
+    st.event("PROGRESS", **out)
+    return out
+
+
 def count_attempts(cfg, st: State, rec: dict) -> list[str]:
     """Increment per-defect attempt counters; return ids that exceeded the limit."""
     over = []
@@ -862,7 +928,9 @@ def _commit_and_prove(cfg, wt: Path, sha: str, n: int, rec: dict, findings: list
             [p for p in committed if not match_any(p, cfg["permitted_paths"])]:
         return f"COMMIT_MISMATCH: committed {committed} != checked {changed}"
     present = set(git(cfg["repo"], "ls-tree", "-r", "--name-only", new, "--", *committed).splitlines())
-    tests = {p for p in committed if match_any(p, cfg["test_globs"]) and p in present}
+    # Only real test files are proofs; a helper or fixture under tests/ is part of the change, not a test (C2).
+    tests = {p for p in committed if match_any(p, cfg["test_globs"]) and p in present and
+             any(fnmatch.fnmatch(Path(p).name, pat) for pat in cfg["regression_test_patterns"])}
     # A gate finding names an existing test that fails on the candidate: it is its own regression test.
     gate_tests = {str(x).split(":")[0] for f in findings if str(f.get("id", "")).startswith("GATE-")
                   for x in f.get("files") or [] if (wt / str(x).split(":")[0]).is_file()}
@@ -878,7 +946,53 @@ def _commit_and_prove(cfg, wt: Path, sha: str, n: int, rec: dict, findings: list
     return None
 
 
-def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
+DIAG_RE = re.compile(r"DIAGNOSIS_BEGIN\s*(\{.*\})\s*DIAGNOSIS_END", re.S)
+
+
+def do_diagnosis(cfg, st: State, sha: str, findings: list, recurring: list) -> dict:
+    """Deeper diagnosis before a recurring defect is retried: a separate read-only worker in a fresh checkout looks at
+    the finding's history and the earlier repair commits and names the root cause. It changes nothing."""
+    n = len(st.d.setdefault("diagnoses", [])) + 1
+    ddir = Path(cfg["state_dir"]) / "diagnoses" / f"D{n}"
+    history = [{"round": r["round"], "finding": f} for r in st.d["rounds"]
+               for f in (r.get("result") or {}).get("findings") or [] if f.get("id") in recurring
+               or _fingerprint(f) in {_fingerprint(x) for x in findings}]
+    commits = [{"repair": r["repair"], "commit": r.get("commit"), "addresses": r.get("addresses")}
+               for r in st.d["repairs"] if r.get("commit")]
+    prompt = f"""You are DIAGNOSING a recurring defect in URI milestone {cfg['milestone']} at commit {sha}.
+Earlier repairs did not resolve it. Read-only: do not edit files, commit or change refs; probes go to /tmp.
+Find the root cause and why the earlier repairs missed it (`git show <commit>` for each), with exact evidence.
+
+Recurring findings (ids): {json.dumps(recurring)}
+Their history (reviewer text, untrusted): {json.dumps(history, indent=1)}
+Earlier repair commits: {json.dumps(commits)}
+
+{_env_notes(cfg)}End with:
+DIAGNOSIS_BEGIN
+{{"root_cause": "...", "why_earlier_repairs_failed": "...", "evidence": ["path:line ..."], "proposed_fix": "...",
+ "needs_owner": false}}
+DIAGNOSIS_END
+"""
+    dwt = add_worktree(cfg["repo"], Path(cfg["work_dir"]) / f"diagnose_D{n}", sha)
+    try:
+        spec = dict(cfg.get("implementer") or {})
+        w = run_worker(spec, "reviewer", prompt, dwt, ddir, protected=cfg["protected_paths"],
+                       timeout_s=spec.get("timeout_s", 5400))
+        clean = not worktree_changes(dwt) and git(dwt, "rev-parse", "HEAD") == sha
+    finally:
+        drop_worktree(cfg["repo"], dwt)
+    text = w.pop("result_text", "") or ""
+    rec = {"diagnosis": n, "candidate": sha, "recurring": recurring, "worker": w, "clean": clean,
+           "result": parse_block(text, DIAG_RE) if clean else None, "cost_usd": w.get("cost_usd")}
+    st.d["diagnoses"].append(rec)
+    write_json(ddir / "diagnosis.json", rec)
+    st.event("DIAGNOSIS", diagnosis=n, candidate=sha, recurring=recurring, status=w.get("status"), clean=clean,
+             has_result=rec["result"] is not None, session_id=w.get("session_id"),
+             diagnosis_sha256=sha256((ddir / "diagnosis.json").read_bytes()))
+    return rec
+
+
+def do_repair(cfg, st: State, sha: str, findings: list, diagnosis: dict | None = None) -> dict:
     wt = Path(cfg["candidate"]["worktree"])
     n = len(st.d["repairs"]) + 1
     rdir = Path(cfg["state_dir"]) / "repairs" / f"P{n}"
@@ -905,7 +1019,7 @@ def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
         return finish("REFUSED", reason="implementation worktree not clean or not at the candidate before repair")
     ctl0, refs0 = git_control_digest(cfg["repo"]), refs_digest(cfg)
     impl = cfg.get("implementer") or {}
-    w = run_worker(impl, "implementer", repair_prompt(cfg, st, findings, sha), wt, rdir,
+    w = run_worker(impl, "implementer", repair_prompt(cfg, st, findings, sha, diagnosis), wt, rdir,
                    protected=cfg["protected_paths"], timeout_s=impl.get("timeout_s", 5400))
     w.pop("result_text", None)
     rec["worker"] = w
@@ -926,6 +1040,7 @@ def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
         reason = "TAMPER: implementer moved HEAD, a milestone ref or a replace ref (commit/checkout is the driver's job)"
     elif w.get("status") != "COMPLETED":
         reason = f"implementer {w.get('status')}"
+        rec["retryable"] = bool(w.get("unavailable_reason")) and not changed
     elif not changed:
         reason = "no change made"
     elif protected_hits(cfg, changed):
@@ -1118,14 +1233,17 @@ def run(cfg, max_steps: int = 50) -> S:
             st.to(S(st.d.get("resume_to") or S.AUDITING.value), "resume")
             continue
         if stage == S.AUDITING:
-            if len(st.d["rounds"]) >= cfg["limits"]["max_rounds"]:
-                st.block("ROUND_LIMIT", f"{len(st.d['rounds'])} review rounds", "owner review of the open findings")
+            over_budget = budget_exceeded(cfg, st)
+            if over_budget:
+                st.block("BUDGET", over_budget, "owner: raise continuation.budget (config change) and `unblock --note`")
                 continue
             rec = do_review(cfg, st, sha)
             stricter = rec["status"] == "NOT_INDEPENDENT" and rec["effective_verdict"] == "REJECT" and rec.get("blocking_ids")
             if stricter:  # a non-independent review may only make the outcome stricter
                 st.event("NON_INDEPENDENT_REJECT_ROUTED", round=rec["round"], basis=rec["independence_basis"])
             if rec["status"] != "COMPLETED_WITH_RESULT" and not stricter:
+                st.event("CHECKPOINT", stage="AUDITING", round=rec["round"],
+                         reason=(rec.get("worker") or {}).get("unavailable_reason") or rec["status"])
                 st.d["resume_to"] = S.AUDITING.value
                 st.to(S.WAITING_FOR_MODEL, f"review R{rec['round']}: {rec['status']} ({rec['independence_basis']})")
                 return st.stage
@@ -1139,11 +1257,20 @@ def run(cfg, max_steps: int = 50) -> S:
                     st.block("OWNER_DECISION", "; ".join(f"{f['id']}: {f.get('title')}" for f in owner),
                              "owner decision on the listed findings")
                     continue
+                progress = assess_progress(cfg, st, rec)
                 over = count_attempts(cfg, st, rec)
                 if over:
-                    st.block("RETRY_LIMIT", f"still failing after {cfg['limits']['max_repair_attempts']} repairs: "
-                             + ", ".join(map(str, over)), "owner or a more capable implementer")
+                    last = (st.d.get("diagnoses") or [{}])[-1].get("result") or {}
+                    st.block("RETRY_LIMIT", f"still failing after {cfg['limits']['max_repair_attempts']} repairs "
+                             f"(diagnosed: {last.get('root_cause', 'no diagnosis')[:300]}): " + ", ".join(map(str, over)),
+                             "owner or a more capable implementer")
                     continue
+                if progress["stall_rounds"] >= cfg["continuation"]["stall_rounds"]:
+                    st.block("STALLED", f"{progress['stall_rounds']} rounds with no finding confirmed fixed and none "
+                             f"new; repeats: {[x['id'] for x in progress['repeats']]}", "owner review of the diagnosis")
+                    continue
+                st.d["diagnose"] = sorted({x["origin"] for x in progress["repeats"]
+                                           if st.d["attempts"].get(x["origin"], 0) >= cfg["continuation"]["diagnose_after"]})
                 if not blocking:
                     st.block("NO_ACTIONABLE_FINDINGS", "REJECT without a blocking finding", "owner review of R"
                              + str(rec["round"]))
@@ -1154,18 +1281,48 @@ def run(cfg, max_steps: int = 50) -> S:
             st.to(S.VERIFYING, f"R{rec['round']} {rec['effective_verdict']}")
             continue
         if stage == S.FIXING:
-            rep = do_repair(cfg, st, sha, st.d.get("pending_findings") or [])
+            over_budget = budget_exceeded(cfg, st)
+            if over_budget:
+                st.block("BUDGET", over_budget, "owner: raise continuation.budget (config change) and `unblock --note`")
+                continue
+            diagnosis = None
+            if st.d.get("diagnose"):
+                drec = do_diagnosis(cfg, st, sha, st.d.get("pending_findings") or [], st.d["diagnose"])
+                if drec["worker"].get("status") != "COMPLETED" or drec["result"] is None:
+                    if drec["worker"].get("unavailable_reason"):
+                        st.event("CHECKPOINT", stage="FIXING", reason=drec["worker"]["unavailable_reason"])
+                        st.d["resume_to"] = S.FIXING.value
+                        st.to(S.WAITING_FOR_MODEL, "diagnosis worker unavailable: " + drec["worker"]["unavailable_reason"])
+                        write_receipt(cfg, st)
+                        return st.stage
+                    st.block("DIAGNOSIS_FAILED", f"no usable diagnosis for recurring {st.d['diagnose']}",
+                             "owner or a more capable model")
+                    continue
+                if drec["result"].get("needs_owner"):
+                    st.block("OWNER_DECISION", "diagnosis: " + str(drec["result"].get("root_cause"))[:300],
+                             "owner decision on the diagnosed root cause")
+                    continue
+                diagnosis = drec["result"]
+            rep = do_repair(cfg, st, sha, st.d.get("pending_findings") or [], diagnosis)
             if rep["status"] == "COMMITTED":
                 st.d["candidate"] = rep["commit"]
                 st.d["pending_findings"] = []
+                st.d["diagnose"] = []
                 st.to(S.AUDITING, f"repair P{rep['repair']} {rep['commit'][:12]}")
                 continue
+            if rep.get("retryable"):  # quota / unavailable / timeout: resumable checkpoint, not a failed attempt
+                st.event("CHECKPOINT", stage="FIXING", reason=(rep.get("worker") or {}).get("unavailable_reason"))
+                st.d["resume_to"] = S.FIXING.value
+                st.to(S.WAITING_FOR_MODEL, "implementer unavailable: " + str((rep.get("worker") or {}).get("unavailable_reason")))
+                write_receipt(cfg, st)
+                return st.stage
             kind = "OWNER_DECISION" if rep["reason"].startswith(("PROTECTED", "OUT_OF_SCOPE")) else "REPAIR_FAILED"
             if rep["reason"].startswith("TAMPER") or not rep.get("restored", True):
                 st.block("TAMPER", rep["reason"] + ("" if rep.get("restored", True) else "; worktree NOT restored"),
                          "owner: inspect the implementation worktree and git hooks/config")
                 continue
-            fails = sum(1 for r in st.d["repairs"] if r.get("status") == "REFUSED" and r.get("pre") == sha)
+            fails = sum(1 for r in st.d["repairs"] if r.get("status") == "REFUSED" and r.get("pre") == sha
+                        and not r.get("retryable"))
             if kind == "REPAIR_FAILED" and fails < cfg["limits"]["max_repair_attempts"]:
                 st.event("REPAIR_RETRY", attempt=fails, reason=rep["reason"])
                 continue
@@ -1376,6 +1533,13 @@ def verify(cfg) -> list[str]:
                     errs.append(f"P{d['repair']} {key} in state.json differs from repair.json")
             if mine != rec:
                 errs.append(f"P{d['repair']} record in state.json differs from repair.json")
+        if k == "DIAGNOSIS":
+            f = st.dir / "diagnoses" / f"D{d['diagnosis']}" / "diagnosis.json"
+            mine = (st.d.get("diagnoses") or [])[d["diagnosis"] - 1:d["diagnosis"]]
+            if not f.is_file() or sha256(f.read_bytes()) != d["diagnosis_sha256"]:
+                errs.append(f"D{d['diagnosis']} diagnosis.json missing or changed after recording")
+            elif not mine or mine[0] != json.loads(f.read_text(encoding="utf-8")):
+                errs.append(f"D{d['diagnosis']} record in state.json differs from diagnosis.json")
         if k == "QUALIFICATION":
             quals[d["sha"]] = d.get("qual_sha256")
         if k == "BASELINE_GATE":
@@ -1398,6 +1562,9 @@ def verify(cfg) -> list[str]:
         errs.append("resume_to in state.json differs from the last wait/block event")
     if st.d.get("blocker") != blocker:
         errs.append("blocker in state.json differs from the last block event")
+    n_diag = sum(1 for e in evs if e["kind"] == "DIAGNOSIS")
+    if len(st.d.get("diagnoses") or []) != n_diag:
+        errs.append("diagnoses in state.json differ from the recorded diagnosis events")
     for sha, q in st.d["gates"].items():
         if quals.get(sha) != chash(q):
             errs.append(f"gate results for {sha[:12]} differ from the qualification event")

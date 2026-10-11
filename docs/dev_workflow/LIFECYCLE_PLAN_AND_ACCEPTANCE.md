@@ -58,7 +58,7 @@ Date: 2026-10-11. Author: Claude (coordinator session). Written before implement
 | L-AC6 | A repair touching a protected or out-of-scope path is refused and not committed | unit |
 | L-AC7 | A repair must add/change a regression test that fails before and passes after | unit + live |
 | L-AC8 | Re-audit happens on the new SHA by a fresh reviewer process; earlier audits never apply to a different SHA | unit + live |
-| L-AC9 | Same blocking finding after `max_repair_attempts` (default 3) ⇒ BLOCKED (RETRY_LIMIT); `max_rounds` bounds the loop | unit |
+| L-AC9 | Same blocking finding after `max_repair_attempts` (default 3) ⇒ BLOCKED (RETRY_LIMIT); ~~`max_rounds` bounds the loop~~ superseded by L-AC22 (2026-10-11) | unit |
 | L-AC10 | Gate failure set compared with baseline by identity and cause; a new failure blocks VERIFIED and integration | unit |
 | L-AC11 | Protected-path change without authorisation blocks qualification and integration | unit |
 | L-AC12 | Owner-only conditions (finding marked owner decision, integration without authorisation) stop BLOCKED with a stated reason | unit + live |
@@ -69,6 +69,7 @@ Date: 2026-10-11. Author: Claude (coordinator session). Written before implement
 | L-AC17 | GPU gates run under `gpu_lease run`; lease unavailable ⇒ BLOCKED (RESOURCE) | unit |
 | L-AC18 | Live demonstration on a synthetic DEVTEST fixture with real separate `claude` processes: defective candidate rejected, repaired automatically, re-review accepts, receipts preserved | live evidence |
 | L-AC19 | AO-4 tests unchanged and passing; no protected path changed | gate |
+| L-AC22 | Evidence-based continuation replaces the fixed round limit (owner directive 2026-10-11): progress recorded per round; stall stop; repeat vs new; diagnosis before retrying a recurring defect; three-repair recurrence escalation kept; configurable budget; quota/unavailability checkpoints resumable at the same stage; `limits.max_rounds` refused rather than silently kept | unit (`test_new_defects_continue_past_six_rounds_while_progress_is_shown`, `test_recurring_defect_gets_a_diagnosis_then_stall_stops`, `test_same_finding_after_three_repairs_stops`, `test_quota_exhaustion_is_a_resumable_checkpoint_not_a_failed_repair`, `test_reviewer_quota_checkpoints_with_reason`, `test_budget_caps_cost_and_rounds`, `test_limits_max_rounds_is_rejected_not_silently_kept`) |
 | L-AC21 | Every receipt also writes a self-contained visual report (`REPORT.html`, no scripts or network, escaped reviewer text) and `report_data.json`; the skill tells the coordinator to present it (published dashboard or file) after every run (owner request 2026-10-11, added after the plan) | unit (`test_every_receipt_writes_a_visual_report`, `test_report_on_a_blocked_milestone_lists_what_needs_the_owner`, `test_report_escapes_reviewer_text`) |
 | L-AC20 | The skill itself is reviewed by an independent reviewer process before it is used on W1/A0 | review record |
 

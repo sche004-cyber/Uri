@@ -17,6 +17,7 @@ import datetime
 import hashlib
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -24,6 +25,8 @@ import uuid
 from pathlib import Path
 
 INDEPENDENT_PROVIDERS = ("claude_cli", "codex_cli")
+# A worker that failed for one of these reasons is resumable later; the attempt is not counted against the repair.
+QUOTA_RE = re.compile(r"rate.?limit|usage limit|quota|overloaded|too many requests|\b429\b|\b529\b|credit balance")
 
 # Tool policy per role. Prefix rules are a convenience, not the boundary: the driver re-checks the checkout and
 # every ref after the run and discards the result if anything changed.
@@ -111,7 +114,7 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
     (log_dir / f"{role}_prompt.md").write_text(prompt, encoding="utf-8")
     ok, why = provider_available(spec)
     if not ok:
-        rec.update(status="UNAVAILABLE", detail=why, ended_at=_now())
+        rec.update(status="UNAVAILABLE", detail=why, ended_at=_now(), unavailable_reason="UNAVAILABLE")
         return rec
     argv = build_argv(spec, role, worktree, list(protected), session_id)
     if rec["provider"] in ("claude_cli", "codex_cli"):
@@ -171,5 +174,11 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
     (log_dir / f"{role}_result.txt").write_text(text, encoding="utf-8")
     if "status" not in rec:
         rec["status"] = "COMPLETED" if rec.get("exit_code") == 0 else "FAILED"
+    if rec["status"] != "COMPLETED":
+        blob = " ".join([text[-2000:], (err or "")[-2000:], str(rec.get("detail", ""))]).lower()
+        if QUOTA_RE.search(blob):
+            rec["unavailable_reason"] = "QUOTA"
+        elif rec["status"] == "TIMED_OUT":
+            rec["unavailable_reason"] = "TIMEOUT"
     rec["result_text"] = text
     return rec

@@ -79,3 +79,27 @@ because the driver's repair path itself was among the defects (R1-03, R1-06, R1-
 regression test in `tests/dev_workflow/test_lifecycle.py` (`test_r1_01_*` … `test_r1_10_*`, `test_c1_*`,
 `test_regression_proof_rules` for R1-08); R1-11 is covered by the shared process-group runner; R1-12 by the revised
 docs. The repaired commit is re-reviewed by a fresh reviewer process (R2 below).
+
+### R2–R5 — automatic loop (driver pinned at `d5fccdf`)
+
+| Round | Candidate | Reviewer session | Verdict | Blocking | Repair (separate implementer process) |
+|---|---|---|---|---|---|
+| R2 | `d5fccdf` | fresh `claude -p` | REJECT | 5 (R2-01 forged duplicate round + resume_to; R2-02 git replace refs hide a protected change; R2-03 rewritten .git gitfile redirects the reset; R2-04 deleted test crashes the proof; R2-05 GPU lease busy treated as failure) | P1 → `c1ba808` |
+| R3 | `c1ba808` | fresh | REJECT | 4 (redirected HEAD; cached non-completed baseline; resume after candidate move; config re-read every run) | P2 → `4346715` |
+| R4 | `4346715` | fresh | REJECT | 1 (policy binding must cover the resolved protected list) | P3 → `6bcfd1d` |
+| R5 | `6bcfd1d` | fresh | REJECT | 2 (gate-finding proof for class tests and Flutter; non-deterministic baseline keys) | P4 refused (see C2) |
+
+All R2–R5 rounds are independent (separate process, fresh session, integrity verified). Findings narrowed each round
+(5 → 4 → 1 → 2, none repeated more than once).
+
+**C2 (coordinator finding, 02:0xZ).** P4 was refused because the driver treated the fixture helper
+`tests/dev_workflow/lifecycle_fixture/worker.py` (under `tests/`, not a test file) as a regression test; pytest on it
+exits 2. The retry would hit the same wall, so the coordinator stopped the run (driver PID and the implementer's
+process group), saved the interrupted attempt's partial diff (`lifecycle-runs/DEV-LIFECYCLE-1/interrupted/
+P5_partial.diff`, not committed, not recorded in state) and reset the worktree to `6bcfd1d`. Repair: only files
+matching `regression_test_patterns` are proofs (`test_c2_helper_files_under_tests_are_not_regression_proofs`).
+
+**Owner directive 2026-10-11 (continuation policy).** The fixed six-round stop was replaced by the evidence-based
+continuation policy (L-AC22), implemented by the implementation session together with the visual report (L-AC21)
+and C2 as an isolated change on this branch; the R5 findings stay pending for the driver's implementer worker, and
+the whole branch is re-reviewed by fresh reviewer processes.
