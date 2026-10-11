@@ -807,7 +807,7 @@ def _ascii_variant(norm: str) -> str:
        lower-case letters and it is not the first letter ('miI'); 'MIT', 'v1.0', 'A1', 'B12' keep their meaning."""
     def fold(m):
         run = m.group(0)
-        if run.lower() not in _ALL_TLDS and any(ch.isalpha() for ch in run):   # numbers ('000') never
+        if run.lower() not in _ALL_TLDS and not run.isdigit():   # numbers ('000') never; R36-01: '|0|' is read
             before = norm[:m.start()].rstrip()
             # R35-01: a sentence start only protects the few ordinary words whose 'l' reading is a domain ('It' ->
             # 'lt'); 'refunds-portal. Iy' and ': Iink' are read like any other position.
