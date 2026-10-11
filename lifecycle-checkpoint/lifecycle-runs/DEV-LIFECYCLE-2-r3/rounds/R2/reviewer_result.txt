@@ -1,0 +1,49 @@
+**Verdict: ACCEPT WITH FINDINGS.** All four earlier findings are fixed, and I found one new LOW, non-blocking issue: the R2-01 repair only covers one kind of error.
+
+I checked both commits myself. The candidate is `cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35` and the baseline `ce1a90c` exists. No protected path changed between them.
+
+**Earlier findings**
+- **R1-02 (fixed):** a `.cmd` launcher that names cmd.exe, PowerShell or Windows Script Host, or a `.bat`/`.cmd`/`.ps1` script, is now refused. So is one that passes `%*` only on a comment line or on a line other than the one that runs the program. Real npm launchers (`%dp0%`, `IF EXIST`, `REM`/`::` lines) still bind. A reviewer that can't be bound is stopped as REVIEWER_EXEC before it starts, and its bound identity is checked again before it is launched.
+- **R1-03 (fixed):** all 11 tests in `test_lifecycle_windows_cli.py` fail on `ce1a90c` for real reasons (missing `path`/`launch`/`ambiguous`, missing `resolve_cli`, wrong path separator, wrong stage). None of them now pass just because the CLI is "not found".
+- **R1-04 (fixed):** the capability ledger now says Windows containment is NOT VERIFIED in a real milestone run (unit tests reported by the owner), and the lifecycle doc lists the W-2 reviewer identity.
+- **R2-01 (fixed as reported):** when `communicate()` raises `OSError`, the worker or gate command still goes through `finish()`, so its job is terminated and tracked. All 11 new tests in `test_lifecycle_dl2_r2_repair.py` fail on the pre-repair commit `0ee6885` for their own reasons and pass on the candidate.
+
+**New finding: R2-01 is fixed only for `OSError` (LOW, non-blocking)**
+
+`run_cmd` (`lifecycle.py:675-683`) and `_run` (`lifecycle_providers.py:598-611`) catch only `TimeoutExpired` and `OSError` around `communicate()`. Any other exception skips `finish()`. On Windows the job is then never terminated, never added to the list of open jobs and never marked as running outside a job, so the next `precheck()` reports `contained=True` while the job's processes keep running.
+
+- **How it happens:** with `text=True` and no encoding set, output the driver can't decode makes `communicate()` raise `UnicodeDecodeError` on POSIX. Reading CPython's Windows code, the same output there gives an `IndexError` instead; I couldn't run that on Windows.
+- **Where it matters:** the regression proof runs `run_cmd` on test files the implementer wrote, inside `_commit_and_prove`. Its `except Exception` (`lifecycle.py:1222`) turns the error into REFUSED, and the driver keeps going. So the implementer's test can leave a process running in an unterminated job while a later worker starts with `contained=True`. That breaks DL2-AC4.
+- **Linux is still safe:** the next orphan sweep catches the leftover process. On Windows, closing the job handle when the driver exits kills it, but only then.
+- **Proof:** in `/tmp/uri_review_R2/cand/tests/dev_workflow/test_probe_decode.py`, with the fake kernel32, `run_cmd` and `run_worker` raise; the job shows `terminated=False`, nothing tracks it, and `precheck()` returns `contained=True`. A real Linux run of a child writing `b'\xff\xfe'` makes `run_cmd` raise `UnicodeDecodeError` before `finish()`. All 3 probe tests pass, which confirms the gap.
+- **Docs:** `URI_DEVELOPMENT_LIFECYCLE.md` says every spawned worker or command goes through `finish()` "also when its communicate() fails". That is broader than the code.
+- **Suggested fix:** call `finish()` from a `try/finally` (or catch `Exception`, then re-raise or record it), or decode with `errors="replace"`. Add a regression test for an exception that isn't an `OSError`.
+
+**Tests**
+- Full `tests/dev_workflow` on the candidate: 238 passed, 5 skipped. The 5 skipped tests are the Windows-only ones, each reported by name as platform-gated:
+  - `test_win_kill_tree_on_exited_pid_and_on_a_live_tree`
+  - `test_win_grandchild_is_gone_after_the_sweep`
+  - `test_win_breakaway_is_refused`
+  - `test_win_active_processes_rule_on_a_real_job`
+  - `test_win_job_creation_failure_is_not_contained`
+
+**Not verified here**
+- Real Windows behaviour: the Job Object calls, the Windows-only tests and the `IndexError` path were reviewed by reading only.
+- F3 (remote by URL), W-1 and W-3 were checked through the passing tests and the diff, not re-probed in depth this round.
+- The diagnosis worker uses the implementer's settings without a bound identity. If that CLI is a launcher that can't be bound, it is passed on as found, which on Windows means through cmd.exe. That isn't the reviewer path, so I didn't treat it as a finding.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35", "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [{"id": "R2-01", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "R2-01 repair covers only OSError: any other exception from communicate() (e.g. UnicodeDecodeError / Windows reader-thread IndexError on undecodable output) skips containment.finish(); the job stays unterminated and untracked and the next precheck() reports contained=True",
+   "files": ["scripts/dev_workflow/lifecycle.py:675", "scripts/dev_workflow/lifecycle_providers.py:598", "scripts/dev_workflow/lifecycle.py:1222", "scripts/dev_workflow/containment.py:300", "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md:44"],
+   "evidence": "run_cmd/_run catch only TimeoutExpired and OSError around communicate(); text=True without an encoding makes undecodable output raise UnicodeDecodeError on POSIX (reproduced for real: run_cmd on a child writing b'\\xff\\xfe' raises before finish()), and on Windows the reader thread dies so communicate raises IndexError (from reading CPython). The regression proof runs run_cmd on implementer-written tests inside _commit_and_prove, whose except Exception (lifecycle.py:1222) turns the error into REFUSED and the driver loop continues. Probe /tmp/uri_review_R2/cand/tests/dev_workflow/test_probe_decode.py (fake kernel32, communicate raises IndexError): run_cmd and run_worker raise, api.jobs[1] == {'active': 1, 'terminated': False}, _OPEN_JOBS == [], _TAINTED == [], and C.precheck()['contained'] is True; all 3 probe tests pass on the candidate. Linux is still covered by the next orphan sweep; on Windows nothing ends the job until the driver exits (KILL_ON_JOB_CLOSE). The lifecycle doc says every spawned worker or command goes through finish() 'also when its communicate() fails', which is broader than the code.",
+   "suggested_fix": "Call containment.finish() from a try/finally (or catch Exception, record it, then finish and re-raise), or decode with errors='replace'; add a regression test with a communicate() that raises an exception other than OSError."}],
+ "prior_findings": [{"id": "r2.R1-02", "status": "FIXED"}, {"id": "r2.R1-03", "status": "FIXED"}, {"id": "r2.R1-04", "status": "FIXED"}, {"id": "r2.R2-01", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest tests/dev_workflow -q -p no:cacheprovider -rs (candidate)", "result": "238 passed, 5 skipped; the 5 are windows_only tests reported by name as PLATFORM-GATED", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest test_lifecycle_dl2_r2_repair.py + test_lifecycle_windows_cli.py on a git-archive export of pre-repair 0ee6885 with the candidate files copied in", "result": "11 failed (all 8 R1-02 cases and 3 R2-01 tests, each for its own reason), 11 passed (unchanged or modified W-2 tests)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest test_lifecycle_windows_cli.py on a git-archive export of baseline ce1a90c with the candidate file copied in", "result": "11 failed, 0 passed (KeyError path/launch/sha256/realpath/ambiguous, missing resolve_cli, wrong separator, WAITING_FOR_MODEL instead of BLOCKED)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest /tmp/uri_review_R2/cand/tests/dev_workflow/test_probe_decode.py (adversarial probe)", "result": "3 passed, confirming the gap: the job is left unterminated and untracked and precheck() reports contained=True; real UnicodeDecodeError escapes run_cmd on Linux", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Real Windows Job Object behaviour and the 5 windows_only tests (platform-gated; owner's PC)", "CPython-on-Windows communicate() raising IndexError on a decode failure in the reader thread (from reading the code, not run)", "F3 canonical_remote, W-1 and W-3 re-checked only through the passing tests and the diff this round, not re-probed in depth", "Diagnosis worker (implementer settings, role reviewer, no bound identity): a launcher that cannot be bound is launched as found, which on Windows means through cmd.exe; not on the reviewer verdict path, not assessed further"]}
+AUDIT_RESULT_END

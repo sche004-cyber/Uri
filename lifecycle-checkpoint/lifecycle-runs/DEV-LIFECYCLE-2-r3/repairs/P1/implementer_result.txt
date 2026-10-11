@@ -1,0 +1,39 @@
+I repaired all four findings in the working tree; nothing is committed. The full `tests/dev_workflow` suite gives 238 passed and 5 skipped; the 5 are the Windows-only tests (`windows_only`), which can't run here. After a final one-line tidy-up I re-ran the three affected test files: 35 passed, 5 skipped.
+
+**Acceptance criteria I checked against:**
+- **R1-02:** a launcher whose program is cmd.exe or PowerShell, or whose script is `.bat`/`.cmd`/`.ps1`, is refused, and `%*` must be on the line that runs the program.
+- **R1-03:** every new W-2 test fails on ce1a90c on Linux for its own reason.
+- **R1-04:** the docs match the owner's wording.
+- **R2-01:** every path after a successful spawn ends in `containment.finish`.
+- Each code fix has a self-contained test that fails on 0ee6885 and passes now.
+
+**R1-02, launcher binding** (`lifecycle_providers.py`, `_win_launcher_target`)
+- Comment lines (`REM`, `::`) are ignored.
+- The launcher is refused if the program it names is cmd, powershell, pwsh, cscript or wscript, or if its script ends in `.bat`, `.cmd`, `.ps1`, `.vbs` or `.wsf`.
+- `%*` must now be on the line that names the program (the script, if there is one), not just anywhere in the file.
+- The genuine npm launcher shapes still bind.
+
+**R2-01, worker not finished after an OSError** (`lifecycle_providers.py`, `_run`; `lifecycle.py`, `run_cmd`)
+- Spawn and communicate are now handled separately. An `OSError` from `communicate()` marks the run FAILED (BLOCKED for a gate command) but still goes through `containment.finish`, so the Windows job is terminated and tracked.
+- I chose this over registering jobs at spawn time. Registering early would let the precheck inside `drain_after_timeout` close a job handle that `finish` is still about to use.
+
+**R1-03, tests that passed vacuously** (`test_lifecycle_windows_cli.py`)
+- The unbindable-launcher test now checks that the launcher was found and that the exact refusal reason is given; it no longer accepts "not found".
+- The `.ps1` test now also checks that a `.cmd` beside it is found and bound.
+- I added one test showing that npm launchers with comment lines still bind.
+- I copied the file into a clean export of ce1a90c: all 11 of its tests fail there on Linux. On 0ee6885 they pass, which is expected since this is a test finding.
+
+**R1-04, documentation**
+- **`CAPABILITY_LEDGER.md`:** Windows containment in a real milestone run is now NOT VERIFIED. It records that the `windows_only` unit tests passed on your PC (as you reported) and that the logic is tested with a fake kernel32.
+- **`URI_DEVELOPMENT_LIFECYCLE.md`:** it now documents the W-2 reviewer identity (launcher, program, interpreter, launch) and the R1-02 refusal rules. The re-check claim is corrected to "every job that went through `finish()`". The outdated limit "on Windows/macOS there is no containment" is fixed.
+- **`LIFECYCLE_QUALIFICATION.md`:** I left the old "all fail on ce1a90c" claim in place and added a dated correction below it, so the history stays auditable.
+
+**Regression proof:** the new file `tests/dev_workflow/test_lifecycle_dl2_r2_repair.py` has 11 tests. All 11 fail on 0ee6885 (clean export with only this file copied in) and pass now. It imports `FakeApi`/`FakeProc` from `test_lifecycle_platform.py`, which already exists at 0ee6885.
+
+**Not verified:** the new Windows-only behaviour was not run on Windows, only through the fake kernel32 and fixture launchers on Linux. It needs the qualification run on your PC.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["r2.R1-02", "r2.R1-03", "r2.R1-04", "r2.R2-01"], "not_repaired": [],
+ "regression_tests": ["tests/dev_workflow/test_lifecycle_dl2_r2_repair.py"],
+ "notes": "R1-02: _win_launcher_target ignores REM/:: lines, refuses programs named cmd/powershell/pwsh/cscript/wscript and .bat/.cmd/.ps1/.vbs/.wsf scripts, and requires %* on the line that runs the program; npm shim shapes still bind. R2-01: _run and run_cmd catch OSError from communicate() after a successful spawn and still call containment.finish (job terminated and tracked; a failed termination keeps the job in _OPEN_JOBS so the next precheck fails closed). I did not register jobs at spawn time because the precheck inside drain_after_timeout would close a handle finish() still uses. R1-03 (test finding, not a regression file): test_lifecycle_windows_cli.py now asserts the launcher was found and the exact refusal reason; the .ps1 test also binds a .cmd beside it; added an npm-shim-with-comments test. All 11 tests in that file fail on ce1a90c on Linux (checked in a clean export); they pass on 0ee6885 as expected. R1-04: CAPABILITY_LEDGER marks Windows containment in a real milestone run NOT VERIFIED (windows_only unit tests owner-reported passed); URI_DEVELOPMENT_LIFECYCLE documents the W-2 identity (launcher/program/interpreter/launch) and the R1-02 refusal rules and narrows the re-check claim; LIFECYCLE_QUALIFICATION gets a dated correction note (history kept). The regression file's 11 tests all fail on 0ee6885 and pass after; full tests/dev_workflow: 238 passed, 5 skipped (windows_only, PLATFORM-GATED). The Windows code paths were checked only with the fake kernel32 and fixture launchers, not on Windows. graphify not run (coordinator rebuilds)."}
+REPAIR_RESULT_END

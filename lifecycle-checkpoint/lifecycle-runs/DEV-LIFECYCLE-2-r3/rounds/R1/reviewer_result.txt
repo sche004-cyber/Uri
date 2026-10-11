@@ -1,0 +1,76 @@
+Owner-directed import (2026-10-11). Owner decision, given in the cloud coordinator session ('Yes' to option A) and also relayed by the
+owner-PC coordinator: route DEV-LIFECYCLE-2-r2 LOW findings R1-02, R1-03, R1-04 and R2-01 to repair; R1-05 is a documented limitation.
+Relayed, not independent: it may only tighten the outcome.
+
+AUDIT_RESULT_BEGIN
+{
+ "candidate": "0ee6885a68ec14eabec7645b4501f87d17bde6f0",
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "verdict": "REJECT",
+ "findings": [
+  {
+   "blocking": true,
+   "category": "security",
+   "evidence": "Probe /tmp/uri_review_R1/test_probe_w2.py: launcher '\"%~dp0cmd.exe\" /c \"%~dp0real.bat\" %*' gives realpath real.bat, interpreter cmd.exe, no error/unlaunchable. Any non-.exe/.com quoted file, including .bat/.cmd, counts as the 'script', and '%*' is accepted anywhere in the text (e.g. in a REM line). The reviewer then runs through cmd.exe, without /c, so stdin (the prompt) could be read as commands. This contradicts the plan's 'never through cmd.exe'. It needs a launcher already trusted at PLAN.",
+   "files": [
+    "scripts/dev_workflow/lifecycle_providers.py:288",
+    "scripts/dev_workflow/lifecycle_providers.py:297"
+   ],
+   "id": "r2.R1-02",
+   "owner_decision": false,
+   "severity": "LOW",
+   "suggested_fix": "Owner criterion: a .cmd launcher that names cmd.exe (or powershell/pwsh) and a .bat/.cmd/.ps1 must not be bound or launched; %* must be on the launch line itself (not anywhere in the text, e.g. a REM line). Reviewer suggestion: Refuse a bound program whose basename is cmd.exe/powershell.exe/pwsh.exe, and refuse scripts with .bat/.cmd/.ps1 extensions; require %* on the line that names the program.",
+   "title": "A .cmd launcher naming cmd.exe and a .bat is bound and launched as [cmd.exe, x.bat] (DEV-LIFECYCLE-2-r2 R1-02, LOW, routed to repair by owner decision)"
+  },
+  {
+   "blocking": true,
+   "category": "test",
+   "evidence": "Run at ce1a90c with only the new test files copied: test_w2_launcher_that_cannot_be_bound_is_unlaunchable (3 params) and test_w2_ps1_only_is_not_a_reviewer_cli PASS, because shutil.which finds no claude.cmd on Linux and the assertion `ident.get('unlaunchable') or ident.get('error')` also accepts {'error': 'not found'}. The plan and LIFECYCLE_QUALIFICATION claim all 10 fail on ce1a90c (DL2-AC11). test_lifecycle_platform.py fails on the baseline only at collection (ImportError), not per test.",
+   "files": [
+    "tests/dev_workflow/test_lifecycle_windows_cli.py:106",
+    "tests/dev_workflow/test_lifecycle_windows_cli.py:116"
+   ],
+   "id": "r2.R1-03",
+   "owner_decision": false,
+   "severity": "LOW",
+   "suggested_fix": "Owner criterion: every new W-2 test must fail on ce1a90c on Linux as well, for its own reason; no test may accept {'error': 'not found'} as a pass. Reviewer suggestion: Assert the 'unlaunchable' key (or the exact launcher error), not 'error: not found'; assert that the launcher was found.",
+   "title": "Four new W-2 tests pass on baseline ce1a90c on Linux (vacuous 'not found' acceptance) (DEV-LIFECYCLE-2-r2 R1-03, LOW, routed to repair by owner decision)"
+  },
+  {
+   "blocking": true,
+   "category": "documentation",
+   "evidence": "Focus 6 and DL2-AC9 require Windows to stay NOT VERIFIED until the PC qualification run; the ledger row says 'TESTED on the PC (Job Objects ...)'. The URI_DEVELOPMENT_LIFECYCLE reviewer-independence row still describes the identity as 'realpath, SHA-256 and a script's interpreter', with no launcher/launch binding, and claims every earlier job is re-checked (see R1-01).",
+   "files": [
+    "docs/dev_workflow/CAPABILITY_LEDGER.md:12",
+    "docs/dev_workflow/URI_DEVELOPMENT_LIFECYCLE.md"
+   ],
+   "id": "r2.R1-04",
+   "owner_decision": false,
+   "severity": "LOW",
+   "suggested_fix": "Owner criterion: CAPABILITY_LEDGER says Windows containment = windows_only unit tests passed on the owner's PC, and containment in a real milestone run is NOT VERIFIED; URI_DEVELOPMENT_LIFECYCLE.md documents the W-2 identity binding (launcher, program, interpreter, launch) and does not overstate the earlier-job re-check. Reviewer suggestion: Mark Windows containment NOT VERIFIED (logic tested with a fake kernel32; real-job tests reported by the owner), document the launch/launcher identity, and correct the re-check claim.",
+   "title": "CAPABILITY_LEDGER claims Windows containment 'TESTED on the PC'; lifecycle doc omits the W-2 reviewer identity and overstates the earlier-job re-check (DEV-LIFECYCLE-2-r2 R1-04, LOW, routed to repair by owner decision)"
+  },
+  {
+   "blocking": true,
+   "category": "code",
+   "evidence": "_run catches OSError from proc.communicate() (after containment.spawn succeeded and the process was resumed) and returns status FAILED without containment.finish(proc). On Windows the job is neither terminated, nor appended to _OPEN_JOBS, nor recorded in _TAINTED, and the handle stays open, so KILL_ON_JOB_CLOSE does not fire. Probe /tmp/uri_review_R2/probe/test_probe_unfinished.py with the repo's FakeApi/FakeProc: communicate raises OSError(23): job 1 = {'active': 1, 'terminated': False}, _OPEN_JOBS=[], _TAINTED=[], next C.precheck() = {'contained': True, 'killed': 0}. On Linux the leftover worker is a direct child in another session and the next sweep_orphans kills it, so only Windows is affected. Low likelihood: CPython swallows BrokenPipeError/EINVAL on the stdin write.",
+   "files": [
+    "scripts/dev_workflow/lifecycle_providers.py:582",
+    "scripts/dev_workflow/containment.py:172",
+    "scripts/dev_workflow/containment.py:293"
+   ],
+   "id": "r2.R2-01",
+   "owner_decision": false,
+   "severity": "LOW",
+   "suggested_fix": "Coordinator-recommended, owner-approved: same fail-open class as R1-01 (fixed in 0ee6885a); every path after a successful spawn must end in containment.finish or leave the job tracked/tainted so the next precheck() fails closed. Fake-kernel32 regression test required. Reviewer suggestion: Register each job in _OPEN_JOBS at spawn time (remove it only once precheck/finish verified it empty), or call containment.finish(proc) in a finally on every path after a successful spawn (also run_cmd on non-TimeoutExpired exceptions).",
+   "title": "Windows: a worker whose communicate() raises OSError after spawn is never finished; its job stays unterminated and untracked, and the next precheck() reports contained=True (DEV-LIFECYCLE-2-r2 R2-01, LOW, routed to repair by owner decision)"
+  }
+ ],
+ "prior_findings": [],
+ "tests_run": [],
+ "unverified": [
+  "Findings transcribed verbatim from DEV-LIFECYCLE-2-r2 rounds R1 (reviewer 4ea43b42-633b-46ea-8a8a-09ef2c55de7f) and R2 (reviewer 76c2b25e-9190-46b6-9cc1-c393ca7c8a8a); marked blocking by owner decision, not by those reviewers.",
+  "R1-05 (relative remote URL resolution; legacy baseline.ref by remote name) is NOT imported: owner decision, documented limitation."
+ ]
+}
+AUDIT_RESULT_END
