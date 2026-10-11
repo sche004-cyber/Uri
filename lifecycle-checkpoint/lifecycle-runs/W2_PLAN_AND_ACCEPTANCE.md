@@ -31,6 +31,49 @@ No live retrieval happens before step 2. W2 runs under the `uri-development-life
 New code lives in a new package, `uri_web/docs/`, plus tests in `tests/web/w2_*`. No frozen file changes and no new
 dependency.
 
+## 1a. Owner decision D11 (2026-10-11): W2 runs on ARN and URI's runtime Graphify index
+
+The owner said Graphify (with ARN/RAR) must be involved in all memory indexing and information retrieval. Inspection
+showed:
+- the runtime Graphify Foundation (`uri_core/core/graphify_index.py`) is a pointer-only index with five kinds
+  (capability, skill, workflow, memory_pointer, connected_service) and no document kind;
+- ARN.1 (`uri_core/core/arn/`) is the accepted deterministic narrowing engine;
+- ARN.2 (PDF/document narrowing) is planned but explicitly not authorised;
+- all of these are frozen.
+
+The developer `graphify` CLI (code graph) is a separate tool.
+
+Chosen: **ARN + Graphify pointers**.
+
+- **ARN without a frozen change:**
+  - W2 search and question answering run through `ARNEngine` (imported, unchanged).
+  - Each site, document and page checked is `record_source_checked`, so repeated searches are refused.
+  - Document candidates are `add_candidates`, and user clues go through `apply_user_clue`.
+  - A miss returns ARN's case summary and clarification recommendation (ARN never writes the question).
+  - Narrowing follows the ARN.2 plan's order: metadata → document → page → targeted extraction → exhaustive scan,
+    bounded by the ARN `CostCeiling`.
+  - ARN state stays per task and is never persisted (ARN rules).
+- **Narrow frozen exception, controlled like D2:**
+  - `uri_core/core/graphify_index.py` gains a `document` pointer kind: doc_id, title, site, date, reference_no,
+    department. No page text and no personal-data fields, because the index holds pointers, never content.
+  - It also gains a `documents` refresh scope fed by the W2 index, so Brain hints (M34 `relevant_subset`) can point to
+    relevant indexed documents.
+  - Hint filtering in `decision_engine.py` currently keeps only skill/memory_pointer. Whether `document` pointers need
+    a one-line change there is decided at implementation; any such file is named explicitly in
+    `authorized_protected_changes`. Nothing else frozen changes.
+  - Documents flagged `personal_data = candidate` get no pointer; a later relevant-subset test checks this.
+- **Not authorised:** ARN.2 inside `uri_core` remains a separate, unauthorised scope. W2 uses ARN's engine and order
+  without building ARN.2.
+
+Added acceptance:
+- **W2-AC16:** W2 searches record every source in ARN, never repeat a search, and stop at the ARN ceiling. A miss
+  returns an ARN case summary.
+- **W2-AC17:** Document pointers appear in a user's Graphify hint for a relevant question and carry no page text.
+  Personal-data documents have no pointer. The existing M30/M34 Graphify tests still pass (37 + M34 suite). Only the
+  named frozen files change.
+- **W2-AC18:** The per-user Graphify view holds document pointers only from documents that user indexed or that are
+  shared under an approved scope, never another user's (see GRAPHIFY-LEAK-1).
+
 ## 2. Reconciliation with earlier requirements
 
 | # | Earlier requirement | New instruction | Resolution |
