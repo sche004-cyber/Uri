@@ -80,6 +80,31 @@ def test_cli_exits_2_on_refusal(fake_bundle, monkeypatch):
     assert PB.main(["verify"]) == 0
 
 
+def test_install_copies_and_verifies(fake_bundle, monkeypatch, tmp_path):
+    out, expected = fake_bundle
+    monkeypatch.setattr(PB, "OUT", out)
+    expected.write_text(PB.bundle_hash(out))
+    app = tmp_path / "app"
+    (app / "data" / "office_page").mkdir(parents=True)
+    (app / "data" / "office_page" / "stale.js").write_text("old")
+    assert PB.install(app) == PB.bundle_hash(out)
+    assert not (app / "data" / "office_page" / "stale.js").exists()
+    assert PB.bundle_hash(app / "data" / "office_page") == PB.bundle_hash(out)
+
+
+def test_install_refuses_unverified_bundle_or_non_app_folder(fake_bundle, monkeypatch, tmp_path):
+    out, expected = fake_bundle
+    monkeypatch.setattr(PB, "OUT", out)
+    expected.write_text("0" * 64)
+    (tmp_path / "app" / "data").mkdir(parents=True)
+    with pytest.raises(PB.BundleRefused):
+        PB.install(tmp_path / "app")
+    assert not (tmp_path / "app" / "data" / "office_page").exists()
+    expected.write_text(PB.bundle_hash(out))
+    with pytest.raises(PB.BundleRefused, match="not a built URI app"):
+        PB.install(tmp_path / "nothing")
+
+
 # ---- page unit tests (node) ----------------------------------------------------------------------------------------
 def test_page_unit_tests_pass():
     node = shutil.which("node")

@@ -15,6 +15,8 @@ analyzer:
     - web/**
     - android/**
     - windows/**
+    # Vendored third-party package (OFF-O6); analysed with its own options.
+    - packages/**
 
 linter:
   # The lint rules applied to this project can be customized in the

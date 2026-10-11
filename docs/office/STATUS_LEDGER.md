@@ -28,3 +28,17 @@ independent review has run. Every entry states its evidence.
 |---|---|---|
 | Windows 11, Python 3.13, Node 24.19 | 134 collected, 134 passed, 0 skipped | 4/4 (also run inside pytest) |
 | Linux | NOT VERIFIED (no runner) | NOT VERIFIED |
+
+## 2026-10-11, OFF-O6 (a) approved: vendored host, panel and real-runtime tests
+
+| Item | State | Evidence |
+|---|---|---|
+| Vendored package | Done. Baseline `9765e780`; patch listed in `uri_ui/packages/webview_flutter_windows/PATCHES.md` | archive SHA-256 equals pub.dev's |
+| Build toolchain / runtime | Present (VS Community 2026 18.10 C++, WebView2 154.0.4258.62). Nothing installed. Build-local NuGet fetch pinned and verified. | `.nupkg` hashes equal nuget.org catalog |
+| Release builds | App and security probe build with `/W4 /WX` | `flutter build windows --release` |
+| Real-WebView2 security tests | **COMPLETED_WITH_RESULT**; final run: 0 escapes in 48 attempts + 9 navigations | `evidence/webview2_security_probe_run4_final.json` |
+| Defects found by the probe, fixed | WebSocket bypassed the request filter (P2 proxy); WebRTC/STUN UDP escaped (constructors removed in every frame) | runs 1 and 2 kept as history |
+| Bundle hash (current) | `0720ed8e4b4b1178f786c056f2b01f2948b3e95cf76dae1828e2cf99ea54a3e4` (two clean builds) | `uri_ui/office_web/BUNDLE_SHA256`, Dart constant |
+| Tests (Windows) | `tests/office` 136 passed; `tests/ws tests/oi tests/a2ui` 597 passed / 22 skipped (baseline); scheduler 71/71; `flutter test` 519 passed / 5 skipped (not Office); `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok | this session |
+| Live panel with a real workbook and the Brain | **NOT VERIFIED.** Needs the launcher to start the Office service and an owner at the PC; not simulated. | — |
+| Independent review | Pending: separate `claude_cli` reviewer in a Linux cloud session at the exact commit | — |

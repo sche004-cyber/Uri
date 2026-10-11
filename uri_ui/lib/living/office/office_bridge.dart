@@ -1,0 +1,100 @@
+/// URI Office: the contract between the panel and its sheet page, and between the panel and the environment.
+///
+/// Nothing in this file touches a platform plugin, so widget tests can use it. The WebView2 implementation of
+/// [OfficeSurface] lives in `webview_host/webview2_office_surface.dart` and is injected from `main.dart`.
+library;
+
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
+
+/// The sheet page's host: a locked-down web view that shows the page and exchanges JSON messages with it.
+abstract class OfficeSurface {
+  /// Validated messages from the page (see [parsePageMessage]); anything else has already been dropped.
+  Stream<Map<String, dynamic>> get messages;
+
+  /// Loads the page. Throws [OfficeSurfaceError] when the host cannot be locked down or the page is not the
+  /// recorded bundle.
+  Future<void> start();
+
+  Future<void> post(Map<String, dynamic> message);
+
+  /// The host's lockdown counters and settings (for diagnostics and tests).
+  Future<Map<String, dynamic>> securityReport();
+
+  Widget build(BuildContext context);
+
+  Future<void> dispose();
+}
+
+class OfficeSurfaceError implements Exception {
+  OfficeSurfaceError(this.code, [this.detail = '']);
+  final String code;
+  final String detail;
+  @override
+  String toString() => detail.isEmpty ? code : '$code: $detail';
+}
+
+/// Everything the Office panel needs from the platform, injected by `main.dart`.
+class OfficeEnvironment {
+  const OfficeEnvironment({
+    required this.surfaceFactory,
+    required this.pickWorkbookPath,
+    required this.pickSavePath,
+    required this.openExternalLink,
+  });
+
+  final OfficeSurface Function() surfaceFactory;
+
+  /// File picker for an existing .xlsx; returns its absolute path or null.
+  final Future<String?> Function() pickWorkbookPath;
+
+  /// Save dialog for a new .xlsx; returns its absolute path or null.
+  final Future<String?> Function(String suggestedName) pickSavePath;
+
+  /// Opens a Google Sheets link in the owner's browser (outside URI).
+  final Future<void> Function(Uri url) openExternalLink;
+}
+
+final RegExp _cellRef = RegExp(r'^[A-Z]{1,3}[1-9][0-9]{0,6}$');
+
+/// The only messages the panel accepts from the page. Everything else is dropped (returns null).
+///
+/// ```text
+///   {"type": "ready"}
+///   {"type": "edit", "sheet": <1..31 chars>, "cell": "B3", "value": <string|number|bool|null>}
+///   {"type": "edit", "sheet": ..., "cell": ..., "formula": "=..."}
+///   {"type": "error", "code": <string>, "detail": <string>?}
+/// ```
+Map<String, dynamic>? parsePageMessage(Object? raw) {
+  if (raw is! Map) return null;
+  final type = raw['type'];
+  switch (type) {
+    case 'ready':
+      return raw.length == 1 ? const {'type': 'ready'} : null;
+    case 'edit':
+      final sheet = raw['sheet'];
+      final cell = raw['cell'];
+      if (sheet is! String || sheet.isEmpty || sheet.length > 31) return null;
+      if (cell is! String || !_cellRef.hasMatch(cell)) return null;
+      final keys = raw.keys.toSet();
+      if (keys.containsAll({'value', 'formula'})) return null;
+      if (keys.contains('formula')) {
+        final f = raw['formula'];
+        if (f is! String || !f.startsWith('=') || f.length > 8192) return null;
+        if (keys.difference({'type', 'sheet', 'cell', 'formula'}).isNotEmpty) return null;
+        return {'type': 'edit', 'sheet': sheet, 'cell': cell, 'formula': f};
+      }
+      if (!keys.contains('value') || keys.difference({'type', 'sheet', 'cell', 'value'}).isNotEmpty) return null;
+      final v = raw['value'];
+      if (v != null && v is! String && v is! num && v is! bool) return null;
+      if (v is String && v.length > 32767) return null;
+      return {'type': 'edit', 'sheet': sheet, 'cell': cell, 'value': v};
+    case 'error':
+      final code = raw['code'];
+      if (code is! String || code.length > 64) return null;
+      final detail = raw['detail'];
+      return {'type': 'error', 'code': code, 'detail': detail is String ? detail.substring(0, detail.length.clamp(0, 200)) : ''};
+  }
+  return null;
+}

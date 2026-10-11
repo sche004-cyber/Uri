@@ -3,6 +3,9 @@
   python -m uri_office.page_build build    clean `npm ci` from the committed lockfile, `npm run build`, then verify
   python -m uri_office.page_build verify   hash the built bundle and refuse (exit 2) unless it equals BUNDLE_SHA256
   python -m uri_office.page_build hash     print the bundle hash only
+  python -m uri_office.page_build install <app dir>
+                                            verify, copy to <app dir>/data/office_page (where the panel looks for it)
+                                            and verify the copy; the panel itself re-checks the hash before loading
 
 The bundle hash is SHA-256 over the sorted list of (relative path, SHA-256 of file) for every file in
 `uri_ui/assets/office/`, so it covers names, contents and the absence of extra files. The expected value is committed in
@@ -32,9 +35,8 @@ def bundle_hash(out: Path | None = None) -> str:
     out = OUT if out is None else Path(out)
     if not out.is_dir():
         raise BundleRefused(f"no built bundle at {out}")
-    rows = []
-    for f in sorted(p for p in out.rglob("*") if p.is_file()):
-        rows.append([f.relative_to(out).as_posix(), hashlib.sha256(f.read_bytes()).hexdigest()])
+    rows = sorted([f.relative_to(out).as_posix(), hashlib.sha256(f.read_bytes()).hexdigest()]
+                  for f in out.rglob("*") if f.is_file())   # sorted by path string (same as the Dart check)
     if not rows:
         raise BundleRefused("the built bundle is empty")
     return hashlib.sha256(json.dumps(rows, separators=(",", ":")).encode()).hexdigest()
@@ -55,6 +57,24 @@ def verify(out: Path | None = None) -> str:
     if got != want:
         raise BundleRefused(f"bundle hash {got} does not match the recorded {want}; refusing to stage it")
     return got
+
+
+def install(app_dir) -> str:
+    """Copy the verified bundle to `<app dir>/data/office_page` (replacing any older copy) and verify the copy."""
+    got = verify()
+    app = Path(app_dir)
+    if not (app / "data").is_dir():
+        raise BundleRefused(f"{app} is not a built URI app folder (no data/ folder)")
+    dest = app / "data" / "office_page"
+    tmp = app / "data" / "office_page.uri-tmp"
+    shutil.rmtree(tmp, ignore_errors=True)
+    shutil.copytree(OUT, tmp)
+    if bundle_hash(tmp) != got:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise BundleRefused("the copied bundle does not match; nothing was installed")
+    shutil.rmtree(dest, ignore_errors=True)
+    tmp.rename(dest)
+    return verify(dest)
 
 
 def _npm(*args):
@@ -83,8 +103,14 @@ def main(argv=None):
             print(json.dumps({"verified": True, "bundle_sha256": verify()}))
         elif cmd == "hash":
             print(bundle_hash())
+        elif cmd == "install":
+            args = argv or sys.argv[1:]
+            if len(args) != 2:
+                print("usage: python -m uri_office.page_build install <app dir>", file=sys.stderr)
+                return 64
+            print(json.dumps({"installed": True, "bundle_sha256": install(args[1])}))
         else:
-            print("usage: python -m uri_office.page_build build|verify|hash", file=sys.stderr)
+            print("usage: python -m uri_office.page_build build|verify|hash|install <app dir>", file=sys.stderr)
             return 64
     except BundleRefused as exc:
         print(json.dumps({"refused": True, "reason": str(exc)}))

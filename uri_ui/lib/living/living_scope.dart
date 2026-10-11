@@ -1,3 +1,4 @@
+import 'office/office_bridge.dart';
 import 'package:flutter/widgets.dart';
 
 import 'a2ui/a2ui_hub.dart';
@@ -125,6 +126,10 @@ class LivingServices {
   /// that no engine is available; the Windows entry point installs the real
   /// one.
   VoiceCatalog voiceCatalog = const UnavailableVoiceCatalog();
+
+  /// URI Office platform pieces (WebView2 sheet view, path pickers). Null where they are unavailable; the
+  /// Windows entry point installs them.
+  OfficeEnvironment? office;
 
   /// The adapter currently feeding [voice], if any.
   VoiceServiceAdapter? get voiceAdapter => _voiceBinding?.adapter;

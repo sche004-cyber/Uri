@@ -46,4 +46,10 @@ window.SharedWorker = class { constructor(url) { throw refuse('SharedWorker', ur
 // No new windows (the host also refuses them).
 window.open = () => null;
 
+// WebRTC can reach the network over UDP, which neither the CSP nor the host request filter sees (the host also
+// starts WebView2 with direct UDP disabled). The page has no use for it.
+for (const name of ['RTCPeerConnection', 'webkitRTCPeerConnection', 'RTCDataChannel', 'RTCIceTransport']) {
+  try { Object.defineProperty(window, name, { value: undefined, configurable: false, writable: false }); } catch (e) {}
+}
+
 export const NETWORK_DISABLED = true;

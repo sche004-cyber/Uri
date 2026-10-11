@@ -114,6 +114,9 @@ const a2uiActions = <String, Map<String, String>>{
     'note': 'str?',
     'correction': 'enum:set_date|dispute|accept',
   },
+  // URI Office (authority: uri_office service; bound change SHA-256, target re-read before writing).
+  'office.apply_change': {'change_sha256': 'sha256'},
+  'office.reject_change': {'change_sha256': 'sha256'},
   'surface.dismiss': {},
 };
 
