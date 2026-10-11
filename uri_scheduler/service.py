@@ -261,9 +261,10 @@ def icacls_steps(path: Path, user: str, *, folder=False) -> list:
     object under the old access would otherwise stay its owner, keeping implicit READ_CONTROL and WRITE_DAC and so
     the means to grant itself access again (R3-01). Owning the child also gives the user the WRITE_DAC its reset
     needs. Without /C the first child that cannot be taken over or reset fails the step; an empty folder has no child
-    steps. `/L` makes icacls act on a link itself, never on its target (R2-05)."""
+    steps. `/L` makes icacls act on a link itself, never on its target (R2-05); the folder's own step has it too, so a
+    state path swapped for a junction just before it changes only the junction, which then fails closed (R4-01)."""
     grant = f"{user}:(OI)(CI)F" if folder else f"{user}:F"
-    restrict = ["icacls", str(path), "/inheritance:r", "/grant:r", grant]
+    restrict = ["icacls", str(path), "/inheritance:r", "/grant:r", grant] + (["/L"] if folder else [])
     if not folder:
         return [restrict]
     steps = [restrict]
@@ -293,31 +294,100 @@ def _current_user_sid() -> str:
     return sid
 
 
-def drop_foreign_entries(path: Path):
-    """Replace the folder's whole DACL, in one write, with a protected DACL holding only the current user's inheritable
-    full-control entry. `/grant:r` replaces only the user's own explicit entries, so this is what removes explicit
-    entries of other principals from the folder itself (R2-01) without ever resetting it (R1-01). Run after the
-    folder is already closed, so it can only take access away."""
+def user_only_sddl(sid: str, *, folder=False) -> str:
+    """The current user as owner and a protected DACL with only the user's full-control entry (inheritable for the
+    folder). Owning the object matters as much as the DACL: an owner keeps implicit READ_CONTROL/WRITE_DAC (R4-01)."""
+    return f"O:{sid}D:P(A;{'OICI' if folder else ''};FA;;;{sid})"
+
+
+def _win32():
     import ctypes
     from ctypes import wintypes
     advapi, kernel = ctypes.WinDLL("advapi32", use_last_error=True), ctypes.WinDLL("kernel32", use_last_error=True)
-    conv = advapi.ConvertStringSecurityDescriptorToSecurityDescriptorW
-    conv.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p]
-    conv.restype = wintypes.BOOL
+    advapi.ConvertStringSecurityDescriptorToSecurityDescriptorW.argtypes = [
+        wintypes.LPCWSTR, wintypes.DWORD, ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p]
+    advapi.ConvertStringSecurityDescriptorToSecurityDescriptorW.restype = wintypes.BOOL
+    kernel.LocalFree.argtypes = [ctypes.c_void_p]
+    kernel.LocalFree.restype = ctypes.c_void_p
+    return ctypes, wintypes, advapi, kernel
+
+
+def _security_descriptor(advapi, ctypes, sddl: str):
+    sd = ctypes.c_void_p()
+    if not advapi.ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl, 1, ctypes.byref(sd), None):   # rev 1
+        raise StateAclError("could not build the user-only ACL")
+    return sd
+
+
+def drop_foreign_entries(path: Path):
+    """Replace the folder's owner and whole DACL, in one write, with the current user and a protected DACL holding only
+    the user's inheritable full-control entry. `/grant:r` replaces only the user's own explicit entries, so this is
+    what removes explicit entries of other principals from the folder itself (R2-01) without ever resetting it
+    (R1-01); taking the owner removes the implicit WRITE_DAC of a principal that created the folder (R4-01). Run
+    after the folder is already closed, so it can only take access away."""
+    ctypes, wintypes, advapi, kernel = _win32()
     setsec = advapi.SetFileSecurityW
     setsec.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, ctypes.c_void_p]
     setsec.restype = wintypes.BOOL
-    kernel.LocalFree.argtypes = [ctypes.c_void_p]
-    kernel.LocalFree.restype = ctypes.c_void_p
-    sd = ctypes.c_void_p()
-    if not conv(f"D:P(A;OICI;FA;;;{_current_user_sid()})", 1, ctypes.byref(sd), None):   # SDDL_REVISION_1
-        raise StateAclError("could not build the user-only ACL")
+    sd = _security_descriptor(advapi, ctypes, user_only_sddl(_current_user_sid(), folder=True))
     try:
-        ok = setsec(str(path), 0x4, sd)                   # DACL_SECURITY_INFORMATION; "P" keeps it protected
+        ok = setsec(str(path), 0x1 | 0x4, sd)             # OWNER_ and DACL_SECURITY_INFORMATION; "P" keeps it protected
     finally:
         kernel.LocalFree(sd)
     if not ok:
         raise StateAclError("could not restrict access to the current user")
+
+
+def owner_sid(path: Path) -> str:
+    """The SID string of the object's owner, read back from the file system (GetFileSecurityW)."""
+    ctypes, wintypes, advapi, kernel = _win32()
+    get = advapi.GetFileSecurityW
+    get.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD, ctypes.POINTER(wintypes.DWORD)]
+    get.restype = wintypes.BOOL
+    owner = advapi.GetSecurityDescriptorOwner
+    owner.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(wintypes.BOOL)]
+    owner.restype = wintypes.BOOL
+    tostr = advapi.ConvertSidToStringSidW
+    tostr.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_void_p)]
+    tostr.restype = wintypes.BOOL
+    need = wintypes.DWORD(0)
+    get(str(path), 0x1, None, 0, ctypes.byref(need))     # OWNER_SECURITY_INFORMATION: ask for the size first
+    buf = ctypes.create_string_buffer(max(need.value, 1))
+    sid, defaulted, text = ctypes.c_void_p(), wintypes.BOOL(), ctypes.c_void_p()
+    if (not need.value or not get(str(path), 0x1, buf, need.value, ctypes.byref(need))
+            or not owner(buf, ctypes.byref(sid), ctypes.byref(defaulted)) or not sid.value
+            or not tostr(sid, ctypes.byref(text))):
+        raise StateAclError("could not read the state folder's owner")
+    try:
+        return ctypes.wstring_at(text.value)
+    finally:
+        kernel.LocalFree(text)
+
+
+def create_user_only_file(path: Path):
+    """Create a new, empty file whose security descriptor is user-only from the start (CreateFileW, CREATE_NEW), so it
+    is never open to an entry inherited from the folder, not even until its ACL is set (R4-01)."""
+    ctypes, wintypes, advapi, kernel = _win32()
+
+    class _SA(ctypes.Structure):
+        _fields_ = [("nLength", wintypes.DWORD), ("lpSecurityDescriptor", ctypes.c_void_p),
+                    ("bInheritHandle", wintypes.BOOL)]
+    create = kernel.CreateFileW
+    create.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD,
+                       wintypes.DWORD, wintypes.HANDLE]
+    create.restype = wintypes.HANDLE
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.CloseHandle.restype = wintypes.BOOL
+    sd = _security_descriptor(advapi, ctypes, user_only_sddl(_current_user_sid()))
+    try:
+        sa = _SA(ctypes.sizeof(_SA), sd, False)
+        # GENERIC_WRITE, no sharing, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT
+        h = create(str(path), 0x40000000, 0, ctypes.byref(sa), 1, 0x80 | 0x00200000, None)
+    finally:
+        kernel.LocalFree(sd)
+    if h is None or h == ctypes.c_void_p(-1).value:
+        raise OSError(ctypes.get_last_error(), "CreateFileW failed")
+    kernel.CloseHandle(h)
 
 
 def restrict_to_user(path: Path, *, folder=False):
@@ -330,7 +400,10 @@ def restrict_to_user(path: Path, *, folder=False):
     fails closed before any child step, so a planted link cannot make the scheduler change the ACL or owner of a
     path outside it (R2-05); the check runs after the folder is closed, `/L` covers a link that still appears at the
     top level later, and the check runs again once every child is reset, so a link planted while the old access
-    still held also fails closed (R3-01).
+    still held also fails closed (R3-01). The path itself must not be a link (R4-01), checked before any step; for
+    the folder, it must still be the same object, not a link, after it is closed and again at the end, and its owner
+    must read back as the current user once it is taken over, so a folder another principal created or swapped in
+    fails closed instead of staying in that principal's control.
     POSIX: 0700 / 0600."""
     if not _WINDOWS:
         try:
@@ -342,19 +415,32 @@ def restrict_to_user(path: Path, *, folder=False):
     if not user:
         raise StateAclError("no current user")
     try:
+        if _is_link(path):
+            raise StateAclError("the state path is a symlink or junction; use a plain folder and start again")
+        first = os.lstat(path)
         steps = icacls_steps(path, user, folder=folder)
     except OSError as exc:
         raise StateAclError(f"cannot list the state folder: {type(exc).__name__}") from None
+
+    def same_folder():
+        st = os.lstat(path)
+        if _is_link(path) or (st.st_dev, st.st_ino) != (first.st_dev, first.st_ino):
+            raise StateAclError("the state folder was replaced while it was being restricted; start again")
     try:
         _icacls(steps[0])
         if folder:
+            same_folder()
             drop_foreign_entries(path)
+            if owner_sid(path) != _current_user_sid():
+                raise StateAclError("the state folder is owned by another principal and could not be taken over")
             if links_inside(path):
                 raise StateAclError("the state folder contains a symlink or junction; remove it and start again")
         for cmd in steps[1:]:
             _icacls(cmd)
-        if folder and links_inside(path):
-            raise StateAclError("the state folder contains a symlink or junction; remove it and start again")
+        if folder:
+            same_folder()
+            if links_inside(path):
+                raise StateAclError("the state folder contains a symlink or junction; remove it and start again")
     except (OSError, StateAclError) as exc:
         if folder:
             try:
@@ -395,12 +481,16 @@ def _running_instance(state: Path) -> bool:
 
 
 def write_token_file(path: Path, token: str):
-    """A new token file on every launch: created empty, restricted to the current user, then written. On failure no
-    token is left on disk. OS failures surface as StateAclError so the service exits 4 instead of crashing."""
+    """A new token file on every launch: created empty, restricted to the current user, then written. On Windows it is
+    created user-only from the start (R4-01). On failure no token is left on disk. OS failures surface as
+    StateAclError so the service exits 4 instead of crashing."""
     try:
         if path.exists():
             path.unlink()
-        path.write_bytes(b"")
+        if _WINDOWS:
+            create_user_only_file(path)
+        else:
+            path.write_bytes(b"")
         restrict_to_user(path)
         path.write_text(token, encoding="utf-8")
     except (OSError, StateAclError) as exc:

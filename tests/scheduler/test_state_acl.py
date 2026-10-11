@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 from uri_scheduler import service as S  # noqa: E402
 
 WIN = os.name == "nt"
+ME_SID = "S-1-5-21-1-2-3-1001"
 
 
 def _aces(path: Path) -> list:
@@ -62,7 +63,7 @@ def test_folder_steps_restrict_folder_before_resetting_children(tmp_path):   # R
     (tmp_path / "scheduler.db").write_bytes(b"x")
     (tmp_path / "api-token").write_text("old")
     steps = S.icacls_steps(tmp_path, "me", folder=True)
-    assert steps == [["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"],
+    assert steps == [["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"],
                      ["icacls", str(tmp_path / "api-token"), "/setowner", "me", "/T", "/Q", "/L"],
                      ["icacls", str(tmp_path / "api-token"), "/reset", "/T", "/Q", "/L"],
                      ["icacls", str(tmp_path / "scheduler.db"), "/setowner", "me", "/T", "/Q", "/L"],
@@ -74,7 +75,7 @@ def test_folder_steps_restrict_folder_before_resetting_children(tmp_path):   # R
 
 def test_empty_folder_has_only_the_restrict_step(tmp_path):              # R1-01: no reset step, so nothing to fail
     assert S.icacls_steps(tmp_path, "me", folder=True) == [
-        ["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]]
+        ["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"]]
 
 
 @pytest.mark.skipif(not WIN, reason="Windows-qualified: the icacls branch")
@@ -90,11 +91,14 @@ def test_folder_acl_failure_fails_closed(tmp_path, monkeypatch):           # R1-
     assert len(calls) == 2 and all("/grant:r" in c and "/reset" not in c for c in calls)   # grant, then re-grant
 
 
-def _simulated_windows(monkeypatch, fail_reset, fail_on=None, on_call=None):
+def _simulated_windows(monkeypatch, fail_reset, fail_on=None, on_call=None, owner=ME_SID):
     """Drive the icacls branch on any platform: a fake icacls that records calls and fails `/reset` (or the `fail_on`
-    switch) on demand; `on_call` runs on every call, before its result."""
+    switch) on demand; `on_call` runs on every call, before its result. `owner` is the SID the folder's owner reads
+    back as once it has been taken over."""
     monkeypatch.setattr(S, "_WINDOWS", True, raising=False)
     monkeypatch.setenv("USERNAME", "me")
+    monkeypatch.setattr(S, "_current_user_sid", lambda: ME_SID)
+    monkeypatch.setattr(S, "owner_sid", lambda p: owner, raising=False)
     calls = []
 
     class _R:
@@ -119,7 +123,7 @@ def test_folder_is_never_reset_to_its_inherited_acl(tmp_path, monkeypatch):   # 
     (state / "api-token").write_text("live")
     calls = _simulated_windows(monkeypatch, fail_reset=False)
     S.restrict_to_user(state, folder=True)
-    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]
+    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"]
     assert calls[:2] == [grant, ["drop", str(state)]]                     # the folder is closed first, then cleared
     assert all(c[1] != str(state) for c in calls if "/reset" in c)        # and never reset afterwards
     assert ["icacls", str(state / "api-token"), "/reset", "/T", "/Q", "/L"] in calls
@@ -143,7 +147,7 @@ def test_planted_link_is_never_reset_and_fails_closed(tmp_path, monkeypatch, nes
     calls = _simulated_windows(monkeypatch, fail_reset=False)
     with pytest.raises(S.StateAclError):
         S.restrict_to_user(state, folder=True)
-    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]
+    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"]
     assert not [c for c in calls if "/reset" in c]                        # nothing is reset, the link least of all
     assert calls[-1] == grant                                             # the folder is left closed
     assert (outside / "secret").read_text() == "x"
@@ -190,7 +194,7 @@ def test_child_takeover_failure_fails_closed(tmp_path, monkeypatch):      # R3-0
         S.restrict_to_user(state, folder=True)
     assert [c for c in calls if "/setowner" in c]
     assert not [c for c in calls if "/reset" in c]
-    assert calls[-1] == ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]   # left closed
+    assert calls[-1] == ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"]   # left closed
 
 
 def test_link_planted_before_children_are_reset_fails_closed(tmp_path, monkeypatch):   # R3-01: residual R2-05 window
@@ -210,7 +214,7 @@ def test_link_planted_before_children_are_reset_fails_closed(tmp_path, monkeypat
     calls = _simulated_windows(monkeypatch, fail_reset=False, on_call=plant)
     with pytest.raises(S.StateAclError):
         S.restrict_to_user(state, folder=True)
-    assert calls[-1] == ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]   # left closed
+    assert calls[-1] == ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"]   # left closed
 
 
 @pytest.mark.skipif(not WIN, reason="Windows-qualified: object owners and the real icacls")
@@ -246,7 +250,7 @@ def test_child_reset_failure_keeps_folder_closed_and_removes_token(tmp_path, mon
     rc = S.main(["run", "--state", str(state), "--mode", "fixture"])
     assert rc == 4
     assert "STATE_ACL_FAILED" in capsys.readouterr().out
-    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]
+    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"]
     resets = [i for i, c in enumerate(calls) if "/reset" in c]
     assert grant in calls and resets and calls.index(grant) < resets[0]   # folder closed before any reset
     assert calls[-1] == grant                                             # and re-applied after the failure
@@ -357,6 +361,8 @@ def test_token_write_oserror_becomes_state_acl_error(tmp_path, monkeypatch):   #
         real(self, data)                                                  # a file appears, then the OS refuses
         raise PermissionError(13, "Permission denied")
     monkeypatch.setattr(Path, "write_bytes", denied)
+    if WIN:                                                               # Windows creates it through CreateFileW (R4-01)
+        monkeypatch.setattr(S, "create_user_only_file", lambda p: denied(p, b""))
     with pytest.raises(S.StateAclError):
         S.write_token_file(tok, "secret")
     assert not tok.exists()
@@ -394,3 +400,91 @@ def test_missing_user_name_fails_closed(tmp_path, monkeypatch):
     monkeypatch.delenv("USERNAME", raising=False)
     with pytest.raises(S.StateAclError):
         S.restrict_to_user(tmp_path, folder=True)
+
+
+def _link_dir(link: Path, target: Path):
+    if WIN:
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)], check=True, capture_output=True)
+    else:
+        link.symlink_to(target, target_is_directory=True)
+
+
+def test_state_path_that_is_a_link_fails_closed_before_any_step(tmp_path, monkeypatch):   # R4-01, on every platform
+    outside = tmp_path / "protected"
+    outside.mkdir()
+    (outside / "secret").write_text("x")
+    state = tmp_path / "state"
+    _link_dir(state, outside)
+    calls = _simulated_windows(monkeypatch, fail_reset=False)
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(state, folder=True)
+    assert calls == []                                                    # nothing ran, on the link or its target
+    assert (outside / "secret").read_text() == "x"
+
+
+def test_folder_closing_step_never_follows_a_link(tmp_path):              # R4-01: /L on the folder's own step
+    assert "/L" in S.icacls_steps(tmp_path, "me", folder=True)[0]
+
+
+def test_state_path_swapped_for_a_link_while_closing_fails_closed(tmp_path, monkeypatch):   # R4-01: rename + junction
+    outside = tmp_path / "protected"
+    outside.mkdir()
+    state = tmp_path / "state"
+    state.mkdir()
+    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"]
+
+    def swap(cmd):                                                        # the folder is renamed away and replaced
+        if cmd == grant and not state.is_symlink() and not (tmp_path / "moved").exists():
+            state.rename(tmp_path / "moved")
+            _link_dir(state, outside)
+    calls = _simulated_windows(monkeypatch, fail_reset=False, on_call=swap)
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(state, folder=True)
+    assert ["drop", str(state)] not in calls                              # the owner/DACL write never reaches the target
+    assert calls[-1] == grant                                             # the re-grant acts on the link itself (/L)
+
+
+def test_folder_owned_by_another_principal_fails_closed(tmp_path, monkeypatch):   # R4-01, on every platform
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "scheduler.db").write_bytes(b"x")
+    calls = _simulated_windows(monkeypatch, fail_reset=False, owner="S-1-5-21-9-9-9-1002")
+    with pytest.raises(S.StateAclError, match="owned by another principal"):
+        S.restrict_to_user(state, folder=True)
+    assert not [c for c in calls if "/reset" in c]
+    assert calls[-1] == ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F", "/L"]   # left closed
+
+
+def test_folder_write_takes_the_owner_too(tmp_path):                      # R4-01: owner and DACL in one write
+    assert S.user_only_sddl(ME_SID, folder=True) == f"O:{ME_SID}D:P(A;OICI;FA;;;{ME_SID})"
+    assert S.user_only_sddl(ME_SID) == f"O:{ME_SID}D:P(A;;FA;;;{ME_SID})"
+
+
+def test_token_file_is_created_user_only_on_windows(tmp_path, monkeypatch):   # R4-01: never open to inherited entries
+    order = []
+    monkeypatch.setattr(S, "_WINDOWS", True, raising=False)
+
+    def create(p):
+        order.append("create")
+        p.touch()
+    monkeypatch.setattr(S, "create_user_only_file", create, raising=False)
+    monkeypatch.setattr(S, "restrict_to_user", lambda p, **k: order.append("restrict"))
+    monkeypatch.setattr(Path, "write_bytes", lambda self, d: order.append("plain"))
+    tok = tmp_path / "api-token"
+    S.write_token_file(tok, "secret")
+    assert order == ["create", "restrict"]                                # not created by a plain, inheriting write
+    assert tok.read_text(encoding="utf-8") == "secret"
+
+
+@pytest.mark.skipif(not WIN, reason="Windows-qualified: object owners and the real icacls")
+def test_foreign_owned_folder_is_taken_over(tmp_path):                    # R4-01 with real icacls
+    state = tmp_path / "state"
+    state.mkdir()
+    if subprocess.run(["icacls", str(state), "/setowner", "*S-1-5-32-544"], capture_output=True).returncode != 0:
+        pytest.skip("making BUILTIN\\Administrators the owner needs an elevated session")
+    assert S.owner_sid(state) != S._current_user_sid()
+    S.restrict_to_user(state, folder=True)
+    assert S.owner_sid(state) == S._current_user_sid()
+    S.write_token_file(state / "api-token", "t")
+    aces = _aces(state / "api-token")
+    assert len(aces) == 1 and aces[0].endswith(":(F)") and "(I)" not in aces[0], aces
