@@ -525,16 +525,79 @@
    "id": "R13-01",
    "round": "R13",
    "severity": "MEDIUM",
-   "status": "open",
+   "status": "repaired 5629c04",
    "title": "In-page hidden-text filter still misses fully invisible text: negative z-index under an ancestor background, SVG <text> with fill transparent/none or fill-opacity 0, and -webkit-mask-box-image; injected instructions reach the Brain request as 'Visible text' and 'Selected text' (R12-01 class not closed)"
+  },
+  {
+   "blocking": true,
+   "id": "R14-01",
+   "round": "R14",
+   "severity": "MEDIUM",
+   "status": "repaired 6ab76bd",
+   "title": "Field labels (aria-label, display:none <label>, aria-labelledby to hidden elements), invisible sensitive fields and the page title bypass the D10 render check; hidden injected instructions reach the Brain request"
+  },
+  {
+   "blocking": true,
+   "id": "R14-02",
+   "round": "R14",
+   "severity": "MEDIUM",
+   "status": "repaired 6ab76bd",
+   "title": "Text masked by -webkit-text-security (drawn as discs/squares) passes the differential render check and reaches the Brain as 'On-screen text (pixel-checked)' although the user only sees dots"
+  },
+  {
+   "blocking": true,
+   "id": "R15-01",
+   "round": "R15",
+   "severity": "MEDIUM",
+   "status": "repaired 67aff50",
+   "title": "Invisible shareable form fields and hidden text inside contenteditable bypass the D10 render check; injected instructions reach the Brain request as 'Form fields' values"
+  },
+  {
+   "blocking": false,
+   "id": "R16-01",
+   "round": "R16",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Visually reversed text (unicode-bidi:bidi-override; direction:rtl) passes the D10 render check; the Brain reads it in logical order while the user sees it mirrored (page text, selection and contenteditable values)"
+  },
+  {
+   "blocking": false,
+   "id": "R16-02",
+   "round": "R16",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Citation verifier keeps a claim with swapped subject/object or comparison direction in the Brain's own words (lexical check; documented L-W1-1)"
   }
  ],
- "gates": [],
+ "gates": [
+  {
+   "changed_cause": 0,
+   "commit": "67aff5042c0f",
+   "failed": 179,
+   "gate": "python",
+   "new": 178,
+   "ok": false,
+   "passed": 3090,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  },
+  {
+   "changed_cause": 0,
+   "commit": "67aff5042c0f",
+   "failed": 1,
+   "gate": "flutter",
+   "new": 0,
+   "ok": true,
+   "passed": 533,
+   "status": "COMPLETED_WITH_RESULT",
+   "vanished": 0
+  }
+ ],
  "owner": [
   {
-   "kind": "CONFIG",
-   "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
-   "reason": "milestone config or resolved policy changed since the plan (now config f65917424486, policy 60c95fb8b36f)"
+   "kind": "REPAIR_FAILED",
+   "needs": "manual repair",
+   "reason": "no change made"
   }
  ],
  "repairs": [
@@ -634,6 +697,48 @@
    "commit": "",
    "reason": "OUT_OF_SCOPE: graphify-out/.graphify_detect.json, graphify-out/.graphify_python, graphify-out/.graphify_root",
    "repair": "P14",
+   "status": "REFUSED"
+  },
+  {
+   "addresses": "R13-01",
+   "commit": "5629c04db93c",
+   "reason": "",
+   "repair": "P15",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R14-01, R14-02",
+   "commit": "6ab76bdfff8b",
+   "reason": "",
+   "repair": "P16",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R15-01",
+   "commit": "67aff5042c0f",
+   "reason": "",
+   "repair": "P17",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "GATE-python-1, GATE-python-2, GATE-python-3, GATE-python-4, GATE-python-5, GATE-python-6, GATE-python-7, GATE-python-8, GATE-python-9, GATE-python-10, GATE-python-11, GATE-python-12, GATE-python-13, GATE-python-14, GATE-python-15, GATE-python-16, GATE-python-17, GATE-python-18, GATE-python-19, GATE-python-20, GATE-python-21, GATE-python-22, GATE-python-23, GATE-python-24, GATE-python-25, GATE-python-26, GATE-python-27, GATE-python-28, GATE-python-29, GATE-python-30, GATE-python-31, GATE-python-32, GATE-python-33, GATE-python-34, GATE-python-35, GATE-python-36, GATE-python-37, GATE-python-38, GATE-python-39, GATE-python-40, GATE-python-41, GATE-python-42, GATE-python-43, GATE-python-44, GATE-python-45, GATE-python-46, GATE-python-47, GATE-python-48, GATE-python-49, GATE-python-50, GATE-python-51, GATE-python-52, GATE-python-53, GATE-python-54, GATE-python-55, GATE-python-56, GATE-python-57, GATE-python-58, GATE-python-59, GATE-python-60, GATE-python-61, GATE-python-62, GATE-python-63, GATE-python-64, GATE-python-65, GATE-python-66, GATE-python-67, GATE-python-68, GATE-python-69, GATE-python-70, GATE-python-71, GATE-python-72, GATE-python-73, GATE-python-74, GATE-python-75, GATE-python-76, GATE-python-77, GATE-python-78, GATE-python-79, GATE-python-80, GATE-python-81, GATE-python-82, GATE-python-83, GATE-python-84, GATE-python-85, GATE-python-86, GATE-python-87, GATE-python-88, GATE-python-89, GATE-python-90, GATE-python-91, GATE-python-92, GATE-python-93, GATE-python-94, GATE-python-95, GATE-python-96, GATE-python-97, GATE-python-98, GATE-python-99, GATE-python-100, GATE-python-101, GATE-python-102, GATE-python-103, GATE-python-104, GATE-python-105, GATE-python-106, GATE-python-107, GATE-python-108, GATE-python-109, GATE-python-110, GATE-python-111, GATE-python-112, GATE-python-113, GATE-python-114, GATE-python-115, GATE-python-116, GATE-python-117, GATE-python-118, GATE-python-119, GATE-python-120, GATE-python-121, GATE-python-122, GATE-python-123, GATE-python-124, GATE-python-125, GATE-python-126, GATE-python-127, GATE-python-128, GATE-python-129, GATE-python-130, GATE-python-131, GATE-python-132, GATE-python-133, GATE-python-134, GATE-python-135, GATE-python-136, GATE-python-137, GATE-python-138, GATE-python-139, GATE-python-140, GATE-python-141, GATE-python-142, GATE-python-143, GATE-python-144, GATE-python-145, GATE-python-146, GATE-python-147, GATE-python-148, GATE-python-149, GATE-python-150, GATE-python-151, GATE-python-152, GATE-python-153, GATE-python-154, GATE-python-155, GATE-python-156, GATE-python-157, GATE-python-158, GATE-python-159, GATE-python-160, GATE-python-161, GATE-python-162, GATE-python-163, GATE-python-164, GATE-python-165, GATE-python-166, GATE-python-167, GATE-python-168, GATE-python-169, GATE-python-170, GATE-python-171, GATE-python-172, GATE-python-173, GATE-python-174, GATE-python-175, GATE-python-176, GATE-python-177, GATE-python-178",
+   "commit": "",
+   "reason": "no change made",
+   "repair": "P18",
+   "status": "REFUSED"
+  },
+  {
+   "addresses": "GATE-python-1, GATE-python-2, GATE-python-3, GATE-python-4, GATE-python-5, GATE-python-6, GATE-python-7, GATE-python-8, GATE-python-9, GATE-python-10, GATE-python-11, GATE-python-12, GATE-python-13, GATE-python-14, GATE-python-15, GATE-python-16, GATE-python-17, GATE-python-18, GATE-python-19, GATE-python-20, GATE-python-21, GATE-python-22, GATE-python-23, GATE-python-24, GATE-python-25, GATE-python-26, GATE-python-27, GATE-python-28, GATE-python-29, GATE-python-30, GATE-python-31, GATE-python-32, GATE-python-33, GATE-python-34, GATE-python-35, GATE-python-36, GATE-python-37, GATE-python-38, GATE-python-39, GATE-python-40, GATE-python-41, GATE-python-42, GATE-python-43, GATE-python-44, GATE-python-45, GATE-python-46, GATE-python-47, GATE-python-48, GATE-python-49, GATE-python-50, GATE-python-51, GATE-python-52, GATE-python-53, GATE-python-54, GATE-python-55, GATE-python-56, GATE-python-57, GATE-python-58, GATE-python-59, GATE-python-60, GATE-python-61, GATE-python-62, GATE-python-63, GATE-python-64, GATE-python-65, GATE-python-66, GATE-python-67, GATE-python-68, GATE-python-69, GATE-python-70, GATE-python-71, GATE-python-72, GATE-python-73, GATE-python-74, GATE-python-75, GATE-python-76, GATE-python-77, GATE-python-78, GATE-python-79, GATE-python-80, GATE-python-81, GATE-python-82, GATE-python-83, GATE-python-84, GATE-python-85, GATE-python-86, GATE-python-87, GATE-python-88, GATE-python-89, GATE-python-90, GATE-python-91, GATE-python-92, GATE-python-93, GATE-python-94, GATE-python-95, GATE-python-96, GATE-python-97, GATE-python-98, GATE-python-99, GATE-python-100, GATE-python-101, GATE-python-102, GATE-python-103, GATE-python-104, GATE-python-105, GATE-python-106, GATE-python-107, GATE-python-108, GATE-python-109, GATE-python-110, GATE-python-111, GATE-python-112, GATE-python-113, GATE-python-114, GATE-python-115, GATE-python-116, GATE-python-117, GATE-python-118, GATE-python-119, GATE-python-120, GATE-python-121, GATE-python-122, GATE-python-123, GATE-python-124, GATE-python-125, GATE-python-126, GATE-python-127, GATE-python-128, GATE-python-129, GATE-python-130, GATE-python-131, GATE-python-132, GATE-python-133, GATE-python-134, GATE-python-135, GATE-python-136, GATE-python-137, GATE-python-138, GATE-python-139, GATE-python-140, GATE-python-141, GATE-python-142, GATE-python-143, GATE-python-144, GATE-python-145, GATE-python-146, GATE-python-147, GATE-python-148, GATE-python-149, GATE-python-150, GATE-python-151, GATE-python-152, GATE-python-153, GATE-python-154, GATE-python-155, GATE-python-156, GATE-python-157, GATE-python-158, GATE-python-159, GATE-python-160, GATE-python-161, GATE-python-162, GATE-python-163, GATE-python-164, GATE-python-165, GATE-python-166, GATE-python-167, GATE-python-168, GATE-python-169, GATE-python-170, GATE-python-171, GATE-python-172, GATE-python-173, GATE-python-174, GATE-python-175, GATE-python-176, GATE-python-177, GATE-python-178",
+   "commit": "",
+   "reason": "no change made",
+   "repair": "P19",
+   "status": "REFUSED"
+  },
+  {
+   "addresses": "GATE-python-1, GATE-python-2, GATE-python-3, GATE-python-4, GATE-python-5, GATE-python-6, GATE-python-7, GATE-python-8, GATE-python-9, GATE-python-10, GATE-python-11, GATE-python-12, GATE-python-13, GATE-python-14, GATE-python-15, GATE-python-16, GATE-python-17, GATE-python-18, GATE-python-19, GATE-python-20, GATE-python-21, GATE-python-22, GATE-python-23, GATE-python-24, GATE-python-25, GATE-python-26, GATE-python-27, GATE-python-28, GATE-python-29, GATE-python-30, GATE-python-31, GATE-python-32, GATE-python-33, GATE-python-34, GATE-python-35, GATE-python-36, GATE-python-37, GATE-python-38, GATE-python-39, GATE-python-40, GATE-python-41, GATE-python-42, GATE-python-43, GATE-python-44, GATE-python-45, GATE-python-46, GATE-python-47, GATE-python-48, GATE-python-49, GATE-python-50, GATE-python-51, GATE-python-52, GATE-python-53, GATE-python-54, GATE-python-55, GATE-python-56, GATE-python-57, GATE-python-58, GATE-python-59, GATE-python-60, GATE-python-61, GATE-python-62, GATE-python-63, GATE-python-64, GATE-python-65, GATE-python-66, GATE-python-67, GATE-python-68, GATE-python-69, GATE-python-70, GATE-python-71, GATE-python-72, GATE-python-73, GATE-python-74, GATE-python-75, GATE-python-76, GATE-python-77, GATE-python-78, GATE-python-79, GATE-python-80, GATE-python-81, GATE-python-82, GATE-python-83, GATE-python-84, GATE-python-85, GATE-python-86, GATE-python-87, GATE-python-88, GATE-python-89, GATE-python-90, GATE-python-91, GATE-python-92, GATE-python-93, GATE-python-94, GATE-python-95, GATE-python-96, GATE-python-97, GATE-python-98, GATE-python-99, GATE-python-100, GATE-python-101, GATE-python-102, GATE-python-103, GATE-python-104, GATE-python-105, GATE-python-106, GATE-python-107, GATE-python-108, GATE-python-109, GATE-python-110, GATE-python-111, GATE-python-112, GATE-python-113, GATE-python-114, GATE-python-115, GATE-python-116, GATE-python-117, GATE-python-118, GATE-python-119, GATE-python-120, GATE-python-121, GATE-python-122, GATE-python-123, GATE-python-124, GATE-python-125, GATE-python-126, GATE-python-127, GATE-python-128, GATE-python-129, GATE-python-130, GATE-python-131, GATE-python-132, GATE-python-133, GATE-python-134, GATE-python-135, GATE-python-136, GATE-python-137, GATE-python-138, GATE-python-139, GATE-python-140, GATE-python-141, GATE-python-142, GATE-python-143, GATE-python-144, GATE-python-145, GATE-python-146, GATE-python-147, GATE-python-148, GATE-python-149, GATE-python-150, GATE-python-151, GATE-python-152, GATE-python-153, GATE-python-154, GATE-python-155, GATE-python-156, GATE-python-157, GATE-python-158, GATE-python-159, GATE-python-160, GATE-python-161, GATE-python-162, GATE-python-163, GATE-python-164, GATE-python-165, GATE-python-166, GATE-python-167, GATE-python-168, GATE-python-169, GATE-python-170, GATE-python-171, GATE-python-172, GATE-python-173, GATE-python-174, GATE-python-175, GATE-python-176, GATE-python-177, GATE-python-178",
+   "commit": "",
+   "reason": "no change made",
+   "repair": "P20",
    "status": "REFUSED"
   }
  ],
@@ -793,22 +898,58 @@
    "session": "4fb1cdc4-5625-457d-afe5-2ee1c4450a41",
    "status": "COMPLETED_WITH_RESULT",
    "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "5629c04db93c",
+   "findings": 2,
+   "finished": "2026-10-11T08:15:12Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R14",
+   "session": "1853dd29-8d0b-439a-bdbb-7c4fe2bea577",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "6ab76bdfff8b",
+   "findings": 1,
+   "finished": "2026-10-11T08:29:56Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R15",
+   "session": "ff9043c3-00ba-43fe-9acf-2ffd4a9d57b1",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 0,
+   "candidate": "67aff5042c0f",
+   "findings": 2,
+   "finished": "2026-10-11T08:41:04Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R16",
+   "session": "50c89589-9b0b-41c4-bd9d-3242b8918df6",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
   }
  ],
  "summary": {
   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
-  "candidate": "fcfb465ad34fd450107908b18ef2d9d3af15ec82",
+  "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
   "evidence_ok": false,
-  "findings_repaired": 25,
-  "findings_total": 66,
+  "findings_repaired": 29,
+  "findings_total": 71,
   "integration": "none",
   "milestone": "W1-A0-closure",
-  "open_blocking": 1,
+  "open_blocking": 0,
   "owner_actions": 1,
   "receipt_chain_ok": true,
-  "repairs_committed": 10,
-  "rounds": 13,
+  "repairs_committed": 13,
+  "rounds": 16,
   "stage": "BLOCKED",
-  "written_at": "2026-10-11T07:37:59Z"
+  "written_at": "2026-10-11T08:55:09Z"
  }
 }

@@ -1,0 +1,101 @@
+{
+ "addresses": [
+  "R15-01"
+ ],
+ "changed": [
+  "docs/assist/03_PERMISSION_AND_DATA_FLOW.md",
+  "tests/assist/test_a0_r15_review_regressions.py",
+  "uri_assist/bridge.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/perception.py"
+ ],
+ "commit": "67aff5042c0f166392281e072fb5f9db906779c5",
+ "ended_at": "2026-10-11T08:33:52Z",
+ "pre": "6ab76bdfff8be6cb545168996371ec07adfb87d0",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r15_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 17,
+ "report": {
+  "not_repaired": [],
+  "notes": "snapshot.js: contenteditable value now also sent as value_pieces built from its own visible text nodes (textVisible + nodePieces, not innerText). perception.py: new per-field shown_value, which is checkbox/radio state, render-checked contenteditable value_pieces (OS.keep), or '' for input/textarea/select/UIA (fail closed, cannot be probe-bound). bridge._field_line sends only shown_value, otherwise '(value not shown: ...)' or '(empty)'; the raw value never reaches the Brain. D8 snapshot values and Live Assist checks unchanged. Scope consequence for owner review: D8-shareable input/textarea values (search box, comment) are no longer in the structured Ask prompt. Field listing still uses the in-page rules; a listed field carries only a fixed-vocabulary kind plus render-checked label and value. Doc row 86 in docs/assist/03 corrected with an R15 correction entry. Verified: new test 3 failed on 6ab76bd and 3 passed after the change; tests/assist + tests/web 2674 passed, none skipped. Flutter not run (no Dart changes); no graphify write.",
+  "regression_tests": [
+   "tests/assist/test_a0_r15_review_regressions.py"
+  ],
+  "repaired": [
+   "R15-01"
+  ]
+ },
+ "started_at": "2026-10-11T08:29:56Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "03ab0a13-55cf-4fac-9054-61eeafac6a57",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.3991898000000003,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T08:33:43Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 20,
+  "pid": 29098,
+  "prompt_sha256": "7c735d6661272844f99318cbc62cf2205220a28de37a996f800ac4b387271f59",
+  "provider": "claude_cli",
+  "result_text_sha256": "a55ba4962f1c7f5f5bf72c0f4516b43996c0eda888ffb71875a2c4453784a128",
+  "role": "implementer",
+  "session_id": "03ab0a13-55cf-4fac-9054-61eeafac6a57",
+  "session_id_requested": "03ab0a13-55cf-4fac-9054-61eeafac6a57",
+  "started_at": "2026-10-11T08:29:56Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "5e260a92512eb4a8dcfde321d47977090780ad061ea850b76215a6a70c3f5b43"
+ }
+}

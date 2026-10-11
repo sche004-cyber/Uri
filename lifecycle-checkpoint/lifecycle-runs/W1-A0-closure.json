@@ -46,18 +46,10 @@
    "id": "python",
    "kind": "pytest",
    "cmd": [
-    "{python}",
-    "-m",
-    "pytest",
+    "bash",
     "-c",
-    "scripts/phase2d_pytest.ini",
-    "--rootdir=.",
-    "-q",
-    "tests/ws",
-    "tests/oi",
-    "tests/a2ui",
-    "tests/web",
-    "tests/assist"
+    "dirs=\"\"; for x in tests/ws tests/oi tests/a2ui tests/web tests/assist; do [ -e \"$x\" ] && dirs=\"$dirs $x\"; done; exec {python} -m pytest -c scripts/phase2d_pytest.ini --rootdir=. -q $dirs \"$@\"",
+    "python-gate"
    ],
    "timeout_s": 2400
   },

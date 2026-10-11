@@ -1,0 +1,26 @@
+I've repaired R15-01: page text hidden inside form fields can no longer reach the Brain as "Form fields" values. The new regression test fails on `6ab76bd` (3 of 3) and passes after the change (3 of 3). The full `tests/assist` and `tests/web` run passes, 2674 tests, none skipped. Nothing is committed.
+
+**Cause.** A field's value went to the Brain if the in-page visibility rules listed the field and D8 allowed sharing its value. Nothing checked that the value was actually drawn on screen. For a contenteditable, the value was `innerText`, which also picks up `opacity:0` and off-screen spans.
+
+**Change:**
+- **Contenteditable values** (`snapshot.js`, `perception.py`): the value is now rebuilt from the field's own visible text nodes and checked against the render probe, exactly like page text. The Brain sees only the parts that pass.
+- **Input, textarea and select values** (`perception.py`, `bridge.py`): the probe can't check these, because the browser draws them in its own editor rather than as page text. They are never sent to the Brain now. The field still appears as "(value not shown: it could not be checked as drawn on screen)", or "(empty)" when it has no value.
+- **Checkboxes and radios** still send "checked" or "unchecked", since that is a fixed word and can't carry page text.
+
+**Decision for you:** search boxes and comment, message or subject fields that D8 allows sharing no longer send their values on the plain-text Ask path. The page snapshot still carries those values (the D8 test needs that) and the Live Assist checks in the UI still use them, but the Brain doesn't get them. I chose this because the reviewer offered it as an acceptable fix and checking these fields against the screen is not reliable. A scrolled-away part of a value, for example, could ride along with the visible part. If you want those values back, the field's own text would need to be checked in the probe, which is a design choice for you.
+
+**Field listing:** fields are still listed based on the in-page rules only, so a listed field may itself be invisible. That's acceptable now because a listed field carries no page text except a label and value that both passed the render check. Its kind comes from a fixed list.
+
+**Regression test:** `tests/assist/test_a0_r15_review_regressions.py`
+- **Real Chromium test, with and without Ctrl+A:** the page uses the reviewer's payloads. These are a masked textarea, a textarea at negative z-index, a transparent input and a covered input. It also has opacity:0 and off-screen spans inside a contenteditable. The test checks that none of them reaches the Brain request, while the visible contenteditable text, the checkbox state and normal page text still do.
+- **Unit test:** textarea, search and unchecked contenteditable values are never sent; "(empty)" and "checked" still are.
+
+The page is built inside the test file, and it only imports helpers that already exist at `6ab76bd`.
+
+**Doc:** I corrected row 86 of `docs/assist/03_PERMISSION_AND_DATA_FLOW.md`. Its two false statements are kept and marked as corrected for the audit trail, and the row now has a new "Field values (R15-01)" section and a correction entry.
+
+I didn't run any graphify write commands, and I didn't run the Flutter tests because no Flutter files changed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R15-01"], "not_repaired": [], "regression_tests": ["tests/assist/test_a0_r15_review_regressions.py"], "notes": "snapshot.js: contenteditable value now also sent as value_pieces built from its own visible text nodes (textVisible + nodePieces, not innerText). perception.py: new per-field shown_value, which is checkbox/radio state, render-checked contenteditable value_pieces (OS.keep), or '' for input/textarea/select/UIA (fail closed, cannot be probe-bound). bridge._field_line sends only shown_value, otherwise '(value not shown: ...)' or '(empty)'; the raw value never reaches the Brain. D8 snapshot values and Live Assist checks unchanged. Scope consequence for owner review: D8-shareable input/textarea values (search box, comment) are no longer in the structured Ask prompt. Field listing still uses the in-page rules; a listed field carries only a fixed-vocabulary kind plus render-checked label and value. Doc row 86 in docs/assist/03 corrected with an R15 correction entry. Verified: new test 3 failed on 6ab76bd and 3 passed after the change; tests/assist + tests/web 2674 passed, none skipped. Flutter not run (no Dart changes); no graphify write."}
+REPAIR_RESULT_END

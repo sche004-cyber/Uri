@@ -1,0 +1,18 @@
+I didn't repair any of the 178 findings, and I changed no files. Every failure comes from Windows-only code (`msvcrt` file locking and `powershell` calls) in files I'm not allowed to edit. None of those files changed during the W1-A0-closure milestone either.
+
+**What I checked**
+- **`tests/oi` (GATE-python-1 to 161):** I re-ran `tests/oi/test_oi_policy_triage.py` here. The test body passes, then teardown fails at `tests/oi/conftest.py:9` on `import msvcrt`. That teardown hook runs after every test in the folder, so every `tests/oi` test fails the same way on Linux.
+- **`tests/ws/test_ws_hardening.py` (GATE-python-162 to 178):** I re-ran the whole file. The failures are:
+  - the `msvcrt` import inside the test file and at `uri_operational_intelligence/gpu_lease.py:170`;
+  - `FileNotFoundError: 'powershell'`;
+  - a `ValueError` at `tests/ws/test_ws_hardening.py:55`, which I believe is the same problem. Most likely a Windows process query that comes back empty on Linux.
+- **Milestone history:** `git diff --stat 8019d41 HEAD -- tests/oi tests/ws uri_operational_intelligence scripts` is empty. No W1-A0-closure repair commit touched these paths, so these are Linux-vs-Windows platform failures that already existed, not regressions from this milestone.
+
+**Why it stays unrepaired**
+- The fix belongs in `tests/oi/conftest.py`, `tests/ws/test_ws_hardening.py` and `uri_operational_intelligence/{task_ledger,gpu_lease}.py`. The likely fix is a POSIX `fcntl` lock alongside `msvcrt`, plus marking the PowerShell-dependent tests Windows-only.
+- None of those files are in the permitted paths. I can't fix or neutralise them from `uri_web/**`, `uri_assist/**`, `tests/web/**`, `tests/assist/**` or the other allowed locations without the workaround you ruled out.
+- To clear these findings you'd need to either allow edits to those paths, or have the gate treat these Windows-only tests as out of scope on Linux.
+
+REPAIR_RESULT_BEGIN
+{"repaired": [], "not_repaired": [{"id": "GATE-python-1..GATE-python-161", "reason": "Every tests/oi test fails in teardown because tests/oi/conftest.py:9 imports msvcrt, which only exists on Windows (reproduced locally: the test body passes, teardown raises ModuleNotFoundError). The fix belongs in tests/oi/conftest.py and uri_operational_intelligence/task_ledger.py, both outside the permitted paths. These files were not changed by any W1-A0-closure commit (git diff 8019d41..HEAD on them is empty), so this is a Linux platform failure that already existed, not a milestone regression."}, {"id": "GATE-python-162..GATE-python-178", "reason": "tests/ws/test_ws_hardening.py is Windows-only: it hits the msvcrt import in the test file and in uri_operational_intelligence/gpu_lease.py:170, a FileNotFoundError for 'powershell', and a ValueError at test line 55 that is most likely an empty Windows process query on Linux (reproduced locally). The test file and gpu_lease.py are outside the permitted paths and were not changed during W1-A0-closure. This is a platform failure that already existed."}], "regression_tests": [], "notes": "I modified no files. Every finding traces to Windows-only code (msvcrt locking, powershell) in tests/oi/conftest.py, tests/ws/test_ws_hardening.py and uri_operational_intelligence/{task_ledger,gpu_lease}.py, all outside the allowed paths. Clearing these findings needs either permission to add POSIX fcntl locking and mark the PowerShell tests Windows-only in those paths, or a gate decision that treats these Windows-only suites as out of scope on Linux."}
+REPAIR_RESULT_END

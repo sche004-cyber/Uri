@@ -1,0 +1,64 @@
+{
+ "attempts": {},
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "baseline_gates": {},
+ "blocker": null,
+ "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
+ "config_path": "/home/user/uri-wt/lifecycle-runs/W1-A0-closure-2.json",
+ "config_sha256": "fd330b42861dfd46915162a16371833bc651d5cea268e8f2d2fda060230ae1e6",
+ "gates": {},
+ "history": [
+  {
+   "hash": "9fdba44c8123b8c6d95bcc329b7481fa35a87a9d13590a5c3cba83d827e230c7",
+   "kind": "PLAN",
+   "seq": 1,
+   "ts": "2026-10-11T09:02:06Z"
+  },
+  {
+   "hash": "7e0cf09856040774947b9c5b0eba2d98c84358906b82f8a575fa92d891613760",
+   "kind": "STAGE",
+   "seq": 2,
+   "ts": "2026-10-11T09:02:06Z"
+  },
+  {
+   "hash": "a397d858fc6f0f63c9e15c8a086ad731b980581264699e47b6b7003d73b3af0e",
+   "kind": "STAGE",
+   "seq": 3,
+   "ts": "2026-10-11T09:02:06Z"
+  },
+  {
+   "hash": "c412ebd322be3a2a9142954efd94706b50edd79572459e677a24b7ed73e5d63c",
+   "kind": "IMPLEMENTATION_RECORDED",
+   "seq": 4,
+   "ts": "2026-10-11T09:02:07Z"
+  },
+  {
+   "hash": "dbd33d7967846293298322c82b10c7b30b62075fe051a949d6cf401d3897744e",
+   "kind": "STAGE",
+   "seq": 5,
+   "ts": "2026-10-11T09:02:07Z"
+  },
+  {
+   "hash": "65e6d1f25b3d11050e0038415dc741422f47b1b1746dcf17d1f22f09d7ac8ccb",
+   "kind": "REVIEW_STARTED",
+   "seq": 6,
+   "ts": "2026-10-11T09:02:08Z"
+  }
+ ],
+ "integration": null,
+ "milestone": "W1-A0-closure",
+ "repairs": [],
+ "rounds": [
+  {
+   "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R1",
+   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+   "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "round": 1,
+   "started_at": "2026-10-11T09:02:08Z"
+  }
+ ],
+ "schema": "uri-dev-lifecycle/1",
+ "spent_usd": 0,
+ "stage": "AUDITING",
+ "started_at": "2026-10-11T09:02:05Z"
+}
