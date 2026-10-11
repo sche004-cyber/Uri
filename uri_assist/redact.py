@@ -39,11 +39,34 @@ _RUN_TOGETHER = re.compile(
     r"new|old|confirm|current|verify|secret)pin(number|num|no)?\b|\bpin(number|num|no|entry|input|field|value)\b|"
     r"(user|login|admin|account|acct|new|old|confirm|current|root|wifi|txn|master|secret|db)pass\b|"
     r"(verify|verif|sms|email|access|activation|confirmation|confirm|login|signin)code\b")
+# Secret stems inside a run-together word, whatever comes before them (R3-01: "emailverificationcode", "mfacode",
+# "onetimepin", "2facode", "authenticatorcode", "accesstoken", "clientsecret"). Matched on _tokens(), which splits at
+# separators and camelCase but not at digits ("2facode" stays one word), so a stem never spans two words of a label
+# ("not familiar" does not contain "tfa"). otp not before a/h/l/o ("footpath", "hotpot", "hotplate"); tfa only at
+# the start of a word ("nightfall"); secret not in "secretary".
+_STEMS = re.compile(
+    r"otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|verification|authenticat|cvv|cvc|ccv|token|secret(?!ar)|"
+    r"password|passwd|passcode|passphrase|pwd")
+# A short all-digit value is a code / PIN when a name, label or placeholder ENDS with code or pin ("cardcode",
+# "smspin", "Enter code:"), checked on the name with everything but letters and digits removed; postal, country,
+# area, promo, coupon, voucher, referral, bar, sort, IFSC and SWIFT codes stay readable.
+_CODE_END = re.compile(r"(code|pin)(number|num|no)?$")
+_CODE_EXCLUDE = re.compile(r"postal|zip|postcode|pincode|country|area|promo|coupon|voucher|referral|barcode|sortcode|"
+                           r"ifsc|swift")
 
 
 def _words(v: str) -> str:
     v = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=\d)|(?<=\d)(?=[A-Za-z])", " ", v)
     return re.sub(r"[_\-.:/]+", " ", v).lower()
+
+
+def _tokens(v: str) -> str:
+    v = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", " ", v)
+    return re.sub(r"[^A-Za-z0-9]+", " ", v).lower()
+
+
+def _joined(v: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", v.lower())
 
 
 _TEXT_RULES = (
@@ -57,7 +80,7 @@ _TEXT_RULES = (
     ("aadhaar", re.compile(r"(?<!\d)(?<!\d[ -])[2-9]\d{3}[ -]?\d{4}[ -]?\d{4}(?![ -]?\d)")),
 )
 _CARD = re.compile(r"\b(?:\d[ .\u00a0\u2007\u202f-]?){12,18}\d\b")
-_SHORT_CODE = re.compile(r"^\s*\d{4,8}\s*$")
+_SHORT_CODE = re.compile(r"^\s*\d{3,8}\s*$")
 _CODE_LABEL = re.compile(r"(?i)\bcode\b")
 _POSTAL = re.compile(r"(?i)postal|zip|post ?code|pin ?code")
 
@@ -94,12 +117,18 @@ def redact_text(text, counts: Counter) -> str:
     return out
 
 
+def _short_code_label(v: str) -> bool:
+    if _POSTAL.search(v) or _CODE_EXCLUDE.search(_joined(v)):
+        return False
+    return bool(_CODE_LABEL.search(_words(v)) or _CODE_END.search(_joined(v)))
+
+
 def field_is_sensitive(f: dict) -> bool:
     if str(f.get("type", "")).lower() in SENSITIVE_TYPES:
         return True
-    # A short all-digit value in a field labelled "... code" is treated as a one-time code (F5).
+    # A short all-digit value in a field labelled "... code" / ending in code or pin is a one-time code (F5, R3-01).
     if isinstance(f.get("value"), str) and _SHORT_CODE.match(f["value"]) and any(
-            isinstance(f.get(k), str) and _CODE_LABEL.search(_words(f[k])) and not _POSTAL.search(f[k])
+            isinstance(f.get(k), str) and _short_code_label(f[k])
             for k in ("label", "name", "placeholder", "aria_label")):
         return True
     if f.get("is_password") is True:
@@ -109,7 +138,8 @@ def field_is_sensitive(f: dict) -> bool:
         return True
     for k in ("name", "id", "label", "automation_id", "placeholder", "aria_label"):
         v = f.get(k)
-        if isinstance(v, str) and (_SENSITIVE_WORDS.search(_words(v)) or _RUN_TOGETHER.search(_words(v))):
+        if isinstance(v, str) and (_SENSITIVE_WORDS.search(_words(v)) or _RUN_TOGETHER.search(_words(v)) or
+                                   _STEMS.search(_tokens(v))):
             return True
     return False
 
