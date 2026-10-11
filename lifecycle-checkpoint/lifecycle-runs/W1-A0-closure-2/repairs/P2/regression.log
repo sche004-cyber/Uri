@@ -1,0 +1,224 @@
+=== tests/assist/test_a0_d10_pixel_checked_text.py BEFORE (ca622bc0354a960c82acd7a33ecc6de5bb9f360a) DONE
+FF...........F....                                                       [100%]
+=================================== FAILURES ===================================
+__ test_d10_real_chromium_hidden_payloads_never_reach_the_brain[no_selection] __
+
+runs = {'no_selection': {'snap': {'schema': 'uri.assist.dom.v1', 'url': 'about:blank', 'title': 'Inbox', 'lang': '', ...}, 's...n<p>You have 3 new messages.</p>\n<div style="height:2200px"></div>\n<p>Footer BELOWFOLD-PAYLOAD</p>\n</body></html>'}}
+name = 'no_selection'
+
+    @pytest.mark.parametrize("name", ["no_selection", "ctrl_a"])
+    def test_d10_real_chromium_hidden_payloads_never_reach_the_brain(runs, name):
+        run = runs[name]
+        snap = run["snap"]
+        body, user, observation = _ask(snap, decode_probe(run["probe"]))
+        for v in PAYLOADS + NOT_VERIFIABLE:
+            assert v not in body, (name, v)
+        for v in KEPT:                                     # visible text still reaches the Brain
+>           assert v in body, (name, v)
+E           AssertionError: ('no_selection', 'Welcome back')
+E           assert 'Welcome back' in '[{"model": "local", "messages": [{"role": "system", "content": "You help the user understand content from a window or....\\n<<<END SOURCE 1>>>"}], "temperature": 0.0, "max_tokens": 600, "chat_template_kwargs": {"enable_thinking": false}}]'
+
+tests/assist/test_a0_d10_pixel_checked_text.py:180: AssertionError
+_____ test_d10_real_chromium_hidden_payloads_never_reach_the_brain[ctrl_a] _____
+
+runs = {'no_selection': {'snap': {'schema': 'uri.assist.dom.v1', 'url': 'about:blank', 'title': 'Inbox', 'lang': '', ...}, 's...n<p>You have 3 new messages.</p>\n<div style="height:2200px"></div>\n<p>Footer BELOWFOLD-PAYLOAD</p>\n</body></html>'}}
+name = 'ctrl_a'
+
+    @pytest.mark.parametrize("name", ["no_selection", "ctrl_a"])
+    def test_d10_real_chromium_hidden_payloads_never_reach_the_brain(runs, name):
+        run = runs[name]
+        snap = run["snap"]
+        body, user, observation = _ask(snap, decode_probe(run["probe"]))
+        for v in PAYLOADS + NOT_VERIFIABLE:
+            assert v not in body, (name, v)
+        for v in KEPT:                                     # visible text still reaches the Brain
+>           assert v in body, (name, v)
+E           AssertionError: ('ctrl_a', 'Welcome back')
+E           assert 'Welcome back' in '[{"model": "local", "messages": [{"role": "system", "content": "You help the user understand content from a window or....\\n<<<END SOURCE 1>>>"}], "temperature": 0.0, "max_tokens": 600, "chat_template_kwargs": {"enable_thinking": false}}]'
+
+tests/assist/test_a0_d10_pixel_checked_text.py:180: AssertionError
+___________ test_onscreen_missing_or_wrong_screenshot_keeps_nothing ____________
+
+    def test_onscreen_missing_or_wrong_screenshot_keeps_nothing():
+        units = [_unit(0, 10)]
+        snap = _snap(units)
+        good = drawn_probe(snap)
+        small = drawn_probe(_snap(units, w=800))
+        for probe in (None, {}, b"png", {**good, "schema": "other"}, {**good, "viewport": {"w": 800, "h": 900}},
+                      {**good, "device_pixel_ratio": 2}, {**good, "base": small["base"]}, {**good, "base2": None},
+                      {**good, "plain": None},
+                      {**good, "groups": [{**good["groups"][0], "tint2": b"\x89PNG broken"}]},
+                      {**good, "units": []}, {**good, "palette": good["palette"][:1]}):
+            c = Counter()
+>           assert OS.keep(_pieces(units), OS.load(probe, snap), c, 10) == [] and c == {"offscreen_or_unverified": 1}
+E           AssertionError: assert ([{'t': 'xxxxx... [0], 'g': 0}] == []
+E             
+E             Left contains one more item: {'t': 'xxxxxxxxxxxxxxxxxxxx', 'u': [0], 'g': 0}
+E             Use -v to get more diff)
+
+tests/assist/test_a0_d10_pixel_checked_text.py:335: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_d10_real_chromium_hidden_payloads_never_reach_the_brain[no_selection]
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_d10_real_chromium_hidden_payloads_never_reach_the_brain[ctrl_a]
+FAILED tests/assist/test_a0_d10_pixel_checked_text.py::test_onscreen_missing_or_wrong_screenshot_keeps_nothing
+3 failed, 15 passed in 6.21s
+
+=== tests/assist/test_a0_d10_pixel_checked_text.py AFTER (f370064354ba678ec5fed956a709cd0e7626c269) DONE
+..................                                                       [100%]
+18 passed in 6.57s
+
+=== tests/assist/test_a0_r13_differential_render.py BEFORE (ca622bc0354a960c82acd7a33ecc6de5bb9f360a) DONE
+FF..............                                                         [100%]
+=================================== FAILURES ===================================
+_ test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain[no_selection] _
+
+runs = {'no_selection': {'snap': {'schema': 'uri.assist.dom.v1', 'url': 'about:blank', 'title': 'Inbox', 'lang': '', ...}, 's...ou have 3 new messages.</p>\n<div style="height:2200px"></div>\n<p>Footer BELOWFOLD-PAYLOAD</p>\n</body></html>', ...}}
+name = 'no_selection'
+
+    @pytest.mark.parametrize("name", ["no_selection", "ctrl_a"])
+    def test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain(runs, name):
+        run = runs[name]
+        body, user, observation = ask(run)
+        leaked = [v for v in PAYLOADS + PAYLOAD_WORDS if v in body]
+        assert not leaked, (name, leaked, observation["redactions"])
+        missing = [v for v in KEPT if v not in body]          # visible text, also right under a payload, still reaches it
+>       assert not missing, (name, missing)
+E       AssertionError: ('no_selection', ['Welcome back', 'VIS-OK-1', 'DECOY-OK-1', 'DECOY-OK-2', 'DECOY-OK-3', 'DECOY-OK-4', ...])
+E       assert not ['Welcome back', 'VIS-OK-1', 'DECOY-OK-1', 'DECOY-OK-2', 'DECOY-OK-3', 'DECOY-OK-4', ...]
+
+tests/assist/test_a0_r13_differential_render.py:227: AssertionError
+___ test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain[ctrl_a] ___
+
+runs = {'no_selection': {'snap': {'schema': 'uri.assist.dom.v1', 'url': 'about:blank', 'title': 'Inbox', 'lang': '', ...}, 's...ou have 3 new messages.</p>\n<div style="height:2200px"></div>\n<p>Footer BELOWFOLD-PAYLOAD</p>\n</body></html>', ...}}
+name = 'ctrl_a'
+
+    @pytest.mark.parametrize("name", ["no_selection", "ctrl_a"])
+    def test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain(runs, name):
+        run = runs[name]
+        body, user, observation = ask(run)
+        leaked = [v for v in PAYLOADS + PAYLOAD_WORDS if v in body]
+        assert not leaked, (name, leaked, observation["redactions"])
+        missing = [v for v in KEPT if v not in body]          # visible text, also right under a payload, still reaches it
+>       assert not missing, (name, missing)
+E       AssertionError: ('ctrl_a', ['Welcome back', 'VIS-OK-1', 'DECOY-OK-1', 'DECOY-OK-2', 'DECOY-OK-3', 'DECOY-OK-4', ...])
+E       assert not ['Welcome back', 'VIS-OK-1', 'DECOY-OK-1', 'DECOY-OK-2', 'DECOY-OK-3', 'DECOY-OK-4', ...]
+
+tests/assist/test_a0_r13_differential_render.py:227: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r13_differential_render.py::test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain[no_selection]
+FAILED tests/assist/test_a0_r13_differential_render.py::test_r13_01_hidden_text_over_visible_ink_never_reaches_the_brain[ctrl_a]
+2 failed, 14 passed in 6.33s
+
+=== tests/assist/test_a0_r13_differential_render.py AFTER (f370064354ba678ec5fed956a709cd0e7626c269) DONE
+................                                                         [100%]
+16 passed in 6.71s
+
+=== tests/assist/test_a0_r2_decoration_regressions.py BEFORE (ca622bc0354a960c82acd7a33ecc6de5bb9f360a) DONE
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_ test_r2_03_text_under_its_own_decoration_never_reaches_the_brain[no_selection] _
+
+runs = {'no_selection': {'snap': {'schema': 'uri.assist.dom.v1', 'url': 'about:blank', 'title': 'Notices', 'lang': '', ...}, ...tents(document.getElementById("hl"));\nCSS.highlights.set("pagehl", new Highlight(r));</script>\n</body></html>', ...}}
+name = 'no_selection'
+
+    @pytest.mark.parametrize("name", ["no_selection", "ctrl_a"])
+    def test_r2_03_text_under_its_own_decoration_never_reaches_the_brain(runs, name):
+        run = runs[name]
+        body, user, observation = ask(run)
+        leaked = [v for v in PAYLOADS if v in body]
+        assert not leaked, (name, leaked, observation["redactions"])
+        missing = [v for v in KEPT if v not in body]
+>       assert not missing, (name, missing, observation["redactions"])
+E       AssertionError: ('no_selection', ['PLAIN-OK-1', 'LINK-OK-2', 'STRUCK-OK-3', 'UTAG-OK-4', 'WAVY-OK-5'], {'no_ink': 15})
+E       assert not ['PLAIN-OK-1', 'LINK-OK-2', 'STRUCK-OK-3', 'UTAG-OK-4', 'WAVY-OK-5']
+
+tests/assist/test_a0_r2_decoration_regressions.py:63: AssertionError
+___ test_r2_03_text_under_its_own_decoration_never_reaches_the_brain[ctrl_a] ___
+
+runs = {'no_selection': {'snap': {'schema': 'uri.assist.dom.v1', 'url': 'about:blank', 'title': 'Notices', 'lang': '', ...}, ...tents(document.getElementById("hl"));\nCSS.highlights.set("pagehl", new Highlight(r));</script>\n</body></html>', ...}}
+name = 'ctrl_a'
+
+    @pytest.mark.parametrize("name", ["no_selection", "ctrl_a"])
+    def test_r2_03_text_under_its_own_decoration_never_reaches_the_brain(runs, name):
+        run = runs[name]
+        body, user, observation = ask(run)
+        leaked = [v for v in PAYLOADS if v in body]
+        assert not leaked, (name, leaked, observation["redactions"])
+        missing = [v for v in KEPT if v not in body]
+>       assert not missing, (name, missing, observation["redactions"])
+E       AssertionError: ('ctrl_a', ['PLAIN-OK-1', 'LINK-OK-2', 'STRUCK-OK-3', 'UTAG-OK-4', 'WAVY-OK-5'], {'offscreen_or_unverified': 18})
+E       assert not ['PLAIN-OK-1', 'LINK-OK-2', 'STRUCK-OK-3', 'UTAG-OK-4', 'WAVY-OK-5']
+
+tests/assist/test_a0_r2_decoration_regressions.py:63: AssertionError
+____________ test_r2_03_probe_without_the_plain_shot_keeps_nothing _____________
+
+    def test_r2_03_probe_without_the_plain_shot_keeps_nothing():
+        from uri_assist import onscreen as OS
+        units = [{"n": 0, "a": 0, "b": 30, "r": [[10, 10, 300, 18]], "c": 1, "k": 30, "l": 30}]
+        snap = {"units": units, "viewport": {"w": 400, "h": 200}, "device_pixel_ratio": 1}
+        probe = drawn_probe(snap)
+        probe.pop("plain", None)
+        c = Counter()
+>       assert OS.keep([{"t": "x" * 30, "u": [0], "g": 0}], OS.load(probe, snap), c, 9) == []
+E       AssertionError: assert [{'t': 'xxxxx... [0], 'g': 0}] == []
+E         
+E         Left contains one more item: {'t': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'u': [0], 'g': 0}
+E         Use -v to get more diff
+
+tests/assist/test_a0_r2_decoration_regressions.py:77: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r2_decoration_regressions.py::test_r2_03_text_under_its_own_decoration_never_reaches_the_brain[no_selection]
+FAILED tests/assist/test_a0_r2_decoration_regressions.py::test_r2_03_text_under_its_own_decoration_never_reaches_the_brain[ctrl_a]
+FAILED tests/assist/test_a0_r2_decoration_regressions.py::test_r2_03_probe_without_the_plain_shot_keeps_nothing
+3 failed in 3.43s
+
+=== tests/assist/test_a0_r2_decoration_regressions.py AFTER (f370064354ba678ec5fed956a709cd0e7626c269) DONE
+...                                                                      [100%]
+3 passed in 3.24s
+
+=== tests/web/test_w1_r2_review_regressions.py BEFORE (ca622bc0354a960c82acd7a33ecc6de5bb9f360a) DONE
+D tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refunds-portal.n\u2060et/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refunds-portal\ufeff.org]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refunds-portal\uff61net]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refundsportal.Info]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refunds-portal.Xyzq/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refunds-portal.\u043e\u043d\u043b\u0430\u0439\u043d]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refunds-portal.ne\u0301t/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refunds-portal.n\ufe0fet/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[refunds-p\u043ertal.n\u0435t]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_verify_and_extractive_never_keep_a_link[\u0440\u0435\u0444\u0430\u043d\u0434.\u0440\u0444/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_surface_masks_every_link_form_and_shows_no_invisible_characters
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_research_job_end_to_end_never_shows_the_link[refunds-portal&#8203;.net/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_research_job_end_to_end_never_shows_the_link[refunds-portal.Net/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_research_job_end_to_end_never_shows_the_link[refunds-p&#246;rtal.net/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_research_job_end_to_end_never_shows_the_link[refunds&shy;portal.n&shy;et]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_research_job_end_to_end_never_shows_the_link[refunds-portal&#12290;net/claim]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_01_research_job_end_to_end_never_shows_the_link[refunds-portal.&#1089;om]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_recombined_claim_is_quoted_not_reworded[The tax in Texas was cut by an order of magnitude [1].-The tax in Texas was cut by basis points while the levy in Ohio was cut by an order of magnitude.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_recombined_claim_is_quoted_not_reworded[Wages in Texas rose hourly [1].-Wages in Texas rose quarterly while rents in Ohio rose hourly.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_recombined_claim_is_quoted_not_reworded[The levy in Texas was paid over a fortnight [1].-The levy in Texas was paid over a week while the tax in Ohio was paid over a fortnight.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_recombined_claim_is_quoted_not_reworded[Rents in Texas peaked in the nineties [1].-Rents in Texas peaked in the eighties while wages in Ohio peaked in the nineties.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_recombined_claim_is_quoted_not_reworded[The tax in Texas was cut sharply [1].-The tax in Texas was cut gently while the levy in Ohio was cut sharply.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_recombined_claim_is_quoted_not_reworded[The tax in Texas was cut sharply [1].-The tax in Texas fell gently, the levy in Ohio was cut sharply.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_recombined_claim_is_quoted_not_reworded[The bridge reopened before repairs were completed [1].-The bridge reopened after repairs were completed.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_d7_does_not_rest_on_the_quantity_word_list[The tax in Texas was cut by an order of magnitude [1].-The tax in Texas was cut by basis points while the levy in Ohio was cut by an order of magnitude.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_d7_does_not_rest_on_the_quantity_word_list[Wages in Texas rose hourly [1].-Wages in Texas rose quarterly while rents in Ohio rose hourly.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_d7_does_not_rest_on_the_quantity_word_list[The levy in Texas was paid over a fortnight [1].-The levy in Texas was paid over a week while the tax in Ohio was paid over a fortnight.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_d7_does_not_rest_on_the_quantity_word_list[Rents in Texas peaked in the nineties [1].-Rents in Texas peaked in the eighties while wages in Ohio peaked in the nineties.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[It fell by an order of magnitude.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[Fees are charged hourly.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[Rents rose quarterly.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[Rooms are cleaned nightly.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[It took a fortnight.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[Each semester costs more.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[It is reviewed biennially.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[It rose last year.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[Rents peaked in the nineties.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[A handful of hostels closed.]
+FAILED tests/web/test_w1_r2_review_regressions.py::test_r2_02_more_quantity_forms[The balance was nil.]
+61 failed, 6 passed in 0.72s
+
+=== tests/web/test_w1_r2_review_regressions.py AFTER (f370064354ba678ec5fed956a709cd0e7626c269) DONE
+...................................................................      [100%]
+67 passed in 0.42s
+

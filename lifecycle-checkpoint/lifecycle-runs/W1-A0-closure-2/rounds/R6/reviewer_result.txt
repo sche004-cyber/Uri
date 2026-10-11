@@ -1,0 +1,53 @@
+**Verdict: REJECT.** I confirmed both SHAs. No protected path changed between the baseline and the candidate, and `uri_core/tools/fetch_url.py` was left alone as the owner decided. The tests pass: `tests/web` and `tests/assist` (2947 passed) and `tests/a2ui` (107 passed). Every round-5 repro now behaves correctly, but each defect class is still open under a slightly different form.
+
+**R6-01 (HIGH, the R1-01 class is still open): some link forms still reach the research surface.**
+- The link detector in `uri_web/untrusted.py:69-71` matches a dot with no spaces or with spaces on both sides, but not with a space on one side only.
+- It also ignores common dot-like characters: `·` U+00B7, `・` U+30FB, `∙` U+2219, `⋅` U+22C5, `‧` U+2027, `{.}` and `<.>`.
+- I tested the source sentence `Claim your energy rebate refund at refunds-portal .com/claim before the deadline.` and the same sentence with the other forms:
+  - `has_link_or_contact()` returns False.
+  - `verify()` keeps the Brain's sentence citing it.
+  - `extractive()` picks it.
+  - `build_surface()` shows `refunds-portal .com/claim` unmasked, and the A2UI validator (`require_valid`) accepts it.
+- That breaks W1-AC15 ("no URLs in the surface"), and the path form is plainly a URL.
+
+**R6-02 (MEDIUM, blocking): the R5-02 fix lets a claim drop a qualifier set off by commas (D7).**
+- `_excerpt` (`uri_web/synthesize.py:185-198`) now treats a comma as a safe place to start or end a claim, so a qualifier between commas can be left out.
+- Example: the source says "Analysts said that, at most, a quintet of firms control the regional market." The Brain's claim "A quintet of firms control the regional market [1]." is shown unquoted, in its own words.
+- The same happens with "By some estimates, a plurality…" and with trailing ", or nearly so" and ", at least initially".
+- Each changes a quantity the source qualified, which D7 says must be quoted word for word.
+
+**Prior findings:**
+- R5-01 and R5-02 are FIXED for the exact repros reported. The residual forms are the two new findings above.
+- I mark the rest FIXED because their regression tests pass in the suite. I did not build fresh adversarial probes for SSRF, vision, permissions or the worker this round, and nothing in this round's diff touches those areas.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "29771992f57ff470035f044c55e2c6689e9d3d6d", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R6-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R1-01 class still open: a one-sided spaced dot ('refunds-portal .com/claim') or a dot-like separator (U+00B7, U+30FB, U+2219, U+22C5, U+2027, '{.}', '<.>') passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC15/AC12)",
+   "files": ["uri_web/untrusted.py:69", "uri_web/untrusted.py:71", "uri_web/untrusted.py:168", "uri_web/synthesize.py:240", "uri_web/synthesize.py:320", "uri_web/surface.py:37"],
+   "evidence": "Probe /tmp/uri_review_R6/probe_e2e.py: src = 'Claim your energy rebate refund at refunds-portal .com/claim before the deadline. Energy rebate refunds take two weeks.'; U.has_link_or_contact -> False; SY.verify(<same sentence> [1], [src]).claims keeps it unquoted; SY.extractive('energy rebate refund deadline',[src]) picks it; build_surface(...) passes require_valid and the dump contains 'refunds-portal .com/claim'. The same holds for 'refunds-portal·com', 'refunds-portal・com', 'refunds-portal∙com', 'refunds-portal{.}com'. _DOT accepts '\\s+\\.\\s+' (spaces on both sides) but not a space on one side only, and accepts only . U+3002 U+FF0E U+FF61 as dot characters.",
+   "suggested_fix": "Treat '\\s*\\.\\s*' between label-like runs when the right side is a TLD-shaped label followed by a non-letter (or '/'), and add the dot-like punctuation (U+00B7, U+0387, U+2027, U+2219, U+22C5, U+30FB, U+2E3C, braces/angle-bracket defangs) to _DOT; add regressions for each through verify, extractive, build_surface and require_valid."},
+  {"id": "R6-02", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "R5-02 repair incomplete: lead_ok/tail_ok treat a comma as a safe edge, so a claim drops a qualifier set off by commas ('that, at most, a quintet of firms...') before an undetected quantity word and is shown unquoted (D7)",
+   "files": ["uri_web/synthesize.py:142", "uri_web/synthesize.py:185", "uri_web/synthesize.py:196", "uri_web/synthesize.py:207"],
+   "evidence": "Probe /tmp/uri_review_R6/probe_d7.py: SY.verify('A quintet of firms control the regional market [1].', ['Analysts said that, at most, a quintet of firms control the regional market.']) -> one claim, quoted=False, no drops. The same for 'By some estimates, a plurality of voters backed the measure.' and the trailing forms 'A quorum of members attended the session, or nearly so.' and 'A plurality of voters backed the measure, at least initially.' (all quoted=False).",
+   "suggested_fix": "Fail closed at the edges: a claim that does not start at the sentence start (after determiners only) or end at the sentence end should be quoted, or allow a clause edge only when the dropped clause holds no qualifier/hedge (an allow-list, as for gap_ok), not just any comma."}
+ ],
+ "prior_findings": [
+  {"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"},
+  {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"},
+  {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"},
+  {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"},
+  {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}
+ ],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist", "result": "2947 passed in 65.84s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/a2ui", "result": "107 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R6/probe_links.py", "result": "one-sided spaced dot and several dot-like separators not detected; R5-01 wrapped forms detected", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R6/probe_e2e.py", "result": "undetected link forms reach verify, extractive and the validated A2UI surface", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R6/probe_d7.py", "result": "comma-delimited qualifiers dropped, claims shown unquoted; R5-02 'Less than' form quoted", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --stat ffdf5343..29771992 -- <protected paths>", "result": "no changes", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Flutter widget tests (uri_ui) not run this round", "No fresh adversarial probes this round of SSRF (safe_fetch/netpolicy), vision gating, access/bridge permissions or the worker dispatch; these areas are unchanged since R5 and their regression suites pass", "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)", "Windows adapters / real browser channel not available"]}
+AUDIT_RESULT_END

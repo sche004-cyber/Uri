@@ -1,0 +1,101 @@
+{
+ "addresses": [
+  "R3-01",
+  "R3-02"
+ ],
+ "changed": [
+  "tests/web/test_w1_r3_review_regressions.py",
+  "uri_web/synthesize.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "462be42c992c273155e83801b32dc01580a897ef",
+ "ended_at": "2026-10-11T10:13:14Z",
+ "pre": "f370064354ba678ec5fed956a709cd0e7626c269",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_r3_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 3,
+ "report": {
+  "not_repaired": [],
+  "notes": "R3-01: untrusted._is_domain now blocks by default: any label<dot>label with a 2+ letter last label is a link in any case; the _TLDS/case/hyphen rules no longer decide. Two exceptions remain: a missing space before one of a few non-domain words (_SENTENCE_WORDS: the/then/this/that/these/those/they/\u00e9t\u00e9/ete), and the ideographic full stop between two Chinese/Japanese runs unless the second run is in _IDN_TLDS (still list-based; disclosed). Added spaced defangs ([.], ( . ), [dot], (dot), ' dot ', ' . ') to _DOT and a phone pattern (8+ digits, dates and year ranges excluded). mask_links masks the whole matched span across words, look-alike characters included. Existing precision tests left unchanged instead of rewritten as the diagnosis proposed, because rewriting them would weaken existing tests. Not checked: whether the _SENTENCE_WORDS entries are real domain endings (IANA download blocked by the proxy). R3-02: _excerpt matches every claim word in order; the claim may add only determiners; the source may leave out only determiners, or one determiner plus at most MAX_GAP_WORDS words that are not function words (noun-phrase modifiers). Kept because tests d7_verbatim_numbers:40 and r2:140 require 'after a long public consultation' -> 'after consultation' to stay unquoted. states_quantity on the skipped text is kept only as an extra check; added doubling/halving/-tupl(e|ed|ing)/multiplied/bi-weekly/bi-monthly/semi-annual/triennial/quadrennial/\u2030/ppm/ppb/pct to _QUANTITY. Remaining gap: a modifier inside a determiner-led noun phrase before a noun not recognised as a quantity can still be dropped ('the near zorbing' -> 'the zorbing'). Precision costs: 'red dot appeared', 'US DOT said', 8+ digit runs that are not dates, a missing space before an unlisted word, and claims using a function word the source lacks are now flagged or quoted. Ran the new file against a clean export of f370064: 67 failed, 5 passed (the precision and noun-phrase checks plus 3 quantity forms already detected there). After the change: tests/web + tests/assist 2782 passed. graphify not run (as instructed).",
+  "regression_tests": [
+   "tests/web/test_w1_r3_review_regressions.py"
+  ],
+  "repaired": [
+   "R3-01",
+   "R3-02"
+  ]
+ },
+ "started_at": "2026-10-11T10:02:07Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "9cf4f7d5-9b25-4439-b7c1-733e04bb2d0a",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 223
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.7105601999999998,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T10:13:08Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 19,
+  "pid": 6775,
+  "prompt_sha256": "a002b870505b73f502c7eb0fe8e39c6a6579c6fefe51312c4ded06927b9ec041",
+  "provider": "claude_cli",
+  "result_text_sha256": "5a9b7b36b2d0045615f9857aeb84c0d21c3f8e00b689af3754e5c1ff001a3e8d",
+  "role": "implementer",
+  "session_id": "9cf4f7d5-9b25-4439-b7c1-733e04bb2d0a",
+  "session_id_requested": "9cf4f7d5-9b25-4439-b7c1-733e04bb2d0a",
+  "started_at": "2026-10-11T10:02:07Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "9327c4ab487864e1585b5064c959afe07f7a508ced9935f6b22dc4dd36f977bb"
+ }
+}

@@ -1,0 +1,152 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "W1-A0-closure",
+ "stage": "BLOCKED",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+ "rounds": 5,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "claude_cli",
+   "session_id": "20329ef7-e90c-4054-b1eb-ab5e87feda1d",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "100f4590-1645-4c04-b2db-d4e28e47940d",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 3,
+   "provider": "claude_cli",
+   "session_id": "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 4,
+   "provider": "claude_cli",
+   "session_id": "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "462be42c992c273155e83801b32dc01580a897ef",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 5,
+   "provider": "claude_cli",
+   "session_id": "6f65a79d-136c-41cb-9cce-3a488617959e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "COMMITTED",
+   "commit": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04",
+    "R1-05",
+    "R1-06"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 2,
+   "status": "COMMITTED",
+   "commit": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "addresses": [
+    "R2-01",
+    "R2-02",
+    "R2-03"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 3,
+   "status": "COMMITTED",
+   "commit": "462be42c992c273155e83801b32dc01580a897ef",
+   "addresses": [
+    "R3-01",
+    "R3-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 4,
+   "status": "COMMITTED",
+   "commit": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "addresses": [
+    "R4-01",
+    "R4-02"
+   ],
+   "reason": null
+  }
+ ],
+ "open_findings": [
+  {
+   "id": "R5-01",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "R1-01 class still open: a link next to an underscore or hyphen ('_refunds-portal.com_', 'refunds-portal.com_', '-refunds-portal.com') passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator"
+  },
+  {
+   "id": "R5-02",
+   "severity": "MEDIUM",
+   "blocking": true,
+   "title": "D7 bypass at the sentence edge: _excerpt lets a claim drop a leading qualifier ('Less than', 'Fewer than', 'Well short of') before an undetected quantity word (plurality, quintet, quorum), so a changed quantity is shown unquoted in the Brain's words"
+  }
+ ],
+ "gates": {},
+ "integration": null,
+ "blocker": {
+  "at": "2026-10-11T10:27:04Z",
+  "kind": "RETRY_LIMIT",
+  "needs": "owner or a more capable implementer",
+  "reason": "still failing after 3 repairs (diagnosed: R3-01: the candidate regex _BARE (uri_web/untrusted.py:64, unchanged since f370064) only accepts a top-level label of 2-24 letters ([^\\W\\d_]{2,24}) and forbids a hyphen or word character after it ((?![\\w-])). A punycode/ACE TLD such as 'xn--p1ai' (digits and hyphens) never produces a match, so _is_d): R1-01",
+  "stage": "AUDITING"
+ },
+ "events": 36,
+ "evidence_ok_for_candidate": false
+}

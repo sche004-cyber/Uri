@@ -1,0 +1,344 @@
+{
+ "findings": [
+  {
+   "blocking": true,
+   "id": "R1-01",
+   "round": "R1",
+   "severity": "HIGH",
+   "status": "repaired ca622bc",
+   "title": "Link/contact text from untrusted sources reaches the research surface; A2UI validator accepts it (W1-AC15/AC12)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-02",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "D7 (quantities quoted verbatim) bypassed by quantity words the detector misses (tenfold, decade, percentage points, couple)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-03",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "D10 pixel check passes text the user cannot read: white text covered by its own line-through bar reaches the Brain as 'pixel-checked'"
+  },
+  {
+   "blocking": true,
+   "id": "R1-04",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "URL query/fragment secrets and userinfo are not masked in either layer and reach the Brain (A0-AC7)"
+  },
+  {
+   "blocking": true,
+   "id": "R1-05",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "Brain slot not yielded to the user's turn; research cancel ignored during synthesis"
+  },
+  {
+   "blocking": true,
+   "id": "R1-06",
+   "round": "R1",
+   "severity": "MEDIUM",
+   "status": "repaired ca622bc",
+   "title": "Verifier keeps citations to sources that do not support the sentence"
+  },
+  {
+   "blocking": false,
+   "id": "R1-07",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Assist answer/observation can be emitted after revoke"
+  },
+  {
+   "blocking": false,
+   "id": "R1-08",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Dart Assist controller applies stale poll replies (answer shown while paused; a stale reply cancels a new ask)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-09",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Expired grant still shown as ACTIVE (prior R1-09 not fixed)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-10",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Vision path: page-text secrets not blacked out in the image; capture runs before gate checks; debounce set on refused attempts (vision disabled by default)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-11",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Research budget/cancel not checked in the search and feed loops (prior R1-08 not fixed)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-12",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "NAT64 local-use prefix 64:ff9b:1::/48 judged only by its low 32 bits"
+  },
+  {
+   "blocking": false,
+   "id": "R1-13",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "IDN hosts can never be fetched (pinned host comparison uses httpx's decoded host)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-14",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "AssistController used after dispose when an ask reply is in flight"
+  },
+  {
+   "blocking": false,
+   "id": "R1-15",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "Screenshot capture not bound to the granted target (prior R1-10 not fixed)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-16",
+   "round": "R1",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "D10: covering under one cell of a text node (1-2 characters) passes and can change the meaning"
+  },
+  {
+   "blocking": true,
+   "id": "R2-01",
+   "round": "R2",
+   "severity": "HIGH",
+   "status": "repaired f370064",
+   "title": "R1-01 repair incomplete: link forms with zero-width space, title-case TLD, IDN host, soft hyphen or U+3002 pass the detector, verify(), the extractive path and the research surface"
+  },
+  {
+   "blocking": true,
+   "id": "R2-02",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "repaired f370064",
+   "title": "R1-02 repair incomplete: _in_order is a subsequence test, so a claim cut from one sentence restates a quantity in the Brain's own words, and the quantity-word list still misses common forms"
+  },
+  {
+   "blocking": true,
+   "id": "R2-03",
+   "round": "R2",
+   "severity": "MEDIUM",
+   "status": "repaired f370064",
+   "title": "R1-03 not repaired: white text covered by its own line-through bar reaches the Brain as pixel-checked"
+  },
+  {
+   "blocking": false,
+   "id": "R2-04",
+   "round": "R2",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "URL masking still passes some secret-bearing forms: ;jsessionid path parameter, ticket=, hmac=, oauth_verifier="
+  },
+  {
+   "blocking": true,
+   "id": "R3-01",
+   "round": "R3",
+   "severity": "HIGH",
+   "status": "repaired 462be42",
+   "title": "R2-01 repair still incomplete: title-case or mixed-case real gTLDs missing from the hard-coded _TLDS list pass the link detector, verify(), the extractive path and the research surface"
+  },
+  {
+   "blocking": true,
+   "id": "R3-02",
+   "round": "R3",
+   "severity": "MEDIUM",
+   "status": "repaired 462be42",
+   "title": "R2-02 repair incomplete: _excerpt lets a claim drop a qualifier next to an undetected quantity word (doubling, halving, quintupled, biweekly), so a changed quantity is shown in the Brain's words"
+  },
+  {
+   "blocking": false,
+   "id": "R3-03",
+   "round": "R3",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "URL redaction ignores path matrix parameters and some token-bearing keys"
+  },
+  {
+   "blocking": true,
+   "id": "R4-01",
+   "round": "R4",
+   "severity": "HIGH",
+   "status": "repaired f5a5b8e",
+   "title": "R3-01 repair still incomplete: punycode (xn--) top-level domains are not links, so they pass has_link_or_contact, verify(), the extractive path and the research surface (W1-AC15/AC12)"
+  },
+  {
+   "blocking": true,
+   "id": "R4-02",
+   "round": "R4",
+   "severity": "MEDIUM",
+   "status": "repaired f5a5b8e",
+   "title": "R3-02 repair incomplete: _excerpt still lets a claim drop 'a <qualifier>' before an undetected quantity word (decennial, unanimous, quinquennial), so a changed quantity is shown unquoted in the Brain's words (D7)"
+  },
+  {
+   "blocking": false,
+   "id": "R4-03",
+   "round": "R4",
+   "severity": "LOW",
+   "status": "non-blocking",
+   "title": "A Chinese/Japanese host, then U+3002, then an IDN TLD not in _IDN_TLDS is not detected as a link (documented trade-off)"
+  },
+  {
+   "blocking": true,
+   "id": "R5-01",
+   "round": "R5",
+   "severity": "HIGH",
+   "status": "open",
+   "title": "R1-01 class still open: a link next to an underscore or hyphen ('_refunds-portal.com_', 'refunds-portal.com_', '-refunds-portal.com') passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator"
+  },
+  {
+   "blocking": true,
+   "id": "R5-02",
+   "round": "R5",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "D7 bypass at the sentence edge: _excerpt lets a claim drop a leading qualifier ('Less than', 'Fewer than', 'Well short of') before an undetected quantity word (plurality, quintet, quorum), so a changed quantity is shown unquoted in the Brain's words"
+  }
+ ],
+ "gates": [],
+ "owner": [
+  {
+   "kind": "RETRY_LIMIT",
+   "needs": "owner or a more capable implementer",
+   "reason": "still failing after 3 repairs (diagnosed: R3-01: the candidate regex _BARE (uri_web/untrusted.py:64, unchanged since f370064) only accepts a top-level label of 2-24 letters ([^\\W\\d_]{2,24}) and forbids a hyphen or word character after it ((?![\\w-])). A punycode/ACE TLD such as 'xn--p1ai' (digits and hyphens) never produces a match, so _is_d): R1-01"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": "R1-01, R1-02, R1-03, R1-04, R1-05, R1-06",
+   "commit": "ca622bc0354a",
+   "reason": "",
+   "repair": "P1",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R2-01, R2-02, R2-03",
+   "commit": "f370064354ba",
+   "reason": "",
+   "repair": "P2",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R3-01, R3-02",
+   "commit": "462be42c992c",
+   "reason": "",
+   "repair": "P3",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R4-01, R4-02",
+   "commit": "f5a5b8ecbb5c",
+   "reason": "",
+   "repair": "P4",
+   "status": "COMMITTED"
+  }
+ ],
+ "rounds": [
+  {
+   "blocking": 6,
+   "candidate": "67aff5042c0f",
+   "findings": 16,
+   "finished": "2026-10-11T09:13:24Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R1",
+   "session": "20329ef7-e90c-4054-b1eb-ab5e87feda1d",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 3,
+   "candidate": "ca622bc0354a",
+   "findings": 4,
+   "finished": "2026-10-11T09:36:38Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R2",
+   "session": "100f4590-1645-4c04-b2db-d4e28e47940d",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "f370064354ba",
+   "findings": 3,
+   "finished": "2026-10-11T10:00:32Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R3",
+   "session": "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "462be42c992c",
+   "findings": 3,
+   "finished": "2026-10-11T10:16:54Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R4",
+   "session": "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 2,
+   "candidate": "f5a5b8ecbb5c",
+   "findings": 2,
+   "finished": "2026-10-11T10:27:04Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R5",
+   "session": "6f65a79d-136c-41cb-9cce-3a488617959e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  }
+ ],
+ "summary": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+  "evidence_ok": false,
+  "findings_repaired": 13,
+  "findings_total": 28,
+  "integration": "none",
+  "milestone": "W1-A0-closure",
+  "open_blocking": 2,
+  "owner_actions": 1,
+  "receipt_chain_ok": true,
+  "repairs_committed": 4,
+  "rounds": 5,
+  "stage": "BLOCKED",
+  "written_at": "2026-10-11T10:27:04Z"
+ }
+}

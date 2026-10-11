@@ -1,0 +1,38 @@
+I've repaired both findings; nothing is committed. The full `tests/web` and `tests/assist` suite passes (2782 tests) with no existing test edited. The new file `tests/web/test_w1_r3_review_regressions.py` has 72 tests. I ran it against a clean export of f370064: 67 fail there, and all 72 pass after the change.
+
+**R3-01 (links).** The detector now blocks by default. Any `label<dot>label` ending in 2+ letters counts as a link, whatever the case, so the `_TLDS` list and the case and hyphen rules no longer decide anything (`uri_web/untrusted.py`).
+- **Exceptions:** two are left, both lists of text that is not a link:
+  - A missing space before one of a few words that are not domains (`the`, `then`, `this`, `that`, `these`, `those`, `they`, `été`). An unlisted word just gets flagged, so a gap costs precision, not safety.
+  - The Chinese/Japanese full stop `。` between two Chinese or Japanese runs. It is still a link if the second run is in `_IDN_TLDS`.
+- **New forms caught:** spaced defangs (`[.]`, `( . )`, `[dot]`, ` dot `, ` . `) and phone numbers (8 or more digits; ISO dates, dotted dates and year ranges are excluded).
+- **Masking:** `mask_links` now masks the whole match, so `refundsportal [.] com` or `1800 555 0199` becomes one `[link removed]`. It also covers look-alike characters across several words.
+- **Tests:** every reviewer string plus 7 extra forms is checked through `has_link_or_contact`, `verify`, `extractive` and `build_surface` + `require_valid`.
+
+**R3-02 (D7).** `_excerpt` now matches every claim word in order, including small words like "to" and "by"; the claim may add only an article or similar ("the", "a", "this", "its"). The source may only leave out:
+- articles and similar words, or
+- one such word followed by up to two words that describe a noun ("after [a long public] consultation").
+
+Any other omission means the source sentence is quoted. That covers a qualifier before a verb or quantity (nearly, possibly, barely, rarely, roughly), a preposition like "about", and anything across a clause boundary. The tests prove this with made-up words no list could contain ("nearly zorbing", "seldom glorped"). I also added doubling, halving, -tupled, multiplied, bi-weekly, bi-monthly, semi-annual, triennial, ‰, ppm, ppb and pct to `_QUANTITY`, as a backup check only.
+
+**Where I didn't follow the diagnosis:**
+- **Precision tests:** it proposed rewriting them so `rose.The`, `so.Then` and `rose.Été` are flagged. That would weaken existing tests, which the brief forbids, so I kept those tests as they are and used the short list of non-link words instead.
+- **No-gap rule:** it proposed allowing no skipped words at all. Existing tests (`test_w1_d7_verbatim_numbers.py:40`, `test_w1_r2_review_regressions.py:140`) require "after a long public consultation" → "after consultation" to stay in the Brain's words, so I allow the narrow noun-phrase case instead.
+
+**Gaps that remain (none affects the reviewer's examples):**
+1. **Noun-phrase modifiers:** a describing word can still be dropped inside a noun phrase when the noun isn't a known quantity: "saw the near zorbing" → "saw the zorbing" stays in the Brain's words. Real forms like "doubling" are now quoted by the word list. This is the case the existing tests above require to be allowed.
+2. **Chinese/Japanese domains:** a Chinese or Japanese domain ending that isn't in `_IDN_TLDS`, written after Chinese/Japanese text with `。`, is still missed. Blocking it would mask every multi-sentence Chinese or Japanese text.
+3. **Unchecked word list:** I couldn't check the non-link word list against the official IANA list of domain endings because the proxy blocked the download. I'm confident none of them is a real domain ending.
+
+**Costs of blocking by default:** these now get masked or dropped:
+- "red dot appeared" and "US DOT said";
+- runs of 8+ digits that aren't dates;
+- a missing space before a word not on the list;
+- a Brain claim that uses a small word the source lacks ("in" vs "on") is now quoted instead.
+
+I didn't run graphify (as instructed), and no Flutter files changed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R3-01", "R3-02"], "not_repaired": [],
+ "regression_tests": ["tests/web/test_w1_r3_review_regressions.py"],
+ "notes": "R3-01: untrusted._is_domain now blocks by default: any label<dot>label with a 2+ letter last label is a link in any case; the _TLDS/case/hyphen rules no longer decide. Two exceptions remain: a missing space before one of a few non-domain words (_SENTENCE_WORDS: the/then/this/that/these/those/they/été/ete), and the ideographic full stop between two Chinese/Japanese runs unless the second run is in _IDN_TLDS (still list-based; disclosed). Added spaced defangs ([.], ( . ), [dot], (dot), ' dot ', ' . ') to _DOT and a phone pattern (8+ digits, dates and year ranges excluded). mask_links masks the whole matched span across words, look-alike characters included. Existing precision tests left unchanged instead of rewritten as the diagnosis proposed, because rewriting them would weaken existing tests. Not checked: whether the _SENTENCE_WORDS entries are real domain endings (IANA download blocked by the proxy). R3-02: _excerpt matches every claim word in order; the claim may add only determiners; the source may leave out only determiners, or one determiner plus at most MAX_GAP_WORDS words that are not function words (noun-phrase modifiers). Kept because tests d7_verbatim_numbers:40 and r2:140 require 'after a long public consultation' -> 'after consultation' to stay unquoted. states_quantity on the skipped text is kept only as an extra check; added doubling/halving/-tupl(e|ed|ing)/multiplied/bi-weekly/bi-monthly/semi-annual/triennial/quadrennial/‰/ppm/ppb/pct to _QUANTITY. Remaining gap: a modifier inside a determiner-led noun phrase before a noun not recognised as a quantity can still be dropped ('the near zorbing' -> 'the zorbing'). Precision costs: 'red dot appeared', 'US DOT said', 8+ digit runs that are not dates, a missing space before an unlisted word, and claims using a function word the source lacks are now flagged or quoted. Ran the new file against a clean export of f370064: 67 failed, 5 passed (the precision and noun-phrase checks plus 3 quantity forms already detected there). After the change: tests/web + tests/assist 2782 passed. graphify not run (as instructed)."}
+REPAIR_RESULT_END

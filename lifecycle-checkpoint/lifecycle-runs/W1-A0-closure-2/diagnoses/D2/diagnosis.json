@@ -1,0 +1,96 @@
+{
+ "candidate": "f370064354ba678ec5fed956a709cd0e7626c269",
+ "clean": true,
+ "cost_usd": 0.5208092,
+ "diagnosis": 2,
+ "recurring": [
+  "R1-01",
+  "R1-02",
+  "R2-01",
+  "R2-02"
+ ],
+ "result": {
+  "evidence": [
+   "uri_web/untrusted.py:98-104 _is_domain: ASCII TLD is a link only if islower/isupper/in _TLDS/has path/host has [-\\d]; probe: has_link_or_contact('Refundsportal.Cash')==False, 'refundsportal.CaSh'==False, 'refundsportal.Lol'==False, 'refundsportal [.] com'==False, 'refundsportal dot com'==False, 'call 1800 555 0199'==False; 'refundsportal.cash'==True",
+   "uri_web/untrusted.py:51 _DOT has no spaced forms (' [.] ', ' dot '); _OTHER (line 53) has no phone pattern",
+   "uri_web/surface.py:38 clean() -> U.mask_links; probe: clean('Refundsportal.Exchange') returns it unchanged",
+   "uri_web/synthesize.py:282 extractive keeps 'Claim your energy rebate refund at Refundsportal.Cash before the deadline.' (quoted=False); synthesize.py:202 verify keeps it with dropped=[]",
+   "tests/web/test_w1_r2_review_regressions.py:43-48 and tests/web/test_w1_r16_review_regressions.py:47 require 'The fee rose.The board', 'He said so.Then left.' and 'Caf\u00e9 prices rose.\u00c9t\u00e9' NOT be links; those tests are why the detector can't fail closed",
+   "uri_web/synthesize.py:138 MAX_GAP_WORDS = 2; synthesize.py:154-160 gap_ok counts only non-function skipped words and calls states_quantity(text) as the only quantity guard; synthesize.py:149 leaves function words out of the claim sequence",
+   "probe: states_quantity False for doubling/halving/tripling/quintupled/sextupled/biweekly/bimonthly/semiannual/triennial/multiplied/\u2030/pct/ppm",
+   "probe: verify('Rents in the capital are doubling under the new rules [1].',['Rents in the capital are nearly doubling under the new rules.']) -> quoted=False; same for 'possibly halving'->'halving', 'Rents are about doubling'->'Rents are doubling' (function word skipped), 'Rents barely rose'->'Rents rose', 'The fee is rarely waived'->'The fee is waived'",
+   "git show ca622bc: _in_order is a plain subsequence test; _QUANTITY gains \\w+fold|decades?|couples?; LINK_PATTERN TLD is (?:[a-z]{2,24}|[A-Z]{2,24})",
+   "git show f370064 uri_web/untrusted.py: adds _TLDS/_IDN_TLDS lists and keeps the 'rose.The' carve-out; uri_web/synthesize.py: _excerpt with gap_ok relying on states_quantity, plus more _QUANTITY words"
+  ],
+  "needs_owner": false,
+  "proposed_fix": "Make both checks fail closed and keep the lists as an extra check only. (A) untrusted._is_domain: any ASCII 'label<dot>tld' with a 2+ letter alphabetic TLD is a link, in any case. Remove the case/_TLDS/hyphen heuristics. A missing space after a full stop ('rose.The') then counts as a link: verify/extractive drop or skip that sentence and the surface masks it. That only costs precision, never safety. Rewrite the precision tests at test_w1_r2_review_regressions.py:43-48 and test_w1_r16_review_regressions.py:47 so that 'rose.The', 'so.Then' and 'rose.\u00c9t\u00e9' are expected to be flagged, keeping the real non-link cases ('e.g.', 'U.S.', '4.5%', 'a.m.', 'Ph.D', CJK '\u3002'). Add spaced defangs to _DOT: \\s*\\[\\s*\\.\\s*\\]\\s*, \\s*\\(\\s*\\.\\s*\\)\\s*, \\s+dot\\s+ when followed by an alphabetic TLD. Add a phone/contact pattern (\\+?\\d[\\d\\s().-]{6,}\\d with \u22658 digits). Because surface.clean masks one whitespace-separated token at a time, it must also mask the spaced forms over the whole matched span, not only within one token. Self-contained regression tests: 'Refundsportal.Cash', 'refundsportal.Lol', 'refundsportal.CaSh', 'Refundsportal.Exchange', 'Refundsportal.Deals', 'refundsportal [.] com', 'refundsportal dot com', '1800 555 0199', each checked through has_link_or_contact, verify, extractive and build_surface+require_valid. (B) synthesize._excerpt: a non-quoted Brain sentence is shown only if its full token sequence, function words included, is a contiguous run of the supporting source sentence's tokens (MAX_GAP_WORDS=0 and no skipped function words). Otherwise quote_instead(). Do not call states_quantity inside gap_ok. Keep _QUANTITY only as the upfront 'always quote' check, and optionally add doubling/halving/-tupl(ed|ing)/multiplied/bi-?weekly/bi-?monthly/semi-?annual/tri-?ennial/\u2030/pct/ppm. Regression tests: the five R3-02 pairs plus 'about doubling', 'barely rose' and 'rarely waived' must give quoted=True (the source sentence) or be dropped, never quoted=False with the shortened text.",
+  "root_cause": "Both protections fail open: text is let through by default and only blocked when a list recognises it. (1) Links: untrusted._is_domain (uri_web/untrusted.py:98-104) treats an ASCII 'label.Tld' as a link only if the TLD is all-lower or all-upper, is in a hard-coded ~200-entry _TLDS list, is followed by '/', or the host has a hyphen or digit. Every other mixed-case real gTLD ('Refundsportal.Cash', '.Lol', '.CaSh', '.Exchange', '.Deals') counts as 'not a link'. Spaced defangs ('[.]' with spaces, ' dot ') and phone numbers have no pattern at all. surface.clean, verify() and extractive() all call this one detector, so a miss passes all three (W1-AC15/AC12). The default exists so that 'rose.The' and 'so.Then' are not flagged, and tests enforce that, so the detector cannot fail closed without changing those tests. (2) D7: synthesize._excerpt (uri_web/synthesize.py:141-176) lets a claim skip up to MAX_GAP_WORDS=2 content words, plus any number of function words, as long as gap_ok's states_quantity(text) check finds no quantity in the skipped text. So a qualifier ('nearly', 'possibly', 'about', 'barely', 'rarely') can be dropped next to any quantity or meaning word the _QUANTITY/_ORDINAL lists don't know ('doubling', 'halving', 'quintupled', 'biweekly', ...). The shortened claim is then shown unquoted in the Brain's words. D7 still depends on the word list, even though the code comment says it rests on _excerpt.",
+  "why_earlier_repairs_failed": "Each repair turned the reviewer's examples into more list entries and kept the 'allow if unknown' default. ca622bc (R1-01/R1-02): added a bare-domain regex limited to all-lower/all-upper TLDs so that 'rose.The' still passes, and added tenfold/decade/couple to _QUANTITY. It also added _in_order, which allowed unlimited gaps. f370064 (R2-01/R2-02): canonicalised Unicode, which is correct and general, then decided ambiguous title-case TLDs with a finite _TLDS/_IDN_TLDS list and special cases, and kept the precision tests (test_w1_r16_review_regressions.py:47, test_w1_r2_review_regressions.py:43-48) that require 'rose.The', 'so.Then' and 'rose.\u00c9t\u00e9' not to be flagged. For D7 it replaced the unlimited gaps with a 2-content-word gap whose only quantity guard is states_quantity(), the same list the comment says D7 no longer depends on. It also added more list words (hourly, basis points, ...). Neither repair removed the default that lets unrecognised forms through, so the next unlisted form (R3-01: '.Cash', 'dot com', phone numbers; R3-02: 'doubling', 'biweekly', or plain qualifiers) passes again."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "5ce1a88e-fbae-4231-8a00-ed670c5b887e",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.5208092,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/diagnose_D2",
+  "ended_at": "2026-10-11T10:02:05Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 8,
+  "pid": 6593,
+  "prompt_sha256": "5e4d0a7879777e5f49420a1d508846d948db0c61b8ae97ec7cc87b163c9a1244",
+  "provider": "claude_cli",
+  "result_text_sha256": "c8b4c7adac1f6714417de6a3944f1da4d874e897356540cb9b5fcc7588f079b7",
+  "role": "reviewer",
+  "session_id": "5ce1a88e-fbae-4231-8a00-ed670c5b887e",
+  "session_id_requested": "5ce1a88e-fbae-4231-8a00-ed670c5b887e",
+  "started_at": "2026-10-11T10:00:35Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "50fc1c5a5cf271f5d312c4614742b4c1842c8af6051cc7be2fe18840ff74ab8a"
+ }
+}

@@ -1,0 +1,155 @@
+{
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocker": {
+  "at": "2026-10-11T10:27:04Z",
+  "kind": "RETRY_LIMIT",
+  "needs": "owner or a more capable implementer",
+  "reason": "still failing after 3 repairs (diagnosed: R3-01: the candidate regex _BARE (uri_web/untrusted.py:64, unchanged since f370064) only accepts a top-level label of 2-24 letters ([^\\W\\d_]{2,24}) and forbids a hyphen or word character after it ((?![\\w-])). A punycode/ACE TLD such as 'xn--p1ai' (digits and hyphens) never produces a match, so _is_d): R1-01",
+  "stage": "AUDITING"
+ },
+ "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+ "config_sha256": "fd330b42861dfd46915162a16371833bc651d5cea268e8f2d2fda060230ae1e6",
+ "events": 36,
+ "evidence_ok_for_candidate": false,
+ "gates": {},
+ "integration": null,
+ "milestone": "W1-A0-closure",
+ "open_findings": [
+  {
+   "blocking": true,
+   "id": "R5-01",
+   "severity": "HIGH",
+   "title": "R1-01 class still open: a link next to an underscore or hyphen ('_refunds-portal.com_', 'refunds-portal.com_', '-refunds-portal.com') passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator"
+  },
+  {
+   "blocking": true,
+   "id": "R5-02",
+   "severity": "MEDIUM",
+   "title": "D7 bypass at the sentence edge: _excerpt lets a claim drop a leading qualifier ('Less than', 'Fewer than', 'Well short of') before an undetected quantity word (plurality, quintet, quorum), so a changed quantity is shown unquoted in the Brain's words"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04",
+    "R1-05",
+    "R1-06"
+   ],
+   "commit": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02",
+    "R2-03"
+   ],
+   "commit": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "reason": null,
+   "repair": 2,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R3-01",
+    "R3-02"
+   ],
+   "commit": "462be42c992c273155e83801b32dc01580a897ef",
+   "reason": null,
+   "repair": 3,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R4-01",
+    "R4-02"
+   ],
+   "commit": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "reason": null,
+   "repair": 4,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "20329ef7-e90c-4054-b1eb-ab5e87feda1d",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 2,
+   "session_id": "100f4590-1645-4c04-b2db-d4e28e47940d",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 3,
+   "session_id": "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "462be42c992c273155e83801b32dc01580a897ef",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 4,
+   "session_id": "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 5,
+   "session_id": "6f65a79d-136c-41cb-9cce-3a488617959e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  }
+ ],
+ "rounds": 5,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "BLOCKED",
+ "verify_errors": [],
+ "written_at": "2026-10-11T10:27:04Z"
+}

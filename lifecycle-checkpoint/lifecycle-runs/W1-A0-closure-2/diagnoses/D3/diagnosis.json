@@ -1,0 +1,94 @@
+{
+ "candidate": "462be42c992c273155e83801b32dc01580a897ef",
+ "clean": true,
+ "cost_usd": 0.43315650000000006,
+ "diagnosis": 3,
+ "recurring": [
+  "R3-01",
+  "R3-02"
+ ],
+ "result": {
+  "evidence": [
+   "uri_web/untrusted.py:64 _BARE tld group (?P<tld>[^\\W\\d_]{2,24})(?![\\w-]); `git show f370064:uri_web/untrusted.py` line 52 is identical, so 462be42 did not change it",
+   "uri_web/untrusted.py:120-132 _is_domain fails closed but is only reached via _BARE.finditer (untrusted.py:137)",
+   "probe /tmp/d3/probe.py: has_link_or_contact -> False for 'Claim at refunds.xn--p1ai now', 'Refunds-Portal.XN--P1AI', 'bank.xn--vermgensberatung-pwb', 'x.xn--p1ai/claim', 'claim at a1.xn--90ais'; True for 'refundsportal.Cash'",
+   "probe: SY.verify('Claim your energy rebate refund at refundsportal.xn--p1ai before the deadline [1].',[src]) -> claim kept (quoted=True) with the link in it, dropped=[]",
+   "uri_web/surface.py:38 masks via U.mask_links, whose _spans (untrusted.py:135-140) relies on the same _BARE",
+   "uri_web/synthesize.py:166-167 gap_ok: skipped[0] in _DETERMINERS and len(skipped)-1 <= MAX_GAP_WORDS and no function words -> skip allowed regardless of meaning",
+   "uri_web/synthesize.py:180 claim may omit a determiner the source has",
+   "probe: verify('The national census is held on decennial cycle [1].',['The national census is held on a roughly decennial cycle.']) -> quoted=False; same for 'a near unanimous decision', 'a roughly quinquennial schedule', and non-quantity cases 'a barely positive profit' -> 'profit', 'a hardly popular plan' -> 'plan'",
+   "tests/web/test_w1_r3_review_regressions.py:104-106 requires _excerpt('approved the rules after consultation', '... after a long public consultation.') to be True, which locks in the hole",
+   "tests/web/test_w1_r3_review_regressions.py:24-28 LINKS contain no xn--/digit/hyphen TLDs"
+  ],
+  "needs_owner": false,
+  "proposed_fix": "R3-01: in _BARE, make the TLD group fail closed on its shape, not on letters: (?P<tld>(?i:xn--[a-z0-9-]{1,59})|[^\\W\\d_][\\w-]{1,62}) with the end anchored (?![\\w-]) after the whole label, requiring at least one letter. In _is_domain, treat any host label or TLD starting with 'xn--' (case-insensitive) as a link before the _SENTENCE_WORDS/CJK exceptions. Keep the existing exceptions unchanged so the ordinary-text test still passes. Add a self-contained parametrised regression over 'refundsportal.xn--p1ai', 'Refunds-Portal.XN--P1AI', 'bank.xn--vermgensberatung-pwb', 'x.xn--p1ai/claim' through has_link_or_contact, verify (claim dropped), extractive (not picked) and build_surface (masked, require_valid passes). R3-02: in gap_ok, allow a gap only when every skipped token is a determiner (delete the 'determiner + MAX_GAP_WORDS modifiers' branch). Any skipped modifier means the source sentence is quoted instead, which D7 says is always safe since over-quoting only costs fluency. Optionally also stop the claim from dropping a determiner the source has, when it is followed by a skipped word. Replace test_r3_02_noun_phrase_modifiers_may_still_be_left_out with its inverse (the long-public-consultation pair must come out quoted, or _excerpt False), and add regression pairs that must yield quoted=True with text == source: decennial/'a roughly decennial cycle', 'a near unanimous decision', 'a roughly quinquennial schedule', plus invented-word 'a seldom zorby plan' -> 'zorby plan' to show it doesn't rely on the word list. Add decennial|centennial|septennial|quinquennial|\\w+ennial(ly)?|unanimous(ly)? to _QUANTITY only as a secondary check.",
+  "root_cause": "R3-01: the candidate regex _BARE (uri_web/untrusted.py:64, unchanged since f370064) only accepts a top-level label of 2-24 letters ([^\\W\\d_]{2,24}) and forbids a hyphen or word character after it ((?![\\w-])). A punycode/ACE TLD such as 'xn--p1ai' (digits and hyphens) never produces a match, so _is_domain, which repair 3 made fail closed, is never called. _OTHER and _PHONE don't catch it either, so has_link_or_contact, verify(), extractive(), mask_links and build_surface all let it through. R3-02: _excerpt.gap_ok (uri_web/synthesize.py:166-167) still lets the source drop one determiner plus up to MAX_GAP_WORDS=2 words that aren't function words, and match() (synthesize.py:180) lets the claim omit the determiner. Qualifiers and adverbs sit exactly in that slot ('a roughly decennial cycle', 'a near unanimous decision', 'a barely positive profit'), so whether the claim gets quoted still depends on states_quantity recognising the word. This contradicts the docstring's 'fails closed' claim.",
+  "why_earlier_repairs_failed": "Every repair patched the reported strings and the layer the reviewer pointed at, not the permissive structure. R3-01: f370064 introduced _BARE with a letters-only TLD group plus a TLD allow-list in _is_domain. 462be42 rewrote only _is_domain to fail closed (diff touches _is_domain, _DOT, _PHONE, _SENTENCE_WORDS; the _BARE line is byte-identical in both commits), so anything _BARE can't match is still missed. Its regression LINKS list (tests/web/test_w1_r3_review_regressions.py:24-28) has only letter-only TLDs and spaced or phone forms, with no digit, hyphen or xn-- TLD. R3-02: f370064 replaced _in_order with a gap rule allowing any 2 skipped content words and kept states_quantity as the guard. 462be42 narrowed that to 'determiner + 2 non-function words' and added more words to _QUANTITY (doubling, ...tupled, biweekly), but kept the noun-phrase-modifier carve-out. It even added test_r3_02_noun_phrase_modifiers_may_still_be_left_out (test file:104-106), which requires 'after [a long public] consultation' to be skippable. Its invented-word tests only cover qualifiers before verbs, never qualifiers inside a noun phrase after a determiner, so the hole was codified, not closed."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "8fff3fcf-7533-44d9-9861-67d7ce648acc",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.43315650000000006,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/diagnose_D3",
+  "ended_at": "2026-10-11T10:18:12Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 8,
+  "pid": 18952,
+  "prompt_sha256": "3e4e4c6fb1fd6dd5e9a4d1f1806099857b45b57b474c7822c6aea41fa55579d8",
+  "provider": "claude_cli",
+  "result_text_sha256": "364bdea353edaf8a73a414c46f4834f7eec5edf9c994b281cdf73399b145ac6f",
+  "role": "reviewer",
+  "session_id": "8fff3fcf-7533-44d9-9861-67d7ce648acc",
+  "session_id_requested": "8fff3fcf-7533-44d9-9861-67d7ce648acc",
+  "started_at": "2026-10-11T10:16:57Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "c489e684a4b830dbfe57ac2a3ef049cb7982ac0f65a3a230c434bf673c1bffdb"
+ }
+}

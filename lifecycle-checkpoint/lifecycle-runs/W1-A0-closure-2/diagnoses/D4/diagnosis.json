@@ -1,0 +1,92 @@
+{
+ "candidate": "29771992f57ff470035f044c55e2c6689e9d3d6d",
+ "clean": true,
+ "cost_usd": 0.428497,
+ "diagnosis": 4,
+ "recurring": [
+  "R5-01"
+ ],
+ "result": {
+  "evidence": [
+   "uri_web/untrusted.py:69-70 _DOT enumerates separators; '\\s+\\.\\s+' requires spaces on both sides; no U+00B7/U+0387/U+2027/U+2219/U+22C5/U+30FB/U+2E3C/{.}/<.>",
+   "uri_web/untrusted.py:71 _BARE: label capped at [\\w-]{0,62} (a 70-char label + '.com' is not detected); boundaries fixed by 29771992",
+   "uri_web/untrusted.py:51 R3-01 comment: fail-closed applied to the TLD only",
+   "uri_web/synthesize.py:240,300,320 and uri_web/surface.py:38 depend solely on U.has_link_or_contact/U.mask_links",
+   "git show 462be42c -- uri_web/untrusted.py: introduced symmetric '\\s+\\.\\s+'",
+   "git show 29771992 -- uri_web/untrusted.py: only the lookaround classes changed",
+   "tests/web/test_w1_r3_review_regressions.py:28 tests only 'refundsportal . com'; tests/web/test_w1_closure_r5_review_regressions.py:22-25 only the reviewer's wrapped literals",
+   "/tmp/diag_D4/p.py at HEAD: all 7 R5-01 strings -> True/masked; 'refunds-portal .com/claim', 'refunds-portal. com', U+00B7, U+30FB, U+2219, U+22C5, U+2027, U+0387, U+2E3C, '{.}', '<.>', '{dot}', '..', '\\\\.', 'a'*70+'.com' -> has_link_or_contact False, mask_links unchanged",
+   "/tmp/diag_D4/e2e.py (reviewer R6 probe) at HEAD: verify keeps the sentence, extractive selects it, build_surface passes require_valid with 'refunds-portal' in the dump for '.com' one-sided, '\u00b7', '{.}', '\u30fb', '\u2219'"
+  ],
+  "needs_owner": false,
+  "proposed_fix": "Make the separator axis fail closed rather than adding more literals: (1) define a dot-like class generated from Unicode data (every char whose unicodedata name contains FULL STOP, DOT, MIDDLE DOT, BULLET, or ONE DOT LEADER, plus '.' U+3002 U+FF0E U+FF61), and accept it optionally wrapped in any bracket pair ([], (), {}, <>) or as the word 'dot', with \\s* (not \\s+) on EITHER side, and runs of them ('..', '\\.'); (2) when whitespace touches the separator, keep the _SENTENCE_WORDS exception (and extend _is_domain so 'word .Then' stays text) but otherwise treat 'label SEP tld' as a link when tld is letters>=2 or ACE and is followed by a non-letter or '/'; (3) remove the {0,62} label cap (use [\\w-]+); (4) in mask_links/has_link_or_contact also test each whitespace token and each pair of adjacent tokens after stripping edge punctuation, so the spaced forms are caught per token too; (5) add a generated regression test that loops over every Unicode code point whose name matches the dot-like set and over {'', ' '} x {'', ' '} spacing x bracket wrappers, asserting has_link_or_contact, mask_links, SY.verify (dropped LINK_OR_CONTACT), SY.extractive (not selected) and build_surface+require_valid (no host in dump), self-contained in one test file.",
+  "root_cause": "uri_web/untrusted.py builds bare-domain detection as a positive allow-list of exact separator spellings: _DOT (line 69-70) accepts only '.', U+3002/U+FF0E/U+FF61, bracket/paren-wrapped '.'/'dot', and '\\s+dot\\s+' / '\\s+\\.\\s+' (whitespace required on BOTH sides), and _BARE (line 71) additionally requires exact label shapes ([^\\W_][\\w-]{0,62}) and specific boundary classes. Any separator spelling not enumerated (one-sided space 'portal .com' / 'portal. com', U+00B7, U+0387, U+2027, U+2219, U+22C5, U+30FB, U+2E3C, '{.}', '<.>', '{dot}', '..', '\\.', or a >63-char label) is not a separator, so the text is not a link. has_link_or_contact/mask_links fail open, and every caller (synthesize.verify:240, extractive:300/320, surface.clean:38, evaluate:287) trusts that single detector. R3-01 made only the TLD axis fail closed; the separator axis and (until R5) the boundary axis kept matching fixed lists. R5-01's specific forms are fixed at HEAD; the same class (R1-01) is still reproducible (R6-01).",
+  "why_earlier_repairs_failed": "Each repair widened the regex by exactly the reviewer's examples and added regression tests that enumerate only those literals: ca622bc0 added [.] (.) [dot] (dot) (ASCII only); f3700643 added NFKC + three CJK full stops and introduced _BARE with (?<![\\w-])/(?![\\w-]) boundaries (the R5-01 bug); 462be42c added spaced defangs but wrote '\\s+\\.\\s+' symmetric (test only has 'refundsportal . com'), leaving one-sided spacing open (R6-01); f5a5b8ec added only the xn-- TLD form; 29771992 changed only the boundary checks to (?<![^\\W_])/(?![^\\W_]) and tested only the reviewer's WRAPPED list. No repair replaced the enumeration with a fail-closed rule or tested a generated family of separators, so each round's suite passed while the next variant stayed open."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "3d7dd2a3-5c0a-4c1b-b771-98f6292b81e4",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.428497,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/diagnose_D4",
+  "ended_at": "2026-10-11T10:39:14Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 8,
+  "pid": 6542,
+  "prompt_sha256": "7d0212f8359a0c0c34484547aa5c2639912665ef09336b3d7966093d209672a4",
+  "provider": "claude_cli",
+  "result_text_sha256": "f00f077186f3d139184ef19db7e40972723c3626c0d30a4209495168372d089a",
+  "role": "reviewer",
+  "session_id": "3d7dd2a3-5c0a-4c1b-b771-98f6292b81e4",
+  "session_id_requested": "3d7dd2a3-5c0a-4c1b-b771-98f6292b81e4",
+  "started_at": "2026-10-11T10:37:59Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "c2ca44f66fe8f0d5b2b12fff7ad33e02026b6799e1d28576d7617dbc6a198d40"
+ }
+}

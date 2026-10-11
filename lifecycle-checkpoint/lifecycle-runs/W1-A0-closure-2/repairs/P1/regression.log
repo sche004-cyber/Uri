@@ -1,0 +1,192 @@
+=== tests/assist/test_a0_r16_url_secret_regressions.py BEFORE (67aff5042c0f166392281e072fb5f9db906779c5) DONE
+ ])
+    def test_r1_04_redact_url_masks_each_secret_key(url, secret):
+        c = Counter()
+>       out = RD.redact_url(url, c)
+              ^^^^^^^^^^^^^
+E       AttributeError: module 'uri_assist.redact' has no attribute 'redact_url'. Did you mean: 'redact_field'?
+
+tests/assist/test_a0_r16_url_secret_regressions.py:62: AttributeError
+_ test_r1_04_redact_url_masks_each_secret_key[https://alice:Hunter2pass@x.test/-Hunter2pass] _
+
+url = 'https://alice:Hunter2pass@x.test/', secret = 'Hunter2pass'
+
+    @pytest.mark.parametrize("url,secret", [
+        ("https://x.test/?client_secret=s3cr3tValue9", "s3cr3tValue9"),
+        ("https://x.test/?refresh_token=r1a2b3", "r1a2b3"),
+        ("https://x.test/?reset_token=r1a2b3", "r1a2b3"),
+        ("https://x.test/?otp=482913", "482913"),
+        ("https://x.test/?pin=4821", "4821"),
+        ("https://x.test/?session_id=s1", "=s1"),
+        ("https://x.test/?passcode=918273", "918273"),
+        ("https://alice:Hunter2pass@x.test/", "Hunter2pass"),
+        ("https://x.test/#access_token=at55&state=q", "at55"),
+    ])
+    def test_r1_04_redact_url_masks_each_secret_key(url, secret):
+        c = Counter()
+>       out = RD.redact_url(url, c)
+              ^^^^^^^^^^^^^
+E       AttributeError: module 'uri_assist.redact' has no attribute 'redact_url'. Did you mean: 'redact_field'?
+
+tests/assist/test_a0_r16_url_secret_regressions.py:62: AttributeError
+_ test_r1_04_redact_url_masks_each_secret_key[https://x.test/#access_token=at55&state=q-at55] _
+
+url = 'https://x.test/#access_token=at55&state=q', secret = 'at55'
+
+    @pytest.mark.parametrize("url,secret", [
+        ("https://x.test/?client_secret=s3cr3tValue9", "s3cr3tValue9"),
+        ("https://x.test/?refresh_token=r1a2b3", "r1a2b3"),
+        ("https://x.test/?reset_token=r1a2b3", "r1a2b3"),
+        ("https://x.test/?otp=482913", "482913"),
+        ("https://x.test/?pin=4821", "4821"),
+        ("https://x.test/?session_id=s1", "=s1"),
+        ("https://x.test/?passcode=918273", "918273"),
+        ("https://alice:Hunter2pass@x.test/", "Hunter2pass"),
+        ("https://x.test/#access_token=at55&state=q", "at55"),
+    ])
+    def test_r1_04_redact_url_masks_each_secret_key(url, secret):
+        c = Counter()
+>       out = RD.redact_url(url, c)
+              ^^^^^^^^^^^^^
+E       AttributeError: module 'uri_assist.redact' has no attribute 'redact_url'. Did you mean: 'redact_field'?
+
+tests/assist/test_a0_r16_url_secret_regressions.py:62: AttributeError
+_____________________ test_r1_04_readable_query_keys_stay ______________________
+
+    def test_r1_04_readable_query_keys_stay():
+        url = "https://x.test/p?q=fees&page=2&lang=en&utm_source=a&ref=b&sort=asc&id=7&promo_code=SUMMER&zip=12345#sec-2"
+        c = Counter()
+>       assert RD.redact_url(url, c) == url and not c
+               ^^^^^^^^^^^^^
+E       AttributeError: module 'uri_assist.redact' has no attribute 'redact_url'. Did you mean: 'redact_field'?
+
+tests/assist/test_a0_r16_url_secret_regressions.py:69: AttributeError
+__________________ test_r1_04_in_page_layer_masks_url_secrets __________________
+
+    def test_r1_04_in_page_layer_masks_url_secrets():
+        url = ("https://portal.example/cb?client_secret=s3cr3tValue9&refresh_token=r1a2b3c4d5e6&otp=482913&pin=4821"
+               "&session_id=sess77abc&passcode=918273&lang=en#state=x&access_token=at55")
+        s = _chromium("text_surfaces.html", url=url)["snapshot"]
+        for secret in ("s3cr3tValue9", "r1a2b3c4d5e6", "482913", "4821", "sess77abc", "918273", "at55"):
+>           assert secret not in s["url"], (secret, s["url"])
+E           AssertionError: ('s3cr3tValue9', 'https://portal.example/cb?client_secret=s3cr3tValue9&refresh_token=r1a2b3c4d5e6&otp=482913&pin=4821&session_id=sess77abc&passcode=918273&lang=en#state=x&access_token=[redacted]')
+E           assert 's3cr3tValue9' not in 'https://por...n=[redacted]'
+E             
+E             's3cr3tValue9' is contained here:
+E               https://portal.example/cb?client_secret=s3cr3tValue9&refresh_token=r1a2b3c4d5e6&otp=482913&pin=4821&session_id=sess77abc&passcode=918273&lang=en#state=x&access_token=[redacted]
+E             ?                                         ++++++++++++
+
+tests/assist/test_a0_r16_url_secret_regressions.py:77: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_url_secrets_and_userinfo_never_reach_the_brain
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://x.test/?client_secret=s3cr3tValue9-s3cr3tValue9]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://x.test/?refresh_token=r1a2b3-r1a2b3]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://x.test/?reset_token=r1a2b3-r1a2b3]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://x.test/?otp=482913-482913]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://x.test/?pin=4821-4821]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://x.test/?session_id=s1-=s1]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://x.test/?passcode=918273-918273]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://alice:Hunter2pass@x.test/-Hunter2pass]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_redact_url_masks_each_secret_key[https://x.test/#access_token=at55&state=q-at55]
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_readable_query_keys_stay
+FAILED tests/assist/test_a0_r16_url_secret_regressions.py::test_r1_04_in_page_layer_masks_url_secrets
+12 failed in 1.18s
+
+=== tests/assist/test_a0_r16_url_secret_regressions.py AFTER (ca622bc0354a960c82acd7a33ecc6de5bb9f360a) DONE
+............                                                             [100%]
+12 passed in 1.07s
+
+=== tests/web/test_w1_r16_review_regressions.py BEFORE (67aff5042c0f166392281e072fb5f9db906779c5) DONE
+in_call():
+        events = []
+        f, _ = web(_routes())
+        in_call = threading.Event()
+        seen = {}
+    
+        def brain(messages, *, cancel=None, timeout_s=None):
+            seen["timeout_s"] = timeout_s
+            in_call.set()
+            t0 = time.monotonic()
+            while time.monotonic() - t0 < 5:
+                if cancel is not None and cancel.cancelled:
+                    return "CANCELLED", ""
+                time.sleep(0.01)
+            return "COMPLETE", "The district board approved a fee increase of 4.5% for the 2027 academic year [1]."
+        br = B.WebResearch(write_event=events.append, fetcher_factory=lambda: f,
+                           providers_factory=lambda: [FakeProvider([("A", "https://a.example/", "")])], brain_complete=brain)
+        jid = br.handle("web_research", {"command": "web_research", "query": "fee increase", "urls": [], "feeds": [],
+                                         "use_brain": True})["job_id"]
+        assert in_call.wait(5)
+        t0 = time.monotonic()
+>       br.cancel_brain_work("user_turn")
+        ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'WebResearch' object has no attribute 'cancel_brain_work'
+
+tests/web/test_w1_r16_review_regressions.py:175: AttributeError
+____________ test_r1_05_local_brain_call_is_cancellable_and_bounded ____________
+
+    def test_r1_05_local_brain_call_is_cancellable_and_bounded():
+        from uri_operational_intelligence import brain_client as BC
+    
+        class Client:
+            base_url = "http://127.0.0.1:18470"
+    
+            def stream_chat(self, body, *, cancel=None, deadlines=None):
+                self.deadlines = deadlines
+                t0 = time.monotonic()
+                while time.monotonic() - t0 < 5:
+                    if cancel.cancelled:
+                        return BC.CallResult(status=BC.CANCELLED)
+                    time.sleep(0.01)
+                return BC.CallResult(status=BC.COMPLETE, text="late")
+    
+            def complete_json(self, body, timeout_s):
+                raise AssertionError("the cancellable path must be used")
+    
+        class Flag:
+            cancelled = False
+        c, flag = Client(), Flag()
+        threading.Timer(0.2, lambda: setattr(flag, "cancelled", True)).start()
+        t0 = time.monotonic()
+>       assert make_complete(c)([{"role": "user", "content": "x"}], cancel=flag, timeout_s=7.5) == ("CANCELLED", "")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: make_complete.<locals>.complete() got an unexpected keyword argument 'cancel'
+
+tests/web/test_w1_r16_review_regressions.py:206: TypeError
+____ test_r1_05_worker_yields_research_and_assist_brain_on_every_brain_turn ____
+
+    def test_r1_05_worker_yields_research_and_assist_brain_on_every_brain_turn():
+        src = (ROOT / "scripts/run_uri_integrated_worker.py").read_text(encoding="utf-8")
+>       assert 'BRAIN_TURNS = frozenset({"oi_turn", "oi_confirm", "oi_decide"})' in src
+E       assert 'BRAIN_TURNS = frozenset({"oi_turn", "oi_confirm", "oi_decide"})' in '"""Working-system client worker: the accepted Phase 2 supervised worker plus Operational Intelligence turns with\nstr...sed_oi": released_oi, "oi_job_unfinished": unfinished}\n\n\nif __name__ == "__main__":\n    raise SystemExit(main())\n'
+
+tests/web/test_w1_r16_review_regressions.py:212: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_detector_sees_every_link_form[refunds-portal.net/claim]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_detector_sees_every_link_form[xhttps://evil.example/pay]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_detector_sees_every_link_form[hxxps://evil[.]example]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_detector_sees_every_link_form[bursar\uff20evil-mail.com]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_detector_sees_every_link_form[https\uff1a//evil.example/claim]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_verify_and_extractive_never_keep_a_link[refunds-portal.net/claim]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_verify_and_extractive_never_keep_a_link[xhttps://evil.example/pay]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_verify_and_extractive_never_keep_a_link[hxxps://evil[.]example]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_verify_and_extractive_never_keep_a_link[bursar\uff20evil-mail.com]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_verify_and_extractive_never_keep_a_link[https\uff1a//evil.example/claim]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_01_surface_masks_every_link_form
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_02_tenfold_is_quoted_not_reworded
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_02_quantity_words[Rents rose tenfold.]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_02_quantity_words[A couple of hostels closed.]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_02_quantity_words[Phase V begins.]
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_02_recombined_words_are_quoted_not_reworded
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_06_unrelated_cited_source_is_not_kept
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_05_cancel_during_the_brain_call_ends_cancelled
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_05_expired_deadline_does_not_call_the_brain
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_05_user_turn_stops_the_research_brain_call
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_05_local_brain_call_is_cancellable_and_bounded
+FAILED tests/web/test_w1_r16_review_regressions.py::test_r1_05_worker_yields_research_and_assist_brain_on_every_brain_turn
+22 failed, 4 passed in 0.43s
+
+=== tests/web/test_w1_r16_review_regressions.py AFTER (ca622bc0354a960c82acd7a33ecc6de5bb9f360a) DONE
+..........................                                               [100%]
+26 passed in 0.58s
+

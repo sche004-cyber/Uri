@@ -1,0 +1,37 @@
+I've repaired all three findings and added regression tests that fail on ca622bc and pass after the change. The full `tests/assist` + `tests/web` run passes (2782 tests).
+
+Each repair adds a structural check instead of extending a list of known-bad examples.
+
+**R2-03: text hidden under its own line-through.** Root cause: a CSS highlight can't remove an element's own text-decoration. Chromium repaints the bar in the highlight colour, so the bar took both tints exactly where the glyphs are.
+- `probe.js`: every probe shot is now taken with all decorations switched off. One extra shot, `plain`, shows the page with only its decorations off.
+- `probe.js` also reports (`d`) any unit whose decoration it could not switch off: the page's own `!important` rule (inline or id selector), a decorated first line or first letter on the unit or an ancestor (shadow hosts and slots included), or one of the page's own CSS highlights over it.
+- `onscreen.py`: a pixel now counts as the unit's ink only where the glyph shows with decorations off and nothing paints over it in the real page. A unit whose decorations cover more than 25% of its box, or that has `d`, is dropped as `decorated`. A probe without `plain` keeps no page text at all.
+- I first also switched off decorations on `::first-letter`/`::first-line`, but that splits text runs and moved the glyphs, which wrongly dropped an ordinary link. Those decorations are now caught by the `d` check instead.
+- Checked in real Chromium: the reviewer's payload and 7 variants (grey and black text, both `!important` forms, decorated ancestor, underline/overline pair, page highlight) are all dropped. A link, `<s>`, `<u>`, a wavy underline and plain text are still kept.
+
+**R2-01: link forms that got past the detector.** The text is now cleaned once, and that same text is both checked and shown: NFKC, then every invisible formatting character is deleted (zero-width space, soft hyphen, BOM, bidi controls, variation selectors and similar).
+- The dot forms browsers accept in host names (`。`, `．`, `｡`) count as dots, and labels may use any Unicode letters.
+- A title-case or non-ASCII TLD counts as a link when it is a known TLD, is followed by `/`, or the host has a hyphen or digit.
+- A second check runs on the text with accents removed and Cyrillic/Greek look-alikes mapped to Latin (catches `.сom`).
+- The surface masks each word that contains a link using this same detector.
+- Ordinary sentences such as `rose.The`, `U.S.`, `a.m.`, `Ph.D` and Japanese text are still not links.
+
+**R2-02: claims that join two clauses.** D7 no longer depends on the quantity-word list. A claim is shown in the Brain's words only if it follows the source's own run of words: between matched words it may leave out at most 2 content words, and never a joining word, comma, semicolon, dash, bracket or quantity. All four reviewer cases are quoted even with the quantity detector forced off, as is a `before`/`after` swap. I also added the missing quantity words as a second check.
+
+**Decisions for you:**
+- **`uri_a2ui/validate._URLISH` is unchanged.** The diagnosis asked for it, but `uri_a2ui/` is outside my permitted paths. The research surface now masks links before the validator runs, so R2-01 doesn't depend on it.
+- **Two existing tests stopped me using a strictly contiguous rule.** They require that dropping a couple of modifiers ("after [a long public] consultation") or adding a "the" keeps the Brain's sentence. Instead of changing those tests, I allow short gaps; making the rule fully contiguous is your call.
+
+**Other changes and limits:**
+- In existing tests I updated the shared Playwright driver (`test_a0_r13_differential_render.py`) to take the `plain` shot, added `plain` to the synthetic probes, and added a missing-`plain` case to `test_a0_d10_pixel_checked_text.py`. No assertions were weakened.
+- I updated the probe description in `docs/assist/03_PERMISSION_AND_DATA_FLOW.md`.
+- Not verified: the real extension adapter that drives `probe.js` (the docs mark the extension channel as not implemented), and whether page highlights are visible from the extension's isolated world. Only the Playwright stand-in was tested.
+- The detector now also flags missing-space typos where the next word is a real TLD (`Café.Bar`, `well-known.Fact`). This only causes extra masking or extra quoting.
+- `tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on` fails because it checks the git HEAD commit (ca622bc vs e8e3b65). That is unrelated to this change.
+- Per instructions, I didn't run `graphify update` and didn't commit.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R2-01", "R2-02", "R2-03"], "not_repaired": [],
+ "regression_tests": ["tests/web/test_w1_r2_review_regressions.py", "tests/assist/test_a0_r2_decoration_regressions.py"],
+ "notes": "Verified: both regression files fail on a clean export of ca622bc (web: 61 failed / 6 guard cases pass both ways; assist: 3 failed, reviewer's STRIKE-PAYLOAD and 4 other payloads leak) and pass after the change. Full tests/assist + tests/web: 2782 passed. R2-03: probe.js takes clear/tint/tint2 with all decorations off (NODECO), adds a 'plain' shot (op 'plain') and a per-unit 'd' flag for decorations it cannot switch off (inline/id !important, decorated ::first-line/::first-letter on the unit or a flat-tree ancestor, a page CSS highlight over the unit); onscreen.py requires 'plain' (missing -> no page text), counts ink only where plain differs from clear and base equals plain, and drops units with 'd' or decorations covering more than 25% of the box ('decorated'). ::first-letter/::first-line are not in NODECO (a rule there splits text runs and moves glyphs, which dropped an ordinary link); the 'd' check covers them. Existing test helpers updated for the new shot (shared Playwright driver in test_a0_r13, synthetic probes in test_a0_r13 and test_a0_d10, plus a missing-plain case); no assertion weakened. R2-01: untrusted.normalise = NFKC + delete default-ignorables, used for detection and display; U+3002/U+FF0E/U+FF61 count as dots; Unicode labels; any-case/IDN TLD accepted when known, followed by '/', or the host has a hyphen/digit; a second pass on an accent-stripped, homoglyph-folded skeleton; surface.clean masks link-bearing tokens through untrusted.mask_links; LINK_PATTERN removed (only surface used it). uri_a2ui/validate._URLISH is outside the permitted paths and unchanged; the surface masks before it runs. R2-02: synthesize._excerpt replaces the subsequence test: matched in order, each gap at most 2 content words and no clause word, clause punctuation or quantity; the claim's own joining words must match the source; memoised. A strictly contiguous rule would break two existing tests (test_w1_d7_verbatim_numbers::test_claim_without_quantity_is_still_checked_not_quoted, test_w1_r9::test_r9_02_any_added_content_word...), so short modifier gaps are allowed; making it fully contiguous is an owner decision. Quantity list extended as a second check only. Not verified: the real extension adapter (docs mark the extension channel NOT IMPLEMENTED) and whether page highlights are visible from the isolated world; only the Playwright stand-in was run. Over-detection: missing-space typos where the next word is a real TLD ('Café.Bar') now count as links (extra masking/quoting only). tests/phase2a/test_frozen_core.py::test_base_commit... fails on the HEAD commit check, unrelated. graphify not run; nothing committed."}
+REPAIR_RESULT_END
