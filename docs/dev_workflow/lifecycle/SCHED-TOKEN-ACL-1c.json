@@ -1,0 +1,88 @@
+{
+ "milestone": "SCHED-TOKEN-ACL-1c",
+ "_note": "Redesign of SCHED-TOKEN-ACL-1 after 1b (in-place repair) was stopped in round 5 by owner decision ('Redesign', 2026-10-11); 1b receipt in docs/scheduler/sched_token_acl_1/review-1b/. Same baseline, so the whole milestone is reviewed at the new SHA. Acceptance criteria: SCHED_TOKEN_ACL_1_PLAN.md with its 'Amendment 2026-10-11' (S1', S2' supersede S1, S2). Windows ACL behaviour is Windows-qualified; the Windows re-run on the final commit is owner-side. Integration none.",
+ "repo": "../../..",
+ "baseline": {
+  "ref": "origin/integration/git-sync-20261008",
+  "expect": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80"
+ },
+ "candidate": {
+  "branch": "phase/sched-token-acl",
+  "worktree": "../../../../uri-wt/sched-acl-impl"
+ },
+ "state_dir": "../uri-wt/lifecycle-runs/SCHED-TOKEN-ACL-1c",
+ "acceptance_criteria_file": "docs/scheduler/SCHED_TOKEN_ACL_1_PLAN.md",
+ "review_focus": [
+  "check-and-refuse design (plan Amendment 2026-10-11): a new state folder is created locked by CreateDirectoryW with O:<sid>D:P(A;OICI;FA;;;<sid>); an existing folder is only checked through one handle opened with FILE_FLAG_OPEN_REPARSE_POINT (owner, protected single-entry DACL, not a link) and every item inside must be a non-link owned by the user with no explicit entry for another SID; otherwise run exits 4 without changing anything",
+  "secure-state: refuses while the scheduler runs or when a link is inside, keeps the old folder renamed aside, copies plain files into a new locked folder, and the result passes the check",
+  "the token: created empty in the checked folder, own non-inherited user-only entry (POSIX 0600) before it is written; fail-closed exit 4 with no token left; no regression in the scheduler service, bearer-token check, service.json or the Living UI client reading api-token",
+  "ctypes correctness of security_of / _create_locked_folder (argtypes, handle and LocalFree handling, SDDL parsing) since Windows cannot be run in the review; the tests prove S1'-S4 on POSIX and do not pass vacuously, Windows tests are explicitly Windows-qualified",
+  "deployment impact recorded in the plan: existing installs and scheduler_task_ctl.ps1 -Action install need one secure-state run; is anything else that starts the service broken"
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "uri_scheduler/service.py",
+  "tests/scheduler/**",
+  "docs/scheduler/**",
+  "docs/dev_workflow/lifecycle/SCHED-TOKEN-ACL-1.json",
+  "docs/dev_workflow/lifecycle/SCHED-TOKEN-ACL-1b.json",
+  "docs/dev_workflow/lifecycle/SCHED-TOKEN-ACL-1c.json"
+ ],
+ "test_globs": [
+  "tests/**"
+ ],
+ "allowed_flaky": [],
+ "gates": [
+  {
+   "id": "python-scheduler",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-m",
+    "pytest",
+    "-c",
+    "scripts/phase2d_pytest.ini",
+    "--rootdir=.",
+    "-q",
+    "tests/scheduler"
+   ]
+  }
+ ],
+ "regression_runner": [
+  "{python}",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "regression_runners": [],
+ "repair_nonblocking_severities": [],
+ "reviewer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 3600
+ },
+ "implementer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 3600
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 8,
+   "max_cost_usd": 60,
+   "max_hours": 6
+  }
+ },
+ "integration": {
+  "mode": "none"
+ },
+ "commit_trailers": []
+}

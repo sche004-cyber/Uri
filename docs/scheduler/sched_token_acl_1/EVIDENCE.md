@@ -1,12 +1,10 @@
 # SCHED-TOKEN-ACL-1 evidence (2026-10-11, Windows 11, owner's PC)
 
-> **Stale after review (R2-04).** Everything below was recorded on commit `1465e16`, before the independent-review
-> repairs `33fc419` (R1-01) and the R2 follow-up (SCHED-TOKEN-ACL-1b: `/reset /T` of explicit entries, R2-01;
-> its review repair closes the folder with `/inheritance:r /grant:r` first, replaces the folder DACL in one write with
-> a protected user-only DACL (`drop_foreign_entries`, ctypes `SetFileSecurityW`), and then resets only the children,
-> never the folder, re-applies the grant and removes `api-token` on failure, and skips the ACL of a live instance, R1-01/R1-02).
-> The Windows gates and the live run must be re-run on the final commit of `phase/sched-token-acl`; until then this
-> page is not Windows evidence for that commit. Linux gate results are in `review/` and `review-1b/`.
+> **Not evidence for the current code.** Everything below was recorded on commit `1465e16`, the first ACL design. That
+> design was repaired (`33fc419`, review `review/`), then replaced by the check-and-refuse redesign (plan, "Amendment
+> 2026-10-11"), after the in-place repair attempt SCHED-TOKEN-ACL-1b was stopped in round 5 (receipt in `review-1b/`).
+> The Windows gates and the live run must be re-run on the final commit of `phase/sched-token-acl`, including
+> `secure-state` on a copy of the canonical state folder. Until then, there is no Windows evidence for that commit.
 
 ## Tests (commit `1465e16`, before the review repairs)
 

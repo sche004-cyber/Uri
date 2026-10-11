@@ -1,0 +1,141 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": null,
+ "candidate": "51f6eedd0ca480f92a38dc2bf7d49ed440be1d7c",
+ "config_sha256": "9c996a62f51fbebd30f7a0c1a063488dcacc47db3b0f157f9980de2ae3b0c7bb",
+ "events": 33,
+ "evidence_ok_for_candidate": false,
+ "gates": {},
+ "integration": null,
+ "milestone": "SCHED-TOKEN-ACL-1b",
+ "open_findings": [
+  {
+   "blocking": true,
+   "id": "R5-01",
+   "severity": "MEDIUM",
+   "title": "Children are listed before the state folder is closed and never re-listed, so a file created after the listing (by timing, or through a folder handle opened under the old (M) access) is never taken over or reset, and the scheduler then uses it (e.g. an attacker-owned scheduler.db)"
+  },
+  {
+   "blocking": false,
+   "id": "R5-02",
+   "severity": "LOW",
+   "title": "drop_foreign_entries/owner_sid use path-based SetFileSecurityW/GetFileSecurityW, which follow a junction swapped in after same_folder()"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01",
+    "R1-02"
+   ],
+   "commit": "31f4eb3544ae389744653130a7933b3b4c23c5ea",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R2-05"
+   ],
+   "commit": "6a88dbcf1f5b80c65ad15407f52081f5e4be698c",
+   "reason": null,
+   "repair": 2,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R3-01"
+   ],
+   "commit": "b79c123ad05032991e0437892787b7fa732a0082",
+   "reason": null,
+   "repair": 3,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R4-01"
+   ],
+   "commit": "51f6eedd0ca480f92a38dc2bf7d49ed440be1d7c",
+   "reason": null,
+   "repair": 4,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "a52aecab0e96f72652b300b4c9b9fd09eb5ca313",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "d6870d26-afb3-40cb-b061-02fa2bb094d0",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "31f4eb3544ae389744653130a7933b3b4c23c5ea",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 2,
+   "session_id": "b10db514-70f2-4c81-a5da-2eb7044cc8d2",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "6a88dbcf1f5b80c65ad15407f52081f5e4be698c",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 3,
+   "session_id": "edce273e-0344-488e-871b-be4bafc3ad4e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "b79c123ad05032991e0437892787b7fa732a0082",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 4,
+   "session_id": "50ebed57-e337-409a-8efb-9f5b94b7fb68",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "51f6eedd0ca480f92a38dc2bf7d49ed440be1d7c",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 5,
+   "session_id": "8a7ff734-6050-4fd8-961b-81c299d87f00",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  }
+ ],
+ "rounds": 5,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "FIXING",
+ "verify_errors": [],
+ "written_at": "2026-10-11T14:33:33Z"
+}
