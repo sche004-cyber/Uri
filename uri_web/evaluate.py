@@ -11,7 +11,8 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 _TRACKING = re.compile(r"^(utm_[a-z]+|fbclid|gclid|dclid|msclkid|mc_cid|mc_eid|ref|ref_src|igshid|spm)$", re.I)
 _WORD = re.compile(r"[A-Za-z][A-Za-z'-]{2,}")
-_NUMBER = re.compile(r"(?<![\w.])(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(\s?%|\s?(?:percent|million|billion|thousand))?", re.I)
+# Only a preceding digit stops a match: "Rs.500", "approx.900" and "No.5" carry numbers too (R1-01).
+_NUMBER = re.compile(r"(?<!\d)(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(\s?%|\s?(?:percent|million|billion|thousand))?", re.I)
 _SENT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])")
 STOP = frozenset("""the and for are was were has have had that this with from which their there been being into than
 then them they its also but not can may will would could should about after before over under more most such

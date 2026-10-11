@@ -154,6 +154,9 @@ class AssistController extends ChangeNotifier {
   }
 
   Future<void> grant(String kind, String targetId, {required bool suggest, bool confirmScreen = false}) async {
+    // A new grant discards any earlier ask (the worker drops answers from another grant).
+    askId = null;
+    answer = null;
     await _call({
       'command': 'assist_grant',
       'kind': kind,
@@ -172,6 +175,7 @@ class AssistController extends ChangeNotifier {
     findings = const [];
     lastObservation = null;
     answer = null;
+    askId = null;               // Stop cancels the ask; otherwise `asking` stays true and Ask stays disabled (R1-03)
     await _call({'command': 'assist_revoke'}, updatesStatus: true);
   }
 

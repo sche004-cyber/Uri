@@ -1,12 +1,19 @@
 // Runs the extension's snapshot.js in real Chromium (Playwright) against a fixture page and prints the snapshot.
-// Usage: node run_snapshot.cjs <snapshot.js> <page.html> [css selector to select]
+// Usage: [SNAPSHOT_URL=https://...] node run_snapshot.cjs <snapshot.js> <page.html> [css selector to select]
 const { chromium } = require("playwright");
 const { readFileSync } = require("node:fs");
 (async () => {
   const [, , scriptPath, pagePath, select] = process.argv;
   const browser = await chromium.launch();
   const page = await browser.newPage({ deviceScaleFactor: 1, viewport: { width: 1000, height: 900 } });
-  await page.setContent(readFileSync(pagePath, "utf8"));
+  const html = readFileSync(pagePath, "utf8");
+  if (process.env.SNAPSHOT_URL) {
+    // Serve the fixture at a given URL (no network) so the snapshot's `url` can be checked too.
+    await page.route("**/*", (r) => r.fulfill({ status: 200, contentType: "text/html", body: html }));
+    await page.goto(process.env.SNAPSHOT_URL);
+  } else {
+    await page.setContent(html);
+  }
   if (select) {
     await page.evaluate((sel) => {
       const r = document.createRange(); r.selectNodeContents(document.querySelector(sel));

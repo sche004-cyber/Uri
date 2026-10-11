@@ -19,18 +19,19 @@ MASK = "[redacted]"
 SENSITIVE_TYPES = {"password", "hidden"}
 SENSITIVE_AUTOCOMPLETE = {"current-password", "new-password", "one-time-code", "cc-number", "cc-csc", "cc-exp",
                           "cc-exp-month", "cc-exp-year", "cc-name", "cc-type"}
-# Names are split into words first ("smsOtp" -> "sms otp", "user_pin" -> "user pin") so short tokens such as
-# otp / pin / pw match only as whole words ("hotpot", "spinner", "pincode" do not).
+# Names are split into words first ("smsOtp" -> "sms otp", "OTPCode" -> "otp code", "cvv2" -> "cvv 2",
+# "user_pin" -> "user pin") so short tokens such as otp / pin / pw match only as whole words ("hotpot", "spinner",
+# "pincode" do not). An all-caps run ending in otp ("SMSOTP" -> "smsotp") is still a one-time code.
 _SENSITIVE_WORDS = re.compile(
-    r"\b(pass|pw|pwd|otp|totp|hotp|mfa|2fa|pin(?! ?code)|cvv|cvc|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|"
+    r"\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|"
     r"password|passwd|passcode|passphrase|apikey|aadhar|aadhaar)\b|"
     r"\bapi ?key\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|"
-    r"\bcard ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|"
+    r"\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|"
     r"\bprivate ?key\b")
 
 
 def _words(v: str) -> str:
-    v = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", v)
+    v = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=\d)|(?<=\d)(?=[A-Za-z])", " ", v)
     return re.sub(r"[_\-.:/]+", " ", v).lower()
 
 

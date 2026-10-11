@@ -7,8 +7,8 @@
   const SENSITIVE_AC = new Set(["current-password", "new-password", "one-time-code", "cc-number", "cc-csc", "cc-exp",
     "cc-exp-month", "cc-exp-year", "cc-name", "cc-type"]);
   // Same rules as uri_assist/redact.py (kept in sync; tests/assist checks both on one fixture).
-  const SENSITIVE_WORDS = /\b(pass|pw|pwd|otp|totp|hotp|mfa|2fa|pin(?! ?code)|cvv|cvc|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|password|passwd|passcode|passphrase|apikey|aadhar|aadhaar)\b|\bapi ?key\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|\bcard ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|\bprivate ?key\b/;
-  const words = (v) => String(v).replace(/(?<=[a-z])(?=[A-Z])/g, " ").replace(/[_\-.:/]+/g, " ").toLowerCase();
+  const SENSITIVE_WORDS = /\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|password|passwd|passcode|passphrase|apikey|aadhar|aadhaar)\b|\bapi ?key\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|\bprivate ?key\b/;
+  const words = (v) => String(v).replace(/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=\d)|(?<=\d)(?=[A-Za-z])/g, " ").replace(/[_\-.:/]+/g, " ").toLowerCase();
   const SHORT_CODE = /^\s*\d{4,8}\s*$/, CODE_LABEL = /\bcode\b/, POSTAL = /postal|zip|post ?code|pin ?code/i;
   const counts = {};
   const bump = (k) => { counts[k] = (counts[k] || 0) + 1; };
@@ -90,8 +90,9 @@
     const shown = visible(el);
     if (!shown && !isSensitive) continue;          // invisible ordinary fields are not part of what the user sees
     const f = {
-      id: el.id || "", tag: el.tagName.toLowerCase(), type, name: el.getAttribute("name") || "", label,
-      autocomplete: el.getAttribute("autocomplete") || "", placeholder: el.getAttribute("placeholder") || "",
+      id: maskText(el.id || ""), tag: el.tagName.toLowerCase(), type, name: maskText(el.getAttribute("name") || ""),
+      label: maskText(label), autocomplete: el.getAttribute("autocomplete") || "",
+      placeholder: maskText(el.getAttribute("placeholder") || ""),
       required: !!el.required || el.getAttribute("aria-required") === "true", readonly: !!el.readOnly || !!el.disabled,
       visible: shown,
     };
@@ -121,13 +122,14 @@
     chunks.push(maskText(t)); total += t.length + 1;
   }
   const headings = [...document.querySelectorAll("h1,h2,h3")].filter(visible)
-    .map((h) => h.innerText.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, MAX_HEADINGS);
+    .map((h) => maskText(h.innerText.replace(/\s+/g, " ").trim())).filter(Boolean).slice(0, MAX_HEADINGS);
   const sel = maskText(String(window.getSelection ? window.getSelection() : "").slice(0, 4000));
-  const url = location.href.replace(/([?&](?:access_?token|token|api_?key|key|secret|password|pwd|sig|signature|code)=)[^&#]*/gi,
+  // Every text that leaves the page passes maskText (title, headings, labels, placeholders and the whole URL too).
+  const url = maskText(location.href).replace(/([?&](?:access_?token|token|api_?key|key|secret|password|pwd|sig|signature|code)=)(?!\[redacted\])[^&#]*/gi,
     (m, k) => { bump("query_secret"); return k + "[redacted]"; });
 
   return {
-    schema: "uri.assist.dom.v1", url, title: document.title.slice(0, 500), lang: document.documentElement.lang || "",
+    schema: "uri.assist.dom.v1", url, title: maskText(document.title.slice(0, 500)), lang: document.documentElement.lang || "",
     selection: sel, headings, text: chunks.join("\n").slice(0, MAX_TEXT), fields, sensitive_rects: sensitiveRects,
     redactions: counts, device_pixel_ratio: dpr,
   };

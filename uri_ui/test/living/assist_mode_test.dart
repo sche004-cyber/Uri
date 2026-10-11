@@ -343,6 +343,49 @@ void main() {
     a.dispose();
   });
 
+  test('after an answer, Stop then a new grant lets the user ask again (R1-03)', () async {
+    final rt = AssistRuntime();
+    final a = AssistController(runtime: () => rt, events: rt.events, pollEvery: const Duration(hours: 1));
+    await a.grant('browser_tab', 'tab-7', suggest: false);
+    await a.ask('What is this?');
+    rt.emit({'schema': 'uri.assist.event.v1', 'turn_id': 'ask-1', 'type': 'assist.answer',
+      'data': {'status': 'COMPLETE', 'answer': 'A fee form.'}});
+    await Future<void>.delayed(Duration.zero);
+    await a.revoke();
+    expect(a.asking, isFalse);
+    await a.grant('browser_tab', 'tab-7', suggest: false);
+    expect(a.active, isTrue);
+    expect(a.asking, isFalse);
+    a.dispose();
+  });
+
+  testWidgets('ask -> answer -> Stop -> share again: Ask is enabled and nothing says "reading" (R1-03)', (tester) async {
+    final (services, rt) = await pumpAssist(tester);
+    services.presentation.setMode(UiPresentationMode.assist);
+    await tester.pumpAndSettle();
+    Future<void> share() async {
+      await tester.tap(find.descendant(of: find.byKey(const ValueKey('assist-kind-browser_tab')), matching: find.text('Choose')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('assist-target-tab-7')));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.byKey(const ValueKey('assist-tab-ask')));
+    await tester.pumpAndSettle();
+    await share();
+    await tester.enterText(find.byKey(const ValueKey('assist-question')), 'What is this?');
+    await tester.tap(find.byKey(const ValueKey('assist-ask')));
+    await tester.pumpAndSettle();
+    expect(rt.commands.last['command'], 'assist_ask');
+    rt.emit({'schema': 'uri.assist.event.v1', 'turn_id': 'ask-1', 'type': 'assist.answer',
+      'data': {'status': 'COMPLETE', 'answer': 'A fee form.'}});
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('assist-stop')));
+    await tester.pumpAndSettle();
+    await share();
+    expect(find.byKey(const ValueKey('assist-asking')), findsNothing);
+    expect(tester.widget<FilledButton>(find.byKey(const ValueKey('assist-ask'))).onPressed, isNotNull);
+  });
+
   test('a cancelled answer is shown as cancelled, never as an answer', () async {
     final rt = AssistRuntime();
     final a = AssistController(runtime: () => rt, events: rt.events, pollEvery: const Duration(hours: 1));
