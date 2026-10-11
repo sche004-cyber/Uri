@@ -782,18 +782,45 @@ def _ending_spans(norm: str) -> list:
     return spans
 
 
+# R31-01: ASCII characters the Unicode confusables data lists as look-alikes of a letter ('0' ~ 'o'; '1', 'I', '|' ~ 'l'),
+# single characters only (the multi-letter 'rn' ~ 'm' is left out: 'corn' would read as 'com').
+from .confusables_ascii import CONFUSABLE_ASCII_SOURCES as _ASCII_SRC   # noqa: E402
+_ASCII_ONE = {k: v for k, v in _ASCII_SRC.items() if len(v) == 1}
+_RUN = re.compile(r"[A-Za-z0-9|]+")
+
+
+def _ascii_variant(norm: str) -> str:
+    """`norm` with ASCII look-alikes read as the letter they pass for, inside runs that hold at least two letters
+    ('c0m' -> 'com', 'g0v' -> 'gov', 'mi1' -> 'mil', 'miI' -> 'mil'); 'I' only in a run that also has lower-case letters
+    ('MIT' stays), and never as the first letter ('In 2020'). Same length as `norm`, so spans found in it are spans of `norm`. Version numbers ('v1.0') and codes
+    ('A1', 'B12') keep their digits (fewer than two letters in the run)."""
+    def fold(m):
+        run = m.group(0)
+        letters = sum(ch.isalpha() for ch in run)
+        if letters < 2:
+            return run
+        lower = any(ch.islower() for ch in run)
+        # 'I' first in a word is a capital ('In 2020', 'It is'), not a look-alike of 'l'.
+        return "".join(_ASCII_ONE[ch] if ch in _ASCII_ONE and (ch != "I" or (lower and i > 0)) else ch
+                       for i, ch in enumerate(run))
+    return _RUN.sub(fold, norm)
+
+
 def has_link_or_contact(text: str) -> bool:
     norm = normalise(text)
+    alt = _ascii_variant(norm)
     return (_links(norm) or _links(_skeleton(text)) or bool(_unusual_spans(norm))
-            or bool(_ending_spans(norm)))
+            or bool(_ending_spans(norm)) or (alt != norm and (_links(alt) or bool(_ending_spans(alt)))))
 
 
 def _all_spans(norm: str) -> list:
     """Link spans in canonical text `norm`, from the text and from its skeleton (mapped back to `norm`), and the
     unusual tokens (D15; checked on the canonical text only: the skeleton maps look-alikes across scripts)."""
     skel, idx = _skeleton_map(norm)
+    alt = _ascii_variant(norm)                 # R31-01: same length, so its spans are spans of `norm`
+    extra = (_spans(alt) + _ending_spans(alt)) if alt != norm else []
     return (_spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a] + _unusual_spans(norm)
-            + _ending_spans(norm))
+            + _ending_spans(norm) + extra)
 
 
 def joins_link(a: str, b: str) -> bool:

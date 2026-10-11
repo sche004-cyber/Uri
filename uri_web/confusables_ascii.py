@@ -5,7 +5,8 @@ from github.com/unicode-org/icu icu4c/source/data/unidata/confusables.txt; sha25
 Unicode data, (c) Unicode, Inc., used under the Unicode License (https://www.unicode.org/license.txt).
 CONFUSABLE_ASCII: single non-ASCII characters whose prototype is ASCII letters or digits (lower-cased).
 CONFUSABLE_LATIN: single non-ASCII characters whose prototype is a non-ASCII Latin spelling ('\u045b' -> '\u0127');
-the reader folds that prototype further. Not edited by hand.
+the reader folds that prototype further.
+CONFUSABLE_ASCII_SOURCES: ASCII characters listed as look-alikes of another ASCII letter (R31-01). Not edited by hand.
 """
 
 CONFUSABLE_ASCII = {
@@ -2342,4 +2343,12 @@ CONFUSABLE_LATIN = {
     '🅮': 'C⃠',
     '🜈': 'Vᷤ',
     '🜔': 'O̵',
+}
+
+CONFUSABLE_ASCII_SOURCES = {
+    '0': 'o',
+    '1': 'l',
+    'I': 'l',
+    'm': 'rn',
+    '|': 'l',
 }
