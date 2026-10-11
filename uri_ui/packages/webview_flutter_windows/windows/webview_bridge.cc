@@ -5,9 +5,11 @@
 
 #include <cmath>
 #include <format>
+#include <set>  // URI patch P1
 
 #include "texture_bridge_gpu.h"
 #include "util/cursor_util.h"
+#include "util/string_converter.h"  // URI patch P1
 #include "util/surface_geometry.h"
 
 namespace {
@@ -138,6 +140,9 @@ constexpr auto kEventValue = "value";
 constexpr auto kErrorNotSupported = "not_supported";
 constexpr auto kScriptFailed = "script_failed";
 constexpr auto kMethodFailed = "method_failed";
+// URI patch P1
+constexpr auto kMethodSetNetworkPolicy = "setNetworkPolicy";
+constexpr auto kMethodGetSecurityReport = "getSecurityReport";
 
 static const std::optional<std::pair<double, double>> GetPointFromArgs(
     const flutter::EncodableValue* args) {
@@ -661,6 +666,38 @@ void WebviewBridge::HandleMethodCall(
       return result->Error(kErrorNotSupported, "Posting the message failed.");
     }
     return result->Error(kErrorInvalidArgs);
+  }
+
+  // URI patch P1 - setNetworkPolicy: {navigationOrigins: [string], messageOrigins: [string]}. Each origin must
+  // already be canonical ("https://host[:port]", lower case, no path); anything else is refused.
+  if (method_name.compare(kMethodSetNetworkPolicy) == 0) {
+    const auto map = std::get_if<flutter::EncodableMap>(method_call.arguments());
+    if (!map) {
+      return result->Error(kErrorInvalidArgs);
+    }
+    std::set<std::string> lists[2];
+    const char* keys[2] = {"navigationOrigins", "messageOrigins"};
+    for (int i = 0; i < 2; ++i) {
+      const auto it = map->find(flutter::EncodableValue(keys[i]));
+      const auto list = it == map->end() ? nullptr : std::get_if<flutter::EncodableList>(&it->second);
+      if (!list) {
+        return result->Error(kErrorInvalidArgs, "origin lists are required");
+      }
+      for (const auto& v : *list) {
+        const auto s = std::get_if<std::string>(&v);
+        if (!s || uri_security::OriginOf(util::Utf16FromUtf8(*s)) != *s) {
+          return result->Error(kErrorInvalidArgs, "not a canonical origin");
+        }
+        lists[i].insert(*s);
+      }
+    }
+    webview_->SetNetworkPolicy(std::move(lists[0]), std::move(lists[1]));
+    return result->Success();
+  }
+
+  // URI patch P1 - getSecurityReport: JSON string with the lockdown counters and settings.
+  if (method_name.compare(kMethodGetSecurityReport) == 0) {
+    return result->Success(flutter::EncodableValue(webview_->SecurityReport()));
   }
 
   // setUserAgent: string

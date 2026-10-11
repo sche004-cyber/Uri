@@ -21,7 +21,7 @@ inline void ConvertColor(COREWEBVIEW2_COLOR& webview_color, int32_t color) {
   webview_color.A = (color >> 24) & 0xFF;
 }
 
-inline WebviewPermissionKind CW2PermissionKindToPermissionKind(
+[[maybe_unused]] inline WebviewPermissionKind CW2PermissionKindToPermissionKind(
     COREWEBVIEW2_PERMISSION_KIND kind) {
   using k = COREWEBVIEW2_PERMISSION_KIND;
   switch (kind) {
@@ -42,7 +42,7 @@ inline WebviewPermissionKind CW2PermissionKindToPermissionKind(
   }
 }
 
-inline COREWEBVIEW2_PERMISSION_STATE WebViewPermissionStateToCW2PermissionState(
+[[maybe_unused]] inline COREWEBVIEW2_PERMISSION_STATE WebViewPermissionStateToCW2PermissionState(
     WebviewPermissionState state) {
   using s = COREWEBVIEW2_PERMISSION_STATE;
   switch (state) {
@@ -96,6 +96,9 @@ Webview::Webview(
     settings_->put_IsStatusBarEnabled(FALSE);
     settings_->put_AreDefaultContextMenusEnabled(FALSE);
   }
+
+  // URI patch P1: lockdown before any other handler and before any navigation.
+  uri_security::Install(webview_.get(), &uri_policy_, &uri_tokens_);
 
   EnableSecurityUpdates();
   RegisterEventHandlers();
@@ -331,6 +334,14 @@ void Webview::RegisterEventHandlers() {
       Callback<ICoreWebView2WebMessageReceivedEventHandler>(
           [this](ICoreWebView2* sender,
                  ICoreWebView2WebMessageReceivedEventArgs* args) -> HRESULT {
+            // URI patch P1: drop messages whose sending document is not an allowed origin.
+            wil::unique_cotaskmem_string wsource;
+            args->get_Source(&wsource);
+            const std::wstring source = wsource.get() ? wsource.get() : L"";
+            if (!uri_policy_.AllowsMessageFrom(source)) {
+              uri_policy_.Count("message", source);
+              return S_OK;
+            }
             wil::unique_cotaskmem_string wmessage;
             if (web_message_received_callback_ &&
                 args->get_WebMessageAsJson(&wmessage) == S_OK) {
@@ -347,37 +358,13 @@ void Webview::RegisterEventHandlers() {
       Callback<ICoreWebView2PermissionRequestedEventHandler>(
           [this](ICoreWebView2* sender,
                  ICoreWebView2PermissionRequestedEventArgs* args) -> HRESULT {
-            if (!permission_requested_callback_) {
-              return S_OK;
-            }
-
+            // URI patch P1: every permission (camera, microphone, location, notifications, clipboard,
+            // ...) is denied without a prompt and is never forwarded to Dart. Upstream forwarded it to
+            // permission_requested_callback_ (see PATCHES.md).
             wil::unique_cotaskmem_string wuri;
-            COREWEBVIEW2_PERMISSION_KIND kind =
-                COREWEBVIEW2_PERMISSION_KIND_UNKNOWN_PERMISSION;
-            BOOL is_user_initiated = false;
-
-            if (args->get_Uri(&wuri) == S_OK &&
-                args->get_PermissionKind(&kind) == S_OK &&
-                args->get_IsUserInitiated(&is_user_initiated) == S_OK) {
-              wil::com_ptr<ICoreWebView2Deferral> deferral;
-              args->GetDeferral(deferral.put());
-
-              const std::string uri = util::Utf8FromUtf16(wuri.get());
-              permission_requested_callback_(
-                  uri, CW2PermissionKindToPermissionKind(kind),
-                  is_user_initiated == TRUE,
-                  // The event args are only borrowed for the duration of this
-                  // handler, but the completer runs after an async round trip
-                  // to Dart; keep a real reference (AddRef) on them.
-                  [deferral = std::move(deferral),
-                   args = wil::com_ptr<ICoreWebView2PermissionRequestedEventArgs>(
-                       args)](WebviewPermissionState state) {
-                    args->put_State(
-                        WebViewPermissionStateToCW2PermissionState(state));
-                    deferral->Complete();
-                  });
-            }
-
+            args->get_Uri(&wuri);
+            args->put_State(COREWEBVIEW2_PERMISSION_STATE_DENY);
+            uri_policy_.Count("permission", wuri.get() ? wuri.get() : L"");
             return S_OK;
           })
           .Get(),
@@ -387,16 +374,11 @@ void Webview::RegisterEventHandlers() {
       Callback<ICoreWebView2NewWindowRequestedEventHandler>(
           [this](ICoreWebView2* sender,
                  ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
-            switch (popup_window_policy_) {
-              case WebviewPopupWindowPolicy::Deny:
-                args->put_Handled(TRUE);
-                break;
-              case WebviewPopupWindowPolicy::ShowInSameWindow:
-                args->put_NewWindow(webview_.get());
-                args->put_Handled(TRUE);
-                break;
-            }
-
+            // URI patch P1: no new windows, ever (upstream honoured popup_window_policy_).
+            wil::unique_cotaskmem_string wuri;
+            args->get_Uri(&wuri);
+            args->put_Handled(TRUE);
+            uri_policy_.Count("window", wuri.get() ? wuri.get() : L"");
             return S_OK;
           })
           .Get(),
@@ -421,42 +403,16 @@ void Webview::RegisterEventHandlers() {
         Callback<ICoreWebView2DownloadStartingEventHandler>(
             [this](ICoreWebView2* sender,
                    ICoreWebView2DownloadStartingEventArgs* args) -> HRESULT {
-              // Everything below runs synchronously, so no deferral is taken;
-              // taking one without completing it would leave the event pending.
+              // URI patch P1: downloads are cancelled before anything is written (upstream let them
+              // run to the default download folder and reported progress to Dart).
+              wil::com_ptr<ICoreWebView2DownloadOperation> op;
+              wil::unique_cotaskmem_string wuri;
+              if (SUCCEEDED(args->get_DownloadOperation(op.put())) && op) {
+                op->get_Uri(&wuri);
+              }
+              args->put_Cancel(TRUE);
               args->put_Handled(TRUE);
-
-              wil::com_ptr<ICoreWebView2DownloadOperation> download;
-              if (FAILED(args->get_DownloadOperation(download.put())) ||
-                  !download) {
-                return S_OK;
-              }
-
-              INT64 totalBytesToReceive = 0;
-              download->get_TotalBytesToReceive(&totalBytesToReceive);
-
-              wil::unique_cotaskmem_string uri;
-              download->get_Uri(&uri);
-
-              wil::unique_cotaskmem_string mimeType;
-              download->get_MimeType(&mimeType);
-
-              wil::unique_cotaskmem_string contentDisposition;
-              download->get_ContentDisposition(&contentDisposition);
-
-              wil::unique_cotaskmem_string resultFilePath;
-              args->get_ResultFilePath(&resultFilePath);
-
-              args->put_ResultFilePath(resultFilePath.get());
-              UpdateDownloadProgress(download.get());
-
-              if (download_event_callback_) {
-                download_event_callback_(
-                    {WebviewDownloadEventKind::DownloadStarted,
-                     util::Utf8FromUtf16(uri.get()),
-                     util::Utf8FromUtf16(resultFilePath.get()), 0,
-                     totalBytesToReceive});
-              }
-
+              uri_policy_.Count("download", wuri.get() ? wuri.get() : L"");
               return S_OK;
             })
             .Get(),
@@ -508,11 +464,15 @@ void Webview::NotifyParentWindowMoved() {
 }
 
 bool Webview::OpenDevTools() {
+#ifdef NDEBUG
+  return false;  // URI patch P1: no developer tools in release builds.
+#else
   if (!IsValid()) {
     return false;
   }
   webview_->OpenDevToolsWindow();
   return true;
+#endif
 }
 
 void Webview::GetCookies(const std::string& uri, GetCookiesCallback callback) {

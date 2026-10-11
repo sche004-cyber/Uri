@@ -15,12 +15,26 @@ std::unique_ptr<WebviewHost> WebviewHost::Create(
     WebviewPlatform* platform, std::optional<std::wstring> user_data_directory,
     std::optional<std::wstring> browser_exe_path,
     std::optional<std::string> arguments) {
-  wil::com_ptr<CoreWebView2EnvironmentOptions> opts;
-  if (arguments.has_value()) {
-    opts = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
-    const std::wstring warguments = util::Utf16FromUtf8(arguments.value());
-    opts->put_AdditionalBrowserArguments(warguments.c_str());
+  // URI patch P2: options are always created. The user-data folder is opened for exclusive access (no other
+  // process, Edge included, may share it), and a browser executable path is never honoured, so only the
+  // installed Evergreen WebView2 runtime is used (no bundled or side-loaded Chromium).
+  browser_exe_path = std::nullopt;
+  wil::com_ptr<CoreWebView2EnvironmentOptions> opts =
+      Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
+  if (auto opts2 = opts.try_query<ICoreWebView2EnvironmentOptions2>()) {
+    opts2->put_ExclusiveUserDataFolderAccess(TRUE);
   }
+  // URI patch P2: no network from this browser, whatever the page does. WebResourceRequested does not see
+  // WebSocket handshakes (found by the real-runtime probe, 2026-10-11), so every connection, loopback included,
+  // is sent to an unreachable proxy. The virtual-host page is served in-process and is unaffected. WebRTC may not
+  // use direct UDP. These arguments always come first; Dart-supplied ones are appended after them.
+  std::wstring warguments =
+      L"--proxy-server=http://0.0.0.0:1 --proxy-bypass-list=<-loopback> "
+      L"--force-webrtc-ip-handling-policy=disable_non_proxied_udp";
+  if (arguments.has_value()) {
+    warguments += L" " + util::Utf16FromUtf8(arguments.value());
+  }
+  opts->put_AdditionalBrowserArguments(warguments.c_str());
 
   std::promise<HRESULT> result_promise;
   wil::com_ptr<ICoreWebView2Environment> env;

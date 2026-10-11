@@ -11,6 +11,9 @@
 #include <vector>
 
 #include "util/surface_geometry.h"
+#include "uri_security.h"  // URI patch P1
+
+#include <set>
 
 class WebviewHost;
 
@@ -208,6 +211,12 @@ class Webview {
   bool SetDefaultContextMenusEnabled(bool enabled);
   bool SetUserAgent(const std::string& user_agent);
   bool OpenDevTools();
+  // URI patch P1: fail-closed network/navigation/message policy (uri_security.h).
+  void SetNetworkPolicy(std::set<std::string> navigation_origins,
+                        std::set<std::string> message_origins) {
+    uri_policy_.Set(std::move(navigation_origins), std::move(message_origins));
+  }
+  std::string SecurityReport() const { return uri_policy_.ReportJson(); }
   bool SetBackgroundColor(int32_t color);
   bool SetZoomFactor(double factor);
   bool Suspend();
@@ -301,6 +310,8 @@ class Webview {
 
   WebviewHost* host_;
   EventRegistrations event_registrations_{};
+  uri_security::Policy uri_policy_;   // URI patch P1
+  uri_security::Tokens uri_tokens_;   // URI patch P1
 
   UrlChangedCallback url_changed_callback_;
   LoadingStateChangedCallback loading_state_changed_callback_;

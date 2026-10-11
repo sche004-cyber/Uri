@@ -12,6 +12,10 @@
 set(NUGET_URL https://dist.nuget.org/win-x86-commandline/v7.6.0/nuget.exe)
 set(NUGET_SHA256 751ee5e79481626a428c1241dc7f94bca2739b32588e669715bc5fb54d8fb8a2)
 
+# URI patch P3: pinned NuGet packages (SHA-256 of the .nupkg as served by nuget.org).
+set(URI_NUPKG_SHA256_Microsoft.Web.WebView2 c66357ac7f324ec9bcafe5241706a023b4122d8c22300c31de4b0eb220db689e)
+set(URI_NUPKG_SHA256_Microsoft.Windows.ImplementationLibrary 7d67bc71dd0edc342db44ea0334ac9b6a1776514f81694b0b5b3c7ac9d608e42)
+
 # Find or download NuGet
 find_program(NUGET nuget)
 if(NOT NUGET)
@@ -53,5 +57,20 @@ function(ensure_nuget_package PACKAGE_ID PACKAGE_VERSION SENTINEL_FILE)
       message(FATAL_ERROR
               "NuGet install failed for ${PACKAGE_ID} (exit code ${_nuget_result})")
     endif()
+  endif()
+  # URI patch P3: refuse any package whose .nupkg is not byte-identical to the pinned one (the pins equal the
+  # SHA-512 nuget.org publishes in its catalog for these versions; see PATCHES.md). Checked on every configure.
+  if(DEFINED URI_NUPKG_SHA256_${PACKAGE_ID})
+    file(GLOB _nupkgs "${CMAKE_BINARY_DIR}/packages/${PACKAGE_ID}/*.nupkg")
+    list(LENGTH _nupkgs _nupkg_count)
+    if(NOT _nupkg_count EQUAL 1)
+      message(FATAL_ERROR "URI: expected one .nupkg for ${PACKAGE_ID}, found ${_nupkg_count}")
+    endif()
+    file(SHA256 ${_nupkgs} _nupkg_hash)
+    if(NOT "${_nupkg_hash}" STREQUAL "${URI_NUPKG_SHA256_${PACKAGE_ID}}")
+      message(FATAL_ERROR "URI: integrity check failed for ${PACKAGE_ID} ${PACKAGE_VERSION}")
+    endif()
+  else()
+    message(FATAL_ERROR "URI: no pinned hash for NuGet package ${PACKAGE_ID}")
   endif()
 endfunction()

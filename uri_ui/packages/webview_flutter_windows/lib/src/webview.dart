@@ -671,6 +671,29 @@ class WebviewController extends ValueNotifier<WebviewValue> {
     return _channel.invokeMethod('postWebMessage', message);
   }
 
+  /// URI patch P1. Sets the fail-closed host policy: requests and navigations are allowed only to
+  /// [navigationOrigins] (plus about:blank), and web messages are delivered only from documents whose origin is
+  /// in [messageOrigins]. Origins must be canonical (`https://host[:port]`, lower case, no path). Until this is
+  /// called the webview allows nothing but about:blank.
+  Future<void> setNetworkPolicy({
+    required List<String> navigationOrigins,
+    required List<String> messageOrigins,
+  }) async {
+    if (_isDisposed) {
+      return;
+    }
+    return _channel.invokeMethod('setNetworkPolicy', <String, Object>{
+      'navigationOrigins': navigationOrigins,
+      'messageOrigins': messageOrigins,
+    });
+  }
+
+  /// URI patch P1. The lockdown counters, the settings read back from the runtime and the last blocked URIs.
+  Future<Map<String, dynamic>> getSecurityReport() async {
+    final raw = await _channel.invokeMethod<String>('getSecurityReport');
+    return jsonDecode(raw ?? '{}') as Map<String, dynamic>;
+  }
+
   /// Sets the user agent value.
   Future<void> setUserAgent(String userAgent) async {
     if (_isDisposed) {

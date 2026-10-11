@@ -31,6 +31,7 @@ set(PLUGIN_SOURCES
   "webview_windows_plugin.cc"
   "webview_platform.cc"
   "webview.cc"
+  "uri_security.cc"  # URI patch P1
   "webview_host.cc"
   "webview_bridge.cc"
   "texture_bridge.cc"
