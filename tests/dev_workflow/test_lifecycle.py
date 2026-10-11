@@ -111,7 +111,8 @@ def test_defect_rejected_repaired_reaudited_and_integrated(tmp_path):
     rep = s["repairs"][0]
     assert rep["status"] == "COMMITTED" and rep["commit"] == s["candidate"]
     proof = json.loads((tmp_path / "state/repairs/P1/repair.json").read_text())["regression"]
-    assert proof["ok"] and proof["before_exit"] != 0 and proof["after_exit"] == 0
+    assert proof["ok"] and proof["tests"]["tests/test_zero.py"]["before_exit"] != 0
+    assert proof["tests"]["tests/test_zero.py"]["after_exit"] == 0
     assert "Lifecycle-Test: yes" in g(wt, "log", "-1", "--format=%B")
     assert remote_tip(remote) == s["candidate"]
     assert s["integration"]["status"] == "INTEGRATED" and s["integration"]["target_tip_before"] == base
@@ -248,7 +249,8 @@ def test_flutter_machine_parser():
              {"type": "testStart", "test": {"id": 3, "name": "ok", "url": "f.dart"}},
              {"type": "testDone", "testID": 3, "result": "success", "skipped": True}]
     r = L.parse_flutter_machine("\n".join(json.dumps(x) for x in lines))
-    assert r == {"failures": {"test/f_test.dart::renders": "TestFailure"}, "passed": 0, "skipped": 1}
+    assert r["failures"] == {"test/f_test.dart::renders": "TestFailure"} and (r["passed"], r["skipped"]) == (0, 1)
+    assert r["ids"] == ["test/f_test.dart::renders", "f.dart::ok"] and r["parsed"] is False  # no "done" event
 
 
 def test_gpu_gate_without_lease_blocks(tmp_path):
@@ -284,7 +286,7 @@ def test_forged_stage_without_evidence_is_blocked(tmp_path):
     st.d["stage"] = "VERIFIED"  # forged
     st.save()
     assert L.run(cfg) == S.BLOCKED
-    assert L.status(cfg)["blocker"]["kind"] == "EVIDENCE" and remote_tip(remote) == base
+    assert L.status(cfg)["blocker"]["kind"] == "TAMPER" and remote_tip(remote) == base
 
 
 # ---------------------------------------------------------------- L-AC15: tamper-evident receipts
@@ -299,7 +301,9 @@ def test_verify_detects_rewritten_verdict(tmp_path):
     rec["effective_verdict"] = "ACCEPT"
     p.write_text(json.dumps(rec))
     errs = L.verify(cfg)
-    assert any("R1 round.json changed" in e for e in errs) and any("R1 verdict differs" in e for e in errs)
+    assert any("R1 round.json missing or changed" in e for e in errs)
+    assert L.run(cfg) == S.COMPLETE
+    assert json.loads((tmp_path / "state/events.jsonl").read_text().splitlines()[-1])["kind"] == "TAMPER_DETECTED"
 
 
 # ---------------------------------------------------------------- L-AC16: status + A2UI
@@ -354,19 +358,31 @@ def test_regression_proof_rules(tmp_path):
     st = L.State(cfg)
     L.init(cfg, st)
     sha = g(wt, "rev-parse", "HEAD")
-    (wt / "tests/test_feature.py").write_text("from pkg.feature import feature\n\n\ndef test_f():\n    assert feature() == 1\n")
+
+    def commit(files):
+        for k, v in files.items():
+            (wt / k).write_text(v)
+        g(wt, "add", "-A")
+        g(wt, "commit", "-qm", "x")
+        return g(wt, "rev-parse", "HEAD")
+    feat = "from pkg.feature import feature\n\n\ndef test_f():\n    assert feature() == 1\n"
+    c1 = commit({"tests/test_feature.py": feat})
     # a coverage-only test passes before: fine for a coverage finding, not enough for a defect
-    p = L.regression_proof(cfg, sha, wt, ["tests/test_feature.py"], tmp_path / "p1", need_fail_before=False)
-    assert p["ok"]
-    p = L.regression_proof(cfg, sha, wt, ["tests/test_feature.py"], tmp_path / "p2", need_fail_before=True)
+    assert L.regression_proof(cfg, sha, c1, ["tests/test_feature.py"], tmp_path / "p1", need_fail_before=False)["ok"]
+    p = L.regression_proof(cfg, sha, c1, ["tests/test_feature.py"], tmp_path / "p2", need_fail_before=True)
     assert not p["ok"] and "no regression test fails" in p["reason"]
-    (wt / "pkg/calc.py").write_text("def safe_div(a, b):\n    if b == 0:\n        return None\n    return a / b\n")
-    (wt / "tests/test_zero.py").write_text("from pkg.calc import safe_div\n\n\ndef test_z():\n    assert safe_div(1, 0) is None\n")
-    p = L.regression_proof(cfg, sha, wt, ["tests/test_feature.py", "tests/test_zero.py"], tmp_path / "p3")
+    c2 = commit({"pkg/calc.py": "def safe_div(a, b):\n    if b == 0:\n        return None\n    return a / b\n",
+                 "tests/test_zero.py": "from pkg.calc import safe_div\n\n\ndef test_z():\n    assert safe_div(1, 0) is None\n"})
+    p = L.regression_proof(cfg, sha, c2, ["tests/test_feature.py", "tests/test_zero.py"], tmp_path / "p3")
     assert p["ok"] and p["tests"]["tests/test_zero.py"]["before_exit"] != 0
-    p = L.regression_proof(cfg, sha, wt, ["tests/test_feature.py"], tmp_path / "p4", need_fail_before=False,
+    p = L.regression_proof(cfg, sha, c2, ["tests/test_feature.py"], tmp_path / "p4", need_fail_before=False,
                            must_fail={"tests/test_feature.py"})
     assert not p["ok"] and "gate test" in p["reason"]
+    # a hanging regression test is a refusal, not a crash (DEV-LIFECYCLE-1 R1-08)
+    c3 = commit({"tests/test_hang.py": "import time\n\n\ndef test_h():\n    time.sleep(30)\n"})
+    cfg["regression_runners"] = [{"suffix": "test_hang.py", "cmd": cfg["regression_runner"], "timeout_s": 2}]
+    p = L.regression_proof(cfg, sha, c3, ["tests/test_hang.py"], tmp_path / "p5", need_fail_before=False)
+    assert not p["ok"] and p["tests"]["tests/test_hang.py"]["after_state"] == "TIMED_OUT"
 
 
 def test_reviewer_that_touches_the_implementation_worktree_is_not_independent(tmp_path):
@@ -397,3 +413,154 @@ def test_worker_timeout_kills_the_process_group(tmp_path):
     import time
     time.sleep(4)
     assert rec["status"] == "TIMED_OUT" and not marker.exists()
+
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1 R1 regressions
+
+def _script_worker(tmp_path, name, body):
+    f = tmp_path / name
+    f.write_text("import sys, json, subprocess, os\nsys.stdin.read()\n" + body)
+    return [PY, str(f)]
+
+
+def test_r1_01_forged_reviewer_binary_is_not_independent(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = json.loads((config(tmp_path, repo, wt, milestone="W9-REAL", independent=False) and
+                      (tmp_path / "cfg.json")).read_text())
+    cfg["reviewer"] = {"provider": "claude_cli", "binary": "/bin/echo"}
+    p = tmp_path / "forged.json"
+    p.write_text(json.dumps(cfg))
+    with pytest.raises(L.LifecycleError, match="binary override"):
+        L.load_config(p)
+    # and a round produced by a non-default executable is never independent for a real milestone
+    rec = {"integrity": {"ok": True}, "worker": {"provider": "claude_cli", "status": "COMPLETED", "session_id": "x",
+                                                 "binary_is_default": False, "binary_realpath": "/tmp/fake"}}
+    ok, why = L.is_independent({"milestone": "W9-REAL", "reviewer": {}}, rec)
+    assert not ok and "not the installed CLI" in why
+
+
+def test_r1_02_edited_state_verdict_is_detected_and_blocks(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, reviewer="always_reject", implementer="noop",
+                 limits={"max_rounds": 6, "max_repair_attempts": 1})
+    assert L.run(cfg) == S.BLOCKED
+    sp = tmp_path / "state/state.json"
+    d = json.loads(sp.read_text())
+    d["rounds"][0]["effective_verdict"] = "ACCEPT"
+    d["rounds"][0]["result"]["findings"] = []
+    d["stage"], d["blocker"] = "VERIFYING", None
+    sp.write_text(json.dumps(d))
+    assert any("differs" in e for e in L.verify(cfg))
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "TAMPER" and remote_tip(remote) == base
+
+
+def test_r1_03_planted_hook_cannot_smuggle_files_into_the_repair(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt)
+    hooks = Path(g(repo, "rev-parse", "--path-format=absolute", "--git-common-dir")) / "hooks"
+    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "hooker.py", f"""
+open('pkg/calc.py','w').write('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+open('tests/test_zero.py','w').write('from pkg.calc import safe_div\\n\\n\\ndef test_z():\\n    assert safe_div(1, 0) is None\\n')
+h = {str(hooks)!r} + '/pre-commit'
+open(h,'w').write('#!/bin/sh\\necho x > OUT_OF_SCOPE.txt; echo P > core/frozen.py; git add OUT_OF_SCOPE.txt core/frozen.py\\n')
+os.chmod(h, 0o755)
+""")}
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "TAMPER" and "hooks" in s["blocker"]["reason"]
+    assert len(g(wt, "log", "--format=%H").split()) == 2 and not L.worktree_changes(wt)
+    assert (wt / "core/frozen.py").read_text() == "FROZEN = True\n" and remote_tip(remote) == base
+
+
+def test_r1_03_driver_git_ignores_hooks(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    hooks = Path(g(repo, "rev-parse", "--path-format=absolute", "--git-common-dir")) / "hooks"
+    (hooks / "pre-commit").write_text("#!/bin/sh\nexit 1\n")
+    (hooks / "pre-commit").chmod(0o755)
+    (wt / "pkg/x.py").write_text("X = 1\n")
+    L.git(wt, "add", "-A")
+    L.git(wt, "commit", "-qm", "driver commit despite a failing hook")
+    assert "driver commit" in g(wt, "log", "-1", "--format=%s")
+
+
+def test_r1_04_crashed_or_empty_test_run_is_a_failure(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    (wt / "tests/conftest.py").write_text("raise ImportError('boom')\n")
+    g(wt, "add", "-A")
+    g(wt, "commit", "-qm", "broken conftest")
+    cfg = config(tmp_path, repo, wt, implementer="noop", limits={"max_rounds": 6, "max_repair_attempts": 1})
+    assert L.run(cfg) == S.BLOCKED
+    gate = list(L.status(cfg)["gates"].values())[0]
+    assert gate["ok"] is False and "unit::__run__" in gate["new_failures"]["unit"]
+
+
+def test_r1_04_vanished_tests_are_failures():
+    base = {"failures": {}, "ids": ["a::x", "a::y"]}
+    cand = {"failures": {}, "ids": ["a::x"]}
+    c = L.compare(cand, base, [])
+    assert c["vanished"] == ["a::y"] and not c["ok"]
+
+
+def test_r1_05_uncommitted_files_do_not_decide_the_gates(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False, break_other=True)
+    (wt / "pkg/other.py").write_text("VALUE = 2\n")  # uncommitted "fix" in the implementation worktree
+    cfg = config(tmp_path, repo, wt)
+    st = L.State(cfg)
+    L.init(cfg, st)
+    q = L.qualify(cfg, st, g(wt, "rev-parse", "HEAD"))
+    assert not q["ok"] and q["gates"]["unit"]["comparison"]["new_failures"] == ["tests.test_other::test_value"]
+
+
+def test_r1_06_detached_child_of_a_worker_is_killed(tmp_path):
+    from scripts.dev_workflow.lifecycle_providers import run_worker
+    marker = tmp_path / "late"
+    argv = _script_worker(tmp_path, "late.py", f"subprocess.Popen(['sh','-c','sleep 2; echo LATE > {marker}'],"
+                                                "stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n")
+    rec = run_worker({"provider": "command", "argv": argv}, "implementer", "", tmp_path, tmp_path / "log")
+    import time
+    time.sleep(3)
+    assert rec["status"] == "COMPLETED" and not marker.exists()
+
+
+def test_r1_07_refused_repair_leaves_no_staged_files(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt)
+    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "stager.py", """
+open('pkg/newfile.py','w').write('N = 1\\n')
+subprocess.run(['git','add','pkg/newfile.py'])
+open('core/frozen.py','w').write('P = 1\\n')
+""")}
+    assert L.run(cfg) == S.BLOCKED
+    assert L.status(cfg)["blocker"]["kind"] == "OWNER_DECISION"
+    assert not L.worktree_changes(wt) and not (wt / "pkg/newfile.py").exists()
+
+
+def test_r1_09_malformed_severity_is_blocking():
+    for f in ({"severity": "High"}, {"severity": "MEDIUM", "blocking": "true"}, {"severity": "MEDIUM"},
+              {"severity": "critical"}, {"severity": "LOW", "blocking": "True"}):
+        assert L.effective_verdict({"verdict": "ACCEPT", "findings": [f]})[0] == "REJECT", f
+    assert L.effective_verdict({"verdict": "accept", "findings": [{"severity": "LOW"}]})[0] == "ACCEPT WITH FINDINGS"
+    assert L.effective_verdict({"verdict": "ACCEPT", "findings": [{"severity": "MEDIUM", "blocking": False}]})[0] \
+        == "ACCEPT WITH FINDINGS"
+
+
+def test_r1_10_test_substring_is_not_devtest(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    assert not L.is_devtest("W2_TEST_COVERAGE") and L.is_devtest("DEVTEST-LC")
+    with pytest.raises(L.LifecycleError):
+        config(tmp_path, repo, wt, milestone="W2_TEST_COVERAGE", independent=True)
+
+
+def test_c1_unrelated_branch_moves_do_not_break_integrity(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = config(tmp_path, repo, wt)
+    script = _script_worker(tmp_path, "rev_other.py", f"""
+subprocess.run(['git','-C',{str(repo)!r},'branch','-f','someone-else',{base!r}])
+h = subprocess.run(['git','rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()
+print('AUDIT_RESULT_BEGIN'); print(json.dumps({{'candidate': h, 'verdict': 'ACCEPT', 'findings': []}})); print('AUDIT_RESULT_END')
+""")
+    cfg["reviewer"] = {"provider": "command", "argv": script, "counts_as_independent": True}
+    assert L.run(cfg) == S.COMPLETE

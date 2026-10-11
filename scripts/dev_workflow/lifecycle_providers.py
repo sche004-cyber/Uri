@@ -18,6 +18,7 @@ import hashlib
 import json
 import os
 import shutil
+import signal
 import subprocess
 import uuid
 from pathlib import Path
@@ -41,6 +42,13 @@ ROLE_TOOLS = {
 
 def _now() -> str:
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _killpg(pid) -> None:
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except OSError:
+        pass
 
 
 def provider_available(spec: dict) -> tuple[bool, str]:
@@ -105,6 +113,17 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
         rec.update(status="UNAVAILABLE", detail=why, ended_at=_now())
         return rec
     argv = build_argv(spec, role, worktree, list(protected), session_id)
+    if rec["provider"] in ("claude_cli", "codex_cli"):
+        name = "claude" if rec["provider"] == "claude_cli" else "codex"
+        real = os.path.realpath(shutil.which(argv[0]) or argv[0])
+        default = shutil.which(name)
+        rec["binary_realpath"] = real
+        rec["binary_is_default"] = bool(default) and real == os.path.realpath(default)
+        try:
+            with open(real, "rb") as fh:
+                rec["binary_sha256"] = hashlib.sha256(fh.read()).hexdigest()
+        except OSError:
+            rec["binary_sha256"] = None
     env = {k: v for k, v in os.environ.items() if not k.startswith("URI_LIFECYCLE_")}
     env.update({"URI_LIFECYCLE_ROLE": role, "PYTHONDONTWRITEBYTECODE": "1"}, **(env_extra or {}))
     rec["argv"] = [a if len(a) < 400 else a[:60] + "…" for a in argv]
@@ -115,16 +134,17 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
         out, err = proc.communicate(prompt, timeout=timeout_s)
         rec["exit_code"] = proc.returncode
     except subprocess.TimeoutExpired:
-        try:
-            os.killpg(proc.pid, 9)  # the worker and everything it started (own session)
-        except OSError:
-            proc.kill()
+        _killpg(proc.pid)
         out, err = proc.communicate()
         rec["exit_code"] = None
         rec.update(status="TIMED_OUT")
     except OSError as e:
         rec.update(status="FAILED", detail=f"spawn: {e}", ended_at=_now())
         return rec
+    # Always end the worker's whole process group before anything is checked or committed: a detached child
+    # must not write after the integrity snapshot (DEV-LIFECYCLE-1 R1-06). A child that calls setsid() itself
+    # escapes the group; the driver's later checks (clean worktree before the next step) still catch its writes.
+    _killpg(proc.pid)
     rec["ended_at"] = _now()
     (log_dir / f"{role}_stdout.txt").write_text(out or "", encoding="utf-8")
     (log_dir / f"{role}_stderr.txt").write_text(err or "", encoding="utf-8")

@@ -52,4 +52,30 @@ implementation-worktree integrity snapshot, process-group kill on timeout, Flutt
 
 ## 3. Independent review of the skill itself (L-AC20)
 
-Pending at the time of writing; recorded below when complete.
+Run by the skill's own driver (pinned copy at the reviewed commit) with config `DEV-LIFECYCLE-1`; state, raw
+outputs and receipts under `evidence/DEV-LIFECYCLE-1/` (copied after the run).
+
+### R1 — candidate `12ac37a`, reviewer `claude -p` session `5cc2696e-28a7-46c2-af07-53e9acf39f25` (00:38-00:42Z)
+
+Reviewer verdict **REJECT**, 4 HIGH + 4 MEDIUM blocking, 4 LOW, each with a working probe:
+R1-01 a `binary` override let any executable act as an independent `claude_cli` reviewer for a real milestone
+(probe reached COMPLETE and pushed); R1-02 evidence was read from `state.json` — an edited verdict reached VERIFIED
+and `verify` passed; R1-03 a worker-planted git pre-commit hook smuggled out-of-scope and protected files into the
+driver's repair commit; R1-04 a crashed/empty pytest or Flutter run passed its gate; R1-05 gates ran in the dirty
+implementation worktree; R1-06 a detached worker child wrote after the integrity snapshot; R1-07 a refused repair
+left staged files; R1-08 a regression-test timeout crashed the driver mid-FIXING; R1-09 lenient severity parsing;
+R1-10 `_TEST` substring treated as DEVTEST; R1-11 gate timeouts left process trees; R1-12 docs over-claimed.
+**These disprove first-version claims in this record (§1 rows L-AC2, L-AC10, L-AC14, L-AC15) and in
+`URI_DEVELOPMENT_LIFECYCLE.md`; the earlier text is kept above as history and corrected by this section.**
+
+The driver recorded the round as NOT_INDEPENDENT ("refs changed during review"). Cause, established by the
+coordinator from the reflog: the coordinator's own commit `2250a3e` on the unrelated branch
+`milestone/a0-assist-foundation-20261010` at 00:38:12Z. The refs snapshot covered every local branch — a false
+positive (coordinator finding **C1**). The conservative outcome (no ACCEPT credit) was correct; the findings are
+valid and were repaired.
+
+Repairs were made by the skill's implementation session (the coordinator), not by the driver's implementer worker,
+because the driver's repair path itself was among the defects (R1-03, R1-06, R1-07, R1-08). Each finding has a
+regression test in `tests/dev_workflow/test_lifecycle.py` (`test_r1_01_*` … `test_r1_10_*`, `test_c1_*`,
+`test_regression_proof_rules` for R1-08); R1-11 is covered by the shared process-group runner; R1-12 by the revised
+docs. The repaired commit is re-reviewed by a fresh reviewer process (R2 below).

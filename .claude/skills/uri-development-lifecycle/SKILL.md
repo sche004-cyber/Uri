@@ -72,7 +72,9 @@ ACCEPT). Re-running `run` resumes from `state.json`; it cannot skip a stage (evi
 
 ## Containment
 
-Workers get tool denials for edits (reviewer), protected paths (implementer) and all git-writing commands; the
-driver re-checks the checkout and refs after every worker and discards the run if anything changed. GPU gates run
+Workers get tool denials for edits (reviewer), protected paths (implementer) and all git-writing commands; after
+every worker the driver kills its process group and re-checks the audit checkout, the implementation worktree, the
+milestone's refs and the repository's hooks/config, and discards the run if anything changed. The driver's own git
+commands ignore hooks. Receipts are tamper-evident (`verify`), not tamper-proof: commit them. GPU gates run
 under `gpu_lease`; no lease ⇒ BLOCKED. Production deployment, service cutover and permission changes are never part
 of this skill.
