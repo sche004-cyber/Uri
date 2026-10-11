@@ -1,0 +1,55 @@
+# uri-development-lifecycle — qualification record
+
+Append-only. Criteria: `LIFECYCLE_PLAN_AND_ACCEPTANCE.md` (L-AC1..L-AC20).
+
+## 1. Automated tests (DEVTEST fixtures, scripted worker processes)
+
+`python -m pytest tests/dev_workflow` → 114 passed (90 pre-existing AO-4 + 24 lifecycle), 2026-10-11, Linux.
+Scripted processes prove the deterministic guarantees; they do not prove reviewer independence.
+
+| Criterion | Test(s) |
+|---|---|
+| L-AC1 | `test_illegal_transition_is_refused` |
+| L-AC2, L-AC3 | `test_scripted_reviewer_never_verifies_a_real_milestone`, `test_missing_reviewer_cannot_accept_and_rounds_are_bounded`, `test_reviewer_that_touches_the_implementation_worktree_is_not_independent`, `test_imported_accept_is_never_evidence` |
+| L-AC4 | `test_reviewer_label_accept_with_high_finding_is_reject` |
+| L-AC5, L-AC7, L-AC8, L-AC13 | `test_defect_rejected_repaired_reaudited_and_integrated`, `test_imported_reject_is_routed_to_repair`, `test_regression_proof_rules`, `test_repair_without_regression_test_is_not_committed` |
+| L-AC6, L-AC12 | `test_repair_touching_protected_path_is_refused_and_stops`, `test_owner_decision_finding_stops_and_unblock_resumes`, `test_integration_without_owner_authorisation_stops_with_command` |
+| L-AC9 | `test_same_finding_after_three_repairs_stops` |
+| L-AC10, L-AC11 | `test_new_gate_failure_prevents_integration`, `test_gate_failure_is_routed_to_repair_and_then_reaudited`, `test_compare_by_identity_and_cause`, `test_flutter_machine_parser` |
+| L-AC14 | `test_interrupted_run_resumes_and_tampering_cannot_skip_gates`, `test_forged_stage_without_evidence_is_blocked` |
+| L-AC15 | `test_verify_detects_rewritten_verdict` |
+| L-AC16 | `test_status_surface_is_valid_a2ui` |
+| L-AC17 | `test_gpu_gate_without_lease_blocks` |
+| process cleanup | `test_worker_timeout_kills_the_process_group` |
+
+## 2. Live demonstration with real separate Claude processes (L-AC18)
+
+`python -m scripts.dev_workflow.lifecycle_demo <dir>`; reviewer and implementer = `claude -p` (`claude_cli`,
+model claude-opus-5-5; the CLI also reports internal claude-haiku-5-5 usage). Evidence under
+`evidence/lifecycle_demo_*` (prompts, raw results, round/repair records, event chains, receipts).
+
+**Demo 1 (2026-10-11T00:2xZ) — exposed a driver defect; stopped by the coordinator.** The real reviewer R1
+REJECTed the defective candidate with two blocking findings (the defect, and missing test coverage for `feature()`).
+The implementer added `tests/test_feature.py`, which correctly passes before and after a coverage repair; the driver
+demanded that *every* test file fail before, and also treated a reviewer finding's file (`pkg/feature.py`) as a gate
+test, so it refused the repair twice. Correction: every regression test must pass after; at least one must fail
+before when a code/security defect is addressed; only gate findings name existing tests that must each fail before
+(`test_regression_proof_rules`). The run was stopped (incomplete state kept as evidence).
+
+**Demo 2 (2026-10-11T00:3xZ) — passed, on the driver as of that time** (before three later hardening changes:
+implementation-worktree integrity snapshot, process-group kill on timeout, Flutter test ids from `root_url`):
+
+| Step | Result |
+|---|---|
+| R1 reviewer, session `d8c73ae5-68d9-4086-b8a7-612aca42ca44`, candidate `a67c0b7` | REJECT (R1-01 HIGH divide by zero; R1-02 HIGH missing tests; R1-03 LOW) — independent: separate process, integrity OK |
+| P1 implementer, session `72295bdd-7a54-468b-b9ca-c1dd2fc9d485` | changed `pkg/calc.py`, `tests/test_calc.py`, `tests/test_feature.py`; `test_calc.py` failed before (exit 1) and passed after; driver committed `7e7079c`; `core/` untouched |
+| R2 reviewer, session `65e6d9bd-eff8-405e-a385-c8b9934aca0a`, candidate `7e7079c` | ACCEPT — fresh session, different SHA from R1 |
+| Gates | `unit`: no new failures vs baseline |
+| Integration, not authorised | BLOCKED `OWNER_AUTHORIZATION`, needs `git push origin 7e7079c…:refs/heads/canon`; remote unchanged |
+| Missing reviewer (separate state) | WAITING_FOR_MODEL, verdict null — no ACCEPT |
+| Owner authorisation (DEVTEST simulation) + `unblock` + `run` | fast-forward, remote `canon` `b12e845` → `7e7079c` verified by `ls-remote`; COMPLETE |
+| `verify` | chain OK, no errors |
+
+## 3. Independent review of the skill itself (L-AC20)
+
+Pending at the time of writing; recorded below when complete.

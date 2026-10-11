@@ -1,0 +1,26 @@
+**Verdict: REJECT.** I checked both commit IDs and they match the ones you gave. The candidate changes exactly one file: it adds `pkg/feature.py` (`def feature(): return 1`).
+
+- **`safe_div` (HIGH, blocking):** `pkg/calc.py` is unchanged from the baseline and still just returns `a / b`. Dividing by zero raises an error instead of returning `None`. I reproduced this for (1, 0), (0, 0), (1.0, 0.0) and (1, -0.0). Normal cases work: `safe_div(6, 3)` returns 2.0 and `safe_div(1, 2)` returns 0.5.
+- **Missing tests (HIGH, blocking):** No test covers `safe_div(a, 0)` returning `None`. No test covers `feature()` either: nothing under `tests/` imports `pkg.feature`.
+- **`feature()`:** Correct. It returns 1, but it has no test.
+- **`core/`:** Not touched. No change under the protected path.
+- **Test run (LOW):** Running `pytest` from the repo root fails before any test runs with `ModuleNotFoundError: No module named 'pkg'`. With `PYTHONPATH=.` both existing tests pass. The baseline has the same problem.
+
+No earlier findings to check this round.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "4dbb03f17b5cddaeaf38295dc151264f0218623c", "baseline": "0477dc3acba047e325d9b6f333b027c36603ecef", "verdict": "REJECT",
+ "findings": [
+  {"id": "R1-01", "severity": "HIGH", "blocking": true, "category": "code", "owner_decision": false, "title": "safe_div raises ZeroDivisionError instead of returning None when b == 0", "files": ["pkg/calc.py:2"], "evidence": "pkg/calc.py is unchanged from baseline: `def safe_div(a, b): return a / b`. Probe: safe_div(1,0) -> ZeroDivisionError('division by zero'); safe_div(0,0) -> ZeroDivisionError; safe_div(1.0,0.0) and safe_div(1,-0.0) -> ZeroDivisionError('float division by zero'). Criterion 'returns None when b == 0 (never raises)' is not met.", "suggested_fix": "Add `if b == 0: return None` before `return a / b` (this also covers 0.0 and -0.0)."},
+  {"id": "R1-02", "severity": "HIGH", "blocking": true, "category": "test", "owner_decision": false, "title": "No pytest coverage for safe_div zero-divisor behaviour or for feature()", "files": ["tests/test_calc.py:4", "pkg/feature.py:1"], "evidence": "tests/ contains only test_calc.py::test_div (safe_div(4,2)==2) and test_other.py::test_value. No test asserts safe_div(x, 0) is None, and no test imports pkg.feature. This fails the criterion 'every behaviour has a pytest test under tests/'.", "suggested_fix": "Add tests asserting safe_div(1, 0) is None, safe_div(1.0, 0.0) is None and safe_div(6, 3) == 2, plus tests/test_feature.py asserting feature() == 1."},
+  {"id": "R1-03", "severity": "LOW", "blocking": false, "category": "test", "owner_decision": false, "title": "Running pytest from the repo root fails with ModuleNotFoundError: pkg", "files": ["tests/test_calc.py:1"], "evidence": "`pytest -q` gives 2 collection errors 'No module named pkg'; `PYTHONPATH=. pytest -q` gives 2 passed. There is no conftest.py or pytest config to put the repo root on the import path. The baseline has the same problem.", "suggested_fix": "Add an empty conftest.py at the repo root, or a pytest config with pythonpath = ."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "pytest -q -p no:cacheprovider", "result": "2 collection errors: ModuleNotFoundError: No module named 'pkg'", "status": "FAILED"},
+  {"command": "PYTHONPATH=. pytest -q -p no:cacheprovider", "result": "2 passed in 0.01s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -c probe of safe_div at (1,0),(0,0),(1.0,0.0),(1,-0.0),(6,3),(1,2) and feature()", "result": "feature()==1; safe_div raises ZeroDivisionError for every zero divisor; 6/3=2.0, 1/2=0.5", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --stat 0477dc3..4dbb03f", "result": "only pkg/feature.py added (+2 lines); no change under core/", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Correct behaviour for non-numeric inputs (e.g. strings, None) is not covered by the criteria and was not judged"]}
+AUDIT_RESULT_END

@@ -1,0 +1,15 @@
+I fixed all three findings. Nothing is committed, and nothing outside `pkg/` and `tests/` changed.
+
+- **R1-01:** `pkg/calc.py` now returns `None` when the divisor is 0, instead of raising `ZeroDivisionError`.
+- **R1-03:** I added `test_div_by_zero_returns_none` to `tests/test_calc.py`. It checks that `safe_div(1, 0)` and `safe_div(0, 0)` both return `None`. This is the regression test for R1-01.
+- **R1-02:** I added `tests/test_feature.py`, which checks that `feature() == 1`.
+
+**Verification:** pytest isn't installed here, so I called every `test_*` function directly with a small Python script.
+- **After the fix:** all 4 tests pass.
+- **On a67c0b7 (with the new tests copied in):** `test_div_by_zero_returns_none` fails with `ZeroDivisionError`, as it should.
+- **`test_feature` passes on a67c0b7 too:** R1-02 was a missing test, not a code bug. `feature()` already returns 1, so there was nothing for a test to catch.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R1-01", "R1-02", "R1-03"], "not_repaired": [],
+ "regression_tests": ["tests/test_calc.py", "tests/test_feature.py"], "notes": "R1-01: pkg/calc.py now returns None when b == 0. R1-03: added tests/test_calc.py::test_div_by_zero_returns_none, which fails on a67c0b7 (ZeroDivisionError) and passes after the fix. R1-02: added tests/test_feature.py::test_feature asserting feature() == 1. This was a test-only finding, so the test passes on a67c0b7 too, because feature() was already correct. pytest is not installed in this environment, so I ran the tests by calling each test function directly, against both the fixed tree and an archive of a67c0b7. Existing tests are unchanged."}
+REPAIR_RESULT_END

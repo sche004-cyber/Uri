@@ -1,0 +1,81 @@
+{
+ "baseline": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d",
+ "blocker": null,
+ "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+ "config_sha256": "a662f8c46c4c6520dc7f3071f355aaeeb2daaaed9ddc405316d8d98123da13c5",
+ "events": 25,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "7e7079cc46f7": {
+   "blocked": null,
+   "new_failures": {
+    "unit": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T00:34:32Z",
+  "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+  "command": "git push origin 7e7079cc46f728e92ccafbfee75469d28cee2020:refs/heads/canon",
+  "mode": "fast-forward",
+  "push_exit": 0,
+  "push_stderr": "To /tmp/claude-0/lc_demo2/canonical.git\n   b12e845..7e7079c  7e7079cc46f728e92ccafbfee75469d28cee2020 -> canon\n",
+  "remote": "origin",
+  "result_commit": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+  "status": "INTEGRATED",
+  "target_ref": "canon",
+  "target_tip_after": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+  "target_tip_before": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d"
+ },
+ "milestone": "DEVTEST-LIFECYCLE-LIVE",
+ "open_findings": [],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03"
+   ],
+   "commit": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "a67c0b74e4ba508eee59dc8a6234ef48b2629c1c",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "d8c73ae5-68d9-4086-b8a7-612aca42ca44",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT",
+   "round": 2,
+   "session_id": "65e6d9bd-eff8-405e-a385-c8b9934aca0a",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT"
+  }
+ ],
+ "rounds": 2,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "COMPLETE",
+ "verify_errors": [],
+ "written_at": "2026-10-11T00:34:33Z"
+}

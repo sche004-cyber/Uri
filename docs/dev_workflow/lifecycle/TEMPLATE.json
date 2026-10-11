@@ -1,0 +1,27 @@
+{
+ "milestone": "M00-example",
+ "repo": "../../..",
+ "baseline": {"ref": "origin/integration/git-sync-20261008", "expect": "<40-char sha you verified>"},
+ "candidate": {"branch": "milestone/m00-example-YYYYMMDD", "worktree": "../../../../uri-wt/m00"},
+ "state_dir": "../../../../uri-wt/lifecycle-runs/M00-example",
+ "acceptance_criteria_file": "docs/<area>/00_PLAN_AND_ACCEPTANCE_CRITERIA.md",
+ "review_focus": ["security of <module>", "behaviour of <command> against criterion X"],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": ["<package>/**", "tests/<area>/**", "docs/<area>/**"],
+ "test_globs": ["tests/**", "**/test/**"],
+ "allowed_flaky": [],
+ "gates": [
+  {"id": "python", "kind": "pytest", "cmd": ["{python}", "-m", "pytest", "-c", "scripts/phase2d_pytest.ini", "--rootdir=.", "-q", "tests/<area>"]},
+  {"id": "flutter", "kind": "flutter", "cwd": "uri_ui", "cmd": ["flutter", "test"], "timeout_s": 3600},
+  {"id": "gpu-bench", "kind": "command", "gpu": true, "required": false, "cmd": ["{python}", "scripts/<bench>.py"]}
+ ],
+ "regression_runner": ["{python}", "-m", "pytest", "-q", "-p", "no:cacheprovider"],
+ "regression_runners": [{"suffix": "_test.dart", "cwd": "uri_ui", "cmd": ["flutter", "test"]}],
+ "repair_nonblocking_severities": [],
+ "reviewer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 5400},
+ "implementer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 5400},
+ "limits": {"max_rounds": 6, "max_repair_attempts": 3},
+ "integration": {"mode": "fast-forward", "remote": "origin", "target_ref": "integration/git-sync-20261008", "authorized": false},
+ "commit_trailers": []
+}
