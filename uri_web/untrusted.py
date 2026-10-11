@@ -505,7 +505,10 @@ def _tld_match(text: str, fam: str) -> str:
     # R24-01/R25-01: optional vocalisation ('\u0645\u0650\u0635\u0652\u0631', '\u0645\u0618\u0635\u0631', Hebrew points): every
     # non-spacing or enclosing mark is removed, not a hand-picked range. Spacing vowel signs (Mc: '\u093e' in
     # '\u092d\u093e\u0930\u0924') are kept: they are part of the spelling.
-    plain = "".join(ch for ch in bare if unicodedata.category(ch) not in ("Mn", "Me"))
+    # R26-01: NFKC composes a letter and its mark ('ć' -> 'ć'), so the marks are removed from the
+    # decomposed word and the rest recomposed ('ćom', 'ṣhop', 'òrg').
+    plain = unicodedata.normalize("NFC", "".join(ch for ch in unicodedata.normalize("NFD", bare)
+                                                 if unicodedata.category(ch) not in ("Mn", "Me")))
     if plain != bare and plain in _ALL_TLDS:
         return plain
     if fam != "LATIN":
