@@ -109,11 +109,19 @@ class WebResearch:
         if self._complete is None:
             return None
 
-        def complete(messages):
-            if not self._brain_idle():
+        def complete(messages, *, cancel=None, timeout_s=None):
+            if not self._brain_idle() or (cancel is not None and cancel.cancelled):
                 return "BRAIN_BUSY", ""        # yield to the user's own turn; the extractive answer is used
-            return self._complete(messages)
+            return P.call_brain(self._complete, messages, cancel=cancel, timeout_s=timeout_s)
         return complete
+
+    def cancel_brain_work(self, reason: str = "user_turn"):
+        """R1-05: a user turn needs the single Brain slot. A running research job's Brain call is stopped (or not
+        started); the job finishes with its extractive answer."""
+        with self._lock:
+            job = self._job
+        if job is not None and job[1].is_alive():
+            job[0].yield_brain()
 
     def _web_research(self, c):
         q = c["query"]

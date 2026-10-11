@@ -204,7 +204,8 @@ def main():
                                     write_event=lambda ev: write({"event": ev}), memory=memory, defer_start=True,
                                     host_report=lambda: BH.read_host_report(oi_state),
                                     host_request=lambda action: BH.write_host_request(oi_state, action))
-            # W1 / A0 (additive): research and Assist commands. Both yield the single Brain slot to the user's turn.
+            # W1 / A0 (additive): research and Assist commands. Both yield the single Brain slot to the user's turn
+            # (BRAIN_TURNS below cancels their Brain work in flight).
             # A failure to load them never takes the OI worker down: their commands are then refused (COMMAND_SCHEMA).
             web = assist = None
             WEB_COMMANDS = ASSIST_COMMANDS = frozenset()
@@ -237,6 +238,7 @@ def main():
                 WEB_COMMANDS, ASSIST_COMMANDS = frozenset(WEB.COMMANDS), frozenset(ASSIST.COMMANDS)
             except Exception:
                 web = assist = None
+            BRAIN_TURNS = frozenset({"oi_turn", "oi_confirm", "oi_decide"})   # OI commands that start Brain work
             EXECUTION = {"execution_begin": {"command", "turn_id", "approval_digest", "proposal_digest"},
                          "execution_status": {"command", "execution_id"}, "execution_cancel": {"command", "execution_id"},
                          "execution_list": {"command"}}
@@ -249,8 +251,13 @@ def main():
                     if kind in WB.COMMANDS:
                         if kind not in WB.OPEN_WHILE_BUSY and turns.execution_active is not None:
                             raise TurnError("EXECUTION_IN_PROGRESS")
-                        if kind == "oi_turn" and assist is not None:
-                            assist.cancel_brain_work("user_turn")   # the user's turn gets the single Brain slot
+                        if kind in BRAIN_TURNS and WB.valid(kind, command):
+                            # The user's turn, and a confirmation or decision that resumes it, get the single Brain
+                            # slot: research and Assist Brain work in flight is stopped (R1-05).
+                            if web is not None:
+                                web.cancel_brain_work("user_turn")
+                            if assist is not None:
+                                assist.cancel_brain_work("user_turn")
                         try:
                             result = oi.handle(kind, command)
                         except WB.BridgeRefused as exc:

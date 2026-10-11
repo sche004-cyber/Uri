@@ -17,12 +17,13 @@ from . import pipeline as P
 from . import untrusted as U
 
 KIND = "web.research_result"
-_SCHEME = re.compile(r"(?i)\b(?:https?|ftp|file)://")
+_SCHEME = re.compile(r"(?i)(?:https?|ftp|file)?://")
 _SCRIPTISH = re.compile(r"(?i)\b(javascript|vbscript|data):")
 # Links, e-mail addresses and IP addresses in web-derived text are masked whole (R6-03): the surface carries no
 # address a user could follow or contact, whichever field the text arrived in.
-_LINK = re.compile(r"(?i)\b(?:https?|ftp|file)://\S*|\bwww\.\S+|[\w.+-]+@[\w-]+\.[\w.-]+|\b\d{1,3}(?:\.\d{1,3}){3}\b|"
-                   r"\b(?:javascript|vbscript):\S*|\bdata:[a-z]+/\S*")
+# R1-01: the same pattern as the verifier's (untrusted.LINK_PATTERN), matched after NFKC normalisation: bare domains,
+# defanged and fullwidth forms and any '://' are masked too.
+_LINK = re.compile(U.LINK_PATTERN)
 LINK_MASK = "[link removed]"
 HIDDEN_TITLE = "(title hidden: instruction-like text)"
 MAX_TEXT = 1200
@@ -39,7 +40,8 @@ def _mask_link(m) -> str:
 
 
 def clean(s, limit=MAX_TEXT, links=True) -> str:
-    s = _LINK.sub(_mask_link, str(s or "")) if links else str(s or "")
+    s = U.normalise(str(s or ""))
+    s = _LINK.sub(_mask_link, s) if links else s
     s = _SCHEME.sub("", s)
     s = _SCRIPTISH.sub(lambda m: m.group(1) + " :", s)
     s = "".join(ch for ch in s if ch in "\n\t" or (ord(ch) >= 32 and not 0xD800 <= ord(ch) <= 0xDFFF))

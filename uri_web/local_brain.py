@@ -7,6 +7,7 @@ streamed and cancellable (BrainClient), with a bounded deadline.
 from __future__ import annotations
 
 import ipaddress
+import threading
 from urllib.parse import urlsplit
 
 
@@ -48,11 +49,32 @@ def loopback_client(base_url: str):
 
 def make_complete(client, *, max_tokens: int = 700, timeout_s: float = 60.0):
     """client: uri_operational_intelligence.brain_client.BrainClient bound to Runtime v1."""
+    default_timeout_s = timeout_s
     from uri_operational_intelligence.reasoning_policy import FAST, tier_params
     require_loopback(client.base_url)
 
-    def complete(messages):
+    def complete(messages, *, cancel=None, timeout_s=None):
+        """cancel: an object with `.cancelled` (the research job's Cancel or a user turn taking the Brain, R1-05);
+        timeout_s: what is left of the job's deadline. Either closes the stream, which frees the Brain's slot."""
         body = {"model": "local", "messages": messages, **tier_params(FAST, use="answer", max_tokens=max_tokens)}
-        res = client.complete_json(body, timeout_s=timeout_s)
-        return res.status, res.text
+        limit = default_timeout_s if timeout_s is None else max(0.0, min(float(timeout_s), default_timeout_s))
+        if cancel is None:
+            res = client.complete_json(body, timeout_s=limit)
+            return res.status, res.text
+        from uri_operational_intelligence import brain_client as BC
+        token, done = BC.CancelToken(), threading.Event()
+
+        def watch():
+            while not done.wait(0.05):
+                if cancel.cancelled:
+                    token.cancel("research_cancelled")
+                    return
+        threading.Thread(target=watch, daemon=True).start()
+        try:
+            res = client.stream_chat(body, cancel=token, deadlines=BC.Deadlines(
+                first_token_s=limit, idle_s=min(30.0, limit), total_s=limit))
+        finally:
+            done.set()
+        status = BC.DEADLINE_EXCEEDED if res.status in (BC.TIMEOUT_FIRST_TOKEN, BC.STALLED) else res.status
+        return status, res.text
     return complete

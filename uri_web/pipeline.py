@@ -16,6 +16,7 @@ FAILED. Only COMPLETED_WITH_RESULT carries an answer.
 """
 from __future__ import annotations
 
+import inspect
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -112,11 +113,25 @@ class ResearchJob:
         self.complete = complete if request.use_brain else None
         self.progress = progress or (lambda **_: None)
         self.cancel_flag = CancelFlag()
+        self.brain_yield = CancelFlag()     # R1-05: the user's turn takes the Brain; the job goes on without it
         self.clock = clock
         self.job_id = str(uuid.uuid4())
 
     def cancel(self):
         self.cancel_flag.cancel()
+
+    def yield_brain(self):
+        """Stop this job's Brain call now (or skip it); the extractive answer is used instead."""
+        self.brain_yield.cancel()
+
+    def _brain_call(self, t0):
+        """The Brain callable for synthesis, bounded by what is left of the deadline and stopped by Cancel or by
+        yield_brain() during the call (R1-05); None when there is no Brain, no time left or the slot was yielded."""
+        left = self.req.budget.deadline_s - (self.clock() - t0)
+        if self.complete is None or left <= 0 or self.brain_yield.cancelled:
+            return None
+        stop = _Either(self.cancel_flag, self.brain_yield)
+        return lambda messages: call_brain(self.complete, messages, cancel=stop, timeout_s=left)
 
     def _p(self, stage, **kw):
         try:
@@ -254,12 +269,16 @@ class ResearchJob:
             res.status = CANCELLED
             return
         syn = None
+        timed_out = timed_out or self._expired(t0)   # R1-05: then the Brain is not called (_brain_call)
         if res.sources:
             self._p("synthesize", method="brain" if self.complete else "extractive")
             # Numbering matches res.sources; metadata-only sources get empty text so nothing can cite them.
             numbered = [(s["title"], U.evidence_text(s["text"]) if s["analysed_scope"] in (R.FULL_TEXT, R.SNIPPET_ONLY)
                          else "") for s in res.sources]
-            syn = SY.synthesize(res.query or "summary", numbered, complete=self.complete)
+            syn = SY.synthesize(res.query or "summary", numbered, complete=self._brain_call(t0))
+        if self.cancel_flag.cancelled:              # R1-05: Cancel during synthesis ends the job without an answer
+            res.status = CANCELLED
+            return
         if syn is not None:
             res.synthesis_method, res.brain_status = syn.method, syn.brain_status
             res.answer = [{"text": c.text, "citations": c.citations, "quoted": c.quoted} for c in syn.verified.claims]
@@ -270,6 +289,27 @@ class ResearchJob:
             res.status = COMPLETED_WITH_RESULT
         else:
             res.status = NO_RESULT
+
+
+class _Either:
+    def __init__(self, *flags):
+        self.flags = flags
+
+    @property
+    def cancelled(self):
+        return any(f.cancelled for f in self.flags)
+
+
+def call_brain(complete, messages, *, cancel, timeout_s):
+    """Call ``complete(messages)``, passing ``cancel`` (an object with ``.cancelled``) and ``timeout_s`` when it
+    accepts them (`local_brain.make_complete` does)."""
+    try:
+        params = inspect.signature(complete).parameters
+    except (TypeError, ValueError):
+        params = {}
+    if "cancel" in params or any(p.kind is p.VAR_KEYWORD for p in params.values()):
+        return complete(messages, cancel=cancel, timeout_s=timeout_s)
+    return complete(messages)
 
 
 def _host(url):

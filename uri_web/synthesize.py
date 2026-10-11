@@ -77,7 +77,11 @@ _QUANTITY = re.compile(
     r"first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|once|single|dozen|score|"
     r"january|february|march|april|may|june|july|august|september|october|november|december|"
     r"monday|tuesday|wednesday|thursday|friday|saturday|sunday|yesterday|today|tomorrow|annual|annually|"
-    r"daily|weekly|monthly|yearly|majority|minority|most|all|none|every|several|few|many)\b", re.I)
+    r"daily|weekly|monthly|yearly|majority|minority|most|all|none|every|several|few|many|"
+    # R1-02: multiplicative and grouping words ("tenfold", "percentage points", "a decade", "a couple of").
+    r"\w+fold|percentages?|decades?|centur(?:y|ies)|millenni(?:um|a)|couples?|pairs?|dual|both|"
+    r"(?:phase|part|class|grade|stage|tier|level|chapter|section|schedule|article|book|volume|act|title)\s+[ivxlcdm])\b",
+    re.I)
 
 
 # R9-02: a word list alone always misses the next form ("eleventh", "hundredth", "¾", "Chapter XI"). Any Unicode
@@ -116,6 +120,23 @@ def _words_of(text: str) -> set:
 
 def _novel_words(claim: str, source: str) -> set:
     return _words_of(claim) - _words_of(source) - _FUNCTION_WORDS
+
+
+def _in_order(claim: str, source: str) -> bool:
+    """R1-02: the claim's words (function words aside) occur in the source sentence in the same order. Words that are
+    all present but recombined ("rents ... rose" + "wages rose tenfold") are not the source's statement."""
+    src = iter(w.lower() for w in _TOKEN.findall(source or ""))
+    return all(any(w == s for s in src) for w in (w.lower() for w in _TOKEN.findall(claim or ""))
+               if w not in _FUNCTION_WORDS)
+
+
+def _supported_by(body: str, cw: set, claim_nums: set, sentence) -> bool:
+    """One source sentence states the claim in the claim's own words: enough shared content words, every number,
+    the same polarity, no new word and the same word order."""
+    s, w, nums = sentence
+    return (bool(cw) and len(cw & w) / len(cw) >= MIN_SUPPORT and claim_nums <= nums
+            and bool(_NEG.search(body)) == bool(_NEG.search(s)) and not _antonym_flip(body, s)
+            and not _novel_words(body, s) and _in_order(body, s))
 
 
 def verify(answer: str, source_texts: list) -> Verified:
@@ -174,11 +195,13 @@ def verify(answer: str, source_texts: list) -> Verified:
         if bool(_NEG.search(body)) != bool(_NEG.search(best[0])) or _antonym_flip(body, best[0]):
             v.dropped.append({"text": sent, "reason": "POLARITY_MISMATCH"})
             continue
-        if _novel_words(body, best[0]):
-            quote_instead()                          # R9-02: a word the source sentence does not have
+        if _novel_words(body, best[0]) or not _in_order(body, best[0]):
+            quote_instead()                          # R9-02 / R1-02: a word or word order the source does not have
             continue
+        # R1-06: only the cited sources that themselves state the claim stay cited.
+        kept = [c for c in cited if any(_supported_by(body, cw, claim_nums, x) for x in sents_of[c - 1])]
         if len(v.claims) < MAX_ANSWER_SENTENCES:
-            v.claims.append(Claim(body, cited))
+            v.claims.append(Claim(body, kept))
     return v
 
 

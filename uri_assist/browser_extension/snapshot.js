@@ -522,8 +522,20 @@
   const selected = selectionOf();
   const sel = maskText(selected.text.slice(0, 4000));
   // Every text that leaves the page passes maskText (title, headings, labels, placeholders and the whole URL too).
-  const url = maskText(location.href).replace(/([?&](?:access_?token|token|api_?key|key|secret|password|pwd|sig|signature|code)=)(?!\[redacted\])[^&#]*/gi,
-    (m, k) => { bump("query_secret"); return k + "[redacted]"; });
+  // R1-04: the userinfo (user:password@) is removed and the value of every query or fragment key that names a secret
+  // (the field-name rules above, a key ending in code / pin / key, sig / signature / sid) is masked whatever its
+  // length (same rule as redact_url in redact.py).
+  const secretKey = (k) => { let d = k; try { d = decodeURIComponent(k); } catch (e) { /* keep as is */ }
+    const j = joined(d);
+    return secretName(d) || (CODE_END.test(j.replace(READABLE, "")) && !CODE_EXCLUDE.test(j)) || /^(sig|signature|sid)$/.test(j); };
+  const maskUrl = (href) => {
+    let out = maskText(String(href)).replace(/^([a-z][a-z0-9+.-]*:\/\/)[^\/?#@\s]*@/i, (m, sch) => { bump("url_userinfo"); return sch; });
+    const at = out.search(/[?#]/);
+    if (at >= 0) out = out.slice(0, at) + out.slice(at).replace(/([?#&;])([^=&#;?\s]*)=([^&#;\s]*)/g, (m, p, k, v) =>
+      v && v !== "[redacted]" && secretKey(k) ? (bump("query_secret"), `${p}${k}=[redacted]`) : m);
+    return out;
+  };
+  const url = maskUrl(location.href);
 
   return {
     schema: "uri.assist.dom.v1", url, title: maskText(document.title.slice(0, 500)), lang: document.documentElement.lang || "",

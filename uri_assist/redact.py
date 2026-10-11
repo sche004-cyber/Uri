@@ -12,7 +12,8 @@ Field rules (value removed, field marked `sensitive`):
 Text rules (masked in any text: page text, selection, field values, labels): JWTs, bearer tokens, HTTP Basic
 credentials, API keys with known prefixes (OpenAI/Anthropic sk-, Stripe sk_/rk_/pk_ live/test, GitHub ghp_ /
 github_pat_, GitLab glpat-, npm_, Hugging Face hf_, SendGrid SG., AWS AKIA, Slack xox, Google AIza, Tavily tvly-), long hex/base64 secrets, Luhn-valid card numbers, 12-digit Aadhaar-shaped numbers, `key=value` query
-secrets. Each redaction is counted by kind; the counts (never the values) are reported.
+secrets, and in the page URL the userinfo and the value of every query / fragment key that names a secret
+(`redact_url`). Each redaction is counted by kind; the counts (never the values) are reported.
 """
 from __future__ import annotations
 
@@ -133,6 +134,41 @@ def redact_text(text, counts: Counter) -> str:
             counts[kind] += 1
             return (m.group(1) + MASK) if kind == "query_secret" else MASK
         out = rx.sub(sub, out)
+    return out
+
+
+# R1-04: in a URL, the userinfo (user:password@) is removed, and the value of every query or fragment key that names a
+# secret is masked whatever its length: the field-name classifier (client_secret, refresh_token, otp, pin, passcode,
+# session_id ...), a key ending in code / pin / key, and sig / signature / sid. The same rule is in snapshot.js.
+_URL_USERINFO = re.compile(r"(?i)^([a-z][a-z0-9+.-]*://)[^/?#@\s]*@")
+_URL_PAIR = re.compile(r"([?#&;])([^=&#;?\s]*)=([^&#;\s]*)")
+
+
+def _secret_key(k: str) -> bool:
+    from urllib.parse import unquote
+    k = unquote(k)
+    j = _joined(k)
+    return bool(_secret_name(k) or (_CODE_END.search(_READABLE.sub("", j)) and not _CODE_EXCLUDE.search(j))
+                or j in ("sig", "signature", "sid"))
+
+
+def redact_url(url, counts: Counter) -> str:
+    if not isinstance(url, str) or not url:
+        return url if isinstance(url, str) else ""
+
+    def userinfo(m):
+        counts["url_userinfo"] += 1
+        return m.group(1)
+
+    def pair(m):
+        if not m.group(3) or m.group(3) == MASK or not _secret_key(m.group(2)):
+            return m.group(0)
+        counts["query_secret"] += 1
+        return f"{m.group(1)}{m.group(2)}={MASK}"
+    out = _URL_USERINFO.sub(userinfo, redact_text(url, counts))
+    at = min((i for i in (out.find("?"), out.find("#")) if i >= 0), default=-1)
+    if at >= 0:
+        out = out[:at] + _URL_PAIR.sub(pair, out[at:])
     return out
 
 

@@ -129,7 +129,7 @@ def normalise(snapshot: dict, stamp: Stamp, probe: Optional[dict] = None) -> Obs
             fields.append(out)
             if out.get("sensitive"):
                 withheld_values.append(base["value"])
-        title, location = _s(snapshot.get("title")), RD.redact_text(_s(snapshot.get("url"), 2048), counts)
+        title, location = _s(snapshot.get("title")), RD.redact_url(_s(snapshot.get("url"), 2048), counts)
         headings = []
         raw_heads = pieces.get("headings") if isinstance(pieces.get("headings"), list) else []
         for hp in raw_heads[:MAX_HEADINGS]:

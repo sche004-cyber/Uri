@@ -13,6 +13,7 @@ Retrieved text is DATA. These helpers make that structural:
 from __future__ import annotations
 
 import re
+import unicodedata
 
 _PATTERNS = (
     ("override_instructions", re.compile(r"\b(ignore|disregard|forget|override)\b[^.\n]{0,40}\b(previous|prior|above|all|earlier|system)\b[^.\n]{0,20}\b(instruction|prompt|rule|message)s?", re.I)),
@@ -35,12 +36,23 @@ def flags(text: str) -> list:
     return [name for name, rx in _PATTERNS if rx.search(text)]
 
 
-_LINK_OR_CONTACT = re.compile(r"(?i)\b(?:https?|ftp|file)://|\bwww\.|[\w.+-]+@[\w-]+\.[\w.-]+|"
-                              r"\b\d{1,3}(?:\.\d{1,3}){3}\b|\bjavascript:|\bdata:[a-z]+/")
+# R1-01 (W1-A0 closure review): a link is matched after NFKC normalisation (fullwidth '＠' and '：' become '@' and
+# ':'), '://' is matched anywhere (no word boundary: 'xhttps://', 'hxxps://'), defanged dots ('[.]', '(.)', '[dot]')
+# count as dots, and a bare domain ('refunds-portal.net/claim') is a link. The TLD of a bare domain must be all lower
+# or all upper case, so a missing space after a full stop ('rose.The') is not taken for one.
+_DOT = r"(?:\.|\[\.\]|\(\.\)|\[dot\]|\(dot\))"
+LINK_PATTERN = (r"\S*(?::|\[:\])//\S*|(?i:\bwww)" + _DOT + r"\S+|[\w.+-]+@[\w-]+(?:" + _DOT + r"[\w-]+)+|"
+                r"\b\d{1,3}(?:" + _DOT + r"\d{1,3}){3}\b|(?i:\b(?:javascript|vbscript):)\S*|(?i:\bdata:[a-z]+/)\S*|"
+                r"\b(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,62})" + _DOT + r")+(?:[a-z]{2,24}|[A-Z]{2,24})\b(?:/\S*)?")
+_LINK_OR_CONTACT = re.compile(LINK_PATTERN)
+
+
+def normalise(text: str) -> str:
+    return unicodedata.normalize("NFKC", text or "")
 
 
 def has_link_or_contact(text: str) -> bool:
-    return bool(_LINK_OR_CONTACT.search(text or ""))
+    return bool(_LINK_OR_CONTACT.search(normalise(text)))
 
 
 def evidence_text(text: str) -> str:
