@@ -230,10 +230,21 @@ class StateAclError(Exception):
     pass
 
 
+def icacls_steps(path: Path, user: str, *, folder=False) -> list:
+    """The icacls commands restrict_to_user runs on Windows. For the folder, `/reset /T` first drops every explicit
+    entry (any principal's) on the folder and on everything already inside it and turns inheritance back on there;
+    without /C the first file it cannot reset fails the step. Then `/inheritance:r /grant:r` leaves the single
+    inheritable user entry, which the files inside re-inherit (R2-01)."""
+    grant = f"{user}:(OI)(CI)F" if folder else f"{user}:F"
+    restrict = ["icacls", str(path), "/inheritance:r", "/grant:r", grant]
+    return [["icacls", str(path), "/reset", "/T", "/Q"], restrict] if folder else [restrict]
+
+
 def restrict_to_user(path: Path, *, folder=False):
-    """SCHED-TOKEN-ACL-1: replace the inherited ACL with one full-control entry for the current Windows user. For the
-    state folder the entry is inheritable, so the token, the database and artifacts inside cannot be read, deleted or
-    replaced by other local principals (files already inside are re-inherited from it). POSIX: 0700 / 0600."""
+    """SCHED-TOKEN-ACL-1: replace the ACL with one full-control entry for the current Windows user. For the state
+    folder the entry is inheritable, so the token, the database and artifacts inside cannot be read, deleted or
+    replaced by other local principals (explicit entries already on the folder or on files inside are removed and
+    those files re-inherit it). POSIX: 0700 / 0600."""
     if os.name != "nt":
         try:
             os.chmod(path, 0o700 if folder else 0o600)
@@ -243,14 +254,13 @@ def restrict_to_user(path: Path, *, folder=False):
     user = os.environ.get("USERNAME")
     if not user:
         raise StateAclError("no current user")
-    grant = f"{user}:(OI)(CI)F" if folder else f"{user}:F"
-    try:
-        r = subprocess.run(["icacls", str(path), "/inheritance:r", "/grant:r", grant], capture_output=True, text=True,
-                           timeout=30)
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise StateAclError(f"icacls failed: {type(exc).__name__}") from None
-    if r.returncode != 0:
-        raise StateAclError("could not restrict access to the current user")
+    for cmd in icacls_steps(path, user, folder=folder):
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise StateAclError(f"icacls failed: {type(exc).__name__}") from None
+        if r.returncode != 0:
+            raise StateAclError("could not restrict access to the current user")
 
 
 def write_token_file(path: Path, token: str):

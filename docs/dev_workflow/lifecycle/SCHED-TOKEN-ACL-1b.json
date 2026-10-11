@@ -1,0 +1,86 @@
+{
+ "milestone": "SCHED-TOKEN-ACL-1b",
+ "_note": "Follow-up to SCHED-TOKEN-ACL-1 (VERIFIED on 33fc419a with 4 LOW findings, receipt in docs/scheduler/sched_token_acl_1/review/). Owner chose to fix R2-01..R2-04 before merge. Same baseline, so the whole milestone is reviewed again at the new SHA. Windows ACL behaviour stays Windows-qualified; the Windows re-run on the final commit is owner-side. Integration none.",
+ "repo": "../../..",
+ "baseline": {
+  "ref": "origin/integration/git-sync-20261008",
+  "expect": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80"
+ },
+ "candidate": {
+  "branch": "phase/sched-token-acl",
+  "worktree": "../../../../uri-wt/sched-acl-impl"
+ },
+ "state_dir": "../uri-wt/lifecycle-runs/SCHED-TOKEN-ACL-1b",
+ "acceptance_criteria_file": "docs/scheduler/SCHED_TOKEN_ACL_1_PLAN.md",
+ "review_focus": [
+  "R2-01: restrict_to_user / icacls_steps now run `icacls <state> /reset /T /Q` then `/inheritance:r /grant:r <user>:(OI)(CI)F`; check this removes explicit entries of other principals on the folder and on files already inside (including protected DACLs), fails closed (exit 4) when a file cannot be reset, and opens no window in which the token or database is exposed",
+  "R2-02/R2-03/R2-04: S2 test now asserts on POSIX; service.py renormalised to LF (diff vs baseline must be only the real change); EVIDENCE.md marks its Windows counts as pre-repair and does not claim evidence for the final commit",
+  "everything from SCHED-TOKEN-ACL-1 still holds: folder restricted before the database or token exists, token restricted before it is written, fail-closed exit 4 with no token left behind, no regression in the scheduler service, bearer-token check, service.json or the Living UI client",
+  "the tests in tests/scheduler/test_state_acl.py prove S1-S4 on Windows and do not pass vacuously on POSIX"
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": [
+  "uri_scheduler/service.py",
+  "tests/scheduler/**",
+  "docs/scheduler/**",
+  "docs/dev_workflow/lifecycle/SCHED-TOKEN-ACL-1.json",
+  "docs/dev_workflow/lifecycle/SCHED-TOKEN-ACL-1b.json"
+ ],
+ "test_globs": [
+  "tests/**"
+ ],
+ "allowed_flaky": [],
+ "gates": [
+  {
+   "id": "python-scheduler",
+   "kind": "pytest",
+   "cmd": [
+    "{python}",
+    "-m",
+    "pytest",
+    "-c",
+    "scripts/phase2d_pytest.ini",
+    "--rootdir=.",
+    "-q",
+    "tests/scheduler"
+   ]
+  }
+ ],
+ "regression_runner": [
+  "{python}",
+  "-m",
+  "pytest",
+  "-q",
+  "-p",
+  "no:cacheprovider"
+ ],
+ "regression_runners": [],
+ "repair_nonblocking_severities": [],
+ "reviewer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 3600
+ },
+ "implementer": {
+  "provider": "claude_cli",
+  "model": "claude-opus-5-5",
+  "timeout_s": 3600
+ },
+ "limits": {
+  "max_repair_attempts": 3
+ },
+ "continuation": {
+  "stall_rounds": 2,
+  "diagnose_after": 2,
+  "budget": {
+   "max_rounds": 8,
+   "max_cost_usd": 60,
+   "max_hours": 6
+  }
+ },
+ "integration": {
+  "mode": "none"
+ },
+ "commit_trailers": []
+}

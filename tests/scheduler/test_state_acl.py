@@ -49,11 +49,51 @@ def test_files_already_inside_are_reinherited(tmp_path):                 # S2
     old_token = state / "api-token"
     old_token.write_text("old")
     S.restrict_to_user(state, folder=True)
-    if not WIN:
-        return                                                            # POSIX: mode bits are per file (S3 covers the token)
+    if not WIN:                                                           # POSIX: the 0700 folder is what guards them (R2-02)
+        assert stat.S_IMODE(state.stat().st_mode) == 0o700
+        assert old_db.read_bytes() == b"x" and old_token.read_text() == "old"
+        return
     for f in (old_db, old_token):
         aces = _aces(f)
         assert len(aces) == 1 and aces[0].endswith(":(I)(F)"), (f.name, aces)
+
+
+def test_folder_steps_reset_explicit_entries_before_restricting(tmp_path):   # R2-01, on every platform
+    steps = S.icacls_steps(tmp_path, "me", folder=True)
+    assert steps == [["icacls", str(tmp_path), "/reset", "/T", "/Q"],
+                     ["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]]
+    assert "/C" not in steps[0]                                           # an un-resettable file fails the step
+    assert S.icacls_steps(tmp_path, "me") == [["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:F"]]
+
+
+@pytest.mark.skipif(not WIN, reason="Windows-qualified: the icacls branch")
+def test_folder_reset_failure_fails_closed(tmp_path, monkeypatch):         # R2-01: a failed /reset stops before the grant
+    calls = []
+
+    def run(cmd, **k):
+        calls.append(cmd)
+        return _Fail()
+    monkeypatch.setattr(S.subprocess, "run", run)
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(tmp_path, folder=True)
+    assert len(calls) == 1 and "/reset" in calls[0]
+
+
+@pytest.mark.skipif(not WIN, reason="Windows-qualified: explicit ACEs of other principals")
+def test_foreign_explicit_entries_are_removed(tmp_path):                  # R2-01: S1 and S2 with a hostile starting ACL
+    state = tmp_path / "state"
+    state.mkdir()
+    inside = state / "scheduler.db"
+    inside.write_bytes(b"x")
+    users = "*S-1-5-32-545"                                               # BUILTIN\Users
+    for target, grant in ((state, users + ":(OI)(CI)R"), (inside, users + ":R")):
+        subprocess.run(["icacls", str(target), "/grant", grant], check=True, capture_output=True)
+    subprocess.run(["icacls", str(inside), "/inheritance:d"], check=True, capture_output=True)   # protected DACL
+    S.restrict_to_user(state, folder=True)
+    aces = _aces(state)
+    assert len(aces) == 1 and aces[0].endswith(":(OI)(CI)(F)") and aces[0][:-len(":(OI)(CI)(F)")] in _me(), aces
+    aces = _aces(inside)
+    assert len(aces) == 1 and aces[0].endswith(":(I)(F)") and aces[0][:-len(":(I)(F)")] in _me(), aces
 
 
 def test_token_file_is_new_each_launch_and_user_only(tmp_path):          # S3

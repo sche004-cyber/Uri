@@ -1,6 +1,11 @@
 # SCHED-TOKEN-ACL-1 evidence (2026-10-11, Windows 11, owner's PC)
 
-## Tests (candidate branch `phase/sched-token-acl`)
+> **Stale after review (R2-04).** Everything below was recorded on commit `1465e16`, before the independent-review
+> repairs `33fc419` (R1-01) and the R2 follow-up (SCHED-TOKEN-ACL-1b: `/reset /T` of explicit entries, R2-01).
+> The Windows gates and the live run must be re-run on the final commit of `phase/sched-token-acl`; until then this
+> page is not Windows evidence for that commit. Linux gate results are in `review/` and `review-1b/`.
+
+## Tests (commit `1465e16`, before the review repairs)
 
 | Gate | Result |
 |---|---|
