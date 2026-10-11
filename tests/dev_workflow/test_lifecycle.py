@@ -724,3 +724,121 @@ def test_r2_05_gpu_lease_busy_is_blocked_not_a_gate_failure(tmp_path):
     assert r["status"] == "BLOCKED" and "busy" in r["detail"]
     r = L.run_gate(cfg, dict(gate, kind="command"), wt, tmp_path / "logs")
     assert r["status"] == "BLOCKED"
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1 R3 repairs
+
+@pytest.mark.parametrize("target", ["other", "canon"])
+def test_r3_01_redirected_head_does_not_move_another_branch_on_restore(tmp_path, target):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cand = g(wt, "rev-parse", "HEAD")
+    g(repo, "branch", "other", base)
+    tips = {b: g(repo, "rev-parse", f"refs/heads/{b}") for b in ("other", "canon")}
+    cfg = config(tmp_path, repo, wt)
+    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "headref.py", f"""
+from pathlib import Path
+gd = subprocess.run(['git','rev-parse','--absolute-git-dir'],capture_output=True,text=True).stdout.strip()
+Path(gd, 'HEAD').write_text('ref: refs/heads/{target}\\n')
+Path('pkg/calc.py').write_text('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+""")}
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "TAMPER"
+    assert {b: g(repo, "rev-parse", f"refs/heads/{b}") for b in ("other", "canon")} == tips
+    assert g(repo, "status", "--porcelain") == "" and remote_tip(remote) == base
+    assert g(wt, "symbolic-ref", "HEAD") == "refs/heads/feature" and g(wt, "rev-parse", "HEAD") == cand
+    assert not L.worktree_changes(wt) and L.verify(cfg) == []
+
+
+def test_r3_01_reviewer_redirecting_impl_head_is_not_independent(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    g(repo, "branch", "twin", g(wt, "rev-parse", "HEAD"))  # same SHA: only the HEAD symref differs
+    cfg = config(tmp_path, repo, wt)
+    cfg["reviewer"] = {"provider": "command", "counts_as_independent": True, "argv": _script_worker(
+        tmp_path, "rev_head.py", f"""
+subprocess.run(['git','-C',{str(wt)!r},'symbolic-ref','HEAD','refs/heads/twin'])
+h = subprocess.run(['git','rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()
+print('AUDIT_RESULT_BEGIN'); print(json.dumps({{'candidate': h, 'verdict': 'ACCEPT', 'findings': []}})); print('AUDIT_RESULT_END')
+""")}
+    assert L.run(cfg) == S.WAITING_FOR_MODEL
+    assert L.status(cfg)["reviewers"][0]["status"] == "NOT_INDEPENDENT" and remote_tip(remote) == base
+
+
+def test_r3_02_transient_baseline_gate_failure_is_not_cached(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    mark = tmp_path / "hang_baseline"
+    mark.write_text("1")
+    code = (f"import time\nfrom pathlib import Path\n"
+            f"if not Path('pkg/feature.py').exists() and Path({str(mark)!r}).exists():\n    time.sleep(60)\n")
+    cfg = config(tmp_path, repo, wt, integration={"mode": "none"},
+                 gates=[{"id": "slow", "kind": "command", "timeout_s": 3, "cmd": ["{python}", "-c", code]}])
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "RESOURCE" and "baseline gate slow: TIMED_OUT" in s["blocker"]["reason"]
+    mark.unlink()  # the transient cause is gone
+    L.unblock(cfg, "owner: baseline host recovered")
+    assert L.run(cfg) == S.VERIFIED
+    st = L.State(cfg)
+    assert st.d["baseline_gates"]["slow"]["result"]["status"] == "COMPLETED_WITH_RESULT"
+    kinds = [e["data"]["status"] for e in L._chained_events(st) if e["kind"] == "BASELINE_GATE"]
+    assert kinds == ["TIMED_OUT", "COMPLETED_WITH_RESULT"] and L.verify(cfg) == []
+
+
+def test_r3_03_candidate_moved_after_verified_is_reaudited(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = config(tmp_path, repo, wt, integration={"mode": "fast-forward", "remote": "origin", "target_ref": "canon",
+                                                  "authorized": False})
+    assert L.run(cfg) == S.BLOCKED and L.status(cfg)["blocker"]["kind"] == "OWNER_AUTHORIZATION"
+    (wt / "pkg/feature.py").write_text("def feature():\n    return 2\n")
+    g(wt, "commit", "-qam", "outside change")
+    new = g(wt, "rev-parse", "HEAD")
+    for _ in range(2):
+        L.unblock(cfg, "owner: continue")
+        assert L.run(cfg) == S.BLOCKED
+        if L.status(cfg)["blocker"]["kind"] == "OWNER_AUTHORIZATION":
+            break
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "OWNER_AUTHORIZATION" and s["candidate"] == new
+    assert [r["candidate"] for r in s["reviewers"]][-1] == new and len(s["reviewers"]) == 2
+    assert s["evidence_ok_for_candidate"] and L.verify(cfg) == []
+
+
+def _protected_candidate_with_silent_reviewer(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    (wt / "core/frozen.py").write_text("FROZEN = False\n")
+    g(wt, "commit", "-qam", "touch protected core")
+    cfg = config(tmp_path, repo, wt)
+    p = tmp_path / "cfg.json"
+    raw = json.loads(p.read_text())
+    raw["reviewer"] = {"provider": "command", "argv": [PY, "-c", "print('no result')"], "counts_as_independent": True}
+    p.write_text(json.dumps(raw))
+    cfg = L.load_config(p)
+    assert L.run(cfg) == S.WAITING_FOR_MODEL
+    # Policy relaxed between runs by whoever can write the config file.
+    raw.update(authorized_protected_changes=["core/**"], gates=[],
+               reviewer={"provider": "command", "argv": [PY, str(WORKER), "reviewer", "check"],
+                         "counts_as_independent": True})
+    p.write_text(json.dumps(raw))
+    return repo, wt, base, remote, L.load_config(p)
+
+
+def test_r3_04_changed_config_blocks_until_owner_acknowledges(tmp_path):
+    repo, wt, base, remote, cfg = _protected_candidate_with_silent_reviewer(tmp_path)
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "CONFIG" and remote_tip(remote) == base and len(s["reviewers"]) == 1
+    ev = [e for e in L._chained_events(L.State(cfg)) if e["kind"] == "CONFIG_CHANGED"][-1]
+    assert ev["data"]["to"] == cfg["_config_sha256"] and ev["data"]["policy"]["authorized_protected_changes"] == ["core/**"]
+    assert L.run(cfg) == S.BLOCKED and remote_tip(remote) == base  # re-running does not acknowledge it
+    L.unblock(cfg, "owner: core/frozen.py change authorised")
+    assert L.run(cfg) == S.COMPLETE and remote_tip(remote) == g(wt, "rev-parse", "HEAD") and L.verify(cfg) == []
+
+
+def test_r3_04_config_binding_is_read_from_the_chain_not_state_json(tmp_path):
+    repo, wt, base, remote, cfg = _protected_candidate_with_silent_reviewer(tmp_path)
+    sp = tmp_path / "state/state.json"
+    d = json.loads(sp.read_text())
+    d["config_sha256"] = cfg["_config_sha256"]  # hide the change from a state.json comparison
+    sp.write_text(json.dumps(d))
+    assert L.run(cfg) == S.BLOCKED
+    assert L.status(cfg)["blocker"]["kind"] == "CONFIG" and remote_tip(remote) == base

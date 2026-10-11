@@ -125,6 +125,16 @@ def load_config(path) -> dict:
     return cfg
 
 
+POLICY_KEYS = ("baseline", "candidate", "protected_paths", "authorized_protected_changes", "permitted_paths",
+               "test_globs", "allowed_flaky", "gates", "integration", "reviewer", "implementer", "limits",
+               "regression_runner", "regression_runners", "repair_nonblocking_severities")
+
+
+def policy(cfg) -> dict:
+    """The policy-relevant part of the milestone config, recorded in the event chain (R3-04)."""
+    return {k: cfg.get(k) for k in POLICY_KEYS}
+
+
 def is_devtest(milestone: str) -> bool:
     """Strict DEVTEST namespace for the lifecycle (AO-4's heuristic also matches any name containing _TEST)."""
     return is_devtest_identifier(milestone) and str(milestone).upper().startswith(("DEVTEST", "TOOLING_TEST"))
@@ -185,8 +195,16 @@ class State:
 
     def block(self, kind: str, reason: str, needs: str) -> None:
         cur = self.stage
-        self.d["resume_to"] = {S.VERIFYING: S.VERIFYING, S.VERIFIED: S.VERIFYING, S.FIXING: S.FIXING}.get(
-            cur, S.AUDITING).value
+        # A block on the way back from an earlier block (e.g. CONFIG after an unblock) keeps where that one resumes to.
+        if cur in (S.BLOCKED, S.READY_TO_RESUME) and self.d.get("resume_to"):
+            resume = S(self.d["resume_to"])
+        else:
+            resume = {S.VERIFYING: S.VERIFYING, S.VERIFIED: S.VERIFYING, S.FIXING: S.FIXING}.get(cur, S.AUDITING)
+        # Verification can only resume where an independent ACCEPT exists for the current candidate; otherwise
+        # (candidate moved, evidence missing) the resume is a re-audit (R3-03).
+        if resume == S.VERIFYING and accepted_review(self.cfg, self, self.d.get("candidate")) is None:
+            resume = S.AUDITING
+        self.d["resume_to"] = resume.value
         self.d["blocker"] = {"kind": kind, "reason": reason, "needs": needs, "at": now(), "stage": cur.value if cur else None}
         self.to(S.BLOCKED, f"{kind}: {reason}")
 
@@ -603,7 +621,10 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
             else:
                 key = chash([st.d["baseline"], g["cmd"], g.get("kind"), g.get("cwd", ".")])
                 cached = st.d["baseline_gates"].get(g["id"])
-                if not cached or cached.get("key") != key:
+                # Only a completed baseline run is reused: a timeout, busy GPU lease or other BLOCKED result is
+                # re-tried on the next qualification, each attempt its own BASELINE_GATE event (R3-02).
+                if not cached or cached.get("key") != key or \
+                        (cached.get("result") or {}).get("status") != "COMPLETED_WITH_RESULT":
                     base_wt = base_wt or add_worktree(cfg["repo"], Path(cfg["work_dir"]) / "baseline", st.d["baseline"])
                     b = run_gate(cfg, g, base_wt, Path(cfg["state_dir"]) / "gates" / "baseline")
                     cached = {"key": key, "result": b}
@@ -689,7 +710,8 @@ def do_review(cfg, st: State, sha: str) -> dict:
         return {"head": git(awt, "rev-parse", "HEAD"), "status": worktree_changes(awt), "refs": refs_digest(cfg),
                 "git_control": git_control_digest(cfg["repo"]),
                 "impl_identity": list(worktree_identity(cfg, cwt)), "audit_identity": list(worktree_identity(cfg, awt)),
-                "impl_head": git(cwt, "rev-parse", "HEAD"), "impl_status": worktree_changes(cwt)}
+                "impl_head": git(cwt, "rev-parse", "HEAD"), "impl_symref": head_symref(cwt),
+                "impl_status": worktree_changes(cwt)}
     before = snap()
     rec = {"round": rnd, "candidate": sha, "baseline": st.d["baseline"], "started_at": now(), "audit_worktree": str(awt)}
     st.d["rounds"].append(rec)
@@ -797,14 +819,26 @@ def regression_proof(cfg, pre_sha: str, post_sha: str, tests: list[str], log_dir
     return {"ok": not reasons, "tests": per, "need_fail_before": need_fail_before, "reason": "; ".join(reasons)}
 
 
+def head_symref(wt) -> str:
+    return git(wt, "symbolic-ref", "-q", "HEAD", check=False)
+
+
 def _restore(cfg, wt: Path, sha: str) -> bool:
     """Put the implementation worktree back to ``sha`` exactly (index, files, branch tip). Never resets a worktree
-    whose ``.git`` no longer leads to its own git dir: that would reset another checkout (R2-03)."""
+    whose ``.git`` no longer leads to its own git dir: that would reset another checkout (R2-03). Only the
+    candidate branch is moved: HEAD is re-pointed at it first, so a HEAD redirected to another branch (R3-01) cannot
+    make ``reset --hard`` move that branch."""
     if not worktree_identity(cfg, wt)[0]:
+        return False
+    branch = f"refs/heads/{cfg['candidate']['branch']}"
+    git(wt, "update-ref", "--no-deref", branch, sha, check=False)
+    git(wt, "symbolic-ref", "HEAD", branch, check=False)
+    if head_symref(wt) != branch:
         return False
     git(wt, "reset", "-q", "--hard", sha, check=False)
     git(wt, "clean", "-fdq", check=False)
-    return git(wt, "rev-parse", "HEAD", check=False) == sha and not worktree_changes(wt)
+    return head_symref(wt) == branch and git(wt, "rev-parse", "HEAD", check=False) == sha and \
+        git(wt, "rev-parse", "-q", "--verify", branch, check=False) == sha and not worktree_changes(wt)
 
 
 def _commit_and_prove(cfg, wt: Path, sha: str, n: int, rec: dict, findings: list, changed: list, rdir: Path):
@@ -856,6 +890,10 @@ def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
     ident = worktree_identity(cfg, wt)
     if not ident[0]:
         return finish("REFUSED", reason="TAMPER: " + ident[1], restored=False)
+    branch = f"refs/heads/{cfg['candidate']['branch']}"
+    if head_symref(wt) != branch:  # never reset through a HEAD that names another branch (R3-01)
+        return finish("REFUSED", reason=f"TAMPER: implementation worktree HEAD is '{head_symref(wt) or 'detached'}', "
+                                        f"not {branch}", restored=False)
     if git(wt, "rev-parse", "HEAD") != sha or worktree_changes(wt):
         return finish("REFUSED", reason="implementation worktree not clean or not at the candidate before repair")
     ctl0, refs0 = git_control_digest(cfg["repo"]), refs_digest(cfg)
@@ -877,7 +915,7 @@ def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
     reason = None
     if git_control_digest(cfg["repo"]) != ctl0:
         reason = "TAMPER: git hooks or config changed during the repair"
-    elif refs_digest(cfg) != refs0 or head != sha:
+    elif refs_digest(cfg) != refs0 or head != sha or head_symref(wt) != branch:
         reason = "TAMPER: implementer moved HEAD, a milestone ref or a replace ref (commit/checkout is the driver's job)"
     elif w.get("status") != "COMPLETED":
         reason = f"implementer {w.get('status')}"
@@ -985,8 +1023,26 @@ def init(cfg, st: State) -> None:
     st.event("PLAN", baseline=base, candidate=st.d["candidate"], config_sha256=cfg["_config_sha256"],
              acceptance_criteria_file=cfg.get("acceptance_criteria_file"), protected=cfg["protected_paths"],
              permitted=cfg["permitted_paths"], gates=[g["id"] for g in cfg["gates"]],
-             reviewer=cfg["reviewer"].get("provider"), integration=cfg["integration"].get("mode"))
+             reviewer=cfg["reviewer"].get("provider"), integration=cfg["integration"].get("mode"),
+             policy=policy(cfg))
     st.to(S.ACCEPTED, "plan recorded from config")
+
+
+def config_binding(st: State) -> tuple[str | None, bool]:
+    """(config hash bound in the event chain, acknowledged?). The plan binds the config; a later CONFIG_CHANGED
+    binds the new one, unacknowledged until an OWNER_UNBLOCK recorded with that same config (R3-04). Read from the
+    chain, never from state.json."""
+    bound, acked = None, True
+    for ev in _chained_events(st):
+        d = ev["data"]
+        if ev["kind"] == "PLAN":
+            bound, acked = d.get("config_sha256"), True
+        elif ev["kind"] == "CONFIG_CHANGED":
+            bound, acked = d.get("to"), False
+        elif ev["kind"] == "OWNER_UNBLOCK" and not acked and d.get("config_sha256") == bound and \
+                (d.get("blocker") or {}).get("kind") == "CONFIG":
+            acked = True
+    return bound, acked
 
 
 def run(cfg, max_steps: int = 50) -> S:
@@ -1000,9 +1056,19 @@ def run(cfg, max_steps: int = 50) -> S:
     if errs and st.stage != S.BLOCKED:
         st.block("TAMPER", "receipt verification failed: " + "; ".join(errs[:5]),
                  "owner: investigate; start a fresh state_dir (evidence cannot be trusted)")
-    if st.d.get("config_sha256") != cfg["_config_sha256"]:
-        st.event("CONFIG_CHANGED", frm=st.d.get("config_sha256"), to=cfg["_config_sha256"])
+    # A changed config can relax policy (protected paths, gates, integration authorisation, reviewer): it is bound
+    # to the chain and stops the run until the owner acknowledges it with `unblock --note` (R3-04).
+    bound, acked = config_binding(st)
+    if bound != cfg["_config_sha256"]:
+        st.event("CONFIG_CHANGED", frm=bound, to=cfg["_config_sha256"], policy=policy(cfg))
         st.d["config_sha256"] = cfg["_config_sha256"]
+        acked = False
+    if not acked:
+        if st.stage not in (S.BLOCKED, S.COMPLETE):  # an existing block (e.g. TAMPER) is kept; CONFIG follows it
+            st.block("CONFIG", f"milestone config changed since the plan (now {cfg['_config_sha256'][:12]})",
+                     "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`")
+        write_receipt(cfg, st)
+        return st.stage
     wt = Path(cfg["candidate"]["worktree"])
     for _ in range(max_steps):
         stage = st.stage
@@ -1210,7 +1276,7 @@ def unblock(cfg, note: str) -> S:
     st = State(cfg)
     if st.stage != S.BLOCKED:
         raise LifecycleError(f"stage is {st.d['stage']}, not BLOCKED")
-    st.event("OWNER_UNBLOCK", note=note, blocker=st.d["blocker"])
+    st.event("OWNER_UNBLOCK", note=note, blocker=st.d["blocker"], config_sha256=cfg["_config_sha256"])
     st.d["blocker"] = None
     st.to(S.READY_TO_RESUME, "owner: " + note)
     return st.stage
