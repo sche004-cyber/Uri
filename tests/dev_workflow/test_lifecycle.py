@@ -1257,8 +1257,10 @@ def user_home(tmp_path, monkeypatch):
     for var in ("XDG_CONFIG_HOME", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM", "GIT_CONFIG_NOSYSTEM"):
         monkeypatch.delenv(var, raising=False)
         monkeypatch.delitem(L.GIT_ENV, var, raising=False)
+        monkeypatch.delitem(L.NOBYTECODE, var, raising=False)
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setitem(L.GIT_ENV, "HOME", str(home))
+    monkeypatch.setitem(L.NOBYTECODE, "HOME", str(home))  # gate commands' environment (R5-01)
     return home
 
 
@@ -1340,3 +1342,30 @@ print('REPAIR_RESULT_BEGIN'); print(json.dumps({'repaired': ['R1-01']})); print(
     st = json.loads((tmp_path / "state/state.json").read_text())
     assert "TAMPER" in json.dumps(st["repairs"])
     assert remote_tip(remote) == base
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1 R5
+
+def test_r5_01_combined_gate_writing_global_insteadof_cannot_fake_a_merge_integration(tmp_path, user_home):
+    """Merge mode runs the candidate's tests on the merge result after evidence_ok's control check. A conftest that
+    writes ~/.gitconfig insteadOf only in the integration worktree must not redirect the push and its ls-remote
+    verification into a false COMPLETE (R5-01)."""
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    fake = tmp_path / "fake.git"
+    subprocess.run(["git", "clone", "-q", "--bare", str(remote), str(fake)], check=True)
+    (wt / "tests/conftest.py").write_text(
+        "import os\nfrom pathlib import Path\n\n"
+        "if Path.cwd().name == 'integration':\n"
+        "    with open(os.path.join(os.environ['HOME'], '.gitconfig'), 'a') as fh:\n"
+        f"        fh.write('[url \"{fake}\"]\\n\\tinsteadOf = {remote}\\n')\n")
+    g(wt, "add", "-A")
+    g(wt, "commit", "-qm", "candidate with integration-only conftest")
+    cfg = config(tmp_path, repo, wt, integration={"mode": "merge", "remote": "origin", "target_ref": "canon",
+                                                  "authorized": True})
+    assert L.run(cfg) == S.BLOCKED
+    assert "insteadOf" in (user_home / ".gitconfig").read_text()  # the gate really wrote it
+    st = json.loads((tmp_path / "state/state.json").read_text())
+    assert st["integration"]["status"] == "REFUSED_TAMPER"
+    assert st["blocker"]["kind"] == "TAMPER"
+    assert remote_tip(remote) == base
+    assert g(fake, "rev-parse", "refs/heads/canon") == base  # nothing was pushed anywhere

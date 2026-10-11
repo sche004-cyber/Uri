@@ -1261,15 +1261,29 @@ def integrate(cfg, st: State, sha: str) -> None:
             st.block("INTEGRATION", rec["status"], "repair and re-run")
             return
         command = f"git push {remote} {result_sha}:refs/heads/{target}"
+        # The combined gates ran candidate code after evidence_ok's control check: a test that wrote ~/.gitconfig
+        # insteadOf (or a hook, config, replace ref) would redirect the push and its ls-remote check (R5-01).
+        drift = control_drift(cfg, st)
+        if drift:
+            rec.update(status="REFUSED_TAMPER", command=command, result_commit=result_sha, detail=drift)
+            st.d["integration"] = rec
+            st.event("INTEGRATION", **{k: v for k, v in rec.items() if k != "combined_gates"})
+            st.block("TAMPER", "after the combined gates: " + drift, TAMPER_NEEDS)
+            return
     p = subprocess.run([*GIT, "-C", cfg["repo"], "push", remote, f"{result_sha}:refs/heads/{target}"],
                        capture_output=True, text=True, env=GIT_ENV)
     after = git(cfg["repo"], "ls-remote", remote, f"refs/heads/{target}").split("\t")[0]
     rec.update(command=command, push_exit=p.returncode, push_stderr=p.stderr[-400:], target_tip_after=after,
                result_commit=result_sha)
     rec["status"] = "INTEGRATED" if p.returncode == 0 and after == result_sha else "PUSH_FAILED"
+    drift = control_drift(cfg, st)  # the push and its verification must have read the anchored control state
+    if drift:
+        rec.update(status="UNVERIFIED_TAMPER", detail=drift)
     st.d["integration"] = rec
     st.event("INTEGRATION", **{k: v for k, v in rec.items() if k != "combined_gates"})
-    if rec["status"] == "INTEGRATED":
+    if drift:
+        st.block("TAMPER", "around the integration push: " + drift, TAMPER_NEEDS)
+    elif rec["status"] == "INTEGRATED":
         st.to(S.COMPLETE, f"{target} -> {result_sha}")
     else:
         st.block("PERMISSION", "push to integration target failed", rec["push_stderr"] or "owner push permission")
