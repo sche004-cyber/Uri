@@ -44,3 +44,15 @@ All positive claims, readiness declarations, and verification conclusions must a
 - **Insufficient indicators:** A started command, existing process, created file, successful build, lack of exception, or another agent's "passed" claim is not sufficient proof by itself.
 - **Independent multi-surface verification:** Where practical, Claude should independently verify source, repo state, logs, test results, runtime behavior, telemetry, artifacts, and milestone state.
 - **Auditable correction history:** If later evidence disproves an earlier conclusion, preserve the history and explicitly record the correction rather than silently overwriting it.
+
+## Development lifecycle (default for development work)
+
+New features, development milestones, significant bug fixes, security repairs, runtime or UI changes and
+multi-component integrations use the `uri-development-lifecycle` skill (`.claude/skills/uri-development-lifecycle/`)
+by default: after implementation, start `python -m scripts.dev_workflow.lifecycle run <config>` without waiting to be
+asked. It launches the independent reviewer (a separate Claude process), routes findings to repair, re-audits,
+qualifies and integrates only per policy. The implementing session never approves its own work. Documentation-only
+changes may use the light path. Never use it for URI user conversations or URI runtime office or document tasks (URI Office development milestones
+are in scope).
+After every milestone run, give the owner the visual report (`REPORT.html` / milestone dashboard) with its link,
+the stage, what was achieved and what needs the owner — without being asked.

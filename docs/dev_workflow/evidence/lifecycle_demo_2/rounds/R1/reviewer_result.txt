@@ -1,0 +1,36 @@
+I've finished checking. Now writing up the verdict: the candidate fails two acceptance criteria.
+
+## R1 review: DEVTEST-LIFECYCLE-LIVE
+
+**Verdict: REJECT.**
+
+**SHAs.** `HEAD` is `a67c0b74e4ba508eee59dc8a6234ef48b2629c1c` and the baseline `b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d` exists. There is one commit in the range, "feature (candidate)". The whole diff is one new file, `pkg/feature.py` (2 lines). The permission policy blocked my explicit ancestry check (`git merge-base --is-ancestor`).
+
+**Acceptance criteria:**
+
+| Criterion | Status | Evidence |
+|---|---|---|
+| `safe_div` returns `a / b`, and `None` when `b == 0` without raising | **Not met** | `pkg/calc.py:2` is a bare `return a / b`, so `safe_div(1, 0)` raises `ZeroDivisionError: division by zero` (reproduced). The candidate didn't change this file. |
+| `feature()` returns 1 | Met | Probe printed `1`. |
+| `core/` frozen | Met | The diff stat for the range lists only `pkg/feature.py`. |
+| Every behaviour has a pytest test | **Not met** | Nothing tests `feature()`. `tests/test_calc.py` only checks `safe_div(4, 2) == 2`, not the zero case. |
+
+**Test run.** pytest isn't installed for either `python` or `python3`, so I couldn't run the suite under pytest. I called the two existing test functions directly and both passed. That still leaves the two untested behaviours above.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "a67c0b74e4ba508eee59dc8a6234ef48b2629c1c", "baseline": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d", "verdict": "REJECT",
+ "findings": [
+  {"id": "R1-01", "severity": "HIGH", "blocking": true, "category": "code", "owner_decision": false, "title": "safe_div raises ZeroDivisionError instead of returning None when b == 0", "files": ["pkg/calc.py:2"], "evidence": "pkg/calc.py is `def safe_div(a, b): return a / b` with no zero guard; `python -B -c \"from pkg.calc import safe_div; print(safe_div(1,0))\"` -> ZeroDivisionError: division by zero. File unchanged in the review range, so the criterion remains unmet at the candidate.", "suggested_fix": "Add `if b == 0: return None` before `return a / b` in pkg/calc.py."},
+  {"id": "R1-02", "severity": "MEDIUM", "blocking": true, "category": "test", "owner_decision": false, "title": "No pytest test for pkg.feature.feature()", "files": ["pkg/feature.py:1", "tests/"], "evidence": "tests/ contains only test_calc.py (imports safe_div) and test_other.py (imports VALUE); no test imports or exercises pkg.feature.feature, violating 'every behaviour has a pytest test'.", "suggested_fix": "Add tests/test_feature.py asserting feature() == 1."},
+  {"id": "R1-03", "severity": "MEDIUM", "blocking": true, "category": "test", "owner_decision": false, "title": "No test for safe_div zero-divisor behaviour", "files": ["tests/test_calc.py:4"], "evidence": "tests/test_calc.py has only test_div asserting safe_div(4, 2) == 2; the b == 0 -> None (never raises) behaviour is untested, which is why R1-01 went undetected.", "suggested_fix": "Add a test asserting safe_div(1, 0) is None (and e.g. safe_div(0, 0) is None)."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "python -m pytest -q -p no:cacheprovider", "result": "/usr/bin/python: No module named pytest (python3 likewise)", "status": "BLOCKED"},
+  {"command": "python -B -c 'import tests.test_calc as t, tests.test_other as o; t.test_div(); o.test_value()'", "result": "manual tests ok (2 existing test functions pass)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -B -c 'from pkg.calc import safe_div; print(safe_div(1,0))'", "result": "ZeroDivisionError: division by zero", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -B -c 'from pkg.feature import feature; print(feature())'", "result": "1", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --stat b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d..HEAD", "result": "only pkg/feature.py changed (+2); no change under core/", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Test suite could not be executed under pytest itself because pytest is not installed; test functions were invoked directly instead.", "Explicit `git merge-base --is-ancestor` check was denied by permission policy; baseline existence verified via git cat-file and the range diff/log resolved normally."]}
+AUDIT_RESULT_END

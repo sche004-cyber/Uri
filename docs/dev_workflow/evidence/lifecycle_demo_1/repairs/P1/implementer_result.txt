@@ -1,0 +1,22 @@
+I repaired both findings. With the fix, all 6 tests pass. Against the baseline `pkg/calc.py` from 4dbb03f, the two new zero-divisor tests fail with `ZeroDivisionError`, as they should.
+
+- **R1-01:** in `pkg/calc.py`, `safe_div` now returns `None` when `b == 0`. That check also catches `0.0` and `-0.0`. Otherwise it still returns `a / b`.
+- **R1-02:** I added three tests to `tests/test_calc.py`:
+  - `test_div_exact` checks `safe_div(6, 3) == 2`.
+  - `test_div_by_zero_returns_none` checks `safe_div(1, 0)` and `safe_div(0, 0)` both return `None`.
+  - `test_div_by_float_zero_returns_none` checks `safe_div(1.0, 0.0)` and `safe_div(1, -0.0)` both return `None`.
+  
+  I also added `tests/test_feature.py`, which asserts `feature() == 1`.
+
+`test_feature` and `test_div_exact` also pass on the baseline. That is expected: `feature()` and normal division already worked, so these tests close a coverage gap rather than catch a bug.
+
+Two things to know when you run the tests:
+- **Run setup:** `python -m pytest` fails here because pytest isn't installed for the system Python. Running `pytest` directly can't import `pkg`, because the repo has no pytest config. That was already the case before my change. I ran the suite with `PYTHONPATH=. pytest` from the worktree root.
+- **Baseline check:** I ran it in a scratch copy with the old `calc.py`, so the worktree and git stash were not touched.
+
+I changed nothing in `core/` and nothing outside `pkg/` and `tests/`, and I made no commits.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R1-01", "R1-02"], "not_repaired": [],
+ "regression_tests": ["tests/test_calc.py", "tests/test_feature.py"], "notes": "pkg/calc.py: safe_div returns None when b == 0 (also covers 0.0/-0.0). New tests test_div_by_zero_returns_none and test_div_by_float_zero_returns_none fail on 4dbb03f (ZeroDivisionError) and pass after the fix. test_div_exact and tests/test_feature.py::test_feature close coverage gaps and pass on both revisions because that behaviour was already correct. Run tests from the repo root as `PYTHONPATH=. pytest`: the repo has no pytest config, so bare `pytest` cannot import pkg (this predates the change), and pytest is not installed for /usr/bin/python. Result after the fix: 6 passed."}
+REPAIR_RESULT_END

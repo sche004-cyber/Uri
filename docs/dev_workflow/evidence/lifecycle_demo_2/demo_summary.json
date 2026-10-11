@@ -1,0 +1,206 @@
+{
+ "fixture": {
+  "repo": "/tmp/claude-0/lc_demo2/repo",
+  "baseline": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d",
+  "remote": "/tmp/claude-0/lc_demo2/canonical.git"
+ },
+ "phase1": {
+  "stage": "BLOCKED",
+  "status": {
+   "schema": "uri-dev-lifecycle/1",
+   "milestone": "DEVTEST-LIFECYCLE-LIVE",
+   "stage": "BLOCKED",
+   "baseline": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d",
+   "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+   "rounds": 2,
+   "reviewers": [
+    {
+     "round": 1,
+     "provider": "claude_cli",
+     "session_id": "d8c73ae5-68d9-4086-b8a7-612aca42ca44",
+     "models": [
+      "claude-haiku-5-5",
+      "claude-opus-5-5"
+     ],
+     "candidate": "a67c0b74e4ba508eee59dc8a6234ef48b2629c1c",
+     "verdict": "REJECT",
+     "reviewer_label": "REJECT",
+     "independent": true,
+     "status": "COMPLETED_WITH_RESULT"
+    },
+    {
+     "round": 2,
+     "provider": "claude_cli",
+     "session_id": "65e6d9bd-eff8-405e-a385-c8b9934aca0a",
+     "models": [
+      "claude-haiku-5-5",
+      "claude-opus-5-5"
+     ],
+     "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+     "verdict": "ACCEPT",
+     "reviewer_label": "ACCEPT",
+     "independent": true,
+     "status": "COMPLETED_WITH_RESULT"
+    }
+   ],
+   "repairs": [
+    {
+     "repair": 1,
+     "status": "COMMITTED",
+     "commit": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+     "addresses": [
+      "R1-01",
+      "R1-02",
+      "R1-03"
+     ],
+     "reason": null
+    }
+   ],
+   "open_findings": [],
+   "gates": {
+    "7e7079cc46f7": {
+     "ok": true,
+     "blocked": null,
+     "new_failures": {
+      "unit": []
+     }
+    }
+   },
+   "integration": {
+    "at": "2026-10-11T00:34:32Z",
+    "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+    "command": "git push origin 7e7079cc46f728e92ccafbfee75469d28cee2020:refs/heads/canon",
+    "mode": "fast-forward",
+    "remote": "origin",
+    "status": "AWAITING_OWNER_AUTHORIZATION",
+    "target_ref": "canon",
+    "target_tip_before": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d"
+   },
+   "blocker": {
+    "at": "2026-10-11T00:34:32Z",
+    "kind": "OWNER_AUTHORIZATION",
+    "needs": "git push origin 7e7079cc46f728e92ccafbfee75469d28cee2020:refs/heads/canon",
+    "reason": "integration into canon needs owner authorisation",
+    "stage": "VERIFIED"
+   },
+   "events": 17,
+   "evidence_ok_for_candidate": true
+  },
+  "remote_tip": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d"
+ },
+ "phase2_missing_reviewer": {
+  "stage": "WAITING_FOR_MODEL",
+  "status": {
+   "schema": "uri-dev-lifecycle/1",
+   "milestone": "DEVTEST-LIFECYCLE-NOREVIEWER",
+   "stage": "WAITING_FOR_MODEL",
+   "baseline": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d",
+   "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+   "rounds": 1,
+   "reviewers": [
+    {
+     "round": 1,
+     "provider": "claude_cli",
+     "session_id": null,
+     "models": null,
+     "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+     "verdict": null,
+     "reviewer_label": null,
+     "independent": false,
+     "status": "NO_RESULT"
+    }
+   ],
+   "repairs": [],
+   "open_findings": [],
+   "gates": {},
+   "integration": null,
+   "blocker": null,
+   "events": 8,
+   "evidence_ok_for_candidate": false
+  }
+ },
+ "phase3": {
+  "stage": "COMPLETE",
+  "status": {
+   "schema": "uri-dev-lifecycle/1",
+   "milestone": "DEVTEST-LIFECYCLE-LIVE",
+   "stage": "COMPLETE",
+   "baseline": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d",
+   "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+   "rounds": 2,
+   "reviewers": [
+    {
+     "round": 1,
+     "provider": "claude_cli",
+     "session_id": "d8c73ae5-68d9-4086-b8a7-612aca42ca44",
+     "models": [
+      "claude-haiku-5-5",
+      "claude-opus-5-5"
+     ],
+     "candidate": "a67c0b74e4ba508eee59dc8a6234ef48b2629c1c",
+     "verdict": "REJECT",
+     "reviewer_label": "REJECT",
+     "independent": true,
+     "status": "COMPLETED_WITH_RESULT"
+    },
+    {
+     "round": 2,
+     "provider": "claude_cli",
+     "session_id": "65e6d9bd-eff8-405e-a385-c8b9934aca0a",
+     "models": [
+      "claude-haiku-5-5",
+      "claude-opus-5-5"
+     ],
+     "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+     "verdict": "ACCEPT",
+     "reviewer_label": "ACCEPT",
+     "independent": true,
+     "status": "COMPLETED_WITH_RESULT"
+    }
+   ],
+   "repairs": [
+    {
+     "repair": 1,
+     "status": "COMMITTED",
+     "commit": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+     "addresses": [
+      "R1-01",
+      "R1-02",
+      "R1-03"
+     ],
+     "reason": null
+    }
+   ],
+   "open_findings": [],
+   "gates": {
+    "7e7079cc46f7": {
+     "ok": true,
+     "blocked": null,
+     "new_failures": {
+      "unit": []
+     }
+    }
+   },
+   "integration": {
+    "at": "2026-10-11T00:34:32Z",
+    "candidate": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+    "command": "git push origin 7e7079cc46f728e92ccafbfee75469d28cee2020:refs/heads/canon",
+    "mode": "fast-forward",
+    "push_exit": 0,
+    "push_stderr": "To /tmp/claude-0/lc_demo2/canonical.git\n   b12e845..7e7079c  7e7079cc46f728e92ccafbfee75469d28cee2020 -> canon\n",
+    "remote": "origin",
+    "result_commit": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+    "status": "INTEGRATED",
+    "target_ref": "canon",
+    "target_tip_after": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+    "target_tip_before": "b12e845c84dba08cd0b6c9c6df4f0cfa3b4f236d"
+   },
+   "blocker": null,
+   "events": 25,
+   "evidence_ok_for_candidate": true
+  },
+  "remote_tip": "7e7079cc46f728e92ccafbfee75469d28cee2020",
+  "core_unchanged": true
+ },
+ "phase4_verify_errors": []
+}
