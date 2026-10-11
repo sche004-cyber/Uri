@@ -797,6 +797,14 @@ def _ascii_variant(norm: str) -> str:
     ('A1', 'B12') keep their digits (fewer than two letters in the run)."""
     def fold(m):
         run = m.group(0)
+        if run[0] == "I" and len(run) > 1:
+            # R33-01: a leading 'I' read as 'l' when the word then spells a listed domain and does not start a
+            # sentence ('refunds-portal ~ Iy' -> 'ly'); 'It is', 'In 2020', 'I like' keep their meaning.
+            before = norm[:m.start()].rstrip()
+            lead = "l" + run[1:]
+            if before and before[-1] not in ".!?:\"'\u201c\u2018(" and lead.lower() in _ALL_TLDS \
+                    and run.lower() not in _ALL_TLDS:
+                run = lead
         letters = sum(ch.isalpha() for ch in run)
         lower = any(ch.islower() for ch in run)
         # 'I' first in a word is a capital ('In 2020', 'It is'), not a look-alike of 'l'.
