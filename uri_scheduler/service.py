@@ -8,15 +8,18 @@
 
 The service needs no Brain, no UI window and no conversation. It holds `scheduler.lock` (a second instance on the same
 state dir exits with SCHEDULER_ALREADY_RUNNING) and the supervisor's own lock. The HTTP API binds 127.0.0.1 only and
-requires the bearer token written to `<state>/api-token` (readable by the same Windows user; same-user trust limit as
-Phase 1 C1). Persistent operation while URI is closed needs an OS launcher (Task Scheduler logon task); that
+requires the bearer token written to `<state>/api-token`. The state folder and the token file are restricted to the current
+Windows user before anything is written (SCHED-TOKEN-ACL-1); the service refuses to start (exit 4) if that fails. Other
+processes of the same user can still read it (same-user trust limit as Phase 1 C1). Persistent operation while URI is closed needs an OS launcher (Task Scheduler logon task); that
 registration is an owner decision and is NOT performed here (see docs/scheduler/SCHEDULER_ARCHITECTURE.md).
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import secrets
+import subprocess
 import sys
 import threading
 import time
@@ -223,6 +226,44 @@ def make_handler(svc: Service, token: str):
     return H
 
 
+class StateAclError(Exception):
+    pass
+
+
+def restrict_to_user(path: Path, *, folder=False):
+    """SCHED-TOKEN-ACL-1: replace the inherited ACL with one full-control entry for the current Windows user. For the
+    state folder the entry is inheritable, so the token, the database and artifacts inside cannot be read, deleted or
+    replaced by other local principals (files already inside are re-inherited from it). POSIX: 0700 / 0600."""
+    if os.name != "nt":
+        os.chmod(path, 0o700 if folder else 0o600)
+        return
+    user = os.environ.get("USERNAME")
+    if not user:
+        raise StateAclError("no current user")
+    grant = f"{user}:(OI)(CI)F" if folder else f"{user}:F"
+    try:
+        r = subprocess.run(["icacls", str(path), "/inheritance:r", "/grant:r", grant], capture_output=True, text=True,
+                           timeout=30)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise StateAclError(f"icacls failed: {type(exc).__name__}") from None
+    if r.returncode != 0:
+        raise StateAclError("could not restrict access to the current user")
+
+
+def write_token_file(path: Path, token: str):
+    """A new token file on every launch: created empty, restricted to the current user, then written. On failure no
+    token is left on disk."""
+    if path.exists():
+        path.unlink()
+    path.write_bytes(b"")
+    try:
+        restrict_to_user(path)
+    except StateAclError:
+        path.unlink()
+        raise
+    path.write_text(token, encoding="utf-8")
+
+
 def build(args) -> Scheduler:
     harness = ClaudeHarness(args.state, mode=args.mode, client_home=args.client_home, client_root=args.client_root,
                             qualification=args.qualification, fixture_script=args.fixture_script,
@@ -262,13 +303,25 @@ def main(argv=None):
         print(json.dumps({"occurrences": {r[0]: r[1] for r in rows}, "chain": st.verify_chain()}, indent=1))
         return 0
     try:
+        state = Path(a.state)
+        state.mkdir(parents=True, exist_ok=True)
+        restrict_to_user(state, folder=True)        # before the database or the token exists (SCHED-TOKEN-ACL-1)
+    except StateAclError as exc:
+        print(json.dumps({"error": "STATE_ACL_FAILED", "detail": str(exc)}))
+        return 4
+    try:
         sched = build(a).start()
     except SchedulerAlreadyRunning as exc:
         print(json.dumps({"error": exc.code, "detail": exc.detail}))
         return 3
     token_path = Path(a.state) / "api-token"
     token = secrets.token_urlsafe(32)
-    token_path.write_text(token, encoding="utf-8")
+    try:
+        write_token_file(token_path, token)
+    except StateAclError as exc:
+        sched.close()
+        print(json.dumps({"error": "STATE_ACL_FAILED", "detail": str(exc)}))
+        return 4
     svc = Service(sched, tick_s=a.tick_s, owner=a.owner)
     srv = ThreadingHTTPServer(("127.0.0.1", a.port), make_handler(svc, token))
     threading.Thread(target=srv.serve_forever, daemon=True).start()

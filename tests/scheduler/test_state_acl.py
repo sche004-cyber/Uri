@@ -1,0 +1,110 @@
+"""SCHED-TOKEN-ACL-1 (docs/scheduler/SCHED_TOKEN_ACL_1_PLAN.md): the scheduler's state folder and token file are
+restricted to the current Windows user, and the service refuses to start when that fails."""
+import os
+import stat
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from uri_scheduler import service as S  # noqa: E402
+
+WIN = os.name == "nt"
+
+
+def _aces(path: Path) -> list:
+    out = subprocess.run(["icacls", str(path)], capture_output=True, text=True).stdout
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip() and not ln.startswith("Successfully")]
+    lines[0] = lines[0][len(str(path)):].strip()
+    return lines
+
+
+def _me() -> set:
+    u = os.environ.get("USERNAME", "")
+    return {os.environ.get("USERDOMAIN", "") + "\\" + u, os.environ.get("COMPUTERNAME", "") + "\\" + u}
+
+
+def test_state_folder_gets_one_inheritable_user_entry(tmp_path):        # S1
+    state = tmp_path / "state"
+    state.mkdir()
+    S.restrict_to_user(state, folder=True)
+    if not WIN:
+        assert stat.S_IMODE(state.stat().st_mode) == 0o700
+        return
+    aces = _aces(state)
+    assert len(aces) == 1, aces
+    assert aces[0].endswith(":(OI)(CI)(F)") and aces[0][:-len(":(OI)(CI)(F)")] in _me(), aces
+
+
+def test_files_already_inside_are_reinherited(tmp_path):                 # S2
+    state = tmp_path / "state"
+    state.mkdir()
+    old_db = state / "scheduler.db"
+    old_db.write_bytes(b"x")
+    old_token = state / "api-token"
+    old_token.write_text("old")
+    S.restrict_to_user(state, folder=True)
+    if not WIN:
+        return                                                            # POSIX: mode bits are per file (S3 covers the token)
+    for f in (old_db, old_token):
+        aces = _aces(f)
+        assert len(aces) == 1 and aces[0].endswith(":(I)(F)"), (f.name, aces)
+
+
+def test_token_file_is_new_each_launch_and_user_only(tmp_path):          # S3
+    state = tmp_path / "state"
+    state.mkdir()
+    S.restrict_to_user(state, folder=True)
+    tok = state / "api-token"
+    S.write_token_file(tok, "first")
+    S.write_token_file(tok, "second")
+    assert tok.read_text(encoding="utf-8") == "second"
+    if not WIN:
+        assert stat.S_IMODE(tok.stat().st_mode) == 0o600
+        return
+    aces = _aces(tok)
+    assert len(aces) == 1 and aces[0].endswith(":(F)") and "(I)" not in aces[0], aces
+    assert aces[0][:-len(":(F)")] in _me(), aces
+
+
+class _Fail:
+    returncode = 1
+    stdout = stderr = ""
+
+
+def test_token_acl_failure_leaves_no_token(tmp_path, monkeypatch):       # S4 (token step)
+    if not WIN:
+        monkeypatch.setattr(S.os, "chmod", lambda *a, **k: (_ for _ in ()).throw(S.StateAclError("chmod failed")))
+    else:
+        monkeypatch.setattr(S.subprocess, "run", lambda *a, **k: _Fail())
+    tok = tmp_path / "api-token"
+    with pytest.raises(S.StateAclError):
+        S.write_token_file(tok, "secret")
+    assert not tok.exists()
+
+
+def test_service_refuses_to_start_when_folder_acl_fails(tmp_path, monkeypatch, capsys):   # S4 (folder step)
+    if not WIN:
+        monkeypatch.setattr(S, "restrict_to_user", lambda *a, **k: (_ for _ in ()).throw(S.StateAclError("x")))
+    else:
+        monkeypatch.setattr(S.subprocess, "run", lambda *a, **k: _Fail())
+    built = []
+    monkeypatch.setattr(S, "build", lambda a: built.append(a))
+    rc = S.main(["run", "--state", str(tmp_path / "state"), "--mode", "fixture"])
+    assert rc == 4
+    assert "STATE_ACL_FAILED" in capsys.readouterr().out
+    assert built == []                                                    # nothing was opened
+    assert not (tmp_path / "state" / "api-token").exists()
+
+
+def test_missing_user_name_fails_closed(tmp_path, monkeypatch):
+    if not WIN:
+        pytest.skip("Windows-qualified only: USERNAME drives the Windows ACL entry")
+    monkeypatch.delenv("USERNAME", raising=False)
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(tmp_path, folder=True)

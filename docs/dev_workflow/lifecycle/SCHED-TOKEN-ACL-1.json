@@ -1,0 +1,31 @@
+{
+ "milestone": "SCHED-TOKEN-ACL-1",
+ "_note": "Run in a Linux cloud clone of github.com/sche004-cyber/Uri (origin = canonical). Windows ACL behaviour is Windows-qualified; the owner's PC results are in docs/scheduler/sched_token_acl_1/EVIDENCE.md (gate evidence, not the review). Integration none.",
+ "repo": "../../..",
+ "baseline": {"ref": "origin/integration/git-sync-20261008", "expect": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80"},
+ "candidate": {"branch": "phase/sched-token-acl", "worktree": "../../../../uri-wt/sched-acl-impl"},
+ "state_dir": "../uri-wt/lifecycle-runs/SCHED-TOKEN-ACL-1",
+ "acceptance_criteria_file": "docs/scheduler/SCHED_TOKEN_ACL_1_PLAN.md",
+ "review_focus": [
+  "uri_scheduler/service.py restrict_to_user / write_token_file: folder restricted before the database or token exists, token restricted before it is written, fail-closed exit 4 with no token left behind",
+  "no regression in the scheduler service, its bearer-token check, service.json or the Living UI client that reads api-token",
+  "the tests in tests/scheduler/test_state_acl.py really prove S1-S4 on Windows and do not pass vacuously on POSIX"
+ ],
+ "protected_paths": "ws_frozen_check",
+ "authorized_protected_changes": [],
+ "permitted_paths": ["uri_scheduler/service.py", "tests/scheduler/**", "docs/scheduler/**", "docs/dev_workflow/lifecycle/SCHED-TOKEN-ACL-1.json"],
+ "test_globs": ["tests/**"],
+ "allowed_flaky": [],
+ "gates": [
+  {"id": "python-scheduler", "kind": "pytest", "cmd": ["{python}", "-m", "pytest", "-c", "scripts/phase2d_pytest.ini", "--rootdir=.", "-q", "tests/scheduler"]}
+ ],
+ "regression_runner": ["{python}", "-m", "pytest", "-q", "-p", "no:cacheprovider"],
+ "regression_runners": [],
+ "repair_nonblocking_severities": [],
+ "reviewer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 3600},
+ "implementer": {"provider": "claude_cli", "model": "claude-opus-5-5", "timeout_s": 3600},
+ "limits": {"max_repair_attempts": 3},
+ "continuation": {"stall_rounds": 2, "diagnose_after": 2, "budget": {"max_rounds": 8, "max_cost_usd": 60, "max_hours": 6}},
+ "integration": {"mode": "none"},
+ "commit_trailers": []
+}
