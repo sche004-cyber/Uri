@@ -339,10 +339,42 @@ def _control_config(path: Path) -> list[str]:
     return sorted(entries)
 
 
-def git_control_digest(repo) -> str:
-    """Hooks and config of the shared repository: a worker that plants a hook or rewrites config is caught."""
-    common = Path(git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir"))
+def _user_git_control(repo) -> list[str]:
+    """Git also reads user- and system-level config, attributes and ignore files, and workers share the driver's HOME:
+    a worker-written ~/.gitconfig ``insteadOf`` redirects the driver's push and its verification, a global smudge
+    filter makes driver checkouts differ from the candidate commit, a global ignore file hides untracked files
+    (DEV-LIFECYCLE-1 R4-01). The effective entries (includes followed) and the files' bytes are bound."""
     parts = []
+    for scope in ("--system", "--global"):
+        out = subprocess.run(["git", "-C", str(repo), "config", scope, "--includes", "--list", "-z"],
+                             capture_output=True, env=GIT_ENV).stdout
+        parts.append(f"config{scope}:{sha256(out)}")
+    env = GIT_ENV
+    home = Path(env.get("HOME") or Path.home())
+    xdg = Path(env["XDG_CONFIG_HOME"]) if env.get("XDG_CONFIG_HOME") else home / ".config"
+    files = {home / ".gitconfig", xdg / "git/config", xdg / "git/attributes", xdg / "git/ignore",
+             Path("/etc/gitconfig"), Path("/etc/gitattributes")}
+    for var in ("GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM", "GIT_ATTR_GLOBAL", "GIT_ATTR_SYSTEM"):
+        p = subprocess.run(["git", "var", var], capture_output=True, text=True, env=GIT_ENV)  # git >= 2.42
+        files.update(Path(x) for x in p.stdout.splitlines() if p.returncode == 0 and x.strip())
+    for key in ("core.attributesFile", "core.excludesFile"):  # wherever the effective config points them
+        v = subprocess.run(["git", "-C", str(repo), "config", "--type=path", "--get", key],
+                           capture_output=True, text=True, env=GIT_ENV).stdout.strip()
+        if v:
+            files.add(Path(v))
+    for p in sorted(files, key=str):
+        try:
+            parts.append(f"{p}:{sha256(p.read_bytes())}")
+        except OSError:
+            parts.append(f"{p}:-")
+    return parts
+
+
+def git_control_digest(repo) -> str:
+    """Hooks and config of the shared repository, plus user/system-level git control files: a worker that plants a
+    hook or rewrites config is caught."""
+    common = Path(git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir"))
+    parts = _user_git_control(repo)
     for p in sorted((common / "hooks").glob("*")) if (common / "hooks").is_dir() else []:
         if p.is_file() and not p.name.endswith(".sample"):
             parts.append(f"{p.name}:{sha256(p.read_bytes())}")
@@ -392,8 +424,8 @@ def control_drift(cfg, st: State) -> str | None:
     if anchor is None:
         return "no git control state bound in the event chain"
     bad = [k for k in cur if cur[k] != anchor.get(k)]
-    return ("GIT_CONTROL: " + ", ".join(bad) + " changed since the plan (git hooks/config/info or replace refs)") \
-        if bad else None
+    return ("GIT_CONTROL: " + ", ".join(bad) + " changed since the plan (git hooks/config/info, user/system git "
+            "config/attributes/ignore or replace refs)") if bad else None
 
 
 def worktree_identity(cfg, wt) -> tuple[bool, str]:

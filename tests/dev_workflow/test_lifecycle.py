@@ -1245,3 +1245,98 @@ def test_r3_01_integration_fetch_moves_no_local_ref_even_with_hostile_refspec(tm
                                                   "authorized": False})
     L.integration_fetch(cfg, "origin", "canon")
     assert g(repo, "for-each-ref", "--format=%(refname) %(objectname)") == refs0
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1 R4
+
+@pytest.fixture
+def user_home(tmp_path, monkeypatch):
+    """A throwaway HOME for the driver and its workers, so tests never touch the real ~/.gitconfig."""
+    home = tmp_path / "home"
+    home.mkdir()
+    for var in ("XDG_CONFIG_HOME", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM", "GIT_CONFIG_NOSYSTEM"):
+        monkeypatch.delenv(var, raising=False)
+        monkeypatch.delitem(L.GIT_ENV, var, raising=False)
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setitem(L.GIT_ENV, "HOME", str(home))
+    return home
+
+
+@pytest.mark.parametrize("rel,text", [
+    (".gitconfig", '[url "/tmp/fake.git"]\n\tinsteadOf = /tmp/real.git\n'),
+    (".gitconfig", '[filter "x"]\n\tsmudge = sed s/True/False/\n\tclean = cat\n'),
+    (".gitconfig", "[include]\n\tpath = ~/elsewhere.cfg\n"),
+    (".config/git/config", '[url "/tmp/fake.git"]\n\tinsteadOf = /tmp/real.git\n'),
+    (".config/git/attributes", "*.py filter=x\n"),
+    (".config/git/ignore", "pkg/\n"),
+])
+def test_r4_01_user_level_git_control_files_are_bound(tmp_path, user_home, rel, text):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    d0 = L.git_control_digest(repo)
+    f = user_home / rel
+    f.parent.mkdir(parents=True, exist_ok=True)
+    with open(f, "a") as fh:
+        fh.write(text)
+    assert L.git_control_digest(repo) != d0
+
+
+def test_r4_01_included_global_config_and_custom_attributes_file_are_bound(tmp_path, user_home):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    inc, attrs = tmp_path / "inc.cfg", tmp_path / "attrs"
+    inc.write_text("")
+    attrs.write_text("")
+    (user_home / ".gitconfig").write_text(f"[include]\n\tpath = {inc}\n[core]\n\tattributesFile = {attrs}\n")
+    d0 = L.git_control_digest(repo)
+    inc.write_text('[url "/tmp/fake.git"]\n\tinsteadOf = /tmp/real.git\n')  # the included file, not ~/.gitconfig
+    d1 = L.git_control_digest(repo)
+    assert d1 != d0
+    attrs.write_text("*.py filter=x\n")
+    assert L.git_control_digest(repo) != d1
+
+
+def test_r4_01_worker_written_global_insteadof_blocks_and_push_is_not_redirected(tmp_path, user_home):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    fake = tmp_path / "fake.git"
+    subprocess.run(["git", "clone", "-q", "--bare", str(remote), str(fake)], check=True)
+    body = f"""
+from pathlib import Path
+with open(os.path.join(os.environ['HOME'], '.gitconfig'), 'a') as fh:  # plain file write, not `git config`
+    fh.write('[url "{fake}"]\\n\\tinsteadOf = {remote}\\n')
+Path('pkg/calc.py').write_text('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+Path('tests/test_zero.py').write_text('from pkg.calc import safe_div\\n\\n\\ndef test_zero():\\n    assert safe_div(1, 0) is None\\n')
+print('REPAIR_RESULT_BEGIN'); print(json.dumps({{'repaired': ['R1-01']}})); print('REPAIR_RESULT_END')
+"""
+    config(tmp_path, repo, wt)
+    c = json.loads((tmp_path / "cfg.json").read_text())
+    c["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "evil_impl.py", body)}
+    (tmp_path / "cfg.json").write_text(json.dumps(c))
+    cfg = L.load_config(tmp_path / "cfg.json")
+    assert L.run(cfg) == "BLOCKED"
+    assert (user_home / ".gitconfig").is_file()  # the worker really wrote it
+    st = json.loads((tmp_path / "state/state.json").read_text())
+    assert "TAMPER" in json.dumps(st["repairs"])
+    assert remote_tip(remote) == base
+    assert g(fake, "rev-parse", "refs/heads/canon") == base  # nothing was pushed anywhere
+
+
+def test_r4_01_worker_written_global_smudge_filter_blocks_before_checkouts_differ(tmp_path, user_home):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    # committed blobs stay as they are; the smudge filter would show reviewer/gate checkouts other content
+    body = """
+from pathlib import Path
+with open(os.path.join(os.environ['HOME'], '.gitconfig'), 'a') as fh:
+    fh.write('[filter "x"]\\n\\tsmudge = sed s/2/3/\\n\\tclean = cat\\n')
+Path('.gitattributes').write_text('pkg/other.py filter=x\\n')
+print('REPAIR_RESULT_BEGIN'); print(json.dumps({'repaired': ['R1-01']})); print('REPAIR_RESULT_END')
+"""
+    config(tmp_path, repo, wt)
+    c = json.loads((tmp_path / "cfg.json").read_text())
+    c["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "evil_impl.py", body)}
+    c["permitted_paths"].append(".gitattributes")
+    (tmp_path / "cfg.json").write_text(json.dumps(c))
+    cfg = L.load_config(tmp_path / "cfg.json")
+    assert L.run(cfg) == "BLOCKED"
+    assert '[filter "x"]' in (user_home / ".gitconfig").read_text()
+    st = json.loads((tmp_path / "state/state.json").read_text())
+    assert "TAMPER" in json.dumps(st["repairs"])
+    assert remote_tip(remote) == base
