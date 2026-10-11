@@ -1163,3 +1163,33 @@ sys.exit(subprocess.run([sys.executable, {str(WORKER)!r}, 'implementer', 'marker
     st = json.loads((tmp_path / "state/state.json").read_text())
     assert st["diagnoses"][0]["result"] is None and st["diagnoses"][0]["tamper"]
     assert remote_tip(remote) == base
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1b R2 (accepted with findings)
+
+def test_r2_01_routine_branch_tracking_is_not_tamper_but_core_config_is(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    d0 = L.git_control_digest(repo)
+    g(repo, "branch", "--track", "other-session-work", "origin/canon")  # another session's bookkeeping
+    g(repo, "config", "remote.origin.prune", "true")
+    assert L.git_control_digest(repo) == d0
+    g(repo, "config", "core.fsmonitor", "/tmp/evil")
+    assert L.git_control_digest(repo) != d0
+    g(repo, "config", "--unset", "core.fsmonitor")
+    g(repo, "config", "remote.origin.pushurl", "/tmp/elsewhere")  # where pushes go is control, not bookkeeping
+    assert L.git_control_digest(repo) != d0
+
+
+def test_r2_02_hashed_files_are_written_as_exact_bytes(tmp_path):
+    from scripts.dev_workflow.lifecycle_providers import run_worker
+    argv = _script_worker(tmp_path, "crlf.py", "sys.stdout.write('line one\\r\\nline two\\nAUDIT_RESULT_BEGIN\\n{}\\nAUDIT_RESULT_END\\n')\n")
+    rec = run_worker({"provider": "command", "argv": argv}, "reviewer", "p\r\nq", tmp_path, tmp_path / "log")
+    raw = (tmp_path / "log/reviewer_stdout.txt").read_bytes()
+    assert L.sha256(raw) == rec["stdout_sha256"]  # stored bytes are the hashed bytes
+    assert (tmp_path / "log/reviewer_prompt.md").read_bytes() == b"p\r\nq"
+    h = L.write_json(tmp_path / "x.json", {"a": "b\nc"})
+    assert h == L.sha256((tmp_path / "x.json").read_bytes())
+    import inspect
+    from scripts.dev_workflow import lifecycle_providers, lifecycle_report
+    for mod in (L, lifecycle_providers, lifecycle_report):
+        assert ".write_text(" not in inspect.getsource(mod)  # no newline-translating writes remain

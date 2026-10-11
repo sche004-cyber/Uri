@@ -95,7 +95,7 @@ def write_json(path: Path, obj) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     data = json.dumps(obj, indent=1, sort_keys=True)
-    tmp.write_text(data, encoding="utf-8")
+    tmp.write_bytes(data.encode("utf-8"))  # exact bytes: no newline translation on Windows (R2-02)
     tmp.replace(path)
     return sha256(data)
 
@@ -199,7 +199,7 @@ class State:
         ev = {"seq": len(self.d["history"]) + 1, "ts": now(), "kind": kind, "data": data, "prev": prev}
         ev["hash"] = sha256(json.dumps({k: ev[k] for k in ("seq", "ts", "kind", "data", "prev")}, sort_keys=True))
         self.dir.mkdir(parents=True, exist_ok=True)
-        with self.events_path.open("a", encoding="utf-8") as f:
+        with self.events_path.open("a", encoding="utf-8", newline="") as f:
             f.write(json.dumps(ev, sort_keys=True) + "\n")
         self.d["history"].append({"seq": ev["seq"], "ts": ev["ts"], "kind": kind, "hash": ev["hash"]})
         self.save()
@@ -319,6 +319,25 @@ def is_independent(cfg, round_rec: dict, impl_sids=frozenset()) -> tuple[bool, s
 
 # --------------------------------------------------------------------------- git helpers
 
+# Routine bookkeeping other sessions write to the shared config (branch tracking, fetch refspecs) is not tampering;
+# everything else (core.*, filters, diff/merge drivers, includes, aliases, URLs, credentials, extensions, unknown
+# keys) is (R2-01).
+_ROUTINE_CONFIG = re.compile(r"^(branch\.[^\0]+|remote\.[^.]+\.(fetch|tagopt|prune|prunetags|mirror|skipdefaultupdate))$")
+
+
+def _control_config(path: Path) -> list[str]:
+    out = subprocess.run(["git", "config", "--file", str(path), "--no-includes", "--list", "-z"],
+                         capture_output=True, env=GIT_ENV).stdout.decode("utf-8", "replace")
+    entries = []
+    for item in out.split("\0"):
+        if not item:
+            continue
+        key = item.split("\n", 1)[0].lower()
+        if not _ROUTINE_CONFIG.match(key):
+            entries.append(item)
+    return sorted(entries)
+
+
 def git_control_digest(repo) -> str:
     """Hooks and config of the shared repository: a worker that plants a hook or rewrites config is caught."""
     common = Path(git(repo, "rev-parse", "--path-format=absolute", "--git-common-dir"))
@@ -327,7 +346,7 @@ def git_control_digest(repo) -> str:
         if p.is_file() and not p.name.endswith(".sample"):
             parts.append(f"{p.name}:{sha256(p.read_bytes())}")
     cfgf = common / "config"
-    parts.append("config:" + (sha256(cfgf.read_bytes()) if cfgf.is_file() else "-"))
+    parts.append("config:" + (sha256("\0".join(_control_config(cfgf))) if cfgf.is_file() else "-"))
     info = common / "info"  # grafts rewrite history; attributes change how files are read
     for p in sorted(info.glob("*")) if info.is_dir() else []:
         if p.is_file():
@@ -635,7 +654,7 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
     if junit.exists():
         junit.unlink()
     rc, stdout, stderr, state = run_cmd(cmd, wt / gate.get("cwd", "."), gate.get("timeout_s", 3600))
-    (log_dir / f"{gate['id']}.log").write_text(stdout + "\n--- stderr ---\n" + stderr, encoding="utf-8")
+    (log_dir / f"{gate['id']}.log").write_bytes((stdout + "\n--- stderr ---\n" + stderr).encode("utf-8"))
     if state != "DONE":
         out.update(status=state, detail=stderr[-300:])
         return out
@@ -949,7 +968,7 @@ def regression_proof(cfg, pre_sha: str, post_sha: str, tests: list[str], log_dir
             bc, bo, be, bs = run_cmd(_expand(r["cmd"], cfg, pre) + [rel], pre / cwd, tmo)
             ac, ao, ae, as_ = run_cmd(_expand(r["cmd"], cfg, post) + [rel], post / cwd, tmo)
             per[t] = {"before_exit": bc, "after_exit": ac, "before_state": bs, "after_state": as_}
-            with (log_dir / "regression.log").open("a", encoding="utf-8") as f:
+            with (log_dir / "regression.log").open("a", encoding="utf-8", newline="") as f:
                 f.write(f"=== {t} BEFORE ({pre_sha}) {bs}\n{bo[-6000:]}{be[-3000:]}\n=== {t} AFTER ({post_sha}) {as_}\n"
                         f"{ao[-6000:]}{ae[-3000:]}\n")
     finally:
@@ -1509,7 +1528,7 @@ def import_review(cfg, result_file: Path, provider: str, session_id: str, source
     rnd = len(st.d["rounds"]) + 1
     rdir = Path(cfg["state_dir"]) / "rounds" / f"R{rnd}"
     rdir.mkdir(parents=True, exist_ok=True)
-    (rdir / "reviewer_result.txt").write_text(text, encoding="utf-8")
+    (rdir / "reviewer_result.txt").write_bytes(text.encode("utf-8"))
     reviewed = (result or {}).get("candidate")
     same_tree = bool(reviewed) and git(cfg["repo"], "rev-parse", f"{reviewed}^{{tree}}", check=False) == \
         git(cfg["repo"], "rev-parse", f"{sha}^{{tree}}")
@@ -1789,7 +1808,7 @@ def write_receipt(cfg, st: State) -> Path:
                                                         for f in s["open_findings"]]
     L += ["", "## Integration", "", f"```\n{json.dumps(s['integration'], indent=1)}\n```", "",
           "## Blocker", "", f"```\n{json.dumps(s['blocker'], indent=1)}\n```", ""]
-    (st.dir / "RECEIPT.md").write_text("\n".join(L), encoding="utf-8")
+    (st.dir / "RECEIPT.md").write_bytes("\n".join(L).encode("utf-8"))
     # Visual milestone report on every receipt (owner directive 2026-10-11): REPORT.html + report_data.json.
     from scripts.dev_workflow.lifecycle_report import write_report
     write_report(st.dir, st.d, s)

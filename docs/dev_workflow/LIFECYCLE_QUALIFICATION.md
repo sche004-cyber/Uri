@@ -114,3 +114,19 @@ corrected); R1-02 malformed `findings` make the result unparseable (NO_RESULT), 
 (junit classnames, Flutter paths relative to the gate `cwd`) are resolved to files, and an unresolvable gate test
 refuses the repair; R1-04 hooks/config/`info/` and replace refs are bound at PLAN and any drift is BLOCKED (TAMPER),
 including drift by the diagnosis worker. The R5 non-deterministic-baseline-key finding is not part of this repair.
+
+### DEV-LIFECYCLE-1b (fresh state directory, driver pinned at `fbac437`)
+
+| Round | Candidate | Reviewer session | Verdict | Blocking | Repair |
+|---|---|---|---|---|---|
+| R1 | `fbac437` | `91871433-89e7-479f-80e2-e1e97327c314` | REJECT | 4 (R1-01 HIGH verdict read from an unbound mutable result file; R1-02 malformed findings dropped; R1-03 gate proof for class/Flutter ids; R1-04 control-file baseline not anchored) + 5 LOW | P1 → `1f720ed` (separate implementer process) |
+| R2 | `1f720ed` | `8900cfe1-e72c-4080-8460-a93c7f0eaa3e` | **ACCEPT WITH FINDINGS** | 0 (R2-01 MEDIUM non-blocking, R2-02 LOW) | — |
+
+Gates on `1f720ed`: `dev_workflow` no new failures vs baseline; protected paths unchanged; receipt chain verified;
+stage VERIFIED (integration policy `none`).
+
+**Follow-up before integration (implementation session).** Two accepted findings would make the skill unusable
+where it is meant to run: R2-02 (on Windows every hashed file is newline-translated, so every round fails verify)
+and R2-01 (routine branch-tracking writes by other sessions to the shared git config read as TAMPER). Both repaired
+with regression tests (`test_r2_01_*`, `test_r2_02_*`); the new commit is re-audited by a fresh reviewer before
+canonical integration under owner decision D1. The other LOW findings (R1-05..R1-09) stay documented limitations.

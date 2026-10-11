@@ -111,7 +111,7 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
     rec = {"provider": spec.get("provider"), "role": role, "model_requested": spec.get("model"),
            "session_id_requested": session_id, "cwd": str(worktree), "started_at": _now(),
            "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest()}
-    (log_dir / f"{role}_prompt.md").write_text(prompt, encoding="utf-8")
+    (log_dir / f"{role}_prompt.md").write_bytes(prompt.encode("utf-8"))
     ok, why = provider_available(spec)
     if not ok:
         rec.update(status="UNAVAILABLE", detail=why, ended_at=_now(), unavailable_reason="UNAVAILABLE")
@@ -150,8 +150,9 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
     # escapes the group; the driver's later checks (clean worktree before the next step) still catch its writes.
     _killpg(proc.pid)
     rec["ended_at"] = _now()
-    (log_dir / f"{role}_stdout.txt").write_text(out or "", encoding="utf-8")
-    (log_dir / f"{role}_stderr.txt").write_text(err or "", encoding="utf-8")
+    # Hashed files are written as exact bytes: no newline translation on Windows (R2-02).
+    (log_dir / f"{role}_stdout.txt").write_bytes((out or "").encode("utf-8"))
+    (log_dir / f"{role}_stderr.txt").write_bytes((err or "").encode("utf-8"))
     rec["stdout_sha256"] = hashlib.sha256((out or "").encode()).hexdigest()
     text, meta = out or "", {}
     if rec["provider"] == "claude_cli":
@@ -171,7 +172,7 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
     else:
         rec["session_id"] = f"{rec['provider']}-{session_id}"
     rec["result_text_sha256"] = hashlib.sha256(text.encode()).hexdigest()
-    (log_dir / f"{role}_result.txt").write_text(text, encoding="utf-8")
+    (log_dir / f"{role}_result.txt").write_bytes(text.encode("utf-8"))
     if "status" not in rec:
         rec["status"] = "COMPLETED" if rec.get("exit_code") == 0 else "FAILED"
     if rec["status"] != "COMPLETED":

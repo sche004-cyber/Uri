@@ -217,7 +217,7 @@ green accepted. Each round is a separate reviewer process.</p>{_rounds_svg(data[
 
 def write_report(state_dir: Path, state: dict, status: dict) -> Path:
     data = report_data(state, status)
-    (state_dir / "report_data.json").write_text(json.dumps(data, indent=1, sort_keys=True), encoding="utf-8")
+    (state_dir / "report_data.json").write_bytes(json.dumps(data, indent=1, sort_keys=True).encode("utf-8"))
     out = state_dir / "REPORT.html"
-    out.write_text(render_html(data), encoding="utf-8")
+    out.write_bytes(render_html(data).encode("utf-8"))
     return out
