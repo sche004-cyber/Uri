@@ -17,7 +17,8 @@ rulings and owner decisions use the prefix `OFF-` so they never clash with the o
 
 | Item | Value | Evidence |
 |---|---|---|
-| Canonical | `integration/git-sync-20261008` = `ce1a90c046d2e9566a86d8dccf25df0e2bc98c80` | `git ls-remote origin` 2026-10-11 |
+| Canonical | `integration/git-sync-20261008` = `ce1a90c046d2e9566a86d8dccf25df0e2bc98c80` on remote `uri-repo` (`github.com/sche004-cyber/Uri`) | `git ls-remote uri-repo` 2026-10-11 (re-checked after push). **Correction:** revision 2 recorded this as `git ls-remote origin`; `origin` (`sche004-cyber/uri-agent`) has no such branch, and the earlier output came from `uri-repo`. The SHA was right; the remote name was wrong. |
+| Pushed | `phase/uri-office` on `uri-repo` (durable copy next to canonical) and on `origin`. Never pushed to canonical, `milestone/*` or `ccr-cab5ed06-9hwyc4`. | `git ls-remote` |
 | Candidate | branch `phase/uri-office`, worktree `C:\Users\cheta\Development\uri-office`, created from ce1a90c (no commits yet; Office work is new files plus two additive entries in `uri_a2ui/actions.py`) | `git worktree add`, `git log -1` |
 | Not edited until rebased after W1/A0 merges | `tests/phase2a/test_frozen_core.py`, `scripts/oi_materialize_test_runtime.py`, `scripts/run_uri_integrated_worker.py`, `scripts/phase2close_chain.py` | owner instruction |
 | Not used | `codex/antigravity-harness-recon` (uncommitted work) | owner instruction |
