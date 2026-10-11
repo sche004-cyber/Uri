@@ -512,9 +512,16 @@ def _endings(words: list, norm: str):
                 yield b, e, text.casefold()
 
 
-# Stroke and dot-shaped letters of listed scripts: CJK dot and stroke radicals, Hangul araea, katakana middle dots.
-_STROKES = frozenset("\u4e36\u4e3f\u4e40\u4e41\u4e5a\u4e85\u318d\u119e\u11a2\u30fb\uff65\u3006\u3007"
-                     + "".join(chr(c) for c in range(0x31C0, 0x31E4)) + "".join(chr(c) for c in range(0x2F00, 0x2FD6)))
+# Stroke and dot-shaped letters of listed scripts: the one-stroke CJK radicals (also as Kangxi radicals U+2F00-2F05) and
+# their stroke variants, the stroke-and-dot radicals '\u4e8c' and '\u4ea0', the Hangul araea, '\u3006'.
+# R14-01: kept in canonical form, as the checked text is (normalise(): NFKC maps '\u2f01' to '\u4e28'), and only
+# letters (a non-letter such as a CJK stroke U+31C0-31E3 or '\u30fb' is never part of a word: it is gap already).
+# Radicals that are real words ('\u4eba', '\u53e3', '\u5c71') are left out: '\u5c71\u53e3' is the name (D17 residual).
+_STROKES = frozenset(c for c in (normalise(ch) for ch in
+                                 "\u4e00\u4e28\u4e36\u4e3f\u4e59\u4e85\u4e40\u4e41\u4e5a\u4e5b\u4e8c\u4ea0"
+                                 "\u318d\u119e\u11a2\u3006" + "".join(chr(c) for c in range(0x2F00, 0x2F06)))
+                     if len(c) == 1 and _letter(c))
+assert all(normalise(c) == c and _letter(c) for c in _STROKES)
 _OPEN, _CLOSE = "([{\uff08\u3010\u300c\u300e\u3014", ")]}\uff09\u3011\u300d\u300f\u3015"
 
 
