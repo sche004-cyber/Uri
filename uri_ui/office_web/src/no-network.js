@@ -1,4 +1,6 @@
-// AC15: the page must never reach the network. Univer's sheets-core preset always registers @univerjs/network
+// AC15: the page must never reach the network. Layers: the WebView2 host (primary: request filter, navigation and
+// new-window refusal), the CSP in index.html, and this module.
+// Univer's sheets-core preset always registers @univerjs/network
 // (fetch/XHR HTTP implementations and a WebSocket service) and its drawing code downloads images by URL with fetch().
 // URI Office uses none of that. This module is imported first by main.js, so it runs before any Univer code, and
 // replaces the browser network APIs with versions that allow only in-page data: and blob: URLs. The CSP
@@ -36,5 +38,12 @@ window.EventSource = class {
 };
 
 if (navigator.sendBeacon) navigator.sendBeacon = () => false;
+
+// The page starts no workers (see index.html); refuse them so a worker can never run outside this module's patches.
+window.Worker = class { constructor(url) { throw refuse('Worker', url); } };
+window.SharedWorker = class { constructor(url) { throw refuse('SharedWorker', url); } };
+
+// No new windows (the host also refuses them).
+window.open = () => null;
 
 export const NETWORK_DISABLED = true;

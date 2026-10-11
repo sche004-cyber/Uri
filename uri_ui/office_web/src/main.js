@@ -83,6 +83,10 @@ function setMarks(marks) {
 
 univerAPI.addEvent(univerAPI.Event.CommandExecuted, (ev) => {
   if (applying || ev.id !== 'sheet.mutation.set-range-values') return;
+  // Univer's own writes (formula results are {onlyLocal: true, fromFormula: true}) are not owner edits. Without this, a
+  // recalculated formula cell would be sent to the service as an edit that replaces its formula with a value.
+  const o = ev.options || {};
+  if (o.onlyLocal || o.fromFormula) return;
   for (const e of editsFromMutation(ev.params || {}, sheetNameById)) send({ type: 'edit', ...e });
 });
 
