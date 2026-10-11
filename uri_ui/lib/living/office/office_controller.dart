@@ -171,13 +171,13 @@ class OfficeController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fetches the workbook again from the service (which re-reads a Google sheet whose layout a save changed) and
-  /// reloads the grid. Until that succeeds the service refuses edits from the old grid.
+  /// Asks the service to re-read a Google sheet whose layout a save changed (a POST: reading the view never changes
+  /// state) and reloads the grid. Until that succeeds the service refuses edits from the old grid.
   Future<void> _reloadView() async {
     final wid = workbookId;
     if (wid == null) return;
     try {
-      final v = await client.view(wid);
+      final v = await client.reload(wid);
       if (wid == workbookId) await _apply(v);
       if (v['reload_required'] == true) {
         notice = 'The save was applied, but the sheet could not be read again. Edits are paused until it reloads; '

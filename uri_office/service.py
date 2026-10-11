@@ -99,11 +99,7 @@ class Office:
 
     def view(self, wid) -> dict:
         s = self._session(wid)
-        with s.lock:
-            try:
-                self._refresh(s)                         # a panel reloading after a failed re-read gets the new layout
-            except OfficeError:
-                pass                                     # reported as reload_required below
+        with s.lock:                                     # read-only (AC6): a pending re-read is done by reload()
             out = {"workbook_id": s.workbook_id, "engine": s.engine, "label": s.label, "workbook": s.workbook,
                    "draft": s.draft.snapshot(), "history_on": self.history.consented(s.key)}
             if s.engine == "google":
@@ -112,6 +108,18 @@ class Office:
                 out["reload_required"] = bool(s.stale_ops)
                 out["layout_version"] = s.layout_version
             return out
+
+    def reload(self, wid) -> dict:
+        """The panel's reload after a save whose re-read failed: re-read the Google sheet now and return the view, with
+        how many proposed changes were dropped because their rows moved. If the re-read fails again the view says
+        reload_required and nothing changes."""
+        s = self._session(wid)
+        with s.lock:
+            try:
+                refreshed = self._refresh(s)
+            except OfficeError:
+                refreshed = None                         # reported as reload_required in the view
+            return {**self.view(wid), "proposals_dropped": refreshed[0] if refreshed is not None else 0}
 
     def open_local(self, raw_path) -> dict:
         g = self.grants.grant_open(raw_path)
@@ -494,7 +502,7 @@ def make_handler(office: Office, token: str):
                              "undo": lambda: office.undo(wid), "redo": lambda: office.undo(wid, redo=True),
                              "instruct": lambda: office.instruct(wid, b),
                              "propose_save": lambda: office.propose_save(wid, b),
-                             "propose_share": lambda: office.propose_share(wid),
+                             "propose_share": lambda: office.propose_share(wid), "reload": lambda: office.reload(wid),
                              "edit_copy": lambda: office.edit_copy(wid), "export": lambda: office.export(wid, b),
                              "history": lambda: office.history_op(wid, b), "close": lambda: office.close(wid)}
                     if verb in table:
