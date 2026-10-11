@@ -10,7 +10,8 @@ running. Anything else is ``contained=False`` (fail closed): a real milestone re
   assigned to the job and only then resumed, so it cannot start a process outside the job. The job has
   ``JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`` and no breakaway flag, so a ``CREATE_BREAKAWAY_FROM_JOB`` request fails. After
   the worker or command the job is terminated and must report ``ActiveProcesses == 0``; the job handle is kept until
-  the next ``precheck()`` has confirmed again that it is empty.
+  the next ``precheck()`` has confirmed again that it is empty, also when termination or the check failed. A worker or
+  command that ran without a job taints the driver: every later ``precheck()`` is ``contained=False`` (R1-01).
 * Elsewhere: no containment (``contained=False``).
 
 Not covered on any platform (disclosed, see DEV_LIFECYCLE_2_PLAN_AND_ACCEPTANCE.md): processes started by other routes
@@ -168,7 +169,8 @@ class WinJobApi:
 
 
 _API = None
-_OPEN_JOBS: list = []   # Windows jobs terminated by finish(), kept until precheck() has confirmed them empty again
+_OPEN_JOBS: list = []   # Windows jobs ended by finish(), kept until precheck() has confirmed them empty again
+_TAINTED: list = []     # Windows: why something ran outside any job; nothing it left can be verified (R1-01)
 
 
 def win_api():
@@ -271,14 +273,17 @@ def finish(proc, sweep=None, wait_s: float = EMPTY_WAIT_S) -> dict:
     api = win_api()
     if job is None or api is None:
         kill_pid_tree(proc.pid)
-        return {"contained": False, "reason": getattr(proc, "_uri_job_error", None) or "no job object"}
+        why = getattr(proc, "_uri_job_error", None) or "no job object"
+        _TAINTED.append(f"pid {proc.pid} ran outside a job ({why})")
+        return {"contained": False, "reason": why}
+    _OPEN_JOBS.append(job)      # even when the check below fails: precheck() must verify it again (R1-01)
+    proc._uri_job = None
     try:
         api.terminate(job)
         n = _wait_empty(api, job, wait_s)
     except OSError as e:
+        kill_pid_tree(proc.pid)
         return {"contained": False, "reason": f"job not verified: {e}"}
-    _OPEN_JOBS.append(job)
-    proc._uri_job = None
     if n:
         return {"contained": False, "reason": f"{n} process(es) still active in the job after termination"}
     return {"contained": True, "killed": "job terminated", "active_processes": 0}
@@ -292,6 +297,9 @@ def precheck(sweep=None, wait_s: float = EMPTY_WAIT_S) -> dict:
     api = win_api()
     if api is None:
         return {"contained": False, "killed": 0, "reason": "job objects unavailable"}
+    if _TAINTED:
+        return {"contained": False, "killed": 0, "reason": "earlier process(es) ran outside a job: "
+                                                           + "; ".join(_TAINTED)}
     left, killed = [], 0
     for job in list(_OPEN_JOBS):
         try:

@@ -41,6 +41,8 @@ Checked and not a finding: Git for Windows 2.55 does not read `%PROGRAMDATA%\Git
   has `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` and no breakaway flags. After the worker or command:
   `TerminateJobObject`, then `QueryInformationJobObject(JobObjectBasicAccountingInformation)` must show
   `ActiveProcesses == 0`; only then `contained=True`. Before each worker, every earlier job must still show 0.
+  A job whose termination or check failed stays on that list; a worker or command that ran without a job (job not
+  created or not assigned) makes every later `precheck()` `contained=False` for the rest of the driver run (R1-01).
 - **Other platforms, or any containment API failure:** `contained=False` (fail closed); a real milestone review does
   not count. Process termination never calls `os.killpg` where it does not exist.
 
@@ -68,7 +70,7 @@ BLOCKED (REVIEWER_EXEC) and is never run.
 | DL2-AC1 | No code path on the worker or gate route calls a POSIX-only API where it does not exist (`os.killpg`, `os.getsid`, `signal.SIGKILL`, `start_new_session`, `/proc`); with `os.killpg` absent, `_killpg`/tree kill on an exited PID returns without raising. | Linux test simulating win32; Windows test on the PC |
 | DL2-AC2 | Windows: every worker and gate runs in its own Job Object from its first instruction (suspended → assigned → resumed); a failure to create or assign gives `contained=False`. | Linux logic tests with a fake kernel32 (call order and flags); Windows tests |
 | DL2-AC3 | The job sets `KILL_ON_JOB_CLOSE` and never `BREAKAWAY_OK` / `SILENT_BREAKAWAY_OK`; a child's breakaway attempt is refused or recorded as not contained. | fake-kernel32 flag test; Windows breakaway test |
-| DL2-AC4 | `contained=True` only when the job reports `ActiveProcesses == 0` after termination, and every earlier job still does before the next worker starts; a grandchild started by a worker is gone after the sweep. | fake-kernel32 tests; Windows grandchild test |
+| DL2-AC4 | `contained=True` only when the job reports `ActiveProcesses == 0` after termination, and every earlier job still does before the next worker starts (also one whose termination failed; after a worker or command without a job no later precheck is contained, R1-01); a grandchild started by a worker is gone after the sweep. | fake-kernel32 tests; Windows grandchild test |
 | DL2-AC5 | A job-creation failure gives `contained=False` and `is_independent()` False for a real milestone. | Linux test |
 | DL2-AC6 | `canonical_url` resolves to exactly one remote; none or several → BLOCKED; `insteadOf`-rewritten URLs are compared after rewriting. | Linux tests with temporary repositories |
 | DL2-AC7 | An empty baseline `ls-remote` → BLOCKED; an empty integration target tip → BLOCKED; a configured `integration.remote` that is not the resolved remote → BLOCKED. | Linux tests |

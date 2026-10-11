@@ -26,9 +26,10 @@ WIN = pytest.mark.windows_only
 # ---------------------------------------------------------------- F2: Windows job containment logic (fake kernel32)
 
 class FakeApi:
-    def __init__(self, create_fails=False, assign_fails=False, resume_fails=False, stuck=0):
+    def __init__(self, create_fails=False, assign_fails=False, resume_fails=False, stuck=0, terminate_fails=False):
         self.calls, self.jobs, self.n = [], {}, 0
         self.create_fails, self.assign_fails, self.resume_fails, self.stuck = create_fails, assign_fails, resume_fails, stuck
+        self.terminate_fails = terminate_fails
 
     def create(self):
         self.calls.append("create")
@@ -51,6 +52,8 @@ class FakeApi:
 
     def terminate(self, job):
         self.calls.append(("terminate", job))
+        if self.terminate_fails:
+            raise OSError(5, "TerminateJobObject failed")
         self.jobs[job]["terminated"] = True
         self.jobs[job]["active"] = self.stuck
 
@@ -80,6 +83,7 @@ def fake_windows(monkeypatch):
         monkeypatch.setattr(C, "WINDOWS", True)
         monkeypatch.setattr(C, "_API", api)
         monkeypatch.setattr(C, "_OPEN_JOBS", [])
+        monkeypatch.setattr(C, "_TAINTED", [], raising=False)
         monkeypatch.setattr(C.subprocess, "Popen", FakeProc)
         monkeypatch.setattr(C.subprocess, "run", lambda *a, **k: None)
         return api
@@ -133,6 +137,46 @@ def test_f2_precheck_confirms_earlier_jobs_are_empty(fake_windows, monkeypatch):
     api.stuck = 1
     r = C.precheck(wait_s=0.1)
     assert r["contained"] is False and "earlier" in r["reason"]
+
+
+@pytest.mark.parametrize("failure", ["create_fails", "assign_fails"])
+def test_r1_01_precheck_after_a_worker_without_a_job_is_not_contained(fake_windows, failure):
+    """R1-01: a worker or gate that ran outside any job may have left processes nobody can verify; every later
+    precheck() must fail closed, also after a later worker that was contained."""
+    api = fake_windows(**{failure: True})
+    assert C.finish(C.spawn(["gate"]))["contained"] is False
+    r = C.precheck(wait_s=0.1)
+    assert r["contained"] is False and "outside a job" in r["reason"]
+    api.create_fails = api.assign_fails = False
+    assert C.finish(C.spawn(["worker"]))["contained"] is True
+    assert C.precheck(wait_s=0.1)["contained"] is False
+
+
+def test_r1_01_precheck_after_a_failed_termination_is_not_contained(fake_windows):
+    """R1-01: TerminateJobObject failing in finish() keeps the job; precheck() re-checks it and fails closed while it
+    still cannot be emptied, and is contained once a later termination has emptied it."""
+    api = fake_windows(terminate_fails=True)
+    r = C.finish(C.spawn(["gate"]), wait_s=0.1)
+    assert r["contained"] is False and "not verified" in r["reason"]
+    assert C._OPEN_JOBS == [1]
+    r = C.precheck(wait_s=0.1)
+    assert r["contained"] is False and "earlier job" in r["reason"]
+    api.terminate_fails = False
+    assert C.precheck(wait_s=0.1) == {"contained": True, "killed": 1}
+    assert ("close", 1) in api.calls and C._OPEN_JOBS == []
+
+
+def test_r1_01_precheck_after_a_failed_empty_check_is_not_contained(fake_windows, monkeypatch):
+    """R1-01: QueryInformationJobObject failing in finish() keeps the job for precheck()."""
+    api = fake_windows()
+    real_active = api.active
+    def broken(job):
+        raise OSError(5, "QueryInformationJobObject failed")
+    monkeypatch.setattr(api, "active", broken)
+    assert C.finish(C.spawn(["gate"]), wait_s=0.1)["contained"] is False
+    assert C.precheck(wait_s=0.1)["contained"] is False
+    monkeypatch.setattr(api, "active", real_active)
+    assert C.precheck(wait_s=0.1)["contained"] is True and C._OPEN_JOBS == []
 
 
 def test_f2_no_kernel32_is_not_contained(monkeypatch):
