@@ -21,7 +21,10 @@ import re
 import shutil
 import signal
 import subprocess
+import sys
 import tempfile
+import threading
+import time
 import uuid
 from pathlib import Path
 
@@ -54,6 +57,74 @@ def _killpg(pid) -> None:
         os.killpg(pid, signal.SIGKILL)
     except OSError:
         pass
+
+
+# Worker containment (DEV-LIFECYCLE-1 R8-01). A worker child that calls setsid() leaves the killed process group; as an
+# orphan it would be adopted by init and outlive the worker, e.g. to write ``env`` into the next reviewer's fresh config
+# dir and remove it once the CLI has read it. On Linux the driver makes itself the child subreaper: every orphan in its
+# process tree is re-parented to the driver instead, and sweep_orphans() kills them all after each worker and command and
+# before each worker starts. Elsewhere there is no containment and a real milestone's review does not count.
+_PR_SET_CHILD_SUBREAPER, _PR_GET_CHILD_SUBREAPER = 36, 37
+_SUBREAPER: bool | None = None
+
+
+def enable_containment() -> bool:
+    """Make this process the child subreaper (Linux; idempotent). True only when the kernel confirms it."""
+    global _SUBREAPER
+    if _SUBREAPER is None:
+        _SUBREAPER = False
+        if sys.platform.startswith("linux"):
+            try:
+                import ctypes
+                libc = ctypes.CDLL(None, use_errno=True)
+                flag = ctypes.c_int(0)
+                _SUBREAPER = libc.prctl(_PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == 0 and \
+                    libc.prctl(_PR_GET_CHILD_SUBREAPER, ctypes.byref(flag), 0, 0, 0) == 0 and flag.value == 1
+            except (OSError, AttributeError):
+                _SUBREAPER = False
+    return _SUBREAPER
+
+
+def _orphans() -> list[int]:
+    """Direct children of this process outside its session: adopted orphans of workers and commands (all of them run
+    in their own session and are waited for before a sweep, so no legitimate child is in another session then)."""
+    me, sid = os.getpid(), os.getsid(0)
+    found = []
+    for e in os.scandir("/proc"):
+        if not e.name.isdigit():
+            continue
+        try:
+            with open(f"/proc/{e.name}/stat", "rb") as fh:
+                fields = fh.read().rsplit(b")", 1)[1].split()
+        except (OSError, IndexError):
+            continue
+        if int(fields[1]) == me and int(fields[3]) != sid:
+            found.append(int(e.name))
+    return found
+
+
+def sweep_orphans(max_passes: int = 500) -> dict:
+    """Kill every adopted orphan until none is left (their own children are adopted in turn). ``contained`` is True
+    only when containment is active and the sweep converged."""
+    if not enable_containment():
+        return {"contained": False, "killed": 0, "reason": f"no child-subreaper containment on {sys.platform}"}
+    killed = 0
+    for _ in range(max_passes):
+        pids = _orphans()
+        if not pids:
+            return {"contained": True, "killed": killed}
+        for pid in pids:  # a child's pid cannot be reused before it is reaped: no race with an unrelated process
+            try:
+                os.kill(pid, signal.SIGKILL)
+                killed += 1
+            except OSError:
+                pass
+        for pid in pids:
+            try:
+                os.waitpid(pid, 0)
+            except ChildProcessError:
+                pass
+    return {"contained": False, "killed": killed, "reason": "orphans kept respawning"}
 
 
 def provider_available(spec: dict) -> tuple[bool, str]:
@@ -255,6 +326,46 @@ def config_dir_clean(d: Path) -> bool:
     return not (isinstance(g, dict) and ("env" in g or "apiKeyHelper" in g))
 
 
+class ConfigWatch:
+    """Watches a reviewer's config dir for the whole run, not only its end state (R8-01): ``env``/``apiKeyHelper`` or a
+    settings file present at any observed moment, even if removed before the run ends, makes the run not isolated."""
+
+    def __init__(self, d: Path, interval: float = 0.01):
+        self.d, self.interval, self.dirty, self._last = d, interval, False, None
+        self._stop = threading.Event()
+        self._t = threading.Thread(target=self._loop, daemon=True)
+
+    def _sig(self):
+        try:
+            names = tuple(sorted(os.listdir(self.d)))
+            st = os.stat(self.d / ".claude.json")
+            return names, st.st_ino, st.st_size, st.st_mtime_ns, st.st_ctime_ns
+        except OSError:
+            return None
+
+    def check(self):
+        sig = self._sig()
+        if sig is None or sig != self._last:
+            self._last = sig
+            if not config_dir_clean(self.d):
+                self.dirty = True
+
+    def _loop(self):
+        while not self._stop.is_set():
+            self.check()
+            self._stop.wait(self.interval)
+
+    def __enter__(self):
+        self.check()
+        self._t.start()
+        return self
+
+    def __exit__(self, *exc):
+        self._stop.set()
+        self._t.join()
+        self.check()
+
+
 def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path, *,
                protected: list[str] = (), timeout_s: float = 3600, env_extra: dict | None = None) -> dict:
     """Run one worker process. Returns a record; never raises for worker failure."""
@@ -287,6 +398,8 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
                 return rec
     env = {k: v for k, v in os.environ.items() if not k.startswith("URI_LIFECYCLE_")}
     env.update({"URI_LIFECYCLE_ROLE": role, "PYTHONDONTWRITEBYTECODE": "1"}, **(env_extra or {}))
+    # No process left by an earlier worker or command may run alongside this one (R8-01).
+    rec["containment_pre"] = sweep_orphans()
     cfg_dir = None
     if role == "reviewer" and rec["provider"] == "claude_cli":  # driver-made config, never the shared one (R7-01)
         cfg_dir = reviewer_config_dir()
@@ -303,6 +416,9 @@ def run_worker(spec: dict, role: str, prompt: str, worktree: Path, log_dir: Path
 
 def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) -> dict:
     rec["argv"] = [a if len(a) < 400 else a[:60] + "…" for a in argv]
+    watch = ConfigWatch(cfg_dir) if cfg_dir is not None else None
+    if watch:
+        watch.__enter__()
     try:
         proc = subprocess.Popen(argv, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, text=True, env=env, start_new_session=True)
@@ -315,15 +431,20 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
         rec["exit_code"] = None
         rec.update(status="TIMED_OUT")
     except OSError as e:
+        if watch:
+            watch.__exit__(None, None, None)
         rec.update(status="FAILED", detail=f"spawn: {e}", ended_at=_now())
         return rec
     # Always end the worker's whole process group before anything is checked or committed: a detached child
     # must not write after the integrity snapshot (DEV-LIFECYCLE-1 R1-06). A child that calls setsid() itself
-    # escapes the group; the driver's later checks (clean worktree before the next step) still catch its writes.
+    # escapes the group but is adopted by the driver (child subreaper) and killed by the sweep (R8-01).
     _killpg(proc.pid)
+    rec["containment_post"] = sweep_orphans()
+    rec["contained"] = rec["containment_pre"].get("contained") is True and rec["containment_post"]["contained"] is True
     rec["ended_at"] = _now()
-    if cfg_dir is not None:
-        rec["config_isolated"] = config_dir_clean(cfg_dir)
+    if watch:
+        watch.__exit__(None, None, None)
+        rec["config_isolated"] = not watch.dirty and config_dir_clean(cfg_dir)
     # Hashed files are written as exact bytes: no newline translation on Windows (R2-02).
     (log_dir / f"{role}_stdout.txt").write_bytes((out or "").encode("utf-8"))
     (log_dir / f"{role}_stderr.txt").write_bytes((err or "").encode("utf-8"))

@@ -34,7 +34,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from scripts.dev_workflow.lifecycle_providers import (INDEPENDENT_PROVIDERS, managed_policy_state,
-                                                      reviewer_executable, run_worker)
+                                                      reviewer_executable, run_worker, sweep_orphans)
 from scripts.dev_workflow.security_boundary import is_devtest_identifier
 from scripts.dev_workflow.state_machine import VALID_TRANSITIONS, InvalidTransitionError, WorkflowState as S
 
@@ -314,6 +314,9 @@ def is_independent(cfg, round_rec: dict, impl_sids=frozenset()) -> tuple[bool, s
         return False, f"reviewer executable {w.get('binary_realpath')} is not the installed CLI bound at the plan"
     if not is_devtest(cfg["milestone"]) and w.get("config_isolated") is not True:
         return False, "reviewer did not run on a driver-made CLI config (user settings/env are worker-writable, R7-01)"
+    if not is_devtest(cfg["milestone"]) and w.get("contained") is not True:
+        return False, ("a process left by an earlier worker could have run alongside the reviewer: no verified "
+                       "orphan containment before and after it (R8-01)")
     sid = w.get("session_id")
     if not sid or sid == cfg.get("coordinator_session_id") or sid in impl_sids:
         return False, "reviewer session id missing or shared with coordinator/implementer"
@@ -663,6 +666,7 @@ def run_cmd(cmd, cwd, timeout) -> tuple:
         _killpg(p.pid)
         out, err = p.communicate()
     _killpg(p.pid)
+    sweep_orphans()  # a setsid() child of a gate or test is adopted by the driver and killed here (R8-01)
     return (p.returncode if state == "DONE" else None), out, err, state
 
 
@@ -1346,6 +1350,7 @@ TAMPER_NEEDS = "owner: inspect the repository's git hooks/config/info and refs; 
 
 
 def run(cfg, max_steps: int = 50) -> S:
+    sweep_orphans()  # become the child subreaper before any worker or command is started (R8-01)
     st = State(cfg)
     if st.stage is None:
         init(cfg, st)
