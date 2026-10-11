@@ -1,6 +1,6 @@
 # Lifecycle receipt — W1-A0-closure
 
-Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · candidate `d029f606ec84f32fd39c2276c34e1a4fd281eec1` · events 104 · chain OK
+Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · candidate `fcfb465ad34fd450107908b18ef2d9d3af15ec82` · events 115 · chain OK
 
 ## Review rounds
 
@@ -37,6 +37,7 @@ Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · can
 | P11 | COMMITTED | `2de591eca07d9410f691ac20ff71242d3befc6f6` | R10-01 |  |
 | P12 | COMMITTED | `d5a9b41c79b4c9d0be83ab7c43e61f106177d022` | R11-01 |  |
 | P13 | COMMITTED | `d029f606ec84f32fd39c2276c34e1a4fd281eec1` | R12-01 |  |
+| P14 | REFUSED | `-` | R13-01 | OUT_OF_SCOPE: graphify-out/.graphify_detect.json, graphify-out/.graphify_python, graphify-out/.graphify_root |
 
 ## Qualification
 
@@ -55,10 +56,10 @@ null
 
 ```
 {
- "at": "2026-10-11T07:02:56Z",
- "kind": "OWNER_DECISION",
- "needs": "owner decision on the diagnosed root cause",
- "reason": "diagnosis: snapshot.js decides whether text is hidden with a blocklist of CSS hiding techniques (visible() + clipBoxOf() + covered() + the text-fill alpha check). CSS has an unbounded number of ways to make text unpainted, so the list can never be complete. The three R13 bypasses are: (1) covered() returns fal",
- "stage": "FIXING"
+ "at": "2026-10-11T07:37:58Z",
+ "kind": "CONFIG",
+ "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
+ "reason": "milestone config or resolved policy changed since the plan (now config f65917424486, policy 60c95fb8b36f)",
+ "stage": "READY_TO_RESUME"
 }
 ```

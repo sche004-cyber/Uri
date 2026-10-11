@@ -1,0 +1,96 @@
+{
+ "addresses": [
+  "R13-01"
+ ],
+ "changed": [
+  "docs/assist/03_PERMISSION_AND_DATA_FLOW.md",
+  "docs/assist/A0_QUALIFICATION.md",
+  "graphify-out/.graphify_detect.json",
+  "graphify-out/.graphify_python",
+  "graphify-out/.graphify_root",
+  "tests/assist/test_a0_d10_pixel_checked_text.py",
+  "tests/assist/test_a0_r13_review_regressions.py",
+  "uri_assist/bridge.py",
+  "uri_assist/browser_extension/snapshot.js",
+  "uri_assist/onscreen.py",
+  "uri_assist/perception.py"
+ ],
+ "ended_at": "2026-10-11T07:35:40Z",
+ "pre": "fcfb465ad34fd450107908b18ef2d9d3af15ec82",
+ "reason": "OUT_OF_SCOPE: graphify-out/.graphify_detect.json, graphify-out/.graphify_python, graphify-out/.graphify_root",
+ "repair": 14,
+ "report": {
+  "not_repaired": [],
+  "notes": "Fixes R13-01 and both causes in the D7 diagnosis. (1) Field-label channel: snapshot.js builds labels only from textVisible text nodes of label[for], the wrapping label and aria-labelledby targets, sent as label_pieces; aria-label/name/id/placeholder are used only for the in-page sensitivity test; fields not shown have no label. perception.py pixel-checks label_pieces into shown_label; bridge._context_block uses shown_label only, otherwise a neutral '<type> field N' name (no name/id fallback). (2) Text-bound pixel check: onscreen.untangle drops overlapping drawn pieces with different text (counted overlapping_text) across text, selection, headings and labels; in page, covered() uses elementsFromPoint paint order (an ancestor painted above the text covers it), the background-colour rule applies to all text using the first opaque background below the text, SVG fill/fill-opacity/stroke is evaluated, and -webkit-mask-box-image/mask-border counts as masked. In test_a0_d10_pixel_checked_text.py, PIXEL_ONLY now lists only BLUR/PEN/BELOWFOLD, a new assertion requires the R13 payloads to be removed in page, and the no_ink minimum went from 9 to 2 because fewer pieces reach the pixel check; every assertion on what reaches the Brain is unchanged. Verified: all 6 new tests and both extended Chromium tests fail on a clean export of fcfb465 and pass after the change; tests/assist + tests/web: 2656 passed. Docs 03 section 4 and A0_QUALIFICATION (A0-AC8 row, L-A0-5, evidence row) updated with explicit correction notes. Remaining residual (documented): hidden text over drawn ink that is not page text (borders/images/canvas) passes unless an in-page rule catches it; thresholds verified only on headless Chromium at DPR 1. graphify-out/ files created by 'graphify update .' were deleted because they are outside the permitted paths.",
+  "regression_tests": [
+   "tests/assist/test_a0_r13_review_regressions.py",
+   "tests/assist/test_a0_d10_pixel_checked_text.py"
+  ],
+  "repaired": [
+   "R13-01"
+  ]
+ },
+ "restored": true,
+ "started_at": "2026-10-11T07:27:25Z",
+ "status": "REFUSED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "9946ec11-4796-4c01-ac64-245158758af5",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 144
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 2.137803,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T07:35:40Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 33,
+  "pid": 25500,
+  "prompt_sha256": "c912c4b413f4048e1da2e9a2a0dfa60fe9d273c526d5dd1d013b55c09376821c",
+  "provider": "claude_cli",
+  "result_text_sha256": "d43a9c4e5c2a08b70a0900cda8d32b6263abb4b9fdb679754af5a13381acf9f7",
+  "role": "implementer",
+  "session_id": "9946ec11-4796-4c01-ac64-245158758af5",
+  "session_id_requested": "9946ec11-4796-4c01-ac64-245158758af5",
+  "started_at": "2026-10-11T07:27:25Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "07159e7111f88a61dfaf3b7f0654ab12b41fd85327fdfc8e29e9b3999ab5b7b2"
+ }
+}

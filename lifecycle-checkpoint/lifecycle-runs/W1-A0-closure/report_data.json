@@ -532,9 +532,9 @@
  "gates": [],
  "owner": [
   {
-   "kind": "OWNER_DECISION",
-   "needs": "owner decision on the diagnosed root cause",
-   "reason": "diagnosis: snapshot.js decides whether text is hidden with a blocklist of CSS hiding techniques (visible() + clipBoxOf() + covered() + the text-fill alpha check). CSS has an unbounded number of ways to make text unpainted, so the list can never be complete. The three R13 bypasses are: (1) covered() returns fal"
+   "kind": "CONFIG",
+   "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
+   "reason": "milestone config or resolved policy changed since the plan (now config f65917424486, policy 60c95fb8b36f)"
   }
  ],
  "repairs": [
@@ -628,6 +628,13 @@
    "reason": "",
    "repair": "P13",
    "status": "COMMITTED"
+  },
+  {
+   "addresses": "R13-01",
+   "commit": "",
+   "reason": "OUT_OF_SCOPE: graphify-out/.graphify_detect.json, graphify-out/.graphify_python, graphify-out/.graphify_root",
+   "repair": "P14",
+   "status": "REFUSED"
   }
  ],
  "rounds": [
@@ -790,7 +797,7 @@
  ],
  "summary": {
   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
-  "candidate": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
+  "candidate": "fcfb465ad34fd450107908b18ef2d9d3af15ec82",
   "evidence_ok": false,
   "findings_repaired": 25,
   "findings_total": 66,
@@ -802,6 +809,6 @@
   "repairs_committed": 10,
   "rounds": 13,
   "stage": "BLOCKED",
-  "written_at": "2026-10-11T07:02:56Z"
+  "written_at": "2026-10-11T07:37:59Z"
  }
 }

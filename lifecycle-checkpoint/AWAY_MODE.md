@@ -70,6 +70,10 @@ The repository rule is "after modifying code, run `graphify update .`".
 - So the graph is built from a clean `git archive` export, outside the repository:
   - `/home/user/uri-wt/graphs/canonical`: rebuilt after every canonical integration.
   - `/home/user/uri-wt/graphs/<milestone>`: rebuilt after a milestone's accepted commit.
+  - Lesson (2026-10-11 07:35): once graphify was installed, a repair worker followed the repo rule, ran
+    `graphify update .` in the worktree and then deleted the tracked `graphify-out/` files. The driver refused this
+    as OUT_OF_SCOPE and restored the worktree. **Every milestone config therefore carries an environment note:** no
+    graphify writes in the worktree; use the read-only graph outside the repo.
   - New milestone configs give workers this path as an environment note, so they can run `graphify query/path/explain
     --graph <path>/graphify-out/graph.json`.
 - A rebuild takes about 1 minute (AST only, no API cost). After a container reset it is simply rebuilt; it is not
@@ -119,3 +123,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 07:40 | Owner D11: W2 runs on ARN (no frozen change), plus a narrow frozen exception adding a `document` pointer kind to the runtime Graphify index. W2 plan updated (W2-AC16..18). GRAPHIFY-LEAK-1 **confirmed** by reproduction on canonical: the primary user's memory pointers (ID/category/consent, no content) reach other users' Brain hints. Pre-existing, frozen; fix awaits owner decision. |
 | 2026-10-11 07:45 | Owner D12: fix GRAPHIFY-LEAK-1 as its own milestone after SSRF-1 and before W2 (frozen exception: server.py, plus graphify_index.py only if needed). Queue: W1/A0 → SSRF-1 → GRAPHIFY-LEAK-1 → W2. |
 | 2026-10-11 07:35 | D10 implemented by a separate agent and reviewed by the coordinator: frozen check clean; 2650 assist+web tests pass; 17 new tests fail on d029f60 with real payload leaks. Committed `fcfb465`; OWNER_DECISION unblocked; driver relaunched (PID 24911) and resumed in FIXING on the new candidate. Ledger now records D9-D12. |
+| 2026-10-11 07:40 | Diagnosis D7 on fcfb465 went to repair. Repair P14 was refused OUT_OF_SCOPE because the worker ran graphify in the worktree (coordinator-caused). Worktree restored. Graphify read-only note added (policy hash unchanged); W1/A0 graph built at graphs/W1-A0 (fcfb465). Unblocked; driver relaunched (PID 31137). |
