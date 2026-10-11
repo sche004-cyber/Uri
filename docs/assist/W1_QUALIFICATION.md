@@ -13,16 +13,16 @@ integrated; NOT activated.**
 | W1-AC1 SSRF corpus refused | MET | `test_w1_netpolicy_safe_fetch.py` (40 address forms, 26 URL forms) + F6 LDH tests |
 | W1-AC2 every redirect re-validated, max 5 | MET | redirect tests (private, literal loopback, `file:`, limit) |
 | W1-AC3 pinned connection, rebinding refused | MET | pinning + rebinding tests; live direct run against pypi.org shows the pinned IP with correct Host/SNI/TLS (`evidence/w1_live_direct_pinned*.json`) |
-| W1-AC4 timeouts, byte cap, type allow-list, no cookies/credentials | MET | tests; compressed bodies refused (raw byte cap) |
+| W1-AC4 timeouts, byte cap, type allow-list, no cookies/credentials | MET after the R4 repair | tests; compressed bodies refused (raw byte cap); `test_w1_r4_review_regressions.py` (real socket). **Correction (review R4 of `1615512`):** the earlier MET was false — the total deadline was checked only between body chunks, so a server dripping header bytes or chunk framing under the read timeout held a fetch for 67 s against a 2 s budget. A watchdog now shuts the hop's sockets down at the deadline (connect gets at most the remaining budget). |
 | W1-AC5 SourceRecord per attempt, UNTRUSTED fixed | MET | record test |
 | W1-AC6 extraction + hidden content dropped | MET | extraction fixtures + 8 more hidden forms (F3) |
 | W1-AC7 RSS/Atom/RDF, DOCTYPE/ENTITY refused | MET | feed tests; live Atom/RSS from pypi.org (20 items) |
 | W1-AC8 providers, explicit UNAVAILABLE, no key leakage | MET in code; **search NOT VERIFIED live** (no keys; egress policy) | provider tests; key file for the worker (F2) |
 | W1-AC9 duplicates / near-duplicates | MET | evaluation tests |
-| W1-AC10 citation-backed, unsupported sentences dropped | MET **as a lexical check** (one supporting sentence, numbers, polarity); not a semantic proof | verifier + F3 tests |
-| W1-AC11 conflicts with both citations | MET | conflict tests incl. near-duplicate pages |
+| W1-AC10 citation-backed, unsupported sentences dropped | MET **as a lexical check** (one supporting sentence, numbers with their magnitude/unit, polarity); not a semantic proof | verifier + F3 tests; `test_w1_r4_review_regressions.py`. **Correction (review R4 of `1615512`):** numbers were compared without attached magnitudes (`$5bn` was "supported" by `$5m`; lakh/crore, trillion, km/miles likewise). Scales are now multiplied out and units kept; unlisted unit words after a space are still ignored (residual). |
+| W1-AC11 conflicts with both citations | MET after the R4 repair | conflict tests incl. near-duplicate pages; R4-02 magnitude cases (`$5m` vs `$5bn`, `2 lakh` vs `2 crore` were 0 conflicts before) |
 | W1-AC12 prompt-injection resistance | MET for the paths tested (malicious page, feed, data-block escape, steering notes) | `test_malicious_page_cannot_redirect_the_pipeline` and F3 tests |
-| W1-AC13 bounded background research, progress, cancel, fixed statuses | MET (Brain synthesis itself not cancellable: L-W1-3) | pipeline/bridge tests, F1 deferred start |
+| W1-AC13 bounded background research, progress, cancel, fixed statuses | MET after the R4 repair (Brain synthesis itself not cancellable: L-W1-3) | pipeline/bridge tests, F1 deferred start; R4-03: cancel now cuts a fetch while headers/chunk framing drip (was CANCELLED only after 12 s, or never) |
 | W1-AC14 read-only Mastodon/Bluesky | MET with fake HTTP; **live NOT VERIFIED** (egress policy denied the hosts) | social tests; `evidence/w1_live_proxy_egress_denied.json` |
 | W1-AC15 A2UI rendering, no URLs, no new action | MET | surface tests; Dart renderer test |
 | W1-AC16 no frozen path, no new dependency, gates unchanged | MET (protected-path check); Phase 1 byte check **BLOCKED** (zip only on the PC) | `ws_frozen_check` protected part `[]`; gates below |

@@ -3,8 +3,9 @@
 Field rules (value removed, field marked `sensitive`):
   * input type password / hidden;
   * autocomplete tokens for passwords, one-time codes and payment cards;
-  * name / id / label / automation id that names a secret (password, token, OTP, PIN, CVV, card, account number,
-    national IDs such as SSN, Aadhaar, PAN);
+  * name / id / label / automation id that names a secret (password, token, OTP, PIN, CVV, any *key, credential,
+    recovery / backup code, session, card, account number, national IDs such as SSN, Aadhaar, PAN, passport);
+  * a short single-token value in a field whose name or label ends in code / pin / key;
   * UI Automation elements flagged IsPassword.
 Text rules (masked in any text: page text, selection, field values, labels): JWTs, bearer tokens, common API-key
 prefixes, long hex/base64 secrets, Luhn-valid card numbers, 12-digit Aadhaar-shaped numbers, `key=value` query
@@ -39,21 +40,33 @@ _RUN_TOGETHER = re.compile(
     r"new|old|confirm|current|verify|secret)pin(number|num|no)?\b|\bpin(number|num|no|entry|input|field|value)\b|"
     r"(user|login|admin|account|acct|new|old|confirm|current|root|wifi|txn|master|secret|db)pass\b|"
     r"(verify|verif|sms|email|access|activation|confirmation|confirm|login|signin)code\b")
-# Secret stems inside a run-together word, whatever comes before them (R3-01: "emailverificationcode", "mfacode",
-# "onetimepin", "2facode", "authenticatorcode", "accesstoken", "clientsecret"). Matched on _tokens(), which splits at
-# separators and camelCase but not at digits ("2facode" stays one word), so a stem never spans two words of a label
-# ("not familiar" does not contain "tfa"). otp not before a/h/l/o ("footpath", "hotpot", "hotplate"); tfa only at
-# the start of a word ("nightfall"); secret not in "secretary".
+# Secret stems inside a word, whatever comes before or after them. Matched on each word of _tokens() (split at
+# separators and camelCase, not at digits: "2facode" stays one word) after the readable words in _READABLE are cut
+# out, so a stem never spans two words of a label ("not familiar" has no "tfa") and "keyboard" / "monkey" stay
+# readable. R3-01 and R4-01 showed that lists of cited names leak the next name, so this is a class of stems:
+# one-time and 2FA codes, card security codes, passwords, any *key (api, access, signing, master, pass, priv ...),
+# tokens (a personal access token is a "pat"), secrets, credentials, recovery material, session/cookie/CSRF values and national IDs. otp not before
+# a/h/l/o ("footpath", "hotpot", "hotplate"); tfa only at the start of a word ("nightfall"); secret not in
+# "secretary".
 _STEMS = re.compile(
     r"otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|verification|authenticat|cvv|cvc|ccv|token|secret(?!ar)|"
-    r"password|passwd|passcode|passphrase|pwd")
-# A short all-digit value is a code / PIN when a name, label or placeholder ENDS with code or pin ("cardcode",
-# "smspin", "Enter code:"), checked on the name with everything but letters and digits removed; postal, country,
-# area, promo, coupon, voucher, referral, bar, sort, IFSC and SWIFT codes stay readable.
-_CODE_END = re.compile(r"(code|pin)(number|num|no)?$")
+    r"password|passwd|passcode|passphrase|pwd|key|credential|recovery|mnemonic|seedphrase|aadhaa?r|\bssn|ssn\b|"
+    r"passport|iban|jwt|csrf|xsrf|bearer|cookie|session|pat\b|psk\b|maiden")
+_READABLE = re.compile(r"keyboard|keyword|keynote|keystone|keyframe|monkey|donkey|turkey|hockey|jockey|whiskey|"
+                       r"possession|obsession|expat")
+# Secret phrases written as several words ("Recovery code", "backup_code", "Social security number"), matched on
+# the whole name with everything but letters and digits removed.
+_PHRASES = re.compile(r"backupcode|resetcode|unlockcode|recoverycode|seedphrase|secretphrase|socialsecurity|"
+                      r"cardnumber|cardnum|ccnumber|ccnum|accountnumber|accountnum|acctnumber|acctnum|sessionid|"
+                      r"privatekey|apikey|securitycode|securityanswer|authcode|nationalid|taxid|routingnumber|bankaccount|sessid|"
+                      r"nonce")
+# A short single-token value (3-32 letters, digits, _ or -) is a code / PIN / key when a name, label or placeholder
+# ENDS with code, pin or key ("cardcode", "smspin", "Enter code:"; "7f3a9-2c1d8" as well as "482913", R4-01),
+# checked on the name with everything but letters and digits removed; postal, country, area, promo, coupon,
+# voucher, referral, bar, sort, IFSC, SWIFT, currency, language and locale codes stay readable.
+_CODE_END = re.compile(r"(code|pin|key)(number|num|no)?$")
 _CODE_EXCLUDE = re.compile(r"postal|zip|postcode|pincode|country|area|promo|coupon|voucher|referral|barcode|sortcode|"
-                           r"ifsc|swift")
-
+                           r"ifsc|swift|currency|language|locale")
 
 def _words(v: str) -> str:
     v = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=\d)|(?<=\d)(?=[A-Za-z])", " ", v)
@@ -80,7 +93,7 @@ _TEXT_RULES = (
     ("aadhaar", re.compile(r"(?<!\d)(?<!\d[ -])[2-9]\d{3}[ -]?\d{4}[ -]?\d{4}(?![ -]?\d)")),
 )
 _CARD = re.compile(r"\b(?:\d[ .\u00a0\u2007\u202f-]?){12,18}\d\b")
-_SHORT_CODE = re.compile(r"^\s*\d{3,8}\s*$")
+_SHORT_CODE = re.compile(r"^\s*[A-Za-z0-9_-]{3,32}\s*$")
 _CODE_LABEL = re.compile(r"(?i)\bcode\b")
 _POSTAL = re.compile(r"(?i)postal|zip|post ?code|pin ?code")
 
@@ -120,14 +133,21 @@ def redact_text(text, counts: Counter) -> str:
 def _short_code_label(v: str) -> bool:
     if _POSTAL.search(v) or _CODE_EXCLUDE.search(_joined(v)):
         return False
-    return bool(_CODE_LABEL.search(_words(v)) or _CODE_END.search(_joined(v)))
+    return bool(_CODE_LABEL.search(_words(v)) or _CODE_END.search(_READABLE.sub("", _joined(v))))
+
+
+def _secret_name(v: str) -> bool:
+    return bool(_SENSITIVE_WORDS.search(_words(v)) or _RUN_TOGETHER.search(_words(v)) or
+                any(_STEMS.search(_READABLE.sub("", t)) for t in _tokens(v).split()) or _PHRASES.search(_joined(v)))
 
 
 def field_is_sensitive(f: dict) -> bool:
-    if str(f.get("type", "")).lower() in SENSITIVE_TYPES:
+    ftype = str(f.get("type", "")).lower()
+    if ftype in SENSITIVE_TYPES:
         return True
-    # A short all-digit value in a field labelled "... code" / ending in code or pin is a one-time code (F5, R3-01).
-    if isinstance(f.get("value"), str) and _SHORT_CODE.match(f["value"]) and any(
+    # A short single-token value in a field labelled "... code" / ending in code, pin or key is a one-time, recovery
+    # or access code (F5, R3-01, R4-01). Checkbox and radio values are only checked/unchecked.
+    if ftype not in ("checkbox", "radio") and isinstance(f.get("value"), str) and _SHORT_CODE.match(f["value"]) and any(
             isinstance(f.get(k), str) and _short_code_label(f[k])
             for k in ("label", "name", "placeholder", "aria_label")):
         return True
@@ -138,8 +158,7 @@ def field_is_sensitive(f: dict) -> bool:
         return True
     for k in ("name", "id", "label", "automation_id", "placeholder", "aria_label"):
         v = f.get(k)
-        if isinstance(v, str) and (_SENSITIVE_WORDS.search(_words(v)) or _RUN_TOGETHER.search(_words(v)) or
-                                   _STEMS.search(_tokens(v))):
+        if isinstance(v, str) and _secret_name(v):
             return True
     return False
 

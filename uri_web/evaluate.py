@@ -6,13 +6,26 @@ with different numbers or dates. They are shown with both citations; URI does no
 from __future__ import annotations
 
 import re
+from decimal import Decimal
 from dataclasses import dataclass, field
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 _TRACKING = re.compile(r"^(utm_[a-z]+|fbclid|gclid|dclid|msclkid|mc_cid|mc_eid|ref|ref_src|igshid|spm)$", re.I)
 _WORD = re.compile(r"[A-Za-z][A-Za-z'-]{2,}")
 # Only a preceding digit stops a match: "Rs.500", "approx.900" and "No.5" carry numbers too (R1-01).
-_NUMBER = re.compile(r"(?<!\d)(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(\s?%|\s?(?:percent|million|billion|thousand))?", re.I)
+# A magnitude or unit is part of the number (R4-02): letters written against it ("$5m", "$5bn", "5k", "5km") and a
+# scale or unit word after one space ("5 million", "2 lakh", "500 crore", "5 miles"). Scales are multiplied out, so
+# "$5m", "$5 million" and "$5,000,000" are one number and "$5m" vs "$5bn" are two.
+_NUMBER = re.compile(r"(?<!\d)(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)"
+                     r"(\s?%|[A-Za-z]+\b|\s(?:percent|thousands?|millions?|billions?|trillions?|lakhs?|lacs?|crores?|"
+                     r"mn|bn|tn|cr|km|kms|kilomet(?:re|er)s?|miles?|mi|kgs?|kilograms?|grams?|tonnes?|tons?|lbs?|"
+                     r"pounds?|feet|ft|metres?|meters?|cm|mm|acres?|hectares?|litres?|liters?|gallons?|mph)\b)?", re.I)
+_SCALE = {"k": 3, "thousand": 3, "m": 6, "mn": 6, "mio": 6, "million": 6, "b": 9, "bn": 9, "billion": 9,
+          "t": 12, "tn": 12, "trillion": 12, "lakh": 5, "lac": 5, "crore": 7, "cr": 7}
+_UNIT = {"percent": "%", "kms": "km", "kgs": "kg", "lbs": "lb", "kilometre": "km", "kilometer": "km", "mile": "mi", "kg": "kg",
+         "kilogram": "kg", "gram": "g", "tonne": "t-mass", "ton": "t-mass", "lb": "lb", "pound": "lb", "foot": "ft",
+         "feet": "ft", "metre": "metre", "meter": "metre", "liter": "litre"}
+_ORDINAL = {"st", "nd", "rd", "th"}
 _SENT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])")
 STOP = frozenset("""the and for are was were has have had that this with from which their there been being into than
 then them they its also but not can may will would could should about after before over under more most such
@@ -57,9 +70,20 @@ def numbers(s: str) -> set:
     out = set()
     for m in _NUMBER.finditer(s):
         n = m.group(1).replace(",", "")
-        unit = (m.group(2) or "").strip().lower().replace("percent", "%")
-        out.add(n + unit)
+        raw = (m.group(2) or "").strip().lower()
+        unit = raw[:-1] if len(raw) > 3 and raw.endswith("s") and raw[:-1] in _SCALE.keys() | _UNIT.keys() else raw
+        if unit in ("", *_ORDINAL):
+            out.add(n)
+        elif unit in _SCALE:
+            out.add(_fmt(Decimal(n).scaleb(_SCALE[unit])))
+        else:
+            out.add(n + _UNIT.get(unit, unit))
     return out
+
+
+def _fmt(n: Decimal) -> str:
+    t = format(n.normalize(), "f")
+    return t.rstrip("0").rstrip(".") if "." in t else t
 
 
 def jaccard(a: set, b: set) -> float:

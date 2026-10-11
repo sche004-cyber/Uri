@@ -10,16 +10,21 @@
   const SENSITIVE_WORDS = /\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|password|passwd|passcode|passphrase|apikey|aadhar|aadhaar)\b|\bapi ?key\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|\bprivate ?key\b/;
   // Run-together lowercase names (see _RUN_TOGETHER in redact.py; same pattern).
   const RUN_TOGETHER = /password|passwd|passcode|passphrase|pwd|cvv|cvc|ccv|\b(mpin|tpin)|(mpin|tpin)\b|\botp|otp\b|otp(code|value|val|number|num|no|input|field|digit|box|text|entry|pin|token)|(upi|atm|card|security|secure|login|user|txn|transaction|account|acct|debit|credit|bank|access|mobile|wallet|new|old|confirm|current|verify|secret)pin(number|num|no)?\b|\bpin(number|num|no|entry|input|field|value)\b|(user|login|admin|account|acct|new|old|confirm|current|root|wifi|txn|master|secret|db)pass\b|(verify|verif|sms|email|access|activation|confirmation|confirm|login|signin)code\b/;
-  // Secret stems inside run-together words, and short codes in fields whose name ends in code / pin (see _STEMS,
-  // _CODE_END and _CODE_EXCLUDE in redact.py; same patterns).
-  const STEMS = /otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|verification|authenticat|cvv|cvc|ccv|token|secret(?!ar)|password|passwd|passcode|passphrase|pwd/;
-  const CODE_END = /(code|pin)(number|num|no)?$/, CODE_EXCLUDE = /postal|zip|postcode|pincode|country|area|promo|coupon|voucher|referral|barcode|sortcode|ifsc|swift/;
+  // Secret stems inside each word (after readable words are cut out), secret phrases on the joined name, and short
+  // single-token codes in fields whose name ends in code / pin / key (see _STEMS, _READABLE, _PHRASES, _CODE_END and
+  // _CODE_EXCLUDE in redact.py; same patterns).
+  const STEMS = /otp(?![ahlo])|mfa|2fa|\btfa|onetime|twofactor|verification|authenticat|cvv|cvc|ccv|token|secret(?!ar)|password|passwd|passcode|passphrase|pwd|key|credential|recovery|mnemonic|seedphrase|aadhaa?r|\bssn|ssn\b|passport|iban|jwt|csrf|xsrf|bearer|cookie|session|pat\b|psk\b|maiden/;
+  const READABLE = /keyboard|keyword|keynote|keystone|keyframe|monkey|donkey|turkey|hockey|jockey|whiskey|possession|obsession|expat/g;
+  const PHRASES = /backupcode|resetcode|unlockcode|recoverycode|seedphrase|secretphrase|socialsecurity|cardnumber|cardnum|ccnumber|ccnum|accountnumber|accountnum|acctnumber|acctnum|sessionid|privatekey|apikey|securitycode|securityanswer|authcode|nationalid|taxid|routingnumber|bankaccount|sessid|nonce/;
+  const CODE_END = /(code|pin|key)(number|num|no)?$/, CODE_EXCLUDE = /postal|zip|postcode|pincode|country|area|promo|coupon|voucher|referral|barcode|sortcode|ifsc|swift|currency|language|locale/;
   const tokens = (v) => String(v).replace(/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])/g, " ").replace(/[^A-Za-z0-9]+/g, " ").toLowerCase();
   const joined = (v) => String(v).toLowerCase().replace(/[^a-z0-9]+/g, "");
   const shortCodeLabel = (v) => !POSTAL.test(v) && !CODE_EXCLUDE.test(joined(v)) &&
-    (CODE_LABEL.test(words(v)) || CODE_END.test(joined(v)));
+    (CODE_LABEL.test(words(v)) || CODE_END.test(joined(v).replace(READABLE, "")));
+  const secretName = (v) => SENSITIVE_WORDS.test(words(v)) || RUN_TOGETHER.test(words(v)) ||
+    tokens(v).split(" ").some((t) => STEMS.test(t.replace(READABLE, ""))) || PHRASES.test(joined(v));
   const words = (v) => String(v).replace(/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=\d)|(?<=\d)(?=[A-Za-z])/g, " ").replace(/[_\-.:/]+/g, " ").toLowerCase();
-  const SHORT_CODE = /^\s*\d{3,8}\s*$/, CODE_LABEL = /\bcode\b/, POSTAL = /postal|zip|post ?code|pin ?code/i;
+  const SHORT_CODE = /^\s*[A-Za-z0-9_-]{3,32}\s*$/, CODE_LABEL = /\bcode\b/, POSTAL = /postal|zip|post ?code|pin ?code/i;
   const counts = {};
   const bump = (k) => { counts[k] = (counts[k] || 0) + 1; };
   const luhn = (d) => { let t = 0, alt = false; for (let i = d.length - 1; i >= 0; i--) { let n = +d[i];
@@ -78,11 +83,11 @@
     const type = (el.getAttribute("type") || "").toLowerCase();
     if (SENSITIVE_TYPES.has(type)) return true;
     const named = [label, el.name, el.getAttribute("placeholder"), el.getAttribute("aria-label")].filter(Boolean);
-    if (SHORT_CODE.test(value || "") && named.some(shortCodeLabel)) return true;
+    if (type !== "checkbox" && type !== "radio" && SHORT_CODE.test(value || "") && named.some(shortCodeLabel)) return true;
     const ac = (el.getAttribute("autocomplete") || "").toLowerCase().split(/\s+/);
     if (ac.some((t) => SENSITIVE_AC.has(t))) return true;
     return [el.name, el.id, label, el.getAttribute("placeholder"), el.getAttribute("aria-label")]
-      .some((v) => v && (SENSITIVE_WORDS.test(words(v)) || RUN_TOGETHER.test(words(v)) || STEMS.test(tokens(v))));
+      .some((v) => v && secretName(v));
   };
 
   const fields = [], sensitiveRects = [];

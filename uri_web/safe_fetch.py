@@ -6,7 +6,9 @@ Per hop (the first request and every redirect):
   3. connect to the validated address (pinned): the request goes to that IP with the original Host header and TLS
      SNI/certificate name, so a second DNS answer (rebinding) is never used.
 Redirects are handled here (never by the HTTP library), at most `max_redirects`. Bodies are streamed with a byte cap,
-a total deadline and cooperative cancellation. No cookies, no credentials, no proxies from the environment.
+a total deadline and cooperative cancellation. The deadline and the cancel flag are enforced on the whole request by a
+watchdog that shuts the hop's sockets down (R4-03), so a server that drips header bytes or chunk framing slower than
+the read timeout cannot hold a fetch past its budget. No cookies, no credentials, no proxies from the environment.
 
 Egress modes:
   * "direct" (default, production): pinned connection as above.
@@ -18,12 +20,14 @@ from __future__ import annotations
 
 import re
 import socket
+import threading
 import time
 from dataclasses import dataclass
 from typing import Callable, Optional
 from urllib.parse import urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
 
+import httpcore
 import httpx
 
 from . import netpolicy as NP
@@ -71,6 +75,90 @@ class _Pinned(httpx.BaseTransport):
         self.inner.close()
 
 
+class _WatchedStream(httpcore.NetworkStream):
+    """A network stream whose socket the watchdog can shut down from another thread (TLS keeps the registration)."""
+
+    def __init__(self, inner, backend):
+        self.inner, self.backend = inner, backend
+        backend.streams.append(self)
+
+    def read(self, max_bytes, timeout=None):
+        return self.inner.read(max_bytes, timeout)
+
+    def write(self, buffer, timeout=None):
+        self.inner.write(buffer, timeout)
+
+    def close(self):
+        self.inner.close()
+
+    def start_tls(self, ssl_context, server_hostname=None, timeout=None):
+        self.inner = self.inner.start_tls(ssl_context, server_hostname, timeout)
+        return self
+
+    def get_extra_info(self, info):
+        return self.inner.get_extra_info(info)
+
+    def kill(self):
+        sock = self.inner.get_extra_info("socket")
+        if sock is not None:
+            try:      # socket.socket.shutdown, not SSLSocket's: wake a recv blocked in the request thread now
+                socket.socket.shutdown(sock, socket.SHUT_RDWR)
+            except OSError:
+                pass
+
+
+class _WatchedBackend(httpcore.NetworkBackend):
+    def __init__(self):
+        self.inner, self.streams, self.killed = httpcore.SyncBackend(), [], False
+
+    def connect_tcp(self, host, port, timeout=None, local_address=None, socket_options=None):
+        stream = _WatchedStream(self.inner.connect_tcp(host, port, timeout, local_address, socket_options), self)
+        if self.killed:           # the deadline passed while connecting
+            stream.kill()
+        return stream
+
+    def connect_unix_socket(self, path, timeout=None, socket_options=None):
+        raise httpcore.ConnectError("UNIX_SOCKET_REFUSED")
+
+    def sleep(self, seconds):
+        self.inner.sleep(seconds)
+
+    def kill(self):
+        self.killed = True
+        for s in list(self.streams):
+            s.kill()
+
+
+class _Watchdog:
+    """Shuts the hop's sockets down once the total deadline passes or the cancel flag is set (R4-03)."""
+
+    POLL = 0.05
+
+    def __init__(self, backend, deadline, cancel, clock):
+        self.backend, self.deadline, self.cancel, self.clock = backend, deadline, cancel, clock
+        self.reason, self._done = None, threading.Event()
+        self._thread = threading.Thread(target=self._run, name="safe-fetch-watchdog", daemon=True)
+
+    def __enter__(self):
+        self._thread.start()
+        return self
+
+    def __exit__(self, *exc):
+        self._done.set()
+        self._thread.join()
+
+    def _run(self):
+        while not self._done.wait(self.POLL):
+            if self.cancel is not None and self.cancel.cancelled:
+                self.reason = R.CANCELLED
+            elif self.clock() > self.deadline:
+                self.reason = R.TIMED_OUT
+            if self.reason is not None:
+                if self.backend is not None:
+                    self.backend.kill()
+                return
+
+
 class CancelFlag:
     def __init__(self):
         self.cancelled = False
@@ -113,12 +201,21 @@ class SafeFetcher:
         self.connections: list = []    # (host, address) per hop, for audit and tests
 
     # ---- transport -----------------------------------------------------------------------------
-    def _inner(self) -> httpx.BaseTransport:
+    def _inner(self):
+        """(transport, watched backend or None). Our own transports open sockets through a backend the watchdog can
+        shut down; an injected transport (tests) has none, and the chunk-loop checks still apply to it."""
         if self._transport is not None:
-            return self._transport
+            return self._transport, None
         if self.egress == "proxy":
-            return httpx.HTTPTransport(proxy=self.proxy, retries=0, trust_env=False)
-        return httpx.HTTPTransport(retries=0, trust_env=False)
+            t = httpx.HTTPTransport(proxy=self.proxy, retries=0, trust_env=False)
+        else:
+            t = httpx.HTTPTransport(retries=0, trust_env=False)
+        backend = _WatchedBackend()
+        pool = getattr(t, "_pool", None)
+        if not hasattr(pool, "_network_backend"):     # httpx/httpcore layout changed: refuse rather than run unbounded
+            raise RuntimeError("SAFE_FETCH_WATCHDOG_UNAVAILABLE")
+        pool._network_backend = backend
+        return t, backend
 
     def _resolve_checked(self, target: NP.Target) -> Optional[str]:
         """Return the pinned address (direct) or None (proxy). Raises EgressRefused."""
@@ -188,12 +285,12 @@ class SafeFetcher:
                 rec.fetch_status, rec.refusal_code = R.REFUSED, exc.code
                 rec.redirect_chain = chain
                 return FetchResult(rec)
-            inner = self._inner()
+            inner, backend = self._inner()
             transport = _Pinned(inner, address, target.host) if address is not None else inner
             self.connections.append((target.host, address))
             rec.connected_address = address
             try:
-                result = self._one(current, transport, deadline, cancel, rec, max_bytes)
+                result = self._one(current, transport, deadline, cancel, rec, max_bytes, backend)
             finally:
                 if self._transport is None:
                     transport.close()
@@ -220,15 +317,27 @@ class SafeFetcher:
         rec.fetch_status, rec.redirect_chain = R.TOO_MANY_REDIRECTS, chain
         return FetchResult(rec)
 
-    def _one(self, url, transport, deadline, cancel, rec, max_bytes):
+    def _one(self, url, transport, deadline, cancel, rec, max_bytes, backend=None):
         remaining = deadline - self.clock()
         if remaining <= 0:
             rec.fetch_status = R.TIMED_OUT
             return None
+        watchdog = _Watchdog(backend, deadline, cancel, self.clock)
+        with watchdog:
+            result = self._exchange(url, transport, deadline, cancel, rec, max_bytes)
+        if result is None and watchdog.reason is not None and rec.fetch_status in (R.UNREACHABLE, R.TIMED_OUT):
+            rec.fetch_status = watchdog.reason       # the watchdog cut the connection: say why
+        return result
+
+    def _exchange(self, url, transport, deadline, cancel, rec, max_bytes):
         headers = {"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,"
                    "text/plain;q=0.8,application/json;q=0.5", "Accept-Encoding": "identity"}
         try:
-            with httpx.Client(transport=transport, timeout=self.timeout, follow_redirects=False, trust_env=False,
+            # A connect cannot be cut by the watchdog (no socket yet), so it gets at most the remaining budget.
+            remaining = max(0.01, deadline - self.clock())
+            timeout = httpx.Timeout(connect=min(self.timeout.connect, remaining), read=self.timeout.read,
+                                    write=self.timeout.write, pool=min(self.timeout.pool, remaining))
+            with httpx.Client(transport=transport, timeout=timeout, follow_redirects=False, trust_env=False,
                               cookies=None) as client:
                 with client.stream("GET", url, headers=headers) as resp:
                     status = resp.status_code
