@@ -28,14 +28,8 @@
  },
  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
  "baseline_gates": {},
- "blocker": {
-  "at": "2026-10-11T07:02:56Z",
-  "kind": "OWNER_DECISION",
-  "needs": "owner decision on the diagnosed root cause",
-  "reason": "diagnosis: snapshot.js decides whether text is hidden with a blocklist of CSS hiding techniques (visible() + clipBoxOf() + covered() + the text-fill alpha check). CSS has an unbounded number of ways to make text unpainted, so the list can never be complete. The three R13 bypasses are: (1) covered() returns fal",
-  "stage": "FIXING"
- },
- "candidate": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
+ "blocker": null,
+ "candidate": "fcfb465ad34fd450107908b18ef2d9d3af15ec82",
  "config_path": "/home/user/uri-wt/lifecycle-runs/W1-A0-closure.json",
  "config_sha256": "e9f199344cb01d05216b4034313d66bfd5007f3cb4b4eeccfb1d780c6687d9cc",
  "diagnose": [
@@ -1174,6 +1168,30 @@
    "kind": "STAGE",
    "seq": 104,
    "ts": "2026-10-11T07:02:56Z"
+  },
+  {
+   "hash": "7de3b9090c9cc5f30ffa19b7a4635f07e7d7e707963880331c959bfd742f9610",
+   "kind": "OWNER_UNBLOCK",
+   "seq": 105,
+   "ts": "2026-10-11T07:25:13Z"
+  },
+  {
+   "hash": "54c52fc20df133d8f2d011c11b7da5eacec5dd79b0b690899423f9c79dc406b0",
+   "kind": "STAGE",
+   "seq": 106,
+   "ts": "2026-10-11T07:25:13Z"
+  },
+  {
+   "hash": "37d61c13a587a70e2d0c4fc80eaec90012d2e310428aa1b9dbca58d0cd021d51",
+   "kind": "CANDIDATE_MOVED",
+   "seq": 107,
+   "ts": "2026-10-11T07:25:14Z"
+  },
+  {
+   "hash": "74299c8184eec1ab85e7d895a106615e118d132485fb6287ab731c5a1e61c393",
+   "kind": "STAGE",
+   "seq": 108,
+   "ts": "2026-10-11T07:25:14Z"
   }
  ],
  "integration": null,
@@ -6110,7 +6128,7 @@
  ],
  "schema": "uri-dev-lifecycle/1",
  "spent_usd": 49.8998,
- "stage": "BLOCKED",
+ "stage": "FIXING",
  "stall_rounds": 0,
  "started_at": "2026-10-11T03:39:53Z"
 }
