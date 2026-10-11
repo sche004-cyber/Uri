@@ -67,11 +67,12 @@ def excel_lock_present(path: Path) -> bool:
 
 
 class Office:
-    def __init__(self, state: Path, *, owner="owner", google: G.GoogleSheets | None = None, brain=None):
+    def __init__(self, state: Path, *, owner="owner", google: G.GoogleSheets | None = None, brain=None,
+                 allowed_roots=None):
         self.state = Path(state)
         self.state.mkdir(parents=True, exist_ok=True)
         self.owner = owner
-        self.grants = Grants()
+        self.grants = Grants(allowed_roots)
         self.approvals = Approvals(self.state, owner)
         self.history = History(self.state)
         self.google = google or G.GoogleSheets(self.state, None)
@@ -446,6 +447,8 @@ def main(argv=None):
     run.add_argument("--owner", default="owner")
     run.add_argument("--google-token", help="absolute path of URI's existing Google token.json")
     run.add_argument("--brain-url", help="Runtime v1 base URL, e.g. http://127.0.0.1:18470")
+    run.add_argument("--allow-root", action="append", default=None,
+                     help="folder the owner's workbooks may come from (repeatable; default: the user's home folder)")
     a = ap.parse_args(argv)
     state = Path(a.state)
     brain = None
@@ -453,7 +456,8 @@ def main(argv=None):
         from uri_operational_intelligence import brain_client as BC
         from .brain import OfficeBrain
         brain = OfficeBrain(BC.BrainClient(a.brain_url))
-    office = Office(state, owner=a.owner, google=G.GoogleSheets(state, a.google_token), brain=brain)
+    office = Office(state, owner=a.owner, google=G.GoogleSheets(state, a.google_token), brain=brain,
+                    allowed_roots=a.allow_root)
     srv, _ = serve(office, "127.0.0.1", a.port)
     (state / "service.json").write_text(json.dumps({"port": srv.server_address[1], "pid": os.getpid(),
                                                      "started": time.time(), "token_file": str(state / "api-token")}),

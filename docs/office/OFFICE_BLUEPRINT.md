@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-10-11).** Revision 1, kept as history only. Its architecture (Office modules inside `uri_operational_intelligence/`, a stdio helper, new worker commands, its own Google sign-in, Codex-only audit, base ffdf534) was replaced. The current plan is `00_PLAN_AND_ACCEPTANCE_CRITERIA.md`: a top-level `uri_office/` package running as its own local HTTP service; the guarded worker is unchanged.
+
 # URI Office M1 — Live Sheets Panel (blueprint for freeze)
 
 ## Context

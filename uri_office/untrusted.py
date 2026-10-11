@@ -1,5 +1,9 @@
 """Untrusted-data block for Brain prompts (AC16, OFF-R6).
 
+TODO(AC16): after W1/A0 is merged into canonical and phase/uri-office is rebased onto it, replace this module's
+body with W1's `uri_web.untrusted.data_block` (keep `SYSTEM_RULE` only if W1 has no equivalent) and re-run
+tests/office. Until then this module stays as it is.
+
 Cell contents, sheet names and history rows come from files and people outside URI's control. They reach the Brain
 only inside one clearly marked block, as JSON, after the system prompt has said that nothing inside it is an
 instruction. This mirrors the convention of W1's `uri_web/untrusted.data_block`; once W1 is merged this module should

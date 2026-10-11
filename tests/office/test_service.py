@@ -3,6 +3,7 @@ import http.client
 import json
 import os
 import shutil
+import stat
 import subprocess
 import threading
 
@@ -15,7 +16,7 @@ from uri_office.service import Office, serve
 
 @pytest.fixture
 def svc(tmp_path):
-    office = Office(tmp_path / "state")
+    office = Office(tmp_path / "state", allowed_roots=[tmp_path])
     srv, token = serve(office, "127.0.0.1", 0)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     yield office, srv.server_address[1], token
@@ -80,6 +81,8 @@ def test_token_file_is_per_launch_and_current_user_only(tmp_path):
         account, _, perm = entries[0].rpartition(":")
         assert account in allowed and perm == "(F)", entries
         assert "(I)" not in acl
+    else:
+        assert stat.S_IMODE(f.stat().st_mode) == 0o600
 
 
 def test_get_never_changes_state(svc, rich):
@@ -120,12 +123,31 @@ def test_unknown_routes_and_principal(svc):
 
 
 # ---- AC7 file access -------------------------------------------------------------------------------------------------
-@pytest.mark.parametrize("bad", ["relative.xlsx", r"\\server\share\a.xlsx", "C:/a/../b.xlsx", "C:/a/b.xlsx:ads",
-                                 "C:/a/b.csv", "", None])
-def test_open_refuses_bad_paths(svc, bad):
+def test_open_refuses_bad_paths_on_this_platform(svc, rich):
     _, port, token = svc
-    st, out, _ = call(port, token, "POST", "/open/local", {"path": bad})
-    assert st == 400 and out["error"] == "PATH_REFUSED"
+    sep = os.sep
+    bad = ["relative.xlsx", str(rich.parent) + sep + ".." + sep + rich.parent.name + sep + rich.name,
+           str(rich)[:-5] + ".csv", "", None]
+    bad += ([r"\\server\share\a.xlsx", str(rich) + ":ads", r"\\?\C:\a.xlsx"] if os.name == "nt"
+            else ["//server/share/a.xlsx", "/dev/null.xlsx"])
+    for b in bad:
+        st, out, _ = call(port, token, "POST", "/open/local", {"path": b})
+        assert st == 400 and out["error"] == "PATH_REFUSED", b
+
+
+def test_open_refuses_file_outside_allowed_roots(tmp_path, rich):
+    (tmp_path / "elsewhere").mkdir()
+    office = Office(tmp_path / "state", allowed_roots=[tmp_path / "elsewhere"])
+    with pytest.raises(OfficeError) as e:
+        office.open_local(str(rich))
+    assert e.value.code == "PATH_REFUSED" and "outside" in e.value.detail
+
+
+def test_no_allowed_roots_refuses_everything(tmp_path, rich):
+    office = Office(tmp_path / "state", allowed_roots=[])
+    with pytest.raises(OfficeError) as e:
+        office.open_local(str(rich))
+    assert e.value.code == "PATH_REFUSED"
 
 
 def test_edit_and_save_only_after_hash_bound_approval(svc, rich):
@@ -236,18 +258,19 @@ def _aces(path):
     return lines
 
 
-@pytest.mark.skipif(os.name != "nt", reason="Windows ACL")
 def test_state_folder_is_current_user_only(tmp_path):
     office = Office(tmp_path / "state")
     srv, _ = serve(office, "127.0.0.1", 0)
     srv.server_close()
+    if os.name != "nt":
+        assert stat.S_IMODE((tmp_path / "state").stat().st_mode) == 0o700
+        return
     user = os.environ["USERNAME"]
     allowed = {os.environ.get("USERDOMAIN", "") + "\\" + user, os.environ.get("COMPUTERNAME", "") + "\\" + user}
     folder = _aces(tmp_path / "state")
     assert len(folder) == 1, folder                       # no Users, Everyone, sandbox groups or inherited entries
-    account, _, perm = folder[0].rpartition(":")
-    assert account.rsplit(":", 2)[0] in allowed or account in allowed
-    assert folder[0].endswith("(OI)(CI)(F)"), folder
+    account = folder[0][:-len(":(OI)(CI)(F)")]
+    assert account in allowed and folder[0].endswith(":(OI)(CI)(F)"), folder
     # files created later inside the folder inherit only that one entry
     (tmp_path / "state" / "later.txt").write_text("x")
     later = _aces(tmp_path / "state" / "later.txt")
