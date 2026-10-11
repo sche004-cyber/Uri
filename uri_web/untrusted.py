@@ -915,7 +915,9 @@ def _digit_variant(norm: str) -> str:
     def fold(m):
         tok = m.group(0)
         # numbers stay ('2020', '1,000', '1/2', '3:1'): only a token with a letter, or a lone '0'/'1'/'|', is read
-        return tok.translate(_DIGIT_LOOK) if len(tok) == 1 or any(ch.isalpha() for ch in tok) else tok
+        # R40-01: decided on the token's core without leading/trailing punctuation ('0,', '0)', "0'", '0.').
+        core = tok.strip("".join(ch for ch in tok if unicodedata.category(ch)[0] in "PS" and ch != "|"))
+        return tok.translate(_DIGIT_LOOK) if len(core) == 1 or any(ch.isalpha() for ch in core) else tok
     return _TOKEN.sub(fold, norm)
 
 
