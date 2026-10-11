@@ -1,6 +1,6 @@
 # W2 — Web & Document Intelligence: plan and acceptance criteria
 
-Status: **PLANNED** — 24 acceptance criteria, delivered as W2a + W2b (§4d) (self-reviewed: FTS5, `Page.find_tables`, POSIX `resource` limits and the pytesseract `timeout`
+Status: **PLANNED** — 26 acceptance criteria, delivered as W2a + W2b (§4d) (self-reviewed: FTS5, `Page.find_tables`, POSIX `resource` limits and the pytesseract `timeout`
 parameter confirmed present in the cloud venv). Not implemented, not reviewed, not integrated.
 
 Written 2026-10-11 from:
@@ -379,7 +379,7 @@ Acceptance:
 
 ## 4d. Delivery in two lifecycle milestones
 
-W2 now has 24 acceptance criteria. One independent review of the whole change would be slow and less reliable, so W2
+W2 now has 26 acceptance criteria. One independent review of the whole change would be slow and less reliable, so W2
 is delivered as two milestones. Each has its own branch from the canonical tip, its own independent review and its
 own D1 integration. Same order in the queue.
 
@@ -387,12 +387,110 @@ own D1 integration. Same order in the queue.
   - Covers: discovery and fetch, extraction/OCR worker and limits, document index and versions, temporary files and
     cache, relationship evidence rules, privacy separation, ARN narrowing, Graphify document pointers (D11), and the
     FIND / ANSWER / SUMMARISE intents.
-  - Acceptance: W2-AC1…AC18, AC23, AC24.
+  - Acceptance: W2-AC1…AC18, AC23 (with `docs.open_document`), AC24.
 - **W2b — structured knowledge.**
   - Covers: named collections and the current-rules view, the agenda-item index, and non-web (uploaded/Drive/local)
     sources.
-  - Acceptance: W2-AC19…AC22.
+  - Acceptance: W2-AC19…AC22, AC25, AC26.
   - Depends on W2a being integrated.
+
+## 4e. "What rules apply to this task" (W2-AC25) and the Sources & Rules UI (W2-AC26) (owner approval, 2026-10-11)
+
+### The owner's example
+
+"Check the procurement rules to buy a heater for the office: check the GFR, FRSR and any other rules relevant to NIT
+Sikkim." The owner noted that the user may not name any rules at all. This is a sixth intent, **APPLY** (which rules
+govern doing X), on top of the five in §4c.
+
+### W2-AC25: task → applicable rules → cited procedure
+
+1. **Source profile** (owner-approved, user-extendable, stored with the W2 index):
+   - It maps task categories (procurement of goods, leave, travel/TA, recruitment, pay and service, works, and others
+     added later) to rule sources.
+   - Each source records: name, issuing authority, level (central | institute | body decision), precedence, scope or
+     collection, and status (indexed | approved-not-indexed | needs-approval | missing).
+   - Example (procurement, NIT Sikkim):
+     - central: GFR 2017 procurement chapter, the Department of Expenditure procurement manual for goods, DoE OMs
+       amending them, GeM rules;
+     - institute: NIT Act/Statutes, the NIT Sikkim purchase procedure/manual, the BoG-approved Delegation of
+       Financial Powers;
+     - body decisions: BoG/FC items and circulars (W2b collections and agenda index).
+   - **No source is assumed to exist.** Missing ones are shown as missing.
+2. **Classification:** the request is classified into task categories without the user naming any rule (Brain
+   proposal checked against the profile). Each selected source is listed with a one-line reason.
+3. **Clarification first** when the procedure depends on a missing fact (estimated value, GeM availability,
+   recurring or one-off). This uses ARN's clarification recommendation; URI never assumes a value.
+4. **"Not relevant" explanations** for rules the user names that do not govern the task, for example FR-SR, which
+   covers service conditions (pay, leave), not procurement of goods. Explanations are grounded in the source's own
+   stated scope where indexed.
+5. **Cited procedure checklist:** ordered steps and decision points (GeM route; value thresholds; purchase committee
+   or tender; approving authority at this value). Every threshold, amount and limit is quoted verbatim from a cited,
+   current document (D7), **never from model memory**. Amendments are marked confirmed or unconfirmed (§3/§4b).
+6. **Conflicts:** central and institute rules are shown side by side with citations, together with the precedence
+   the documents themselves state. If none is stated, URI says so.
+7. **Coverage:** profile sources used, missing, or not yet approved. The answer says plainly when a key source (for
+   example the institute purchase manual) is absent.
+
+### W2-AC26: Sources & Rules UI (placeholders the user fills in)
+
+- **New A2UI surface `docs.sources`** (existing catalog components only: Column, Card, Text, Badge, List,
+  TextField, ChoicePicker, Button; no catalog change):
+  - one card per task category in the source profile;
+  - inside each card, one row per expected source with a status badge (indexed / not approved / missing);
+  - **empty-state placeholders** for missing sources, for example "NIT Sikkim purchase manual — not added yet", each
+    with add actions:
+    - **Add a public source:** a TextField for a site or document address, plus a ChoicePicker for the category.
+      This creates a needs-approval scope; nothing is fetched until the user approves it in the same surface.
+    - **Upload a document:** the existing upload path; marked `internal` (W2-AC22).
+    - **Link a Drive folder:** read-only; marked `internal`.
+  - **Also on the surface:** approve or remove a source, re-check a source (refresh), and add a custom task category
+    with its sources.
+  - Collections (W2-AC19) and the agenda index (W2-AC21) appear as sources that can be attached to categories.
+- **New registered actions** in `uri_a2ui/actions.py`, authority `docs`; each is re-validated by the W2 authority and
+  bound to the surface digest:
+  - `docs.add_public_source` {address: str, category: str}: validated by W1 netpolicy before anything is stored;
+  - `docs.approve_source` {source_id: str, sha256}: `confirms: true`, bound to the exact scope shown;
+  - `docs.remove_source` {source_id: str};
+  - `docs.attach_upload` {artifact_sha256, category};
+  - `docs.link_drive_folder` {folder_id: str, category};
+  - `docs.refresh_source` {source_id};
+  - `docs.add_category` {name: str}.
+- **Flutter renderer** (`uri_ui/lib/living/**`): maps the new actions to client calls. No other Flutter change.
+
+### Opening links (affects W2-AC23; delivered in W2a)
+
+- **Reconciliation R-8.** The A2UI catalog refuses URLs anywhere: W1 shows citations as `host/path` text and nothing
+  is clickable. That safety contract is kept.
+- A list or summary instead shows the document's citation text plus an **Open** button bound to the new action
+  `docs.open_document` {doc_id: str, sha256}, `confirms: true`.
+  - The W2 authority resolves doc_id to the recorded URL server-side and re-checks it with netpolicy.
+  - The renderer shows the full URL in a confirmation dialog, then hands it to the user's own browser.
+  - No URL ever travels inside a surface. URI never browses for the user.
+
+Acceptance:
+
+- **W2-AC25 Applicable rules:**
+  - For the heater fixture (GFR-style, manual-style and delegation-of-powers-style documents plus an FR-SR-style
+    document), and with no rule named in the request:
+    - the procurement category is selected and the sources are listed with reasons;
+    - a missing estimated value gives a clarification, not an answer;
+    - FR-SR is reported as not relevant, with its scope cited;
+    - every threshold in the checklist is verbatim with a citation (a test asserts that no number in the answer is
+      absent from its cited page);
+    - conflicts are shown side by side;
+    - a missing institute manual appears in coverage, and the answer says so.
+  - The same pipeline answers a leave-category task from the same profile (no per-example code).
+- **W2-AC26 Sources UI:**
+  - The `docs.sources` surface validates against the existing catalog (`require_valid`).
+  - Missing sources render as placeholders with add actions.
+  - `docs.add_public_source` with a private, local or non-http address is refused by netpolicy and nothing is stored.
+  - Approval is bound to the shown scope (a changed scope is refused).
+  - An upload is labelled `internal`.
+  - `docs.open_document` never puts a URL in a surface, resolves only indexed doc_ids, and the renderer shows the
+    full URL before opening (Flutter widget test).
+  - New actions are rejected if their context is malformed or the digest does not match.
+
+Delivery: W2-AC25 and W2-AC26 belong to **W2b**, except `docs.open_document`, which ships in **W2a** with W2-AC23.
 
 ## 5. Privacy and knowledge separation
 
