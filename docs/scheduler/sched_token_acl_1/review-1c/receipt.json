@@ -1,0 +1,79 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": null,
+ "candidate": "11ec4a21f2efcaa1a40493f4208f0cc5cd7f108e",
+ "config_sha256": "b211d915e3e502b743f8e6d1f8b365a123b77553493cd40ddd8edb48843eb875",
+ "events": 18,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "11ec4a21f2ef": {
+   "blocked": null,
+   "new_failures": {
+    "python-scheduler": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-11T14:44:38Z",
+  "candidate": "11ec4a21f2efcaa1a40493f4208f0cc5cd7f108e",
+  "mode": "none",
+  "status": "NOT_INTEGRATED_BY_POLICY"
+ },
+ "milestone": "SCHED-TOKEN-ACL-1c",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R2-01",
+   "severity": "LOW",
+   "title": "If both the final rename and the restore rename in secure_state fail, the state path is missing and the next run creates an empty locked folder and starts on an empty DB"
+  }
+ ],
+ "repairs": [
+  {
+   "addresses": [
+    "R1-01",
+    "R1-02"
+   ],
+   "commit": "11ec4a21f2efcaa1a40493f4208f0cc5cd7f108e",
+   "reason": null,
+   "repair": 1,
+   "status": "COMMITTED"
+  }
+ ],
+ "reviewers": [
+  {
+   "candidate": "5b7c05498618bcaee6c3c3f4ec94b5999b0d1c67",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 1,
+   "session_id": "c76a8015-07c3-477f-89ae-0307a03a1276",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "11ec4a21f2efcaa1a40493f4208f0cc5cd7f108e",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 2,
+   "session_id": "ab26664b-5da2-4844-9b71-367a6788e7b6",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 2,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "VERIFIED",
+ "verify_errors": [],
+ "written_at": "2026-10-11T14:44:38Z"
+}

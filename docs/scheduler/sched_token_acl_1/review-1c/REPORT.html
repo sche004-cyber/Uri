@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>SCHED-TOKEN-ACL-1c report</title>
+<style>
+:root{--bg:#f7f8fa;--panel:#fff;--fg:#1d232b;--muted:#5d6774;--line:#dde1e7;--good:#1f7a4d;--bad:#b3261e;--warn:#9a6200;
+--goodf:#2e9e66;--badf:#d0453b;--mutedf:#a9b1bc;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14171b;--panel:#1c2026;--fg:#e6e9ee;--muted:#9aa4b1;
+--line:#2d333b;--good:#5fd19a;--bad:#ff8a80;--warn:#f2b84b;--goodf:#3fb37d;--badf:#e5675d;--mutedf:#59626e;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#14171b;--panel:#1c2026;--fg:#e6e9ee;--muted:#9aa4b1;--line:#2d333b;--good:#5fd19a;--bad:#ff8a80;
+--warn:#f2b84b;--goodf:#3fb37d;--badf:#e5675d;--mutedf:#59626e;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;
+padding-block:24px;padding-inline:16px}
+.wrap{max-width:1100px;margin-inline:auto;display:grid;gap:20px}
+h1{font:400 1.8rem/1.2 Georgia,"Times New Roman",serif;margin:0;text-wrap:balance}h2{font-size:1.05rem;margin:0}
+.sub,.note{color:var(--muted);margin:0}.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr))}
+.card,.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:grid;gap:8px;align-content:start}
+.tile .n{font:400 1.9rem/1.1 Georgia,serif;font-variant-numeric:tabular-nums}.tile .l{color:var(--muted);font-size:.85rem}
+.tile.bad .n{color:var(--bad)}.tile.warn .n{color:var(--warn)}.tile.good .n{color:var(--good)}
+.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr))}
+.tbl{overflow:auto;max-height:28rem}table{border-collapse:collapse;width:100%;font-size:.85rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;background:var(--panel);color:var(--muted);font-weight:600}
+.pill{display:inline-block;padding:0 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.pill.good{color:var(--good);border-color:currentColor}.pill.bad{color:var(--bad);border-color:currentColor}
+.pill.warn{color:var(--warn);border-color:currentColor}.stage{font-size:.95rem;padding:2px 12px}
+svg .grid{stroke:var(--line)}svg .tick{fill:var(--muted);font-size:11px}svg .bar.good{fill:var(--goodf)}
+svg .bar.bad{fill:var(--badf)}svg .bar.muted{fill:var(--mutedf)}svg .bar.light{opacity:.35}
+code{font-size:.85em;word-break:break-all}
+</style></head><body><div class="wrap">
+<header><h1>SCHED-TOKEN-ACL-1c</h1>
+<p class="sub"><span class="pill stage good">VERIFIED</span> Independently accepted and qualified; integration not performed (policy or waiting).
+Independent ACCEPT and passing gates are recorded on this exact commit. Receipt chain verified.</p>
+<p class="note">Baseline <code>ce1a90c046d2e9566a86d8dccf25df0e2bc98c80</code> · candidate <code>11ec4a21f2efcaa1a40493f4208f0cc5cd7f108e</code> ·
+integration NOT_INTEGRATED_BY_POLICY · written 2026-10-11T14:44:38Z</p></header>
+<section class="tiles"><div class="tile "><span class="l">Review rounds</span><span class="n">2</span></div><div class="tile good"><span class="l">Findings repaired</span><span class="n">2 / 6</span></div><div class="tile good"><span class="l">Open blocking findings</span><span class="n">0</span></div><div class="tile "><span class="l">Repairs committed</span><span class="n">1</span></div><div class="tile good"><span class="l">Needs you</span><span class="n">0</span></div></section>
+<section class="card"><h2>Needs you</h2><p class="note">None.</p></section>
+<div class="grid2">
+<section class="card"><h2>Review rounds</h2><p class="note">Findings per round, darker part blocking; red rejected,
+green accepted. Each round is a separate reviewer process.</p><svg viewBox="0 0 640 200" width="100%" role="img" aria-label="Findings per review round"><line x1="30" x2="632" y1="172.0" y2="172.0" class="grid"/><text x="24" y="176.0" text-anchor="end" class="tick">0</text><line x1="30" x2="632" y1="139.2" y2="139.2" class="grid"/><text x="24" y="143.2" text-anchor="end" class="tick">1</text><line x1="30" x2="632" y1="106.4" y2="106.4" class="grid"/><text x="24" y="110.4" text-anchor="end" class="tick">2</text><line x1="30" x2="632" y1="73.6" y2="73.6" class="grid"/><text x="24" y="77.6" text-anchor="end" class="tick">3</text><line x1="30" x2="632" y1="40.8" y2="40.8" class="grid"/><text x="24" y="44.8" text-anchor="end" class="tick">4</text><line x1="30" x2="632" y1="8.0" y2="8.0" class="grid"/><text x="24" y="12.0" text-anchor="end" class="tick">5</text><g><title>R1 5b7c05498618: REJECT, 2 blocking of 5</title><rect x="152.5" width="56.0" y="8.0" height="164.0" rx="4" class="bar bad light"/><rect x="152.5" width="56.0" y="106.4" height="65.6" rx="4" class="bar bad"/></g><text x="180.5" y="190" text-anchor="middle" class="tick">R1</text><g><title>R2 11ec4a21f2ef: ACCEPT WITH FINDINGS, 0 blocking of 1</title><rect x="453.5" width="56.0" y="139.2" height="32.8" rx="4" class="bar good light"/><rect x="453.5" width="56.0" y="172.0" height="0.0" rx="4" class="bar good"/></g><text x="481.5" y="190" text-anchor="middle" class="tick">R2</text></svg></section>
+<section class="card"><h2>Qualification gates</h2><div class="tbl"><table><thead><tr><th>Commit</th><th>Gate</th><th>OK</th><th>Passed</th><th>Failed</th><th>New</th><th>Vanished</th></tr></thead><tbody><tr><td>11ec4a21f2ef</td><td>python-scheduler</td><td><span class="pill good">True</span></td><td>74</td><td>0</td><td>0</td><td>0</td></tr></tbody></table></div></section>
+</div>
+<section class="card"><h2>Reviewer log</h2><div class="tbl"><table><thead><tr><th>Round</th><th>Commit</th><th>Reviewer</th><th>Session</th><th>Verdict</th><th>Blocking</th><th>Findings</th><th>Independent</th><th>Finished</th></tr></thead><tbody><tr><td>R1</td><td>5b7c05498618</td><td>claude_cli</td><td>c76a8015-07c3-477f-89ae-0307a03a1276</td><td><span class="pill bad">REJECT</span></td><td>2</td><td>5</td><td><span class="pill good">True</span></td><td>2026-10-11T14:38:37Z</td></tr><tr><td>R2</td><td>11ec4a21f2ef</td><td>claude_cli</td><td>ab26664b-5da2-4844-9b71-367a6788e7b6</td><td><span class="pill good">ACCEPT WITH FINDINGS</span></td><td>0</td><td>1</td><td><span class="pill good">True</span></td><td>2026-10-11T14:44:07Z</td></tr></tbody></table></div></section>
+<section class="card"><h2>Findings</h2><div class="tbl"><table><thead><tr><th>Round</th><th>Id</th><th>Severity</th><th>Status</th><th>Finding</th></tr></thead><tbody><tr><td>R1</td><td>R1-01</td><td><span class="pill warn">MEDIUM</span></td><td><span class="pill good">repaired 11ec4a2</span></td><td>A secure-state that fails after the rename leaves a missing or partly copied state folder that run then accepts (scheduler starts with an empty DB)</td></tr><tr><td>R1</td><td>R1-02</td><td><span class="pill warn">MEDIUM</span></td><td><span class="pill good">repaired 11ec4a2</span></td><td>scripts/a2ui_live_check.py pre-creates its state folder with tempfile.mkdtemp, so on Windows (its only platform) run exits 4; this impact is not recorded in the plan</td></tr><tr><td>R1</td><td>R1-03</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>secure-state checks for links once, then copytree/copyfile follow any link planted after that check</td></tr><tr><td>R1</td><td>R1-04</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>The check on items inside the folder misses NULL DACLs and conditional ACEs</td></tr><tr><td>R1</td><td>R1-05</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>Owner check compares the raw SID string against the SDDL owner, which can be an alias or BUILTIN\Administrators</td></tr><tr><td>R2</td><td>R2-01</td><td><span class="pill ">LOW</span></td><td><span class="pill ">non-blocking</span></td><td>If both the final rename and the restore rename in secure_state fail, the state path is missing and the next run creates an empty locked folder and starts on an empty DB</td></tr></tbody></table></div></section>
+<section class="card"><h2>Repairs</h2><div class="tbl"><table><thead><tr><th>#</th><th>Status</th><th>Commit</th><th>Addresses</th><th>Reason</th></tr></thead><tbody><tr><td>P1</td><td><span class="pill good">COMMITTED</span></td><td>11ec4a21f2ef</td><td>R1-01, R1-02</td><td></td></tr></tbody></table></div></section>
+<p class="note">Generated by scripts/dev_workflow/lifecycle_report.py from the milestone's recorded state.</p>
+</div></body></html>
