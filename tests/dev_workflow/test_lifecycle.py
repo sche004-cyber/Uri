@@ -1193,3 +1193,55 @@ def test_r2_02_hashed_files_are_written_as_exact_bytes(tmp_path):
     from scripts.dev_workflow import lifecycle_providers, lifecycle_report
     for mod in (L, lifecycle_providers, lifecycle_report):
         assert ".write_text(" not in inspect.getsource(mod)  # no newline-translating writes remain
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1b R3
+
+def _session_b(tmp_path, repo):
+    """Another session's branch with its own commit, which nothing in this milestone may move."""
+    g(repo, "branch", "session-b", "canon")
+    other = tmp_path / "other_wt"
+    g(repo, "worktree", "add", "-q", str(other), "session-b")
+    (other / "work.txt").write_text("other session work\n")
+    g(other, "add", "-A")
+    g(other, "commit", "-qm", "session-b work")
+    g(repo, "worktree", "remove", str(other))
+    return g(repo, "rev-parse", "refs/heads/session-b")
+
+
+def test_r3_01_worker_written_fetch_refspec_is_tamper_and_moves_no_branch(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    sb = _session_b(tmp_path, repo)
+    body = f"""
+from pathlib import Path
+subprocess.run(['git', '-C', {str(repo)!r}, 'config', '--add', 'remote.origin.fetch', '+refs/heads/canon:refs/heads/session-b'])
+Path('pkg/calc.py').write_text('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+Path('tests/test_zero.py').write_text('from pkg.calc import safe_div\\n\\n\\ndef test_zero():\\n    assert safe_div(1, 0) is None\\n')
+print('REPAIR_RESULT_BEGIN'); print(json.dumps({{'repaired': ['R1-01']}})); print('REPAIR_RESULT_END')
+"""
+    config(tmp_path, repo, wt)
+    c = json.loads((tmp_path / "cfg.json").read_text())
+    c["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "evil_impl.py", body)}
+    (tmp_path / "cfg.json").write_text(json.dumps(c))
+    cfg = L.load_config(tmp_path / "cfg.json")
+    assert L.run(cfg) == "BLOCKED"
+    st = json.loads((tmp_path / "state/state.json").read_text())
+    assert "TAMPER" in json.dumps(st["repairs"])
+    assert g(repo, "rev-parse", "refs/heads/session-b") == sb
+    assert remote_tip(remote) == base
+    for key in ("remote.origin.fetch", "remote.origin.mirror", "remote.origin.tagopt", "remote.origin.prunetags"):
+        assert not L._ROUTINE_CONFIG.match(key)
+
+
+def test_r3_01_integration_fetch_moves_no_local_ref_even_with_hostile_refspec(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    sb = _session_b(tmp_path, repo)
+    g(repo, "tag", "local-only-tag", sb)
+    g(repo, "config", "--add", "remote.origin.fetch", "+refs/heads/canon:refs/heads/session-b")
+    g(repo, "config", "remote.origin.prune", "true")
+    g(repo, "config", "remote.origin.prunetags", "true")
+    refs0 = g(repo, "for-each-ref", "--format=%(refname) %(objectname)")
+    cfg = config(tmp_path, repo, wt, integration={"mode": "fast-forward", "remote": "origin", "target_ref": "canon",
+                                                  "authorized": False})
+    L.integration_fetch(cfg, "origin", "canon")
+    assert g(repo, "for-each-ref", "--format=%(refname) %(objectname)") == refs0

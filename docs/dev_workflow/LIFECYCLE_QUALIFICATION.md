@@ -130,3 +130,11 @@ where it is meant to run: R2-02 (on Windows every hashed file is newline-transla
 and R2-01 (routine branch-tracking writes by other sessions to the shared git config read as TAMPER). Both repaired
 with regression tests (`test_r2_01_*`, `test_r2_02_*`); the new commit is re-audited by a fresh reviewer before
 canonical integration under owner decision D1. The other LOW findings (R1-05..R1-09) stay documented limitations.
+
+**Correction (R3-01, re-audit of `39ed499`).** The R2-01 allowlist was too wide: it also ignored
+`remote.<r>.fetch`, `mirror`, `tagopt` and `pruneTags`. A worker could add a fetch refspec mapping the target onto
+another session's branch, pass the control-state check, and the integration fetch then force-moved that branch.
+Repair: only `branch.*` and `remote.<r>.prune`/`skipDefaultUpdate` remain routine (fetch refspec, mirror, tagopt and
+pruneTags changes are TAMPER again), and the integration fetch writes no local ref at all
+(`git fetch --refmap= --no-tags --no-prune --no-write-fetch-head <remote> refs/heads/<target>`). Regression tests
+`test_r3_01_*`.

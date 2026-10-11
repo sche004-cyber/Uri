@@ -319,10 +319,11 @@ def is_independent(cfg, round_rec: dict, impl_sids=frozenset()) -> tuple[bool, s
 
 # --------------------------------------------------------------------------- git helpers
 
-# Routine bookkeeping other sessions write to the shared config (branch tracking, fetch refspecs) is not tampering;
+# Routine bookkeeping other sessions write to the shared config (branch tracking, remote prune flag) is not tampering;
 # everything else (core.*, filters, diff/merge drivers, includes, aliases, URLs, credentials, extensions, unknown
-# keys) is (R2-01).
-_ROUTINE_CONFIG = re.compile(r"^(branch\.[^\0]+|remote\.[^.]+\.(fetch|tagopt|prune|prunetags|mirror|skipdefaultupdate))$")
+# keys) is (R2-01). Fetch refspecs, mirror, tagopt and pruneTags decide which local refs a fetch writes or deletes,
+# so a worker that changes them is TAMPER (R3-01).
+_ROUTINE_CONFIG = re.compile(r"^(branch\.[^\0]+|remote\.[^.]+\.(prune|skipdefaultupdate))$")
 
 
 def _control_config(path: Path) -> list[str]:
@@ -1166,6 +1167,13 @@ def do_repair(cfg, st: State, sha: str, findings: list, diagnosis: dict | None =
     return finish("REFUSED", reason=reason, restored=restored)
 
 
+def integration_fetch(cfg, remote: str, target: str) -> None:
+    """Fetch the target's objects without writing any local ref: no configured refmap (remote.*.fetch could map the
+    target onto another session's branch), no destination, no tags, no pruning (R3-01)."""
+    git(cfg["repo"], "fetch", "-q", "--refmap=", "--no-tags", "--no-prune", "--no-write-fetch-head", remote,
+        f"refs/heads/{target}", check=False)
+
+
 def integrate(cfg, st: State, sha: str) -> None:
     pol = cfg["integration"]
     mode = pol.get("mode", "none")
@@ -1178,7 +1186,7 @@ def integrate(cfg, st: State, sha: str) -> None:
         st.event("INTEGRATION", **st.d["integration"])
         return
     remote, target = pol.get("remote", "origin"), pol["target_ref"]
-    git(cfg["repo"], "fetch", "-q", remote, target, check=False)
+    integration_fetch(cfg, remote, target)
     tip = (git(cfg["repo"], "ls-remote", remote, f"refs/heads/{target}").split("\t") or [""])[0]
     rec = {"mode": mode, "remote": remote, "target_ref": target, "target_tip_before": tip, "candidate": sha, "at": now()}
     if pol.get("expected_target_tip") and tip != pol["expected_target_tip"]:
