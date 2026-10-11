@@ -67,24 +67,134 @@
   // R11-01: visibility is decided per text node. Its own client rects must survive every clip that applies to it
   // (ancestor overflow boxes on its containing-block chain, the legacy clip property, clip-path inset), stay inside
   // the document (text-indent / negative offsets) and, where the rect is in the viewport, not sit under an opaque
-  // element painted above it (elementFromPoint at the rect centre). Fully transparent text colour is hidden too.
-  // Not covered (documented in docs/assist/03): low-contrast colour (white on white), fonts of 2px and above,
-  // occlusion of text outside the viewport, and overlays with pointer-events:none.
-  const alpha = (c) => { const m = /rgba?\(([^)]*)\)/.exec(c || ""); if (!m) return c === "transparent" ? 0 : 1;
-    const v = m[1].split(/[\s,/]+/).filter(Boolean); return v.length > 3 ? parseFloat(v[3]) : 1; };
+  // element painted above it (elementFromPoint at the rect centre). Paint effects are below (R12-01).
+  // Not covered (documented in docs/assist/03): low-contrast colour (white on white, filter brightness/contrast,
+  // blend modes), fonts of 2px and above, transforms that leave glyphs at least 2px tall, gradient masks that are
+  // inked somewhere but transparent over the text, occlusion of text outside the viewport, and overlays with
+  // pointer-events:none.
+  // R12-01: subtree-wide paint effects are decided in the same ancestor walk, and anything that cannot be evaluated
+  // counts as hidden (fail closed): effective opacity = product of opacity and filter:opacity() over every ancestor
+  // (below MIN_ALPHA is hidden; an SVG url() filter is hidden); the text fill colour (-webkit-text-fill-color, which
+  // is the colour actually painted) times that opacity below MIN_ALPHA; mask layers unless one is a gradient with an
+  // inked stop that tiles over the box (url()/image masks, luminance mode and non-add compositing are hidden);
+  // clip-path shapes as geometry (every inset side, circle, ellipse, polygon area; path()/url()/unparseable hidden);
+  // content of a closed <details> other than its summary.
+  const MIN_ALPHA = 0.1;
+  const alpha = (c) => { c = String(c || "").trim(); if (c === "transparent") return 0;
+    let m = /^rgba?\(([^)]*)\)$/.exec(c);
+    if (m) { const v = m[1].split(/[\s,/]+/).filter(Boolean); return v.length > 3 ? num(v[3]) : 1; }
+    m = /\/\s*([-\d.e]+%?)\s*\)$/.exec(c);                  // color(), oklch(), hsl() ... with an explicit alpha
+    return m ? num(m[1]) : 1; };
+  const num = (s) => (String(s).endsWith("%") ? parseFloat(s) / 100 : parseFloat(s));
+  // Split at top level (outside parentheses) on whitespace or on commas.
+  const topSplit = (s, comma) => { const out = []; let d = 0, cur = "";
+    for (const ch of String(s)) {
+      if (ch === "(") d++; else if (ch === ")") d--;
+      if (d === 0 && (comma ? ch === "," : /\s/.test(ch))) { if (cur.trim()) out.push(cur.trim()); cur = ""; } else cur += ch;
+    }
+    if (cur.trim()) out.push(cur.trim()); return out; };
+  const KEYPOS = { left: 0, top: 0, center: 50, right: 100, bottom: 100 };
+  const len = (t, ref) => { t = String(t || "").trim(); let m = /^(-?[\d.]+(?:e-?\d+)?)(px|%)?$/.exec(t);
+    if (m) return m[2] === "%" ? parseFloat(m[1]) * ref / 100 : parseFloat(m[1]);
+    m = /^calc\((-?[\d.]+)%\s*([+-])\s*(-?[\d.]+)px\)$/.exec(t);
+    if (m) return parseFloat(m[1]) * ref / 100 + (m[2] === "-" ? -1 : 1) * parseFloat(m[3]);
+    return t in KEYPOS ? KEYPOS[t] * ref / 100 : NaN; };
+  const filterOpacity = (f) => { if (!f || f === "none") return 1; if (/url\(/.test(f)) return 0;
+    let o = 1; for (const m of f.matchAll(/opacity\(\s*([-\d.e]+%?)\s*\)/g)) o *= num(m[1]); return o; };
+  const masked = (cs) => {
+    const img = cs.maskImage || cs.webkitMaskImage || "none";
+    if (img === "none") return false;
+    if (/luminance/.test(cs.maskMode || "") || topSplit(cs.maskComposite || "add", true).some((c) => c !== "add")) return true;
+    const at = (v, d, i) => { const l = topSplit(v || d, true); return l[i % l.length] || d; };
+    return !topSplit(img, true).some((layer, i) => {
+      if (!/^(repeating-)?(linear|radial|conic)-gradient\(/.test(layer)) return false;   // url()/image: cannot tell
+      const stops = layer.match(/(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^)]*\)|\btransparent\b/g) || [];
+      if (!stops.some((c) => alpha(c) >= MIN_ALPHA)) return false;
+      const size = at(cs.maskSize || cs.webkitMaskSize, "auto", i);
+      if (topSplit(size).some((s) => parseFloat(s) === 0)) return false;
+      if (!/no-repeat/.test(at(cs.maskRepeat || cs.webkitMaskRepeat, "repeat", i))) return true;
+      return /^(auto( auto)?|cover)$/.test(size) && /^0(px|%)? 0(px|%)?$/.test(at(cs.maskPosition || cs.webkitMaskPosition, "0% 0%", i));
+    });
+  };
+  // The viewport box a clip-path leaves on `el` (border box `r`), or null when it leaves nothing or cannot be read.
+  const clipPathBox = (cs, r) => {
+    const v = cs.clipPath; let x = r.left, y = r.top, w = r.width, h = r.height;
+    const g = /\b(margin|padding|content)-box\b/.exec(v);
+    if (g) {
+      const sides = (k) => ["Top", "Right", "Bottom", "Left"].map((s) => parseFloat(cs[k + s + (k === "border" ? "Width" : "")]) || 0);
+      const parts = g[1] === "margin" ? [sides("margin")].map((a) => a.map((n) => -n)) :
+        g[1] === "padding" ? [sides("border")] : [sides("border"), sides("padding")];
+      for (const [t, rt, b, l] of parts) { x += l; y += t; w -= l + rt; h -= t + b; }
+    }
+    const open = v.indexOf("(");
+    if (open < 0) return { l: x, t: y, r: x + w, b: y + h };          // reference box only
+    const fn = v.slice(0, open).trim().split(/\s+/).pop();
+    let d = 0, close = -1;
+    for (let i = open; i < v.length; i++) { if (v[i] === "(") d++; else if (v[i] === ")" && --d === 0) { close = i; break; } }
+    if (close < 0) return null;
+    const args = v.slice(open + 1, close);
+    const pos = (toks) => {                                            // "at X Y" (2 or 4 value form)
+      if (!toks.length) return [w / 2, h / 2];
+      if (toks.length === 2) return [len(toks[0], w), len(toks[1], h)];
+      if (toks.length === 4) { const ax = len(toks[1], w), ay = len(toks[3], h);
+        return [toks[0] === "right" ? w - ax : ax, toks[2] === "bottom" ? h - ay : ay]; }
+      return [NaN, NaN];
+    };
+    const ok = (...n) => n.every(Number.isFinite);
+    if (fn === "inset") {
+      const t = topSplit(args.split(/\bround\b/)[0]);
+      const [a, b = a, c = a, e = b] = t;
+      const T = len(a, h), R = len(b, w), B = len(c, h), L = len(e, w);
+      return t.length && ok(T, R, B, L) ? { l: x + L, t: y + T, r: x + w - R, b: y + h - B } : null;
+    }
+    if (fn === "circle" || fn === "ellipse") {
+      const t = topSplit(args), i = t.indexOf("at"), radii = i < 0 ? t : t.slice(0, i);
+      const [cx, cy] = pos(i < 0 ? [] : t.slice(i + 1));
+      if (!ok(cx, cy)) return null;
+      const side = (k, lo, hi) => (k === "farthest-side" ? Math.max(lo, hi) : Math.min(lo, hi));
+      let rx, ry;
+      if (fn === "circle") {
+        const k = radii[0] || "closest-side";
+        rx = ry = /side$/.test(k) ? (k === "farthest-side" ? Math.max(cx, w - cx, cy, h - cy) : Math.min(cx, w - cx, cy, h - cy))
+          : len(k, Math.hypot(w, h) / Math.SQRT2);
+      } else {
+        const [kx = "closest-side", ky = "closest-side"] = radii;
+        rx = /side$/.test(kx) ? side(kx, cx, w - cx) : len(kx, w);
+        ry = /side$/.test(ky) ? side(ky, cy, h - cy) : len(ky, h);
+      }
+      return ok(rx, ry) ? { l: x + cx - rx, t: y + cy - ry, r: x + cx + rx, b: y + cy + ry } : null;
+    }
+    if (fn === "polygon") {
+      const pts = topSplit(args, true).filter((s) => !/^(nonzero|evenodd)$/.test(s)).map((s) => {
+        const [px, py] = topSplit(s); return [len(px, w), len(py, h)]; });
+      if (pts.length < 3 || !pts.every(([px, py]) => ok(px, py))) return null;
+      let area = 0;
+      pts.forEach(([ax, ay], k) => { const [bx, by] = pts[(k + 1) % pts.length]; area += ax * by - bx * ay; });
+      if (Math.abs(area) / 2 < 4) return null;
+      const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+      return { l: x + Math.min(...xs), t: y + Math.min(...ys), r: x + Math.max(...xs), b: y + Math.max(...ys) };
+    }
+    return null;                                                       // path(), url(), shape(), unknown: hidden
+  };
   const meet = (a, b) => ({ l: Math.max(a.l, b.l), t: Math.max(a.t, b.t), r: Math.min(a.r, b.r), b: Math.min(a.b, b.b) });
   const INF = { l: -Infinity, t: -Infinity, r: Infinity, b: Infinity };
-  const clipCache = new Map();
+  const clipCache = new Map(), opacityCache = new Map();
   // The box every text node directly inside `p` is clipped to (viewport coordinates), or null when nothing can show.
+  // Also records the effective opacity of `p` (opacityCache).
   const clipBoxOf = (p) => {
     if (clipCache.has(p)) return clipCache.get(p);
-    let box = INF, mode = "normal";
-    for (let el = p; el && el !== document.documentElement; el = el.parentElement) {
+    let box = INF, mode = "normal", op = 1, prev = null;
+    for (let el = p; el; prev = el, el = el.parentElement) {
       const cs = getComputedStyle(el), r = el.getBoundingClientRect();
       const containing = el === p || mode === "normal" ||
         (mode === "abs" && (cs.position !== "static" || cs.transform !== "none")) ||
         (mode === "fixed" && cs.transform !== "none");
-      if (cs.clipPath && cs.clipPath !== "none" && /inset\(\s*(50%|100%)/.test(cs.clipPath)) { box = null; break; }
+      // R12-01: these apply to every descendant whatever its containing block.
+      op *= (parseFloat(cs.opacity) || 0) * filterOpacity(cs.filter);
+      if (op < MIN_ALPHA || masked(cs)) { box = null; break; }
+      if (el.tagName === "DETAILS" && !el.open && !(prev && prev === el.querySelector(":scope > summary"))) { box = null; break; }
+      if (cs.clipPath && cs.clipPath !== "none") { const c = clipPathBox(cs, r); if (!c) { box = null; break; } box = meet(box, c); }
+      if (el === document.documentElement) break;
       if (cs.clip && cs.clip !== "auto" && (cs.position === "absolute" || cs.position === "fixed")) {
         const v = /rect\(([^)]*)\)/.exec(cs.clip);
         if (v) {
@@ -104,7 +214,8 @@
       if (containing) mode = cs.position === "fixed" ? "fixed" : cs.position === "absolute" ? "abs" : "normal";
       if (box.r - box.l < 2 || box.b - box.t < 2) { box = null; break; }
     }
-    clipCache.set(p, box);
+    if (box && (box.r - box.l < 2 || box.b - box.t < 2)) box = null;
+    clipCache.set(p, box); opacityCache.set(p, op);
     return box;
   };
   const opaque = (e) => { const cs = getComputedStyle(e);
@@ -123,10 +234,11 @@
     let ok = cache.get(p);
     if (ok === undefined) { ok = visible(p); cache.set(p, ok); }
     if (!ok) return false;
-    if (!textCache.has(p)) textCache.set(p, alpha(getComputedStyle(p).color) > 0);
-    if (!textCache.get(p)) return false;
     const box = clipBoxOf(p);
     if (!box) return false;
+    if (!textCache.has(p)) { const cs = getComputedStyle(p);       // R12-01: the fill colour is what is painted
+      textCache.set(p, alpha(cs.webkitTextFillColor || cs.color) * opacityCache.get(p) >= MIN_ALPHA); }
+    if (!textCache.get(p)) return false;
     const range = document.createRange(); range.selectNodeContents(n);
     const docW = Math.max(document.documentElement.scrollWidth, innerWidth);
     for (const cr of range.getClientRects()) {
