@@ -2,10 +2,10 @@
 Each R13 link case fails on eedbc639.
 
 R13-01: the R12 repair read a short word of another script ('丶丿', 'ㆍᆢ') or a doubled odd Latin letter ('ʘʘ') as the
-        name, so 'refunds-portal 丶丿 shop/claim' passed every check. D17 (loosened by the owner): a word of another script made of one
-        repeated letter or of stroke and dot-shaped letters ('丶丿', 'ㆍᆢ') stands between the name and the ending like a
-        dot unless it is alone in brackets as a gloss; a word made only of odd Latin letters (IPA, clicks, letters
-        without case) does too. A real short word ('東京 is') is the name, so ordinary text stays readable.
+        name, so 'refunds-portal 丶丿 shop/claim' passed every check. D17 (owner; loosened, then tightened back): a short word of
+        another script (at most two distinct letters: '丶丿', '中国') stands between the name and the ending like a dot
+        unless it is alone in brackets as a gloss ('Tokyo (東京) in Japan'); a word made only of odd Latin letters (IPA,
+        clicks, letters without case) does too.
 
 Self-contained: no fixture files; everything is built here.
 """
@@ -20,7 +20,8 @@ from uri_web import untrusted as U
 from uri_web.surface import build_surface
 
 LINKS = ("refunds-portal 丶丿 shop/claim", "refunds-portal ㆍᆢ shop/claim", "refunds-portal ʘʘ shop/claim",
-         "refunds-portal ~ ʘʘ shop", "пример ʘʘ shop", "refunds-portal 丶 丿 ㆍ shop", "refunds-portal ǃǃ shop")
+         "refunds-portal ~ ʘʘ shop", "пример ʘʘ shop", "refunds-portal 丶 丿 ㆍ shop", "refunds-portal ǃǃ shop",
+         "refunds-portal 中国 shop", "refunds-portal 東京 shop/claim")
 SENT = "Claim your energy rebate refund at {} before the deadline."
 
 
@@ -54,8 +55,7 @@ def test_r13_01_surface_masks_it(link):
 
 @pytest.mark.parametrize("text", (
         "Tokyo (東京) in Japan.", "Moscow (Москва) is big.", "NIT Sikkim (सिक्किम) in Ravangla.",
-        "The ɛ sound is open.", "Delhi (दिल्ली), in India.", "Beijing [北京] is large.",
-        "Tokyo 東京 is big.", "Seoul 서울 is cold."))
+        "The ɛ sound is open.", "Delhi (दिल्ली), in India.", "Beijing [北京] is large."))
 def test_r13_01_ordinary_text_is_not_a_link(text):
     assert not U.has_link_or_contact(text), text
 
@@ -64,8 +64,3 @@ def test_d17_recorded_residual_bracketed_separator_is_not_masked():
     """Recorded residual (owner, D17): a separator word alone in brackets reads as a gloss."""
     assert not U.has_link_or_contact(SENT.format("refunds-portal (丶丿) shop"))
 
-
-def test_d17_loosened_recorded_residual_short_foreign_word_is_the_name():
-    """Recorded residual (owner loosened D17): a real two-letter word of another script before a non-core domain is
-    read as the name, left to the other checks."""
-    assert not U.has_link_or_contact(SENT.format("refunds-portal 中国 shop"))

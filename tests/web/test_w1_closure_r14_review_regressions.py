@@ -3,8 +3,9 @@
 R14-01: the D17 stroke and dot allow-list was written in raw code points (the Kangxi Radicals block) that never occur in
         the checked text: normalise() applies NFKC, which maps '⼁' to '丨', and the unified one-stroke radicals
         ('一', '丨', '乙') were missing. So 'refunds-portal 丨丶 shop/claim' read '丨丶' as the name and passed every check.
-        The repair keeps the allow-list in canonical form; this test checks the rule over every pair of stroke and dot
-        letters (unified and Kangxi spellings), not only the reviewer's strings.
+        The repair kept the allow-list in canonical form; the owner then tightened D17 back (every short word of
+        another script is a separator unless bracketed), which removes the allow-list. This test checks the rule over
+        every pair of stroke and dot letters (unified and Kangxi spellings), not only the reviewer's strings.
 
 Self-contained: no fixture files; everything is built here.
 """
@@ -29,12 +30,10 @@ REVIEWER = ("refunds-portal 丨丶 shop/claim", "refunds-portal 一丶 shop/clai
 SENT = "Claim your energy rebate refund at {} before the deadline."
 
 
-def test_r14_01_stroke_set_is_canonical():
-    """Every allow-listed letter can occur in checked text: it is NFKC-stable, a letter, and the set covers the
-    unified forms of the Kangxi one-stroke radicals."""
-    for c in U._STROKES:
-        assert U.normalise(c) == c and unicodedata.category(c)[0] in "LM", hex(ord(c))
-    assert {unicodedata.normalize("NFKC", chr(c)) for c in range(0x2F00, 0x2F06)} <= U._STROKES
+def test_r14_01_kangxi_spellings_are_covered():
+    """The Kangxi spellings normalise to the unified radicals, so the pairs below cover both. (The stroke allow-list
+    this test first checked was removed when the owner tightened D17 back: every short foreign word is a separator.)"""
+    assert {unicodedata.normalize("NFKC", chr(c)) for c in range(0x2F00, 0x2F06)} <= set(STROKES)
 
 
 @pytest.mark.parametrize("pair", PAIRS)
@@ -72,13 +71,15 @@ def test_r14_01_surface_masks_it(link):
     assert "refunds-portal" not in dump, link
 
 
-@pytest.mark.parametrize("text", ("Tokyo 東京 is big.", "Tokyo (東京) in Japan.", "Yamaguchi 山口 is in Japan.",
-                                  "Seoul 서울 is cold."))
+@pytest.mark.parametrize("text", ("Tokyo (東京) in Japan.", "Yamaguchi (山口) is in Japan.", "Seoul (서울) is cold."))
 def test_r14_01_ordinary_text_is_not_a_link(text):
+    """D17 tightened back by the owner: a short foreign word is readable only as a bracketed gloss
+    ('Tokyo 東京 is big' unbracketed is masked, an owner-accepted precision cost)."""
     assert not U.has_link_or_contact(text), text
 
 
 def test_r14_01_recorded_residuals_unchanged():
-    """Owner-accepted D17 residuals: a real short foreign word is the name; a bracketed gloss is not a separator."""
-    assert not U.has_link_or_contact(SENT.format("refunds-portal 中国 shop"))
+    """Owner-accepted D17 residual: a bracketed gloss is not a separator. A real short foreign word is a separator
+    since the owner tightened D17 back."""
+    assert U.has_link_or_contact(SENT.format("refunds-portal 中国 shop"))
     assert not U.has_link_or_contact(SENT.format("refunds-portal (丨丶) shop"))
