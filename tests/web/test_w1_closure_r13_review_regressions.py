@@ -2,9 +2,10 @@
 Each R13 link case fails on eedbc639.
 
 R13-01: the R12 repair read a short word of another script ('丶丿', 'ㆍᆢ') or a doubled odd Latin letter ('ʘʘ') as the
-        name, so 'refunds-portal 丶丿 shop/claim' passed every check. D17: a short word of another script (at most two
-        distinct letters) stands between the name and the ending like a dot unless it is alone in brackets as a gloss
-        ('Tokyo (東京) in Japan'); a word made only of odd Latin letters (IPA, clicks, letters without case) does too.
+        name, so 'refunds-portal 丶丿 shop/claim' passed every check. D17 (loosened by the owner): a word of another script made of one
+        repeated letter or of stroke and dot-shaped letters ('丶丿', 'ㆍᆢ') stands between the name and the ending like a
+        dot unless it is alone in brackets as a gloss; a word made only of odd Latin letters (IPA, clicks, letters
+        without case) does too. A real short word ('東京 is') is the name, so ordinary text stays readable.
 
 Self-contained: no fixture files; everything is built here.
 """
@@ -53,7 +54,8 @@ def test_r13_01_surface_masks_it(link):
 
 @pytest.mark.parametrize("text", (
         "Tokyo (東京) in Japan.", "Moscow (Москва) is big.", "NIT Sikkim (सिक्किम) in Ravangla.",
-        "The ɛ sound is open.", "Delhi (दिल्ली), in India.", "Beijing [北京] is large."))
+        "The ɛ sound is open.", "Delhi (दिल्ली), in India.", "Beijing [北京] is large.",
+        "Tokyo 東京 is big.", "Seoul 서울 is cold."))
 def test_r13_01_ordinary_text_is_not_a_link(text):
     assert not U.has_link_or_contact(text), text
 
@@ -61,3 +63,9 @@ def test_r13_01_ordinary_text_is_not_a_link(text):
 def test_d17_recorded_residual_bracketed_separator_is_not_masked():
     """Recorded residual (owner, D17): a separator word alone in brackets reads as a gloss."""
     assert not U.has_link_or_contact(SENT.format("refunds-portal (丶丿) shop"))
+
+
+def test_d17_loosened_recorded_residual_short_foreign_word_is_the_name():
+    """Recorded residual (owner loosened D17): a real two-letter word of another script before a non-core domain is
+    read as the name, left to the other checks."""
+    assert not U.has_link_or_contact(SENT.format("refunds-portal 中国 shop"))
