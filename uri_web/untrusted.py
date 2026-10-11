@@ -469,6 +469,27 @@ def _single(w) -> bool:
     return w[1] - w[0] == 1 and w[2].casefold() not in ("a", "i")
 
 
+def _bare(text: str) -> str:
+    """`text` without generic combining marks (named 'COMBINING ...': accents, dots below). Vowel signs and other
+    marks that belong to a script ('\u0f72' in '\u0f66\u0f72') are kept: they are part of the letter."""
+    return "".join(ch for ch in text if not (unicodedata.category(ch)[0] == "M"
+                                             and unicodedata.name(ch, "").startswith("COMBINING")))
+
+
+def _tld_match(text: str, fam: str) -> str:
+    """The top-level domain `text` spells, '' if none. Combining marks are ignored ('c\u0323om'). R19-02/R20-02: in a
+    script other than Latin, a look-alike spelling ('\u0441\u043e\u043c') matches through its skeleton and is returned
+    as '~com': it counts only after a name in a different script (_ending_spans)."""
+    bare = _bare(text).casefold()
+    if bare in _ALL_TLDS:
+        return bare
+    if fam != "LATIN":
+        look = _skeleton(text).casefold()
+        if look.isascii() and look in _ALL_TLDS:
+            return "~" + look
+    return ""
+
+
 def _endings(words: list, norm: str):
     """(index of the first word, index of the last word, top-level domain) for each word that is a top-level
     domain, and for each run that spells one:
@@ -480,19 +501,15 @@ def _endings(words: list, norm: str):
       core domains (_CORE), so 'U.S.' does not spell 'us'."""
     n = len(words)
     for b, w in enumerate(words):
-        if w[2].casefold() in _ALL_TLDS:
-            yield b, b, w[2].casefold()
-        elif w[3] != "LATIN":
-            # R19-02: an ending written in look-alike letters of another script ('\u0441\u043e\u043c' for 'com',
-            # '\u0456\u043e' for 'io'); it counts only after a name in a different script (_ending_spans), so
-            # ordinary text in that script ('\u0440\u044b\u0431\u0430 \u0441\u043e\u043c') stays readable.
-            look = _skeleton(w[2]).casefold()
-            if look.isascii() and look in _ALL_TLDS:
-                yield b, b, "~" + look
+        # R19-02: an ending written in look-alike letters of another script ('\u0441\u043e\u043c' for 'com') counts
+        # only after a name in a different script, so ordinary text in that script stays readable.
+        m = _tld_match(w[2], w[3])
+        if m:
+            yield b, b, m
         if b + 1 < n and not norm[w[1]:words[b + 1][0]].strip() and words[b + 1][3] == w[3]:
             nxt = words[b + 1]
-            two = (w[2] + nxt[2]).casefold()
-            if (w[1] - w[0] > 1 and two in _ALL_TLDS and (_single(nxt) or (
+            two = _tld_match(w[2] + nxt[2], w[3])
+            if (w[1] - w[0] > 1 and two and (_single(nxt) or (
                     w[1] - w[0] <= 3 and w[2].casefold() not in _COMMON2 and nxt[2].casefold() not in _COMMON2))):
                 yield b, b + 1, two
         if w[1] - w[0] != 1:
@@ -504,8 +521,9 @@ def _endings(words: list, norm: str):
                 break
             e += 1
             text += nxt[2]
-            if text.casefold() in _ALL_TLDS:
-                yield b, e, text.casefold()
+            m = _tld_match(text, w[3])
+            if m:
+                yield b, e, m
             if nxt[1] - nxt[0] > 1:
                 break
         text, e = w[2], b
@@ -515,8 +533,9 @@ def _endings(words: list, norm: str):
                 break
             e += 1
             text += words[e][2]
-            if text.casefold() in _CORE:
-                yield b, e, text.casefold()
+            m = _tld_match(text, w[3])
+            if m.lstrip("~") in _CORE:
+                yield b, e, m
 
 
 # D19 (owner, 2026-10-11, after R16-01; widened after R17-01): stroke and dot-shaped letters. A word made only of them
@@ -558,15 +577,16 @@ def _separator_word(norm: str, w, fam: str) -> bool:
     - a short word of another script (at most _MAX_FOREIGN distinct letters: '\u4e36\u4e3f', '\u4e2d\u56fd'), unless it
       stands alone in brackets as a gloss ('Tokyo (\u6771\u4eac) in Japan'). Recorded residual: a bracketed one
       ('portal (\u4e36\u4e3f) shop'). Precision cost: 'Tokyo \u6771\u4eac is big' (unbracketed) is masked."""
-    if _single(w) or all(unicodedata.category(ch)[0] == "M" for ch in w[2]):
+    base = _bare(w[2])                     # R20-01: classified without its combining marks ('\u4e36\u4e3f\u0323')
+    if not base or (len(base) == 1 and base.casefold() not in ("a", "i")):
         return True                        # R19-01: marks with no base letter ('\u0323\u0307\u0308'), any length
-    if set(w[2]) <= _STROKES:
+    if set(base) <= _STROKES:
         return not _bracketed(norm, w)     # D19: any length ('\u4e36\u318d\u11a2', '\u4e28\u4e36\u4e3f')
     if w[3] == fam:
-        return _odd(w[2])
+        return _odd(base)
     # D17 (owner): loosened, then tightened back the same day: any short word of another script (at most
     # _MAX_FOREIGN distinct letters) is a separator unless it stands alone in brackets as a gloss.
-    return len(set(w[2].casefold())) <= _MAX_FOREIGN and not _bracketed(norm, w)
+    return len(set(base.casefold())) <= _MAX_FOREIGN and not _bracketed(norm, w)
 
 
 def _ending_spans(norm: str) -> list:
