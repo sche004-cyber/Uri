@@ -77,6 +77,15 @@ separate commit ranges on that branch; nothing is merged into the canonical bran
 | W1-AC15 | Result renders through the existing A2UI catalog (validated by `uri_a2ui.Surface`), placement `workspace`, no URLs in the surface, no new action | unit |
 | W1-AC16 | No frozen path changed; no new third-party dependency; existing gates unchanged | `ws_frozen_check` protected part, gate run before/after |
 
+**Link-detection scope for W1-AC12/AC15 (owner decisions D13 and D15, 2026-10-11).** Retrieved text is checked
+with an allow-list of characters (D15): a token holding a character outside the listed scripts and ordinary
+punctuation, a letter named as a dot, colon or separator, or letters of two script families is treated as a link (the
+sentence is never shown or used as support; the token is masked). Any two words joined by a dot-like mark, with or
+without spaces, brackets or dashes around it, are a link (D13). **Out of scope, accepted by the owner as residual
+risk:** an address only a person can reassemble from ordinary characters - letters spelt out with spaces ('c o m',
+'portal . c om'), or words for letters or punctuation ('see oh em', 'portal period com') - and the limits recorded in
+D13 ('portal. Com', 'x. com'). A finding in that class is not blocking for this milestone.
+
 ### A0
 
 | ID | Criterion | Evidence required |

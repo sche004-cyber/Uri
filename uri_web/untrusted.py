@@ -153,6 +153,7 @@ _MARK, _JOIN, _COMB, _DOTLIKE, _FULL_STOP, _OPENING, _WRAP = (
 # ('d o t').
 _DOTRUN = _DOTLIKE + r"(?:\s*" + _DOTLIKE + r")*"
 _DOTWORD = r"(?i:d\s*[o0]\s*t)"
+_DASH = "[\\-\u2010-\u2015\u2212\ufe58\ufe63\uff0d]"
 _RUN = r"(?:" + _JOIN + r"*(?:" + _MARK + _COMB + r"*|\s" + _COMB + r"+))+"   # a mark run, no plain space in it
 try:
     re.compile("(?>a)")
@@ -172,6 +173,8 @@ def _dot(follow: str) -> str:
             # 'portal "." com', 'portal (d o t) com'. Both sides are required, so a sentence that ends inside a
             # quote or a bracket ('he said "stop." Then') is not a separator.
             r"\s*(?:" + _WRAP + r"\s*)+(?:" + _DOTRUN + r"|" + _DOTWORD + r")(?:\s*" + _WRAP + r")+\s*",
+            # D15 (round 8): a dot-like run wrapped in dashes on both sides ('portal -.- com').
+            r"\s*(?:" + _DASH + r"\s*)+" + _DOTRUN + r"(?:\s*" + _DASH + r")+\s*",
             _RUN,                                                               # 'portal,com', 'portal{.}com'
             r"\s+(?!" + _OPENING + r")" + _RUN)                                # 'portal ,com'
     return _ATOMIC + "|".join(a + follow for a in alts) + ")"
@@ -316,14 +319,93 @@ def _skeleton_map(norm: str):
     return "".join(chars), idx
 
 
+# D15 (owner, 2026-10-11, after R8-01 reopened the R1-01 class an eighth time with letters drawn like a dot, U+A78F
+# LATIN LETTER SINOLOGICAL DOT and U+1427 CANADIAN SYLLABICS FINAL MIDDLE DOT, and a top-level label spelt out with
+# spaces): "allow-list + accept the rest". Characters are now checked against an ALLOW-list, so an unlisted character
+# costs precision, never safety. A whitespace-separated token is unusual - treated exactly like a link: the sentence
+# is never shown or used as support, the token is masked - when it holds
+#   * a character outside: printable ASCII; letters, digits and combining marks of the listed scripts (_SCRIPTS:
+#     the scripts of India including Sikkim's Nepali, Lepcha, Limbu and Tibetan, and the major world scripts); the
+#     listed ordinary punctuation and symbol ranges (_ORDINARY);
+#   * a letter whose Unicode name makes it a dot, colon, stop or separator ('... LETTER ... DOT', 'MODIFIER LETTER
+#     ... COLON'), whatever its script; or
+#   * letters or digits of two script families ('portal' with an Arabic-Indic digit inside).
+# Owner-accepted residual risk (recorded in OWNER_DECISIONS D15): an address only a person can reassemble from
+# ordinary characters - letters spelt out with spaces ('c o m', 'portal . c om'), words for letters or punctuation
+# ('see oh em', 'portal period com') - is not detected.
+_SCRIPTS = frozenset("""
+LATIN GREEK CYRILLIC ARMENIAN HEBREW ARABIC ARABIC-INDIC EXTENDED DEVANAGARI BENGALI GURMUKHI GUJARATI ORIYA TAMIL
+TELUGU KANNADA MALAYALAM SINHALA THAI LAO TIBETAN MYANMAR GEORGIAN HANGUL HIRAGANA KATAKANA CJK BOPOMOFO ETHIOPIC
+KHMER LEPCHA LIMBU OL
+""".split())
+_FAMILY = {"HIRAGANA": "EASTASIA", "KATAKANA": "EASTASIA", "CJK": "EASTASIA", "BOPOMOFO": "EASTASIA",
+           "HANGUL": "EASTASIA", "ARABIC-INDIC": "ARABIC", "EXTENDED": "ARABIC"}
+_ORDINARY = ((0x00A0, 0x00BF), (0x00D7, 0x00D7), (0x00F7, 0x00F7), (0x2010, 0x205E), (0x2070, 0x209F),
+             (0x20A0, 0x20C0), (0x2100, 0x218F), (0x2190, 0x21FF), (0x2200, 0x22FF), (0x3000, 0x303F),
+             (0xFF01, 0xFF65), (0x0964, 0x0965), (0x060C, 0x060C), (0x061B, 0x061B), (0x061F, 0x061F),
+             (0x066A, 0x066D), (0x06D4, 0x06D4), (0x0F04, 0x0F14), (0x104A, 0x104B), (0x0589, 0x058A),
+             (0x05BE, 0x05BE), (0x05C0, 0x05C0), (0x05C3, 0x05C3), (0x05F3, 0x05F4), (0x10FB, 0x10FB),
+             (0x1361, 0x1368), (0x17D4, 0x17DA), (0x1C3B, 0x1C3F), (0x1944, 0x1945), (0x1C7E, 0x1C7F))
+_DOT_LETTER = re.compile(r"\b(?:DOT|DOTS|COLON|FULL STOP|STOP|SEPARATOR|PUNCTUATION|BULLET)\b(?! (?:ABOVE|BELOW))")
+_DOT_LETTER_OK = re.compile(r"\bWITH\b|\bDOTLESS\b|\bDOTTED\b")
+
+
+def _char_script(ch: str):
+    """The script family of a letter/digit/mark, 'COMMON' for an allowed non-letter, None when not allowed."""
+    o = ord(ch)
+    if 0x20 <= o < 0x7F or ch in "\t\n\r":
+        return "LATIN" if ch.isalpha() else "COMMON"     # ASCII letters are Latin: 'portal' + an Arabic-Indic digit
+    cat = unicodedata.category(ch)
+    if cat[0] in "LMN" and not (cat == "No" and any(a <= o <= b for a, b in _ORDINARY)):
+        name = unicodedata.name(ch, "")
+        if cat[0] == "M" and name.startswith("COMBINING"):
+            return "COMMON"
+        first = name.split(" ", 1)[0]
+        if first not in _SCRIPTS or (_DOT_LETTER.search(name) and not _DOT_LETTER_OK.search(name)):
+            return None
+        return _FAMILY.get(first, first)
+    if cat[0] == "Z" or any(a <= o <= b for a, b in _ORDINARY):
+        return "COMMON"
+    return None
+
+
+def _unusual(token: str) -> bool:
+    fams = set()
+    for ch in token:
+        f = _char_script(ch)
+        if f is None:
+            return True
+        if f != "COMMON":
+            fams.add(f)
+    return len(fams) > 1
+
+
+def _unusual_spans(norm: str) -> list:
+    """Unusual tokens. A token with no allowed letter or digit of its own ('portal \ua78f com') stands between two
+    words like a dot, so the span also covers the word on each side."""
+    toks = list(re.finditer(r"\S+", norm))
+    out = []
+    for i, m in enumerate(toks):
+        if not _unusual(m.group(0)):
+            continue
+        a, b = m.span()
+        if not any(ch.isalnum() and _char_script(ch) is not None for ch in m.group(0)):
+            a = toks[i - 1].start() if i else a
+            b = toks[i + 1].end() if i + 1 < len(toks) else b
+        out.append((a, b))
+    return out
+
+
 def has_link_or_contact(text: str) -> bool:
-    return _links(normalise(text)) or _links(_skeleton(text))
+    norm = normalise(text)
+    return _links(norm) or _links(_skeleton(text)) or bool(_unusual_spans(norm))
 
 
 def _all_spans(norm: str) -> list:
-    """Link spans in canonical text `norm`, from the text and from its skeleton (mapped back to `norm`)."""
+    """Link spans in canonical text `norm`, from the text and from its skeleton (mapped back to `norm`), and the
+    unusual tokens (D15; checked on the canonical text only: the skeleton maps look-alikes across scripts)."""
     skel, idx = _skeleton_map(norm)
-    return _spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a]
+    return (_spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a] + _unusual_spans(norm))
 
 
 def joins_link(a: str, b: str) -> bool:
