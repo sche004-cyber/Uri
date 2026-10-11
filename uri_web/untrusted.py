@@ -648,7 +648,10 @@ def _endings(words: list, norm: str):
         m = _tld_match(w[2], w[3])
         if m:
             yield b, b, m
-        if b + 1 < n and not norm[w[1]:words[b + 1][0]].strip() and words[b + 1][3] == w[3]:
+        # R39-01: also across scripts when either piece is non-Latin ('co' + '\u043c'): the joined text is then read
+        # through the look-alike data like any other ending.
+        if b + 1 < n and not norm[w[1]:words[b + 1][0]].strip() and (
+                words[b + 1][3] == w[3] or not (w[2] + words[b + 1][2]).isascii()):
             nxt = words[b + 1]
             two = _tld_match(w[2] + nxt[2], w[3])
             if (w[1] - w[0] > 1 and two and (_single(nxt) or (
@@ -900,11 +903,29 @@ def _mixed_fold(m) -> str:
     return run
 
 
+_TOKEN = re.compile(r"\S+")
+_DIGIT_LOOK = str.maketrans({"0": "o", "1": "l", "|": "l"})
+
+
+def _digit_variant(norm: str) -> str:
+    """R39-01: `norm` (same length) with every '0', '1' and '|' read as 'o', 'l', 'l', inside a token that holds a letter
+    or is that one character; numbers ('2020', '101', '1,000', '1/2') keep their digits. Only the ending check (_ending_spans) runs on it, so a spelt
+    ending with look-alike digits is found with any spacing, exactly as its letter spelling is ('g0 v', '0r g',
+    'c  0  m', '(c 0 m)', tabs), and the span covers the whole ending."""
+    def fold(m):
+        tok = m.group(0)
+        # numbers stay ('2020', '1,000', '1/2', '3:1'): only a token with a letter, or a lone '0'/'1'/'|', is read
+        return tok.translate(_DIGIT_LOOK) if len(tok) == 1 or any(ch.isalpha() for ch in tok) else tok
+    return _TOKEN.sub(fold, norm)
+
+
 def has_link_or_contact(text: str) -> bool:
     norm = normalise(text)
     alt = _ascii_variant(norm)
+    dig = _digit_variant(alt)
     return (_links(norm) or _links(_skeleton(text)) or bool(_unusual_spans(norm))
-            or bool(_ending_spans(norm)) or (alt != norm and (_links(alt) or bool(_ending_spans(alt)))))
+            or bool(_ending_spans(norm)) or (alt != norm and (_links(alt) or bool(_ending_spans(alt))))
+            or (dig != alt and bool(_ending_spans(dig))))
 
 
 def _all_spans(norm: str) -> list:
@@ -913,6 +934,9 @@ def _all_spans(norm: str) -> list:
     skel, idx = _skeleton_map(norm)
     alt = _ascii_variant(norm)                 # R31-01: same length, so its spans are spans of `norm`
     extra = (_spans(alt) + _ending_spans(alt)) if alt != norm else []
+    dig = _digit_variant(alt)                  # R39-01: ending check only
+    if dig != alt:
+        extra += _ending_spans(dig)
     return (_spans(norm) + [(idx[a], idx[b - 1] + 1) for a, b in _spans(skel) if b > a] + _unusual_spans(norm)
             + _ending_spans(norm) + extra)
 
