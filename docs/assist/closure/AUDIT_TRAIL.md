@@ -37,3 +37,15 @@ review). Started 2026-10-10. This file is append-only: corrections are added as 
 | Prompt | `reviewer_prompt_r1.md` (this directory) |
 | Coordinator gate run on candidate (Linux) | `evidence/gates_candidate_6d60bee.txt`: combined Python 37 failed / 773 passed / 24 skipped / 161 errors — failure set = baseline minus the known flake `test_requests_are_marked_done_with_the_state_they_left`; web+assist 215 passed; Flutter 526 passed / 5 skipped / 1 failed (pre-existing `reference_render_test`); protected paths changed `[]`, Phase 1 zip check BLOCKED |
 | Correction | the first gate run (`evidence/gates_candidate_6d60bee_INVALID_harness_-I.txt`) used `python -I`, which removed the repo root from `sys.path`; every module failed to import. Harness defect, not a code result; kept for the record and superseded by the rerun above |
+| Result | completed 2026-10-11T00:14:18Z (92 turns). Verdict **REJECT**: 2 blocking MEDIUM (R1-01 citation number extraction misses `Rs.500`; R1-02 redaction misses `OTPCode`/`cvv2`/`MPIN`/`pwd1` in both layers — interim F5 repair incomplete), 2 non-blocking MEDIUM (R1-03 Ask stays disabled after Stop + re-grant, introduced by the F4 Dart repair; R1-04 in-page layer does not mask title/headings/labels — doc claim "MET in both layers" false), 6 LOW. No HIGH. SSRF corpus, pinned connect, mixed-answer redirect, access-control core held; frozen paths unchanged; reviewer checkout left clean |
+| Record | `R1_reviewer_result.txt` — machine block transcribed by the coordinator from transcript event `5fd891d2-eda3-411d-b920-a477dfca83de`; findings verbatim, two note fields abridged (disclosed in the file). A first transcription added `category` fields and renamed one key; corrected before commit |
+| Reviewer cross-check of coordinator claims | reviewer reproduced 772 passed / 24 skipped and the baseline failure set; noted that "reference_render_test is pre-existing" was not re-verified by it on the baseline (coordinator evidence: `evidence/baseline_flutter_linux_ffdf534.txt` and a fresh-worktree probe 2026-10-11: baseline Flutter 510 passed / 5 skipped / 1 failed = `render desktop dashboard`) |
+
+### Process change (owner directive 2026-10-11)
+
+From R2 on, W1/A0 closure runs under the `uri-development-lifecycle` skill (branch
+`milestone/dev-lifecycle-20261011`), after that skill is itself independently reviewed. R1 enters the skill's state
+through `import-review` (a relayed review may route findings to repair but never counts as an ACCEPT). Owner
+directive: Codex may be used when available but is never a mandatory dependency; a separate-process Claude reviewer
+is the independent reviewer. Integration into canonical still requires the owner's authorisation for the push
+(this session has no push right to `integration/*`).
