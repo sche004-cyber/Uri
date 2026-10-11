@@ -133,6 +133,52 @@ def test_secure_state_moves_an_old_folder_into_a_locked_one(tmp_path):
     S.make_state_folder(state)
 
 
+def _open_old_state(tmp_path):
+    state = tmp_path / "state"
+    (state / "supervisor").mkdir(parents=True)
+    (state / "scheduler.db").write_bytes(b"db")
+    if not WIN:
+        os.chmod(state, 0o755)
+    return state
+
+
+def _untouched(tmp_path, state):
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["state"]       # no partial folder, nothing renamed aside
+    assert (state / "scheduler.db").read_bytes() == b"db" and (state / "supervisor").is_dir()
+    with pytest.raises(S.StateAclError):                                  # run still refuses the old folder
+        S.make_state_folder(state)
+
+
+def test_secure_state_copy_failure_leaves_the_original_in_place(tmp_path, monkeypatch, capsys):   # R1-01 (1c)
+    state = _open_old_state(tmp_path)
+    import shutil
+    real = shutil.copyfile
+
+    def failing(src, dst, *a, **k):
+        if Path(src).name == "scheduler.db":
+            raise PermissionError(13, "denied", str(src))
+        return real(src, dst, *a, **k)
+    monkeypatch.setattr(shutil, "copyfile", failing)
+    assert S.main(["secure-state", "--state", str(state)]) == 4
+    _untouched(tmp_path, state)
+
+
+def test_secure_state_final_rename_failure_restores_the_original(tmp_path, monkeypatch):   # R1-01 (1c)
+    state = _open_old_state(tmp_path)
+    real = os.rename
+
+    def failing(src, dst):
+        if Path(dst) == state:
+            raise PermissionError(13, "denied", str(dst))
+        return real(src, dst)
+    monkeypatch.setattr(S.os, "rename", lambda s, d: failing(s, d) if Path(s).name.startswith("state.acl-new")
+                        else real(s, d))
+    with pytest.raises(OSError):
+        S.secure_state(state)
+    monkeypatch.setattr(S.os, "rename", real)
+    _untouched(tmp_path, state)
+
+
 def test_secure_state_with_a_link_inside_changes_nothing(tmp_path):
     state = tmp_path / "state"
     state.mkdir()

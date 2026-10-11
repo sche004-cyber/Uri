@@ -366,21 +366,44 @@ def make_state_folder(path: Path):
 
 
 def secure_state(path: Path) -> Path:
-    """One-off move of an existing state folder into a new locked one: the old folder is renamed aside (kept, never
-    deleted) and its plain files and folders are copied in; a link inside it stops the move before anything changes.
-    The copies are new files owned by the user that inherit the user-only entry. Run with the scheduler stopped."""
+    """One-off move of an existing state folder into a new locked one: the plain files and folders are copied into a
+    new locked sibling, which is checked, and only then is the old folder renamed aside (kept, never deleted) and the
+    new one renamed into place. Any failure removes the sibling and leaves the old folder where it was (R1-01, 1c), so
+    `run` keeps refusing instead of starting on a missing or partial folder. A link inside stops the move before
+    anything changes. The copies are new files owned by the user that inherit the user-only entry. Run with the
+    scheduler stopped."""
     if _running_instance(path):
         raise StateAclError("the scheduler is running; stop it first")
     links = [Path(r) / n for r, ds, fs in os.walk(path) for n in ds + fs if _is_link(Path(r) / n)]
     if _is_link(path) or links:
         raise StateAclError(f"links in the state folder, remove them first: {[str(x) for x in links][:5]}")
-    old = path.with_name(f"{path.name}.pre-acl-{int(time.time())}")
-    os.rename(path, old)
-    make_state_folder(path)
     import shutil
-    for item in old.iterdir():
-        (shutil.copytree if item.is_dir() else shutil.copyfile)(item, path / item.name)
-    check_state_folder(path)
+    t = int(time.time())
+    old, new = path.with_name(f"{path.name}.pre-acl-{t}"), path.with_name(f"{path.name}.acl-new-{t}")
+    if os.path.lexists(old) or os.path.lexists(new):
+        raise StateAclError(f"{old.name} or {new.name} already exists; try again")
+    created = False
+    try:
+        make_state_folder(new)                   # refuses a folder someone else planted under this name
+        created = True
+        for item in path.iterdir():
+            (shutil.copytree if item.is_dir() else shutil.copyfile)(item, new / item.name)
+        check_state_folder(new)
+        os.rename(path, old)
+    except BaseException:
+        if created:
+            shutil.rmtree(new, ignore_errors=True)
+        raise
+    try:
+        os.rename(new, path)
+    except BaseException:
+        try:
+            os.rename(old, path)                 # put the original back; the checked copy is then removed
+        except OSError:
+            raise StateAclError(f"could not put either folder in place; the data is in {old.name} and "
+                                f"{new.name}; rename one of them to {path.name}") from None
+        shutil.rmtree(new, ignore_errors=True)
+        raise
     return old
 
 
