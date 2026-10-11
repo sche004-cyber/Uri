@@ -116,6 +116,34 @@ Limits (initial values, to be confirmed by the reviewer): download 20 MB; 300 pa
 30 s OCR per page; 120 s per-document worker wall clock; 1 GB worker address space; 200 KB of text per page;
 5 MB of text per document; crawl budget 200 pages, depth 4, 1 request/s per host, 2 concurrent document workers.
 
+## 4a. Frequently needed documents (owner direction, 2026-10-11)
+
+The owner asked that "files that are required often may also be saved for faster retrieval". This refines §4 step 6
+(delete after processing). The default stays delete-after-processing; a bounded cache is added:
+
+- **When a document is kept:**
+  - It has been needed at least `CACHE_MIN_USES` times within `CACHE_WINDOW_DAYS` (initially 3 uses in 30 days).
+    A use is an answer citing the document, or the user opening it.
+  - Or the user pins it.
+- **Where and how much:** `uri_workspace/web_documents/cache/`. Total size cap `CACHE_MAX_MB` (initially 500 MB) and
+  per-file cap = the download limit. Least-recently-used documents are evicted first; pinned documents are never
+  evicted automatically.
+- **Integrity:** every cached file is checked against its recorded `content_sha256` before use.
+  - On refresh, a changed document replaces the cached copy, and the old hash stays in `versions`.
+  - A document that disappears from the site (GONE) stays cached only if pinned.
+- **Never cached:** documents flagged `personal_data = candidate` (D5). Encrypted or refused files.
+- **Controls:** list, pin, unpin and clear the cache. Clearing never touches the index text, so answers and citations
+  keep working from stored text.
+- **Speed without the file:** answers already come from the indexed page text, which is fast without the original.
+  The cache helps with re-reading the original, re-running OCR with better settings, and offline viewing.
+
+Acceptance:
+- **W2-AC15:** a document reaches the threshold and is cached; LRU eviction holds the cap; a pinned document
+  survives eviction.
+- A hash mismatch makes the cached copy unusable and it is re-fetched.
+- A personal-data document is never cached.
+- Clearing the cache keeps answers working.
+
 ## 5. Privacy and knowledge separation
 
 - **Where W2 writes:** only the W2 index and the W2 graph store. It never calls `MemoryStore`, `user_memory`,

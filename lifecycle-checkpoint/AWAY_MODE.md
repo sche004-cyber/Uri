@@ -53,6 +53,24 @@ work while am away from pc". This file is the standing plan; every check-in foll
      - no permanent copies of PDFs are kept.
 4. **RW1** is NOT started unattended. Its benchmark needs Windows and WebView2 on the owner's PC.
 
+## Code graph (graphify)
+
+The repository rule is "after modifying code, run `graphify update .`".
+
+- In this cloud container, graphify (`graphifyy` 0.9.5, the same version as the repo's skill) is installed as a
+  developer tool with `uv tool install`. It is not a URI dependency.
+- Its output is not git-ignored and the `.gitignore` is frozen. Generating it inside a milestone worktree would
+  leave untracked files that make the candidate dirty, and excluding them via `.git/info` would set off the
+  GIT_CONTROL tamper check.
+- So the graph is built from a clean `git archive` export, outside the repository:
+  - `/home/user/uri-wt/graphs/canonical`: rebuilt after every canonical integration.
+  - `/home/user/uri-wt/graphs/<milestone>`: rebuilt after a milestone's accepted commit.
+  - New milestone configs give workers this path as an environment note, so they can run `graphify query/path/explain
+    --graph <path>/graphify-out/graph.json`.
+- A rebuild takes about 1 minute (AST only, no API cost). After a container reset it is simply rebuilt; it is not
+  stored in git.
+- On the owner's PC, the local `graphify-out/` is updated by the owner's own graphify setup after pulling.
+
 ## Allowed unattended (already authorised)
 
 - Lifecycle runs, repairs, reviews and gates (skill policy).
@@ -92,3 +110,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 06:43 | R10 REJECT (1 blocking: R10-01, a regression from the R9-01 fix). Three repair attempts refused: their test skipped on the pre-repair commit because new fixture files are not copied there. Diagnosis recorded; one environment note added (policy hash unchanged). REPAIR_FAILED and CONFIG unblocked with notes; driver relaunched (PID 16072). Follow-up queued: carry repair-added fixture files into the pre-repair checkout (lifecycle). |
 | 2026-10-11 06:55 | D9 (W2 implementation instructions) received. Repository inspected; W2 plan with 14 acceptance criteria written and self-reviewed (no new owner decision needed except the approved domain list, not blocking). |
 | 2026-10-11 07:10 | W1/A0 rounds 11-13: everything before is confirmed fixed, but the hidden-text blocklist was bypassed again (R11-01 class, diagnosis D6, OWNER_DECISION). Owner chose **D10: pixel-checked page text** (fail closed). Coordinator-directed implementation by a separate agent in progress, following the D7/D8 precedent; independent review follows. Spend $49.90. |
+| 2026-10-11 07:15 | graphify installed (cloud developer tool) and the canonical `ce1a90c` graph built outside the repo (23,413 nodes, 49,620 edges, 54 s; query checked). W2 plan: bounded cache for frequently needed documents added (owner direction, W2-AC15). |
