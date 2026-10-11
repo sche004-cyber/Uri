@@ -16,7 +16,10 @@ DEFAULT_PORTS = {"http": 80, "https": 443}
 ALLOWED_PORTS = frozenset({80, 443})
 MAX_URL_LENGTH = 2048
 
-_NAT64 = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
+_NAT64 = (ipaddress.ip_network("64:ff9b::/96"),)
+# R16-02: the RFC 8215 local-use NAT64 prefix may embed IPv4 at any RFC 6052 offset; it is never needed for public
+# fetches, so it is refused outright.
+_NAT64_LOCAL = ipaddress.ip_network("64:ff9b:1::/48")
 _SIX_TO_FOUR = ipaddress.ip_network("2002::/16")
 _TEREDO = ipaddress.ip_network("2001::/32")
 _LDH = __import__("re").compile(r"^[a-z0-9.-]+$")
@@ -65,6 +68,8 @@ def check_address(address) -> None:
     if isinstance(ip, ipaddress.IPv6Address):
         if ip in _TEREDO:
             raise EgressRefused("ADDRESS_TRANSITION_REFUSED", "teredo")
+        if ip in _NAT64_LOCAL:
+            raise EgressRefused("ADDRESS_TRANSITION_REFUSED", "nat64-local-use")
         inner = _embedded_v4(ip)
         if inner is not None:
             try:

@@ -512,6 +512,13 @@ def _endings(words: list, norm: str):
                 yield b, e, text.casefold()
 
 
+# D19 (owner, 2026-10-11, after R16-01): stroke and dot-shaped letters. A word made only of them is a separator
+# whatever its length ('\u4e36\u318d\u11a2'). Kept in canonical form, as the checked text is (NFKC maps the Kangxi
+# radicals '\u2f00'-'\u2f05' to the unified ones); non-letters (CJK strokes U+31C0-31E3, '\u30fb') are gap already.
+_STROKES = frozenset(c for c in (normalise(ch) for ch in
+                                 "\u4e00\u4e28\u4e36\u4e3f\u4e59\u4e85\u4e40\u4e41\u4e5a\u4e5b\u4e8c\u4ea0"
+                                 "\u318d\u119e\u11a2\u3006" + "".join(chr(c) for c in range(0x2F00, 0x2F06)))
+                     if len(c) == 1 and _letter(c))
 _OPEN, _CLOSE = "([{\uff08\u3010\u300c\u300e\u3014", ")]}\uff09\u3011\u300d\u300f\u3015"
 
 
@@ -537,6 +544,8 @@ def _separator_word(norm: str, w, fam: str) -> bool:
       ('portal (\u4e36\u4e3f) shop'). Precision cost: 'Tokyo \u6771\u4eac is big' (unbracketed) is masked."""
     if _single(w):
         return True
+    if set(w[2]) <= _STROKES:
+        return not _bracketed(norm, w)     # D19: any length ('\u4e36\u318d\u11a2', '\u4e28\u4e36\u4e3f')
     if w[3] == fam:
         return _odd(w[2])
     # D17 (owner): loosened, then tightened back the same day: any short word of another script (at most
