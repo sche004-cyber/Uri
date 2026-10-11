@@ -1,0 +1,32 @@
+I've repaired both findings in the working tree; nothing is committed. The new regression file fails all 4 of its tests on a clean copy of `5629c04` and passes all 4 after the change. The full `tests/assist` + `tests/web` run passes (2671 tests).
+
+**R14-01 (labels, invisible fields, title): repaired**
+- **What reaches the Brain now:** a field is named only by label text that is actually drawn on screen and passes the same render check as page text. The page builds these pieces from the visible text of `<label for>`, a wrapping `<label>` and `aria-labelledby` targets (`snapshot.js`). The perception layer keeps only the pieces that pass, as `shown_label` (`perception.py`).
+- **What no longer reaches it:** `aria-label`, hidden label elements and the old computed label string still decide whether a field is private, but are never sent. A field without a drawn label is listed as "(unlabelled <kind> field)", where the kind comes from a fixed list, never from the page's `type`, `name`, `id` or placeholder.
+- **Invisible fields:** fields that aren't on screen (hidden inputs, invisible private fields) are no longer listed in the Brain request at all (`bridge.py`).
+- **Title:** the page or window title is never sent. The data block is now titled "shared browser tab" or "shared window".
+
+**R14-02 (`-webkit-text-security`): repaired**
+- In the page, text with any `-webkit-text-security` other than `none` is treated as hidden (`snapshot.js`).
+- `probe.js` also reports such ranges with a flag and leaves them out of the probe; `onscreen.py` drops any flagged range and counts it as `masked_glyphs`. This is a second layer: since both scripts run in the page, it adds depth rather than a separate boundary.
+
+**Regression test:** `tests/assist/test_a0_r14_review_regressions.py` is self-contained and embeds the reviewer's payloads.
+- It runs them in real Chromium, with and without Ctrl+A. That covers the title, the hidden-field, `aria-label`, `display:none` label and `aria-labelledby` payloads, an invisible private field, and text-security disc, square and circle. It also checks that drawn labels and normal page text still get through.
+- A unit test covers raw labels with no drawn pieces, plus a hostile `type` and `name`.
+- A synthetic probe test covers the text-security flag.
+
+**Docs:** I updated `docs/assist/03_PERMISSION_AND_DATA_FLOW.md` with the new rules and a correction entry for R14. It also lists these as remaining limits:
+- **Web fonts:** a web font that swaps in different glyphs still passes the check. Detecting non-system web fonts is your decision as owner.
+- **Field values:** the values of fields D8 already shares (search box, comment) are not render-checked, because input values aren't text the probe can repaint.
+- **URL:** the page URL is still sent.
+
+**Other things you should know:**
+- `tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on` fails because it expects HEAD to be the frozen base `e8e3b65`, and this worktree's HEAD is `5629c04`. That comes from the environment, not this change.
+- Raw labels still appear in the user-facing field checks (`checks.py`); those never go to the Brain.
+- I didn't run any graphify command, and I didn't touch any protected path.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R14-01", "R14-02"], "not_repaired": [],
+ "regression_tests": ["tests/assist/test_a0_r14_review_regressions.py"],
+ "notes": "R14-01: field labels now reach the Brain only as render-checked label pieces (snapshot.js labelPieces -> perception shown_label via onscreen.keep); aria-label, hidden labels and the computed label string are used only to decide whether a field is private; unlabelled fields are shown as '(unlabelled <kind> field)' with the kind from a fixed list; fields not on screen and hidden inputs are no longer listed; the page title is never sent (data block titled 'shared browser tab' or 'shared window'). R14-02: -webkit-text-security text is hidden in page (textVisible) and probe.js reports a per-unit flag 's' that onscreen.py drops as 'masked_glyphs'. Docs 03 updated with the new rules, an R14 correction entry and remaining limits (glyph-substituting web fonts need an owner decision; values of fields D8 shares are not render-checked; URL still sent). Verified: the new test file fails 4/4 on a git-archive copy of 5629c04 and passes 4/4 after; tests/assist + tests/web pass 2671/2671. tests/phase2a/test_frozen_core.py::test_base_commit_is_the_one_the_checkpoint_was_built_on fails because it expects HEAD to be the frozen base e8e3b65 (HEAD is 5629c04); environmental, unrelated. No graphify command was run and no protected path was touched."}
+REPAIR_RESULT_END

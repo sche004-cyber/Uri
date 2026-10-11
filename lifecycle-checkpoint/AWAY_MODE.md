@@ -35,7 +35,7 @@ work while am away from pc". This file is the standing plan; every check-in foll
    memory store. `authorized_protected_changes` is `uri_core/app/server.py`, plus `uri_core/core/graphify_index.py`
    only if needed (named explicitly). The regression test is the confirmed reproduction in
    `lifecycle-runs/findings/GRAPHIFY-LEAK-1/`, made self-contained. Independent review, then D1.
-4. **W2**: plan and acceptance criteria in `lifecycle-runs/W2_PLAN_AND_ACCEPTANCE.md`, from the owner's "W2 Web &
+4. **W2a, then W2b** (see plan §4d). W2: plan and acceptance criteria in `lifecycle-runs/W2_PLAN_AND_ACCEPTANCE.md`, from the owner's "W2 Web &
    Document Intelligence: Implementation Instructions" (2026-10-11, recorded as D9) reconciled with the earlier brief.
    The plan supersedes the brief where they differ (approved scopes only, manual refresh, OCR over vision). Starts only
    after SSRF-1 is accepted and integrated. Owner-gated but not blocking: the approved domain list. Earlier owner
@@ -125,3 +125,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 07:35 | D10 implemented by a separate agent and reviewed by the coordinator: frozen check clean; 2650 assist+web tests pass; 17 new tests fail on d029f60 with real payload leaks. Committed `fcfb465`; OWNER_DECISION unblocked; driver relaunched (PID 24911) and resumed in FIXING on the new candidate. Ledger now records D9-D12. |
 | 2026-10-11 07:40 | Diagnosis D7 on fcfb465 went to repair. Repair P14 was refused OUT_OF_SCOPE because the worker ran graphify in the worktree (coordinator-caused). Worktree restored. Graphify read-only note added (policy hash unchanged); W1/A0 graph built at graphs/W1-A0 (fcfb465). Unblocked; driver relaunched (PID 31137). |
 | 2026-10-11 08:15 | Owner approved two W2 additions: named collections (W2-AC19) and the current-rules view built only from confirmed relationships (W2-AC20). W2 plan now has 20 acceptance criteria. |
+| 2026-10-11 08:35 | Owner approved W2-AC21 (agenda-item index for BoG/Senate/FC/BWC minutes) and W2-AC22 (uploaded/Drive/local internal sources). Owner's DoPT-leave example generalised into FIND/LIST (W2-AC23) and SUMMARISE (W2-AC24) intents. W2 is one document-retrieval skill with five intents; delivered as W2a (core) then W2b (structured). |

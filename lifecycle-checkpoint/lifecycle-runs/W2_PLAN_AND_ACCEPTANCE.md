@@ -1,6 +1,6 @@
 # W2 — Web & Document Intelligence: plan and acceptance criteria
 
-Status: **PLANNED** (self-reviewed: FTS5, `Page.find_tables`, POSIX `resource` limits and the pytesseract `timeout`
+Status: **PLANNED** — 24 acceptance criteria, delivered as W2a + W2b (§4d) (self-reviewed: FTS5, `Page.find_tables`, POSIX `resource` limits and the pytesseract `timeout`
 parameter confirmed present in the cloud venv). Not implemented, not reviewed, not integrated.
 
 Written 2026-10-11 from:
@@ -251,6 +251,148 @@ Acceptance:
   - The amendment chain is ordered and every link carries an evidence quote, link and page.
   - Clause text is shown verbatim, never merged.
   - A changed rule document is flagged with its changed pages.
+
+## 4c. The document-retrieval skill: intents and owner examples (owner approval, 2026-10-11)
+
+The owner gave three examples and said they are only *some* of the information-retrieval work expected from URI:
+
+1. "Maintain a database of rules and regulations concerning NIT Sikkim" → §4b (collections, current rules).
+2. "Maintain all items/agendas as indexes for all the minutes of the meetings of BoG, Senate, FC and BWC for NIT
+   Sikkim" → W2-AC21 and W2-AC22.
+3. "Show links for all the relevant DoPT orders related to leave", then the user opens each and asks URI to
+   summarise it → W2-AC23 and W2-AC24.
+
+W2 is therefore built as **one general document-retrieval skill**, not three features. Every request maps to one of
+five intents over the same index, ARN narrowing, Graphify pointers and citation rules. The examples become benchmark
+tasks and fixtures, never per-site code.
+
+| Intent | Example | Output |
+|---|---|---|
+| FIND / LIST | "show links for all relevant DoPT orders on leave" | Ranked list with links and a coverage statement (W2-AC23) |
+| ANSWER | "what is the minimum attendance rule?" | Cited answer (§6) |
+| SUMMARISE | "summarise this one" | Cited summary of one chosen document (W2-AC24) |
+| MAINTAIN | "maintain a database of …" | Named collection with refresh (W2-AC19/20) |
+| STRUCTURE | "index all agenda items of …" | Item-level index (W2-AC21) |
+
+### Agenda-item index for meeting minutes (W2-AC21)
+
+- **Bodies:** governance bodies are configurable per institution. Default set: BoG, Senate, Finance Committee (FC),
+  Building and Works Committee (BWC).
+- **Item records:** each minutes or agenda document is split into items. Each item record holds:
+  - body, meeting number and date;
+  - item number as printed (for example "45.3");
+  - the agenda heading;
+  - the decision or resolution quoted verbatim;
+  - status (approved | recommended | deferred | noted | ratified | withdrawn | not stated);
+  - page citation and split confidence.
+- **Uncertain splits:** an uncertain split is a `candidate`, and the user can correct it; corrections persist.
+- **Item relations** (same evidence rule as §3; `confirmed` only where the text states the link):
+  - `recommended_to` (FC/BWC/Senate → BoG)
+  - `approved_in` / `ratified_in` (a later meeting)
+  - `action_taken_on` (an action-taken report)
+  - `carried_over_to`
+- **Questions this supports:** "items about X since <date>", "what happened to <body> item N", "pending action-taken
+  items". References such as "item 3 of the last BoG" are resolved by RAR against the indexed items.
+- **Privacy:** items about named individuals (appointments, promotions, disciplinary, pay fixation) are personal
+  data.
+  - Listings and exports show the item number and a generic topic only.
+  - The text is shown only for a question about that matter.
+- **Financial figures** are quoted verbatim or omitted (D7), never summed or reconstructed.
+
+### Non-web sources: uploaded and Drive minutes (W2-AC22)
+
+- Unpublished minutes and agenda papers enter the same index from:
+  - files the user uploads (existing `read_attached_file` path);
+  - a Google Drive folder the user approves (existing Drive tools, read-only);
+  - a local folder the user approves.
+- **Labels:** each document is labelled `public` (found on an approved public site) or `internal` (user-provided).
+  Internal documents are:
+  - visible only to the user who added them;
+  - never exported, and never given a Graphify pointer outside that user's view, unless the user says so;
+  - never fetched or shared with any external service.
+- **Same handling as web documents:** extraction limits, temporary-file deletion (originals stay where the user
+  keeps them), provenance (file name, Drive file ID, folder path, hash) and versioning apply unchanged.
+
+### Find and list across official sources (W2-AC23)
+
+- For a FIND request, URI searches the approved scope (for example the DoPT orders and OM pages, once approved) or
+  the collection, narrowed through ARN.
+- **What URI returns:** a ranked list of matching documents. Each entry has:
+  - title, order/OM number, date, issuing department;
+  - the link (to the document and its referring page);
+  - a one-line description quoted from the document's own subject line, with a page citation;
+  - flags: `superseded/amended (confirmed)` or `may be affected (unconfirmed)` from §3/§4b.
+- **Coverage statement (mandatory):** URI never says "all" without one. It states:
+  - which sources and sections were searched and how many pages and documents were checked (from the ARN case
+    summary);
+  - what was not reached (JavaScript-built pages → RW1, login-only, egress-blocked, budget stopped);
+  - the date of the last refresh.
+- **Opening:** opening a link is the user's action, in the user's own browser (hand-off). URI never browses for the
+  user.
+- **Approvals:** a new source in the request (for example dopt.gov.in) is added only after the user confirms it as
+  an approved scope.
+
+### Summarise a chosen document (W2-AC24)
+
+- **Which document:**
+  - "summarise this / the second one / the 2019 OM" is resolved by RAR against the list URI just showed;
+  - or, if the user has the document open and has granted Assist OBSERVE for that tab, by matching the tab's URL
+    to an indexed document (A0 rules; no new permission);
+  - an ambiguous reference makes URI ask which one (ARN clarification recommendation; URI does not invent).
+- **How the summary is built:** from the indexed page text (fetched first if not yet indexed) through the W1
+  synthesis path.
+  - Every summary sentence is checked against a cited source sentence (wording, negation).
+  - Quantities (days of leave, amounts, dates, percentages) are quoted verbatim with their page, or omitted (D7).
+  - Unverifiable sentences are dropped and counted.
+- **Shape:** key provisions; who it applies to; effective date; what it amends or supersedes (confirmed only);
+  each with page citations. Length on request (brief / detailed).
+- **Safety:** instructions inside the document are untrusted data (§6). The summary never adds advice or
+  interpretation beyond the text.
+
+Acceptance:
+
+- **W2-AC21 Agenda items:**
+  - On fixture minutes for the four bodies (native text and scanned), items are split with correct numbers,
+    headings and statuses.
+  - Uncertain splits are `candidate`; user corrections persist across refresh.
+  - Cross-body relations are `confirmed` only with explicit text (negative tests: the same topic in two meetings
+    alone gives `candidate`).
+  - Personal-data items show only a generic topic in listings and exports.
+  - "Item N of the last BoG" resolves through RAR.
+- **W2-AC22 Non-web sources:**
+  - Uploaded and Drive-folder documents are indexed with provenance and the `internal` label.
+  - Another user's view, exports and Graphify pointers never show them.
+  - No external call is made for internal documents.
+  - Originals are untouched.
+- **W2-AC23 Find and list:**
+  - Every listed item has link, number, date and a quoted subject with citation.
+  - Confirmed and unconfirmed supersession flags are correct.
+  - The coverage statement is always present and matches the ARN case summary.
+  - A source not yet approved triggers a confirmation, not a crawl.
+  - The DoPT-leave-style benchmark runs on an offline fixture; live is NOT VERIFIED until the domain is approved and
+    egress allows it.
+- **W2-AC24 Summarise:**
+  - The document is chosen through RAR from the last list, or the active-tab URL under an OBSERVE grant.
+  - Ambiguity gives a clarification, not a guess.
+  - Every summary sentence has a page citation and passes verification; quantities are verbatim or omitted.
+  - An instruction embedded in the document does not change the summary's behaviour.
+
+## 4d. Delivery in two lifecycle milestones
+
+W2 now has 24 acceptance criteria. One independent review of the whole change would be slow and less reliable, so W2
+is delivered as two milestones. Each has its own branch from the canonical tip, its own independent review and its
+own D1 integration. Same order in the queue.
+
+- **W2a — core retrieval.**
+  - Covers: discovery and fetch, extraction/OCR worker and limits, document index and versions, temporary files and
+    cache, relationship evidence rules, privacy separation, ARN narrowing, Graphify document pointers (D11), and the
+    FIND / ANSWER / SUMMARISE intents.
+  - Acceptance: W2-AC1…AC18, AC23, AC24.
+- **W2b — structured knowledge.**
+  - Covers: named collections and the current-rules view, the agenda-item index, and non-web (uploaded/Drive/local)
+    sources.
+  - Acceptance: W2-AC19…AC22.
+  - Depends on W2a being integrated.
 
 ## 5. Privacy and knowledge separation
 
