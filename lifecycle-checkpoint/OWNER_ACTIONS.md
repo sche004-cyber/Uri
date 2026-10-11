@@ -31,8 +31,6 @@ here the same day, and removed only when it is done, with the date. Newest chang
 
 All answered 2026-10-11: O1, O3, O4, O5 stay as they are; O2 (Hebrew points) will be fixed in IDN-1. Nothing waiting.
 
-| # | Example | Hidden because |
-|---|---|---|
 
 ## Log
 | Date | Change |
