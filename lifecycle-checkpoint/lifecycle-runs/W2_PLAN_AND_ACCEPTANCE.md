@@ -601,3 +601,10 @@ Delivery: W2-AC25 and W2-AC26 belong to **W2b**, except `docs.open_document`, wh
 - **Enabling scheduled refresh later:** not blocking.
 - **Optional, environment only:** installing `tesseract-ocr` in the cloud development environment's setup script.
   This would let real OCR be tested here; it is not a URI runtime dependency.
+
+### W2-AC27: first-use explainer (owner request, 2026-10-11; depends on ONBOARD-1)
+
+W2a and W2b each add an ONBOARD-1 registry entry for document search: what it does (searches approved sources and
+cites URL and page), what it can see or send (approved domains only; downloads are temporary and deleted), what it
+never does (no unrestricted crawling; numbers only quoted from the source, D7), and how to stop it. Each sentence is
+tested against the code fact it states (OB-AC1).

@@ -36,7 +36,9 @@ work while am away from pc". This file is the standing plan; every check-in foll
    memory store. `authorized_protected_changes` is `uri_core/app/server.py`, plus `uri_core/core/graphify_index.py`
    only if needed (named explicitly). The regression test is the confirmed reproduction in
    `lifecycle-runs/findings/GRAPHIFY-LEAK-1/`, made self-contained. Independent review, then D1.
-4. **W2a, then W2b** (see plan §4d). W2: plan and acceptance criteria in `lifecycle-runs/W2_PLAN_AND_ACCEPTANCE.md`, from the owner's "W2 Web &
+4. **ONBOARD-1** (owner request 2026-10-11): first-use explainer card per ability per user, starting with Assist.
+   Plan: `lifecycle-runs/ONBOARD-1_PLAN_DRAFT.md`. No frozen file, dependency or permission; independent review, then D1.
+5. **W2a, then W2b** (see plan §4d). W2: plan and acceptance criteria in `lifecycle-runs/W2_PLAN_AND_ACCEPTANCE.md`, from the owner's "W2 Web &
    Document Intelligence: Implementation Instructions" (2026-10-11, recorded as D9) reconciled with the earlier brief.
    The plan supersedes the brief where they differ (approved scopes only, manual refresh, OCR over vision). Starts only
    after SSRF-1 is accepted and integrated. Owner-gated but not blocking: the approved domain list. Earlier owner
@@ -57,7 +59,7 @@ work while am away from pc". This file is the standing plan; every check-in foll
      - personal data in public documents (for example names in results lists) is indexed for search only and never
        written to user memory or learning (D5);
      - no permanent copies of PDFs are kept.
-5. **SCHED-TOKEN-ACL** (pre-existing issue, reported by the URI OFFICE thread on the owner's PC, 2026-10-11; NOT
+6. **SCHED-TOKEN-ACL** (pre-existing issue, reported by the URI OFFICE thread on the owner's PC, 2026-10-11; NOT
    VERIFIED from the cloud).
    - **The issue:** the scheduler's `<state>/api-token` file inherits nine ACL entries, including
      `CodexSandboxUsers` with modify rights. Processes running as Codex sandbox users could read or replace the token
@@ -65,7 +67,7 @@ work while am away from pc". This file is the standing plan; every check-in foll
    - **The fix:** in `uri_scheduler/service.py` (not frozen), restrict the token file AND its folder to the current
      user. It needs a Windows ACL test, so it is a small lifecycle milestone run where Windows is available. Not
      started from the cloud.
-6. **RW1** is NOT started unattended. Its benchmark needs Windows and WebView2 on the owner's PC.
+7. **RW1** is NOT started unattended. Its benchmark needs Windows and WebView2 on the owner's PC.
 
 ## Code graph (graphify)
 
@@ -140,3 +142,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 10:00 | Office M1 (owner's PC thread, branch `phase/uri-office` 2fbbaed0 on `ce1a90c`, not pushed). Reported: HTTP service now copies the scheduler (127.0.0.1 + per-launch bearer token) plus Host and Origin guards; inline-string rule; real Excel fixture. It also reported a scheduler api-token ACL weakness on the PC, queued as SCHED-TOKEN-ACL. Unverified from the cloud. |
 | 2026-10-11 10:25 | Office branch `phase/uri-office` da2a3de checked from the cloud. 4 commits on `ce1a90c`, no frozen or W1/A0 files touched, 63/72 tests pass on Linux (8 are Windows-path-only). BLOCKER found: 190.8 MB of `node_modules` (11,477 files) committed and pushed. **Owner approved** the Office thread rewriting and force-pushing `phase/uri-office` only, and deleting its `uri-agent` copy; the instructions were given as a paste box. Also flagged: the blueprint/architecture drift, the duplicated `untrusted` helper, and `@grpc/grpc-js`, which is not on the approved download list. |
 | 2026-10-11 10:40 | Office rewrite verified from the remotes: `phase/uri-office` 14cff587 has no node_modules in any commit, tree = da2a3de plus 3 new files, base ce1a90c, uri-agent copy deleted, canonical unchanged. W1/A0 run-2: R4 and R5 REJECT, then RETRY_LIMIT (R5-01 '_'/'-'-wrapped links; R5-02 D7 qualifiers dropped at claim edges). Coordinator repair `29771992` (D10 precedent; 38/50 new tests fail on f5a5b8e; web+assist+a2ui 3002 pass; two older tests' sources given commas, recorded). Unblocked, relaunched (PID 3397). R6 REJECT: R6-01 one-sided spaced dot and dot-like separators (R1-01 class, 6th recurrence); R6-02 comma edge still lets a qualifier go (coordinator's rule too loose — correction recorded). Driver repairing. Link-detection scope question put to the owner. Spend run-2 ~$30. |
+| 2026-10-11 11:05 | Owner decisions D13 (mask any dot-joined word) and D14 (Brain-worded claims run sentence edge to edge). Driver stopped mid-repair (its worker had written nothing); coordinator repair `806dcd12` (60/72 new tests fail on 29771992; web+assist+a2ui 3126 pass; ledger rows added). Driver relaunched (PID 10652), CANDIDATE_MOVED recorded, re-diagnosing. Owner request: first-use explainers, queued as ONBOARD-1 before W2a (W2-AC27 added). |
