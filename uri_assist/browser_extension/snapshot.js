@@ -381,6 +381,19 @@
     }
     return ps.length ? finish(ps.slice(0, MAX_LABEL_PIECES), " ") : [];
   };
+  // R15-01: the value of a contenteditable that leaves the page as field text is rebuilt from its own visible text
+  // nodes (not innerText, which includes opacity:0 and off-screen descendants), as pieces URI render-checks like page
+  // text. An input's or textarea's value is not a text node the probe can repaint, so URI never sends it to the Brain
+  // (fail closed); `value` stays here only for D8 and the Live Assist checks.
+  const MAX_VALUE_PIECES = 40;
+  const valuePieces = (el) => {
+    const ps = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n && ps.length < MAX_VALUE_PIECES; n = w.nextNode()) {
+      if (!n.nodeValue.trim() || !n.parentElement || n.parentElement.closest(FIELD) !== el || !textVisible(n)) continue;
+      ps.push(...nodePieces(n, 0, n.nodeValue.length, ps.length ? ps[ps.length - 1].g + 1 : 0));
+    }
+    return ps.length ? finish(ps.slice(0, MAX_VALUE_PIECES), " ") : [];
+  };
   const sensitive = (el, label, value) => {
     const type = (el.getAttribute("type") || "").toLowerCase();
     if (SENSITIVE_TYPES.has(type)) return true;
@@ -430,6 +443,7 @@
       if (shown) sensitiveRects.push(f.rect);
     } else {
       f.sensitive = false; f.value = maskText(String(value).slice(0, MAX_VALUE));
+      if (shown && el.isContentEditable) f.value_pieces = valuePieces(el);
     }
     fields.push(f);
   }

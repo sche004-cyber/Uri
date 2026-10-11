@@ -60,7 +60,15 @@ FIELD_KINDS = {"text", "email", "tel", "url", "number", "search", "date", "datet
 def _field_line(f) -> str:
     kind = f.get("type") or f.get("role")
     name = f.get("shown_label") or f"(unlabelled {kind if kind in FIELD_KINDS else 'form'} field)"
-    return f"- {name}: {'[private field, value hidden]' if f.get('sensitive') else (f.get('value') or '(empty)')}"
+    # R15-01: a value is sent only as perception's render-checked `shown_value` (a contenteditable's drawn text, or
+    # checkbox/radio state); the raw `value` can hold text the user never sees (transparent, masked, covered).
+    if f.get("sensitive"):
+        value = "[private field, value hidden]"
+    elif f.get("shown_value"):
+        value = f["shown_value"]
+    else:
+        value = "(value not shown: it could not be checked as drawn on screen)" if f.get("value") else "(empty)"
+    return f"- {name}: {value}"
 
 
 def _context_block(obs) -> str:

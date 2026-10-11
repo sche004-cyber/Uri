@@ -19,7 +19,9 @@ Snapshot schemas an adapter must produce (all content UNTRUSTED):
   kept only if `onscreen.py` finds every one of its units drawn, in its own colour and in its own box, by the
   adapter's differential render (`probe`, uri.assist.probe.v1, browser_extension/probe.js) taken at observation
   time under the same grant; without a usable probe no page text is kept (fail closed). The same holds for a field's
-  `label_pieces` (R14-01): only those make the field's `shown_label`, the only label the Brain sees.
+  `label_pieces` (R14-01): only those make the field's `shown_label`, the only label the Brain sees, and for a
+  contenteditable's `value_pieces` (R15-01): only those make its `shown_value`, the only field value the Brain sees
+  besides checkbox/radio state. Input, textarea and select values cannot be render-checked and are never sent.
 
 `normalise()` validates the schema, bounds every size, applies `redact` and returns an Observation stamped by the
 access controller. A selection is accepted only when the adapter marks it `selection_source: "page_text"` (built from
@@ -44,7 +46,7 @@ MAX_TEXT = 40_000
 MAX_FIELDS = 200
 MAX_HEADINGS = 60
 MAX_STR = 500
-MAX_TEXT_PIECES, MAX_SEL_PIECES, MAX_HEAD_PIECES, MAX_LABEL_PIECES = 4000, 1000, 40, 20
+MAX_TEXT_PIECES, MAX_SEL_PIECES, MAX_HEAD_PIECES, MAX_LABEL_PIECES, MAX_VALUE_PIECES = 4000, 1000, 40, 20, 40
 DOM, UIA = "uri.assist.dom.v1", "uri.assist.uia.v1"
 
 
@@ -123,6 +125,7 @@ def normalise(snapshot: dict, stamp: Stamp, probe: Optional[dict] = None) -> Obs
             out = RD.redact_field(base, counts)
             _keep_adapter_withholding(out, f)
             out["shown_label"] = _shown_label(f, screen) if out["visible"] else ""
+            out["shown_value"] = _shown_value(f, out, screen)
             fields.append(out)
             if out.get("sensitive"):
                 withheld_values.append(base["value"])
@@ -190,6 +193,23 @@ def _shown_label(raw: dict, screen) -> str:
     junk = Counter()
     kept = OS.keep(raw.get("label_pieces"), screen, junk, MAX_LABEL_PIECES)
     return RD.redact_text(OS.join(kept, " ")[:300], junk)
+
+
+def _shown_value(raw: dict, out: dict, screen) -> str:
+    """R15-01: the field value the Brain may see. Checkbox/radio state is a fixed word. A contenteditable's value is
+    only its value pieces whose own glyphs passed the render check (D10). An input's, textarea's or select's value is
+    drawn by the browser's own editor, not as text nodes the probe can repaint: it cannot be bound to its pixels (it
+    may be transparent, masked, covered or scrolled away) and is never sent (fail closed). D8 decides first."""
+    if out.get("sensitive") or not out.get("visible"):
+        return ""
+    kind = out.get("type")
+    if kind in ("checkbox", "radio"):
+        return out.get("value") if out.get("value") in ("checked", "unchecked") else ""
+    if kind != "contenteditable":
+        return ""
+    junk = Counter()
+    kept = OS.keep(raw.get("value_pieces"), screen, junk, MAX_VALUE_PIECES)
+    return RD.redact_text(OS.join(kept, " ")[:2000], junk)
 
 
 def _keep_adapter_withholding(out: dict, raw: dict) -> None:
