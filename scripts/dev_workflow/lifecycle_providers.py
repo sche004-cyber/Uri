@@ -28,6 +28,8 @@ import time
 import uuid
 from pathlib import Path
 
+from scripts.dev_workflow import containment
+
 INDEPENDENT_PROVIDERS = ("claude_cli", "codex_cli")
 # A worker that failed for one of these reasons is resumable later; the attempt is not counted against the repair.
 QUOTA_RE = re.compile(r"rate.?limit|usage limit|quota|overloaded|too many requests|\b429\b|\b529\b|credit balance")
@@ -53,10 +55,9 @@ def _now() -> str:
 
 
 def _killpg(pid) -> None:
-    try:
-        os.killpg(pid, signal.SIGKILL)
-    except OSError:
-        pass
+    """End a worker's process group (POSIX) or tree (Windows); never raises, also for an exited pid (DEV-LIFECYCLE-2
+    F1: os.killpg and signal.SIGKILL do not exist on Windows)."""
+    containment.kill_pid_tree(pid)
 
 
 # Worker containment (DEV-LIFECYCLE-1 R8-01). A worker child that calls setsid() leaves the killed process group; as an
@@ -105,7 +106,10 @@ def _orphans() -> list[int]:
 
 def sweep_orphans(max_passes: int = 500) -> dict:
     """Kill every adopted orphan until none is left (their own children are adopted in turn). ``contained`` is True
-    only when containment is active and the sweep converged."""
+    only when containment is active and the sweep converged. On Windows: every earlier job must be empty
+    (containment.precheck, DEV-LIFECYCLE-2 F2)."""
+    if containment.WINDOWS:
+        return containment.precheck()
     if not enable_containment():
         return {"contained": False, "killed": 0, "reason": f"no child-subreaper containment on {sys.platform}"}
     killed = 0
@@ -130,8 +134,9 @@ def sweep_orphans(max_passes: int = 500) -> dict:
 def drain_after_timeout(proc, grace: float = 5.0) -> tuple:
     """End a timed-out worker or command without blocking on its pipes (R10-01): kill its group, reap it, sweep the
     orphans that may still hold stdout/stderr (a setsid() child is outside the group), then read what is left for at
-    most ``grace`` seconds. A holder outside the driver's tree cannot block the driver either: the pipes are closed."""
-    _killpg(proc.pid)
+    most ``grace`` seconds. A holder outside the driver's tree cannot block the driver either: the pipes are closed.
+    On Windows the worker's job is terminated instead (DEV-LIFECYCLE-2)."""
+    containment.kill_tree(proc)
     try:
         proc.wait(timeout=grace)  # reaped before the sweep, which treats every child outside our session as an orphan
     except subprocess.TimeoutExpired:
@@ -444,8 +449,8 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
     if watch:
         watch.__enter__()
     try:
-        proc = subprocess.Popen(argv, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, text=True, env=env, start_new_session=True)
+        proc = containment.spawn(argv, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, text=True, env=env)
         rec["pid"] = proc.pid
         out, err = proc.communicate(prompt, timeout=timeout_s)
         rec["exit_code"] = proc.returncode
@@ -460,9 +465,9 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
         return rec
     # Always end the worker's whole process group before anything is checked or committed: a detached child
     # must not write after the integrity snapshot (DEV-LIFECYCLE-1 R1-06). A child that calls setsid() itself
-    # escapes the group but is adopted by the driver (child subreaper) and killed by the sweep (R8-01).
-    _killpg(proc.pid)
-    rec["containment_post"] = sweep_orphans()
+    # escapes the group but is adopted by the driver (child subreaper) and killed by the sweep (R8-01). On Windows
+    # the worker's job is terminated and must report no active process (DEV-LIFECYCLE-2 F2).
+    rec["containment_post"] = containment.finish(proc, sweep_orphans)
     rec["contained"] = rec["containment_pre"].get("contained") is True and rec["containment_post"]["contained"] is True
     rec["ended_at"] = _now()
     if watch:

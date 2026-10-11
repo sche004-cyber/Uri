@@ -32,8 +32,8 @@ def main(argv=None) -> int:
     repo, wt, base, remote = make_fixture(out)
     worker = {"provider": "claude_cli", "model": a.model, "timeout_s": 2400}
     cfg = {
-        "milestone": "DEVTEST-LIFECYCLE-LIVE", "repo": str(repo),
-        "baseline": {"ref": "origin/canon", "expect": base},
+        "milestone": "DEVTEST-LIFECYCLE-LIVE", "repo": str(repo), "canonical_url": str(remote),
+        "baseline": {"remote_branch": "canon", "expect": base},
         "candidate": {"branch": "feature", "worktree": str(wt)},
         "state_dir": str(out / "state"), "work_dir": str(out / "work"),
         "acceptance_criteria": ["pkg.calc.safe_div(a, b) returns a / b, and returns None when b == 0 (never raises)",
@@ -45,7 +45,7 @@ def main(argv=None) -> int:
         "reviewer": dict(worker), "implementer": dict(worker),
         "regression_runner": ["{python}", "-m", "pytest", "-q", "-p", "no:cacheprovider"],
         "gates": [{"id": "unit", "kind": "pytest", "cmd": ["{python}", "-m", "pytest", "-q", "tests"]}],
-        "integration": {"mode": "fast-forward", "remote": "origin", "target_ref": "canon", "authorized": False},
+        "integration": {"mode": "fast-forward", "target_ref": "canon", "authorized": False},
         "commit_trailers": ["Lifecycle-Demo: DEVTEST, not a URI milestone"],
     }
     cpath = out / "lifecycle.json"

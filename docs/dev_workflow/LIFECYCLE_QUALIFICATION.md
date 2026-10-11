@@ -138,3 +138,25 @@ Repair: only `branch.*` and `remote.<r>.prune`/`skipDefaultUpdate` remain routin
 pruneTags changes are TAMPER again), and the integration fetch writes no local ref at all
 (`git fetch --refmap= --no-tags --no-prune --no-write-fetch-head <remote> refs/heads/<target>`). Regression tests
 `test_r3_01_*`.
+
+## 4. DEV-LIFECYCLE-2 — Windows support and canonical remote (2026-10-11)
+
+Plan and criteria: `DEV_LIFECYCLE_2_PLAN_AND_ACCEPTANCE.md` (DL2-AC1..AC12). Findings F1-F3 and L1-L3 came from an
+independent review on the owner's Windows 11 PC.
+
+### Linux (cloud session), candidate tests before the independent review
+
+`python -m pytest tests/dev_workflow` → 212 passed, 5 skipped. The 5 skipped are the `windows_only` tests, listed by
+name under "PLATFORM-GATED ... NOT VERIFIED on linux" in the summary (not silent skips). New tests:
+`test_lifecycle_remote.py` (F1, F3; all 11 fail on `ce1a90c`, F1 with the PC's `AttributeError: module 'os' has no
+attribute 'killpg'`) and `test_lifecycle_platform.py` (F2 logic with a fake kernel32: 9, plus the 5 Windows-only).
+
+### Independent review
+
+Recorded by the driver in the milestone's state directory; summarised here after the run.
+
+### Windows (owner's PC)
+
+NOT VERIFIED. To be recorded here: `python -m pytest tests/dev_workflow` counts on the PC (the `windows_only` tests
+must run, not be platform-gated), then one real DEVTEST lifecycle round showing a contained review is recognised
+(`contained: true`, `is_independent` true). A failure is recorded as NOT VERIFIED, never as a pass.

@@ -33,6 +33,7 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from scripts.dev_workflow import containment
 from scripts.dev_workflow.lifecycle_providers import (INDEPENDENT_PROVIDERS, drain_after_timeout, managed_policy_state,
                                                       reviewer_executable, run_worker, sweep_orphans)
 from scripts.dev_workflow.security_boundary import is_devtest_identifier
@@ -63,6 +64,14 @@ DEFAULTS = {
 
 class LifecycleError(Exception):
     pass
+
+
+class Blocked(LifecycleError):
+    """A stop that needs the owner before any state exists (e.g. the baseline cannot be read at plan time)."""
+
+    def __init__(self, kind: str, reason: str, needs: str):
+        super().__init__(f"BLOCKED {kind}: {reason}")
+        self.kind, self.reason, self.needs = kind, reason, needs
 
 
 def now() -> str:
@@ -146,7 +155,7 @@ def load_config(path) -> dict:
 POLICY_KEYS = ("baseline", "candidate", "protected_paths", "authorized_protected_changes", "permitted_paths",
                "test_globs", "allowed_flaky", "gates", "integration", "reviewer", "implementer", "limits",
                "regression_runner", "regression_runners", "repair_nonblocking_severities", "continuation",
-               "regression_test_patterns")
+               "regression_test_patterns", "canonical_url")
 
 
 def policy(cfg) -> dict:
@@ -397,7 +406,9 @@ def refs_digest(cfg) -> str:
     """Only the refs this milestone depends on (candidate branch, baseline ref, integration target). Other
     sessions legitimately move other branches (DEV-LIFECYCLE-1 coordinator finding C1). Replace refs are included:
     any change to refs/replace/* is tampering (R2-02)."""
-    names = [f"refs/heads/{cfg['candidate']['branch']}", cfg["baseline"]["ref"]]
+    names = [f"refs/heads/{cfg['candidate']['branch']}"]
+    if cfg["baseline"].get("ref"):   # a remote_branch baseline is pinned by SHA at the plan; no local ref to watch
+        names.append(cfg["baseline"]["ref"])
     pol = cfg.get("integration") or {}
     if pol.get("target_ref"):
         names.append(f"refs/heads/{pol['target_ref']}")
@@ -652,10 +663,11 @@ GPU_LEASE_BUSY = 75  # uri_operational_intelligence.gpu_lease `run` exit code on
 
 
 def run_cmd(cmd, cwd, timeout) -> tuple:
-    """Run in its own process group; the whole group is killed afterwards (timeout or not)."""
+    """Run in its own containment (POSIX process group + orphan sweep; Windows job object, DEV-LIFECYCLE-2); the whole
+    tree is ended afterwards (timeout or not)."""
     try:
-        p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                             env=NOBYTECODE, start_new_session=True)
+        p = containment.spawn(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                              env=NOBYTECODE)
     except OSError as e:
         return None, "", f"cannot start: {e}", "BLOCKED"
     state = "DONE"
@@ -664,16 +676,15 @@ def run_cmd(cmd, cwd, timeout) -> tuple:
     except subprocess.TimeoutExpired:
         state = "TIMED_OUT"
         out, err = drain_after_timeout(p)
-    _killpg(p.pid)
-    sweep_orphans()  # a setsid() child of a gate or test is adopted by the driver and killed here (R8-01)
+    # A setsid() child of a gate or test is adopted by the driver and killed by the sweep (R8-01); on Windows the
+    # command's job is terminated.
+    containment.finish(p, sweep_orphans)
     return (p.returncode if state == "DONE" else None), out, err, state
 
 
 def _killpg(pid) -> None:
-    try:
-        os.killpg(pid, signal.SIGKILL)
-    except OSError:
-        pass
+    """DEV-LIFECYCLE-2 F1: never raises where os.killpg/signal.SIGKILL do not exist (Windows)."""
+    containment.kill_pid_tree(pid)
 
 
 def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
@@ -1214,6 +1225,45 @@ def do_repair(cfg, st: State, sha: str, findings: list, diagnosis: dict | None =
     return finish("REFUSED", reason=reason, restored=restored)
 
 
+def _norm_url(url: str) -> str:
+    """A repository URL in comparable form: scheme, user, '.git' and trailing '/' dropped, host and path lower-cased
+    (GitHub names are case-insensitive); 'git@host:owner/repo' and 'https://host/owner/repo' compare equal. A local
+    path compares by its resolved absolute path."""
+    u = (url or "").strip()
+    local = u[7:] if u.startswith("file://") else u
+    if local and (os.path.isabs(local) or local.startswith(".")) and "://" not in local:
+        return "file:" + os.path.normcase(os.path.realpath(local)).rstrip("/\\")
+    m = re.match(r"^(?:[a-z][a-z0-9+.-]*://)?(?:[^@/]+@)?([^/:]+)(?::\d+)?[:/](.+)$", u, re.I)
+    if not m:
+        return u.lower()
+    path = m.group(2).strip("/")
+    path = path[:-4] if path.lower().endswith(".git") else path
+    return m.group(1).lower() + "/" + path.lower()
+
+
+def canonical_remote(cfg) -> tuple:
+    """(remote name, None) for the ONE remote whose URL (after insteadOf rewriting: `git remote get-url`) is the
+    configured `canonical_url`, else (None, reason). DEV-LIFECYCLE-2 F3: a remote NAME such as 'origin' points at
+    different repositories in different clones (uri-agent in the owner's local clones)."""
+    url = cfg.get("canonical_url")
+    if not url:
+        return None, "the config names no canonical_url"
+    want = _norm_url(url)
+    matches = []
+    for name in git(cfg["repo"], "remote").split():
+        got = git(cfg["repo"], "remote", "get-url", name, check=False)
+        if got and _norm_url(got) == want:
+            matches.append(name)
+    if len(matches) == 1:
+        return matches[0], None
+    if not matches:
+        return None, f"no remote of {cfg['repo']} points at {url}"
+    return None, f"several remotes point at {url}: {', '.join(matches)}"
+
+
+REMOTE_NEEDS = "owner: make exactly one remote point at canonical_url (git remote -v), or correct canonical_url"
+
+
 def integration_fetch(cfg, remote: str, target: str) -> None:
     """Fetch the target's objects without writing any local ref: no configured refmap (remote.*.fetch could map the
     target onto another session's branch), no destination, no tags, no pruning (R3-01)."""
@@ -1232,9 +1282,20 @@ def integrate(cfg, st: State, sha: str) -> None:
         st.d["integration"] = {"mode": "none", "status": "NOT_INTEGRATED_BY_POLICY", "candidate": sha, "at": now()}
         st.event("INTEGRATION", **st.d["integration"])
         return
-    remote, target = pol.get("remote", "origin"), pol["target_ref"]
+    target = pol["target_ref"]
+    remote, why = canonical_remote(cfg)   # DEV-LIFECYCLE-2 F3: by URL, never by a remote name alone
+    if remote is None:
+        st.block("REMOTE", why, REMOTE_NEEDS)
+        return
+    if pol.get("remote") and pol["remote"] != remote:
+        st.block("REMOTE", f"integration.remote {pol['remote']!r} is not the canonical remote {remote!r}",
+                 REMOTE_NEEDS)
+        return
     integration_fetch(cfg, remote, target)
     tip = (git(cfg["repo"], "ls-remote", remote, f"refs/heads/{target}").split("\t") or [""])[0]
+    if not tip:
+        st.block("REMOTE", f"ls-remote {remote} refs/heads/{target} returned nothing", REMOTE_NEEDS)
+        return
     rec = {"mode": mode, "remote": remote, "target_ref": target, "target_tip_before": tip, "candidate": sha, "at": now()}
     if pol.get("expected_target_tip") and tip != pol["expected_target_tip"]:
         rec["status"] = "REFUSED_TARGET_MOVED"
@@ -1309,9 +1370,24 @@ def integrate(cfg, st: State, sha: str) -> None:
 def init(cfg, st: State) -> None:
     repo = cfg["repo"]
     b = cfg["baseline"]
-    base = git(repo, "rev-parse", "--verify", b["ref"] + "^{commit}")
+    if b.get("remote_branch"):
+        # DEV-LIFECYCLE-2 F3: the baseline is read from the canonical remote, found by URL; an empty answer is a stop,
+        # never "no baseline".
+        remote, why = canonical_remote(cfg)
+        if remote is None:
+            raise Blocked("REMOTE", why, REMOTE_NEEDS)
+        tip = (git(repo, "ls-remote", remote, f"refs/heads/{b['remote_branch']}").split("\t") or [""])[0]
+        if not tip:
+            raise Blocked("BASELINE", f"ls-remote {remote} refs/heads/{b['remote_branch']} returned nothing",
+                          REMOTE_NEEDS)
+        integration_fetch(cfg, remote, b["remote_branch"])
+        base = git(repo, "rev-parse", "--verify", tip + "^{commit}")
+        label = f"{remote} {b['remote_branch']}"
+    else:
+        base = git(repo, "rev-parse", "--verify", b["ref"] + "^{commit}")
+        label = b["ref"]
     if b.get("expect") and base != b["expect"]:
-        raise LifecycleError(f"baseline {b['ref']} is {base}, expected {b['expect']}")
+        raise LifecycleError(f"baseline {label} is {base}, expected {b['expect']}")
     wt = Path(cfg["candidate"]["worktree"])
     if not wt.exists():
         git(repo, "worktree", "add", "-b", cfg["candidate"]["branch"], str(wt), base)
@@ -1934,6 +2010,10 @@ def main(argv=None) -> int:
             raise LifecycleError("--note with the owner's decision is required")
         print(unblock(cfg, a.note).value)
         return 0
+    except Blocked as e:
+        print(json.dumps({"stage": S.BLOCKED.value, "blocker": {"kind": e.kind, "reason": e.reason, "needs": e.needs}},
+                         indent=1))
+        return EXIT[S.BLOCKED]
     except (LifecycleError, InvalidTransitionError) as e:
         print(json.dumps({"error": str(e)}), file=sys.stderr)
         return 2

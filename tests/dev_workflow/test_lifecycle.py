@@ -64,6 +64,7 @@ def config(tmp, repo, wt, *, milestone="DEVTEST-LC", reviewer="check", implement
            integration=None, gates=None, limits=None, continuation=None):
     cfg = {
         "milestone": milestone, "repo": str(repo),
+        "canonical_url": str(tmp / "canonical.git"),   # DEV-LIFECYCLE-2 F3: the remote is found by URL
         "baseline": {"ref": "origin/canon"},
         "candidate": {"branch": "feature", "worktree": str(wt)},
         "state_dir": str(tmp / "state"), "work_dir": str(tmp / "work"),

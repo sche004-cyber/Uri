@@ -1,6 +1,6 @@
 ---
 name: uri-development-lifecycle
-description: Default process for URI DEVELOPMENT milestones in this repository - new features, development milestones, significant bug fixes, security repairs, runtime changes, UI changes and multi-component integrations. Drives Plan -> Implement -> Test -> Independent Audit (separate Claude process) -> Repair -> Re-audit -> Qualify -> Integrate -> Receipt automatically, so the owner never has to ask for an audit or relay findings. Invoke as `/uri-development-lifecycle <milestone-id>`. Do NOT use for URI user conversations, office tasks or anything the URI Brain does at runtime.
+description: Default process for URI DEVELOPMENT milestones in this repository - new features, development milestones, significant bug fixes, security repairs, runtime changes, UI changes and multi-component integrations. Drives Plan -> Implement -> Test -> Independent Audit (separate Claude process) -> Repair -> Re-audit -> Qualify -> Integrate -> Receipt automatically, so the owner never has to ask for an audit or relay findings. Invoke as `/uri-development-lifecycle <milestone-id>`. Do NOT use for URI user conversations, URI runtime office or document tasks, or anything the URI Brain does at runtime; URI Office development milestones are in scope. For milestones it supersedes the older `uri-development` skill.
 ---
 
 # uri-development-lifecycle
@@ -15,19 +15,25 @@ transcribe a verdict into ACCEPT. Reference: `docs/dev_workflow/URI_DEVELOPMENT_
   multi-component integrations.
 - Lightweight path (no driver run): documentation-only changes with no code, test, config or governance-rule
   change. Still verify links and facts you assert, and say that the light path was used.
-- Never: user conversations, office tasks, URI runtime skills (this skill is not in
+- In scope: development milestones for any URI component, URI Office included.
+- Never: user conversations, URI runtime office or document tasks (what URI does for a user at runtime), URI
+  runtime skills (this skill is not in
   `uri_workspace/skill_registry.json` and must not be added there).
 
 ## Stage 1 — Plan (you)
 
-1. Verify the canonical baseline yourself (`git ls-remote origin integration/git-sync-20261008`); do not trust
-   earlier documents.
+1. Verify the canonical baseline yourself; do not trust earlier documents. Canonical is the repository
+   `https://github.com/sche004-cyber/Uri`, branch `integration/git-sync-20261008`. Find the ONE remote that points
+   at it (`git remote -v`; in the owner's local clones it is `uri-repo`, and `origin` is `uri-agent`, which lacks the
+   branch), then `git ls-remote <that remote> integration/git-sync-20261008`. Empty output, no matching remote or
+   several matching remotes is BLOCKED, never "no baseline".
 2. Write the plan with acceptance criteria FIRST (CLAUDE.md Verification-First standard), e.g.
    `docs/<area>/00_PLAN_AND_ACCEPTANCE_CRITERIA.md`.
 3. List owner-only decisions now (frozen-path changes, new dependencies, credentials, production, push rights).
    Do not start work that needs one; record it as a blocker.
 4. Create the milestone config from `docs/dev_workflow/lifecycle/TEMPLATE.json` → `docs/dev_workflow/lifecycle/<milestone>.json`:
-   baseline ref, candidate branch + worktree (outside the main checkout), criteria file, `review_focus`,
+   `canonical_url`, baseline (`remote_branch` + the `expect` SHA you verified; the driver finds the remote by URL),
+   candidate branch + worktree (outside the main checkout), criteria file, `review_focus`,
    `protected_paths` (`"ws_frozen_check"` = the frozen list), `permitted_paths`, gates, reviewer/implementer
    providers, limits, integration policy (`authorized: false` unless the owner granted it for this target).
    Put `state_dir` OUTSIDE the candidate worktree.
