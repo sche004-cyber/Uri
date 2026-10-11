@@ -68,11 +68,13 @@ def sha256(b: bytes | str) -> str:
 
 
 # Every git command the driver runs ignores repository hooks: a worker could plant one (DEV-LIFECYCLE-1 R1-03).
-GIT = ["git", "-c", "core.hooksPath=/dev/null"]
+# It also ignores replace refs: a worker-created `git replace` would substitute the trees every check reads (R2-02).
+GIT = ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null"]
+GIT_ENV = {**os.environ, "GIT_NO_REPLACE_OBJECTS": "1"}
 
 
 def git(repo, *args, check=True) -> str:
-    p = subprocess.run([*GIT, "-C", str(repo), *args], capture_output=True, text=True)
+    p = subprocess.run([*GIT, "-C", str(repo), *args], capture_output=True, text=True, env=GIT_ENV)
     if check and p.returncode:
         raise LifecycleError(f"git {' '.join(args)}: {p.stderr.strip()}")
     return p.stdout.strip()
@@ -173,7 +175,13 @@ class State:
         if cur is not None and new != cur and new not in VALID_TRANSITIONS.get(cur, set()):
             raise InvalidTransitionError(f"{cur.value} -> {new.value} is not an AO-4 transition")
         self.d["stage"] = new.value
-        self.event("STAGE", stage=new.value, frm=cur.value if cur else None, reason=reason)
+        extra = {}
+        # Where a wait/block resumes to, and the blocker itself, are bound to the event chain (R2-01).
+        if new in (S.BLOCKED, S.WAITING_FOR_MODEL):
+            extra["resume_to"] = self.d.get("resume_to")
+        if new == S.BLOCKED:
+            extra["blocker"] = self.d.get("blocker")
+        self.event("STAGE", stage=new.value, frm=cur.value if cur else None, reason=reason, **extra)
 
     def block(self, kind: str, reason: str, needs: str) -> None:
         cur = self.stage
@@ -251,18 +259,47 @@ def git_control_digest(repo) -> str:
             parts.append(f"{p.name}:{sha256(p.read_bytes())}")
     cfgf = common / "config"
     parts.append("config:" + (sha256(cfgf.read_bytes()) if cfgf.is_file() else "-"))
+    info = common / "info"  # grafts rewrite history; attributes change how files are read
+    for p in sorted(info.glob("*")) if info.is_dir() else []:
+        if p.is_file():
+            parts.append(f"info/{p.name}:{sha256(p.read_bytes())}")
     return sha256("\n".join(parts))
 
 
 def refs_digest(cfg) -> str:
     """Only the refs this milestone depends on (candidate branch, baseline ref, integration target). Other
-    sessions legitimately move other branches (DEV-LIFECYCLE-1 coordinator finding C1)."""
+    sessions legitimately move other branches (DEV-LIFECYCLE-1 coordinator finding C1). Replace refs are included:
+    any change to refs/replace/* is tampering (R2-02)."""
     names = [f"refs/heads/{cfg['candidate']['branch']}", cfg["baseline"]["ref"]]
     pol = cfg.get("integration") or {}
     if pol.get("target_ref"):
         names.append(f"refs/heads/{pol['target_ref']}")
     vals = [f"{n}={git(cfg['repo'], 'rev-parse', '-q', '--verify', n, check=False)}" for n in names]
+    vals.append("replace=" + git(cfg["repo"], "for-each-ref", "--format=%(refname) %(objectname)", "refs/replace/",
+                                 check=False))
     return sha256("\n".join(vals))
+
+
+def worktree_identity(cfg, wt) -> tuple[bool, str]:
+    """The implementation worktree must still be its own linked worktree of ``cfg['repo']``: a rewritten ``.git``
+    gitfile would point driver commands such as ``reset --hard`` at another checkout's index and branch (R2-03)."""
+    wt = Path(wt).resolve()
+    if (wt / ".git").is_symlink():
+        return False, f"{wt}/.git is a symlink"
+    common = Path(git(cfg["repo"], "rev-parse", "--path-format=absolute", "--git-common-dir")).resolve()
+    gd = git(wt, "rev-parse", "--absolute-git-dir", check=False)
+    top = git(wt, "rev-parse", "--show-toplevel", check=False)
+    if not gd or not top or Path(top).resolve() != wt:
+        return False, f"{wt} is not the top level of a git checkout"
+    gd = Path(gd).resolve()
+    if gd == common:
+        ok = common.name == ".git" and common.parent == wt and (wt / ".git").is_dir()
+        return ok, "" if ok else f"{wt}/.git points at the shared git dir {common}"
+    back = gd / "gitdir"
+    if gd.parent != common / "worktrees" or not back.is_file() or \
+            Path(back.read_text(encoding="utf-8").strip()).resolve() != wt / ".git":
+        return False, f"{wt}/.git points at {gd}, which is not this worktree's git dir"
+    return True, ""
 
 
 def add_worktree(repo, path: Path, sha: str) -> Path:
@@ -281,12 +318,13 @@ def drop_worktree(repo, path: Path) -> None:
 
 
 def changed_paths(repo, a: str, b: str) -> list[str]:
-    return [p for p in git(repo, "diff", "--name-only", a, b).splitlines() if p]
+    # --no-renames: a rename out of a protected path must list the protected source path too.
+    return [p for p in git(repo, "diff", "--no-renames", "--name-only", a, b).splitlines() if p]
 
 
 def worktree_changes(wt) -> list[str]:
-    out = subprocess.run(["git", "-C", str(wt), "status", "--porcelain", "-z", "--untracked-files=all"],
-                         capture_output=True, text=True, check=True).stdout
+    out = subprocess.run([*GIT, "-C", str(wt), "status", "--porcelain", "-z", "--untracked-files=all"],
+                         capture_output=True, text=True, check=True, env=GIT_ENV).stdout
     items, paths = out.split("\0"), set()
     i = 0
     while i < len(items):
@@ -448,6 +486,7 @@ def parse_flutter_machine(text: str) -> dict:
 
 
 NOBYTECODE = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+GPU_LEASE_BUSY = 75  # uri_operational_intelligence.gpu_lease `run` exit code on GpuBusy
 
 
 def run_cmd(cmd, cwd, timeout) -> tuple:
@@ -500,6 +539,10 @@ def run_gate(cfg, gate: dict, wt: Path, log_dir: Path) -> dict:
     (log_dir / f"{gate['id']}.log").write_text(stdout + "\n--- stderr ---\n" + stderr, encoding="utf-8")
     if state != "DONE":
         out.update(status=state, detail=stderr[-300:])
+        return out
+    if gate.get("gpu") and rc == GPU_LEASE_BUSY and '"refused"' in stderr:
+        # gpu_lease run: the lease was not granted within --wait. Contention, not a test result (R2-05, L-AC17).
+        out.update(status="BLOCKED", exit_code=rc, detail="GPU lease busy: " + stderr.strip()[-300:])
         return out
     out["exit_code"] = rc
     run_id = f"{gate['id']}::__run__"
@@ -586,9 +629,35 @@ def qualify(cfg, st: State, sha: str, wt: Path | None = None) -> dict:
 
 # --------------------------------------------------------------------------- evidence guards
 
+def _chained_events(st: State) -> list[dict]:
+    """Events of an intact hash chain only (empty when any link is broken)."""
+    prev, evs = "0" * 64, []
+    rows = st.events_path.read_text(encoding="utf-8").splitlines() if st.events_path.is_file() else []
+    for line in rows:
+        ev = json.loads(line)
+        if ev.get("prev") != prev or ev.get("hash") != sha256(json.dumps(
+                {k: ev.get(k) for k in ("seq", "ts", "kind", "data", "prev")}, sort_keys=True)):
+            return []
+        prev = ev["hash"]
+        evs.append(ev)
+    return evs
+
+
 def accepted_review(cfg, st: State, sha: str) -> dict | None:
-    for r in reversed(st.d["rounds"]):
-        if r.get("candidate") == sha and r.get("independent") and r.get("effective_verdict") in VERDICTS[:2]:
+    """The independent ACCEPT for ``sha``, taken from the REVIEW_RECORDED events and the round.json files whose
+    hashes they bind - never from state.json, which a worker or anyone could edit (R2-01)."""
+    for ev in reversed(_chained_events(st)):
+        d = ev["data"]
+        if ev["kind"] != "REVIEW_RECORDED" or d.get("imported") or d.get("candidate") != sha or \
+                d.get("independent") is not True or d.get("status") != "COMPLETED_WITH_RESULT" or \
+                d.get("verdict") not in VERDICTS[:2]:
+            continue
+        f = st.dir / "rounds" / f"R{d['round']}" / "round.json"
+        if not f.is_file() or sha256(f.read_bytes()) != d.get("round_sha256"):
+            continue
+        r = json.loads(f.read_text(encoding="utf-8"))
+        if r.get("round") == d["round"] and r.get("candidate") == sha and r.get("independent") is True and \
+                r.get("effective_verdict") == d["verdict"] and r.get("status") == "COMPLETED_WITH_RESULT":
             return r
     return None
 
@@ -619,6 +688,7 @@ def do_review(cfg, st: State, sha: str) -> dict:
     def snap():
         return {"head": git(awt, "rev-parse", "HEAD"), "status": worktree_changes(awt), "refs": refs_digest(cfg),
                 "git_control": git_control_digest(cfg["repo"]),
+                "impl_identity": list(worktree_identity(cfg, cwt)), "audit_identity": list(worktree_identity(cfg, awt)),
                 "impl_head": git(cwt, "rev-parse", "HEAD"), "impl_status": worktree_changes(cwt)}
     before = snap()
     rec = {"round": rnd, "candidate": sha, "baseline": st.d["baseline"], "started_at": now(), "audit_worktree": str(awt)}
@@ -630,7 +700,8 @@ def do_review(cfg, st: State, sha: str) -> dict:
         after = snap()
     finally:
         drop_worktree(cfg["repo"], awt)
-    integrity = {"before": before, "after": after, "ok": before == after and before["head"] == sha and not after["status"]}
+    integrity = {"before": before, "after": after, "ok": before == after and before["head"] == sha and not after["status"]
+                 and after["impl_identity"][0] is True and after["audit_identity"][0] is True}
     w.pop("result_text", None)
     text = (rdir / "reviewer_result.txt").read_text(encoding="utf-8") if (rdir / "reviewer_result.txt").is_file() else ""
     result = parse_block(text)
@@ -726,11 +797,44 @@ def regression_proof(cfg, pre_sha: str, post_sha: str, tests: list[str], log_dir
     return {"ok": not reasons, "tests": per, "need_fail_before": need_fail_before, "reason": "; ".join(reasons)}
 
 
-def _restore(wt: Path, sha: str) -> bool:
-    """Put the implementation worktree back to ``sha`` exactly (index, files, branch tip)."""
+def _restore(cfg, wt: Path, sha: str) -> bool:
+    """Put the implementation worktree back to ``sha`` exactly (index, files, branch tip). Never resets a worktree
+    whose ``.git`` no longer leads to its own git dir: that would reset another checkout (R2-03)."""
+    if not worktree_identity(cfg, wt)[0]:
+        return False
     git(wt, "reset", "-q", "--hard", sha, check=False)
     git(wt, "clean", "-fdq", check=False)
     return git(wt, "rev-parse", "HEAD", check=False) == sha and not worktree_changes(wt)
+
+
+def _commit_and_prove(cfg, wt: Path, sha: str, n: int, rec: dict, findings: list, changed: list, rdir: Path):
+    """Commit the checked change and prove it; returns a refusal reason or None (``rec['commit']`` set)."""
+    git(wt, "add", "-A", "--", *changed)
+    msg = f"fix({cfg['milestone']}): repair {', '.join(map(str, rec['addresses']))} (lifecycle P{n})\n\n" + \
+          "Findings from independent review; regression proof in lifecycle receipts.\n"
+    if cfg["commit_trailers"]:
+        msg += "\n" + "\n".join(cfg["commit_trailers"]) + "\n"
+    git(wt, "commit", "-q", "--no-verify", "-m", msg)
+    new = git(wt, "rev-parse", "HEAD")
+    committed = changed_paths(cfg["repo"], sha, new)
+    if set(committed) != set(changed) or protected_hits(cfg, committed) or \
+            [p for p in committed if not match_any(p, cfg["permitted_paths"])]:
+        return f"COMMIT_MISMATCH: committed {committed} != checked {changed}"
+    present = set(git(cfg["repo"], "ls-tree", "-r", "--name-only", new, "--", *committed).splitlines())
+    tests = {p for p in committed if match_any(p, cfg["test_globs"]) and p in present}
+    # A gate finding names an existing test that fails on the candidate: it is its own regression test.
+    gate_tests = {str(x).split(":")[0] for f in findings if str(f.get("id", "")).startswith("GATE-")
+                  for x in f.get("files") or [] if (wt / str(x).split(":")[0]).is_file()}
+    kinds = {f.get("category") or "code" for f in findings}
+    defect = bool(kinds - {"documentation", "test"}) or bool(gate_tests)
+    if kinds != {"documentation"}:
+        proof = regression_proof(cfg, sha, new, sorted(tests | gate_tests), rdir, need_fail_before=defect,
+                                 must_fail=gate_tests)
+        rec["regression"] = proof
+        if not proof["ok"]:
+            return "REGRESSION: " + proof["reason"]
+    rec["commit"] = new
+    return None
 
 
 def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
@@ -749,6 +853,9 @@ def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
                  repair_sha256=sha256((rdir / "repair.json").read_bytes()))
         return rec
 
+    ident = worktree_identity(cfg, wt)
+    if not ident[0]:
+        return finish("REFUSED", reason="TAMPER: " + ident[1], restored=False)
     if git(wt, "rev-parse", "HEAD") != sha or worktree_changes(wt):
         return finish("REFUSED", reason="implementation worktree not clean or not at the candidate before repair")
     ctl0, refs0 = git_control_digest(cfg["repo"]), refs_digest(cfg)
@@ -759,14 +866,19 @@ def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
     rec["worker"] = w
     rec["report"] = parse_block((rdir / "implementer_result.txt").read_text(encoding="utf-8")
                                 if (rdir / "implementer_result.txt").is_file() else "", REPAIR_RE) or {}
+    ident = worktree_identity(cfg, wt)
+    if not ident[0]:  # never run reset/clean through a redirected .git (R2-03)
+        return finish("REFUSED", reason="TAMPER: implementer rewrote the worktree's .git: " + ident[1], restored=False)
     head = git(wt, "rev-parse", "HEAD")
     changed = worktree_changes(wt)
     rec["changed"] = changed
+    deleted_tests = [p for p in git(wt, "diff", "--no-renames", "--name-only", "--diff-filter=D", sha).splitlines()
+                     if p and match_any(p, cfg["test_globs"])]
     reason = None
     if git_control_digest(cfg["repo"]) != ctl0:
         reason = "TAMPER: git hooks or config changed during the repair"
     elif refs_digest(cfg) != refs0 or head != sha:
-        reason = "TAMPER: implementer moved HEAD or a milestone ref (commit/checkout is the driver's job)"
+        reason = "TAMPER: implementer moved HEAD, a milestone ref or a replace ref (commit/checkout is the driver's job)"
     elif w.get("status") != "COMPLETED":
         reason = f"implementer {w.get('status')}"
     elif not changed:
@@ -775,35 +887,16 @@ def do_repair(cfg, st: State, sha: str, findings: list) -> dict:
         reason = "PROTECTED: " + ", ".join(protected_hits(cfg, changed))
     elif [p for p in changed if not match_any(p, cfg["permitted_paths"])]:
         reason = "OUT_OF_SCOPE: " + ", ".join(p for p in changed if not match_any(p, cfg["permitted_paths"]))
+    elif deleted_tests:  # a repair must not delete existing tests (R2-04)
+        reason = "DELETES_TESTS: " + ", ".join(deleted_tests)
     if not reason:
-        git(wt, "add", "-A", "--", *changed)
-        msg = f"fix({cfg['milestone']}): repair {', '.join(map(str, rec['addresses']))} (lifecycle P{n})\n\n" + \
-              "Findings from independent review; regression proof in lifecycle receipts.\n"
-        if cfg["commit_trailers"]:
-            msg += "\n" + "\n".join(cfg["commit_trailers"]) + "\n"
-        git(wt, "commit", "-q", "--no-verify", "-m", msg)
-        new = git(wt, "rev-parse", "HEAD")
-        committed = changed_paths(cfg["repo"], sha, new)
-        if set(committed) != set(changed) or protected_hits(cfg, committed) or \
-                [p for p in committed if not match_any(p, cfg["permitted_paths"])]:
-            reason = f"COMMIT_MISMATCH: committed {committed} != checked {changed}"
-        else:
-            tests = {p for p in committed if match_any(p, cfg["test_globs"])}
-            # A gate finding names an existing test that fails on the candidate: it is its own regression test.
-            gate_tests = {str(x).split(":")[0] for f in findings if str(f.get("id", "")).startswith("GATE-")
-                          for x in f.get("files") or [] if (wt / str(x).split(":")[0]).is_file()}
-            kinds = {f.get("category") or "code" for f in findings}
-            defect = bool(kinds - {"documentation", "test"}) or bool(gate_tests)
-            if kinds != {"documentation"}:
-                proof = regression_proof(cfg, sha, new, sorted(tests | gate_tests), rdir, need_fail_before=defect,
-                                         must_fail=gate_tests)
-                rec["regression"] = proof
-                if not proof["ok"]:
-                    reason = "REGRESSION: " + proof["reason"]
-            if not reason:
-                rec["commit"] = new
-                return finish("COMMITTED")
-    restored = _restore(wt, sha)
+        try:
+            reason = _commit_and_prove(cfg, wt, sha, n, rec, findings, changed, rdir)
+        except Exception as e:  # noqa: BLE001 - any failure after the commit must refuse and restore (R2-04)
+            reason = f"ERROR: {type(e).__name__}: {e}"
+        if not reason:
+            return finish("COMMITTED")
+    restored = _restore(cfg, wt, sha)
     return finish("REFUSED", reason=reason, restored=restored)
 
 
@@ -824,7 +917,8 @@ def integrate(cfg, st: State, sha: str) -> None:
     rec = {"mode": mode, "remote": remote, "target_ref": target, "target_tip_before": tip, "candidate": sha, "at": now()}
     if pol.get("expected_target_tip") and tip != pol["expected_target_tip"]:
         rec["status"] = "REFUSED_TARGET_MOVED"
-    elif mode == "fast-forward" and subprocess.run(["git", "-C", cfg["repo"], "merge-base", "--is-ancestor", tip, sha]).returncode:
+    elif mode == "fast-forward" and subprocess.run([*GIT, "-C", cfg["repo"], "merge-base", "--is-ancestor", tip, sha],
+                                                   env=GIT_ENV).returncode:
         rec["status"] = "REFUSED_NOT_FAST_FORWARD"
     if rec.get("status"):
         st.d["integration"] = rec
@@ -842,8 +936,9 @@ def integrate(cfg, st: State, sha: str) -> None:
     if mode == "merge":
         iwt = add_worktree(cfg["repo"], Path(cfg["work_dir"]) / "integration", tip)
         try:
-            m = subprocess.run(["git", "-C", str(iwt), "merge", "--no-ff", "-q", "-m",
-                                f"integrate {cfg['milestone']} ({sha[:12]})", sha], capture_output=True, text=True)
+            m = subprocess.run([*GIT, "-C", str(iwt), "merge", "--no-ff", "-q", "-m",
+                                f"integrate {cfg['milestone']} ({sha[:12]})", sha], capture_output=True, text=True,
+                               env=GIT_ENV)
             if m.returncode:
                 rec.update(status="REFUSED_MERGE_CONFLICT", detail=m.stderr[-400:])
             else:
@@ -860,8 +955,8 @@ def integrate(cfg, st: State, sha: str) -> None:
             st.block("INTEGRATION", rec["status"], "repair and re-run")
             return
         command = f"git push {remote} {result_sha}:refs/heads/{target}"
-    p = subprocess.run(["git", "-C", cfg["repo"], "push", remote, f"{result_sha}:refs/heads/{target}"],
-                       capture_output=True, text=True)
+    p = subprocess.run([*GIT, "-C", cfg["repo"], "push", remote, f"{result_sha}:refs/heads/{target}"],
+                       capture_output=True, text=True, env=GIT_ENV)
     after = git(cfg["repo"], "ls-remote", remote, f"refs/heads/{target}").split("\t")[0]
     rec.update(command=command, push_exit=p.returncode, push_stderr=p.stderr[-400:], target_tip_after=after,
                result_commit=result_sha)
@@ -911,6 +1006,13 @@ def run(cfg, max_steps: int = 50) -> S:
     wt = Path(cfg["candidate"]["worktree"])
     for _ in range(max_steps):
         stage = st.stage
+        ident = worktree_identity(cfg, wt)
+        if not ident[0]:  # every read below would come from another checkout (R2-03)
+            if stage != S.BLOCKED:
+                st.block("TAMPER", "implementation worktree .git redirected: " + ident[1],
+                         "owner: inspect the implementation worktree and the repository's refs")
+            write_receipt(cfg, st)
+            return st.stage
         tip = git(wt, "rev-parse", "HEAD")
         if tip != st.d["candidate"]:
             st.event("CANDIDATE_MOVED", frm=st.d["candidate"], to=tip)
@@ -1114,6 +1216,10 @@ def unblock(cfg, note: str) -> S:
     return st.stage
 
 
+ROUND_STARTED_KEYS = {"round", "candidate", "baseline", "started_at", "audit_worktree"}
+REPAIR_STARTED_KEYS = {"repair", "pre", "addresses", "started_at", "worker", "report", "changed", "regression"}
+
+
 def verify(cfg) -> list[str]:
     """Recompute the event chain and check state.json and every stored record against it.
 
@@ -1132,14 +1238,31 @@ def verify(cfg) -> list[str]:
         evs.append(ev)
     if len(rows) != len(st.d["history"]) or any(a["hash"] != b["hash"] for a, b in zip(st.d["history"], evs)):
         errs.append("state history and event log differ")
+    # Each round/repair number appears once, in order: a duplicate would let a forged copy shadow or be shadowed by
+    # the genuine record (R2-01).
+    if [r.get("round") for r in st.d["rounds"]] != list(range(1, len(st.d["rounds"]) + 1)):
+        errs.append("rounds in state.json are not exactly R1..Rn in order (duplicate or unsequenced round)")
+    if [r.get("repair") for r in st.d["repairs"]] != list(range(1, len(st.d["repairs"]) + 1)):
+        errs.append("repairs in state.json are not exactly P1..Pn in order (duplicate or unsequenced repair)")
     rounds = {r.get("round"): r for r in st.d["rounds"]}
     repairs = {r.get("repair"): r for r in st.d["repairs"]}
     seen_rounds, seen_repairs, quals, bases = set(), set(), {}, {}
+    started, resume_to, blocker = set(), None, None
     for ev in evs:
         d, k = ev["data"], ev["kind"]
+        if k == "STAGE" and "resume_to" in d:
+            resume_to = d["resume_to"]
+        if k == "STAGE" and d.get("stage") == S.BLOCKED.value:
+            blocker = d.get("blocker")
+        if k == "OWNER_UNBLOCK":
+            blocker = None
+        if k == "REVIEW_STARTED":
+            started.add(d["round"])
         if k == "PLAN" and d.get("baseline") != st.d.get("baseline"):
             errs.append("baseline in state differs from the plan event")
         if k == "REVIEW_RECORDED":
+            if d["round"] in seen_rounds:
+                errs.append(f"R{d['round']} recorded twice")
             seen_rounds.add(d["round"])
             rdir = st.dir / "rounds" / f"R{d['round']}"
             f = rdir / "round.json"
@@ -1156,6 +1279,12 @@ def verify(cfg) -> list[str]:
             for key in ("candidate", "effective_verdict", "independent", "status", "result"):
                 if mine.get(key) != rec.get(key):
                     errs.append(f"R{d['round']} {key} in state.json differs from round.json")
+            if mine != rec:
+                errs.append(f"R{d['round']} record in state.json differs from round.json")
+            if rec.get("round") != d["round"] or \
+                    rec.get("candidate") != d.get("candidate") or rec.get("status") != d.get("status") or \
+                    rec.get("independent") != d.get("independent"):
+                errs.append(f"R{d['round']} round.json differs from its review event")
         if k in ("REPAIR_COMMITTED", "REPAIR_REFUSED"):
             seen_repairs.add(d["repair"])
             f = st.dir / "repairs" / f"P{d['repair']}" / "repair.json"
@@ -1167,6 +1296,8 @@ def verify(cfg) -> list[str]:
             for key in ("status", "commit", "pre"):
                 if mine.get(key) != rec.get(key):
                     errs.append(f"P{d['repair']} {key} in state.json differs from repair.json")
+            if mine != rec:
+                errs.append(f"P{d['repair']} record in state.json differs from repair.json")
         if k == "QUALIFICATION":
             quals[d["sha"]] = d.get("qual_sha256")
         if k == "BASELINE_GATE":
@@ -1174,9 +1305,21 @@ def verify(cfg) -> list[str]:
     for n, r in rounds.items():
         if "status" in r and n not in seen_rounds:
             errs.append(f"R{n} in state.json has no recorded review event")
-    for n, r in repairs.items():
+        if n not in seen_rounds and (n not in started or set(r) - ROUND_STARTED_KEYS):
+            errs.append(f"R{n} in state.json is neither recorded nor a started review")
+    for n in (seen_rounds | started) - set(rounds):
+        errs.append(f"R{n} has a review event but no record in state.json")
+    for i, (n, r) in enumerate(repairs.items(), 1):
         if "status" in r and n not in seen_repairs:
             errs.append(f"P{n} in state.json has no recorded repair event")
+        if n not in seen_repairs and (i != len(repairs) or set(r) - REPAIR_STARTED_KEYS):
+            errs.append(f"P{n} in state.json has no recorded repair event and is not the repair in progress")
+    for n in seen_repairs - set(repairs):
+        errs.append(f"P{n} has a repair event but no record in state.json")
+    if st.d.get("resume_to") != resume_to:
+        errs.append("resume_to in state.json differs from the last wait/block event")
+    if st.d.get("blocker") != blocker:
+        errs.append("blocker in state.json differs from the last block event")
     for sha, q in st.d["gates"].items():
         if quals.get(sha) != chash(q):
             errs.append(f"gate results for {sha[:12]} differ from the qualification event")

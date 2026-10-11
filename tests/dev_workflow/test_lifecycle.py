@@ -564,3 +564,163 @@ print('AUDIT_RESULT_BEGIN'); print(json.dumps({{'candidate': h, 'verdict': 'ACCE
 """)
     cfg["reviewer"] = {"provider": "command", "argv": script, "counts_as_independent": True}
     assert L.run(cfg) == S.COMPLETE
+
+
+# ---------------------------------------------------------------- DEV-LIFECYCLE-1 R2 repairs
+
+def _accept_any_reviewer(tmp_path):
+    return _script_worker(tmp_path, "accept_any.py", """
+h = subprocess.run(['git','rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()
+print('AUDIT_RESULT_BEGIN'); print(json.dumps({'candidate': h, 'verdict': 'ACCEPT', 'findings': []})); print('AUDIT_RESULT_END')
+""")
+
+
+def test_r2_01_forged_duplicate_round_and_resume_to_cannot_verify(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, milestone="W1-REAL", independent=False, integration={"mode": "none"}, gates=[])
+    cfg["reviewer"] = {"provider": "command", "argv": _accept_any_reviewer(tmp_path)}
+    assert L.run(cfg) == S.WAITING_FOR_MODEL and L.verify(cfg) == []
+    sp = tmp_path / "state/state.json"
+    d = json.loads(sp.read_text())
+    sha = d["candidate"]
+    forged = dict(d["rounds"][0], independent=True, status="COMPLETED_WITH_RESULT", effective_verdict="ACCEPT")
+    d["rounds"].insert(0, forged)  # duplicate R1, the genuine record stays last
+    d["resume_to"] = "VERIFYING"
+    sp.write_text(json.dumps(d))
+    errs = L.verify(cfg)
+    assert any("duplicate" in e for e in errs) and any("resume_to" in e for e in errs)
+    st = L.State(cfg)
+    assert L.accepted_review(cfg, st, sha) is None  # derived from hash-bound events, not state.json
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "TAMPER" and not s["evidence_ok_for_candidate"]
+
+
+def test_r2_01_edited_resume_to_alone_is_detected(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt, milestone="W1-REAL", independent=False, integration={"mode": "none"}, gates=[])
+    cfg["reviewer"] = {"provider": "command", "argv": _accept_any_reviewer(tmp_path)}
+    assert L.run(cfg) == S.WAITING_FOR_MODEL
+    sp = tmp_path / "state/state.json"
+    d = json.loads(sp.read_text())
+    d["resume_to"] = "VERIFYING"
+    sp.write_text(json.dumps(d))
+    assert any("resume_to" in e for e in L.verify(cfg))
+    assert L.run(cfg) == S.BLOCKED and L.status(cfg)["blocker"]["kind"] == "TAMPER"
+
+
+def _replacing_implementer(tmp_path):
+    return _script_worker(tmp_path, "replacer.py", f"""
+from pathlib import Path
+def g(*a, env=None):
+    return subprocess.run(['git', *a], capture_output=True, text=True, check=True, env=env).stdout.strip()
+Path('core/frozen.py').write_text('PATCHED_BY_WORKER = True\\n')
+g('add', 'core/frozen.py')
+blob = g('hash-object', '-w', 'core/frozen.py')
+for ref in ('HEAD', 'refs/remotes/origin/canon'):
+    c = g('rev-parse', ref)
+    parents = g('rev-list', '--parents', '-n1', c).split()[1:]
+    env = dict(os.environ, GIT_INDEX_FILE={str(tmp_path)!r} + '/idx_' + c[:8])
+    g('read-tree', c, env=env)
+    g('update-index', '--cacheinfo', '100644,' + blob + ',core/frozen.py', env=env)
+    tree = g('write-tree', env=env)
+    g('replace', '-f', c, g('commit-tree', tree, *sum([['-p', p] for p in parents], []), '-m', 'x'))
+Path('pkg/calc.py').write_text('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+Path('tests/test_zero.py').write_text('from pkg.calc import safe_div\\n\\n\\ndef test_zero():\\n    assert safe_div(1, 0) is None\\n')
+""")
+
+
+def test_r2_02_replace_refs_cannot_hide_a_protected_change(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt)
+    cfg["implementer"] = {"provider": "command", "argv": _replacing_implementer(tmp_path)}
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "TAMPER" and remote_tip(remote) == base
+    assert g(remote, "show", "canon:core/frozen.py") == "FROZEN = True"
+    assert not [r for r in s["repairs"] if r["status"] == "COMMITTED"]
+
+
+def test_r2_02_driver_git_ignores_replace_refs(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cand = g(wt, "rev-parse", "HEAD")
+    (wt / "core/frozen.py").write_text("P = 1\n")
+    g(wt, "commit", "-qam", "protected change")
+    sneaky = g(wt, "rev-parse", "HEAD")
+    g(wt, "reset", "-q", "--hard", cand)
+    tree = g(repo, "rev-parse", f"{cand}^{{tree}}")
+    clean = g(repo, "commit-tree", tree, "-p", cand, "-m", "looks clean")
+    g(repo, "replace", sneaky, clean)
+    cfg = config(tmp_path, repo, wt)
+    assert "core/frozen.py" in L.changed_paths(repo, cand, sneaky)
+    before = L.refs_digest(cfg)
+    g(repo, "replace", "-d", sneaky)
+    assert L.refs_digest(cfg) != before  # refs/replace/* is part of the integrity snapshot
+
+
+def test_r2_03_redirected_gitfile_does_not_reset_the_main_checkout(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    main_tip = g(repo, "rev-parse", "refs/heads/canon")
+    cfg = config(tmp_path, repo, wt)
+    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "gitfile.py", """
+from pathlib import Path
+common = subprocess.run(['git','rev-parse','--path-format=absolute','--git-common-dir'],capture_output=True,text=True).stdout.strip()
+Path('.git').write_text('gitdir: ' + common + '\\n')
+Path('pkg/calc.py').write_text('x = 1\\n')
+""")}
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "TAMPER"
+    assert g(repo, "rev-parse", "refs/heads/canon") == main_tip
+    assert g(repo, "status", "--porcelain") == "" and (repo / "pkg/calc.py").read_text().startswith("def safe_div")
+    assert remote_tip(remote) == base
+    assert not L.worktree_identity(cfg, wt)[0]
+    assert L.run(cfg) == S.BLOCKED and g(repo, "rev-parse", "refs/heads/canon") == main_tip
+
+
+def test_r2_04_repair_deleting_a_test_is_refused_and_restored(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cand = g(wt, "rev-parse", "HEAD")
+    cfg = config(tmp_path, repo, wt, limits={"max_rounds": 6, "max_repair_attempts": 1})
+    cfg["implementer"] = {"provider": "command", "argv": _script_worker(tmp_path, "deleter.py", """
+from pathlib import Path
+Path('tests/test_calc.py').unlink()
+Path('pkg/calc.py').write_text('def safe_div(a, b):\\n    if b == 0:\\n        return None\\n    return a / b\\n')
+Path('tests/test_zero.py').write_text('from pkg.calc import safe_div\\n\\n\\ndef test_zero():\\n    assert safe_div(1, 0) is None\\n')
+""")}
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["blocker"]["kind"] == "REPAIR_FAILED" and "tests/test_calc.py" in s["blocker"]["reason"]
+    assert s["repairs"][0]["status"] == "REFUSED" and s["candidate"] == cand
+    assert g(wt, "rev-parse", "HEAD") == cand and not L.worktree_changes(wt) and L.verify(cfg) == []
+
+
+def test_r2_04_error_after_the_repair_commit_is_refused_and_restored(tmp_path, monkeypatch):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cand = g(wt, "rev-parse", "HEAD")
+    cfg = config(tmp_path, repo, wt, limits={"max_rounds": 6, "max_repair_attempts": 1})
+
+    def boom(*a, **k):
+        raise FileNotFoundError("simulated")
+    monkeypatch.setattr(L, "regression_proof", boom)
+    assert L.run(cfg) == S.BLOCKED
+    s = L.status(cfg)
+    assert s["repairs"][0]["status"] == "REFUSED" and "simulated" in s["repairs"][0]["reason"]
+    assert g(wt, "rev-parse", "HEAD") == cand and s["candidate"] == cand and L.verify(cfg) == []
+
+
+def test_r2_05_gpu_lease_busy_is_blocked_not_a_gate_failure(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    pkg = wt / "uri_operational_intelligence"
+    pkg.mkdir()
+    (pkg / "__init__.py").write_text("")
+    (pkg / "gpu_lease.py").write_text(
+        "import json, sys\n"
+        "if sys.argv[1] == 'status':\n    print('{}'); sys.exit(0)\n"
+        "print(json.dumps({'refused': 'busy', 'holder': 'other'}), file=sys.stderr)\nsys.exit(75)\n")
+    gate = {"id": "gpu", "kind": "pytest", "gpu": True, "lease_wait_s": 1, "cmd": ["{python}", "-m", "pytest", "-q", "tests"]}
+    cfg = config(tmp_path, repo, wt)
+    r = L.run_gate(cfg, gate, wt, tmp_path / "logs")
+    assert r["status"] == "BLOCKED" and "busy" in r["detail"]
+    r = L.run_gate(cfg, dict(gate, kind="command"), wt, tmp_path / "logs")
+    assert r["status"] == "BLOCKED"

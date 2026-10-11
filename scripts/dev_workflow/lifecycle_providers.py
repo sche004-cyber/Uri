@@ -31,7 +31,8 @@ GIT_WRITE_DENY = ["Bash(git commit*)", "Bash(git push*)", "Bash(git reset*)", "B
                   "Bash(git switch*)", "Bash(git branch*)", "Bash(git tag*)", "Bash(git update-ref*)",
                   "Bash(git worktree*)", "Bash(git rebase*)", "Bash(git merge*)", "Bash(git stash*)",
                   "Bash(git config*)", "Bash(git clean*)", "Bash(git restore*)", "Bash(git am*)",
-                  "Bash(git cherry-pick*)", "Bash(git revert*)", "Bash(git rm*)", "Bash(git mv*)"]
+                  "Bash(git cherry-pick*)", "Bash(git revert*)", "Bash(git rm*)", "Bash(git mv*)",
+                  "Bash(git replace*)"]
 ROLE_TOOLS = {
     "reviewer": {"allowed": ["Read", "Grep", "Glob", "Bash", "Agent"],
                  "disallowed": ["Edit", "Write", "NotebookEdit", "WebFetch", "WebSearch"]},
