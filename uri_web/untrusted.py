@@ -122,7 +122,10 @@ def _char_classes(**preds) -> dict:
 
 _JOIN_CHARS = "'\u2019/_"
 _DOT_NAME = re.compile(r"\b(?:FULL STOP|DOT|DOTS|BULLET|DANDA|TSHEG|LEADER|ELLIPSIS|PERIOD|ANO TELEIA|"
-                       r"WORD SEPARATOR|WORDSPACE|CIRCLE|SPOT|RING OPERATOR)\b")
+                       r"WORD SEPARATOR|WORDSPACE|CIRCLE|SPOT|RING OPERATOR|"
+                       # R9-01: other marks drawn as dots ('HYPHENATION POINT', 'CARET INSERTION POINT', 'DOTTED
+                       # CROSS', 'THEREFORE', the raised ring of 'DEGREE SIGN')
+                       r"POINT|DOTTED|THEREFORE|BECAUSE|PROPORTION|DEGREE SIGN)\b")
 _FULL_STOP_NAME = re.compile(r"\b(?:FULL STOP|DANDA|ELLIPSIS)\b")
 
 
@@ -380,12 +383,33 @@ def _unusual(token: str) -> bool:
     return len(fams) > 1
 
 
+def _families(token: str) -> set:
+    return {f for f in map(_char_script, token) if f not in (None, "COMMON")}
+
+
+def _lone(toks: list, i: int) -> bool:
+    """R9-01: token i is one letter, digit or mark of a non-Latin script (repeated or not), between two words that
+    hold none of its script ('portal \u0660 com', 'portal \u4e36 shop', 'portal \u0902 com'): it stands there like a
+    dot. Precision cost only: a lone foreign letter quoted in prose ('the letter \u0436 is') is masked."""
+    if not 0 < i < len(toks) - 1:
+        return False
+    core = {ch for ch in toks[i].group(0) if _char_script(ch) not in (None, "COMMON")}
+    fam = _families(toks[i].group(0))
+    if len(core) != 1 or fam == {"LATIN"}:
+        return False
+    prev, nxt = _families(toks[i - 1].group(0)), _families(toks[i + 1].group(0))
+    return bool(prev) and bool(nxt) and not (fam & prev) and not (fam & nxt)
+
+
 def _unusual_spans(norm: str) -> list:
     """Unusual tokens. A token with no allowed letter or digit of its own ('portal \ua78f com') stands between two
-    words like a dot, so the span also covers the word on each side."""
+    words like a dot, so the span also covers the word on each side; so does a lone letter of another script (R9-01)."""
     toks = list(re.finditer(r"\S+", norm))
     out = []
     for i, m in enumerate(toks):
+        if _lone(toks, i):
+            out.append((toks[i - 1].start(), toks[i + 1].end()))
+            continue
         if not _unusual(m.group(0)):
             continue
         a, b = m.span()
