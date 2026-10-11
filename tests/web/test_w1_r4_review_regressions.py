@@ -1,4 +1,5 @@
 """Regressions for review R4 of 1615512 (findings R4-02, R4-03). Each fails without its repair."""
+from tests.web.d7_invariant import only_source_quotes  # D7
 import socket
 import threading
 import time
@@ -26,8 +27,7 @@ def _sent(x):
 @pytest.mark.parametrize("claim, source", DIFFERENT)
 def test_r4_02_verify_drops_a_claim_with_another_magnitude(claim, source):
     v = SY.verify(_sent(claim)[:-1] + " [1].", [_sent(source)])
-    assert v.claims == []
-    assert [d["reason"] for d in v.dropped] == ["NUMBER_NOT_IN_CITED_SOURCE"]
+    assert only_source_quotes(v, [_sent(source)], _sent(claim)) and v.claims   # D7: the source's own value is shown
 
 
 @pytest.mark.parametrize("claim, source", SAME)

@@ -169,13 +169,35 @@ def field_is_sensitive(f: dict) -> bool:
     return False
 
 
+# Owner decision D8 (2026-10-11): field values are WITHHELD BY DEFAULT (fail closed). A value is shared only for
+# checkbox/radio state, search boxes, and fields whose name, id or label is plainly a search, comment, message,
+# subject or notes field - and never when the field looks sensitive. Everything else is reported by label and type
+# with `has_value`, and masked in screenshots like a sensitive field. The same rule is in browser_extension/snapshot.js.
+SHAREABLE_NAME = re.compile(r"^(q|query|search|searchterm|searchquery|searchtext|keyword|keywords|comment|comments|"
+                            r"message|feedback|subject|title|description|note|notes|remark|remarks)$")
+
+
+def value_shareable(f: dict) -> bool:
+    ftype = str(f.get("type", "")).lower()
+    if ftype in ("checkbox", "radio"):
+        return True                      # only "checked" / "unchecked"
+    if ftype == "search" or str(f.get("role", "")).lower() in ("searchbox", "search"):
+        return True
+    if ftype not in ("", "input", "text", "textarea", "contenteditable", "edit", "document"):
+        return False
+    return any(isinstance(f.get(k), str) and SHAREABLE_NAME.match(_joined(f[k]))
+               for k in ("name", "id", "label", "automation_id"))
+
+
 def redact_field(f: dict, counts: Counter) -> dict:
     out = {k: (redact_text(v, counts) if isinstance(v, str) else v) for k, v in f.items() if k != "value"}
-    if field_is_sensitive(f):
-        out["sensitive"] = True
+    sensitive = field_is_sensitive(f)
+    if sensitive or not value_shareable(f):
+        out["sensitive"] = True           # not shared; also masked in screenshots
+        out["withheld"] = "sensitive" if sensitive else "not_shared"
         out["has_value"] = bool(f.get("value"))
         if f.get("value"):
-            counts["sensitive_field"] += 1
+            counts["sensitive_field" if sensitive else "withheld_field"] += 1
         return out
     out["sensitive"] = False
     out["value"] = redact_text(f.get("value") if isinstance(f.get("value"), str) else "", counts)

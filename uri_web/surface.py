@@ -69,14 +69,16 @@ def build_surface(result: dict) -> Surface:
             add({"id": "h_status", "component": "Badge", "text": STATUS_LABEL.get(status, status),
                  "tone": STATUS_TONE.get(status, "neutral")}),
             text("h_meta", f"{len(result.get('sources') or [])} sources · synthesis: {result.get('synthesis_method')}"
-                           f" · {result.get('elapsed_s', 0)} s · citations checked against the sources (wording, numbers, negation);"
+                           f" · {result.get('elapsed_s', 0)} s · sentences with numbers, dates or amounts are quoted word for word from"
+                           f" their source; other sentences are checked against one cited sentence (wording, negation);"
                            f" web content is untrusted evidence", "caption")]
     add({"id": "h_col", "component": "Column", "children": head, "gap": "small"})
     order.append(add({"id": "h_card", "component": "Card", "child": "h_col", "tone": "neutral"}))
 
     answer = result.get("answer") or []
     if answer:
-        ids = [text(f"a{i}", f"{c['text']} " + "".join(f"[{n}]" for n in c["citations"])) for i, c in
+        ids = [text(f"a{i}", (f"\u201c{c['text']}\u201d " if c.get("quoted") else f"{c['text']} ")
+                    + "".join(f"[{n}]" for n in c["citations"])) for i, c in
                enumerate(answer[:8])]
         add({"id": "a_col", "component": "Column", "children": [text("a_t", "Answer", "label"), *ids], "gap": "small"})
         order.append(add({"id": "a_card", "component": "Card", "child": "a_col", "tone": "accent"}))

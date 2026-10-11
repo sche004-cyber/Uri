@@ -14,6 +14,16 @@ owner-authorised and is NOT covered by any decision below.
 | D5 | Assist adapters (browser, Windows UI Automation, screen capture) | Phased development and integration | Remembered, revocable, application-scoped permissions with expiry; observation and suggestions first; sensitive actions need explicit authorisation; software installation, elevated privileges and new sensitive OS permissions need separate approval; no silent capture, no sensitive-data learning, no autonomous form submission | recorded; phased plan to be written as its own milestone; no adapter work started in this session |
 | D6 | Skill location | Keep the Automated Independent Audit & Repair skill under `.claude/` | Force-add only approved skill files; the frozen `.gitignore` stays unchanged; independent acceptance before canonical integration | `.claude/skills/uri-development-lifecycle/SKILL.md` force-added; `.gitignore` unchanged |
 
+## Later decisions the same day
+
+| # | Decision | Context | How it is applied |
+|---|---|---|---|
+| D7 | Numbers in research answers are quoted verbatim | W1/A0 lifecycle stopped at RETRY_LIMIT: the lexical number check (R1-01 class) was bypassed after four repairs. Owner chose "Quote numbers verbatim" over a Brain double-check or a better parser | `uri_web/synthesize.py` quantity sentences become cited source sentences or are dropped; conflict detection stays a heuristic candidate list |
+| D8 | Assist withholds field values by default | Same stop: name-based redaction bypassed four times by unanticipated field names. Owner chose "Hide all field values by default" | `uri_assist/redact.py` and `browser_extension/snapshot.js` share only checkbox/radio state, search boxes and plainly harmless named fields; everything else withheld and masked |
+| — | Evidence-based continuation replaces the fixed round limit | owner directive | lifecycle `continuation` policy |
+| — | No Playwright / separate Chromium runtime dependency; RW1 native WebView2 milestone queued | owner directive | `docs/plans/RW1_NATIVE_RENDERED_WEB_BRIEF.md` (branch `milestone/rw1-native-rendered-web`) |
+| — | W2 general website and document search queued after SSRF-1, run in this thread | owner request | `docs/plans/W2_SITE_DOCUMENT_SEARCH_BRIEF.md` (branch `milestone/w2-site-document-search`) |
+
 ## Effect on earlier records
 
 - `docs/assist/OWNER_RETURN_CHECKLIST.md` items 1 (Codex audit), 2-4 and 8-10 are superseded or answered by D1-D6

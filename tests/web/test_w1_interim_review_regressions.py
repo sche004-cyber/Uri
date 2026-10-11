@@ -1,4 +1,5 @@
 """Regressions for the interim review of 885483b (docs/assist/INTERIM_REVIEW.md). Each fails without its repair."""
+from tests.web.d7_invariant import only_source_quotes  # D7
 import json
 import threading
 
@@ -78,7 +79,8 @@ def test_f3_negation_and_antonyms_are_not_supported(claim, reason):
 def test_f3_support_must_come_from_one_sentence():
     # Every word occurs somewhere in the source, but no single sentence says this.
     v = SY.verify("Officials said the regulator approved trials in March [1].", [SRC])
-    assert not v.claims
+    # D7: "March" makes it a quantity claim; only a source sentence may be shown, never this scattered combination.
+    assert only_source_quotes(v, [SRC], "Officials said the regulator approved trials in March [1].")
 
 
 def test_f3_faithful_claim_still_passes():

@@ -59,7 +59,9 @@ class Observation:
     def unlocated_sensitive(self) -> bool:
         """A private field that is on screen but has no rectangle cannot be blacked out. Hidden inputs and fields
         the adapter reports as not visible are not on screen (interim review LOW: CSRF hidden inputs)."""
-        return any(f.get("sensitive") and not f.get("rect") and f.get("visible", True) and f.get("type") != "hidden"
+        # An empty field shows nothing; a withheld (D8) or sensitive field with a value must be locatable.
+        return any(f.get("sensitive") and f.get("has_value", True) and not f.get("rect") and f.get("visible", True)
+                   and f.get("type") != "hidden"
                    for f in self.fields)
 
     def summary(self) -> dict:

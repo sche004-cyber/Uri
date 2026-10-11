@@ -6,6 +6,7 @@ verify() and find_conflicts(), for every separator (the class, not only the revi
 R6-03: conflict statements and source titles on the research surface pass the same instruction-like and
 link/contact rules as the answer.
 """
+from tests.web.d7_invariant import only_source_quotes  # D7
 import json
 
 import pytest
@@ -58,8 +59,7 @@ def test_r6_01_swapped_compound_values_are_different_values(a, b):
 @pytest.mark.parametrize("claim, source", SWAPPED + [(b, a) for a, b in SWAPPED])
 def test_r6_01_verify_drops_a_claim_with_a_swapped_value(claim, source):
     v = SY.verify(_claim(claim), [_sent(source)])
-    assert v.claims == []
-    assert [d["reason"] for d in v.dropped] == ["NUMBER_NOT_IN_CITED_SOURCE"]
+    assert only_source_quotes(v, [_sent(source)], _sent(claim)) and v.claims   # D7: the source's own value is shown
 
 
 @pytest.mark.parametrize("a, b", SWAPPED + [(b, a) for a, b in SWAPPED])
@@ -82,7 +82,8 @@ def test_r6_01_reviewer_examples():
     for claim, source in (("2026-11-10", "2026-10-11"), ("11/10/2026", "10/11/2026")):
         v = SY.verify(f"The new tax law took effect on {claim} across all the northern provinces of the country [1].",
                       [f"The new tax law took effect on {source} across all the northern provinces of the country."])
-        assert v.claims == [] and len(v.dropped) == 1
+        assert only_source_quotes(v, [f"The new tax law took effect on {source} across all the northern provinces of the country."],
+                                  f"The new tax law took effect on {claim} across all the northern provinces of the country.")
     assert EV.numbers("2026-10-11") != EV.numbers("2026-11-10")
     assert EV.numbers("10/11/2026") != EV.numbers("11/10/2026")
 

@@ -134,8 +134,10 @@ def test_r4_01_in_page_layer_hides_corpus_and_matches_python(tmp_path):
                 # A code-labelled field reaches Python with its value already removed, so only the name rule can fire.
                 assert py[fid]["sensitive"] is True or (fid[0] == "c" and py[fid]["value"] == ""), (n, lb)
             else:
-                assert by_id[fid]["sensitive"] is False and by_id[fid]["value"] == v, n
-                assert py[fid]["sensitive"] is False and py[fid]["value"] == v, n
+                assert (by_id[fid].get("withheld") is None and by_id[fid]["value"] == v) if RD.SHAREABLE_NAME.match(RD._joined(n)) \
+                    else (by_id[fid].get("withheld") == "not_shared" and by_id[fid]["value"] == ""), n   # D8
+                assert (py[fid].get("withheld") is None and py[fid]["value"] == v) if RD.SHAREABLE_NAME.match(RD._joined(n)) \
+                    else (py[fid].get("withheld") == "not_shared" and "value" not in py[fid]), n
             checked += 1
     assert checked == len(rows)
 

@@ -96,10 +96,10 @@ def test_r3_01_in_page_layer_hides_reported_names_in_fixture():
     raw = json.dumps(s)
     for i in range(1, 15):
         assert f'"93{i:04d}"' not in raw, i
-    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f["sensitive"]}
+    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f.get("withheld") == "sensitive"}  # D8: by reason
     assert {f"s{i}" for i in range(1, 15)} <= js_sensitive
     py = PE.normalise({**s}, AC.Stamp("g", 1, "t", "dom", 0.0))
-    assert js_sensitive == {f.get("id") or f.get("name") for f in py.fields if f.get("sensitive")}
+    assert js_sensitive == {f.get("id") or f.get("name") for f in py.fields if f.get("withheld") == "sensitive"}
 
 
 def _generated_pages(tmp_path):
@@ -128,7 +128,9 @@ def test_r3_01_in_page_layer_hides_generated_names(tmp_path):
                 assert f'"{v}"' not in raw and by_id[fid]["sensitive"] is True, n
                 assert py[fid]["sensitive"] is True or py[fid]["value"] == "", n
             else:
-                assert by_id[fid]["sensitive"] is False and by_id[fid]["value"] == v, n
-                assert py[fid]["sensitive"] is False and py[fid]["value"] == v, n
+                assert (by_id[fid].get("withheld") is None and by_id[fid]["value"] == v) if RD.SHAREABLE_NAME.match(RD._joined(n)) \
+                    else (by_id[fid].get("withheld") == "not_shared" and by_id[fid]["value"] == ""), n   # D8
+                assert (py[fid].get("withheld") is None and py[fid]["value"] == v) if RD.SHAREABLE_NAME.match(RD._joined(n)) \
+                    else (py[fid].get("withheld") == "not_shared" and "value" not in py[fid]), n
             checked += 1
     assert checked == len(REPORTED) + len(NAME_ONLY) + len(SHORT_CODE) + len(READABLE)

@@ -59,3 +59,14 @@ nothing else in the file is kept, the process environment is not modified, value
 (`uri_web/search.py` `load_env_keys`, worker hook, `tests/web/test_w1_env_keys.py`). Live search: NOT VERIFIED in
 the cloud container (no `.env` here; the key lives on the owner's PC). This change is part of the W1/A0 candidate
 reviewed from R2 on.
+
+### Lifecycle run W1-A0-closure (driver pinned at the skill commit `39ed499`)
+
+Imported R1 (relayed, not independent) → repairs P1-P6 by separate implementer processes, fresh independent reviews
+R2-R8 (R7 interrupted by the coordinator at a safe point to move the driver to a detached process). Diagnoses D1-D4
+before repeated repairs. Stopped **RETRY_LIMIT** at R8 (2026-10-11T05:25Z): R1-01 (citation number check) still
+failing after 3 repairs; the redaction-by-name class (R1-02 → R2-01 → R3-01 → R8-01 `cv2`) likewise recurring.
+Owner decisions D7 (quote numbers verbatim) and D8 (withhold field values by default) replace both mechanisms; the
+implementation session implemented them (`tests/web/test_w1_d7_verbatim_numbers.py`, `tests/assist/
+test_a0_d8_fail_closed.py`: 28 of 35 fail on `87720d6`, the 7 passing are intended controls; 2556 + 35 W1/A0 tests
+pass after) and the run resumes for fresh independent review of the whole range.

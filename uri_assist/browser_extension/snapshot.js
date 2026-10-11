@@ -91,10 +91,19 @@
       .some((v) => v && secretName(v));
   };
 
+  // Owner decision D8: values are withheld by default (fail closed); same rule as redact.py value_shareable().
+  const SHAREABLE_NAME = /^(q|query|search|searchterm|searchquery|searchtext|keyword|keywords|comment|comments|message|feedback|subject|title|description|note|notes|remark|remarks)$/;
+  const joinedName = (v) => String(v || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const shareable = (el, type, label) => {
+    if (type === "checkbox" || type === "radio") return true;
+    if (type === "search" || ["searchbox", "search"].includes((el.getAttribute("role") || "").toLowerCase())) return true;
+    if (!["", "text", "textarea", "contenteditable", "input"].includes(type)) return false;
+    return [el.getAttribute("name"), el.id, label].some((v) => v && SHAREABLE_NAME.test(joinedName(v)));
+  };
   const fields = [], sensitiveRects = [];
   for (const el of document.querySelectorAll("input, textarea, select, [contenteditable]:not([contenteditable='false'])")) {
     if (fields.length >= MAX_FIELDS) break;
-    const type = (el.getAttribute("type") || el.tagName).toLowerCase();
+    const type = el.isContentEditable ? "contenteditable" : (el.getAttribute("type") || el.tagName).toLowerCase();
     if (["submit", "button", "reset", "image", "file"].includes(type)) continue;
     const label = labelOf(el);
     let value = "";
@@ -103,6 +112,7 @@
     else if (type === "checkbox" || type === "radio") value = el.checked ? "checked" : "unchecked";
     else value = el.value || "";
     const isSensitive = sensitive(el, label, value);
+    const withheld = isSensitive || !shareable(el, type, label);
     const shown = visible(el);
     if (!shown && !isSensitive) continue;          // invisible ordinary fields are not part of what the user sees
     const f = {
@@ -113,9 +123,9 @@
       visible: shown,
     };
     if (shown) f.rect = rectOf(el);
-    if (isSensitive) {
-      f.sensitive = true; f.has_value = !!value; f.value = "";
-      if (value) bump("sensitive_field");
+    if (withheld) {
+      f.sensitive = true; f.withheld = isSensitive ? "sensitive" : "not_shared"; f.has_value = !!value; f.value = "";
+      if (value) bump(isSensitive ? "sensitive_field" : "withheld_field");
       if (shown) sensitiveRects.push(f.rect);
     } else {
       f.sensitive = false; f.value = maskText(String(value).slice(0, MAX_VALUE));

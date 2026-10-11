@@ -3,6 +3,7 @@
 R5-01: a numeral is read WHOLE (Indian lakh/crore grouping, space-grouped thousands, sign) or reported UNREADABLE,
 never split into fragments that pass the subset tests in verify() and find_conflicts().
 """
+from tests.web.d7_invariant import only_source_quotes  # D7
 import re
 
 import pytest
@@ -30,8 +31,7 @@ def _two(a, b):
 @pytest.mark.parametrize("claim, source", DIFFERENT + [(b, a) for a, b in DIFFERENT])
 def test_r5_01_verify_drops_a_claim_with_another_amount(claim, source):
     v = SY.verify(_sent(claim)[:-1] + " [1].", [_sent(source)])
-    assert v.claims == []
-    assert [d["reason"] for d in v.dropped] == ["NUMBER_NOT_IN_CITED_SOURCE"]
+    assert only_source_quotes(v, [_sent(source)], _sent(claim)) and v.claims   # D7: the source's own value is shown
 
 
 @pytest.mark.parametrize("claim, source", SAME + [(b, a) for a, b in SAME])
@@ -72,7 +72,7 @@ def test_r5_01_unreadable_numeral_never_supports_a_claim(numeral):
     s = _sent(f"Rs {numeral}")
     assert EV.unreadable(EV.numbers(s))
     v = SY.verify(s[:-1] + " [1].", [s])
-    assert v.claims == [] and [d["reason"] for d in v.dropped] == ["NUMBER_NOT_IN_CITED_SOURCE"]
+    assert only_source_quotes(v, [s])   # D7: an unreadable numeral is only ever shown in the source's own words
 
 
 def test_r5_01_unreadable_numeral_does_not_suppress_a_conflict():

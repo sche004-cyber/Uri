@@ -41,6 +41,7 @@ _CITE_GROUP = re.compile(r"(?:\s*\[\d{1,3}\])+\s*$")
 class Claim:
     text: str
     citations: list
+    quoted: bool = False      # D7: the text is a source sentence, word for word
 
 
 @dataclass
@@ -61,6 +62,25 @@ def _split_answer(text: str) -> list:
     text = (text or "").strip()
     parts = re.split(r"(?<=[.!?\]])\s+(?=[A-Z0-9\"'(])", text)
     return [p.strip() for p in parts if p.strip()]
+
+
+# Owner decision D7 (2026-10-11): an answer sentence that states a quantity - digits, a number word, a fraction,
+# an ordinal, a percentage or a currency - is never shown in the Brain's words. It is replaced by the cited source
+# sentence that supports it best, word for word, or dropped. Over-detection only means more quoting, so the word
+# list is deliberately broad.
+_QUANTITY = re.compile(
+    r"\d|[$€£₹¥%]|\b(?:rs|inr|usd|eur|gbp|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
+    r"thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|"
+    r"ninety|hundreds?|thousands?|millions?|billions?|trillions?|lakhs?|lacs?|crores?|dozens?|half|halves|halved|"
+    r"thirds?|quarters?|fifths?|tenths?|percent|per\s*cent|twice|thrice|double[ds]?|triple[ds]?|quadrupled?|"
+    r"first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|once|single|dozen|score|"
+    r"january|february|march|april|may|june|july|august|september|october|november|december|"
+    r"monday|tuesday|wednesday|thursday|friday|saturday|sunday|yesterday|today|tomorrow|annual|annually|"
+    r"daily|weekly|monthly|yearly|majority|minority|most|all|none|every|several|few|many)\b", re.I)
+
+
+def states_quantity(text: str) -> bool:
+    return bool(_QUANTITY.search(text or ""))
 
 
 def verify(answer: str, source_texts: list) -> Verified:
@@ -87,6 +107,15 @@ def verify(answer: str, source_texts: list) -> Verified:
             v.dropped.append({"text": sent, "reason": "CITATION_OUT_OF_RANGE"})
             continue
         cited = sorted(set(cites))
+        if states_quantity(body):
+            q = _quote(body, cited, sents_of)
+            if q is None:
+                v.dropped.append({"text": sent, "reason": "NO_SOURCE_SENTENCE_TO_QUOTE"})
+            elif q[0] in {c.text for c in v.claims}:
+                pass                                 # the same source sentence is shown once
+            elif len(v.claims) < MAX_ANSWER_SENTENCES:
+                v.claims.append(Claim(q[0], [q[1]], quoted=True))
+            continue
         claim_nums = numbers(body)
         cw = content_words(body)
         # The claim must be supported by ONE sentence of a cited source (not by words scattered over the page).
@@ -110,6 +139,19 @@ def verify(answer: str, source_texts: list) -> Verified:
         if len(v.claims) < MAX_ANSWER_SENTENCES:
             v.claims.append(Claim(body, cited))
     return v
+
+
+def _quote(body: str, cited: list, sents_of: list):
+    """(source sentence, citation number) that best supports ``body`` - one sentence of one cited source, with enough
+    shared content words and safe to show (no instruction-like text, link or contact) - else None."""
+    cw = content_words(_QUANTITY.sub(" ", body)) or content_words(body)
+    best, best_s = None, 0.0
+    for c in cited:
+        for s, w, _n in sents_of[c - 1]:
+            sc = len(cw & w) / len(cw) if cw else 0.0
+            if sc > best_s and not U.flags(s) and not U.has_link_or_contact(s):
+                best, best_s = (s, c), sc
+    return best if best is not None and best_s >= MIN_SUPPORT else None
 
 
 def _antonym_flip(claim: str, source: str) -> bool:

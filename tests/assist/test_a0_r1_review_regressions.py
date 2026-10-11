@@ -65,10 +65,10 @@ def test_r1_02_in_page_layer_hides_new_names_and_matches_python():
     for secret in ("710001", "710002", "713", "714", "715", "7106", "7107", "71000008", "71000009", "07/31",
                    "pc71011", "pw71012"):
         assert f'"{secret}"' not in raw, secret
-    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f["sensitive"]}
+    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f.get("withheld") == "sensitive"}  # D8: by reason
     assert {f"m{i}" for i in range(1, 13)} <= js_sensitive
     py = PE.normalise({**s}, AC.Stamp("g", 1, "t", "dom", 0.0))
-    assert js_sensitive == {f.get("id") or f.get("name") for f in py.fields if f.get("sensitive")}
+    assert js_sensitive == {f.get("id") or f.get("name") for f in py.fields if f.get("withheld") == "sensitive"}
 
 
 # ---- R1-04: title, headings, labels, placeholders and the URL are masked inside the page ----------------------------
@@ -135,8 +135,8 @@ def test_r2_01_in_page_layer_hides_run_together_names_and_matches_python():
     raw = json.dumps(s)
     for i in range(1, len(R2_SENSITIVE_NAMES) + 1):
         assert f'"82{i:04d}"' not in raw, R2_SENSITIVE_NAMES[i - 1]
-    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f["sensitive"]}
+    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f.get("withheld") == "sensitive"}  # D8: by reason
     assert {f"r{i}" for i in range(1, len(R2_SENSITIVE_NAMES) + 1)} <= js_sensitive
     assert not {f"q{i}" for i in range(1, len(R2_READABLE_NAMES) + 1)} & js_sensitive
     py = PE.normalise({**s}, AC.Stamp("g", 1, "t", "dom", 0.0))
-    assert js_sensitive == {f.get("id") or f.get("name") for f in py.fields if f.get("sensitive")}
+    assert js_sensitive == {f.get("id") or f.get("name") for f in py.fields if f.get("withheld") == "sensitive"}

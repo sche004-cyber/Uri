@@ -1,4 +1,5 @@
 """Regressions for review R1 of 8019d41 (finding R1-01). Each fails without its repair."""
+from tests.web.d7_invariant import only_source_quotes  # D7
 import pytest
 
 from uri_web import evaluate as EV
@@ -18,8 +19,7 @@ def test_r1_01_unsupported_number_is_dropped(claim_num, source_num):
     claim = f"Prices in the city market rose sharply and onions now cost {claim_num} per kilogram this week [1]."
     source = f"Prices in the city market rose sharply and onions now cost {source_num} per kilogram this week."
     v = SY.verify(claim, [source])
-    assert v.claims == []
-    assert [d["reason"] for d in v.dropped] == ["NUMBER_NOT_IN_CITED_SOURCE"]
+    assert only_source_quotes(v, [source], claim) and claim_num not in " ".join(c.text for c in v.claims)   # D7
 
 
 def test_r1_01_supported_number_still_kept():

@@ -262,7 +262,7 @@ class ResearchJob:
             syn = SY.synthesize(res.query or "summary", numbered, complete=self.complete)
         if syn is not None:
             res.synthesis_method, res.brain_status = syn.method, syn.brain_status
-            res.answer = [{"text": c.text, "citations": c.citations} for c in syn.verified.claims]
+            res.answer = [{"text": c.text, "citations": c.citations, "quoted": c.quoted} for c in syn.verified.claims]
             res.dropped_claims = syn.verified.dropped
         if timed_out:
             res.status = TIMED_OUT

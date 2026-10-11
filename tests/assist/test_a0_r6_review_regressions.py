@@ -57,7 +57,8 @@ def test_r6_02_in_page_layer_hides_the_values(tmp_path):
     for i, (n, lb, v) in enumerate(FIELDS):
         assert by_id[f"f{i}"]["sensitive"] is True and by_id[f"f{i}"]["value"] == "", n
     for i, (n, lb, v) in enumerate(READABLE):
-        assert by_id[f"r{i}"]["sensitive"] is False and by_id[f"r{i}"]["value"] == v, n
+        assert (by_id[f"r{i}"].get("withheld") is None and by_id[f"r{i}"]["value"] == v) if RD.SHAREABLE_NAME.match(RD._joined(n)) \
+            else (by_id[f"r{i}"].get("withheld") == "not_shared" and by_id[f"r{i}"]["value"] == ""), n   # D8
     raw = json.dumps(s)
     for n, lb, v in FIELDS:
         assert f'"{v}"' not in raw, n

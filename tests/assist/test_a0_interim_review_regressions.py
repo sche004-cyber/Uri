@@ -127,9 +127,9 @@ def test_f5_in_page_layer_matches_python_on_hostile_fields():
     raw = json.dumps(s)
     for secret in SECRETS:
         assert secret not in raw, secret                    # nothing left the page
-    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f["sensitive"]}
+    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f.get("withheld") == "sensitive"}  # D8: by reason
     py = PE.normalise({**s}, AC.Stamp("g", 1, "t", "dom", 0.0))
-    py_sensitive = {f.get("id") or f.get("name") for f in py.fields if f.get("sensitive")}
+    py_sensitive = {f.get("id") or f.get("name") for f in py.fields if f.get("withheld") == "sensitive"}
     assert js_sensitive == py_sensitive                     # the two layers agree
     assert {"a", "b", "c", "d", "e", "f", "g", "h"} <= js_sensitive
     assert "k" not in js_sensitive and "l" not in js_sensitive          # postal PIN code and spinner stay readable

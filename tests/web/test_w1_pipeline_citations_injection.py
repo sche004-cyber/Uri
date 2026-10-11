@@ -1,4 +1,5 @@
 """W1-AC10..AC13, AC15: citation verification, prompt-injection resistance, bounded pipeline, A2UI, bridge."""
+from tests.web.d7_invariant import only_source_quotes  # D7
 import json
 import threading
 import time
@@ -33,13 +34,16 @@ def test_verifier_keeps_supported_and_drops_fabricated_claims():
               "This sentence has no citation at all.")
     v = SY.verify(answer, [SRC1, SRC2])
     assert [c.citations for c in v.claims] == [[1], [2]]
-    assert [d["reason"] for d in v.dropped] == ["NUMBER_NOT_IN_CITED_SOURCE", "INSUFFICIENT_SUPPORT",
+    # D7: both kept claims carry quantities, so they are the sources' own sentences; the fabricated "9% according to
+    # officials" has no source sentence to quote (no source mentions officials), so it is dropped.
+    assert only_source_quotes(v, [SRC1, SRC2]) and "9%" not in " ".join(c.text for c in v.claims)
+    assert [d["reason"] for d in v.dropped] == ["NO_SOURCE_SENTENCE_TO_QUOTE", "INSUFFICIENT_SUPPORT",
                                                 "CITATION_OUT_OF_RANGE", "NO_CITATION"]
 
 
 def test_verifier_number_must_be_in_the_cited_source_not_any_source():
     v = SY.verify("Parents can appeal the fee of 12,400 rupees until 15 November 2026 [2].", [SRC1, SRC2])
-    assert not v.claims and v.dropped[0]["reason"] == "NUMBER_NOT_IN_CITED_SOURCE"
+    assert only_source_quotes(v, [SRC2]) and "12,400" not in " ".join(c.text for c in v.claims)   # D7
 
 
 def test_no_answer_and_brain_failure_fall_back_to_extractive():
@@ -148,8 +152,8 @@ def test_malicious_page_cannot_redirect_the_pipeline():
     texts = " ".join(a["text"] for a in r.answer)
     assert "evil@example.com" not in texts and "127.0.0.1" not in texts and "50%" not in texts
     assert "4.5%" in texts
-    assert sorted(d["reason"] for d in r.dropped_claims) == ["INSTRUCTION_LIKE", "LINK_OR_CONTACT",
-                                                              "NUMBER_NOT_IN_CITED_SOURCE"]
+    assert {"INSTRUCTION_LIKE", "LINK_OR_CONTACT"} <= {d["reason"] for d in r.dropped_claims}
+    assert all(a["quoted"] for a in r.answer)   # D7: every kept sentence here states a quantity
     assert captured["m"][0]["content"].startswith(U.SYSTEM_RULES[:40])
 
 
