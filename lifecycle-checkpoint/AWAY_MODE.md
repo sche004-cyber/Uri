@@ -32,7 +32,7 @@ work while am away from pc". This file is the standing plan; every check-in foll
 2. **SSRF-1** (D2). Plan: `lifecycle-runs/SSRF-1_PLAN_DRAFT.md`. The branch is cut from the canonical tip after step 1,
    and `authorized_protected_changes` is `uri_core/tools/fetch_url.py` only.
 2b. **IDN-1** (owner decision D21, 2026-10-11: block site addresses with non-English letters, and tell the user why in plain words). Plan: `lifecycle-runs/IDN-1_PLAN_DRAFT.md`. Branch from the canonical tip after SSRF-1.
-2c. **LINK-REP-1** (owner decision D22, 2026-10-11: "Yes"). Known-scam lookup for real addresses, plus urgency and mismatched-link flags. Plan: `lifecycle-runs/LINK-REP-1_PLAN_DRAFT.md`. Branch after IDN-1. Provider URLhaus, skip when unavailable (owner). **Needs from the owner before the run:** a free URLhaus key as `URLHAUS_AUTH_KEY` in `.env`.
+2c. **LINK-REP-1** (owner decision D22, 2026-10-11: "Yes"). Known-scam lookup for real addresses, plus urgency and mismatched-link flags. Plan: `lifecycle-runs/LINK-REP-1_PLAN_DRAFT.md`. Branch after IDN-1. Provider URLhaus, skip when unavailable (owner). Key optional (D25): the check is added security, never a blocker.
 3. **GRAPHIFY-LEAK-1 fix** (owner decision D12, 2026-10-11: "fix before W2"). A small milestone, with its branch cut
    from the canonical tip after SSRF-1. Each user's Graphify view rebuilds its memory pointers from that user's own
    memory store. `authorized_protected_changes` is `uri_core/app/server.py`, plus `uri_core/core/graphify_index.py`
@@ -173,3 +173,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 20:00 | **Owner requirement D23**: every item waiting on the owner lives in one file, `lifecycle-checkpoint/OWNER_ACTIONS.md`, added the same day and removed only when done. File created (4 to-dos, 4 PC items, 5 decisions, 5 optional readability items). |
 | 2026-10-11 20:15 | **Owner decision D24** (W2): proposed site list; refresh only when the user asks for the same data again; personal data searchable only; no PDF copies. Readability: O1 'com' after a space stays caught (owner confirmed after a clearer re-ask; first wording was muddled), O2 Hebrew points allowed (added to IDN-1), O3-O5 unchanged. PC items A2/W1-W4 delegated to a PC thread. W1/A0: R26 REJECT, driver repairing itself. |
 | 2026-10-11 20:25 | D24 Q2 corrected by the owner: "refresh when visit again" (any revisit: asking for the data or opening it). W2 plan updated. |
+| 2026-10-11 20:35 | **Owner decision D25**: relying on an outside API must not restrict URI. LINK-REP-1: without a key or when URLhaus is down/slow, URI works as today with a 'Not scam-checked' note; only a positive listing blocks. Replaces the earlier 'skip when unavailable' default. A1 now optional. |
