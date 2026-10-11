@@ -522,7 +522,11 @@ _STROKE_SOURCE = ("".join(chr(c) for c in range(0x2F00, 0x2F1D)) + "".join(chr(c
                   + "\u4e00\u4e28\u4e36\u4e3f\u4e59\u4e85\u4e40\u4e41\u4e5a\u4e5b\u4e8c\u4ea0\u4e09\u4e37\u3007\u3006"
                   + "".join(chr(c) for c in range(0x1100, 0x1200)) + "".join(chr(c) for c in range(0x3131, 0x318F))
                   + "".join(chr(c) for c in range(0x3105, 0x3130)) + "".join(chr(c) for c in range(0x31A0, 0x31C0))
-                  + "\u30ce\u30fd\u30fe\u309d\u309e\u30fc\u3005" + "".join(chr(c) for c in range(0x31F0, 0x3200)))
+                  + "\u30ce\u30fd\u30fe\u309d\u309e\u30fc\u3005" + "".join(chr(c) for c in range(0x31F0, 0x3200))
+                  # D20 (owner, after R18-01): all hiragana and katakana, full and half width ('\u30cb\u30cf\u30c8', '\u304f\u3057\u3078').
+                  + "".join(chr(c) for c in range(0x3041, 0x3097)) + "".join(chr(c) for c in range(0x30A1, 0x30FB))
+                  + "".join(chr(c) for c in range(0xFF66, 0xFF9E)))
+# D20: the list is final. A look-alike outside these groups is owner-accepted residual risk, not a blocking finding.
 _STROKES = frozenset(c for c in (normalise(ch) for ch in _STROKE_SOURCE) if len(c) == 1 and _letter(c))
 _OPEN, _CLOSE = "([{\uff08\u3010\u300c\u300e\u3014", ")]}\uff09\u3011\u300d\u300f\u3015"
 
