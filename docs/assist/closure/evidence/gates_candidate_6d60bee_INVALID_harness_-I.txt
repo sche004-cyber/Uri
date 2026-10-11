@@ -1,0 +1,56 @@
+2026-10-10T23:56:11Z
+6d60bee3c653c9b07045038c3854acefda246a1c
+?? docs/assist/closure/
+== combined python (ws oi a2ui web assist)
+ERROR tests/a2ui/test_contract.py
+ERROR tests/a2ui/test_schedule_intent.py
+ERROR tests/a2ui/test_scheduler_a2ui.py
+ERROR tests/assist/test_a0_access_perception.py
+ERROR tests/assist/test_a0_interim_review_regressions.py
+ERROR tests/oi/test_oi_answer_planner_ledger.py
+ERROR tests/oi/test_oi_audit_r1_regressions.py
+ERROR tests/oi/test_oi_audit_r2_regressions.py
+ERROR tests/oi/test_oi_audit_r3_regressions.py
+ERROR tests/oi/test_oi_audit_r5_regressions.py
+ERROR tests/oi/test_oi_brain_client.py
+ERROR tests/oi/test_oi_core_provider.py
+ERROR tests/oi/test_oi_orchestrator.py
+ERROR tests/oi/test_oi_policy_triage.py
+ERROR tests/oi/test_oi_runtime_v1.py
+ERROR tests/oi/test_oi_server.py
+ERROR tests/web/test_w1_extract_feeds_search_social.py
+ERROR tests/web/test_w1_interim_review_regressions.py
+ERROR tests/web/test_w1_netpolicy_safe_fetch.py
+ERROR tests/web/test_w1_pipeline_citations_injection.py
+ERROR tests/ws/test_ti_audit_r1_regressions.py
+ERROR tests/ws/test_ti_audit_r2_regressions.py
+ERROR tests/ws/test_ti_audit_r3_regressions.py
+ERROR tests/ws/test_ti_audit_r4_regressions.py
+ERROR tests/ws/test_ti_desk_bridge.py
+ERROR tests/ws/test_ti_live_findings.py
+ERROR tests/ws/test_ti_store_verify_input.py
+ERROR tests/ws/test_ti_text_intent.py
+ERROR tests/ws/test_ti_worker_live.py
+ERROR tests/ws/test_ws_cloud_and_composition.py
+ERROR tests/ws/test_ws_hardening.py
+ERROR tests/ws/test_ws_worker_bridge.py
+== web+assist
+ERROR tests/assist/test_a0_interim_review_regressions.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 6 errors during collection !!!!!!!!!!!!!!!!!!!!
+6 errors in 0.18s
+== frozen check
+{
+ "tree": "/home/user/uri-wt/a0",
+ "phase1_frozen": {
+  "checked": 0,
+  "drift": null,
+  "blocked": "checkpoint zip not present"
+ },
+ "protected_changed_vs_baseline": [],
+ "ok": false
+}
+== flutter test
+01:34 +526 ~5 -1: Some tests failed.
+
+Failing tests:
+  /home/user/uri-wt/a0/uri_ui/test/reference_render_test.dart: render desktop dashboard
