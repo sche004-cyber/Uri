@@ -58,16 +58,25 @@ def test_files_already_inside_are_reinherited(tmp_path):                 # S2
         assert len(aces) == 1 and aces[0].endswith(":(I)(F)"), (f.name, aces)
 
 
-def test_folder_steps_reset_explicit_entries_before_restricting(tmp_path):   # R2-01, on every platform
+def test_folder_steps_restrict_folder_before_resetting_children(tmp_path):   # R2-01 / R1-01, on every platform
+    (tmp_path / "scheduler.db").write_bytes(b"x")
+    (tmp_path / "api-token").write_text("old")
     steps = S.icacls_steps(tmp_path, "me", folder=True)
-    assert steps == [["icacls", str(tmp_path), "/reset", "/T", "/Q"],
-                     ["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]]
-    assert "/C" not in steps[0]                                           # an un-resettable file fails the step
+    assert steps == [["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"],
+                     ["icacls", str(tmp_path / "api-token"), "/reset", "/T", "/Q"],
+                     ["icacls", str(tmp_path / "scheduler.db"), "/reset", "/T", "/Q"]]
+    assert all("/C" not in st for st in steps)                            # an un-resettable file fails the step
+    assert ["icacls", str(tmp_path), "/reset", "/T", "/Q"] not in steps   # the folder itself is never reset
     assert S.icacls_steps(tmp_path, "me") == [["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:F"]]
 
 
+def test_empty_folder_has_only_the_restrict_step(tmp_path):              # R1-01: no reset step, so nothing to fail
+    assert S.icacls_steps(tmp_path, "me", folder=True) == [
+        ["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]]
+
+
 @pytest.mark.skipif(not WIN, reason="Windows-qualified: the icacls branch")
-def test_folder_reset_failure_fails_closed(tmp_path, monkeypatch):         # R2-01: a failed /reset stops before the grant
+def test_folder_acl_failure_fails_closed(tmp_path, monkeypatch):           # R1-02: a failed step re-applies the grant
     calls = []
 
     def run(cmd, **k):
@@ -76,7 +85,76 @@ def test_folder_reset_failure_fails_closed(tmp_path, monkeypatch):         # R2-
     monkeypatch.setattr(S.subprocess, "run", run)
     with pytest.raises(S.StateAclError):
         S.restrict_to_user(tmp_path, folder=True)
-    assert len(calls) == 1 and "/reset" in calls[0]
+    assert len(calls) == 2 and all("/grant:r" in c and "/reset" not in c for c in calls)   # grant, then re-grant
+
+
+def _simulated_windows(monkeypatch, fail_reset):
+    """Drive the icacls branch on any platform: a fake icacls that records calls and fails `/reset` on demand."""
+    monkeypatch.setattr(S, "_WINDOWS", True, raising=False)
+    monkeypatch.setenv("USERNAME", "me")
+    calls = []
+
+    class _R:
+        stdout = stderr = ""
+
+        def __init__(self, rc):
+            self.returncode = rc
+
+    def run(cmd, **k):
+        calls.append(list(cmd))
+        return _R(5 if (fail_reset and "/reset" in cmd) else 0)
+    monkeypatch.setattr(S.subprocess, "run", run)
+    monkeypatch.setattr(S, "drop_foreign_entries", lambda p: calls.append(["drop", str(p)]), raising=False)
+    return calls
+
+
+def test_folder_is_never_reset_to_its_inherited_acl(tmp_path, monkeypatch):   # R1-01, on every platform
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "api-token").write_text("live")
+    calls = _simulated_windows(monkeypatch, fail_reset=False)
+    S.restrict_to_user(state, folder=True)
+    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]
+    assert calls[:2] == [grant, ["drop", str(state)]]                     # the folder is closed first, then cleared
+    assert all(c[1] != str(state) for c in calls if "/reset" in c)        # and never reset afterwards
+    assert ["icacls", str(state / "api-token"), "/reset", "/T", "/Q"] in calls
+
+
+def test_child_reset_failure_keeps_folder_closed_and_removes_token(tmp_path, monkeypatch, capsys):   # R1-02
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "api-token").write_text("old")
+    calls = _simulated_windows(monkeypatch, fail_reset=True)
+    monkeypatch.setattr(S, "build", lambda a: pytest.fail("the ACL failure must stop main before build"))
+    rc = S.main(["run", "--state", str(state), "--mode", "fixture"])
+    assert rc == 4
+    assert "STATE_ACL_FAILED" in capsys.readouterr().out
+    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]
+    resets = [i for i, c in enumerate(calls) if "/reset" in c]
+    assert grant in calls and resets and calls.index(grant) < resets[0]   # folder closed before any reset
+    assert calls[-1] == grant                                             # and re-applied after the failure
+    assert not (state / "api-token").exists()                             # no old token left on disk
+
+
+@pytest.mark.skipif(WIN, reason="POSIX flock probe; the msvcrt probe is Windows-qualified")
+def test_live_instance_folder_acl_is_not_touched(tmp_path, monkeypatch, capsys):   # R1-01: lock before the ACL
+    import fcntl
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "api-token").write_text("live")
+    fh = open(state / "scheduler.lock", "a+b")
+    fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)               # a running instance holds the lock
+    touched = []
+    monkeypatch.setattr(S, "restrict_to_user", lambda p, **k: touched.append(p))
+    monkeypatch.setattr(S, "build", lambda a: touched.append("build"))
+    try:
+        rc = S.main(["run", "--state", str(state), "--mode", "fixture"])
+    finally:
+        fh.close()
+    assert rc == 3
+    assert "SCHEDULER_ALREADY_RUNNING" in capsys.readouterr().out
+    assert touched == []
+    assert (state / "api-token").read_text() == "live"
 
 
 @pytest.mark.skipif(not WIN, reason="Windows-qualified: explicit ACEs of other principals")

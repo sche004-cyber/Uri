@@ -230,22 +230,77 @@ class StateAclError(Exception):
     pass
 
 
+_WINDOWS = os.name == "nt"
+
+
 def icacls_steps(path: Path, user: str, *, folder=False) -> list:
-    """The icacls commands restrict_to_user runs on Windows. For the folder, `/reset /T` first drops every explicit
-    entry (any principal's) on the folder and on everything already inside it and turns inheritance back on there;
-    without /C the first file it cannot reset fails the step. Then `/inheritance:r /grant:r` leaves the single
-    inheritable user entry, which the files inside re-inherit (R2-01)."""
+    """The icacls commands restrict_to_user runs on Windows. For the folder, `/inheritance:r /grant:r` first closes it
+    to a single inheritable user entry; only then does `/reset /T` run on each child already inside, dropping every
+    explicit entry (any principal's, protected DACLs included) so the child re-inherits from the closed folder. The
+    folder itself is never reset, so it never falls back to its parent's ACL, not even between two steps (R1-01).
+    Without /C the first child that cannot be reset fails the step; an empty folder has no reset steps."""
     grant = f"{user}:(OI)(CI)F" if folder else f"{user}:F"
     restrict = ["icacls", str(path), "/inheritance:r", "/grant:r", grant]
-    return [["icacls", str(path), "/reset", "/T", "/Q"], restrict] if folder else [restrict]
+    if not folder:
+        return [restrict]
+    return [restrict] + [["icacls", str(child), "/reset", "/T", "/Q"] for child in sorted(path.iterdir())]
+
+
+def _icacls(cmd):
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise StateAclError(f"icacls failed: {type(exc).__name__}") from None
+    if r.returncode != 0:
+        raise StateAclError("could not restrict access to the current user")
+
+
+def _current_user_sid() -> str:
+    try:
+        r = subprocess.run(["whoami", "/user", "/fo", "csv", "/nh"], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise StateAclError(f"whoami failed: {type(exc).__name__}") from None
+    sid = r.stdout.strip().rsplit(",", 1)[-1].strip('"') if r.returncode == 0 else ""
+    if not sid.startswith("S-1-") or not sid[4:].replace("-", "").isdigit():
+        raise StateAclError("no current user SID")
+    return sid
+
+
+def drop_foreign_entries(path: Path):
+    """Replace the folder's whole DACL, in one write, with a protected DACL holding only the current user's inheritable
+    full-control entry. `/grant:r` replaces only the user's own explicit entries, so this is what removes explicit
+    entries of other principals from the folder itself (R2-01) without ever resetting it (R1-01). Run after the
+    folder is already closed, so it can only take access away."""
+    import ctypes
+    from ctypes import wintypes
+    advapi, kernel = ctypes.WinDLL("advapi32", use_last_error=True), ctypes.WinDLL("kernel32", use_last_error=True)
+    conv = advapi.ConvertStringSecurityDescriptorToSecurityDescriptorW
+    conv.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p]
+    conv.restype = wintypes.BOOL
+    setsec = advapi.SetFileSecurityW
+    setsec.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, ctypes.c_void_p]
+    setsec.restype = wintypes.BOOL
+    kernel.LocalFree.argtypes = [ctypes.c_void_p]
+    kernel.LocalFree.restype = ctypes.c_void_p
+    sd = ctypes.c_void_p()
+    if not conv(f"D:P(A;OICI;FA;;;{_current_user_sid()})", 1, ctypes.byref(sd), None):   # SDDL_REVISION_1
+        raise StateAclError("could not build the user-only ACL")
+    try:
+        ok = setsec(str(path), 0x4, sd)                   # DACL_SECURITY_INFORMATION; "P" keeps it protected
+    finally:
+        kernel.LocalFree(sd)
+    if not ok:
+        raise StateAclError("could not restrict access to the current user")
 
 
 def restrict_to_user(path: Path, *, folder=False):
     """SCHED-TOKEN-ACL-1: replace the ACL with one full-control entry for the current Windows user. For the state
     folder the entry is inheritable, so the token, the database and artifacts inside cannot be read, deleted or
-    replaced by other local principals (explicit entries already on the folder or on files inside are removed and
-    those files re-inherit it). POSIX: 0700 / 0600."""
-    if os.name != "nt":
+    replaced by other local principals. Folder order: close it (`/inheritance:r /grant:r`), drop other principals'
+    explicit entries on it, then reset the children so they re-inherit from the closed folder; the folder is never
+    reset (R1-01). If any step fails, the folder restriction is applied again before failing (R1-02).
+    POSIX: 0700 / 0600."""
+    if not _WINDOWS:
         try:
             os.chmod(path, 0o700 if folder else 0o600)
         except OSError as exc:
@@ -254,13 +309,53 @@ def restrict_to_user(path: Path, *, folder=False):
     user = os.environ.get("USERNAME")
     if not user:
         raise StateAclError("no current user")
-    for cmd in icacls_steps(path, user, folder=folder):
-        try:
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            raise StateAclError(f"icacls failed: {type(exc).__name__}") from None
-        if r.returncode != 0:
-            raise StateAclError("could not restrict access to the current user")
+    try:
+        steps = icacls_steps(path, user, folder=folder)
+    except OSError as exc:
+        raise StateAclError(f"cannot list the state folder: {type(exc).__name__}") from None
+    try:
+        _icacls(steps[0])
+        if folder:
+            drop_foreign_entries(path)
+        for cmd in steps[1:]:
+            _icacls(cmd)
+    except (OSError, StateAclError) as exc:
+        if folder:
+            try:
+                _icacls(steps[0])                         # best effort: leave the folder closed (R1-02)
+            except StateAclError:
+                pass
+        if isinstance(exc, StateAclError):
+            raise
+        raise StateAclError(f"acl failed: {type(exc).__name__}") from None
+
+
+def _running_instance(state: Path) -> bool:
+    """True when another process holds `<state>/scheduler.lock` (the Scheduler's single-instance lock). Probed before
+    the ACL of a possibly live state folder is touched; the probe lock is released at once (R1-01)."""
+    path = state / "scheduler.lock"
+    if not path.exists():
+        return False
+    try:
+        fh = open(path, "a+b")
+    except OSError:
+        return False
+    try:
+        fh.seek(0)
+        if _WINDOWS:
+            import msvcrt
+            msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+            fh.seek(0)
+            msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        return False
+    except OSError:
+        return True
+    finally:
+        fh.close()
 
 
 def write_token_file(path: Path, token: str):
@@ -320,11 +415,18 @@ def main(argv=None):
         rows = st.q("SELECT state, COUNT(*) FROM occurrence GROUP BY state")
         print(json.dumps({"occurrences": {r[0]: r[1] for r in rows}, "chain": st.verify_chain()}, indent=1))
         return 0
+    state = Path(a.state)
+    if _running_instance(state):                    # never touch the ACL or token of a live instance (R1-01)
+        print(json.dumps({"error": "SCHEDULER_ALREADY_RUNNING", "detail": str(state / "scheduler.lock")}))
+        return 3
     try:
-        state = Path(a.state)
         state.mkdir(parents=True, exist_ok=True)
         restrict_to_user(state, folder=True)        # before the database or the token exists (SCHED-TOKEN-ACL-1)
     except (OSError, StateAclError) as exc:
+        try:
+            (state / "api-token").unlink(missing_ok=True)     # no old token left behind on failure (R1-02)
+        except OSError:
+            pass
         print(json.dumps({"error": "STATE_ACL_FAILED", "detail": str(exc)}))
         return 4
     try:
