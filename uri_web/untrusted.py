@@ -495,10 +495,6 @@ def _bare(text: str) -> str:
     return "".join(out)
 
 
-# Optional vocalisation, left out when an address is typed: Arabic harakat and Quranic marks, Hebrew points and accents.
-_VOWELS = re.compile("[\u064b-\u065f\u0670\u06d6-\u06ed\u0591-\u05c7]")
-
-
 def _tld_match(text: str, fam: str) -> str:
     """The top-level domain `text` spells, '' if none. Combining marks are ignored ('c\u0323om'). R19-02/R20-02: in a
     script other than Latin, a look-alike spelling ('\u0441\u043e\u043c') matches through its skeleton and is returned
@@ -506,7 +502,10 @@ def _tld_match(text: str, fam: str) -> str:
     bare = _bare(text).casefold()
     if bare in _ALL_TLDS:
         return bare
-    plain = _VOWELS.sub("", bare)              # R24-01: optional Arabic vowel marks and Hebrew points ('\u0645\u0650\u0635\u0652\u0631')
+    # R24-01/R25-01: optional vocalisation ('\u0645\u0650\u0635\u0652\u0631', '\u0645\u0618\u0635\u0631', Hebrew points): every
+    # non-spacing or enclosing mark is removed, not a hand-picked range. Spacing vowel signs (Mc: '\u093e' in
+    # '\u092d\u093e\u0930\u0924') are kept: they are part of the spelling.
+    plain = "".join(ch for ch in bare if unicodedata.category(ch) not in ("Mn", "Me"))
     if plain != bare and plain in _ALL_TLDS:
         return plain
     if fam != "LATIN":
