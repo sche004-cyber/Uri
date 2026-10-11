@@ -227,3 +227,28 @@ def test_closed_workbook_grant_is_revoked(svc, rich):
     with pytest.raises(OfficeError) as e:
         office.grants.get(gid, "open")
     assert e.value.code == "NO_GRANT"
+
+
+def _aces(path):
+    out = subprocess.run(["icacls", str(path)], capture_output=True, text=True).stdout
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip() and not ln.startswith("Successfully")]
+    lines[0] = lines[0][len(str(path)):].strip()
+    return lines
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows ACL")
+def test_state_folder_is_current_user_only(tmp_path):
+    office = Office(tmp_path / "state")
+    srv, _ = serve(office, "127.0.0.1", 0)
+    srv.server_close()
+    user = os.environ["USERNAME"]
+    allowed = {os.environ.get("USERDOMAIN", "") + "\\" + user, os.environ.get("COMPUTERNAME", "") + "\\" + user}
+    folder = _aces(tmp_path / "state")
+    assert len(folder) == 1, folder                       # no Users, Everyone, sandbox groups or inherited entries
+    account, _, perm = folder[0].rpartition(":")
+    assert account.rsplit(":", 2)[0] in allowed or account in allowed
+    assert folder[0].endswith("(OI)(CI)(F)"), folder
+    # files created later inside the folder inherit only that one entry
+    (tmp_path / "state" / "later.txt").write_text("x")
+    later = _aces(tmp_path / "state" / "later.txt")
+    assert len(later) == 1 and later[0].endswith("(I)(F)"), later

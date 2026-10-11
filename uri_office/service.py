@@ -4,8 +4,9 @@
 
 Security (AC6):
   * binds 127.0.0.1 only; any other host is refused at start;
-  * a random bearer token is made per launch and written to `<state>/api-token`, readable by the current Windows user
-    only (inherited ACL removed; same-user trust limit as the scheduler and Phase 1 C1); the panel reads it from there;
+  * the state folder and the token file get one full-control ACL entry for the current Windows user (inheritance
+    removed; folder entry inherited by its contents), so other principals can neither read nor delete-and-replace them;
+  * a random bearer token is made per launch and written to `<state>/api-token`; the panel reads it from there;
   * every request must carry that token, a loopback Host header for this port (DNS-rebinding guard) and no Origin
     header (browser pages cannot call it); no CORS header is ever sent and OPTIONS is refused;
   * GET never changes state (status, workbook view, open approval surfaces only); every change is a POST;
@@ -398,9 +399,27 @@ def serve(office: Office, host: str, port: int):
     except ValueError:
         raise OfficeError("BIND_REFUSED", "the Office service binds to 127.0.0.1 only") from None
     token = secrets.token_urlsafe(32)
+    restrict_to_user(office.state, folder=True)
     write_token_file(office.state / "api-token", token)
     srv = ThreadingHTTPServer((host, port), make_handler(office, token))
     return srv, token
+
+
+def restrict_to_user(path: Path, *, folder=False):
+    """Replace the inherited ACL with one full-control entry for the current Windows user. For the state folder the entry
+    is inherited by everything created inside it, so no other principal can read, delete or replace the token, the
+    working copies, backups, history or the audit database."""
+    if os.name != "nt":
+        os.chmod(path, 0o700 if folder else 0o600)
+        return
+    user = os.environ.get("USERNAME")
+    if not user:
+        raise OfficeError("ACL_FAILED", "no current user")
+    grant = f"{user}:(OI)(CI)F" if folder else f"{user}:F"
+    r = subprocess.run(["icacls", str(path), "/inheritance:r", "/grant:r", grant], capture_output=True, text=True,
+                       timeout=30)
+    if r.returncode != 0:
+        raise OfficeError("ACL_FAILED", "could not restrict access to this user")
 
 
 def write_token_file(path: Path, token: str):
@@ -410,17 +429,11 @@ def write_token_file(path: Path, token: str):
     if path.exists():
         path.unlink()
     path.write_bytes(b"")
-    if os.name == "nt":
-        user = os.environ.get("USERNAME")
-        if not user:
-            raise OfficeError("TOKEN_ACL_FAILED", "no current user")
-        r = subprocess.run(["icacls", str(path), "/inheritance:r", "/grant:r", f"{user}:F"],
-                           capture_output=True, text=True, timeout=30)
-        if r.returncode != 0:
-            path.unlink()
-            raise OfficeError("TOKEN_ACL_FAILED", "could not restrict the token file to this user")
-    else:
-        os.chmod(path, 0o600)
+    try:
+        restrict_to_user(path)
+    except OfficeError:
+        path.unlink()
+        raise
     path.write_text(token, encoding="utf-8")
 
 
