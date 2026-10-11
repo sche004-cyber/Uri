@@ -1,0 +1,24 @@
+﻿sha=cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35
+........................................................................ [ 29%]
+........................s.ssss.......................................... [ 59%]
+........................................................................ [ 88%]
+...........................                                              [100%]
+============================== warnings summary ===============================
+scripts\dev_workflow\auditor.py:41
+  C:\Users\cheta\Development\uri-dl2-gate\scripts\dev_workflow\auditor.py:41: PytestCollectionWarning: cannot collect test class 'TestExecutionResult' because it has a __init__ constructor (from: tests/dev_workflow/test_workflow.py)
+    @dataclass
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============== PLATFORM-GATED: 5 test(s) NOT VERIFIED on win32 ===============
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r8_01_setsid_child_of_a_worker_cannot_inject_env_into_the_reviewer_config
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r8_01_setsid_child_of_a_gate_or_test_command_is_killed
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_timed_out_command_with_setsid_child_holding_stdout_returns_and_is_swept
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_timed_out_worker_with_setsid_child_holding_stdout_returns_and_is_swept
+PLATFORM-GATED (Linux only) tests/dev_workflow/test_lifecycle.py::test_r10_01_pipe_holder_outside_the_swept_tree_cannot_block_the_driver
+=========================== short test summary info ===========================
+SKIPPED [1] tests\dev_workflow\test_lifecycle.py:1795: PLATFORM-GATED: Linux only; NOT VERIFIED on win32
+SKIPPED [1] tests\dev_workflow\test_lifecycle.py:1846: PLATFORM-GATED: Linux only; NOT VERIFIED on win32
+SKIPPED [1] tests\dev_workflow\test_lifecycle.py:1896: PLATFORM-GATED: Linux only; NOT VERIFIED on win32
+SKIPPED [1] tests\dev_workflow\test_lifecycle.py:1905: PLATFORM-GATED: Linux only; NOT VERIFIED on win32
+SKIPPED [1] tests\dev_workflow\test_lifecycle.py:1915: PLATFORM-GATED: Linux only; NOT VERIFIED on win32
+238 passed, 5 skipped, 1 warning in 905.67s (0:15:05)
