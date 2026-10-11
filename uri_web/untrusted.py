@@ -496,8 +496,26 @@ def _bare(text: str) -> str:
     return "".join(out)
 
 
-_LATIN_NAME = re.compile(r"LATIN (?:SMALL |CAPITAL )?LETTER (?:(?:SMALL CAPITAL|SCRIPT|TURNED|REVERSED|DOTLESS|CLOSED|"
-                         r"OPEN|BARRED|INVERTED|SIDEWAYS|MIDDLE-TILDE|LONG|BROKEN|STRETCHED|INSULAR|BLACKLETTER) )*"
+# R29-01: TURNED, REVERSED, INVERTED and SIDEWAYS letters are not read as their base letter ('\u028d' TURNED W looks like
+# 'm', not 'w'); they are unknown letters (see _ascii_fold).
+from .confusables_ascii import CONFUSABLE_ASCII as _CONFUSABLE_ASCII   # noqa: E402  (generated data module)
+
+# Checked text is NFKC; a confusable whose NFKC form differs ('\u03f2' -> '\u03c2') is also found by that form.
+_NFKC_SOURCES: dict = {}
+for _k in _CONFUSABLE_ASCII:
+    _n = unicodedata.normalize("NFKC", _k)
+    if _n != _k and len(_n) == 1:
+        _NFKC_SOURCES.setdefault(_n, []).append(_k)
+
+_TLDS_BY_LEN: dict = {}
+for _t in _ALL_TLDS:
+    if _t.isascii():
+        _TLDS_BY_LEN.setdefault(len(_t), []).append(_t)
+for _v in _TLDS_BY_LEN.values():
+    _v.sort(key=lambda t: (t not in _CORE, t))
+
+_LATIN_NAME = re.compile(r"LATIN (?:SMALL |CAPITAL )?LETTER (?:(?:SMALL CAPITAL|SCRIPT|DOTLESS|CLOSED|"
+                         r"OPEN|BARRED|MIDDLE-TILDE|LONG|BROKEN|STRETCHED|INSULAR|BLACKLETTER) )*"
                          r"([A-Z])(?: WITH .*)?$")
 
 
@@ -523,7 +541,7 @@ def _latin_base(ch: str) -> str:
     if m:
         return m.group(1).lower()
     m = _LATIN_REST.match(name)
-    if m:
+    if m and not re.search(r"\b(?:TURNED|REVERSED|INVERTED|SIDEWAYS)\b", name):
         for w in m.group(1).split():
             if len(w) <= 2 and w.isalpha() and w.isascii():
                 return w.lower()
@@ -532,21 +550,52 @@ def _latin_base(ch: str) -> str:
     return ""
 
 
-def _latin_fold(text: str) -> str:
-    """`text` with every letter replaced by its plain ASCII letter and marks dropped; '' if a letter has none.
-    R28-01: a letter with no plain letter by name is read through the confusables skeleton ('\u03b1' -> 'a')."""
-    out = []
+def _ascii_options(ch: str) -> tuple:
+    """R29-01: the plain ASCII spellings character `ch` can pass for, from every source we have: the Unicode
+    confusables data (uri_web/confusables_ascii.py, full UTS #39, also for its NFKC form, since checked text is NFKC),
+    the letter its Latin name says it is drawn from (_latin_base), and the older table (_skeleton). A Latin letter with
+    none is '?' (unknown look-alike, any letter). () for a non-Latin letter with none."""
+    if ch.isascii():
+        return (ch.lower(),)
+    opts = set()
+    for c in (ch, ch.lower(), ch.upper()):
+        for k in (c, unicodedata.normalize("NFKC", c)):
+            if k in _CONFUSABLE_ASCII:
+                opts.add(_CONFUSABLE_ASCII[k])
+    for k in _NFKC_SOURCES.get(ch, ()):
+        opts.add(_CONFUSABLE_ASCII[k])
+    if _char_script(ch) == "LATIN" and _latin_base(ch):
+        opts.add(_latin_base(ch))
+    sk = _skeleton(ch).casefold()
+    if sk.isascii() and sk.isalpha():
+        opts.add(sk)
+    if not opts and _char_script(ch) == "LATIN":
+        opts.add("?")
+    return tuple(sorted(opts))
+
+
+def _ascii_folds(text: str) -> list:
+    """Every plain ASCII spelling `text` can pass for (marks dropped), at most 64; [] if some letter has none."""
+    outs = [""]
     for ch in unicodedata.normalize("NFD", text):
         if unicodedata.category(ch)[0] == "M":
             continue
-        b = _latin_base(ch)
-        if not b:
-            b = _skeleton(ch).casefold()
-            b = b if b.isascii() and b.isalpha() else ""
-        if not b:
-            return ""
-        out.append(b)
-    return "".join(out)
+        opts = _ascii_options(ch)
+        if not opts:
+            return []
+        outs = [o + x for o in outs for x in opts][:64]
+    return outs
+
+
+def _wild_tld(pattern: str) -> str:
+    """The listed top-level domain `pattern` spells, with '?' standing for any one letter; '' if none.
+    At least half the letters must be known ('co?' -> 'com'; '??' never matches). Core domains first."""
+    if "?" not in pattern:
+        return pattern if pattern in _ALL_TLDS else ""
+    if pattern.count("?") * 2 > len(pattern):
+        return ""
+    hits = [t for t in _TLDS_BY_LEN.get(len(pattern), ()) if all(p in ("?", c) for p, c in zip(pattern, t))]
+    return hits[0] if hits else ""            # sorted core domains first
 
 
 def _tld_match(text: str, fam: str) -> str:
@@ -565,14 +614,13 @@ def _tld_match(text: str, fam: str) -> str:
                                                  if unicodedata.category(ch) not in ("Mn", "Me")))
     if plain != bare and plain in _ALL_TLDS:
         return plain
-    if fam == "LATIN":
-        fold = _latin_fold(text)              # R27-01: 'ɡov', 'ᴄᴏᴍ', 'cøm', 'ȼom', 'ƈom', 'sħop'
-        if fold and fold != bare and fold in _ALL_TLDS:
-            return fold
-    if fam != "LATIN":
-        look = _skeleton(text).casefold()
-        if look.isascii() and look in _ALL_TLDS:
-            return "~" + look
+    # R27-01/R28-01/R29-01: a look-alike spelling ('ɡov', 'ᴄᴏᴍ', 'bɩz', 'miǀ', 'coʍ'; '\u0455\u04bb\u043e\u0440', '\u03f2\u03bf\u039c'),
+    # read through the full Unicode confusables data. In a script other than Latin it is returned as '~tld': it counts
+    # only after a name in a different script (_ending_spans), so ordinary text in that script stays readable.
+    hits = [h for h in (_wild_tld(f) for f in _ascii_folds(text) if f != bare) if h]
+    if hits:
+        hit = min(hits, key=lambda t: (t not in _CORE, t))
+        return hit if fam == "LATIN" else "~" + hit
     return ""
 
 
@@ -713,7 +761,7 @@ def _ending_spans(norm: str) -> list:
         letters_between = a < b - 1
         if (not letters_between or ascii_only) and _PROSE_GAP.fullmatch(
                 "".join(ch for ch in gap if not _letter(ch))):
-            if not spelt and tld not in _CORE:
+            if not spelt and tld not in _CORE and not look:   # R29-01: a cross-script look-alike is never prose
                 continue                      # 'the shop', 'Gangtok, in', 'Fees: Rs', 'The Ltd. Co.'
             if letters_between and b - 1 - a >= 2 and all(norm[words[k][1]:words[k][1] + 1] == "."
                                                            for k in range(a + 1, b)):
