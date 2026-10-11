@@ -103,3 +103,14 @@ matching `regression_test_patterns` are proofs (`test_c2_helper_files_under_test
 continuation policy (L-AC22), implemented by the implementation session together with the visual report (L-AC21)
 and C2 as an isolated change on this branch; the R5 findings stay pending for the driver's implementer worker, and
 the whole branch is re-reviewed by fresh reviewer processes.
+
+**Repair after the post-directive review (R1 of the re-review at `fbac437`).** The fresh reviewer reported four
+blocking findings; the earlier R5 gate-proof finding was among them (still unrepaired at `fbac437`). Repairs, each with
+a regression test in `tests/dev_workflow/test_lifecycle.py` (`test_r1r2_*`):
+R1-01 the verdict is parsed from the worker's in-memory result, and `verify` re-derives every round's result from the
+hashed raw output and checks `reviewer_result.txt` (a lingering `setsid` child can no longer turn a REJECT into ACCEPT;
+the earlier §6 claim that such writes were caught by the clean-worktree checks was wrong for `state_dir` and is
+corrected); R1-02 malformed `findings` make the result unparseable (NO_RESULT), never ACCEPT; R1-03 gate test ids
+(junit classnames, Flutter paths relative to the gate `cwd`) are resolved to files, and an unresolvable gate test
+refuses the repair; R1-04 hooks/config/`info/` and replace refs are bound at PLAN and any drift is BLOCKED (TAMPER),
+including drift by the diagnosis worker. The R5 non-deterministic-baseline-key finding is not part of this repair.

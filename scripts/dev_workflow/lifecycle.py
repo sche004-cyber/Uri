@@ -74,7 +74,8 @@ def sha256(b: bytes | str) -> str:
 
 # Every git command the driver runs ignores repository hooks: a worker could plant one (DEV-LIFECYCLE-1 R1-03).
 # It also ignores replace refs: a worker-created `git replace` would substitute the trees every check reads (R2-02).
-GIT = ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null"]
+# core.fsmonitor would run a configured command on the driver's own `git status` (R1-04, round 2).
+GIT = ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"]
 GIT_ENV = {**os.environ, "GIT_NO_REPLACE_OBJECTS": "1"}
 
 
@@ -89,11 +90,14 @@ def chash(obj) -> str:
     return sha256(json.dumps(obj, sort_keys=True))
 
 
-def write_json(path: Path, obj) -> None:
+def write_json(path: Path, obj) -> str:
+    """Write ``obj``; returns the sha256 of the bytes written (not re-read: another process may change the file)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(obj, indent=1, sort_keys=True), encoding="utf-8")
+    data = json.dumps(obj, indent=1, sort_keys=True)
+    tmp.write_text(data, encoding="utf-8")
     tmp.replace(path)
+    return sha256(data)
 
 
 def match_any(path: str, globs) -> bool:
@@ -259,9 +263,35 @@ def is_blocking(f: dict) -> bool:
     return True
 
 
-def effective_verdict(result: dict) -> tuple[str, list]:
-    """The driver's verdict, from findings alone; the reviewer's label can only make it stricter."""
-    findings = [f for f in result.get("findings") or [] if isinstance(f, dict)]
+def result_problem(result) -> str | None:
+    """Why a parsed result block is unusable, or None. Findings that are not a list of objects are never filtered
+    down to an ACCEPT: the whole result is unparseable (DEV-LIFECYCLE-1 round 2, R1-02)."""
+    if not isinstance(result, dict):
+        return "result is not a JSON object"
+    for key in ("findings", "prior_findings"):
+        v = result.get(key)
+        if v is None and key == "prior_findings":
+            continue
+        if not isinstance(v, list) or not all(isinstance(f, dict) for f in v):
+            return f"{key} is not a list of objects"
+    return None
+
+
+def parse_review(text: str) -> tuple[dict | None, str | None]:
+    """(result, problem) of a reviewer's final text; result is None whenever it cannot be used."""
+    result = parse_block(text)
+    if result is None:
+        return None, "no AUDIT_RESULT block"
+    problem = result_problem(result)
+    return (None, problem) if problem else (result, None)
+
+
+def effective_verdict(result: dict) -> tuple[str | None, list]:
+    """The driver's verdict, from findings alone; the reviewer's label can only make it stricter. A malformed
+    result has no verdict (None), never an ACCEPT."""
+    if result_problem(result):
+        return None, []
+    findings = result["findings"]
     blocking = [f for f in findings if is_blocking(f)]
     label = str(result.get("verdict", "")).strip().upper()
     if blocking or label == "REJECT" or label not in VERDICTS:
@@ -317,6 +347,33 @@ def refs_digest(cfg) -> str:
     vals.append("replace=" + git(cfg["repo"], "for-each-ref", "--format=%(refname) %(objectname)", "refs/replace/",
                                  check=False))
     return sha256("\n".join(vals))
+
+
+def control_state(cfg) -> dict:
+    """Repository state that must not change at all during a milestone: hooks/config/info and replace refs. The
+    milestone's own refs move legitimately (repair commits, the integration target) and are checked per step."""
+    return {"git_control": git_control_digest(cfg["repo"]),
+            "replace_refs": sha256(git(cfg["repo"], "for-each-ref", "--format=%(refname) %(objectname)", "refs/replace/",
+                                       check=False))}
+
+
+def control_anchor(st: State) -> dict | None:
+    """The control state bound at PLAN (or CONTROL_ANCHORED for a run planned before it was recorded), replaced only
+    by an owner unblock of a GIT_CONTROL tamper block. Read from the event chain, never from state.json (R1-04)."""
+    anchor = None
+    for ev in _chained_events(st):
+        if ev["kind"] in ("PLAN", "CONTROL_ANCHORED", "OWNER_UNBLOCK") and ev["data"].get("control"):
+            anchor = ev["data"]["control"]
+    return anchor
+
+
+def control_drift(cfg, st: State) -> str | None:
+    cur, anchor = control_state(cfg), control_anchor(st)
+    if anchor is None:
+        return "no git control state bound in the event chain"
+    bad = [k for k in cur if cur[k] != anchor.get(k)]
+    return ("GIT_CONTROL: " + ", ".join(bad) + " changed since the plan (git hooks/config/info or replace refs)") \
+        if bad else None
 
 
 def worktree_identity(cfg, wt) -> tuple[bool, str]:
@@ -615,11 +672,18 @@ def compare(cand: dict, base: dict | None, flaky) -> dict:
             "ok": not new and not changed and not vanished}
 
 
-def _test_file(test_id: str, wt: Path) -> str:
+def _test_file(test_id: str, wt: Path, cwd: str = ".") -> str:
+    """Repository-relative test file of a gate test id: a junit classname (``pkg.test_mod.TestCls``, trailing class
+    components stripped) or a path, each tried against the gate's cwd and the repository root (R1-03, round 2).
+    Returns the unresolved head when no file exists."""
     head = test_id.split("::")[0]
-    for cand in (head, head.replace(".", "/") + ".py"):
-        if (wt / cand).is_file():
-            return cand
+    parts = head.split(".")
+    cands = [head] + ["/".join(parts[:i]) + ".py" for i in range(len(parts), 0, -1)]
+    for base in ([cwd] if cwd not in ("", ".") else []) + ["."]:
+        for c in cands:
+            p = str(Path(base) / c) if base != "." else c
+            if (wt / p).is_file():
+                return p
     return head
 
 
@@ -716,6 +780,9 @@ def evidence_ok(cfg, st: State, sha: str) -> tuple[bool, list]:
         why.append("qualification gates not passed on this exact commit")
     if protected_hits(cfg, changed_paths(cfg["repo"], st.d["baseline"], sha)):
         why.append("protected paths changed without authorisation")
+    drift = control_drift(cfg, st)
+    if drift:
+        why.append(drift)
     errs = verify(cfg)
     if errs:
         why.append("receipt verification failed: " + "; ".join(errs[:5]))
@@ -746,12 +813,17 @@ def do_review(cfg, st: State, sha: str) -> dict:
         after = snap()
     finally:
         drop_worktree(cfg["repo"], awt)
-    integrity = {"before": before, "after": after, "ok": before == after and before["head"] == sha and not after["status"]
+    drift = control_drift(cfg, st)
+    integrity = {"before": before, "after": after, "control_drift": drift,
+                 "ok": before == after and before["head"] == sha and not after["status"] and not drift
                  and after["impl_identity"][0] is True and after["audit_identity"][0] is True}
-    w.pop("result_text", None)
-    text = (rdir / "reviewer_result.txt").read_text(encoding="utf-8") if (rdir / "reviewer_result.txt").is_file() else ""
-    result = parse_block(text)
+    # The verdict comes from the text the worker process returned in memory (hash bound as result_sha256), never from
+    # reviewer_result.txt: a lingering child of the reviewer can rewrite that file after the run (R1-01, round 2).
+    text = w.pop("result_text", None) or ""
+    result, problem = parse_review(text)
     rec.update(worker=w, integrity=integrity, result=result, ended_at=now())
+    if problem:
+        rec["result_problem"] = problem
     ok, why = is_independent(cfg, rec, {(r.get("worker") or {}).get("session_id") for r in st.d["repairs"]})
     rec["independent"], rec["independence_basis"] = ok, why
     if result is None:
@@ -762,11 +834,10 @@ def do_review(cfg, st: State, sha: str) -> dict:
         rec["effective_verdict"], blocking = effective_verdict(result)
         rec["blocking_ids"] = [f.get("id") for f in blocking]
         rec["status"] = "COMPLETED_WITH_RESULT" if ok else "NOT_INDEPENDENT"
-    write_json(rdir / "round.json", rec)
+    round_sha = write_json(rdir / "round.json", rec)
     st.event("REVIEW_RECORDED", round=rnd, candidate=sha, status=rec["status"], verdict=rec["effective_verdict"],
              reviewer_label=(result or {}).get("verdict"), independent=ok, session_id=w.get("session_id"),
-             stdout_sha256=w.get("stdout_sha256"), result_sha256=w.get("result_text_sha256"),
-             round_sha256=sha256((rdir / "round.json").read_bytes()))
+             stdout_sha256=w.get("stdout_sha256"), result_sha256=sha256(text), round_sha256=round_sha)
     return rec
 
 
@@ -887,6 +958,7 @@ def regression_proof(cfg, pre_sha: str, post_sha: str, tests: list[str], log_dir
     reasons = [f"{t} does not pass after the repair ({r['after_state']}, exit {r['after_exit']})"
                for t, r in per.items() if r["after_exit"] != 0]
     reasons += [f"gate test {t} did not fail before the repair" for t in must_fail if per.get(t, {}).get("before_exit") == 0]
+    reasons += [f"gate test {t} was not run" for t in sorted(must_fail) if t not in per]
     if need_fail_before and not any(r["before_exit"] != 0 for r in per.values()):
         reasons.append("no regression test fails on the pre-repair commit")
     return {"ok": not reasons, "tests": per, "need_fail_before": need_fail_before, "reason": "; ".join(reasons)}
@@ -932,8 +1004,12 @@ def _commit_and_prove(cfg, wt: Path, sha: str, n: int, rec: dict, findings: list
     tests = {p for p in committed if match_any(p, cfg["test_globs"]) and p in present and
              any(fnmatch.fnmatch(Path(p).name, pat) for pat in cfg["regression_test_patterns"])}
     # A gate finding names an existing test that fails on the candidate: it is its own regression test.
-    gate_tests = {str(x).split(":")[0] for f in findings if str(f.get("id", "")).startswith("GATE-")
-                  for x in f.get("files") or [] if (wt / str(x).split(":")[0]).is_file()}
+    named = {str(x).split(":")[0] for f in findings if str(f.get("id", "")).startswith("GATE-") for x in f.get("files") or []}
+    unresolved = sorted(t for t in named if not (wt / t).is_file() or not _runner_for(cfg, t))
+    if unresolved:  # never silently relax the proof for a gate test that cannot be located or run (R1-03, round 2)
+        return "REGRESSION: gate test(s) named by gate findings cannot be resolved to a file with a configured " \
+               "regression runner: " + ", ".join(unresolved)
+    gate_tests = named
     kinds = {f.get("category") or "code" for f in findings}
     defect = bool(kinds - {"documentation", "test"}) or bool(gate_tests)
     if kinds != {"documentation"}:
@@ -974,21 +1050,32 @@ DIAGNOSIS_BEGIN
 DIAGNOSIS_END
 """
     dwt = add_worktree(cfg["repo"], Path(cfg["work_dir"]) / f"diagnose_D{n}", sha)
+    cwt = Path(cfg["candidate"]["worktree"])
+
+    def snap():  # the diagnoser changes nothing: same before/after check as a review round (R1-04, round 2)
+        return {"refs": refs_digest(cfg), "control": control_state(cfg), "impl_identity": list(worktree_identity(cfg, cwt)),
+                "impl_head": git(cwt, "rev-parse", "HEAD"), "impl_symref": head_symref(cwt),
+                "impl_status": worktree_changes(cwt)}
+    before = snap()
     try:
         spec = dict(cfg.get("implementer") or {})
         w = run_worker(spec, "reviewer", prompt, dwt, ddir, protected=cfg["protected_paths"],
                        timeout_s=spec.get("timeout_s", 5400))
+        after = snap()
         clean = not worktree_changes(dwt) and git(dwt, "rev-parse", "HEAD") == sha
     finally:
         drop_worktree(cfg["repo"], dwt)
+    drift = control_drift(cfg, st)
+    tamper = drift or ("; ".join(f"{k} changed" for k in before if before[k] != after[k]) or None)
     text = w.pop("result_text", "") or ""
-    rec = {"diagnosis": n, "candidate": sha, "recurring": recurring, "worker": w, "clean": clean,
-           "result": parse_block(text, DIAG_RE) if clean else None, "cost_usd": w.get("cost_usd")}
+    rec = {"diagnosis": n, "candidate": sha, "recurring": recurring, "worker": w, "clean": clean and not tamper,
+           "tamper": tamper, "result": parse_block(text, DIAG_RE) if clean and not tamper else None,
+           "cost_usd": w.get("cost_usd")}
     st.d["diagnoses"].append(rec)
-    write_json(ddir / "diagnosis.json", rec)
-    st.event("DIAGNOSIS", diagnosis=n, candidate=sha, recurring=recurring, status=w.get("status"), clean=clean,
-             has_result=rec["result"] is not None, session_id=w.get("session_id"),
-             diagnosis_sha256=sha256((ddir / "diagnosis.json").read_bytes()))
+    diag_sha = write_json(ddir / "diagnosis.json", rec)
+    st.event("DIAGNOSIS", diagnosis=n, candidate=sha, recurring=recurring, status=w.get("status"), clean=rec["clean"],
+             tamper=tamper, has_result=rec["result"] is not None, session_id=w.get("session_id"),
+             diagnosis_sha256=diag_sha)
     return rec
 
 
@@ -1147,7 +1234,7 @@ def init(cfg, st: State) -> None:
              acceptance_criteria_file=cfg.get("acceptance_criteria_file"), protected=cfg["protected_paths"],
              permitted=cfg["permitted_paths"], gates=[g["id"] for g in cfg["gates"]],
              reviewer=cfg["reviewer"].get("provider"), integration=cfg["integration"].get("mode"),
-             policy=policy(cfg))
+             policy=policy(cfg), control=control_state(cfg))
     st.to(S.ACCEPTED, "plan recorded from config")
 
 
@@ -1167,6 +1254,10 @@ def config_binding(st: State) -> tuple[tuple[str | None, str | None], bool]:
                 (d.get("blocker") or {}).get("kind") == "CONFIG":
             acked = True
     return bound, acked
+
+
+TAMPER_NEEDS = "owner: inspect the repository's git hooks/config/info and refs; restore them, or accept the current " \
+               "state with `unblock --note`"
 
 
 def run(cfg, max_steps: int = 50) -> S:
@@ -1195,6 +1286,8 @@ def run(cfg, max_steps: int = 50) -> S:
                      "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`")
         write_receipt(cfg, st)
         return st.stage
+    if control_anchor(st) is None:  # a run planned before the control state was bound: bind it now
+        st.event("CONTROL_ANCHORED", control=control_state(cfg))
     wt = Path(cfg["candidate"]["worktree"])
     for _ in range(max_steps):
         stage = st.stage
@@ -1205,6 +1298,10 @@ def run(cfg, max_steps: int = 50) -> S:
                          "owner: inspect the implementation worktree and the repository's refs")
             write_receipt(cfg, st)
             return st.stage
+        drift = control_drift(cfg, st) if stage not in (S.BLOCKED, S.COMPLETE) else None
+        if drift:  # checked before every step, so before every worker (R1-04, round 2)
+            st.block("TAMPER", drift, TAMPER_NEEDS)
+            continue
         tip = git(wt, "rev-parse", "HEAD")
         if tip != st.d["candidate"]:
             st.event("CANDIDATE_MOVED", frm=st.d["candidate"], to=tip)
@@ -1238,7 +1335,11 @@ def run(cfg, max_steps: int = 50) -> S:
                 st.block("BUDGET", over_budget, "owner: raise continuation.budget (config change) and `unblock --note`")
                 continue
             rec = do_review(cfg, st, sha)
-            stricter = rec["status"] == "NOT_INDEPENDENT" and rec["effective_verdict"] == "REJECT" and rec.get("blocking_ids")
+            drift = control_drift(cfg, st)
+            if drift:  # an owner matter, never a WAITING_FOR_MODEL that resumes on its own (R1-04, round 2)
+                st.block("TAMPER", f"review R{rec['round']}: {drift}", TAMPER_NEEDS)
+                continue
+            stricter =rec["status"] == "NOT_INDEPENDENT" and rec["effective_verdict"] == "REJECT" and rec.get("blocking_ids")
             if stricter:  # a non-independent review may only make the outcome stricter
                 st.event("NON_INDEPENDENT_REJECT_ROUTED", round=rec["round"], basis=rec["independence_basis"])
             if rec["status"] != "COMPLETED_WITH_RESULT" and not stricter:
@@ -1288,6 +1389,9 @@ def run(cfg, max_steps: int = 50) -> S:
             diagnosis = None
             if st.d.get("diagnose"):
                 drec = do_diagnosis(cfg, st, sha, st.d.get("pending_findings") or [], st.d["diagnose"])
+                if drec.get("tamper"):
+                    st.block("TAMPER", "diagnosis worker: " + drec["tamper"], TAMPER_NEEDS)
+                    continue
                 if drec["worker"].get("status") != "COMPLETED" or drec["result"] is None:
                     if drec["worker"].get("unavailable_reason"):
                         st.event("CHECKPOINT", stage="FIXING", reason=drec["worker"]["unavailable_reason"])
@@ -1348,7 +1452,9 @@ def run(cfg, max_steps: int = 50) -> S:
                     for t in (c.get("new_failures") or []) + (c.get("changed_cause") or []):
                         findings.append({"id": f"GATE-{gid}-{len(findings) + 1}", "severity": "HIGH", "blocking": True,
                                          "category": "test", "title": f"gate {gid}: new failure {t}",
-                                         "files": [_test_file(t, wt)],
+                                         "files": [] if t.endswith("::__run__") else
+                                         [_test_file(t, wt, next((g.get("cwd", ".") for g in cfg["gates"]
+                                                                  if g["id"] == gid), "."))],
                                          "evidence": e["candidate"].get("failures", {}).get(t, "")})
                 over = []
                 for f in findings:
@@ -1398,7 +1504,7 @@ def import_review(cfg, result_file: Path, provider: str, session_id: str, source
     if st.stage != S.AUDITING:
         raise LifecycleError(f"import-review needs stage AUDITING, not {st.d['stage']}")
     text = Path(result_file).read_text(encoding="utf-8")
-    result = parse_block(text)
+    result, problem = parse_review(text)
     sha = st.d["candidate"]
     rnd = len(st.d["rounds"]) + 1
     rdir = Path(cfg["state_dir"]) / "rounds" / f"R{rnd}"
@@ -1414,7 +1520,7 @@ def import_review(cfg, result_file: Path, provider: str, session_id: str, source
            "independent": False, "independence_basis": "relayed by the coordinator: may only tighten the outcome",
            "started_at": now(), "ended_at": now()}
     if result is None:
-        rec.update(status="NO_RESULT", effective_verdict=None)
+        rec.update(status="NO_RESULT", effective_verdict=None, result_problem=problem)
     else:
         rec["effective_verdict"], blocking = effective_verdict(result)
         rec["blocking_ids"] = [f.get("id") for f in blocking]
@@ -1444,14 +1550,39 @@ def unblock(cfg, note: str) -> S:
     st = State(cfg)
     if st.stage != S.BLOCKED:
         raise LifecycleError(f"stage is {st.d['stage']}, not BLOCKED")
+    b = st.d["blocker"] or {}
+    # Only an unblock of a GIT_CONTROL tamper block re-binds the control state: the owner accepts the current one.
+    extra = {"control": control_state(cfg)} if b.get("kind") == "TAMPER" and "GIT_CONTROL" in str(b.get("reason")) else {}
     st.event("OWNER_UNBLOCK", note=note, blocker=st.d["blocker"], config_sha256=cfg["_config_sha256"],
-             policy_sha256=policy_sha256(cfg))
+             policy_sha256=policy_sha256(cfg), **extra)
     st.d["blocker"] = None
     st.to(S.READY_TO_RESUME, "owner: " + note)
     return st.stage
 
 
-ROUND_STARTED_KEYS = {"round", "candidate", "baseline", "started_at", "audit_worktree"}
+def _review_text_errors(d: dict, rec: dict, rdir: Path) -> list[str]:
+    """Re-derive a round's result from the hash-bound raw reviewer output and compare it with the recorded result;
+    reviewer_result.txt, a convenience copy, must still hash to result_sha256 (R1-01, round 2)."""
+    n, errs = d["round"], []
+    raw = rdir / ("reviewer_result.txt" if d.get("imported") else "reviewer_stdout.txt")
+    text = raw.read_text(encoding="utf-8") if raw.is_file() else ""
+    if not d.get("imported") and (rec.get("worker") or {}).get("provider") == "claude_cli":
+        try:  # same extraction as lifecycle_providers.run_worker
+            meta = json.loads(text)
+            text = (meta.get("result") or "") if isinstance(meta, dict) else text
+        except ValueError:
+            pass
+    if sha256(text) != d.get("result_sha256"):
+        errs.append(f"R{n} result text does not derive from the recorded reviewer output")
+    elif parse_review(text)[0] != rec.get("result"):
+        errs.append(f"R{n} recorded result differs from the reviewer output")
+    copy = rdir / "reviewer_result.txt"
+    if copy.is_file() and sha256(copy.read_bytes()) != d.get("result_sha256"):
+        errs.append(f"R{n} reviewer_result.txt changed after recording")
+    return errs
+
+
+ROUND_STARTED_KEYS ={"round", "candidate", "baseline", "started_at", "audit_worktree"}
 REPAIR_STARTED_KEYS = {"repair", "pre", "addresses", "started_at", "worker", "report", "changed", "regression"}
 
 
@@ -1507,7 +1638,10 @@ def verify(cfg) -> list[str]:
             raw = rdir / ("reviewer_result.txt" if d.get("imported") else "reviewer_stdout.txt")
             if raw.is_file() and sha256(raw.read_bytes()) != d["stdout_sha256"]:
                 errs.append(f"R{d['round']} reviewer output changed after recording")
+            elif not raw.is_file() and d.get("stdout_sha256"):
+                errs.append(f"R{d['round']} reviewer output missing")
             rec = json.loads(f.read_text(encoding="utf-8"))
+            errs += _review_text_errors(d, rec, rdir)
             if rec.get("effective_verdict") != d["verdict"]:
                 errs.append(f"R{d['round']} verdict differs from the recorded event")
             mine = rounds.get(d["round"]) or {}
