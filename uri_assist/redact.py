@@ -28,6 +28,17 @@ _SENSITIVE_WORDS = re.compile(
     r"\bapi ?key\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|"
     r"\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|"
     r"\bprivate ?key\b")
+# Run-together lowercase names ("otpcode", "cardcvv", "newpassword", "upipin", "loginpwd", "userpass", "verifycode"):
+# long stems match anywhere in a word; otp only at the start/end of a word or before a known suffix ("footpath",
+# "hotpot", "hotplate" stay readable); pin / pass / code only after a known prefix ("pincode", "spinner", "camping",
+# "passenger", "compass", "zipcode" stay readable).
+_RUN_TOGETHER = re.compile(
+    r"password|passwd|passcode|passphrase|pwd|cvv|cvc|ccv|\b(mpin|tpin)|(mpin|tpin)\b|"
+    r"\botp|otp\b|otp(code|value|val|number|num|no|input|field|digit|box|text|entry|pin|token)|"
+    r"(upi|atm|card|security|secure|login|user|txn|transaction|account|acct|debit|credit|bank|access|mobile|wallet|"
+    r"new|old|confirm|current|verify|secret)pin(number|num|no)?\b|\bpin(number|num|no|entry|input|field|value)\b|"
+    r"(user|login|admin|account|acct|new|old|confirm|current|root|wifi|txn|master|secret|db)pass\b|"
+    r"(verify|verif|sms|email|access|activation|confirmation|confirm|login|signin)code\b")
 
 
 def _words(v: str) -> str:
@@ -98,7 +109,7 @@ def field_is_sensitive(f: dict) -> bool:
         return True
     for k in ("name", "id", "label", "automation_id", "placeholder", "aria_label"):
         v = f.get(k)
-        if isinstance(v, str) and _SENSITIVE_WORDS.search(_words(v)):
+        if isinstance(v, str) and (_SENSITIVE_WORDS.search(_words(v)) or _RUN_TOGETHER.search(_words(v))):
             return True
     return False
 

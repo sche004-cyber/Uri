@@ -8,6 +8,8 @@
     "cc-exp-month", "cc-exp-year", "cc-name", "cc-type"]);
   // Same rules as uri_assist/redact.py (kept in sync; tests/assist checks both on one fixture).
   const SENSITIVE_WORDS = /\b(pass|pw|pwd|[a-z]*otp|mfa|2 ?fa|pin(?! ?code)|mpin|tpin|cvv|cvc|ccv|csc|cvn|ssn|pan|iban|secret|token|cookie|session|auth|password|passwd|passcode|passphrase|apikey|aadhar|aadhaar)\b|\bapi ?key\b|\bone ?time\b|\btwo ?factor\b|\bverification ?code\b|\bsecurity ?(code|answer)\b|\bauth ?code\b|\bcard ?(number|num|no|expiry|exp|expiration)\b|\bacct ?(number|num|no)\b|\bcc ?(num|number|no)\b|\baccount ?(number|num|no)\b|\bsocial ?security\b|\bpan ?(number|no)\b|\bprivate ?key\b/;
+  // Run-together lowercase names (see _RUN_TOGETHER in redact.py; same pattern).
+  const RUN_TOGETHER = /password|passwd|passcode|passphrase|pwd|cvv|cvc|ccv|\b(mpin|tpin)|(mpin|tpin)\b|\botp|otp\b|otp(code|value|val|number|num|no|input|field|digit|box|text|entry|pin|token)|(upi|atm|card|security|secure|login|user|txn|transaction|account|acct|debit|credit|bank|access|mobile|wallet|new|old|confirm|current|verify|secret)pin(number|num|no)?\b|\bpin(number|num|no|entry|input|field|value)\b|(user|login|admin|account|acct|new|old|confirm|current|root|wifi|txn|master|secret|db)pass\b|(verify|verif|sms|email|access|activation|confirmation|confirm|login|signin)code\b/;
   const words = (v) => String(v).replace(/(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=\d)|(?<=\d)(?=[A-Za-z])/g, " ").replace(/[_\-.:/]+/g, " ").toLowerCase();
   const SHORT_CODE = /^\s*\d{4,8}\s*$/, CODE_LABEL = /\bcode\b/, POSTAL = /postal|zip|post ?code|pin ?code/i;
   const counts = {};
@@ -72,7 +74,7 @@
     const ac = (el.getAttribute("autocomplete") || "").toLowerCase().split(/\s+/);
     if (ac.some((t) => SENSITIVE_AC.has(t))) return true;
     return [el.name, el.id, label, el.getAttribute("placeholder"), el.getAttribute("aria-label")]
-      .some((v) => v && SENSITIVE_WORDS.test(words(v)));
+      .some((v) => v && (SENSITIVE_WORDS.test(words(v)) || RUN_TOGETHER.test(words(v))));
   };
 
   const fields = [], sensitiveRects = [];

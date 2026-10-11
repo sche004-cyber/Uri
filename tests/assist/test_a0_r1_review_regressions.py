@@ -92,3 +92,51 @@ def test_r1_04_every_text_leaving_the_page_is_masked():
     c = Counter()
     for t in [s["title"], s["url"], *s["headings"], *(f[k] for f in s["fields"] for k in ("label", "placeholder"))]:
         assert RD.redact_text(t, c) == t
+
+
+# ---- R2-01: lowercase run-together OTP / CVV / PIN / password names, in both layers ---------------------------------
+
+R2_SENSITIVE_NAMES = ("otpcode", "smsotpcode", "otpvalue", "otpnumber", "cvvcode", "cvvnumber", "cardcvv", "cardcvc",
+                      "userpassword", "newpassword", "confirmpassword", "loginpassword", "txnpassword", "upipin",
+                      "atmpin", "cardpin", "securitypin", "loginpwd", "userpass", "verifycode")
+R2_READABLE_NAMES = ("hotpot", "footpath", "hotplate", "camping", "compass", "bypass", "passenger", "zipcode",
+                     "spinach", "opinion")
+
+
+@pytest.mark.parametrize("name", R2_SENSITIVE_NAMES)
+def test_r2_01_run_together_names_are_sensitive(name):
+    assert RD.field_is_sensitive({"type": "text", "name": name, "value": "482913"})
+
+
+@pytest.mark.parametrize("name", R2_READABLE_NAMES + ("pincode", "spinner", "pinnacle", "author", "account"))
+def test_r2_01_ordinary_run_together_names_still_readable(name):
+    assert not RD.field_is_sensitive({"type": "text", "name": name, "value": "x"})
+
+
+def test_r2_01_values_never_reach_the_brain_request():
+    fields = [{"type": "text", "name": n, "label": "x", "value": f"82{i:04d}", "rect": {"x": 1, "y": 1, "w": 2, "h": 2}}
+              for i, n in enumerate(R2_SENSITIVE_NAMES, 1)]
+    obs = PE.normalise(dom_snapshot(fields=fields), AC.Stamp("g", 1, "t", "dom", 0.0))
+    raw = json.dumps(list(obs.fields))
+    for i in range(1, len(R2_SENSITIVE_NAMES) + 1):
+        assert f"82{i:04d}" not in raw
+    assert all(f["sensitive"] for f in obs.fields)
+
+
+def test_r2_01_in_page_pattern_is_the_python_pattern():
+    import re
+    js = (ROOT / "uri_assist/browser_extension/snapshot.js").read_text()
+    m = re.search(r"const RUN_TOGETHER = /(.*)/;", js)
+    assert m and m.group(1) == RD._RUN_TOGETHER.pattern
+
+
+def test_r2_01_in_page_layer_hides_run_together_names_and_matches_python():
+    s = _chromium("tricky_fields.html")["snapshot"]
+    raw = json.dumps(s)
+    for i in range(1, len(R2_SENSITIVE_NAMES) + 1):
+        assert f'"82{i:04d}"' not in raw, R2_SENSITIVE_NAMES[i - 1]
+    js_sensitive = {f["id"] or f["name"] for f in s["fields"] if f["sensitive"]}
+    assert {f"r{i}" for i in range(1, len(R2_SENSITIVE_NAMES) + 1)} <= js_sensitive
+    assert not {f"q{i}" for i in range(1, len(R2_READABLE_NAMES) + 1)} & js_sensitive
+    py = PE.normalise({**s}, AC.Stamp("g", 1, "t", "dom", 0.0))
+    assert js_sensitive == {f.get("id") or f.get("name") for f in py.fields if f.get("sensitive")}
