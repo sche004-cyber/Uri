@@ -1489,12 +1489,15 @@ def write_receipt(cfg, st: State) -> Path:
     L += ["", "## Integration", "", f"```\n{json.dumps(s['integration'], indent=1)}\n```", "",
           "## Blocker", "", f"```\n{json.dumps(s['blocker'], indent=1)}\n```", ""]
     (st.dir / "RECEIPT.md").write_text("\n".join(L), encoding="utf-8")
+    # Visual milestone report on every receipt (owner directive 2026-10-11): REPORT.html + report_data.json.
+    from scripts.dev_workflow.lifecycle_report import write_report
+    write_report(st.dir, st.d, s)
     return st.dir / "receipt.json"
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m scripts.dev_workflow.lifecycle")
-    ap.add_argument("cmd", choices=["run", "status", "verify", "unblock", "receipt", "import-review"])
+    ap.add_argument("cmd", choices=["run", "status", "verify", "unblock", "receipt", "report", "import-review"])
     ap.add_argument("config")
     ap.add_argument("--a2ui", action="store_true")
     ap.add_argument("--note", default="")
@@ -1518,6 +1521,10 @@ def main(argv=None) -> int:
             return 0 if not errs else 1
         if a.cmd == "import-review":
             print(import_review(cfg, Path(a.file), a.provider, a.session_id, a.source).value)
+            return 0
+        if a.cmd == "report":
+            write_receipt(cfg, State(cfg))
+            print(Path(cfg["state_dir"]) / "REPORT.html")
             return 0
         if a.cmd == "receipt":
             print(write_receipt(cfg, State(cfg)))

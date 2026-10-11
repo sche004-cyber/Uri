@@ -54,7 +54,7 @@ Run it in the background; it can take hours. It will, without you:
 - run the gates on the candidate and the baseline and compare failures by test id and cause;
 - integrate only per policy and only with owner authorisation; write `receipt.json` + `RECEIPT.md`.
 
-Exit codes: 0 COMPLETE/VERIFIED, 3 BLOCKED, 4 NOT_VERIFIED, 5 WAITING_FOR_MODEL (reviewer unavailable — never an
+Each stop also writes the visual report (see below). Exit codes: 0 COMPLETE/VERIFIED, 3 BLOCKED, 4 NOT_VERIFIED, 5 WAITING_FOR_MODEL (reviewer unavailable — never an
 ACCEPT). Re-running `run` resumes from `state.json`; it cannot skip a stage (evidence is bound to SHAs).
 
 ## Reporting (you)
@@ -69,6 +69,24 @@ ACCEPT). Re-running `run` resumes from `state.json`; it cannot skip a stage (evi
   `authorized_protected_changes` on your own.
 - A review made by another channel (e.g. a separate cloud session) may be recorded with `import-review`; it can
   route findings to repair but never counts as an ACCEPT.
+
+## Visual report after every milestone (owner directive 2026-10-11)
+
+Every time `run` stops — COMPLETE, VERIFIED, BLOCKED, NOT_VERIFIED or WAITING_FOR_MODEL — and when a milestone
+closes, give the owner a visual report without being asked:
+
+1. The driver has already written `<state_dir>/REPORT.html` (self-contained page: stage, review rounds chart,
+   reviewer log with session ids, findings and their repairs, gates, what needs the owner) and
+   `<state_dir>/report_data.json` (the same as rows). `python -m scripts.dev_workflow.lifecycle report <cfg>`
+   regenerates them.
+2. Where the Artifact tool is available, publish the milestone's dashboard from `report_data.json` (Dashboard
+   type; one dashboard per milestone, updated in place on later runs — keep its URL in
+   `<state_dir>/dashboard_url.txt`). Otherwise send `REPORT.html` to the owner as a file (SendUserFile or
+   equivalent). Never hand-type figures: every number comes from `report_data.json`.
+3. In the reply, give the link and three lines: stage, what was achieved this run, and what needs the owner
+   (`summary.owner_actions` / `owner` rows). If `summary.evidence_ok` is false, say "not qualified" plainly.
+4. A program-level view across milestones (like the W1/A0 + skill dashboard of 2026-10-11) is updated the same way
+   when several milestones run together.
 
 ## Containment
 

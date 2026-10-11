@@ -13,6 +13,7 @@ Status: implemented 2026-10-11 as an extension of AO-4 (`scripts/dev_workflow`).
 | Config | `docs/dev_workflow/lifecycle/<milestone>.json` (template `TEMPLATE.json`) | milestone scope |
 | Tests | `tests/dev_workflow/test_lifecycle.py`, fixture worker `tests/dev_workflow/lifecycle_fixture/worker.py` | DEVTEST scenarios |
 | Live demo | `scripts/dev_workflow/lifecycle_demo.py` | real separate Claude processes on a DEVTEST fixture |
+| Visual report | `scripts/dev_workflow/lifecycle_report.py` | `REPORT.html` + `report_data.json` written with every receipt |
 
 It reuses: AO-4 `WorkflowState` and `VALID_TRANSITIONS` (stages), AO-4 `is_devtest_identifier` (test namespace),
 `scripts/ws_frozen_check.py` `PROTECTED` (default protected paths), `uri_operational_intelligence.gpu_lease run`
@@ -64,7 +65,8 @@ python -m scripts.dev_workflow.lifecycle_demo /tmp/demo    # live DEVTEST demons
 
 ## 5. Outputs
 
-`<state_dir>/state.json` (machine state), `events.jsonl` (hash chain), `rounds/R<n>/` (prompt, raw stdout/stderr,
+`REPORT.html` (visual milestone report, self-contained) and `report_data.json` (its rows, for a published
+dashboard), `<state_dir>/state.json` (machine state), `events.jsonl` (hash chain), `rounds/R<n>/` (prompt, raw stdout/stderr,
 parsed result, `round.json` with worker identity and integrity check), `repairs/P<n>/` (prompt, output,
 `repair.json`, regression logs), `gates/<sha>/` (logs, junit), `receipt.json`, `RECEIPT.md`.
 

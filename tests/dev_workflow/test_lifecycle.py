@@ -881,3 +881,39 @@ def test_r3_04_config_binding_is_read_from_the_chain_not_state_json(tmp_path):
     sp.write_text(json.dumps(d))
     assert L.run(cfg) == S.BLOCKED
     assert L.status(cfg)["blocker"]["kind"] == "CONFIG" and remote_tip(remote) == base
+# ---------------------------------------------------------------- visual milestone report
+
+def test_every_receipt_writes_a_visual_report(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path)
+    cfg = config(tmp_path, repo, wt)
+    assert L.run(cfg) == S.COMPLETE
+    page = (tmp_path / "state/REPORT.html").read_text()
+    data = json.loads((tmp_path / "state/report_data.json").read_text())
+    s = data["summary"]
+    assert s["stage"] == "COMPLETE" and s["rounds"] == 2 and s["findings_repaired"] == 1 and s["open_blocking"] == 0
+    assert s["evidence_ok"] is True and s["receipt_chain_ok"] is True and s["integration"] == "INTEGRATED"
+    assert [r["verdict"] for r in data["rounds"]] == ["REJECT", "ACCEPT"]
+    assert data["findings"][0]["status"].startswith("repaired ")
+    assert "<script" not in page and "http" not in page.split("</style>")[1]  # self-contained, no network
+    assert "COMPLETE" in page and "<svg" in page and "safe_div divides by zero" in page
+
+
+def test_report_on_a_blocked_milestone_lists_what_needs_the_owner(tmp_path):
+    repo, wt, base, remote = make_fixture(tmp_path, defect=False)
+    cfg = config(tmp_path, repo, wt, integration={"mode": "fast-forward", "remote": "origin", "target_ref": "canon",
+                                                  "authorized": False})
+    assert L.run(cfg) == S.BLOCKED
+    data = json.loads((tmp_path / "state/report_data.json").read_text())
+    assert data["summary"]["owner_actions"] == 1 and data["owner"][0]["kind"] == "OWNER_AUTHORIZATION"
+    assert data["owner"][0]["needs"].startswith("git push origin ")
+    page = (tmp_path / "state/REPORT.html").read_text()
+    assert "Needs you" in page and "OWNER_AUTHORIZATION" in page
+
+
+def test_report_escapes_reviewer_text(tmp_path):
+    from scripts.dev_workflow.lifecycle_report import render_html, report_data
+    st = {"rounds": [{"round": 1, "candidate": "abc", "status": "COMPLETED_WITH_RESULT", "effective_verdict": "REJECT",
+                      "result": {"findings": [{"id": "R1-01", "severity": "HIGH", "title": "<img src=x onerror=alert(1)>"}]}}],
+          "repairs": [], "gates": {}, "blocker": None}
+    page = render_html(report_data(st, {"milestone": "M<1>", "stage": "FIXING"}))
+    assert "<img" not in page and "&lt;img" in page and "M&lt;1&gt;" in page

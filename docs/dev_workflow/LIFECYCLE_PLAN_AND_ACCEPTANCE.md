@@ -69,6 +69,7 @@ Date: 2026-10-11. Author: Claude (coordinator session). Written before implement
 | L-AC17 | GPU gates run under `gpu_lease run`; lease unavailable ⇒ BLOCKED (RESOURCE) | unit |
 | L-AC18 | Live demonstration on a synthetic DEVTEST fixture with real separate `claude` processes: defective candidate rejected, repaired automatically, re-review accepts, receipts preserved | live evidence |
 | L-AC19 | AO-4 tests unchanged and passing; no protected path changed | gate |
+| L-AC21 | Every receipt also writes a self-contained visual report (`REPORT.html`, no scripts or network, escaped reviewer text) and `report_data.json`; the skill tells the coordinator to present it (published dashboard or file) after every run (owner request 2026-10-11, added after the plan) | unit (`test_every_receipt_writes_a_visual_report`, `test_report_on_a_blocked_milestone_lists_what_needs_the_owner`, `test_report_escapes_reviewer_text`) |
 | L-AC20 | The skill itself is reviewed by an independent reviewer process before it is used on W1/A0 | review record |
 
 ## 4. Out of scope / not claimed
