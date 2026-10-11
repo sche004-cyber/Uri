@@ -32,3 +32,21 @@ Run through the lifecycle skill (independent review, then D1).
 | LR-AC3 | No key, an error or a timeout never blocks research: the source is used as today with the 'Not scam-checked' note; only a positive listing blocks. |
 | LR-AC4 | Red-flag phrases and mismatched links are flagged; a flagged source cannot be a claim's only support. |
 | LR-AC5 | Messages follow D18. Each new test fails on the pre-change commit and passes on the candidate. |
+
+## Added scope (owner, 2026-10-11, D26): Security tab for the key
+- A new **Security** tab in URI settings with a field to add the URLhaus key, so the owner never edits `.env` by hand.
+- **Frozen exception (owner-approved, tab entry only):** `uri_ui/lib/screens/settings/settings_shell.dart` gets only
+  the entry that shows the new tab. The tab itself is a new file (`uri_ui/lib/screens/settings/security_screen.dart`).
+  No other frozen file changes; set `authorized_protected_changes` to that one path.
+- **Key handling:** sent once to the local URI server over the existing authenticated local connection and stored
+  in the local secrets file readable only by the current user (same place as `URLHAUS_AUTH_KEY`). Never shown again
+  (only "Key saved" and the last 4 characters), never logged, never sent anywhere but URLhaus. Buttons: Save,
+  Remove, Test (one lookup of a known-safe address, plain result).
+- Status line in plain words: "Scam check: on" / "Scam check: off (no key) - URI still works, sites are not
+  scam-checked" / "Scam check: service unavailable".
+
+| # | Criterion |
+|---|---|
+| LR-AC6 | The Security tab saves, tests and removes the key; the key is never displayed in full, logged, or included in reports, events or A2UI output. |
+| LR-AC7 | Only `settings_shell.dart`'s tab entry changes among frozen files (driver protected-path check). |
+| LR-AC8 | Flutter tests cover the tab: empty state, saved state (last 4 only), remove, test result, and the off/unavailable status lines. |
