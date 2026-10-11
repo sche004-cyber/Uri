@@ -1,0 +1,21 @@
+﻿case a_new  2026-10-11T20:24:56
+exists before: False
+> python -m uri_scheduler.service run --state C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\new --mode fixture --port 18599
+ready: True  exited: False
+> icacls C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\new
+C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\new CHETANPC\cheta:(OI)(CI)(F)
+
+Successfully processed 1 files; Failed processing 0 files
+> icacls C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\new\api-token
+C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\new\api-token CHETANPC\cheta:(F)
+
+Successfully processed 1 files; Failed processing 0 files
+token length: 43 (value not recorded)
+GET /status with bearer -> 200
+GET /status without bearer -> 401
+> taskkill /PID 7104 /T /F
+SUCCESS: The process with PID 7104 (child process of PID 16660) has been terminated.
+stdout:
+{"ready": true, "port": 18599, "mode": "fixture", "startup": {"interrupted": [], "harness": []}}
+stderr (last 15 lines):
+exit code after stop: 

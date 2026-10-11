@@ -1,0 +1,37 @@
+﻿case b_open  2026-10-11T20:25:08
+> icacls C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\open
+C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\open S-1-5-21-3041004764-4181285226-2913346969-18481432:(I)(OI)(CI)(M)
+                                                                 S-1-5-21-3378200114-4252682979-2014257123-3837942712:(I)(OI)(CI)(M)
+                                                                 S-1-5-21-3988682181-3972818837-1439910506-4245611555:(I)(OI)(CI)(M)
+                                                                 ChetanPC\CodexSandboxUsers:(I)(OI)(CI)(M)
+                                                                 S-1-5-21-3702941007-2275081338-2633963748-4136210280:(I)(OI)(CI)(M)
+                                                                 S-1-15-3-3557520199-3666692283-3112367039-3524159787-2791857073-3163583606-3692855932:(I)(F)
+                                                                 S-1-15-3-3557520199-3666692283-3112367039-3524159787-2791857073-3163583606-3692855932:(I)(OI)(CI)(IO)(F)
+                                                                 CHETANPC\cheta:(I)(OI)(CI)(F)
+                                                                 NT AUTHORITY\SYSTEM:(I)(OI)(CI)(F)
+                                                                 BUILTIN\Administrators:(I)(OI)(CI)(F)
+
+Successfully processed 1 files; Failed processing 0 files
+> python -m uri_scheduler.service run --state C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\open --mode fixture --port 18599
+ready: False  exited: True  exit code: 
+stdout:
+{"error": "STATE_ACL_FAILED", "detail": "the state folder is not restricted to the current user; stop the scheduler and run `python -m uri_scheduler.service secure-state --state <folder>`"}
+stderr (last 15 lines):
+> icacls C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\open
+C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\open S-1-5-21-3041004764-4181285226-2913346969-18481432:(I)(OI)(CI)(M)
+                                                                 S-1-5-21-3378200114-4252682979-2014257123-3837942712:(I)(OI)(CI)(M)
+                                                                 S-1-5-21-3988682181-3972818837-1439910506-4245611555:(I)(OI)(CI)(M)
+                                                                 ChetanPC\CodexSandboxUsers:(I)(OI)(CI)(M)
+                                                                 S-1-5-21-3702941007-2275081338-2633963748-4136210280:(I)(OI)(CI)(M)
+                                                                 S-1-15-3-3557520199-3666692283-3112367039-3524159787-2791857073-3163583606-3692855932:(I)(F)
+                                                                 S-1-15-3-3557520199-3666692283-3112367039-3524159787-2791857073-3163583606-3692855932:(I)(OI)(CI)(IO)(F)
+                                                                 CHETANPC\cheta:(I)(OI)(CI)(F)
+                                                                 NT AUTHORITY\SYSTEM:(I)(OI)(CI)(F)
+                                                                 BUILTIN\Administrators:(I)(OI)(CI)(F)
+
+Successfully processed 1 files; Failed processing 0 files
+icacls unchanged: True
+> python -m uri_scheduler.service run --state C:\Users\cheta\AppData\Local\Temp\sacl-live-20261011-202455\open --mode fixture --port 18599   (direct re-run to capture the exit code)
+{"error": "STATE_ACL_FAILED", "detail": "the state folder is not restricted to the current user; stop the scheduler and run `python -m uri_scheduler.service secure-state --state <folder>`"}
+exit code: 4
+icacls unchanged: True
