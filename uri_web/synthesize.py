@@ -90,7 +90,9 @@ _QUANTITY = re.compile(
     r"years?|months?|weeks?|days?|hours?|minutes?|centenar(?:y|ies)|anniversar(?:y|ies)|"
     # R3-02: multiplicatives as verbs and rates ("doubling", "quintupled", "biweekly", "ppm"). Still a second check.
     r"doubling|halving|tripling|quadrupling|\w*tupl(?:e[ds]?|ing)|multipl(?:y|ies|ied|ying)|bi-?weekly|"
-    r"bi-?monthly|semi-?annual(?:ly)?|tri-?ennial(?:ly)?|quadrennial(?:ly)?|ppm|ppb|pct)\b",
+    r"bi-?monthly|semi-?annual(?:ly)?|tri-?ennial(?:ly)?|quadrennial(?:ly)?|ppm|ppb|pct|"
+    # R4-02: periods and proportions ("decennial", "unanimous"). Still a second check only.
+    r"\w+ennial(?:ly)?|unanimous(?:ly)?|unanimity|fractions?|trios?|quartets?|midnight|noon|gross)\b",
     re.I)
 
 
@@ -138,21 +140,29 @@ and or but nor yet so while whilst whereas although though because since unless 
 respectively which who whom whose where when then after before whereby compared against instead rather
 """.split())
 _CLAUSE_MARK = re.compile(r"[,;:()\[\]{}\u2013\u2014!?\"\u201c\u201d]|\s-\s|\.\s")
-# R3-02: the only words that open a noun phrase. Words between one of them and the next kept word are that noun
-# phrase's modifiers ("after [a long public] consultation").
+# R3-02: the only words that open a noun phrase.
 _DETERMINERS = frozenset("a an the this that these those its their his her our your my".split())
+# R4-02: the ONLY modifiers a claim may leave out of a noun phrase, after its determiner ("after [a long public]
+# consultation"). R3-02 let any two words that were not function words go, so a qualifier inside a noun phrase ("on [a
+# roughly] decennial cycle", "a [near] unanimous decision", "a [barely] positive profit") was dropped unless
+# states_quantity knew the next word. This is an allow-list: a word missing from it only means the source sentence is
+# quoted (D7: over-quoting costs fluency, never safety). Keep it to descriptive adjectives that carry no quantity,
+# degree, hedge, polarity or truth value.
+_PLAIN_MODIFIERS = frozenset("long lengthy public formal official detailed".split())
 MAX_GAP_WORDS = 2
 
 
 def _excerpt(claim: str, source: str) -> bool:
     """R3-02: the claim is the source sentence's own run of words, and the rule fails closed. EVERY claim word,
     function words included, is matched to the source in order; the claim may add only a determiner ("the"). Between
-    two matched words the source may leave out only (a) determiners, or (b) one determiner followed by at most
-    MAX_GAP_WORDS words that are not function words: the modifiers of a noun phrase ("after [a long public]
+    two matched words the source may leave out only (a) determiners ("after [the] repairs"), or (b) one determiner
+    followed by at most MAX_GAP_WORDS words from the closed allow-list _PLAIN_MODIFIERS ("after [a long public]
     consultation"). Anything else left out - a qualifier before a verb or a quantity ("are [nearly] doubling",
-    "[barely] rose", "is [rarely] waived"), a preposition ("are [about] doubling"), a clause boundary - means the
-    source sentence is quoted instead. This no longer depends on recognising the quantity word (R2-02 let any two
-    unrecognised words be skipped). states_quantity() on the skipped text is kept as an extra check only."""
+    "[barely] rose", "is [rarely] waived"), any other modifier inside a noun phrase ("on [a roughly] decennial
+    cycle", "a [near] unanimous decision"; R4-02: R3-02 let any two non-function words go here), a preposition ("are
+    [about] doubling"), a clause boundary - means the source sentence is quoted instead, which only costs fluency
+    (D7). This does not depend on recognising the quantity word. states_quantity() on the skipped text is kept as an
+    extra check only."""
     c = [w.lower() for w in _TOKEN.findall(claim or "")]
     toks = [(m.group(0).lower(), m.start(), m.end()) for m in _TOKEN.finditer(source or "")]
     if not any(w not in _FUNCTION_WORDS for w in c):
@@ -166,8 +176,9 @@ def _excerpt(claim: str, source: str) -> bool:
             return False
         if all(w in _DETERMINERS for w in skipped):
             return True
+        # R4-02: modifiers only from the closed allow-list; any other word (a qualifier, an unknown word) fails closed.
         return (skipped[0] in _DETERMINERS and len(skipped) - 1 <= MAX_GAP_WORDS
-                and not any(w in _FUNCTION_WORDS for w in skipped[1:]))
+                and all(w in _PLAIN_MODIFIERS for w in skipped[1:]))
 
     seen = set()                                     # (ci, prev) already shown not to match: no exponential retry
 

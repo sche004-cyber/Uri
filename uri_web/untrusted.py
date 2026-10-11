@@ -59,9 +59,12 @@ def flags(text: str) -> list:
 # every multi-sentence Chinese or Japanese text. Spaced defangs
 # ('portal [.] com', 'portal ( . ) com', 'portal dot com', 'portal . com') are dots, and a phone number (eight or more
 # digits in one run of digits, spaces, dots, dashes and brackets, dates and year ranges aside) is a contact.
+# R4-01: the top-level label was letters only, so an ASCII-compatible (punycode) top-level domain ('refunds.xn--p1ai',
+# the ASCII form of '.рф') never reached _is_domain at all. A top-level label is now letters OR any label with '--' in
+# positions 3-4 (the reserved ACE form: 'xn--', and any future prefix), and such a label is always a link.
 _DOT = (r"(?:[.\u3002\uff0e\uff61]|\s*\[\s*\.\s*\]\s*|\s*\(\s*\.\s*\)\s*|\s*\[\s*(?i:dot)\s*\]\s*|\s*\(\s*(?i:dot)\s*\)\s*"
         r"|\s+(?i:dot)\s+|\s+\.\s+)")
-_BARE = re.compile(r"(?<![\w-])(?P<host>(?:[^\W_][\w-]{0,62}" + _DOT + r")+)(?P<tld>[^\W\d_]{2,24})(?![\w-])(?P<path>/\S*)?")
+_BARE = re.compile(r"(?<![\w-])(?P<host>(?:[^\W_][\w-]{0,62}" + _DOT + r")+)(?P<tld>(?i:[a-z0-9]{2}--[\w-]{1,59})|[^\W\d_]{2,63})(?![\w-])(?P<path>/\S*)?")
 _OTHER = re.compile(r"\S*(?::|\[:\])//\S*|(?i:\bwww)" + _DOT + r"\S+|[\w.+-]+@[\w-]+(?:" + _DOT + r"[\w-]+)+|"
                     r"\b\d{1,3}(?:" + _DOT + r"\d{1,3}){3}\b|(?i:\b(?:javascript|vbscript):)\S*|(?i:\bdata:[a-z]+/)\S*")
 _PHONE = re.compile(r"(?<![\w+])\+?\(?\d[\d \t().\-]{6,}\d(?![\w])")
@@ -117,11 +120,14 @@ def _cjk(text: str) -> bool:
     return any("\u3040" <= ch <= "\u30ff" or "\u3400" <= ch <= "\u9fff" or "\uf900" <= ch <= "\ufaff" for ch in text)
 
 
+_ACE = re.compile(r"(?i)(?<![\w-])[a-z0-9]{2}--")
+
+
 def _is_domain(m) -> bool:
     """R3-01: fails closed. Every 'label<dot>label' is a link except the two certainly-not-a-link forms above."""
     host, tld = m.group("host"), m.group("tld")
-    if m.group("path"):
-        return True
+    if m.group("path") or _ACE.search(host + tld):
+        return True                                  # R4-01: an ACE ('xn--') label is never ordinary text
     one = re.fullmatch(r"([^\W\d_]+)(\s*\.\s*)", host)
     if (one and tld[:1].isupper() and (len(tld) == 1 or tld[1:].islower())
             and tld.casefold() in _SENTENCE_WORDS):
