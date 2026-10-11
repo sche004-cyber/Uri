@@ -1,6 +1,6 @@
 # Lifecycle receipt — W1-A0-closure
 
-Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · candidate `20a646fd3fe8c48367bdc1cc995df5d09c3e7dab` · events 80 · chain OK
+Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · candidate `d029f606ec84f32fd39c2276c34e1a4fd281eec1` · events 104 · chain OK
 
 ## Review rounds
 
@@ -16,6 +16,9 @@ Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · can
 | R8 | claude_cli | `ea66c95f-0132-47b0-b8ec-ad4326276010` | `87720d6dcd76` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
 | R9 | claude_cli | `ce6ea834-ed6e-4ef5-91f8-9fdc31f027f8` | `3dd9cde91818` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
 | R10 | claude_cli | `4f8c44cf-8eb5-407d-bf7a-6b574b4d1502` | `20a646fd3fe8` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
+| R11 | claude_cli | `321bb07d-f7cd-4846-abc9-f440a293cac5` | `2de591eca07d` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
+| R12 | claude_cli | `e5e6f379-17f2-4b11-b603-5cf22ec39580` | `d5a9b41c79b4` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
+| R13 | claude_cli | `4fb1cdc4-5625-457d-afe5-2ee1c4450a41` | `d029f606ec84` | REJECT | REJECT | True | COMPLETED_WITH_RESULT |
 
 ## Repairs
 
@@ -31,14 +34,16 @@ Stage: **BLOCKED** · baseline `ffdf534386a3d40cf9e1646ef1080bee28dd3aa9` · can
 | P8 | REFUSED | `-` | R10-01 | REGRESSION: no regression test fails on the pre-repair commit |
 | P9 | REFUSED | `-` | R10-01 | REGRESSION: no regression test fails on the pre-repair commit |
 | P10 | REFUSED | `-` | R10-01 | REGRESSION: no regression test fails on the pre-repair commit |
+| P11 | COMMITTED | `2de591eca07d9410f691ac20ff71242d3befc6f6` | R10-01 |  |
+| P12 | COMMITTED | `d5a9b41c79b4c9d0be83ab7c43e61f106177d022` | R11-01 |  |
+| P13 | COMMITTED | `d029f606ec84f32fd39c2276c34e1a4fd281eec1` | R12-01 |  |
 
 ## Qualification
 
 
 ## Open findings (latest round)
 
-- R10-01 MEDIUM blocking=True: R9-01 repair regression: the rebuilt selection copies hidden text (display:none, aria-hidden, tiny/transparent/off-screen) and <script>/<style> source into 'Selected text', bypassing the hidden-text filter; injected instructions and page-state secrets reach the Brain request
-- R10-02 LOW blocking=False: Assist UI poll path has no epoch or ask-id check: an assist_ask_status reply in flight when the user presses Stop (or Stop, re-grant and a new ask) can still show the old answer (R9-05 class on the polling path)
+- R13-01 MEDIUM blocking=True: In-page hidden-text filter still misses fully invisible text: negative z-index under an ancestor background, SVG <text> with fill transparent/none or fill-opacity 0, and -webkit-mask-box-image; injected instructions reach the Brain request as 'Visible text' and 'Selected text' (R12-01 class not closed)
 
 ## Integration
 
@@ -50,10 +55,10 @@ null
 
 ```
 {
- "at": "2026-10-11T06:42:00Z",
- "kind": "CONFIG",
- "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
- "reason": "milestone config or resolved policy changed since the plan (now config e9f199344cb0, policy 60c95fb8b36f)",
- "stage": "READY_TO_RESUME"
+ "at": "2026-10-11T07:02:56Z",
+ "kind": "OWNER_DECISION",
+ "needs": "owner decision on the diagnosed root cause",
+ "reason": "diagnosis: snapshot.js decides whether text is hidden with a blocklist of CSS hiding techniques (visible() + clipBoxOf() + covered() + the text-fill alpha check). CSS has an unbounded number of ways to make text unpainted, so the list can never be complete. The three R13 bypasses are: (1) covered() returns fal",
+ "stage": "FIXING"
 }
 ```

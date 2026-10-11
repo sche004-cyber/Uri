@@ -30,7 +30,11 @@ work while am away from pc". This file is the standing plan; every check-in foll
    `integration/git-sync-20261008` (expected tip `ce1a90c`) with a receipt.
 2. **SSRF-1** (D2). Plan: `lifecycle-runs/SSRF-1_PLAN_DRAFT.md`. The branch is cut from the canonical tip after step 1,
    and `authorized_protected_changes` is `uri_core/tools/fetch_url.py` only.
-3. **W2** (brief `docs/plans/W2_SITE_DOCUMENT_SEARCH_BRIEF.md`). Owner direction, 2026-10-11:
+3. **W2**: plan and acceptance criteria in `lifecycle-runs/W2_PLAN_AND_ACCEPTANCE.md`, from the owner's "W2 Web &
+   Document Intelligence: Implementation Instructions" (2026-10-11, recorded as D9) reconciled with the earlier brief.
+   The plan supersedes the brief where they differ (approved scopes only, manual refresh, OCR over vision). Starts only
+   after SSRF-1 is accepted and integrated. Owner-gated but not blocking: the approved domain list. Earlier owner
+   direction, 2026-10-11:
    - Downloaded documents are temporary. Each is read, then deleted when the work is done, including on failure or
      cancel; leftovers are swept at the next start.
    - What stays is a memory record: source URL, site, the menu path where the document was found, the linking page,
@@ -86,3 +90,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 06:30 | Owner switched back to Auto. Allow-rule test in auto mode: `lc-launch.sh` with a nonexistent config ran and refused (exit 2) - launches are permitted unattended. |
 | 2026-10-11 06:40 | Owner direction for W2 documents recorded: temporary download, memory record and relations, then delete. PDF-library decision corrected: PyMuPDF and Tesseract OCR already exist. |
 | 2026-10-11 06:43 | R10 REJECT (1 blocking: R10-01, a regression from the R9-01 fix). Three repair attempts refused: their test skipped on the pre-repair commit because new fixture files are not copied there. Diagnosis recorded; one environment note added (policy hash unchanged). REPAIR_FAILED and CONFIG unblocked with notes; driver relaunched (PID 16072). Follow-up queued: carry repair-added fixture files into the pre-repair checkout (lifecycle). |
+| 2026-10-11 06:55 | D9 (W2 implementation instructions) received. Repository inspected; W2 plan with 14 acceptance criteria written and self-reviewed (no new owner decision needed except the approved domain list, not blocking). |

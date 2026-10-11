@@ -1,0 +1,91 @@
+{
+ "candidate": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+ "clean": true,
+ "cost_usd": 0.4159489,
+ "diagnosis": 5,
+ "recurring": [
+  "R11-01"
+ ],
+ "result": {
+  "evidence": [
+   "uri_assist/browser_extension/snapshot.js:57-58 checkVisibility opacityProperty only (own opacity:0)",
+   "uri_assist/browser_extension/snapshot.js:63 and :87 /inset\\(\\s*(50%|100%)/ leading-value-only clip-path test",
+   "uri_assist/browser_extension/snapshot.js:126 only alpha(getComputedStyle(p).color); no -webkit-text-fill-color",
+   "uri_assist/browser_extension/snapshot.js:79-109 clipBoxOf: no mask-image, filter or ancestor opacity, no <details> handling",
+   "docs/assist/03_PERMISSION_AND_DATA_FLOW.md:77 claims opacity/transparent colour/clip-path inset covered",
+   "git show d5a9b41: only R11 patterns added; test HIDDEN_PAGE has no filter/mask/text-fill/details cases",
+   "Probe /tmp/diag_D5 (Chromium 1000x900, Ctrl+A): text and selection contain FILTEROPACITY-B, TEXTFILL-C, CPBOTTOM-D, CIRCLE-E, NEARZERO(0.01)-F, MASK-H, POLY-I, CPRIGHT-Q, CP60-R, DETAILS-S; redactions={hidden_text:2}",
+   "pytest test_a0_r10/r11_review_regressions.py: 4 passed at d5a9b41 (no coverage of R12 class)"
+  ],
+  "needs_owner": false,
+  "proposed_fix": "Change textVisible/visible in snapshot.js so text is dropped unless it is positively shown. Walk the parent's ancestor chain once (cached) and: (1) compute effective opacity as the product of each ancestor's opacity and any filter:opacity(x) value, and treat < 0.1 as hidden; (2) treat any ancestor with a mask-image/-webkit-mask-image other than none as hidden (fail closed, or allow only url() masks); (3) parse clip-path: for inset() read all four sides (percentages against the element's box, px as given) and compute the remaining box, meeting it into clipBoxOf's box; treat circle/ellipse/polygon/path/url shapes as hidden if their area is ~0, otherwise conservatively meet with the element's bounding box; (4) treat -webkit-text-fill-color alpha 0 the same as transparent color; (5) drop text inside details:not([open]) unless it is inside that details' own summary (n.parentElement.closest('details:not([open])') with no closest summary inside it). Use the same function for page text, headings and selection, as now. Add a self-contained Chromium regression test (fixture HTML and node runner embedded and written to tmp_path, asserting not skipping if node/playwright are missing) with the R12 payloads plus kept-visible controls (normal text, opacity:0.5, clip-path:inset(10%), open details, summary text). Check the snapshot's text, selection and headings, and the FakeClient Brain body via mk/grant/ask_and_wait. Update docs/assist/03 line 77 to list exactly what is covered and add the remaining gaps (low-contrast colour, transform scale above the rect threshold, blend modes) to the Not covered list.",
+  "root_cause": "uri_assist/browser_extension/snapshot.js keeps text unless it matches one of a fixed list of known hiding techniques (fail-open). Every check in that list is narrower than the CSS feature it is meant to cover: checkVisibility({opacityProperty}) only catches an element's own opacity:0 (not filter:opacity(), near-zero opacity, or opacity multiplied through ancestors); the clip-path test /inset\\(\\s*(50%|100%)/ (lines 63 and 87) only matches a leading 50%/100% inset value, so other sides, other percentages and circle/polygon/ellipse shapes pass; textVisible (line 126) checks alpha(color) but never -webkit-text-fill-color; mask-image/-webkit-mask-image are never checked; closed <details> content still returns client rects, so the rect checks (lines 59-60, 132-135) keep it. docs/assist/03 line 77 claims opacity, transparent text colour and clip-path inset are covered and does not list these cases as gaps.",
+  "why_earlier_repairs_failed": "Each repair patched only the techniques named in its own finding. 2de591e (R10-01) only connected the selection to the existing visible() check (shownText); the check itself was unchanged. d5a9b41 (R11-01) added clipBoxOf/covered/alpha(color) for exactly the five R11 patterns (legacy clip, ancestor overflow, text-indent, covering overlay, transparent colour), reused the narrow leading-inset clip-path test, added no opacity, filter, text-fill or mask handling, and widened the docs coverage claim. Its regression test page (tests/assist/test_a0_r11_review_regressions.py HIDDEN_PAGE) contains only the R11 patterns, so it passes (R10/R11 tests: 4 passed) while R12 techniques leak, and the next review finds the next uncovered technique."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "eb2f47d4-2ee7-4cae-aded-f6dcba991f17",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 10
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.4159489,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure/diagnose_D5",
+  "ended_at": "2026-10-11T06:53:53Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 9,
+  "pid": 27192,
+  "prompt_sha256": "0df9c02920e2b3ed07cffeb6aad1b72b2bf6eca3a8e13ec8cd2ece6d83f02008",
+  "provider": "claude_cli",
+  "result_text_sha256": "fcf70a31eeb6139540f401afa65e655383954385110a550e32bea004cee68600",
+  "role": "reviewer",
+  "session_id": "eb2f47d4-2ee7-4cae-aded-f6dcba991f17",
+  "session_id_requested": "eb2f47d4-2ee7-4cae-aded-f6dcba991f17",
+  "started_at": "2026-10-11T06:52:50Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "995338372ee40a01c287551ef317186042466de207e1f5b03d634c2695618196"
+ }
+}

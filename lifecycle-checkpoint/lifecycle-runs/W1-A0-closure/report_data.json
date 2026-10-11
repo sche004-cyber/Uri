@@ -493,7 +493,7 @@
    "id": "R10-01",
    "round": "R10",
    "severity": "MEDIUM",
-   "status": "open",
+   "status": "repaired 2de591e",
    "title": "R9-01 repair regression: the rebuilt selection copies hidden text (display:none, aria-hidden, tiny/transparent/off-screen) and <script>/<style> source into 'Selected text', bypassing the hidden-text filter; injected instructions and page-state secrets reach the Brain request"
   },
   {
@@ -503,14 +503,38 @@
    "severity": "LOW",
    "status": "non-blocking",
    "title": "Assist UI poll path has no epoch or ask-id check: an assist_ask_status reply in flight when the user presses Stop (or Stop, re-grant and a new ask) can still show the old answer (R9-05 class on the polling path)"
+  },
+  {
+   "blocking": true,
+   "id": "R11-01",
+   "round": "R11",
+   "severity": "MEDIUM",
+   "status": "repaired d5a9b41",
+   "title": "In-page hidden-text filter misses screen-reader-only (clip), overflow-clipped, text-indent and covered text; injected hidden instructions reach the Brain request as 'Visible text' and 'Selected text' (R10-01 class not closed)"
+  },
+  {
+   "blocking": true,
+   "id": "R12-01",
+   "round": "R12",
+   "severity": "MEDIUM",
+   "status": "repaired d029f60",
+   "title": "In-page hidden-text filter still misses fully invisible text (filter:opacity(0), -webkit-text-fill-color:transparent, non-leading/other clip-path insets and shapes, transparent mask-image, closed <details> content, near-zero opacity); injected instructions reach the Brain request as 'Visible text' and 'Selected text' (R11-01 class not closed)"
+  },
+  {
+   "blocking": true,
+   "id": "R13-01",
+   "round": "R13",
+   "severity": "MEDIUM",
+   "status": "open",
+   "title": "In-page hidden-text filter still misses fully invisible text: negative z-index under an ancestor background, SVG <text> with fill transparent/none or fill-opacity 0, and -webkit-mask-box-image; injected instructions reach the Brain request as 'Visible text' and 'Selected text' (R12-01 class not closed)"
   }
  ],
  "gates": [],
  "owner": [
   {
-   "kind": "CONFIG",
-   "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
-   "reason": "milestone config or resolved policy changed since the plan (now config e9f199344cb0, policy 60c95fb8b36f)"
+   "kind": "OWNER_DECISION",
+   "needs": "owner decision on the diagnosed root cause",
+   "reason": "diagnosis: snapshot.js decides whether text is hidden with a blocklist of CSS hiding techniques (visible() + clipBoxOf() + covered() + the text-fill alpha check). CSS has an unbounded number of ways to make text unpainted, so the list can never be complete. The three R13 bypasses are: (1) covered() returns fal"
   }
  ],
  "repairs": [
@@ -583,6 +607,27 @@
    "reason": "REGRESSION: no regression test fails on the pre-repair commit",
    "repair": "P10",
    "status": "REFUSED"
+  },
+  {
+   "addresses": "R10-01",
+   "commit": "2de591eca07d",
+   "reason": "",
+   "repair": "P11",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R11-01",
+   "commit": "d5a9b41c79b4",
+   "reason": "",
+   "repair": "P12",
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": "R12-01",
+   "commit": "d029f606ec84",
+   "reason": "",
+   "repair": "P13",
+   "status": "COMMITTED"
   }
  ],
  "rounds": [
@@ -705,22 +750,58 @@
    "session": "4f8c44cf-8eb5-407d-bf7a-6b574b4d1502",
    "status": "COMPLETED_WITH_RESULT",
    "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "2de591eca07d",
+   "findings": 1,
+   "finished": "2026-10-11T06:46:25Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R11",
+   "session": "321bb07d-f7cd-4846-abc9-f440a293cac5",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "d5a9b41c79b4",
+   "findings": 1,
+   "finished": "2026-10-11T06:52:47Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R12",
+   "session": "e5e6f379-17f2-4b11-b603-5cf22ec39580",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "blocking": 1,
+   "candidate": "d029f606ec84",
+   "findings": 1,
+   "finished": "2026-10-11T07:01:25Z",
+   "independent": true,
+   "reviewer": "claude_cli",
+   "round": "R13",
+   "session": "4fb1cdc4-5625-457d-afe5-2ee1c4450a41",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
   }
  ],
  "summary": {
   "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
-  "candidate": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+  "candidate": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
   "evidence_ok": false,
-  "findings_repaired": 22,
-  "findings_total": 63,
+  "findings_repaired": 25,
+  "findings_total": 66,
   "integration": "none",
   "milestone": "W1-A0-closure",
   "open_blocking": 1,
   "owner_actions": 1,
   "receipt_chain_ok": true,
-  "repairs_committed": 7,
-  "rounds": 10,
+  "repairs_committed": 10,
+  "rounds": 13,
   "stage": "BLOCKED",
-  "written_at": "2026-10-11T06:42:01Z"
+  "written_at": "2026-10-11T07:02:56Z"
  }
 }

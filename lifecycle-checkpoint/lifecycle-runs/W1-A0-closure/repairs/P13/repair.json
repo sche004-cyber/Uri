@@ -1,0 +1,99 @@
+{
+ "addresses": [
+  "R12-01"
+ ],
+ "changed": [
+  "docs/assist/03_PERMISSION_AND_DATA_FLOW.md",
+  "tests/assist/test_a0_r12_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js"
+ ],
+ "commit": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
+ "ended_at": "2026-10-11T06:59:13Z",
+ "pre": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r12_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 13,
+ "report": {
+  "not_repaired": [],
+  "notes": "Root cause addressed: snapshot.js now decides subtree-wide paint effects per text node in the cached ancestor walk (clipBoxOf, now including <html>) and fails closed on anything it cannot evaluate: effective opacity = product of opacity and filter:opacity() (<0.1 hidden, SVG url() filter hidden); painted colour alpha (-webkit-text-fill-color, else color) x effective opacity <0.1 hidden; mask-image hidden unless a gradient layer with an inked stop covers the box (url/image masks, luminance, non-add composite, zero size hidden); clip-path parsed as geometry (all inset sides incl. 3-value and calc forms, circle, ellipse, polygon bbox+area; path()/url()/unparseable hidden); closed <details> content except its summary hidden. alpha() now reads '/ a' colour syntaxes. visible() (fields, sensitive black-out rects) deliberately unchanged. New test fails on d5a9b41 (both tests observed failing on unmodified snapshot.js) and passes after; R10/R11 pass; tests/assist + tests/web: 2633 passed. docs/assist/03 row rewritten to list exactly what is covered and the remaining gaps (low contrast incl. filter brightness/contrast and blend modes, transforms leaving glyphs >=2px, partially transparent gradient masks, off-viewport occlusion, pointer-events:none overlays). graphify update not run (graphify-out is outside permitted paths).",
+  "regression_tests": [
+   "tests/assist/test_a0_r12_review_regressions.py"
+  ],
+  "repaired": [
+   "R12-01"
+  ]
+ },
+ "started_at": "2026-10-11T06:53:55Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "199908d7-b75f-4e03-bb63-32754d40045f",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 139
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.0668428,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T06:59:06Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 27718,
+  "prompt_sha256": "28bdc38db4869f947f726174b72ad4d43b74751a08853f1104dee3be18200201",
+  "provider": "claude_cli",
+  "result_text_sha256": "2bc930b3bec2f4f8f921d477a18fc477097f7a3264dccfcd053ea5bcdb1b5d52",
+  "role": "implementer",
+  "session_id": "199908d7-b75f-4e03-bb63-32754d40045f",
+  "session_id_requested": "199908d7-b75f-4e03-bb63-32754d40045f",
+  "started_at": "2026-10-11T06:53:55Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "43cfb7c2563ce2242b4997730a6621d68b0643bc8d9c49ab51d9320b130006af"
+ }
+}

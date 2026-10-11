@@ -1,0 +1,258 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure/audit_R11",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R11-01"
+ ],
+ "candidate": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T06:46:25Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+   "impl_head": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "373ca0352c267ec2606a3ee7274850c108cff7bff7697219d693d3b505e5d5ad",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+   "impl_head": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "373ca0352c267ec2606a3ee7274850c108cff7bff7697219d693d3b505e5d5ad",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Real Chromium (Playwright, /opt/pw-browsers), page with <div style='position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0)'>SRONLY-PAYLOAD-1</div>, <div style='height:0;overflow:hidden'><p>CLIPPED-PAYLOAD-2</p></div>, <div style='text-indent:-9999px'>INDENT-PAYLOAD-5</div>, <div style='max-height:0;overflow:hidden'><span style='display:block'>MAXH-PAYLOAD-7</span></div>, and text under an absolutely positioned opaque overlay (COVERED-PAYLOAD-8). None of them is visible in the page screenshot. After Ctrl+A, page.evaluate(snapshot.js) returns all of them in snap.text and snap.selection with redactions={} (no hidden_text count). Feeding that snapshot through tests.assist helpers mk/grant(observe)/ask_and_wait gives status COMPLETE, and each payload appears twice in FakeClient.bodies (under 'Visible text' and 'Selected text: Welcome back SRONLY-PAYLOAD-1 CLIPPED-PAYLOAD-2 ...'). Cause: visible() only checks closest([hidden],[aria-hidden],...), checkVisibility, own rect >=1px, font-size<2, clip-path inset, and off-left/top. It ignores the legacy clip property, ancestor overflow clipping, text-indent and occlusion. The data-flow doc claims 'hidden text dropped in page'. Probe: /tmp/uri_review_R11/hidden.html, run.cjs, probe_brain.py.",
+    "files": [
+     "uri_assist/browser_extension/snapshot.js:54",
+     "uri_assist/browser_extension/snapshot.js:63",
+     "uri_assist/browser_extension/snapshot.js:146",
+     "uri_assist/browser_extension/snapshot.js:159",
+     "uri_assist/bridge.py:61",
+     "docs/assist/03_PERMISSION_AND_DATA_FLOW.md:77"
+    ],
+    "id": "R11-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Decide visibility per text node, not per element: use a Range over the text node and check that its client rects intersect the viewport/document and every ancestor's overflow clip box (walk ancestors with overflow != visible, plus clip/clip-path). Treat clip:rect(0,0,0,0) and 1x1 overflow-hidden boxes as hidden. Optionally sample elementFromPoint at the rect centre to detect occlusion. Apply the same rule to page text, headings and the selection, and add a self-contained Chromium regression test with these patterns that checks the Brain body. Otherwise, correct the doc claim to list exactly what the filter covers.",
+    "title": "In-page hidden-text filter misses screen-reader-only (clip), overflow-clipped, text-indent and covered text; injected hidden instructions reach the Brain request as 'Visible text' and 'Selected text' (R10-01 class not closed)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R10-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers /tmp/claude-0/venv/bin/python -m pytest tests/web tests/assist -q -p no:cacheprovider -x",
+    "result": "2629 passed in 30.71s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "flutter test test/living/assist_mode_test.dart test/living/assist_r9_test.dart (on a git-archive copy of uri_ui in /tmp/uri_review_R11/ui)",
+    "result": "+23 All tests passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "node /tmp/uri_review_R11/run.cjs snapshot.js hidden.html (real Chromium, Ctrl+A)",
+    "result": "SRONLY/CLIPPED/INDENT/MAXH/COVERED payloads present in snap.text and snap.selection; redactions={}",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -B /tmp/uri_review_R11/probe_brain.py",
+    "result": "assist_ask COMPLETE; each hidden payload appears 2x in the Brain request body",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "ws_frozen_check zip part (Phase 1 checkpoint zip not present); protected-path check done by git diff --name-only only",
+   "SSRF/safe_fetch, vision gating and permission paths: unchanged since the R10 review (20a646f), not re-audited in depth this round beyond spot reading and the passing suite",
+   "Full Flutter suite not run (only the Assist tests)",
+   "Windows/UIA and live browser-extension channel (not built; owner checklist #8)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 11,
+ "started_at": "2026-10-11T06:44:13Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "321bb07d-f7cd-4846-abc9-f440a293cac5",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 58
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7869219000000001,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure/audit_R11",
+  "ended_at": "2026-10-11T06:46:24Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 18,
+  "pid": 19070,
+  "prompt_sha256": "a682f1ac94bc529b45bab9e6d460483382aa3585b4af3f8a6f837fd911b9d832",
+  "provider": "claude_cli",
+  "result_text_sha256": "ca79b8f9ded678021d63c7e5e8429564f62c8e147f2673bfb769b74c2d90b844",
+  "role": "reviewer",
+  "session_id": "321bb07d-f7cd-4846-abc9-f440a293cac5",
+  "session_id_requested": "321bb07d-f7cd-4846-abc9-f440a293cac5",
+  "started_at": "2026-10-11T06:44:13Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "a7f5662967168a61762f127db1ab8f6d184f1df735ed81edf4c4abd3dca0367c"
+ }
+}

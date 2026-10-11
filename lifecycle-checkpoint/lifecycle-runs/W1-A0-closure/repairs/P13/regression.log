@@ -1,0 +1,57 @@
+=== tests/assist/test_a0_r12_review_regressions.py BEFORE (d5a9b41c79b4c9d0be83ab7c43e61f106177d022) DONE
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____________ test_r12_01_paint_hidden_text_never_leaves_the_page ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-365/test_r12_01_paint_hidden_text_0')
+
+    def test_r12_01_paint_hidden_text_never_leaves_the_page(tmp_path):
+        runs = _runs(tmp_path)
+        for name in ("ctrl_a", "range_all"):
+            snap = runs[name]["snap"]
+            sel, text, heads = snap["selection"], snap["text"], " ".join(snap["headings"])
+            for v in PAYLOADS:
+>               assert v not in sel, (name, v, sel)
+E               AssertionError: ('ctrl_a', 'HEADFILTER-PAYLOAD', 'Welcome backHEADFILTER-PAYLOAD-A FILTEROPACITY-PAYLOAD-B TEXTFILL-PAYLOAD-C CPBOTTOM...nset INSET-OK-2 Open summaryOpen OPEN-OK-3 Masked MASKOK-OK-4 Round CIRCLE-OK-7 Dim DIM-OK-8 You have 3 new messages.')
+E               assert 'HEADFILTER-PAYLOAD' not in 'Welcome bac...ew messages.'
+E                 
+E                 'HEADFILTER-PAYLOAD' is contained here:
+E                 ?             ^^
+E                   Welcome backHEADFILTER-PAYLOAD-A FILTEROPACITY-PAYLOAD-B TEXTFILL-PAYLOAD-C CPBOTTOM-PAYLOAD-D CIRCLE-PAYLOAD-E NEARZERO-PAYLOAD-F PRODUCT-PAYLOAD-G MASK-PAYLOAD-H POLY-PAYLOAD-I ELLIPSE-PAYLOAD-J FAINT-PAYLOAD-K CPRIGHT-PAYLOAD-Q CP60-PAYLOAD-R Summary SUMMARY-OK-6DETAILS-PAYLOAD-S PATH-PAYLOAD-U FILTERNEAR-PAYLOAD-V FLATPOLY-PAYLOAD-W Half HALF-OK-1 Inset INSET-OK-2 Open summaryOpen OPEN-OK-3 Masked MASKOK-OK-4 Round CIRCLE-OK-7 Dim DIM-OK-8 You have 3 new messages.
+E                 ?             ^^^^^^^^^^^^^^^^^^^^
+
+tests/assist/test_a0_r12_review_regressions.py:101: AssertionError
+_____ test_r12_01_real_snapshot_to_brain_body_has_no_paint_hidden_payload ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-365/test_r12_01_real_snapshot_to_b0')
+
+    def test_r12_01_real_snapshot_to_brain_body_has_no_paint_hidden_payload(tmp_path):
+        snap = _runs(tmp_path)["ctrl_a"]["snap"]
+        client = FakeClient(text="You have three new messages.")
+        br, _ = mk(snap=snap, client=client)
+        grant(br, perms=("observe",))
+        assert ask_and_wait(br, "What did I select?")["status"] == "COMPLETE"
+        body = json.dumps(client.bodies)
+        assert "Selected text: Welcome back" in body
+        assert "HALF-OK-1" in body
+        for v in PAYLOADS:
+>           assert v not in body, v
+E           AssertionError: HEADFILTER-PAYLOAD
+E           assert 'HEADFILTER-PAYLOAD' not in '[{"model": ...g": false}}]'
+E             
+E             'HEADFILTER-PAYLOAD' is contained here:
+E             ?           ^^
+E               lcome backHEADFILTER-PAYLOAD-A FILTEROPACITY-PAYLOAD-B TEXTFILL-PAYLOAD-C CPBOTTOM-PAYLOAD-D CIRCLE-PAYLOAD-E NEARZERO-PAYLOAD-F PRODUCT-PAYLOAD-G MASK-PAYLOAD-H POLY-PAYLOAD-I ELLIPSE-PAYLOAD-J FAINT-PAYLOAD-K CPRIGHT-PAYLOAD-Q CP60-PAYLOAD-R Summary SUMMARY-OK-6DETAILS-PAYLOAD-S PATH-PAYLOAD-U FILTERNEAR-PAYLOAD-V FLATPOLY-PAYLOAD-W Half HALF-OK-1 Inset INSET-OK-2 Open summaryOpen OPEN-OK-3 Masked MASKOK-OK-4 Round CIRCLE-OK-7 Dim DIM-OK-8 You have 3 new messages.\nHeadings: Welcome back HEADFILTER-PAYLOAD-A\nVisible text...
+E             
+E             ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests/assist/test_a0_r12_review_regressions.py:121: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r12_review_regressions.py::test_r12_01_paint_hidden_text_never_leaves_the_page
+FAILED tests/assist/test_a0_r12_review_regressions.py::test_r12_01_real_snapshot_to_brain_body_has_no_paint_hidden_payload
+2 failed in 1.55s
+
+=== tests/assist/test_a0_r12_review_regressions.py AFTER (d029f606ec84f32fd39c2276c34e1a4fd281eec1) DONE
+..                                                                       [100%]
+2 passed in 1.62s
+

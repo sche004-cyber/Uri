@@ -1,15 +1,15 @@
 {
  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
  "blocker": {
-  "at": "2026-10-11T06:42:00Z",
-  "kind": "CONFIG",
-  "needs": "owner: review the policy change (CONFIG_CHANGED event) and `unblock --note`",
-  "reason": "milestone config or resolved policy changed since the plan (now config e9f199344cb0, policy 60c95fb8b36f)",
-  "stage": "READY_TO_RESUME"
+  "at": "2026-10-11T07:02:56Z",
+  "kind": "OWNER_DECISION",
+  "needs": "owner decision on the diagnosed root cause",
+  "reason": "diagnosis: snapshot.js decides whether text is hidden with a blocklist of CSS hiding techniques (visible() + clipBoxOf() + covered() + the text-fill alpha check). CSS has an unbounded number of ways to make text unpainted, so the list can never be complete. The three R13 bypasses are: (1) covered() returns fal",
+  "stage": "FIXING"
  },
- "candidate": "20a646fd3fe8c48367bdc1cc995df5d09c3e7dab",
+ "candidate": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
  "config_sha256": "e9f199344cb01d05216b4034313d66bfd5007f3cb4b4eeccfb1d780c6687d9cc",
- "events": 80,
+ "events": 104,
  "evidence_ok_for_candidate": false,
  "gates": {},
  "integration": null,
@@ -17,15 +17,9 @@
  "open_findings": [
   {
    "blocking": true,
-   "id": "R10-01",
+   "id": "R13-01",
    "severity": "MEDIUM",
-   "title": "R9-01 repair regression: the rebuilt selection copies hidden text (display:none, aria-hidden, tiny/transparent/off-screen) and <script>/<style> source into 'Selected text', bypassing the hidden-text filter; injected instructions and page-state secrets reach the Brain request"
-  },
-  {
-   "blocking": false,
-   "id": "R10-02",
-   "severity": "LOW",
-   "title": "Assist UI poll path has no epoch or ask-id check: an assist_ask_status reply in flight when the user presses Stop (or Stop, re-grant and a new ask) can still show the old answer (R9-05 class on the polling path)"
+   "title": "In-page hidden-text filter still misses fully invisible text: negative z-index under an ancestor background, SVG <text> with fill transparent/none or fill-opacity 0, and -webkit-mask-box-image; injected instructions reach the Brain request as 'Visible text' and 'Selected text' (R12-01 class not closed)"
   }
  ],
  "repairs": [
@@ -133,6 +127,33 @@
    "reason": "REGRESSION: no regression test fails on the pre-repair commit",
    "repair": 10,
    "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R10-01"
+   ],
+   "commit": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+   "reason": null,
+   "repair": 11,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R11-01"
+   ],
+   "commit": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+   "reason": null,
+   "repair": 12,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R12-01"
+   ],
+   "commit": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
+   "reason": null,
+   "repair": 13,
+   "status": "COMMITTED"
   }
  ],
  "reviewers": [
@@ -269,11 +290,53 @@
    "session_id": "4f8c44cf-8eb5-407d-bf7a-6b574b4d1502",
    "status": "COMPLETED_WITH_RESULT",
    "verdict": "REJECT"
+  },
+  {
+   "candidate": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 11,
+   "session_id": "321bb07d-f7cd-4846-abc9-f440a293cac5",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 12,
+   "session_id": "e5e6f379-17f2-4b11-b603-5cf22ec39580",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "d029f606ec84f32fd39c2276c34e1a4fd281eec1",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 13,
+   "session_id": "4fb1cdc4-5625-457d-afe5-2ee1c4450a41",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
   }
  ],
- "rounds": 10,
+ "rounds": 13,
  "schema": "uri-dev-lifecycle/1",
  "stage": "BLOCKED",
  "verify_errors": [],
- "written_at": "2026-10-11T06:42:01Z"
+ "written_at": "2026-10-11T07:02:56Z"
 }

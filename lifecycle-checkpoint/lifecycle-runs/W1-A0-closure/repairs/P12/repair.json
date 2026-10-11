@@ -1,0 +1,99 @@
+{
+ "addresses": [
+  "R11-01"
+ ],
+ "changed": [
+  "docs/assist/03_PERMISSION_AND_DATA_FLOW.md",
+  "tests/assist/test_a0_r11_review_regressions.py",
+  "uri_assist/browser_extension/snapshot.js"
+ ],
+ "commit": "d5a9b41c79b4c9d0be83ab7c43e61f106177d022",
+ "ended_at": "2026-10-11T06:49:45Z",
+ "pre": "2de591eca07d9410f691ac20ff71242d3befc6f6",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/assist/test_a0_r11_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 12,
+ "report": {
+  "not_repaired": [],
+  "notes": "snapshot.js now decides visibility per text node for page text, headings and selection. A node is kept only if its client rects survive ancestor overflow clipping along its containing-block chain, the legacy clip property and clip-path inset, keep at least 2px in each direction, stay inside the document (catches text-indent and negative offsets), have a non-transparent text colour, and are not under an opaque element at the rect centre when that point is in the viewport. Not covered, now stated in docs/assist/03: low-contrast colour, fonts of 2px or more, occlusion outside the viewport, overlays with pointer-events:none. Text in the viewport currently covered by a solid sticky header is also dropped, deliberately failing safe. Fail-before was proven by temporarily restoring the 2de591e snapshot.js in this tree (2 failed), then the repaired file (2 passed), because creating a separate worktree was denied. Full tests/assist and tests/web: 2631 passed.",
+  "regression_tests": [
+   "tests/assist/test_a0_r11_review_regressions.py"
+  ],
+  "repaired": [
+   "R11-01"
+  ]
+ },
+ "started_at": "2026-10-11T06:46:25Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "a30bedfb-7eda-4864-96f3-27142a192db8",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 63
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7009207,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T06:49:38Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 11,
+  "pid": 21511,
+  "prompt_sha256": "a488c1460e58fe7d48d41bdcf58d05855cb525e5d2d3f4174b3eefffebf46e7b",
+  "provider": "claude_cli",
+  "result_text_sha256": "70fd6d7a7c4569742bb683b15621aad6e3bee43805d3cfca6f2172186e15faa2",
+  "role": "implementer",
+  "session_id": "a30bedfb-7eda-4864-96f3-27142a192db8",
+  "session_id_requested": "a30bedfb-7eda-4864-96f3-27142a192db8",
+  "started_at": "2026-10-11T06:46:25Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "733895b9b96de2f7f92e7ce0f821c46c05f1353b15d5e5b2854f662567e1fb59"
+ }
+}
