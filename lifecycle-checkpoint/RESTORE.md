@@ -15,10 +15,14 @@ besides D1 integration into canonical). Updated by each unattended check-in.
 
 ## Restore (fresh container)
 
+Restore tested 2026-10-11 from a fresh clone of the pushed branch: bundle verified, milestone branches recreated at
+the tips in `REFS.txt`.
+
 ```
 cd /home/user/Uri && git fetch origin integration/git-sync-20261008
 git bundle verify lifecycle-checkpoint/milestones.bundle
 git fetch lifecycle-checkpoint/milestones.bundle 'refs/heads/*:refs/heads/*'     # recreates the milestone branches
+git branch milestone/dev-lifecycle-20261011 1f4aeddf50d4eb2d024af7132b443b5dc57591df  # already in canonical, so not in the bundle
 mkdir -p /home/user/uri-wt && cp -r lifecycle-checkpoint/lifecycle-runs /home/user/uri-wt/lifecycle-runs
 for b in a0:milestone/a0-assist-foundation-20261010 lifecycle:milestone/dev-lifecycle-20261011 \
          w1:milestone/w1-web-intelligence-20261010 w2:milestone/w2-site-document-search \
