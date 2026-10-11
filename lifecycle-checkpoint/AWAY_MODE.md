@@ -57,7 +57,15 @@ work while am away from pc". This file is the standing plan; every check-in foll
      - personal data in public documents (for example names in results lists) is indexed for search only and never
        written to user memory or learning (D5);
      - no permanent copies of PDFs are kept.
-5. **RW1** is NOT started unattended. Its benchmark needs Windows and WebView2 on the owner's PC.
+5. **SCHED-TOKEN-ACL** (pre-existing issue, reported by the URI OFFICE thread on the owner's PC, 2026-10-11; NOT
+   VERIFIED from the cloud).
+   - **The issue:** the scheduler's `<state>/api-token` file inherits nine ACL entries, including
+     `CodexSandboxUsers` with modify rights. Processes running as Codex sandbox users could read or replace the token
+     and call the scheduler API as the owner.
+   - **The fix:** in `uri_scheduler/service.py` (not frozen), restrict the token file AND its folder to the current
+     user. It needs a Windows ACL test, so it is a small lifecycle milestone run where Windows is available. Not
+     started from the cloud.
+6. **RW1** is NOT started unattended. Its benchmark needs Windows and WebView2 on the owner's PC.
 
 ## Code graph (graphify)
 
@@ -129,3 +137,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 08:35 | Owner approved W2-AC21 (agenda-item index for BoG/Senate/FC/BWC minutes) and W2-AC22 (uploaded/Drive/local internal sources). Owner's DoPT-leave example generalised into FIND/LIST (W2-AC23) and SUMMARISE (W2-AC24) intents. W2 is one document-retrieval skill with five intents; delivered as W2a (core) then W2b (structured). |
 | 2026-10-11 08:55 | Owner approved W2-AC25 (task → applicable rules → cited procedure; heater/GFR example; thresholds never from model memory) and asked for a UI placeholder to add sources → W2-AC26 (Sources & Rules A2UI surface with placeholders and add/approve actions; no catalog change). Found R-8: the A2UI catalog forbids URLs → `docs.open_document` action (server-side resolution, full URL confirmed before opening) in W2a. |
 | 2026-10-11 09:05 | **R16 ACCEPT WITH FINDINGS on `67aff50`** (W1-A0-closure). The gates then reported 178 "new" failures. Diagnosis: the baseline gate ran 0 tests (`tests/web` missing at `ffdf534`) and the driver accepted it (driver defect, queued). A manual baseline run shows the failures are environmental; the only candidate-only one is flaky on both commits and already allowed. That result is recorded as invalid evidence. Gate fixed to run only existing folders (owner approved; nothing loosened). The driver cannot re-verify from FIXING, so the old run is superseded and `W1-A0-closure-2` re-plans the same candidate with the baseline pinned to merge-base `ffdf534`. Fresh independent review started 09:02. Spend so far: $69.73 in the old run. |
+| 2026-10-11 10:00 | Office M1 (owner's PC thread, branch `phase/uri-office` 2fbbaed0 on `ce1a90c`, not pushed). Reported: HTTP service now copies the scheduler (127.0.0.1 + per-launch bearer token) plus Host and Origin guards; inline-string rule; real Excel fixture. It also reported a scheduler api-token ACL weakness on the PC, queued as SCHED-TOKEN-ACL. Unverified from the cloud. |
