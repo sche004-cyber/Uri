@@ -254,7 +254,12 @@
     }
     contrastCache.set(p, out); return out;
   };
-  const textCache = new Map();
+  const textCache = new Map(), cache = new Map();
+  const FIELD = "input,textarea,select,[contenteditable]:not([contenteditable='false'])";
+  const inField = (n) => { const e = n && (n.nodeType === 1 ? n : n.parentElement); return !!(e && e.closest(FIELD)); };
+  // R14-02: -webkit-text-security draws every glyph as a disc or square: the user sees dots, not the text, so it is
+  // hidden (onscreen.py also drops units probe.js reports with it).
+  const secured = (cs) => (cs.webkitTextSecurity || cs.getPropertyValue("-webkit-text-security") || "none") !== "none";
   const textVisible = (n) => {
     const p = n.parentElement;
     if (!p) return false;
@@ -264,7 +269,7 @@
     const box = clipBoxOf(p);
     if (!box) return false;
     if (!textCache.has(p)) { const cs = getComputedStyle(p);       // R12-01: the fill colour is what is painted
-      textCache.set(p, alpha(cs.webkitTextFillColor || cs.color) * opacityCache.get(p) >= MIN_ALPHA); }
+      textCache.set(p, !secured(cs) && alpha(cs.webkitTextFillColor || cs.color) * opacityCache.get(p) >= MIN_ALPHA); }
     if (!textCache.get(p)) return false;
     if (selRanges.some((r) => r.intersectsNode(n)) && sameAsBackground(p)) return false;
     const range = document.createRange(); range.selectNodeContents(n);
@@ -354,6 +359,28 @@
     if (el.getAttribute("aria-label")) parts.push(el.getAttribute("aria-label"));
     return parts.join(" ").replace(/\s+/g, " ").trim().slice(0, 300);
   };
+  // R14-01: the label that leaves the page as label text is rebuilt from the label's own visible text nodes (a
+  // <label for>, a wrapping <label>, aria-labelledby targets), as pieces URI render-checks like page text. aria-label
+  // and hidden label elements are not drawn, so they are never sent as a label; `label` (labelOf) is used only to
+  // decide whether a field is private.
+  const MAX_LABEL_PIECES = 20;
+  const labelPieces = (el) => {
+    const srcs = [];
+    if (el.id) srcs.push(...document.querySelectorAll(`label[for="${CSS.escape(el.id)}"]`));
+    const wrap = el.closest("label");
+    if (wrap) srcs.push(wrap);
+    const lb = el.getAttribute("aria-labelledby");
+    if (lb) for (const id of lb.split(/\s+/)) { const n = id && document.getElementById(id); if (n) srcs.push(n); }
+    const ps = [], seen = new Set();
+    for (const src of srcs) {
+      const w = document.createTreeWalker(src, NodeFilter.SHOW_TEXT);
+      for (let n = w.nextNode(); n && ps.length < MAX_LABEL_PIECES; n = w.nextNode()) {
+        if (seen.has(n) || !n.nodeValue.trim() || inField(n) || !textVisible(n)) continue;
+        seen.add(n); ps.push(...nodePieces(n, 0, n.nodeValue.length, ps.length ? ps[ps.length - 1].g + 1 : 0));
+      }
+    }
+    return ps.length ? finish(ps.slice(0, MAX_LABEL_PIECES), " ") : [];
+  };
   const sensitive = (el, label, value) => {
     const type = (el.getAttribute("type") || "").toLowerCase();
     if (SENSITIVE_TYPES.has(type)) return true;
@@ -394,7 +421,7 @@
       label: maskText(label), autocomplete: el.getAttribute("autocomplete") || "",
       placeholder: maskText(el.getAttribute("placeholder") || ""),
       required: !!el.required || el.getAttribute("aria-required") === "true", readonly: !!el.readOnly || !!el.disabled,
-      visible: shown,
+      visible: shown, label_pieces: shown ? labelPieces(el) : [],
     };
     if (shown) f.rect = rectOf(el);
     if (withheld) {
@@ -410,7 +437,6 @@
   // Visible text only: hidden, aria-hidden, zero-size, transparent, off-screen, clipped and covered text is skipped.
   const chunks = [], textPieces = []; let total = 0, textGroup = 0;
   const walker = document.createTreeWalker(document.body || document.documentElement, NodeFilter.SHOW_TEXT);
-  const cache = new Map();
   for (let n = walker.nextNode(); n && total < MAX_TEXT; n = walker.nextNode()) {
     const t = n.nodeValue.replace(/\s+/g, " ").trim();
     if (!t) continue;
@@ -438,8 +464,6 @@
   // R9-01: the selection is rebuilt from the page's own text nodes inside the selected ranges. Text selected inside a
   // field (an input's or textarea's value, a select, a contenteditable) is that field's value and is never copied;
   // only the fact that such a selection exists is reported (selection_withheld).
-  const FIELD = "input,textarea,select,[contenteditable]:not([contenteditable='false'])";
-  const inField = (n) => { const e = n && (n.nodeType === 1 ? n : n.parentElement); return !!(e && e.closest(FIELD)); };
   // R10-01 / R11-01: the same per-text-node visibility rule as the page text above (hidden, aria-hidden, tiny,
   // transparent, off-screen, clipped, indented-away, covered and script/style/noscript/template text is never copied
   // into the selection).

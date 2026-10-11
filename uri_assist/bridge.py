@@ -50,12 +50,24 @@ def valid(kind, command) -> bool:
     return kind in COMMANDS and isinstance(command, dict) and any(set(command) == s for s in COMMANDS[kind])
 
 
+# R14-01: a field is named to the Brain only by its render-checked label (perception `shown_label`), otherwise by its
+# kind from this fixed list; attributes (aria-label, name, id, type, placeholder) can hold text the user never sees.
+FIELD_KINDS = {"text", "email", "tel", "url", "number", "search", "date", "datetime-local", "month", "week", "time",
+               "color", "range", "password", "checkbox", "radio", "textarea", "select", "contenteditable", "input",
+               "edit", "combobox", "list", "document"}
+
+
+def _field_line(f) -> str:
+    kind = f.get("type") or f.get("role")
+    name = f.get("shown_label") or f"(unlabelled {kind if kind in FIELD_KINDS else 'form'} field)"
+    return f"- {name}: {'[private field, value hidden]' if f.get('sensitive') else (f.get('value') or '(empty)')}"
+
+
 def _context_block(obs) -> str:
     from uri_web.untrusted import data_block     # the same untrusted-data typing as W1
-    fields = "\n".join(
-        f"- {f.get('label') or f.get('name') or f.get('id') or 'field'}: "
-        f"{'[private field, value hidden]' if f.get('sensitive') else (f.get('value') or '(empty)')}"
-        for f in obs.fields[:60])
+    # Fields that are not on screen (hidden inputs, invisible fields) are not part of what the user sees (R14-01).
+    shown = [f for f in obs.fields if f.get("visible", True) is not False and f.get("type") != "hidden"]
+    fields = "\n".join(_field_line(f) for f in shown[:60])
     body = "\n".join(x for x in (
         ("Location: " + obs.location) if obs.location else "",
         ("Selected text (pixel-checked): " + obs.selection) if obs.selection else "",
@@ -65,7 +77,8 @@ def _context_block(obs) -> str:
         ("Form fields:\n" + fields) if fields else "",
         ("On-screen text (pixel-checked):\n" + obs.text[:12000]) if obs.text else
         "On-screen text: none could be pixel-checked, so no page text is shared.") if x)
-    return data_block(1, obs.title, body)
+    # R14-01: the page or window title is not drawn in the shared view and cannot be render-checked: never sent.
+    return data_block(1, "shared browser tab" if obs.source == "dom" else "shared window", body)
 
 
 class AssistCommands:

@@ -18,11 +18,14 @@
     for (let n = w.nextNode(); n; n = w.nextNode()) nodes.push(n);
     const units = arg.units.map((x) => {                  // [n, a, b], or null for a unit not to probe
       const [n, a, b] = Array.isArray(x) ? x : [-1, 0, 0], node = nodes[n];
-      if (!node || !(a >= 0 && b > a && b <= node.nodeValue.length)) return { range: null, r: [], c: 0, l: -1 };
+      if (!node || !(a >= 0 && b > a && b <= node.nodeValue.length)) return { range: null, r: [], c: 0, l: -1, s: 0 };
+      // R14-02: glyphs drawn as discs or squares (-webkit-text-security) are reported; URI drops such units.
+      const cs = node.parentElement ? getComputedStyle(node.parentElement) : null;
+      const s = cs && (cs.webkitTextSecurity || cs.getPropertyValue("-webkit-text-security") || "none") !== "none" ? 1 : 0;
       const range = document.createRange(); range.setStart(node, a); range.setEnd(node, b);
       const all = [...range.getClientRects()].filter((q) => q.width > 0 && q.height > 0)
         .map((q) => { const x = Math.floor(q.left), y = Math.floor(q.top); return [x, y, Math.ceil(q.right) - x, Math.ceil(q.bottom) - y]; });
-      return { range, r: all.slice(0, MAX_RECTS), c: all.length, l: node.nodeValue.length };
+      return { range, r: all.slice(0, MAX_RECTS), c: all.length, l: node.nodeValue.length, s };
     });
     // Groups: units whose rects, grown by a quarter of their height, touch go to different groups (so a clear shot
     // removes no other ink inside a unit's own box). Colours: inside a group, units closer than three line heights
@@ -32,7 +35,7 @@
     const near = (u, v, f) => u.r.some((p) => v.r.some((q) => hit(grow(p, f * Math.max(p[3], q[3])), grow(q, 0))));
     const groups = [], inView = (r) => r[0] >= -2 && r[1] >= -2 && r[0] + r[2] <= innerWidth + 2 && r[1] + r[3] <= innerHeight + 2;
     units.forEach((u, i) => {
-      if (!u.range || !u.r.length || u.c > MAX_RECTS || !u.r.every(inView)) return;   // URI cannot check these
+      if (!u.range || u.s || !u.r.length || u.c > MAX_RECTS || !u.r.every(inView)) return;   // URI cannot check these
       for (const g of groups) {
         if (g.units.some((j) => near(u, units[j], 0.25))) continue;
         const used = new Set(g.units.filter((j) => near(u, units[j], 3)).map((j) => g.colours[g.units.indexOf(j)]));
@@ -48,7 +51,7 @@
     window[arg.key] = { units, groups, saved, sheet, sheets: document.adoptedStyleSheets, names: [] };
     sel.removeAllRanges();
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-    return { ok: true, units: units.map(({ r, c, l }) => ({ r, c, l })), groups,
+    return { ok: true, units: units.map(({ r, c, l, s }) => ({ r, c, l, s })), groups,
       viewport: { w: innerWidth, h: innerHeight }, device_pixel_ratio: window.devicePixelRatio || 1 };
   }
   if (!st) return { ok: false };

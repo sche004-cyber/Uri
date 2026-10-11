@@ -35,9 +35,13 @@ units in one group or near units in one colour, a unit whose rectangles, rectang
 the snapshot's (the page changed), rectangles (partly) outside the viewport, or a unit no group probed. The screenshots are
 used only here and are never sent anywhere.
 
+R14-02: a unit the snapshot or the probe reports as drawn with -webkit-text-security (discs or squares in place of the
+glyphs; `s`) is dropped (`masked_glyphs`): its glyphs take the tints although the user sees only dots.
+
 Limits (docs/assist/03_PERMISSION_AND_DATA_FLOW.md): the page's own scripts run during the probe and can change the
 page between the shots; glyphs a font draws more than three line heights outside their own box can be credited to a
-same-colour unit of the same group; text the highlight does not repaint (SVG text) is never kept.
+same-colour unit of the same group; text the highlight does not repaint (SVG text) is never kept; a web font that
+draws other glyphs than the characters (glyph substitution) passes the check (owner decision).
 """
 from __future__ import annotations
 
@@ -66,7 +70,7 @@ MAX_GROUPS = 8
 MAX_UNITS = 6000
 MAX_PIXELS = 40_000_000           # decompression bomb guard (same as vision.py)
 
-UNVERIFIED, NO_INK = "offscreen_or_unverified", "no_ink"
+UNVERIFIED, NO_INK, MASKED_GLYPHS = "offscreen_or_unverified", "no_ink", "masked_glyphs"
 
 
 def _num(v):
@@ -95,7 +99,8 @@ def _unit(u) -> Optional[dict]:
     r = _rects(u.get("r"))
     if r is None or not _int(u.get("c"), 0, 10_000) or not _int(u.get("l"), 0, 10_000_000):
         return None
-    return {"r": r, "c": u["c"], "l": u["l"], "k": u["k"] if _int(u.get("k"), 0, 100_000) else None}
+    return {"r": r, "c": u["c"], "l": u["l"], "k": u["k"] if _int(u.get("k"), 0, 100_000) else None,
+            "s": u.get("s") not in (None, 0, False)}
 
 
 def _image(png, w, h, dpr):
@@ -220,6 +225,8 @@ class Probe:
         u = self.units[i]
         if u["k"] == 0:
             return None                                  # whitespace carries nothing to verify
+        if u.get("s"):
+            return MASKED_GLYPHS                         # R14-02: -webkit-text-security shows dots, not the text
         if u["k"] is None or not u["r"] or u["c"] > len(u["r"]) or i not in self.where:
             return UNVERIFIED
         tinted = inked = unstable = area = 0
@@ -273,6 +280,8 @@ def load(probe, snapshot) -> Optional[Probe]:
         a, b = _unit(su), _unit(pu)
         if a is None or b is None or (a["k"] or 0) == 0:
             units.append({"r": [], "c": 0, "l": 0, "k": None if a is None else a["k"]})
+        elif a["s"] or b["s"]:
+            units.append({"r": [], "c": 0, "l": 0, "k": a["k"], "s": True})   # R14-02: drawn as discs/squares
         elif (a["r"], a["c"], a["l"]) != (b["r"], b["c"], b["l"]):
             units.append({"r": [], "c": 0, "l": 0, "k": None})     # the page changed between snapshot and probe
         else:
