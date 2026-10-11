@@ -14,7 +14,7 @@
 | Archive SHA-256 | `5e1222be978b408b7f4297eec7ff6048000de92f29dbb6cbd04155c11d53677c` (equal to the `archive_sha256` pub.dev publishes) |
 | Upstream repository | `https://github.com/omar-hanafy/webview_flutter_windows`, a fork of `jnschulze/flutter-webview-windows` |
 | Licence | BSD-3-Clause, `LICENSE` kept unchanged |
-| Unmodified baseline | commit `9765e780` on `phase/uri-office`. The diff from that commit is exactly the patches below. |
+| Unmodified baseline | commit `9765e780` on `phase/uri-office` (identical to the pub.dev archive). The diff from that commit is exactly the patches below plus this file. Line endings are kept as upstream has them (upstream mixes LF and CRLF files); patched files are not re-encoded. |
 
 ## Build-time downloads
 
@@ -46,8 +46,11 @@ Files: new `windows/uri_security.h` and `windows/uri_security.cc`; edits in `win
 | Browser accelerator keys (F12, Ctrl+Shift+I, Ctrl+P, ...) | on | off in release builds |
 | Host objects | allowed (none added) | `AreHostObjectsAllowed = FALSE` |
 | Script dialogs (alert, confirm, prompt) | on | off |
+| Web messages from the page | `IsWebMessageEnabled` left at the runtime default | set to `TRUE` explicitly in `uri_security::Install`, so the page-to-host channel the Office panel depends on does not rest on a default; delivery is still limited by the message allow-list above |
+| WebRTC and WebTransport in pages | available | `uri_security::Install` adds a document-created script that redefines `RTCPeerConnection`, `webkitRTCPeerConnection`, `RTCDataChannel`, `RTCIceTransport`, `RTCSctpTransport`, `RTCDtlsTransport` and `WebTransport` as non-configurable `undefined` in every document and child frame before any page script runs. Reason: WebRTC sends UDP that `WebResourceRequested` and the proxy (P2) do not see (real-runtime probe, 2026-10-11). |
 | Password saving and general autofill | on | off (`ICoreWebView2Settings4`), per D5 |
 | Swipe navigation | on | off |
+| Upstream permission helpers | used | `CW2PermissionKindToPermissionKind` and `WebViewPermissionStateToCW2PermissionState` in `webview.cc` are no longer called (permissions are denied, not forwarded) and are marked `[[maybe_unused]]` so the build stays warning-clean; they are kept to keep the diff small |
 | New Dart API | — | `setNetworkPolicy({navigationOrigins, messageOrigins})`, which refuses non-canonical origins; `getSecurityReport()` returns counters, the settings read back from the runtime and the last 64 blocked URIs. There is no API to turn the lockdown off. |
 
 **Internal resources that bypass the request filter, and why they are allowed:**
@@ -66,7 +69,11 @@ File: `windows/webview_host.cc`.
 - Environment options are always created.
 - `ExclusiveUserDataFolderAccess = TRUE`, so no other process (Edge included) can share the user-data folder.
 - A browser executable path is never honoured (`browser_exe_path` is forced to `nullopt`), so only the installed Evergreen runtime runs.
-- The URI host passes its own user-data folder, `%LOCALAPPDATA%\URI\office\webview2`. That folder is restricted to the current user (one inheritable full-control entry, inheritance removed) before the environment starts; if that fails, the host refuses to start.
+- **Network kill switch.** These browser arguments are always set, before any Dart-supplied arguments (which are appended after them, not instead of them):
+  - `--proxy-server=http://0.0.0.0:1` and `--proxy-bypass-list=<-loopback>`: every connection, loopback included, goes to an unreachable proxy. Reason: `WebResourceRequested` (P1) does not see WebSocket handshakes (real-runtime probe, 2026-10-11). The virtual-host page is served in-process and is unaffected.
+  - `--force-webrtc-ip-handling-policy=disable_non_proxied_udp`: WebRTC may not use direct UDP. Together with the WebRTC/WebTransport constructor removal in P1 this closes the UDP path the request filter and the proxy cannot see.
+
+Not in this package: the URI host (`uri_ui/lib/living/webview_host/webview2_office_surface.dart`, `prepareUserDataFolder`) passes its own user-data folder, `%LOCALAPPDATA%\URI\office\webview2`, and restricts it to the current user (one inheritable full-control entry, inheritance removed) before the environment starts; if that fails, the host refuses to start.
 
 ## P3: pinned NuGet packages
 

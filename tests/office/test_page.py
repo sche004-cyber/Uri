@@ -132,6 +132,16 @@ def test_page_guards_hold_in_the_real_univer_engine():
     assert "# fail 0" in r.stdout
 
 
+@pytest.mark.skipif(not (WEB / "node_modules" / "@univerjs" / "sheets-formula").is_dir(),
+                    reason="needs `npm ci` in uri_ui/office_web (staging build); runs against the real Univer engine")
+def test_shared_formula_edits_are_formulas_in_the_real_univer_engine():
+    """Formula fill / insert-function cells carrying only a shared-formula id are sent as formulas, not clears (R2-01)."""
+    r = subprocess.run([shutil.which("node"), "--test", "test/edits.univer.test.mjs"], cwd=WEB, capture_output=True,
+                       text=True, timeout=180)
+    assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
+    assert "# fail 0" in r.stdout
+
+
 # ---- AC15 page layers in a real Chromium engine (Windows-qualified: needs Microsoft Edge) -------------------------
 @pytest.mark.skipif(os.name != "nt", reason="Windows-qualified only: needs Microsoft Edge (the panel runs on Windows)")
 def test_page_blocks_every_network_attempt_in_edge(tmp_path):

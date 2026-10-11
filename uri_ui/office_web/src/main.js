@@ -7,13 +7,14 @@
 //               (marks: [{sheet, cell, state: proposed|accepted|user, after}])
 //               {type: "marks", marks}                     refresh marks after a decision
 // Page -> host: {type: "ready"} | {type: "edit", sheet, cell, value|formula} | {type: "error", code}
+//               (code FORMULA_NOT_RESOLVED: a shared-formula cell whose formula could not be read; nothing is sent)
 //               (code STRUCTURE_CHANGE_NOT_SUPPORTED: a structural grid change was refused in the page, see guard.js)
 import './no-network.js';        // must stay the first import: runs before any Univer code (AC15)
 import { createUniver, LocaleType, mergeLocales } from '@univerjs/presets';
 import { UniverSheetsCorePreset } from '@univerjs/preset-sheets-core';
 import sheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
 import { CanceledError, ICommandService } from '@univerjs/core';
-import { IFunctionService } from '@univerjs/engine-formula';
+import { FormulaDataModel, IFunctionService } from '@univerjs/engine-formula';
 import '@univerjs/preset-sheets-core/lib/index.css';
 import { editsFromMutation, parseCell, toUniver } from './convert.js';
 import { blockFunctions, guardStructure } from './guard.js';
@@ -102,7 +103,13 @@ univerAPI.addEvent(univerAPI.Event.CommandExecuted, (ev) => {
   // recalculated formula cell would be sent to the service as an edit that replaces its formula with a value.
   const o = ev.options || {};
   if (o.onlyLocal || o.fromFormula) return;
-  for (const e of editsFromMutation(ev.params || {}, sheetNameById)) send({ type: 'edit', ...e });
+  const p = ev.params || {};
+  const formulas = injector.get(FormulaDataModel);
+  const resolve = (row, col) => formulas.getFormulaStringByCell(row, col, p.subUnitId, p.unitId);
+  for (const e of editsFromMutation(p, sheetNameById, resolve)) {
+    if (e.error) send({ type: 'error', code: e.error, detail: `${e.sheet}!${e.cell}` });
+    else send({ type: 'edit', ...e });
+  }
 });
 
 if (host) {

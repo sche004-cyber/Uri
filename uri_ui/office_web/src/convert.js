@@ -72,7 +72,11 @@ export function toUniver(wb, id = 'uri-office') {
 }
 
 // One user edit from a Univer set-range-values mutation -> service edit requests.
-export function editsFromMutation(params, sheetNameById) {
+// Formula fill and insert-function write shared formulas: the first cell as {f, si}, the others as {si, f: null,
+// v: null}. Those cells are formulas, not clears: resolveFormula(row, col) reads the formula Univer derives for them
+// (the page passes FormulaDataModel.getFormulaStringByCell). If it cannot, the cell is reported as an error and never
+// sent as an empty value.
+export function editsFromMutation(params, sheetNameById, resolveFormula = () => null) {
   const sheet = sheetNameById[params.subUnitId];
   if (!sheet || !params.cellValue) return [];
   const out = [];
@@ -81,7 +85,11 @@ export function editsFromMutation(params, sheetNameById) {
       const ref = cellRef(Number(r), Number(c));
       if (cell == null) { out.push({ sheet, cell: ref, value: null }); continue; }
       if (typeof cell.f === 'string' && cell.f.startsWith('=')) out.push({ sheet, cell: ref, formula: cell.f });
-      else if ('v' in cell || 'p' in cell) out.push({ sheet, cell: ref, value: cell.v ?? null });
+      else if (typeof cell.si === 'string' && cell.si) {
+        const f = resolveFormula(Number(r), Number(c));
+        if (typeof f === 'string' && f.startsWith('=')) out.push({ sheet, cell: ref, formula: f });
+        else out.push({ sheet, cell: ref, error: 'FORMULA_NOT_RESOLVED' });
+      } else if ('v' in cell || 'p' in cell) out.push({ sheet, cell: ref, value: cell.v ?? null });
     }
   }
   return out;

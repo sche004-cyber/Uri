@@ -42,3 +42,17 @@ test('edits from a user mutation: values, formulas, clears; style-only writes ig
 test('unknown sheet ids produce no edits', () => {
   assert.deepEqual(editsFromMutation({ subUnitId: 'zz', cellValue: { 0: { 0: { v: 1 } } } }, { s0: 'Sales' }), []);
 });
+
+test('shared-formula cells (si only, f and v null) are sent as their resolved formula, never as clears (R2-01)', () => {
+  const cellValue = { 0: { 1: { f: '=A1*2', si: 'x1' } }, 1: { 1: { si: 'x1', f: null, v: null } },
+    2: { 1: { si: 'x1', f: null, v: null } } };
+  const resolve = (r, c) => (c === 1 ? `=A${r + 1}*2` : null);
+  assert.deepEqual(editsFromMutation({ subUnitId: 's0', cellValue }, { s0: 'Sales' }, resolve), [
+    { sheet: 'Sales', cell: 'B1', formula: '=A1*2' },
+    { sheet: 'Sales', cell: 'B2', formula: '=A2*2' },
+    { sheet: 'Sales', cell: 'B3', formula: '=A3*2' },
+  ]);
+  // unresolvable: an error entry, never value null
+  assert.deepEqual(editsFromMutation({ subUnitId: 's0', cellValue: { 1: { 1: { si: 'x1', f: null, v: null } } } },
+    { s0: 'Sales' }), [{ sheet: 'Sales', cell: 'B2', error: 'FORMULA_NOT_RESOLVED' }]);
+});
