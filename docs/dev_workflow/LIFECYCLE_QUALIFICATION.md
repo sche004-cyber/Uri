@@ -170,6 +170,12 @@ gate"), repaired on the PC in the commit after `f3706e03`: 10 new tests in `test
 on `ce1a90c` for their own reason), portable fixtures, a `linux_only` marker reported by name. The test of a reviewer
 that leaves a detached forger behind (`test_r1r2_01_*[True]`) now runs on Windows against real Job Objects.
 
+Correction (DEV-LIFECYCLE-2 r2, R1-03): the claim "all fail on `ce1a90c` for their own reason" was wrong on Linux for
+four of them (the three `test_w2_launcher_that_cannot_be_bound_is_unlaunchable` cases and
+`test_w2_ps1_only_is_not_a_reviewer_cli` accepted `{'error': 'not found'}`). They now assert that the launcher was
+found and the exact refusal; with the added `test_w2_npm_shims_with_comments_and_if_exist_lines_are_still_bound`, all
+11 tests of that file fail on `ce1a90c` on Linux (checked in a clean export of `ce1a90c` with the file copied in).
+
 The gate counts on the exact candidate SHA after that repair, the independent review and the real DEVTEST round are
 recorded in the milestone receipt; until they are, Windows stays NOT VERIFIED. A failure is recorded as NOT VERIFIED,
 never as a pass.

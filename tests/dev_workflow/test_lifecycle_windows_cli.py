@@ -98,24 +98,41 @@ def test_w2_npm_script_launcher_binds_interpreter_and_script(win):
     assert ident["interpreter"] == {"realpath": os.path.realpath(node), "sha256": P._file_sha256(str(node))}
 
 
-@pytest.mark.parametrize("body", [
-    b'@ECHO off\r\n"%~dp0a.exe" "%~dp0b.exe" %*\r\n',          # several programs
-    b'@ECHO off\r\n"%~dp0missing.exe" %*\r\n',                  # nothing it names exists
-    b'@ECHO off\r\n"%~dp0prog/claude.exe"\r\n',                 # does not pass its arguments on
+@pytest.mark.parametrize("body,reason", [
+    (b'@ECHO off\r\n"%~dp0a.exe" "%~dp0b.exe" %*\r\n', "several programs"),
+    (b'@ECHO off\r\n"%~dp0missing.exe" %*\r\n', "does not name one executable"),
+    (b'@ECHO off\r\n"%~dp0prog/claude.exe"\r\n', "does not pass its arguments on"),
 ])
-def test_w2_launcher_that_cannot_be_bound_is_unlaunchable(win, body):
+def test_w2_launcher_that_cannot_be_bound_is_unlaunchable(win, body, reason):
+    """The launcher IS found (not a vacuous 'not found', R1-03) and is refused for its own reason."""
     _exe(win / "a.exe")
     _exe(win / "b.exe")
     _exe(win / "prog/claude.exe")
     (win / "claude.cmd").write_bytes(body)
     ident = P.reviewer_executable({"provider": "claude_cli"})
-    assert ident.get("unlaunchable") or ident.get("error")
-    assert "sha256" not in ident or ident.get("unlaunchable")
+    assert ident["path"] == os.path.abspath(win / "claude.cmd") and ident["error"] != "not found"
+    assert len(ident["unlaunchable"]) == 1 and reason in ident["unlaunchable"][0]
+    assert "sha256" not in ident
 
 
 def test_w2_ps1_only_is_not_a_reviewer_cli(win):
+    """A ``.ps1`` is never a candidate, while a ``.cmd`` launcher beside it is (R1-03: the 'not found' is the
+    ``.ps1`` being skipped, not the launcher lookup failing on this platform)."""
     (win / "claude.ps1").write_text("& node cli.js $args")
     assert P.reviewer_executable({"provider": "claude_cli"}) == {"name": "claude", "error": "not found"}
+    exe = _exe(win / "prog/claude.exe")
+    _native_shim(win)
+    ident = P.reviewer_executable({"provider": "claude_cli"})
+    assert ident["path"] == os.path.abspath(win / "claude.cmd") and ident["launch"] == [os.path.realpath(exe)]
+    assert not ident.get("unlaunchable") and not ident.get("ambiguous")
+
+
+def test_w2_npm_shims_with_comments_and_if_exist_lines_are_still_bound(win):
+    """R1-02 keeps the genuine npm shapes launchable: comment and IF EXIST lines are not the launch line."""
+    exe = _exe(win / "prog/claude.exe")
+    (win / "claude.cmd").write_bytes(b'@ECHO off\r\nREM npm shim\r\n:: generated\r\nGOTO start\r\n:start\r\n'
+                                     b'SETLOCAL\r\n"%~dp0prog/claude.exe"   %*\r\n')
+    assert P.resolve_cli(str(win / "claude.cmd"))["launch"] == [os.path.realpath(exe)]
 
 
 def test_w2_exe_planted_beside_the_launcher_is_ambiguous(win):

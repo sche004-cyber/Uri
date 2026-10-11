@@ -676,6 +676,8 @@ def run_cmd(cmd, cwd, timeout) -> tuple:
     except subprocess.TimeoutExpired:
         state = "TIMED_OUT"
         out, err = drain_after_timeout(p)
+    except OSError as e:  # still finished below: its job is terminated and tracked (DEV-LIFECYCLE-2 R2-01)
+        state, out, err = "BLOCKED", "", f"cannot communicate: {e}"
     # A setsid() child of a gate or test is adopted by the driver and killed by the sweep (R8-01); on Windows the
     # command's job is terminated.
     containment.finish(p, sweep_orphans)

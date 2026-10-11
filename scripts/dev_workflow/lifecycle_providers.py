@@ -265,29 +265,46 @@ def _path_candidates(name: str) -> list[str]:
 WINDOWS = sys.platform == "win32"
 _WIN_LAUNCHABLE = (".exe", ".com", ".cmd", ".bat")
 _DP0 = re.compile(r"%~?dp0%?", re.IGNORECASE)
+_REM = re.compile(r"^\s*@?\s*(rem(\s|$)|::)", re.IGNORECASE)
+# A launcher must not hand the reviewer to a command interpreter: it would read the prompt on stdin as commands.
+_WIN_SHELLS = ("cmd.exe", "powershell.exe", "pwsh.exe", "cscript.exe", "wscript.exe")
+_WIN_SHELL_SCRIPTS = (".bat", ".cmd", ".ps1", ".vbs", ".wsf")
 
 
 def _win_launcher_target(shim: str) -> dict:
     """W-2: the program a ``.cmd``/``.bat`` launcher (npm shim) runs, so that program is what is bound and launched
     directly. Never cmd.exe: it would re-parse every argument. The quoted paths of the launcher are read with
-    ``%~dp0`` replaced by its folder; other variables are not evaluated. Exactly one program and at most one script
-    must remain, otherwise the launcher is refused (fail closed)."""
+    ``%~dp0`` replaced by its folder; other variables are not evaluated; comment lines (``REM``, ``::``) are ignored.
+    Exactly one program and at most one script must remain, the program must not be a command interpreter
+    (cmd/PowerShell/Windows Script Host) nor the script a shell script, and ``%*`` must be on the line that runs it;
+    otherwise the launcher is refused (fail closed, DEV-LIFECYCLE-2 R1-02)."""
     d = os.path.dirname(os.path.abspath(shim))
     try:
         text = Path(shim).read_text(encoding="utf-8", errors="replace")
     except OSError as e:
         return {"error": f"launcher not readable: {e}"}
-    exes, scripts = [], []
-    for tok in re.findall(r'"([^"]+)"', text):
-        t = _DP0.sub(lambda m: d + os.sep, tok)
-        if "%" in t:
-            continue  # e.g. npm's "%_prog%": resolved below from the script type
-        t = os.path.normpath(t)
-        if not os.path.isfile(t) or t in exes or t in scripts:
+    exes, scripts, line_of = [], [], {}
+    for line in text.splitlines():
+        if _REM.match(line):
             continue
-        (exes if t.lower().endswith((".exe", ".com")) else scripts).append(t)
+        for tok in re.findall(r'"([^"]+)"', line):
+            t = _DP0.sub(lambda m: d + os.sep, tok)
+            if "%" in t:
+                continue  # e.g. npm's "%_prog%": resolved below from the script type
+            t = os.path.normpath(t)
+            if not os.path.isfile(t) or t in exes or t in scripts:
+                continue
+            (exes if t.lower().endswith((".exe", ".com")) else scripts).append(t)
+            line_of[t] = line
     if len(scripts) > 1 or len(exes) > 1:
         return {"error": f"launcher names several programs ({', '.join(exes + scripts)})"}
+    bad = [t for t in exes if os.path.basename(t).lower() in _WIN_SHELLS] + \
+          [t for t in scripts if t.lower().endswith(_WIN_SHELL_SCRIPTS)]
+    if bad:
+        return {"error": f"launcher runs a command interpreter or shell script ({', '.join(bad)})"}
+    runs = scripts[0] if scripts else (exes[0] if exes else None)
+    if runs is not None and "%*" not in line_of[runs]:
+        return {"error": "launcher does not pass its arguments on (%*) on the line that runs the program"}
     if scripts and not exes and scripts[0].lower().endswith((".js", ".mjs", ".cjs")):
         node = shutil.which("node")  # npm: "%_prog%" is node.exe beside the launcher (found above) or on PATH
         if node and os.path.splitext(node)[1].lower() in (".exe", ".com"):
@@ -573,7 +590,13 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
     try:
         proc = containment.spawn(argv, cwd=worktree, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, text=True, env=env)
-        rec["pid"] = proc.pid
+    except OSError as e:
+        if watch:
+            watch.__exit__(None, None, None)
+        rec.update(status="FAILED", detail=f"spawn: {e}", ended_at=_now())
+        return rec
+    rec["pid"] = proc.pid
+    try:
         out, err = proc.communicate(prompt, timeout=timeout_s)
         rec["exit_code"] = proc.returncode
     except subprocess.TimeoutExpired:
@@ -581,10 +604,10 @@ def _run(argv, rec, role, prompt, worktree, log_dir, env, timeout_s, cfg_dir) ->
         rec["exit_code"] = None
         rec.update(status="TIMED_OUT")
     except OSError as e:
-        if watch:
-            watch.__exit__(None, None, None)
-        rec.update(status="FAILED", detail=f"spawn: {e}", ended_at=_now())
-        return rec
+        # The worker runs: it still goes through finish() below, so its job is terminated and tracked (R2-01).
+        out, err = "", ""
+        rec["exit_code"] = None
+        rec.update(status="FAILED", detail=f"communicate: {e}")
     # Always end the worker's whole process group before anything is checked or committed: a detached child
     # must not write after the integrity snapshot (DEV-LIFECYCLE-1 R1-06). A child that calls setsid() itself
     # escapes the group but is adopted by the driver (child subreaper) and killed by the sweep (R8-01). On Windows
