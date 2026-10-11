@@ -792,17 +792,21 @@ _RUN = re.compile(r"[A-Za-z0-9|]+")
 def _ascii_variant(norm: str) -> str:
     """`norm` with ASCII look-alikes read as the letter they pass for, inside runs that hold at least two letters
     ('c0m' -> 'com', 'g0v' -> 'gov', 'mi1' -> 'mil', 'miI' -> 'mil'); 'I' only in a run that also has lower-case letters
-    ('MIT' stays), and never as the first letter ('In 2020'). Same length as `norm`, so spans found in it are spans of `norm`. Version numbers ('v1.0') and codes
+    ('MIT' stays), and never as the first letter ('In 2020'); a one-letter run only when it then spells a listed
+    domain (R32-01: 'i0' -> 'io'). Same length as `norm`, so spans found in it are spans of `norm`. Version numbers ('v1.0') and codes
     ('A1', 'B12') keep their digits (fewer than two letters in the run)."""
     def fold(m):
         run = m.group(0)
         letters = sum(ch.isalpha() for ch in run)
-        if letters < 2:
-            return run
         lower = any(ch.islower() for ch in run)
         # 'I' first in a word is a capital ('In 2020', 'It is'), not a look-alike of 'l'.
-        return "".join(_ASCII_ONE[ch] if ch in _ASCII_ONE and (ch != "I" or (lower and i > 0)) else ch
-                       for i, ch in enumerate(run))
+        out = "".join(_ASCII_ONE[ch] if ch in _ASCII_ONE and (ch != "I" or (lower and i > 0)) else ch
+                      for i, ch in enumerate(run))
+        if letters >= 2:
+            return out
+        # R32-01: a run with one letter ('i0', 'c0', '1y') is read only when it then spells a listed top-level domain
+        # ('io', 'co', 'ly'); other codes ('A1', 'v1', 'B12') keep their digits.
+        return out if letters == 1 and out.lower() in _ALL_TLDS and run.lower() not in _ALL_TLDS else run
     return _RUN.sub(fold, norm)
 
 
