@@ -76,3 +76,19 @@ The reviewer's findings disproved these earlier claims. The claims are kept abov
 | R3-04 | R1-03: array formula cells are refused | Data-table formulas (`t="dataTable"`) were not locked; saving the anchor dropped the table. Every cell in a data table's `ref` is now locked and refused at save time | `tests/office/test_review_r3_repairs.py` |
 
 Not verified in this repair: the Windows-only Edge/WebView2 probes on the new bundle `b379fff2…`.
+
+## 2026-10-11, review VERIFIED at 25fce881 (R9 ACCEPT WITH FINDINGS) -> Windows gate evidence
+
+The cloud lifecycle run continued after round 2 and reached VERIFIED at `25fce881` (9 rounds, repairs P6-P12; open: R9-01, R9-02 LOW). Its gates were Linux only. On the owner's PC, at that code:
+
+| Check | Result |
+|---|---|
+| Page bundle, two clean builds | `b379fff2350c3b86fb51d4d85b4525d5ac03b6d9fda0fbdaa103182ca567c02c`, equal to `BUNDLE_SHA256` |
+| Real WebView2 probe (run 6) | 0 escapes in 48 attempts + 9 navigations, nothing downloaded, all lockdown settings off (`evidence/webview2_security_probe_run6_verified_25fce881.json`) |
+| `tests/ws tests/oi tests/a2ui` | 597 passed, 22 skipped (baseline) |
+| `flutter test` | 522 passed, 5 skipped |
+| `tests/office` | **3 failed** on Windows: the node-test wrappers looked for TAP output (`# fail 0`), which node prints only when it chooses TAP; the node tests themselves passed |
+| `flutter analyze` | 4 issues (2 new `use_null_aware_elements` infos from the repairs) |
+
+Windows gate fix on top (this commit): node wrappers force `--test-reporter=tap`; the two lints fixed. After it: `tests/office` 246 passed / 3 POSIX-only skips; analyze back to the 2 pre-existing infos; Office widget tests 11/11.
+A local manual repair of round 2 (`wip/office-manual-r2-repair`, 9f5f14ad) overlapped the run's own repairs and was NOT pushed; its extra low-severity hardening (R2-03 Dart-args ignored, R2-04 install_ok, R2-06 card characters, R2-08 page-folder links) is available as a follow-up if wanted.

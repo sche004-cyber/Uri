@@ -104,7 +104,7 @@ class OfficeController extends ChangeNotifier {
       // the values as opened.
       final w = r['workbook'];
       final lv = r['layout_version'];
-      view = {...view!, 'draft': d, if (w is Map) 'workbook': w, if (lv != null) 'layout_version': lv};
+      view = {...view!, 'draft': d, if (w is Map) 'workbook': w, 'layout_version': ?lv};
       if (pageReady) await surface.post({'type': 'load', 'workbook': view!['workbook'], 'marks': marks()});
     }
   }
@@ -122,7 +122,7 @@ class OfficeController extends ChangeNotifier {
         // The grid's layout version goes with the edit: the service refuses coordinates from a grid whose rows moved.
         final lv = view?['layout_version'];
         final body = {'sheet': m['sheet'], 'cell': m['cell'], if (m.containsKey('formula')) 'formula': m['formula'] else 'value': m['value'],
-          if (lv != null) 'layout_version': lv};
+          'layout_version': ?lv};
         _pageEdits.add((wid, body));
         await _sendPageEdits();
       case 'error':

@@ -109,7 +109,7 @@ def test_install_refuses_unverified_bundle_or_non_app_folder(fake_bundle, monkey
 def test_page_unit_tests_pass():
     node = shutil.which("node")
     assert node, "node is required to test the Office page"
-    r = subprocess.run([node, "--test", "test/convert.test.mjs"], cwd=WEB, capture_output=True, text=True, timeout=120)
+    r = subprocess.run([node, "--test", "--test-reporter=tap", "test/convert.test.mjs"], cwd=WEB, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
     assert "# fail 0" in r.stdout or "fail 0" in r.stdout
 
@@ -118,7 +118,7 @@ def test_page_guard_unit_tests_pass():
     """Network formula functions stay blocked after workbooks load (R1-01); structural grid edits are refused (R1-11)."""
     node = shutil.which("node")
     assert node, "node is required to test the Office page"
-    r = subprocess.run([node, "--test", "test/guard.test.mjs"], cwd=WEB, capture_output=True, text=True, timeout=120)
+    r = subprocess.run([node, "--test", "--test-reporter=tap", "test/guard.test.mjs"], cwd=WEB, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
     assert "# fail 0" in r.stdout
 
@@ -126,7 +126,7 @@ def test_page_guard_unit_tests_pass():
 @pytest.mark.skipif(not (WEB / "node_modules" / "@univerjs" / "sheets").is_dir(),
                     reason="needs `npm ci` in uri_ui/office_web (staging build); runs against the real Univer engine")
 def test_page_guards_hold_in_the_real_univer_engine():
-    r = subprocess.run([shutil.which("node"), "--test", "test/guard.univer.test.mjs"], cwd=WEB, capture_output=True,
+    r = subprocess.run([shutil.which("node"), "--test", "--test-reporter=tap", "test/guard.univer.test.mjs"], cwd=WEB, capture_output=True,
                        text=True, timeout=180)
     assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
     assert "# fail 0" in r.stdout
@@ -136,7 +136,7 @@ def test_page_guards_hold_in_the_real_univer_engine():
                     reason="needs `npm ci` in uri_ui/office_web (staging build); runs against the real Univer engine")
 def test_shared_formula_edits_are_formulas_in_the_real_univer_engine():
     """Formula fill / insert-function cells carrying only a shared-formula id are sent as formulas, not clears (R2-01)."""
-    r = subprocess.run([shutil.which("node"), "--test", "test/edits.univer.test.mjs"], cwd=WEB, capture_output=True,
+    r = subprocess.run([shutil.which("node"), "--test", "--test-reporter=tap", "test/edits.univer.test.mjs"], cwd=WEB, capture_output=True,
                        text=True, timeout=180)
     assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
     assert "# fail 0" in r.stdout
