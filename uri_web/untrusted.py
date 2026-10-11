@@ -831,10 +831,40 @@ def _ascii_variant(norm: str) -> str:
         lower = any(ch.islower() for ch in run)
         return "".join(_ASCII_ONE[ch] if ch in _ASCII_ONE and (ch != "I" or (lower and i > 0)) else ch
                        for i, ch in enumerate(run))
-    return _RUN.sub(fold, _MIXED.sub(_mixed_fold, norm))
+    return _RUN.sub(fold, _SPELT_SINGLES.sub(_spelt_fold, _MIXED.sub(_mixed_fold, norm)))
 
 
-_MIXED = re.compile(r"[\w|]+")
+_MIXED = re.compile(r"(?:[^\W_]|\|)+")      # R38-02: '_' splits a group ('\u04410\u043c_' -> '\u04410\u043c' + '_')
+# R38-01: single characters separated by single spaces ('c 0 m', 'g 0 v', 'i 0', '\u0441 0 \u043c').
+_SPELT_SINGLES = re.compile(r"(?<!\S)(?:[^\W_]|\|)(?: (?:[^\W_]|\|))+(?!\S)")
+
+
+def _spelt_fold(m) -> str:
+    """R38-01: a spelt-out ending whose letters include look-alikes is read letter by letter with every fold set
+    ('0'/'1' as 'o'/'l', 'I'/'|' as 'i' or 'l', single-letter Unicode look-alikes) and replaced, same length, only
+    when the joined reading spells a listed top-level domain and differs from what is written."""
+    text = m.group(0)
+    chars = text.split(" ")
+    if len(chars) > 12:
+        return text
+    choices = []
+    for ch in chars:
+        if ch in ("I", "|"):
+            choices.append(("i", "l") if ch == "I" else ("l",))
+        elif ch in _ASCII_ONE:
+            choices.append((_ASCII_ONE[ch],))
+        elif ch.isascii():
+            choices.append((ch.lower(),) if ch.isalpha() else ())
+        else:
+            choices.append(tuple(sorted({o for o in _ascii_options(ch) if len(o) == 1 and o != "?"})))
+        if not choices[-1]:
+            return text
+    if sum(len(c) > 1 for c in choices) > 6:
+        return text
+    for reading in itertools.product(*choices):
+        if "".join(reading) in _ALL_TLDS and "".join(reading) != "".join(chars).lower():
+            return " ".join(reading)
+    return text
 
 
 def _mixed_fold(m) -> str:
