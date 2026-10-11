@@ -28,9 +28,11 @@ work while am away from pc". This file is the standing plan; every check-in foll
 
 1. **W1/A0 closure** (running; active run record `W1-A0-closure-2`, config `lifecycle-runs/W1-A0-closure-2.json`;
    `W1-A0-closure` is superseded history). Independent ACCEPT on the exact commit, then the gates, then the D1 merge into
-   `integration/git-sync-20261008` (expected tip `ce1a90c`) with a receipt.
+   `integration/git-sync-20261008` (expected tip `cbdf3f2c` since DEV-LIFECYCLE-2 integrated) with a receipt.
 2. **SSRF-1** (D2). Plan: `lifecycle-runs/SSRF-1_PLAN_DRAFT.md`. The branch is cut from the canonical tip after step 1,
    and `authorized_protected_changes` is `uri_core/tools/fetch_url.py` only.
+2b. **IDN-1** (owner decision D21, 2026-10-11: block site addresses with non-English letters, and tell the user why in plain words). Plan: `lifecycle-runs/IDN-1_PLAN_DRAFT.md`. Branch from the canonical tip after SSRF-1.
+   Also proposed, awaiting owner yes: **LINK-REP-1** (known-scam lists such as URLhaus/Web Risk for real addresses, plus urgency and mismatched-link flags; sends addresses to an outside service).
 3. **GRAPHIFY-LEAK-1 fix** (owner decision D12, 2026-10-11: "fix before W2"). A small milestone, with its branch cut
    from the canonical tip after SSRF-1. Each user's Graphify view rebuilds its memory pointers from that user's own
    memory store. `authorized_protected_changes` is `uri_core/app/server.py`, plus `uri_core/core/graphify_index.py`
@@ -165,3 +167,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 18:35 | W1/A0 R23 on 0e9a51ea: RETRY_LIMIT, R23-01 (one letter + own-script marks). Coordinator repair `d51207ea` (letters only; same-script bracketed phrases; 14/19 new tests fail on 0e9a51ea; web 2992 pass; gate identical to baseline). Relaunched for R24. Owner shared phishing-defence ideas: hidden-text stripping already done; threat feeds + urgency/mismatch flags proposed as LINK-REP-1 after W1/A0 (needs owner yes for sending URLs to an outside service); sandboxed link checkers rejected (would open scam sites). |
 | 2026-10-11 19:00 | W1/A0 R24 on d51207ea: RETRY_LIMIT, R24-01 (Arabic/Hebrew TLD with optional vowel marks). R23-01 confirmed fixed. Coordinator repair `0adc9541` (18/18 new link tests fail on d51207ea; web 3014 pass; gate = baseline + known ws flake). Relaunched for R25. Noted, unchanged: D15 masks pointed Hebrew (shin dot). Owner asked about blocking sites without English letters: proposed blocking non-English site ADDRESSES (IDN hosts) as a small change after W1/A0; awaiting owner yes. |
 | 2026-10-11 19:25 | W1/A0 R25 on 0adc9541: RETRY_LIMIT, R25-01 (hand-picked Arabic mark ranges incomplete). Coordinator repair `74909458` (all Mn/Me marks removed for ending match; 14/14 new link tests fail on 0adc9541; web 3032 pass; gate identical to baseline). Relaunched for R26. |
+| 2026-10-11 19:35 | **Owner decision D21**: block site addresses with non-English letters (option 1), and when a genuine site is blocked URI must say why. Queued as IDN-1 after SSRF-1 (plan draft written). Not applied to the W1/A0 candidate (would restart its review). The D21 row goes into OWNER_DECISIONS in the IDN-1 branch. |
