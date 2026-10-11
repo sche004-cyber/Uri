@@ -1,67 +1,39 @@
 {
  "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
- "blocker": {
-  "at": "2026-10-11T14:00:55Z",
-  "kind": "REPAIR_FAILED",
-  "needs": "manual repair",
-  "reason": "REGRESSION: no regression test fails on the pre-repair commit",
-  "stage": "FIXING"
+ "blocker": null,
+ "candidate": "25fce881bad918e32dbd732e8004dfabdfa41985",
+ "config_sha256": "0e7a085340173d278e78445c26ae4f7226c47dd0ccf71b413b4f8dad365fe0e0",
+ "events": 78,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "25fce881bad9": {
+   "blocked": null,
+   "new_failures": {
+    "python-a2ui": [],
+    "python-office": []
+   },
+   "ok": true
+  }
  },
- "candidate": "68d60652e832c0a92aa1b1998da09cee308a16fa",
- "config_sha256": "6055869cf36fa3525264d9bca81b0fc962de1eca529b00b63215af920ef4a63a",
- "events": 21,
- "evidence_ok_for_candidate": false,
- "gates": {},
- "integration": null,
+ "integration": {
+  "at": "2026-10-11T15:29:02Z",
+  "candidate": "25fce881bad918e32dbd732e8004dfabdfa41985",
+  "mode": "none",
+  "status": "NOT_INTEGRATED_BY_POLICY"
+ },
  "milestone": "URI-OFFICE-M1",
  "open_findings": [
   {
-   "blocking": true,
-   "id": "R2-01",
-   "severity": "MEDIUM",
-   "title": "Formula fill/insert-function cells that carry only a shared-formula id (si) are reported to the service as empty values, so the draft clears cells the grid shows as formulas"
-  },
-  {
-   "blocking": true,
-   "id": "R2-02",
-   "severity": "MEDIUM",
-   "title": "PATCHES.md doesn't list the network kill switch or the WebRTC/WebTransport removal, yet says the diff from 9765e780 is exactly the listed patches"
+   "blocking": false,
+   "id": "R9-01",
+   "severity": "LOW",
+   "title": "The panel never shows how many proposed changes a reload dropped (proposals_dropped)"
   },
   {
    "blocking": false,
-   "id": "R2-03",
+   "id": "R9-02",
    "severity": "LOW",
-   "title": "The host network kill switch can be overridden by Dart-supplied browser arguments or the WebView2 environment variables and policies; 'no API to turn the lockdown off' is not accurate"
-  },
-  {
-   "blocking": false,
-   "id": "R2-04",
-   "severity": "LOW",
-   "title": "The request filter fails open on errors, ignores install HRESULTs and doesn't cover worker request sources"
-  },
-  {
-   "blocking": false,
-   "id": "R2-05",
-   "severity": "LOW",
-   "title": "An edit reply for a previous workbook can overwrite the newly opened workbook's draft in the panel"
-  },
-  {
-   "blocking": false,
-   "id": "R2-06",
-   "severity": "LOW",
-   "title": "The approval card keeps bidi/format control characters in values and formulas, and shows sheet names raw"
-  },
-  {
-   "blocking": false,
-   "id": "R2-07",
-   "severity": "LOW",
-   "title": "AC15 row still says the host layer and real-WebView2 run are 'open' while \u00a713 records them done; the real-WebView2 probe hasn't been re-run on bundle faf22fb3; the gRPC placeholder cites a README that doesn't exist"
-  },
-  {
-   "blocking": false,
-   "id": "R2-08",
-   "severity": "LOW",
-   "title": "The Dart page-hash check happens before the live folder is mapped, and symlinks are not hashed (TOCTOU)"
+   "title": "No Dart test covers the controller reload path (RELOAD_REQUIRED, then POST /workbook/<id>/reload)"
   }
  ],
  "repairs": [
@@ -113,6 +85,85 @@
    "reason": "REGRESSION: no regression test fails on the pre-repair commit",
    "repair": 4,
    "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02"
+   ],
+   "commit": null,
+   "reason": "REGRESSION: no runnable regression test (a test file with a configured runner is required)",
+   "repair": 5,
+   "status": "REFUSED"
+  },
+  {
+   "addresses": [
+    "R2-01",
+    "R2-02"
+   ],
+   "commit": "4743860bb104e49979ccbc016181facc3c440838",
+   "reason": null,
+   "repair": 6,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R3-01",
+    "R3-02",
+    "R3-03",
+    "R3-04"
+   ],
+   "commit": "dcab7e1b2138d73b5b0904137fa6a79af99945bd",
+   "reason": null,
+   "repair": 7,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R4-01"
+   ],
+   "commit": "a73daefef7336f0d17d0cc57e1687b9567d6a9b1",
+   "reason": null,
+   "repair": 8,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R5-01",
+    "R5-02"
+   ],
+   "commit": "ace76d3cae51d74009cc32b73f532fae02078d73",
+   "reason": null,
+   "repair": 9,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R6-01"
+   ],
+   "commit": "65180741ee24366b17ad6923ff8e85e7a3ff9e09",
+   "reason": null,
+   "repair": 10,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R7-01",
+    "R7-02"
+   ],
+   "commit": "02c91b85a99a0db74477ace08d1dfbed581c0885",
+   "reason": null,
+   "repair": 11,
+   "status": "COMMITTED"
+  },
+  {
+   "addresses": [
+    "R8-01"
+   ],
+   "commit": "25fce881bad918e32dbd732e8004dfabdfa41985",
+   "reason": null,
+   "repair": 12,
+   "status": "COMMITTED"
   }
  ],
  "reviewers": [
@@ -143,11 +194,109 @@
    "session_id": "7ebe3be0-0341-4b06-8445-ed0e6aaa70bb",
    "status": "COMPLETED_WITH_RESULT",
    "verdict": "REJECT"
+  },
+  {
+   "candidate": "4743860bb104e49979ccbc016181facc3c440838",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 3,
+   "session_id": "9061675f-3ee6-49fd-9a19-d4b34c71cb89",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "dcab7e1b2138d73b5b0904137fa6a79af99945bd",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 4,
+   "session_id": "8711d217-fb8b-4199-97a3-39ce2e06636e",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "a73daefef7336f0d17d0cc57e1687b9567d6a9b1",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 5,
+   "session_id": "218370ce-9ed2-44e7-a3ac-53712861e18a",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "ace76d3cae51d74009cc32b73f532fae02078d73",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 6,
+   "session_id": "a95564d5-efa3-4a23-bc0e-97eba7320df0",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "65180741ee24366b17ad6923ff8e85e7a3ff9e09",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 7,
+   "session_id": "5931f0b4-2dd2-4da4-b2da-2f35ceccec98",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "02c91b85a99a0db74477ace08d1dfbed581c0885",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "REJECT",
+   "round": 8,
+   "session_id": "45120fde-bb79-459c-b1ce-e063232dd4e6",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "REJECT"
+  },
+  {
+   "candidate": "25fce881bad918e32dbd732e8004dfabdfa41985",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 9,
+   "session_id": "fc4a852c-77d6-419f-9c4e-a3bbf5013925",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
   }
  ],
- "rounds": 2,
+ "rounds": 9,
  "schema": "uri-dev-lifecycle/1",
- "stage": "BLOCKED",
+ "stage": "VERIFIED",
  "verify_errors": [],
- "written_at": "2026-10-11T14:00:55Z"
+ "written_at": "2026-10-11T15:29:02Z"
 }
