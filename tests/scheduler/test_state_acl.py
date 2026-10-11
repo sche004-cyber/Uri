@@ -63,7 +63,9 @@ def test_folder_steps_restrict_folder_before_resetting_children(tmp_path):   # R
     (tmp_path / "api-token").write_text("old")
     steps = S.icacls_steps(tmp_path, "me", folder=True)
     assert steps == [["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"],
+                     ["icacls", str(tmp_path / "api-token"), "/setowner", "me", "/T", "/Q", "/L"],
                      ["icacls", str(tmp_path / "api-token"), "/reset", "/T", "/Q", "/L"],
+                     ["icacls", str(tmp_path / "scheduler.db"), "/setowner", "me", "/T", "/Q", "/L"],
                      ["icacls", str(tmp_path / "scheduler.db"), "/reset", "/T", "/Q", "/L"]]
     assert all("/C" not in st for st in steps)                            # an un-resettable file fails the step
     assert all(st[1] != str(tmp_path) for st in steps if "/reset" in st)  # the folder itself is never reset
@@ -88,8 +90,9 @@ def test_folder_acl_failure_fails_closed(tmp_path, monkeypatch):           # R1-
     assert len(calls) == 2 and all("/grant:r" in c and "/reset" not in c for c in calls)   # grant, then re-grant
 
 
-def _simulated_windows(monkeypatch, fail_reset):
-    """Drive the icacls branch on any platform: a fake icacls that records calls and fails `/reset` on demand."""
+def _simulated_windows(monkeypatch, fail_reset, fail_on=None, on_call=None):
+    """Drive the icacls branch on any platform: a fake icacls that records calls and fails `/reset` (or the `fail_on`
+    switch) on demand; `on_call` runs on every call, before its result."""
     monkeypatch.setattr(S, "_WINDOWS", True, raising=False)
     monkeypatch.setenv("USERNAME", "me")
     calls = []
@@ -102,7 +105,9 @@ def _simulated_windows(monkeypatch, fail_reset):
 
     def run(cmd, **k):
         calls.append(list(cmd))
-        return _R(5 if (fail_reset and "/reset" in cmd) else 0)
+        if on_call:
+            on_call(cmd)
+        return _R(5 if (fail_reset and "/reset" in cmd) or (fail_on and fail_on in cmd) else 0)
     monkeypatch.setattr(S.subprocess, "run", run)
     monkeypatch.setattr(S, "drop_foreign_entries", lambda p: calls.append(["drop", str(p)]), raising=False)
     return calls
@@ -161,9 +166,75 @@ def test_junction_target_acl_is_untouched(tmp_path):                     # R2-05
     assert len(aces) == 1 and aces[0].endswith(":(OI)(CI)(F)"), aces      # the state folder is still closed
 
 
+def test_each_child_is_taken_over_before_its_reset(tmp_path, monkeypatch):   # R3-01, on every platform
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "outputs").mkdir()
+    (state / "scheduler.db").write_bytes(b"x")
+    calls = _simulated_windows(monkeypatch, fail_reset=False)
+    S.restrict_to_user(state, folder=True)
+    drop = calls.index(["drop", str(state)])
+    for name in ("outputs", "scheduler.db"):
+        own = calls.index(["icacls", str(state / name), "/setowner", "me", "/T", "/Q", "/L"])
+        reset = calls.index(["icacls", str(state / name), "/reset", "/T", "/Q", "/L"])
+        assert drop < own < reset                                         # closed, then owned, then re-inherited
+    assert all(c[1] != str(state) for c in calls if "/setowner" in c)     # only the children
+
+
+def test_child_takeover_failure_fails_closed(tmp_path, monkeypatch):      # R3-01: a child we cannot own stops startup
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "scheduler.db").write_bytes(b"x")
+    calls = _simulated_windows(monkeypatch, fail_reset=False, fail_on="/setowner")
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(state, folder=True)
+    assert [c for c in calls if "/setowner" in c]
+    assert not [c for c in calls if "/reset" in c]
+    assert calls[-1] == ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]   # left closed
+
+
+def test_link_planted_before_children_are_reset_fails_closed(tmp_path, monkeypatch):   # R3-01: residual R2-05 window
+    outside = tmp_path / "protected"
+    outside.mkdir()
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "outputs").mkdir()
+    link = state / "outputs" / "x"
+
+    def plant(cmd):                                                       # the old owner wins the race after the check
+        if "/reset" in cmd and not os.path.lexists(link):
+            if WIN:
+                subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], check=True, capture_output=True)
+            else:
+                link.symlink_to(outside, target_is_directory=True)
+    calls = _simulated_windows(monkeypatch, fail_reset=False, on_call=plant)
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(state, folder=True)
+    assert calls[-1] == ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]   # left closed
+
+
+@pytest.mark.skipif(not WIN, reason="Windows-qualified: object owners and the real icacls")
+def test_foreign_owned_child_is_taken_over(tmp_path):                    # R3-01 with real icacls
+    state = tmp_path / "state"
+    state.mkdir()
+    inside = state / "scheduler.db"
+    inside.write_bytes(b"x")
+    if subprocess.run(["icacls", str(inside), "/setowner", "*S-1-5-32-544"], capture_output=True).returncode != 0:
+        pytest.skip("making BUILTIN\\Administrators the owner needs an elevated session")
+
+    def owner(p):
+        return subprocess.run(["powershell", "-NoProfile", "-Command", f"(Get-Acl -LiteralPath '{p}').Owner"],
+                              capture_output=True, text=True, check=True).stdout.strip()
+    assert owner(inside) not in _me()
+    S.restrict_to_user(state, folder=True)
+    assert owner(inside) in _me()
+    aces = _aces(inside)
+    assert len(aces) == 1 and aces[0].endswith(":(I)(F)"), aces
+
+
 def test_reset_steps_never_follow_links(tmp_path):                       # R2-05: /L on every child reset
     (tmp_path / "x").mkdir()
-    assert all("/L" in st for st in S.icacls_steps(tmp_path, "me", folder=True) if "/reset" in st)
+    assert all("/L" in st for st in S.icacls_steps(tmp_path, "me", folder=True) if "/reset" in st or "/setowner" in st)
 
 
 def test_child_reset_failure_keeps_folder_closed_and_removes_token(tmp_path, monkeypatch, capsys):   # R1-02

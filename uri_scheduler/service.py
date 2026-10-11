@@ -257,13 +257,20 @@ def icacls_steps(path: Path, user: str, *, folder=False) -> list:
     to a single inheritable user entry; only then does `/reset /T` run on each child already inside, dropping every
     explicit entry (any principal's, protected DACLs included) so the child re-inherits from the closed folder. The
     folder itself is never reset, so it never falls back to its parent's ACL, not even between two steps (R1-01).
-    Without /C the first child that cannot be reset fails the step; an empty folder has no reset steps. `/L` makes
-    icacls act on a link itself, never on its target (R2-05)."""
+    Before its reset each child is taken over with `/setowner <user> /T`: a principal that created or replaced an
+    object under the old access would otherwise stay its owner, keeping implicit READ_CONTROL and WRITE_DAC and so
+    the means to grant itself access again (R3-01). Owning the child also gives the user the WRITE_DAC its reset
+    needs. Without /C the first child that cannot be taken over or reset fails the step; an empty folder has no child
+    steps. `/L` makes icacls act on a link itself, never on its target (R2-05)."""
     grant = f"{user}:(OI)(CI)F" if folder else f"{user}:F"
     restrict = ["icacls", str(path), "/inheritance:r", "/grant:r", grant]
     if not folder:
         return [restrict]
-    return [restrict] + [["icacls", str(child), "/reset", "/T", "/Q", "/L"] for child in sorted(path.iterdir())]
+    steps = [restrict]
+    for child in sorted(path.iterdir()):
+        steps += [["icacls", str(child), "/setowner", user, "/T", "/Q", "/L"],
+                  ["icacls", str(child), "/reset", "/T", "/Q", "/L"]]
+    return steps
 
 
 def _icacls(cmd):
@@ -317,11 +324,13 @@ def restrict_to_user(path: Path, *, folder=False):
     """SCHED-TOKEN-ACL-1: replace the ACL with one full-control entry for the current Windows user. For the state
     folder the entry is inheritable, so the token, the database and artifacts inside cannot be read, deleted or
     replaced by other local principals. Folder order: close it (`/inheritance:r /grant:r`), drop other principals'
-    explicit entries on it, then reset the children so they re-inherit from the closed folder; the folder is never
-    reset (R1-01). If any step fails, the folder restriction is applied again before failing (R1-02). A symlink or
-    junction anywhere in the folder fails closed before any reset, so a planted link cannot make the scheduler reset
-    the ACL of a path outside it (R2-05); the check runs after the folder is closed, and `/L` covers a link that
-    still appears at the top level later.
+    explicit entries on it, then take ownership of each child and reset it so it re-inherits from the closed folder;
+    the folder is never reset (R1-01), and no child is left owned by another principal (R3-01). If any step fails,
+    the folder restriction is applied again before failing (R1-02). A symlink or junction anywhere in the folder
+    fails closed before any child step, so a planted link cannot make the scheduler change the ACL or owner of a
+    path outside it (R2-05); the check runs after the folder is closed, `/L` covers a link that still appears at the
+    top level later, and the check runs again once every child is reset, so a link planted while the old access
+    still held also fails closed (R3-01).
     POSIX: 0700 / 0600."""
     if not _WINDOWS:
         try:
@@ -344,6 +353,8 @@ def restrict_to_user(path: Path, *, folder=False):
                 raise StateAclError("the state folder contains a symlink or junction; remove it and start again")
         for cmd in steps[1:]:
             _icacls(cmd)
+        if folder and links_inside(path):
+            raise StateAclError("the state folder contains a symlink or junction; remove it and start again")
     except (OSError, StateAclError) as exc:
         if folder:
             try:

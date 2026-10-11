@@ -33,6 +33,7 @@
 - It uses the same commands as `uri_office/service.py` on `phase/uri-office` (copied, not imported, so the two milestones stay independent).
 - No other module changes.
 - **Links in the state folder (R2-05):** child resets pass `/L`, so icacls acts on a link itself and not on its target. After the folder is closed, any symlink or junction anywhere under it fails closed (`STATE_ACL_FAILED`) before any reset. Otherwise a principal with the old inherited `(M)` could plant a junction and make the scheduler reset the ACL of a folder outside the state folder. The owner removes the link and starts again.
+- **Owners of existing children (R3-01):** before its reset, each child is taken over with `icacls <child> /setowner <user> /T /Q /L`. Otherwise a principal that created or replaced an object under the old `(M)` would stay its owner, keeping implicit READ_CONTROL/WRITE_DAC and the ability to grant itself access again. A child the user cannot take over fails the step (`STATE_ACL_FAILED`), and the folder is left closed. The link check runs again once every child is reset, so a link planted between the first check and the resets also fails closed.
 - **Same-user trust limit:** processes running as the same Windows user can still read the token. That is the documented trust boundary (Phase 1 C1), and this fix does not change it.
 
 ## Out of scope
