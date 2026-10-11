@@ -790,6 +790,12 @@ _ASCII_ONE = {k: v for k, v in _ASCII_SRC.items() if len(v) == 1}
 _RUN = re.compile(r"[A-Za-z0-9|]+")
 
 
+# Ordinary capitalised words whose 'I' read as 'l' would spell a listed domain ('It' -> 'lt'); kept as written at a
+# sentence start (R35-01).
+_SENTENCE_I = frozenset(w for w in ("i", "it", "its", "is", "in", "if", "into", "item", "idea", "ice", "ill", "ink",
+                                    "india", "italy", "iran", "iowa") if "l" + w[1:] in _ALL_TLDS)
+
+
 def _ascii_variant(norm: str) -> str:
     """`norm` with ASCII look-alikes read as the letter they pass for (R31-01..R34-01). Same length as `norm`, so spans
     found in it are spans of `norm`.
@@ -803,7 +809,9 @@ def _ascii_variant(norm: str) -> str:
         run = m.group(0)
         if run.lower() not in _ALL_TLDS and any(ch.isalpha() for ch in run):   # numbers ('000') never
             before = norm[:m.start()].rstrip()
-            starts = not before or before[-1] in ".!?:\"'\u201c\u2018("
+            # R35-01: a sentence start only protects the few ordinary words whose 'l' reading is a domain ('It' ->
+            # 'lt'); 'refunds-portal. Iy' and ': Iink' are read like any other position.
+            starts = (not before or before[-1] in ".!?:\"'\u201c\u2018(") and run.lower() in _SENTENCE_I
             choices = []
             for i, ch in enumerate(run):
                 if ch in ("I", "|"):
