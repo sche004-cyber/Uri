@@ -63,10 +63,10 @@ def test_folder_steps_restrict_folder_before_resetting_children(tmp_path):   # R
     (tmp_path / "api-token").write_text("old")
     steps = S.icacls_steps(tmp_path, "me", folder=True)
     assert steps == [["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"],
-                     ["icacls", str(tmp_path / "api-token"), "/reset", "/T", "/Q"],
-                     ["icacls", str(tmp_path / "scheduler.db"), "/reset", "/T", "/Q"]]
+                     ["icacls", str(tmp_path / "api-token"), "/reset", "/T", "/Q", "/L"],
+                     ["icacls", str(tmp_path / "scheduler.db"), "/reset", "/T", "/Q", "/L"]]
     assert all("/C" not in st for st in steps)                            # an un-resettable file fails the step
-    assert ["icacls", str(tmp_path), "/reset", "/T", "/Q"] not in steps   # the folder itself is never reset
+    assert all(st[1] != str(tmp_path) for st in steps if "/reset" in st)  # the folder itself is never reset
     assert S.icacls_steps(tmp_path, "me") == [["icacls", str(tmp_path), "/inheritance:r", "/grant:r", "me:F"]]
 
 
@@ -117,7 +117,53 @@ def test_folder_is_never_reset_to_its_inherited_acl(tmp_path, monkeypatch):   # 
     grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]
     assert calls[:2] == [grant, ["drop", str(state)]]                     # the folder is closed first, then cleared
     assert all(c[1] != str(state) for c in calls if "/reset" in c)        # and never reset afterwards
-    assert ["icacls", str(state / "api-token"), "/reset", "/T", "/Q"] in calls
+    assert ["icacls", str(state / "api-token"), "/reset", "/T", "/Q", "/L"] in calls
+
+
+@pytest.mark.parametrize("nested", [False, True])
+def test_planted_link_is_never_reset_and_fails_closed(tmp_path, monkeypatch, nested):   # R2-05, on every platform
+    outside = tmp_path / "protected"
+    outside.mkdir()
+    (outside / "secret").write_text("x")
+    state = tmp_path / "state"
+    state.mkdir()
+    (state / "scheduler.db").write_bytes(b"x")
+    parent = state / "sub" if nested else state
+    parent.mkdir(exist_ok=True)
+    link = parent / "x"
+    if WIN:
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], check=True, capture_output=True)
+    else:
+        link.symlink_to(outside, target_is_directory=True)
+    calls = _simulated_windows(monkeypatch, fail_reset=False)
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(state, folder=True)
+    grant = ["icacls", str(state), "/inheritance:r", "/grant:r", "me:(OI)(CI)F"]
+    assert not [c for c in calls if "/reset" in c]                        # nothing is reset, the link least of all
+    assert calls[-1] == grant                                             # the folder is left closed
+    assert (outside / "secret").read_text() == "x"
+
+
+@pytest.mark.skipif(not WIN, reason="Windows-qualified: a real junction and the real icacls")
+def test_junction_target_acl_is_untouched(tmp_path):                     # R2-05 with real icacls
+    outside = tmp_path / "protected"
+    outside.mkdir()
+    subprocess.run(["icacls", str(outside), "/inheritance:r", "/grant:r", "*S-1-5-32-544:(OI)(CI)F",
+                    f"{os.environ['USERNAME']}:(OI)(CI)F"], check=True, capture_output=True)
+    before = _aces(outside)
+    state = tmp_path / "state"
+    state.mkdir()
+    subprocess.run(["cmd", "/c", "mklink", "/J", str(state / "x"), str(outside)], check=True, capture_output=True)
+    with pytest.raises(S.StateAclError):
+        S.restrict_to_user(state, folder=True)
+    assert _aces(outside) == before                                       # still protected, not reset to inherited
+    aces = _aces(state)
+    assert len(aces) == 1 and aces[0].endswith(":(OI)(CI)(F)"), aces      # the state folder is still closed
+
+
+def test_reset_steps_never_follow_links(tmp_path):                       # R2-05: /L on every child reset
+    (tmp_path / "x").mkdir()
+    assert all("/L" in st for st in S.icacls_steps(tmp_path, "me", folder=True) if "/reset" in st)
 
 
 def test_child_reset_failure_keeps_folder_closed_and_removes_token(tmp_path, monkeypatch, capsys):   # R1-02

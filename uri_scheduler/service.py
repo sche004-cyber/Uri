@@ -231,6 +231,25 @@ class StateAclError(Exception):
 
 
 _WINDOWS = os.name == "nt"
+_FILE_ATTRIBUTE_REPARSE_POINT = 0x400
+
+
+def _is_link(path: Path) -> bool:
+    """True for a symlink, junction or any other reparse point; checked with lstat, so the link is never followed."""
+    st = os.lstat(path)
+    return path.is_symlink() or bool(getattr(st, "st_file_attributes", 0) & _FILE_ATTRIBUTE_REPARSE_POINT)
+
+
+def links_inside(path: Path) -> list:
+    """Every symlink, junction or other reparse point anywhere under the folder, without descending into one."""
+    found, todo = [], [path]
+    while todo:
+        for child in sorted(todo.pop().iterdir()):
+            if _is_link(child):
+                found.append(child)
+            elif child.is_dir():
+                todo.append(child)
+    return found
 
 
 def icacls_steps(path: Path, user: str, *, folder=False) -> list:
@@ -238,12 +257,13 @@ def icacls_steps(path: Path, user: str, *, folder=False) -> list:
     to a single inheritable user entry; only then does `/reset /T` run on each child already inside, dropping every
     explicit entry (any principal's, protected DACLs included) so the child re-inherits from the closed folder. The
     folder itself is never reset, so it never falls back to its parent's ACL, not even between two steps (R1-01).
-    Without /C the first child that cannot be reset fails the step; an empty folder has no reset steps."""
+    Without /C the first child that cannot be reset fails the step; an empty folder has no reset steps. `/L` makes
+    icacls act on a link itself, never on its target (R2-05)."""
     grant = f"{user}:(OI)(CI)F" if folder else f"{user}:F"
     restrict = ["icacls", str(path), "/inheritance:r", "/grant:r", grant]
     if not folder:
         return [restrict]
-    return [restrict] + [["icacls", str(child), "/reset", "/T", "/Q"] for child in sorted(path.iterdir())]
+    return [restrict] + [["icacls", str(child), "/reset", "/T", "/Q", "/L"] for child in sorted(path.iterdir())]
 
 
 def _icacls(cmd):
@@ -298,7 +318,10 @@ def restrict_to_user(path: Path, *, folder=False):
     folder the entry is inheritable, so the token, the database and artifacts inside cannot be read, deleted or
     replaced by other local principals. Folder order: close it (`/inheritance:r /grant:r`), drop other principals'
     explicit entries on it, then reset the children so they re-inherit from the closed folder; the folder is never
-    reset (R1-01). If any step fails, the folder restriction is applied again before failing (R1-02).
+    reset (R1-01). If any step fails, the folder restriction is applied again before failing (R1-02). A symlink or
+    junction anywhere in the folder fails closed before any reset, so a planted link cannot make the scheduler reset
+    the ACL of a path outside it (R2-05); the check runs after the folder is closed, and `/L` covers a link that
+    still appears at the top level later.
     POSIX: 0700 / 0600."""
     if not _WINDOWS:
         try:
@@ -317,6 +340,8 @@ def restrict_to_user(path: Path, *, folder=False):
         _icacls(steps[0])
         if folder:
             drop_foreign_entries(path)
+            if links_inside(path):
+                raise StateAclError("the state folder contains a symlink or junction; remove it and start again")
         for cmd in steps[1:]:
             _icacls(cmd)
     except (OSError, StateAclError) as exc:
