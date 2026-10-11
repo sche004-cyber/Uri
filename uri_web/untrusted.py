@@ -831,7 +831,43 @@ def _ascii_variant(norm: str) -> str:
         lower = any(ch.islower() for ch in run)
         return "".join(_ASCII_ONE[ch] if ch in _ASCII_ONE and (ch != "I" or (lower and i > 0)) else ch
                        for i, ch in enumerate(run))
-    return _RUN.sub(fold, norm)
+    return _RUN.sub(fold, _MIXED.sub(_mixed_fold, norm))
+
+
+_MIXED = re.compile(r"[\w|]+")
+
+
+def _mixed_fold(m) -> str:
+    """R37-01: a group that mixes non-ASCII look-alikes with ASCII ones ('\u04410\u043c', '\u04cf0\u04cf', '|\u043e\u0406', '\u0455|') is
+    read with both fold sets at once: each character by its single-letter Unicode look-alike, '0'/'1' as 'o'/'l',
+    'I'/'|' as 'i' or 'l'. The reading replaces the group (same length) only when it spells a listed top-level domain,
+    so ordinary text is unchanged."""
+    run = m.group(0)
+    if run.isascii() or all(not ch.isascii() for ch in run) or len(run) > 12:
+        return run
+    choices = []
+    for ch in run:
+        if ch.isascii():
+            if ch in ("I", "|"):
+                choices.append(("i", "l") if ch == "I" else ("l",))
+            elif ch in _ASCII_ONE:
+                choices.append((_ASCII_ONE[ch],))
+            elif ch.isalpha():
+                choices.append((ch.lower(),))
+            else:
+                return run
+            continue
+        opts = {o for o in _ascii_options(ch) if len(o) == 1 and o != "?"}
+        if not opts:
+            return run
+        choices.append(tuple(sorted(opts)))
+    if sum(len(c) > 1 for c in choices) > 6:
+        return run
+    for reading in itertools.product(*choices):
+        r = "".join(reading)
+        if r in _ALL_TLDS:
+            return r
+    return run
 
 
 def has_link_or_contact(text: str) -> bool:
