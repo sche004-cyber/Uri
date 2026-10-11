@@ -16,9 +16,10 @@ Run through the lifecycle skill (independent review, then D1).
 4. **Plain message (D18)** when a site is blocked: "Blocked: this site is on a known-scam list." / "Not checked: the
    scam-list service was unavailable, so this site was skipped."
 
-## Owner inputs needed before the run
-- Which provider, and its API key placed in `.env` by the owner (never shown or logged).
-- Whether "lookup unavailable" should skip (default) or allow the source.
+## Owner inputs
+- Provider: **abuse.ch URLhaus** (owner, 2026-10-11). Key name in `.env`: `URLHAUS_AUTH_KEY`, placed by the owner;
+  never shown or logged. Until it is present the run is BLOCKED on that input (not bypassed).
+- Lookup unavailable: **skip the site** with the plain note (owner, 2026-10-11: "Ok yes" to the default).
 
 ## Acceptance criteria (draft)
 | # | Criterion |

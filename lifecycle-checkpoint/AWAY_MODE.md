@@ -32,7 +32,7 @@ work while am away from pc". This file is the standing plan; every check-in foll
 2. **SSRF-1** (D2). Plan: `lifecycle-runs/SSRF-1_PLAN_DRAFT.md`. The branch is cut from the canonical tip after step 1,
    and `authorized_protected_changes` is `uri_core/tools/fetch_url.py` only.
 2b. **IDN-1** (owner decision D21, 2026-10-11: block site addresses with non-English letters, and tell the user why in plain words). Plan: `lifecycle-runs/IDN-1_PLAN_DRAFT.md`. Branch from the canonical tip after SSRF-1.
-2c. **LINK-REP-1** (owner decision D22, 2026-10-11: "Yes"). Known-scam lookup for real addresses, plus urgency and mismatched-link flags. Plan: `lifecycle-runs/LINK-REP-1_PLAN_DRAFT.md`. Branch after IDN-1. **Needs from the owner before the run:** provider choice and its API key in `.env`.
+2c. **LINK-REP-1** (owner decision D22, 2026-10-11: "Yes"). Known-scam lookup for real addresses, plus urgency and mismatched-link flags. Plan: `lifecycle-runs/LINK-REP-1_PLAN_DRAFT.md`. Branch after IDN-1. Provider URLhaus, skip when unavailable (owner). **Needs from the owner before the run:** a free URLhaus key as `URLHAUS_AUTH_KEY` in `.env`.
 3. **GRAPHIFY-LEAK-1 fix** (owner decision D12, 2026-10-11: "fix before W2"). A small milestone, with its branch cut
    from the canonical tip after SSRF-1. Each user's Graphify view rebuilds its memory pointers from that user's own
    memory store. `authorized_protected_changes` is `uri_core/app/server.py`, plus `uri_core/core/graphify_index.py`
@@ -169,3 +169,4 @@ runnable, the Routine is paused and the reason is written here.
 | 2026-10-11 19:25 | W1/A0 R25 on 0adc9541: RETRY_LIMIT, R25-01 (hand-picked Arabic mark ranges incomplete). Coordinator repair `74909458` (all Mn/Me marks removed for ending match; 14/14 new link tests fail on 0adc9541; web 3032 pass; gate identical to baseline). Relaunched for R26. |
 | 2026-10-11 19:35 | **Owner decision D21**: block site addresses with non-English letters (option 1), and when a genuine site is blocked URI must say why. Queued as IDN-1 after SSRF-1 (plan draft written). Not applied to the W1/A0 candidate (would restart its review). The D21 row goes into OWNER_DECISIONS in the IDN-1 branch. |
 | 2026-10-11 19:45 | **Owner decision D22**: "Yes" to LINK-REP-1 (read as approval of the pending proposal; owner told to correct if meant otherwise). Queued after IDN-1, plan draft written. Needs provider + API key from the owner before it runs. |
+| 2026-10-11 19:50 | LINK-REP-1 settings from the owner: provider URLhaus; when the lookup is unavailable, skip the site. Still needed before the run: the owner's URLhaus key in `.env` (URLHAUS_AUTH_KEY). |
