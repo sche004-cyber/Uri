@@ -268,6 +268,11 @@ def _criteria_text(cfg) -> str:
     return "Acceptance criteria:\n" + "\n".join(f"- {c}" for c in cfg.get("acceptance_criteria") or [])
 
 
+def _env_notes(cfg) -> str:
+    notes = cfg.get("environment_notes") or []
+    return ("Environment notes:\n" + "\n".join(f"- {n}" for n in notes) + "\n\n") if notes else ""
+
+
 def review_prompt(cfg, st: State, rnd: int, candidate: str) -> str:
     prior = [{"id": f["id"], "severity": f.get("severity"), "title": f.get("title"), "files": f.get("files")}
              for r in st.d["rounds"] for f in (r.get("result") or {}).get("findings") or []
@@ -296,7 +301,7 @@ code evidence. Set "owner_decision": true when the only fix needs a protected pa
 or an owner policy decision. Set "category": "documentation" for doc-only findings.
 Verdict: REJECT if any HIGH or blocking finding.
 
-Your final message must end with exactly one block of valid JSON:
+{_env_notes(cfg)}Your final message must end with exactly one block of valid JSON:
 AUDIT_RESULT_BEGIN
 {{"candidate": "<sha you verified>", "baseline": "<sha>", "verdict": "ACCEPT | ACCEPT WITH FINDINGS | REJECT",
  "findings": [{{"id": "R{rnd}-01", "severity": "HIGH|MEDIUM|LOW", "blocking": true, "category": "code|security|test|documentation",
@@ -317,7 +322,7 @@ your change (it will be run both ways). Do not weaken, skip or delete existing t
 Do not commit or push; the driver commits after checking your change. If a finding cannot be fixed within these
 limits, do not work around it: report it as not repaired with the reason.
 
-Findings (from the reviewer, verbatim):
+{_env_notes(cfg)}Findings (from the reviewer, verbatim):
 {json.dumps(findings, indent=1)}
 
 End your final message with:
