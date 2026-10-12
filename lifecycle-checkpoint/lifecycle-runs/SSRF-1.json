@@ -30,11 +30,7 @@
   "tests/**",
   "uri_ui/test/**"
  ],
- "allowed_flaky": [
-  "tests.ws.test_ws_hardening::test_requests_are_marked_done_with_the_state_they_left",
-  "tests.ws.test_ws_hardening::test_host_requests_are_explicit_fresh_and_used_once",
-  "tests.ws.test_ws_hardening::test_a_restart_request_during_load_is_kept_for_later"
- ],
+ "allowed_flaky": [],
  "gates": [
   {
    "id": "python",
@@ -98,7 +94,7 @@
   "remote": "origin",
   "target_ref": "integration/git-sync-20261008",
   "authorized": true,
-  "expected_target_tip": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded"
+  "expected_target_tip": "b7062f0890883d9df0337386d379f64715b20948"
  },
  "commit_trailers": [
   "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
