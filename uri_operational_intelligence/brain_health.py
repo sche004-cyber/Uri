@@ -16,6 +16,7 @@ source, and a state without evidence says UNKNOWN in its reasons instead of gues
 from __future__ import annotations
 
 import json
+import math
 import os
 import time
 import uuid
@@ -202,7 +203,11 @@ def write_host_request(report_dir, action) -> dict:
     """One explicit request for the Brain host (restart / stop / start)."""
     if action not in ACTIONS:
         raise ValueError("ACTION_INVALID")
-    req = {"schema": REQUEST_SCHEMA, "id": str(uuid.uuid4()), "action": action, "requested_at": round(time.time(), 3)}
+    # Rounded DOWN to the millisecond (WS-FLAKE-1): rounding to the nearest could stamp a time up to 0.5 ms in the
+    # future, and the host refuses a request with a negative age as stale.
+    now = time.time()
+    req = {"schema": REQUEST_SCHEMA, "id": str(uuid.uuid4()), "action": action,
+           "requested_at": min(now, math.floor(now * 1000) / 1000)}
     path = Path(report_dir) / REQUEST_FILE
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(req), encoding="utf-8")
