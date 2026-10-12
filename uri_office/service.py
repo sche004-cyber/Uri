@@ -374,7 +374,11 @@ class Office:
         with s.lock:
             refreshed = self._refresh(s)
             (s.draft.redo if redo else s.draft.undo)()
-            return {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
+            out = {"draft": s.draft.snapshot(), **self._reloaded(s, refreshed)}
+            if s.engine == "new":                      # undo may remove or bring back a sheet (Codex R2-03)
+                self._sync_new_sheets(s)
+                out["workbook"] = s.workbook
+            return out
 
     def instruct(self, wid, body) -> dict:
         if self.brain is None:

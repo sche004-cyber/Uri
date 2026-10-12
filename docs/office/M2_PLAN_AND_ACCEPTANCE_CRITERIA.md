@@ -139,3 +139,17 @@ Limitation (model, not mechanism): the local Brain's checks are not exhaustive (
 Codex could not run pytest in its read-only sandbox (no temporary folder) and did not run Flutter; the PC gates below are this session's.
 
 PC gates after the Codex repairs: Python `tests/office tests/a2ui tests/ws tests/oi` 883 passed, 27 skipped; `flutter test` 543 passed, 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.
+
+### 2026-10-12, Codex re-review of 317a64e2 (round 2)
+
+`gpt-6-sol`, high, read-only, 268 s, COMPLETED_WITH_RESULT. **Verdict: REJECT.** C-01, C-03, C-04 REPAIRED; C-02 PARTIAL (see R2-02). Verified here before repair:
+
+| Finding | Verified | Repair | Test (fails on 317a64e2, passes after) |
+|---|---|---|---|
+| R2-01 HIGH: `copy_range` copied cells beyond the reader's 50,000-cell cap as empty, silently | reproduced | copying from a sheet that was read only in part is refused (`SOURCE_SHEET_TOO_LARGE`) | `test_r2_01_...` |
+| R2-02 HIGH: the same file could be added twice; after a save through one record the other went stale | confirmed by reading | one record per physical file: a second selection is refused (`DUPLICATE_FILE`) | `test_r2_02_...` |
+| R2-03 MEDIUM: undo removed an `add_sheet` change but not the sheet; the grid was not resynced | reproduced | undo/redo restore a new workbook's sheets as well (an opened file's base is not copied, to keep edits fast) and return the workbook for the grid | `test_r2_03_...` (2 tests) |
+| R2-04 MEDIUM: workbook (600) and reference (400) excerpts allowed 1,000 cells, against the 600 total in the plan | confirmed by reading | one budget: references get what the workbook excerpt leaves | `test_r2_04_...` |
+
+M2 limit added: a sheet larger than 50,000 cells can be shown and checked in part only; it cannot be a copy source.
+PC gates after round 2: Python 888 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.

@@ -189,8 +189,10 @@ class OfficeBrain:
             raise OfficeError("INSTRUCTION_TOO_LONG")
         with_files = sources is not None
         view = excerpt_all(sheets) if with_files or engine == "new" else excerpt(sheets, active)
+        # One budget for the whole request: the reference files get what the workbook's excerpt left (Codex R2-04).
+        used = sum(len(sh["cells"]) for sh in view.get("sheets", ())) if with_files else 0
         body = build_body(instruction.strip(), view, history_rows, engine,
-                          SRC.excerpt(sources) if with_files else None, task)
+                          SRC.excerpt(sources, max(0, MAX_EXCERPT_CELLS - used)) if with_files else None, task)
         res = self.client.stream_chat(body, cancel=cancel or BC.CancelToken(), deadlines=TIMEOUT)
         if res.status == BC.CANCELLED:
             raise OfficeError("CANCELLED", "Stopped. Nothing was changed.")

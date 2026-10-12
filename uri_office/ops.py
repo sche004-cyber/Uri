@@ -200,6 +200,10 @@ def copy_edits(op, *, sources: dict, sheets, next_free_row=None, locked=None) ->
     sheet = next((sh for sh in src["sheets"] if sh["name"] == op.get("from_sheet")), None)
     if sheet is None:
         raise OfficeError("UNKNOWN_SOURCE_SHEET", str(op.get("from_sheet"))[:64])
+    if sheet.get("truncated"):
+        # The reader stopped at its cell cap: cells it did not read would be copied as empty (Codex R2-01).
+        raise OfficeError("SOURCE_SHEET_TOO_LARGE", f"{sheet['name']} has more cells than URI Office reads "
+                                                    "(50,000 per sheet); split the file or copy from a smaller sheet")
     c1, r1, c2, r2 = _source_range(op.get("from_range"), sheet)
     if (r2 - r1 + 1) * (c2 - c1 + 1) > MAX_CELLS_PER_OP:
         raise OfficeError("OP_TOO_LARGE", f"more than {MAX_CELLS_PER_OP} cells")

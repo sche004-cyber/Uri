@@ -10,6 +10,7 @@ never by path.
 """
 from __future__ import annotations
 
+import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -43,10 +44,17 @@ def add(grants, work: Path, existing: list, raw_paths) -> list:
         raise OfficeError("TOO_MANY_SOURCES", f"at most {MAX_SOURCES} files per new workbook")
     added: list = []
     grants_made = []
+    seen = {_same_file_key(grants.get(s.grant_id, "open").path) for s in existing}
     try:
         for raw in raw_paths:
             g = grants.grant_open(raw)
             grants_made.append(g.grant_id)
+            key = _same_file_key(g.path)
+            if key in seen:
+                # One record per physical file: a second record would go stale when URI saves through the first
+                # (Codex R2-02).
+                raise OfficeError("DUPLICATE_FILE", f"{g.path.name} is already added")
+            seen.add(key)
             n = len(existing) + len(added) + 1
             dest = work / f"source-{n}.xlsx"
             shutil.copy2(g.path, dest)
@@ -65,6 +73,10 @@ def add(grants, work: Path, existing: list, raw_paths) -> list:
     return existing + added
 
 
+def _same_file_key(path) -> str:
+    return os.path.normcase(os.path.realpath(path))
+
+
 def _unique(name: str, taken: list) -> str:
     if name not in taken:
         return name
@@ -81,9 +93,10 @@ def listing(sources: list) -> list:
                          "truncated": sh["truncated"]} for sh in s.workbook["sheets"]]} for s in sources]
 
 
-def excerpt(sources: list) -> list:
-    """A bounded view for the Brain: every source sheet's size and its first rows (values; formulas as text)."""
-    out, budget = [], MAX_EXCERPT_CELLS
+def excerpt(sources: list, budget: int = MAX_EXCERPT_CELLS) -> list:
+    """A bounded view for the Brain: every source sheet's size and its first rows (values; formulas as text), within
+    `budget` cells (what is left of the request's total after the workbook's own excerpt, Codex R2-04)."""
+    out = []
     for s in sources:
         sheets = []
         for sh in s.workbook["sheets"]:

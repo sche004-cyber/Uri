@@ -66,8 +66,21 @@ class Draft:
                             if ch["state"] == "proposed" or id(ch) in others]}
 
     # ---- versioning ----------------------------------------------------------------------------------------------
+    def _state(self):
+        """What undo and redo restore: the changes and, for a new workbook, its sheets (Codex R2-03). Only a new
+        workbook changes its sheets inside the draft, so an opened file's (possibly large) base is not copied."""
+        if self.engine == "new":
+            return copy.deepcopy((self.changes, self.base, self.locked))
+        return (copy.deepcopy(self.changes), None, None)
+
+    def _restore(self, state):
+        changes, base, locked = state
+        self.changes = changes
+        if base is not None:
+            self.base, self.locked = base, locked
+
     def _push(self):
-        self._undo.append(copy.deepcopy(self.changes))
+        self._undo.append(self._state())
         del self._undo[:-MAX_VERSIONS]
         self._redo.clear()
         self.version += 1
@@ -75,15 +88,15 @@ class Draft:
     def undo(self):
         if not self._undo:
             raise OfficeError("NOTHING_TO_UNDO")
-        self._redo.append(copy.deepcopy(self.changes))
-        self.changes = self._undo.pop()
+        self._redo.append(self._state())
+        self._restore(self._undo.pop())
         self.version += 1
 
     def redo(self):
         if not self._redo:
             raise OfficeError("NOTHING_TO_REDO")
-        self._undo.append(copy.deepcopy(self.changes))
-        self.changes = self._redo.pop()
+        self._undo.append(self._state())
+        self._restore(self._redo.pop())
         self.version += 1
 
     # ---- edits ---------------------------------------------------------------------------------------------------

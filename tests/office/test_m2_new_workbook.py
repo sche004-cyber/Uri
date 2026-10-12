@@ -106,8 +106,10 @@ def test_sources_are_refused_all_or_nothing(tmp_path, office):
 def test_add_sources_only_to_a_new_workbook_and_at_most_ten(tmp_path, office):
     o, _ = office()
     a = make_source(tmp_path / "a.xlsx")
+    (tmp_path / "other").mkdir()
+    a2 = make_source(tmp_path / "other" / "a.xlsx")
     v = o.open_new([str(a)])
-    v2 = o.add_sources(v["workbook_id"], {"paths": [str(a)]})
+    v2 = o.add_sources(v["workbook_id"], {"paths": [str(a2)]})
     assert [s["label"] for s in v2["sources"]] == ["a.xlsx", "a.xlsx (2)"]
     with pytest.raises(OfficeError) as e:
         o.add_sources(v["workbook_id"], {"paths": [str(a)] * 9})
@@ -613,3 +615,66 @@ def test_c04_a_file_added_while_one_is_the_working_file_needs_a_role(tmp_path, o
     with pytest.raises(OfficeError) as e:
         o.instruct(wid, {"text": "go"})
     assert e.value.code == "ROLES_NEEDED" and client.bodies == []
+
+
+
+# ---- Codex re-review of 317a64e2 (R2-01..R2-04) ---------------------------------------------------------------------
+def test_r2_01_copy_from_a_sheet_read_only_in_part_is_refused():
+    src = {"S1": {"sheets": [{"name": "D", "max_row": 100000, "truncated": True, "cells": {"A1": {"v": 1}}}]}}
+    with pytest.raises(OfficeError) as e:
+        O.copy_edits(op(op="copy_range", source="S1", from_sheet="D", from_range="A90000:A90000", sheet="T",
+                        cell="A1"), sources=src, sheets=["T"])
+    assert e.value.code == "SOURCE_SHEET_TOO_LARGE"
+
+
+def test_r2_02_the_same_file_cannot_be_added_twice(tmp_path, office):
+    o, _ = office()
+    a = make_source(tmp_path / "a.xlsx")
+    with pytest.raises(OfficeError) as e:
+        o.open_new([str(a), str(tmp_path / "." / "a.xlsx")])
+    assert e.value.code == "DUPLICATE_FILE" and o.sessions == {}
+    v = o.open_new([str(a)])
+    with pytest.raises(OfficeError) as e:
+        o.add_sources(v["workbook_id"], {"paths": [str(a)]})
+    assert e.value.code == "DUPLICATE_FILE"
+    assert [x["label"] for x in o.view(v["workbook_id"])["sources"]] == ["a.xlsx"]
+
+
+def test_r2_03_undo_and_redo_restore_sheets_of_a_new_workbook(tmp_path, office):
+    a = make_source(tmp_path / "a.xlsx")
+    o, _ = office({"message": "ok", "ops": [op(op="add_sheet", name="Summary"),
+                                             op(op="set_values", sheet="Summary", range="A1", values=[["x"]])]})
+    v = o.open_new([str(a)])
+    as_reference(o, v)
+    wid = v["workbook_id"]
+    o.instruct(wid, {"text": "go"})
+    r = o.undo(wid)
+    assert [s["name"] for s in r["workbook"]["sheets"]] == ["Sheet1"] and o.sessions[wid].draft.sheets() == ["Sheet1"]
+    r = o.undo(wid, redo=True)
+    assert [s["name"] for s in r["workbook"]["sheets"]] == ["Summary", "Sheet1"]
+
+
+def test_r2_03_undo_in_an_opened_file_does_not_copy_its_base(tmp_path):
+    d = D.Draft("w", "local", {"sheets": [{"name": "S", "cells": {"A1": {"v": 1}}}]})
+    d.user_edit({"sheet": "S", "cell": "A2", "value": 2})
+    assert d._undo[-1][1] is None
+    d.undo()
+    assert d.base == {"S": {"A1": {"v": 1}}} and d.changes == []
+
+
+def test_r2_04_one_excerpt_budget_for_the_workbook_and_the_references(tmp_path, office):
+    from uri_office import brain as B
+    big = make_source(tmp_path / "big.xlsx", rows=[("c",) * 30 for _ in range(30)])     # 900 cells
+    ref = make_source(tmp_path / "ref.xlsx", rows=[("r",) * 20 for _ in range(8)])      # 160 cells in the first rows
+    o, client = office({"message": "ok", "ops": []})
+    v = o.open_new([str(big), str(ref)])
+    o.set_roles(v["workbook_id"], {"roles": {"S1": "edit", "S2": "reference"}})
+    o.instruct(v["workbook_id"], {"text": "go"})
+    user = client.bodies[0]["messages"][1]["content"]
+    import re
+    blocks = [json.loads(b) for b in
+              re.findall(r"BEGIN: [^>]*>>>\n(.*?)\n<<<UNTRUSTED DATA [0-9a-f]+ END>>>", user, re.S)]
+    work, refs_ = blocks[0], blocks[1]
+    n_work = sum(len(sh["cells"]) for sh in work["sheets"])
+    n_refs = sum(len(sh["first_rows"]) for x in refs_ for sh in x["sheets"])
+    assert n_work == B.MAX_EXCERPT_CELLS and n_refs == 0
