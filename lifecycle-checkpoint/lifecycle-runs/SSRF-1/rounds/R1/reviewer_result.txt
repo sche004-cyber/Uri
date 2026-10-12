@@ -1,0 +1,63 @@
+**Verdict: REJECT.** The SSRF protection holds, but one blocking finding remains: the refusal message gives the user a false reason for some failures.
+
+I checked both SHAs: the candidate is `f44f70a5` and the baseline `03f0bf2c` exists.
+
+**SSRF protection (focus 1): no bypass found.** I tried about 30 hostile URLs, and every one was refused before any connection. They covered:
+- IPv6 forms: IPv4-mapped, NAT64, 6to4, IPv4-compatible, zone-id link-local and `::`.
+- Numeric host forms: decimal, octal, hex, zero-padded, `0`, and full-width digits.
+- Trailing-dot hosts, local names (`localhost.`, `*.internal`, `*.local`) and percent-encoded hosts.
+- Userinfo tricks: `\@`, `%2f@`, and `:80@`.
+- Odd ports, and redirects (301/302/303/307/308) to internal targets.
+- DNS answers that include any non-public address.
+
+In direct mode the connection always goes to the address that was checked. The tests show this, and the host check before connecting refuses any mismatch between how the policy and httpx read the host.
+
+**Other focus areas:**
+- **W1 default (focus 2):** behaviour is the same as before when `extra_types` is left empty. Document bodies come back as bytes and are not decoded.
+- **Refusal output (focus 4):** it never contains the internal address, the body or the old `str(error)` detail.
+- **robots.txt (focus 5):** it is not applied. The baseline didn't apply it either, so this matches previous behaviour.
+
+**Findings:**
+- **R1-01 (MEDIUM, blocking):** every refusal gets the same message: "URI will not fetch that address (private or local network)." That includes a domain that doesn't resolve, an empty DNS answer, a public host on port 8443 and an invalid or over-long URL. The baseline said "URI could not reach that URL." for an unresolvable host. A typo'd or offline domain is now reported as a private-network address, which contradicts the module's "reports the real reason" promise.
+- **R1-02 (LOW):** a public HTML page sent gzip-compressed despite the request for uncompressed content now comes back as "unsupported" with content type 'unknown'. The baseline decompressed it and read it.
+- **R1-03 (LOW):** a page with no charset in its headers or meta tag is now decoded as UTF-8 instead of Latin-1. A Latin-1 page that read 'café' on the baseline now reads 'caf�'.
+- **R1-04 (LOW):** document types passed in `extra_types` override the built-in text types, so `text/plain` becomes a "document". A future fetcher that uses document types with robots.txt switched on could never parse robots.txt. `fetch_url` itself doesn't hit this because it skips robots.
+
+The office-readiness, research-recovery and evidence-transport test files can't be collected because the `google` packages aren't installed. With those modules stubbed, all 58 of their tests pass. The live public fetch wasn't run.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7", "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded", "verdict": "REJECT",
+ "findings": [
+  {"id": "R1-01", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Every REFUSED status, including DNS failure, port refusal and invalid URL, is reported as a 'private or local network' address",
+   "files": ["uri_core/tools/fetch_url.py:147", "uri_web/safe_fetch.py:259"],
+   "evidence": "fetch_url maps rec.fetch_status == REFUSED to the fixed message 'URI will not fetch that address (private or local network).' SafeFetcher also uses REFUSED for DNS_FAILED, DNS_EMPTY, PORT_REFUSED, URL_INVALID and HOST_INVALID. Probe with a resolver raising socket.gaierror for 'http://typo-domain-xyz.com/' returned {'status':'unavailable','message':'URI will not fetch that address (private or local network).','refusal_code':'DNS_FAILED'}. The production tool gives the same for a host of 5x63-char labels (DNS_FAILED), and 'https://example.com:8443/x' gives PORT_REFUSED with the same message. The baseline reported an unresolvable host as 'URI could not reach that URL.' The module docstring promises to report the real reason; a typo'd or offline domain is now told to the user as a private-network address.",
+   "suggested_fix": "Use the private/local message only for address-class codes (ADDRESS_NOT_PUBLIC, ADDRESS_TRANSITION_REFUSED, HOST_LOCAL_NAME, HOST_NUMERIC_AMBIGUOUS, USERINFO_REFUSED). Map DNS_FAILED and DNS_EMPTY to 'URI could not reach that URL.', and PORT_REFUSED, SCHEME_REFUSED and URL_INVALID to accurate wording. Keep refusal_code and do not add the address. Add tests for DNS failure and port refusal messages."},
+  {"id": "R1-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Content-Encoding gzip response is reported as unsupported content type 'unknown'",
+   "files": ["uri_web/safe_fetch.py:400", "uri_core/tools/fetch_url.py:177"],
+   "evidence": "Mock 200 text/html with content-encoding: gzip returns {'status':'unsupported','message':\"URI has no reader for content type 'unknown'.\",'content_type':''}. The baseline (requests) decompressed it transparently and returned the text. Accept-Encoding: identity makes this rare.",
+   "suggested_fix": "Report the real reason (unsupported content encoding) or keep the content type, so an HTML page is not called 'unknown'."},
+  {"id": "R1-03", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "HTML without a charset is now decoded as UTF-8 instead of ISO-8859-1",
+   "files": ["uri_web/safe_fetch.py:427", "uri_core/tools/fetch_url.py:199"],
+   "evidence": "Mock text/html (no charset, no meta) with Latin-1 body b'<p>caf\\xe9</p>' gives text 'caf\\ufffd'. The baseline used requests' response.encoding (ISO-8859-1 for text/*) and gave 'café'. The reverse case (UTF-8 bytes without a charset) improves. This is a small output change under S-AC5 'public HTML unchanged'.",
+   "suggested_fix": "Accept and record the change in the plan, or fall back to latin-1 when UTF-8 decoding fails."},
+  {"id": "R1-04", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "extra_types overrides TEXT_TYPES, which silently changes robots.txt handling for such a fetcher",
+   "files": ["uri_web/safe_fetch.py:354", "uri_web/safe_fetch.py:282"],
+   "evidence": "kind = extra or TEXT_TYPES.get(mime). With fetch_url's map, text/plain becomes 'document', so _robots_allows (res.kind == 'text') would never parse robots.txt if robots were enabled on that fetcher. Not reachable today because fetch_url passes robots=False.",
+   "suggested_fix": "Document that extra_types must not be used with robots, or keep robots.txt fetches on TEXT_TYPES only."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/ssrf", "result": "55 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/ssrf on git archive of 03f0bf2c with the test file copied in", "result": "53 failed, 2 passed (matches the claim)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web", "result": "3677 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest test_m19_office_readiness.py test_m20_research_recovery.py test_orchestrator_evidence_transport.py", "result": "collection error: ModuleNotFoundError google", "status": "BLOCKED"},
+  {"command": "same 3 files via /tmp/uri_review_R1/run_stub.py (google*, google_auth* modules stubbed)", "result": "58 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "PYTHONPATH=. python /tmp/uri_review_R1/probe1.py (30 adversarial URL forms, DNS failure, port, long host)", "result": "all internal forms refused with no wire request; DNS failure and port refusal misreported as private network (R1-01)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "PYTHONPATH=. python /tmp/uri_review_R1/probe2.py (gzip, charset, 302 without location, json)", "result": "R1-02 and R1-03 reproduced; 302 and json behave as before", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Live public fetch through the production direct transport (cloud egress requires a proxy; S-AC10)", "The 3 legacy test files with the real google libraries installed (run here only with stubbed modules)", "Frozen-file integrity check script: not run; checked by diff only (only uri_core/tools/fetch_url.py changes among protected paths)"]}
+AUDIT_RESULT_END

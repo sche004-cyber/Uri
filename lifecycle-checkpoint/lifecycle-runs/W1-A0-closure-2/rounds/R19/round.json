@@ -1,0 +1,323 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R19",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R19-01",
+  "R19-02"
+ ],
+ "candidate": "0577aeb6004f5db8e9088e7a5496d237b9717bf2",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T14:29:33Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "0577aeb6004f5db8e9088e7a5496d237b9717bf2",
+   "impl_head": "0577aeb6004f5db8e9088e7a5496d237b9717bf2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "005fc04165d183b0d2dc2fd2c1777ae813633511373e8e503a19ce5406de78bb",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "0577aeb6004f5db8e9088e7a5496d237b9717bf2",
+   "impl_head": "0577aeb6004f5db8e9088e7a5496d237b9717bf2",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "005fc04165d183b0d2dc2fd2c1777ae813633511373e8e503a19ce5406de78bb",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "0577aeb6004f5db8e9088e7a5496d237b9717bf2",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_letter() counts category M as a letter, so ' \\u0323\\u0307\\u0308 ' becomes a word with script COMMON. _separator_word: not single, not in _STROKES, script != the TLD's, and 3 distinct > _MAX_FOREIGN, so it is taken as the NAME. The gap to 'shop' is a plain space (_PROSE_GAP) and 'shop' is not in _CORE, so line 586 skips it. _BARE/_RUN only match '\\s'+COMB+ when a letter follows directly. Probe: has_link_or_contact('Claim your energy rebate refund at refunds-portal \\u0323\\u0307\\u0308 shop before the deadline.') == False; also '... \\u0323\\u0307\\u0308\\u0304 shop', '... cash'. mask_links leaves it unchanged; SY.verify keeps the claim with its citation; SY.extractive returns the sentence; surface.build_surface shows it in the Answer and Sources cards and Surface.__post_init__ (A2UI validation) accepts it. With 1 or 2 distinct marks the same text is caught.",
+    "files": [
+     "uri_web/untrusted.py:450",
+     "uri_web/untrusted.py:463",
+     "uri_web/untrusted.py:547",
+     "uri_web/untrusted.py:562",
+     "uri_web/untrusted.py:583",
+     "uri_web/untrusted.py:586",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R19-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Treat a word made only of combining marks (or with no base letter) as part of the gap or separator, whatever its length. Better: remove combining marks that do not follow a base letter before splitting into words, so they count as non-prose gap characters.",
+    "title": "R1-01 link class still open: a run of three or more distinct combining dot marks on a space ('refunds-portal \u0323\u0307\u0308 shop') is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13/D16)"
+   },
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_endings matches w[2].casefold() against _ALL_TLDS on the canonical text only. has_link_or_contact and _all_spans run _ending_spans(norm) but never on the skeleton, which maps Cyrillic \u0441\u043e\u043c to 'com'. The skeleton pass only runs _spans (dot or mark forms). An all-Cyrillic token has one script family, so _unusual does not fire. Probe: has_link_or_contact('Claim your energy rebate refund at refunds-portal \u0441\u043e\u043c before the deadline.') == False, and the same for '\u0456\u043e' and '\u043e\u0433\u0433'. extractive returns the sentence and build_surface plus A2UI validation show it. The plain-ASCII 'refunds-portal com' is detected.",
+    "files": [
+     "uri_web/untrusted.py:483",
+     "uri_web/untrusted.py:572",
+     "uri_web/untrusted.py:601",
+     "uri_web/untrusted.py:610"
+    ],
+    "id": "R19-02",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Run _ending_spans on the skeleton too (mapped back through _skeleton_map, as _all_spans does for _spans), in both has_link_or_contact and _all_spans.",
+    "title": "D16 ending check ignores the skeleton: a core domain written in Cyrillic look-alikes after a plain space ('refunds-portal \u0441\u043e\u043c', 'refunds-portal \u0456\u043e') is not a link, although 'portal com' is (W1-AC12/AC15)"
+   },
+   {
+    "blocking": false,
+    "category": "security",
+    "evidence": "has_link_or_contact('Claim ... at refunds-portal \u4e36\u4e3f go ld/claim before the deadline.') == False, and the same for 'on line'. The plan already discloses this as not owner-accepted.",
+    "files": [
+     "uri_web/untrusted.py:445",
+     "uri_web/untrusted.py:489"
+    ],
+    "id": "R19-03",
+    "owner_decision": true,
+    "severity": "LOW",
+    "suggested_fix": "Owner decision: either accept it as residual risk or join these splits when the gap holds a non-prose separator.",
+    "title": "Disclosed, not owner-accepted: a split ending whose first piece is in _COMMON2 is never joined ('refunds-portal \u4e36\u4e3f go ld', '... on line')"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist -p no:cacheprovider",
+    "result": "5096 passed in 101.89s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R19/probe1.py, probe2.py, probe3.py (detector, verify, extractive, surface and A2UI probes)",
+    "result": "R19-01 and R19-02 reproduced end to end; the R18-01 forms are detected",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf5343..0577aeb6 -- <protected paths>",
+    "result": "no changes to protected paths",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter tests (uri_ui) were not run this round",
+   "Playwright browser_extension parity tests were run only as part of tests/assist, with no separate review",
+   "SSRF transport, DNS pinning and redirects were reviewed by reading netpolicy.py only, with no new probes",
+   "Vision gating, access/bridge permissions and the integrated worker dispatch were not re-probed this round; relied on the passing tests and earlier rounds",
+   "ws_frozen_check zip part is BLOCKED (Phase 1 checkpoint zip not present)",
+   "Prior findings other than R18-01 are marked FIXED from the passing regression tests, not by fresh probes; R1-01 is NOT_FIXED because R19-01 and R19-02 reopen its class"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 19,
+ "started_at": "2026-10-11T14:26:30Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "9353e27a-d9ff-4f6c-9003-d6c6c3f05d64",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.0920953000000002,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R19",
+  "ended_at": "2026-10-11T14:29:32Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 15,
+  "pid": 19527,
+  "prompt_sha256": "0c1c9f2cca999d5a3416a43312dd16d5f53e060bf9821b3f201212a09c9eb5fe",
+  "provider": "claude_cli",
+  "result_text_sha256": "d07ebcf0c439981d10bb69de273e27b4d8d7587032b436d5a1fb474b1f53baaa",
+  "role": "reviewer",
+  "session_id": "9353e27a-d9ff-4f6c-9003-d6c6c3f05d64",
+  "session_id_requested": "9353e27a-d9ff-4f6c-9003-d6c6c3f05d64",
+  "started_at": "2026-10-11T14:26:30Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "917171db3d503867a3b0cb4ef25239570a096237a4de1a17fdd39d8ebcb38433"
+ }
+}

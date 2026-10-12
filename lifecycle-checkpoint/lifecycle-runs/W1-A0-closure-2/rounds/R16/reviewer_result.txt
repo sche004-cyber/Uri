@@ -1,0 +1,72 @@
+**Verdict: REJECT.** I checked both commits myself: the candidate is `9b6b4f27` and the baseline is `ffdf5343`. None of the protected paths changed.
+
+**Blocking findings**
+- **R16-01 (HIGH):** the link detector misses a link split by a three-letter dot-shaped word. For example, `refunds-portal 丶ㆍᆢ shop/claim` or `refunds-portal 丶丿乀 shop/claim` gets past every check: the detector, masking, `verify()`, `extractive()`, the research surface and the A2UI validator. The two-letter pairs from R14-01 are now caught. The cause is that the D17 rule only counts a foreign word as a separator when it has at most two distinct letters. D16 says anything between the name and the domain should count, and this case is not on the owner's list of accepted gaps. Changing the two-letter limit is the owner's call.
+- **R16-02 (MEDIUM):** the network policy accepts NAT64 addresses in `64:ff9b:1::/48` that hide a private IPv4 address. It always reads the IPv4 from the last 32 bits, which is only right for a /96 prefix. RFC 6052 also allows /48, /56 and /64 layouts, which place the IPv4 elsewhere. Example: `64:ff9b:1:7f00:0:100:808:808` hides 127.0.0.1 in the /48 layout and is allowed. That breaks W1-AC1.
+
+**Non-blocking (LOW)**
+- **R16-03:** a split domain ending is not joined when its first piece is a common two-letter word. `refunds-portal ~ go ld/claim` is missed even though `~` is not ordinary prose. This gap was disclosed for review but not accepted by the owner.
+- **R16-04:** a bad SearXNG URL in the owner's config crashes the whole research job. It is the same pattern as R11-02, but in `search.py`.
+- **R16-05:** if Stop lands at the wrong moment, an Assist answer can still be stored and sent after it. The UI does not show it.
+- **R16-06:** the screenshot is taken before vision checks whether it will refuse. The "screenshot for this question" checkbox stays ticked across questions and new grants. The vision path never checks the screenshot's size against the page viewport.
+
+**Earlier findings:** all 26 are fixed. The R1-01 link class is still open through the new R16-01 form.
+
+**Tests:** `tests/web` and `tests/assist` together give 3,943 passed. The Assist Flutter tests (23 passed) were run by a helper agent, not by me. Everything else in the review focus checked out: the SSRF checks other than NAT64 /48, Assist permissions and vision gating, redaction parity, and nothing claiming the browser channel is built. Two things are unverified: the Phase 1 zip part of `ws_frozen_check` (no zip here), and live Windows, GPU and browser adapters.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "9b6b4f27fd6b54b5b92cf1fa36c086c9aa49b126", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R16-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": true,
+   "title": "R1-01 link class still open: a foreign-script separator word of three or more distinct dot/stroke-shaped letters ('丶ㆍᆢ', '丶丿乀', '丨丶丿', 'ㆍᆢ丶') between name and a non-core TLD is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D16)",
+   "files": ["uri_web/untrusted.py:543", "uri_web/untrusted.py:424", "uri_web/untrusted.py:554", "uri_web/untrusted.py:565", "uri_web/synthesize.py:238", "uri_web/synthesize.py:341", "uri_web/surface.py:37"],
+   "evidence": "SENT='Claim your energy rebate refund at {} before the deadline.'; U.has_link_or_contact(SENT.format('refunds-portal 丶ㆍᆢ shop/claim')) -> False (also for '丶丿乀 shop/claim', '丨丶丿 shop', 'ㆍᆢ丶 cash/claim', '丶丿乀乁 shop/claim', '丶ㆍᆢ online'); mask_links leaves it unchanged; SY.verify(SENT.format(link)[:-1]+' [1].',[src]) keeps the claim with no drop; SY.extractive('energy rebate refund deadline',[src]) returns the sentence; build_surface(...) output contains 'refunds-portal 丶ᆞᆢ shop/claim' and require_valid passes. Cause: _separator_word returns len(set(word)) <= _MAX_FOREIGN (2), so a 3-distinct-letter foreign word becomes the 'name', the gap before 'shop' is a plain space (prose), and 'shop' is not in _CORE. Not listed among the owner-accepted residuals (only the bracketed separator is); D16 states 'a name, then anything at all, then a real TLD is a link'. Probes: /tmp/uri_review_R16/probe_links.py, probe_r16_01.py.",
+   "suggested_fix": "Treat any unbracketed word of a script different from both the name's and the ending's (or of the ending's script made of non-alphabet letters) as a separator regardless of its distinct-letter count, or bound by script-membership rather than letter count; owner to confirm the precision cost (e.g. 'Tokyo 東京都 is big' masked). Add a parametrised regression over 3- and 4-letter combinations of stroke/dot letters."},
+  {"id": "R16-02", "severity": "MEDIUM", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "netpolicy accepts 64:ff9b:1::/48 (RFC 8215 local-use NAT64) addresses embedding a private IPv4 at the /48, /56 or /64 offsets: _embedded_v4 always reads the last 32 bits and the NAT64 branch returns before the is_global check (W1-AC1)",
+   "files": ["uri_web/netpolicy.py:51", "uri_web/netpolicy.py:53", "uri_web/netpolicy.py:74", "uri_web/netpolicy.py:75"],
+   "evidence": "N.check_url('http://[64:ff9b:1:7f00:0:100:808:808]/') -> Target(...) accepted (127.0.0.1 in RFC 6052 /48 layout); 'http://[64:ff9b:1:a9fe:a9:fe00:808:808]/' (169.254.169.254 /48) accepted; /64 form 64:ff9b:1:0:7f:0:100:0 accepted via DNS answer and connected (helper probe /tmp/uri_review_R16/ssrf/p2_nat64.py, p4_fetch.py). ipaddress reports these as not global. 64:ff9b::/96 forms are correctly refused.",
+   "suggested_fix": "Refuse 64:ff9b:1::/48 outright (local-use, not needed for public fetches), or check the embedded IPv4 at every RFC 6052 offset (/32,/40,/48,/56,/64,/96) and refuse if any is non-public; never return before the is_global check for the local-use prefix."},
+  {"id": "R16-03", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": true,
+   "title": "Split ending whose first piece is a common two-letter word is not joined even after a non-prose separator ('refunds-portal ~ go ld/claim', '~ he lp') - the disclosed, not owner-accepted, limitation is wider than needed",
+   "files": ["uri_web/untrusted.py:483", "uri_web/untrusted.py:486"],
+   "evidence": "has_link_or_contact(SENT.format('refunds-portal ~ go ld/claim')) -> False; verify() keeps it, extractive() returns it, surface shows it. _endings rejects 'go'+'ld' via _COMMON2 regardless of the gap before the name.",
+   "suggested_fix": "Apply the _COMMON2 exclusion only when the gap between name and ending is ordinary prose; join the split when the gap holds a non-prose character."},
+  {"id": "R16-04", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "SearxngProvider does not catch httpx.InvalidURL: an owner-configured SearXNG URL with an invalid IDNA host turns the research job into FAILED INTERNAL_ERROR (R11-02 pattern in search)",
+   "files": ["uri_web/search.py:99", "uri_web/search.py:181"],
+   "evidence": "ResearchJob(..., providers=[SearxngProvider(base_url='http://\\u2603.example')]).run() -> FAILED INTERNAL_ERROR (helper probe /tmp/uri_review_R16/ssrf/p9_searxng_job.py). Config-only trigger; not reachable from page content.",
+   "suggested_fix": "Catch httpx.InvalidURL (or httpx.InvalidURL plus ValueError) in the provider call and return FAILED/UNAVAILABLE for that provider."},
+  {"id": "R16-05", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Assist answer stored and emitted after Stop: the ask thread re-checks the grant before, not under the lock with, storing and emitting the answer (A0-AC4 race)",
+   "files": ["uri_assist/bridge.py:268", "uri_assist/bridge.py:278", "uri_assist/bridge.py:282", "uri_ui/lib/living/assist/assist_controller.dart:307"],
+   "evidence": "Helper probe /tmp/uri_review_R16/assist/p_toctou.py revokes between check_unchanged and the store: output 'access state: OFF / EMITTED after revoke: assist.answer COMPLETE ...' and the text stays in _answers; assist_ask_status blanks it on read; the UI's _early buffer keeps unknown-id events and _discardDerived does not clear it (code reading).",
+   "suggested_fix": "Re-check the stamp under the access lock at store/emit time and blank the result if changed; clear _early in _discardDerived."},
+  {"id": "R16-06", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "Vision path: screenshot captured before VisionGate refusals (not qualified, busy, debounced); 'screenshot for this question' toggle persists across asks, Stop and new grants; prepare_image does not check screenshot size against viewport x DPR before masking field rectangles",
+   "files": ["uri_assist/bridge.py:462", "uri_assist/vision.py:103", "uri_assist/vision.py:43", "uri_ui/lib/living/assist/assist_mode_view.dart:32"],
+   "evidence": "p_vision.py: REFUSED VISION_NOT_QUALIFIED/BRAIN_BUSY with screenshots captured=1; dart probe: second ask under a new grant sends use_screenshot: true; p_visionrects.py: 2000x1800 screenshot for a 1000x900@1x snapshot leaves 12586 unmasked field pixels. No image is sent on refusal; the user still presses Ask.",
+   "suggested_fix": "Run VisionGate pre-checks before capture; reset the toggle after each ask and on stop/grant; refuse when screenshot dimensions do not match viewport x devicePixelRatio."}
+ ],
+ "prior_findings": [
+  {"id": "R1-01", "status": "FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"},
+  {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"},
+  {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"},
+  {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"},
+  {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"},
+  {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"},
+  {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"},
+  {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"},
+  {"id": "R13-01", "status": "FIXED"}, {"id": "R14-01", "status": "FIXED"}
+ ],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -p no:cacheprovider tests/web tests/assist -q", "result": "3943 passed in 100.05s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web -k 'safe_fetch or netpolicy or ssrf' (helper agent)", "result": "87 passed, 1650 deselected", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "flutter test test/living/assist_mode_test.dart test/living/assist_r9_test.dart (helper agent, from uri_ui/)", "result": "23 passed; git status clean before/after", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R16/probe_links.py and probe_r16_01.py", "result": "R14-01 forms detected; 3-distinct-letter separators and '~ go ld' missed through all exits", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "SSRF probes /tmp/uri_review_R16/ssrf/p1..p10 (helper agent)", "result": "Only NAT64 64:ff9b:1::/48 offset gap; rebinding, redirects, proxy env, TLS pinning, odd hosts, R11-02 OK", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "Assist probes /tmp/uri_review_R16/assist/* incl. real-Chromium redaction parity and pixel-check variants (helper agent)", "result": "No blocking issue; LOW items R16-05, R16-06", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --stat ffdf534..9b6b4f27 -- <protected paths>", "result": "no changes", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["ws_frozen_check zip part (Phase 1 checkpoint zip not present)", "Live Windows/GPU Runtime v1 vision and real browser/UIA adapters (not available in cloud)", "Live Tavily/Brave/SearXNG search", "::target-text pixel-check variant (headless Chromium does not activate text fragments)", "Full repository Python/Flutter gate beyond tests/web, tests/assist and Assist Flutter tests"]}
+AUDIT_RESULT_END

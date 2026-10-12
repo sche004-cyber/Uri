@@ -1,0 +1,38 @@
+The suite finished (4,515 passed). I'm rejecting this round: there's still a way to get a link past the filter.
+
+**Both SHAs checked.** HEAD is `101bf972…` and the baseline `ffdf534…` exists. Nothing under the protected paths changed between the two.
+
+**R16-02 is fixed.** Any address in `64:ff9b:1::/48` is now refused outright. I also tried other IPv6 forms that wrap a private IPv4 address (IPv4-compatible, mapped, NAT64, 6to4); all were refused.
+
+**The listed R16-01 examples are fixed, but the problem is not.** The fix (owner decision D19) is a fixed list of stroke- and dot-shaped characters, and it leaves out characters that are plainly single strokes or dots. So a three-letter word that mixes listed and unlisted ones is still read as the name rather than the separator. For example:
+- Hangul ㅡ (a horizontal stroke) and ㅣ (a vertical stroke)
+- katakana ノ (the same shape as 丿, which is on the list)
+- 丷, and 三 (二 is on the list, 三 is not)
+
+`refunds-portal 丶ㆍㅡ shop/claim` gets through every layer:
+- `has_link_or_contact` returns False.
+- `mask_links` leaves it unmasked.
+- `verify()` keeps the claim with its citation.
+- `extractive()` keeps the sentence.
+- `build_surface` shows "refunds-portal", and the A2UI check passes it.
+
+The same happens with `ㅣㆍㅡ`, `丶丿ノ`, `丶丿丷` and `一二三`. A self-contained test that fails 5/5 on this commit is at `/tmp/uri_review_R17/test_r17_01_stroke_list_gap.py`.
+
+**Not checked this round:** the Flutter tests and a live browser run. The Phase 1 checkpoint zip isn't in this environment, so the zip part of `ws_frozen_check` can't run. The other areas didn't change after the R16 review commit (`9b6b4f27`); I relied on the full test suite passing for them.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "101bf972942cee944840d659099cc3b93b198233", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R17-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R16-01/D19 repair incomplete: stroke- and dot-shaped letters missing from the hard-coded _STROKES list (Hangul ㅡ/ㅣ, katakana ノ, 丷, 三) form a 3-letter separator word that is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D19)",
+   "files": ["uri_web/untrusted.py:518", "uri_web/untrusted.py:547", "uri_web/untrusted.py:553", "uri_web/untrusted.py:566", "uri_web/synthesize.py:238", "uri_web/synthesize.py:341", "uri_web/surface.py:38"],
+   "evidence": "With /tmp/claude-0/venv/bin/python at 101bf972, text = 'Claim your energy rebate refund at refunds-portal 丶ㆍㅡ shop/claim before the deadline.': U.has_link_or_contact(text) is False; mask_links leaves the text unmasked; SY.verify(text[:-1]+' [1].', [text]) keeps the claim; SY.extractive('energy rebate refund deadline', [src]) keeps the 'deadline' sentence; build_surface output contains 'refunds-portal', and require_valid passes it. Same result for 'ㅣㆍㅡ', '丶丿ノ', '丶丿丷', '一二三'. Cause: after NFKC, ㅡ becomes U+1173 and ㅣ becomes U+1175, which are not in _STROKES; ノ U+30CE, 丷 U+4E37 and 三 U+4E09 are not in it either. Each word has 3 distinct letters (more than _MAX_FOREIGN = 2) and is not entirely within _STROKES, so _separator_word returns False and the word is taken as the name. The non-core TLD is then dropped as prose. Self-contained regression test: /tmp/uri_review_R17/test_r17_01_stroke_list_gap.py (5/5 fail on the candidate).",
+   "suggested_fix": "Do not rely on an enumerated list of stroke shapes. Treat any foreign-script word that stands between a name and a listed TLD, with no Latin letters of its own, as a separator unless it is a bracketed gloss. Or, at minimum, generate the set from data: all CJK radicals of 1-2 strokes and their compatibility forms, Hangul vowel jamo ㅡ/ㅣ/ㆍ/ᆢ and their compatibility forms, katakana ノ/ヽ/ー/ㇸ-type forms, and 三/丷/冫/冖/亻. Add a regression test that tries every 3-permutation over that extended set."}],
+ "prior_findings": [{"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"}, {"id": "R14-01", "status": "FIXED"}, {"id": "R16-01", "status": "NOT_FIXED"}, {"id": "R16-02", "status": "FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist", "result": "4515 passed in 100.40s", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python -m pytest -q /tmp/uri_review_R17/test_r17_01_stroke_list_gap.py", "result": "5 failed (R17-01 reproduced)", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "probe /tmp/uri_review_R17/p1.py (R16-01 forms and new stroke words through has_link_or_contact/mask_links)", "result": "R16-01 reported forms masked; 丶ᆞᅳ, ᅵᆞᅳ, 丶丿ノ, 丶丿丷, 一二三 and others not detected", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "probe /tmp/uri_review_R17/p2.py (verify/extractive/build_surface/require_valid)", "result": "all five new forms survive every layer", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "netpolicy.check_address probe (64:ff9b:1::/48, ::a00:1, ::ffff:0:a00:1, 64:ff9b::a00:1, 2002:..., 64:ff9b:2::a00:1)", "result": "all private-embedding forms refused; 64:ff9b:1::808:808 refused ADDRESS_TRANSITION_REFUSED", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "git diff --stat ffdf534..101bf972 -- <protected paths>", "result": "empty (no protected path changed)", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Flutter widget tests (uri_ui) not run this round", "ws_frozen_check zip part BLOCKED: Phase 1 checkpoint zip not present", "Real-browser/Playwright snapshot.js parity not re-run this round; the files are unchanged since the R16 review commit 9b6b4f27", "Areas outside uri_web/untrusted.py and uri_web/netpolicy.py (vision, access, bridge, integrated worker, Assist controller) are unchanged since the R16 review; checked here only by the passing tests/assist and tests/web suites", "Windows/GPU live adapters and the live Brain not available"]}
+AUDIT_RESULT_END

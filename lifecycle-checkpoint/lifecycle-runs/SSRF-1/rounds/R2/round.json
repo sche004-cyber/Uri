@@ -1,0 +1,206 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/SSRF-1/audit_R2",
+ "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+ "blocking_ids": [],
+ "candidate": "a5a31435035c88ab5c3a868796f96232bc036759",
+ "effective_verdict": "ACCEPT WITH FINDINGS",
+ "ended_at": "2026-10-12T02:18:50Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "a5a31435035c88ab5c3a868796f96232bc036759",
+   "impl_head": "a5a31435035c88ab5c3a868796f96232bc036759",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/ssrf-1-20261012",
+   "refs": "74409c20069c61af89baf466bdfa4abc2a0b5144d0678df61238db90a9c2791c",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "a5a31435035c88ab5c3a868796f96232bc036759",
+   "impl_head": "a5a31435035c88ab5c3a868796f96232bc036759",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/ssrf-1-20261012",
+   "refs": "74409c20069c61af89baf466bdfa4abc2a0b5144d0678df61238db90a9c2791c",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded",
+  "candidate": "a5a31435035c88ab5c3a868796f96232bc036759",
+  "findings": [
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "With an injected SafeFetcher (resolver -> 93.184.216.34, MockTransport, fetch_url extra_types), FetchUrlTool().execute(request_text='http://b\u00fccher.de/') and 'http://xn--bcher-kva.de/' both return {'status':'unavailable','message':'URI could not reach that URL.','error':'UNREACHABLE'} and nothing reaches the transport. httpx.URL('http://xn--bcher-kva.de/').host == 'b\u00fccher.de' while NP.check_url(...).host == 'xn--bcher-kva.de', so _Pinned.handle_request raises ConnectError('PIN_HOST_MISMATCH') (reproduced directly with httpx 0.28.1). The baseline fetched these hosts with requests.get. The failure is closed and honest, and IDN hosts are rare, so LOW.",
+    "files": [
+     "uri_web/safe_fetch.py:63",
+     "uri_core/tools/fetch_url.py:166"
+    ],
+    "id": "R2-01",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "In _Pinned.handle_request compare the ASCII host, e.g. request.url.raw_host.decode('ascii').lower() != self.host, and add an IDN test in tests/ssrf and tests/web.",
+    "title": "fetch_url can no longer fetch internationalised (IDN) host names: SafeFetcher's pin check compares httpx's Unicode host with netpolicy's punycode host"
+   },
+   {
+    "blocking": false,
+    "category": "code",
+    "evidence": "A public response with content-type text/html and content-encoding: gzip returns {'status':'unsupported','message':\"URI has no reader for content type 'unknown'.\",'content_type':''}. The baseline (requests: Accept */*, gzip decoded) returned the page text. The new Accept header also lists no document types (application/pdf, docx, xlsx, csv) and no */*, so servers that strictly negotiate on Accept could answer 406 for documents.",
+    "files": [
+     "uri_web/safe_fetch.py:400",
+     "uri_web/safe_fetch.py:408",
+     "uri_core/tools/fetch_url.py:197"
+    ],
+    "id": "R2-02",
+    "owner_decision": false,
+    "severity": "LOW",
+    "suggested_fix": "Let SafeFetcher callers pass an Accept value (fetch_url adds its document types or */*), and map a CONTENT_ENCODING_* refusal_code in fetch_url to a clear message instead of 'unknown' content type; or document both as accepted behaviour changes.",
+    "title": "fetch_url now sends W1's Accept / Accept-Encoding: identity; a server that gzips anyway gets a misleading 'unsupported, unknown content type'"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/ssrf",
+    "result": "65 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web",
+    "result": "3677 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest test_m19_office_readiness.py test_m20_research_recovery.py test_orchestrator_evidence_transport.py test_m32_capability_effect_classification.py test_m20_skill_discovery_boundary.py (without stub)",
+    "result": "3 collection errors: ModuleNotFoundError google (environment)",
+    "status": "BLOCKED"
+   },
+   {
+    "command": "PYTHONPATH=/tmp/uri_review_R2/stub (google module stub) pytest the same 5 files",
+    "result": "68 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "tests/ssrf copied onto a git archive of the baseline 03f0bf2c uri_core+uri_web",
+    "result": "63 failed, 2 passed (the expected unchanged-behaviour tests)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "tests/ssrf/test_ssrf_1_refusal_messages.py copied onto a git archive of pre-repair f44f70a5",
+    "result": "5 failed (the R1-01 cases), 5 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R2/probe1.py (production _new_fetcher kwargs with fake resolver/transport: about 70 SSRF/redirect/DNS/behaviour cases)",
+    "result": "all non-public targets refused before any send; requests went only to the checked address; public output shapes as at baseline",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/uri_review_R2/probe2.py (real network stack against a 127.0.0.1 listener; IDN; DOCX; W1 default types)",
+    "result": "listener got 0 connections; IDN hosts UNREACHABLE (R2-01); DOCX extracted from bytes with no text decode; W1 default unchanged",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Live public internet fetch (S-AC10): no real egress test was done in this container",
+   "Full m19/m20/orchestrator test files on a real environment with the google packages installed (only run here with a stub module)",
+   "Flutter/UI gates (no UI change in range)"
+  ],
+  "verdict": "ACCEPT WITH FINDINGS"
+ },
+ "round": 2,
+ "started_at": "2026-10-12T02:14:25Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "0b084aad-70a2-4cab-bb89-0897f34c0f59",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.9763514000000002,
+  "cwd": "/tmp/claude-0/lc-work/SSRF-1/audit_R2",
+  "ended_at": "2026-10-12T02:18:48Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 15,
+  "pid": 12183,
+  "prompt_sha256": "c0bb30777dd38aaae67b0a8c3c732c181b9bdd56d73ffb0cc08260f13f9de8e5",
+  "provider": "claude_cli",
+  "result_text_sha256": "8ef5c4fc67c9010008af42aa37fa99f7689932bd084836caffab915de5a82f27",
+  "role": "reviewer",
+  "session_id": "0b084aad-70a2-4cab-bb89-0897f34c0f59",
+  "session_id_requested": "0b084aad-70a2-4cab-bb89-0897f34c0f59",
+  "started_at": "2026-10-12T02:14:25Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "f8dc2e4f2414fc70bdc2ac127020f80a4f22d6f7632f64d2a690df989ed97694"
+ }
+}

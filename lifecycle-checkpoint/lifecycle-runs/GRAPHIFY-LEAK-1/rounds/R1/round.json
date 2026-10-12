@@ -1,0 +1,198 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/audit_R1",
+ "baseline": "e07b71c68ea44096020ca8865ae228b550b48e16",
+ "blocking_ids": [
+  "R1-01",
+  "R1-02"
+ ],
+ "candidate": "9ae7c60cd02b3a7be87a465db4170705d28f9d72",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-12T03:37:25Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "9ae7c60cd02b3a7be87a465db4170705d28f9d72",
+   "impl_head": "9ae7c60cd02b3a7be87a465db4170705d28f9d72",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/graphify-leak-1-20261012",
+   "refs": "99a532e7fbfc3ea2b309e4e4f6e99174b75ecebeedcf6f41bcb0657c37d8922e",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "9ae7c60cd02b3a7be87a465db4170705d28f9d72",
+   "impl_head": "9ae7c60cd02b3a7be87a465db4170705d28f9d72",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/graphify-leak-1-20261012",
+   "refs": "99a532e7fbfc3ea2b309e4e4f6e99174b75ecebeedcf6f41bcb0657c37d8922e",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "e07b71c68ea44096020ca8865ae228b550b48e16",
+  "candidate": "9ae7c60cd02b3a7be87a465db4170705d28f9d72",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "test",
+    "evidence": "conftest imports uri_core.app.server while the placeholders are installed, then deletes only google*/googleapiclient*/google_auth_* entries from sys.modules. uri_core.app.server and uri_core.services.gmail_service (etc.) remain imported with MagicMock bindings: a probe test run after tests/graphify sees type(uri_core.services.gmail_service.build) == MagicMock. Repro on this host (Google packages not installed): `pytest tests/test_m31_model_brain_ux.py` -> 1 collection error; `pytest tests/graphify tests/test_m31_model_brain_ux.py` -> 25 passed. Same for test_decision_engine.py (error alone; 60 passed with tests/graphify). tests/graphify sorts before tests/test_* in a plain `pytest tests` run. os.environ.setdefault('URI_EXTERNAL_CREDENTIAL_SECRET', ...) at module level also persists for the session. This contradicts the conftest docstring ('no other test in the same run can see them') and review focus 5.",
+    "files": [
+     "tests/graphify/conftest.py:36",
+     "tests/graphify/conftest.py:40",
+     "tests/graphify/conftest.py:41"
+    ],
+    "id": "R1-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Isolate the placeholder import: snapshot sys.modules before it and, on teardown of tests/graphify (session/module fixture or pytest_unconfigure-scoped hook), remove every module added during the placeholder window (including uri_core.*), or use pytest.importorskip / run the tests in a subprocess. Set the credential secret with monkeypatch inside a fixture rather than at import time.",
+    "title": "conftest placeholders leak into other tests in the same run (server and uri_core.services stay bound to MagicMock Google modules; credential secret persists)"
+   },
+   {
+    "blocking": true,
+    "category": "code",
+    "evidence": "_sync_memory calls graphify_index.refresh(scope='memory'), which deletes then re-adds keys in self.records in place, on every get/list_all/relevant_subset. /ask is a sync endpoint, so FastAPI runs it in its thread pool; the no-login view is shared by all no-login requests. Probe (/tmp/uri_review_R1/conc/test_conc.py; 300 memories, sys.setswitchinterval(1e-6)): two threads calling view.relevant_subset raise KeyError('memory:...') out of relevant_subset (the error comes from _sync_memory, outside relevant_subset's own try). With list_all readers: RuntimeError 'dictionary changed size during iteration'. A concurrent refresh(view, scope='capabilities') (as in refresh_user_external_lifecycle, server.py:665) raised RuntimeError 1466 times in 8 s; external_lifecycle_lock does not cover Brain-turn lookups, so a capability republish can abort before multi_action_dispatch is swapped. decision_engine catches the relevant_subset error, so in a Brain turn this drops the hint for that turn. Before this change, lookups only read.",
+    "files": [
+     "uri_core/app/server.py:248",
+     "uri_core/app/server.py:255",
+     "uri_core/app/server.py:257",
+     "uri_core/app/server.py:665",
+     "uri_core/core/graphify_index.py:346"
+    ],
+    "id": "R1-02",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Build the merged record dict (non-memory plus freshly indexed memory) in a local variable and assign self.records once, under a per-view lock that the capability/service refresh path also takes (or have that refresh replace records atomically under the same lock). Catch any exception in _sync_memory so a lookup never raises.",
+    "title": "Lookups edit the view's shared records without a lock: concurrent lookups and the capability refresh raise KeyError/RuntimeError"
+   }
+  ],
+  "prior_findings": [],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/graphify (candidate)",
+    "result": "11 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -q tests/graphify on git archive of e07b71c6 uri_core with the candidate tests copied in",
+    "result": "8 failed, 3 passed (leak/freshness/no-login/broken-store/Brain-hint cases fail on baseline)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -q tests/test_m31_model_brain_ux.py vs pytest -q tests/graphify tests/test_m31_model_brain_ux.py",
+    "result": "1 collection error alone vs 25 passed after tests/graphify (placeholder leak)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -q test_decision_engine.py vs pytest -q tests/graphify test_decision_engine.py; same for test_m33_1_batch1_foundations.py",
+    "result": "collection error alone vs 60 passed / 16 passed after tests/graphify",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -s /tmp/uri_review_R1/test_probe_mock.py after tests/graphify",
+    "result": "uri_core.services.gmail_service.build is MagicMock; import google raises ImportError",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -s /tmp/uri_review_R1/conc/test_conc.py (thread race on one user view)",
+    "result": "KeyError/RuntimeError raised from relevant_subset, list_all and refresh(scope='capabilities')",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Full repository regression suite against the baseline (AC8 'no new failures') not run; only targeted suites were run",
+   "Behaviour with the real Google client packages installed (not present on this host)",
+   "End-to-end HTTP /ask concurrency through uvicorn (the race was shown at the view API level, not through live HTTP requests)",
+   "Flutter/UI unaffected (no UI files changed; not run)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 1,
+ "started_at": "2026-10-12T03:34:11Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "448f4a86-b6f5-4297-a120-8d8035683fc4",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.0766272000000001,
+  "cwd": "/tmp/claude-0/lc-work/GRAPHIFY-LEAK-1/audit_R1",
+  "ended_at": "2026-10-12T03:37:24Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 22,
+  "pid": 19351,
+  "prompt_sha256": "350edead2d617dfc0bdb015f10784acbf3984244ee23197ebe0f62e97c4a6d9a",
+  "provider": "claude_cli",
+  "result_text_sha256": "965c136c8b135019695fc35008a56a01a83eb37abf6c1f593f86968979ea1949",
+  "role": "reviewer",
+  "session_id": "448f4a86-b6f5-4297-a120-8d8035683fc4",
+  "session_id_requested": "448f4a86-b6f5-4297-a120-8d8035683fc4",
+  "started_at": "2026-10-12T03:34:11Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "eb349c6eb1bff1698b162e70086b85b7e4b767930e0384b4230205dfa12775d1"
+ }
+}

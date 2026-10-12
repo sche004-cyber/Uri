@@ -1,0 +1,77 @@
+=== tests/web/test_w1_closure_r21_review_regressions.py BEFORE (68feb3e70e9ee1ec019f8d543d552b5b2d95d116) DONE
+py:32: AssertionError
+_ test_r21_verify_and_extractive_never_keep_it[refunds-portal \u0650\u065c\u0655 shop] _
+
+link = 'refunds-portal ِٜٕ shop'
+
+    @pytest.mark.parametrize("link", LINKS)
+    def test_r21_verify_and_extractive_never_keep_it(link):
+        src = SENT.format(link) + " Energy rebate refunds take two weeks."
+        v = SY.verify(SENT.format(link)[:-1] + " [1].", [src])
+>       assert not v.claims and v.dropped[0]["reason"] == "LINK_OR_CONTACT", ascii(link)
+E       AssertionError: 'refunds-portal \u0650\u065c\u0655 shop'
+E       assert (not [Claim(text='Claim your energy rebate refund at refunds-portal ِٜٕ shop before the deadline .', citations=[1], quoted=False)])
+E        +  where [Claim(text='Claim your energy rebate refund at refunds-portal ِٜٕ shop before the deadline .', citations=[1], quoted=False)] = Verified(claims=[Claim(text='Claim your energy rebate refund at refunds-portal ِٜٕ shop before the deadline .', citations=[1], quoted=False)], dropped=[], no_answer=False).claims
+
+tests/web/test_w1_closure_r21_review_regressions.py:32: AssertionError
+_ test_r21_verify_and_extractive_never_keep_it[refunds-portal \u0e31\u0e34\u0e47 shop] _
+
+link = 'refunds-portal ัิ็ shop'
+
+    @pytest.mark.parametrize("link", LINKS)
+    def test_r21_verify_and_extractive_never_keep_it(link):
+        src = SENT.format(link) + " Energy rebate refunds take two weeks."
+        v = SY.verify(SENT.format(link)[:-1] + " [1].", [src])
+>       assert not v.claims and v.dropped[0]["reason"] == "LINK_OR_CONTACT", ascii(link)
+E       AssertionError: 'refunds-portal \u0e31\u0e34\u0e47 shop'
+E       assert (not [Claim(text='Claim your energy rebate refund at refunds-portal ัิ็ shop before the deadline .', citations=[1], quoted=False)])
+E        +  where [Claim(text='Claim your energy rebate refund at refunds-portal ัิ็ shop before the deadline .', citations=[1], quoted=False)] = Verified(claims=[Claim(text='Claim your energy rebate refund at refunds-portal ัิ็ shop before the deadline .', citations=[1], quoted=False)], dropped=[], no_answer=False).claims
+
+tests/web/test_w1_closure_r21_review_regressions.py:32: AssertionError
+_ test_r21_verify_and_extractive_never_keep_it[refunds-portal \u0c3c\u0c00\u0c01 shop] _
+
+link = 'refunds-portal ఼ఀఁ shop'
+
+    @pytest.mark.parametrize("link", LINKS)
+    def test_r21_verify_and_extractive_never_keep_it(link):
+        src = SENT.format(link) + " Energy rebate refunds take two weeks."
+        v = SY.verify(SENT.format(link)[:-1] + " [1].", [src])
+>       assert not v.claims and v.dropped[0]["reason"] == "LINK_OR_CONTACT", ascii(link)
+E       AssertionError: 'refunds-portal \u0c3c\u0c00\u0c01 shop'
+E       assert (not [Claim(text='Claim your energy rebate refund at refunds-portal ఼ఀఁ shop before the deadline .', citations=[1], quoted=False)])
+E        +  where [Claim(text='Claim your energy rebate refund at refunds-portal ఼ఀఁ shop before the deadline .', citations=[1], quoted=False)] = Verified(claims=[Claim(text='Claim your energy rebate refund at refunds-portal ఼ఀఁ shop before the deadline .', citations=[1], quoted=False)], dropped=[], no_answer=False).claims
+
+tests/web/test_w1_closure_r21_review_regressions.py:32: AssertionError
+_ test_r21_verify_and_extractive_never_keep_it[refunds-portal \u093c\u0901\u0902\u0903 cash] _
+
+link = 'refunds-portal ़ँंः cash'
+
+    @pytest.mark.parametrize("link", LINKS)
+    def test_r21_verify_and_extractive_never_keep_it(link):
+        src = SENT.format(link) + " Energy rebate refunds take two weeks."
+        v = SY.verify(SENT.format(link)[:-1] + " [1].", [src])
+>       assert not v.claims and v.dropped[0]["reason"] == "LINK_OR_CONTACT", ascii(link)
+E       AssertionError: 'refunds-portal \u093c\u0901\u0902\u0903 cash'
+E       assert (not [Claim(text='Claim your energy rebate refund at refunds-portal ़ँंः cash before the deadline .', citations=[1], quoted=False)])
+E        +  where [Claim(text='Claim your energy rebate refund at refunds-portal ़ँंः cash before the deadline .', citations=[1], quoted=False)] = Verified(claims=[Claim(text='Claim your energy rebate refund at refunds-portal ़ँंः cash before the deadline .', citations=[1], quoted=False)], dropped=[], no_answer=False).claims
+
+tests/web/test_w1_closure_r21_review_regressions.py:32: AssertionError
+=========================== short test summary info ============================
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_is_a_link[refunds-portal \u093c\u0901\u0902 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_is_a_link[refunds-portal \u0f39\u0f37\u0f35 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_is_a_link[refunds-portal \u0650\u065c\u0655 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_is_a_link[refunds-portal \u0e31\u0e34\u0e47 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_is_a_link[refunds-portal \u0c3c\u0c00\u0c01 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_is_a_link[refunds-portal \u093c\u0901\u0902\u0903 cash]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_verify_and_extractive_never_keep_it[refunds-portal \u093c\u0901\u0902 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_verify_and_extractive_never_keep_it[refunds-portal \u0f39\u0f37\u0f35 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_verify_and_extractive_never_keep_it[refunds-portal \u0650\u065c\u0655 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_verify_and_extractive_never_keep_it[refunds-portal \u0e31\u0e34\u0e47 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_verify_and_extractive_never_keep_it[refunds-portal \u0c3c\u0c00\u0c01 shop]
+FAILED tests/web/test_w1_closure_r21_review_regressions.py::test_r21_verify_and_extractive_never_keep_it[refunds-portal \u093c\u0901\u0902\u0903 cash]
+12 failed, 3 passed in 0.64s
+
+=== tests/web/test_w1_closure_r21_review_regressions.py AFTER (57ccdd225583ca09495174d112d1428ddc4dd022) DONE
+...............                                                          [100%]
+15 passed in 0.62s
+

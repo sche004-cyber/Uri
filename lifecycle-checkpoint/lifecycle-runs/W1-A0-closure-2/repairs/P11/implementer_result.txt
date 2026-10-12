@@ -1,0 +1,18 @@
+I repaired R28-01. Endings spelt with Latin letters that are named after other letters, such as `ɑ` (alpha) and `ɩ` (iota), are now read as the plain letter they look like, so these hidden links get caught and masked. The new regression test fails 20 of 26 cases on 0fcc39d4 and passes all 26 after the change. The full `tests/web` and `tests/assist` suites pass (5315 tests).
+
+**What changed** (`uri_web/untrusted.py`, `_latin_base` / `_latin_fold`):
+- **Short names:** if a Latin letter isn't covered by the R27-01 name rule, the code now looks in the rest of its Unicode name for the first word that is one or two plain letters. For example `æ` becomes "ae", `ᵺ` "th", `ⱶ` "h" and `ꝛ` "r".
+- **Named letters:** a fixed table covers letters named after other letters: alpha→a, iota→i, beta→b, gamma→y, delta→d, epsilon→e, upsilon→u, omega→w, chi→x, schwa→e, eth→d, thorn→p, wynn→p, eng→n, kra→k, yr→r, heng→h, tone six→b, sharp s→ss.
+- **Everything else:** a letter still without a match goes through the same look-alike table already used for other scripts, as the reviewer suggested. A letter with no match at all still leaves the word unchanged, as before.
+
+**Test results:**
+- **Caught now:** `refunds-portal bɩz/claim`, `refunds-portal ɩo/claim` and the `~` forms with `cɑsh`, `ɑpp`, `ɩnfo` (including `/claim` paths), plus `ƅiz`, `Ɩnfo` and `ꞵiz`. Each is detected and masked, cleaned by the research surface, dropped by `verify()` with reason `LINK_OR_CONTACT`, and left out by `extractive()`.
+- **Still readable:** ordinary Danish, Icelandic and German text (`sø`, `Ærø`, `Þetta`, `Við`, `Straße`, `ŋ`/`ə` in prose) is not treated as a link.
+
+**Not changed:** `refunds-portal cɑsh/claim` and `ɑpp/claim` with only a space before them (no `~`) are still not caught. Their plain spellings `cash/claim` and `app/claim` aren't caught either; that is the residual the owner accepted under D16. With the `~` form they are caught.
+
+I couldn't use `git stash` (the command was refused), so for the before/after check I exported 0fcc39d4's `uri_web` into the scratchpad and ran the new test against it there. I didn't run graphify, commit or push, and only `uri_web/untrusted.py` plus the new test file changed.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R28-01"], "not_repaired": [], "regression_tests": ["tests/web/test_w1_closure_r28_review_regressions.py"], "notes": "uri_web/untrusted.py: _latin_base now falls back to reading the rest of the Unicode name after LETTER/LIGATURE (first 1-2 plain-letter word, else a fixed table for alpha/iota/beta/gamma/delta/epsilon/upsilon/omega/chi/schwa/eth/thorn/wynn/eng/kra/yr/heng/tone six/sharp s); _latin_fold sends any letter still unmatched through the look-alike table already used for other scripts. Regression test: 20 of 26 cases fail on 0fcc39d4 (checked against an exported copy of that commit's uri_web) and all 26 pass after the change. Full tests/web and tests/assist: 5315 passed. ASCII parity: '<name> cɑsh/claim' with only a space before it stays unmasked, as does plain 'cash/claim': that is the owner-accepted D16 residual for non-core endings after ordinary prose; the '~' forms are masked."}
+REPAIR_RESULT_END

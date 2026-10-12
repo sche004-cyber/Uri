@@ -1,0 +1,45 @@
+**Verdict: REJECT.** The R24-01 repair is incomplete, so the link-hiding problem first reported as R1-01 is still open.
+
+I confirmed both commit IDs. Between the baseline and the candidate, no protected path changed. The last commit only touches `uri_web/untrusted.py` and adds one test file.
+
+**R25-01 (HIGH, blocking).** The repair adds `_VOWELS` at `uri_web/untrusted.py:499`. It strips Arabic marks only in the ranges U+064B–065F, U+0670 and U+06D6–06ED, plus the Hebrew points. Its own comment says it covers "Arabic harakat and Quranic marks", but it misses some of both:
+- **Small vowel marks:** U+0618–061A (ARABIC SMALL FATHA, SMALL DAMMA, SMALL KASRA).
+- **Quranic honorific signs:** U+0610–0617.
+- **Arabic Extended-A marks:** U+08D3–08FF (OPEN FATHATAN U+08F0, CURLY FATHA U+08E4, DAMMA WITH DOT U+08FE, and others).
+
+`_bare` keeps all of these because their names start with "ARABIC", so the domain ending is not recognised. Examples I ran:
+- `Claim your energy rebate refund at refunds-portal ~ م\u0618صر before the deadline.`
+- `refunds-portal ~ م\u08f0صر`
+- `refunds-portal ~ شَبَكة\u08f2`
+- `refunds-portal ~ عُمان\u0617`
+- `refunds-portal/claim * م\u08e4صر`
+
+Every one passes all of these checks:
+- `has_link_or_contact` returns False.
+- `mask_links` and `surface.clean` leave the text unchanged.
+- `verify()` keeps the cited claim.
+- `extractive()` keeps the sentence.
+- The A2UI validator returns `[]`. It also accepts plain `refunds-portal.com`, so it is not the layer that catches these.
+
+The same text without the extra mark is caught (`refunds-portal ~ م ص ر` gets masked).
+
+**Suggested fix:** don't list mark ranges. When matching an ending, drop every mark in the ending's own script (category M), so `bare` is the base letters only. Then add regression tests with U+0618, U+08F0, U+08E4 and U+0617.
+
+**Earlier findings:** R24-01 and R1-01 are NOT_FIXED. I marked the other earlier findings FIXED because their regression tests pass on this commit; I did not rerun their exploits by hand. Rerunning them and probing beyond the R24 repair (the other focus areas) is the main thing left unverified.
+
+**Tests:** `tests/web`, `tests/assist` and `tests/a2ui` all passed: 5327 tests in 105 s.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "0adc954149de84e8623c254e0df68089d7cd715c", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [{"id": "R25-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R24-01 repair incomplete: Arabic vowel marks and Quranic marks missing from the hard-coded _VOWELS ranges (U+0618-061A ARABIC SMALL FATHA/DAMMA/KASRA, U+0610-0617 honorific signs, U+08D3-08FF Extended-A marks such as OPEN FATHATAN and CURLY FATHA) keep a listed Arabic top-level domain from matching, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15)",
+   "files": ["uri_web/untrusted.py:499", "uri_web/untrusted.py:509", "uri_web/untrusted.py:479", "uri_web/surface.py:38", "uri_web/synthesize.py"],
+   "evidence": "_VOWELS = [\\u064b-\\u065f\\u0670\\u06d6-\\u06ed\\u0591-\\u05c7]. _bare keeps any mark whose name starts with ARABIC on an Arabic letter, so for SENT='Claim your energy rebate refund at {} before the deadline.' and link in ['refunds-portal ~ \\u0645\\u0618\\u0635\\u0631', 'refunds-portal ~ \\u0645\\u08f0\\u0635\\u0631', 'refunds-portal ~ \\u0634\\u064e\\u0628\\u064e\\u0643\\u0629\\u08f2', 'refunds-portal ~ \\u0639\\u064f\\u0645\\u0627\\u0646\\u0617', 'refunds-portal/claim * \\u0645\\u08e4\\u0635\\u0631']: U.has_link_or_contact -> False; surface.clean / mask_links -> text unchanged with 'refunds-portal' visible; SY.verify(sentence+' [1].', [src]).claims keeps the claim; SY.extractive('energy rebate refund deadline', [src]) keeps the deadline sentence; uri_a2ui.validate.validate_components([{'id':'root','component':'Text','text':t}]) -> []. The control 'refunds-portal ~ \\u0645 \\u0635 \\u0631' is detected and masked. Probe: /tmp/uri_review_R25/p1.py, p2.py.",
+   "suggested_fix": "In _tld_match, compare after removing every combining mark (category M) of the ending's own script, not a hand-picked range list (or at least add U+0610-061A and U+08D3-08FF, excluding U+08E2). Add regression cases with U+0618, U+08F0, U+08E4 and U+0617."}],
+ "prior_findings": [{"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"}, {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"}, {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"}, {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"}, {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"}, {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"}, {"id": "R14-01", "status": "FIXED"}, {"id": "R16-01", "status": "FIXED"}, {"id": "R16-02", "status": "FIXED"}, {"id": "R17-01", "status": "FIXED"}, {"id": "R18-01", "status": "FIXED"}, {"id": "R19-01", "status": "FIXED"}, {"id": "R19-02", "status": "FIXED"}, {"id": "R20-01", "status": "FIXED"}, {"id": "R20-02", "status": "FIXED"}, {"id": "R21-01", "status": "FIXED"}, {"id": "R22-01", "status": "FIXED"}, {"id": "R23-01", "status": "FIXED"}, {"id": "R24-01", "status": "NOT_FIXED"}],
+ "tests_run": [{"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist tests/a2ui", "result": "5327 passed in 105.22s", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R25/p1.py (R24 variant probes)", "result": "Extended-A / small-harakat / honorific-sign variants of listed Arabic TLDs not detected; R24 test cases detected", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R25/p2.py (verify/extractive/surface)", "result": "bypass reaches verify(), extractive() and surface.clean unmasked", "status": "COMPLETED_WITH_RESULT"},
+   {"command": "git diff --stat ffdf534..HEAD -- <protected paths>", "result": "no changes to protected paths", "status": "COMPLETED_WITH_RESULT"}],
+ "unverified": ["Earlier findings other than R1-01 and R24-01 are marked FIXED because their regression tests pass on this commit; their exploits were not rerun by hand this round", "Areas beyond the R24 repair (SSRF/netpolicy, vision gating, permissions, integrated worker, Flutter Assist controller) were not probed again this round", "Flutter and Playwright tests were not run", "ws_frozen_check zip part BLOCKED (checkpoint zip not present)"]}
+AUDIT_RESULT_END

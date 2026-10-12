@@ -1,0 +1,273 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "W1-A0-closure",
+ "stage": "BLOCKED",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "candidate": "834c1c30956fd5aa7af4c2914f1f785902ab4ed3",
+ "rounds": 12,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "claude_cli",
+   "session_id": "20329ef7-e90c-4054-b1eb-ab5e87feda1d",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "100f4590-1645-4c04-b2db-d4e28e47940d",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 3,
+   "provider": "claude_cli",
+   "session_id": "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 4,
+   "provider": "claude_cli",
+   "session_id": "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "462be42c992c273155e83801b32dc01580a897ef",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 5,
+   "provider": "claude_cli",
+   "session_id": "6f65a79d-136c-41cb-9cce-3a488617959e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 6,
+   "provider": "claude_cli",
+   "session_id": "40727e7b-2c06-4695-abd1-c53c5b1f749f",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "29771992f57ff470035f044c55e2c6689e9d3d6d",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 7,
+   "provider": "claude_cli",
+   "session_id": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 8,
+   "provider": "claude_cli",
+   "session_id": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 9,
+   "provider": "claude_cli",
+   "session_id": "fedecee9-bc48-4b89-ad28-364dc5a28cdb",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 10,
+   "provider": "claude_cli",
+   "session_id": "58d9ffbb-47b7-4425-9982-0b347af11a44",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "7b1252f79efe62a7a4eff2c2275a7984e5048f1e",
+   "verdict": null,
+   "reviewer_label": null,
+   "independent": true,
+   "status": "NO_RESULT"
+  },
+  {
+   "round": 11,
+   "provider": "claude_cli",
+   "session_id": "955eed4d-c802-425c-81f7-babb9c2faa44",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "6b07b467779cbe3d2562b1623620c10ceae47d55",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 12,
+   "provider": "claude_cli",
+   "session_id": "3914cd97-0c39-4039-aaaf-2ade06a404eb",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "834c1c30956fd5aa7af4c2914f1f785902ab4ed3",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "COMMITTED",
+   "commit": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04",
+    "R1-05",
+    "R1-06"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 2,
+   "status": "COMMITTED",
+   "commit": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "addresses": [
+    "R2-01",
+    "R2-02",
+    "R2-03"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 3,
+   "status": "COMMITTED",
+   "commit": "462be42c992c273155e83801b32dc01580a897ef",
+   "addresses": [
+    "R3-01",
+    "R3-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 4,
+   "status": "COMMITTED",
+   "commit": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "addresses": [
+    "R4-01",
+    "R4-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 5,
+   "status": "COMMITTED",
+   "commit": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "addresses": [
+    "R6-01",
+    "R6-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 6,
+   "status": "COMMITTED",
+   "commit": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "addresses": [
+    "R7-01",
+    "R7-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 7,
+   "status": "COMMITTED",
+   "commit": "7b1252f79efe62a7a4eff2c2275a7984e5048f1e",
+   "addresses": [
+    "R9-01"
+   ],
+   "reason": null
+  }
+ ],
+ "open_findings": [
+  {
+   "id": "R12-01",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "R1-01 link class still open under D16: a name in a different script from the ending (Cyrillic/Greek/Arabic name + core Latin domain, with a plain space or a path; Latin name + non-Latin listed TLD after a separator) passes has_link_or_contact, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15)"
+  }
+ ],
+ "gates": {},
+ "integration": null,
+ "blocker": {
+  "at": "2026-10-11T12:55:29Z",
+  "kind": "RETRY_LIMIT",
+  "needs": "owner or a more capable implementer",
+  "reason": "still failing after 3 repairs (diagnosed: The link detector in uri_web/untrusted.py is still a list of known separator shapes, not a rule. _BARE (untrusted.py:78) matches a bare domain only when the labels are joined by _DOT (untrusted.py:76), and _DOT accepts only the 14 characters in _DOTCH (untrusted.py:75), certain bracket pairs and a s): R7-01, R1-01",
+  "stage": "AUDITING"
+ },
+ "events": 88,
+ "evidence_ok_for_candidate": false
+}

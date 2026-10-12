@@ -1,0 +1,98 @@
+{
+ "addresses": [
+  "R28-01"
+ ],
+ "changed": [
+  "tests/web/test_w1_closure_r28_review_regressions.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "6c51965f82eab805b14612e892d445fec50646ac",
+ "ended_at": "2026-10-11T16:08:14Z",
+ "pre": "0fcc39d4bf06655b0c45b05b65be46b70a07248a",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_closure_r28_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 11,
+ "report": {
+  "not_repaired": [],
+  "notes": "uri_web/untrusted.py: _latin_base now falls back to reading the rest of the Unicode name after LETTER/LIGATURE (first 1-2 plain-letter word, else a fixed table for alpha/iota/beta/gamma/delta/epsilon/upsilon/omega/chi/schwa/eth/thorn/wynn/eng/kra/yr/heng/tone six/sharp s); _latin_fold sends any letter still unmatched through the look-alike table already used for other scripts. Regression test: 20 of 26 cases fail on 0fcc39d4 (checked against an exported copy of that commit's uri_web) and all 26 pass after the change. Full tests/web and tests/assist: 5315 passed. ASCII parity: '<name> c\u0251sh/claim' with only a space before it stays unmasked, as does plain 'cash/claim': that is the owner-accepted D16 residual for non-core endings after ordinary prose; the '~' forms are masked.",
+  "regression_tests": [
+   "tests/web/test_w1_closure_r28_review_regressions.py"
+  ],
+  "repaired": [
+   "R28-01"
+  ]
+ },
+ "started_at": "2026-10-11T16:04:03Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "75cf1644-7580-406c-927c-4427a4deb518",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 78
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.8500403000000001,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T16:08:07Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 23,
+  "pid": 31662,
+  "prompt_sha256": "e8d441aa53ad9f8e58fac2d61b8f170c6edd3160d659d6f623069b605b9743ee",
+  "provider": "claude_cli",
+  "result_text_sha256": "bafa8497ada3490e53ae26a7eeedd86cb048a2301c10b9992db15e4f370e3d6c",
+  "role": "implementer",
+  "session_id": "75cf1644-7580-406c-927c-4427a4deb518",
+  "session_id_requested": "75cf1644-7580-406c-927c-4427a4deb518",
+  "started_at": "2026-10-11T16:04:03Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "1b124e18aff0a16f401b8e4d9d6afe841f6a3bc3a539d29e4e20c0bb5275f478"
+ }
+}

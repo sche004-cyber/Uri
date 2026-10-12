@@ -104,7 +104,7 @@
   "remote": "origin",
   "target_ref": "integration/git-sync-20261008",
   "authorized": true,
-  "expected_target_tip": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80"
+  "expected_target_tip": "cbdf3f2ceb5eea4e8b634f92c8e3dee4571a3b35"
  },
  "commit_trailers": [
   "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
@@ -122,7 +122,7 @@
   "stall_rounds": 2,
   "diagnose_after": 2,
   "budget": {
-   "max_rounds": 30,
+   "max_rounds": 50,
    "max_cost_usd": 400,
    "max_hours": 36
   }

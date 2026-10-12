@@ -1,0 +1,30 @@
+All four findings are repaired in this working tree, with nothing committed. Each regression test was run against the original c85bd832 source files (copied back in temporarily): all three test files fail there and pass with the fix. After the changes, all of `tests/assist` (2221) and `tests/web` (3384) pass, and so do all 257 Flutter tests in `test/living`.
+
+**R41-01: answer shown after Pause/Stop**
+- **App side** (`assist_controller.dart`): the poll now remembers which ask (or research job) it asked about, and the epoch, before it waits. It drops the reply if a grant, pause, resume, Stop or worker change happened meanwhile.
+- **Worker side** (`bridge.py`): the job now checks the grant again just before it stores and sends the answer, while holding the access lock. A Stop, pause or new grant can no longer land between the check and the send; if the grant changed, a blank cancelled result goes out instead. I added a small `held()` method to `uri_assist/access.py` that returns that lock.
+- **Tests:** `assist_r41_poll_test.dart` holds the status reply in flight across pause, Stop and a new grant (3 of 4 cases fail before the fix). The Python test runs Stop or pause right after the post-answer check passes and asserts that no answer or observation is emitted.
+
+**R41-02: field text in headings**
+- `snapshot.js` now skips text inside a field when it builds headings.
+- As a second layer, `perception.py` drops any heading piece drawn inside a withheld field's box, and any heading containing a known withheld value. This works even if the in-page layer misses it: a test runs a copy of snapshot.js without the fix and the values still don't reach the Brain.
+
+**R41-03: secrets in URLs written in text**
+- Both layers (`redact.py` and the snapshot.js masking) now apply the Location rule to every whitespace-separated piece of text: the `user:password@` part is removed, and secret-named query, fragment and bare `key=value` values are masked at any length.
+- I didn't apply the reviewer's suggested key-boundary change. It made `promo_code=SUMMER` masked and broke the existing test `test_r1_04_readable_query_keys_stay`. The key-aware rule covers `client_secret=…` and keeps promo, zip and postal codes readable.
+- **Tests:** real-Chromium end-to-end checks of page text, headings and a shared contenteditable, plus unit checks on `redact_text`.
+
+**R41-04: instruction-like titles, snippets and feed titles**
+- Injection flags now cover title plus text for fetched pages, title plus snippet for snippet-only sources, and title plus summary for feed items.
+- A flagged title reaches the Brain only as `(title hidden: instruction-like text)`.
+- When the Brain replies NO_ANSWER but the extractive path finds supported sentences, those sentences are shown instead (`extractive_fallback`, `brain_status` set to `NO_ANSWER`). When the sources have nothing, NO_ANSWER still stands.
+
+**Things to know:**
+- While testing I accidentally wrote a stray copy of `uri_assist/bridge.py` to `/b.py`, at the filesystem root and outside the repository. Deleting it was denied by permissions; it is harmless but can be removed.
+- The worker now sends the `assist.answer` event while holding the access lock. If writing that event ever blocks, a Pause or Stop arriving at that moment waits until the write finishes.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R41-01", "R41-02", "R41-03", "R41-04"], "not_repaired": [],
+ "regression_tests": ["tests/assist/test_a0_r41_review_regressions.py", "tests/web/test_w1_closure_r41_review_regressions.py", "uri_ui/test/living/assist_r41_poll_test.dart"],
+ "notes": "Pre-repair runs (original source files swapped back in temporarily): assist file 13 failed/2 passed (the 2 are non-regression guards), web file 5 failed/1 passed (guard), Dart file 3 failed/1 passed (guard). After repair: tests/assist 2221 passed, tests/web 3384 passed, flutter test/living 257 passed. Changed source: uri_assist/{access.py (new held() accessor), bridge.py, perception.py, redact.py, browser_extension/snapshot.js}, uri_web/{pipeline.py, synthesize.py}, uri_ui/lib/living/assist/assist_controller.dart. The suggested query_secret key-boundary change was not applied because it made promo_code=SUMMER masked and broke the existing test test_r1_04_readable_query_keys_stay; bare key=value tokens go through the Location's key-aware pair rule instead. The R41-02 Python layer drops heading pieces drawn inside withheld field boxes, independently of snapshot.js. The assist.answer event is now emitted while holding the access lock: a blocking event write delays a concurrent pause or revoke until it finishes. A stray copy of bridge.py was accidentally written to /b.py (outside the repository) and could not be deleted because the command was denied. graphify was not run."}
+REPAIR_RESULT_END

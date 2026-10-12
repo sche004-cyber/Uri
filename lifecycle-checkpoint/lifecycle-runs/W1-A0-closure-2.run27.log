@@ -1,0 +1,614 @@
+{
+ "schema": "uri-dev-lifecycle/1",
+ "milestone": "W1-A0-closure",
+ "stage": "BLOCKED",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "candidate": "bdc82ef1ccfced0ff28001531807d1d18dad8f65",
+ "rounds": 34,
+ "reviewers": [
+  {
+   "round": 1,
+   "provider": "claude_cli",
+   "session_id": "20329ef7-e90c-4054-b1eb-ab5e87feda1d",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "67aff5042c0f166392281e072fb5f9db906779c5",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 2,
+   "provider": "claude_cli",
+   "session_id": "100f4590-1645-4c04-b2db-d4e28e47940d",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 3,
+   "provider": "claude_cli",
+   "session_id": "c9556679-5432-4d0c-9e5d-806fdc2bba47",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 4,
+   "provider": "claude_cli",
+   "session_id": "7fb002ae-d084-4e18-b13d-6cbc18118a09",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "462be42c992c273155e83801b32dc01580a897ef",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 5,
+   "provider": "claude_cli",
+   "session_id": "6f65a79d-136c-41cb-9cce-3a488617959e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 6,
+   "provider": "claude_cli",
+   "session_id": "40727e7b-2c06-4695-abd1-c53c5b1f749f",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "29771992f57ff470035f044c55e2c6689e9d3d6d",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 7,
+   "provider": "claude_cli",
+   "session_id": "8996df3a-61f6-4227-beac-1c5fd562e6e5",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 8,
+   "provider": "claude_cli",
+   "session_id": "8375af4b-8468-4e67-ba85-0cfe741090e8",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 9,
+   "provider": "claude_cli",
+   "session_id": "fedecee9-bc48-4b89-ad28-364dc5a28cdb",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "66a4765a3897a1c3c460576645c12da68edc9bd3",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 10,
+   "provider": "claude_cli",
+   "session_id": "58d9ffbb-47b7-4425-9982-0b347af11a44",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "7b1252f79efe62a7a4eff2c2275a7984e5048f1e",
+   "verdict": null,
+   "reviewer_label": null,
+   "independent": true,
+   "status": "NO_RESULT"
+  },
+  {
+   "round": 11,
+   "provider": "claude_cli",
+   "session_id": "955eed4d-c802-425c-81f7-babb9c2faa44",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "6b07b467779cbe3d2562b1623620c10ceae47d55",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 12,
+   "provider": "claude_cli",
+   "session_id": "3914cd97-0c39-4039-aaaf-2ade06a404eb",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "834c1c30956fd5aa7af4c2914f1f785902ab4ed3",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 13,
+   "provider": "claude_cli",
+   "session_id": "40ed20e0-46c8-4727-a220-6e245ef92f34",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "eedbc6393bbe837b67807e995a052e8ecbf3d8e0",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 14,
+   "provider": "claude_cli",
+   "session_id": "6f4d33ba-2d75-437d-84e2-c483c35e37ce",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "da10d0b84cbd80f60be930295a01baed47b31110",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 15,
+   "provider": null,
+   "session_id": null,
+   "models": null,
+   "candidate": "fe77015a8cd20a09b0cd0d6b5115d3edc79df5cb",
+   "verdict": null,
+   "reviewer_label": null,
+   "independent": null,
+   "status": null
+  },
+  {
+   "round": 16,
+   "provider": "claude_cli",
+   "session_id": "64de2d7c-e673-41ef-9f5a-6cdd70846398",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "9b6b4f27fd6b54b5b92cf1fa36c086c9aa49b126",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 17,
+   "provider": "claude_cli",
+   "session_id": "ab6049a3-a187-42cb-99fb-7341ad93b5ae",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "101bf972942cee944840d659099cc3b93b198233",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 18,
+   "provider": "claude_cli",
+   "session_id": "6afee17c-97e6-442c-babf-adf6f8a27c87",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "b7b93e7c43b34885995891776d0aa8104a79fbb3",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 19,
+   "provider": "claude_cli",
+   "session_id": "9353e27a-d9ff-4f6c-9003-d6c6c3f05d64",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "0577aeb6004f5db8e9088e7a5496d237b9717bf2",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 20,
+   "provider": "claude_cli",
+   "session_id": "586829f2-57de-4d4f-b19b-a70fbcf36aa4",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "eb4d676de99d18710bffd9b3a0cdb7ab1baca7d5",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 21,
+   "provider": "claude_cli",
+   "session_id": "52e01df5-01af-463d-b502-28d430e80cb3",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 22,
+   "provider": "claude_cli",
+   "session_id": "0c531ba3-7aba-4e0c-a339-bc0c3a3ca91e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "57ccdd225583ca09495174d112d1428ddc4dd022",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 23,
+   "provider": "claude_cli",
+   "session_id": "4e0a4142-8a24-4c0d-882e-eaee893fe71b",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "0e9a51ead3e1271a6e082b6db8f6bc7a7eb1a5bf",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 24,
+   "provider": "claude_cli",
+   "session_id": "4472b5d0-e435-47c6-adf4-b6a8e2dd1826",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "d51207ead093905e94052f1c7290b005c851d8b5",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 25,
+   "provider": "claude_cli",
+   "session_id": "1835f9a4-c6bc-4d6c-aa81-78605b3632a4",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "0adc954149de84e8623c254e0df68089d7cd715c",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 26,
+   "provider": "claude_cli",
+   "session_id": "c980a987-2d05-499e-9ebc-d736519add01",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "74909458161186edead2642957332ce50655f558",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 27,
+   "provider": "claude_cli",
+   "session_id": "d4a299e6-c46f-4636-afb4-91f480470f6e",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 28,
+   "provider": "claude_cli",
+   "session_id": "cdeb0687-0b29-47e6-9bb9-e03aabc7f25c",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "0fcc39d4bf06655b0c45b05b65be46b70a07248a",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 29,
+   "provider": "claude_cli",
+   "session_id": "4cb82373-5b21-4f8b-9771-ad6129b6ca3f",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "6c51965f82eab805b14612e892d445fec50646ac",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 30,
+   "provider": "claude_cli",
+   "session_id": "1ffebf80-c1fb-4146-b4d2-15942217164b",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "c5fe635154daec2f6866c5f8478b5856c645f3d4",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 31,
+   "provider": "claude_cli",
+   "session_id": "e3c4978f-615f-4701-974d-08c6484d9a8c",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "87bd6aa7b68cfa9750e86d94b1bc29b4fb8a19e9",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 32,
+   "provider": "claude_cli",
+   "session_id": "1cc0493a-d4e1-4531-9bca-be1312499420",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "1525b10d4b09793a9fb9fee903cf546fff2b0c83",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 33,
+   "provider": "claude_cli",
+   "session_id": "6b3cd187-2794-4f44-82b8-15f39aa3863d",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "fc3d6f4257ac2b9d5883a97468b6e3f898a9545f",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  },
+  {
+   "round": 34,
+   "provider": "claude_cli",
+   "session_id": "e7db5c4f-31fc-4720-9834-eca675374aee",
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "candidate": "bdc82ef1ccfced0ff28001531807d1d18dad8f65",
+   "verdict": "REJECT",
+   "reviewer_label": "REJECT",
+   "independent": true,
+   "status": "COMPLETED_WITH_RESULT"
+  }
+ ],
+ "repairs": [
+  {
+   "repair": 1,
+   "status": "COMMITTED",
+   "commit": "ca622bc0354a960c82acd7a33ecc6de5bb9f360a",
+   "addresses": [
+    "R1-01",
+    "R1-02",
+    "R1-03",
+    "R1-04",
+    "R1-05",
+    "R1-06"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 2,
+   "status": "COMMITTED",
+   "commit": "f370064354ba678ec5fed956a709cd0e7626c269",
+   "addresses": [
+    "R2-01",
+    "R2-02",
+    "R2-03"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 3,
+   "status": "COMMITTED",
+   "commit": "462be42c992c273155e83801b32dc01580a897ef",
+   "addresses": [
+    "R3-01",
+    "R3-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 4,
+   "status": "COMMITTED",
+   "commit": "f5a5b8ecbb5c524b3b768cc09ae71dfa2bcc068b",
+   "addresses": [
+    "R4-01",
+    "R4-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 5,
+   "status": "COMMITTED",
+   "commit": "f604e7cd73ba15a567b31e9b4360e2a4ef7de892",
+   "addresses": [
+    "R6-01",
+    "R6-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 6,
+   "status": "COMMITTED",
+   "commit": "474adb8440ffcf946384edd23c15245c3061eee5",
+   "addresses": [
+    "R7-01",
+    "R7-02"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 7,
+   "status": "COMMITTED",
+   "commit": "7b1252f79efe62a7a4eff2c2275a7984e5048f1e",
+   "addresses": [
+    "R9-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 8,
+   "status": "COMMITTED",
+   "commit": "fe77015a8cd20a09b0cd0d6b5115d3edc79df5cb",
+   "addresses": [
+    "R14-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 9,
+   "status": "COMMITTED",
+   "commit": "57ccdd225583ca09495174d112d1428ddc4dd022",
+   "addresses": [
+    "R21-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 10,
+   "status": "COMMITTED",
+   "commit": "be7cdecfd503ed5b1862c6f0bbf35856774f62b2",
+   "addresses": [
+    "R26-01"
+   ],
+   "reason": null
+  },
+  {
+   "repair": 11,
+   "status": "COMMITTED",
+   "commit": "6c51965f82eab805b14612e892d445fec50646ac",
+   "addresses": [
+    "R28-01"
+   ],
+   "reason": null
+  }
+ ],
+ "open_findings": [
+  {
+   "id": "R34-01",
+   "severity": "HIGH",
+   "blocking": true,
+   "title": "R33-01 repair incomplete (R31/R32/R33 class): capital 'I' as 'l' is not folded in upper-case runs, and the leading-I step makes the general fold turn the next 'I' into 'l', so 'IIVE', 'IINK', 'IOI', 'PI', 'II' and core 'MII/claim' pass has_link_or_contact, mask_links, verify(), extractive() and the research surface while 'lIVE', 'lINK', 'lOl', 'Pl', 'Il', 'MIl/claim' are links (W1-AC12/AC15, D16/D29)"
+  }
+ ],
+ "gates": {},
+ "integration": null,
+ "blocker": {
+  "at": "2026-10-11T17:09:56Z",
+  "kind": "RETRY_LIMIT",
+  "needs": "owner or a more capable implementer",
+  "reason": "still failing after 3 repairs (diagnosed: uri_web/untrusted.py _words() counts any category-M character as a letter (_letter, line 449-450), so a run of marks with no base letter after a space becomes a 'word' tagged with the marks' own script. Commit 68feb3e7 changed _separator_word (line 580-582) to classify base=_bare(w[2]) and treat the): R1-01",
+  "stage": "AUDITING"
+ },
+ "events": 263,
+ "evidence_ok_for_candidate": false
+}

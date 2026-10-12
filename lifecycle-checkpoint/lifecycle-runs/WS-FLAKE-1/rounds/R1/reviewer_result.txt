@@ -1,0 +1,36 @@
+**Verdict: ACCEPT WITH FINDINGS.** The fix works, and I found nothing HIGH or blocking. There is one LOW, non-blocking finding about older behaviour this change doesn't touch.
+
+I verified both SHAs: HEAD is 57411e8d and 03f0bf2c exists. The diff touches only `uri_operational_intelligence/brain_health.py`, the new test and the plan doc, and no protected path.
+
+**Focus 1: the request stamp and how the host judges its age**
+- The new stamp is `min(now, floor(now*1000)/1000)`. The `min()` is needed: in 2,000,000 random clock values, the floor on its own landed after `now` 1,218 times, because the multiply by 1000 can round up.
+- I put the stamp through a JSON round trip for those 2,000,000 values, plus 6,000,000 values at and around millisecond boundaries near the current date. The age was never negative, and in the realistic range it was always 1 ms or less, so a fresh request can't be refused any more.
+- The single outlier is a clock value around the year 6300, where floats are coarse. Its age was 1.007 ms, still non-negative, so it is accepted.
+- Stale, invalid and reused requests are still refused: the host check `0 <= age <= REQUEST_MAX_AGE_S` is unchanged. The only cost is that stamps are now up to 1 ms older, which is negligible against the 120 s window.
+
+**Focus 2: other writers and readers**
+- The only producer of the request file is `write_host_request`. `scripts/run_uri_integrated_worker.py:206` calls it, and `ws_brain_host.write_request` re-exports it.
+- The only reader is `Host.take_request`. The `requested_at` hit in `uri_supervisor_bridge` is the unrelated `cancel_requested_at`.
+- The finding (R1-01): the guard against reusing a request, `last_request_id`, lives only in memory. A new host process started within 120 s accepts a request the previous host already used. My probe showed a second host taking the same `stop` again as ACCEPTED, and `take_request` has the same code on the baseline, so this change didn't cause it.
+
+**Focus 3: the tests**
+- The new tests use a fixed clock and are self-contained (no fixture files).
+- They fail on the baseline (9 failed, 4 passed) and pass on the candidate (13 passed). The 4 that pass on the baseline are the stale-request check and the 0.0005 clock value, where nearest-millisecond rounding happens to give the right answer.
+- The three formerly flaky tests passed 50 out of 50 runs on the candidate, against 10 out of 30 on the baseline.
+- In the full `tests/ws` run, 17 other `test_ws_hardening.py` tests fail here. They are lease, lock and advise tests that need the Windows-only `msvcrt` module or real processes, and none of them use the request stamp.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "57411e8d177f565344ac4ee48333e6444312f8a7", "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [{"id": "R1-01", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false, "title": "Request replay guard is in-memory only: a new host instance re-accepts an already-consumed request within REQUEST_MAX_AGE_S (pre-existing, unchanged by this diff)", "files": ["scripts/ws_brain_host.py:81", "scripts/ws_brain_host.py:135", "scripts/ws_brain_host.py:139"], "evidence": "last_request_id is initialised to None in Host.__init__ and never loaded from the persisted report; the request file is never removed after use. Probe /tmp/uri_review_R1/test_replay_probe.py: host 1 takes a 'stop' request (ACCEPTED); a second Host built on the same dirs then returns 'stop' again with last_request ACCEPTED, same id. take_request has identical code on 03f0bf2c, so this is not a regression from WS-FLAKE-1.", "suggested_fix": "In a follow-up, seed last_request_id (or a consumed-id set) from the persisted report's 'requests'/'last_request', or delete/rename the request file once consumed."}],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "pytest tests/ws/test_ws_flake_1_request_stamp.py (candidate)", "result": "13 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/ws/test_ws_flake_1_request_stamp.py copied into git archive of 03f0bf2c", "result": "9 failed, 4 passed (AC1/AC2 fail for clocks .0006, .9999, .4567891; the .0005 clock and AC3 pass on baseline)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest tests/ws/test_ws_flake_1_request_stamp.py tests/ws/test_ws_hardening.py (candidate)", "result": "51 passed, 17 failed, 2 skipped; all 17 failures are lease/advise/process tests that need the Windows-only msvcrt module or real processes, unrelated to the request stamp", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "50x pytest test_ws_hardening.py -k 'restart_request_during_load_is_kept_for_later or requests_are_marked_done_with_the_state_they_left or host_requests_are_explicit_fresh_and_used_once' (candidate)", "result": "50/50 pass (3 tests each run)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "30x same selection on baseline 03f0bf2c", "result": "10 pass / 20 fail", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "python -I /tmp/uri_review_R1/probe.py, probe2.py (property check of stamp after JSON round-trip)", "result": "0 negative ages in 8M samples; floor alone exceeded now 1218/2M times (min() guard is needed and present); one >1ms gap only at an epoch around the year 6300", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest /tmp/uri_review_R1/test_replay_probe.py", "result": "second Host re-accepts consumed 'stop' request (R1-01)", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Behaviour on Windows (the msvcrt-dependent hardening tests could not run here)", "Wall-clock steps backwards (NTP) between write and take can still give a negative age; not addressed by this change and not tested", "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)"]}
+AUDIT_RESULT_END

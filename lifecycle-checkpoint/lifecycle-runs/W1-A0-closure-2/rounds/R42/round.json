@@ -1,0 +1,422 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R42",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R42-01"
+ ],
+ "candidate": "78006f9ccf8792fd5cd59830b532ea2a2392f652",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T23:53:26Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "78006f9ccf8792fd5cd59830b532ea2a2392f652",
+   "impl_head": "78006f9ccf8792fd5cd59830b532ea2a2392f652",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "f3e2c630c12109197b41f38e38ed14ba8e5c083a107847f5ac892c23c2b0bbea",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "78006f9ccf8792fd5cd59830b532ea2a2392f652",
+   "impl_head": "78006f9ccf8792fd5cd59830b532ea2a2392f652",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "f3e2c630c12109197b41f38e38ed14ba8e5c083a107847f5ac892c23c2b0bbea",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "78006f9ccf8792fd5cd59830b532ea2a2392f652",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Real-Chromium probe (/tmp/uri_review_R42/split/test_split_probe.py using tests/assist/test_a0_r13_differential_render run_chromium/ask with the real snapshot.js/probe.js). Page: <p>A: https://api.example.com/cb?client_secret=<b>ZqSPLITA81xPLm</b>&amp;x=1</p>, <pre><code><span>https://api.example.com/cb?</span><span>client_secret</span>=<span>ZqSPLITB81x</span></code></pre>, <a>https://alice:</a><span>HunterSPLITC@db.example.com</span>, https://carol:<em>TroubSPLITD</em>@wiki.example/page, <h2>Docs https://wiki.example/page?session_id=<i>SIDSPLITE77</i></h2>. Brain user message 'On-screen text (pixel-checked)' contains 'client_secret=\\nZqSPLITA81xPLm', 'client_secret\\n=\\nZqSPLITB81x', 'https://alice:\\nHunterSPLITC@...', 'https://carol:\\nTroubSPLITD', and Headings contains 'session_id= SIDSPLITE77': all 5 secrets LEAKED in both no_selection and ctrl_a runs. In the same ctrl_a run, 'Selected text' shows client_secret=[redacted], session_id=[redacted] and https://db.example.com (userinfo removed). Cause: page text is one group per text node joined with '\\n' (snapshot.js:472 textGroup++; onscreen.join), headings join nodes with ' ', and _url_parts/urlParts operate per whitespace-free token, so the key has an empty value (left unmasked) and the value is a separate token.",
+    "files": [
+     "uri_assist/redact.py:139",
+     "uri_assist/redact.py:162",
+     "uri_assist/browser_extension/snapshot.js:62",
+     "uri_assist/browser_extension/snapshot.js:472",
+     "uri_assist/browser_extension/snapshot.js:349",
+     "uri_assist/browser_extension/snapshot.js:488",
+     "uri_assist/onscreen.py:383",
+     "uri_assist/perception.py:166"
+    ],
+    "id": "R42-01",
+    "owner_decision": false,
+    "severity": "MEDIUM",
+    "suggested_fix": "Apply the URL rule (and the other text rules) to the concatenation of inline-adjacent text nodes of one block (join nodes of the same block container without a separator before masking, as the selection path does), in both snapshot.js (finish/maskQuiet over the block) and perception (redact over the block's joined pieces), or fail closed: when a token ends with a secret-naming 'key=' or 'scheme://user:' with an empty value, mask the next token. Add a Chromium regression with the inline-split forms above.",
+    "title": "R41-03 repair incomplete: URL secrets split across inline elements (e.g. ?client_secret=<b>VALUE</b>, highlighted <span>client_secret</span>=<span>VALUE</span>, https://user:<em>PW</em>@host) are not masked in page text or headings and reach the Brain, while the selection path masks the same URL (A0-AC7)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R32-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R33-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R34-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R35-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R36-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R37-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R38-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R38-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R39-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R40-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R41-03",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R41-04",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist",
+    "result": "5605 passed in 112.22s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "cd uri_ui && /tmp/claude-0/flutter/bin/flutter test test/living/",
+    "result": "All tests passed (+257)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R42/p1.py (redact_text URL-in-text probes)",
+    "result": "reported forms masked; 'https://user:p@ss@host' leaves 'ss@host' (LOW, not reported)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "pytest -s /tmp/uri_review_R42/split/test_split_probe.py (real Chromium, inline-split URL secrets)",
+    "result": "5/5 secrets reach the Brain prompt in text and headings (R42-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -c synthesize NO_ANSWER + instruction-like title probe",
+    "result": "title replaced by placeholder; extractive answer shown with citation, brain_status NO_ANSWER (R41-04 fixed)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python -c netpolicy.check_address transition-form probes",
+    "result": "IPv4-compatible, NAT64, 6to4 and local-use NAT64 private forms refused",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Older link-detection findings (R1-01 through R40-01) were judged FIXED from their passing regression tests and the owner's D30 closure of that class; I did not re-probe each one",
+   "ws_frozen_check zip part (Phase 1 checkpoint zip not present); the protected-path diff was checked with git diff and is empty",
+   "Real browser channel and Windows UIA adapters (owner checklist #8; not built)",
+   "GPU and vision runtime behaviour with the real resident Brain"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 42,
+ "started_at": "2026-10-11T23:50:03Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "815a4a1c-21d9-48ea-b1fb-4fed8457b2c1",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 84
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 1.5183083,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R42",
+  "ended_at": "2026-10-11T23:53:25Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 26,
+  "pid": 16569,
+  "prompt_sha256": "3e0591a7a0d44280b9091cc77539541521f1e1d539cab8b2f571b2a50ee8d1da",
+  "provider": "claude_cli",
+  "result_text_sha256": "aaa9eb937dbe47ce9bca53bd40b7f1b81c9f1c117ce6d128f8f0acef6a5c4f41",
+  "role": "reviewer",
+  "session_id": "815a4a1c-21d9-48ea-b1fb-4fed8457b2c1",
+  "session_id_requested": "815a4a1c-21d9-48ea-b1fb-4fed8457b2c1",
+  "started_at": "2026-10-11T23:50:03Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "12ba4f333ab63d873c76d73390de8fea14f7b0c76095dafc5631862ecc667439"
+ }
+}

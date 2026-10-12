@@ -1,0 +1,340 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R28",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R28-01"
+ ],
+ "candidate": "0fcc39d4bf06655b0c45b05b65be46b70a07248a",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T16:04:03Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "0fcc39d4bf06655b0c45b05b65be46b70a07248a",
+   "impl_head": "0fcc39d4bf06655b0c45b05b65be46b70a07248a",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "64232c3b4cea9d042bf82c10114517326fe54cd1271438815894f03f7ee66514",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "0fcc39d4bf06655b0c45b05b65be46b70a07248a",
+   "impl_head": "0fcc39d4bf06655b0c45b05b65be46b70a07248a",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "64232c3b4cea9d042bf82c10114517326fe54cd1271438815894f03f7ee66514",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "0fcc39d4bf06655b0c45b05b65be46b70a07248a",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "has_link_or_contact('Claim at refunds-portal b\\u0269z/claim now') -> False, while 'refunds-portal biz/claim' -> True. False also for 'refunds-portal \\u0269o/claim', 'refunds-portal ~ c\\u0251sh', '~ \\u0251pp', '~ \\u0269nfo'; mask_links leaves all five unchanged. For the probed '~ c\\u0251sh', 'c\\u0251sh/claim', '~ \\u0269nfo', '~ \\u0251pp' and '\\u0251pp/claim' forms, verify('Claim your energy rebate refund at refunds-portal ~ c\\u0251sh before the deadline [1].', [src]) keeps the claim with its citation, extractive() keeps the sentence, and surface.clean() returns it unmasked. _LATIN_NAME only maps names ending in a single letter A-Z with an optional 'WITH ...' tail; 135 Latin letters below U+2C00 have no mapping (ALPHA, IOTA, GAMMA, AE, OE, ETH, TONE SIX ...), and _latin_fold returns '' for the whole word when any letter is unmapped.",
+    "files": [
+     "uri_web/untrusted.py:499",
+     "uri_web/untrusted.py:506",
+     "uri_web/untrusted.py:517",
+     "uri_web/untrusted.py:544",
+     "uri_web/surface.py:38",
+     "uri_web/synthesize.py:238",
+     "uri_web/synthesize.py:341"
+    ],
+    "id": "R28-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Fold ending candidates through a confusables skeleton for Latin-script words too (as already done for non-Latin scripts), plus an explicit map for Latin letters named after Greek letters (alpha->a, iota->i, ...), and add regression cases for 'b\u0269z', '\u0269o', 'c\u0251sh', '\u0251pp'.",
+    "title": "R27-01 repair incomplete: Latin look-alike letters whose Unicode name has no A-Z letter (U+0251 LATIN SMALL LETTER ALPHA '\u0251', U+0269 LATIN SMALL LETTER IOTA '\u0269', U+0196 '\u0196') are not folded, so 'refunds-portal b\u0269z/claim' (core domain, plain space), 'refunds-portal \u0269o/claim', 'refunds-portal ~ c\u0251sh', '~ \u0251pp' and '~ \u0269nfo' pass has_link_or_contact and mask_links; the probed '~ c\u0251sh', 'c\u0251sh/claim', '~ \u0269nfo', '~ \u0251pp' and '\u0251pp/claim' forms also pass verify(), extractive() and the research surface (W1-AC12/AC15, D16)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "NOT_FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x -p no:cacheprovider tests/web tests/assist",
+    "result": "5289 passed in 102.28s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/a2ui",
+    "result": "107 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R28/p1.py and p2.py (link-detector, verify, extractive and surface probes)",
+    "result": "'\u0251'/'\u0269' look-alike endings are not detected or masked; verify/extractive/surface keep the probed forms (R28-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "netpolicy.check_address probes (NAT64 /48 local-use, mapped, 6to4, link-local, CGNAT)",
+    "result": "all non-public refused; 8.8.8.8 allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Earlier non-link findings (R1-02..R1-06, R2-03, R11-02 etc.) are marked FIXED because their regression tests pass in tests/web and tests/assist; they were not re-probed by hand this round",
+   "R1-01 is marked FIXED for its original reproductions; the wider link class it started is still open as R28-01",
+   "Flutter tests (uri_ui Assist controller lifecycle) not run this round",
+   "Vision, permissions and integrated-worker code not re-reviewed this round beyond the passing tests/assist suite",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 28,
+ "started_at": "2026-10-11T16:00:13Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "cdeb0687-0b29-47e6-9bb9-e03aabc7f25c",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 75
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.7367712,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R28",
+  "ended_at": "2026-10-11T16:04:01Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 28369,
+  "prompt_sha256": "2499cb91f593e689917c7d2b7a937bc1b5b0b9ef0602b5508ff06e5ce3abe572",
+  "provider": "claude_cli",
+  "result_text_sha256": "f931ccefc1cde7d9c5de4e831be5ff7352076ed2c4aef29fd7e47bdaf3ce37c9",
+  "role": "reviewer",
+  "session_id": "cdeb0687-0b29-47e6-9bb9-e03aabc7f25c",
+  "session_id_requested": "cdeb0687-0b29-47e6-9bb9-e03aabc7f25c",
+  "started_at": "2026-10-11T16:00:13Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "a65ab264c90d5b7eefd741d379b565cb7d838c766121574951a6955133a32200"
+ }
+}

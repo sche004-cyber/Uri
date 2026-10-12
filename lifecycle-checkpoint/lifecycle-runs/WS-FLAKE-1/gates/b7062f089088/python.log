@@ -1,0 +1,3540 @@
+........................................................................ [  1%]
+........................................................................ [  2%]
+........................................................................ [  3%]
+...................................ss....................FFFFFFF........ [  4%]
+...................FF.......F..FFFFF.ssF.F..............ssssssssssss.E.E [  5%]
+.E.E.E.E.E.E.E.EFEFE.E.E.E.E.E.E.E.E.E.E.E.EFEFEFEFE.E.E.E.E.E.E.E.E.E.E [  6%]
+FEFE.E.E.E.EFE.EFEFE.E.E.E.E.E.EFEFEFE.E.E.E.EFE.E.E.E.E.E.E.E.E.E.EFE.E [  6%]
+.E.E.E.E.E.E.E.E.E.Essssssss.E.E.E.E.E.E.E.E.E.E.E.E.E.EFEFE.E.E.E.E.E.E [  7%]
+.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E.E [  7%]
+.E.E.E.E.E.E.E.E.E.EFE.EFE.E.E.E.E.E.E.................................. [  8%]
+........................................................................ [  9%]
+........................................................................ [ 10%]
+........................................................................ [ 11%]
+........................................................................ [ 12%]
+........................................................................ [ 14%]
+........................................................................ [ 15%]
+........................................................................ [ 16%]
+........................................................................ [ 17%]
+........................................................................ [ 18%]
+........................................................................ [ 19%]
+........................................................................ [ 20%]
+........................................................................ [ 21%]
+........................................................................ [ 22%]
+........................................................................ [ 23%]
+........................................................................ [ 25%]
+........................................................................ [ 26%]
+........................................................................ [ 27%]
+........................................................................ [ 28%]
+........................................................................ [ 29%]
+........................................................................ [ 30%]
+........................................................................ [ 31%]
+........................................................................ [ 32%]
+........................................................................ [ 33%]
+........................................................................ [ 34%]
+........................................................................ [ 36%]
+........................................................................ [ 37%]
+........................................................................ [ 38%]
+........................................................................ [ 39%]
+........................................................................ [ 40%]
+........................................................................ [ 41%]
+........................................................................ [ 42%]
+........................................................................ [ 43%]
+........................................................................ [ 44%]
+........................................................................ [ 45%]
+........................................................................ [ 47%]
+........................................................................ [ 48%]
+........................................................................ [ 49%]
+........................................................................ [ 50%]
+........................................................................ [ 51%]
+........................................................................ [ 52%]
+........................................................................ [ 53%]
+........................................................................ [ 54%]
+........................................................................ [ 55%]
+........................................................................ [ 56%]
+........................................................................ [ 58%]
+........................................................................ [ 59%]
+........................................................................ [ 60%]
+........................................................................ [ 61%]
+........................................................................ [ 62%]
+........................................................................ [ 63%]
+........................................................................ [ 64%]
+........................................................................ [ 65%]
+........................................................................ [ 66%]
+........................................................................ [ 67%]
+........................................................................ [ 69%]
+........................................................................ [ 70%]
+........................................................................ [ 71%]
+........................................................................ [ 72%]
+........................................................................ [ 73%]
+........................................................................ [ 74%]
+........................................................................ [ 75%]
+........................................................................ [ 76%]
+........................................................................ [ 77%]
+........................................................................ [ 78%]
+........................................................................ [ 80%]
+........................................................................ [ 81%]
+........................................................................ [ 82%]
+........................................................................ [ 83%]
+........................................................................ [ 84%]
+........................................................................ [ 85%]
+........................................................................ [ 86%]
+........................................................................ [ 87%]
+........................................................................ [ 88%]
+........................................................................ [ 90%]
+........................................................................ [ 91%]
+........................................................................ [ 92%]
+........................................................................ [ 93%]
+........................................................................ [ 94%]
+........................................................................ [ 95%]
+........................................................................ [ 96%]
+........................................................................ [ 97%]
+........................................................................ [ 98%]
+........................................................................ [ 99%]
+......                                                                   [100%]
+==================================== ERRORS ====================================
+__ ERROR at teardown of test_action_marker_split_across_chunks_is_never_shown __
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_normal_answer_is_released_and_marker_check_does_not_delay_much _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_reply_that_is_a_strict_prefix_of_the_marker_is_still_delivered _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__ ERROR at teardown of test_unverified_action_claim_is_flagged_and_corrected __
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_normal_tier_request_parameters_and_length_escalation _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_messages_layout_is_stable_system_first_current_turn_last _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_______ ERROR at teardown of test_plan_validation_accepts_verbatim_spans _______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___ ERROR at teardown of test_plan_validation_downgrades_model_written_spans ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_plan_validation_rejects_unknown_capability_and_forward_dependencies _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_propose_plan_uses_normal_tier_and_schema ______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_________ ERROR at teardown of test_ledger_transitions_and_completion __________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_ledger_restart_recovery_never_retries_possible_execution _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_____________ ERROR at teardown of test_ledger_ids_are_uuids_only ______________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___ ERROR at teardown of test_harness_choice_never_selects_without_the_user ____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________ ERROR at teardown of test_harness_choice_explicit_and_history _________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_____ ERROR at teardown of test_harness_choice_quota_exclusion_and_reasons _____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__ ERROR at teardown of test_documented_status_is_labelled_and_never_offered ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___ ERROR at teardown of test_documented_status_without_manifest_is_unknown ____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_negated_spans_are_never_executable[Don't email Ravi, just draft the reply.-email Ravi-True] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_negated_spans_are_never_executable[Do not delete the old files; archive them.-delete the old files-True] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_negated_spans_are_never_executable[Never send it to the principal.-send it to the principal-True] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_negated_spans_are_never_executable[Draft the reply instead of emailing Ravi.-emailing Ravi-True] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_negated_spans_are_never_executable[Draft the reply, then email Ravi.-email Ravi-False] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_negated_spans_are_never_executable[I don't know the date, but remember that the audit is on Monday.-remember that the audit is on Monday-False] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_step_is_durably_executing_before_core_receives_the_approval _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_decide_step_transport_error_marks_uncertain _____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_decide_step_denied_never_marks_executing ______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____________ ERROR at teardown of test_skip_propagates_transitively ____________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___________ ERROR at teardown of test_attach_requires_artifact_match ___________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_________ ERROR at teardown of test_hash_cache_requires_file_identity __________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_long_range_negation_rejected[Do not under any circumstances email Ravi.-email Ravi] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_long_range_negation_rejected[Please don't, whatever happens tomorrow, delete the reports.-delete the reports] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_long_range_negation_rejected[I never want you to send it to the principal.-send it to the principal] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_core_receives_the_users_exact_characters ______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_________________ ERROR at teardown of test_success_allowlists _________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_complete_json_unknown_finish_reason_is_not_success _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____________ ERROR at teardown of test_sse_disconnect_cancels_turn _____________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__ ERROR at teardown of test_waiting_for_model_emits_choice_without_switching __
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_________ ERROR at teardown of test_concurrent_advance_dispatches_once _________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____________ ERROR at teardown of test_claim_cannot_be_taken_twice _____________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_partial_word_spans_rejected[Please deactivate account 42 today.-activate account] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_partial_word_spans_rejected[Unsubscribe me from the newsletter.-subscribe me] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_partial_word_spans_rejected[Reschedule the meeting.-schedule the meeting] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___________ ERROR at teardown of test_whole_word_span_still_accepted ___________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___ ERROR at teardown of test_record_step_cannot_settle_an_approval_directly ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__________ ERROR at teardown of test_status_ready_requires_artifacts ___________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_action_step_conversation_is_refused_and_blocks_dependents _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_single_turn_apis_refuse_plan_step_turns _______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___________ ERROR at teardown of test_ready_rechecked_on_every_probe ___________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_span_boundaries[Please de-activate account 42.-activate account-False] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_span_boundaries[Please de-activate account 42.--activate account-False] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_span_boundaries[Don't re-send the invoice.-send the invoice-False] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_span_boundaries[Email: send it (now)-send it (now)-True] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_span_boundaries[Please activate account 42.-activate account-True] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_______ ERROR at teardown of test_second_process_cannot_write_or_recover _______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys,time; sys.path.insert(0, r'/tmp/claude-0/lc-work/WS-FLAKE-1/integration');from uri_operational_intelligence.task_ledger import TaskLedger;TaskLedger(r'/tmp/pytest-of-root/pytest-921/test_second_process_cannot_wri0').acquire_owner(); print('OWNED', flush=True); time.sleep(30)
+                                                                                                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/task_ledger.py", line 80, in acquire_owner
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+_____ ERROR at teardown of test_concurrent_confirm_step_reaches_core_once ______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_unexpected_reply_after_approval_is_uncertain ____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_unicode_punctuation[Please don\u2019t email Ravi.-email Ravi-negated] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_unicode_punctuation[Please re\u2010send invoice 7.-send invoice-no_match] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_unicode_punctuation[Please de\u2013activate account 42.-activate account-no_match] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_unicode_punctuation[Email\xa0Ravi the timetable.-Email Ravi-ok] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_____________ ERROR at teardown of test_quota_pause_after_approval _____________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_spliced_payload_under_registered_id_refused _____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_tampered_approval_envelope_refused_and_single_use __
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________________ ERROR at teardown of test_registry_is_bounded _________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_unicode_categories_folded[Please don\u201bt email Ravi.-email Ravi-SOURCE_SPAN_NEGATED] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_unicode_categories_folded[Please de\u2015activate account 42.-activate account-SOURCE_SPAN_NOT_VERBATIM] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_unicode_categories_folded[Please re\u2e3asend invoice 7.-send invoice-SOURCE_SPAN_NOT_VERBATIM] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_unicode_categories_folded[Please don\u02bct delete the files.-delete the files-SOURCE_SPAN_NEGATED] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___ ERROR at teardown of test_stream_complete_separates_reasoning_and_answer ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__________ ERROR at teardown of test_length_is_incomplete_not_success __________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_cancel_mid_stream_closes_connection_and_server_sees_disconnect _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_cancel_during_prefill_before_first_token ______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________________ ERROR at teardown of test_first_token_timeout _________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______________ ERROR at teardown of test_stall_after_output_began ______________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___________________ ERROR at teardown of test_total_deadline ___________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_unreachable_is_reported_after_one_retry _______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_stream_broken_after_output_is_interrupted_not_retried _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_______________ ERROR at teardown of test_http_error_and_bad_sse _______________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________ ERROR at teardown of test_stream_without_finish_is_interrupted ________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________________ ERROR at teardown of test_complete_json_paths _________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_deadline_and_cancel_work_while_waiting_for_response_headers _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_abandoned_header_wait_disconnects_and_pool_recovers _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_seam_timeout_disconnects_so_the_server_can_drop_the_generation _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_________ ERROR at teardown of test_provider_is_fast_tier_json_grammar _________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__ ERROR at teardown of test_provider_failures_raise_typed_errors_never_text ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_describe_never_raises_and_reports_readiness _____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________________ ERROR at teardown of test_snap_and_b1_routing _________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_selection_row_is_explicit_server_local_model ____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__________ ERROR at teardown of test_simple_question_never_calls_core __________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_action_goes_to_core_with_the_explicit_brain_selection _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_answer_channel_marker_reroutes_to_core_without_showing_text _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___ ERROR at teardown of test_core_conversation_falls_back_to_answer_channel ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_______ ERROR at teardown of test_core_failure_is_reported_never_guessed _______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_________ ERROR at teardown of test_brain_not_ready_is_an_honest_error _________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_harness_request_needs_explicit_choice_and_calls_nothing _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_deep_depth_is_an_escalation_offer_not_local_unbounded_thinking _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____________________ ERROR at teardown of test_cancel_turn _____________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_multi_step_plan_then_steps_through_core _______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__________ ERROR at teardown of test_uncertain_step_blocks_dependents __________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env0-WAITING_APPROVAL] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env1-VERIFIED] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env2-UNCERTAIN] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env3-FAILED] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env4-CANCELLED] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env5-REFUSED] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env6-WAITING_USER_CHOICE] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env7-FAILED] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_envelope_mapping_never_reads_unknown_as_success[env8-FAILED] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_simulator_emits_only_contract_events[answer] ____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__ ERROR at teardown of test_simulator_emits_only_contract_events[reasoning] ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___ ERROR at teardown of test_simulator_emits_only_contract_events[approval] ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_simulator_emits_only_contract_events[error] _____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_____ ERROR at teardown of test_simulator_emits_only_contract_events[plan] _____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_simulator_emits_only_contract_events[quota] _____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_core_path_with_brain_down_fails_fast_without_calling_core _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_perf_monitor_detects_throughput_and_residency_degradation _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________ ERROR at teardown of test_orchestrator_surfaces_degraded_brain ________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_____________ ERROR at teardown of test_triage_labels[hi-TRIVIAL] ______________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_________ ERROR at teardown of test_triage_labels[Thanks URI!-TRIVIAL] _________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________ ERROR at teardown of test_triage_labels[good morning-TRIVIAL] _________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_____ ERROR at teardown of test_triage_labels[how are you today?-TRIVIAL] ______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__ ERROR at teardown of test_triage_labels[What is an office order?-QUESTION] __
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Explain the difference between RAM and VRAM.-QUESTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Draft a short leave application for two days.-QUESTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Write a haiku about rain.-QUESTION] __
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[How do I remember names better?-QUESTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Is it safe to delete temp files on Windows?-QUESTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Compare SSD and HDD for a school office and recommend one.-ANALYSIS] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Why does my laptop slow down after an hour? Diagnose likely causes.-ANALYSIS] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[What are the pros and cons of moving our timetable to Google Sheets?-ANALYSIS] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[remember that my favourite colour is teal-ACTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Please remember that the VC meeting moved to Thursday.-ACTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Delete all the files on my desktop-ACTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Send an email to Meena about the exam-ACTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Can you save this note to my documents?-ACTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__ ERROR at teardown of test_triage_labels[forget my old phone number-ACTION] __
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Draft a leave letter and save it to my desktop as leave.docx-ACTION] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Refactor the Flutter settings screens across 14 files and run the tests.-HARNESS] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Fix the failing unit tests in the repo-HARNESS] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Search my mail for the fee circular, then draft a reply and send it to the principal.-MULTI_STEP] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[1. remember that the audit is on Monday\n2. create a checklist file\n3. email it to Ravi-MULTI_STEP] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_triage_labels[Do a deep research literature review of all the papers on MoE routing-ESCALATE] _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____________________ ERROR at teardown of test_policy_rules ____________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_tier_params_are_server_side_and_bounded _______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_normal_length_becomes_escalation_candidate_never_local_retry _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__________ ERROR at teardown of test_config_is_the_frozen_runtime_v1 ___________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____ ERROR at teardown of test_expected_argv_is_exactly_the_frozen_flag_set ____
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_pinned_artifacts_cover_binary_dll_model_projector_and_mtp _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___ ERROR at teardown of test_verify_artifacts_match_cached_mismatch_missing ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________ ERROR at teardown of test_status_stopped_when_nothing_listens _________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_ ERROR at teardown of test_foreign_instance_on_port_is_never_adopted_or_started_over _
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+___________ ERROR at teardown of test_missing_artifacts_refuse_start ___________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+_______________ ERROR at teardown of test_live_identity_problems _______________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+________ ERROR at teardown of test_start_lock_excludes_a_second_starter ________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__ ERROR at teardown of test_stop_never_touches_an_instance_it_did_not_start ___
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______________ ERROR at teardown of test_auth_required_everywhere ______________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+____________ ERROR at teardown of test_turn_streams_contract_events ____________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+__________________ ERROR at teardown of test_cancel_over_http __________________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______________ ERROR at teardown of test_bad_depth_and_simulator _______________
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+______ ERROR at teardown of test_internal_error_still_finishes_the_stream ______
+
+    @pytest.fixture(autouse=True)
+    def _release_ledger_owners():
+        """Ledger ownership is process-wide; release it after every test so tmp ledgers are independent."""
+        yield
+        from uri_operational_intelligence import task_ledger
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/oi/conftest.py:9: ModuleNotFoundError
+=================================== FAILURES ===================================
+____________________ test_lease_acquire_release_and_history ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_lease_acquire_release_and0')
+
+    def test_lease_acquire_release_and_history(tmp_path):
+>       with G.acquire("runtime_v1_brain", label="t", directory=tmp_path) as lease:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/gpu_lease.py:207: in acquire
+    fd = _try_lock(d)
+         ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+directory = PosixPath('/tmp/pytest-of-root/pytest-921/test_lease_acquire_release_and0')
+
+    def _try_lock(directory: Path):
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/gpu_lease.py:170: ModuleNotFoundError
+_________ test_second_workload_refused_with_holder_and_wait_times_out __________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_second_workload_refused_w0')
+
+    def test_second_workload_refused_with_holder_and_wait_times_out(tmp_path):
+>       p = child_holder(tmp_path)
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_second_workload_refused_w0')
+max_hold = '600'
+
+    def child_holder(tmp_path, max_hold="600"):
+        # A venv python.exe on Windows is a launcher; the holder's real pid is the one it prints.
+        p = subprocess.Popen([sys.executable, "-c", HOLD, str(tmp_path), max_hold], stdout=subprocess.PIPE, text=True)
+>       word, pid = p.stdout.readline().split()
+        ^^^^^^^^^
+E       ValueError: not enough values to unpack (expected 2, got 0)
+
+tests/ws/test_ws_hardening.py:55: ValueError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    l = G.acquire("benchmark", label="child bench", directory=sys.argv[1], max_hold_s=float(sys.argv[2]))
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 207, in acquire
+    fd = _try_lock(d)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 170, in _try_lock
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+____________ test_dead_holder_is_recovered_without_touching_anyone _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_dead_holder_is_recovered_0')
+
+    def test_dead_holder_is_recovered_without_touching_anyone(tmp_path):
+>       p = child_holder(tmp_path)
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_dead_holder_is_recovered_0')
+max_hold = '600'
+
+    def child_holder(tmp_path, max_hold="600"):
+        # A venv python.exe on Windows is a launcher; the holder's real pid is the one it prints.
+        p = subprocess.Popen([sys.executable, "-c", HOLD, str(tmp_path), max_hold], stdout=subprocess.PIPE, text=True)
+>       word, pid = p.stdout.readline().split()
+        ^^^^^^^^^
+E       ValueError: not enough values to unpack (expected 2, got 0)
+
+tests/ws/test_ws_hardening.py:55: ValueError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    l = G.acquire("benchmark", label="child bench", directory=sys.argv[1], max_hold_s=float(sys.argv[2]))
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 207, in acquire
+    fd = _try_lock(d)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 170, in _try_lock
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+__________________ test_overdue_holder_is_reported_not_broken __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_overdue_holder_is_reporte0')
+
+    def test_overdue_holder_is_reported_not_broken(tmp_path):
+>       p = child_holder(tmp_path, max_hold="0.1")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_overdue_holder_is_reporte0')
+max_hold = '0.1'
+
+    def child_holder(tmp_path, max_hold="600"):
+        # A venv python.exe on Windows is a launcher; the holder's real pid is the one it prints.
+        p = subprocess.Popen([sys.executable, "-c", HOLD, str(tmp_path), max_hold], stdout=subprocess.PIPE, text=True)
+>       word, pid = p.stdout.readline().split()
+        ^^^^^^^^^
+E       ValueError: not enough values to unpack (expected 2, got 0)
+
+tests/ws/test_ws_hardening.py:55: ValueError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    l = G.acquire("benchmark", label="child bench", directory=sys.argv[1], max_hold_s=float(sys.argv[2]))
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 207, in acquire
+    fd = _try_lock(d)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 170, in _try_lock
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+__________________________ test_override_is_recorded ___________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_override_is_recorded0')
+
+    def test_override_is_recorded(tmp_path):
+>       with G.acquire("runtime_v1_brain", directory=tmp_path, override={"by": "--override-contention"}) as lease:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:118: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/gpu_lease.py:207: in acquire
+    fd = _try_lock(d)
+         ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+directory = PosixPath('/tmp/pytest-of-root/pytest-921/test_override_is_recorded0')
+
+    def _try_lock(directory: Path):
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/gpu_lease.py:170: ModuleNotFoundError
+_________________ test_cli_workload_dies_with_its_lease_holder _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_cli_workload_dies_with_it0')
+
+    def test_cli_workload_dies_with_its_lease_holder(tmp_path):
+        import psutil
+        env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
+        marker = tmp_path / "child.pid"
+        child = "import os,time; open(%r,'w').write(str(os.getpid())); time.sleep(120)" % str(marker)
+        p = subprocess.Popen([sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "run", "--purpose", "benchmark",
+                              "--", sys.executable, "-c", child], env=env, cwd=REPO)
+        t0 = time.monotonic()
+        while not marker.exists() and time.monotonic() - t0 < 30:
+            time.sleep(0.2)
+>       workload = int(marker.read_text())
+                       ^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-root/pytest-921/test_cli_workload_dies_with_it0/child.pid')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-root/pytest-921/test_cli_workload_dies_with_it0/child.pid'
+
+/usr/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 564, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 545, in main
+    lease = acquire(a.purpose, label=a.label, wait_s=a.wait, max_hold_s=a.max_hold)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 207, in acquire
+    fd = _try_lock(d)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 170, in _try_lock
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+______________ test_cli_run_refuses_while_held_and_runs_when_free ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_cli_run_refuses_while_hel0')
+
+    def test_cli_run_refuses_while_held_and_runs_when_free(tmp_path):
+        env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
+        cmd = [sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "run", "--purpose", "benchmark", "--",
+               sys.executable, "-c", "print('BENCH_RAN')"]
+        ok = subprocess.run(cmd, env=env, capture_output=True, text=True, cwd=REPO)
+>       assert ok.returncode == 0 and "BENCH_RAN" in ok.stdout
+E       assert (1 == 0)
+E        +  where 1 = CompletedProcess(args=['/tmp/claude-0/venv/bin/python', '-m', 'uri_operational_intelligence.gpu_lease', 'run', '--purp...elligence/gpu_lease.py", line 170, in _try_lock\n    import msvcrt\nModuleNotFoundError: No module named \'msvcrt\'\n').returncode
+
+tests/ws/test_ws_hardening.py:150: AssertionError
+_____ test_a_load_stopped_before_its_spawn_is_reaped_before_the_lease_goes _____
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_a_load_stopped_before_its0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f14f4245950>
+
+    def test_a_load_stopped_before_its_spawn_is_reaped_before_the_lease_goes(tmp_path, monkeypatch):
+        H, h = new_host(tmp_path, Seq([G.census(raw([(1580, 311, 9)], 330), card=CARD)]))
+        killed = []
+    
+        class Contained:
+            pass
+    
+        class LateSpawner:
+            owns_instance = True
+    
+            def __init__(self, *a, **k):
+                self._contained = None
+    
+            def ensure_ready(self, on_state=None):
+                time.sleep(1.0)                    # the stop arrives before the spawn
+                self._contained = Contained()      # ... and the spawn still happens
+                time.sleep(0.5)
+                return None
+    
+            def stop(self):
+                if self._contained is not None:
+                    killed.append(True)
+                self._contained = None
+                return True
+        monkeypatch.setattr(H.R, "RuntimeManager", LateSpawner)
+>       assert h.acquire_lease()
+               ^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:591: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/ws_brain_host.py:171: in acquire_lease
+    self.lease = G.acquire("runtime_v1_brain", label="WS Brain host", session=str(REPO),
+uri_operational_intelligence/gpu_lease.py:207: in acquire
+    fd = _try_lock(d)
+         ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+directory = PosixPath('/tmp/pytest-of-root/pytest-921/test_a_load_stopped_before_its0/lease')
+
+    def _try_lock(directory: Path):
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/gpu_lease.py:170: ModuleNotFoundError
+_ test_a_long_living_loader_keeps_the_lease_and_exit_leaves_release_to_the_os __
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_a_long_living_loader_keep0')
+
+    def test_a_long_living_loader_keeps_the_lease_and_exit_leaves_release_to_the_os(tmp_path):
+        H, h = new_host(tmp_path, Seq([G.census(raw([], 300), card=CARD)]))
+>       assert h.acquire_lease()
+               ^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:602: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/ws_brain_host.py:171: in acquire_lease
+    self.lease = G.acquire("runtime_v1_brain", label="WS Brain host", session=str(REPO),
+uri_operational_intelligence/gpu_lease.py:207: in acquire
+    fd = _try_lock(d)
+         ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+directory = PosixPath('/tmp/pytest-of-root/pytest-921/test_a_long_living_loader_keep0/lease')
+
+    def _try_lock(directory: Path):
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/gpu_lease.py:170: ModuleNotFoundError
+_________________ test_host_waits_for_another_uri_lease_holder _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_host_waits_for_another_ur0')
+
+    def test_host_waits_for_another_uri_lease_holder(tmp_path):
+>       p = child_holder(tmp_path / "lease")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:715: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_host_waits_for_another_ur0/lease')
+max_hold = '600'
+
+    def child_holder(tmp_path, max_hold="600"):
+        # A venv python.exe on Windows is a launcher; the holder's real pid is the one it prints.
+        p = subprocess.Popen([sys.executable, "-c", HOLD, str(tmp_path), max_hold], stdout=subprocess.PIPE, text=True)
+>       word, pid = p.stdout.readline().split()
+        ^^^^^^^^^
+E       ValueError: not enough values to unpack (expected 2, got 0)
+
+tests/ws/test_ws_hardening.py:55: ValueError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    l = G.acquire("benchmark", label="child bench", directory=sys.argv[1], max_hold_s=float(sys.argv[2]))
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 207, in acquire
+    fd = _try_lock(d)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 170, in _try_lock
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+____ test_advise_waits_for_a_heavy_holder_and_ignores_the_users_brain_host _____
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_waits_for_a_heavy_0')
+
+    def test_advise_waits_for_a_heavy_holder_and_ignores_the_users_brain_host(tmp_path):
+        desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+>       p = child_holder(tmp_path)                                         # purpose benchmark
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:770: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_waits_for_a_heavy_0')
+max_hold = '600'
+
+    def child_holder(tmp_path, max_hold="600"):
+        # A venv python.exe on Windows is a launcher; the holder's real pid is the one it prints.
+        p = subprocess.Popen([sys.executable, "-c", HOLD, str(tmp_path), max_hold], stdout=subprocess.PIPE, text=True)
+>       word, pid = p.stdout.readline().split()
+        ^^^^^^^^^
+E       ValueError: not enough values to unpack (expected 2, got 0)
+
+tests/ws/test_ws_hardening.py:55: ValueError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    l = G.acquire("benchmark", label="child bench", directory=sys.argv[1], max_hold_s=float(sys.argv[2]))
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 207, in acquire
+    fd = _try_lock(d)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 170, in _try_lock
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+__________________ test_advise_fails_closed_when_unmeasurable __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_fails_closed_when_0')
+
+    def test_advise_fails_closed_when_unmeasurable(tmp_path):
+        assert advise(tmp_path, {"ok": False, "error": "TimeoutExpired"})["verdict"] == G.WAIT_HEAVY
+        assert advise(tmp_path, G.census({"p": [], "a": []}, card=CARD))["verdict"] == G.WAIT_HEAVY
+        # adapter counter present, per-process counters missing: a Brain could be invisible (Codex r8)
+        partial = G.census({"p": [], "a": [{"i": LUID + "_phys_0", "v": int(16000 * MB)}]}, card=CARD)
+        assert partial["ok"] and partial["processes"] == []
+        r = advise(tmp_path, partial)
+        assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "PROCESS_COUNTERS_MISSING"
+        # some processes visible, but Brain-sized memory unattributed
+        hidden_brain = G.census(raw([(1580, 311, 9)], 15900), card=CARD)
+        r = advise(tmp_path, hidden_brain)
+        assert r["verdict"] == G.WAIT_HEAVY and r["reason"] == "UNATTRIBUTED_GPU_MEMORY"
+        # partial list, a demoted Brain's entry missing: unattributed memory below Brain size still fails closed (r9)
+        partial_brain = named(G.census(raw([(1580, 311, 9), (3144, 84, 23)], 11900), card=CARD), {})
+        assert advise(tmp_path, partial_brain)["reason"] == "UNATTRIBUTED_GPU_MEMORY"
+        # a Brain-sized process whose name could not be read
+        unnamed = G.census(raw([(1580, 311, 9), (4242, 15000, 1149)], 15400), card=CARD)
+        assert advise(tmp_path, unnamed)["reason"] == "UNIDENTIFIED_LARGE_GPU_PROCESS"
+        desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+        # The lock is held but the record names no live holder: an acquire() between taking the lock and publishing
+        # lease.json (Codex P-GOV-1 r1 M1), or a corrupt record. Both fail closed.
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+tests/ws/test_ws_hardening.py:809: ModuleNotFoundError
+____________ test_advise_never_takes_the_lock_or_writes_lease_files ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_never_takes_the_lo0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f14ef646690>
+
+    def test_advise_never_takes_the_lock_or_writes_lease_files(tmp_path, monkeypatch):
+        desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+>       with G.acquire("benchmark", label="bench", directory=tmp_path):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:833: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/gpu_lease.py:207: in acquire
+    fd = _try_lock(d)
+         ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+directory = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_never_takes_the_lo0')
+
+    def _try_lock(directory: Path):
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/gpu_lease.py:170: ModuleNotFoundError
+__________________________ test_advise_cli_exit_codes __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_cli_exit_codes0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f14ef40d550>
+capsys = <_pytest.capture.CaptureFixture object at 0x7f14f5c4a660>
+
+    def test_advise_cli_exit_codes(tmp_path, monkeypatch, capsys):
+        env = dict(os.environ, URI_GPU_LEASE_DIR=str(tmp_path), PYTHONPATH=str(REPO))
+        cmd = [sys.executable, "-m", "uri_operational_intelligence.gpu_lease", "advise", "--window"]
+>       p = child_holder(tmp_path)                       # another session's benchmark (not an ancestor of the CLI)
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:852: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_cli_exit_codes0')
+max_hold = '600'
+
+    def child_holder(tmp_path, max_hold="600"):
+        # A venv python.exe on Windows is a launcher; the holder's real pid is the one it prints.
+        p = subprocess.Popen([sys.executable, "-c", HOLD, str(tmp_path), max_hold], stdout=subprocess.PIPE, text=True)
+>       word, pid = p.stdout.readline().split()
+        ^^^^^^^^^
+E       ValueError: not enough values to unpack (expected 2, got 0)
+
+tests/ws/test_ws_hardening.py:55: ValueError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    l = G.acquire("benchmark", label="child bench", directory=sys.argv[1], max_hold_s=float(sys.argv[2]))
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 207, in acquire
+    fd = _try_lock(d)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 170, in _try_lock
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+_____________ test_advise_does_not_wait_for_the_callers_own_lease ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_does_not_wait_for_0')
+
+    def test_advise_does_not_wait_for_the_callers_own_lease(tmp_path):
+        desktop = G.census(raw([(1580, 311, 9)], 330), card=CARD)
+>       p = child_holder(tmp_path)                                         # benchmark lease held by "our" runner
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:874: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_advise_does_not_wait_for_0')
+max_hold = '600'
+
+    def child_holder(tmp_path, max_hold="600"):
+        # A venv python.exe on Windows is a launcher; the holder's real pid is the one it prints.
+        p = subprocess.Popen([sys.executable, "-c", HOLD, str(tmp_path), max_hold], stdout=subprocess.PIPE, text=True)
+>       word, pid = p.stdout.readline().split()
+        ^^^^^^^^^
+E       ValueError: not enough values to unpack (expected 2, got 0)
+
+tests/ws/test_ws_hardening.py:55: ValueError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    l = G.acquire("benchmark", label="child bench", directory=sys.argv[1], max_hold_s=float(sys.argv[2]))
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 207, in acquire
+    fd = _try_lock(d)
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/gpu_lease.py", line 170, in _try_lock
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+_______________ test_wait_ui_window_behaviour_on_real_processes ________________
+
+    @needs_launcher
+    def test_wait_ui_window_behaviour_on_real_processes():
+        """The launcher's own Wait-UiWindow function, extracted from the script and run against real processes: a
+        process without a window stays PENDING (the Brain is held back, for a new or a reused UI alike), an ending process
+        is EXITED, a windowed process is SHOWN. SHOWN needs a window: the function reads no other signal."""
+        src = (REPO / "scripts" / "launch_uri_working_system.ps1").read_text(encoding="utf-8")
+        fn = src[src.index("# BEGIN Wait-UiWindow"):src.index("# END Wait-UiWindow")]
+        body = src[src.index("$check = Test-Installation $RuntimeRoot"):]
+        assert body.count("Wait-UiWindow $") == 2                          # both the reused and the new UI path use it
+        assert "Get-Counter" not in fn and "MainWindowHandle -ne 0" in fn
+        script = fn + r'''
+    $hidden = Start-Process powershell -ArgumentList '-NoProfile','-Command','Start-Sleep 30' -WindowStyle Hidden -PassThru
+    $ending = Start-Process cmd -ArgumentList '/c','exit 0' -WindowStyle Hidden -PassThru
+    $shown = Start-Process powershell -WindowStyle Minimized -PassThru -ArgumentList '-NoProfile','-Command','Add-Type -AssemblyName System.Windows.Forms; $f = New-Object System.Windows.Forms.Form; $f.Text = ''uri-test''; [void]$f.ShowDialog()'
+    try {
+      $r = [ordered]@{ hidden = (Wait-UiWindow $hidden 3); ending = (Wait-UiWindow $ending 10); shown = (Wait-UiWindow $shown 20) }
+      $r | ConvertTo-Json -Compress
+    } finally { foreach ($p in @($hidden, $shown)) { if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force } } }
+    '''
+>       r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script],
+                           capture_output=True, text=True, timeout=120)
+
+tests/ws/test_ws_hardening.py:958: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/subprocess.py:555: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/subprocess.py:1040: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: 255 args: ['powershell', '-NoProfile', '-ExecutionPolicy...>
+args = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', '# BEGIN Wait-UiWindow (P-GOV-1; extracted and ...ress\n} finally { foreach ($p in @($hidden, $shown)) { if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force } } }\n']
+executable = b'powershell', preexec_fn = None, close_fds = True, pass_fds = ()
+cwd = None, env = None, startupinfo = None, creationflags = 0, shell = False
+p2cread = -1, p2cwrite = -1, c2pread = 15, c2pwrite = 16, errread = 17
+errwrite = 18, restore_signals = True, gid = None, gids = None, uid = None
+umask = -1, start_new_session = False, process_group = -1
+
+    def _execute_child(self, args, executable, preexec_fn, close_fds,
+                       pass_fds, cwd, env,
+                       startupinfo, creationflags, shell,
+                       p2cread, p2cwrite,
+                       c2pread, c2pwrite,
+                       errread, errwrite,
+                       restore_signals,
+                       gid, gids, uid, umask,
+                       start_new_session, process_group):
+        """Execute program (POSIX version)"""
+    
+        if isinstance(args, (str, bytes)):
+            args = [args]
+        elif isinstance(args, os.PathLike):
+            if shell:
+                raise TypeError('path-like args is not allowed when '
+                                'shell is true')
+            args = [args]
+        else:
+            args = list(args)
+    
+        if shell:
+            # On Android the default shell is at '/system/bin/sh'.
+            unix_shell = ('/system/bin/sh' if
+                      hasattr(sys, 'getandroidapilevel') else '/bin/sh')
+            args = [unix_shell, "-c"] + args
+            if executable:
+                args[0] = executable
+    
+        if executable is None:
+            executable = args[0]
+    
+        sys.audit("subprocess.Popen", executable, args, cwd, env)
+    
+        if (_USE_POSIX_SPAWN
+                and os.path.dirname(executable)
+                and preexec_fn is None
+                and (not close_fds or _HAVE_POSIX_SPAWN_CLOSEFROM)
+                and not pass_fds
+                and cwd is None
+                and (p2cread == -1 or p2cread > 2)
+                and (c2pwrite == -1 or c2pwrite > 2)
+                and (errwrite == -1 or errwrite > 2)
+                and not start_new_session
+                and process_group == -1
+                and gid is None
+                and gids is None
+                and uid is None
+                and umask < 0):
+            self._posix_spawn(args, executable, env, restore_signals, close_fds,
+                              p2cread, p2cwrite,
+                              c2pread, c2pwrite,
+                              errread, errwrite)
+            return
+    
+        orig_executable = executable
+    
+        # For transferring possible exec failure from child to parent.
+        # Data format: "exception name:hex errno:description"
+        # Pickle is not used; it is complex and involves memory allocation.
+        errpipe_read, errpipe_write = os.pipe()
+        # errpipe_write must not be in the standard io 0, 1, or 2 fd range.
+        low_fds_to_close = []
+        while errpipe_write < 3:
+            low_fds_to_close.append(errpipe_write)
+            errpipe_write = os.dup(errpipe_write)
+        for low_fd in low_fds_to_close:
+            os.close(low_fd)
+        try:
+            try:
+                # We must avoid complex work that could involve
+                # malloc or free in the child process to avoid
+                # potential deadlocks, thus we do all this here.
+                # and pass it to fork_exec()
+    
+                if env is not None:
+                    env_list = []
+                    for k, v in env.items():
+                        k = os.fsencode(k)
+                        if b'=' in k:
+                            raise ValueError("illegal environment variable name")
+                        env_list.append(k + b'=' + os.fsencode(v))
+                else:
+                    env_list = None  # Use execv instead of execve.
+                executable = os.fsencode(executable)
+                if os.path.dirname(executable):
+                    executable_list = (executable,)
+                else:
+                    # This matches the behavior of os._execvpe().
+                    executable_list = tuple(
+                        os.path.join(os.fsencode(dir), executable)
+                        for dir in os.get_exec_path(env))
+                fds_to_keep = set(pass_fds)
+                fds_to_keep.add(errpipe_write)
+                self.pid = _fork_exec(
+                        args, executable_list,
+                        close_fds, tuple(sorted(map(int, fds_to_keep))),
+                        cwd, env_list,
+                        p2cread, p2cwrite, c2pread, c2pwrite,
+                        errread, errwrite,
+                        errpipe_read, errpipe_write,
+                        restore_signals, start_new_session,
+                        process_group, gid, gids, uid, umask,
+                        preexec_fn, _USE_VFORK)
+                self._child_created = True
+            finally:
+                # be sure the FD is closed no matter what
+                os.close(errpipe_write)
+    
+            self._close_pipe_fds(p2cread, p2cwrite,
+                                 c2pread, c2pwrite,
+                                 errread, errwrite)
+    
+            # Wait for exec to fail or succeed; possibly raising an
+            # exception (limited in size)
+            errpipe_data = bytearray()
+            while True:
+                part = os.read(errpipe_read, 50000)
+                errpipe_data += part
+                if not part or len(errpipe_data) > 50000:
+                    break
+        finally:
+            # be sure the FD is closed no matter what
+            os.close(errpipe_read)
+    
+        if errpipe_data:
+            try:
+                pid, sts = os.waitpid(self.pid, 0)
+                if pid == self.pid:
+                    self._handle_exitstatus(sts)
+                else:
+                    self.returncode = sys.maxsize
+            except ChildProcessError:
+                pass
+    
+            try:
+                exception_name, hex_errno, err_msg = (
+                        errpipe_data.split(b':', 2))
+                # The encoding here should match the encoding
+                # written in by the subprocess implementations
+                # like _posixsubprocess
+                err_msg = err_msg.decode()
+            except ValueError:
+                exception_name = b'SubprocessError'
+                hex_errno = b'0'
+                err_msg = 'Bad exception data from child: {!r}'.format(
+                              bytes(errpipe_data))
+            child_exception_type = getattr(
+                    builtins, exception_name.decode('ascii'),
+                    SubprocessError)
+            if issubclass(child_exception_type, OSError) and hex_errno:
+                errno_num = int(hex_errno, 16)
+                if err_msg == "noexec:chdir":
+                    err_msg = ""
+                    # The error must be from chdir(cwd).
+                    err_filename = cwd
+                elif err_msg == "noexec":
+                    err_msg = ""
+                    err_filename = None
+                else:
+                    err_filename = orig_executable
+                if errno_num != 0:
+                    err_msg = os.strerror(errno_num)
+                if err_filename is not None:
+>                   raise child_exception_type(errno_num, err_msg, err_filename)
+E                   FileNotFoundError: [Errno 2] No such file or directory: 'powershell'
+
+/usr/lib/python3.13/subprocess.py:1992: FileNotFoundError
+_________ test_capture_tool_runs_the_advisory_from_the_repository_root _________
+
+    def test_capture_tool_runs_the_advisory_from_the_repository_root():
+        """Found in staging (final integration 2026-10-10): the capture tool computed docs/ as the repository root, so the
+        advisory module could not be imported and every capture was refused as UNREADABLE. The tool's own line, evaluated
+        by PowerShell at the tool's real location, must give the repository root."""
+        tool = REPO / "docs" / "working_system" / "tools" / "capture_ws.ps1"
+        line = next(x for x in tool.read_text(encoding="utf-8").splitlines() if x.startswith("$repo = "))
+        script = "$PSScriptRoot = '%s'; %s; $repo" % (str(tool.parent), line)
+>       r = subprocess.run(["powershell", "-NoProfile", "-Command", script], capture_output=True, text=True, timeout=60)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/ws/test_ws_hardening.py:979: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/subprocess.py:555: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/subprocess.py:1040: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Popen: returncode: 255 args: ['powershell', '-NoProfile', '-Command', "$PSS...>
+args = ['powershell', '-NoProfile', '-Command', "$PSScriptRoot = '/tmp/claude-0/lc-work/WS-FLAKE-1/integration/docs/working_system/tools'; $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\\..\\..')).Path; $repo"]
+executable = b'powershell', preexec_fn = None, close_fds = True, pass_fds = ()
+cwd = None, env = None, startupinfo = None, creationflags = 0, shell = False
+p2cread = -1, p2cwrite = -1, c2pread = 15, c2pwrite = 16, errread = 17
+errwrite = 18, restore_signals = True, gid = None, gids = None, uid = None
+umask = -1, start_new_session = False, process_group = -1
+
+    def _execute_child(self, args, executable, preexec_fn, close_fds,
+                       pass_fds, cwd, env,
+                       startupinfo, creationflags, shell,
+                       p2cread, p2cwrite,
+                       c2pread, c2pwrite,
+                       errread, errwrite,
+                       restore_signals,
+                       gid, gids, uid, umask,
+                       start_new_session, process_group):
+        """Execute program (POSIX version)"""
+    
+        if isinstance(args, (str, bytes)):
+            args = [args]
+        elif isinstance(args, os.PathLike):
+            if shell:
+                raise TypeError('path-like args is not allowed when '
+                                'shell is true')
+            args = [args]
+        else:
+            args = list(args)
+    
+        if shell:
+            # On Android the default shell is at '/system/bin/sh'.
+            unix_shell = ('/system/bin/sh' if
+                      hasattr(sys, 'getandroidapilevel') else '/bin/sh')
+            args = [unix_shell, "-c"] + args
+            if executable:
+                args[0] = executable
+    
+        if executable is None:
+            executable = args[0]
+    
+        sys.audit("subprocess.Popen", executable, args, cwd, env)
+    
+        if (_USE_POSIX_SPAWN
+                and os.path.dirname(executable)
+                and preexec_fn is None
+                and (not close_fds or _HAVE_POSIX_SPAWN_CLOSEFROM)
+                and not pass_fds
+                and cwd is None
+                and (p2cread == -1 or p2cread > 2)
+                and (c2pwrite == -1 or c2pwrite > 2)
+                and (errwrite == -1 or errwrite > 2)
+                and not start_new_session
+                and process_group == -1
+                and gid is None
+                and gids is None
+                and uid is None
+                and umask < 0):
+            self._posix_spawn(args, executable, env, restore_signals, close_fds,
+                              p2cread, p2cwrite,
+                              c2pread, c2pwrite,
+                              errread, errwrite)
+            return
+    
+        orig_executable = executable
+    
+        # For transferring possible exec failure from child to parent.
+        # Data format: "exception name:hex errno:description"
+        # Pickle is not used; it is complex and involves memory allocation.
+        errpipe_read, errpipe_write = os.pipe()
+        # errpipe_write must not be in the standard io 0, 1, or 2 fd range.
+        low_fds_to_close = []
+        while errpipe_write < 3:
+            low_fds_to_close.append(errpipe_write)
+            errpipe_write = os.dup(errpipe_write)
+        for low_fd in low_fds_to_close:
+            os.close(low_fd)
+        try:
+            try:
+                # We must avoid complex work that could involve
+                # malloc or free in the child process to avoid
+                # potential deadlocks, thus we do all this here.
+                # and pass it to fork_exec()
+    
+                if env is not None:
+                    env_list = []
+                    for k, v in env.items():
+                        k = os.fsencode(k)
+                        if b'=' in k:
+                            raise ValueError("illegal environment variable name")
+                        env_list.append(k + b'=' + os.fsencode(v))
+                else:
+                    env_list = None  # Use execv instead of execve.
+                executable = os.fsencode(executable)
+                if os.path.dirname(executable):
+                    executable_list = (executable,)
+                else:
+                    # This matches the behavior of os._execvpe().
+                    executable_list = tuple(
+                        os.path.join(os.fsencode(dir), executable)
+                        for dir in os.get_exec_path(env))
+                fds_to_keep = set(pass_fds)
+                fds_to_keep.add(errpipe_write)
+                self.pid = _fork_exec(
+                        args, executable_list,
+                        close_fds, tuple(sorted(map(int, fds_to_keep))),
+                        cwd, env_list,
+                        p2cread, p2cwrite, c2pread, c2pwrite,
+                        errread, errwrite,
+                        errpipe_read, errpipe_write,
+                        restore_signals, start_new_session,
+                        process_group, gid, gids, uid, umask,
+                        preexec_fn, _USE_VFORK)
+                self._child_created = True
+            finally:
+                # be sure the FD is closed no matter what
+                os.close(errpipe_write)
+    
+            self._close_pipe_fds(p2cread, p2cwrite,
+                                 c2pread, c2pwrite,
+                                 errread, errwrite)
+    
+            # Wait for exec to fail or succeed; possibly raising an
+            # exception (limited in size)
+            errpipe_data = bytearray()
+            while True:
+                part = os.read(errpipe_read, 50000)
+                errpipe_data += part
+                if not part or len(errpipe_data) > 50000:
+                    break
+        finally:
+            # be sure the FD is closed no matter what
+            os.close(errpipe_read)
+    
+        if errpipe_data:
+            try:
+                pid, sts = os.waitpid(self.pid, 0)
+                if pid == self.pid:
+                    self._handle_exitstatus(sts)
+                else:
+                    self.returncode = sys.maxsize
+            except ChildProcessError:
+                pass
+    
+            try:
+                exception_name, hex_errno, err_msg = (
+                        errpipe_data.split(b':', 2))
+                # The encoding here should match the encoding
+                # written in by the subprocess implementations
+                # like _posixsubprocess
+                err_msg = err_msg.decode()
+            except ValueError:
+                exception_name = b'SubprocessError'
+                hex_errno = b'0'
+                err_msg = 'Bad exception data from child: {!r}'.format(
+                              bytes(errpipe_data))
+            child_exception_type = getattr(
+                    builtins, exception_name.decode('ascii'),
+                    SubprocessError)
+            if issubclass(child_exception_type, OSError) and hex_errno:
+                errno_num = int(hex_errno, 16)
+                if err_msg == "noexec:chdir":
+                    err_msg = ""
+                    # The error must be from chdir(cwd).
+                    err_filename = cwd
+                elif err_msg == "noexec":
+                    err_msg = ""
+                    err_filename = None
+                else:
+                    err_filename = orig_executable
+                if errno_num != 0:
+                    err_msg = os.strerror(errno_num)
+                if err_filename is not None:
+>                   raise child_exception_type(errno_num, err_msg, err_filename)
+E                   FileNotFoundError: [Errno 2] No such file or directory: 'powershell'
+
+/usr/lib/python3.13/subprocess.py:1992: FileNotFoundError
+____________________ test_ledger_transitions_and_completion ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_ledger_transitions_and_co0')
+
+    def test_ledger_transitions_and_completion(tmp_path):
+        L = TaskLedger(tmp_path)
+>       t = L.create(session_id="s", request_text=TEXT, plan=P.validate_plan(plan(), TEXT, {"remember_fact"})["plan"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_answer_planner_ledger.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14ef688bf0>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+________ test_ledger_restart_recovery_never_retries_possible_execution _________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_ledger_restart_recovery_n0')
+
+    def test_ledger_restart_recovery_never_retries_possible_execution(tmp_path):
+        L = TaskLedger(tmp_path)
+        p = P.validate_plan(plan(), TEXT, {"remember_fact"})["plan"]
+>       a = L.create(session_id="s", request_text=TEXT, plan=p, state="RUNNING")["task_id"]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_answer_planner_ledger.py:149: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14ef5b1250>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+_______ test_step_is_durably_executing_before_core_receives_the_approval _______
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14ef6e4670>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_step_is_durably_executing0')
+
+    def test_step_is_durably_executing_before_core_receives_the_approval(fake, tmp_path):
+        seen = {}
+    
+        class CrashCore(FakeCore):
+            def decide(self, text, session_id, selection, turn, approve):
+                seen["state_at_decide"] = o.ledger.get(tid)["steps"][0]["state"]
+                raise KeyboardInterrupt("process dies here")
+    
+        o = mk(fake, tmp_path, CrashCore())
+>       tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r1_regressions.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14ef6a6090>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+_______________ test_decide_step_transport_error_marks_uncertain _______________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14ef6fb5b0>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_decide_step_transport_err0')
+
+    def test_decide_step_transport_error_marks_uncertain(fake, tmp_path):
+        class Boom(FakeCore):
+            def decide(self, *a):
+                raise ConnectionError("lost")
+        o = mk(fake, tmp_path, Boom())
+>       tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r1_regressions.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14ef6a7cb0>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+________________ test_decide_step_denied_never_marks_executing _________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14ef6f8750>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_decide_step_denied_never_0')
+
+    def test_decide_step_denied_never_marks_executing(fake, tmp_path):
+        core = FakeCore([{"turn_id": "t", "state": "cancelled", "code": "APPROVAL_DENIED"}])
+        o = mk(fake, tmp_path, core)
+>       tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r1_regressions.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14ef6a5910>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+______________________ test_skip_propagates_transitively _______________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14ef6f9550>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_skip_propagates_transitiv0')
+
+    def test_skip_propagates_transitively(fake, tmp_path):
+        o = mk(fake, tmp_path, FakeCore([{"turn_id": "c", "state": "failed", "code": "SETTLED_FAILED"}]))
+>       tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r1_regressions.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14ef6a5cd0>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+___________________ test_concurrent_advance_dispatches_once ____________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f40ea970>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_concurrent_advance_dispat0')
+
+    def test_concurrent_advance_dispatches_once(fake, tmp_path):
+        calls = []
+    
+        class SlowCore(FakeCore):
+            def begin(self, text, session_id, selection):
+                calls.append(text)
+                time.sleep(0.3)
+                return {"turn_id": "t", "state": "reply", "code": "INTENT_CONFIRMATION_REQUIRED",
+                        "confirmation": {"intent_id": "i", "revision": 1, "digest": "d"}}
+    
+        core = SlowCore()
+        mk = lambda: Orchestrator(client=BC.BrainClient(fake.url), core=core, brain_selection=SEL,
+                                  ledger=TaskLedger(tmp_path), readiness=lambda: Readiness("READY", fake.url))
+        a, b = mk(), mk()                         # two orchestrators, two ledger objects, same files
+>       tid = a.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r2_regressions.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f40d80b0>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+_______________________ test_claim_cannot_be_taken_twice _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_claim_cannot_be_taken_twi0')
+
+    def test_claim_cannot_be_taken_twice(tmp_path):
+        L = TaskLedger(tmp_path)
+>       tid = L.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r2_regressions.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14ef706990>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+_____________ test_record_step_cannot_settle_an_approval_directly ______________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f40ebbd0>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_record_step_cannot_settle0')
+
+    def test_record_step_cannot_settle_an_approval_directly(fake, tmp_path):
+        o = Orchestrator(client=BC.BrainClient(fake.url), core=FakeCore(), brain_selection=SEL, ledger=TaskLedger(tmp_path))
+>       tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r2_regressions.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f40da450>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+________ test_action_step_conversation_is_refused_and_blocks_dependents ________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f40e9e10>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_action_step_conversation_0')
+
+    def test_action_step_conversation_is_refused_and_blocks_dependents(fake, tmp_path):
+        core = FakeCore([{"turn_id": "t", "state": "reply", "code": "CONVERSATION"}])
+        o = Orchestrator(client=BC.BrainClient(fake.url), core=core, brain_selection=SEL, ledger=TaskLedger(tmp_path),
+                         readiness=lambda: Readiness("READY", fake.url))
+>       tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r2_regressions.py:111: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f40dae10>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+_________________ test_single_turn_apis_refuse_plan_step_turns _________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f40e9d30>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_single_turn_apis_refuse_p0')
+
+    def test_single_turn_apis_refuse_plan_step_turns(fake, tmp_path):
+        core = FakeCore([{"turn_id": "single-1", "state": "approval_required", "code": "APPROVAL_REQUIRED",
+                          "approval_request": {"capability_id": "remember_fact", "arguments": {}, "approval_digest": "0" * 64}}])
+        o = orch(fake, tmp_path, core)
+>       tid = waiting_approval_task(o)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r3_regressions.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/oi/test_oi_audit_r3_regressions.py:35: in waiting_approval_task
+    tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f40db410>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+_________________ test_second_process_cannot_write_or_recover __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_second_process_cannot_wri0')
+
+    def test_second_process_cannot_write_or_recover(tmp_path):
+        import subprocess
+        import sys
+        holder = subprocess.Popen([sys.executable, "-c", (
+            "import sys,time; sys.path.insert(0, r'%s');"
+            "from uri_operational_intelligence.task_ledger import TaskLedger;"
+            "TaskLedger(r'%s').acquire_owner(); print('OWNED', flush=True); time.sleep(30)")
+            % (os.getcwd(), str(tmp_path))], stdout=subprocess.PIPE, text=True)
+        try:
+>           assert holder.stdout.readline().strip() == "OWNED"
+E           AssertionError: assert '' == 'OWNED'
+E             
+E             - OWNED
+
+tests/oi/test_oi_audit_r3_regressions.py:102: AssertionError
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys,time; sys.path.insert(0, r'/tmp/claude-0/lc-work/WS-FLAKE-1/integration');from uri_operational_intelligence.task_ledger import TaskLedger;TaskLedger(r'/tmp/pytest-of-root/pytest-921/test_second_process_cannot_wri0').acquire_owner(); print('OWNED', flush=True); time.sleep(30)
+                                                                                                                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/tmp/claude-0/lc-work/WS-FLAKE-1/integration/uri_operational_intelligence/task_ledger.py", line 80, in acquire_owner
+    import msvcrt
+ModuleNotFoundError: No module named 'msvcrt'
+________________ test_concurrent_confirm_step_reaches_core_once ________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f4147af0>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_concurrent_confirm_step_r0')
+
+    def test_concurrent_confirm_step_reaches_core_once(fake, tmp_path):
+        calls = []
+    
+        class SlowCore(FakeCore):
+            def confirm(self, session_id, selection, turn):
+                calls.append(turn["turn_id"])
+                time.sleep(0.3)
+                return {"turn_id": "c2", "state": "approval_required", "code": "APPROVAL_REQUIRED",
+                        "approval_request": {"capability_id": "remember_fact", "arguments": {}, "approval_digest": "0" * 64}}
+    
+        o = orch(fake, tmp_path, SlowCore())
+>       tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r3_regressions.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f4142690>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+______________ test_unexpected_reply_after_approval_is_uncertain _______________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f4146270>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_unexpected_reply_after_ap0')
+
+    def test_unexpected_reply_after_approval_is_uncertain(fake, tmp_path):
+        core = FakeCore([{"turn_id": "core-1", "state": "approval_required", "code": "APPROVAL_REQUIRED",
+                          "approval_request": {"capability_id": "remember_fact", "arguments": {}, "approval_digest": "0" * 64}}])
+        o = orch(fake, tmp_path, core)
+>       tid = waiting_approval_task(o)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r3_regressions.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/oi/test_oi_audit_r3_regressions.py:35: in waiting_approval_task
+    tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f4141070>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+_______________________ test_quota_pause_after_approval ________________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f40ebd90>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_quota_pause_after_approva0')
+
+    def test_quota_pause_after_approval(fake, tmp_path):
+        core = FakeCore([{"turn_id": "core-1", "state": "reply", "code": "WAITING_FOR_MODEL"}])
+        o = orch(fake, tmp_path, core)
+>       tid = waiting_approval_task(o)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_audit_r3_regressions.py:171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/oi/test_oi_audit_r3_regressions.py:35: in waiting_approval_task
+    tid = o.ledger.create(session_id="s", request_text="x", plan=PLAN, state="RUNNING")["task_id"]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f41406b0>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+________________ test_cancel_during_prefill_before_first_token _________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f4147d90>
+
+    def test_cancel_during_prefill_before_first_token(fake):
+        fake.scripts.append({"chunks": [("answer", "late")], "finish": "stop", "first_delay": 3.0})
+        tok = BC.CancelToken()
+        import threading
+        threading.Timer(0.3, tok.cancel).start()
+        t0 = time.monotonic()
+        r = BC.BrainClient(fake.url).stream_chat(body(), cancel=tok)
+>       assert r.status == BC.CANCELLED and time.monotonic() - t0 < 1.5 and r.text == ""
+E       AssertionError: assert ('CANCELLED' == 'CANCELLED'
+E         
+E           CANCELLED and (1727.265790123 - 1724.20959696) < 1.5)
+E        +  where 1727.265790123 = <built-in function monotonic>()
+E        +    where <built-in function monotonic> = time.monotonic
+
+tests/oi/test_oi_brain_client.py:65: AssertionError
+_________________ test_multi_step_plan_then_steps_through_core _________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f40e9390>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_multi_step_plan_then_step0')
+
+    def test_multi_step_plan_then_steps_through_core(fake, tmp_path):
+        text = "Remember that the audit is on Monday, then draft a checklist for it"
+        plan = {"goal": "g", "clarifications": [], "steps": [
+            {"id": "s1", "description": "remember", "kind": "action", "capability": "remember_fact",
+             "source_span": "Remember that the audit is on Monday", "depends_on": []},
+            {"id": "s2", "description": "Draft a checklist for the audit", "kind": "answer", "capability": None,
+             "source_span": None, "depends_on": ["s1"]}]}
+        fake.scripts.append({"json": json.dumps(plan), "finish": "stop"})
+        core = FakeCore([{"turn_id": "c1", "state": "reply", "code": "INTENT_CONFIRMATION_REQUIRED",
+                          "confirmation": {"intent_id": "i", "revision": 1, "digest": "d"}}])
+        o = orch(fake, tmp_path, core)
+        # triage would see one action verb at the start + an answer step; force the plan path explicitly
+        from uri_operational_intelligence import triage as T, reasoning_policy as RP
+        sink = EventSink()
+>       out = o._plan_turn(text, "s", T.Triage(T.MULTI_STEP), RP.decide(T.MULTI_STEP), lambda t, **d: sink.emit("x", t, **d), "x")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_orchestrator.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/orchestrator.py:365: in _plan_turn
+    task = self.ledger.create(session_id=session_id, request_text=text, plan=v["plan"], state="AWAITING_PLAN_APPROVAL")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f4122c30>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+____________________ test_uncertain_step_blocks_dependents _____________________
+
+fake = <tests.oi.fake_llama.FakeLlama object at 0x7f14f41451d0>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_uncertain_step_blocks_dep0')
+
+    def test_uncertain_step_blocks_dependents(fake, tmp_path):
+        o = orch(fake, tmp_path, FakeCore([{"turn_id": "c1", "state": "execution_uncertain", "code": "SETTLED_EXECUTION_UNCERTAIN"}]))
+        plan = {"goal": "g", "clarifications": [], "steps": [
+            {"id": "s1", "description": "a", "kind": "action", "capability": "remember_fact", "source_span": "x", "depends_on": []},
+            {"id": "s2", "description": "b", "kind": "answer", "capability": None, "source_span": None, "depends_on": ["s1"]}]}
+>       tid = o.ledger.create(session_id="s", request_text="x", plan=plan, state="RUNNING")["task_id"]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_orchestrator.py:171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/task_ledger.py:123: in create
+    self.acquire_owner()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.task_ledger.TaskLedger object at 0x7f14f41221b0>
+
+    def acquire_owner(self):
+        """Exclusive ownership of this ledger by THIS PROCESS (a held byte-range lock on `ledger.owner`), taken
+        automatically by every write and by recover(). A second OS process can neither write nor recover the ledger,
+        so recovery can never reset a step that a live writer is running. Within the owning process, recover() must
+        run before any step is started (the dev server does it at startup)."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/task_ledger.py:80: ModuleNotFoundError
+_____________________ test_missing_artifacts_refuse_start ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_missing_artifacts_refuse_0')
+
+    def test_missing_artifacts_refuse_start(tmp_path):
+        cfg = _cfg_for(tmp_path, {}, port=free_port())
+        mgr = R.RuntimeManager(cfg, tmp_path / "state")
+>       r = mgr.ensure_ready(start=True, timeout=5)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/oi/test_oi_runtime_v1.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+uri_operational_intelligence/runtime_v1.py:344: in ensure_ready
+    self._acquire_lock()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.runtime_v1.RuntimeManager object at 0x7f14f40e4710>
+
+    def _acquire_lock(self):
+        """Cross-process: only one OI manager may start Runtime v1 at a time on this machine."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/runtime_v1.py:301: ModuleNotFoundError
+__________________ test_start_lock_excludes_a_second_starter ___________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-921/test_start_lock_excludes_a_sec0')
+
+    def test_start_lock_excludes_a_second_starter(tmp_path):
+        cfg = _cfg_for(tmp_path, {}, port=free_port())
+        a, b = R.RuntimeManager(cfg, tmp_path / "s"), R.RuntimeManager(cfg, tmp_path / "s")
+>       a._acquire_lock()
+
+tests/oi/test_oi_runtime_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <uri_operational_intelligence.runtime_v1.RuntimeManager object at 0x7f14ef7239b0>
+
+    def _acquire_lock(self):
+        """Cross-process: only one OI manager may start Runtime v1 at a time on this machine."""
+>       import msvcrt
+E       ModuleNotFoundError: No module named 'msvcrt'
+
+uri_operational_intelligence/runtime_v1.py:301: ModuleNotFoundError
+=============================== warnings summary ===============================
+../../../venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  /tmp/claude-0/venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/ws/test_ws_hardening.py::test_lease_acquire_release_and_history
+FAILED tests/ws/test_ws_hardening.py::test_second_workload_refused_with_holder_and_wait_times_out
+FAILED tests/ws/test_ws_hardening.py::test_dead_holder_is_recovered_without_touching_anyone
+FAILED tests/ws/test_ws_hardening.py::test_overdue_holder_is_reported_not_broken
+FAILED tests/ws/test_ws_hardening.py::test_override_is_recorded - ModuleNotFo...
+FAILED tests/ws/test_ws_hardening.py::test_cli_workload_dies_with_its_lease_holder
+FAILED tests/ws/test_ws_hardening.py::test_cli_run_refuses_while_held_and_runs_when_free
+FAILED tests/ws/test_ws_hardening.py::test_a_load_stopped_before_its_spawn_is_reaped_before_the_lease_goes
+FAILED tests/ws/test_ws_hardening.py::test_a_long_living_loader_keeps_the_lease_and_exit_leaves_release_to_the_os
+FAILED tests/ws/test_ws_hardening.py::test_host_waits_for_another_uri_lease_holder
+FAILED tests/ws/test_ws_hardening.py::test_advise_waits_for_a_heavy_holder_and_ignores_the_users_brain_host
+FAILED tests/ws/test_ws_hardening.py::test_advise_fails_closed_when_unmeasurable
+FAILED tests/ws/test_ws_hardening.py::test_advise_never_takes_the_lock_or_writes_lease_files
+FAILED tests/ws/test_ws_hardening.py::test_advise_cli_exit_codes - ValueError...
+FAILED tests/ws/test_ws_hardening.py::test_advise_does_not_wait_for_the_callers_own_lease
+FAILED tests/ws/test_ws_hardening.py::test_wait_ui_window_behaviour_on_real_processes
+FAILED tests/ws/test_ws_hardening.py::test_capture_tool_runs_the_advisory_from_the_repository_root
+FAILED tests/oi/test_oi_answer_planner_ledger.py::test_ledger_transitions_and_completion
+FAILED tests/oi/test_oi_answer_planner_ledger.py::test_ledger_restart_recovery_never_retries_possible_execution
+FAILED tests/oi/test_oi_audit_r1_regressions.py::test_step_is_durably_executing_before_core_receives_the_approval
+FAILED tests/oi/test_oi_audit_r1_regressions.py::test_decide_step_transport_error_marks_uncertain
+FAILED tests/oi/test_oi_audit_r1_regressions.py::test_decide_step_denied_never_marks_executing
+FAILED tests/oi/test_oi_audit_r1_regressions.py::test_skip_propagates_transitively
+FAILED tests/oi/test_oi_audit_r2_regressions.py::test_concurrent_advance_dispatches_once
+FAILED tests/oi/test_oi_audit_r2_regressions.py::test_claim_cannot_be_taken_twice
+FAILED tests/oi/test_oi_audit_r2_regressions.py::test_record_step_cannot_settle_an_approval_directly
+FAILED tests/oi/test_oi_audit_r2_regressions.py::test_action_step_conversation_is_refused_and_blocks_dependents
+FAILED tests/oi/test_oi_audit_r3_regressions.py::test_single_turn_apis_refuse_plan_step_turns
+FAILED tests/oi/test_oi_audit_r3_regressions.py::test_second_process_cannot_write_or_recover
+FAILED tests/oi/test_oi_audit_r3_regressions.py::test_concurrent_confirm_step_reaches_core_once
+FAILED tests/oi/test_oi_audit_r3_regressions.py::test_unexpected_reply_after_approval_is_uncertain
+FAILED tests/oi/test_oi_audit_r3_regressions.py::test_quota_pause_after_approval
+FAILED tests/oi/test_oi_brain_client.py::test_cancel_during_prefill_before_first_token
+FAILED tests/oi/test_oi_orchestrator.py::test_multi_step_plan_then_steps_through_core
+FAILED tests/oi/test_oi_orchestrator.py::test_uncertain_step_blocks_dependents
+FAILED tests/oi/test_oi_runtime_v1.py::test_missing_artifacts_refuse_start - ...
+FAILED tests/oi/test_oi_runtime_v1.py::test_start_lock_excludes_a_second_starter
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_action_marker_split_across_chunks_is_never_shown
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_normal_answer_is_released_and_marker_check_does_not_delay_much
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_reply_that_is_a_strict_prefix_of_the_marker_is_still_delivered
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_unverified_action_claim_is_flagged_and_corrected
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_normal_tier_request_parameters_and_length_escalation
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_messages_layout_is_stable_system_first_current_turn_last
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_plan_validation_accepts_verbatim_spans
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_plan_validation_downgrades_model_written_spans
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_plan_validation_rejects_unknown_capability_and_forward_dependencies
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_propose_plan_uses_normal_tier_and_schema
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_ledger_transitions_and_completion
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_ledger_restart_recovery_never_retries_possible_execution
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_ledger_ids_are_uuids_only
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_harness_choice_never_selects_without_the_user
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_harness_choice_explicit_and_history
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_harness_choice_quota_exclusion_and_reasons
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_documented_status_is_labelled_and_never_offered
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_documented_status_without_manifest_is_unknown
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_negated_spans_are_never_executable[Don't email Ravi, just draft the reply.-email Ravi-True]
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_negated_spans_are_never_executable[Do not delete the old files; archive them.-delete the old files-True]
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_negated_spans_are_never_executable[Never send it to the principal.-send it to the principal-True]
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_negated_spans_are_never_executable[Draft the reply instead of emailing Ravi.-emailing Ravi-True]
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_negated_spans_are_never_executable[Draft the reply, then email Ravi.-email Ravi-False]
+ERROR tests/oi/test_oi_answer_planner_ledger.py::test_negated_spans_are_never_executable[I don't know the date, but remember that the audit is on Monday.-remember that the audit is on Monday-False]
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_step_is_durably_executing_before_core_receives_the_approval
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_decide_step_transport_error_marks_uncertain
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_decide_step_denied_never_marks_executing
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_skip_propagates_transitively
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_attach_requires_artifact_match
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_hash_cache_requires_file_identity
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_long_range_negation_rejected[Do not under any circumstances email Ravi.-email Ravi]
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_long_range_negation_rejected[Please don't, whatever happens tomorrow, delete the reports.-delete the reports]
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_long_range_negation_rejected[I never want you to send it to the principal.-send it to the principal]
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_core_receives_the_users_exact_characters
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_success_allowlists - Mod...
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_complete_json_unknown_finish_reason_is_not_success
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_sse_disconnect_cancels_turn
+ERROR tests/oi/test_oi_audit_r1_regressions.py::test_waiting_for_model_emits_choice_without_switching
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_concurrent_advance_dispatches_once
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_claim_cannot_be_taken_twice
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_partial_word_spans_rejected[Please deactivate account 42 today.-activate account]
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_partial_word_spans_rejected[Unsubscribe me from the newsletter.-subscribe me]
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_partial_word_spans_rejected[Reschedule the meeting.-schedule the meeting]
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_whole_word_span_still_accepted
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_record_step_cannot_settle_an_approval_directly
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_status_ready_requires_artifacts
+ERROR tests/oi/test_oi_audit_r2_regressions.py::test_action_step_conversation_is_refused_and_blocks_dependents
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_single_turn_apis_refuse_plan_step_turns
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_ready_rechecked_on_every_probe
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_span_boundaries[Please de-activate account 42.-activate account-False]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_span_boundaries[Please de-activate account 42.--activate account-False]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_span_boundaries[Don't re-send the invoice.-send the invoice-False]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_span_boundaries[Email: send it (now)-send it (now)-True]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_span_boundaries[Please activate account 42.-activate account-True]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_second_process_cannot_write_or_recover
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_concurrent_confirm_step_reaches_core_once
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_unexpected_reply_after_approval_is_uncertain
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_unicode_punctuation[Please don\u2019t email Ravi.-email Ravi-negated]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_unicode_punctuation[Please re\u2010send invoice 7.-send invoice-no_match]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_unicode_punctuation[Please de\u2013activate account 42.-activate account-no_match]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_unicode_punctuation[Email\xa0Ravi the timetable.-Email Ravi-ok]
+ERROR tests/oi/test_oi_audit_r3_regressions.py::test_quota_pause_after_approval
+ERROR tests/oi/test_oi_audit_r5_regressions.py::test_spliced_payload_under_registered_id_refused
+ERROR tests/oi/test_oi_audit_r5_regressions.py::test_tampered_approval_envelope_refused_and_single_use
+ERROR tests/oi/test_oi_audit_r5_regressions.py::test_registry_is_bounded - Mo...
+ERROR tests/oi/test_oi_audit_r5_regressions.py::test_unicode_categories_folded[Please don\u201bt email Ravi.-email Ravi-SOURCE_SPAN_NEGATED]
+ERROR tests/oi/test_oi_audit_r5_regressions.py::test_unicode_categories_folded[Please de\u2015activate account 42.-activate account-SOURCE_SPAN_NOT_VERBATIM]
+ERROR tests/oi/test_oi_audit_r5_regressions.py::test_unicode_categories_folded[Please re\u2e3asend invoice 7.-send invoice-SOURCE_SPAN_NOT_VERBATIM]
+ERROR tests/oi/test_oi_audit_r5_regressions.py::test_unicode_categories_folded[Please don\u02bct delete the files.-delete the files-SOURCE_SPAN_NEGATED]
+ERROR tests/oi/test_oi_brain_client.py::test_stream_complete_separates_reasoning_and_answer
+ERROR tests/oi/test_oi_brain_client.py::test_length_is_incomplete_not_success
+ERROR tests/oi/test_oi_brain_client.py::test_cancel_mid_stream_closes_connection_and_server_sees_disconnect
+ERROR tests/oi/test_oi_brain_client.py::test_cancel_during_prefill_before_first_token
+ERROR tests/oi/test_oi_brain_client.py::test_first_token_timeout - ModuleNotF...
+ERROR tests/oi/test_oi_brain_client.py::test_stall_after_output_began - Modul...
+ERROR tests/oi/test_oi_brain_client.py::test_total_deadline - ModuleNotFoundE...
+ERROR tests/oi/test_oi_brain_client.py::test_unreachable_is_reported_after_one_retry
+ERROR tests/oi/test_oi_brain_client.py::test_stream_broken_after_output_is_interrupted_not_retried
+ERROR tests/oi/test_oi_brain_client.py::test_http_error_and_bad_sse - ModuleN...
+ERROR tests/oi/test_oi_brain_client.py::test_stream_without_finish_is_interrupted
+ERROR tests/oi/test_oi_brain_client.py::test_complete_json_paths - ModuleNotF...
+ERROR tests/oi/test_oi_brain_client.py::test_deadline_and_cancel_work_while_waiting_for_response_headers
+ERROR tests/oi/test_oi_brain_client.py::test_abandoned_header_wait_disconnects_and_pool_recovers
+ERROR tests/oi/test_oi_brain_client.py::test_seam_timeout_disconnects_so_the_server_can_drop_the_generation
+ERROR tests/oi/test_oi_core_provider.py::test_provider_is_fast_tier_json_grammar
+ERROR tests/oi/test_oi_core_provider.py::test_provider_failures_raise_typed_errors_never_text
+ERROR tests/oi/test_oi_core_provider.py::test_describe_never_raises_and_reports_readiness
+ERROR tests/oi/test_oi_core_provider.py::test_snap_and_b1_routing - ModuleNot...
+ERROR tests/oi/test_oi_core_provider.py::test_selection_row_is_explicit_server_local_model
+ERROR tests/oi/test_oi_orchestrator.py::test_simple_question_never_calls_core
+ERROR tests/oi/test_oi_orchestrator.py::test_action_goes_to_core_with_the_explicit_brain_selection
+ERROR tests/oi/test_oi_orchestrator.py::test_answer_channel_marker_reroutes_to_core_without_showing_text
+ERROR tests/oi/test_oi_orchestrator.py::test_core_conversation_falls_back_to_answer_channel
+ERROR tests/oi/test_oi_orchestrator.py::test_core_failure_is_reported_never_guessed
+ERROR tests/oi/test_oi_orchestrator.py::test_brain_not_ready_is_an_honest_error
+ERROR tests/oi/test_oi_orchestrator.py::test_harness_request_needs_explicit_choice_and_calls_nothing
+ERROR tests/oi/test_oi_orchestrator.py::test_deep_depth_is_an_escalation_offer_not_local_unbounded_thinking
+ERROR tests/oi/test_oi_orchestrator.py::test_cancel_turn - ModuleNotFoundErro...
+ERROR tests/oi/test_oi_orchestrator.py::test_multi_step_plan_then_steps_through_core
+ERROR tests/oi/test_oi_orchestrator.py::test_uncertain_step_blocks_dependents
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env0-WAITING_APPROVAL]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env1-VERIFIED]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env2-UNCERTAIN]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env3-FAILED]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env4-CANCELLED]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env5-REFUSED]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env6-WAITING_USER_CHOICE]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env7-FAILED]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_envelope_mapping_never_reads_unknown_as_success[env8-FAILED]
+ERROR tests/oi/test_oi_orchestrator.py::test_simulator_emits_only_contract_events[answer]
+ERROR tests/oi/test_oi_orchestrator.py::test_simulator_emits_only_contract_events[reasoning]
+ERROR tests/oi/test_oi_orchestrator.py::test_simulator_emits_only_contract_events[approval]
+ERROR tests/oi/test_oi_orchestrator.py::test_simulator_emits_only_contract_events[error]
+ERROR tests/oi/test_oi_orchestrator.py::test_simulator_emits_only_contract_events[plan]
+ERROR tests/oi/test_oi_orchestrator.py::test_simulator_emits_only_contract_events[quota]
+ERROR tests/oi/test_oi_orchestrator.py::test_core_path_with_brain_down_fails_fast_without_calling_core
+ERROR tests/oi/test_oi_orchestrator.py::test_perf_monitor_detects_throughput_and_residency_degradation
+ERROR tests/oi/test_oi_orchestrator.py::test_orchestrator_surfaces_degraded_brain
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[hi-TRIVIAL] - Mod...
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Thanks URI!-TRIVIAL]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[good morning-TRIVIAL]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[how are you today?-TRIVIAL]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[What is an office order?-QUESTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Explain the difference between RAM and VRAM.-QUESTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Draft a short leave application for two days.-QUESTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Write a haiku about rain.-QUESTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[How do I remember names better?-QUESTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Is it safe to delete temp files on Windows?-QUESTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Compare SSD and HDD for a school office and recommend one.-ANALYSIS]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Why does my laptop slow down after an hour? Diagnose likely causes.-ANALYSIS]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[What are the pros and cons of moving our timetable to Google Sheets?-ANALYSIS]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[remember that my favourite colour is teal-ACTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Please remember that the VC meeting moved to Thursday.-ACTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Delete all the files on my desktop-ACTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Send an email to Meena about the exam-ACTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Can you save this note to my documents?-ACTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[forget my old phone number-ACTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Draft a leave letter and save it to my desktop as leave.docx-ACTION]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Refactor the Flutter settings screens across 14 files and run the tests.-HARNESS]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Fix the failing unit tests in the repo-HARNESS]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Search my mail for the fee circular, then draft a reply and send it to the principal.-MULTI_STEP]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[1. remember that the audit is on Monday\n2. create a checklist file\n3. email it to Ravi-MULTI_STEP]
+ERROR tests/oi/test_oi_policy_triage.py::test_triage_labels[Do a deep research literature review of all the papers on MoE routing-ESCALATE]
+ERROR tests/oi/test_oi_policy_triage.py::test_policy_rules - ModuleNotFoundEr...
+ERROR tests/oi/test_oi_policy_triage.py::test_tier_params_are_server_side_and_bounded
+ERROR tests/oi/test_oi_policy_triage.py::test_normal_length_becomes_escalation_candidate_never_local_retry
+ERROR tests/oi/test_oi_runtime_v1.py::test_config_is_the_frozen_runtime_v1 - ...
+ERROR tests/oi/test_oi_runtime_v1.py::test_expected_argv_is_exactly_the_frozen_flag_set
+ERROR tests/oi/test_oi_runtime_v1.py::test_pinned_artifacts_cover_binary_dll_model_projector_and_mtp
+ERROR tests/oi/test_oi_runtime_v1.py::test_verify_artifacts_match_cached_mismatch_missing
+ERROR tests/oi/test_oi_runtime_v1.py::test_status_stopped_when_nothing_listens
+ERROR tests/oi/test_oi_runtime_v1.py::test_foreign_instance_on_port_is_never_adopted_or_started_over
+ERROR tests/oi/test_oi_runtime_v1.py::test_missing_artifacts_refuse_start - M...
+ERROR tests/oi/test_oi_runtime_v1.py::test_live_identity_problems - ModuleNot...
+ERROR tests/oi/test_oi_runtime_v1.py::test_start_lock_excludes_a_second_starter
+ERROR tests/oi/test_oi_runtime_v1.py::test_stop_never_touches_an_instance_it_did_not_start
+ERROR tests/oi/test_oi_server.py::test_auth_required_everywhere - ModuleNotFo...
+ERROR tests/oi/test_oi_server.py::test_turn_streams_contract_events - ModuleN...
+ERROR tests/oi/test_oi_server.py::test_cancel_over_http - ModuleNotFoundError...
+ERROR tests/oi/test_oi_server.py::test_bad_depth_and_simulator - ModuleNotFou...
+ERROR tests/oi/test_oi_server.py::test_internal_error_still_finishes_the_stream
+37 failed, 6480 passed, 24 skipped, 1 warning, 161 errors in 268.18s (0:04:28)
+
+--- stderr ---

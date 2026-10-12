@@ -1,0 +1,273 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R14",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R14-01"
+ ],
+ "candidate": "da10d0b84cbd80f60be930295a01baed47b31110",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T13:24:20Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "da10d0b84cbd80f60be930295a01baed47b31110",
+   "impl_head": "da10d0b84cbd80f60be930295a01baed47b31110",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "b0661c0a3b7f849fdc8a8379c36dc52392ff6b05339bafea58ce490ae89b42fd",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "da10d0b84cbd80f60be930295a01baed47b31110",
+   "impl_head": "da10d0b84cbd80f60be930295a01baed47b31110",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "b0661c0a3b7f849fdc8a8379c36dc52392ff6b05339bafea58ce490ae89b42fd",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "da10d0b84cbd80f60be930295a01baed47b31110",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "_STROKES lists the Kangxi Radicals block U+2F00-U+2FD5, but check text is NFKC-normalised first (untrusted.py:255), mapping every Kangxi radical to its unified ideograph (U+2F01->U+4E28, U+2F00->U+4E00), so that range never matches; the unified single-stroke radicals \u4e00 U+4E00, \u4e28 U+4E28, \u4e59 U+4E59 are absent from _STROKES. _separator_word therefore returns False for '\u4e28\u4e36' (letters not single, not subset of _STROKES) and the word becomes the name. Probe /tmp/uri_review_R14/test_r14_probe.py (same harness as tests/web/test_w1_closure_r13_review_regressions.py) with SENT='Claim your energy rebate refund at {} before the deadline.' and links 'refunds-portal \u4e28\u4e36 shop/claim', 'refunds-portal \u4e00\u4e36 shop/claim', 'refunds-portal \u2f01\u2f02 shop/claim', 'refunds-portal \u2f00\u2f02 shop/claim', 'refunds-portal \u4e36\u4e00 shop/claim', 'refunds-portal \u4e59\u4e36 shop': 18/18 fail - has_link_or_contact False, mask_links keeps 'refunds-portal', verify() keeps the cited claim, build_surface output contains 'refunds-portal \u4e59\u4e36 shop' and require_valid accepts it. These are stroke and dot radicals, which D17 names as separators; they are neither a bracketed gloss nor a real short foreign word (the only owner-accepted residuals).",
+    "files": [
+     "uri_web/untrusted.py:516",
+     "uri_web/untrusted.py:255",
+     "uri_web/untrusted.py:548",
+     "uri_web/untrusted.py:556"
+    ],
+    "id": "R14-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Build _STROKES from the NFKC forms of U+2F00-U+2FD5 (or normalise the set the same way as the text) and add \u4e00 U+4E00, \u4e28 U+4E28, \u4e59 U+4E59, \u4e85 U+4E85 explicitly; add a self-contained regression test covering the forms above at every layer.",
+    "title": "R13-01 repair incomplete: two distinct CJK stroke/dot radicals between name and TLD ('\u4e28\u4e36', '\u4e00\u4e36', '\u4e36\u4e00', '\u4e59\u4e36', Kangxi '\u2f01\u2f02', '\u2f00\u2f02') are read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D17)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "NOT_FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist",
+    "result": "3511 passed in 92.17s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web -k 'r11 or r12 or r13'",
+    "result": "146 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q /tmp/uri_review_R14/test_r14_probe.py",
+    "result": "18 failed (R14-01 reproduced at detector, verify/extractive and surface/A2UI layers)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..da10d0b -- <protected paths>",
+    "result": "no changes to protected paths; uri_core/tools/fetch_url.py untouched",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "SSRF (safe_fetch/netpolicy), vision gating, access/bridge permissions and integrated worker not re-probed adversarially this round (no changes since R13; existing tests pass)",
+   "Flutter widget tests not run this round",
+   "Playwright browser snapshot tests not run separately",
+   "ws_frozen_check zip part BLOCKED (Phase 1 checkpoint zip absent)",
+   "Prior findings R1-01..R12-01 marked FIXED on the basis of their passing regression tests plus R13/R14 probes, not full re-derivation"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 14,
+ "started_at": "2026-10-11T13:21:52Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "6f4d33ba-2d75-437d-84e2-c483c35e37ce",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 77
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.558507,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R14",
+  "ended_at": "2026-10-11T13:24:18Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 12,
+  "pid": 11093,
+  "prompt_sha256": "f1ccbd5a8db8b60dbd3b73c60714fe1330f33a9b1589acecd5bf538eb80ca043",
+  "provider": "claude_cli",
+  "result_text_sha256": "f2250a44f97665ca3c96e053cba29161124ff304b08db28b67c6cfe0249ee58d",
+  "role": "reviewer",
+  "session_id": "6f4d33ba-2d75-437d-84e2-c483c35e37ce",
+  "session_id_requested": "6f4d33ba-2d75-437d-84e2-c483c35e37ce",
+  "started_at": "2026-10-11T13:21:52Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "52a81370d2746a111d182e4dd8d62e310b24c99694d5face84ca20735387daad"
+ }
+}

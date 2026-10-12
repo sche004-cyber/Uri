@@ -1,0 +1,98 @@
+{
+ "addresses": [
+  "R21-01"
+ ],
+ "changed": [
+  "tests/web/test_w1_closure_r21_review_regressions.py",
+  "uri_web/untrusted.py"
+ ],
+ "commit": "57ccdd225583ca09495174d112d1428ddc4dd022",
+ "ended_at": "2026-10-11T14:56:14Z",
+ "pre": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/web/test_w1_closure_r21_review_regressions.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 9,
+ "report": {
+  "not_repaired": [],
+  "notes": "Root cause: _words makes a word out of marks with no base letter, and since R20-01 _separator_word cleaned it with _bare, which removes only marks named 'COMBINING ...', so script marks stayed and were read as the name. Fix in _separator_word: marks at the start of a word with no letter before them are now removed whatever their name, then _bare runs; a mark-only word comes out empty and is a separator (R19-01 restored without its name restriction), and R20-01 handling of words with a base letter is unchanged. Not done in _words, because marks moved into the gap would be filtered to a plain-prose gap and the match dropped (shop is not core). Pre-repair check: the 6 link cases return False with the 68feb3e7 untrusted.py (loaded directly, since stash and worktree were denied) and True after. The 3 ordinary-text tests pass on both. R19/R20 tests pass; tests/web + tests/assist: 5154 passed.",
+  "regression_tests": [
+   "tests/web/test_w1_closure_r21_review_regressions.py"
+  ],
+  "repaired": [
+   "R21-01"
+  ]
+ },
+ "started_at": "2026-10-11T14:53:25Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "33d9c57f-14e2-426f-8bdd-841a2b793e71",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 76
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.43107379999999984,
+  "cwd": "/home/user/uri-wt/a0",
+  "ended_at": "2026-10-11T14:56:08Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 11,
+  "pid": 7743,
+  "prompt_sha256": "2910b0f8229709bf975ca75227143336878e64d0321f31cd37987e5b2dafad36",
+  "provider": "claude_cli",
+  "result_text_sha256": "63d77f8b62aad2c706fa118617ba900812c48f9629a4da82532d7d88d4bc0936",
+  "role": "implementer",
+  "session_id": "33d9c57f-14e2-426f-8bdd-841a2b793e71",
+  "session_id_requested": "33d9c57f-14e2-426f-8bdd-841a2b793e71",
+  "started_at": "2026-10-11T14:53:25Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "42828448c0fc8cc805b6bfd997a51742637baac0894c11e22b88bf1a1e0535c5"
+ }
+}

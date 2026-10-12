@@ -1,0 +1,368 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R34",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R34-01"
+ ],
+ "candidate": "bdc82ef1ccfced0ff28001531807d1d18dad8f65",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T17:09:55Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "bdc82ef1ccfced0ff28001531807d1d18dad8f65",
+   "impl_head": "bdc82ef1ccfced0ff28001531807d1d18dad8f65",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "fbafae72ffedae0808172c39184d534a5562fdb49490d789caebb98d034ac88d",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "bdc82ef1ccfced0ff28001531807d1d18dad8f65",
+   "impl_head": "bdc82ef1ccfced0ff28001531807d1d18dad8f65",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "fbafae72ffedae0808172c39184d534a5562fdb49490d789caebb98d034ac88d",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "bdc82ef1ccfced0ff28001531807d1d18dad8f65",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "SENT='Claim your energy rebate refund at {} before the deadline.' has_link_or_contact: '~ lIVE' True vs '~ IIVE' False; '~ lINK' True vs '~ IINK' False; '~ lOl' True vs '~ IOI' False; '~ Pl' True vs '~ PI' False; '~ Il' True vs '~ II' False; 'refunds-portal MIl/claim' True vs 'refunds-portal MII/claim' False. For each False case: mask_links leaves the text unchanged, verify(claim [1], [src]) keeps the claim, extractive() keeps the deadline sentence, and surface.clean('Claim your refund at refunds-portal MII/claim today.') returns it unmasked. Cause: in _ascii_variant, 'I' folds only when `lower and i > 0`, so an all-capitals run never folds. For 'IIVE' the R33 step sets run='lIVE'; that makes lower True, so the comprehension also folds the second 'I' and gives 'llVE', which is not a domain. Probes: /tmp/uri_review_R34/p3.py, p4.py.",
+    "files": [
+     "uri_web/untrusted.py:800",
+     "uri_web/untrusted.py:806",
+     "uri_web/untrusted.py:808",
+     "uri_web/untrusted.py:811",
+     "uri_web/untrusted.py:822",
+     "uri_web/surface.py:38"
+    ],
+    "id": "R34-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Try the candidate readings of each run: every 'I' and '|' read as 'l' or kept, with 0/1 folded, case-insensitive. Mark the run as an ending if any reading is a listed domain (still excluding words that are listed as they stand). Do not apply the 'I'-as-'l' fold one character at a time after rewriting the leading 'I'. Add regression cases for IIVE, IINK, IOI, PI, II and 'MII/claim'.",
+    "title": "R33-01 repair incomplete (R31/R32/R33 class): capital 'I' as 'l' is not folded in upper-case runs, and the leading-I step makes the general fold turn the next 'I' into 'l', so 'IIVE', 'IINK', 'IOI', 'PI', 'II' and core 'MII/claim' pass has_link_or_contact, mask_links, verify(), extractive() and the research surface while 'lIVE', 'lINK', 'lOl', 'Pl', 'Il', 'MIl/claim' are links (W1-AC12/AC15, D16/D29)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R32-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R33-01",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist",
+    "result": "5437 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/a2ui",
+    "result": "107 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/a2ui tests/oi",
+    "result": "tests/oi: 20 failed, 161 errors; all 179 tracebacks counted are ModuleNotFoundError: msvcrt (Windows-only); tests/oi unchanged in range",
+    "status": "BLOCKED"
+   },
+   {
+    "command": "PYTHONPATH=. python /tmp/uri_review_R34/p1.py..p4.py (link-detector probes)",
+    "result": "R33 listed forms detected; upper-case I/l parity gaps found (R34-01)",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "netpolicy.check_address probes (NAT64 local-use /48, 6to4, Teredo, v4-mapped, CGNAT, site-local)",
+    "result": "all refused",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter tests not run this round",
+   "Playwright browser_extension tests not run this round beyond the tests/assist suite",
+   "ws_frozen_check zip part (checkpoint zip absent)",
+   "Fixed status of rounds R1-R32 is based on the full test suite passing plus spot probes, not on re-running each original reproduction",
+   "R1-01 is marked NOT_FIXED because R34-01 is still a live member of that link class"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 34,
+ "started_at": "2026-10-11T17:04:17Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "e7db5c4f-31fc-4720-9834-eca675374aee",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 77
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.6924124000000001,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R34",
+  "ended_at": "2026-10-11T17:09:54Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 6809,
+  "prompt_sha256": "6272ee1d191d55de44be29326616ed2c6eb10c72d86c44fd4f5aec14d9f7c844",
+  "provider": "claude_cli",
+  "result_text_sha256": "680bd90a21426e04d20c977bc35bc87a76fa7e03a9610360943bd14ccc8bb92e",
+  "role": "reviewer",
+  "session_id": "e7db5c4f-31fc-4720-9834-eca675374aee",
+  "session_id_requested": "e7db5c4f-31fc-4720-9834-eca675374aee",
+  "started_at": "2026-10-11T17:04:17Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "f635de897d95f792b4aa77f01d39a957fb78868f7bb18dde5d31918e09ba6dbb"
+ }
+}

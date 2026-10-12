@@ -1,0 +1,45 @@
+I'm rejecting the candidate (HEAD `0577aeb6`, baseline `ffdf5343`, both checked). Two new ways to slip a link past the detector both reach the research surface, and the A2UI validator accepts them. All 5,096 web and assist tests pass, the R18-01 kana cases are now caught, and no protected path changed.
+
+**R19-01 (HIGH): three or more different combining dot marks on a space hide a link.** `refunds-portal ̣̇̈ shop` (U+0323, U+0307, U+0308 sitting on a space) is not detected. The detector reads the run of marks as the site name instead of as a separator. The text between that run and `shop` then looks like an ordinary space, so `shop` is skipped. With one or two marks the same text is caught. Rule D13 says any dot-like mark between two words makes a link, and the code already treats a space followed by combining marks as a mark.
+
+**R19-02 (HIGH): Cyrillic look-alike endings after a plain space hide a link.** `refunds-portal сом` (Cyrillic с, о, м) and `refunds-portal іо` are not detected, although the plan says `portal com` with a plain space is a link. The detector has a look-alike pass that maps Cyrillic letters to Latin ones, but the check that looks up domain endings by name never uses it. This is not covered by the D20 residual, which is about stroke-shaped separator letters.
+
+**R19-03 (LOW, not blocking):** a split ending whose first piece is a common two-letter word (`go ld`, `on line`) is not joined. The plan discloses this but the owner has not accepted it.
+
+I only lightly checked SSRF, vision, permissions and the integrated worker this round. I relied on the passing test suite and earlier rounds, and list them as unverified below.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "0577aeb6004f5db8e9088e7a5496d237b9717bf2", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R19-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R1-01 link class still open: a run of three or more distinct combining dot marks on a space ('refunds-portal \u0323\u0307\u0308 shop') is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13/D16)",
+   "files": ["uri_web/untrusted.py:450", "uri_web/untrusted.py:463", "uri_web/untrusted.py:547", "uri_web/untrusted.py:562", "uri_web/untrusted.py:583", "uri_web/untrusted.py:586", "uri_web/surface.py:38"],
+   "evidence": "_letter() counts category M as a letter, so ' \\u0323\\u0307\\u0308 ' becomes a word with script COMMON. _separator_word: not single, not in _STROKES, script != the TLD's, and 3 distinct > _MAX_FOREIGN, so it is taken as the NAME. The gap to 'shop' is a plain space (_PROSE_GAP) and 'shop' is not in _CORE, so line 586 skips it. _BARE/_RUN only match '\\s'+COMB+ when a letter follows directly. Probe: has_link_or_contact('Claim your energy rebate refund at refunds-portal \\u0323\\u0307\\u0308 shop before the deadline.') == False; also '... \\u0323\\u0307\\u0308\\u0304 shop', '... cash'. mask_links leaves it unchanged; SY.verify keeps the claim with its citation; SY.extractive returns the sentence; surface.build_surface shows it in the Answer and Sources cards and Surface.__post_init__ (A2UI validation) accepts it. With 1 or 2 distinct marks the same text is caught.",
+   "suggested_fix": "Treat a word made only of combining marks (or with no base letter) as part of the gap or separator, whatever its length. Better: remove combining marks that do not follow a base letter before splitting into words, so they count as non-prose gap characters."},
+  {"id": "R19-02", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "D16 ending check ignores the skeleton: a core domain written in Cyrillic look-alikes after a plain space ('refunds-portal \u0441\u043e\u043c', 'refunds-portal \u0456\u043e') is not a link, although 'portal com' is (W1-AC12/AC15)",
+   "files": ["uri_web/untrusted.py:483", "uri_web/untrusted.py:572", "uri_web/untrusted.py:601", "uri_web/untrusted.py:610"],
+   "evidence": "_endings matches w[2].casefold() against _ALL_TLDS on the canonical text only. has_link_or_contact and _all_spans run _ending_spans(norm) but never on the skeleton, which maps Cyrillic \u0441\u043e\u043c to 'com'. The skeleton pass only runs _spans (dot or mark forms). An all-Cyrillic token has one script family, so _unusual does not fire. Probe: has_link_or_contact('Claim your energy rebate refund at refunds-portal \u0441\u043e\u043c before the deadline.') == False, and the same for '\u0456\u043e' and '\u043e\u0433\u0433'. extractive returns the sentence and build_surface plus A2UI validation show it. The plain-ASCII 'refunds-portal com' is detected.",
+   "suggested_fix": "Run _ending_spans on the skeleton too (mapped back through _skeleton_map, as _all_spans does for _spans), in both has_link_or_contact and _all_spans."},
+  {"id": "R19-03", "severity": "LOW", "blocking": false, "category": "security", "owner_decision": true,
+   "title": "Disclosed, not owner-accepted: a split ending whose first piece is in _COMMON2 is never joined ('refunds-portal \u4e36\u4e3f go ld', '... on line')",
+   "files": ["uri_web/untrusted.py:445", "uri_web/untrusted.py:489"],
+   "evidence": "has_link_or_contact('Claim ... at refunds-portal \u4e36\u4e3f go ld/claim before the deadline.') == False, and the same for 'on line'. The plan already discloses this as not owner-accepted.",
+   "suggested_fix": "Owner decision: either accept it as residual risk or join these splits when the gap holds a non-prose separator."}
+ ],
+ "prior_findings": [
+  {"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"},
+  {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"},
+  {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"},
+  {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"},
+  {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"},
+  {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"},
+  {"id": "R14-01", "status": "FIXED"}, {"id": "R16-01", "status": "FIXED"}, {"id": "R16-02", "status": "FIXED"}, {"id": "R17-01", "status": "FIXED"}, {"id": "R18-01", "status": "FIXED"}
+ ],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist -p no:cacheprovider", "result": "5096 passed in 101.89s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R19/probe1.py, probe2.py, probe3.py (detector, verify, extractive, surface and A2UI probes)", "result": "R19-01 and R19-02 reproduced end to end; the R18-01 forms are detected", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --stat ffdf5343..0577aeb6 -- <protected paths>", "result": "no changes to protected paths", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Flutter tests (uri_ui) were not run this round", "Playwright browser_extension parity tests were run only as part of tests/assist, with no separate review", "SSRF transport, DNS pinning and redirects were reviewed by reading netpolicy.py only, with no new probes", "Vision gating, access/bridge permissions and the integrated worker dispatch were not re-probed this round; relied on the passing tests and earlier rounds", "ws_frozen_check zip part is BLOCKED (Phase 1 checkpoint zip not present)", "Prior findings other than R18-01 are marked FIXED from the passing regression tests, not by fresh probes; R1-01 is NOT_FIXED because R19-01 and R19-02 reopen its class"]}
+AUDIT_RESULT_END

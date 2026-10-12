@@ -1,0 +1,97 @@
+=== tests/assist/test_a0_r42_review_regressions.py BEFORE (78006f9ccf8792fd5cd59830b532ea2a2392f652) DONE
+t_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[https://carol:\nTroubSPLITD\n@wiki.example/page-TroubSPLITD] _
+
+text = 'https://carol:\nTroubSPLITD\n@wiki.example/page', secret = 'TroubSPLITD'
+
+    @pytest.mark.parametrize("text,secret", [
+        ("https://api.example.com/cb?client_secret=\nZqSPLITA81xPLm\n&x=1", "ZqSPLITA81xPLm"),
+        ("https://api.example.com/cb?\nclient_secret\n=\nZqSPLITB81x", "ZqSPLITB81x"),
+        ("https://api.example.com/cb?client_secret\n=ZqSPLITB81x", "ZqSPLITB81x"),
+        ("https://alice:\nHunterSPLITC@db.example.com", "HunterSPLITC"),
+        ("https://alice:\nHunterSPLITC@db.example.com", "alice"),
+        ("https://carol:\nTroubSPLITD\n@wiki.example/page", "TroubSPLITD"),
+        ("Docs https://wiki.example/page?session_id= SIDSPLITE77", "SIDSPLITE77"),
+        ("link /verify?otp= 482913&pin=12", "482913"),
+    ])
+    def test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace(text, secret):
+        out = RD.redact_text(text, Counter())
+>       assert secret not in out, out
+E       AssertionError: https://carol:
+E         TroubSPLITD
+E         @wiki.example/page
+E       assert 'TroubSPLITD' not in 'https://car...example/page'
+E         
+E         'TroubSPLITD' is contained here:
+E           https://carol:
+E           TroubSPLITD
+E           @wiki.example/page
+
+tests/assist/test_a0_r42_review_regressions.py:68: AssertionError
+_ test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[Docs https://wiki.example/page?session_id= SIDSPLITE77-SIDSPLITE77] _
+
+text = 'Docs https://wiki.example/page?session_id= SIDSPLITE77'
+secret = 'SIDSPLITE77'
+
+    @pytest.mark.parametrize("text,secret", [
+        ("https://api.example.com/cb?client_secret=\nZqSPLITA81xPLm\n&x=1", "ZqSPLITA81xPLm"),
+        ("https://api.example.com/cb?\nclient_secret\n=\nZqSPLITB81x", "ZqSPLITB81x"),
+        ("https://api.example.com/cb?client_secret\n=ZqSPLITB81x", "ZqSPLITB81x"),
+        ("https://alice:\nHunterSPLITC@db.example.com", "HunterSPLITC"),
+        ("https://alice:\nHunterSPLITC@db.example.com", "alice"),
+        ("https://carol:\nTroubSPLITD\n@wiki.example/page", "TroubSPLITD"),
+        ("Docs https://wiki.example/page?session_id= SIDSPLITE77", "SIDSPLITE77"),
+        ("link /verify?otp= 482913&pin=12", "482913"),
+    ])
+    def test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace(text, secret):
+        out = RD.redact_text(text, Counter())
+>       assert secret not in out, out
+E       AssertionError: Docs https://wiki.example/page?session_id= SIDSPLITE77
+E       assert 'SIDSPLITE77' not in 'Docs https:... SIDSPLITE77'
+E         
+E         'SIDSPLITE77' is contained here:
+E           Docs https://wiki.example/page?session_id= SIDSPLITE77
+E         ?                                            +++++++++++
+
+tests/assist/test_a0_r42_review_regressions.py:68: AssertionError
+_ test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[link /verify?otp= 482913&pin=12-482913] _
+
+text = 'link /verify?otp= 482913&pin=12', secret = '482913'
+
+    @pytest.mark.parametrize("text,secret", [
+        ("https://api.example.com/cb?client_secret=\nZqSPLITA81xPLm\n&x=1", "ZqSPLITA81xPLm"),
+        ("https://api.example.com/cb?\nclient_secret\n=\nZqSPLITB81x", "ZqSPLITB81x"),
+        ("https://api.example.com/cb?client_secret\n=ZqSPLITB81x", "ZqSPLITB81x"),
+        ("https://alice:\nHunterSPLITC@db.example.com", "HunterSPLITC"),
+        ("https://alice:\nHunterSPLITC@db.example.com", "alice"),
+        ("https://carol:\nTroubSPLITD\n@wiki.example/page", "TroubSPLITD"),
+        ("Docs https://wiki.example/page?session_id= SIDSPLITE77", "SIDSPLITE77"),
+        ("link /verify?otp= 482913&pin=12", "482913"),
+    ])
+    def test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace(text, secret):
+        out = RD.redact_text(text, Counter())
+>       assert secret not in out, out
+E       AssertionError: link /verify?otp= 482913&pin=[redacted]
+E       assert '482913' not in 'link /verif...n=[redacted]'
+E         
+E         '482913' is contained here:
+E           link /verify?otp= 482913&pin=[redacted]
+E         ?                   ++++++
+
+tests/assist/test_a0_r42_review_regressions.py:68: AssertionError
+=========================== short test summary info ============================
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_url_secrets_split_across_inline_elements_never_reach_the_brain[no_selection]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_url_secrets_split_across_inline_elements_never_reach_the_brain[ctrl_a]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[https://api.example.com/cb?client_secret=\nZqSPLITA81xPLm\n&x=1-ZqSPLITA81xPLm]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[https://api.example.com/cb?\nclient_secret\n=\nZqSPLITB81x-ZqSPLITB81x]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[https://api.example.com/cb?client_secret\n=ZqSPLITB81x-ZqSPLITB81x]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[https://alice:\nHunterSPLITC@db.example.com-HunterSPLITC]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[https://alice:\nHunterSPLITC@db.example.com-alice]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[https://carol:\nTroubSPLITD\n@wiki.example/page-TroubSPLITD]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[Docs https://wiki.example/page?session_id= SIDSPLITE77-SIDSPLITE77]
+FAILED tests/assist/test_a0_r42_review_regressions.py::test_r42_01_redact_text_masks_url_secrets_cut_by_whitespace[link /verify?otp= 482913&pin=12-482913]
+10 failed, 1 passed in 3.33s
+
+=== tests/assist/test_a0_r42_review_regressions.py AFTER (304bdf7039e33101e63045ffff03ab0258f535b3) DONE
+...........                                                              [100%]
+11 passed in 3.37s
+

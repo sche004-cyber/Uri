@@ -1,0 +1,60 @@
+**Verdict: ACCEPT WITH FINDINGS.** I found no SSRF bypass. R1-01 is FIXED. There are two LOW findings, neither blocking.
+
+**Scope check.** The checkout HEAD is `a5a31435…`, and baseline `03f0bf2c…` exists. Of the protected paths, only `uri_core/tools/fetch_url.py` changed, and that is the one change the owner authorised under D2. The other changes are `uri_web/safe_fetch.py` (+10 lines), the plan doc and the tests.
+
+**SSRF (focus 1).** I probed the production fetcher setup with a fake resolver and transport. Every one of these was refused before anything was sent:
+- **Addresses and names:** loopback, RFC1918, CGNAT, 169.254.169.254, `0`, `0.0.0.0`, `::`, multicast, and `fe80::1%eth0`.
+- **IPv6 transition forms:** `::ffff:` mapped, NAT64 and 6to4.
+- **Numeric host forms:** decimal, octal, hex and `127.1`.
+- **Local names:** `localhost` and `*.localhost`.
+- **URL tricks:** userinfo, the backslash/`@` trick, ports other than 80 and 443, and `file:` reached through a redirect.
+- **Redirects:** 302 and 307 to each of the targets above.
+- **DNS:** a mixed public and private answer, and a host whose second lookup moves to 127.0.0.1 after a redirect.
+
+Every request that did go out went to the checked public address, with the original Host header. With the real network stack, a listener on 127.0.0.1 got no connections.
+
+**W1 unchanged (focus 2).** `extra_types` defaults to empty, and nothing in W1 passes it. With the defaults, a PDF still comes back as `UNSUPPORTED_CONTENT_TYPE` with an empty body and text. With fetch_url's settings, document bodies come back as raw bytes and are never decoded to text.
+
+**Public fetches (focus 3).** HTML, no Content-Type, text/plain, CSV, DOCX, empty pages, HTTP 404/500, image/png, JSON, over 10 MB, 8000-character truncation, no URL and ftp:// all return the same keys and statuses as before.
+
+**Refusal output (focus 4).** It contains only a fixed message, a refusal code and the URL the user gave. It never includes the internal address, a redirect target, a response body or an exception string.
+
+**robots.txt (focus 5).** The baseline called `requests.get` with no robots check, and the new code uses `honour_robots=False` and `robots=False`. Behaviour is the same.
+
+**R1-01: FIXED.** DNS failure and empty DNS answers now say "could not reach". Port, userinfo, scheme and invalid-URL refusals each get their own message. All five R1-01 tests fail on `f44f70a5` and pass now.
+
+**Findings (both LOW, not blocking):**
+- **R2-01, IDN hosts are now unreachable.** Both `http://bücher.de/` and `http://xn--bcher-kva.de/` return "could not reach" (`UNREACHABLE`); the baseline fetched them through `requests`. The cause is in W1: `_Pinned` compares httpx's decoded `request.url.host` (`'bücher.de'`) with netpolicy's punycode host, so the request fails with `PIN_HOST_MISMATCH` before it is sent. This fails closed and says so honestly, and IDN hosts are rare, hence LOW.
+- **R2-02, request headers changed.** fetch_url now sends W1's headers: `Accept-Encoding: identity`, and an `Accept` without `*/*` or the document types. The baseline used `requests`' defaults, which accept everything and decompress gzip. A server that sends gzip anyway now gets "no reader for content type 'unknown'", even when the page is text/html.
+
+**Two things to note:**
+- `test_m19`, `test_m20_research_recovery` and `test_orchestrator_evidence_transport` only ran with a stub `google` module I put on the path; without it they don't load.
+- The plan doc still says 55 tests; there are 65 now. This is minor and I didn't file it.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "a5a31435035c88ab5c3a868796f96232bc036759", "baseline": "03f0bf2cbd70d90e8b662618a42f742c2edb3ded", "verdict": "ACCEPT WITH FINDINGS",
+ "findings": [
+  {"id": "R2-01", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "fetch_url can no longer fetch internationalised (IDN) host names: SafeFetcher's pin check compares httpx's Unicode host with netpolicy's punycode host",
+   "files": ["uri_web/safe_fetch.py:63", "uri_core/tools/fetch_url.py:166"],
+   "evidence": "With an injected SafeFetcher (resolver -> 93.184.216.34, MockTransport, fetch_url extra_types), FetchUrlTool().execute(request_text='http://bücher.de/') and 'http://xn--bcher-kva.de/' both return {'status':'unavailable','message':'URI could not reach that URL.','error':'UNREACHABLE'} and nothing reaches the transport. httpx.URL('http://xn--bcher-kva.de/').host == 'bücher.de' while NP.check_url(...).host == 'xn--bcher-kva.de', so _Pinned.handle_request raises ConnectError('PIN_HOST_MISMATCH') (reproduced directly with httpx 0.28.1). The baseline fetched these hosts with requests.get. The failure is closed and honest, and IDN hosts are rare, so LOW.",
+   "suggested_fix": "In _Pinned.handle_request compare the ASCII host, e.g. request.url.raw_host.decode('ascii').lower() != self.host, and add an IDN test in tests/ssrf and tests/web."},
+  {"id": "R2-02", "severity": "LOW", "blocking": false, "category": "code", "owner_decision": false,
+   "title": "fetch_url now sends W1's Accept / Accept-Encoding: identity; a server that gzips anyway gets a misleading 'unsupported, unknown content type'",
+   "files": ["uri_web/safe_fetch.py:400", "uri_web/safe_fetch.py:408", "uri_core/tools/fetch_url.py:197"],
+   "evidence": "A public response with content-type text/html and content-encoding: gzip returns {'status':'unsupported','message':\"URI has no reader for content type 'unknown'.\",'content_type':''}. The baseline (requests: Accept */*, gzip decoded) returned the page text. The new Accept header also lists no document types (application/pdf, docx, xlsx, csv) and no */*, so servers that strictly negotiate on Accept could answer 406 for documents.",
+   "suggested_fix": "Let SafeFetcher callers pass an Accept value (fetch_url adds its document types or */*), and map a CONTENT_ENCODING_* refusal_code in fetch_url to a clear message instead of 'unknown' content type; or document both as accepted behaviour changes."}
+ ],
+ "prior_findings": [{"id": "R1-01", "status": "FIXED"}],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/ssrf", "result": "65 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q tests/web", "result": "3677 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest test_m19_office_readiness.py test_m20_research_recovery.py test_orchestrator_evidence_transport.py test_m32_capability_effect_classification.py test_m20_skill_discovery_boundary.py (without stub)", "result": "3 collection errors: ModuleNotFoundError google (environment)", "status": "BLOCKED"},
+  {"command": "PYTHONPATH=/tmp/uri_review_R2/stub (google module stub) pytest the same 5 files", "result": "68 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "tests/ssrf copied onto a git archive of the baseline 03f0bf2c uri_core+uri_web", "result": "63 failed, 2 passed (the expected unchanged-behaviour tests)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "tests/ssrf/test_ssrf_1_refusal_messages.py copied onto a git archive of pre-repair f44f70a5", "result": "5 failed (the R1-01 cases), 5 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R2/probe1.py (production _new_fetcher kwargs with fake resolver/transport: about 70 SSRF/redirect/DNS/behaviour cases)", "result": "all non-public targets refused before any send; requests went only to the checked address; public output shapes as at baseline", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/uri_review_R2/probe2.py (real network stack against a 127.0.0.1 listener; IDN; DOCX; W1 default types)", "result": "listener got 0 connections; IDN hosts UNREACHABLE (R2-01); DOCX extracted from bytes with no text decode; W1 default unchanged", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Live public internet fetch (S-AC10): no real egress test was done in this container", "Full m19/m20/orchestrator test files on a real environment with the google packages installed (only run here with a stub module)", "Flutter/UI gates (no UI change in range)"]}
+AUDIT_RESULT_END

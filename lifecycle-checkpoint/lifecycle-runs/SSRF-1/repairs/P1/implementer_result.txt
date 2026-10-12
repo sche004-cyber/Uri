@@ -1,0 +1,24 @@
+I could not repair R1-01, and the working tree is unchanged.
+
+**Why:** the defect is in `uri_core/tools/fetch_url.py`. When `rec.fetch_status == R.REFUSED`, it returns the fixed message "URI will not fetch that address (private or local network)." I confirmed this in the source, along with where each refusal code comes from (`uri_web/netpolicy.py`, `uri_web/safe_fetch.py:235-243`). Both edits I tried on that file were denied by this session's permission settings ("File is in a directory that is denied by your permission settings"). It is on the permitted list, but it sits under the protected `uri_core/`, and the session's permission rule wins. I did not get around this by editing the file through the shell.
+
+**Fixing it in `uri_web/safe_fetch.py` instead would be a workaround, not a fix:**
+- I could change DNS failures from `REFUSED` to `UNREACHABLE`, which would make the tool's fallback say "could not reach". But that changes W1's `SafeFetcher` contract, and `tests/web/test_w1_*` depend on those codes.
+- It would also still leave `PORT_REFUSED`, `SCHEME_REFUSED`, `URL_INVALID` and `USERINFO_REFUSED` reported as a private-network address.
+
+**Proposed repair, once someone with write access to that file can apply it:** in `fetch_url.py`, replace the fixed message with a lookup on `rec.refusal_code`:
+- **Private or local network message:** `ADDRESS_NOT_PUBLIC`, `ADDRESS_TRANSITION_REFUSED`, `HOST_LOCAL_NAME`, `HOST_NUMERIC_AMBIGUOUS`, `HOST_SINGLE_LABEL`.
+- **"URI could not reach that URL.":** `DNS_FAILED`, `DNS_EMPTY`.
+- **`PORT_REFUSED`:** "URI only fetches web pages on the standard ports (80 and 443)."
+- **`SCHEME_REFUSED`:** "Only http(s) URLs can be fetched."
+- **`USERINFO_REFUSED`:** a message saying the URL contains a username or password.
+- **`URL_INVALID`, `HOST_INVALID`, `HOST_MISSING`, `ADDRESS_INVALID`:** "That URL is not valid…"
+- **Any other code:** "URI will not fetch that URL."
+
+`refusal_code` stays in the result, and the address is still never shown.
+
+The regression test would go in `tests/ssrf/test_ssrf_1_fetch_url.py`, using the existing `tool_with` helper with a resolver that raises `socket.gaierror`. It would check that `http://typo-domain-xyz.com/` gives `refusal_code == "DNS_FAILED"` and a message with neither "private" nor "local". It would also check that `https://example.com:8443/x` gives `PORT_REFUSED` and a port message. I did not add that test: with the fix not applied it would fail in this tree, and I don't want to leave a failing test behind.
+
+REPAIR_RESULT_BEGIN
+{"repaired": [], "not_repaired": [{"id": "R1-01", "reason": "The defect is in uri_core/tools/fetch_url.py (REFUSED is mapped to one fixed 'private or local network' message). That file is on the permitted list, but both edit attempts were denied by the session's permission settings, which deny the protected uri_core/ directory. Fixing it only in uri_web/safe_fetch.py would be a workaround: it changes W1's SafeFetcher status contract that tests/web relies on, and it still leaves PORT_REFUSED, SCHEME_REFUSED, URL_INVALID and USERINFO_REFUSED mislabeled. I did not bypass the denial with shell edits."}], "regression_tests": [], "notes": "Working tree unchanged (git status clean). Proposed fix for fetch_url.py: replace the fixed REFUSED message with a lookup on rec.refusal_code. Private/local message only for ADDRESS_NOT_PUBLIC, ADDRESS_TRANSITION_REFUSED, HOST_LOCAL_NAME, HOST_NUMERIC_AMBIGUOUS, HOST_SINGLE_LABEL. DNS_FAILED and DNS_EMPTY -> 'URI could not reach that URL.' PORT_REFUSED -> a standard-ports (80/443) message. SCHEME_REFUSED -> 'Only http(s) URLs can be fetched.' USERINFO_REFUSED -> a username/password message. URL_INVALID, HOST_INVALID, HOST_MISSING, ADDRESS_INVALID -> an invalid-URL message. Any other code -> 'URI will not fetch that URL.' Keep refusal_code and never include the address. Regression test to add in tests/ssrf/test_ssrf_1_fetch_url.py with tool_with: a resolver raising socket.gaierror for typo-domain-xyz.com expects DNS_FAILED and a message without 'private'/'local'; https://example.com:8443/x expects PORT_REFUSED and a port message. This needs write permission on uri_core/tools/fetch_url.py for the repair session."}
+REPAIR_RESULT_END

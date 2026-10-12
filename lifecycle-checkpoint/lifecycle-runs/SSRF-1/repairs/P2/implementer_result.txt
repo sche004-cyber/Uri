@@ -1,0 +1,31 @@
+I fixed R1-01: `fetch_url` no longer reports every refused fetch as a "private or local network" address. Only address-type refusals say that now; the others give the actual reason. The new tests fail on f44f70a and pass after the change.
+
+**What changed:** one edit in `uri_core/tools/fetch_url.py`. A refused fetch now gets its message from a lookup on the refusal code instead of one fixed sentence:
+
+| Refusal code | Message shown |
+|---|---|
+| `ADDRESS_NOT_PUBLIC`, `ADDRESS_TRANSITION_REFUSED`, `HOST_LOCAL_NAME`, `HOST_NUMERIC_AMBIGUOUS`, `HOST_SINGLE_LABEL` | "URI will not fetch that address (private or local network)." (unchanged) |
+| `DNS_FAILED`, `DNS_EMPTY` | "URI could not reach that URL." (same wording as before SSRF-1) |
+| `PORT_REFUSED` | "URI only fetches web pages on the standard ports (80 and 443)." |
+| `SCHEME_REFUSED` (for example, a redirect to `ftp://`) | "Only http(s) URLs can be fetched." |
+| `USERINFO_REFUSED` | "URI will not fetch a URL that contains a username or password." |
+| `URL_INVALID`, `HOST_INVALID`, `HOST_MISSING`, `ADDRESS_INVALID` | "That URL is not valid." |
+| any code not in the table | "URI refused to fetch that URL." |
+
+`refusal_code` is still returned and no message includes the address. `uri_web/safe_fetch.py` needed no change, because its refusal codes already tell the cases apart.
+
+**One difference from the reviewer's suggestion:** they listed `USERINFO_REFUSED` with the private-network codes. I gave it its own message, because a URL with a username and password is not a private address. Moving it back into the private group is a one-line change if you prefer that.
+
+**Regression test:** `tests/ssrf/test_ssrf_1_refusal_messages.py` is a new, self-contained file using a fake resolver and a mock transport, with no fixture files and no network.
+- **Pre-repair (f44f70a):** 5 failed, 5 passed. The failures are the DNS-failure (`socket.gaierror`), empty DNS answer, port 8443, username-and-password and `ftp://` redirect tests. The 5 that pass check that loopback, metadata, localhost, numeric-host and private-DNS-answer refusals still say "private or local" and don't leak the address, so they should pass both ways.
+- **Pre-repair method:** the permission system blocked both `git stash` and overwriting `fetch_url.py`. I loaded the HEAD version of `fetch_url.py` from the scratchpad under the same module name and ran the test file against it. The tree was never modified.
+- **After the repair:** all of `tests/ssrf` plus `tests/web/test_w1_pipeline_citations_injection.py` pass (85 passed). No existing test was changed.
+
+**Not tested:** the reviewer's case of a host made of 5×63-character labels in the production tool. Checking that would need real DNS, so the tests use injected resolvers instead.
+
+Nothing is committed, and I didn't run graphify.
+
+REPAIR_RESULT_BEGIN
+{"repaired": ["R1-01"], "not_repaired": [],
+ "regression_tests": ["tests/ssrf/test_ssrf_1_refusal_messages.py"], "notes": "fetch_url.py now chooses the refused-fetch message by refusal_code. Only the address-class codes (ADDRESS_NOT_PUBLIC, ADDRESS_TRANSITION_REFUSED, HOST_LOCAL_NAME, HOST_NUMERIC_AMBIGUOUS, HOST_SINGLE_LABEL) say 'private or local network'. DNS_FAILED and DNS_EMPTY say 'URI could not reach that URL.'. PORT_REFUSED, SCHEME_REFUSED, USERINFO_REFUSED and the invalid-URL codes each get accurate wording, and unknown codes get a neutral fallback. refusal_code is kept and no address appears in any message. USERINFO_REFUSED has its own message rather than the private one the reviewer suggested; moving it back is a one-line change. uri_web/safe_fetch.py is unchanged because its codes already distinguish the cases. The new test file had 5 failures and 5 passes against the f44f70a fetch_url.py (loaded from the scratchpad under the same module name, because stash and overwriting the file were not permitted). After the repair, tests/ssrf plus tests/web/test_w1_pipeline_citations_injection.py pass (85 passed). The production-tool case with a long-label host was not tested because it would need real DNS."}
+REPAIR_RESULT_END

@@ -1,0 +1,92 @@
+{
+ "candidate": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+ "clean": true,
+ "cost_usd": 0.37570659999999995,
+ "diagnosis": 7,
+ "recurring": [
+  "R19-01"
+ ],
+ "result": {
+  "evidence": [
+   "uri_web/untrusted.py:449-450 _letter treats category M as a letter, so a mark run becomes a word",
+   "uri_web/untrusted.py:472-476 _bare strips only marks whose name starts with 'COMBINING'",
+   "uri_web/untrusted.py:580-582 base=_bare(w[2]); `if not base or len(base)==1` replaced eb4d676d's all-category-M test (git show 68feb3e7)",
+   "uri_web/untrusted.py:589 len(set(base.casefold())) <= _MAX_FOREIGN is False for 3 distinct script marks, so the run is taken as the name",
+   "uri_web/untrusted.py:611-614 plain-space gap and non-_CORE 'shop' -> continue (no span)",
+   "probe at 68feb3e7: has_link_or_contact(S.format('refunds-portal \\u093c\\u0901\\u0902 shop'))==False; same for \\u0f39\\u0f37\\u0f35, \\u0650\\u065c\\u0655, \\u0e31\\u0e34\\u0e47, \\u0c3c\\u0c00\\u0c01 and '\\u093c\\u0901\\u0902\\u0903 cash'; the COMBINING-named '\\u0323\\u0307\\u0308 shop' is True",
+   "probe: _words gives ('\\u093c\\u0901\\u0902','DEVANAGARI') and _bare leaves it unchanged; for '\\u0323\\u0307\\u0308' _bare gives ''",
+   "tests/web/test_w1_closure_r19_review_regressions.py:16-17 LINKS cover only U+0323/0307/0308/0304 (COMBINING-named)",
+   "git show eb4d676d: `if _single(w) or all(unicodedata.category(ch)[0] == \"M\" for ch in w[2])`; git show 68feb3e7 removes it in favour of _bare"
+  ],
+  "needs_owner": false,
+  "proposed_fix": "In _separator_word, restore the script-agnostic rule before any stripping: `if all(unicodedata.category(ch)[0] == 'M' for ch in w[2]): return True`, then apply base=_bare(w[2]) for words that have a base letter. More robust: in _words, treat category-M characters that do not follow a base letter as gap characters, so mark-only words are never produced. Add regression cases (as \\u escapes, self-contained): 'refunds-portal \\u093c\\u0901\\u0902 shop', '\\u0f39\\u0f37\\u0f35 shop', '\\u0650\\u065c\\u0655 shop', '\\u0e31\\u0e34\\u0e47 shop', '\\u0c3c\\u0c00\\u0c01 shop', '\\u093c\\u0901\\u0902\\u0903 cash'. Assert has_link_or_contact is True and mask_links removes 'refunds-portal'. Keep the R19 and R20 cases passing.",
+  "root_cause": "uri_web/untrusted.py _words() counts any category-M character as a letter (_letter, line 449-450), so a run of marks with no base letter after a space becomes a 'word' tagged with the marks' own script. Commit 68feb3e7 changed _separator_word (line 580-582) to classify base=_bare(w[2]) and treat the word as a separator only if base is empty or one letter. _bare (line 472-476) removes only marks whose Unicode name starts with 'COMBINING', so script marks (U+093C DEVANAGARI SIGN NUKTA, U+0901/0902, U+0F39/0F37/0F35, U+0650/065C/0655, U+0E31/0E34/0E47, U+0C3C/0C00/0C01) stay in base. base then has 3 distinct characters (more than _MAX_FOREIGN=2), its script differs from the TLD's and it is not in _STROKES, so the mark run is taken as the NAME. The gap before 'shop' is a plain space and 'shop' is not in _CORE, so line 614 drops the match. has_link_or_contact returns False and mask_links, verify, extractive, the surface and the A2UI check all let it through.",
+  "why_earlier_repairs_failed": "eb4d676d (R19-01) added a correct, script-agnostic rule: all(unicodedata.category(ch)[0]=='M' for ch in w[2]) returns True. Its tests (tests/web/test_w1_closure_r19_review_regressions.py:16-17) only used marks named 'COMBINING ...' (U+0323/0307/0308/0304), copied from the reviewer's probe. 68feb3e7 (R20-01) replaced that rule with `not base` after _bare(), which narrowed 'all category M' to 'all named COMBINING'. The R19 tests still passed, so the regression was not caught. Both repairs targeted the reviewer's exact characters, not the cause: _words makes words out of marks that have no base letter. The earlier repairs ca622bc0..fe77015a predate the mark-only word case."
+ },
+ "tamper": null,
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "96c95acf-3cd8-4b09-8074-c9c91fe82459",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 0
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.37570659999999995,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/diagnose_D7",
+  "ended_at": "2026-10-11T14:53:23Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 9,
+  "pid": 7544,
+  "prompt_sha256": "b1facaa9bc4210a850aa6c86e01c7a023ffad3281f1e8732465272c6b1e04776",
+  "provider": "claude_cli",
+  "result_text_sha256": "c3188f67c9cf9f940530efa5ce1b36bd2cd016924b1cbbee6e039804d3a5dd76",
+  "role": "reviewer",
+  "session_id": "96c95acf-3cd8-4b09-8074-c9c91fe82459",
+  "session_id_requested": "96c95acf-3cd8-4b09-8074-c9c91fe82459",
+  "started_at": "2026-10-11T14:52:17Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "afa302a67b9d4d81038ec9209c9894e1449bd87038db3d365c59ad536830be37"
+ }
+}

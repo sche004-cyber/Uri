@@ -1,0 +1,94 @@
+=== tests/ssrf/test_ssrf_1_refusal_messages.py BEFORE (f44f70a58e49d9ebe9559004bc81b7c62c0d8fe7) DONE
+FFFFF.....                                                               [100%]
+=================================== FAILURES ===================================
+_______________ test_dns_failure_is_could_not_reach_not_private ________________
+
+    def test_dns_failure_is_could_not_reach_not_private():
+        seen = []
+        out = run(tool_with(gaierror_resolver, seen), "http://typo-domain-xyz.com/")
+        assert out["refusal_code"] == "DNS_FAILED"
+>       assert out["message"] == "URI could not reach that URL.", out
+E       AssertionError: {'status': 'unavailable', 'message': 'URI will not fetch that address (private or local network).', 'refusal_code': 'DNS_FAILED', 'url': 'http://typo-domain-xyz.com/'}
+E       assert 'URI will not...cal network).' == 'URI could no...ach that URL.'
+E         
+E         - URI could not reach that URL.
+E         + URI will not fetch that address (private or local network).
+
+tests/ssrf/test_ssrf_1_refusal_messages.py:52: AssertionError
+_____________ test_dns_empty_answer_is_could_not_reach_not_private _____________
+
+    def test_dns_empty_answer_is_could_not_reach_not_private():
+        seen = []
+        out = run(tool_with(lambda h, p: [], seen), "http://empty-answer.example/")
+        assert out["refusal_code"] == "DNS_EMPTY"
+>       assert out["message"] == "URI could not reach that URL.", out
+E       AssertionError: {'status': 'unavailable', 'message': 'URI will not fetch that address (private or local network).', 'refusal_code': 'DNS_EMPTY', 'url': 'http://empty-answer.example/'}
+E       assert 'URI will not...cal network).' == 'URI could no...ach that URL.'
+E         
+E         - URI could not reach that URL.
+E         + URI will not fetch that address (private or local network).
+
+tests/ssrf/test_ssrf_1_refusal_messages.py:61: AssertionError
+______________ test_port_refusal_names_the_port_rule_not_private _______________
+
+    def test_port_refusal_names_the_port_rule_not_private():
+        seen = []
+        out = run(tool_with(public_resolver, seen), "https://example.com:8443/x")
+        assert out["refusal_code"] == "PORT_REFUSED"
+>       assert PRIVATE_WORDS not in out["message"], out
+E       AssertionError: {'status': 'unavailable', 'message': 'URI will not fetch that address (private or local network).', 'refusal_code': 'PORT_REFUSED', 'url': 'https://example.com:8443/x'}
+E       assert 'private or local' not in 'URI will no...al network).'
+E         
+E         'private or local' is contained here:
+E           URI will not fetch that address (private or local network).
+E         ?                                  ++++++++++++++++
+
+tests/ssrf/test_ssrf_1_refusal_messages.py:69: AssertionError
+_________________ test_userinfo_refusal_is_not_called_private __________________
+
+    def test_userinfo_refusal_is_not_called_private():
+        seen = []
+        out = run(tool_with(public_resolver, seen), "http://user:pw@example.com/")
+        assert out["refusal_code"] == "USERINFO_REFUSED"
+>       assert PRIVATE_WORDS not in out["message"], out
+E       AssertionError: {'status': 'unavailable', 'message': 'URI will not fetch that address (private or local network).', 'refusal_code': 'USERINFO_REFUSED', 'url': 'http://user:pw@example.com/'}
+E       assert 'private or local' not in 'URI will no...al network).'
+E         
+E         'private or local' is contained here:
+E           URI will not fetch that address (private or local network).
+E         ?                                  ++++++++++++++++
+
+tests/ssrf/test_ssrf_1_refusal_messages.py:78: AssertionError
+____________ test_redirect_to_non_http_scheme_is_not_called_private ____________
+
+    def test_redirect_to_non_http_scheme_is_not_called_private():
+        seen = []
+    
+        def wire(request):
+            seen.append(str(request.url))
+            return httpx.Response(302, headers={"location": "ftp://example.com/file"})
+        f = SafeFetcher(resolver=public_resolver, transport=httpx.MockTransport(wire), honour_robots=False,
+                        max_bytes=FU._MAX_BYTES, total_timeout=15.0)
+        out = run(FU.FetchUrlTool(fetcher=f), "http://example.com/start")
+        assert out["refusal_code"] == "SCHEME_REFUSED"
+>       assert PRIVATE_WORDS not in out["message"], out
+E       AssertionError: {'status': 'unavailable', 'message': 'URI will not fetch that address (private or local network).', 'refusal_code': 'SCHEME_REFUSED', 'url': 'http://example.com/start'}
+E       assert 'private or local' not in 'URI will no...al network).'
+E         
+E         'private or local' is contained here:
+E           URI will not fetch that address (private or local network).
+E         ?                                  ++++++++++++++++
+
+tests/ssrf/test_ssrf_1_refusal_messages.py:94: AssertionError
+=========================== short test summary info ============================
+FAILED tests/ssrf/test_ssrf_1_refusal_messages.py::test_dns_failure_is_could_not_reach_not_private
+FAILED tests/ssrf/test_ssrf_1_refusal_messages.py::test_dns_empty_answer_is_could_not_reach_not_private
+FAILED tests/ssrf/test_ssrf_1_refusal_messages.py::test_port_refusal_names_the_port_rule_not_private
+FAILED tests/ssrf/test_ssrf_1_refusal_messages.py::test_userinfo_refusal_is_not_called_private
+FAILED tests/ssrf/test_ssrf_1_refusal_messages.py::test_redirect_to_non_http_scheme_is_not_called_private
+5 failed, 5 passed in 0.17s
+
+=== tests/ssrf/test_ssrf_1_refusal_messages.py AFTER (a5a31435035c88ab5c3a868796f96232bc036759) DONE
+..........                                                               [100%]
+10 passed in 0.17s
+

@@ -1,0 +1,64 @@
+I'm rejecting this round (REJECT). The leak itself is fixed, but there are two blocking MEDIUM findings: the test placeholders leak into other tests in the same run, and the new view isn't safe when two requests use it at once.
+
+**Checked**
+- **SHAs:** HEAD is `9ae7c60cd02b3a7be87a465db4170705d28f9d72`. The baseline `e07b71c68ea44096020ca8865ae228b550b48e16` exists, and the range is one commit touching 4 files.
+- **Protected path:** `uri_core/app/server.py` changed. That is authorised by owner decision D12 in `docs/governance/OWNER_DECISIONS_20261011.md`, added in commit 422159e9, which is in the baseline's history. `graphify_index.py` is unchanged.
+- **Cross-user leak (AC1/AC3):** fixed. Signed-in views drop the shared `memory:` records and rebuild them from that user's own store. Brain Turn State is covered too. All 11 new tests pass on the candidate. With the same tests copied onto the baseline, 8 fail and 3 pass, as the plan says.
+- **Freshness:** own memories added or deleted after the view was built are reflected. The view only stores the ID, category and consent, never the memory text.
+- **Shared index:** the shared index and `catalogue_ready` are unchanged. The per-user capability/service refresh still runs on the new view type.
+- **No-login path:** `_UserScopedStoreInitializer` runs before `_GraphifyIndexLoader`, and the no-login view follows a replaced `_memory_store` through its callable.
+- **Placeholders:** they are only used when the Google packages are missing, and `import google` raises ImportError again afterwards.
+
+**R1-01 (MEDIUM, blocking, test): the conftest placeholders leak into later tests.**
+- `tests/graphify/conftest.py` imports `uri_core.app.server` while the placeholders are installed. Afterwards it removes only the `google*` entries from `sys.modules`.
+- `uri_core.app.server` and `uri_core.services.*` stay imported with Mock objects in place of the Google client code. For example, a probe test run after `tests/graphify` sees `uri_core.services.gmail_service.build` as a MagicMock.
+- Reproduction:
+  - `pytest tests/test_m31_model_brain_ux.py` alone: 1 collection error.
+  - `pytest tests/graphify tests/test_m31_model_brain_ux.py`: 25 passed.
+  - `test_decision_engine.py` behaves the same: error alone, 60 passed together with `tests/graphify`.
+- `tests/graphify` sorts before `tests/test_*`, so this happens in a plain `pytest tests` run too. It contradicts the conftest's own docstring and can hide real failures in the baseline comparison.
+- The fake credential secret is also set with a module-level `setdefault` and stays set for the whole session.
+
+**R1-02 (MEDIUM, blocking, code): lookups now edit the view's records without a lock.**
+- Every `get`, `list_all` and `relevant_subset` now deletes and rebuilds the memory records in place. Before this change, lookups only read.
+- `/ask` is a sync endpoint, so FastAPI runs it in its thread pool. Two Brain turns for the same user, or any no-login turns (they all share one view), can therefore overlap.
+- Probe (300 memories, `sys.setswitchinterval(1e-6)`): two threads calling `relevant_subset` raise `KeyError: 'memory:…'` from `_sync_memory`. That happens outside `relevant_subset`'s own try, so "never raises" fails.
+- `list_all` also raises `RuntimeError: dictionary changed size during iteration`.
+- The capability refresh's `graphify_refresh(scope="capabilities")` raised the same RuntimeError about 1,470 times in that run. `external_lifecycle_lock` doesn't cover Brain-turn lookups. When that refresh raises, `refresh_user_external_lifecycle` exits before it swaps in the new `multi_action_dispatch`, so a capability change isn't published.
+- `decision_engine` catches the `relevant_subset` error, so in a Brain turn the effect is a dropped hint for that turn rather than a crash.
+- Suggested fix: build the merged record dict privately and swap it in under a per-view lock that the capability/service refresh also takes.
+
+**Low notes, not findings:**
+- Cost is one JSON file read per lookup, which is the limitation the plan already documents.
+- Records are copied one level deep. Inner record dicts are shared with the shared index, as they were at baseline.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "9ae7c60cd02b3a7be87a465db4170705d28f9d72", "baseline": "e07b71c68ea44096020ca8865ae228b550b48e16", "verdict": "REJECT",
+ "findings": [
+  {"id": "R1-01", "severity": "MEDIUM", "blocking": true, "category": "test", "owner_decision": false,
+   "title": "conftest placeholders leak into other tests in the same run (server and uri_core.services stay bound to MagicMock Google modules; credential secret persists)",
+   "files": ["tests/graphify/conftest.py:36", "tests/graphify/conftest.py:40", "tests/graphify/conftest.py:41"],
+   "evidence": "conftest imports uri_core.app.server while the placeholders are installed, then deletes only google*/googleapiclient*/google_auth_* entries from sys.modules. uri_core.app.server and uri_core.services.gmail_service (etc.) remain imported with MagicMock bindings: a probe test run after tests/graphify sees type(uri_core.services.gmail_service.build) == MagicMock. Repro on this host (Google packages not installed): `pytest tests/test_m31_model_brain_ux.py` -> 1 collection error; `pytest tests/graphify tests/test_m31_model_brain_ux.py` -> 25 passed. Same for test_decision_engine.py (error alone; 60 passed with tests/graphify). tests/graphify sorts before tests/test_* in a plain `pytest tests` run. os.environ.setdefault('URI_EXTERNAL_CREDENTIAL_SECRET', ...) at module level also persists for the session. This contradicts the conftest docstring ('no other test in the same run can see them') and review focus 5.",
+   "suggested_fix": "Isolate the placeholder import: snapshot sys.modules before it and, on teardown of tests/graphify (session/module fixture or pytest_unconfigure-scoped hook), remove every module added during the placeholder window (including uri_core.*), or use pytest.importorskip / run the tests in a subprocess. Set the credential secret with monkeypatch inside a fixture rather than at import time."},
+  {"id": "R1-02", "severity": "MEDIUM", "blocking": true, "category": "code", "owner_decision": false,
+   "title": "Lookups edit the view's shared records without a lock: concurrent lookups and the capability refresh raise KeyError/RuntimeError",
+   "files": ["uri_core/app/server.py:248", "uri_core/app/server.py:255", "uri_core/app/server.py:257", "uri_core/app/server.py:665", "uri_core/core/graphify_index.py:346"],
+   "evidence": "_sync_memory calls graphify_index.refresh(scope='memory'), which deletes then re-adds keys in self.records in place, on every get/list_all/relevant_subset. /ask is a sync endpoint, so FastAPI runs it in its thread pool; the no-login view is shared by all no-login requests. Probe (/tmp/uri_review_R1/conc/test_conc.py; 300 memories, sys.setswitchinterval(1e-6)): two threads calling view.relevant_subset raise KeyError('memory:...') out of relevant_subset (the error comes from _sync_memory, outside relevant_subset's own try). With list_all readers: RuntimeError 'dictionary changed size during iteration'. A concurrent refresh(view, scope='capabilities') (as in refresh_user_external_lifecycle, server.py:665) raised RuntimeError 1466 times in 8 s; external_lifecycle_lock does not cover Brain-turn lookups, so a capability republish can abort before multi_action_dispatch is swapped. decision_engine catches the relevant_subset error, so in a Brain turn this drops the hint for that turn. Before this change, lookups only read.",
+   "suggested_fix": "Build the merged record dict (non-memory plus freshly indexed memory) in a local variable and assign self.records once, under a per-view lock that the capability/service refresh path also takes (or have that refresh replace records atomically under the same lock). Catch any exception in _sync_memory so a lookup never raises."}
+ ],
+ "prior_findings": [],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/graphify (candidate)", "result": "11 passed", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -q tests/graphify on git archive of e07b71c6 uri_core with the candidate tests copied in", "result": "8 failed, 3 passed (leak/freshness/no-login/broken-store/Brain-hint cases fail on baseline)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -q tests/test_m31_model_brain_ux.py vs pytest -q tests/graphify tests/test_m31_model_brain_ux.py", "result": "1 collection error alone vs 25 passed after tests/graphify (placeholder leak)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -q test_decision_engine.py vs pytest -q tests/graphify test_decision_engine.py; same for test_m33_1_batch1_foundations.py", "result": "collection error alone vs 60 passed / 16 passed after tests/graphify", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -s /tmp/uri_review_R1/test_probe_mock.py after tests/graphify", "result": "uri_core.services.gmail_service.build is MagicMock; import google raises ImportError", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "pytest -s /tmp/uri_review_R1/conc/test_conc.py (thread race on one user view)", "result": "KeyError/RuntimeError raised from relevant_subset, list_all and refresh(scope='capabilities')", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": [
+  "Full repository regression suite against the baseline (AC8 'no new failures') not run; only targeted suites were run",
+  "Behaviour with the real Google client packages installed (not present on this host)",
+  "End-to-end HTTP /ask concurrency through uvicorn (the race was shown at the view API level, not through live HTTP requests)",
+  "Flutter/UI unaffected (no UI files changed; not run)"
+ ]}
+AUDIT_RESULT_END

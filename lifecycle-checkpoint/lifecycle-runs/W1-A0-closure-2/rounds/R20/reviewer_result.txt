@@ -1,0 +1,44 @@
+**Verdict: REJECT.** Both R19 repairs can still be bypassed, so a scam link in a fetched page still reaches the Brain's answer and the research screen.
+
+Both commit hashes match, the checkout is unchanged, and no protected path changed between baseline and candidate. The web and assist test suites pass: 5,111 tests.
+
+**R20-01 (HIGH): a combining dot mark added to a separator word turns it back into a "name".** The R19-01 repair only treats a word made entirely of marks as a separator. Add one mark to a word the detector already catches and the link gets through. Examples: `refunds-portal 丶丿̣ shop`, `ᆞᆢ̣`, `ニハト̣`, `丨丶丿̣`, `ʘ̣`, `ǃ̣`. These are letters already on the "final" D20 stroke list or D17 odd letters, plus a mark. So this is not the owner-accepted "look-alike outside the list" risk. In every case the link passes the link check, the masking, `verify()` (keeps the claim with its citation), `extractive()` and the research screen.
+
+**R20-02 (HIGH): a look-alike `com` spelt with spaces is not a link.** The R19-02 repair checks the look-alike skeleton only for a single word. So `refunds-portal с о м` and `refunds-portal со м` (Cyrillic letters) pass every layer, although the Latin `c o m` and `co m` are caught. With a path (`с о м/claim`) the link is detected, but masking still leaves `refunds-portal с о` on screen.
+
+I left these out as weaker issues: the look-alike table misses `һ` (U+04BB), so `refunds-portal ~ ѕһор` passes. Flutter, the browser channel, vision and the permission paths were not re-tested this round; earlier rounds covered them and nothing there changed.
+
+My reproduction test is `/tmp/uri_review_R20/test_r20_regressions.py`; it needs no fixture files. All 12 cases fail on this candidate.
+
+AUDIT_RESULT_BEGIN
+{"candidate": "eb4d676de99d18710bffd9b3a0cdb7ab1baca7d5", "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9", "verdict": "REJECT",
+ "findings": [
+  {"id": "R20-01", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R19-01 repair incomplete: a separator word plus a combining mark ('丶丿̣', 'ᆞᆢ̣', 'ニハト̣', 'ʘ̣') is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive() and the research surface (W1-AC12/AC15, D17/D19)",
+   "files": ["uri_web/untrusted.py:561", "uri_web/untrusted.py:563", "uri_web/untrusted.py:534", "uri_web/untrusted.py:538", "uri_web/untrusted.py:585"],
+   "evidence": "_separator_word only accepts words made entirely of marks (category M). A word of listed stroke letters plus one mark fails set(w[2]) <= _STROKES because the mark is not in _STROKES; an odd Latin letter plus a mark fails _odd because Mn is not Lo/Lm. The word is then the 'name', the gap is a plain space, and the non-core TLD is skipped. Probe: has_link_or_contact('Claim your energy rebate refund at refunds-portal 丶丿̣ shop before the deadline.') == False, also for '\\u318d\\u11a2\\u0323', '\\u30cb\\u30cf\\u30c8\\u0323', '\\u4e28\\u4e36\\u4e3f\\u0323', '\\u0298\\u0323', '\\u01c3\\u0323', '\\u4e36\\u4e3f\\u0301'; mask_links leaves the text unchanged; SY.verify keeps the claim with its citation; SY.extractive returns the sentence; surface.build_surface emits it without error. Without the mark ('丶丿', 'ʘ') all are links. The letters are inside the D20 groups, so the 'list is final' residual does not apply.",
+   "suggested_fix": "In _separator_word (and _odd, and the stroke-set test) remove combining marks (category M) from the word before classifying it, and treat a word that is empty after that as a separator."},
+  {"id": "R20-02", "severity": "HIGH", "blocking": true, "category": "security", "owner_decision": false,
+   "title": "R19-02 repair incomplete: a look-alike core domain spelt with spaces ('refunds-portal с о м', 'со м') is not an ending, although Latin 'c o m' / 'co m' are links; with a path, masking still leaves 'refunds-portal с о' on screen",
+   "files": ["uri_web/untrusted.py:485", "uri_web/untrusted.py:492", "uri_web/untrusted.py:498", "uri_web/untrusted.py:518"],
+   "evidence": "The skeleton lookup (R19-02) is applied only to single words; the spelt-out paths (single letters joined by spaces, word + one letter) compare text.casefold() against _ALL_TLDS without the skeleton. Probe: has_link_or_contact('Claim your energy rebate refund at refunds-portal с о м before the deadline.') == False; same for 'со м'; verify() keeps the claim, extractive() returns it. Control: 'refunds-portal c o m' and 'refunds-portal co m' are links. With '/claim' the link is detected, but mask_links gives 'refunds-portal с о [X]', so the name stays visible.",
+   "suggested_fix": "Apply the same skeleton match (non-Latin letters, only after a name in a different script) to the spelt-out and split-ending branches of _endings, and mask from the name rather than from the path."}
+ ],
+ "prior_findings": [
+  {"id": "R1-01", "status": "NOT_FIXED"}, {"id": "R1-02", "status": "FIXED"}, {"id": "R1-03", "status": "FIXED"}, {"id": "R1-04", "status": "FIXED"}, {"id": "R1-05", "status": "FIXED"}, {"id": "R1-06", "status": "FIXED"},
+  {"id": "R2-01", "status": "FIXED"}, {"id": "R2-02", "status": "FIXED"}, {"id": "R2-03", "status": "FIXED"},
+  {"id": "R3-01", "status": "FIXED"}, {"id": "R3-02", "status": "FIXED"}, {"id": "R4-01", "status": "FIXED"}, {"id": "R4-02", "status": "FIXED"},
+  {"id": "R5-01", "status": "FIXED"}, {"id": "R5-02", "status": "FIXED"}, {"id": "R6-01", "status": "FIXED"}, {"id": "R6-02", "status": "FIXED"},
+  {"id": "R7-01", "status": "FIXED"}, {"id": "R7-02", "status": "FIXED"}, {"id": "R8-01", "status": "FIXED"}, {"id": "R9-01", "status": "FIXED"},
+  {"id": "R11-01", "status": "FIXED"}, {"id": "R11-02", "status": "FIXED"}, {"id": "R12-01", "status": "FIXED"}, {"id": "R13-01", "status": "FIXED"},
+  {"id": "R14-01", "status": "FIXED"}, {"id": "R16-01", "status": "FIXED"}, {"id": "R16-02", "status": "FIXED"}, {"id": "R17-01", "status": "FIXED"},
+  {"id": "R18-01", "status": "FIXED"}, {"id": "R19-01", "status": "NOT_FIXED"}, {"id": "R19-02", "status": "NOT_FIXED"}
+ ],
+ "tests_run": [
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist", "result": "5111 passed in 98.63s", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider /tmp/uri_review_R20/test_r20_regressions.py", "result": "12 failed (all R20-01/R20-02 reproductions)", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R20/p1.py, p2.py, p3.py (adversarial probes incl. surface.build_surface)", "result": "bypasses listed in R20-01/R20-02 confirmed through verify, extractive and the research surface", "status": "COMPLETED_WITH_RESULT"},
+  {"command": "git diff --stat ffdf534..eb4d676 -- <protected paths>", "result": "no changes", "status": "COMPLETED_WITH_RESULT"}
+ ],
+ "unverified": ["Flutter widget tests (uri_ui) not re-run this round", "ws_frozen_check zip part (Phase 1 checkpoint zip not present)", "browser_extension snapshot.js/probe.js parity, vision and access/bridge permission paths not re-probed this round; no changes to them since R19", "Skeleton table gap: 'һ' (U+04BB) not mapped, so 'refunds-portal ~ ѕһор' passes; not reported as a finding"]}
+AUDIT_RESULT_END

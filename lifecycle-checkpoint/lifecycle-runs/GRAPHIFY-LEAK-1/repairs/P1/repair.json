@@ -1,0 +1,109 @@
+{
+ "addresses": [
+  "R1-01",
+  "R1-02"
+ ],
+ "changed": [
+  "docs/graphify/GRAPHIFY_LEAK_1_PLAN_AND_ACCEPTANCE.md",
+  "tests/graphify/conftest.py",
+  "tests/graphify/test_graphify_leak_1.py",
+  "tests/graphify/test_graphify_leak_1_repair.py",
+  "uri_core/app/server.py"
+ ],
+ "commit": "6c62281fb6b37acfc486fa29468e66824912e151",
+ "ended_at": "2026-10-12T03:56:08Z",
+ "pre": "9ae7c60cd02b3a7be87a465db4170705d28f9d72",
+ "regression": {
+  "need_fail_before": true,
+  "ok": true,
+  "reason": "",
+  "tests": {
+   "tests/graphify/test_graphify_leak_1.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   },
+   "tests/graphify/test_graphify_leak_1_repair.py": {
+    "after_exit": 0,
+    "after_state": "DONE",
+    "before_exit": 1,
+    "before_state": "DONE"
+   }
+  }
+ },
+ "repair": 1,
+ "report": {
+  "not_repaired": [],
+  "notes": "R1-02: server._MemoryScopedGraphifyView now builds memory pointers separately, merges into a new dict and assigns records once; _sync_memory never raises; get/list_all/relevant_subset hold a per-view RLock (view.lock) for sync+read; refresh_user_external_lifecycle holds the same lock around its capability/service graphify refresh. Unused 'refresh as _graphify_refresh' import removed; graphify_index.py unchanged. R1-01: conftest no longer imports the server at collection; module-scoped fixture graphify_server installs placeholders and the credential secret (monkeypatch) only while a tests/graphify module runs, then removes every module added in that window that is a placeholder, uri_core.*, or bound a placeholder (also deleting the parent-package attribute); real third-party modules are left alone. test_graphify_leak_1.py now takes the server from that fixture (its 11 test functions unchanged). Regression file (4 tests) needs no new fixtures: it falls back to importing the server when the old conftest has no graphify_server fixture; on 9ae7c60c all 4 fail (empty hint x2, TypeError, placeholder bindings and secret survive into the probe), and after the change all 4 pass. The race tests are made deterministic by an instrumented record and an instrumented lock, not timing; stable over 5 runs. tests/graphify: 15 passed. Root-level server tests (run with a scratch placeholder plugin): 80 passed / 5 failed on both candidate and baseline, identical failures (network/package staging). Plan doc gained a 'Review round 1 repairs' section (AC9, AC10). Nothing under graphify-out/ touched; no graphify update run.",
+  "regression_tests": [
+   "tests/graphify/test_graphify_leak_1_repair.py"
+  ],
+  "repaired": [
+   "R1-01",
+   "R1-02"
+  ]
+ },
+ "started_at": "2026-10-12T03:37:25Z",
+ "status": "COMMITTED",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--output-format",
+   "json",
+   "--session-id",
+   "31e03a99-2267-4f03-bffd-97f16c1b1ded",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Edit",
+   "Write",
+   "Agent",
+   "--disallowedTools",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 2
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 2.0414259,
+  "cwd": "/home/user/uri-wt/gleak",
+  "ended_at": "2026-10-12T03:55:54Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 1,
+  "pid": 19969,
+  "prompt_sha256": "d2e577c3099b146a8edfd54cf25ff830720c009e10fffeff35d611c7d162fd1f",
+  "provider": "claude_cli",
+  "result_text_sha256": "0f681ebe22668d76a445aa54a70b768e07d245187ac014056d56c141a3bad355",
+  "role": "implementer",
+  "session_id": "31e03a99-2267-4f03-bffd-97f16c1b1ded",
+  "session_id_requested": "31e03a99-2267-4f03-bffd-97f16c1b1ded",
+  "started_at": "2026-10-12T03:37:25Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "984b83a8a43b58f8ee89edee73976f41f2ee8516cfe30f7deb8fe37e91b1bdfa"
+ }
+}

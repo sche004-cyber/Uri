@@ -1,0 +1,315 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R21",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R21-01"
+ ],
+ "candidate": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T14:52:15Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+   "impl_head": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "62cab752750081b47297c19e30c69b72f24797fa1412513f79da775212a4d6f9",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+   "impl_head": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "62cab752750081b47297c19e30c69b72f24797fa1412513f79da775212a4d6f9",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "68feb3e70e9ee1ec019f8d543d552b5b2d95d116",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "SENT='Claim your energy rebate refund at {} before the deadline.'. For 'refunds-portal \\u093c\\u0901\\u0902 shop', 'refunds-portal \\u0f39\\u0f37\\u0f35 shop', 'refunds-portal \\u0650\\u065c\\u0655 shop', 'refunds-portal \\u0e31\\u0e34\\u0e47 shop', 'refunds-portal \\u0c3c\\u0c00\\u0c01 shop': at 68feb3e7 U.has_link_or_contact -> False, U.mask_links leaves the text unchanged, SY.verify(sentence+' [1].', [src]) keeps the claim, SY.extractive('energy rebate refund deadline', [src]) returns the sentence, and surface.build_surface shows it unmasked in the answer and source title (Surface built without validation error). At eb4d676d all five are detected and masked (True / claim dropped / extractive empty / surface masked). Cause: _separator_word now computes base=_bare(w[2]), and _bare strips only marks whose Unicode name starts with 'COMBINING', so these script marks remain, base has 3 distinct characters, and the old 'all category M -> separator' rule (R19-01) no longer fires.",
+    "files": [
+     "uri_web/untrusted.py:472",
+     "uri_web/untrusted.py:580",
+     "uri_web/untrusted.py:581",
+     "uri_web/untrusted.py:589",
+     "uri_web/surface.py:38",
+     "uri_web/synthesize.py"
+    ],
+    "id": "R21-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "In _separator_word, keep the R19-01 rule before stripping: if every character of w[2] is category M, return True; then use _bare for words that have a base letter. Add the five cases above to the regression tests.",
+    "title": "R20-01 repair regressed R19-01: a run of three or more non-'COMBINING'-named marks on a space (Devanagari nukta/candrabindu/anusvara, Tibetan, Arabic, Thai, Telugu signs) between name and a non-core TLD is read as the name, so the link passes has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13/D16)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -x tests/web tests/assist -p no:cacheprovider",
+    "result": "5137 passed in 97s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R21/probe.py <HEAD> and <eb4d676d archive> (mark-run separators, R20 variants)",
+    "result": "5 mark-run link forms undetected at HEAD, detected at eb4d676d; R20-01/R20-02 forms detected at HEAD",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "python /tmp/uri_review_R21/probe2.py / probe3.py (extractive, build_surface)",
+    "result": "extractive returns and surface shows the unmasked link sentence at HEAD; masked at eb4d676d",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "netpolicy.check_address/check_url corpus (22 addresses, 8 URLs)",
+    "result": "all private/special forms refused; public allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff ffdf534..68feb3e7 --stat -- <protected paths>",
+    "result": "no changes",
+    "status": "COMPLETED_WITH_RESULT"
+   }
+  ],
+  "unverified": [
+   "Flutter widget tests (uri_ui) not run this round",
+   "Playwright/Chromium snapshot.js tests not run separately beyond the pytest suite",
+   "ws_frozen_check zip part (checkpoint zip absent)",
+   "Live PC/Windows adapters, vision against the real Brain"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 21,
+ "started_at": "2026-10-11T14:48:55Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "52e01df5-01af-463d-b502-28d430e80cb3",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 72
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.6368555,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R21",
+  "ended_at": "2026-10-11T14:52:14Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 14,
+  "pid": 4424,
+  "prompt_sha256": "d0a2937ca052b9e3b6a29571e55b0b20545aa10c0957fd855570715bad107914",
+  "provider": "claude_cli",
+  "result_text_sha256": "77ed418b286de340c7f6dfc34a08e766adb798fbdd324df607fa63fbc08dc24d",
+  "role": "reviewer",
+  "session_id": "52e01df5-01af-463d-b502-28d430e80cb3",
+  "session_id_requested": "52e01df5-01af-463d-b502-28d430e80cb3",
+  "started_at": "2026-10-11T14:48:55Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "6a96af92ac312506fffdcde71c1ce52a3474f80c8a4d2987930a928e07dac5ce"
+ }
+}

@@ -1,0 +1,369 @@
+{
+ "audit_worktree": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R32",
+ "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+ "blocking_ids": [
+  "R32-01"
+ ],
+ "candidate": "1525b10d4b09793a9fb9fee903cf546fff2b0c83",
+ "effective_verdict": "REJECT",
+ "ended_at": "2026-10-11T16:48:22Z",
+ "independence_basis": "separate process, fresh session, clean checkout, integrity verified",
+ "independent": true,
+ "integrity": {
+  "after": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "1525b10d4b09793a9fb9fee903cf546fff2b0c83",
+   "impl_head": "1525b10d4b09793a9fb9fee903cf546fff2b0c83",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "a3d6c7e4fc70b85f2bad3d498f85c42d50b47b41d7b4ebe6529e3d9595d39f8e",
+   "status": []
+  },
+  "before": {
+   "audit_identity": [
+    true,
+    ""
+   ],
+   "git_control": "a5e2b2b82bc499c59ed60df34da9c32609d3c61cc51c92ba725afae0c0e8e6dc",
+   "head": "1525b10d4b09793a9fb9fee903cf546fff2b0c83",
+   "impl_head": "1525b10d4b09793a9fb9fee903cf546fff2b0c83",
+   "impl_identity": [
+    true,
+    ""
+   ],
+   "impl_status": [],
+   "impl_symref": "refs/heads/milestone/a0-assist-foundation-20261010",
+   "refs": "a3d6c7e4fc70b85f2bad3d498f85c42d50b47b41d7b4ebe6529e3d9595d39f8e",
+   "status": []
+  },
+  "control_drift": null,
+  "ok": true
+ },
+ "result": {
+  "baseline": "ffdf534386a3d40cf9e1646ef1080bee28dd3aa9",
+  "candidate": "1525b10d4b09793a9fb9fee903cf546fff2b0c83",
+  "findings": [
+   {
+    "blocking": true,
+    "category": "security",
+    "evidence": "Probe /tmp/uri_review_R32/p2.py with SENT='Claim your energy rebate refund at {} before the deadline.': for 'refunds-portal.i0/claim', has_link_or_contact=False; SY.verify(SENT[:-1]+' [1].', [src]) keeps the claim 'Claim your energy rebate refund at refunds-portal.i0/claim before the deadline.' with its citation; SY.extractive keeps the same sentence; surface.clean returns it unmasked. Same for 'refunds-portal.c0/claim', '.1y/claim', '.m0/claim', '.|y/claim', 'refunds-portal i0/claim', 'refunds-portal ~ i0', 'refunds-portal . i0'. Control 'refunds-portal.io/claim' -> True, masked '[link removed]', verify drops it. Cause: fold() returns the run unchanged when letters < 2 ('i0' has one letter). The same gate also leaves 'I' unfolded when it is first in a run, but the first-letter cases probed ('.Iy', '.Iive') are still caught.",
+    "files": [
+     "uri_web/untrusted.py:794",
+     "uri_web/untrusted.py:801",
+     "uri_web/untrusted.py:811",
+     "uri_web/untrusted.py:823",
+     "uri_web/surface.py:38",
+     "uri_a2ui/validate.py:19"
+    ],
+    "id": "R32-01",
+    "owner_decision": false,
+    "severity": "HIGH",
+    "suggested_fix": "Apply the ASCII look-alike fold to the label right after a dot-like separator, or to any run next to a separator or ending position, whatever its letter count (or try both variants for two-character labels against the TLD list), keeping the version/code exemption only for prose runs that are not in an ending position. Add regression cases for 'refunds-portal.i0/claim', '.c0', '.1y', '.|y', 'refunds-portal i0/claim', '~ i0', ' . i0'.",
+    "title": "R31-01 repair incomplete: _ascii_variant folds look-alikes only in runs with at least two letters, so two-character endings with one ASCII look-alike ('refunds-portal.i0/claim' = .io core domain, '.c0', '.t0', '.1y', '.m0', '.|y', 'refunds-portal i0/claim', '~ i0', ' . i0') pass has_link_or_contact, mask_links, verify(), extractive(), the research surface and the A2UI validator (W1-AC12/AC15, D13/D16/D29)"
+   }
+  ],
+  "prior_findings": [
+   {
+    "id": "R1-01",
+    "status": "NOT_FIXED"
+   },
+   {
+    "id": "R1-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-04",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-05",
+    "status": "FIXED"
+   },
+   {
+    "id": "R1-06",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R2-03",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R3-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R4-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R5-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R6-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R7-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R8-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R9-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R11-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R12-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R13-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R14-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R16-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R17-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R18-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R19-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R20-02",
+    "status": "FIXED"
+   },
+   {
+    "id": "R21-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R22-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R23-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R24-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R25-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R26-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R27-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R28-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R29-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R30-01",
+    "status": "FIXED"
+   },
+   {
+    "id": "R31-01",
+    "status": "NOT_FIXED"
+   }
+  ],
+  "tests_run": [
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/web tests/assist",
+    "result": "5390 passed in 103.21s",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python -m pytest -q -p no:cacheprovider tests/a2ui",
+    "result": "107 passed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R32/p1.py (has_link_or_contact/mask_links look-alike probes)",
+    "result": "'.i0','.c0','.t0','.1y','.m0','.|y','.1i','.1t' and 'refunds-portal i0/claim','~ i0',' . i0' not detected; multi-letter forms detected",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "/tmp/claude-0/venv/bin/python /tmp/uri_review_R32/p2.py (verify/extractive/surface.clean probes)",
+    "result": "R32-01 forms kept by verify() with citation, extractive() and unmasked in surface.clean; control '.io' dropped/masked",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "netpolicy.check_address probes for 64:ff9b:1::/48 embedded private IPv4, 6to4, Teredo, mapped/compat",
+    "result": "all private embeddings refused; 64:ff9b::808:808 allowed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "git diff --stat ffdf534..1525b10d -- <protected paths>",
+    "result": "empty: no protected path changed",
+    "status": "COMPLETED_WITH_RESULT"
+   },
+   {
+    "command": "ws_frozen_check zip part",
+    "result": "Phase 1 checkpoint zip not present",
+    "status": "BLOCKED"
+   }
+  ],
+  "unverified": [
+   "Flutter uri_ui Assist controller tests not re-run this round",
+   "Playwright browser_extension snapshot/probe tests not re-run separately beyond tests/assist",
+   "Earlier non-link prior findings (R1-02..R1-06, R11-02) marked FIXED based on their passing regression tests, not fresh adversarial probing this round",
+   "ws_frozen_check zip comparison (checkpoint zip absent)"
+  ],
+  "verdict": "REJECT"
+ },
+ "round": 32,
+ "started_at": "2026-10-11T16:44:54Z",
+ "status": "COMPLETED_WITH_RESULT",
+ "worker": {
+  "argv": [
+   "/opt/node22/bin/claude",
+   "-p",
+   "--safe-mode",
+   "--setting-sources",
+   "",
+   "--strict-mcp-config",
+   "--output-format",
+   "json",
+   "--session-id",
+   "1cc0493a-d4e1-4531-9bca-be1312499420",
+   "--permission-mode",
+   "dontAsk",
+   "--allowedTools",
+   "Read",
+   "Grep",
+   "Glob",
+   "Bash",
+   "Agent",
+   "--disallowedTools",
+   "Edit",
+   "Write",
+   "NotebookEdit",
+   "WebFetch",
+   "WebSearch",
+   "--settings",
+   "{\"permissions\": {\"deny\": [\"Bash(git commit*)\", \"Bash(git pus\u2026",
+   "--model",
+   "claude-opus-5-5"
+  ],
+  "binary_anchor_ok": true,
+  "binary_is_default": true,
+  "binary_realpath": "/opt/claude-code/bin/claude",
+  "binary_sha256": "24972e3bc859fab2b46ed4c1e51f7d6130f06d3bd550811a114640de3370d0de",
+  "config_isolated": true,
+  "contained": true,
+  "containment_post": {
+   "contained": true,
+   "killed": 73
+  },
+  "containment_pre": {
+   "contained": true,
+   "killed": 0
+  },
+  "cost_usd": 0.6154464000000001,
+  "cwd": "/tmp/claude-0/lc-work/W1-A0-closure-2/audit_R32",
+  "ended_at": "2026-10-11T16:48:20Z",
+  "exit_code": 0,
+  "model_requested": "claude-opus-5-5",
+  "models_used": [
+   "claude-haiku-5-5",
+   "claude-opus-5-5"
+  ],
+  "num_turns": 13,
+  "pid": 25282,
+  "prompt_sha256": "963ad40836018177cc4252de2f51f101d6913cd95a87dccfcbcc73123b0a43d7",
+  "provider": "claude_cli",
+  "result_text_sha256": "815ee935aa9f8806b338b9137a262c6125a8ad37ce1b7ca3e08e37c5a3a89c60",
+  "role": "reviewer",
+  "session_id": "1cc0493a-d4e1-4531-9bca-be1312499420",
+  "session_id_requested": "1cc0493a-d4e1-4531-9bca-be1312499420",
+  "started_at": "2026-10-11T16:44:54Z",
+  "status": "COMPLETED",
+  "stdout_sha256": "246f58338505b0002e0cc5d683e13e39b6b04cdc9ba39824ce8875a4fc377b21"
+ }
+}
