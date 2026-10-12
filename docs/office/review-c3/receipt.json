@@ -1,0 +1,91 @@
+{
+ "baseline": "ce1a90c046d2e9566a86d8dccf25df0e2bc98c80",
+ "blocker": null,
+ "candidate": "6348b1b11eeefbea9299fabf06c5f3815475cd76",
+ "config_sha256": "b7283eaedc99d174115b55118ff8b7964bb9dbafe417f7ad075cb24aa2c190cb",
+ "events": 13,
+ "evidence_ok_for_candidate": true,
+ "gates": {
+  "6348b1b11eee": {
+   "blocked": null,
+   "new_failures": {
+    "python-a2ui": [],
+    "python-office": []
+   },
+   "ok": true
+  }
+ },
+ "integration": {
+  "at": "2026-10-12T01:42:15Z",
+  "candidate": "6348b1b11eeefbea9299fabf06c5f3815475cd76",
+  "mode": "none",
+  "status": "NOT_INTEGRATED_BY_POLICY"
+ },
+ "milestone": "URI-OFFICE-M1-c3",
+ "open_findings": [
+  {
+   "blocking": false,
+   "id": "R1-01",
+   "severity": "LOW",
+   "title": "WebView2 request filter fails open on COM errors, contrary to the 'fail-closed' claim"
+  },
+  {
+   "blocking": false,
+   "id": "R1-02",
+   "severity": "LOW",
+   "title": "@grpc/grpc-js override still resolves to a nonexistent path; committed stub never installed (prior M1-c2 R1-03 still open)"
+  },
+  {
+   "blocking": false,
+   "id": "R1-03",
+   "severity": "LOW",
+   "title": "AC18 Python and Dart bundle-hash algorithms diverge for non-ASCII names, sort order and symlinked files"
+  },
+  {
+   "blocking": false,
+   "id": "R1-04",
+   "severity": "LOW",
+   "title": "Voice drafting mode in Office focus sends push-to-talk to the hidden draft desk instead of the workbook or a refusal"
+  },
+  {
+   "blocking": false,
+   "id": "R1-05",
+   "severity": "LOW",
+   "title": "Windows reserved-name check misses names with spaces before the extension (e.g. 'C:\\CON .xlsx')"
+  },
+  {
+   "blocking": false,
+   "id": "R1-06",
+   "severity": "LOW",
+   "title": "serve() accepts any loopback address and a negative Content-Length bypasses MAX_BODY"
+  },
+  {
+   "blocking": false,
+   "id": "R1-07",
+   "severity": "LOW",
+   "title": "Companion live-check evidence predates the final repair commit and the ledger does not name its commit; resume() drops the kept workbook on any other service error"
+  }
+ ],
+ "repairs": [],
+ "reviewers": [
+  {
+   "candidate": "6348b1b11eeefbea9299fabf06c5f3815475cd76",
+   "independent": true,
+   "models": [
+    "claude-haiku-5-5",
+    "claude-opus-5-5"
+   ],
+   "provider": "claude_cli",
+   "reviewer_label": "ACCEPT WITH FINDINGS",
+   "round": 1,
+   "session_id": "c45aa89c-ebd6-4862-9846-e97b886a6fb9",
+   "status": "COMPLETED_WITH_RESULT",
+   "verdict": "ACCEPT WITH FINDINGS"
+  }
+ ],
+ "rounds": 1,
+ "schema": "uri-dev-lifecycle/1",
+ "stage": "VERIFIED",
+ "verify_errors": [],
+ "written_at": "2026-10-12T01:42:15Z"
+}
