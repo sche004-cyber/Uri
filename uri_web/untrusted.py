@@ -839,7 +839,8 @@ def _ascii_variant(norm: str) -> str:
 
 _MIXED = re.compile(r"(?:[^\W_]|\|)+")      # R38-02: '_' splits a group ('\u04410\u043c_' -> '\u04410\u043c' + '_')
 # R38-01: single characters separated by single spaces ('c 0 m', 'g 0 v', 'i 0', '\u0441 0 \u043c').
-_SPELT_SINGLES = re.compile(r"(?<!\S)(?:[^\W_]|\|)(?: (?:[^\W_]|\|))+(?!\S)")
+# R43-01: any spacing (spaces, tabs) and any punctuation or path right after the last letter ('о r g/claim').
+_SPELT_SINGLES = re.compile(r"(?<![^\W_|])(?:[^\W_]|\|)(?:[ \t]+(?:[^\W_]|\|))+(?![^\W_|])")
 
 
 def _spelt_fold(m) -> str:
@@ -847,7 +848,8 @@ def _spelt_fold(m) -> str:
     ('0'/'1' as 'o'/'l', 'I'/'|' as 'i' or 'l', single-letter Unicode look-alikes) and replaced, same length, only
     when the joined reading spells a listed top-level domain and differs from what is written."""
     text = m.group(0)
-    chars = text.split(" ")
+    parts = re.split(r"([ \t]+)", text)
+    chars, seps = parts[0::2], parts[1::2]
     if len(chars) > 12:
         return text
     choices = []
@@ -866,7 +868,7 @@ def _spelt_fold(m) -> str:
         return text
     for reading in itertools.product(*choices):
         if "".join(reading) in _ALL_TLDS and "".join(reading) != "".join(chars).lower():
-            return " ".join(reading)
+            return "".join(r + (seps[i] if i < len(seps) else "") for i, r in enumerate(reading))
     return text
 
 
