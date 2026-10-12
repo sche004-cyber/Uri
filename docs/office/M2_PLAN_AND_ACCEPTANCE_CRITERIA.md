@@ -24,7 +24,7 @@ The sources are never written. Nothing leaves the PC.
 
 | Id | Decision | Why |
 |---|---|---|
-| M2-D1 (**owner may overrule**) | The approval card for *creating a new file* shows a summary (destination; each sheet with its cell and formula counts; the sources used), not every cell. The hash still binds the full content, and a different draft version is refused as before. M1's rule that a card lists every change stays for saving *into an existing file* and for Google. | A new file from sources can hold tens of thousands of cells, which no card can show; M1 would refuse it. Creating a new file changes no existing data; the owner reviewed the content in the grid and accepted it change by change or with *Accept all*. |
+| M2-D1 (**owner approved 2026-10-12**: "Ok reccommendation") | The approval card for *creating a new file* shows a summary (destination; each sheet with its cell and formula counts; the sources used), not every cell. The hash still binds the full content, and a different draft version is refused as before. M1's rule that a card lists every change stays for saving *into an existing file* and for Google. | A new file from sources can hold tens of thousands of cells, which no card can show; M1 would refuse it. Creating a new file changes no existing data; the owner reviewed the content in the grid and accepted it change by change or with *Accept all*. |
 | M2-D2 | *Accept all* / *Reject all* decide every change that was **proposed** when the pane last showed the draft. The request carries the draft version and the SHA-256 over the sorted `(change id, change hash)` pairs; the service recomputes both and refuses with `STALE_CHANGE` if anything differs. All or nothing. | Per-change decisions stay hash-bound; the batch is bound the same way without a 2 MB request. |
 | M2-D3 | `copy_range` copies **values** (the cached results for formula cells), never formulas, from a source into the new workbook. A source formula cell without a cached result (a file Excel never calculated) is copied as empty and reported. | Formulas from a source would point at sheets that are not in the new workbook. External references stay refused (M1 rule). |
 | M2-D4 | In a new workbook, `add_sheet` and `rename_sheet` take effect in the draft at once (there is no file yet); they are listed in the conversation. A sheet left with no cells is not written. Saving with no cells at all is refused (`NOTHING_TO_SAVE`). | Structure is free until the file exists; it keeps the draft model unchanged. |
@@ -41,7 +41,7 @@ The sources are never written. Nothing leaves the PC.
 | AC | Criterion | Evidence |
 |---|---|---|
 | M2-AC1 | `POST /open/new {"paths": [...]}` opens a new workbook (engine `new`, one empty sheet `Sheet1`) with 1-10 sources. Every path goes through the M1 path rule (`grants.grant_open`: owner-picked, allowed roots, regular file, 50 MB cap) and is copied in; a source whose file changes during copy-in is refused. Duplicate names get distinct labels. More than 10 sources, or a non-xlsx, is refused with nothing opened. | pytest |
-| M2-AC2 | `POST /workbook/<id>/sources {"paths": [...]}` adds sources to an open new workbook under the same rules (total stays at most 10). Only engine `new` accepts sources. | pytest |
+| M2-AC2 | `POST /workbook/<id>/sources {"paths": [...]}` adds files to a workbook opened with "New from files" under the same rules (total stays at most 10), also while one of its files is the working file (a later file is often another reference). A file added later has no role until the owner gives it one, so requests wait again (M2-D10). A workbook opened with "Open file" or a Google link takes no added files. (Corrected 2026-10-12 after Codex C-04: the first text said "only engine `new`", which contradicted M2-D11.) | pytest |
 | M2-AC3 | The view lists sources (id `S1..`, label, sheet names and sizes) and never a source path. | pytest, widget test |
 | M2-AC4 | The Brain request for a new workbook contains the owner's instruction as the only instruction; each source's bounded excerpt (sheet sizes, the first rows of each sheet, a total cell cap) and the new workbook's excerpt are inside untrusted-data blocks. A source cell saying "ignore previous instructions" does not change the ops returned by the fake Brain. | pytest |
 | M2-AC5 | New-workbook ops: `set_values`, `set_formula`, `add_sheet`, `rename_sheet`, `copy_range{source, from_sheet, from_range, sheet, cell}`. Each is validated; an invalid op is reported, never guessed. `copy_range` is capped at 5,000 cells per op, copies values only (D3), and refuses an unknown source, sheet or range. Network and external-reference formulas stay refused. Row ops stay Google-only. | pytest |
@@ -124,3 +124,18 @@ Brain READY 159 tok/s with `--override-contention`; `advise --window` GO before 
 The check run used a build made before the opening notice was reworded ("Added ... Say what each file is for"); the build run used the reworded one. Brain and service stopped; GPU lease FREE.
 
 Limitation (model, not mechanism): the local Brain's checks are not exhaustive (it missed an arithmetic error). Findings are suggestions; the owner remains the reviewer.
+
+### 2026-10-12, Codex review of 99bd8116 (owner: "Send the review to codex")
+
+`codex exec`, model `gpt-6-sol`, effort high, read-only, 227 s, status COMPLETED_WITH_RESULT. **Verdict: REJECT**, 4 findings. Each was verified here before repair (Codex output is a claim):
+
+| Finding | Verified | Repair | Test (fails on 99bd8116, passes after) |
+|---|---|---|---|
+| C-01 HIGH: the snapshot kept only the last 500 changes, so with more than 500 proposals the pane's *Accept all* hash could not match | reproduced: 501 proposed, 500 in the snapshot | the snapshot carries every proposed change plus the latest 500 others, `proposed_count` and `proposed_set_sha256` | `test_c01_...` |
+| C-02 HIGH: after saving the working file in place, its source record kept the copy-in hash and data: switching back gave a false `TARGET_CHANGED`, and as a reference its data was stale | confirmed by reading `_apply`/`_switch_target` | an in-place save of a working file updates its source record; a real outside change is still refused | `test_c02_...` |
+| C-03 HIGH: `Draft.propose` changed the draft before a refusal (cap, unknown sheet, locked cell), leaving partial proposals | reproduced: cap 2, 2 changes left after `DRAFT_TOO_LARGE` | propose is all or nothing (capacity checked first; any refusal restores the draft) | `test_c03_...` |
+| C-04 MEDIUM: `/sources` accepted files while a working file was set, contrary to the AC2 text | confirmed | kept the behaviour (a later file is usually another reference, and it waits for a role); corrected AC2, which contradicted M2-D11 | `test_c04_...` (passes before and after: a documentation correction) |
+
+Codex could not run pytest in its read-only sandbox (no temporary folder) and did not run Flutter; the PC gates below are this session's.
+
+PC gates after the Codex repairs: Python `tests/office tests/a2ui tests/ws tests/oi` 883 passed, 27 skipped; `flutter test` 543 passed, 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.

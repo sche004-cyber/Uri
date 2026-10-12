@@ -490,6 +490,11 @@ class Office:
             if not t["save_as"]:
                 self._committed(s, pending)
                 s.open_sha = xlsx_model.file_sha256(dest)
+                # A working file that is also one of the added files: its record follows URI's own save, so it can
+                # be a reference or the working file again without a false "changed on disk" (Codex C-02).
+                for src in s.sources:
+                    if src.grant_id == s.grant_id:
+                        src.sha256, src.workbook = s.open_sha, s.workbook
             return {"changed_parts": res["changed_parts"], "saved_to": dest.name}
 
     def _create_new_file(self, s, t, pending) -> dict:

@@ -54,10 +54,16 @@ class Draft:
         return cur
 
     def snapshot(self) -> dict:
+        """Every proposed change (the panel decides them, also all at once with the set hash, Codex C-01) plus the
+        latest 500 others, in draft order."""
+        shown = [ch for ch in self.changes if ch["state"] in LIVE or ch["state"] in ("rejected", "edited_by_user")]
+        others = {id(ch) for ch in [c for c in shown if c["state"] != "proposed"][-500:]}
         return {"workbook_id": self.workbook_id, "engine": self.engine, "version": self.version,
                 "can_undo": bool(self._undo), "can_redo": bool(self._redo),
-                "changes": [dict(ch, change_sha256=change_sha256(ch)) for ch in self.changes
-                            if ch["state"] in LIVE or ch["state"] in ("rejected", "edited_by_user")][-500:]}
+                "proposed_count": sum(1 for c in self.changes if c["state"] == "proposed"),
+                "proposed_set_sha256": self.proposed_set_sha256(),
+                "changes": [dict(ch, change_sha256=change_sha256(ch)) for ch in shown
+                            if ch["state"] == "proposed" or id(ch) in others]}
 
     # ---- versioning ----------------------------------------------------------------------------------------------
     def _push(self):
@@ -103,7 +109,19 @@ class Draft:
     def propose(self, edits: list) -> list:
         """URI's validated edits (from `ops.to_cell_edits`) become proposed, marked changes. Returns the new changes.
         In a new workbook (engine "new", M2-D4) add_sheet and rename_sheet take effect at once and are recorded as
-        accepted structural changes."""
+        accepted structural changes. All or nothing: a refusal part way (draft cap, unknown sheet, locked cell)
+        leaves the draft exactly as it was (Codex C-03)."""
+        if len(self.changes) + len(edits) > MAX_CHANGES:
+            raise OfficeError("DRAFT_TOO_LARGE", "save or discard before making more changes")
+        saved = (copy.deepcopy(self.changes), copy.deepcopy(self.base), copy.deepcopy(self.locked),
+                 copy.deepcopy(self._undo), copy.deepcopy(self._redo), self.version)
+        try:
+            return self._propose(edits)
+        except Exception:
+            self.changes, self.base, self.locked, self._undo, self._redo, self.version = saved
+            raise
+
+    def _propose(self, edits: list) -> list:
         self._push()
         new = []
         for e in edits:

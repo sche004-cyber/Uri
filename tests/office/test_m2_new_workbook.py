@@ -549,3 +549,67 @@ def test_reference_copy_into_the_working_file_respects_locked_cells(tmp_path, of
     o.set_roles(v["workbook_id"], {"roles": {"S1": "edit", "S2": "reference"}})
     r = o.instruct(v["workbook_id"], {"text": "go"})
     assert [x["code"] for x in r["refused"]] == ["CELL_NOT_EDITABLE"]
+
+
+# ---- Codex review of 99bd8116 (C-01..C-04) -----------------------------------------------------------------------------
+def test_c01_snapshot_carries_every_proposed_change_and_the_set_hash():
+    d = D.Draft("w", "new", {"sheets": [{"name": "S", "cells": {}}]})
+    d.user_edit({"sheet": "S", "cell": "Z1", "value": "typed"})
+    d.propose([{"sheet": "S", "cell": f"A{i}", "value": i} for i in range(1, 702)])
+    snap = d.snapshot()
+    shown = [c for c in snap["changes"] if c["state"] == "proposed"]
+    assert len(shown) == snap["proposed_count"] == 701
+    pairs = sorted((c["cid"], c["change_sha256"]) for c in shown)
+    assert hashlib.sha256(canonical([list(p) for p in pairs])).hexdigest() == snap["proposed_set_sha256"] \
+        == d.proposed_set_sha256()
+    assert any(c["state"] == "user" for c in snap["changes"])
+
+
+def test_c03_a_refused_proposal_leaves_the_draft_unchanged(monkeypatch):
+    d = D.Draft("w", "new", {"sheets": [{"name": "S", "cells": {}}]})
+    d.propose([{"sheet": "S", "cell": "A1", "value": 1}])
+    before = (json.dumps(d.changes, sort_keys=True), d.version, list(d.base), len(d._undo))
+    monkeypatch.setattr(D, "MAX_CHANGES", 3)
+    with pytest.raises(OfficeError) as e:
+        d.propose([{"sheet": "S", "cell": f"B{i}", "value": i} for i in range(1, 4)])
+    assert e.value.code == "DRAFT_TOO_LARGE"
+    monkeypatch.setattr(D, "MAX_CHANGES", 20_000)
+    with pytest.raises(OfficeError) as e:            # fails part way: a sheet op applied, then an unknown sheet
+        d.propose([{"op": "add_sheet", "name": "New"}, {"sheet": "Missing", "cell": "A1", "value": 1}])
+    assert e.value.code == "UNKNOWN_SHEET"
+    assert (json.dumps(d.changes, sort_keys=True), d.version, list(d.base), len(d._undo)) == before
+
+
+def test_c02_saving_the_working_file_keeps_its_record_current(tmp_path, office):
+    o, _ = office()
+    a, b = make_source(tmp_path / "a.xlsx"), make_source(tmp_path / "b.xlsx")
+    v = o.open_new([str(a), str(b)])
+    wid = v["workbook_id"]
+    o.set_roles(wid, {"roles": {"S1": "edit", "S2": "reference"}})
+    o.edit(wid, {"sheet": "Data", "cell": "C1", "value": "saved by URI"})
+    p = o.propose_save(wid, {})
+    o.action(action_for(p["messages"], "apply", "office.apply_change"))
+    o.set_roles(wid, {"roles": {"S1": "reference", "S2": "edit"}})
+    src = o.sessions[wid].sources[0]
+    assert src.sha256 == xlsx_model.file_sha256(a)
+    assert src.workbook["sheets"][0]["cells"]["C1"]["v"] == "saved by URI"     # as a reference: the saved data
+    v = o.set_roles(wid, {"roles": {"S1": "edit", "S2": "reference"}})         # no false TARGET_CHANGED
+    assert v["working"] == "S1"
+    make_source(a, rows=(("changed outside",),))                               # a real outside change is still caught
+    o.set_roles(wid, {"roles": {"S1": "reference", "S2": "reference"}})
+    with pytest.raises(OfficeError) as e:
+        o.set_roles(wid, {"roles": {"S1": "edit"}})
+    assert e.value.code == "TARGET_CHANGED"
+
+
+def test_c04_a_file_added_while_one_is_the_working_file_needs_a_role(tmp_path, office):
+    o, client = office({"message": "ok", "ops": []})
+    a, b, c = (make_source(tmp_path / f"{n}.xlsx") for n in "abc")
+    v = o.open_new([str(a), str(b)])
+    wid = v["workbook_id"]
+    o.set_roles(wid, {"roles": {"S1": "edit", "S2": "reference"}})
+    v = o.add_sources(wid, {"paths": [str(c)]})
+    assert (v["engine"], v["working"], [x["role"] for x in v["sources"]]) == ("local", "S1", ["edit", "reference", None])
+    with pytest.raises(OfficeError) as e:
+        o.instruct(wid, {"text": "go"})
+    assert e.value.code == "ROLES_NEEDED" and client.bodies == []
