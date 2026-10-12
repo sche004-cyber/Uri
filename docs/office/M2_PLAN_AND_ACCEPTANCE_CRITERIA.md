@@ -270,3 +270,15 @@ Verified by Claude before commit: `_clearSurfaces` runs only when the working fi
 Codex's direct service probe passed (published cells, successful action with `reopen_needed`, preserved draft, audit event). The focused pytest invocation did not execute the test: pytest raised `PermissionError: [WinError 5]` while scanning `.codex_tmp/pytest-r11`. Flutter test and `dart format` produced no output and were interrupted in this sandbox. The new test bodies and a clean gate still need execution outside this sandbox.
 
 Verified by Claude before commit: after publication a failure restores the session exactly (engine, draft, grants; the extra grant revoked), never deletes the file and reports `created` with `reopen_needed`; the pane does not reload as a local workbook then. Both new tests (Python and Dart) fail on d0c92fc0 and pass after (Codex could not run them in its sandbox). PC gates: Python 922 passed / 27 skipped; `flutter test` 545 passed / 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.
+
+### 2026-10-12, Codex review of 314e9bb7 (round 12)
+
+**Verdict: ACCEPT WITH FINDINGS.** R11-01 was confirmed repaired. R12-01 is MEDIUM, non-blocking, and an undocumented outcome mismatch; Codex repaired it on the owner's instruction. The repair remains uncommitted for independent re-review.
+
+| Finding | Classification | Repair | Tests |
+|---|---|---|---|
+| R12-01: `xlsx_new.write` published a file, then a temporary-file cleanup error escaped and made the approval report `APPLY_FAILED` without a creation audit or notice | Non-blocking successful-publication outcome mismatch; repair | After publication, an `OSError` removing the temporary file leaves the successful result intact with `temp_left: true`, which flows into `office.new_file_created`. Before publication, a cleanup `OSError` cannot mask the original write error or `DESTINATION_EXISTS` refusal. | `test_r12_01_temp_cleanup_failure_after_publication_keeps_success`, `test_r12_01_destination_exists_wins_over_temp_cleanup_failure`, `test_r12_01_service_audits_published_file_with_leftover_temp` |
+
+The three round-12 test bodies passed when invoked directly. Pytest could not run them in this Windows sandbox: its temporary-directory setup failed with `PermissionError: [WinError 5]` while scanning `.codex_tmp/pytest-r12-before`. A clean pytest gate and independent re-review remain pending.
+
+Verified by Claude before commit: only `xlsx_new.write` changed (original errors win over cleanup errors before publication; after publication a cleanup failure is recorded as `temp_left`). The 3 new tests fail on 314e9bb7 and pass after. PC gates: Python 925 passed / 27 skipped; `flutter test` 545 passed / 5 skipped; `ws_frozen_check` ok.

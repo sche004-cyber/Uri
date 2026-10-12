@@ -467,6 +467,72 @@ def test_r10_02_fallback_write_failure_removes_only_its_destination(tmp_path, mo
     assert not list(tmp_path.glob(".~uri-*.xlsx"))
 
 
+def test_r12_01_temp_cleanup_failure_after_publication_keeps_success(tmp_path, monkeypatch):
+    dest = tmp_path / "new.xlsx"
+    unlink = type(dest).unlink
+
+    def cannot_remove_temp(path, *args, **kwargs):
+        if path.name.startswith(".~uri-"):
+            raise PermissionError("temp is locked")
+        return unlink(path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(type(dest), "unlink", cannot_remove_temp)
+        result = xlsx_new.write(dest, [("Summary", {"A1": {"v": "ready"}})])
+
+    assert result == {"sheets": 1, "cells": 1, "formulas": 0, "temp_left": True}
+    assert load_workbook(dest)["Summary"]["A1"].value == "ready"
+    assert len(list(tmp_path.glob(".~uri-*.xlsx"))) == 1
+
+
+def test_r12_01_destination_exists_wins_over_temp_cleanup_failure(tmp_path, monkeypatch):
+    dest = tmp_path / "new.xlsx"
+    dest.write_bytes(b"someone else's file")
+    unlink = type(dest).unlink
+
+    def cannot_remove_temp(path, *args, **kwargs):
+        if path.name.startswith(".~uri-"):
+            raise PermissionError("temp is locked")
+        return unlink(path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(type(dest), "unlink", cannot_remove_temp)
+        with pytest.raises(OfficeError) as e:
+            xlsx_new.write(dest, [("Summary", {"A1": {"v": "ready"}})])
+
+    assert e.value.code == "DESTINATION_EXISTS"
+    assert dest.read_bytes() == b"someone else's file"
+    assert len(list(tmp_path.glob(".~uri-*.xlsx"))) == 1
+
+
+def test_r12_01_service_audits_published_file_with_leftover_temp(tmp_path, office, monkeypatch):
+    o, _ = office()
+    source = make_source(tmp_path / "source.xlsx")
+    v = o.open_new([str(source)])
+    as_reference(o, v)
+    wid = v["workbook_id"]
+    o.edit(wid, {"sheet": "Sheet1", "cell": "A1", "value": "ready"})
+    dest = tmp_path / "new.xlsx"
+    p = o.propose_save(wid, {"save_as_path": str(dest)})
+    unlink = type(dest).unlink
+
+    def cannot_remove_temp(path, *args, **kwargs):
+        if path.name.startswith(".~uri-"):
+            raise PermissionError("temp is locked")
+        return unlink(path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(type(dest), "unlink", cannot_remove_temp)
+        done = o.action(action_for(p["messages"], "apply", "office.apply_change"))
+
+    assert done["status"] == "applied" and done["created"] is True
+    assert done["temp_left"] is True and done["reopen_needed"] is False
+    assert load_workbook(dest)["Sheet1"]["A1"].value == "ready"
+    event = o.approvals.db.execute("SELECT payload_json FROM event WHERE kind='office.new_file_created' "
+                                   "ORDER BY seq DESC LIMIT 1").fetchone()
+    assert json.loads(event[0])["temp_left"] is True
+
+
 def test_r5_01_oversized_new_file_is_refused_before_publication_and_can_be_retried(tmp_path, http_office,
                                                                                       monkeypatch):
     o, port, token = http_office

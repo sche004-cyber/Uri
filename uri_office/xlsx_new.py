@@ -54,9 +54,19 @@ def write(dest: Path, sheets: list) -> dict:
         if tmp.stat().st_size > grants.MAX_BYTES:
             raise OfficeError("NEW_FILE_TOO_LARGE", "the new workbook exceeds the 50 MB file limit", 413)
         _link_no_replace(tmp, dest)
-    finally:
+    except BaseException:
+        # A failed cleanup must not replace the refusal or write error.
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+    result = {"sheets": len(sheets), "cells": cells, "formulas": formulas}
+    try:
         tmp.unlink(missing_ok=True)
-    return {"sheets": len(sheets), "cells": cells, "formulas": formulas}
+    except OSError:
+        result["temp_left"] = True
+    return result
 
 
 def _link_no_replace(tmp: Path, dest: Path):
