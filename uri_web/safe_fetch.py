@@ -191,7 +191,7 @@ class SafeFetcher:
                  egress: str = "direct", proxy: Optional[str] = None, connect_timeout: float = 5.0,
                  read_timeout: float = 10.0, total_timeout: float = 20.0, max_bytes: int = 3_000_000,
                  max_redirects: int = 5, honour_robots: bool = True, allowed_ports=NP.ALLOWED_PORTS,
-                 clock: Callable = time.monotonic, proxy_unresolved_ok=()):
+                 clock: Callable = time.monotonic, proxy_unresolved_ok=(), extra_types=None):
         if egress not in ("direct", "proxy"):
             raise ValueError("EGRESS_MODE")
         if egress == "proxy" and not proxy and transport is None:
@@ -204,6 +204,9 @@ class SafeFetcher:
         # Proxy mode only: public host names the operator allows even when they cannot be resolved locally (the
         # proxy resolves them; rebinding protection then depends on the proxy). Empty by default.
         self.proxy_unresolved_ok = frozenset(h.lower() for h in proxy_unresolved_ok)
+        # SSRF-1: content types a caller can also receive (mime -> kind), e.g. documents for uri_core fetch_url. Empty by
+        # default, so W1 behaviour is unchanged. Bodies of these kinds are returned as bytes, not decoded to text.
+        self.extra_types = dict(extra_types or {})
         self._robots: dict = {}
         self.connections: list = []    # (host, address) per hop, for audit and tests
 
@@ -348,12 +351,15 @@ class SafeFetcher:
                 rec.fetch_status = R.HTTP_ERROR
                 return FetchResult(rec)
             mime = (ctype or "").split(";", 1)[0].strip().lower()
-            kind = TEXT_TYPES.get(mime)
+            extra = self.extra_types.get(mime)
+            kind = extra or TEXT_TYPES.get(mime)
             rec.content_type, rec.bytes, rec.sha256 = mime or None, len(body), R.sha256_bytes(body)
             if kind is None:
                 rec.fetch_status, rec.analysed_scope = R.UNSUPPORTED_CONTENT_TYPE, R.METADATA_ONLY
                 return FetchResult(rec)
             rec.fetch_status = R.OK
+            if extra is not None and extra not in ("html", "text", "feed", "json"):
+                return FetchResult(rec, body=body, kind=kind)        # a document: bytes for the caller's extractor
             return FetchResult(rec, body=body, text=_decode(body, ctype), kind=kind)
         rec.fetch_status, rec.redirect_chain = R.TOO_MANY_REDIRECTS, chain
         return FetchResult(rec)
