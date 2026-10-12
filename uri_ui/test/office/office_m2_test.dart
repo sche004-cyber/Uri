@@ -254,6 +254,21 @@ void main() {
     expect(find.byKey(const ValueKey('office-working-S2')), findsNothing);
   });
 
+  test('switching the working file removes its open approval surface', () async {
+    final svc = _Service();
+    final c = OfficeController(client: svc.client(), surface: FakeSurface());
+    addTearDown(c.dispose);
+    await c.openNew([r'C:\Users\me\north.xlsx', r'C:\Users\me\south.xlsx']);
+    await c.proposeSave(saveAsPath: r'C:\Users\me\summary.xlsx');
+    expect(c.hub.surfaces.map((s) => s.id), contains('new-w1'));
+
+    await c.setRole('S1', 'reference');
+    expect(c.hub.surfaces.map((s) => s.id), contains('new-w1'));
+    await c.setRole('S2', 'check');
+    expect(c.working, 'S2');
+    expect(c.hub.surfaces, isEmpty);
+  });
+
   test('a check lists its findings in the conversation', () async {
     final svc = _Service()
       ..roles = {'S1': 'check', 'S2': 'reference'}

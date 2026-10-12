@@ -245,3 +245,16 @@ Codex attempted the new pytest test before and after repair with `TMP`/`TEMP` an
 
 Verified by Claude before commit: the change only moves `notes` out of the new-workbook branch (returned for any session with added files); the round-9 test fails on e656f68e and passes after (Codex could not run it in its sandbox). PC gates are in the next line.
 PC gates after round 9: Python 920 passed / 27 skipped; flutter test 543 passed / 5 skipped; ws_frozen_check ok.
+
+### 2026-10-12, Codex review of 3dee8bb9 (round 10)
+
+**Verdict: ACCEPT WITH FINDINGS.** R9-01 was confirmed repaired. Both round-10 findings are LOW, non-blocking, cheap to repair, and are not limitations already stated in this plan. Codex repaired them on the owner's instruction under the owner's repair-versus-document rule; the repairs remain uncommitted for independent re-review.
+
+| Finding | Classification | Repair | Test |
+|---|---|---|---|
+| R10-01: changing the working file closes the service approval, but leaves its A2UI card in the Flutter pane until a click fails with `UNKNOWN_SURFACE` | Undocumented stale approval; repair | `OfficeController.setRole` deletes the hub's open surfaces when the working file changes, using the same `deleteSurface` mechanism as `_forgetWorkbook` | `switching the working file removes its open approval surface` also checks that an unchanged working file retains the card |
+| R10-02: the no-hard-link fallback can leave a partial `.xlsx` when its exclusive-create copy fails | Undocumented partial file; repair | After `O_EXCL` creates the destination, a copy failure removes that destination and re-raises; an existing destination is still refused without replacement | `test_r10_02_fallback_write_failure_removes_only_its_destination` simulates unavailable hard links and a partial write, checks destination and `.~uri-*` cleanup, then checks existing-file preservation |
+
+Codex's focused pytest invocation did not run the test: pytest raised `PermissionError: [WinError 5]` while scanning `.codex_tmp/pytest-r10` during temporary-directory setup. The R10-02 test body passed when invoked directly with `.codex_tmp` supplied as its temporary directory; a separate direct fallback probe also passed (partial destination removed, temporary file removed, existing destination preserved). Flutter test verification could not run in this sandbox: the Flutter tool cannot open `C:\Users\cheta\flutter\bin\cache\lockfile` outside the writable worktree. Direct `dart analyze` was also denied when it tried to start `dartaotruntime.exe`.
+
+Verified by Claude before commit: `_clearSurfaces` runs only when the working file changed (and from `_forgetWorkbook`, unchanged behaviour); the writer fallback removes only the file its own O_EXCL created. Both new tests (Python and Dart) fail on 3dee8bb9 and pass after (Codex could run neither fully in its sandbox). PC gates: Python 921 passed / 27 skipped; `flutter test` 544 passed / 5 skipped; `flutter analyze` 2 pre-existing infos; `ws_frozen_check` ok.

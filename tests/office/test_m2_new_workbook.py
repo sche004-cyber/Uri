@@ -383,6 +383,44 @@ def test_new_file_never_replaces_an_existing_file(tmp_path, http_office):
     assert not list(tmp_path.glob(".~uri-*"))
 
 
+def test_r10_02_fallback_write_failure_removes_only_its_destination(tmp_path, monkeypatch):
+    def no_links(_src, _dest):
+        raise OSError("hard links unavailable")
+
+    real_fdopen = xlsx_new.os.fdopen
+
+    class FailingWriter:
+        def __init__(self, out):
+            self.out = out
+
+        def __enter__(self):
+            self.out.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self.out.__exit__(*args)
+
+        def write(self, data):
+            self.out.write(data[:10])
+            raise OSError("copy write failed")
+
+    monkeypatch.setattr(xlsx_new.os, "link", no_links)
+    monkeypatch.setattr(xlsx_new.os, "fdopen", lambda fd, mode: FailingWriter(real_fdopen(fd, mode)))
+    sheets = [("Summary", {"A1": {"v": "value"}})]
+    dest = tmp_path / "new.xlsx"
+    with pytest.raises(OSError, match="copy write failed"):
+        xlsx_new.write(dest, sheets)
+    assert not dest.exists()
+    assert not list(tmp_path.glob(".~uri-*.xlsx"))
+
+    dest.write_bytes(b"someone else's file")
+    with pytest.raises(OfficeError) as e:
+        xlsx_new.write(dest, sheets)
+    assert e.value.code == "DESTINATION_EXISTS"
+    assert dest.read_bytes() == b"someone else's file"
+    assert not list(tmp_path.glob(".~uri-*.xlsx"))
+
+
 def test_r5_01_oversized_new_file_is_refused_before_publication_and_can_be_retried(tmp_path, http_office,
                                                                                       monkeypatch):
     o, port, token = http_office

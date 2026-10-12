@@ -75,6 +75,7 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
         final before = working;
         await _apply(await client.setRoles(wid, roles));
         if (working != before) {
+          _clearSurfaces();
           final w = sources.where((s) => s['id'] == working).map((s) => s['label']).firstOrNull;
           _say(OfficeSpeaker.notice, w == null
               ? 'No working file: URI builds a new workbook from the references.'
@@ -317,6 +318,10 @@ class OfficeController extends ChangeNotifier implements OfficeRequestTarget {
   void _forgetWorkbook() {
     conversation.clear();
     brainMessage = null;
+    _clearSurfaces();
+  }
+
+  void _clearSurfaces() {
     final old = [for (final s in hub.surfaces) s.id];
     if (old.isNotEmpty) {
       hub.apply([for (final id in old) {'version': 'v0.9', 'deleteSurface': {'surfaceId': id}}]);

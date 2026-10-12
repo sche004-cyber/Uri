@@ -72,5 +72,9 @@ def _link_no_replace(tmp: Path, dest: Path):
         fd = os.open(dest, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0))
     except FileExistsError:
         raise OfficeError("DESTINATION_EXISTS", "choose a new file name", 409) from None
-    with os.fdopen(fd, "wb") as out, open(tmp, "rb") as src:
-        out.write(src.read())
+    try:
+        with os.fdopen(fd, "wb") as out, open(tmp, "rb") as src:
+            out.write(src.read())
+    except Exception:
+        dest.unlink(missing_ok=True)                 # O_EXCL created this file; do not leave a partial workbook
+        raise
